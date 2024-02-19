@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Buffer
 import de.fabmax.kool.util.Viewport
 import kotlinx.coroutines.CompletableDeferred
 
@@ -35,7 +34,8 @@ interface RenderBackend {
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
     fun uploadTextureToGpu(tex: Texture, data: TextureData)
 
-    fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Buffer>)
+    fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>)
+    fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>)
 }
 
 class DeviceCoordinates(

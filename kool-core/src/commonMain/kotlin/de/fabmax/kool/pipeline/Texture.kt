@@ -1,8 +1,13 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.util.*
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.pipeline.backend.GpuTexture
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.ColorGradient
+import de.fabmax.kool.util.UniqueId
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 
@@ -19,9 +24,16 @@ abstract class Texture(
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
      * called.
      */
-    var loadedTexture: LoadedTexture? = null
+    var gpuTexture: GpuTexture? = null
 
     var loadingState = LoadingState.NOT_LOADED
+
+    val width: Int
+        get() = gpuTexture?.width ?: 0
+    val height: Int
+        get() = gpuTexture?.height ?: 0
+    val depth: Int
+        get() = gpuTexture?.depth ?: 0
 
     /**
      * Disposes the underlying texture memory and resets the [loadingState] to [LoadingState.NOT_LOADED]. In contrast
@@ -31,8 +43,8 @@ abstract class Texture(
      * @see release
      */
     open fun dispose() {
-        loadedTexture?.release()
-        loadedTexture = null
+        gpuTexture?.release()
+        gpuTexture = null
         loadingState = LoadingState.NOT_LOADED
     }
 
@@ -82,6 +94,21 @@ open class Texture1d(
         name: String = UniqueId.nextId("Texture1d"),
         loader: (suspend CoroutineScope.() -> TextureData1d)? = null
     ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
+
+    constructor(
+        props: TextureProps = TextureProps(),
+        data: TextureData1d,
+        name: String = UniqueId.nextId("Texture2d")
+    ): this(props, name, BufferedTextureLoader(data))
+
+    suspend inline fun readbackTextureData(): TextureData1d {
+        val deferred = CompletableDeferred<TextureData>()
+        KoolSystem.requireContext().backend.readTextureData(this, deferred)
+
+        val buffer = deferred.await()
+        check(buffer is TextureData1d)
+        return buffer
+    }
 }
 
 open class Texture2d(
@@ -94,31 +121,28 @@ open class Texture2d(
         props: TextureProps = TextureProps(),
         name: String = UniqueId.nextId("Texture2d"),
         loader: (suspend CoroutineScope.() -> TextureData)? = null
-    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
+    ): this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     constructor(
         props: TextureProps = TextureProps(),
         data: TextureData2d,
         name: String = UniqueId.nextId("Texture2d")
-    ) : this(props, name, BufferedTextureLoader(data))
+    ): this(props, name, BufferedTextureLoader(data))
 
+    @Deprecated("You should use Assets.loadTexture2d() instead", ReplaceWith("Assets.loadTexture2d(assetPath)"))
     constructor(
         assetPath: String,
         name: String = UniqueId.nextId("Texture2d"),
         props: TextureProps = TextureProps()
-    ) : this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props) })
+    ): this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props) })
 
-    fun readTexturePixels(): TextureData2d? {
-        val tex = loadedTexture ?: return null
-        val bufferSize = tex.width * tex.height * props.format.channels
-        val buffer = if (props.format.isF16 || props.format.isF32) {
-            Float32Buffer(bufferSize)
-        } else {
-            Uint8Buffer(bufferSize)
-        }
-        val data = TextureData2d(buffer, tex.width, tex.height, props.format)
-        tex.readTexturePixels(data)
-        return data
+    suspend inline fun readbackTextureData(): TextureData2d {
+        val deferred = CompletableDeferred<TextureData>()
+        KoolSystem.requireContext().backend.readTextureData(this, deferred)
+
+        val buffer = deferred.await()
+        check(buffer is TextureData2d)
+        return buffer
     }
 }
 
@@ -132,14 +156,22 @@ open class Texture3d(
         props: TextureProps = TextureProps(),
         name: String = UniqueId.nextId("Texture3d"),
         loader: (suspend CoroutineScope.() -> TextureData)? = null
-    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
+    ): this(props, name, loader?.let { AsyncTextureLoader(it) })
 
     constructor(
         props: TextureProps = TextureProps(),
         data: TextureData3d,
         name: String = UniqueId.nextId("Texture3d")
-    ) : this(props, name, BufferedTextureLoader(data))
+    ): this(props, name, BufferedTextureLoader(data))
 
+    suspend inline fun readbackTextureData(): TextureData3d {
+        val deferred = CompletableDeferred<TextureData>()
+        KoolSystem.requireContext().backend.readTextureData(this, deferred)
+
+        val buffer = deferred.await()
+        check(buffer is TextureData3d)
+        return buffer
+    }
 }
 
 open class TextureCube(
@@ -154,6 +186,11 @@ open class TextureCube(
         loader: (suspend CoroutineScope.() -> TextureDataCube)? = null
     ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
 
+    constructor(
+        props: TextureProps = TextureProps(),
+        data: TextureDataCube,
+        name: String = UniqueId.nextId("Texture3d")
+    ): this(props, name, BufferedTextureLoader(data))
 }
 
 class BufferedTexture2d(
@@ -201,7 +238,7 @@ class GradientTexture(
         defaultSamplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING
     ),
     name = name,
-    loader = BufferedTextureLoader(TextureData1d.gradientF16(gradient, size))
+    data = TextureData1d.gradientF16(gradient, size)
 ) {
     companion object {
         val DEFAULT_SAMPLER_SETTINGS_CLAMPED = SamplerSettings(
@@ -210,236 +247,4 @@ class GradientTexture(
         )
         val DEFAULT_SAMPLER_SETTINGS_REPEATING = DEFAULT_SAMPLER_SETTINGS_CLAMPED.copy(addressModeU = AddressMode.REPEAT)
     }
-}
-
-data class TextureProps(
-    val format: TexFormat = TexFormat.RGBA,
-
-    /**
-     * If true, mip-levels are generated for the given texture on load.
-     */
-    val generateMipMaps: Boolean = true,
-
-    /**
-     * If non-null, the loader implementation will try to scale the loaded texture image to the given size in pixels.
-     * This is particular useful to scale vector (SVG) images to a desired resolution on load.
-     */
-    val resolveSize: Vec2i? = null,
-
-    /**
-     * Preferred / default sampler settings to be used with this texture.
-     * TODO: Notice that sampler settings can be overridden individually for each shader using the texture.
-     */
-    val defaultSamplerSettings: SamplerSettings = SamplerSettings()
-)
-
-data class SamplerSettings(
-    /**
-     * Clamp or (mirror-) repeat the texture in U (i.e. X) direction.
-     */
-    val addressModeU: AddressMode = AddressMode.REPEAT,
-
-    /**
-     * Clamp or (mirror-) repeat the texture in V (i.e. Y) direction.
-     */
-    val addressModeV: AddressMode = AddressMode.REPEAT,
-
-    /**
-     * Clamp or (mirror-) repeat the texture in W (i.e. Z) direction (relevant for 3d textures only).
-     */
-    val addressModeW: AddressMode = AddressMode.REPEAT,
-
-    /**
-     * Minification filter method to use (when texture is viewed from far distance).
-     * Either [FilterMethod.LINEAR] or [FilterMethod.NEAREST] Default is LINEAR. If LINEAR is chosen and the texture
-     * has mip levels, tri-linear filtering is used, bi-linear otherwise.
-     */
-    val minFilter: FilterMethod = FilterMethod.LINEAR,
-
-    /**
-     * Magnification filter method to use (when texture is viewed from close distance).
-     * Either [FilterMethod.LINEAR] or [FilterMethod.NEAREST]. Default is LINEAR.
-     */
-    val magFilter: FilterMethod = FilterMethod.LINEAR,
-
-    /**
-     * Maximum level of anisotropic filtering to apply:
-     *  - 1: no anisotropic filtering
-     *  - 4: default value
-     * Anisotropic filtering requires a texture with mip-levels. For textures without mip-levels, this value is
-     * ignored. The value might be clamped by the implementation if given level is higher than what the hardware
-     * supports.
-     */
-    val maxAnisotropy: Int = 4,
-
-    /**
-     * Compare method to use in case this sampler is used to sample a depth map. Otherwise, compare op is ignored.
-     */
-    val compareOp: DepthCompareOp = DepthCompareOp.ALWAYS,
-) {
-    /**
-     * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.NEAREST].
-     */
-    fun nearest(): SamplerSettings = copy(minFilter = FilterMethod.NEAREST, magFilter = FilterMethod.NEAREST)
-
-    /**
-     * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.LINEAR].
-     */
-    fun linear(): SamplerSettings = copy(minFilter = FilterMethod.LINEAR, magFilter = FilterMethod.LINEAR)
-
-    /**
-     * Returns a copy of this [SamplerSettings] with u, v and w address modes set to [AddressMode.CLAMP_TO_EDGE].
-     */
-    fun clamped(): SamplerSettings = copy(
-        addressModeU = AddressMode.CLAMP_TO_EDGE,
-        addressModeV = AddressMode.CLAMP_TO_EDGE,
-        addressModeW = AddressMode.CLAMP_TO_EDGE
-    )
-
-    /**
-     * Returns a copy of this [SamplerSettings] with u, v and w address modes set to [AddressMode.REPEAT].
-     */
-    fun repeating(): SamplerSettings = copy(
-        addressModeU = AddressMode.REPEAT,
-        addressModeV = AddressMode.REPEAT,
-        addressModeW = AddressMode.REPEAT
-    )
-
-    /**
-     * Returns a copy of this [SamplerSettings] with u, v and w address modes set to [AddressMode.MIRRORED_REPEAT].
-     */
-    fun mirroredRepeating(): SamplerSettings = copy(
-        addressModeU = AddressMode.MIRRORED_REPEAT,
-        addressModeV = AddressMode.MIRRORED_REPEAT,
-        addressModeW = AddressMode.MIRRORED_REPEAT
-    )
-
-    fun noAnisotropy(): SamplerSettings = copy(maxAnisotropy = 1)
-    fun withAnisotropy(maxAnisotropy: Int): SamplerSettings = copy(maxAnisotropy = maxAnisotropy)
-}
-
-enum class FilterMethod {
-    NEAREST,
-    LINEAR
-}
-
-enum class AddressMode {
-    CLAMP_TO_EDGE,
-    MIRRORED_REPEAT,
-    REPEAT
-}
-
-abstract class TextureData {
-    var width = 0
-        protected set
-    var height = 0
-        protected set
-    var depth = 0
-        protected set
-    var format = TexFormat.RGBA
-        protected set
-
-    abstract val data: Any
-}
-
-class TextureData1d(override val data: Buffer, width: Int, format: TexFormat) : TextureData() {
-    init {
-        this.width = width
-        this.height = 1
-        this.depth = 1
-        this.format = format
-    }
-
-    companion object {
-        fun gradient(gradient: ColorGradient, size: Int): TextureData1d {
-            val buf = Uint8Buffer(4 * size)
-            val color = MutableColor()
-            for (i in 0 until size) {
-                gradient.getColorInterpolated(i / (size - 1f), color)
-                buf[i * 4 + 0] = (color.r * 255f).roundToInt().toUByte()
-                buf[i * 4 + 1] = (color.g * 255f).roundToInt().toUByte()
-                buf[i * 4 + 2] = (color.b * 255f).roundToInt().toUByte()
-                buf[i * 4 + 3] = (color.a * 255f).roundToInt().toUByte()
-            }
-            return TextureData1d(buf, size, TexFormat.RGBA)
-        }
-
-        fun gradientF16(gradient: ColorGradient, size: Int): TextureData1d {
-            val buf = Float32Buffer(4 * size)
-            val color = MutableColor()
-            for (i in 0 until size) {
-                gradient.getColorInterpolated(i / (size - 1f), color)
-                buf[i * 4 + 0] = color.r
-                buf[i * 4 + 1] = color.g
-                buf[i * 4 + 2] = color.b
-                buf[i * 4 + 3] = color.a
-            }
-            return TextureData1d(buf, size, TexFormat.RGBA_F16)
-        }
-    }
-}
-
-/**
- * Buffer based 2d texture data. Texture data can be generated and edited procedurally. Layout and format of data
- * is specified by the format parameter. The buffer size must match the texture size and data format.
- *
- * @param data   texture data buffer, must have a size of width * height * bytes-per-pixel
- * @param width  width of texture in pixels
- * @param height height of texture in pixels
- * @param format texture data format
- */
-open class TextureData2d(override val data: Buffer, width: Int, height: Int, format: TexFormat) : TextureData() {
-    init {
-        this.width = width
-        this.height = height
-        this.depth = 1
-        this.format = format
-    }
-
-    companion object {
-        fun singleColor(color: Color): TextureData2d {
-            val buf = Uint8Buffer(4)
-            buf[0] = (color.r * 255f).roundToInt().toUByte()
-            buf[1] = (color.g * 255f).roundToInt().toUByte()
-            buf[2] = (color.b * 255f).roundToInt().toUByte()
-            buf[3] = (color.a * 255f).roundToInt().toUByte()
-            return TextureData2d(buf, 1, 1, TexFormat.RGBA)
-        }
-    }
-}
-
-open class TextureData3d(override val data: Buffer, width: Int, height: Int, depth: Int, format: TexFormat) : TextureData() {
-    init {
-        this.width = width
-        this.height = height
-        this.depth = depth
-        this.format = format
-    }
-}
-
-class TextureDataCube(
-    val front: TextureData,
-    val back: TextureData,
-    val left: TextureData,
-    val right: TextureData,
-    val up: TextureData,
-    val down: TextureData
-) : TextureData() {
-
-    val posX: TextureData get() = right
-    val negX: TextureData get() = left
-    val posY: TextureData get() = up
-    val negY: TextureData get() = down
-    val posZ: TextureData get() = back
-    val negZ: TextureData get() = front
-
-    init {
-        width = front.width
-        height = front.height
-        depth = 1
-        format = front.format
-    }
-
-    override val data: Any
-        get() = front.data
 }

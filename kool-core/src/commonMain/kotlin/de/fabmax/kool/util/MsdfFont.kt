@@ -3,6 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.pipeline.AsyncTextureLoader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import kotlinx.serialization.Serializable
@@ -146,9 +147,9 @@ class MsdfFont(
         val DEFAULT_FONT_DATA: MsdfFontData by lazy {
             val fontInfo = KoolSystem.config.defaultFont
             val msdfMap = Texture2d(
-                "fonts/font-roboto-regular.png",
-                "MsdfFont:${fontInfo.fontMeta.name}",
-                MSDF_TEX_PROPS
+                props = MSDF_TEX_PROPS,
+                name = "MsdfFont:${fontInfo.fontMeta.name}",
+                loader = AsyncTextureLoader { Assets.loadTextureData("fonts/font-roboto-regular.png", MSDF_TEX_PROPS) }
             )
             MsdfFontData(msdfMap, fontInfo.fontMeta)
         }

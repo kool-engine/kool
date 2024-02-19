@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.ComputeShaderCodeGl
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 import de.fabmax.kool.pipeline.backend.gl.ShaderCodeGl
-import de.fabmax.kool.util.Buffer
 import kotlinx.coroutines.CompletableDeferred
 
 class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hints("#version 330 core"))) : RenderBackend {
@@ -45,7 +44,11 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) { }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Buffer>) {
-        deferred.complete(storage.buffer)
+    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+        deferred.complete(Unit)
+    }
+
+    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+        TODO("Not yet implemented")
     }
 }

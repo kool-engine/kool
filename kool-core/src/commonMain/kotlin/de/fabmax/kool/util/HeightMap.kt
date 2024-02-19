@@ -64,7 +64,7 @@ class HeightMap(val heightData: FloatArray, val width: Int, val height: Int) {
 
             val heightData = FloatArray(textureData2d.width * textureData2d.height)
             if (textureData2d.data is Float32Buffer) {
-                val float32Buf = textureData2d.data as Float32Buffer
+                val float32Buf = textureData2d.data
                 for (i in 0 until textureData2d.width * textureData2d.height) {
                     heightData[i] = float32Buf[i] * heightScale + heightOffset
                 }

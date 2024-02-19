@@ -180,8 +180,8 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
 
     private fun destroyBuffers() {
         val rp = renderPass
-        val colorTexs = parentPass.colorTextures.map { it.loadedTexture }
-        val depthTex = parentPass.depthTexture?.loadedTexture
+        val colorTexs = parentPass.colorTextures.map { it.gpuTexture }
+        val depthTex = parentPass.depthTexture?.gpuTexture
 
         isCreated = false
         renderPass = null
@@ -213,7 +213,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
     }
 
     private fun Texture2d.clear() {
-        loadedTexture = null
+        gpuTexture = null
         loadingState = Texture.LoadingState.NOT_LOADED
     }
 
@@ -285,7 +285,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
                     LoadedTextureVk(sys, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
                 vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
-                loadedTexture = vkTex
+                gpuTexture = vkTex
                 loadingState = Texture.LoadingState.LOADED
 
             } else {
@@ -297,7 +297,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
                     LoadedTextureVk(sys, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
                 vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
-                loadedTexture = vkTex
+                gpuTexture = vkTex
                 loadingState = Texture.LoadingState.LOADED
             }
         }
@@ -305,7 +305,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
 
     private fun Texture2d.createCopyTexColor(ctx: Lwjgl3Context) {
         val vkBackend = ctx.backend as VkRenderBackend
-        val prev = loadedTexture
+        val prev = gpuTexture
         if (prev != null) {
             launchDelayed(3) {
                 prev.release()
@@ -315,7 +315,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2d
         val width = parentPass.width
         val height = parentPass.height
         val tex = TextureLoader.createTexture(vkBackend.vkSystem, props, width, height, 1)
-        loadedTexture = tex
+        gpuTexture = tex
         loadingState = Texture.LoadingState.LOADED
         vkBackend.vkSystem.device.addDependingResource(tex)
     }

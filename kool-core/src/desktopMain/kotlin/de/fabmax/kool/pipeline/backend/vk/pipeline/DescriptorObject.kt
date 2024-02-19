@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.backend.vk.LoadedTextureVk
 import de.fabmax.kool.pipeline.backend.vk.VkSystem
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorBufferInfoN
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorImageInfoN
-import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
@@ -90,7 +89,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             val imageInfo = callocVkDescriptorImageInfoN(sampler.arraySize) {
                 for (i in 0 until sampler.arraySize) {
                     this[i].apply {
-                        val vkTex = textures[i]?.loadedTexture as LoadedTextureVk?
+                        val vkTex = textures[i]?.gpuTexture as LoadedTextureVk?
                         imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                         imageView(vkTex?.textureImageView?.vkImageView ?: 0L)
                         sampler(vkTex?.sampler ?: 0L)
@@ -138,11 +137,11 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                         }
                         is SyncTextureLoader -> {
                             val data = tex.loader.loadTextureDataSync()
-                            tex.loadedTexture = getLoadedTex(tex, data, sys)
+                            tex.gpuTexture = getLoadedTex(tex, data, sys)
                             tex.loadingState = Texture.LoadingState.LOADED
                         }
                         is BufferedTextureLoader -> {
-                            tex.loadedTexture = getLoadedTex(tex, tex.loader.data, sys)
+                            tex.gpuTexture = getLoadedTex(tex, tex.loader.data, sys)
                             tex.loadingState = Texture.LoadingState.LOADED
                         }
                         else -> {
@@ -152,13 +151,13 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 }
 
                 val bound = if (i < boundTex.size) boundTex[i] else null
-                if (tex.loadingState == Texture.LoadingState.LOADED && bound != tex.loadedTexture) {
+                if (tex.loadingState == Texture.LoadingState.LOADED && bound != tex.gpuTexture) {
                     when {
                         i < boundTex.size -> {
-                            boundTex[i] = tex.loadedTexture as LoadedTextureVk
+                            boundTex[i] = tex.gpuTexture as LoadedTextureVk
                         }
                         i == boundTex.size -> {
-                            boundTex.add(tex.loadedTexture as LoadedTextureVk)
+                            boundTex.add(tex.gpuTexture as LoadedTextureVk)
                         }
                         else -> {
                             throw IllegalStateException()
@@ -190,7 +189,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         fun pollCompleted(): Boolean {
             if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
-                tex.loadedTexture = getLoadedTex(tex, deferredTex.getCompleted(), sys)
+                tex.gpuTexture = getLoadedTex(tex, deferredTex.getCompleted(), sys)
                 tex.loadingState = Texture.LoadingState.LOADED
             }
             return isCompleted

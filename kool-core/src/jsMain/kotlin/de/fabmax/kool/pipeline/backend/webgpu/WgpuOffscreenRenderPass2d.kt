@@ -116,7 +116,7 @@ class WgpuOffscreenRenderPass2d(
             descriptor = desc
             gpuTexture = tex
 
-            texture.loadedTexture = WgpuLoadedTexture(gpuTexture)
+            texture.gpuTexture = WgpuLoadedTexture(gpuTexture)
             texture.loadingState = Texture.LoadingState.LOADED
             createViews()
         }
@@ -130,13 +130,13 @@ class WgpuOffscreenRenderPass2d(
             descriptor = desc
             gpuTexture = tex
 
-            texture.loadedTexture?.release()
-            texture.loadedTexture = WgpuLoadedTexture(gpuTexture)
+            texture.gpuTexture?.release()
+            texture.gpuTexture = WgpuLoadedTexture(gpuTexture)
             createViews()
         }
 
         fun copyToTexture(target: Texture2d, encoder: GPUCommandEncoder) {
-            var copyDst = (target.loadedTexture as WgpuLoadedTexture?)
+            var copyDst = (target.gpuTexture as WgpuLoadedTexture?)
             if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
                 copyDst?.release()
                 val (_, gpuTex) = createTexture(
@@ -146,7 +146,7 @@ class WgpuOffscreenRenderPass2d(
                     texture = target
                 )
                 copyDst = WgpuLoadedTexture(gpuTex)
-                target.loadedTexture = copyDst
+                target.gpuTexture = copyDst
                 target.loadingState = Texture.LoadingState.LOADED
             }
             backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.texture.gpuTexture, parentPass.numTextureMipLevels, encoder)
@@ -180,8 +180,8 @@ class WgpuOffscreenRenderPass2d(
         override fun release() {
             if (!isReleased) {
                 super.release()
-                texture.loadedTexture?.release()
-                texture.loadedTexture = null
+                texture.gpuTexture?.release()
+                texture.gpuTexture = null
                 texture.loadingState = Texture.LoadingState.NOT_LOADED
             }
         }

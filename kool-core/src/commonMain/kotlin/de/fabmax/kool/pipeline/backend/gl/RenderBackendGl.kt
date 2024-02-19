@@ -29,7 +29,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     private val windowViewport = Viewport(0, 0, 0, 0)
     protected val sceneRenderer = SceneRenderPassGl(numSamples, this)
 
-    private val awaitedStorageBuffers = mutableListOf<Pair<StorageBuffer, CompletableDeferred<Buffer>>>()
+    private val awaitedStorageBuffers = mutableListOf<Pair<StorageBuffer, CompletableDeferred<Unit>>>()
 
     protected fun setupGl() {
         if (gl.capabilities.hasClipControl) {
@@ -63,7 +63,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
-        tex.loadedTexture = when (tex) {
+        tex.gpuTexture = when (tex) {
             is Texture1d -> TextureLoaderGl.loadTexture1dCompat(tex, data, this)
             is Texture2d -> TextureLoaderGl.loadTexture2d(tex, data, this)
             is Texture3d -> TextureLoaderGl.loadTexture3d(tex, data, this)
@@ -159,7 +159,33 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Buffer>) {
+    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+        val glTex = texture.gpuTexture as LoadedTextureGl?
+        if (glTex == null) {
+            deferred.completeExceptionally(IllegalStateException("Texture not yet uploaded to GPU"))
+            return
+        }
+
+        val format = texture.props.format
+        val buffer = TextureData.createBuffer(format, glTex.width, glTex.height, glTex.depth)
+        val targetData = when (texture) {
+            is Texture1d -> TextureData1d(buffer, glTex.width, format)
+            is Texture2d -> TextureData2d(buffer, glTex.width, glTex.height, format)
+            is Texture3d -> TextureData3d(buffer, glTex.width, glTex.height, glTex.depth, format)
+            else -> {
+                deferred.completeExceptionally(IllegalStateException("Unsupported texture type: ${texture::class.simpleName} (texture: ${texture.name})"))
+                return
+            }
+        }
+
+        if (!gl.readTexturePixels(glTex, targetData)) {
+            deferred.completeExceptionally(IllegalStateException("Failed reading texture data of texture ${texture.name}"))
+        } else {
+            deferred.complete(targetData)
+        }
+    }
+
+    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         awaitedStorageBuffers += storage to deferred
     }
 
@@ -170,7 +196,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             if (gpuBuf == null || !gl.readBuffer(gpuBuf, storage.buffer)) {
                 deferredBuffer.completeExceptionally(IllegalStateException("Failed reading buffer"))
             } else {
-                deferredBuffer.complete(storage.buffer)
+                deferredBuffer.complete(Unit)
             }
         }
         awaitedStorageBuffers.clear()

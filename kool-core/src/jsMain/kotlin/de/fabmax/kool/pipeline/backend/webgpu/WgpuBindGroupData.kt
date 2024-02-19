@@ -26,7 +26,7 @@ class WgpuBindGroupData(
     fun bind(passEncoderState: PassEncoderState, renderPass: RenderPass, group: Int = data.layout.group) {
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
-            if (tex.binding.texture?.loadedTexture !== tex.loadedTex) {
+            if (tex.binding.texture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 data.isDirty = true
             }
@@ -137,7 +137,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.Texture1dBindingData.makeTexture1dEntry(): List<GPUBindGroupEntry> {
         val location = locations[layout]
         val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
-        val loadedTex = checkNotNull(tex.loadedTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.gpuTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
         val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
 
         val sampler = device.createSampler(
@@ -156,7 +156,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.Texture2dBindingData.makeTexture2dEntry(): List<GPUBindGroupEntry> {
         val location = locations[layout]
         val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
-        val loadedTex = checkNotNull(tex.loadedTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.gpuTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
         val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
         val maxAnisotropy = if (tex.props.generateMipMaps &&
             samplerSettings.minFilter == FilterMethod.LINEAR &&
@@ -184,7 +184,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.Texture3dBindingData.makeTexture3dEntry(): List<GPUBindGroupEntry> {
         val location = locations[layout]
         val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
-        val loadedTex = checkNotNull(tex.loadedTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.gpuTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
         val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
 
         val sampler = device.createSampler(
@@ -206,7 +206,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.TextureCubeBindingData.makeTextureCubeEntry(): List<GPUBindGroupEntry> {
         val location = locations[layout]
         val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
-        val loadedTex = checkNotNull(tex.loadedTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.gpuTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
         val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
         val compare = if (layout.sampleType == TextureSampleType.DEPTH) samplerSettings.compareOp.wgpu else null
 

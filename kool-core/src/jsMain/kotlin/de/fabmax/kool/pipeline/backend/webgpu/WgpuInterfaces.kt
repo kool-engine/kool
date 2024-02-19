@@ -68,6 +68,7 @@ external class GPUCommandEncoder {
     fun beginComputePass(descriptor: GPUComputePassDescriptor = definedExternally): GPUComputePassEncoder
     fun beginRenderPass(descriptor: GPURenderPassDescriptor): GPURenderPassEncoder
     fun copyBufferToBuffer(source: GPUBuffer, sourceOffset: Long, destination: GPUBuffer, destinationOffset: Long, size: Long)
+    fun copyTextureToBuffer(source: GPUImageCopyTexture, destination: GPUImageCopyBuffer, copySize: IntArray)
     fun copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: IntArray)
     fun finish(): GPUCommandBuffer
 }

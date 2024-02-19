@@ -4,8 +4,8 @@ import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
 import java.awt.image.BufferedImage
 
-fun Texture2d.toBufferedImage(flipY: Boolean = true): BufferedImage? {
-    val data = readTexturePixels() ?: return null
+suspend fun Texture2d.toBufferedImage(flipY: Boolean = true): BufferedImage {
+    val data = readbackTextureData()
 
     val img = BufferedImage(data.width, data.height, BufferedImage.TYPE_INT_ARGB)
     when (val buf = data.data) {

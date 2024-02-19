@@ -60,11 +60,11 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
                 val glTarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex
                 gl.bindFramebuffer(gl.FRAMEBUFFER, copyFbo)
                 for (i in frameCopy.colorCopy.indices) {
-                    val loaded = frameCopy.colorCopy[i].loadedTexture as LoadedTextureGl
+                    val loaded = frameCopy.colorCopy[i].gpuTexture as LoadedTextureGl
                     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, glTarget, loaded.glTexture, mipLevel)
                 }
                 frameCopy.depthCopy?.let {
-                    val loaded = it.loadedTexture as LoadedTextureGl
+                    val loaded = it.gpuTexture as LoadedTextureGl
                     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, glTarget, loaded.glTexture, mipLevel)
                 }
 
@@ -187,7 +187,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
         tex.bind()
         tex.applySamplerSettings(props.defaultSamplerSettings)
         gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
-        loadedTexture = tex
+        gpuTexture = tex
         loadingState = Texture.LoadingState.LOADED
     }
 }

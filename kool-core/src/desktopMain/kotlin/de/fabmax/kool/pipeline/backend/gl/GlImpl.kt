@@ -337,8 +337,8 @@ object GlImpl : GlApi {
         return success
     }
 
-    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
-        TextureCopyHelper.readTexturePixels(src, dst)
+    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData): Boolean {
+        return TextureCopyHelper.readTexturePixels(src, dst)
     }
 
     private fun checkApiVersion(): GlApiVersion {

@@ -426,7 +426,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     }
                     Image(bloom) {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.3f * ((positionFlags.loadedTexture?.height ?: 1) / deferredPipeline.bloomMapSize)))
+                            .imageSize(ImageSize.FixedScale(0.3f * ((positionFlags.height) / deferredPipeline.bloomMapSize)))
                             .imageProvider(FlatImageProvider(bloom, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(bloomMapShader.apply { colorMap = bloom })

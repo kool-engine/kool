@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Buffer
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.memStack
@@ -55,7 +54,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
-        tex.loadedTexture = when (tex) {
+        tex.gpuTexture = when (tex) {
             is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
             is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
             is Texture3d -> TextureLoader.loadTexture3d(vkSystem, tex.props, data)
@@ -63,10 +62,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             else -> throw IllegalArgumentException("Unsupported texture type: $tex")
         }
         tex.loadingState = Texture.LoadingState.LOADED
-        vkSystem.device.addDependingResource(tex.loadedTexture as LoadedTextureVk)
+        vkSystem.device.addDependingResource(tex.gpuTexture as LoadedTextureVk)
     }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Buffer>) {
+    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
         TODO("Not yet implemented")
     }
 

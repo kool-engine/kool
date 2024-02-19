@@ -1,9 +1,8 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.LoadedTexture
-import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.backend.GpuTexture
 
-class WgpuLoadedTexture(val texture: WgpuTextureResource): LoadedTexture {
+class WgpuLoadedTexture(val texture: WgpuTextureResource): GpuTexture {
 
     override val width: Int = texture.gpuTexture.width
     override val height: Int = texture.gpuTexture.height
@@ -11,10 +10,6 @@ class WgpuLoadedTexture(val texture: WgpuTextureResource): LoadedTexture {
 
     override var isReleased: Boolean = false
         private set
-
-    override fun readTexturePixels(targetData: TextureData) {
-        TODO("Not yet implemented")
-    }
 
     override fun release() {
         if (!isReleased) {

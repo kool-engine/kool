@@ -61,12 +61,12 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
         var blitMask = 0
         gl.bindFramebuffer(gl.FRAMEBUFFER, copyFbo)
         if (frameCopy.isCopyColor) {
-            val loaded = frameCopy.colorCopy2d.loadedTexture as LoadedTextureGl
+            val loaded = frameCopy.colorCopy2d.gpuTexture as LoadedTextureGl
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, loaded.glTexture, 0)
             blitMask = gl.COLOR_BUFFER_BIT
         }
         if (frameCopy.isCopyDepth) {
-            val loaded = frameCopy.depthCopy2d.loadedTexture as LoadedTextureGl
+            val loaded = frameCopy.depthCopy2d.gpuTexture as LoadedTextureGl
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, loaded.glTexture, 0)
             blitMask = blitMask or gl.DEPTH_BUFFER_BIT
         }
@@ -102,8 +102,8 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
     }
 
     private fun bindTargetTex(dst: Texture2d, width: Int, height: Int, isColor: Boolean) {
-        if (dst.loadedTexture == null) {
-            dst.loadedTexture = LoadedTextureGl(
+        if (dst.gpuTexture == null) {
+            dst.gpuTexture = LoadedTextureGl(
                 target = gl.TEXTURE_2D,
                 glTexture = gl.createTexture(),
                 backend = backend,
@@ -111,7 +111,7 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
                 estimatedSize = width * height * 4L
             )
         }
-        val tex = dst.loadedTexture as LoadedTextureGl
+        val tex = dst.gpuTexture as LoadedTextureGl
         tex.bind()
 
         if (tex.width != width || tex.height != height) {
@@ -160,12 +160,12 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
     }
 
     private fun makeResolveFbo(width: Int, height: Int) {
-        var loadedTex = resolvedColor.loadedTexture as LoadedTextureGl?
+        var loadedTex = resolvedColor.gpuTexture as LoadedTextureGl?
         loadedTex?.release()
 
         val estSize = Texture.estimatedTexSize(renderSize.x, renderSize.y, 1, 1, 4).toLong()
         loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, resolvedColor, estSize)
-        resolvedColor.loadedTexture = loadedTex
+        resolvedColor.gpuTexture = loadedTex
         resolvedColor.loadingState = Texture.LoadingState.LOADED
 
         loadedTex.setSize(width, height, 1)
@@ -182,7 +182,7 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
             target = gl.FRAMEBUFFER,
             attachment = gl.COLOR_ATTACHMENT0,
             textarget = gl.TEXTURE_2D,
-            texture = (resolvedColor.loadedTexture as LoadedTextureGl).glTexture,
+            texture = (resolvedColor.gpuTexture as LoadedTextureGl).glTexture,
             level = 0
         )
         gl.drawBuffers(intArrayOf(gl.COLOR_ATTACHMENT0))

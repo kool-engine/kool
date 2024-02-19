@@ -52,8 +52,8 @@ abstract class StorageBuffer(
 
     /**
      * Returns the float value at the specified buffer index (given that the underlying buffer is a float buffer).
-     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
-     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackBuffer] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackBuffer] has to be called before the updated buffer
      * contents can be read.
      */
     fun getF1(index: Int): Float {
@@ -62,8 +62,8 @@ abstract class StorageBuffer(
 
     /**
      * Returns the 2d float vector at the specified buffer index (given that the underlying buffer is a float buffer).
-     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
-     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackBuffer] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackBuffer] has to be called before the updated buffer
      * contents can be read.
      */
     fun getF2(index: Int, result: MutableVec2f = MutableVec2f()): MutableVec2f {
@@ -73,8 +73,8 @@ abstract class StorageBuffer(
 
     /**
      * Returns the 4d float vector at the specified buffer index (given that the underlying buffer is a float buffer).
-     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
-     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackBuffer] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackBuffer] has to be called before the updated buffer
      * contents can be read.
      */
     fun getF4(index: Int, result: MutableVec4f = MutableVec4f()): MutableVec4f {
@@ -105,8 +105,8 @@ abstract class StorageBuffer(
 
     /**
      * Returns the int value at the specified buffer index (given that the underlying buffer is an int buffer).
-     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
-     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackBuffer] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackBuffer] has to be called before the updated buffer
      * contents can be read.
      */
     fun getI1(index: Int): Int {
@@ -115,8 +115,8 @@ abstract class StorageBuffer(
 
     /**
      * Returns the 2d int vector at the specified buffer index (given that the underlying buffer is an int buffer).
-     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
-     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackBuffer] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackBuffer] has to be called before the updated buffer
      * contents can be read.
      */
     fun getI2(index: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i {
@@ -126,8 +126,8 @@ abstract class StorageBuffer(
 
     /**
      * Returns the 4d int vector at the specified buffer index (given that the underlying buffer is an int buffer).
-     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackFloats] is called. Hence, if
-     * this buffer is modified by a (compute-) shader, [readbackFloats] has to be called before the updated buffer
+     * Notice, that the buffer content is only synced with the GPU-buffer, when [readbackBuffer] is called. Hence, if
+     * this buffer is modified by a (compute-) shader, [readbackBuffer] has to be called before the updated buffer
      * contents can be read.
      */
     fun getI4(index: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i {
@@ -146,39 +146,18 @@ abstract class StorageBuffer(
     }
 
     /**
-     * Synchronizes the buffer with the GPU buffer by reading back the buffer data from the GPU. The synchronized
-     * buffer is passed into the given [block]. However, at the time [block] is executed, the buffer is synchronized
-     * and the [getF1], [getF2], and [getF4] convenience functions can be used as well.
+     * Synchronizes the buffer with the GPU buffer by reading back the buffer data from the GPU. By the time this
+     * method returns, the buffer is synchronized and the [getF1], [getF2], [getF4], [getI1], etc. functions can be
+     * used to read the current buffer contents.
      *
      * Notice that, depending on the platform, the buffer is read asynchronously and is neither guaranteed nor likely
      * to complete in the same frame. Moreover, buffer reading is an expensive operation and should be avoided on a
      * per-frame basis.
      */
-    suspend inline fun readbackFloats(block: (Float32Buffer) -> Unit) {
-        val deferred = CompletableDeferred<Buffer>()
+    suspend inline fun readbackBuffer() {
+        val deferred = CompletableDeferred<Unit>()
         KoolSystem.requireContext().backend.readStorageBuffer(this, deferred)
-
-        val buffer = deferred.await()
-        check(buffer is Float32Buffer) { "Buffer has an int-format ($format), cannot used with float values" }
-        block(buffer)
-    }
-
-    /**
-     * Synchronizes the buffer with the GPU buffer by reading back the buffer data from the GPU. The synchronized
-     * buffer is passed into the given [block]. However, at the time [block] is executed, the buffer is synchronized
-     * and the [getI1], [getI2], and [getI4] convenience functions can be used as well.
-     *
-     * Notice that, depending on the platform, the buffer is read asynchronously and is neither guaranteed nor likely
-     * to complete in the same frame. Moreover, buffer reading is an expensive operation and should be avoided on a
-     * per-frame basis.
-     */
-    suspend inline fun readbackInts(block: (Int32Buffer) -> Unit) {
-        val deferred = CompletableDeferred<Buffer>()
-        KoolSystem.requireContext().backend.readStorageBuffer(this, deferred)
-
-        val buffer = deferred.await()
-        check(buffer is Int32Buffer) { "Buffer has an float-format ($format), cannot used with int values" }
-        block(buffer)
+        deferred.await()
     }
 
     override fun release() {

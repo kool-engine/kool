@@ -139,17 +139,17 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
                     texture.loadingState = Texture.LoadingState.LOADING
                     CoroutineScope(Dispatchers.RenderLoop).launch {
                         val texData = texture.loader.loadTextureDataAsync().await()
-                        texture.loadedTexture = getLoadedTex(texData, texture, backend)
+                        texture.gpuTexture = getLoadedTex(texData, texture, backend)
                         texture.loadingState = Texture.LoadingState.LOADED
                     }
                 }
                 is SyncTextureLoader -> {
                     val data = texture.loader.loadTextureDataSync()
-                    texture.loadedTexture = getLoadedTex(data, texture, backend)
+                    texture.gpuTexture = getLoadedTex(data, texture, backend)
                     texture.loadingState = Texture.LoadingState.LOADED
                 }
                 is BufferedTextureLoader -> {
-                    texture.loadedTexture = getLoadedTex(texture.loader.data, texture, backend)
+                    texture.gpuTexture = getLoadedTex(texture.loader.data, texture, backend)
                     texture.loadingState = Texture.LoadingState.LOADED
                 }
                 else -> {
@@ -159,7 +159,7 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
             }
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
-            val tex = texture.loadedTexture as LoadedTextureGl
+            val tex = texture.gpuTexture as LoadedTextureGl
             gl.activeTexture(gl.TEXTURE0 + texUnit)
             tex.bind()
             tex.applySamplerSettings(null)

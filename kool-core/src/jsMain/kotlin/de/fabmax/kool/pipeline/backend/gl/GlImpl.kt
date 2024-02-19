@@ -352,7 +352,11 @@ object GlImpl : GlApi {
 
     override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean = false
 
-    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData) {
+    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData): Boolean {
+        if (src.target != TEXTURE_2D) {
+            return false
+        }
+
         val fb = createFramebuffer()
         bindFramebuffer(FRAMEBUFFER, fb)
         framebufferTexture2D(FRAMEBUFFER, COLOR_ATTACHMENT0, TEXTURE_2D, src.glTexture, 0)
@@ -365,6 +369,7 @@ object GlImpl : GlApi {
             logE { "Failed reading pixels from framebuffer" }
         }
         deleteFramebuffer(fb)
+        return true
     }
 
     private class WebGlObjList<T, P>(

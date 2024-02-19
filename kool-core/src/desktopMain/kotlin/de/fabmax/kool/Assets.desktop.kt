@@ -8,8 +8,8 @@ import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.HttpCache
-import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.ImageDecoder
+import de.fabmax.kool.platform.imageAtlasTextureData
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -121,7 +121,7 @@ private object PlatformAssetsImpl : PlatformAssets {
                 logE { "Failed loading texture ${textureRef.path}: $e" }
             }
         }
-        return LoadedTextureAsset(textureRef, ImageAtlasTextureData(data!!, textureRef.tilesX, textureRef.tilesY))
+        return LoadedTextureAsset(textureRef, imageAtlasTextureData(data!!, textureRef.tilesX, textureRef.tilesY))
     }
 
     private fun loadLocalTexture(path: String, props: TextureProps?): TextureData2d {

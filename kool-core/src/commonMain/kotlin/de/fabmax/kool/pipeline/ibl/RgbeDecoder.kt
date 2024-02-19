@@ -23,7 +23,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
             ColorAttachmentTextures(listOf(TextureAttachmentConfig(TexFormat.RGBA_F16))),
             mipLevels = MipMode.Generate
         ),
-        Vec2i(hdriTexture.loadedTexture?.width ?: 1024, hdriTexture.loadedTexture?.height ?: 512),
+        Vec2i(hdriTexture.gpuTexture?.width ?: 1024, hdriTexture.gpuTexture?.height ?: 512),
         name = "rgbe-decoder"
     )
 {

@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import org.lwjgl.vulkan.VK10.vkDestroySampler
@@ -8,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage: Image,
                       val textureImageView: ImageView, val sampler: Long,
-                      private val isSharedRes: Boolean = false) : VkResource(), LoadedTexture {
+                      private val isSharedRes: Boolean = false) : VkResource(), GpuTexture {
 
     val texId = nextTexId.getAndIncrement()
 
@@ -18,10 +19,6 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
 
     override val isReleased: Boolean
         get() = isDestroyed
-
-    override fun readTexturePixels(targetData: TextureData) {
-        TODO("Not yet implemented")
-    }
 
     init {
         if (!isSharedRes) {

@@ -266,7 +266,7 @@ interface GlApi {
     fun viewport(x: Int, y: Int, width: Int, height: Int)
 
     fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean
-    fun readTexturePixels(src: LoadedTextureGl, dst: TextureData)
+    fun readTexturePixels(src: LoadedTextureGl, dst: TextureData): Boolean
 
     fun checkNoError() = check(getError() == 0)
 }

@@ -218,6 +218,17 @@ class GPUImageCopyExternalImage(
     val source: ImageBitmap
 )
 
+class GPUImageCopyBuffer(
+    @JsName("buffer")
+    val buffer: GPUBuffer,
+    @JsName("bytesPerRow")
+    val bytesPerRow: Int,
+    @JsName("rowsPerImage")
+    val rowsPerImage: Int,
+    @JsName("offset")
+    val offset: Long = 0
+)
+
 class GPUImageCopyTexture(
     @JsName("texture")
     val texture: GPUTexture,

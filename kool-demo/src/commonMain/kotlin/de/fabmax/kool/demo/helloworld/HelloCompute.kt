@@ -104,10 +104,11 @@ class HelloCompute : DemoScene("Hello Compute") {
                 // the first pixel to the console
                 launchOnMainThread {
                     logI { "${Time.frameCount}: Read back storage buffer from GPU memory..." }
-                    storageBuffer.readbackFloats {
-                        val color = storageBuffer.getF4(0)
-                        logI { "${Time.frameCount}: Got buffer, rgba[0] = ${color.x}, ${color.y}, ${color.z}, ${color.w}" }
-                    }
+                    // buffer readback is an asynchronous operation and will take some time to complete (which is why
+                    // it is a suspending function)
+                    storageBuffer.readbackBuffer()
+                    val color = storageBuffer.getF4(0)
+                    logI { "${Time.frameCount}: Got buffer, rgba[0] = ${color.x}, ${color.y}, ${color.z}, ${color.w}" }
                 }
             }
         }

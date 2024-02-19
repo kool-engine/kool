@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
 import de.fabmax.kool.platform.JsContext
@@ -16,10 +17,7 @@ import de.fabmax.kool.util.*
 import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
-import org.khronos.webgl.Float32Array
-import org.khronos.webgl.Int32Array
-import org.khronos.webgl.Uint16Array
-import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.*
 import org.w3c.dom.HTMLCanvasElement
 
 class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
@@ -48,7 +46,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
-    private val awaitedStorageBuffers = mutableListOf<AwaitedStorageBuffers>()
+    private val gpuReadbacks = mutableListOf<GpuReadback>()
 
     init {
         check(isSupported()) {
@@ -100,14 +98,14 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             }
         }
 
-        if (awaitedStorageBuffers.isNotEmpty()) {
+        if (gpuReadbacks.isNotEmpty()) {
             // copy all buffers requested for readback to temporary buffers using the current command encoder
-            copyStorageBuffers(encoder)
+            copyReadbacks(encoder)
         }
         device.queue.submit(arrayOf(encoder.finish()))
-        if (awaitedStorageBuffers.isNotEmpty()) {
+        if (gpuReadbacks.isNotEmpty()) {
             // after encoder is finished and submitted, temp buffers can be mapped for readback
-            mapCopiedStorageBuffers()
+            mapReadbacks()
         }
     }
 
@@ -237,53 +235,102 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Buffer>) {
-        awaitedStorageBuffers += AwaitedStorageBuffers(storage, deferred)
+    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+        gpuReadbacks += ReadbackStorageBuffer(storage, deferred)
     }
 
-    private fun copyStorageBuffers(encoder: GPUCommandEncoder) {
-        awaitedStorageBuffers.forEach { awaited ->
-            val gpuBuf = awaited.storage.gpuBuffer as WgpuBufferResource?
+    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+        gpuReadbacks += ReadbackTexture(texture, deferred)
+    }
+
+    private fun copyReadbacks(encoder: GPUCommandEncoder) {
+        gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().forEach { readback ->
+            val gpuBuf = readback.storage.gpuBuffer as WgpuBufferResource?
             if (gpuBuf == null) {
-                awaited.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
+                readback.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
             } else {
-                val size = awaited.storage.buffer.limit.toLong() * 4
+                val size = readback.storage.buffer.limit.toLong() * 4
                 val mapBuffer = device.createBuffer(
                     GPUBufferDescriptor(
-                        label = "map-read-copy-dst",
+                        label = "storage-buffer-readback",
                         size = size,
                         usage = GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST
                     )
                 )
                 encoder.copyBufferToBuffer(gpuBuf.buffer, 0L, mapBuffer, 0L, size)
-                awaited.mapBuffer = mapBuffer
+                readback.mapBuffer = mapBuffer
+            }
+        }
+
+        gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
+            val gpuTex = readback.texture.gpuTexture as WgpuLoadedTexture?
+            if (gpuTex == null || readback.texture.props.format.isF16) {
+                readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
+            } else {
+                val format = readback.texture.props.format
+                val size = format.pxSize.toLong() * gpuTex.width * gpuTex.height * gpuTex.depth
+                val mapBuffer = device.createBuffer(
+                    GPUBufferDescriptor(
+                        label = "texture-readback",
+                        size = size,
+                        usage = GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST
+                    )
+                )
+                encoder.copyTextureToBuffer(
+                    source = GPUImageCopyTexture(gpuTex.texture.gpuTexture),
+                    destination = GPUImageCopyBuffer(
+                        buffer = mapBuffer,
+                        bytesPerRow = format.pxSize * gpuTex.width,
+                        rowsPerImage = gpuTex.height
+                    ),
+                    copySize = intArrayOf(gpuTex.width, gpuTex.height, gpuTex.depth)
+                )
+                readback.mapBuffer = mapBuffer
             }
         }
     }
 
-    private fun mapCopiedStorageBuffers() {
-        awaitedStorageBuffers.forEach { awaited ->
-            val dst = awaited.storage.buffer
-            awaited.mapBuffer?.let { mapBuffer ->
-                mapBuffer.mapAsync(GPUMapMode.READ).then {
-                    val arrayBuffer = awaited.mapBuffer!!.getMappedRange()
-                    when (dst) {
-                        is Uint8BufferImpl -> dst.buffer.set(Uint8Array(arrayBuffer))
-                        is Uint16BufferImpl -> dst.buffer.set(Uint16Array(arrayBuffer))
-                        is Int32BufferImpl -> dst.buffer.set(Int32Array(arrayBuffer))
-                        is Float32BufferImpl -> dst.buffer.set(Float32Array(arrayBuffer))
-                        is MixedBufferImpl -> Uint8Array(dst.buffer.buffer).set(Uint8Array(arrayBuffer))
-                        else -> {
-                            logE { "Unexpected buffer type: ${dst::class.simpleName}" }
-                        }
-                    }
-                    mapBuffer.unmap()
-                    mapBuffer.destroy()
-                    awaited.deferred.complete(dst)
+    private fun mapReadbacks() {
+        gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().filter { it.mapBuffer != null }.forEach { readback ->
+            val mapBuffer = readback.mapBuffer!!
+            mapBuffer.mapAsync(GPUMapMode.READ).then {
+                readback.storage.buffer.copyFrom(mapBuffer.getMappedRange())
+                mapBuffer.unmap()
+                mapBuffer.destroy()
+                readback.deferred.complete(Unit)
+            }
+        }
+
+        gpuReadbacks.filterIsInstance<ReadbackTexture>().filter { it.mapBuffer != null }.forEach { readback ->
+            val mapBuffer = readback.mapBuffer!!
+            mapBuffer.mapAsync(GPUMapMode.READ).then {
+                val gpuTex = readback.texture.gpuTexture as WgpuLoadedTexture
+                val format = readback.texture.props.format
+                val dst = TextureData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
+                dst.copyFrom(mapBuffer.getMappedRange())
+                mapBuffer.unmap()
+                mapBuffer.destroy()
+                when (readback.texture) {
+                    is Texture1d -> readback.deferred.complete(TextureData1d(dst, gpuTex.width, format))
+                    is Texture2d -> readback.deferred.complete(TextureData2d(dst, gpuTex.width, gpuTex.height, format))
+                    is Texture3d -> readback.deferred.complete(TextureData3d(dst, gpuTex.width, gpuTex.height, gpuTex.depth, format))
+                    else -> readback.deferred.completeExceptionally(IllegalArgumentException("Unsupported texture type"))
                 }
             }
         }
-        awaitedStorageBuffers.clear()
+
+        gpuReadbacks.clear()
+    }
+
+    private fun Buffer.copyFrom(src: ArrayBuffer) {
+        when (this) {
+            is Uint8BufferImpl -> this.buffer.set(Uint8Array(src))
+            is Uint16BufferImpl -> this.buffer.set(Uint16Array(src))
+            is Int32BufferImpl -> this.buffer.set(Int32Array(src))
+            is Float32BufferImpl -> this.buffer.set(Float32Array(src))
+            is MixedBufferImpl -> Uint8Array(this.buffer.buffer).set(Uint8Array(src))
+            else -> logE { "Unexpected buffer type: ${this::class.simpleName}" }
+        }
     }
 
     fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): WgpuBufferResource {
@@ -294,7 +341,13 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuTextureResource(device.createTexture(descriptor), texture)
     }
 
-    private class AwaitedStorageBuffers(val storage: StorageBuffer, val deferred: CompletableDeferred<Buffer>) {
+    private interface GpuReadback
+
+    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>) : GpuReadback {
+        var mapBuffer: GPUBuffer? = null
+    }
+
+    private class ReadbackTexture(val texture: Texture, val deferred: CompletableDeferred<TextureData>) : GpuReadback {
         var mapBuffer: GPUBuffer? = null
     }
 

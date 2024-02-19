@@ -81,8 +81,8 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
 
     private fun destroyBuffers() {
         val rp = renderPass
-        val colorTexs = parentPass.colorTextures.map { it.loadedTexture }
-        val depthTex = parentPass.depthTexture?.loadedTexture
+        val colorTexs = parentPass.colorTextures.map { it.gpuTexture }
+        val depthTex = parentPass.depthTexture?.gpuTexture
 
         isCreated = false
         renderPass = null
@@ -114,7 +114,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
     }
 
     private fun TextureCube.clear() {
-        loadedTexture = null
+        gpuTexture = null
         loadingState = Texture.LoadingState.NOT_LOADED
     }
 
@@ -208,14 +208,14 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
         rp.addDependingResource(loadedTex)
 
         parentPass.colorTexture!!.apply {
-            loadedTexture = loadedTex
+            gpuTexture = loadedTex
             loadingState = Texture.LoadingState.LOADING
         }
     }
 
     private fun TextureCube.createCopyTexColor(ctx: Lwjgl3Context) {
         val vkBackend = ctx.backend as VkRenderBackend
-        val prev = loadedTexture
+        val prev = gpuTexture
         if (prev != null) {
             launchDelayed(3) {
                 prev.release()
@@ -225,7 +225,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : OffscreenPa
         val width = parentPass.width
         val height = parentPass.height
         val tex = TextureLoader.createCubeTexture(vkBackend.vkSystem, props, width, height)
-        loadedTexture = tex
+        gpuTexture = tex
         loadingState = Texture.LoadingState.LOADED
         vkBackend.vkSystem.device.addDependingResource(tex)
     }

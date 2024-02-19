@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.pipeline.backend.stats.TextureInfo
 import kotlin.math.min
 
@@ -10,7 +11,7 @@ class LoadedTextureGl(
     val backend: RenderBackendGl,
     val texture: Texture,
     estimatedSize: Long
-) : LoadedTexture {
+) : GpuTexture {
 
     val texId = nextTexId++
     override var isReleased = false
@@ -65,17 +66,6 @@ class LoadedTextureGl(
         ) {
             gl.texParameteri(target, gl.TEXTURE_MAX_ANISOTROPY_EXT, anisotropy)
         }
-    }
-
-    override fun readTexturePixels(targetData: TextureData) {
-        if (target != gl.TEXTURE_2D) {
-            throw IllegalStateException("readTexturePixels() is only supported for 2D textures")
-        }
-        if (targetData.width != width || targetData.height != height) {
-            throw IllegalArgumentException("supplied targetData dimension does not match texture size " +
-                    "(supplied: ${targetData.width} x ${targetData.height}, actual: $width x $height)")
-        }
-        gl.readTexturePixels(this, targetData)
     }
 
     override fun release() {

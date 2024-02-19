@@ -55,11 +55,11 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         for (mipLevel in 0 until parent.numTextureMipLevels) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, copyFbo)
             for (i in frameCopy.colorCopy.indices) {
-                val loaded = frameCopy.colorCopy[i].loadedTexture as LoadedTextureGl
+                val loaded = frameCopy.colorCopy[i].gpuTexture as LoadedTextureGl
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0 + i, gl.TEXTURE_2D, loaded.glTexture, mipLevel)
             }
             frameCopy.depthCopy?.let {
-                val loaded = it.loadedTexture as LoadedTextureGl
+                val loaded = it.gpuTexture as LoadedTextureGl
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, loaded.glTexture, mipLevel)
             }
 
@@ -178,7 +178,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         tex.bind()
         tex.applySamplerSettings(props.defaultSamplerSettings)
         gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
-        loadedTexture = tex
+        gpuTexture = tex
         loadingState = Texture.LoadingState.LOADED
     }
 }

@@ -114,30 +114,30 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
         if (isCopyColor) {
             for (i in colorCopy.indices) {
                 val dst = colorCopy[i]
-                var loaded = dst.loadedTexture as LoadedTextureGl?
+                var loaded = dst.gpuTexture as LoadedTextureGl?
                 if (loaded == null || loaded.width != width || loaded.height != height) {
-                    dst.loadedTexture?.release()
+                    dst.gpuTexture?.release()
                     createColorAttachmentTexture(width, height, mipLevels, dst, glTarget)
-                    loaded = dst.loadedTexture as LoadedTextureGl
+                    loaded = dst.gpuTexture as LoadedTextureGl
                     loaded.bind()
                     loaded.setSize(width, height, layers)
                     loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
-                    dst.loadedTexture = loaded
+                    dst.gpuTexture = loaded
                 }
             }
         }
 
         if (isCopyDepth) {
             val dst = depthCopy2d
-            var loaded = dst.loadedTexture as LoadedTextureGl?
+            var loaded = dst.gpuTexture as LoadedTextureGl?
             if (loaded == null || loaded.width != width || loaded.height != height) {
-                dst.loadedTexture?.release()
+                dst.gpuTexture?.release()
                 createDepthAttachmentTexture(width, height, mipLevels, dst, glTarget)
-                loaded = dst.loadedTexture as LoadedTextureGl
+                loaded = dst.gpuTexture as LoadedTextureGl
                 loaded.bind()
                 loaded.setSize(width, height, layers)
                 loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
-                dst.loadedTexture = loaded
+                dst.gpuTexture = loaded
             }
         }
     }
@@ -186,7 +186,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
         gl.texStorage2D(texTarget, mipLevels, intFormat, width, height)
 
         val glColorTexture = tex.glTexture
-        colorTexture.loadedTexture = tex
+        colorTexture.gpuTexture = tex
         colorTexture.loadingState = Texture.LoadingState.LOADED
         return glColorTexture
     }
@@ -209,7 +209,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
         gl.texStorage2D(texTarget, mipLevels, intFormat, width, height)
 
         val glDepthTexture = tex.glTexture
-        depthTexture.loadedTexture = tex
+        depthTexture.gpuTexture = tex
         depthTexture.loadingState = Texture.LoadingState.LOADED
         return glDepthTexture
     }
