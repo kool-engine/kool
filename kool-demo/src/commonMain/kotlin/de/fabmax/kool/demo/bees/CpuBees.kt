@@ -19,12 +19,14 @@ class CpuBees(val team: Int) {
     val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeamCpu, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
     val beeMesh: Mesh
 
-    val positions = Array(BeeConfig.maxBeesPerTeamCpu + 1) { MutableVec4f(Vec4f.W_AXIS) }
+    val positions = Array(BeeConfig.maxBeesPerTeamCpu + 1) { MutableVec4f(0f, 0f, 0f, BeeConfig.decayTime) }
     val rotations = Array(BeeConfig.maxBeesPerTeamCpu) { MutableQuatF(QuatF.IDENTITY) }
     val velocities = Array(BeeConfig.maxBeesPerTeamCpu) { MutableVec3f() }
     val enemies = IntArray(BeeConfig.maxBeesPerTeamCpu) { BeeConfig.maxBeesPerTeamCpu }
 
-    var aliveBees = 0
+    private var numSimulatedBees = 0
+    private var prevSimulatedBees = 0
+    private var decreaseBeeCountdown = 0f
 
     lateinit var enemyBees: CpuBees
 
@@ -40,8 +42,6 @@ class CpuBees(val team: Int) {
     val instanceUpdateTime = mutableStateOf(0.0)
 
     init {
-        spawnBees()
-
         beeMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = beeInstances).apply {
             generate {
                 cube {
@@ -60,32 +60,41 @@ class CpuBees(val team: Int) {
         }
     }
 
+    private fun updateBeeCount() {
+        // if number of bees is decreased, keep simulating the previous number until excess bees decayed
+        if (prevSimulatedBees > BeeConfig.beesPerTeam.value) {
+            decreaseBeeCountdown = BeeConfig.decayTime
+        }
+        prevSimulatedBees = BeeConfig.beesPerTeam.value
+        if (decreaseBeeCountdown > 0f) {
+            decreaseBeeCountdown -= Time.deltaT
+            numSimulatedBees = max(numSimulatedBees, BeeConfig.beesPerTeam.value)
+        } else {
+            numSimulatedBees = BeeConfig.beesPerTeam.value
+        }
+    }
+
     fun updateBees() {
+        updateBeeCount()
+
+        val numBees = BeeConfig.beesPerTeam.value
         val dt = min(0.02f, Time.deltaT)
         val pt = PerfTimer()
 
         // update alive bees
-        var newAliveCnt = 0
-        repeat(aliveBees) { i ->
+        repeat(numSimulatedBees) { i ->
             val bee = Bee(i)
-            if (!bee.isDecayed) {
-                bee.update(dt)
-                if (i != newAliveCnt) {
-                    // keep the particle attribute arrays packed
-                    rotations[newAliveCnt].set(rotations[i])
-                    positions[newAliveCnt].set(positions[i])
-                    velocities[newAliveCnt].set(velocities[i])
-                    enemies[newAliveCnt] = enemies[i]
-                }
-                newAliveCnt++
-            }
-        }
-        aliveBees = newAliveCnt
 
-        // spawn new bees if there are too few
-        spawnBees()
-        // kill bees if there are to many
-        killBees()
+            if (i > numBees) {
+                if (bee.isAlive) {
+                    bee.kill()
+                }
+            } else if (bee.isDecayed) {
+                bee.spawn()
+            }
+
+            bee.update(dt)
+        }
         beeUpdateTime.set(pt.takeMs())
 
         // copy mesh instance data
@@ -96,38 +105,29 @@ class CpuBees(val team: Int) {
 
     private fun updateInstances() {
         beeInstances.clear()
-        beeInstances.addInstances(aliveBees) { buf ->
-            repeat(aliveBees) { i ->
+        beeInstances.addInstances(numSimulatedBees) { buf ->
+            repeat(numSimulatedBees) { i ->
                 positions[i].putTo(buf)
                 rotations[i].putTo(buf)
             }
         }
     }
 
-    private fun spawnBees() {
-        val n = BeeConfig.beesPerTeam.value
-        while (aliveBees < n) {
-            val spawned = Bee(aliveBees++)
+    private fun Bee.spawn() {
+        rotation.set(randomF(0f, 360f).deg, random.randomInUnitSphere(tmpVec3a).norm())
+        position.set(random.randomInUnitSphere(tmpVec3a).mul(BeeConfig.worldSize.x * 0.05f))
+        position.x += -BeeConfig.worldSize.x * 0.4f + BeeConfig.worldSize.x * 0.8f * team
+        enemy = EnemyBee(BeeConfig.maxBeesPerTeamCpu)
+        random.randomInUnitSphere(velocity).mul(BeeConfig.maxSpawnSpeed)
+    }
 
-            spawned.rotation.set(randomF(0f, 360f).deg, random.randomInUnitSphere(tmpVec3a).norm())
-            spawned.position.set(random.randomInUnitSphere(tmpVec3a).mul(BeeConfig.worldSize.x * 0.05f))
-            spawned.position.x += -BeeConfig.worldSize.x * 0.4f + BeeConfig.worldSize.x * 0.8f * team
-            spawned.enemy = EnemyBee(BeeConfig.maxBeesPerTeamCpu)
-            random.randomInUnitSphere(spawned.velocity).mul(BeeConfig.maxSpawnSpeed)
+    private fun Bee.kill() {
+        if (position.w == 0f) {
+            position.w = 0.01f
         }
     }
 
-    private fun killBees() {
-        if (aliveBees > BeeConfig.beesPerTeam.value) {
-            for (i in BeeConfig.beesPerTeam.value until aliveBees) {
-                if (positions[i].w == 0f) {
-                    positions[i].w = 0.01f
-                }
-            }
-        }
-    }
-
-    fun getRandomBee() = Bee(random.randomI(0, max(1, aliveBees - 1)))
+    private fun getRandomBee() = Bee(random.randomI(0, max(1, BeeConfig.beesPerTeam.value - 1)))
 
     @JvmInline
     value class Bee(val index: Int) {
@@ -145,7 +145,7 @@ class CpuBees(val team: Int) {
     val Bee.rotation: MutableQuatF get() = rotations[index]
     val Bee.velocity: MutableVec3f get() = velocities[index]
     val Bee.isAlive: Boolean get() = position.w == 0f
-    val Bee.isDecayed: Boolean get() = position.w > BeeConfig.decayTime
+    val Bee.isDecayed: Boolean get() = position.w >= BeeConfig.decayTime
     var Bee.enemy: EnemyBee
         get() = EnemyBee(enemies[index])
         set(value) {

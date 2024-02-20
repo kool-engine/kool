@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec3i
+import de.fabmax.kool.math.RayD
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.OffscreenRenderPass
@@ -119,6 +120,10 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     fun computePickRay(pointer: Pointer, result: RayF): Boolean {
+        return camera.computePickRay(result, pointer, mainRenderPass.viewport)
+    }
+
+    fun computePickRay(pointer: Pointer, result: RayD): Boolean {
         return camera.computePickRay(result, pointer, mainRenderPass.viewport)
     }
 

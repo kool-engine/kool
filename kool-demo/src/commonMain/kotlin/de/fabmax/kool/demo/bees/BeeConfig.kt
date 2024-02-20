@@ -12,7 +12,7 @@ object BeeConfig {
 
     val maxSpawnSpeed = 20f
 
-    val speedJitter = 200f
+    val speedJitter = 100f
     val speedDamping = 0.9f
     val teamAttraction = 5f
     val teamRepulsion = -4f

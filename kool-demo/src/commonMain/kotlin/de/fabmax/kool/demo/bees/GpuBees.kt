@@ -15,6 +15,7 @@ import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
+import kotlin.math.max
 import kotlin.math.min
 
 class GpuBees(beeScene: Scene) {
@@ -72,6 +73,17 @@ class GpuBees(beeScene: Scene) {
                         }
                     }
                     normalize(q)
+                }
+            }
+
+            val randomRotation = functionFloat4("randomRot") {
+                val rand = paramFloat1("rand")
+
+                body {
+                    val ang = float1Var(noise11(rand) * PI_F.const)
+                    val sin = float1Var(sin(ang))
+                    val axis = float3Var(normalize(noise31(rand)) * sin)
+                    float4Value(axis, cos(ang))
                 }
             }
 
@@ -139,8 +151,11 @@ class GpuBees(beeScene: Scene) {
                     deadAlive += deltaT
 
                     `if`((deadAlive gt BeeConfig.decayTime.const) and (beeIndex lt numBees)) {
+                        // respawn bee
                         deadAlive set 0f.const
-                        position set spawnPos + (noise31(rand) - 0.5f.const) * 10f.const
+                        rotation set randomRotation(rand + 51f.const)
+                        position set spawnPos + normalize(noise31(rand) - 0.5f.const) * noise11(rand + 1337f.const) * (BeeConfig.worldSize.x * 0.05f).const
+                        velocity set (noise31(rand + 19f.const) - 0.5f.const) * (2f * BeeConfig.maxSpawnSpeed).const
                     }
                 }
 
@@ -207,13 +222,34 @@ class GpuBees(beeScene: Scene) {
         val bindGroupB: BindGroupData = taskB.pipeline.pipelineDataLayout.createData()
 
         taskA.pipeline.pipelineData = bindGroupA
-        spawnPos = Vec3f(BeeConfig.worldSize.x * 0.4f, 0f, 0f)
+        spawnPos = Vec3f(BeeConfig.worldSize.x * -0.4f, 0f, 0f)
         beeBuffer = beeBufferA
         enemyBeeBuffer = beeBufferB
         taskB.pipeline.pipelineData = bindGroupB
-        spawnPos = Vec3f(BeeConfig.worldSize.x * -0.4f, 0f, 0f)
+        spawnPos = Vec3f(BeeConfig.worldSize.x * 0.4f, 0f, 0f)
         beeBuffer = beeBufferB
         enemyBeeBuffer = beeBufferA
+
+        var numSimulatedBees = 0
+        var prevSimulatedBees = 0
+        var decreaseBeeCountdown = 0f
+
+        beeScene.onUpdate {
+            // use a multiple of compute shader workgroup-size (64) as instance count
+            val currentInstances = (BeeConfig.beesPerTeam.value + 63) and 63.inv()
+
+            // if number of bees is decreased, keep simulating the previous number until excess bees decayed
+            if (prevSimulatedBees > currentInstances) {
+                decreaseBeeCountdown = BeeConfig.decayTime
+            }
+            prevSimulatedBees = currentInstances
+            if (decreaseBeeCountdown > 0f) {
+                decreaseBeeCountdown -= Time.deltaT
+                numSimulatedBees = max(numSimulatedBees, currentInstances)
+            } else {
+                numSimulatedBees = currentInstances
+            }
+        }
 
         taskA.onBeforeDispatch {
             taskA.pipeline.pipelineData = bindGroupA
@@ -221,17 +257,18 @@ class GpuBees(beeScene: Scene) {
             randomSeed = 1000f + (Time.gameTime % 1000.0).toFloat()
             numBees = BeeConfig.beesPerTeam.value
 
-            taskA.setNumGroupsByInvocations(BeeConfig.beesPerTeam.value)
-            beeInstancesA.numInstances = BeeConfig.beesPerTeam.value
+            taskA.setNumGroupsByInvocations(numSimulatedBees)
+            beeInstancesA.numInstances = numSimulatedBees
         }
+
         taskB.onBeforeDispatch {
             taskB.pipeline.pipelineData = bindGroupB
             deltaT = min(0.02f, Time.deltaT)
             randomSeed = -1000f - (Time.gameTime % 1000.0).toFloat()
             numBees = BeeConfig.beesPerTeam.value
 
-            taskB.setNumGroupsByInvocations(BeeConfig.beesPerTeam.value)
-            beeInstancesB   .numInstances = BeeConfig.beesPerTeam.value
+            taskB.setNumGroupsByInvocations(numSimulatedBees)
+            beeInstancesB.numInstances = numSimulatedBees
         }
     }
 
@@ -244,7 +281,7 @@ class GpuBees(beeScene: Scene) {
     private fun initBeeBuffer(beeBuffer: StorageBuffer1d, spawnPos: Vec3f, velocity: Vec3f) {
         for (i in 0 until maxGpuBees) {
             // position and dead / alive state
-            beeBuffer[i * 3 + 0] = Vec4f(spawnPos + randomInUnitCube() * 5f, 0f)
+            beeBuffer[i * 3 + 0] = Vec4f(spawnPos + randomInUnitCube() * 5f, BeeConfig.decayTime)
             // rotation
             beeBuffer[i * 3 + 1] = QuatF.IDENTITY.toVec4f()
             // velocity and enemy index

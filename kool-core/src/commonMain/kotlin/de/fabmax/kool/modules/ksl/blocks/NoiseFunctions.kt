@@ -156,7 +156,7 @@ class Noise11(parentScope: KslScopeBuilder) :
             val x = float1Var(fract(p * 0.1031f.const))
             x *= x + 33.33f.const
             x *= x + x
-            return@body x
+            return@body fract(x)
         }
     }
 

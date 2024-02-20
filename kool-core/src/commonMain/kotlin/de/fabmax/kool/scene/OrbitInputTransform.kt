@@ -8,6 +8,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxD
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.animation.SpringDamperDouble
 import de.fabmax.kool.util.Time
+import kotlin.math.abs
 
 /**
  * A special kind of transform group which translates mouse input into a orbit transform. This is mainly useful
@@ -313,8 +314,13 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
 
     override fun computePanPoint(result: MutableVec3d, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
-        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport) &&
-                panPlane.intersectionPoint(pointerRay, result)
+        if (!view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport)) {
+            return false
+        }
+        if (abs(pointerRay.direction dot panPlane.n) < 0.01) {
+            return false
+        }
+        return panPlane.intersectionPoint(pointerRay, result)
     }
 }
 
