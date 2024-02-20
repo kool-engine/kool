@@ -41,6 +41,12 @@ class CpuBees(val team: Int) {
     val beeUpdateTime = mutableStateOf(0.0)
     val instanceUpdateTime = mutableStateOf(0.0)
 
+    private var speedJitter = BeeConfig.speedJitter.value
+    private var teamAttraction = BeeConfig.teamAttraction.value
+    private var teamRepulsion = BeeConfig.teamRepulsion.value
+    private var chaseForce = BeeConfig.chaseForce.value
+    private var attackForce = BeeConfig.attackForce.value
+
     init {
         beeMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = beeInstances).apply {
             generate {
@@ -80,6 +86,12 @@ class CpuBees(val team: Int) {
         val numBees = BeeConfig.beesPerTeam.value
         val dt = min(0.02f, Time.deltaT)
         val pt = PerfTimer()
+
+        speedJitter = BeeConfig.speedJitter.value
+        teamAttraction = BeeConfig.teamAttraction.value
+        teamRepulsion = BeeConfig.teamRepulsion.value
+        chaseForce = BeeConfig.chaseForce.value
+        attackForce = BeeConfig.attackForce.value
 
         // update alive bees
         repeat(numSimulatedBees) { i ->
@@ -218,19 +230,25 @@ class CpuBees(val team: Int) {
         val vel = velocity
         val target = enemy
 
-        val v = random.randomInUnitCube(tmpVec3a).mul(BeeConfig.speedJitter * dt)
+        val v = random.randomInUnitCube(tmpVec3a).mul(speedJitter * dt)
         vel.add(v).mul(1f - BeeConfig.speedDamping * dt)
 
         // swarming
         val attractiveFriend = getRandomBee()
         var delta = attractiveFriend.position.subtract(pos, tmpVec4)
         var dist = max(0.1f, delta.length())
-        vel.add(delta.mul(BeeConfig.teamAttraction * dt / dist))
+        if (attractiveFriend.isAlive) {
+            // only alive friends are attractive
+            vel.add(delta.mul(teamAttraction * dt / dist))
+        }
 
         val repellentFriend = getRandomBee()
         delta = pos.subtract(repellentFriend.position, tmpVec4)
         dist = max(0.1f, delta.length())
-        vel.add(delta.mul(BeeConfig.teamRepulsion * dt / dist))
+        if (repellentFriend.isAlive) {
+            // only alive friends repel
+            vel.add(delta.mul(teamRepulsion * dt / dist))
+        }
 
         // attack enemy bee
         if (!target.isAlive) {
@@ -240,10 +258,10 @@ class CpuBees(val team: Int) {
             dist = delta.length()
 
             if (dist > BeeConfig.attackDistance) {
-                vel.add(delta.mul(BeeConfig.chaseForce * dt / dist))
+                vel.add(delta.mul(chaseForce * dt / dist))
 
             } else {
-                vel.add(delta.mul(BeeConfig.attackForce * dt / dist))
+                vel.add(delta.mul(attackForce * dt / dist))
                 if (dist < BeeConfig.hitDistance) {
                     target.kill()
                 }

@@ -116,6 +116,21 @@ class BeeDemo : DemoScene("Fighting Bees") {
                 Text("${t.toString(2)} ms") { labelStyle() }
             }
         }
+
+        Text("Bee Movement") { sectionTitleStyle() }
+
+        MenuSlider2("Team attraction", BeeConfig.teamAttraction.use(), 0f, 50f, { it.toInt().toString() }) {
+            BeeConfig.teamAttraction.set(it)
+        }
+        MenuSlider2("Team repulsion", BeeConfig.teamRepulsion.use(), 0f, 50f, { it.toInt().toString() }) {
+            BeeConfig.teamRepulsion.set(it)
+        }
+        MenuSlider2("Jitter", BeeConfig.speedJitter.use(), 0f, 500f, { it.toInt().toString() }) {
+            BeeConfig.speedJitter.set(it)
+        }
+        MenuSlider2("Chase force", BeeConfig.chaseForce.use(), 0f, 50f, { it.toInt().toString() }) {
+            BeeConfig.chaseForce.set(it)
+        }
     }
 
     companion object {
