@@ -12,8 +12,7 @@ class ShaderManager(val backend: RenderBackendGl) {
     private val glComputePrograms = mutableMapOf<ComputeShaderCodeGl, UsedGlProgram>()
 
     fun bindDrawShader(cmd: DrawCommand): CompiledDrawShader.DrawInfo {
-        val pipeline = checkNotNull(cmd.pipeline)
-        val shader = pipeline.getCompiledShader()
+        val shader = cmd.pipeline.getCompiledShader()
         val current = boundShader as? CompiledDrawShader
 
         if (shader.program != current?.program) {

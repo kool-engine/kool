@@ -2,11 +2,7 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BindGroupScope
-import de.fabmax.kool.pipeline.BufferPosition
-import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformBufferLayout
-import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.positioned
 
 fun KslProgram.cameraData(): CameraData {
@@ -72,9 +68,8 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onUpdate(cmd: DrawCommand) {
-        val pipeline = cmd.pipeline ?: return
         val bindingLayout = uboLayout ?: return
-        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(pipeline, bindingLayout.bindingIndex) ?: return
+        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
 
         val q = cmd.queue
         val vp = q.view.viewport

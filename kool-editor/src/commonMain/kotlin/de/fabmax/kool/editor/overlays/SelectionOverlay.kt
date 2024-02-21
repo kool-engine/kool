@@ -107,11 +107,12 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         }
 
         private fun setupDrawCommand(i: Int, cmd: DrawCommand, updateEvent: UpdateEvent) {
-            cmd.pipeline = null
+            cmd.isActive = false
             if (cmd.mesh in meshSelection) {
                 getPipeline(cmd.mesh, updateEvent)?.let { (shader, pipeline) ->
                     shader.color = selectionColors[i % selectionColors.size]
                     cmd.pipeline = pipeline
+                    cmd.isActive = true
                 }
             }
         }

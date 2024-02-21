@@ -115,13 +115,13 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
         return prevQueue
     }
 
-    fun addMesh(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawCommand {
+    fun addMesh(mesh: Mesh, pipeline: DrawPipeline): DrawCommand {
         val cmd = if (commandPool.isNotEmpty()) {
             commandPool.removeAt(commandPool.lastIndex)
         } else {
-            DrawCommand(this, mesh)
+            DrawCommand(this, mesh, pipeline)
         }
-        cmd.setup(mesh, drawGroupId, updateEvent)
+        cmd.setup(mesh, pipeline, drawGroupId)
         getOrderedQueue().commands.add(cmd)
         return cmd
     }

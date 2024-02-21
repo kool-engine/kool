@@ -7,7 +7,6 @@ import de.fabmax.kool.math.toMutableMat4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.DrawCommand
 
 fun KslProgram.mvpMatrix(): MvpMatrixData {
     return (dataBlocks.find { it is MvpMatrixData } as? MvpMatrixData) ?: MvpMatrixData(this)
@@ -57,8 +56,6 @@ class MvpMatrixData(program: KslProgram) : MeshMatrixData(program, "uMvpMat") {
     private val tmpMat4f = MutableMat4f()
 
     override fun onUpdate(cmd: DrawCommand) {
-        val pipeline = cmd.pipeline ?: return
-
         // Do not use getPipelineDataUpdating() here: MVP matrix needs to be always updated, in case this mesh /
         // pipeline combination is drawn in multiple views with different view matrices.
         //
@@ -66,7 +63,7 @@ class MvpMatrixData(program: KslProgram) : MeshMatrixData(program, "uMvpMat") {
         //  views. This is currently the case but might change in future. In that case, using a precomputed MVP matrix
         //  would not be possible anymore (work around: use separate model and view matrices and multiply them in
         //  the vertex shader)
-        val uboData = cmd.mesh.meshPipelineData.getPipelineData(pipeline)
+        val uboData = cmd.mesh.meshPipelineData.getPipelineData(cmd.pipeline)
 
         if (cmd.queue.isDoublePrecision) {
             cmd.queue.viewProjMatD.mul(cmd.modelMatD, tmpMat4d)
@@ -88,9 +85,8 @@ class ModelMatrixData(program: KslProgram) : MeshMatrixData(program, "uModelMat"
     private val tmpMat4f = MutableMat4f()
 
     override fun onUpdate(cmd: DrawCommand) {
-        val pipeline = cmd.pipeline ?: return
         val bindingLayout = uboLayout ?: return
-        val uboData = cmd.mesh.meshPipelineData.getPipelineDataUpdating(pipeline, bindingLayout.bindingIndex) ?: return
+        val uboData = cmd.mesh.meshPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
 
         if (cmd.queue.isDoublePrecision) {
             cmd.modelMatD.toMutableMat4f(tmpMat4f)

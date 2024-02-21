@@ -36,22 +36,28 @@ open class DepthMapPass(
     }
 
     protected open fun setupDrawCommand(cmd: DrawCommand, updateEvent: UpdateEvent) {
-        cmd.pipeline = getDepthPipeline(cmd.mesh, updateEvent)
+        val pipeline = getDepthPipeline(cmd.mesh, updateEvent)
+        if (pipeline == null) {
+            cmd.isActive = false
+        } else {
+            cmd.pipeline = pipeline
+        }
     }
 
     protected open fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): DrawPipeline? {
-        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
-            return null
-        }
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.depthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = false, outputNormals = false)) }
                 ?: defaultDepthShader(mesh, updateEvent)
-            depthShader.getOrCreatePipeline(mesh, updateEvent)
+            depthShader?.getOrCreatePipeline(mesh, updateEvent)
         }
     }
 
-    private fun defaultDepthShader(mesh: Mesh, updateEvent: UpdateEvent): DepthShader {
+    private fun defaultDepthShader(mesh: Mesh, updateEvent: UpdateEvent): DepthShader? {
+        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS)) {
+            return null
+        }
+
         val cfg = DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent))
         val key = DepthShaderKey(
             vertexLayout = mesh.geometry.vertexAttributes,
@@ -101,18 +107,19 @@ class NormalLinearDepthMapPass(
     }
 
     override fun getDepthPipeline(mesh: Mesh, updateEvent: UpdateEvent): DrawPipeline? {
-        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
-            return null
-        }
         return shadowPipelines.getOrPut(mesh.id) {
             val depthShader = mesh.normalLinearDepthShader
                 ?: mesh.depthShaderConfig?.let { cfg -> DepthShader(cfg.copy(outputLinearDepth = true, outputNormals = true)) }
                 ?: defaultDepthShader(mesh, updateEvent)
-            depthShader.getOrCreatePipeline(mesh, updateEvent)
+            depthShader?.getOrCreatePipeline(mesh, updateEvent)
         }
     }
 
-    private fun defaultDepthShader(mesh: Mesh, updateEvent: UpdateEvent): DepthShader {
+    private fun defaultDepthShader(mesh: Mesh, updateEvent: UpdateEvent): DepthShader? {
+        if (!mesh.geometry.hasAttribute(Attribute.POSITIONS) || !mesh.geometry.hasAttribute(Attribute.NORMALS)) {
+            return null
+        }
+
         val cfg = DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, updateEvent)).copy(
             outputLinearDepth = true,
             outputNormals = true

@@ -5,7 +5,7 @@ import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
-class DrawCommand(val queue: DrawQueue, mesh: Mesh) {
+class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) {
 
     var mesh: Mesh = mesh
         private set
@@ -13,7 +13,8 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh) {
         private set
 
     var geometry: IndexedVertexList = mesh.geometry
-    var pipeline: DrawPipeline? = null
+
+    var isActive = true
 
     /**
      * Single precision model matrix of this command's [mesh].
@@ -25,10 +26,11 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh) {
      */
     val modelMatD: Mat4d get() = mesh.modelMatD
 
-    fun setup(mesh: Mesh, drawGroupId: Int, updateEvent: RenderPass.UpdateEvent) {
+    fun setup(mesh: Mesh, pipeline: DrawPipeline, drawGroupId: Int) {
         this.mesh = mesh
+        this.pipeline = pipeline
         this.drawGroupId = drawGroupId
         geometry = mesh.geometry
-        pipeline = mesh.getOrCreatePipeline(updateEvent)
+        isActive = true
     }
 }

@@ -2,11 +2,7 @@ package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BindGroupScope
-import de.fabmax.kool.pipeline.BufferPosition
-import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformBufferLayout
-import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.positioned
 
 fun KslProgram.deferredCameraData(): DeferredCamData {
@@ -56,12 +52,11 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
         val q = cmd.queue
         val vp = q.view.viewport
         val cam = q.view.camera
-        val pipeline = cmd.pipeline
         val bindingLayout = uboLayout
 
-        if (pipeline != null && bindingLayout != null) {
+        if (bindingLayout != null) {
             val uboData = cmd.queue.view.viewPipelineData
-                .getPipelineData(pipeline)
+                .getPipelineData(cmd.pipeline)
                 .uniformBufferBindingData(bindingLayout.bindingIndex)
 
             uboData.isBufferDirty = true

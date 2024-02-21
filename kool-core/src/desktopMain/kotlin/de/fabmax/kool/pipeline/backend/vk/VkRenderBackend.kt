@@ -349,7 +349,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             var prevPipeline = 0L
             drawQueue.forEach { cmd ->
                 val pipelineCfg = cmd.pipeline
-                if (!cmd.mesh.geometry.isEmpty() && pipelineCfg != null) {
+                if (!cmd.mesh.geometry.isEmpty()) {
                     pipelineCfg.update(cmd)
 
                     if (!sys.pipelineManager.hasPipeline(pipelineCfg, renderPass.vkRenderPass)) {

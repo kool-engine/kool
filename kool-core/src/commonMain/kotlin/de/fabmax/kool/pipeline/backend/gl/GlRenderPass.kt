@@ -76,12 +76,12 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
                 }
             }
 
-            cmd.pipeline?.let { pipeline ->
+            if (cmd.isActive) {
                 val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
                 val isValid = cmd.geometry.numIndices > 0  &&  drawInfo.isValid && drawInfo.numIndices > 0
 
                 if (isValid) {
-                    GlState.setupPipelineAttribs(pipeline, view.renderPass.isReverseDepth, gl)
+                    GlState.setupPipelineAttribs(cmd.pipeline, view.renderPass.isReverseDepth, gl)
 
                     val insts = cmd.mesh.instances
                     if (insts == null) {

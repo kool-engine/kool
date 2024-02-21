@@ -1,10 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.pipeline.DrawPipeline
-import de.fabmax.kool.pipeline.InputRate
-import de.fabmax.kool.pipeline.PipelineBackend
-import de.fabmax.kool.pipeline.VertexLayout
-import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.PrimitiveType
 
@@ -98,7 +94,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     }
 
     fun bindMesh(cmd: DrawCommand): DrawInfo {
-        val pipeline = cmd.pipeline!!
         val geom = getOrCreateGpuGeometry(cmd)
 
         users.add(cmd.mesh.id)

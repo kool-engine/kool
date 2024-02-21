@@ -228,7 +228,10 @@ open class Mesh(
             }
             rayTest.onMeshDataChanged(this)
         }
-        updateEvent.view.drawQueue.addMesh(this, updateEvent)
+
+        getOrCreatePipeline(updateEvent)?.let { pipeline ->
+            updateEvent.view.drawQueue.addMesh(this, pipeline)
+        }
     }
 
     companion object {
