@@ -411,11 +411,15 @@ open class Node(name: String? = null) : BaseReleasable() {
         fun markUpdatedF() {
             updateId++
             updateIdF = updateId
+            lazyInvModelMatF.isDirty = true
+            lazyInvModelMatD.isDirty = true
         }
 
         fun markUpdatedD() {
             updateId++
             updateIdD = updateId
+            lazyInvModelMatF.isDirty = true
+            lazyInvModelMatD.isDirty = true
         }
     }
 }
