@@ -75,6 +75,36 @@ class RayF() {
         return false
     }
 
+    fun closestPointOnRay(otherRay: RayF, result: MutableVec3f): MutableVec3f {
+        val s = distanceOnRay(otherRay)
+        result.set(direction).mul(s).add(origin)
+        return result
+    }
+
+    fun closestPositivePointOnRay(otherRay: RayF, result: MutableVec3f): MutableVec3f {
+        val s = distanceOnRay(otherRay).coerceAtLeast(0f)
+        result.set(direction).mul(s).add(origin)
+        return result
+    }
+
+    private fun distanceOnRay(otherRay: RayF): Float {
+        val (x1, y1, z1) = direction
+        val (x2, y2, zz) = otherRay.direction
+        val x3 = otherRay.origin.x - origin.x
+        val y3 = otherRay.origin.y - origin.y
+        val z3 = otherRay.origin.z - origin.z
+
+        val r1 = direction dot direction
+        val r2 = otherRay.direction dot otherRay.direction
+
+        val a = x1 * x2 + y1 * y2 + z1 * zz
+        val b = x1 * x3 + y1 * y3 + z1 * z3
+        val c = x3 * x2 + y3 * y2 + z3 * zz
+        val denom = a * a - r1 * r2
+
+        return (a * c - r2 * b) / denom
+    }
+
     fun transformBy(matrix: Mat4f, result: RayF = this): RayF {
         matrix.transform(origin, 1f, result.origin)
         matrix.transform(direction, 0f, result.direction).norm()
@@ -140,6 +170,36 @@ class RayD() {
         }
 
         return false
+    }
+
+    fun closestPointOnRay(otherRay: RayD, result: MutableVec3d): MutableVec3d {
+        val s = distanceOnRay(otherRay)
+        result.set(direction).mul(s).add(origin)
+        return result
+    }
+
+    fun closestPositivePointOnRay(otherRay: RayD, result: MutableVec3d): MutableVec3d {
+        val s = distanceOnRay(otherRay).coerceAtLeast(0.0)
+        result.set(direction).mul(s).add(origin)
+        return result
+    }
+
+    private fun distanceOnRay(otherRay: RayD): Double {
+        val (x1, y1, z1) = direction
+        val (x2, y2, zz) = otherRay.direction
+        val x3 = otherRay.origin.x - origin.x
+        val y3 = otherRay.origin.y - origin.y
+        val z3 = otherRay.origin.z - origin.z
+
+        val r1 = direction dot direction
+        val r2 = otherRay.direction dot otherRay.direction
+
+        val a = x1 * x2 + y1 * y2 + z1 * zz
+        val b = x1 * x3 + y1 * y3 + z1 * z3
+        val c = x3 * x2 + y3 * y2 + z3 * zz
+        val denom = a * a - r1 * r2
+
+        return (a * c - r2 * b) / denom
     }
 
     fun transformBy(matrix: Mat4d, result: RayD = this): RayD {

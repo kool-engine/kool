@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.gizmo
 
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.RayD
-import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -12,7 +11,7 @@ import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
@@ -31,10 +30,12 @@ class PlaneHandle(
     name: String = "plane-handle"
 ) : Node(name), GizmoHandle {
 
+    override val handleTransform = TrsTransformD()
+
     override val drawNode: Node
         get() = this
-
-    override val handleTransform = TrsTransformF()
+    override val gizmoOperation: GizmoOperation
+        get() = TODO("Not yet implemented")
 
     private val mesh: Mesh
     private val coveredMesh: Mesh
@@ -121,15 +122,11 @@ class PlaneHandle(
         }
     }
 
-    override fun onHover(pointer: Pointer, globalRay: RayD) {
+    override fun onHover(pointer: Pointer, globalRay: RayD, gizmo: GizmoNode) {
         setColors(color, coveredColor)
     }
 
-    override fun onHoverExit() {
+    override fun onHoverExit(gizmo: GizmoNode) {
         setColors(colorIdle, coveredColorIdle)
-    }
-
-    override fun onDrag(pointer: Pointer, dragStartPointerPos: Vec2d, globalRay: RayD) {
-
     }
 }

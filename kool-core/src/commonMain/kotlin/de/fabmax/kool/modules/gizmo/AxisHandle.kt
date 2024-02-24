@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.gizmo
 
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.RayD
-import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -11,13 +10,14 @@ import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.util.Color
 
 class AxisHandle(
     val color: Color,
-    axis: GizmoHandle.Axis,
-    handleType: HandleType = HandleType.ARROW,
+    val axis: GizmoHandle.Axis,
+    override val gizmoOperation: GizmoOperation = AxisTranslation(axis),
+    handleShape: HandleType = HandleType.ARROW,
     val coveredColor: Color = color.withAlpha(0.5f),
     val colorIdle: Color = color.mulRgb(0.8f),
     val coveredColorIdle: Color = colorIdle.withAlpha(0.3f),
@@ -26,10 +26,10 @@ class AxisHandle(
     name: String = "axis-handle"
 ) : Node(name), GizmoHandle {
 
+    override val handleTransform = TrsTransformD()
+
     override val drawNode: Node
         get() = this
-
-    override val handleTransform = TrsTransformF()
 
     private val hitMesh: Mesh
     private val mesh: Mesh
@@ -45,9 +45,9 @@ class AxisHandle(
         hitMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-hitMesh")
         hitMesh.rayTest = MeshRayTest.geometryTest(mesh)
 
-        mesh.setupGeometry(handleType, innerDistance, length, 0.015f, 0.07f)
+        mesh.setupGeometry(handleShape, innerDistance, length, 0.015f, 0.07f)
         mesh.setupShader(DepthCompareOp.LESS)
-        coveredMesh.setupGeometry(handleType, innerDistance, length, 0.015f, 0.07f)
+        coveredMesh.setupGeometry(handleShape, innerDistance, length, 0.015f, 0.07f)
         coveredMesh.setupShader(DepthCompareOp.ALWAYS)
         hitMesh.setupGeometry(HandleType.SPHERE, innerDistance, length, 0.07f, 0.15f)
         setColors(colorIdle, coveredColorIdle)
@@ -64,16 +64,12 @@ class AxisHandle(
         (coveredMesh.shader as KslUnlitShader).color = coveredColor
     }
 
-    override fun onHover(pointer: Pointer, globalRay: RayD) {
+    override fun onHover(pointer: Pointer, globalRay: RayD, gizmo: GizmoNode) {
         setColors(color, coveredColor)
     }
 
-    override fun onHoverExit() {
+    override fun onHoverExit(gizmo: GizmoNode) {
         setColors(colorIdle, coveredColorIdle)
-    }
-
-    override fun onDrag(pointer: Pointer, dragStartPointerPos: Vec2d, globalRay: RayD) {
-        //println("drag $name")
     }
 
     private fun Mesh.setupGeometry(

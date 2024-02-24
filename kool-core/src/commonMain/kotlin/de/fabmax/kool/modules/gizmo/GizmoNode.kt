@@ -3,25 +3,28 @@ package de.fabmax.kool.modules.gizmo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
-import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.math.RayD
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.toRayF
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.TrsTransformD
 
 class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener {
 
-    private val gizmoTransform = TrsTransformF()
+    private val gizmoTransform = TrsTransformD()
+    private val startTransform = TrsTransformD()
 
     private val handles = mutableListOf<GizmoHandle>()
 
     private val rayTest = RayTest()
     private val pickRay = RayD()
     private var dragMode = DragMode.NO_DRAG
+    private var isDrag = false
     private var hoverHandle: GizmoHandle? = null
-    private val dragStartPointerPos = MutableVec2d()
+
+    private var isManipulating = false
 
     init {
         transform = gizmoTransform
@@ -36,6 +39,35 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     fun removeHandle(handle: GizmoHandle) {
         handles -= handle
         removeNode(handle.drawNode)
+    }
+
+    fun startManipulation() {
+        startTransform.set(gizmoTransform)
+        isManipulating = true
+    }
+
+    fun finishManipulation() {
+        isManipulating = false
+    }
+
+    fun manipulateAxisTranslation(axis: GizmoHandle.Axis, distance: Double) {
+        check(isManipulating) { "manipulateAxisTranslation is only allowed between calling startManipulation() and finishManipulation()" }
+
+        gizmoTransform.set(startTransform)
+        gizmoTransform.translate(axis.axis * distance)
+    }
+
+    fun manipulateAxisScale(axis: GizmoHandle.Axis, factor: Double) {
+        check(isManipulating) { "manipulateAxisTranslation is only allowed between calling startManipulation() and finishManipulation()" }
+
+        val scale = Vec3d(
+            if (axis.axis.x == 0.0) 1.0 else axis.axis.x * factor,
+            if (axis.axis.y == 0.0) 1.0 else axis.axis.y * factor,
+            if (axis.axis.z == 0.0) 1.0 else axis.axis.z * factor,
+        )
+
+        gizmoTransform.set(startTransform)
+        gizmoTransform.scale(scale)
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
@@ -60,7 +92,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
                 null
             }
             if (newHandle != hoverHandle) {
-                hoverHandle?.onHoverExit()
+                hoverHandle?.onHoverExit(this)
             }
             hoverHandle = newHandle
         }
@@ -74,10 +106,23 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         hoverHandle?.let { hover ->
             if (ptr.isLeftButtonDown) {
                 ptr.consume()
-                hover.onDrag(ptr, dragStartPointerPos, pickRay)
+                if (!isDrag) {
+                    hover.onDragStart(ptr, pickRay, this)
+                    isDrag = true
+                } else {
+                    hover.onDrag(ptr, pickRay, this)
+                }
             } else {
-                hover.onHover(ptr, pickRay)
+                if (isDrag) {
+                    hover.onDragEnd(ptr, pickRay, this)
+                    isDrag = false
+                }
+                hover.onHover(ptr, pickRay, this)
             }
+        }
+
+        if (!ptr.isLeftButtonDown) {
+            isDrag = false
         }
     }
 
