@@ -13,17 +13,15 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.util.Color
 
-class AxisHandle(
+class AxisRotationHandle(
     val color: Color,
     val axis: GizmoHandle.Axis,
-    override val gizmoOperation: GizmoOperation = AxisTranslation(axis),
-    handleShape: HandleType = HandleType.ARROW,
+    override val gizmoOperation: GizmoOperation = AxisRotation(axis),
     val coveredColor: Color = color.withAlpha(0.5f),
     val colorIdle: Color = color.mulRgb(0.8f),
     val coveredColorIdle: Color = colorIdle.withAlpha(0.3f),
-    length: Float = 0.6f,
-    innerDistance: Float = 0.2f,
-    name: String = "axis-handle"
+    radius: Float = 0.8f,
+    name: String = "axis-rotation-handle"
 ) : Node(name), GizmoHandle {
 
     override val drawNode: Node
@@ -43,11 +41,11 @@ class AxisHandle(
         coveredMesh.isPickable = false
         hitMesh.rayTest = MeshRayTest.geometryTest(hitMesh)
 
-        mesh.setupGeometry(handleShape, innerDistance, length, 0.015f, 0.07f)
+        mesh.setupGeometry(radius, 0.01f)
         mesh.setupShader(DepthCompareOp.LESS)
-        coveredMesh.setupGeometry(handleShape, innerDistance, length, 0.015f, 0.07f)
+        coveredMesh.setupGeometry(radius, 0.01f)
         coveredMesh.setupShader(DepthCompareOp.ALWAYS)
-        hitMesh.setupGeometry(HandleType.SPHERE, innerDistance, length, 0.07f, 0.15f)
+        hitMesh.setupGeometry(radius, 0.05f)
         setColors(colorIdle, coveredColorIdle)
 
         // hasChanged flag is usually cleared after mesh is drawn the first time, but hitMesh is never drawn
@@ -64,44 +62,23 @@ class AxisHandle(
         (coveredMesh.shader as KslUnlitShader).color = coveredColor
     }
 
-    override fun onHover(pointer: Pointer, globalRay: RayD, gizmo: GizmoNode) {
-        setColors(color, coveredColor)
-    }
-
-    override fun onHoverExit(gizmo: GizmoNode) {
-        setColors(colorIdle, coveredColorIdle)
-    }
-
     private fun Mesh.setupGeometry(
-        handleType: HandleType,
-        innerDistance: Float,
-        length: Float,
-        lineRadius: Float,
-        tipRadius: Float,
+        orbitRadius: Float,
+        geomRadius: Float,
     ) {
         isCastingShadow = false
         generate {
-            rotate(90f.deg, Vec3f.NEG_Z_AXIS)
-            translate(0f, innerDistance, 0f)
-            translate(0f, length * 0.5f, 0f)
-            cylinder {
-                height = length
-                radius = lineRadius
-                steps = 8
-            }
+            rotate(90f.deg, Vec3f.Z_AXIS)
+            profile {
+                circleShape(geomRadius, 6)
 
-            translate(0f, length * 0.5f + 0.0475f, 0f)
-            when (handleType) {
-                HandleType.ARROW -> cylinder {
-                    height = 0.14f
-                    bottomRadius = tipRadius
-                    topRadius = 0f
-                    topFill = false
-                    steps = 16
-                }
-                HandleType.SPHERE -> icoSphere {
-                    steps = 2
-                    radius = tipRadius
+                val n = 60
+                for (i in 0..n) {
+                    withTransform {
+                        rotate((360f * i / n).deg, Vec3f.NEG_Y_AXIS)
+                        translate(orbitRadius, 0f, 0f)
+                        sample()
+                    }
                 }
             }
         }
@@ -119,8 +96,11 @@ class AxisHandle(
         }
     }
 
-    enum class HandleType {
-        ARROW,
-        SPHERE
+    override fun onHover(pointer: Pointer, globalRay: RayD, gizmo: GizmoNode) {
+        setColors(color, coveredColor)
+    }
+
+    override fun onHoverExit(gizmo: GizmoNode) {
+        setColors(colorIdle, coveredColorIdle)
     }
 }

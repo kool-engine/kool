@@ -66,6 +66,9 @@ interface MeshRayTest {
 
         override fun rayTest(test: RayTest, localRay: RayF): Boolean {
             rayTraverser.setup(localRay.toRayD(rayD))
+            if (triangleTree == null) {
+                onMeshDataChanged(mesh)
+            }
             triangleTree?.let { rayTraverser.traverse(it) }
 
             rayTraverser.nearest?.let { hitTri ->
@@ -99,6 +102,9 @@ interface MeshRayTest {
 
         override fun rayTest(test: RayTest, localRay: RayF): Boolean {
             rayTraverser.setup(localRay.toRayD(rayD))
+            if (edgeTree == null) {
+                onMeshDataChanged(mesh)
+            }
             edgeTree?.let { rayTraverser.traverse(it) }
 
             if (rayTraverser.nearest != null) {

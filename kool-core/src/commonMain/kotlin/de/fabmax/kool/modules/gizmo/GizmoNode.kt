@@ -2,11 +2,9 @@ package de.fabmax.kool.modules.gizmo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerState
-import de.fabmax.kool.math.RayD
-import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.toRayF
+import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformD
@@ -24,7 +22,14 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     private var isDrag = false
     private var hoverHandle: GizmoHandle? = null
 
-    private var isManipulating = false
+    private val globalToDragLocal = MutableMat4d()
+
+    private val escListener = InputStack.SimpleKeyListener(KeyboardInput.KEY_ESC, "Cancel drag") {
+        cancelManipulation()
+    }
+
+    var isManipulating = false
+        private set
 
     init {
         transform = gizmoTransform
@@ -41,13 +46,28 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         removeNode(handle.drawNode)
     }
 
-    fun startManipulation() {
+    fun startManipulation(cancelOnEscape: Boolean = true) {
         startTransform.set(gizmoTransform)
         isManipulating = true
+
+        if (cancelOnEscape) {
+            InputStack.defaultInputHandler.addKeyListener(escListener)
+        }
     }
 
     fun finishManipulation() {
+        check(isManipulating) { "finishManipulation is only allowed after calling startManipulation()" }
+
         isManipulating = false
+        InputStack.defaultInputHandler.removeKeyListener(escListener)
+    }
+
+    fun cancelManipulation() {
+        check(isManipulating) { "cancelManipulation is only allowed after calling startManipulation()" }
+
+        gizmoTransform.set(startTransform)
+        isManipulating = false
+        InputStack.defaultInputHandler.removeKeyListener(escListener)
     }
 
     fun manipulateAxisTranslation(axis: GizmoHandle.Axis, distance: Double) {
@@ -57,14 +77,29 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         gizmoTransform.translate(axis.axis * distance)
     }
 
-    fun manipulateAxisScale(axis: GizmoHandle.Axis, factor: Double) {
+    fun manipulateTranslation(translationOffset: Vec3d) {
         check(isManipulating) { "manipulateAxisTranslation is only allowed between calling startManipulation() and finishManipulation()" }
 
-        val scale = Vec3d(
-            if (axis.axis.x == 0.0) 1.0 else axis.axis.x * factor,
-            if (axis.axis.y == 0.0) 1.0 else axis.axis.y * factor,
-            if (axis.axis.z == 0.0) 1.0 else axis.axis.z * factor,
-        )
+        gizmoTransform.set(startTransform)
+        gizmoTransform.translate(translationOffset)
+    }
+
+    fun manipulateAxisRotation(axis: Vec3d, angle: AngleD) {
+        check(isManipulating) { "manipulateAxisRotation is only allowed between calling startManipulation() and finishManipulation()" }
+
+        gizmoTransform.set(startTransform)
+        gizmoTransform.rotate(angle, axis)
+    }
+
+    fun manipulateRotation(rotation: QuatD) {
+        check(isManipulating) { "manipulateAxisRotation is only allowed between calling startManipulation() and finishManipulation()" }
+
+        gizmoTransform.set(startTransform)
+        gizmoTransform.rotate(rotation)
+    }
+
+    fun manipulateScale(scale: Vec3d) {
+        check(isManipulating) { "manipulateAxisTranslation is only allowed between calling startManipulation() and finishManipulation()" }
 
         gizmoTransform.set(startTransform)
         gizmoTransform.scale(scale)
@@ -104,17 +139,29 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         }
 
         hoverHandle?.let { hover ->
+            if (ptr.isLeftButtonDown && !isDrag) {
+                globalToDragLocal.set(invModelMatD)
+            }
+            val dragCtx = DragContext(
+                gizmo = this,
+                pointer = ptr,
+                globalRay = pickRay,
+                localRay = pickRay.transformBy(globalToDragLocal, RayD()),
+                globalToLocal = globalToDragLocal,
+                camera = scene.camera
+            )
+
             if (ptr.isLeftButtonDown) {
                 ptr.consume()
                 if (!isDrag) {
-                    hover.onDragStart(ptr, pickRay, this)
+                    hover.onDragStart(dragCtx)
                     isDrag = true
                 } else {
-                    hover.onDrag(ptr, pickRay, this)
+                    hover.onDrag(dragCtx)
                 }
             } else {
                 if (isDrag) {
-                    hover.onDragEnd(ptr, pickRay, this)
+                    hover.onDragEnd(dragCtx)
                     isDrag = false
                 }
                 hover.onHover(ptr, pickRay, this)

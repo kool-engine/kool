@@ -175,6 +175,13 @@ open class Node(name: String? = null) : BaseReleasable() {
         transform.applyToModelMat(parent?.modelMats, modelMats)
     }
 
+    fun updateModelMatRecursive() {
+        updateModelMat()
+        for (i in children.indices) {
+            children[i].updateModelMatRecursive()
+        }
+    }
+
     /**
      * Called on a per-frame basis, when the draw queue is built. The actual number of times this method
      * is called per frame depends on various factors (number of render passes, object visibility, etc.).

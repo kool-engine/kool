@@ -22,27 +22,27 @@ import kotlin.math.max
 class PlaneHandle(
     val color: Color,
     axis: GizmoHandle.Axis,
+    override val gizmoOperation: GizmoOperation = PlaneTranslation(axis.axis),
     val coveredColor: Color = color.withAlpha(0.5f),
     val colorIdle: Color = color.mulRgb(0.8f),
     val coveredColorIdle: Color = colorIdle.withAlpha(0.3f),
     size: Float = 0.25f,
-    innerDistance: Float = 0.2f,
+    innerDistance: Float = 0.25f,
     name: String = "plane-handle"
 ) : Node(name), GizmoHandle {
 
-    override val handleTransform = TrsTransformD()
-
     override val drawNode: Node
         get() = this
-    override val gizmoOperation: GizmoOperation
-        get() = TODO("Not yet implemented")
 
     private val mesh: Mesh
     private val coveredMesh: Mesh
     private val lineMesh: Mesh
 
     init {
-        transform = handleTransform
+        transform = TrsTransformD().apply {
+            rotation.set(axis.orientation)
+            markDirty()
+        }
 
         mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-mesh")
         mesh.setup(size, innerDistance, DepthCompareOp.LESS)
@@ -61,8 +61,6 @@ class PlaneHandle(
         addNode(coveredMesh)
         addNode(mesh)
         addNode(lineMesh)
-
-        setAxis(axis)
     }
 
     private fun setColors(mainColor: Color, coveredColor: Color) {
