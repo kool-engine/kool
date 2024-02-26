@@ -1,9 +1,7 @@
 package de.fabmax.kool.modules.gizmo
 
 import de.fabmax.kool.input.Pointer
-import de.fabmax.kool.math.RayD
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
@@ -17,6 +15,7 @@ import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
 import kotlin.math.abs
 import kotlin.math.atan2
+import kotlin.math.cos
 import kotlin.math.max
 
 class PlaneHandle(
@@ -38,6 +37,9 @@ class PlaneHandle(
     private val coveredMesh: Mesh
     private val lineMesh: Mesh
 
+    private var isHovered = false
+    private var alphaFactor = 1f
+
     init {
         transform = TrsTransformD().apply {
             rotation.set(axis.orientation)
@@ -55,19 +57,54 @@ class PlaneHandle(
         lineMesh = Mesh(IndexedVertexList(Attribute.POSITIONS, primitiveType = PrimitiveType.LINES), name = "${name}-lineMesh")
         lineMesh.makeOutline(size, innerDistance, mesh)
 
-
-        setColors(colorIdle, coveredColorIdle)
-
         addNode(coveredMesh)
         addNode(mesh)
         addNode(lineMesh)
+
+        val camDelta = MutableVec3d()
+        val alphaThreshHigh = cos(75f.deg.rad)
+        val alphaThreshLow = cos(85f.deg.rad)
+
+        onUpdate {
+            modelMatD.transform(camDelta.set(Vec3d.ZERO), 1.0)
+            camDelta.subtract(it.camera.dataD.globalPos)
+            val cosAngle = abs(camDelta.norm() dot axis.axis).toFloat()
+            alphaFactor = if (cosAngle < alphaThreshHigh) {
+                smoothStep(alphaThreshLow, alphaThreshHigh, cosAngle)
+            } else {
+                1f
+            }
+
+            isVisible = alphaFactor > 0.01f
+            mesh.isPickable = isVisible
+            updateColors()
+        }
     }
 
-    private fun setColors(mainColor: Color, coveredColor: Color) {
+    private fun updateColors() {
+        var mainColor: Color = if (isHovered) color else colorIdle
+        var coveredColor: Color = if (isHovered) coveredColor else coveredColorIdle
+
+        if (alphaFactor > 0f && isHovered) {
+            alphaFactor = 1f
+        }
+        if (alphaFactor != 1f) {
+            mainColor = mainColor.withAlpha(mainColor.a * alphaFactor)
+            coveredColor = coveredColor.withAlpha(coveredColor.a * alphaFactor)
+        }
+
         val planeAlpha = mainColor.a * 0.3f
         (mesh.shader as KslUnlitShader).color = mainColor.withAlpha(planeAlpha)
         (coveredMesh.shader as KslUnlitShader).color = coveredColor
         (lineMesh.shader as KslUnlitShader).color = mainColor
+    }
+
+    override fun onHover(pointer: Pointer, globalRay: RayD, gizmo: GizmoNode) {
+        isHovered = true
+    }
+
+    override fun onHoverExit(gizmo: GizmoNode) {
+        isHovered = false
     }
 
     private fun Mesh.setup(
@@ -118,13 +155,5 @@ class PlaneHandle(
             }
             color { uniformColor(color) }
         }
-    }
-
-    override fun onHover(pointer: Pointer, globalRay: RayD, gizmo: GizmoNode) {
-        setColors(color, coveredColor)
-    }
-
-    override fun onHoverExit(gizmo: GizmoNode) {
-        setColors(colorIdle, coveredColorIdle)
     }
 }
