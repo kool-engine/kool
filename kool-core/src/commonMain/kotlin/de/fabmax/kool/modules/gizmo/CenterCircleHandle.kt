@@ -80,6 +80,11 @@ class CenterCircleHandle(
         }
     }
 
+    override fun release() {
+        super.release()
+        parentCam?.let { it.onCameraUpdated -= camUpdateListener }
+    }
+
     private fun setColors(mainColor: Color, coveredColor: Color) {
         (mesh.shader as KslUnlitShader).color = mainColor
         (coveredMesh.shader as KslUnlitShader).color = coveredColor

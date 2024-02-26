@@ -5,16 +5,28 @@ import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformD
+import de.fabmax.kool.util.BufferedList
 
 class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener {
 
-    private val gizmoTransform = TrsTransformD()
-    private val startTransform = TrsTransformD()
+    val gizmoTransform = TrsTransformD()
 
-    private val handles = mutableListOf<GizmoHandle>()
+    val gizmoListeners = BufferedList<GizmoListener>()
+
+    private val nodeTransform = TrsTransformD()
+    private val handleTransform = TrsTransformD()
+
+    private val startTransform = TrsTransformD()
+    private val startScale = MutableVec3d()
+
+    private val handleGroup = Node().apply {
+        transform = handleTransform
+    }
 
     private val rayTest = RayTest()
     private val pickRay = RayD()
@@ -28,27 +40,68 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         cancelManipulation()
     }
 
+    var isDistanceIndependentSize = true
+    var gizmoSize = 1f
+        set(value) {
+            field = value
+            handleTransform.scale(value)
+        }
+
+    private var parentCam: Camera? = null
+    private val camUpdateListener: (RenderPass.UpdateEvent) -> Unit = { ev ->
+        gizmoTransform.decompose(nodeTransform.translation, nodeTransform.rotation)
+        nodeTransform.markDirty()
+
+        if (isDistanceIndependentSize) {
+            val cam = ev.camera
+            val handleOrigin = handleGroup.modelMatF.transform(MutableVec3f(), 1f)
+            val distance = (handleOrigin - cam.globalPos) dot cam.globalLookDir
+            handleTransform.setIdentity().scale(distance / 10f * gizmoSize)
+        }
+        updateModelMatRecursive()
+        gizmoListeners.forEach { it.onGizmoUpdate(gizmoTransform) }
+    }
+
     var isManipulating = false
         private set
 
     init {
-        transform = gizmoTransform
+        transform = nodeTransform
         drawGroupId = DEFAULT_GIZMO_DRAW_GROUP
+        addNode(handleGroup)
+
+        onUpdate { ev ->
+            gizmoListeners.update()
+            if (parentCam != ev.camera) {
+                parentCam?.let { it.onCameraUpdated -= camUpdateListener }
+                parentCam = ev.camera
+                ev.camera.onCameraUpdated += camUpdateListener
+            }
+        }
+    }
+
+    override fun release() {
+        super.release()
+        parentCam?.let { it.onCameraUpdated -= camUpdateListener }
     }
 
     fun addHandle(handle: GizmoHandle) {
-        handles += handle
-        addNode(handle.drawNode)
+        handleGroup.addNode(handle.drawNode)
     }
 
     fun removeHandle(handle: GizmoHandle) {
-        handles -= handle
-        removeNode(handle.drawNode)
+        handleGroup.removeNode(handle.drawNode)
+    }
+
+    fun clearHandles() {
+        handleGroup.children.forEach { it.release() }
+        handleGroup.clearChildren()
     }
 
     fun startManipulation(cancelOnEscape: Boolean = true) {
         startTransform.set(gizmoTransform)
         isManipulating = true
+        gizmoListeners.forEach { it.onManipulationStart(startTransform) }
 
         if (cancelOnEscape) {
             InputStack.defaultInputHandler.addKeyListener(escListener)
@@ -59,6 +112,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         check(isManipulating) { "finishManipulation is only allowed after calling startManipulation()" }
 
         isManipulating = false
+        gizmoListeners.forEach { it.onManipulationFinished(startTransform, gizmoTransform) }
         InputStack.defaultInputHandler.removeKeyListener(escListener)
     }
 
@@ -67,6 +121,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         isManipulating = false
+        gizmoListeners.forEach { it.onManipulationCanceled(startTransform) }
         InputStack.defaultInputHandler.removeKeyListener(escListener)
     }
 
