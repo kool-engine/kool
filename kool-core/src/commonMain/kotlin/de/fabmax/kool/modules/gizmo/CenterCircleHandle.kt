@@ -16,9 +16,9 @@ class CenterCircleHandle(
     val color: Color,
     override val gizmoOperation: GizmoOperation = CamPlaneTranslation(),
     val hitTestMode: HitTestMode = HitTestMode.SOLID,
-    val coveredColor: Color = color.withAlpha(0.5f),
+    val coveredColor: Color = color.withAlpha(0.7f),
     val colorIdle: Color = color.mulRgb(0.8f),
-    val coveredColorIdle: Color = colorIdle.withAlpha(0.3f),
+    val coveredColorIdle: Color = colorIdle.withAlpha(0.7f),
     radius: Float = 0.2f,
     innerRadius: Float = 0f,
     name: String = "center-handle"

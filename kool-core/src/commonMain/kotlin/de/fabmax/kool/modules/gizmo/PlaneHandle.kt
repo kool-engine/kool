@@ -22,9 +22,9 @@ class PlaneHandle(
     val color: Color,
     axis: GizmoHandle.Axis,
     override val gizmoOperation: GizmoOperation = PlaneTranslation(axis.axis),
-    val coveredColor: Color = color.withAlpha(0.5f),
+    val coveredColor: Color = color.withAlpha(0.7f),
     val colorIdle: Color = color.mulRgb(0.8f),
-    val coveredColorIdle: Color = colorIdle.withAlpha(0.3f),
+    val coveredColorIdle: Color = colorIdle.withAlpha(0.7f),
     size: Float = 0.25f,
     innerDistance: Float = 0.25f,
     name: String = "plane-handle"
@@ -66,8 +66,7 @@ class PlaneHandle(
         val alphaThreshLow = cos(85f.deg.rad)
 
         onUpdate {
-            modelMatD.transform(camDelta.set(Vec3d.ZERO), 1.0)
-            camDelta.subtract(it.camera.dataD.globalPos)
+            parent?.invModelMatD?.transform(camDelta.set(it.camera.dataD.globalPos), 1.0)
             val cosAngle = abs(camDelta.norm() dot axis.axis).toFloat()
             alphaFactor = if (cosAngle < alphaThreshHigh) {
                 smoothStep(alphaThreshLow, alphaThreshHigh, cosAngle)
@@ -76,7 +75,6 @@ class PlaneHandle(
             }
 
             isVisible = alphaFactor > 0.01f
-            mesh.isPickable = isVisible
             updateColors()
         }
     }

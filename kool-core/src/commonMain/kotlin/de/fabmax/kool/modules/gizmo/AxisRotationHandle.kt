@@ -17,9 +17,9 @@ class AxisRotationHandle(
     val color: Color,
     val axis: GizmoHandle.Axis,
     override val gizmoOperation: GizmoOperation = AxisRotation(axis),
-    val coveredColor: Color = color.withAlpha(0.5f),
+    val coveredColor: Color = color.withAlpha(0.7f),
     val colorIdle: Color = color.mulRgb(0.8f),
-    val coveredColorIdle: Color = colorIdle.withAlpha(0.3f),
+    val coveredColorIdle: Color = colorIdle.withAlpha(0.7f),
     radius: Float = 0.8f,
     name: String = "axis-rotation-handle"
 ) : Node(name), GizmoHandle {
@@ -63,8 +63,7 @@ class AxisRotationHandle(
         val alphaThreshLow = cos(85f.deg.rad)
 
         onUpdate {
-            modelMatD.transform(camDelta.set(Vec3d.ZERO), 1.0)
-            camDelta.subtract(it.camera.dataD.globalPos)
+            parent?.invModelMatD?.transform(camDelta.set(it.camera.dataD.globalPos), 1.0)
             val cosAngle = abs(camDelta.norm() dot axis.axis).toFloat()
             alphaFactor = if (cosAngle < alphaThreshHigh) {
                 smoothStep(alphaThreshLow, alphaThreshHigh, cosAngle)
@@ -73,7 +72,6 @@ class AxisRotationHandle(
             }
 
             isVisible = alphaFactor > 0.01f
-            hitMesh.isPickable = isVisible
             updateColors()
         }
     }

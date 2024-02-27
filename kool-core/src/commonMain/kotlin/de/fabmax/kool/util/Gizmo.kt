@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
@@ -13,6 +15,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import kotlin.math.*
 
+@Deprecated("Will be replaced by SimpleGizmo")
 class Gizmo : Node(), InputStack.PointerListener {
 
     private var prevHoverHandle: Int = AXIS_NONE

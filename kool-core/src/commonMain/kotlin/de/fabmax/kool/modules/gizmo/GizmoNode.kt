@@ -35,6 +35,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     private var hoverHandle: GizmoHandle? = null
 
     private val globalToDragLocal = MutableMat4d()
+    private val gizmoRotation = MutableMat3d()
 
     private val escListener = InputStack.SimpleKeyListener(KeyboardInput.KEY_ESC, "Cancel drag") {
         cancelManipulation()
@@ -57,9 +58,13 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
             val handleOrigin = handleGroup.modelMatF.transform(MutableVec3f(), 1f)
             val distance = (handleOrigin - cam.globalPos) dot cam.globalLookDir
             handleTransform.setIdentity().scale(distance / 10f * gizmoSize)
+        } else {
+            handleTransform.scale(gizmoSize)
         }
         updateModelMatRecursive()
-        gizmoListeners.forEach { it.onGizmoUpdate(gizmoTransform) }
+        if (isManipulating) {
+            gizmoListeners.forEach { it.onGizmoUpdate(gizmoTransform) }
+        }
     }
 
     var isManipulating = false
@@ -128,15 +133,25 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     fun manipulateAxisTranslation(axis: GizmoHandle.Axis, distance: Double) {
         check(isManipulating) { "manipulateAxisTranslation is only allowed between calling startManipulation() and finishManipulation()" }
 
+        // gizmoTransform is TRS, i.e. translation is applied before rotation. Rotate given translation to current
+        // gizmo orientation
+        gizmoRotation.setIdentity().rotate(gizmoTransform.rotation)
+        val rotatedAxis = gizmoRotation.transform(axis.axis, MutableVec3d())
+
         gizmoTransform.set(startTransform)
-        gizmoTransform.translate(axis.axis * distance)
+        gizmoTransform.translate(rotatedAxis * distance)
     }
 
     fun manipulateTranslation(translationOffset: Vec3d) {
         check(isManipulating) { "manipulateAxisTranslation is only allowed between calling startManipulation() and finishManipulation()" }
 
+        // gizmoTransform is TRS, i.e. translation is applied before rotation. Rotate given translation to current
+        // gizmo orientation
+        gizmoRotation.setIdentity().rotate(gizmoTransform.rotation)
+        val rotatedTranslation = gizmoRotation.transform(translationOffset, MutableVec3d())
+
         gizmoTransform.set(startTransform)
-        gizmoTransform.translate(translationOffset)
+        gizmoTransform.translate(rotatedTranslation)
     }
 
     fun manipulateAxisRotation(axis: Vec3d, angle: AngleD) {

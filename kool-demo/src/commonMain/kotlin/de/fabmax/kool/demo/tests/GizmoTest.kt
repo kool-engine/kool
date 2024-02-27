@@ -2,257 +2,138 @@ package de.fabmax.kool.demo.tests
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.demo.LabeledSwitch
 import de.fabmax.kool.demo.MenuRow
+import de.fabmax.kool.demo.labelStyle
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.sectionTitleStyle
-import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
+import de.fabmax.kool.modules.gizmo.GizmoFrame
+import de.fabmax.kool.modules.gizmo.GizmoMode
+import de.fabmax.kool.modules.gizmo.SimpleGizmo
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.toString
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Gizmo
 import de.fabmax.kool.util.MdColor
-import kotlin.math.max
 
 class GizmoTest : DemoScene("Gizmo Test") {
-    private val gizmo1 = Gizmo()
-    private val gizmo2 = Gizmo()
 
-    private val transform1 = TransformProps(gizmo1)
-    private val transform2 = TransformProps(gizmo2)
+    private val gizmo = SimpleGizmo()
+
+    private val meshA: Mesh = ColorMesh(name = "Mesh A")
+    private val meshB: Mesh = ColorMesh(name = "Mesh B")
+
+    private val transformNode = mutableStateOf(meshA).onChange { gizmo.transformNode = it }
+    private val transformMode = mutableStateOf(gizmo.mode).onChange { gizmo.mode = it }
+    private val transformFrame = mutableStateOf(gizmo.transformFrame).onChange { gizmo.transformFrame = it }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        gizmo1.gizmoListener = object : Gizmo.GizmoListener {
-            override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.translate(axis * distance)
-            }
-
-            override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.translate(dragPosition)
-            }
-
-            override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.rotate(angle.deg, rotationAxis)
-            }
-        }
-
-        addGroup {
-            onUpdate += {
-                gizmo1.getGizmoTransform(this)
-            }
-
-            addColorMesh {
-                generate {
-                    cube { }
-                }
-                shader = KslBlinnPhongShader {
-                    color {
-                        vertexColor()
-                    }
-                }
-            }
-
-        }
-
-        // gizmo must be added after scene objects for correct depth / alpha behavior
-        addNode(gizmo1)
-
-        gizmo2.setFixedScale(1f)
-        gizmo2.setGizmoTransform(MutableMat4d().translate(0.0, 0.0, 3.0))
-        gizmo2.properties = Gizmo.GizmoProperties(
-            axisLenX = 4f,
-            axisColorX = Color.WHITE,
-            axisColorNegX = Color.WHITE,
-            axisHandleColorX = MdColor.AMBER,
-            axisHandleColorNegX = MdColor.AMBER,
-            isOnlyShowAxisTowardsCam = false,
-            rotationHandleRadius = 0.75f,
-            hasAxisY = false,
-            hasAxisNegY = false,
-            hasRotationX = false,
-            hasRotationY = true,
-            hasRotationZ = false,
-            hasPlaneXY = false,
-            hasPlaneXZ = true,
-            hasPlaneYZ = false
-        )
-        addNode(gizmo2)
-
-        var axX = 1f
-        var axNegX = 1f
-        gizmo2.gizmoListener = object : Gizmo.GizmoListener {
-            override fun onDragStart(ctx: KoolContext) {
-                axX = gizmo2.properties.axisLenX
-                axNegX = gizmo2.properties.axisLenNegX
-            }
-
-            override fun onDragAxis(axis: Vec3f, distance: Float, targetTransform: Transform, ctx: KoolContext) {
-                if (axis.z != 0f || KeyboardInput.isAltDown) {
-                    targetTransform.translate(axis * distance)
-                } else if (axis.x > 0f) {
-                    gizmo2.properties.axisLenX = max(0.1f, axX + distance)
-                } else {
-                    gizmo2.properties.axisLenNegX = max(0.1f, axNegX + distance)
-                }
-                gizmo2.updateMesh()
-            }
-
-            override fun onDragPlane(planeNormal: Vec3f, dragPosition: Vec3f, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.translate(dragPosition)
-            }
-
-            override fun onDragRotate(rotationAxis: Vec3f, angle: Float, targetTransform: Transform, ctx: KoolContext) {
-                targetTransform.rotate(angle.deg, rotationAxis)
-            }
-        }
-
-        InputStack.defaultInputHandler.pointerListeners += gizmo1
-        InputStack.defaultInputHandler.pointerListeners += gizmo2
-
-        // add cam transform after gizmo, so that gizmo can consume drag events before cam transform
         defaultOrbitCamera()
 
-        onUpdate += {
-            transform1.update()
-            transform2.update()
+        //gizmo.gizmoNode.isDistanceIndependentSize = false
+        addNode(gizmo)
+
+        addNode(meshA)
+        meshA.addNode(meshB)
+
+        meshA.apply {
+            generate {
+                cube { }
+            }
+            shader = KslBlinnPhongShader {
+                color {
+                    vertexColor()
+                }
+            }
+            transform.rotate(15f.deg, Vec3f.Y_AXIS)
         }
 
-        onRelease {
-            InputStack.defaultInputHandler.pointerListeners -= gizmo1
-            InputStack.defaultInputHandler.pointerListeners -= gizmo2
+        meshB.apply {
+            generate {
+                cube { }
+            }
+            shader = KslBlinnPhongShader {
+                color {
+                    vertexColor()
+                }
+            }
+            transform.translate(2f, 1f, -0.5f)
+            transform.rotate(10f.deg, 10f.deg, 10f.deg)
         }
-        camera.setClipRange(0.2f, 500f)
+
+        gizmo.transformNode = meshA
+
+        addLineMesh {
+            addLine(MdColor.RED, Vec3f.ZERO, Vec3f(10f, 0f, 0f))
+            addLine(MdColor.LIGHT_GREEN, Vec3f.ZERO, Vec3f(0f, 10f, 0f))
+            addLine(MdColor.BLUE, Vec3f.ZERO, Vec3f(0f, 0f, 10f))
+        }
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
-        Text("Gizmo 1") { sectionTitleStyle() }
-        val isDynScale1 = remember(gizmo1.isDynamicScale()).onChange {
-            if (it) gizmo1.setDynamicScale() else gizmo1.setFixedScale()
-        }
-        LabeledSwitch("Distance independent scale", isDynScale1)
-        translation(transform1)
-        rotation(transform1)
+        Text("Mode") { sectionTitleStyle() }
+        gizmoMode(GizmoMode.TRANSLATE, "Translate")
+        gizmoMode(GizmoMode.ROTATE, "Rotate")
+        gizmoMode(GizmoMode.SCALE, "Scale")
 
-        Text("Gizmo 2") { sectionTitleStyle() }
-        val isDynScale2 = remember(gizmo2.isDynamicScale()).onChange {
-            if (it) gizmo2.setDynamicScale() else gizmo2.setFixedScale()
-        }
-        LabeledSwitch("Dynamic scale", isDynScale2)
-        translation(transform2)
-        rotation(transform2)
+        Text("Frame") { sectionTitleStyle() }
+        gizmoFrame(GizmoFrame.GLOBAL, "Global")
+        gizmoFrame(GizmoFrame.PARENT, "Parent")
+        gizmoFrame(GizmoFrame.LOCAL, "Local")
+
+        Text("Transform Node") { sectionTitleStyle() }
+        meshButton(meshA)
+        meshButton(meshB)
     }
 
-    private fun UiScope.translation(props: TransformProps) = MenuRow {
-        Column(sizes.largeGap * 4f) {
-            Text("Location") {
-                modifier.margin(vertical = sizes.smallGap * 0.75f)
-            }
-        }
-        Column(Grow.Std) {
-            Row(Grow.Std) {
-                Text("x:") { modifier.alignY(AlignmentY.Center) }
-                TransformTextField(props.tx, 3)
-            }
-            Row(Grow.Std) {
-                Text("y:") { modifier.alignY(AlignmentY.Center) }
-                TransformTextField(props.ty, 3)
-            }
-            Row(Grow.Std) {
-                Text("z:") { modifier.alignY(AlignmentY.Center) }
-                TransformTextField(props.tz, 3)
-            }
-        }
-    }
-
-    private fun UiScope.rotation(props: TransformProps) = MenuRow {
-        Column(sizes.largeGap * 4f) {
-            Text("Rotation") {
-                modifier.margin(vertical = sizes.smallGap * 0.75f)
-            }
-        }
-        Column(Grow.Std) {
-            Row(Grow.Std) {
-                Text("x:") { modifier.alignY(AlignmentY.Center) }
-                TransformTextField(props.rx, 1)
-            }
-            Row(Grow.Std) {
-                Text("y:") { modifier.alignY(AlignmentY.Center) }
-                TransformTextField(props.ry, 1)
-            }
-            Row(Grow.Std) {
-                Text("z:") { modifier.alignY(AlignmentY.Center) }
-                TransformTextField(props.rz, 1)
-            }
-        }
-    }
-
-    private fun UiScope.TransformTextField(state: MutableStateValue<Float>, precision: Int) = TextField {
-        var text by remember(state.value.toString(precision))
-        if (!isFocused.value) {
-            text = state.use().toString(precision)
-        }
-        modifier
-            .text(text)
-            .padding(vertical = sizes.smallGap * 0.75f)
-            .margin(start = sizes.gap)
-            .width(Grow.Std)
-            .textAlignX(AlignmentX.End)
-            .onEnterPressed { text = state.use().toString(precision) }
-            .onChange { txt ->
-                text = txt
-                txt.toFloatOrNull()?.let {
-                    state.set(it)
+    private fun UiScope.gizmoMode(mode: GizmoMode, label: String) = MenuRow {
+        RadioButton(transformMode.use() == mode) {
+            modifier
+                .alignY(AlignmentY.Center)
+                .margin(end = sizes.gap)
+                .onToggle {
+                    if (it) {
+                        transformMode.set(mode)
+                    }
                 }
-            }
+        }
+        Text(label) {
+            labelStyle(Grow.Std)
+            modifier.onClick { transformMode.set(mode) }
+        }
     }
 
-    class TransformProps(val gizmo: Gizmo) {
-        private var isUpdateFromGizmo = false
-
-        val tx = mutableStateOf(0f).onChange { updateTranslation(x = it) }
-        val ty = mutableStateOf(0f).onChange { updateTranslation(y = it) }
-        val tz = mutableStateOf(0f).onChange { updateTranslation(z = it) }
-
-        val rx = mutableStateOf(0f).onChange { updateRotation(x = it) }
-        val ry = mutableStateOf(0f).onChange { updateRotation(y = it) }
-        val rz = mutableStateOf(0f).onChange { updateRotation(z = it) }
-
-        private val tmpMat4 = MutableMat4f()
-        private val tmpMat3 = MutableMat3f()
-        private val tmpVec = MutableVec3f()
-
-        fun update() {
-            gizmo.getGizmoTransform(tmpMat4)
-
-            isUpdateFromGizmo = true
-            tmpMat4.transform(tmpVec.set(Vec3f.ZERO))
-            tx.set(tmpVec.x)
-            ty.set(tmpVec.y)
-            tz.set(tmpVec.z)
-
-            tmpMat4.getUpperLeft(tmpMat3).getEulerAngles(tmpVec)
-            rx.set(tmpVec.x)
-            ry.set(tmpVec.y)
-            rz.set(tmpVec.z)
-            isUpdateFromGizmo = false
+    private fun UiScope.gizmoFrame(frame: GizmoFrame, label: String) = MenuRow {
+        RadioButton(transformFrame.use() == frame) {
+            modifier
+                .alignY(AlignmentY.Center)
+                .margin(end = sizes.gap)
+                .onToggle {
+                    if (it) {
+                        transformFrame.set(frame)
+                    }
+                }
         }
-
-        private fun updateTranslation(x: Float = tx.value, y: Float = ty.value, z: Float = tz.value) {
-            if (isUpdateFromGizmo) {
-                return
-            }
-            gizmo.setTranslation(tmpVec.set(x, y, z))
+        Text(label) {
+            labelStyle(Grow.Std)
+            modifier.onClick { transformFrame.set(frame) }
         }
+    }
 
-        private fun updateRotation(x: Float = rx.value, y: Float = ry.value, z: Float = rz.value) {
-            if (isUpdateFromGizmo) {
-                return
-            }
-            gizmo.setEulerAngles(tmpVec.set(x, y, z))
+    private fun UiScope.meshButton(mesh: Mesh) = MenuRow {
+        RadioButton(transformNode.use() == mesh) {
+            modifier
+                .alignY(AlignmentY.Center)
+                .margin(end = sizes.gap)
+                .onToggle {
+                    if (it) {
+                        transformNode.set(mesh)
+                    }
+                }
+        }
+        Text(mesh.name) {
+            labelStyle(Grow.Std)
+            modifier.onClick { transformNode.set(mesh) }
         }
     }
 }
