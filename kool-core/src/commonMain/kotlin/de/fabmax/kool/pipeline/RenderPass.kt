@@ -71,7 +71,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     var isProfileTimes = false
     var tUpdate = 0.0
     var tCollect = 0.0
-    var tDraw = 0.0
+    var tGpu = 0.0
 
     var isMirrorY = false
         protected set

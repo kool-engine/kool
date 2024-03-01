@@ -99,6 +99,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
     }
 
     override fun release() {
+        super.release()
         deleteBuffers()
         resInfo.deleted()
     }

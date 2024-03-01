@@ -12,6 +12,8 @@ value class GlFramebuffer(val handle: Int)
 @JvmInline
 value class GlProgram(val handle: Int)
 @JvmInline
+value class GlQuery(val handle: Int)
+@JvmInline
 value class GlRenderbuffer(val handle: Int)
 @JvmInline
 value class GlShader(val handle: Int)
@@ -57,6 +59,8 @@ interface GlApi {
     val ONE: Int
     val ONE_MINUS_SRC_ALPHA: Int
     val POINTS: Int
+    val QUERY_RESULT: Int
+    val QUERY_RESULT_AVAILABLE: Int
     val READ_FRAMEBUFFER: Int
     val READ_ONLY: Int
     val READ_WRITE: Int
@@ -85,6 +89,8 @@ interface GlApi {
     val TEXTURE_WRAP_S: Int
     val TEXTURE_WRAP_T: Int
     val TEXTURE0: Int
+    val TIME_ELAPSED: Int
+    val TIMESTAMP: Int
     val TRIANGLES: Int
     val TRIANGLE_STRIP: Int
     val TRUE: Any
@@ -167,6 +173,7 @@ interface GlApi {
 
     fun activeTexture(texture: Int)
     fun attachShader(program: GlProgram, shader: GlShader)
+    fun beginQuery(target: Int, query: GlQuery)
     fun bindBuffer(target: Int, buffer: GlBuffer)
     fun bindBufferBase(target: Int, index: Int, buffer: GlBuffer)
     fun bindFramebuffer(target: Int, framebuffer: GlFramebuffer)
@@ -189,6 +196,7 @@ interface GlApi {
     fun createBuffer(): GlBuffer
     fun createFramebuffer(): GlFramebuffer
     fun createProgram(): GlProgram
+    fun createQuery(): GlQuery
     fun createRenderbuffer(): GlRenderbuffer
     fun createShader(type: Int): GlShader
     fun createTexture(): GlTexture
@@ -198,6 +206,7 @@ interface GlApi {
     fun deleteBuffer(buffer: GlBuffer)
     fun deleteFramebuffer(framebuffer: GlFramebuffer)
     fun deleteProgram(program: GlProgram)
+    fun deleteQuery(query: GlQuery)
     fun deleteRenderbuffer(renderbuffer: GlRenderbuffer)
     fun deleteShader(shader: GlShader)
     fun deleteTexture(texture: GlTexture)
@@ -211,6 +220,7 @@ interface GlApi {
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, instanceCount: Int)
     fun enable(cap: Int)
     fun enableVertexAttribArray(index: Int)
+    fun endQuery(target: Int)
     fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: GlRenderbuffer)
     fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: GlTexture, level: Int)
     fun generateMipmap(target: Int)
@@ -220,6 +230,8 @@ interface GlApi {
     fun getInteger(pName: Int): Int
     fun getProgramInfoLog(program: GlProgram): String
     fun getProgramParameter(program: GlProgram, param: Int): Any
+    fun getQueryParameter(query: GlQuery, param: Int): Any
+    fun getQueryParameterU64(query: GlQuery, param: Int): Long
     fun getShaderInfoLog(shader: GlShader): String
     fun getShaderParameter(shader: GlShader, param: Int): Any
     fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int
@@ -228,6 +240,7 @@ interface GlApi {
     fun lineWidth(width: Float)
     fun linkProgram(program: GlProgram)
     fun memoryBarrier(barriers: Int)
+    fun queryCounter(query: GlQuery, target: Int)
     fun readBuffer(src: Int)
     fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int)
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
@@ -299,6 +312,7 @@ data class GlCapabilities(
     val maxAnisotropy: Int,
     val canFastCopyTextures: Boolean,
     val hasClipControl: Boolean,
+    val hasTimestampQuery: Boolean,
 
     val hasComputeShaders: Boolean = false,
     val maxWorkGroupCount: Vec3i = Vec3i.ZERO,

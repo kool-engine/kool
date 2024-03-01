@@ -51,6 +51,8 @@ object GlImpl : GlApi {
     override val ONE = WebGLRenderingContext.ONE
     override val ONE_MINUS_SRC_ALPHA = WebGLRenderingContext.ONE_MINUS_SRC_ALPHA
     override val POINTS = WebGLRenderingContext.POINTS
+    override val QUERY_RESULT: Int = WebGL2RenderingContext.QUERY_RESULT
+    override val QUERY_RESULT_AVAILABLE: Int = WebGL2RenderingContext.QUERY_RESULT_AVAILABLE
     override val READ_FRAMEBUFFER = WebGL2RenderingContext.READ_FRAMEBUFFER
     override val READ_ONLY = 0
     override val READ_WRITE = 0
@@ -79,6 +81,8 @@ object GlImpl : GlApi {
     override val TEXTURE_WRAP_S = WebGLRenderingContext.TEXTURE_WRAP_S
     override val TEXTURE_WRAP_T = WebGLRenderingContext.TEXTURE_WRAP_T
     override val TEXTURE0 = WebGLRenderingContext.TEXTURE0
+    override val TIME_ELAPSED: Int = 0
+    override val TIMESTAMP: Int = 0
     override val TRIANGLES = WebGLRenderingContext.TRIANGLES
     override val TRIANGLE_STRIP = WebGLRenderingContext.TRIANGLE_STRIP
     override val TRUE = true
@@ -177,6 +181,10 @@ object GlImpl : GlApi {
         factory = { gl.createFramebuffer() },
         deleter = { gl.deleteFramebuffer(it) }
     )
+    private val queries = WebGlObjList<WebGLQuery, Unit>(
+        factory = { gl.createQuery() },
+        deleter = { gl.deleteQuery(it) }
+    )
     private val programs = WebGlObjList<ProgramInfo, Unit>(
         factory = { ProgramInfo(gl.createProgram()) },
         deleter = { gl.deleteProgram(it?.webGl) }
@@ -199,6 +207,7 @@ object GlImpl : GlApi {
     private val GlBuffer.webGl: WebGLBuffer? get() = buffers[handle]
     private val GlFramebuffer.webGl: WebGLFramebuffer? get() = framebuffers[handle]
     private val GlProgram.webGl: WebGLProgram? get() = programs[handle]?.webGl
+    private val GlQuery.webGl: WebGLQuery? get() = queries[handle]
     private val GlRenderbuffer.webGl: WebGLRenderbuffer? get() = renderbuffers[handle]
     private val GlShader.webGl: WebGLShader? get() = shaders[handle]
     private val GlTexture.webGl: WebGLTexture? get() = textures[handle]
@@ -206,6 +215,7 @@ object GlImpl : GlApi {
 
     override fun activeTexture(texture: Int) = gl.activeTexture(texture)
     override fun attachShader(program: GlProgram, shader: GlShader) = gl.attachShader(program.webGl, shader.webGl)
+    override fun beginQuery(target: Int, query: GlQuery) = gl.beginQuery(target, query.webGl)
     override fun bindBuffer(target: Int, buffer: GlBuffer) = gl.bindBuffer(target, buffer.webGl)
     override fun bindBufferBase(target: Int, index: Int, buffer: GlBuffer) = gl.bindBufferBase(target, index, buffer.webGl)
     override fun bindFramebuffer(target: Int, framebuffer: GlFramebuffer) = gl.bindFramebuffer(target, framebuffer.webGl)
@@ -229,6 +239,7 @@ object GlImpl : GlApi {
     override fun createBuffer(): GlBuffer = GlBuffer(buffers.create(Unit))
     override fun createFramebuffer(): GlFramebuffer = GlFramebuffer(framebuffers.create(Unit))
     override fun createProgram(): GlProgram = GlProgram(programs.create(Unit))
+    override fun createQuery(): GlQuery = GlQuery(queries.create(Unit))
     override fun createRenderbuffer(): GlRenderbuffer = GlRenderbuffer(renderbuffers.create(Unit))
     override fun createShader(type: Int): GlShader = GlShader(shaders.create(type))
     override fun createTexture(): GlTexture = GlTexture(textures.create(Unit))
@@ -236,6 +247,7 @@ object GlImpl : GlApi {
     override fun deleteBuffer(buffer: GlBuffer) = buffers.delete(buffer.handle)
     override fun deleteFramebuffer(framebuffer: GlFramebuffer) = framebuffers.delete(framebuffer.handle)
     override fun deleteProgram(program: GlProgram) = programs.delete(program.handle)
+    override fun deleteQuery(query: GlQuery) = queries.delete(query.handle)
     override fun deleteRenderbuffer(renderbuffer: GlRenderbuffer) = renderbuffers.delete(renderbuffer.handle)
     override fun deleteShader(shader: GlShader) = shaders.delete(shader.handle)
     override fun deleteTexture(texture: GlTexture) = textures.delete(texture.handle)
@@ -249,6 +261,7 @@ object GlImpl : GlApi {
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, instanceCount: Int) = gl.drawElementsInstanced(mode, count, type, 0, instanceCount)
     override fun enable(cap: Int) = gl.enable(cap)
     override fun enableVertexAttribArray(index: Int) = gl.enableVertexAttribArray(index)
+    override fun endQuery(target: Int) = gl.endQuery(target)
     override fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: GlRenderbuffer) = gl.framebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer.webGl)
     override fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: GlTexture, level: Int) = gl.framebufferTexture2D(target, attachment, textarget, texture.webGl, level)
     override fun generateMipmap(target: Int) = gl.generateMipmap(target)
@@ -258,6 +271,8 @@ object GlImpl : GlApi {
     override fun getInteger(pName: Int): Int = gl.getParameter(pName) as Int
     override fun getProgramInfoLog(program: GlProgram): String = gl.getProgramInfoLog(program.webGl) ?: ""
     override fun getProgramParameter(program: GlProgram, param: Int): Any = gl.getProgramParameter(program.webGl, param) ?: 0
+    override fun getQueryParameter(query: GlQuery, param: Int): Any = gl.getQueryParameter(query.webGl, param)
+    override fun getQueryParameterU64(query: GlQuery, param: Int): Long = 0L
     override fun getShaderInfoLog(shader: GlShader): String = gl.getShaderInfoLog(shader.webGl) ?: ""
     override fun getShaderParameter(shader: GlShader, param: Int): Any = gl.getShaderParameter(shader.webGl, param) ?: 0
     override fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int = gl.getUniformBlockIndex(program.webGl, uniformBlockName)
@@ -266,6 +281,7 @@ object GlImpl : GlApi {
     override fun lineWidth(width: Float) = gl.lineWidth(width)
     override fun linkProgram(program: GlProgram) = gl.linkProgram(program.webGl)
     override fun memoryBarrier(barriers: Int) = notSupported("memoryBarrier")
+    override fun queryCounter(query: GlQuery, target: Int) = notSupported("queryCounter")
     override fun readBuffer(src: Int) = gl.readBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorage(target, internalformat, width, height)
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorageMultisample(target, samples, internalformat, width, height)
@@ -343,10 +359,11 @@ object GlImpl : GlApi {
         val hasClipControl = clipControlExt != null
 
         capabilities = GlCapabilities(
-            maxTexUnits,
-            maxAnisotropy,
-            canFastCopyTextures,
-            hasClipControl
+            maxTexUnits = maxTexUnits,
+            maxAnisotropy = maxAnisotropy,
+            canFastCopyTextures = canFastCopyTextures,
+            hasClipControl = hasClipControl,
+            hasTimestampQuery = false
         )
     }
 

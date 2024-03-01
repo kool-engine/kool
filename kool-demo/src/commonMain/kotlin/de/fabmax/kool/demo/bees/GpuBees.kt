@@ -7,6 +7,7 @@ import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.blocks.noise11
 import de.fabmax.kool.modules.ksl.blocks.noise31
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
@@ -25,6 +26,8 @@ class GpuBees(beeScene: Scene) {
     // Contains position, rotation and velocities for all bees of one team
     private val beeBufferA = StorageBuffer1d((maxGpuBees + 64) * 3, GpuType.FLOAT4)
     private val beeBufferB = StorageBuffer1d((maxGpuBees + 64) * 3, GpuType.FLOAT4)
+
+    val beeUpdateTime = mutableStateOf(0.0)
 
     private val beeUpdateShader = KslComputeShader("Bee update") {
         computeStage(64) {
@@ -228,12 +231,13 @@ class GpuBees(beeScene: Scene) {
     val beeMeshA = makeBeeMesh(beeInstancesA)
     val beeMeshB = makeBeeMesh(beeInstancesB)
 
-    val simulationPass = ComputeRenderPass("Bee update pass")
+    private val simulationPass = ComputeRenderPass("Bee update pass")
 
     init {
         initBeeBuffer(beeBufferA, Vec3f(BeeConfig.worldSize.x * 0.4f, 0f, 0f))
         initBeeBuffer(beeBufferB, Vec3f(BeeConfig.worldSize.x * -0.4f, 0f, 0f))
 
+        simulationPass.isProfileTimes = true
         beeScene.addOffscreenPass(simulationPass)
 
         var deltaT by beeUpdateShader.uniform1f("deltaT")
@@ -283,6 +287,7 @@ class GpuBees(beeScene: Scene) {
             } else {
                 numSimulatedBees = currentInstances
             }
+            beeUpdateTime.set(simulationPass.tGpu)
         }
 
         taskA.onBeforeDispatch {

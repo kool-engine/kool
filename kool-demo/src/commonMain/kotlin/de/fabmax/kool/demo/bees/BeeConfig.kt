@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.bees
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -8,7 +7,7 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 object BeeConfig {
     val maxBeesPerTeamCpu = 50_000
     val maxBeesPerTeamGpu = 500_000
-    val beesPerTeam = mutableStateOf(if (KoolSystem.isJavascript) maxBeesPerTeamCpu / 5 else maxBeesPerTeamCpu)
+    val beesPerTeam = mutableStateOf(5_000)
 
     val maxSpawnSpeed = 20f
 

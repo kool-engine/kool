@@ -8,7 +8,9 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logW
 import kotlinx.coroutines.CompletableDeferred
 
 abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
@@ -62,7 +64,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
+    override fun writeTextureData(tex: Texture, data: TextureData) {
         tex.gpuTexture = when (tex) {
             is Texture1d -> TextureLoaderGl.loadTexture1dCompat(tex, data, this)
             is Texture2d -> TextureLoaderGl.loadTexture2d(tex, data, this)
@@ -79,6 +81,10 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
 
     override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
         return OffscreenRenderPassCubeGl(parentPass, this)
+    }
+
+    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+        return ComputeRenderPassGl(parentPass, this)
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {
@@ -104,12 +110,8 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         for (i in scene.sortedOffscreenPasses.indices) {
             val pass = scene.sortedOffscreenPasses[i]
             if (pass.isEnabled) {
-                val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
                 drawOffscreen(pass)
                 pass.afterDraw()
-                if (pass.isProfileTimes) {
-                    pass.tDraw = Time.precisionTime - t
-                }
             }
         }
     }
@@ -118,8 +120,8 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         when (offscreenPass) {
             is OffscreenRenderPass2d -> offscreenPass.impl.draw()
             is OffscreenRenderPassCube -> offscreenPass.impl.draw()
+            is ComputeRenderPass -> offscreenPass.impl.dispatch()
             is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
-            is ComputeRenderPass -> dispatchCompute(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }
     }
@@ -135,29 +137,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
 
     protected fun OffscreenPass2dImpl.draw() = (this as OffscreenRenderPass2dGl).draw()
     protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenRenderPassCubeGl).draw()
-
-    private fun dispatchCompute(computePass: ComputeRenderPass) {
-        val tasks = computePass.tasks
-
-        for (i in tasks.indices) {
-            val task = tasks[i]
-            if (task.isEnabled) {
-                val pipeline = tasks[i].pipeline
-                task.beforeDispatch()
-
-                if (shaderMgr.bindComputeShader(pipeline, task)) {
-                    val maxCnt = gl.capabilities.maxWorkGroupCount
-                    if (task.numGroups.x > maxCnt.x || task.numGroups.y > maxCnt.y || task.numGroups.z > maxCnt.z) {
-                        logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: (${task.numGroups.x}, ${task.numGroups.y}, ${task.numGroups.z})" }
-                    }
-                    gl.dispatchCompute(task.numGroups.x, task.numGroups.y, task.numGroups.z)
-                    gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
-
-                    task.afterDispatch()
-                }
-            }
-        }
-    }
+    protected fun ComputePassImpl.dispatch() = (this as ComputeRenderPassGl).dispatch()
 
     override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
         val glTex = texture.gpuTexture as LoadedTextureGl?

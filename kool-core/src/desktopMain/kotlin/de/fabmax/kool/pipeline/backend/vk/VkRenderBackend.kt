@@ -53,7 +53,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = vkSystem.physicalDevice.deviceName
     }
 
-    override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
+    override fun writeTextureData(tex: Texture, data: TextureData) {
         tex.gpuTexture = when (tex) {
             is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
             is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
@@ -79,6 +79,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
         return VkOffscreenPassCube(parentPass)
+    }
+
+    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+        TODO("Not yet implemented")
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {

@@ -19,7 +19,7 @@ class Vec3Test {
         val t = Vec3f(2f, 3f, 4f)
         assertTrue(isFuzzyEqual(t.sqrLength(), 29f), "sqrLen failed")
         assertTrue(isFuzzyEqual(t.length(), sqrt(29f)), "length failed")
-        assertTrue(isFuzzyEqual(t.norm(MutableVec3f()).length(), 1f), "norm failed")
+        assertTrue(isFuzzyEqual(t.normed().length(), 1f), "norm failed")
     }
 
     @Test

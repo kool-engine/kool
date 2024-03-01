@@ -4,13 +4,14 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
-class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : OffscreenPass2dImpl {
+class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(), OffscreenPass2dImpl {
     private var isCreated = false
     private var isCreationBlocked = false
 

@@ -109,6 +109,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
     }
 
     override fun release() {
+        super.release()
         deleteBuffers()
         resInfo.deleted()
     }

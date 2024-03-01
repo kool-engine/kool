@@ -7,7 +7,6 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.util.Time
 
 class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
     private val renderFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
@@ -43,13 +42,7 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
 
     fun draw(scene: Scene) {
         val scenePass = scene.mainRenderPass
-        val t = if (scenePass.isProfileTimes) Time.precisionTime else 0.0
-
         renderViews(scenePass)
-
-        if (scenePass.isProfileTimes) {
-            scenePass.tDraw = Time.precisionTime - t
-        }
         scenePass.afterDraw()
     }
 

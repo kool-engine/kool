@@ -42,7 +42,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     val pipelineManager = WgpuPipelineManager(this)
     private val sceneRenderer = WgpuScreenRenderPass(this)
-    private val computePassEncoderState = ComputePassEncoderState()
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
@@ -113,11 +112,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         for (i in sortedOffscreenPasses.indices) {
             val pass = sortedOffscreenPasses[i]
             if (pass.isEnabled) {
-                val t = if (pass.isProfileTimes) Time.precisionTime else 0.0
                 pass.render(encoder)
-                if (pass.isProfileTimes) {
-                    pass.tDraw = Time.precisionTime - t
-                }
             }
         }
     }
@@ -145,49 +140,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private fun OffscreenRenderPassCube.draw(encoder: GPUCommandEncoder) = (impl as WgpuOffscreenRenderPassCube).draw(encoder)
 
-    private fun ComputeRenderPass.dispatch(encoder: GPUCommandEncoder) {
-        val tasks = tasks
-
-        val maxNumGroups = device.limits.maxComputeWorkgroupsPerDimension
-        val maxWorkGroupSzX = device.limits.maxComputeWorkgroupSizeX
-        val maxWorkGroupSzY = device.limits.maxComputeWorkgroupSizeY
-        val maxWorkGroupSzZ = device.limits.maxComputeWorkgroupSizeZ
-        val maxInvocations = device.limits.maxComputeInvocationsPerWorkgroup
-
-        computePassEncoderState.setup(encoder, encoder.beginComputePass())
-        for (i in tasks.indices) {
-            val task = tasks[i]
-            if (task.isEnabled) {
-                val pipeline = tasks[i].pipeline
-
-                var isInLimits = true
-
-                val groupSize = pipeline.workGroupSize
-                if (task.numGroups.x > maxNumGroups || task.numGroups.y > maxNumGroups || task.numGroups.z > maxNumGroups) {
-                    logE { "Maximum compute shader workgroup count exceeded: max count = $maxNumGroups, requested count: (${task.numGroups.x}, ${task.numGroups.y}, ${task.numGroups.z})" }
-                    isInLimits = false
-                }
-                if (groupSize.x > maxWorkGroupSzX || groupSize.y > maxWorkGroupSzY || groupSize.z > maxWorkGroupSzZ) {
-                    logE { "Maximum compute shader workgroup size exceeded: max size = ($maxWorkGroupSzX, $maxWorkGroupSzY, $maxWorkGroupSzZ), requested size: $groupSize" }
-                    isInLimits = false
-                }
-                if (groupSize.x * groupSize.y * groupSize.z > maxInvocations) {
-                    logE { "Maximum compute shader workgroup invocations exceeded: max invocations = $maxInvocations, " +
-                            "requested invocations: ${groupSize.x} x ${groupSize.y} x ${groupSize.z} = ${groupSize.x * groupSize.y * groupSize.z}" }
-                    isInLimits = false
-                }
-
-                if (isInLimits) {
-                    task.beforeDispatch()
-                    if (pipelineManager.bindComputePipeline(task, computePassEncoderState)) {
-                        computePassEncoderState.passEncoder.dispatchWorkgroups(task.numGroups.x, task.numGroups.y, task.numGroups.z)
-                        task.afterDispatch()
-                    }
-                }
-            }
-        }
-        computePassEncoderState.end()
-    }
+    private fun ComputeRenderPass.dispatch(encoder: GPUCommandEncoder) = (impl as WgpuComputePass).dispatch(encoder)
 
     override fun cleanup(ctx: KoolContext) {
         // do nothing for now
@@ -225,7 +178,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuOffscreenRenderPassCube(parentPass, 1, this)
     }
 
-    override fun uploadTextureToGpu(tex: Texture, data: TextureData) {
+    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+        return WgpuComputePass(parentPass, this)
+    }
+
+    override fun writeTextureData(tex: Texture, data: TextureData) {
         when (tex) {
             is Texture1d -> textureLoader.loadTexture1d(tex, data)
             is Texture2d -> textureLoader.loadTexture2d(tex, data)

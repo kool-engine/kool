@@ -1,7 +1,9 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.util.Releasable
 import kotlin.math.ceil
 
 fun ComputeRenderPass(computeShader: ComputeShader, numInvocationsX: Int, numInvocationsY: Int = 1, numInvocationsZ: Int = 1): ComputeRenderPass {
@@ -18,6 +20,8 @@ class ComputeRenderPass(name: String) :
 
     private val _tasks = mutableListOf<Task>()
     val tasks: List<Task> get() = _tasks
+
+    internal val impl = KoolSystem.requireContext().backend.createComputePass(this)
 
     fun addTask(computeShader: ComputeShader, numGroups: Vec3i): Task {
         val task = Task(this, computeShader, numGroups)
@@ -74,3 +78,5 @@ class ComputeRenderPass(name: String) :
         }
     }
 }
+
+interface ComputePassImpl : Releasable

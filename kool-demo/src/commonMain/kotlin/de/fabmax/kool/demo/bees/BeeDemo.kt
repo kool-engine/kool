@@ -94,7 +94,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
         // There are two teams -> total number of bees is beesPerTeam * 2
         val maxBees = if (isGpuSimulation.use()) BeeConfig.maxBeesPerTeamGpu else BeeConfig.maxBeesPerTeamCpu
         MenuSlider2(
-            "Number of Bees",
+            "Number of bees",
             BeeConfig.beesPerTeam.use().toFloat(),
             10f,
             maxBees.toFloat(),
@@ -104,17 +104,17 @@ class BeeDemo : DemoScene("Fighting Bees") {
         }
 
         if (ctx.backend.hasComputeShaders) {
-            LabeledSwitch("GPU Simulation", isGpuSimulation)
+            LabeledSwitch("GPU simulation", isGpuSimulation)
         }
 
         MenuRow {
-            val t = cpuBeesA.beeUpdateTime.use() + cpuBeesB.beeUpdateTime.use()
-            Text("Bee update:") { labelStyle(Grow.Std) }
-            if (isGpuSimulation.use()) {
-                Text("0.00 ms") { labelStyle() }
+            Text("Bee simulation time:") { labelStyle(Grow.Std) }
+            val t = if (isGpuSimulation.use()) {
+                gpuBees.beeUpdateTime.use()
             } else {
-                Text("${t.toString(2)} ms") { labelStyle() }
+                cpuBeesA.beeUpdateTime.use() + cpuBeesB.beeUpdateTime.use()
             }
+            Text("${t.toString(2)} ms") { labelStyle() }
         }
 
         Text("Bee Movement") { sectionTitleStyle() }

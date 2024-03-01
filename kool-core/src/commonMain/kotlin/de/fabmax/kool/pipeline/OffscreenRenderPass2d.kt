@@ -6,6 +6,7 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.launchDelayed
 
@@ -85,7 +86,6 @@ open class OffscreenRenderPass2d(drawNode: Node, attachmentConfig: AttachmentCon
     }
 }
 
-interface OffscreenPass2dImpl {
+interface OffscreenPass2dImpl : Releasable {
     fun applySize(width: Int, height: Int)
-    fun release()
 }

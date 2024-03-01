@@ -7,6 +7,7 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.launchDelayed
 
 open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
@@ -102,8 +103,6 @@ open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentC
     }
 }
 
-interface OffscreenPassCubeImpl {
+interface OffscreenPassCubeImpl : Releasable {
     fun applySize(width: Int, height: Int)
-
-    fun release()
 }

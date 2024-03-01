@@ -171,7 +171,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
             println("  $name")
             println("    update:  ${(tUpdate * 1000).toString(2)} ms, " +
                     "collect: ${(tCollect * 1000).toString(2)} ms, " +
-                    "draw: ${(tDraw * 1000).toString(2)} ms")
+                    "draw: ${(tGpu * 1000).toString(2)} ms")
         }
 
         val scenes = KoolSystem.requireContext().scenes

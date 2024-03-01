@@ -51,6 +51,8 @@ object GlImpl : GlApi {
     override val ONE = GL_ONE
     override val ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA
     override val POINTS = GL_POINTS
+    override val QUERY_RESULT = GL_QUERY_RESULT
+    override val QUERY_RESULT_AVAILABLE = GL_QUERY_RESULT_AVAILABLE
     override val READ_FRAMEBUFFER = GL_READ_FRAMEBUFFER
     override val READ_ONLY = GL_READ_ONLY
     override val READ_WRITE = GL_READ_WRITE
@@ -79,6 +81,8 @@ object GlImpl : GlApi {
     override val TEXTURE_WRAP_S = GL_TEXTURE_WRAP_S
     override val TEXTURE_WRAP_T = GL_TEXTURE_WRAP_T
     override val TEXTURE0 = GL_TEXTURE0
+    override val TIME_ELAPSED = GL_TIME_ELAPSED
+    override val TIMESTAMP = GL_TIMESTAMP
     override val TRIANGLES = GL_TRIANGLES
     override val TRIANGLE_STRIP = GL_TRIANGLE_STRIP
     override val TRUE = GL_TRUE
@@ -166,6 +170,7 @@ object GlImpl : GlApi {
 
     override fun activeTexture(texture: Int) = glActiveTexture(texture)
     override fun attachShader(program: GlProgram, shader: GlShader) = glAttachShader(program.handle, shader.handle)
+    override fun beginQuery(target: Int, query: GlQuery) = glBeginQuery(target, query.handle)
     override fun bindBuffer(target: Int, buffer: GlBuffer) = glBindBuffer(target, buffer.handle)
     override fun bindBufferBase(target: Int, index: Int, buffer: GlBuffer) = glBindBufferBase(target, index, buffer.handle)
     override fun bindFramebuffer(target: Int, framebuffer: GlFramebuffer) = glBindFramebuffer(target, framebuffer.handle)
@@ -188,6 +193,7 @@ object GlImpl : GlApi {
     override fun createBuffer(): GlBuffer = GlBuffer(glGenBuffers())
     override fun createFramebuffer(): GlFramebuffer = GlFramebuffer(glGenFramebuffers())
     override fun createProgram(): GlProgram = GlProgram(glCreateProgram())
+    override fun createQuery(): GlQuery = GlQuery(glGenQueries())
     override fun createRenderbuffer(): GlRenderbuffer = GlRenderbuffer(glGenRenderbuffers())
     override fun createShader(type: Int): GlShader = GlShader(glCreateShader(type))
     override fun createTexture(): GlTexture = GlTexture(glGenTextures())
@@ -197,6 +203,7 @@ object GlImpl : GlApi {
     override fun deleteBuffer(buffer: GlBuffer) = glDeleteBuffers(buffer.handle)
     override fun deleteFramebuffer(framebuffer: GlFramebuffer) = glDeleteFramebuffers(framebuffer.handle)
     override fun deleteProgram(program: GlProgram) = glDeleteProgram(program.handle)
+    override fun deleteQuery(query: GlQuery) = glDeleteQueries(query.handle)
     override fun deleteRenderbuffer(renderbuffer: GlRenderbuffer) = glDeleteRenderbuffers(renderbuffer.handle)
     override fun deleteShader(shader: GlShader) = glDeleteShader(shader.handle)
     override fun deleteTexture(texture: GlTexture) = glDeleteTextures(texture.handle)
@@ -210,6 +217,7 @@ object GlImpl : GlApi {
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, instanceCount: Int) = glDrawElementsInstanced(mode, count, type, 0L, instanceCount)
     override fun enable(cap: Int) = glEnable(cap)
     override fun enableVertexAttribArray(index: Int) = glEnableVertexAttribArray(index)
+    override fun endQuery(target: Int) = glEndQuery(target)
     override fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: GlRenderbuffer) = glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer.handle)
     override fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: GlTexture, level: Int) = glFramebufferTexture2D(target, attachment, textarget, texture.handle, level)
     override fun generateMipmap(target: Int) = glGenerateMipmap(target)
@@ -219,6 +227,8 @@ object GlImpl : GlApi {
     override fun getInteger(pName: Int): Int = glGetInteger(pName)
     override fun getProgramInfoLog(program: GlProgram): String = glGetProgramInfoLog(program.handle)
     override fun getProgramParameter(program: GlProgram, param: Int): Int = glGetProgrami(program.handle, param)
+    override fun getQueryParameter(query: GlQuery, param: Int): Any = glGetQueryObjecti(query.handle, param)
+    override fun getQueryParameterU64(query: GlQuery, param: Int): Long = glGetQueryObjectui64(query.handle, param)
     override fun getShaderInfoLog(shader: GlShader): String = glGetShaderInfoLog(shader.handle)
     override fun getShaderParameter(shader: GlShader, param: Int): Int = glGetShaderi(shader.handle, param)
     override fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int = glGetUniformBlockIndex(program.handle, uniformBlockName)
@@ -227,6 +237,7 @@ object GlImpl : GlApi {
     override fun lineWidth(width: Float) = glLineWidth(width)
     override fun linkProgram(program: GlProgram) = glLinkProgram(program.handle)
     override fun memoryBarrier(barriers: Int) = glMemoryBarrier(barriers)
+    override fun queryCounter(query: GlQuery, target: Int) = glQueryCounter(query.handle, target)
     override fun readBuffer(src: Int) = glReadBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorage(target, internalformat, width, height)
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
@@ -301,14 +312,15 @@ object GlImpl : GlApi {
         }
 
         capabilities = GlCapabilities(
-            maxTexUnits,
-            maxAnisotropy,
-            canFastCopyTextures,
-            hasClipControl,
-            hasComputeShaders,
-            workGroupCount,
-            workGroupSize,
-            maxInvocations
+            maxTexUnits = maxTexUnits,
+            maxAnisotropy = maxAnisotropy,
+            canFastCopyTextures = canFastCopyTextures,
+            hasClipControl = hasClipControl,
+            hasTimestampQuery = true,
+            hasComputeShaders = hasComputeShaders,
+            maxWorkGroupCount = workGroupCount,
+            maxWorkGroupSize = workGroupSize,
+            maxWorkGroupInvocations = maxInvocations
         )
     }
 

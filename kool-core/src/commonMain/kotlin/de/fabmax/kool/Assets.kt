@@ -417,7 +417,7 @@ object Assets : CoroutineScope {
 
     private suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
         withContext(Dispatchers.RenderLoop) {
-            KoolSystem.requireContext().backend.uploadTextureToGpu(texture, texData)
+            KoolSystem.requireContext().backend.writeTextureData(texture, texData)
         }
     }
 

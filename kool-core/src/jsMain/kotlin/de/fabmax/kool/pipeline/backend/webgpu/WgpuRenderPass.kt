@@ -4,7 +4,6 @@ import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Time
 
 abstract class WgpuRenderPass<T: RenderPass>(
     val depthFormat: GPUTextureFormat?,
@@ -20,8 +19,6 @@ abstract class WgpuRenderPass<T: RenderPass>(
     abstract val colorTargetFormats: List<GPUTextureFormat>
 
     protected fun render(renderPass: T, encoder: GPUCommandEncoder) {
-        val t = if (renderPass.isProfileTimes) Time.precisionTime else 0.0
-
         for (mipLevel in 0 until renderPass.numRenderMipLevels) {
             renderPass.setupMipLevel(mipLevel)
 
@@ -59,9 +56,6 @@ abstract class WgpuRenderPass<T: RenderPass>(
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
 
-        if (renderPass.isProfileTimes) {
-            renderPass.tDraw = Time.precisionTime - t
-        }
         renderPass.afterDraw()
     }
 

@@ -2,16 +2,25 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.releaseWith
 
-abstract class GlRenderPass(val backend: RenderBackendGl) {
+abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
     protected val gl: GlApi = backend.gl
 
     private val colorBufferClearVal = Float32Buffer(4)
 
+    private val timeQuery: TimeQuery by lazy { TimeQuery(gl).also { it.releaseWith(this) } }
+
     protected fun renderViews(renderPass: RenderPass) {
-        val t = if (renderPass.isProfileTimes) Time.precisionTime else 0.0
+        val q = if (renderPass.isProfileTimes) timeQuery else null
+        q?.let {
+            if (it.isAvailable) {
+                renderPass.tGpu = it.getQueryResultMillis()
+            }
+            it.begin()
+        }
 
         for (mipLevel in 0 until renderPass.numRenderMipLevels) {
             renderPass.setupMipLevel(mipLevel)
@@ -46,9 +55,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl) {
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
 
-        if (renderPass.isProfileTimes) {
-            renderPass.tDraw = Time.precisionTime - t
-        }
+        q?.end()
     }
 
     protected fun renderView(view: RenderPass.View, viewIndex: Int, mipLevel: Int) {

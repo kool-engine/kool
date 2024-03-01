@@ -42,7 +42,11 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         TODO("Not yet implemented")
     }
 
-    override fun uploadTextureToGpu(tex: Texture, data: TextureData) { }
+    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+        TODO("Not yet implemented")
+    }
+
+    override fun writeTextureData(tex: Texture, data: TextureData) { }
 
     override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         deferred.complete(Unit)
