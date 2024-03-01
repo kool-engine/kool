@@ -118,11 +118,11 @@ object InputStack {
         fun removeKeyListener(listener: SimpleKeyListener) = simpleKeyboardListener.removeKeyListener(listener)
     }
 
-    interface PointerListener {
+    fun interface PointerListener {
         fun handlePointer(pointerState: PointerState, ctx: KoolContext)
     }
 
-    interface KeyboardListener {
+    fun interface KeyboardListener {
         fun handleKeyboard(keyEvents: MutableList<KeyEvent>, ctx: KoolContext)
     }
 

@@ -218,9 +218,9 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
     }
 
     /**
-     * Norms the length of this vector and returns the result in a provided [MutableVec3f].
+     * Norms the length of this vector and returns the result in an (optionally provided) [MutableVec3f].
      */
-    fun norm(result: MutableVec3f): MutableVec3f = result.set(this).norm()
+    fun normed(result: MutableVec3f = MutableVec3f()): MutableVec3f = result.set(this).norm()
 
     /**
      * Returns a unit vector orthogonal to this vector.
@@ -620,9 +620,9 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
     }
 
     /**
-     * Norms the length of this vector and returns the result in a provided [MutableVec3d].
+     * Norms the length of this vector and returns the result in an (optionally provided) [MutableVec3d].
      */
-    fun norm(result: MutableVec3d): MutableVec3d = result.set(this).norm()
+    fun normed(result: MutableVec3d = MutableVec3d()): MutableVec3d = result.set(this).norm()
 
     /**
      * Returns a unit vector orthogonal to this vector.

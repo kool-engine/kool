@@ -18,6 +18,16 @@ fun Vec4d.toQuatD() = QuatD(x, y, z, w)
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
+fun QuatF.toEulers(eulersDeg: MutableVec3f = MutableVec3f(), order: EulerOrder = EulerOrder.ZYX): MutableVec3f {
+    Mat3f.rotation(this).getEulerAngles(eulersDeg, order)
+    return eulersDeg
+}
+
+fun MutableQuatF.rotateByEulers(eulersDeg: Vec3f, order: EulerOrder = EulerOrder.ZYX): MutableQuatF {
+    mul(Mat3f.rotation(eulersDeg.x.deg, eulersDeg.y.deg, eulersDeg.z.deg, order).getRotation())
+    return this
+}
+
 open class QuatF(open val x: Float, open val y: Float, open val z: Float, open val w: Float) {
 
     constructor(q: QuatF) : this(q.x, q.y, q.z, q.w)
@@ -313,6 +323,16 @@ fun QuatF(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
 
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
+
+fun QuatD.toEulers(eulersDeg: MutableVec3d = MutableVec3d(), order: EulerOrder = EulerOrder.ZYX): MutableVec3d {
+    Mat3d.rotation(this).getEulerAngles(eulersDeg, order)
+    return eulersDeg
+}
+
+fun MutableQuatD.rotateByEulers(eulersDeg: Vec3d, order: EulerOrder = EulerOrder.ZYX): MutableQuatD {
+    mul(Mat3d.rotation(eulersDeg.x.deg, eulersDeg.y.deg, eulersDeg.z.deg, order).getRotation())
+    return this
+}
 
 open class QuatD(open val x: Double, open val y: Double, open val z: Double, open val w: Double) {
 

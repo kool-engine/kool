@@ -36,7 +36,7 @@ sealed class Light : Node() {
     }
 
     protected fun setTransformByDirectionAndPos(direction: Vec3f = Vec3f.X_AXIS, pos: Vec3f = Vec3f.ZERO) {
-        val dir = direction.norm(MutableVec3f())
+        val dir = direction.normed()
         val v = if (abs(dir.dot(Vec3f.Y_AXIS)) > 0.9f) {
             Vec3f.X_AXIS
         } else {

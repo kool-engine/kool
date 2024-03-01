@@ -190,9 +190,9 @@ open class Vec2f(open val x: Float, open val y: Float) {
     }
 
     /**
-     * Norms the length of this vector and returns the result in a provided [MutableVec2f].
+     * Norms the length of this vector and returns the result in an (optionally provided) [MutableVec2f].
      */
-    fun norm(result: MutableVec2f): MutableVec2f = result.set(this).norm()
+    fun normed(result: MutableVec2f = MutableVec2f()) = result.set(this).norm()
 
     /**
      * Rotates this vector by the given [AngleF] and returns the result in a provided [MutableVec2f].
@@ -530,9 +530,9 @@ open class Vec2d(open val x: Double, open val y: Double) {
     }
 
     /**
-     * Norms the length of this vector and returns the result in a provided [MutableVec2d].
+     * Norms the length of this vector and returns the result in an (optionally provided) [MutableVec2d].
      */
-    fun norm(result: MutableVec2d): MutableVec2d = result.set(this).norm()
+    fun normed(result: MutableVec2d = MutableVec2d()) = result.set(this).norm()
 
     /**
      * Rotates this vector by the given [AngleD] and returns the result in a provided [MutableVec2d].

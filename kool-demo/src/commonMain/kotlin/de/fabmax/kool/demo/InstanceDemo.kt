@@ -136,7 +136,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
     private inner class BunnyInstance(val position: Vec3f, rotAxis: Vec3f) : InstancedLodController.Instance<BunnyInstance>() {
         val rotSpeed = rotAxis.length() * 120f
-        val rotAxis = rotAxis.norm(MutableVec3f())
+        val rotAxis = rotAxis.normed()
 
         val color = MutableColor()
 
