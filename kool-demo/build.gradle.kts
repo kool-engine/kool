@@ -46,6 +46,7 @@ kotlin {
             //  Notice that runtimeLibs are only available and added to classpath after first build (or after
             //  cacheRuntimeLibs task is executed manually) AND the gradle project is re-synced.
             implementation(fileTree("${projectDir}/runtimeLibs") { include("*.jar") })
+            implementation(jvmLibs.jsvg)
 
             // add all native libs potentially needed for running demo as runtimeOnly dependencies, so that they can
             // be found by the cacheRuntimeLibs task

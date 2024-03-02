@@ -365,7 +365,7 @@ object Assets : CoroutineScope {
     }
 
     fun loadTexture2dAsync(assetPath: String, props: TextureProps = TextureProps()): Deferred<Texture2d> = async {
-        loadTexture2d(loadTextureData(assetPath), props, trimAssetPath(assetPath))
+        loadTexture2d(loadTextureData(assetPath, props), props, trimAssetPath(assetPath))
     }
 
     fun loadTexture3dAsync(

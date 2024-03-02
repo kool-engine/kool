@@ -64,7 +64,10 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         val y = viewport.y shr mipLevel
         val w = viewport.width shr mipLevel
         val h = viewport.height shr mipLevel
-        gl.viewport(x, y, w, h)
+
+        // kool viewport coordinate origin is top left, while OpenGL's is bottom left
+        val windowHeight = view.renderPass.size.y shr mipLevel
+        gl.viewport(x, windowHeight - y - h, w, h)
 
         // only do copy when last mip-level is rendered
         val isLastMipLevel = mipLevel == view.renderPass.numRenderMipLevels - 1

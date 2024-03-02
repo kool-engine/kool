@@ -15,6 +15,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Uint8Array
+import org.w3c.dom.Image
 import org.w3c.dom.ImageBitmap
 import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
@@ -48,7 +49,7 @@ private object PlatformAssetsImpl : PlatformAssets {
 
     override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
         val resolveSz = textureRef.props?.resolveSize
-        val img = loadImage(textureRef.path, textureRef.isHttp, resolveSz)
+        val img = loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz)
         val texData = ImageTextureData(img, textureRef.props?.format)
         return LoadedTextureAsset(textureRef, texData)
     }
@@ -56,7 +57,7 @@ private object PlatformAssetsImpl : PlatformAssets {
     override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
         val resolveSz = textureRef.props?.resolveSize
         val texData = ImageAtlasTextureData(
-            loadImage(textureRef.path, textureRef.isHttp, resolveSz),
+            loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz),
             textureRef.tilesX,
             textureRef.tilesY,
             textureRef.props?.format
@@ -64,11 +65,30 @@ private object PlatformAssetsImpl : PlatformAssets {
         return LoadedTextureAsset(textureRef, texData)
     }
 
-    private suspend fun loadImage(path: String, isHttp: Boolean, resize: Vec2i?): ImageBitmap {
+    private suspend fun loadImageBitmap(path: String, isHttp: Boolean, resize: Vec2i?): ImageBitmap {
+        val mime = MimeType.forFileName(path)
         val prefixedUrl = if (isHttp) path else "${Assets.assetsBasePath}/${path}"
-        val response = fetch(prefixedUrl).await()
-        val imgBlob = response.blob().await()
-        return createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
+
+        return if (mime != MimeType.IMAGE_SVG) {
+            // raster image type -> fetch blob and create ImageBitmap directly
+            val response = fetch(prefixedUrl).await()
+            val imgBlob = response.blob().await()
+            createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
+
+        } else {
+            // svg image -> use an Image element to convert it to an ImageBitmap
+            val deferredBitmap = CompletableDeferred<ImageBitmap>()
+            val img = resize?.let { Image(it.x, it.y) } ?: Image()
+            img.onload = {
+                createImageBitmap(img, ImageBitmapOptions(resize)).then { bmp -> deferredBitmap.complete(bmp) }
+            }
+            img.onerror = { _, _, _, _, _ ->
+                deferredBitmap.completeExceptionally(IllegalStateException("Failed loading tex from $prefixedUrl"))
+            }
+            img.crossOrigin = ""
+            img.src = prefixedUrl
+            deferredBitmap.await()
+        }
     }
 
     override suspend fun waitForFonts() {
@@ -167,6 +187,7 @@ private object PlatformAssetsImpl : PlatformAssets {
 }
 
 external fun createImageBitmap(blob: Blob, options: ImageBitmapOptions = definedExternally): Promise<ImageBitmap>
+external fun createImageBitmap(image: Image, options: ImageBitmapOptions = definedExternally): Promise<ImageBitmap>
 
 external fun fetch(resource: String): Promise<Response>
 
