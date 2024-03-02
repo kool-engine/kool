@@ -17,6 +17,7 @@ import org.w3c.dom.events.Event
 import org.w3c.dom.events.UIEvent
 import org.w3c.files.get
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 /**
@@ -28,6 +29,9 @@ class JsContext internal constructor() : KoolContext() {
 
     override val isJavascript = true
     override val isJvm = false
+
+    private val pixelRatio: Double
+        get() = min(KoolSystem.configJs.deviceScaleLimit, window.devicePixelRatio)
 
     override var windowWidth = 0
         private set
@@ -60,15 +64,15 @@ class JsContext internal constructor() : KoolContext() {
         if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
             canvas.style.width = "100%"
             canvas.style.height = "100%"
-            canvas.width = (window.innerWidth * window.devicePixelRatio).toInt()
-            canvas.height = (window.innerHeight * window.devicePixelRatio).toInt()
+            canvas.width = (window.innerWidth * pixelRatio).toInt()
+            canvas.height = (window.innerHeight * pixelRatio).toInt()
         } else {
             canvasFixedWidth = canvas.width
             canvasFixedHeight = canvas.height
             canvas.style.width = "${canvasFixedWidth}px"
             canvas.style.height = "${canvasFixedHeight}px"
-            canvas.width = (canvasFixedWidth * window.devicePixelRatio).roundToInt()
-            canvas.height = (canvasFixedHeight * window.devicePixelRatio).roundToInt()
+            canvas.width = (canvasFixedWidth * pixelRatio).roundToInt()
+            canvas.height = (canvasFixedHeight * pixelRatio).roundToInt()
         }
 
         backend = when (KoolSystem.configJs.renderBackend) {
@@ -125,7 +129,7 @@ class JsContext internal constructor() : KoolContext() {
             e.preventDefault()
         }
 
-        windowScale = window.devicePixelRatio.toFloat()
+        windowScale = pixelRatio.toFloat()
         windowWidth = canvas.width
         windowHeight = canvas.height
 
@@ -144,13 +148,13 @@ class JsContext internal constructor() : KoolContext() {
         animationMillis = time
 
         // update viewport size according to window scale
-        windowScale = window.devicePixelRatio.toFloat()
+        windowScale = pixelRatio.toFloat()
         if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
-            windowWidth = (window.innerWidth * window.devicePixelRatio).toInt()
-            windowHeight = (window.innerHeight * window.devicePixelRatio).toInt()
+            windowWidth = (window.innerWidth * pixelRatio).toInt()
+            windowHeight = (window.innerHeight * pixelRatio).toInt()
         } else {
-            windowWidth = (canvasFixedWidth * window.devicePixelRatio).toInt()
-            windowHeight = (canvasFixedHeight * window.devicePixelRatio).toInt()
+            windowWidth = (canvasFixedWidth * pixelRatio).toInt()
+            windowHeight = (canvasFixedHeight * pixelRatio).toInt()
         }
         if (windowWidth != canvas.width || windowHeight != canvas.height) {
             // resize canvas to viewport, this only affects the render resolution, actual canvas size is determined
@@ -184,14 +188,6 @@ class JsContext internal constructor() : KoolContext() {
 
     override fun getSysInfos(): List<String> {
         return sysInfo
-    }
-
-    class InitProps {
-        var canvasName = "glCanvas"
-        val excludedKeyCodes: MutableSet<String> = mutableSetOf("F5", "F11")
-
-        var localAssetPath = "./assets"
-        val customFonts = mutableMapOf<String, String>()
     }
 }
 

@@ -18,6 +18,8 @@ fun main() = KoolApplication(
     KoolConfigJs(
         renderBackend = backend,
         isGlobalKeyEventGrabbing = true,
+        forceFloatDepthBuffer = false,
+        deviceScaleLimit = 1.5,
         loaderTasks = listOf { Physics.loadAndAwaitPhysics() }
     )
 ) {

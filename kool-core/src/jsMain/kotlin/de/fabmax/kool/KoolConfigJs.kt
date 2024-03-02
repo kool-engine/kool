@@ -21,6 +21,8 @@ data class KoolConfigJs(
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
     val powerPreference: GPUPowerPreference = GPUPowerPreference.highPerformance,
+    val deviceScaleLimit: Double = 3.0,
+    val forceFloatDepthBuffer: Boolean = true,
     val numSamples: Int = 4,
     val loaderTasks: List<suspend () -> Unit> = emptyList(),
 

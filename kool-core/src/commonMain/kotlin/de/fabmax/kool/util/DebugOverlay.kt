@@ -42,7 +42,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     private val deltaTGraph = DeltaTGraph()
 
-    private val isExpanded = mutableStateOf(false)
+    val isExpanded = mutableStateOf(false)
 
     init {
         val fpsFont = MsdfFont(sizePts = 20f)

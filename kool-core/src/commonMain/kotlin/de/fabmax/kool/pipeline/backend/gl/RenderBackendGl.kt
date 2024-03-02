@@ -26,6 +26,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         protected set
     override val hasComputeShaders: Boolean get() = gl.capabilities.hasComputeShaders
 
+    var useFloatDepthBuffer = true
     internal val shaderMgr = ShaderManager(this)
 
     private val windowViewport = Viewport(0, 0, 0, 0)
@@ -57,7 +58,9 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             }
         }
 
-        sceneRenderer.resolve(gl.DEFAULT_FRAMEBUFFER, gl.COLOR_BUFFER_BIT)
+        if (useFloatDepthBuffer) {
+            sceneRenderer.resolve(gl.DEFAULT_FRAMEBUFFER, gl.COLOR_BUFFER_BIT)
+        }
 
         if (awaitedStorageBuffers.isNotEmpty()) {
             readbackStorageBuffers()

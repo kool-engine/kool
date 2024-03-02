@@ -35,6 +35,8 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         setupGl()
 
         sceneRenderer.resolveDirect = false
+
+        useFloatDepthBuffer = KoolSystem.configJs.forceFloatDepthBuffer
     }
 
     override suspend fun startRenderLoop() {
