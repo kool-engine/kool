@@ -40,12 +40,19 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     internal lateinit var textureLoader: WgpuTextureLoader
         private set
 
+    internal val timestampQuery: WgpuTimestamps by lazy {
+        WgpuTimestamps(128, this)
+    }
+
     val pipelineManager = WgpuPipelineManager(this)
     private val sceneRenderer = WgpuScreenRenderPass(this)
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
+
+    // right now, we can only query individual render pass times, not the entire frame time
+    override val frameGpuTime: Double = 0.0
 
     init {
         check(isSupported()) {
@@ -64,7 +71,19 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             txt
         }
 
-        device = adapter.requestDevice().await()
+        val availableFeatures = mutableSetOf<String>()
+        adapter.features.forEach { s: String -> availableFeatures.add(s) }
+        logD { "Available GPUAdapter features:" }
+        availableFeatures.forEach { logD { it } }
+
+        val requiredFeatures = mutableListOf<String>()
+        if ("timestamp-query" in availableFeatures) {
+            logI { "Enabling WebGPU timestamp-query feature" }
+            requiredFeatures.add("timestamp-query")
+        }
+
+        val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
+        device = adapter.requestDevice(deviceDesc).await()
 
         canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
@@ -101,7 +120,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             // copy all buffers requested for readback to temporary buffers using the current command encoder
             copyReadbacks(encoder)
         }
+        timestampQuery.resolve(encoder)
         device.queue.submit(arrayOf(encoder.finish()))
+
+        timestampQuery.readTimestamps()
         if (gpuReadbacks.isNotEmpty()) {
             // after encoder is finished and submitted, temp buffers can be mapped for readback
             mapReadbacks()

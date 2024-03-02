@@ -183,9 +183,10 @@ interface GPUComputePassDescriptor
 
 fun GPUComputePassDescriptor(
     label: String = "",
-    //timestampWrites: GPUComputePassTimestampWrites
+    timestampWrites: GPUComputePassTimestampWrites? = null
 ): GPUComputePassDescriptor {
     val o = js("({})")
+    timestampWrites?.let { o["timestampWrites"] = it }
     o["label"] = label
     return o
 }
@@ -328,17 +329,38 @@ data class GPURenderPassDepthStencilAttachment(
 )
 
 interface GPURenderPassDescriptor
+
 fun GPURenderPassDescriptor(
     colorAttachments: Array<GPURenderPassColorAttachment>,
     depthStencilAttachment: GPURenderPassDepthStencilAttachment? = null,
+    timestampWrites: GPURenderPassTimestampWrites? = null,
     label: String = ""
 ): GPURenderPassDescriptor {
     val o = js("({})")
     o["colorAttachments"] = colorAttachments
     depthStencilAttachment?.let { o["depthStencilAttachment"] = it }
+    timestampWrites?.let { o["timestampWrites"] = it }
     o["label"] = label
     return o
 }
+
+data class GPUComputePassTimestampWrites(
+    @JsName("querySet")
+    val querySet: GPUQuerySet,
+    @JsName("beginningOfPassWriteIndex")
+    val beginningOfPassWriteIndex: Int,
+    @JsName("endOfPassWriteIndex")
+    val endOfPassWriteIndex: Int
+)
+
+data class GPURenderPassTimestampWrites(
+    @JsName("querySet")
+    val querySet: GPUQuerySet,
+    @JsName("beginningOfPassWriteIndex")
+    val beginningOfPassWriteIndex: Int,
+    @JsName("endOfPassWriteIndex")
+    val endOfPassWriteIndex: Int
+)
 
 interface GPURenderPipelineDescriptor
 
@@ -377,6 +399,18 @@ data class GPUDepthStencilState(
     val depthBiasClamp: Float = 0f
 )
 
+interface GPUDeviceDescriptor
+
+fun GPUDeviceDescriptor(
+    requiredFeatures: Array<String> = emptyArray(),
+    label: String = "",
+): GPUDeviceDescriptor {
+    val o = js("({})")
+    o["requiredFeatures"] = requiredFeatures
+    o["label"] = label
+    return o
+}
+
 interface GPUProgrammableStage
 
 fun GPUProgrammableStage(
@@ -387,6 +421,20 @@ fun GPUProgrammableStage(
     val o = js("({})")
     o["module"] = module
     o["entryPoint"] = entryPoint
+    return o
+}
+
+interface GPUQuerySetDescriptor
+
+fun GPUQuerySetDescriptor(
+    type: GPUQueryType,
+    count: Int,
+    label: String = "",
+): GPUQuerySetDescriptor {
+    val o = js("({})")
+    o["type"] = type
+    o["count"] = count
+    o["label"] = label
     return o
 }
 

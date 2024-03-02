@@ -42,6 +42,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     private val semaPool: SemaphorePool
     private val renderPassGraph = RenderPassGraph()
 
+    override var frameGpuTime: Double = 0.0
+
     init {
         val vkSetup = VkSetup().apply {
             isValidating = true

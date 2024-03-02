@@ -19,6 +19,9 @@ class RenderBackendGlImpl(ctx: KoolContext) :
     override val glfwWindow: GlfwWindow
     override val glslGeneratorHints: GlslGenerator.Hints
 
+    private val timer: TimeQuery
+    override var frameGpuTime: Double = 0.0
+
     init {
         glfwWindow = createWindow()
 
@@ -36,10 +39,18 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
         setupGl()
+
+        timer = TimeQuery(gl)
     }
 
     override fun renderFrame(ctx: KoolContext) {
-        super.renderFrame(ctx)
+        if (timer.isAvailable) {
+            frameGpuTime = timer.getQueryResultMillis()
+        }
+
+        timer.timedScope {
+            super.renderFrame(ctx)
+        }
         glfwSwapBuffers(glfwWindow.windowPtr)
     }
 

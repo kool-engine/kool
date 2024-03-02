@@ -80,11 +80,11 @@ class RenderPassEncoderState<T: RenderPass>(val gpuRenderPass: WgpuRenderPass<T>
         _renderPass = renderPass
     }
 
-    fun begin(viewIndex: Int, mipLevel: Int, forceLoad: Boolean = false) {
+    fun begin(viewIndex: Int, mipLevel: Int, timestampWrites: GPURenderPassTimestampWrites? = null, forceLoad: Boolean = false) {
         check(!isPassActive)
 
         val (colorAttachments, depthAttachment) = gpuRenderPass.getRenderAttachments(renderPass, viewIndex, mipLevel, forceLoad)
-        _passEncoder = encoder.beginRenderPass(colorAttachments, depthAttachment, renderPass.name)
+        _passEncoder = encoder.beginRenderPass(colorAttachments, depthAttachment, timestampWrites, renderPass.name)
         isPassActive = true
     }
 

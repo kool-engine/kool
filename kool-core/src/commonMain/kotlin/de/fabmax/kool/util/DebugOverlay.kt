@@ -28,6 +28,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     val ui: Scene
 
     private val fpsText = mutableStateOf("")
+    private val frameTimeText = mutableStateOf("")
     private val sysInfos = mutableStateListOf<String>()
     private val viewportText = mutableStateOf("")
     private val uptimeText = mutableStateOf("")
@@ -49,6 +50,12 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
         ui = UiScene("debug-overlay") {
             onUpdate += {
+
+                val frameTime = it.ctx.backend.frameGpuTime
+                if (frameTime != 0.0) {
+                    frameTimeText.set("${frameTime.toString(2)} ms @ GPU")
+                }
+
                 fpsText.set("${it.ctx.fps.toString(1)} fps")
                 if (isExpanded.value) {
                     updateExpandedStats(it)
@@ -70,23 +77,37 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                 // min width
                 Box { modifier.width(180.dp) }
 
-                Text(fpsText.use()) {
+                Column(Grow.Std) {
                     modifier
-                        .alignX(AlignmentX.Center)
-                        .padding(sizes.gap)
-                        .width(Grow.Std)
-                        .textAlignX(AlignmentX.Center)
-                        .font(fpsFont)
-                        .textColor(colors.primary)
                         .background(deltaTGraph)
+                        .padding(sizes.gap)
 
-                    Text(if (isExpanded.use()) "-" else "+") {
+                    Text(fpsText.use()) {
                         modifier
-                            .align(AlignmentX.End, AlignmentY.Center)
+                            //.padding(sizes.gap)
+                            .width(Grow.Std)
+                            .textAlignX(AlignmentX.Center)
                             .font(fpsFont)
                             .textColor(colors.primary)
-                            .onClick { isExpanded.set(!isExpanded.value) }
-                            .margin(end = sizes.gap)
+
+                        Text(if (isExpanded.use()) "-" else "+") {
+                            modifier
+                                .align(AlignmentX.End, AlignmentY.Center)
+                                .font(fpsFont)
+                                .textColor(colors.primary)
+                                .onClick { isExpanded.set(!isExpanded.value) }
+                                .margin(end = sizes.gap)
+                        }
+                    }
+
+                    val frameTimeTxt = frameTimeText.use()
+                    if (frameTimeTxt.isNotEmpty()) {
+                        Text(frameTimeTxt) {
+                            modifier
+                                .alignX(AlignmentX.Center)
+                                .margin(top = sizes.smallGap)
+                                .textColor(colors.primary)
+                        }
                     }
                 }
 

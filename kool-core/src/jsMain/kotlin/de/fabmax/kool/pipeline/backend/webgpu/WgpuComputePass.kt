@@ -4,12 +4,16 @@ import de.fabmax.kool.pipeline.ComputePassImpl
 import de.fabmax.kool.pipeline.ComputeRenderPass
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.releaseWith
 
 class WgpuComputePass(val parentPass: ComputeRenderPass, val backend: RenderBackendWebGpu) :
     BaseReleasable(),
     ComputePassImpl
 {
     private val computePassEncoderState = ComputePassEncoderState()
+
+    private var beginTimestamp: WgpuTimestamps.QuerySlot? = null
+    private var endTimestamp: WgpuTimestamps.QuerySlot? = null
 
     fun dispatch(encoder: GPUCommandEncoder) {
         val tasks = parentPass.tasks
@@ -20,7 +24,19 @@ class WgpuComputePass(val parentPass: ComputeRenderPass, val backend: RenderBack
         val maxWorkGroupSzZ = backend.device.limits.maxComputeWorkgroupSizeZ
         val maxInvocations = backend.device.limits.maxComputeInvocationsPerWorkgroup
 
-        computePassEncoderState.setup(encoder, encoder.beginComputePass())
+        var timestampWrites: GPUComputePassTimestampWrites? = null
+        if (parentPass.isProfileTimes) {
+            createTimestampQueries()
+            val begin = beginTimestamp
+            val end = endTimestamp
+            if (begin != null && end != null && begin.isReady && end.isReady) {
+                parentPass.tGpu = (end.latestResult - begin.latestResult) / 1e6
+                timestampWrites = GPUComputePassTimestampWrites(backend.timestampQuery.querySet, begin.index, end.index)
+            }
+        }
+        val desc = GPUComputePassDescriptor(parentPass.name, timestampWrites)
+
+        computePassEncoderState.setup(encoder, encoder.beginComputePass(desc))
         for (i in tasks.indices) {
             val task = tasks[i]
             if (task.isEnabled) {
@@ -53,5 +69,14 @@ class WgpuComputePass(val parentPass: ComputeRenderPass, val backend: RenderBack
             }
         }
         computePassEncoderState.end()
+    }
+
+    private fun createTimestampQueries() {
+        if (beginTimestamp == null) {
+            beginTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
+        }
+        if (endTimestamp == null) {
+            endTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
+        }
     }
 }

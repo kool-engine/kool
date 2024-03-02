@@ -17,6 +17,8 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         glslVersionStr = "#version 300 es",
     )
 
+    override var frameGpuTime: Double = 0.0
+
     init {
         val options = js("({})")
         options["powerPreference"] = KoolSystem.configJs.powerPreference

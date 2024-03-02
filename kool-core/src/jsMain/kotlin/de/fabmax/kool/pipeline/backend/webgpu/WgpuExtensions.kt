@@ -6,8 +6,9 @@ import de.fabmax.kool.scene.geometry.PrimitiveType
 fun GPUCommandEncoder.beginRenderPass(
     colorAttachments: Array<GPURenderPassColorAttachment>,
     depthStencilAttachment: GPURenderPassDepthStencilAttachment? = null,
+    timestampWrites: GPURenderPassTimestampWrites? = null,
     label: String = ""
-) = beginRenderPass(GPURenderPassDescriptor(colorAttachments, depthStencilAttachment, label))
+) = beginRenderPass(GPURenderPassDescriptor(colorAttachments, depthStencilAttachment, timestampWrites, label))
 
 fun GPUDevice.createBindGroup(
     layout: GPUBindGroupLayout,

@@ -4,12 +4,16 @@ import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.releaseWith
 
 abstract class WgpuRenderPass<T: RenderPass>(
     val depthFormat: GPUTextureFormat?,
     val numSamples: Int,
     val backend: RenderBackendWebGpu
 ) : BaseReleasable() {
+
+    private var beginTimestamp: WgpuTimestamps.QuerySlot? = null
+    private var endTimestamp: WgpuTimestamps.QuerySlot? = null
 
     private val passEncoderState = RenderPassEncoderState(this)
 
@@ -19,13 +23,24 @@ abstract class WgpuRenderPass<T: RenderPass>(
     abstract val colorTargetFormats: List<GPUTextureFormat>
 
     protected fun render(renderPass: T, encoder: GPUCommandEncoder) {
+        var timestampWrites: GPURenderPassTimestampWrites? = null
+        if (renderPass.isProfileTimes) {
+            createTimestampQueries()
+            val begin = beginTimestamp
+            val end = endTimestamp
+            if (begin != null && end != null && begin.isReady && end.isReady) {
+                renderPass.tGpu = (end.latestResult - begin.latestResult) / 1e6
+                timestampWrites = GPURenderPassTimestampWrites(backend.timestampQuery.querySet, begin.index, end.index)
+            }
+        }
+
         for (mipLevel in 0 until renderPass.numRenderMipLevels) {
             renderPass.setupMipLevel(mipLevel)
 
             when (renderPass.viewRenderMode) {
                 RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
                     passEncoderState.setup(encoder, renderPass)
-                    passEncoderState.begin(0, mipLevel)
+                    passEncoderState.begin(0, mipLevel, timestampWrites)
                     for (viewIndex in renderPass.views.indices) {
                         renderView(viewIndex, mipLevel, passEncoderState)
                     }
@@ -55,8 +70,16 @@ abstract class WgpuRenderPass<T: RenderPass>(
         if (anySingleShots) {
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
-
         renderPass.afterDraw()
+    }
+
+    private fun createTimestampQueries() {
+        if (beginTimestamp == null) {
+            beginTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
+        }
+        if (endTimestamp == null) {
+            endTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
+        }
     }
 
     protected abstract fun generateMipLevels(encoder: GPUCommandEncoder)

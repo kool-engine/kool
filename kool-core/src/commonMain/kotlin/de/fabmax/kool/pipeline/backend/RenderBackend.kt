@@ -19,6 +19,8 @@ interface RenderBackend {
     val isInvertedNdcY: Boolean get() = deviceCoordinates.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM
     val hasComputeShaders: Boolean
 
+    val frameGpuTime: Double
+
     fun renderFrame(ctx: KoolContext)
     fun cleanup(ctx: KoolContext)
 

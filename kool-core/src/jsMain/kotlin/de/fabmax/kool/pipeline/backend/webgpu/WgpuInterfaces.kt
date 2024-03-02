@@ -20,7 +20,8 @@ external class GPU {
 }
 
 external class GPUAdapter {
-    fun requestDevice(): Promise<GPUDevice>
+    val features: dynamic
+    fun requestDevice(descriptor: GPUDeviceDescriptor = definedExternally): Promise<GPUDevice>
 }
 
 external class GPUBindGroupLayout
@@ -70,6 +71,8 @@ external class GPUCommandEncoder {
     fun copyBufferToBuffer(source: GPUBuffer, sourceOffset: Long, destination: GPUBuffer, destinationOffset: Long, size: Long)
     fun copyTextureToBuffer(source: GPUImageCopyTexture, destination: GPUImageCopyBuffer, copySize: IntArray)
     fun copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: IntArray)
+    //fun writeTimestamp(querySet: GPUQuerySet, queryIndex: Int)
+    fun resolveQuerySet(querySet: GPUQuerySet, firstQuery: Int, queryCount: Int, destination: GPUBuffer, destinationOffset: Long)
     fun finish(): GPUCommandBuffer
 }
 
@@ -83,6 +86,7 @@ external class GPUDevice {
     fun createBindGroup(descriptor: GPUBindGroupDescriptor): GPUBindGroup
     fun createCommandEncoder(): GPUCommandEncoder
     fun createComputePipeline(descriptor: GPUComputePipelineDescriptor): GPUComputePipeline
+    fun createQuerySet(descriptor: GPUQuerySetDescriptor): GPUQuerySet
     fun createRenderPipeline(descriptor: GPURenderPipelineDescriptor): GPURenderPipeline
     fun createShaderModule(descriptor: GPUShaderModuleDescriptor): GPUShaderModule
     fun createSampler(descriptor: GPUSamplerDescriptor): GPUSampler
@@ -122,6 +126,8 @@ external class GPURenderPassEncoder {
 external class GPUComputePipeline {
     fun getBindGroupLayout(index: Int): GPUBindGroupLayout
 }
+
+external class GPUQuerySet
 
 external class GPURenderPipeline {
     fun getBindGroupLayout(index: Int): GPUBindGroupLayout

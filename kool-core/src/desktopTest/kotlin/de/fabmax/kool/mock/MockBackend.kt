@@ -20,6 +20,8 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
     override val hasComputeShaders: Boolean = false
 
+    override var frameGpuTime: Double = 0.0
+
     override fun renderFrame(ctx: KoolContext) { }
 
     override fun cleanup(ctx: KoolContext) { }
