@@ -81,6 +81,7 @@ kotlin {
 
         jsMain.dependencies {
             implementation(npm("pako", "2.0.4"))
+            implementation(npm("jszip", "3.10.1"))
         }
 
         //androidMain.dependencies { }

@@ -17,26 +17,8 @@ suspend fun Assets.loadGltfModel(
 ): Model = loadGltfModelAsync(assetPath, modelCfg, scene).await()
 
 fun Assets.loadGltfFileAsync(assetPath: String): Deferred<GltfFile> = Assets.async {
-    val gltfFile = when {
-        isGltf(assetPath) -> loadGltf(assetPath)
-        isBinaryGltf(assetPath) -> loadGlb(assetPath)
-        else -> throw IllegalArgumentException("Given asset path should end in .gltf, gltf.gz, glb or glb.gz")
-    }
-
-    val modelBasePath = if (assetPath.contains('/')) {
-        assetPath.substring(0, assetPath.lastIndexOf('/'))
-    } else { "." }
-
-    gltfFile.let { m ->
-        m.buffers.filter { it.uri != null }.forEach {
-            val uri = it.uri!!
-            val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
-            it.data = loadBlobAsset(bufferPath)
-        }
-        m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
-        m.updateReferences()
-    }
-    gltfFile
+    val blob = loadBlobAsset(assetPath)
+    GltfFile(blob, assetPath)
 }
 
 fun Assets.loadGltfModelAsync(
@@ -44,7 +26,7 @@ fun Assets.loadGltfModelAsync(
     modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
 ): Deferred<Model> = Assets.async {
-    loadGltfFile(assetPath).makeModel(modelCfg, scene)
+    loadGltfFileAsync(assetPath).await().makeModel(modelCfg, scene)
 }
 
 private fun isGltf(assetPath: String): Boolean {

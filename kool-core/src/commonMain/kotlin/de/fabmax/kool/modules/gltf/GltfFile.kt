@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.BlendMode
@@ -8,12 +9,80 @@ import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.animation.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.math.min
+
+suspend fun GltfFile(data: Uint8Buffer, filePath: String): GltfFile {
+    val gltfData = if (filePath.lowercase().endsWith(".gz")) {
+        data.inflate()
+    } else {
+        data
+    }
+    val gltfFile = when (val type = filePath.lowercase().removeSuffix(".gz").substringAfterLast('.')) {
+        "gltf" -> GltfFile.fromJson(gltfData.decodeToString())
+        "glb" -> loadGlb(gltfData)
+        else -> error("Invalid gltf file type: $type ($filePath)")
+    }
+
+    val modelBasePath = if (filePath.contains('/')) {
+        filePath.substringBeforeLast('/')
+    } else { "." }
+
+    gltfFile.let { m ->
+        m.buffers.filter { it.uri != null }.forEach {
+            val uri = it.uri!!
+            val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
+            it.data = Assets.loadBlobAsset(bufferPath)
+        }
+        m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
+        m.updateReferences()
+    }
+    return gltfFile
+}
+
+private fun loadGlb(data: Uint8Buffer): GltfFile {
+    val str = DataStream(data)
+
+    // file header
+    val magic = str.readUInt()
+    val version = str.readUInt()
+    //val fileLength = str.readUInt()
+    str.readUInt()
+    if (magic != GltfFile.GLB_FILE_MAGIC) {
+        error("Unexpected glTF magic number: $magic (should be ${GltfFile.GLB_FILE_MAGIC} / 'glTF')")
+    }
+    if (version != 2) {
+        logW("loadGlb") { "Unexpected glTF version: $version (should be 2) - stuff might not work as expected" }
+    }
+
+    // chunk 0 - JSON content
+    var chunkLen = str.readUInt()
+    var chunkType = str.readUInt()
+    if (chunkType != GltfFile.GLB_CHUNK_MAGIC_JSON) {
+        error("Unexpected chunk type for chunk 0: $chunkType (should be ${GltfFile.GLB_CHUNK_MAGIC_JSON} / 'JSON')")
+    }
+    val jsonData = str.readData(chunkLen).toArray()
+    val model = GltfFile.fromJson(jsonData.decodeToString())
+
+    // remaining data chunks
+    var iChunk = 1
+    while (str.hasRemaining()) {
+        chunkLen = str.readUInt()
+        chunkType = str.readUInt()
+        if (chunkType == GltfFile.GLB_CHUNK_MAGIC_BIN) {
+            model.buffers[iChunk-1].data = str.readData(chunkLen)
+
+        } else {
+            logW("loadGlb") { "Unexpected chunk type for chunk $iChunk: $chunkType (should be ${GltfFile.GLB_CHUNK_MAGIC_BIN} / ' BIN')" }
+            str.index += chunkLen
+        }
+        iChunk++
+    }
+
+    return model
+}
 
 /**
  * The root object for a glTF asset.
