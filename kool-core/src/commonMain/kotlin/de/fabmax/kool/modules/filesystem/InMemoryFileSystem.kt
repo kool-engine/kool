@@ -85,3 +85,5 @@ suspend fun InMemoryFileSystem(copyFrom: FileSystem): InMemoryFileSystem {
     }
     return fs
 }
+
+expect suspend fun InMemoryFileSystem.toZip(): Uint8Buffer

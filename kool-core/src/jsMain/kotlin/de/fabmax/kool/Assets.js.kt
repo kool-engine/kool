@@ -6,9 +6,7 @@ import de.fabmax.kool.modules.audio.AudioClipImpl
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.platform.FontMapGenerator
-import de.fabmax.kool.platform.ImageAtlasTextureData
-import de.fabmax.kool.platform.ImageTextureData
+import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import kotlinx.coroutines.CompletableDeferred
@@ -146,22 +144,8 @@ private object PlatformAssetsImpl : PlatformAssets {
         } else {
             defaultFileName
         }
-        document.body?.let { body ->
-            val element = document.createElement("a")
-            element.setAttribute("href", data.toDataUrl(mimeType))
-            fName?.let { element.setAttribute("download", it) }
-
-            element.asDynamic().style.display = "none"
-            body.appendChild(element)
-            element.asDynamic().click()
-            body.removeChild(element)
-        }
+        FileSaver.saveAs(data, fName ?: "", mimeType)
         return null
-    }
-
-    private fun Uint8Buffer.toDataUrl(mimeType: String): String {
-        val base64 = encodeBase64()
-        return "data:$mimeType;base64,$base64"
     }
 
     override suspend fun loadTextureData2d(imagePath: String, props: TextureProps?): TextureData2d {
