@@ -128,10 +128,7 @@ class GridOverlay : Node("Grid overlay") {
                         outColor.a set min(outColor.a, aLimit) * aMod
                         colorPort.input(outColor)
 
-                        val clipDepth = float1Var(clipPos.output.z / clipPos.output.w) * 0.99999f.const
-                        val near = 0f.const
-                        val far = 1f.const
-                        outDepth set (((far - near) * clipDepth) + near + far) / 2f.const
+                        outDepth set (clipPos.output.z / (clipPos.output.w * 0.99999f.const))
                     }
                 }
             }

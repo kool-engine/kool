@@ -64,6 +64,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
             onUpdate { ev ->
                 onNodeUpdate.forEach { it(ev) }
             }
+            tryEnableInfiniteDepth()
         }
         nodesToNodeModels[drawNode] = this
 

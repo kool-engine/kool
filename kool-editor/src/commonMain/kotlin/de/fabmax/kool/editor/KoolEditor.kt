@@ -47,6 +47,7 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         camera.setClipRange(0.1f, 1000f)
         clearColor = null
         clearDepth = false
+        tryEnableInfiniteDepth()
     }
     val gridOverlay = GridOverlay()
     val lightOverlay = SceneObjectsOverlay()

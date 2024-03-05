@@ -18,7 +18,6 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
 import kotlin.math.max
-import kotlin.math.roundToInt
 
 class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
@@ -45,8 +44,8 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
             if (selectionPass.isEnabled) {
                 val vp = editor.editorOverlay.mainRenderPass.viewport
-                val sceneWidth = (vp.width * 0.75f).roundToInt()
-                val sceneHeight = (vp.height * 0.75f).roundToInt()
+                val sceneWidth = vp.width
+                val sceneHeight = vp.height
                 selectionPass.setSize(sceneWidth, sceneHeight)
             }
 
@@ -84,7 +83,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     inner class SelectionPass(editor: KoolEditor) : OffscreenRenderPass2d(
         // drawNode will be replaced by content scene, once it is loaded
         Node(),
-        AttachmentConfig(ColorAttachmentTextures(listOf(TextureAttachmentConfig(TexFormat.R, SamplerSettings().nearest())))),
+        colorAttachmentDefaultDepth(TexFormat.R),
         Vec2i(128),
         name = "selection-overlay"
     ) {
@@ -157,7 +156,14 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     private data class ShaderAndPipeline(val shader: KslUnlitShader, val pipeline: DrawPipeline)
 
     private class SelectionOutlineShader(selectionMask: Texture2d?) :
-        KslShader(Model(), FullscreenShaderUtil.fullscreenShaderPipelineCfg)
+        KslShader(
+            Model(),
+            PipelineConfig(
+                blendMode = BlendMode.BLEND_MULTIPLY_ALPHA,
+                cullMethod = CullMethod.NO_CULLING,
+                depthTest = DepthCompareOp.ALWAYS,
+            )
+        )
     {
         var outlineColor by uniformColor("uOutlineColor", Color.WHITE)
 
@@ -196,7 +202,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
                         `if`(minMask ne maxMask) {
                             val color = float4Var(uniformFloat4("uOutlineColor"))
-                            color.a set clamp(min(minMaskCount, maxMaskCount) / max(minMaskCount, maxMaskCount) * 4f.const, 0f.const, 1f.const)
+                            color.a set clamp(min(minMaskCount, maxMaskCount) / max(minMaskCount, maxMaskCount) * 2f.const, 0f.const, 1f.const)
                             colorOutput(color)
                         }.`else` {
                             discard()
@@ -206,7 +212,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             }
 
             companion object {
-                private const val rE = 1f
+                private const val rE = 2f
                 private const val rC = 1f
                 val samplePattern = listOf(
                     Vec2f(-rC, -rC),
