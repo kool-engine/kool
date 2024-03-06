@@ -25,16 +25,16 @@ class ZipFileSytem(zip: JsZip) : FileSystem {
         zip.forEach { relativePath, zipObj ->
             if (!zipObj.dir) {
                 val path = FileSystem.sanitizePath(relativePath)
-                val parent = getParentDir(path)
+                makeParentDirs(path)
                 val file = File(path, zipObj)
                 fsItems[file.path] = file
-                parent.items[file.name] = file
             }
+            fsItems.values.filter { it != root }.forEach { (it.parent as Directory).items[it.name] = it }
         }
     }
 
-    private fun getParentDir(path: String): Directory {
-        return path.substringBeforeLast("/").split("/")
+    private fun makeParentDirs(path: String) {
+        path.substringBeforeLast("/").split("/")
             .filter { it.isNotEmpty() }
             .fold(root as Directory) { parent, name ->
                 parent.items.getOrPut("$name/") {

@@ -18,15 +18,15 @@ class ZipFileSytem(zipPath: String) : FileSystem {
     init {
         zipFile.entries().asSequence().filter { !it.isDirectory }.forEach { entry ->
             val path = FileSystem.sanitizePath(entry.name)
-            val parent = getParentDir(path)
+            makeParentDirs(path)
             val file = File(path, entry)
             fsItems[file.path] = file
-            parent.items[file.name] = file
         }
+        fsItems.values.filter { it != root }.forEach { (it.parent as Directory).items[it.name] = it }
     }
 
-    private fun getParentDir(path: String): Directory {
-        return path.substringBeforeLast("/").split("/")
+    private fun makeParentDirs(path: String) {
+        path.substringBeforeLast("/").split("/")
             .filter { it.isNotEmpty() }
             .fold(root as Directory) { parent, name ->
                 parent.items.getOrPut("$name/") {
