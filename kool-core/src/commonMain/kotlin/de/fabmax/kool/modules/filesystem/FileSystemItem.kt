@@ -34,6 +34,15 @@ interface FileSystemDirectory : FileSystemItem {
     operator fun get(name: String): FileSystemItem
 }
 
+interface WritableFileSystemFile : FileSystemFile {
+    suspend fun write(data: Uint8Buffer)
+    fun delete()
+}
+
+interface WritableFileSystemDirectory : FileSystemDirectory {
+    fun delete()
+}
+
 suspend fun FileSystemFile.loadTexture2d(props: TextureProps = TextureProps()): Texture2d {
     val mimeType = this.mimeType
     if (mimeType == MimeType.BINARY_DATA) {

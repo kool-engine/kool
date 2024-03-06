@@ -65,4 +65,8 @@ class BufferedList<T> private constructor(private val backingList: MutableList<T
         }
     }
 
+    fun updated(): BufferedList<T> {
+        update()
+        return this
+    }
 }

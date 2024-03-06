@@ -24,10 +24,7 @@ class ZipFileSytem(zip: JsZip) : FileSystem {
     init {
         zip.forEach { relativePath, zipObj ->
             if (!zipObj.dir) {
-                var path = relativePath
-                if (!path.startsWith("/")) {
-                    path = "/$path"
-                }
+                val path = FileSystem.sanitizePath(relativePath)
                 val parent = getParentDir(path)
                 val file = File(path, zipObj)
                 fsItems[file.path] = file
@@ -50,7 +47,18 @@ class ZipFileSytem(zip: JsZip) : FileSystem {
 
     override fun listAll(): List<FileSystemItem> = fsItems.values.toList().sortedBy { it.path }
 
-    override fun get(path: String): FileSystemItem = checkNotNull(fsItems[path]) { "File not found: $path" }
+    override fun get(path: String): FileSystemItem {
+        val sanitized = FileSystem.sanitizePath(path)
+        return checkNotNull(fsItems[sanitized]) { "File not found: $sanitized" }
+    }
+
+    override fun contains(path: String): Boolean = FileSystem.sanitizePath(path) in fsItems
+
+    override fun addFileSystemWatcher(listener: FileSystemWatcher) {
+        // zip file system will never change, no need to keep any listeners around
+    }
+
+    override fun removeFileSystemWatcher(listener: FileSystemWatcher) { }
 
     private class Directory(override val path: String): FileSystemDirectory {
         val items = mutableMapOf<String, FileSystemItem>()
@@ -62,7 +70,7 @@ class ZipFileSytem(zip: JsZip) : FileSystem {
 
     private inner class File(override val path: String, val zipEntry: ZipObject): FileSystemFile {
         override val size: Long
-            get() = 0L
+            get() = -1L
 
         override suspend fun read(): Uint8Buffer {
             val data = zipEntry.asyncU8().await()

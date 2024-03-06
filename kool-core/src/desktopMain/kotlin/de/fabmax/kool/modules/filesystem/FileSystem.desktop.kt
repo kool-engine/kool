@@ -17,10 +17,7 @@ class ZipFileSytem(zipPath: String) : FileSystem {
 
     init {
         zipFile.entries().asSequence().filter { !it.isDirectory }.forEach { entry ->
-            var path = entry.name
-            if (!path.startsWith("/")) {
-                path = "/$path"
-            }
+            val path = FileSystem.sanitizePath(entry.name)
             val parent = getParentDir(path)
             val file = File(path, entry)
             fsItems[file.path] = file
@@ -42,7 +39,18 @@ class ZipFileSytem(zipPath: String) : FileSystem {
 
     override fun listAll(): List<FileSystemItem> = fsItems.values.toList().sortedBy { it.path }
 
-    override fun get(path: String): FileSystemItem = checkNotNull(fsItems[path]) { "File not found: $path" }
+    override fun get(path: String): FileSystemItem {
+        val sanitized = FileSystem.sanitizePath(path)
+        return checkNotNull(fsItems[sanitized]) { "File not found: $sanitized" }
+    }
+
+    override fun contains(path: String): Boolean = FileSystem.sanitizePath(path) in fsItems
+
+    override fun addFileSystemWatcher(listener: FileSystemWatcher) {
+        // zip file system will never change, no need to keep any listeners around
+    }
+
+    override fun removeFileSystemWatcher(listener: FileSystemWatcher) { }
 
     private class Directory(override val path: String): FileSystemDirectory {
         val items = mutableMapOf<String, FileSystemItem>()

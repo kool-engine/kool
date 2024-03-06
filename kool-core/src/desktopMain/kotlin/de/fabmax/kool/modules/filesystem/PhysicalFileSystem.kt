@@ -2,13 +2,37 @@ package de.fabmax.kool.modules.filesystem
 
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.toBuffer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.nio.file.Path
+import kotlin.io.path.*
 
-class InMemoryFileSystem : WritableFileSystem {
+@OptIn(ExperimentalPathApi::class)
+class PhysicalFileSystem(rootPath: String) : WritableFileSystem {
+    val rootPath = Path(rootPath).absolutePathString()
 
-    override val root: FileSystemDirectory = Directory("/")
-    private val fsItems = mutableMapOf<String, InMemoryItem>("/" to root as Directory)
+    override val root: FileSystemDirectory
+    private val fsItems = mutableMapOf<String, FsItem>()
 
     private val listeners = BufferedList<FileSystemWatcher>()
+
+    init {
+        val root = Directory(Path(rootPath))
+        fsItems["/"] = root
+        this.root = root
+
+        root.physPath
+            .walk(PathWalkOption.INCLUDE_DIRECTORIES, PathWalkOption.FOLLOW_LINKS)
+            .filter { it != root.physPath }
+            .forEach { path ->
+                println("walking $path")
+                val item: FsItem = if (path.isDirectory()) Directory(path) else File(path)
+                fsItems[item.path] = item
+            }
+
+        // todo: register OS watch service
+    }
 
     override fun listAll(): List<FileSystemItem> = fsItems.values.toList().sortedBy { it.path }
 
@@ -36,7 +60,9 @@ class InMemoryFileSystem : WritableFileSystem {
         check(name.isNotBlank()) { "invalid directory path: $dirPath" }
 
         val parentDir = get(parentPath) as Directory
-        val dir = Directory(dirPath)
+        val dirPhysPath = Path(parentDir.physPath.absolutePathString(), name)
+        dirPhysPath.createDirectory()
+        val dir = Directory(dirPhysPath)
         fsItems[dirPath] = dir
         parentDir.items[dir.name] = dir
 
@@ -56,7 +82,9 @@ class InMemoryFileSystem : WritableFileSystem {
         check(name.isNotBlank()) { "invalid file path: $filePath" }
 
         val parentDir = get(parentPath) as Directory
-        val file = File(filePath, data)
+        val physPath = Path(parentDir.physPath.absolutePathString(), name)
+        val file = File(physPath)
+        file.write(data)
         fsItems[filePath] = file
         parentDir.items[file.name] = file
 
@@ -67,16 +95,23 @@ class InMemoryFileSystem : WritableFileSystem {
         return file
     }
 
-    private sealed class InMemoryItem: FileSystemItem {
+    private fun Path.fsPath(): String {
+        val fsPath = absolutePathString().removePrefix(rootPath)
+        return FileSystem.sanitizePath(fsPath)
+    }
+
+    private sealed class FsItem: FileSystemItem {
         abstract fun delete(isParentDelete: Boolean)
     }
 
-    private inner class Directory(override val path: String) : InMemoryItem(), WritableFileSystemDirectory {
-        val items = mutableMapOf<String, InMemoryItem>()
+    private inner class Directory(val physPath: Path) : FsItem(), WritableFileSystemDirectory {
+        override val path: String = FileSystem.sanitizeDirPath(physPath.fsPath())
 
-        override fun list(): List<InMemoryItem> = items.values.toList().sortedBy { it.path }
+        val items = mutableMapOf<String, FsItem>()
 
-        override fun get(name: String): InMemoryItem = checkNotNull(items[name]) { "File not found: $name" }
+        override fun list(): List<FsItem> = items.values.toList().sortedBy { it.path }
+
+        override fun get(name: String): FsItem = checkNotNull(items[name]) { "File not found: $name" }
 
         override fun delete() {
             delete(false)
@@ -86,8 +121,9 @@ class InMemoryFileSystem : WritableFileSystem {
             check(this != root) { "root directory cannot be deleted" }
             list().forEach { it.delete(true) }
             fsItems.remove(path)
+            physPath.deleteRecursively()
 
-            val parent = this@InMemoryFileSystem[FileSystem.parentPath(path)] as Directory
+            val parent = this@PhysicalFileSystem[FileSystem.parentPath(path)] as Directory
             listeners.updated().forEach {
                 it.onDirectoryDeleted(this)
                 if (!isParentDelete) {
@@ -97,14 +133,22 @@ class InMemoryFileSystem : WritableFileSystem {
         }
     }
 
-    private inner class File(override val path: String, var data: Uint8Buffer) : InMemoryItem(), WritableFileSystemFile {
-        override val size: Long
-            get() = data.capacity.toLong()
+    private inner class File(val physPath: Path) : FsItem(), WritableFileSystemFile {
+        override val path: String = physPath.fsPath()
 
-        override suspend fun read(): Uint8Buffer = data
+        override val size: Long
+            get() = physPath.fileSize()
+
+        override suspend fun read(): Uint8Buffer {
+            return withContext(Dispatchers.IO) {
+                physPath.readBytes().toBuffer()
+            }
+        }
 
         override suspend fun write(data: Uint8Buffer) {
-            this.data = data
+            withContext(Dispatchers.IO) {
+                physPath.writeBytes(data.toArray())
+            }
             listeners.updated().forEach { it.onFileChanged(this) }
         }
 
@@ -114,8 +158,9 @@ class InMemoryFileSystem : WritableFileSystem {
 
         override fun delete(isParentDelete: Boolean) {
             fsItems.remove(path)
+            physPath.deleteExisting()
 
-            val parent = this@InMemoryFileSystem[FileSystem.parentPath(path)] as Directory
+            val parent = this@PhysicalFileSystem[FileSystem.parentPath(path)] as Directory
             listeners.updated().forEach {
                 it.onFileDeleted(this)
                 if (!isParentDelete) {
@@ -125,16 +170,3 @@ class InMemoryFileSystem : WritableFileSystem {
         }
     }
 }
-
-suspend fun InMemoryFileSystem(copyFrom: FileSystem): InMemoryFileSystem {
-    val fs = InMemoryFileSystem()
-    copyFrom.listAll().filter { it.path != "/" }.forEach {
-        when (it) {
-            is FileSystemDirectory -> fs.createDirectory(it.path)
-            is FileSystemFile -> fs.createFile(it.path, it.read())
-        }
-    }
-    return fs
-}
-
-expect suspend fun InMemoryFileSystem.toZip(): Uint8Buffer
