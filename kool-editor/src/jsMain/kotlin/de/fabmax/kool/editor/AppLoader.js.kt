@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual class AppLoadService actual constructor(paths: ProjectPaths) {
+actual class AppLoadService actual constructor(paths: ProjectFiles) {
     actual var hasAppChanged = false
         private set
 

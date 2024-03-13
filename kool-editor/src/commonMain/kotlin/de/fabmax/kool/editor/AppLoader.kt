@@ -7,7 +7,7 @@ import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-expect class AppLoadService(paths: ProjectPaths) {
+expect class AppLoadService(paths: ProjectFiles) {
     var hasAppChanged: Boolean
         private set
 
@@ -43,22 +43,22 @@ class AppBehavior(val simpleName: String, val qualifiedName: String, val propert
     }
 }
 
-class AppLoader(val editor: KoolEditor, paths: ProjectPaths) {
+class AppLoader(val editor: KoolEditor) {
     val appReloadListeners = mutableListOf<AppReloadListener>()
 
-    private val loadService = AppLoadService(paths)
+    private val loadService = AppLoadService(editor.projectFiles)
     private var isBuildInProgress = false
 
-    init {
-        editor.editorContent.onUpdate {
-            if (loadService.hasAppChanged) {
-                editor.ui.appStateInfo.set("App sources changed on disc")
-                if (!isBuildInProgress && editor.ctx.isWindowFocused) {
-                    reloadApp()
-                }
-            }
-        }
-    }
+//    init {
+//        editor.editorContent.onUpdate {
+//            if (loadService.hasAppChanged) {
+//                editor.ui.appStateInfo.set("App sources changed on disc")
+//                if (!isBuildInProgress && editor.ctx.isWindowFocused) {
+//                    reloadApp()
+//                }
+//            }
+//        }
+//    }
 
     fun addIgnorePath(path: String) {
         loadService.addIgnorePath(path)

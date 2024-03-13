@@ -158,7 +158,7 @@ class MaterialAttributeSourcePopup(
     private fun UiScope.textureSelector() {
         val texAttr = editMatAttr as MapAttribute
         textureSelector(texAttr.mapPath, false) {
-            lastTextureAttr = MapAttribute(it.path)
+            lastTextureAttr = MapAttribute(it?.path ?: "")
             setEditAttrib(lastTextureAttr)
         }
     }

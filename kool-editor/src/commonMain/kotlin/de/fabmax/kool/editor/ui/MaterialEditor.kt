@@ -317,8 +317,8 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
             AutoPopup().apply {
                 popupContent = Composable {
                     defaultPopupStyle()
-                    textureSelector(editTex?.mapPath ?: "", true) {
-                        editTex = if (it.path.isEmpty()) null else MapAttribute(it.path)
+                    textureSelector(editTex?.mapPath ?: "", true) { asset ->
+                        editTex = asset?.let { MapAttribute(it.path) }
                         editHandler.onEdit(editTex)
                     }
                     okButton { hide() }

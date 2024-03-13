@@ -2,6 +2,7 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.NativeAssetLoader
 import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.util.logE
 
@@ -12,7 +13,7 @@ actual object PlatformFunctions {
     var loadedApp: LoadedApp? = null
 
     suspend fun initPlatform(projModelPath: String, loadedApp: LoadedApp) {
-        Assets.assetsBasePath = "."
+        Assets.defaultLoader = NativeAssetLoader(".")
         projectModel = EditorProject.loadFromAssets(projModelPath)
         this.loadedApp = loadedApp
     }

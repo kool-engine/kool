@@ -13,12 +13,14 @@ import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.copy
+import de.fabmax.kool.util.logE
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 object EditorState {
 
-    val projectModel = PlatformFunctions.loadProjectModel(KoolEditor.instance.paths.projectFile) ?: newProject()
+    //val projectModel = PlatformFunctions.loadProjectModel(KoolEditor.instance.paths.projectFile) ?: newProject()
+    val projectModel = newProject()
 
     val loadedApp = mutableStateOf<LoadedApp?>(null)
 
@@ -111,7 +113,10 @@ object EditorState {
         }
     )
 
-    fun saveProject() = PlatformFunctions.saveProjectModel(KoolEditor.instance.paths.projectFile)
+    //fun saveProject() = PlatformFunctions.saveProjectModel(KoolEditor.instance.paths.projectFile)
+    fun saveProject() {
+        logE { "saveProject" }
+    }
 
     enum class TransformOrientation(val label: String) {
         LOCAL("Local"),

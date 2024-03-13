@@ -1,10 +1,10 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
+import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
@@ -752,26 +752,28 @@ inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() ->
     block()
 }
 
-fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, onSelect: (AssetItem) -> Unit) = Column {
-    val textures = mutableListOf<AssetItem>()
+fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, onSelect: (AssetItem?) -> Unit) = Column {
+    val textures = mutableListOf<TextureOption>()
     if (withNoneOption) {
-        textures += AssetItem("None", "", AppAssetType.Texture)
+        textures += TextureOption("None", null)
     }
-    textures += KoolEditor.instance.availableAssets.textureAssets
+    textures += KoolEditor.instance.availableAssets.textureAssets.map { TextureOption(it.name, it) }
 
     ComboBox {
         defaultComboBoxStyle()
         modifier
             .size(sizes.baseSize * 6, sizes.lineHeight)
             .items(textures)
-            .selectedIndex(textures.indexOfFirst { it.path == selectedTexPath })
+            .selectedIndex(textures.indexOfFirst { selectedTexPath == it.assetItem?.path })
             .onItemSelected {
-                onSelect(textures[it])
+                onSelect(textures[it].assetItem)
             }
     }
 
     if (selectedTexPath.isNotEmpty()) {
-        val tex = CachedAppAssets.getTextureIfLoaded(selectedTexPath).use()
+        // fixme: this is awful
+        val tex = (AppAssets.impl as CachedAppAssets).getTextureIfLoaded(selectedTexPath).use()
+        //val tex = CachedAppAssets.getTextureIfLoaded(selectedTexPath).use()
         Image(tex) {
             modifier
                 .margin(top = sizes.gap)
@@ -779,6 +781,10 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
                 .imageZ(UiSurface.LAYER_BACKGROUND)
         }
     }
+}
+
+private class TextureOption(val name: String, val assetItem: AssetItem?) {
+    override fun toString(): String = name
 }
 
 fun UiScope.iconButton(

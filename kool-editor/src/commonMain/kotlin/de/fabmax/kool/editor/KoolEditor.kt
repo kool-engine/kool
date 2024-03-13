@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.ApplicationCallbacks
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.LoadableFile
 import de.fabmax.kool.editor.actions.DeleteNodeAction
@@ -18,6 +17,7 @@ import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.editor.ui.FloatingToolbar
+import de.fabmax.kool.fileSystemAssetLoader
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
@@ -31,7 +31,7 @@ import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logW
 
-class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
+class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
 
     init { instance = this }
 
@@ -64,9 +64,9 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
         editorOverlay.addNode(this)
     }
 
-    val appLoader = AppLoader(this, paths)
+    val appLoader = AppLoader(this)
     val modeController = AppModeController(this)
-    val availableAssets = AvailableAssets(paths.assetsBasePath, paths.assetsSubDir)
+    val availableAssets = AvailableAssets(projectFiles)
     val ui = EditorUi(this)
 
     private val editorAppCallbacks = object : ApplicationCallbacks {
@@ -83,8 +83,8 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     }
 
     init {
-        Assets.assetsBasePath = paths.assetsBasePath
-        AppAssets.impl = CachedAppAssets
+        //Assets.defaultLoader = fileSystemAssetLoader(projectFiles.assets)
+        AppAssets.impl = CachedAppAssets(fileSystemAssetLoader(projectFiles.fileSystem.root))
 
         AppState.isInEditorState.set(true)
         AppState.appModeState.set(AppMode.EDIT)
@@ -117,8 +117,9 @@ class KoolEditor(val ctx: KoolContext, val paths: ProjectPaths) {
     fun editBehaviorSource(behavior: AppBehavior) = editBehaviorSource(behavior.qualifiedName)
 
     fun editBehaviorSource(behaviorClassName: String) {
-        val sourcePath = "${paths.commonSrcPath}/${behaviorClassName.replace('.', '/')}.kt"
-        PlatformFunctions.editBehavior(sourcePath)
+        TODO()
+        //val sourcePath = "${paths.commonSrcPath}/${behaviorClassName.replace('.', '/')}.kt"
+        //PlatformFunctions.editBehavior(sourcePath)
     }
 
     private fun registerAutoSaveOnFocusLoss() {

@@ -28,6 +28,26 @@ kotlin {
             api(project(":kool-physics"))
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
         }
+
+        val desktopTest by getting
+        desktopTest.dependencies {
+            implementation(fileTree("${projectDir}/../kool-demo/runtimeLibs") { include("*.jar") })
+            implementation(jvmLibs.jsvg)
+
+            // add all native libs potentially needed for running demo as runtimeOnly dependencies, so that they can
+            // be found by the cacheRuntimeLibs task
+            listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
+                runtimeOnly("${jvmLibs.lwjgl.core.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.glfw.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.jemalloc.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.nfd.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.opengl.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.shaderc.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.stb.get()}:$platform")
+                runtimeOnly("${jvmLibs.lwjgl.vma.get()}:$platform")
+                runtimeOnly("${jvmLibs.physxjni.get()}:$platform")
+            }
+        }
     }
 
     sourceSets.all {
