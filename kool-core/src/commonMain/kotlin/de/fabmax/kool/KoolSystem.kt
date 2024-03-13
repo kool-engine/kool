@@ -43,9 +43,9 @@ object KoolSystem {
 
 interface KoolConfig {
     /**
-     * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).
+     * Default asset loader used by [Assets] to load textures, models, etc.
      */
-    val assetPath: String
+    val defaultAssetLoader: AssetLoader
 
     val defaultFont: MsdfFontInfo
 }

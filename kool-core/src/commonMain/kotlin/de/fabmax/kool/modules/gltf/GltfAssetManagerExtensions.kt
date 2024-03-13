@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.DataStream
@@ -8,26 +9,31 @@ import de.fabmax.kool.util.logW
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 
-suspend fun Assets.loadGltfFile(assetPath: String): GltfFile = loadGltfFileAsync(assetPath).await()
+suspend fun AssetLoader.loadGltfFile(assetPath: String): GltfFile = loadGltfFileAsync(assetPath).await()
 
-suspend fun Assets.loadGltfModel(
+suspend fun AssetLoader.loadGltfModel(
     assetPath: String,
     modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
 ): Model = loadGltfModelAsync(assetPath, modelCfg, scene).await()
 
-fun Assets.loadGltfFileAsync(assetPath: String): Deferred<GltfFile> = Assets.async {
+fun AssetLoader.loadGltfFileAsync(assetPath: String): Deferred<GltfFile> = Assets.async {
     val blob = loadBlobAsset(assetPath)
     GltfFile(blob, assetPath)
 }
 
-fun Assets.loadGltfModelAsync(
+fun AssetLoader.loadGltfModelAsync(
     assetPath: String,
     modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
 ): Deferred<Model> = Assets.async {
     loadGltfFileAsync(assetPath).await().makeModel(modelCfg, scene)
 }
+
+suspend fun Assets.loadGltfFile(assetPath: String): GltfFile = defaultLoader.loadGltfFileAsync(assetPath).await()
+suspend fun Assets.loadGltfModel(assetPath: String, modelCfg: GltfLoadConfig = GltfLoadConfig(), scene: Int = 0): Model = defaultLoader.loadGltfModelAsync(assetPath, modelCfg, scene).await()
+fun Assets.loadGltfFileAsync(assetPath: String): Deferred<GltfFile> = defaultLoader.loadGltfFileAsync(assetPath)
+fun Assets.loadGltfModelAsync(assetPath: String, modelCfg: GltfLoadConfig = GltfLoadConfig(), scene: Int = 0): Deferred<Model> = defaultLoader.loadGltfModelAsync(assetPath, modelCfg, scene)
 
 private fun isGltf(assetPath: String): Boolean {
     return assetPath.endsWith(".gltf", true) || assetPath.endsWith(".gltf.gz", true)

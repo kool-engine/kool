@@ -76,7 +76,8 @@ class InMemoryFileSystem : WritableFileSystem {
 
         override fun list(): List<InMemoryItem> = items.values.toList().sortedBy { it.path }
 
-        override fun get(name: String): InMemoryItem = checkNotNull(items[name]) { "File not found: $name" }
+        override fun getChildOrNull(name: String): InMemoryItem? = items[name]
+        override fun contains(name: String): Boolean = name in items
 
         override fun delete() {
             delete(false)

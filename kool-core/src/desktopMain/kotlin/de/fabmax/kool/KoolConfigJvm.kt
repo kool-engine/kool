@@ -9,9 +9,9 @@ import javax.imageio.ImageIO
 
 data class KoolConfigJvm(
     /**
-     * Base path used by [Assets] to look for assets to be loaded (textures, models, etc.).
+     * Default asset loader used by [Assets] to load textures, models, etc.
      */
-    override val assetPath: String = "./assets",
+    override val defaultAssetLoader: AssetLoader = NativeAssetLoader("./assets"),
 
     /**
      * Default font used by UI elements.
@@ -22,7 +22,7 @@ data class KoolConfigJvm(
      * Alternative base path used by [Assets] to look for assets using the classloader. This can be used to place
      * assets into the resources directory under /src/commonMain/resources/[classloaderAssetPath]. The classloader
      * asset path is preferred by the [Assets] loader. If a requested asset is not found in the classloader resources
-     * the regular file-system based [assetPath] is used.
+     * the regular file-system based asset path is used.
      */
     val classloaderAssetPath: String = "",
 

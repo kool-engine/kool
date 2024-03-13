@@ -168,7 +168,8 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
 
         override fun list(): List<FsItem> = items.values.toList().sortedBy { it.path }
 
-        override fun get(name: String): FsItem = checkNotNull(items[name]) { "File not found: $name" }
+        override fun getChildOrNull(name: String): FsItem? = items[name]
+        override fun contains(name: String): Boolean = name in items
 
         override fun delete() {
             delete(false)

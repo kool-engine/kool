@@ -33,6 +33,21 @@ interface FileSystem {
     }
 }
 
+fun FileSystem.getItemOrNull(path: String): FileSystemItem? {
+    return if (path in this) {
+        this[path]
+    } else {
+        null
+    }
+}
+
+fun FileSystem.getFileOrNull(path: String): FileSystemFile? = getItemOrNull(path) as? FileSystemFile?
+fun FileSystem.getDirectoryOrNull(path: String): FileSystemDirectory? = getItemOrNull(path) as? FileSystemDirectory?
+
+fun FileSystem.getItem(path: String): FileSystemItem = checkNotNull(getItemOrNull(path)) { "Item not found: $path" }
+fun FileSystem.getFile(path: String): FileSystemFile = checkNotNull(getFileOrNull(path)) { "File not found: $path" }
+fun FileSystem.getDirectory(path: String): FileSystemDirectory = checkNotNull(getDirectoryOrNull(path)) { "Directory not found: $path" }
+
 interface WritableFileSystem : FileSystem {
     fun createDirectory(path: String): WritableFileSystemDirectory
     suspend fun createFile(path: String, data: Uint8Buffer): WritableFileSystemFile

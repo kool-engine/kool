@@ -57,7 +57,8 @@ class ZipFileSytem(zipPath: String) : FileSystem {
 
         override fun list(): List<FileSystemItem> = items.values.toList().sortedBy { it.path }
 
-        override fun get(name: String): FileSystemItem = checkNotNull(items[name]) { "File not found: $name" }
+        override fun getChildOrNull(name: String): FileSystemItem? = items[name]
+        override fun contains(name: String): Boolean = name in items
     }
 
     private inner class File(override val path: String, val zipEntry: ZipEntry): FileSystemFile {
