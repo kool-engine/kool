@@ -6,17 +6,15 @@ import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-expect class AppLoadService(paths: ProjectFiles) {
-    var hasAppChanged: Boolean
-        private set
-
-    fun addIgnorePath(path: String)
+interface AppLoadService {
+    val hasAppChanged: Boolean
 
     suspend fun buildApp()
 
     suspend fun loadApp(): LoadedApp
 }
+
+expect fun AppLoadService(projectFiles: ProjectFiles): AppLoadService
 
 interface AppReloadListener {
     suspend fun onAppReloaded(loadedApp: LoadedApp)
@@ -35,7 +33,7 @@ class LoadedApp(val app: EditorAwareApp, val behaviorClasses: Map<KClass<*>, App
 class AppBehavior(val simpleName: String, val qualifiedName: String, val properties: List<BehaviorProperty>) {
     val prettyName = BehaviorEditor.camelCaseToWords(simpleName)
 
-    fun dumpProperties() {
+    fun printProperties() {
         println(qualifiedName)
         properties.forEach {
             println("    ${it.name}: ${it.type}")
@@ -49,19 +47,15 @@ class AppLoader(val editor: KoolEditor) {
     private val loadService = AppLoadService(editor.projectFiles)
     private var isBuildInProgress = false
 
-//    init {
-//        editor.editorContent.onUpdate {
-//            if (loadService.hasAppChanged) {
-//                editor.ui.appStateInfo.set("App sources changed on disc")
-//                if (!isBuildInProgress && editor.ctx.isWindowFocused) {
-//                    reloadApp()
-//                }
-//            }
-//        }
-//    }
-
-    fun addIgnorePath(path: String) {
-        loadService.addIgnorePath(path)
+    init {
+        editor.editorContent.onUpdate {
+            if (loadService.hasAppChanged) {
+                editor.ui.appStateInfo.set("App sources changed on disc")
+                if (!isBuildInProgress && editor.ctx.isWindowFocused) {
+                    reloadApp()
+                }
+            }
+        }
     }
 
     fun reloadApp() {

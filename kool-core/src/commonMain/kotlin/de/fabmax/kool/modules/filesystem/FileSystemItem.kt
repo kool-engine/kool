@@ -14,6 +14,8 @@ interface FileSystemItem {
     val path: String
     val name: String
     val isDirectory: Boolean
+
+    val parent: FileSystemDirectory?
 }
 
 interface FileSystemFile : FileSystemItem {

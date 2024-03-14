@@ -1,15 +1,17 @@
 package de.fabmax.kool.editor
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual class AppLoadService actual constructor(paths: ProjectFiles) {
-    actual var hasAppChanged = false
-        private set
+import de.fabmax.kool.util.logE
 
-    actual fun addIgnorePath(path: String) { }
+actual fun AppLoadService(projectFiles: ProjectFiles): AppLoadService = AppLoadServiceImpl()
 
-    actual suspend fun buildApp() { }
+class AppLoadServiceImpl : AppLoadService {
+    override val hasAppChanged = false
 
-    actual suspend fun loadApp(): LoadedApp {
+    override suspend fun buildApp() {
+        logE { "App building not supported in browser" }
+    }
+
+    override suspend fun loadApp(): LoadedApp {
         return PlatformFunctions.loadedApp ?: throw IllegalStateException("PlatformFunctions.initPlatform() not called")
     }
 }

@@ -1,57 +1,75 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.editor.api.BehaviorLoader
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.model.EditorProject
+import de.fabmax.kool.modules.filesystem.FileSystemFile
+import de.fabmax.kool.modules.filesystem.FileSystemWatcher
+import de.fabmax.kool.modules.filesystem.PhysicalFileSystem
+import de.fabmax.kool.modules.filesystem.getFileOrNull
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.net.URLClassLoader
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 import kotlin.io.path.*
 import kotlin.reflect.KClass
 
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual class AppLoadService actual constructor(paths: ProjectFiles) : CoroutineScope {
+actual fun AppLoadService(projectFiles: ProjectFiles): AppLoadService = AppLoadServiceImpl(projectFiles)
+
+class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadService, CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Job()
 
-//    private val appClassPath = Path.of(paths.classPath)
-
+    private val physFs: PhysicalFileSystem? = projectFiles.fileSystem as? PhysicalFileSystem
     private val buildInProgress = AtomicBoolean(false)
 
-    actual var hasAppChanged = false
+    override var hasAppChanged = true
         private set
 
-    val ignoredPaths = mutableSetOf<Path>()
+    private val ignoredPaths = mutableSetOf<Path>()
+
+    private val fsWatcher = object : FileSystemWatcher {
+        override fun onFileCreated(file: FileSystemFile) = checkIfSourceFileChanged(file)
+        override fun onFileChanged(file: FileSystemFile) = checkIfSourceFileChanged(file)
+        override fun onFileDeleted(file: FileSystemFile) = checkIfSourceFileChanged(file)
+
+        private fun checkIfSourceFileChanged(file: FileSystemFile) {
+            if (!hasAppChanged && file is PhysicalFileSystem.File && file.path.startsWith("/src/")) {
+                hasAppChanged = true
+                logD { "App sources changed" }
+            }
+        }
+    }
 
     init {
-//        paths.jsAppBehaviorBindingsPath?.let {
-//            ignoredPaths.add(Path.of(it))
-//        }
+        if (physFs == null) {
+            logW { "Project file system is not physical, dynamic app building and loading will not work." }
+        }
+        projectFiles.fileSystem.addFileSystemWatcher(fsWatcher)
     }
 
-    actual fun addIgnorePath(path: String) {
-        ignoredPaths.add(Path.of(path))
-    }
+    override suspend fun buildApp() {
+        hasAppChanged = false
 
-//    @Suppress("unused")
-//    private val loader = launch {
-//        while (true) {
-//            val changes = watcher.changes.receive().filter { it.path !in ignoredPaths }
-//            if (changes.isNotEmpty()) {
-//                logD { "File change detected: ${changes[0].path}, ${changes[0].type}}" }
-//                hasAppChanged = true
-//            }
-//        }
-//    }
+        val buildGradle = physFs?.getFileOrNull(BUILD_GRADLE) as PhysicalFileSystem.File?
+        if (buildGradle == null) {
+            logI { "build.gradle.kts not found, unable to build app" }
+            return
+        }
 
-    actual suspend fun buildApp() {
         if (buildInProgress.getAndSet(true)) {
             logW("AppLoader.loader") { "Build is already in progress" }
             return
@@ -59,65 +77,71 @@ actual class AppLoadService actual constructor(paths: ProjectFiles) : CoroutineS
 
         logI("AppLoader.loader") { "Executing gradle build" }
 
-//        suspendCoroutine { continuation ->
-//            thread {
-//                try {
-//                    val isWindows = "windows" in System.getProperty("os.name").lowercase()
-//                    val gradleDir = File(paths.gradleRootDir).canonicalFile
-//                    val gradlewCmd = if (isWindows) "$gradleDir\\gradlew.bat" else "$gradleDir/gradlew"
-//                    logI { "Building app: $gradlewCmd ${paths.gradleBuildTask}" }
-//
-//                    val buildProcess = ProcessBuilder()
-//                        .command(gradlewCmd, paths.gradleBuildTask)
-//                        .directory(gradleDir)
-//                        .start()
-//                    thread {
-//                        BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
-//                            if (it.isNotEmpty()) {
-//                                logD("gradle") { "  $it" }
-//                            }
-//                        }
-//                    }
-//                    thread {
-//                        BufferedReader(InputStreamReader(buildProcess.errorStream)).lines().forEach {
-//                            logE("gradle") { "  $it" }
-//                        }
-//                    }
-//                    val exitCode = buildProcess.waitFor()
-//                    logI { "Gradle build finished (exit code: $exitCode)" }
-//                    hasAppChanged = false
-//
-//                    if (exitCode == 0) {
-//                        continuation.resume(Unit)
-//                    } else {
-//                        continuation.resumeWith(Result.failure(IllegalStateException("Build failed")))
-//                    }
-//                } finally {
-//                    buildInProgress.set(false)
-//                }
-//            }
-//        }
+        suspendCoroutine { continuation ->
+            thread {
+                try {
+                    val isWindows = "windows" in System.getProperty("os.name").lowercase()
+                    val gradleDir = buildGradle.physPath.parent.toFile().canonicalFile
+                    val gradlewCmd = if (isWindows) "$gradleDir\\gradlew.bat" else "$gradleDir/gradlew"
+                    logI { "Building app: $gradlewCmd $GRADLE_BUILD_TASK, working dir: $gradleDir" }
+
+                    val buildProcess = ProcessBuilder()
+                        .command(gradlewCmd, GRADLE_BUILD_TASK)
+                        .directory(gradleDir)
+                        .start()
+                    thread {
+                        BufferedReader(InputStreamReader(buildProcess.inputStream)).lines().forEach {
+                            if (it.isNotEmpty()) {
+                                logD("gradle") { "  $it" }
+                            }
+                        }
+                    }
+                    thread {
+                        BufferedReader(InputStreamReader(buildProcess.errorStream)).lines().forEach {
+                            logE("gradle") { "  $it" }
+                        }
+                    }
+                    val exitCode = buildProcess.waitFor()
+                    logI { "Gradle build finished (exit code: $exitCode)" }
+
+                    if (exitCode == 0) {
+                        continuation.resume(Unit)
+                    } else {
+                        continuation.resumeWith(Result.failure(IllegalStateException("Build failed")))
+                    }
+                } finally {
+                    buildInProgress.set(false)
+                }
+            }
+        }
     }
 
-    actual suspend fun loadApp(): LoadedApp {
-//        if (!appClassPath.exists()) {
-//            buildApp()
-//        }
-//
-//        logI { "Loading app from directory: $appClassPath" }
-//        val loader = URLClassLoader(arrayOf(appClassPath.toUri().toURL()), this.javaClass.classLoader)
-//        BehaviorLoader.appBehaviorLoader = BehaviorLoader.ReflectionAppBehaviorLoader(loader)
-//        val behaviorClasses = examineClasses(loader, appClassPath)
-//
-//        paths.jsAppBehaviorBindingsPath?.let { genPath ->
-//            logI { "Generating Javascript behavior bindings: $genPath" }
-//            JsAppBehaviorBindingsGenerator.generateBehaviorBindings(behaviorClasses.values.toList(), genPath)
-//        }
-//
-//        val appClass = loader.loadClass(paths.appMainClass)
-//        val app = appClass.getDeclaredConstructor().newInstance()
-//        return LoadedApp(app as EditorAwareApp, behaviorClasses)
-        return LoadedApp(EmptyApp(), emptyMap())
+    override suspend fun loadApp(): LoadedApp {
+        if (physFs == null) {
+            return LoadedApp(EmptyApp(), emptyMap())
+        }
+
+        val buildClasses = Path(physFs.rootPath, BUILD_OUTPUT_CLASSES)
+        if (!buildClasses.exists()) {
+            buildApp()
+            if (!buildClasses.exists()) {
+                logE { "Built app, but classes not found at $BUILD_OUTPUT_CLASSES" }
+                return LoadedApp(EmptyApp(), emptyMap())
+            }
+        }
+
+        logI { "Loading app from directory: $buildClasses" }
+        val loader = URLClassLoader(arrayOf(buildClasses.toUri().toURL()), this.javaClass.classLoader)
+        BehaviorLoader.appBehaviorLoader = BehaviorLoader.ReflectionAppBehaviorLoader(loader)
+        val behaviorClasses = examineClasses(loader, buildClasses)
+
+        val jsGenOutput = Path(physFs.rootPath, JS_BEHAVIOR_GEN_OUTPUT).pathString
+        logI { "Generating Javascript behavior bindings: $jsGenOutput" }
+        JsAppBehaviorBindingsGenerator.generateBehaviorBindings(behaviorClasses.values.toList(), jsGenOutput)
+
+        val appClass = loader.loadClass(projectFiles.appMainClass)
+        val app = appClass.getDeclaredConstructor().newInstance()
+        return LoadedApp(app as EditorAwareApp, behaviorClasses)
     }
 
     @OptIn(ExperimentalPathApi::class)
@@ -146,6 +170,13 @@ actual class AppLoadService actual constructor(paths: ProjectFiles) : CoroutineS
             }
         }
         return behaviorClasses
+    }
+
+    companion object {
+        private const val BUILD_GRADLE = "build.gradle.kts"
+        private const val GRADLE_BUILD_TASK = "jvmMainClasses"
+        private const val BUILD_OUTPUT_CLASSES = "build/classes/kotlin/jvm/main"
+        private const val JS_BEHAVIOR_GEN_OUTPUT = "src/jsMain/kotlin/BehaviorBindings.kt"
     }
 
     private class EmptyApp : EditorAwareApp {

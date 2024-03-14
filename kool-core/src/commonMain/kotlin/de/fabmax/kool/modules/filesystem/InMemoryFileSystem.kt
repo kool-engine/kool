@@ -72,6 +72,9 @@ class InMemoryFileSystem : WritableFileSystem {
     }
 
     private inner class Directory(override val path: String) : InMemoryItem(), WritableFileSystemDirectory {
+        override val parent: FileSystemDirectory?
+            get() = this@InMemoryFileSystem.getDirectoryOrNull(FileSystem.parentPath(path))
+
         val items = mutableMapOf<String, InMemoryItem>()
 
         override fun list(): List<InMemoryItem> = items.values.toList().sortedBy { it.path }
@@ -99,6 +102,9 @@ class InMemoryFileSystem : WritableFileSystem {
     }
 
     private inner class File(override val path: String, var data: Uint8Buffer) : InMemoryItem(), WritableFileSystemFile {
+        override val parent: FileSystemDirectory?
+            get() = this@InMemoryFileSystem.getDirectoryOrNull(FileSystem.parentPath(path))
+
         override val size: Long
             get() = data.capacity.toLong()
 

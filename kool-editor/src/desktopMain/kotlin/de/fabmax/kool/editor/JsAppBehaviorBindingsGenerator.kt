@@ -36,6 +36,9 @@ object JsAppBehaviorBindingsGenerator {
         source.appendLine("}")
 
         val file = File(filePath)
+        if (!file.parentFile.exists()) {
+            file.parentFile.mkdirs()
+        }
         if (!file.exists() || file.readText() != source.toString()) {
             file.writeText(source.toString())
         }

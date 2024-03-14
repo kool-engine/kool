@@ -12,9 +12,6 @@ interface FileSystem {
     fun addFileSystemWatcher(listener: FileSystemWatcher)
     fun removeFileSystemWatcher(listener: FileSystemWatcher)
 
-    val FileSystemItem.parent: FileSystemDirectory
-        get() = get(parentPath(path)) as FileSystemDirectory
-
     companion object {
         fun sanitizePath(path: String): String {
             val p = path.replace('\\', '/')

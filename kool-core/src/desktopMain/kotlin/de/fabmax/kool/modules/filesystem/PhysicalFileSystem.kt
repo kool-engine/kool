@@ -14,7 +14,7 @@ import kotlin.io.path.*
 class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boolean = false) : WritableFileSystem, AutoCloseable {
     val rootPath = Path(rootPath).absolutePathString()
 
-    override val root: FileSystemDirectory
+    override val root: Directory
     private val fsItems = mutableMapOf<String, FsItem>()
 
     private val listeners = BufferedList<FileSystemWatcher>()
@@ -157,11 +157,14 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         return if (isDir) FileSystem.sanitizeDirPath(fsPath) else FileSystem.sanitizePath(fsPath)
     }
 
-    private sealed class FsItem: FileSystemItem {
-        abstract fun delete(isParentDelete: Boolean)
+    sealed class FsItem: FileSystemItem {
+        internal abstract fun delete(isParentDelete: Boolean)
     }
 
-    private inner class Directory(val physPath: Path) : FsItem(), WritableFileSystemDirectory {
+    inner class Directory(val physPath: Path) : FsItem(), WritableFileSystemDirectory {
+        override val parent: Directory?
+            get() = this@PhysicalFileSystem.getDirectoryOrNull(FileSystem.parentPath(path)) as Directory?
+
         override val path: String = physPath.fsPath(true)
 
         val items = mutableMapOf<String, FsItem>()
@@ -191,7 +194,10 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         }
     }
 
-    private inner class File(val physPath: Path) : FsItem(), WritableFileSystemFile {
+    inner class File(val physPath: Path) : FsItem(), WritableFileSystemFile {
+        override val parent: Directory?
+            get() = this@PhysicalFileSystem.getDirectoryOrNull(FileSystem.parentPath(path)) as Directory?
+
         override val path: String = physPath.fsPath(false)
 
         override val size: Long

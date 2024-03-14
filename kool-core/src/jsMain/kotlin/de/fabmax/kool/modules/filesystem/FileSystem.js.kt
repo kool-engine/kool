@@ -60,7 +60,10 @@ class ZipFileSytem(zip: JsZip) : FileSystem {
 
     override fun removeFileSystemWatcher(listener: FileSystemWatcher) { }
 
-    private class Directory(override val path: String): FileSystemDirectory {
+    private inner class Directory(override val path: String): FileSystemDirectory {
+        override val parent: FileSystemDirectory?
+            get() = this@ZipFileSytem.getDirectoryOrNull(FileSystem.parentPath(path))
+
         val items = mutableMapOf<String, FileSystemItem>()
 
         override fun list(): List<FileSystemItem> = items.values.toList().sortedBy { it.path }
@@ -70,6 +73,9 @@ class ZipFileSytem(zip: JsZip) : FileSystem {
     }
 
     private inner class File(override val path: String, val zipEntry: ZipObject): FileSystemFile {
+        override val parent: FileSystemDirectory?
+            get() = this@ZipFileSytem.getDirectoryOrNull(FileSystem.parentPath(path))
+
         override val size: Long
             get() = -1L
 

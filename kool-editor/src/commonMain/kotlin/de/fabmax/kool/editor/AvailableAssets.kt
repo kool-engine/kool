@@ -78,23 +78,21 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
         val rootAssets = mutableListOf<AssetItem>()
         assetsByPath.values.forEach { it.children.clear() }
 
-        with(projectFiles.fileSystem) {
-            projectFiles.assets.collect().forEach { file ->
-                val pathString = file.path
-                val parentPath = file.parent.path
-                val parent = assetsByPath[parentPath]
+        projectFiles.assets.collect().forEach { file ->
+            val pathString = file.path
+            val parentPath = file.parent?.path
+            val parent = assetsByPath[parentPath]
 
-                val assetItem = assetsByPath.getOrPut(file.path) {
-                    AssetItem(file)
-                }
-
-                if (parent != null) {
-                    parent.children += assetItem
-                } else {
-                    rootAssets += assetItem
-                }
-                assetPaths += pathString
+            val assetItem = assetsByPath.getOrPut(file.path) {
+                AssetItem(file)
             }
+
+            if (parent != null) {
+                parent.children += assetItem
+            } else {
+                rootAssets += assetItem
+            }
+            assetPaths += pathString
         }
 
         assetsByPath.keys.retainAll(assetPaths)
