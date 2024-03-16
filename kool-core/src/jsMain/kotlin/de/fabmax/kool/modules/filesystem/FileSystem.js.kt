@@ -37,8 +37,8 @@ class ZipFileSytem(zip: JsZip) : FileSystem {
         path.substringBeforeLast("/").split("/")
             .filter { it.isNotEmpty() }
             .fold(root as Directory) { parent, name ->
-                parent.items.getOrPut("$name/") {
-                    val newDir = Directory("${parent.path}${name}/")
+                parent.items.getOrPut(name) {
+                    val newDir = Directory("${parent.path}/${name}")
                     fsItems[newDir.path] = newDir
                     newDir
                 } as Directory

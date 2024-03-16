@@ -5,7 +5,7 @@ import de.fabmax.kool.util.Uint8Buffer
 
 class InMemoryFileSystem : WritableFileSystem {
 
-    override val root: FileSystemDirectory = Directory("/")
+    override val root: WritableFileSystemDirectory = Directory("/")
     private val fsItems = mutableMapOf<String, InMemoryItem>("/" to root as Directory)
 
     private val listeners = BufferedList<FileSystemWatcher>()
@@ -28,7 +28,7 @@ class InMemoryFileSystem : WritableFileSystem {
     }
 
     override fun createDirectory(path: String): WritableFileSystemDirectory {
-        val dirPath = FileSystem.sanitizeDirPath(path)
+        val dirPath = FileSystem.sanitizePath(path)
         check(dirPath !in this) { "directory already exists: $dirPath" }
 
         val parentPath = FileSystem.parentPath(dirPath)
@@ -42,7 +42,6 @@ class InMemoryFileSystem : WritableFileSystem {
 
         listeners.updated().forEach {
             it.onDirectoryCreated(dir)
-            it.onDirectoryChanged(parentDir)
         }
         return dir
     }
@@ -62,14 +61,11 @@ class InMemoryFileSystem : WritableFileSystem {
 
         listeners.updated().forEach {
             it.onFileCreated(file)
-            it.onDirectoryChanged(parentDir)
         }
         return file
     }
 
-    private sealed class InMemoryItem: FileSystemItem {
-        abstract fun delete(isParentDelete: Boolean)
-    }
+    private sealed class InMemoryItem: WritableFileSystemItem
 
     private inner class Directory(override val path: String) : InMemoryItem(), WritableFileSystemDirectory {
         override val parent: FileSystemDirectory?
@@ -83,20 +79,11 @@ class InMemoryFileSystem : WritableFileSystem {
         override fun contains(name: String): Boolean = name in items
 
         override fun delete() {
-            delete(false)
-        }
-
-        override fun delete(isParentDelete: Boolean) {
             check(this != root) { "root directory cannot be deleted" }
-            list().forEach { it.delete(true) }
+            list().forEach { it.delete() }
             fsItems.remove(path)
-
-            val parent = this@InMemoryFileSystem[FileSystem.parentPath(path)] as Directory
             listeners.updated().forEach {
                 it.onDirectoryDeleted(this)
-                if (!isParentDelete) {
-                    it.onDirectoryChanged(parent)
-                }
             }
         }
 
@@ -106,6 +93,10 @@ class InMemoryFileSystem : WritableFileSystem {
 
         override suspend fun createFile(name: String, data: Uint8Buffer): WritableFileSystemFile {
             return this@InMemoryFileSystem.createFile("${path}/$name", data)
+        }
+
+        override fun move(destinationPath: String) {
+            TODO("Not yet implemented")
         }
     }
 
@@ -124,19 +115,14 @@ class InMemoryFileSystem : WritableFileSystem {
         }
 
         override fun delete() {
-            delete(false)
-        }
-
-        override fun delete(isParentDelete: Boolean) {
             fsItems.remove(path)
-
-            val parent = this@InMemoryFileSystem[FileSystem.parentPath(path)] as Directory
             listeners.updated().forEach {
                 it.onFileDeleted(this)
-                if (!isParentDelete) {
-                    it.onDirectoryChanged(parent)
-                }
             }
+        }
+
+        override fun move(destinationPath: String) {
+            TODO("Not yet implemented")
         }
     }
 }

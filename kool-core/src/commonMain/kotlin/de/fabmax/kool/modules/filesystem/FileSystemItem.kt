@@ -13,15 +13,13 @@ import de.fabmax.kool.util.logW
 interface FileSystemItem {
     val path: String
     val name: String
+        get() = path.substringAfterLast("/")
     val isDirectory: Boolean
 
     val parent: FileSystemDirectory?
 }
 
 interface FileSystemFile : FileSystemItem {
-    override val name: String
-        get() = path.substringAfterLast("/")
-
     override val isDirectory: Boolean
         get() = false
 
@@ -33,9 +31,6 @@ interface FileSystemFile : FileSystemItem {
 }
 
 interface FileSystemDirectory : FileSystemItem {
-    override val name: String
-        get() = path.removeSuffix("/").substringAfterLast("/") + "/"
-
     override val isDirectory: Boolean
         get() = true
 
@@ -45,14 +40,16 @@ interface FileSystemDirectory : FileSystemItem {
     operator fun contains(name: String): Boolean
 }
 
-interface WritableFileSystemFile : FileSystemFile {
-    suspend fun write(data: Uint8Buffer)
+interface WritableFileSystemItem : FileSystemItem {
     fun delete()
+    fun move(destinationPath: String)
 }
 
-interface WritableFileSystemDirectory : FileSystemDirectory {
-    fun delete()
+interface WritableFileSystemFile : FileSystemFile, WritableFileSystemItem {
+    suspend fun write(data: Uint8Buffer)
+}
 
+interface WritableFileSystemDirectory : FileSystemDirectory, WritableFileSystemItem {
     fun createDirectory(name: String): WritableFileSystemDirectory
     suspend fun createFile(name: String, data: Uint8Buffer): WritableFileSystemFile
 }
@@ -70,10 +67,10 @@ fun FileSystemDirectory.collect() = buildList {
 
 fun FileSystemDirectory.getItemOrNull(path: String): FileSystemItem? {
     var it = this
-    val names = path.split('/').filter { it.isNotBlank() }
+    val names = FileSystem.sanitizePath(path).split('/').filter { it.isNotBlank() }
     for (i in names.indices) {
         val name = names[i]
-        val child = it.getChildOrNull(name) ?: it.getChildOrNull("${name}/") ?: return null
+        val child = it.getChildOrNull(name) ?: return null
         if (i == names.lastIndex) {
             return child
         }
@@ -92,6 +89,23 @@ fun FileSystemDirectory.getDirectoryOrNull(path: String): FileSystemDirectory? =
 fun FileSystemDirectory.getItem(path: String): FileSystemItem = checkNotNull(getItemOrNull(path)) { "Item not found: $path" }
 fun FileSystemDirectory.getFile(path: String): FileSystemFile = checkNotNull(getFileOrNull(path)) { "File not found: $path" }
 fun FileSystemDirectory.getDirectory(path: String): FileSystemDirectory = checkNotNull(getDirectoryOrNull(path)) { "Directory not found: $path" }
+
+fun WritableFileSystemDirectory.getOrCreateDirectory(path: String): WritableFileSystemDirectory {
+    return (getDirectoryOrNull(path) as WritableFileSystemDirectory?) ?: createDirectory(path)
+}
+
+suspend fun WritableFileSystemDirectory.getOrCreateFile(path: String): WritableFileSystemFile {
+    return (getFileOrNull(path) as WritableFileSystemFile?) ?: createFile(path, Uint8Buffer(0))
+}
+
+fun WritableFileSystemDirectory.createDirectories(path: String): WritableFileSystemDirectory {
+    val dirNames = FileSystem.sanitizePath(path).split("/").filter { it.isNotBlank() }
+    var it = this
+    for (name in dirNames) {
+        it = it.getOrCreateDirectory(name)
+    }
+    return it
+}
 
 suspend fun FileSystemFile.loadTexture2d(props: TextureProps = TextureProps()): Texture2d {
     val mimeType = this.mimeType

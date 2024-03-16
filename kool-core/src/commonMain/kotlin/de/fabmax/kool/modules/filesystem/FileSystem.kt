@@ -16,18 +16,16 @@ interface FileSystem {
         private val multiSeperatorRegex = Regex("/{2,}")
 
         fun sanitizePath(path: String): String {
-            val p = path.replace('\\', '/').replace(multiSeperatorRegex, "/")
-            return if (p.startsWith("/")) p else "/$p"
-        }
-
-        fun sanitizeDirPath(path: String): String {
-            val p = sanitizePath(path)
-            return if (p.endsWith("/")) p else "$p/"
+            return "/${path}"
+                .replace('\\', '/')
+                .replace(multiSeperatorRegex, "/")
+                .removeSuffix("/")
+                .ifEmpty { "/" }
         }
 
         fun parentPath(path: String): String {
-            val p = sanitizePath(path)
-            return if (p == "/") p else p.removeSuffix("/").substringBeforeLast('/') + '/'
+            val p = sanitizePath(path).substringBeforeLast('/')
+            return p.ifEmpty { "/" }
         }
     }
 }
@@ -48,25 +46,22 @@ fun FileSystem.getFile(path: String): FileSystemFile = checkNotNull(getFileOrNul
 fun FileSystem.getDirectory(path: String): FileSystemDirectory = checkNotNull(getDirectoryOrNull(path)) { "Directory not found: $path" }
 
 interface WritableFileSystem : FileSystem {
+    override val root: WritableFileSystemDirectory
+
     fun createDirectory(path: String): WritableFileSystemDirectory
     suspend fun createFile(path: String, data: Uint8Buffer): WritableFileSystemFile
+}
 
-    fun getOrCreateDirectory(path: String): WritableFileSystemDirectory {
-        val dirPath = FileSystem.sanitizeDirPath(path)
-        return if (dirPath in this) {
-            get(dirPath) as WritableFileSystemDirectory
-        } else {
-            createDirectory(dirPath)
-        }
-    }
+fun WritableFileSystem.getOrCreateDirectory(path: String): WritableFileSystemDirectory {
+    return root.getOrCreateDirectory(path)
+}
 
-    suspend fun getOrCreateFile(path: String): WritableFileSystemFile {
-        return if (path in this) {
-            get(path) as WritableFileSystemFile
-        } else {
-            createFile(path, Uint8Buffer(0))
-        }
-    }
+suspend fun WritableFileSystem.getOrCreateFile(path: String): WritableFileSystemFile {
+    return root.getOrCreateFile(path)
+}
+
+fun WritableFileSystem.createDirectories(path: String): WritableFileSystemDirectory {
+    return root.createDirectories(path)
 }
 
 interface FileSystemWatcher {
@@ -76,7 +71,6 @@ interface FileSystemWatcher {
 
     fun onDirectoryCreated(directory: FileSystemDirectory) { }
     fun onDirectoryDeleted(directory: FileSystemDirectory) { }
-    fun onDirectoryChanged(directory: FileSystemDirectory) { }
 }
 
 fun FileSystem.print() {

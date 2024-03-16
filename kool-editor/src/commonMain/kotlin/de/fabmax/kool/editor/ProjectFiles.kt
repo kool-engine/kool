@@ -2,6 +2,7 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.modules.filesystem.WritableFileSystem
 import de.fabmax.kool.modules.filesystem.getFile
+import de.fabmax.kool.modules.filesystem.getOrCreateDirectory
 
 class ProjectFiles(
     val fileSystem: WritableFileSystem,

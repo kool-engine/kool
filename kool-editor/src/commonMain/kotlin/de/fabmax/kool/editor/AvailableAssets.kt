@@ -16,10 +16,10 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
 
     private val fsWatcher = object : FileSystemWatcher {
         override fun onFileCreated(file: FileSystemFile) = addAssetItem(file)
-        override fun onFileDeleted(file: FileSystemFile) = deleteAssetItem(file)
+        override fun onFileDeleted(file: FileSystemFile) = removeAssetItem(file)
 
         override fun onDirectoryCreated(directory: FileSystemDirectory) = addAssetItem(directory)
-        override fun onDirectoryDeleted(directory: FileSystemDirectory) = deleteAssetItem(directory)
+        override fun onDirectoryDeleted(directory: FileSystemDirectory) = removeAssetItem(directory)
 
         private fun addAssetItem(fileItem: FileSystemItem) {
             if (fileItem.path.startsWith(projectFiles.assets.path)) {
@@ -41,7 +41,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
             }
         }
 
-        private fun deleteAssetItem(fileItem: FileSystemItem) {
+        private fun removeAssetItem(fileItem: FileSystemItem) {
             val deletedAsset = assetsByPath[fileItem.path] ?: return
             val parent = assetsByPath[fileItem.parent?.path]
             if (parent == null) {
@@ -66,46 +66,43 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
     }
 
     fun createAssetDir(createPath: String) {
-        val parentPath = FileSystem.sanitizeDirPath(createPath.removeSuffix("/").substringBeforeLast('/'))
-        val parentItem = assetsByPath[parentPath]
+        val parentPath = FileSystem.parentPath(createPath)
+        val parentItem = assetsByPath[parentPath]?.fileItem as? WritableFileSystemDirectory?
         if (parentItem == null) {
-            logE { "Unable to create directory: ${createPath}. Parent path not found (${parentPath})" }
+            logE { "Unable to create directory: ${createPath}. Parent directory not found or not writable" }
             return
         }
-
-        // Only create actual directory. No need to create the corresponding AssetItem, is handled by fsWatcher
-        val parentDir = parentItem.fileItem as WritableFileSystemDirectory
-        parentDir.createDirectory(createPath.removePrefix(parentPath))
+        parentItem.createDirectory(createPath.removePrefix(parentPath))
     }
 
     fun renameAsset(sourcePath: String, destPath: String) {
-        TODO()
 //        val source = Path(assetsDir.pathString, sourcePath.removePrefix(browserSubDir))
 //        val dest = Path(assetsDir.pathString, destPath.removePrefix(browserSubDir))
 //        logD { "Rename asset: $source -> $dest" }
 //        dest.parent.createDirectories()
 //        source.moveTo(dest, StandardCopyOption.ATOMIC_MOVE)
+
+        val moveItem = assetsByPath[sourcePath]?.fileItem as? WritableFileSystemItem?
+        if (moveItem == null) {
+            logE { "Unable to move asset: ${sourcePath}. Item not found or not writable" }
+            return
+        }
+        moveItem.move(destPath)
     }
 
     fun deleteAsset(deletePath: String) {
-        val deleteItem = assetsByPath[deletePath]
+        val deleteItem = assetsByPath[deletePath]?.fileItem as? WritableFileSystemItem?
         if (deleteItem == null) {
-            logE { "Unable to delete asset: ${deletePath}. Path not found" }
+            logE { "Unable to delete asset: ${deletePath}. Path not found or not writable" }
             return
         }
-
-        // Only delete file. No need to modify asset items: is handled by fsWatcher
-        when (deleteItem.fileItem) {
-            is WritableFileSystemFile -> deleteItem.fileItem.delete()
-            is WritableFileSystemDirectory -> deleteItem.fileItem.delete()
-            else -> logE { "Unable to delete asset: ${deletePath}. Not a writable file item" }
-        }
+        deleteItem.delete()
     }
 
     suspend fun importAssets(targetPath: String, assetFiles: List<LoadableFile>) {
-        val targetDir = assetsByPath[FileSystem.sanitizeDirPath(targetPath)]?.fileItem as WritableFileSystemDirectory?
+        val targetDir = assetsByPath[FileSystem.sanitizePath(targetPath)]?.fileItem as? WritableFileSystemDirectory?
         if (targetDir == null) {
-            logE { "Unable to import assets into target directory: ${targetPath}. Path not found" }
+            logE { "Unable to import assets into target directory: ${targetPath}. Path not found or not writable" }
             return
         }
 
