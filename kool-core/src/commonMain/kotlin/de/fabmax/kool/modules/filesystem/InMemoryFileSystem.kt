@@ -99,6 +99,14 @@ class InMemoryFileSystem : WritableFileSystem {
                 }
             }
         }
+
+        override fun createDirectory(name: String): WritableFileSystemDirectory {
+            return this@InMemoryFileSystem.createDirectory("${path}/$name")
+        }
+
+        override suspend fun createFile(name: String, data: Uint8Buffer): WritableFileSystemFile {
+            return this@InMemoryFileSystem.createFile("${path}/$name", data)
+        }
     }
 
     private inner class File(override val path: String, var data: Uint8Buffer) : InMemoryItem(), WritableFileSystemFile {

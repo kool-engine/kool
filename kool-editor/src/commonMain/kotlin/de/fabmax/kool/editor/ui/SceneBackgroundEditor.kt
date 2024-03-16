@@ -122,7 +122,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
     }
 
     private fun UiScope.availableHdriTextures(): List<AssetItem> {
-        return KoolEditor.instance.availableAssets.hdriTextureAssets.use()
+        return KoolEditor.instance.availableAssets.hdriAssets.use()
     }
 
     private data class BackgroundTypeOption<T: SceneBackgroundData>(val name: String, val type: KClass<T>) {

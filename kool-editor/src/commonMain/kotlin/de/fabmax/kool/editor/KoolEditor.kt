@@ -29,6 +29,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logW
 
 class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
@@ -78,7 +79,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
 
         override fun onFileDrop(droppedFiles: List<LoadableFile>) {
             val targetPath = ui.assetBrowser.selectedDirectory.value?.path ?: ""
-            availableAssets.importAssets(targetPath, droppedFiles)
+            launchOnMainThread {
+                availableAssets.importAssets(targetPath, droppedFiles)
+            }
         }
     }
 

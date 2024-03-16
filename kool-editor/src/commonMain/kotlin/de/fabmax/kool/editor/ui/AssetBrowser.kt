@@ -62,7 +62,6 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
         traversedPaths: MutableSet<String>,
         addToDirTree: Boolean
     ): BrowserItem {
-
         traversedPaths += assetItem.path
         var item = browserItems[assetItem.path]
         if (item == null || !assetItem.type.matchesBrowserItemType(item)) {
@@ -80,7 +79,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
             }
             item.isExpandable.set(assetItem.children.any { it.type == AppAssetType.Directory })
             item.children.clear()
-            assetItem.children.forEach {
+            assetItem.children.use().forEach {
                 item.children += traverseAssetItem(
                     level = level + 1,
                     assetItem = it,

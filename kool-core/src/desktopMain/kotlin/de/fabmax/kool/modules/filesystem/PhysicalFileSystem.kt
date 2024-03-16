@@ -1,11 +1,9 @@
 package de.fabmax.kool.modules.filesystem
 
-import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.toBuffer
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.getOrElse
 import kotlinx.coroutines.withContext
 import java.nio.file.Path
 import kotlin.io.path.*
@@ -17,11 +15,39 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
     override val root: Directory
     private val fsItems = mutableMapOf<String, FsItem>()
 
-    private val listeners = BufferedList<FileSystemWatcher>()
+    private val watchers = BufferedList<FileSystemWatcher>()
     private val watchService: FileSystemWatchService?
     private val watchJob: Job?
 
+    private val fsWatcher = object : FileSystemWatcher {
+        override fun onFileCreated(file: FileSystemFile) {
+            fsItems[file.path] = file as File
+            val parent = file.parent
+            parent?.let { it.children[file.name] = file }
+        }
+
+        override fun onFileDeleted(file: FileSystemFile) {
+            fsItems.remove(file.path)
+            val parent = file.parent as Directory?
+            parent?.let { it.children -= file.name }
+        }
+
+        override fun onDirectoryCreated(directory: FileSystemDirectory) {
+            fsItems[directory.path] = directory as Directory
+            val parent = directory.parent
+            parent?.let { it.children[directory.name] = directory }
+        }
+
+        override fun onDirectoryDeleted(directory: FileSystemDirectory) {
+            fsItems.remove(directory.path)
+            val parent = directory.parent as Directory?
+            parent?.let { it.children -= directory.name }
+        }
+    }
+
     init {
+        watchers += fsWatcher
+
         val root = Directory(Path(rootPath))
         fsItems["/"] = root
         this.root = root
@@ -33,7 +59,7 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
                 val item: FsItem = if (path.isDirectory()) Directory(path) else File(path)
                 fsItems[item.path] = item
             }
-        fsItems.values.filter { it != root }.forEach { (it.parent as Directory).items[it.name] = it }
+        fsItems.values.filter { it != root }.forEach { (it.parent as Directory).children[it.name] = it }
 
         if (isLaunchWatchService) {
             watchService = FileSystemWatchService(this)
@@ -46,8 +72,8 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
 
     private fun launchWatchJob(service: FileSystemWatchService) = launchOnMainThread {
         while (!service.isClosed) {
-            val events = service.changes.receive()
-            events.forEach { event ->
+            val events = service.changes.receiveCatching()
+            events.getOrElse { emptyList() }.forEach { event ->
                 // do not rely on Path.isDirectory to decide for item type -> if a directory was deleted,
                 // Path.isDirectory will also be false
                 val path = event.path.fsPath(false)
@@ -56,28 +82,24 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
                 if (item is Directory) {
                     when (event.type) {
                         FileSystemWatchService.ChangeType.CREATED -> { } // created but item already exists -> already handled
-                        FileSystemWatchService.ChangeType.MODIFIED -> listeners.updated().forEach { it.onDirectoryChanged(item) }
-                        FileSystemWatchService.ChangeType.DELETED -> listeners.updated().forEach { it.onDirectoryDeleted(item) }
+                        FileSystemWatchService.ChangeType.MODIFIED -> watchers.updated().forEach { it.onDirectoryChanged(item) }
+                        FileSystemWatchService.ChangeType.DELETED -> watchers.updated().forEach { it.onDirectoryDeleted(item) }
                     }
                 } else if (item is File) {
                     when (event.type) {
                         FileSystemWatchService.ChangeType.CREATED -> { } // created but item already exists -> already handled
-                        FileSystemWatchService.ChangeType.MODIFIED -> listeners.updated().forEach { it.onFileChanged(item) }
-                        FileSystemWatchService.ChangeType.DELETED -> listeners.updated().forEach { it.onFileDeleted(item) }
+                        FileSystemWatchService.ChangeType.MODIFIED -> watchers.updated().forEach { it.onFileChanged(item) }
+                        FileSystemWatchService.ChangeType.DELETED -> watchers.updated().forEach { it.onFileDeleted(item) }
                     }
                 } else if (event.type == FileSystemWatchService.ChangeType.CREATED) {
-                    val fsItem: FsItem = if (event.path.isDirectory()) {
+                    // created but item is null -> externally created
+                    if (event.path.isDirectory()) {
                         val dir = Directory(event.path)
-                        listeners.updated().forEach { it.onDirectoryCreated(dir) }
-                        dir
+                        watchers.updated().forEach { it.onDirectoryCreated(dir) }
                     } else {
                         val file = File(event.path)
-                        listeners.updated().forEach { it.onFileCreated(file) }
-                        file
+                        watchers.updated().forEach { it.onFileCreated(file) }
                     }
-                    (fsItem.parent as Directory).items[fsItem.name] = fsItem
-                    fsItems[fsItem.path] = fsItem
-
                 }
                 // else: received event for an untracked item -> ignored
                 // this can happen if a tracked file was deleted. In that case the event was already handled
@@ -95,11 +117,11 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
     override fun contains(path: String): Boolean = FileSystem.sanitizePath(path) in fsItems
 
     override fun addFileSystemWatcher(listener: FileSystemWatcher) {
-        listeners += listener
+        watchers += listener
     }
 
     override fun removeFileSystemWatcher(listener: FileSystemWatcher) {
-        listeners -= listener
+        watchers -= listener
     }
 
     override fun createDirectory(path: String): WritableFileSystemDirectory {
@@ -114,13 +136,10 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         val dirPhysPath = Path(parentDir.physPath.absolutePathString(), name)
         dirPhysPath.createDirectory()
         val dir = Directory(dirPhysPath)
-        fsItems[dirPath] = dir
-        parentDir.items[dir.name] = dir
 
-        listeners.updated().forEach {
-            it.onDirectoryCreated(dir)
-            if (!isLaunchWatchService) {
-                // if a watch service is running, the service will issue the change event
+        if (!isLaunchWatchService) {
+            watchers.updated().forEach {
+                it.onDirectoryCreated(dir)
                 it.onDirectoryChanged(parentDir)
             }
         }
@@ -139,13 +158,10 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         val physPath = Path(parentDir.physPath.absolutePathString(), name)
         val file = File(physPath)
         file.write(data)
-        fsItems[filePath] = file
-        parentDir.items[file.name] = file
 
-        listeners.updated().forEach {
-            it.onFileCreated(file)
-            if (!isLaunchWatchService) {
-                // if a watch service is running, the service will issue the change event
+        if (!isLaunchWatchService) {
+            watchers.updated().forEach {
+                it.onFileCreated(file)
                 it.onDirectoryChanged(parentDir)
             }
         }
@@ -167,12 +183,20 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
 
         override val path: String = physPath.fsPath(true)
 
-        val items = mutableMapOf<String, FsItem>()
+        internal val children = mutableMapOf<String, FsItem>()
 
-        override fun list(): List<FsItem> = items.values.toList().sortedBy { it.path }
+        override fun list(): List<FsItem> = children.values.toList().sortedBy { it.path }
 
-        override fun getChildOrNull(name: String): FsItem? = items[name]
-        override fun contains(name: String): Boolean = name in items
+        override fun getChildOrNull(name: String): FsItem? = children[name]
+        override fun contains(name: String): Boolean = name in children
+
+        override fun createDirectory(name: String): WritableFileSystemDirectory {
+            return this@PhysicalFileSystem.createDirectory("${path}/$name")
+        }
+
+        override suspend fun createFile(name: String, data: Uint8Buffer): WritableFileSystemFile {
+            return this@PhysicalFileSystem.createFile("${path}/$name", data)
+        }
 
         override fun delete() {
             delete(false)
@@ -181,14 +205,19 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         override fun delete(isParentDelete: Boolean) {
             check(this != root) { "root directory cannot be deleted" }
             list().forEach { it.delete(true) }
-            fsItems.remove(path)
-            physPath.deleteRecursively()
+            try {
+                physPath.deleteRecursively()
+            } catch (e: Exception) {
+                logE { "Error on deleting directory: $e" }
+            }
 
-            val parent = this@PhysicalFileSystem[FileSystem.parentPath(path)] as Directory
-            listeners.updated().forEach {
-                it.onDirectoryDeleted(this)
-                if (!isParentDelete) {
-                    it.onDirectoryChanged(parent)
+            if (!isLaunchWatchService) {
+                val parent = this.parent
+                watchers.updated().forEach {
+                    it.onDirectoryDeleted(this)
+                    if (parent != null && !isParentDelete) {
+                        it.onDirectoryChanged(parent)
+                    }
                 }
             }
         }
@@ -215,7 +244,7 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
             }
             if (!isLaunchWatchService) {
                 // if a watch service is running, the service will issue the change event
-                listeners.updated().forEach { it.onFileChanged(this) }
+                watchers.updated().forEach { it.onFileChanged(this) }
             }
         }
 
@@ -224,14 +253,15 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         }
 
         override fun delete(isParentDelete: Boolean) {
-            fsItems.remove(path)
-            physPath.deleteExisting()
+            physPath.deleteIfExists()
 
-            val parent = this@PhysicalFileSystem[FileSystem.parentPath(path)] as Directory
-            listeners.updated().forEach {
-                it.onFileDeleted(this)
-                if (!isParentDelete) {
-                    it.onDirectoryChanged(parent)
+            if (!isLaunchWatchService) {
+                val parent = this.parent
+                watchers.updated().forEach {
+                    it.onFileDeleted(this)
+                    if (parent != null && !isParentDelete) {
+                        it.onDirectoryChanged(parent)
+                    }
                 }
             }
         }

@@ -47,7 +47,9 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         override fun onFileDeleted(file: FileSystemFile) = checkIfSourceFileChanged(file)
 
         private fun checkIfSourceFileChanged(file: FileSystemFile) {
-            if (!hasAppChanged && file is PhysicalFileSystem.File && file.path.startsWith("/src/")) {
+            // only trigger app reload if an actual source file has changed
+            // valid source file need to be kotlin files be somewhere under /src/ - this excludes assets under /src/*/resources/
+            if (!hasAppChanged && file is PhysicalFileSystem.File && file.path.startsWith("/src/") && file.path.endsWith(".kt")) {
                 hasAppChanged = true
                 logD { "App sources changed" }
             }

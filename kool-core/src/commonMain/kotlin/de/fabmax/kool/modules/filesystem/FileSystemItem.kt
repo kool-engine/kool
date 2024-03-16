@@ -52,6 +52,9 @@ interface WritableFileSystemFile : FileSystemFile {
 
 interface WritableFileSystemDirectory : FileSystemDirectory {
     fun delete()
+
+    fun createDirectory(name: String): WritableFileSystemDirectory
+    suspend fun createFile(name: String, data: Uint8Buffer): WritableFileSystemFile
 }
 
 fun FileSystemDirectory.collect() = buildList {

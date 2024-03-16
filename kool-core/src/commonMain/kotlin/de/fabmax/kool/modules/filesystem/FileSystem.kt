@@ -13,8 +13,10 @@ interface FileSystem {
     fun removeFileSystemWatcher(listener: FileSystemWatcher)
 
     companion object {
+        private val multiSeperatorRegex = Regex("/{2,}")
+
         fun sanitizePath(path: String): String {
-            val p = path.replace('\\', '/')
+            val p = path.replace('\\', '/').replace(multiSeperatorRegex, "/")
             return if (p.startsWith("/")) p else "/$p"
         }
 

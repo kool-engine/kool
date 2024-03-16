@@ -175,6 +175,16 @@ abstract class DndItemFlavor<T: Any> {
         override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
     }
 
+    data object BROWSER_ITEM_HDRI : DndItemFlavor<BrowserPanel.BrowserAssetItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserAssetItem) -> Any> = mapOf(
+            this to { it },
+            ASSET_ITEM to { it.asset },
+            ASSET_ITEM_TEXTURE to { it.asset }
+        )
+
+        override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
+    }
+
     data object BROWSER_ITEM_MODEL : DndItemFlavor<BrowserPanel.BrowserAssetItem>() {
         override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserAssetItem) -> Any> = mapOf(
             this to { it },
