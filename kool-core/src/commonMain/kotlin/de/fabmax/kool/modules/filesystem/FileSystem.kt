@@ -1,5 +1,7 @@
 package de.fabmax.kool.modules.filesystem
 
+import de.fabmax.kool.util.Uint8Buffer
+
 interface FileSystem {
     val root: FileSystemDirectory
 
@@ -63,3 +65,4 @@ fun FileSystem.print() {
 }
 
 expect suspend fun zipFileSystem(path: String): FileSystem
+expect suspend fun zipFileSystem(zipData: Uint8Buffer): FileSystem

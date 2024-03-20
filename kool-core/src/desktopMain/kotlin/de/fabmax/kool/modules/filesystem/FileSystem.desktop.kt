@@ -1,13 +1,33 @@
 package de.fabmax.kool.modules.filesystem
 
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.toBuffer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
 
 actual suspend fun zipFileSystem(path: String): FileSystem = ZipFileSytem(path)
+
+actual suspend fun zipFileSystem(zipData: Uint8Buffer): FileSystem {
+    val memFs = InMemoryFileSystem()
+    ZipInputStream(ByteArrayInputStream(zipData.toArray())).use { zip ->
+        var entry = zip.nextEntry
+        while (entry != null) {
+            if (!entry.isDirectory) {
+                val path = FileSystem.sanitizePath(entry.name)
+                memFs.createDirectories(FileSystem.parentPath(path))
+                memFs.createFile(path, Uint8BufferImpl(zip.readAllBytes()))
+            }
+            zip.closeEntry()
+            entry = zip.nextEntry
+        }
+    }
+    return memFs
+}
 
 class ZipFileSytem(zipPath: String) : FileSystem {
     val zipFile = ZipFile(zipPath)

@@ -16,6 +16,11 @@ actual suspend fun zipFileSystem(path: String): FileSystem {
     return ZipFileSytem(zip)
 }
 
+actual suspend fun zipFileSystem(zipData: Uint8Buffer): FileSystem {
+    val zip = JsZip().loadAsync((zipData as Uint8BufferImpl).buffer).await()
+    return ZipFileSytem(zip)
+}
+
 class ZipFileSytem(zip: JsZip) : FileSystem {
 
     override val root: FileSystemDirectory = Directory("/")
