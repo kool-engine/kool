@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.filesystem
 
-import de.fabmax.kool.util.Uint8Buffer
-
 interface FileSystem {
     val root: FileSystemDirectory
 
@@ -16,6 +14,7 @@ interface FileSystem {
         private val multiSeperatorRegex = Regex("/{2,}")
 
         fun sanitizePath(path: String): String {
+            check(".." !in path) { "'..' not allowed in paths (full path: $path)" }
             return "/${path}"
                 .replace('\\', '/')
                 .replace(multiSeperatorRegex, "/")
@@ -40,38 +39,9 @@ fun FileSystem.getItemOrNull(path: String): FileSystemItem? {
 
 fun FileSystem.getFileOrNull(path: String): FileSystemFile? = getItemOrNull(path) as? FileSystemFile?
 fun FileSystem.getDirectoryOrNull(path: String): FileSystemDirectory? = getItemOrNull(path) as? FileSystemDirectory?
-
 fun FileSystem.getItem(path: String): FileSystemItem = checkNotNull(getItemOrNull(path)) { "Item not found: $path" }
 fun FileSystem.getFile(path: String): FileSystemFile = checkNotNull(getFileOrNull(path)) { "File not found: $path" }
 fun FileSystem.getDirectory(path: String): FileSystemDirectory = checkNotNull(getDirectoryOrNull(path)) { "Directory not found: $path" }
-
-interface WritableFileSystem : FileSystem {
-    override val root: WritableFileSystemDirectory
-
-    fun createDirectory(path: String): WritableFileSystemDirectory
-    suspend fun createFile(path: String, data: Uint8Buffer): WritableFileSystemFile
-}
-
-fun WritableFileSystem.getOrCreateDirectory(path: String): WritableFileSystemDirectory {
-    return root.getOrCreateDirectory(path)
-}
-
-suspend fun WritableFileSystem.getOrCreateFile(path: String): WritableFileSystemFile {
-    return root.getOrCreateFile(path)
-}
-
-fun WritableFileSystem.createDirectories(path: String): WritableFileSystemDirectory {
-    return root.createDirectories(path)
-}
-
-interface FileSystemWatcher {
-    fun onFileCreated(file: FileSystemFile) { }
-    fun onFileDeleted(file: FileSystemFile) { }
-    fun onFileChanged(file: FileSystemFile) { }
-
-    fun onDirectoryCreated(directory: FileSystemDirectory) { }
-    fun onDirectoryDeleted(directory: FileSystemDirectory) { }
-}
 
 fun FileSystem.print() {
     fun size(s: Long): String {

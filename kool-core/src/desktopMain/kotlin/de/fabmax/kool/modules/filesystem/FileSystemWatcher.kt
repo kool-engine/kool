@@ -71,7 +71,7 @@ internal class FileSystemWatchService(val parentFs: PhysicalFileSystem, val even
     private fun Path.watchRecursively() {
         walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
             try {
-                if (it.isDirectory()) {
+                if (it.isDirectory() && it !in pathsToWatchKeys) {
                     val key = it.register(
                         watchService,
                         StandardWatchEventKinds.ENTRY_CREATE,
@@ -86,6 +86,20 @@ internal class FileSystemWatchService(val parentFs: PhysicalFileSystem, val even
                 e.printStackTrace()
             }
         }
+    }
+
+    fun stopWatching(path: Path) {
+        val abs = path.absolutePathString()
+        val watchedPaths = pathsToWatchKeys.filter { (path, _) -> path.absolutePathString().startsWith(abs) }
+        watchedPaths.forEach { (path, watchKey) ->
+            pathsToWatchKeys.remove(path)
+            watchKeysToPaths.remove(watchKey)
+            watchKey.cancel()
+        }
+    }
+
+    fun startWatching(path: Path) {
+        path.watchRecursively()
     }
 
     enum class ChangeType {

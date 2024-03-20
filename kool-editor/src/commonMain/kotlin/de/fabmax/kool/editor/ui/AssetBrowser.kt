@@ -138,7 +138,9 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
     private fun SubMenuItem<BrowserItem>.renameDirectoryItem() = item("Rename directory") { item ->
         OkCancelEnterTextDialog("Rename / Move Directory", item.path, hint = "New directory name") {
             if (it.isNotBlank()) {
-                editor.availableAssets.renameAsset(item.path, it.trim())
+                launchOnMainThread {
+                    editor.availableAssets.renameAsset(item.path, it.trim())
+                }
             }
         }
     }
@@ -152,7 +154,9 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
     private fun SubMenuItem<BrowserItem>.renameAssetItem() = item("Rename asset file") { item ->
         OkCancelEnterTextDialog("Rename / Move Asset File", item.path, hint = "New asset file name") {
             if (it.isNotBlank()) {
-                editor.availableAssets.renameAsset(item.path, it.trim())
+                launchOnMainThread {
+                    editor.availableAssets.renameAsset(item.path, it.trim())
+                }
             }
         }
     }

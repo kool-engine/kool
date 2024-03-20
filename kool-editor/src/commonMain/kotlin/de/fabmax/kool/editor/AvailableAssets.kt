@@ -30,6 +30,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
                     val assetItem = AssetItem(fileItem)
                     assetsByPath[fileItem.path] = assetItem
                     parent.children += assetItem
+                    parent.sortChildrenByName()
 
                     when (assetItem.type) {
                         AppAssetType.Texture -> textureAssets += assetItem
@@ -75,19 +76,8 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
         parentItem.createDirectory(createPath.removePrefix(parentPath))
     }
 
-    fun renameAsset(sourcePath: String, destPath: String) {
-//        val source = Path(assetsDir.pathString, sourcePath.removePrefix(browserSubDir))
-//        val dest = Path(assetsDir.pathString, destPath.removePrefix(browserSubDir))
-//        logD { "Rename asset: $source -> $dest" }
-//        dest.parent.createDirectories()
-//        source.moveTo(dest, StandardCopyOption.ATOMIC_MOVE)
-
-        val moveItem = assetsByPath[sourcePath]?.fileItem as? WritableFileSystemItem?
-        if (moveItem == null) {
-            logE { "Unable to move asset: ${sourcePath}. Item not found or not writable" }
-            return
-        }
-        moveItem.move(destPath)
+    suspend fun renameAsset(sourcePath: String, destPath: String) {
+        projectFiles.fileSystem.move(sourcePath, destPath)
     }
 
     fun deleteAsset(deletePath: String) {

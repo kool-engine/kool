@@ -10,9 +10,9 @@ class InMemoryFileSystem : WritableFileSystem {
 
     private val listeners = BufferedList<FileSystemWatcher>()
 
-    override fun listAll(): List<FileSystemItem> = fsItems.values.toList().sortedBy { it.path }
+    override fun listAll(): List<WritableFileSystemItem> = fsItems.values.toList().sortedBy { it.path }
 
-    override fun get(path: String): FileSystemItem {
+    override fun get(path: String): WritableFileSystemItem {
         val sanitized = FileSystem.sanitizePath(path)
         return checkNotNull(fsItems[sanitized]) { "File not found: $sanitized" }
     }
@@ -65,9 +65,33 @@ class InMemoryFileSystem : WritableFileSystem {
         return file
     }
 
-    private sealed class InMemoryItem: WritableFileSystemItem
+    override suspend fun move(sourcePath: String, destinationPath: String) {
+        val dst = FileSystem.sanitizePath(destinationPath)
+        val src = getItem(sourcePath)
+        check(src != root) { "root directory cannot be moved" }
+        check(getItemOrNull(dst) == null) { "destination path already exists" }
 
-    private inner class Directory(override val path: String) : InMemoryItem(), WritableFileSystemDirectory {
+        val dstDir = getDirectory(FileSystem.parentPath(destinationPath)) as Directory
+        val dstName = FileSystem.sanitizePath(destinationPath).substringAfterLast('/')
+
+        when (src) {
+            is File -> {
+                dstDir.createFile(dstName, src.data)
+                src.delete()
+            }
+            is Directory -> {
+                val subDst = dstDir.createDirectory(dstName)
+                src.list().forEach {
+                    move(it.path, "${subDst.path}/${it.name}")
+                }
+                src.delete()
+            }
+        }
+    }
+
+    private sealed class InMemoryItem(override val path: String): WritableFileSystemItem
+
+    private inner class Directory(path: String) : InMemoryItem(path), WritableFileSystemDirectory {
         override val parent: FileSystemDirectory?
             get() = this@InMemoryFileSystem.getDirectoryOrNull(FileSystem.parentPath(path))
 
@@ -81,6 +105,8 @@ class InMemoryFileSystem : WritableFileSystem {
         override fun delete() {
             check(this != root) { "root directory cannot be deleted" }
             list().forEach { it.delete() }
+
+            (parent as Directory?)?.let { it.items -= name }
             fsItems.remove(path)
             listeners.updated().forEach {
                 it.onDirectoryDeleted(this)
@@ -94,13 +120,9 @@ class InMemoryFileSystem : WritableFileSystem {
         override suspend fun createFile(name: String, data: Uint8Buffer): WritableFileSystemFile {
             return this@InMemoryFileSystem.createFile("${path}/$name", data)
         }
-
-        override fun move(destinationPath: String) {
-            TODO("Not yet implemented")
-        }
     }
 
-    private inner class File(override val path: String, var data: Uint8Buffer) : InMemoryItem(), WritableFileSystemFile {
+    private inner class File(path: String, var data: Uint8Buffer) : InMemoryItem(path), WritableFileSystemFile {
         override val parent: FileSystemDirectory?
             get() = this@InMemoryFileSystem.getDirectoryOrNull(FileSystem.parentPath(path))
 
@@ -115,14 +137,11 @@ class InMemoryFileSystem : WritableFileSystem {
         }
 
         override fun delete() {
+            (parent as Directory?)?.let { it.items -= name }
             fsItems.remove(path)
             listeners.updated().forEach {
                 it.onFileDeleted(this)
             }
-        }
-
-        override fun move(destinationPath: String) {
-            TODO("Not yet implemented")
         }
     }
 }

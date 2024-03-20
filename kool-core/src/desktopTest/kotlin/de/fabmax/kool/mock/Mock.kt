@@ -16,4 +16,7 @@ object Mock {
         }
     }
 
+    init {
+        testCtx.run()
+    }
 }

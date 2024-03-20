@@ -6,6 +6,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.getOrElse
 import kotlinx.coroutines.withContext
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import kotlin.io.path.*
 
 @OptIn(ExperimentalPathApi::class)
@@ -79,6 +80,17 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         }
     }
 
+    private fun expectFsEvents(vararg events: FsEvent) {
+        if (isLaunchWatchService) {
+            synchronized(expectedEvents) {
+                if (expectedEvents.size > 1000) {
+                    expectedEvents.removeIf { System.currentTimeMillis() - it.time > 1_000 }
+                }
+                expectedEvents += events
+            }
+        }
+    }
+
     private fun launchWatchJob(service: FileSystemWatchService) = launchOnMainThread {
         while (!service.isClosed) {
             val events = service.changes.receiveCatching()
@@ -88,9 +100,6 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
                 val path = event.path.fsPath()
                 val fsEvent = FsEvent(path, event.type)
                 val wasExpected = synchronized(expectedEvents) {
-                    if (expectedEvents.size > 100) {
-                        expectedEvents.removeIf { System.currentTimeMillis() - it.time > 10_000 }
-                    }
                     expectedEvents.remove(fsEvent)
                 }
 
@@ -122,9 +131,9 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         }
     }
 
-    override fun listAll(): List<FileSystemItem> = fsItems.values.toList().sortedBy { it.path }
+    override fun listAll(): List<WritableFileSystemItem> = fsItems.values.toList().sortedBy { it.path }
 
-    override fun get(path: String): FileSystemItem {
+    override fun get(path: String): WritableFileSystemItem {
         val sanitized = FileSystem.sanitizePath(path)
         return checkNotNull(fsItems[sanitized]) { "File not found: $sanitized" }
     }
@@ -149,13 +158,10 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
 
         val parentDir = get(parentPath) as Directory
         val dirPhysPath = Path(parentDir.physPath.absolutePathString(), name)
-        dirPhysPath.createDirectory()
         val dir = Directory(dirPhysPath)
+        expectFsEvents(FsEvent(dir.path, FileSystemWatchService.ChangeType.CREATED))
 
-        synchronized(expectedEvents) {
-            expectedEvents += FsEvent(dir.path, FileSystemWatchService.ChangeType.CREATED)
-        }
-
+        dirPhysPath.createDirectory()
         watchers.updated().forEach {
             it.onDirectoryCreated(dir)
         }
@@ -174,15 +180,80 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         val physPath = Path(parentDir.physPath.absolutePathString(), name)
         val file = File(physPath)
 
-        synchronized(expectedEvents) {
-            expectedEvents += FsEvent(file.path, FileSystemWatchService.ChangeType.CREATED)
-        }
+        expectFsEvents(
+            FsEvent(file.path, FileSystemWatchService.ChangeType.CREATED),
+            FsEvent(file.path, FileSystemWatchService.ChangeType.MODIFIED)
+        )
 
-        file.write(data)
+        withContext(Dispatchers.IO) {
+            physPath.writeBytes(data.toArray())
+        }
         watchers.updated().forEach {
             it.onFileCreated(file)
         }
         return file
+    }
+
+    override suspend fun move(sourcePath: String, destinationPath: String) {
+        val dst = FileSystem.sanitizePath(destinationPath)
+        val src = getItem(sourcePath) as FsItem
+        check(src != root) { "root directory cannot be moved" }
+        check(getItemOrNull(dst) == null) { "destination path already exists" }
+
+        val dstDir = getDirectory(FileSystem.parentPath(dst)) as Directory
+        val dstName = dst.substringAfterLast('/')
+        val dstPath = Path(dstDir.physPath.pathString, dstName)
+
+        when (src) {
+            is File -> moveFile(src, dst, dstPath)
+            is Directory -> moveDir(src, dst, dstPath)
+        }
+    }
+
+    private fun moveFile(src: File, dst: String, dstPath: Path) {
+        expectFsEvents(
+            FsEvent(src.path, FileSystemWatchService.ChangeType.DELETED),
+            FsEvent(dst, FileSystemWatchService.ChangeType.CREATED),
+        )
+        src.physPath.moveTo(dstPath, StandardCopyOption.ATOMIC_MOVE)
+
+        val moved = File(dstPath)
+        watchers.updated().forEach {
+            it.onFileDeleted(src)
+            it.onFileCreated(moved)
+        }
+    }
+
+    private fun moveDir(src: Directory, dst: String, dstPath: Path) {
+        val watchers = watchers.updated()
+
+        expectFsEvents(
+            FsEvent(src.path, FileSystemWatchService.ChangeType.DELETED),
+            FsEvent(dst, FileSystemWatchService.ChangeType.CREATED),
+        )
+
+        watchService?.stopWatching(src.physPath)
+        src.physPath.moveTo(dstPath, StandardCopyOption.ATOMIC_MOVE)
+        watchService?.startWatching(dstPath)
+
+        fun notifyMoved(dir: Directory) {
+            val moveDir = Path(dstPath.pathString, dir.path.removePrefix(src.path))
+            watchers.forEach { it.onDirectoryCreated(Directory(moveDir)) }
+
+            dir.children.values.toList().forEach { child ->
+                if (child is File) {
+                    val moveFile = File(Path(moveDir.pathString, child.name))
+                    watchers.forEach {
+                        it.onFileCreated(moveFile)
+                        it.onFileDeleted(child)
+                    }
+                } else if (child is Directory) {
+                    notifyMoved(child)
+                }
+            }
+            watchers.forEach { it.onDirectoryDeleted(dir) }
+        }
+        notifyMoved(src)
     }
 
     private fun Path.fsPath(): String {
@@ -198,13 +269,14 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         val time: Long = System.currentTimeMillis()
     }
 
-    sealed class FsItem: WritableFileSystemItem
+    sealed class FsItem(val physPath: Path): WritableFileSystemItem
 
-    inner class Directory(val physPath: Path) : FsItem(), WritableFileSystemDirectory {
+    inner class Directory(physPath: Path) : FsItem(physPath), WritableFileSystemDirectory {
         override val parent: Directory?
             get() = this@PhysicalFileSystem.getDirectoryOrNull(FileSystem.parentPath(path)) as Directory?
 
-        override val path: String = physPath.fsPath()
+        override var path: String = physPath.fsPath()
+            private set
 
         internal val children = mutableMapOf<String, FsItem>()
 
@@ -224,12 +296,9 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         override fun delete() {
             check(this != root) { "root directory cannot be deleted" }
 
-            synchronized(expectedEvents) {
-                expectedEvents += FsEvent(path, FileSystemWatchService.ChangeType.DELETED)
-            }
-
             list().forEach { it.delete() }
             try {
+                expectFsEvents(FsEvent(path, FileSystemWatchService.ChangeType.DELETED))
                 physPath.deleteIfExists()
             } catch (e: Exception) {
                 logE { "Error on deleting directory: $e" }
@@ -238,13 +307,9 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
                 it.onDirectoryDeleted(this)
             }
         }
-
-        override fun move(destinationPath: String) {
-            TODO("Not yet implemented")
-        }
     }
 
-    inner class File(val physPath: Path) : FsItem(), WritableFileSystemFile {
+    inner class File(physPath: Path) : FsItem(physPath), WritableFileSystemFile {
         override val parent: Directory?
             get() = this@PhysicalFileSystem.getDirectoryOrNull(FileSystem.parentPath(path)) as Directory?
 
@@ -270,18 +335,12 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
         }
 
         override fun delete() {
-            synchronized(expectedEvents) {
-                expectedEvents += FsEvent(path, FileSystemWatchService.ChangeType.DELETED)
-            }
+            expectFsEvents(FsEvent(path, FileSystemWatchService.ChangeType.DELETED))
 
             physPath.deleteIfExists()
             watchers.updated().forEach {
                 it.onFileDeleted(this)
             }
-        }
-
-        override fun move(destinationPath: String) {
-            TODO("Not yet implemented")
         }
     }
 }

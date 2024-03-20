@@ -13,7 +13,7 @@ import de.fabmax.kool.util.logW
 interface FileSystemItem {
     val path: String
     val name: String
-        get() = path.substringAfterLast("/")
+        get() = path.substringAfterLast("/").ifEmpty { "/" }
     val isDirectory: Boolean
 
     val parent: FileSystemDirectory?
@@ -42,7 +42,6 @@ interface FileSystemDirectory : FileSystemItem {
 
 interface WritableFileSystemItem : FileSystemItem {
     fun delete()
-    fun move(destinationPath: String)
 }
 
 interface WritableFileSystemFile : FileSystemFile, WritableFileSystemItem {
