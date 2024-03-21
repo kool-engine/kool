@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.DockNodeLeaf
 import de.fabmax.kool.scene.Scene
@@ -80,10 +80,10 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
             modifier
                 .width(sizes.baseSize * 2.5f)
                 .alignY(AlignmentY.Center)
-                .items(EditorState.TransformOrientation.entries.map { it.label })
-                .selectedIndex(EditorState.transformMode.use().ordinal)
+                .items(KoolEditor.TransformOrientation.entries.map { it.label })
+                .selectedIndex(editor.transformMode.use().ordinal)
                 .onItemSelected { i ->
-                    EditorState.transformMode.set(EditorState.TransformOrientation.entries[i])
+                    editor.transformMode.set(KoolEditor.TransformOrientation.entries[i])
                 }
         }
     }

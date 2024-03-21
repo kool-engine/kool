@@ -12,6 +12,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
     val textureAssets = mutableStateListOf<AssetItem>()
     val hdriAssets = mutableStateListOf<AssetItem>()
 
+    private val assetPathPrefix = projectFiles.assets.path
     private val assetsByPath = mutableMapOf<String, AssetItem>()
 
     private val fsWatcher = object : FileSystemWatcher {
@@ -27,7 +28,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
                 if (parent == null) {
                     refreshAllAssets()
                 } else {
-                    val assetItem = AssetItem(fileItem)
+                    val assetItem = AssetItem(fileItem, fileItem.assetPath)
                     assetsByPath[fileItem.path] = assetItem
                     parent.children += assetItem
                     parent.sortChildrenByName()
@@ -67,21 +68,25 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
     }
 
     fun createAssetDir(createPath: String) {
-        val parentPath = FileSystem.parentPath(createPath)
+        val prefixedPath = FileSystem.sanitizePath("${assetPathPrefix}/${createPath}")
+        val parentPath = FileSystem.parentPath(prefixedPath)
         val parentItem = assetsByPath[parentPath]?.fileItem as? WritableFileSystemDirectory?
         if (parentItem == null) {
             logE { "Unable to create directory: ${createPath}. Parent directory not found or not writable" }
             return
         }
-        parentItem.createDirectory(createPath.removePrefix(parentPath))
+        parentItem.createDirectory(prefixedPath.removePrefix(parentPath))
     }
 
     suspend fun renameAsset(sourcePath: String, destPath: String) {
-        projectFiles.fileSystem.move(sourcePath, destPath)
+        val prefixedSrc = FileSystem.sanitizePath("${assetPathPrefix}/${sourcePath}")
+        val prefixedDst = FileSystem.sanitizePath("${assetPathPrefix}/${destPath}")
+        projectFiles.fileSystem.move(prefixedSrc, prefixedDst)
     }
 
     fun deleteAsset(deletePath: String) {
-        val deleteItem = assetsByPath[deletePath]?.fileItem as? WritableFileSystemItem?
+        val prefixedPath = FileSystem.sanitizePath("${assetPathPrefix}/${deletePath}")
+        val deleteItem = assetsByPath[prefixedPath]?.fileItem as? WritableFileSystemItem?
         if (deleteItem == null) {
             logE { "Unable to delete asset: ${deletePath}. Path not found or not writable" }
             return
@@ -90,7 +95,8 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
     }
 
     suspend fun importAssets(targetPath: String, assetFiles: List<LoadableFile>) {
-        val targetDir = assetsByPath[FileSystem.sanitizePath(targetPath)]?.fileItem as? WritableFileSystemDirectory?
+        val prefixedPath = FileSystem.sanitizePath("${assetPathPrefix}/${targetPath}")
+        val targetDir = assetsByPath[prefixedPath]?.fileItem as? WritableFileSystemDirectory?
         if (targetDir == null) {
             logE { "Unable to import assets into target directory: ${targetPath}. Path not found or not writable" }
             return
@@ -113,7 +119,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
             val parent = assetsByPath[parentPath]
 
             val assetItem = assetsByPath.getOrPut(file.path) {
-                AssetItem(file)
+                AssetItem(file, file.assetPath)
             }
 
             if (parent != null) {
@@ -135,13 +141,18 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
             addAll(newRootAssets)
         }
     }
+
+    private val FileSystemItem.assetPath: String
+        get() = path.removePrefix(assetPathPrefix)
 }
 
-class AssetItem(val fileItem: FileSystemItem, val type: AppAssetType = AppAssetType.fromFileItem(fileItem)) {
+class AssetItem(
+    val fileItem: FileSystemItem,
+    val path: String,
+    val type: AppAssetType = AppAssetType.fromFileItem(fileItem)
+) {
     val name: String
         get() = fileItem.name
-    val path: String
-        get() = fileItem.path
 
     val children = mutableStateListOf<AssetItem>()
 

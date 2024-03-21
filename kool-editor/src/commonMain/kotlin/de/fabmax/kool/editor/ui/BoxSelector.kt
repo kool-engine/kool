@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
@@ -42,7 +41,7 @@ class BoxSelector : Composable {
                     boxSelectCursor = it.screenPosition
                     startSelection.clear()
                     if (KeyboardInput.isShiftDown || KeyboardInput.isAltDown) {
-                        startSelection += EditorState.selection
+                        startSelection += KoolEditor.instance.selectionOverlay.selection
                     }
                     // explicitly consume pointer, to avoid camera movement during box select
                     it.pointer.consume()
@@ -94,8 +93,8 @@ class BoxSelector : Composable {
     }
 
     private fun updateSelection(min: Vec2f, max: Vec2f) {
-        val scene = EditorState.activeScene.value ?: return
         val editor = KoolEditor.instance
+        val scene = editor.activeScene.value ?: return
         val editorCam = editor.editorOverlay.camera
         val viewport = editor.editorOverlay.mainRenderPass.viewport
 
@@ -111,7 +110,7 @@ class BoxSelector : Composable {
         } else {
             startSelection + boxSelection
         }
-        EditorState.setSelection(newSelection)
+        editor.selectionOverlay.setSelection(newSelection)
     }
 
     private abstract class BoxIntersectHelper(val cam: Camera, boxMin: Vec2f, boxMax: Vec2f, viewport: Viewport) {

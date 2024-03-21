@@ -1,17 +1,16 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
-import de.fabmax.kool.editor.data.ProjectData
-import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.editor.ui.OkCancelBrowsePathDialog
+import de.fabmax.kool.modules.filesystem.PhysicalFileSystem
+import de.fabmax.kool.modules.filesystem.getDirectoryOrNull
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.IOException
+import kotlin.io.path.pathString
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object PlatformFunctions {
@@ -53,25 +52,12 @@ actual object PlatformFunctions {
         return true
     }
 
-    actual fun loadProjectModel(path: String): EditorProject? {
-        val projFile = File(path)
-        return try {
-            val projData = Json.decodeFromString<ProjectData>(projFile.readText())
-            EditorProject(projData)
-        } catch (e: Exception) {
-            logW { "Project not found at ${projFile.absolutePath}, creating new empty project" }
-            return null
-        }
-    }
+    actual fun editBehavior(behaviorClassName: String) {
+        val srcDir = KoolEditor.instance.projectFiles.fileSystem.getDirectoryOrNull("src/commonMain/kotlin")
+        val srcPath = (srcDir as? PhysicalFileSystem.Directory?)?.physPath?.pathString ?: ""
+        val classPath = behaviorClassName.replace('.', '/')
+        val behaviorSourcePath = "${srcPath}/${classPath}.kt"
 
-    actual fun saveProjectModel(path: String) {
-        val modelPath = File(path)
-        modelPath.parentFile.mkdirs()
-        modelPath.writeText(EditorState.jsonCodec.encodeToString(EditorState.projectModel.projectData))
-        logD { "Saved project to ${modelPath.absolutePath}" }
-    }
-
-    actual fun editBehavior(behaviorSourcePath: String) {
         val behaviorPath = File(behaviorSourcePath).canonicalPath
         logD { "Edit behavior source: $behaviorPath" }
 

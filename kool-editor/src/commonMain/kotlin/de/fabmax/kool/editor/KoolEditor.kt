@@ -1,8 +1,6 @@
 package de.fabmax.kool.editor
 
-import de.fabmax.kool.ApplicationCallbacks
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.LoadableFile
+import de.fabmax.kool.*
 import de.fabmax.kool.editor.actions.DeleteNodeAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
@@ -10,6 +8,9 @@ import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.components.SsaoComponent
+import de.fabmax.kool.editor.data.ProjectData
+import de.fabmax.kool.editor.model.EditorProject
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
@@ -17,24 +18,34 @@ import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.editor.ui.FloatingToolbar
-import de.fabmax.kool.fileSystemAssetLoader
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.modules.ui2.docking.DockLayout
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
+suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
+    val projectData = Json.decodeFromString<ProjectData>(projectFiles.projectModelFile.read().decodeToString())
+    val projectModel = EditorProject(projectData)
+    return KoolEditor(projectFiles, projectModel, ctx)
+}
 
+class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject, val ctx: KoolContext) {
     init { instance = this }
+
+    val loadedApp = mutableStateOf<LoadedApp?>(null)
+    val activeScene = mutableStateOf<SceneModel?>(null)
 
     val editorInputContext = InputStack.InputHandler("Editor input")
     val editorCameraTransform = EditorCamTransform(this)
@@ -70,9 +81,11 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
     val availableAssets = AvailableAssets(projectFiles)
     val ui = EditorUi(this)
 
+    val transformMode = mutableStateOf(TransformOrientation.GLOBAL)
+
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-            EditorState.saveProject()
+            saveProject()
             saveEditorConfig()
             return PlatformFunctions.onWindowCloseRequest(ctx)
         }
@@ -86,8 +99,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
     }
 
     init {
-        //Assets.defaultLoader = fileSystemAssetLoader(projectFiles.assets)
-        AppAssets.impl = CachedAppAssets(fileSystemAssetLoader(projectFiles.fileSystem.root))
+        AppAssets.impl = CachedAppAssets(fileSystemAssetLoader(projectFiles.assets))
 
         AppState.isInEditorState.set(true)
         AppState.appModeState.set(AppMode.EDIT)
@@ -120,9 +132,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
     fun editBehaviorSource(behavior: AppBehavior) = editBehaviorSource(behavior.qualifiedName)
 
     fun editBehaviorSource(behaviorClassName: String) {
-        TODO()
-        //val sourcePath = "${paths.commonSrcPath}/${behaviorClassName.replace('.', '/')}.kt"
-        //PlatformFunctions.editBehavior(sourcePath)
+        PlatformFunctions.editBehavior(behaviorClassName)
     }
 
     private fun registerAutoSaveOnFocusLoss() {
@@ -130,7 +140,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
         var wasFocused = false
         editorContent.onUpdate {
             if (wasFocused && !ctx.isWindowFocused) {
-                EditorState.saveProject()
+                saveProject()
             }
             wasFocused = ctx.isWindowFocused
         }
@@ -156,34 +166,34 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
             keyCode = LocalKeyCode('C'),
             filter = InputStack.KEY_FILTER_CTRL_PRESSED
         ) {
-            EditorCopyAndPaste.copySelection()
+            EditorClipboard.copySelection()
         }
         editorInputContext.addKeyListener(
             name = "Paste",
             keyCode = LocalKeyCode('V'),
             filter = InputStack.KEY_FILTER_CTRL_PRESSED
         ) {
-            EditorCopyAndPaste.paste()
+            EditorClipboard.paste()
         }
         editorInputContext.addKeyListener(
             name = "Duplicate",
             keyCode = LocalKeyCode('D'),
             filter = InputStack.KEY_FILTER_CTRL_PRESSED
         ) {
-            EditorCopyAndPaste.duplicateSelection()
+            EditorClipboard.duplicateSelection()
         }
         editorInputContext.addKeyListener(
             name = "Delete selected objects",
             keyCode = KeyboardInput.KEY_DEL
         ) {
-            DeleteNodeAction(EditorState.getSelectedSceneNodes()).apply()
+            DeleteNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
         }
         editorInputContext.addKeyListener(
             name = "Hide selected objects",
             keyCode = LocalKeyCode('H'),
             filter = { it.isPressed && !it.isAltDown }
         ) {
-            val selection = EditorState.getSelectedSceneNodes()
+            val selection = selectionOverlay.getSelectedSceneNodes()
             SetVisibilityAction(selection, selection.any { !it.isVisibleState.value }).apply()
         }
         editorInputContext.addKeyListener(
@@ -191,7 +201,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
             keyCode = LocalKeyCode('H'),
             filter = { it.isPressed && it.isAltDown }
         ) {
-            EditorState.activeScene.value?.sceneNodes?.filter { !it.isVisibleState.value } ?.let { nodes ->
+            activeScene.value?.sceneNodes?.filter { !it.isVisibleState.value } ?.let { nodes ->
                 SetVisibilityAction(nodes, true).apply()
             }
         }
@@ -246,7 +256,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
             val rayTest = RayTest()
 
             override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
-                val sceneModel = EditorState.activeScene.value ?: return
+                val sceneModel = activeScene.value ?: return
                 val appScene = sceneModel.drawNode
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
@@ -263,7 +273,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
                             }
                             it = it.parent
                         }
-                        EditorState.selectSingle(selectedNodeModel)
+                        selectionOverlay.selectSingle(selectedNodeModel)
                     }
                 }
             }
@@ -277,18 +287,18 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
         editorCameraTransform.addNode(editorOverlay.camera)
 
         // dispose old scene + objects
-        EditorState.projectModel.getCreatedScenes().forEach { sceneModel ->
+        projectModel.getCreatedScenes().forEach { sceneModel ->
             ctx.scenes -= sceneModel.drawNode
             sceneModel.drawNode.removeOffscreenPass(selectionOverlay.selectionPass)
         }
-        EditorState.loadedApp.value?.app?.onDispose(ctx)
+        this.loadedApp.value?.app?.onDispose(ctx)
         selectionOverlay.selectionPass.disposePipelines()
 
         // initialize newly loaded app
-        loadedApp.app.loadApp(EditorState.projectModel, ctx)
+        loadedApp.app.loadApp(projectModel, ctx)
 
         // add scene objects from new app
-        EditorState.projectModel.getCreatedScenes().let { newScenes ->
+        projectModel.getCreatedScenes().let { newScenes ->
             if (newScenes.size != 1) {
                 logW { "Unsupported number of scene, currently only single scene setups are supported" }
             }
@@ -311,12 +321,12 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
             }
         }
 
-        EditorState.loadedApp.set(loadedApp)
-        if (EditorState.activeScene.value == null) {
-            EditorState.activeScene.set(EditorState.projectModel.getCreatedScenes().getOrNull(0))
+        this.loadedApp.set(loadedApp)
+        if (activeScene.value == null) {
+            activeScene.set(projectModel.getCreatedScenes().getOrNull(0))
         }
-        if (EditorState.selection.isEmpty()) {
-            EditorState.activeScene.value?.let { EditorState.selection.add(it) }
+        if (selectionOverlay.selection.isEmpty()) {
+            activeScene.value?.let { selectionOverlay.selection.add(it) }
         }
 
         if (AppState.appMode == AppMode.EDIT) {
@@ -350,10 +360,30 @@ class KoolEditor(val projectFiles: ProjectFiles, val ctx: KoolContext) {
         DockLayout.saveLayout(ui.dock, "editor.ui.layout")
     }
 
+    fun saveProject() {
+        Assets.launch {
+            val text = jsonCodec.encodeToString(projectModel.projectData)
+            projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
+            logI { "Saved project model" }
+        }
+    }
+
     companion object {
         lateinit var instance: KoolEditor
             private set
 
         const val TAG_EDITOR_SUPPORT_CONTENT = "%editor-content-hidden"
+
+        @OptIn(ExperimentalSerializationApi::class)
+        val jsonCodec = Json {
+            prettyPrint = true
+            prettyPrintIndent = "  "
+        }
+    }
+
+    enum class TransformOrientation(val label: String) {
+        LOCAL("Local"),
+        PARENT("Parent"),
+        GLOBAL("Global")
     }
 }

@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.TransformData
@@ -44,7 +44,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
         }
 
         val transformData = component.transformState.use()
-        transformProperties.setTransformData(transformData, EditorState.transformMode.use())
+        transformProperties.setTransformData(transformData, KoolEditor.instance.transformMode.use())
     }
 
     private fun UiScope.position() = labeledXyzRow(
@@ -214,7 +214,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             }
         }
 
-        fun setTransformData(transformData: TransformData, transformMode: EditorState.TransformOrientation) {
+        fun setTransformData(transformData: TransformData, transformMode: KoolEditor.TransformOrientation) {
             editTransformData = transformData
 
             val translatedTd = fromComponentToSelectedReferenceFrame(transformData, transformMode)
@@ -227,10 +227,10 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
 
         private fun fromComponentToSelectedReferenceFrame(
             transformData: TransformData,
-            transformMode: EditorState.TransformOrientation
+            transformMode: KoolEditor.TransformOrientation
         ): TransformData {
             return when (transformMode) {
-                EditorState.TransformOrientation.LOCAL -> {
+                KoolEditor.TransformOrientation.LOCAL -> {
                     // local orientation doesn't make much sense for the transform editor -> use default (parent)
                     // frame instead
                     transformData
@@ -238,11 +238,11 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                     //  in idle, pos / rot are 0.0, scale is 1.0, entering a value then changes the property by that
                     //  amount within the local orientation
                 }
-                EditorState.TransformOrientation.PARENT -> {
+                KoolEditor.TransformOrientation.PARENT -> {
                     // component transform data already is in parent frame -> no further transforming needed
                     transformData
                 }
-                EditorState.TransformOrientation.GLOBAL -> {
+                KoolEditor.TransformOrientation.GLOBAL -> {
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
                         TransformData.fromMatrix(component.nodeModel.drawNode.modelMatD)
@@ -256,14 +256,14 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
 
         private fun fromSelectedReferenceFrameToComponent(transformData: TransformData): TransformData {
             // reverse transform transformData into component parent frame
-            return when (EditorState.transformMode.value) {
-                EditorState.TransformOrientation.LOCAL -> {
+            return when (KoolEditor.instance.transformMode.value) {
+                KoolEditor.TransformOrientation.LOCAL -> {
                     transformData
                 }
-                EditorState.TransformOrientation.PARENT -> {
+                KoolEditor.TransformOrientation.PARENT -> {
                     transformData
                 }
-                EditorState.TransformOrientation.GLOBAL -> {
+                KoolEditor.TransformOrientation.GLOBAL -> {
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
                         val globalToParent = parent.drawNode.invModelMatD

@@ -11,8 +11,8 @@ import de.fabmax.kool.util.logI
 class AppModeController(val editor: KoolEditor) {
 
     fun startApp() {
-        val app = EditorState.loadedApp.value?.app ?: return
-        val sceneModel = EditorState.projectModel.getCreatedScenes().getOrNull(0) ?: return
+        val app = editor.loadedApp.value?.app ?: return
+        val sceneModel = editor.projectModel.getCreatedScenes().getOrNull(0) ?: return
 
         logI { "Start app" }
 

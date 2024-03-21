@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
@@ -16,7 +15,7 @@ import de.fabmax.kool.modules.ui2.*
 class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.PROPERTIES, ui) {
 
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
-        val selObjs = EditorState.selection.use()
+        val selObjs = KoolEditor.instance.selectionOverlay.selection.use()
         val selectedObject = if (selObjs.size == 1) selObjs[0] else null
         val title = when (selectedObject) {
             is SceneModel -> "Scene Properties"
@@ -43,7 +42,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     .padding(horizontal = sizes.gap)
 
                 if (selectedObject == null) {
-                    val n = EditorState.selection.size
+                    val n = KoolEditor.instance.selectionOverlay.selection.size
                     val txt = if (n == 0) "Nothing selected" else "$n objects selected"
                     Text(txt) {
                         modifier
@@ -165,38 +164,38 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             createComponent(target)?.let { AddComponentAction(target, it).apply() }
         }
 
-        object AddSsaoComponent : ComponentAdder<SsaoComponent>("Screen-space Ambient Occlusion") {
+        data object AddSsaoComponent : ComponentAdder<SsaoComponent>("Screen-space Ambient Occlusion") {
             override fun createComponent(target: NodeModel): SsaoComponent = SsaoComponent(target as SceneModel)
             override fun accept(nodeModel: NodeModel) =
                 nodeModel is SceneModel && !nodeModel.hasComponent<SsaoComponent>()
         }
 
-        object AddCameraComponent : ComponentAdder<CameraComponent>("Camera") {
+        data object AddCameraComponent : ComponentAdder<CameraComponent>("Camera") {
             override fun createComponent(target: NodeModel): CameraComponent = CameraComponent(target as SceneNodeModel)
             override fun accept(nodeModel: NodeModel) =
                 nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
         }
 
 
-        object AddLightComponent : ComponentAdder<DiscreteLightComponent>("Light") {
+        data object AddLightComponent : ComponentAdder<DiscreteLightComponent>("Light") {
             override fun createComponent(target: NodeModel): DiscreteLightComponent = DiscreteLightComponent(target as SceneNodeModel)
             override fun accept(nodeModel: NodeModel) =
                 nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
         }
 
-        object AddShadowMapComponent : ComponentAdder<ShadowMapComponent>("Shadow") {
+        data object AddShadowMapComponent : ComponentAdder<ShadowMapComponent>("Shadow") {
             override fun createComponent(target: NodeModel): ShadowMapComponent = ShadowMapComponent(target as SceneNodeModel)
             override fun accept(nodeModel: NodeModel) =
                 nodeModel.hasComponent<DiscreteLightComponent>() && !nodeModel.hasComponent<ShadowMapComponent>()
         }
 
-        object AddMeshComponent : ComponentAdder<MeshComponent>("Mesh") {
+        data object AddMeshComponent : ComponentAdder<MeshComponent>("Mesh") {
             override fun createComponent(target: NodeModel): MeshComponent = MeshComponent(target as SceneNodeModel)
             override fun accept(nodeModel: NodeModel) =
                 nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
         }
 
-        object AddModelComponent : ComponentAdder<ModelComponent>("Model") {
+        data object AddModelComponent : ComponentAdder<ModelComponent>("Model") {
             override fun accept(nodeModel: NodeModel) =
                 nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
 
@@ -214,17 +213,17 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             }
         }
 
-        object AddMaterialComponent : ComponentAdder<MaterialComponent>("Material") {
+        data object AddMaterialComponent : ComponentAdder<MaterialComponent>("Material") {
             override fun createComponent(target: NodeModel): MaterialComponent = MaterialComponent(target as SceneNodeModel)
             override fun accept(nodeModel: NodeModel) = !nodeModel.hasComponent<MaterialComponent>()
                     && (nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>())
         }
 
-        object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {
+        data object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {
             override fun accept(nodeModel: NodeModel) = true
 
             override fun addMenuItems(target: NodeModel, parentMenu: SubMenuItem<NodeModel>) {
-                val scriptClasses = EditorState.loadedApp.value?.behaviorClasses?.values ?: emptyList()
+                val scriptClasses = KoolEditor.instance.loadedApp.value?.behaviorClasses?.values ?: emptyList()
                 if (scriptClasses.isNotEmpty()) {
                     parentMenu.subMenu(name) {
                         scriptClasses.forEach { script ->

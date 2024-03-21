@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.overlays
 
-import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.model.SceneModel
@@ -223,7 +223,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         addNode(groupMesh)
 
         onUpdate {
-            EditorState.activeScene.value?.let { sceneModel ->
+            KoolEditor.instance.activeScene.value?.let { sceneModel ->
                 addLightInstances(sceneModel)
                 addCameraInstances(sceneModel)
                 addGroupInstances(sceneModel)

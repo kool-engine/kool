@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.actions.DeleteMaterialAction
 import de.fabmax.kool.modules.ui2.UiScope
 
@@ -14,7 +13,7 @@ class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.m
         traversedPaths += "/materials"
 
         materialDir.children.clear()
-        EditorState.projectModel.materials.use().forEach {
+        editor.projectModel.materials.use().forEach {
             val materialItem = browserItems.getOrPut("/materials/${it.name}") {
                 BrowserMaterialItem(1, it)
             }

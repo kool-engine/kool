@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.BehaviorProperty
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
 import de.fabmax.kool.editor.components.BehaviorComponent
@@ -42,7 +41,7 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
             }
 
             val behavior = component.behaviorInstance.use() ?: return@Column
-            val behaviorProperties = EditorState.loadedApp.use()?.behaviorClasses?.get(behavior::class)?.properties
+            val behaviorProperties = KoolEditor.instance.loadedApp.use()?.behaviorClasses?.get(behavior::class)?.properties
             if (behaviorProperties == null) {
                 logE { "Unable to get KoolBehavior class for behavior ${component.behaviorInstance.value}" }
             }

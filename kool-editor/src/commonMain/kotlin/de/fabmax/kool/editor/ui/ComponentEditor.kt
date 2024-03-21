@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.RemoveComponentAction
 import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.model.NodeModel
@@ -13,7 +13,7 @@ abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Com
         get() = component.nodeModel
 
     open val sceneModel: SceneModel
-        get() = requireNotNull(EditorState.activeScene.value)
+        get() = requireNotNull(KoolEditor.instance.activeScene.value)
 
     protected fun removeComponent() {
         RemoveComponentAction(nodeModel, component).apply()

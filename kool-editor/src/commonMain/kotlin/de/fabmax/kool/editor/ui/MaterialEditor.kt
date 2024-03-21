@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.RenameMaterialAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
@@ -348,7 +347,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
             MaterialItem("New material", null)
         )
         var index = 0
-        EditorState.projectModel.materials.use().forEachIndexed { i, material ->
+        KoolEditor.instance.projectModel.materials.use().forEachIndexed { i, material ->
             if (component.isHoldingMaterial(material)) {
                 index = i + 2
             }
@@ -391,7 +390,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         override fun toString(): String = itemText
 
         fun getMaterialModel(): MaterialData? {
-            return material ?: if (itemText == "New material") EditorState.projectModel.createNewMaterial() else null
+            return material ?: if (itemText == "New material") KoolEditor.instance.projectModel.createNewMaterial() else null
         }
     }
 }

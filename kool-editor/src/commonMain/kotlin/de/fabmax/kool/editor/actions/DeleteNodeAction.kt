@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
@@ -12,7 +11,7 @@ class DeleteNodeAction(
     constructor(removeNodeModel: SceneNodeModel): this(listOf(removeNodeModel))
 
     override fun doAction() {
-        EditorState.selection.removeAll(removeNodeModels)
+        KoolEditor.instance.selectionOverlay.selection.removeAll(removeNodeModels)
         removeNodeModels.forEach {
             it.sceneModel.removeSceneNode(it)
         }

@@ -1,6 +1,9 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.*
+import de.fabmax.kool.editor.AppReloadListener
+import de.fabmax.kool.editor.AssetItem
+import de.fabmax.kool.editor.EditorDefaults
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.actions.DeleteNodeAction
 import de.fabmax.kool.editor.actions.MoveSceneNodeAction
@@ -27,6 +30,9 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private val dndCtx: DragAndDropContext<EditorDndItem<*>> get() = sceneBrowser.dnd.dndContext
 
+    private val editor: KoolEditor
+        get() = KoolEditor.instance
+
     init {
         sceneBrowser.editor.appLoader.appReloadListeners += AppReloadListener {
             nodeTreeItemMap.clear()
@@ -38,8 +44,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun addNewMesh(parent: SceneObjectItem, meshShape: MeshShapeData) {
-        val parentScene = EditorState.activeScene.value ?: return
-        val id = EditorState.projectModel.nextId()
+        val parentScene = editor.activeScene.value ?: return
+        val id = editor.projectModel.nextId()
         val nodeData = SceneNodeData("${meshShape.name}-$id", id)
         nodeData.components += MeshComponentData(meshShape)
         nodeData.components += MaterialComponentData(-1)
@@ -48,8 +54,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
-        val parentScene = EditorState.activeScene.value ?: return
-        val id = EditorState.projectModel.nextId()
+        val parentScene = editor.activeScene.value ?: return
+        val id = editor.projectModel.nextId()
         val nodeData = SceneNodeData(modelAsset.name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
         val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
@@ -57,8 +63,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
-        val parentScene = EditorState.activeScene.value ?: return
-        val id = EditorState.projectModel.nextId()
+        val parentScene = editor.activeScene.value ?: return
+        val id = editor.projectModel.nextId()
         val nodeData = SceneNodeData("${lightType.name}-$id", id)
         nodeData.components += DiscreteLightComponentData(lightType)
         val light = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
@@ -73,8 +79,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
-        val parentScene = EditorState.activeScene.value ?: return
-        val id = EditorState.projectModel.nextId()
+        val parentScene = editor.activeScene.value ?: return
+        val id = editor.projectModel.nextId()
         val nodeData = SceneNodeData("Empty-$id", id)
         val empty = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
         AddNodeAction(empty).apply()
@@ -92,11 +98,11 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     override fun UiScope.compose() {
-        EditorState.activeScene.use()
+        editor.activeScene.use()
 
         if (!isTreeValid.use()) {
             treeItems.clear()
-            EditorState.projectModel.getCreatedScenes().forEach { sceneModel ->
+            editor.projectModel.getCreatedScenes().forEach { sceneModel ->
                 sceneModel.drawNode.let {
                     treeItems.appendNode(sceneModel, it, sceneModel, 0)
                 }
@@ -155,7 +161,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     item(modelAsset.name) { addNewModel(it, modelAsset) }
                 }
             }
-            EditorState.activeScene.value?.let { sceneModel ->
+            editor.activeScene.value?.let { sceneModel ->
                 if (sceneModel.drawNode.lighting.lights.size < sceneModel.maxNumLightsState.value) {
                     subMenu("Light") {
                         item("Directional") { addNewLight(it, LightTypeData.Directional()) }
@@ -177,7 +183,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             .margin(horizontal = sizes.smallGap)
             .onClick {
                 if (it.pointer.isLeftButtonClicked) {
-                    EditorState.selectSingle(item.nodeModel)
+                    editor.selectionOverlay.selectSingle(item.nodeModel)
                     if (it.pointer.leftButtonRepeatedClickCount == 2 && item.isExpandable) {
                         item.toggleExpanded()
                     }
@@ -254,7 +260,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
-        val fgColor = if (item.nodeModel in EditorState.selection.use()) {
+        val fgColor = if (item.nodeModel in editor.selectionOverlay.selection.use()) {
             if (item.type != SceneObjectType.NON_MODEL_NODE) {
                 colors.primary
             } else {

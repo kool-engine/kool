@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.data.TransformData
@@ -299,7 +298,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
 
         // determine gizmo orientation
         globalGizmoOrientation.set(QuatD.IDENTITY)
-        if (EditorState.transformMode.value == EditorState.TransformOrientation.LOCAL) {
+        if (editor.transformMode.value == KoolEditor.TransformOrientation.LOCAL) {
             if (selection.size == 1) {
                 // use local orientation of single selected object
                 selection[0].nodeModel.drawNode.modelMatF.decompose(rotation = globalGizmoOrientation)
@@ -309,7 +308,7 @@ class TransformGizmoOverlay(private val editor: KoolEditor) : Node("Transform gi
                 // objects have the same parent (or global orientation if not)
                 globalGizmoOrientation.set(parentOrientation)
             }
-        } else if (EditorState.transformMode.value == EditorState.TransformOrientation.PARENT && isSameParent) {
+        } else if (editor.transformMode.value == KoolEditor.TransformOrientation.PARENT && isSameParent) {
             // use parent orientation if selected objects all have the same parent
             globalGizmoOrientation.set(parentOrientation)
         }

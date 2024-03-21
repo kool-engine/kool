@@ -50,7 +50,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         }
     }
 
-    fun focusSelectedObject() = focusObjects(EditorState.getSelectedSceneNodes())
+    fun focusSelectedObject() = focusObjects(editor.selectionOverlay.getSelectedSceneNodes())
 
     fun focusObject(objectModel: SceneNodeModel) = focusObjects(listOf(objectModel))
 

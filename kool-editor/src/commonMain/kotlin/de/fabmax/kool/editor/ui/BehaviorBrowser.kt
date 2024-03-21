@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.modules.ui2.UiScope
 
@@ -14,7 +13,7 @@ class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.m
         traversedPaths += "/behaviors"
 
         scriptDir.children.clear()
-        EditorState.loadedApp.value?.behaviorClasses?.values?.forEach {
+        editor.loadedApp.value?.behaviorClasses?.values?.forEach {
             val scriptItem = browserItems.getOrPut("/behaviors/${it.qualifiedName}") {
                 BrowserBehaviorItem(1, it)
             }

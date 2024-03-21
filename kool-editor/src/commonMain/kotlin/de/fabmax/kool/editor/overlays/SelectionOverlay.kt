@@ -1,25 +1,31 @@
 package de.fabmax.kool.editor.overlays
 
-import de.fabmax.kool.editor.EditorState
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
 import kotlin.math.max
 
 class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
+
+    val selection = mutableStateListOf<NodeModel>()
+    val onSelectionChanged = mutableListOf<(List<NodeModel>) -> Unit>()
 
     val selectionPass = SelectionPass(editor)
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
@@ -37,7 +43,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         overlayMesh.isVisible = false
         addNode(overlayMesh)
 
-        EditorState.onSelectionChanged += { updateSelection = true }
+        onSelectionChanged += { updateSelection = true }
 
         onUpdate {
             selectionColor = editor.ui.uiColors.value.primary
@@ -52,7 +58,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             if (updateSelection) {
                 updateSelection = false
                 prevSelection.clear()
-                prevSelection += EditorState.selection
+                prevSelection += selection
                 meshSelection.clear()
                 prevSelection
                     .filter { it !is SceneModel }
@@ -65,6 +71,46 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 }
             }
         }
+    }
+
+    fun selectSingle(selectModel: NodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
+        val selectList = selectModel?.let { listOf(it) } ?: emptyList()
+
+        if (toggleSelect && selectModel in selection) {
+            if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
+                reduceSelection(selectList)
+            } else {
+                clearSelection()
+            }
+        } else if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
+            expandSelection(selectList)
+        } else {
+            setSelection(selectList)
+        }
+    }
+
+    fun clearSelection() = setSelection(emptyList())
+
+    fun expandSelection(addModels: List<NodeModel>) = setSelection(selection.toSet() + addModels.toSet())
+
+    fun reduceSelection(removeModels: List<NodeModel>) = setSelection(selection.toSet() - removeModels.toSet())
+
+    fun setSelection(selectModels: Collection<NodeModel>) {
+        if (selection != selectModels) {
+            selection.atomic {
+                clear()
+                addAll(selectModels)
+            }
+            onSelectionChanged.forEach { it(selection) }
+        }
+    }
+
+    fun getSelectedNodes(filter: (NodeModel) -> Boolean = { true }): List<NodeModel> {
+        return selection.copy().filter(filter)
+    }
+
+    fun getSelectedSceneNodes(filter: (SceneNodeModel) -> Boolean = { true }): List<SceneNodeModel> {
+        return selection.copy().filterIsInstance<SceneNodeModel>().filter(filter)
     }
 
     fun invalidateSelection() {
@@ -227,5 +273,4 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             }
         }
     }
-
 }

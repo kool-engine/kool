@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.data.MaterialData
 
 class RenameMaterialAction(
@@ -12,14 +12,14 @@ class RenameMaterialAction(
     override fun doAction() {
         materialData.nameState.set(applyName)
         // re-add material to keep correct order
-        EditorState.projectModel.removeMaterial(materialData)
-        EditorState.projectModel.addMaterial(materialData)
+        KoolEditor.instance.projectModel.removeMaterial(materialData)
+        KoolEditor.instance.projectModel.addMaterial(materialData)
     }
 
     override fun undoAction() {
         materialData.nameState.set(undoName)
         // re-add material to keep correct order
-        EditorState.projectModel.removeMaterial(materialData)
-        EditorState.projectModel.addMaterial(materialData)
+        KoolEditor.instance.projectModel.removeMaterial(materialData)
+        KoolEditor.instance.projectModel.addMaterial(materialData)
     }
 }

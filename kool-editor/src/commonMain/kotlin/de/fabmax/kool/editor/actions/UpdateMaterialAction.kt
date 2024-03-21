@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.EditorState
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.updateMaterial
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.MaterialShaderData
@@ -12,11 +12,11 @@ class UpdateMaterialAction(
 ) : EditorAction {
     override fun doAction() {
         materialData.shaderDataState.set(applyMaterial)
-        EditorState.projectModel.updateMaterial(materialData)
+        KoolEditor.instance.projectModel.updateMaterial(materialData)
     }
 
     override fun undoAction() {
         materialData.shaderDataState.set(undoMaterial)
-        EditorState.projectModel.updateMaterial(materialData)
+        KoolEditor.instance.projectModel.updateMaterial(materialData)
     }
 }

@@ -1,13 +1,13 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.Assets
-import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.data.PbrShaderData
-import de.fabmax.kool.editor.data.ProjectData
-import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.math.MutableMat4d
+import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logE
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 class EditorProject(val projectData: ProjectData) {
@@ -129,5 +129,43 @@ class EditorProject(val projectData: ProjectData) {
                 null
             }
         }
+
+        fun emptyProject(): EditorProject = EditorProject(
+            ProjectData().apply {
+                val sceneId = nextId++
+                val camId = nextId++
+                val boxId = nextId++
+                val lightId = nextId++
+                sceneNodeIds += sceneId
+                sceneNodes += SceneNodeData("New Scene", sceneId).apply {
+                    childNodeIds += listOf(camId, boxId, lightId)
+                    components += ScenePropertiesComponentData(cameraNodeId = camId)
+                    components += SceneBackgroundComponentData(
+                        SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
+                    )
+                }
+                sceneNodes += SceneNodeData("Camera", camId).apply {
+                    components += CameraComponentData(CameraTypeData.Perspective())
+                    components += TransformComponentData(
+                        TransformData.fromMatrix(
+                            MutableMat4d()
+                                .translate(0.0, 2.5, 5.0)
+                                .rotate(-30.0.deg, Vec3d.X_AXIS)
+                        ))
+                }
+                sceneNodes += SceneNodeData("Default Cube", boxId).apply {
+                    components += MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
+                }
+                sceneNodes += SceneNodeData("Directional Light", lightId).apply {
+                    components += DiscreteLightComponentData(LightTypeData.Directional())
+                    components += TransformComponentData(
+                        TransformData.fromMatrix(
+                            MutableMat4d()
+                                .translate(5.0, 5.0, 5.0)
+                                .rotate(0.0.deg, 30.0.deg, (-120.0).deg)
+                        ))
+                }
+            }
+        )
     }
 }
