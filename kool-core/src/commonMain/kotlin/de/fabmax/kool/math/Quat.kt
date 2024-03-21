@@ -117,9 +117,9 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     }
 
     /**
-     * Norms the length of this vector and returns the result in a provided [MutableVec4f].
+     * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatF].
      */
-    fun norm(result: MutableQuatF): MutableQuatF = result.set(this).norm()
+    fun normed(result: MutableQuatF = MutableQuatF()): MutableQuatF = result.set(this).norm()
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
@@ -423,9 +423,9 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
-     * Norms the length of this vector and returns the result in a provided [MutableVec4d].
+     * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatD].
      */
-    fun norm(result: MutableQuatD): MutableQuatD = result.set(this).norm()
+    fun normed(result: MutableQuatD = MutableQuatD()): MutableQuatD = result.set(this).norm()
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must

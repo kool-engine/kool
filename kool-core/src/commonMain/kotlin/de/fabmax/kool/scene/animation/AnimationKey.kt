@@ -57,8 +57,8 @@ open class RotationKey(time: Float, val rotation: QuatF) : AnimationKey<Rotation
     override fun toString() = "${time.toString(2)} -> rotation: $rotation [$interpolation]"
 
     private fun slerp(quatA: QuatF, quatB: QuatF, f: Float, result: MutableQuatF): MutableQuatF {
-        quatA.norm(qa)
-        quatB.norm(qb)
+        quatA.normed(qa)
+        quatB.normed(qb)
 
         val t = f.clamp(0f, 1f)
 
