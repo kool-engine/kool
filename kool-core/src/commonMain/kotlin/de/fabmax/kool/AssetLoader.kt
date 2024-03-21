@@ -3,8 +3,10 @@ package de.fabmax.kool
 import de.fabmax.kool.Assets.loadTextureData
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -86,10 +88,12 @@ abstract class AssetLoader {
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-        loaded.data?.let {
-            logD { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+        if (loaded.data != null) {
+            logD { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
+        } else {
+            logE { "Failed loading ${trimAssetPath(assetPath)}" }
         }
-        loaded.data ?: error("Failed loading texture ${trimAssetPath(assetPath)}")
+        loaded.data ?: textureDataLoadFailed
     }
 
     /**
@@ -109,10 +113,12 @@ abstract class AssetLoader {
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-        loaded.data?.let {
-            logD { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+        if (loaded.data != null) {
+            logD { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
+        } else {
+            logE { "Failed loading ${trimAssetPath(assetPath)}" }
         }
-        loaded.data as TextureData2d? ?: error("Failed loading texture ${trimAssetPath(assetPath)}")
+        loaded.data as TextureData2d? ?: textureDataLoadFailed
     }
 
     /**
@@ -141,7 +147,12 @@ abstract class AssetLoader {
         loaded.data?.let {
             logD { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
         }
-        loaded.data ?: error("Failed loading texture atlas ${trimAssetPath(assetPath)}")
+        if (loaded.data != null) {
+            logD { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height}x${loaded.data.depth})" }
+        } else {
+            logE { "Failed loading ${trimAssetPath(assetPath)}" }
+        }
+        loaded.data ?: textureDataLoadFailed
     }
 
     /**
@@ -291,6 +302,8 @@ abstract class AssetLoader {
 
     companion object {
         private const val NUM_LOAD_WORKERS = 8
+
+        val textureDataLoadFailed = TextureData2d.singleColor(Color.MAGENTA)
     }
 }
 

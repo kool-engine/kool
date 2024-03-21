@@ -16,7 +16,7 @@ internal class FileSystemWatchService(val parentFs: PhysicalFileSystem, val even
     private val pathsToWatchKeys = mutableMapOf<Path, WatchKey>()
 
     var isClosed = false
-    val changes = Channel<List<ChangeEvent>>(100)
+    val changes = Channel<List<ChangeEvent>>(Channel.UNLIMITED)
 
     private val watcherThread = thread(isDaemon = true) {
         logD { "Starting FileSystemWatchService for ${parentFs.rootPath}" }

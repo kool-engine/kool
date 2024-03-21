@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
@@ -11,7 +10,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.*
 import java.util.zip.GZIPInputStream
@@ -50,9 +49,7 @@ class HttpCache private constructor(private val cacheDir: File) {
     private fun rebuildIndex() {
         synchronized(cache) {
             cache.clear()
-            if (!cacheDir.exists() && !cacheDir.mkdirs()) {
-                throw KoolException("Failed to create cache directory")
-            }
+            check(cacheDir.exists() || cacheDir.mkdirs()) { "Failed to create cache directory" }
         }
 
         fun File.walk(recv: (File) -> Unit) {
@@ -122,9 +119,9 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     fun loadHttpResource(url: String): File? {
-        val req = URL(url)
+        val req = URI(url).toURL()
 
-        // use host-name as cache directory name, sub-domain components are dropped
+        // use host-name as cache directory name, subdomain components are dropped
         // e.g. a.tile.openstreetmap.org and b.tile.openstreetmap.org should share the same cache dir
         var host = req.host
         while (host.count { it == '.' } > 1) {
@@ -193,7 +190,7 @@ class HttpCache private constructor(private val cacheDir: File) {
         }
 
         fun loadHttpResource(url: String): File? {
-            val inst = instance ?: throw KoolException("Default cache used before initCache() was called")
+            val inst = checkNotNull(instance) { "Default cache used before initCache() was called" }
             return inst.loadHttpResource(url)
         }
     }
