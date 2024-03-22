@@ -7,7 +7,10 @@ import kotlinx.coroutines.runBlocking
 import java.nio.file.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
-import kotlin.io.path.*
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.isDirectory
+import kotlin.io.path.visitFileTree
 
 internal class FileSystemWatchService(val parentFs: PhysicalFileSystem, val eventTimeoutMs: Long = 1000L) {
 
@@ -20,13 +23,14 @@ internal class FileSystemWatchService(val parentFs: PhysicalFileSystem, val even
 
     private val watcherThread = thread(isDaemon = true) {
         logD { "Starting FileSystemWatchService for ${parentFs.rootPath}" }
-        Path(parentFs.rootPath).watchRecursively()
+        parentFs.rootPath.watchRecursively()
         try {
             while (!isClosed) {
                 watchService.poll(eventTimeoutMs, TimeUnit.MILLISECONDS)?.let { watchKey ->
                     watchKeysToPaths[watchKey]?.let { watchDir ->
                         val changeEvents = watchKey.pollEvents()
                             .filter { it.context() is Path }
+                            .filter { it.context() as Path !in parentFs.excludePaths }
                             .mapNotNull { event ->
                                 val file = event.context() as Path
                                 val changedFile = watchDir.resolve(file)
@@ -69,22 +73,31 @@ internal class FileSystemWatchService(val parentFs: PhysicalFileSystem, val even
 
     @OptIn(ExperimentalPathApi::class)
     private fun Path.watchRecursively() {
-        walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
-            try {
-                if (it.isDirectory() && it !in pathsToWatchKeys) {
-                    val key = it.register(
-                        watchService,
-                        StandardWatchEventKinds.ENTRY_CREATE,
-                        StandardWatchEventKinds.ENTRY_DELETE,
-                        StandardWatchEventKinds.ENTRY_MODIFY
-                    )
-                    watchKeysToPaths[key] = it
-                    pathsToWatchKeys[it] = key
+        visitFileTree {
+            onPreVisitDirectory { dir, _ ->
+                if (dir !in parentFs.excludePaths) {
+                    dir.watch()
+                    FileVisitResult.CONTINUE
+                } else {
+                    FileVisitResult.SKIP_SUBTREE
                 }
-            } catch (e: Exception) {
-                logE { "Directory watching failed for path $it" }
-                e.printStackTrace()
             }
+        }
+    }
+
+    private fun Path.watch() {
+        try {
+            val key = register(
+                watchService,
+                StandardWatchEventKinds.ENTRY_CREATE,
+                StandardWatchEventKinds.ENTRY_DELETE,
+                StandardWatchEventKinds.ENTRY_MODIFY
+            )
+            watchKeysToPaths[key] = this
+            pathsToWatchKeys[this] = key
+        } catch (e: Exception) {
+            logE { "Directory watching failed for path $this" }
+            e.printStackTrace()
         }
     }
 

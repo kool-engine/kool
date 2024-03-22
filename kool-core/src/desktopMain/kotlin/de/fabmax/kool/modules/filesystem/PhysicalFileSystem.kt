@@ -5,13 +5,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.getOrElse
 import kotlinx.coroutines.withContext
+import java.nio.file.FileVisitResult
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import kotlin.io.path.*
 
 @OptIn(ExperimentalPathApi::class)
-class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boolean = false) : WritableFileSystem, AutoCloseable {
-    val rootPath = Path(rootPath).absolutePathString()
+class PhysicalFileSystem(
+    val rootPath: Path,
+    val excludePaths: Set<Path> = emptySet(),
+    private val isLaunchWatchService: Boolean = false
+) : WritableFileSystem, AutoCloseable {
 
     override val root: Directory
     private val fsItems = mutableMapOf<String, FsItem>()
@@ -58,18 +62,35 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
     init {
         watchers += fsWatcher
 
-        val root = Directory(Path(rootPath))
+        root = Directory(rootPath)
         fsItems["/"] = root
-        this.root = root
 
-        root.physPath
-            .walk(PathWalkOption.INCLUDE_DIRECTORIES, PathWalkOption.FOLLOW_LINKS)
-            .filter { it != root.physPath }
-            .forEach { path ->
-                val item: FsItem = if (path.isDirectory()) Directory(path) else File(path)
-                fsItems[item.path] = item
+        rootPath.visitFileTree {
+            onPreVisitDirectory { dir, _ ->
+                if (dir in excludePaths) {
+                    FileVisitResult.SKIP_SUBTREE
+                } else {
+                    if (dir != rootPath) {
+                        val dirItem = Directory(dir)
+                        fsItems[dirItem.path] = dirItem
+                    }
+                    FileVisitResult.CONTINUE
+                }
             }
-        fsItems.values.filter { it != root }.forEach { (it.parent as Directory).children[it.name] = it }
+            onVisitFile { file, _ ->
+                if (file !in excludePaths) {
+                    val fileItem = File(file)
+                    fsItems[fileItem.path] = fileItem
+                }
+                FileVisitResult.CONTINUE
+            }
+        }
+        fsItems.values
+            .filter { it != root }
+            .forEach {
+                val parentDir = checkNotNull(it.parent as? Directory?) { "parent is null: ${it.physPath}" }
+                parentDir.children[it.name] = it
+            }
 
         if (isLaunchWatchService) {
             watchService = FileSystemWatchService(this)
@@ -257,7 +278,7 @@ class PhysicalFileSystem(rootPath: String, private val isLaunchWatchService: Boo
     }
 
     private fun Path.fsPath(): String {
-        return FileSystem.sanitizePath(absolutePathString().removePrefix(rootPath))
+        return FileSystem.sanitizePath(relativeTo(rootPath).pathString)
     }
 
     override fun close() {

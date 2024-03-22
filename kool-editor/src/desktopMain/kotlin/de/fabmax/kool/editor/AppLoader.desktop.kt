@@ -123,7 +123,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
             return LoadedApp(EmptyApp(), emptyMap())
         }
 
-        val buildClasses = Path(physFs.rootPath, BUILD_OUTPUT_CLASSES)
+        val buildClasses = physFs.rootPath.resolve(BUILD_OUTPUT_CLASSES)
         if (!buildClasses.exists()) {
             buildApp()
             if (!buildClasses.exists()) {
@@ -137,7 +137,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         BehaviorLoader.appBehaviorLoader = BehaviorLoader.ReflectionAppBehaviorLoader(loader)
         val behaviorClasses = examineClasses(loader, buildClasses)
 
-        val jsGenOutput = Path(physFs.rootPath, JS_BEHAVIOR_GEN_OUTPUT).pathString
+        val jsGenOutput = physFs.rootPath.resolve(JS_BEHAVIOR_GEN_OUTPUT).pathString
         logI { "Generating Javascript behavior bindings: $jsGenOutput" }
         JsAppBehaviorBindingsGenerator.generateBehaviorBindings(behaviorClasses.values.toList(), jsGenOutput)
 
