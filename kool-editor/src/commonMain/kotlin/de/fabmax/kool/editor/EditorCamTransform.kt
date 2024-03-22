@@ -19,7 +19,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
 
     init {
         minZoom = 1.0
-        maxZoom = 1000.0
+        maxZoom = 10000.0
         zoomAnimator.stiffness = 500.0
         horiRotAnimator.stiffness = 500.0
         vertRotAnimator.stiffness = 500.0

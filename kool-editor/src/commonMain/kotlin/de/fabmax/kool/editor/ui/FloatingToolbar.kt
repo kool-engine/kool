@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
+import de.fabmax.kool.modules.gizmo.GizmoMode
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.launchOnMainThread
 
@@ -19,10 +19,10 @@ class FloatingToolbar(val ui: EditorUi) : Composable {
             launchOnMainThread {
                 ui.editor.gizmoOverlay.setTransformObjects(ui.editor.selectionOverlay.getSelectedSceneNodes())
                 ui.editor.gizmoOverlay.transformMode = when (actionMode.value) {
-                    EditActionMode.MOVE -> TransformGizmoOverlay.TransformMode.MOVE
-                    EditActionMode.ROTATE -> TransformGizmoOverlay.TransformMode.ROTATE
-                    EditActionMode.SCALE -> TransformGizmoOverlay.TransformMode.SCALE
-                    else -> TransformGizmoOverlay.TransformMode.MOVE
+                    EditActionMode.MOVE -> GizmoMode.TRANSLATE
+                    EditActionMode.ROTATE -> GizmoMode.ROTATE
+                    EditActionMode.SCALE -> GizmoMode.SCALE
+                    else -> GizmoMode.TRANSLATE
                 }
             }
         } else {

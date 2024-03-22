@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.abs
 
@@ -44,7 +45,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
         }
 
         val transformData = component.transformState.use()
-        transformProperties.setTransformData(transformData, KoolEditor.instance.transformMode.use())
+        transformProperties.setTransformData(transformData, KoolEditor.instance.gizmoOverlay.transformFrame.use())
     }
 
     private fun UiScope.position() = labeledXyzRow(
@@ -214,10 +215,10 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
             }
         }
 
-        fun setTransformData(transformData: TransformData, transformMode: KoolEditor.TransformOrientation) {
+        fun setTransformData(transformData: TransformData, transformFrame: GizmoFrame) {
             editTransformData = transformData
 
-            val translatedTd = fromComponentToSelectedReferenceFrame(transformData, transformMode)
+            val translatedTd = fromComponentToSelectedReferenceFrame(transformData, transformFrame)
             setPosition(translatedTd.position.toVec3d())
             setScale(translatedTd.scale.toVec3d())
 
@@ -227,10 +228,10 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
 
         private fun fromComponentToSelectedReferenceFrame(
             transformData: TransformData,
-            transformMode: KoolEditor.TransformOrientation
+            transformFrame: GizmoFrame
         ): TransformData {
-            return when (transformMode) {
-                KoolEditor.TransformOrientation.LOCAL -> {
+            return when (transformFrame) {
+                GizmoFrame.LOCAL -> {
                     // local orientation doesn't make much sense for the transform editor -> use default (parent)
                     // frame instead
                     transformData
@@ -238,11 +239,11 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                     //  in idle, pos / rot are 0.0, scale is 1.0, entering a value then changes the property by that
                     //  amount within the local orientation
                 }
-                KoolEditor.TransformOrientation.PARENT -> {
+                GizmoFrame.PARENT -> {
                     // component transform data already is in parent frame -> no further transforming needed
                     transformData
                 }
-                KoolEditor.TransformOrientation.GLOBAL -> {
+                GizmoFrame.GLOBAL -> {
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
                         TransformData.fromMatrix(component.nodeModel.drawNode.modelMatD)
@@ -256,14 +257,14 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
 
         private fun fromSelectedReferenceFrameToComponent(transformData: TransformData): TransformData {
             // reverse transform transformData into component parent frame
-            return when (KoolEditor.instance.transformMode.value) {
-                KoolEditor.TransformOrientation.LOCAL -> {
+            return when (KoolEditor.instance.gizmoOverlay.transformFrame.value) {
+                GizmoFrame.LOCAL -> {
                     transformData
                 }
-                KoolEditor.TransformOrientation.PARENT -> {
+                GizmoFrame.PARENT -> {
                     transformData
                 }
-                KoolEditor.TransformOrientation.GLOBAL -> {
+                GizmoFrame.GLOBAL -> {
                     val parent = component.nodeModel.parent
                     if (parent is SceneNodeModel) {
                         val globalToParent = parent.drawNode.invModelMatD

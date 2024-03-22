@@ -21,7 +21,6 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
     private val clientGlobalToParent = MutableMat4d()
     private val clientTransformOffset = MutableMat4d()
 
-    private val tmpMat3 = MutableMat3d()
     private val tmpMat4 = MutableMat4d()
 
     private var isInternalUpdate = false

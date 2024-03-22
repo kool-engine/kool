@@ -36,8 +36,13 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
-    val projectData = Json.decodeFromString<ProjectData>(projectFiles.projectModelFile.read().decodeToString())
-    val projectModel = EditorProject(projectData)
+    val projectModel = try {
+        val data = Json.decodeFromString<ProjectData>(projectFiles.projectModelFile.read().decodeToString())
+        EditorProject(data)
+    } catch (e: Exception) {
+        logW("KoolEditor") { "Failed loading project model, creating empty" }
+        EditorProject.emptyProject()
+    }
     return KoolEditor(projectFiles, projectModel, ctx)
 }
 
@@ -56,14 +61,13 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     val editorOverlay = scene("editor-overlay") {
-        camera.setClipRange(0.1f, 1000f)
         clearColor = null
         clearDepth = false
         tryEnableInfiniteDepth()
     }
     val gridOverlay = GridOverlay()
     val lightOverlay = SceneObjectsOverlay()
-    val gizmoOverlay = TransformGizmoOverlay(this)
+    val gizmoOverlay = TransformGizmoOverlay()
     val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {
@@ -80,8 +84,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val modeController = AppModeController(this)
     val availableAssets = AvailableAssets(projectFiles)
     val ui = EditorUi(this)
-
-    val transformMode = mutableStateOf(TransformOrientation.GLOBAL)
 
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
@@ -379,11 +381,5 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             prettyPrint = true
             prettyPrintIndent = "  "
         }
-    }
-
-    enum class TransformOrientation(val label: String) {
-        LOCAL("Local"),
-        PARENT("Parent"),
-        GLOBAL("Global")
     }
 }

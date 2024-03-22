@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.DockNodeLeaf
 import de.fabmax.kool.scene.Scene
@@ -77,13 +77,14 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
         }
         ComboBox {
             defaultComboBoxStyle()
+            val selectedFrame = editor.gizmoOverlay.transformFrame.use()
             modifier
                 .width(sizes.baseSize * 2.5f)
                 .alignY(AlignmentY.Center)
-                .items(KoolEditor.TransformOrientation.entries.map { it.label })
-                .selectedIndex(editor.transformMode.use().ordinal)
+                .items(transformFrames)
+                .selectedIndex(transformFrames.indexOfFirst { it.frame == selectedFrame })
                 .onItemSelected { i ->
-                    editor.transformMode.set(KoolEditor.TransformOrientation.entries[i])
+                    editor.gizmoOverlay.transformFrame.set(transformFrames[i].frame)
                 }
         }
     }
@@ -99,5 +100,17 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
                 targetScene.mainRenderPass.viewport.set(x, y, w, h)
             }
         }
+    }
+
+    private class TransformFrameOption(val frame: GizmoFrame, val label: String) {
+        override fun toString(): String = label
+    }
+
+    companion object {
+        private val transformFrames = listOf(
+            TransformFrameOption(GizmoFrame.GLOBAL, "Global"),
+            TransformFrameOption(GizmoFrame.PARENT, "Parent"),
+            TransformFrameOption(GizmoFrame.LOCAL, "Local"),
+        )
     }
 }
