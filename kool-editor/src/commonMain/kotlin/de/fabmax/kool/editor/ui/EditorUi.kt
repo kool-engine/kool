@@ -163,6 +163,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 val Sizes.baseSize: Dp get() = largeGap * 2f
 val Sizes.treeIndentation: Dp get() = gap * 1.5f
 val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
+val Sizes.editItemHeight: Dp get() = largeGap * 1.25f
 val Sizes.lineHeightLarger: Dp get() = baseSize * 0.9f
 val Sizes.lineHeightTitle: Dp get() = baseSize
 val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f

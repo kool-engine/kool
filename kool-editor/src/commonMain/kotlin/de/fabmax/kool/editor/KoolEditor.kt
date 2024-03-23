@@ -23,6 +23,8 @@ import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
+import de.fabmax.kool.modules.filesystem.toZip
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ao.AoPipeline
@@ -367,6 +369,13 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             val text = jsonCodec.encodeToString(projectModel.projectData)
             projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
             logI { "Saved project model" }
+        }
+    }
+
+    fun exportProject() {
+        Assets.launch {
+            val zippedProj = InMemoryFileSystem(projectFiles.fileSystem).toZip()
+            Assets.saveFileByUser(zippedProj, "kool-editor-proj.zip")
         }
     }
 

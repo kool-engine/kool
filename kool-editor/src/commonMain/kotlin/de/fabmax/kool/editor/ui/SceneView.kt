@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.DockNodeLeaf
@@ -20,6 +21,7 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
     }
 
     val isShowToolbar = mutableStateOf(true)
+    val isShowExportButton = mutableStateOf(KoolSystem.isJavascript)
     val toolbar = FloatingToolbar(ui)
 
     private var viewBox: UiNode? = null
@@ -86,6 +88,22 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
                 .onItemSelected { i ->
                     editor.gizmoOverlay.transformFrame.set(transformFrames[i].frame)
                 }
+        }
+
+        if (isShowExportButton.use()) {
+            divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
+
+            iconTextButton(
+                icon = IconMap.small.DOWNLOAD,
+                text = "Save Project Files",
+                bgColor = colors.componentBg,
+                bgColorHovered = colors.componentBgHovered,
+                bgColorClicked = colors.elevatedComponentBgHovered,
+                width = sizes.baseSize * 4.5f,
+                margin = sizes.gap
+            ) {
+                editor.exportProject()
+            }
         }
     }
 

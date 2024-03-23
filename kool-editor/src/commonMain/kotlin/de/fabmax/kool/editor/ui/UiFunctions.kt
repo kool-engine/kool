@@ -491,7 +491,7 @@ fun <T: Any> UiScope.labeledCombobox(
     ComboBox {
         defaultComboBoxStyle()
         modifier
-            .size(valueWidth, sizes.lineHeight)
+            .width(valueWidth)
             .items(items)
             .selectedIndex(selectedIndex)
             .onItemSelected {
@@ -702,7 +702,7 @@ fun UiScope.labeledCheckbox(
 
     Checkbox(state) {
         modifier
-            .size(FitContent, sizes.lineHeight)
+            .size(FitContent, sizes.editItemHeight)
             .onToggle {
                 onToggle(it)
             }
@@ -725,7 +725,7 @@ fun UiScope.labeledSwitch(
 
     Switch(state) {
         modifier
-            .size(FitContent, sizes.lineHeight)
+            .size(FitContent, sizes.editItemHeight)
             .onToggle {
                 onToggle(it)
             }
@@ -762,7 +762,7 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     ComboBox {
         defaultComboBoxStyle()
         modifier
-            .size(sizes.baseSize * 6, sizes.lineHeight)
+            .width(sizes.baseSize * 6)
             .items(textures)
             .selectedIndex(textures.indexOfFirst { selectedTexPath == it.assetItem?.path })
             .onItemSelected {
@@ -863,7 +863,7 @@ fun UiScope.iconTextButton(
         .align(AlignmentX.Center, AlignmentY.Center)
         .margin(margin)
         .width(width)
-        .height(sizes.largeGap * 1.35f)
+        .height(sizes.editItemHeight)
         .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
         .onEnter { isHovered = true }
         .onExit {
@@ -908,6 +908,7 @@ fun ButtonScope.defaultButtonStyle() {
 
 fun ComboBoxScope.defaultComboBoxStyle() {
     modifier
+        .height(sizes.editItemHeight)
         .clearWheelCallbacks()
         .padding(vertical = sizes.smallTextFieldPadding)
         .colors(

@@ -12,6 +12,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.logW
 import kotlin.reflect.KClass
 
 class SceneBackgroundEditor(component: SceneBackgroundComponent) :
@@ -54,7 +55,12 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
     }
 
     private fun UiScope.selectHdriBackground() {
-        val hdriTexture = availableHdriTextures().getOrNull(selectedHdri.value) ?: return
+        val hdriTexture = availableHdriTextures().getOrNull(selectedHdri.value)
+        if (hdriTexture == null) {
+            logW { "Unable to set HDR background: No suitable texture found in available assets" }
+            return
+        }
+
         val oldBg = component.backgroundState.value
         val newBg = SceneBackgroundData.Hdri(hdriTexture.path, skyLod.value)
         SetBackgroundAction(component, oldBg, newBg).apply()

@@ -36,7 +36,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
                     when (assetItem.type) {
                         AppAssetType.Texture -> textureAssets += assetItem
                         AppAssetType.Hdri -> hdriAssets += assetItem
-                        AppAssetType.Model -> textureAssets += assetItem
+                        AppAssetType.Model -> modelAssets += assetItem
                         else -> { }
                     }
                 }
@@ -55,7 +55,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
                 when (deletedAsset.type) {
                     AppAssetType.Texture -> textureAssets -= deletedAsset
                     AppAssetType.Hdri -> hdriAssets -= deletedAsset
-                    AppAssetType.Model -> textureAssets -= deletedAsset
+                    AppAssetType.Model -> modelAssets -= deletedAsset
                     else -> { }
                 }
             }
@@ -133,8 +133,8 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
         assetsByPath.keys.retainAll(assetPaths)
         assetsByPath.values.forEach { it.sortChildrenByName() }
         assetsByPath.values.filterAssetsByType(AppAssetType.Model, modelAssets)
-        assetsByPath.values.filterAssetsByType(AppAssetType.Texture, textureAssets) { !it.name.lowercase().endsWith(".rgbe.png") }
-        assetsByPath.values.filterAssetsByType(AppAssetType.Texture, hdriAssets) { it.name.lowercase().endsWith(".rgbe.png") }
+        assetsByPath.values.filterAssetsByType(AppAssetType.Texture, textureAssets)
+        assetsByPath.values.filterAssetsByType(AppAssetType.Hdri, hdriAssets)
 
         rootAssets.atomic {
             clear()

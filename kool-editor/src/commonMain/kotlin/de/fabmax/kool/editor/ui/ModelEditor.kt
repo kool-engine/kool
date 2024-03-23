@@ -24,7 +24,7 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
                 defaultComboBoxStyle()
                 modifier
                     .margin(horizontal = sizes.gap)
-                    .size(Grow.Std, sizes.lineHeight)
+                    .width(Grow.Std)
                     .alignY(AlignmentY.Center)
                     .items(items)
                     .selectedIndex(selIndex)
