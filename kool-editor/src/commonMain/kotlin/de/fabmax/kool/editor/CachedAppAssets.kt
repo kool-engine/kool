@@ -11,7 +11,7 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.logE
 
-class CachedAppAssets(val loader: AssetLoader) : AppAssetsLoader {
+class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     private val loadedHdris = mutableMapOf<String, MutableStateValue<EnvironmentMaps?>>()
     private val loadedModels = mutableMapOf<String, MutableStateValue<GltfFile?>>()
     private val loadedTextures2d = mutableMapOf<String, MutableStateValue<Texture2d?>>()
@@ -19,7 +19,7 @@ class CachedAppAssets(val loader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadHdriEnvironment(path: String): EnvironmentMaps? {
         val hdriState = loadedHdris.getOrPut(path) { mutableStateOf(null) }
         return try {
-            val hdriTex = loader.loadTexture2d(path)
+            val hdriTex = assetLoader.loadTexture2d(path)
             hdriState.value ?: EnvironmentHelper.hdriEnvironment(hdriTex).also { hdriState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading HDRI: $path" }
@@ -30,7 +30,7 @@ class CachedAppAssets(val loader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadModel(modelPath: String): GltfFile? {
         val modelState = loadedModels.getOrPut(modelPath) { mutableStateOf(null) }
         return try {
-            modelState.value ?: loader.loadGltfFile(modelPath).also { modelState.set(it) }
+            modelState.value ?: assetLoader.loadGltfFile(modelPath).also { modelState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading model: $modelPath" }
             null
@@ -40,7 +40,7 @@ class CachedAppAssets(val loader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadTexture2d(path: String): Texture2d? {
         val texState = loadedTextures2d.getOrPut(path) { mutableStateOf(null) }
         return try {
-            texState.value ?: loader.loadTexture2d(path).also { texState.set(it) }
+            texState.value ?: assetLoader.loadTexture2d(path).also { texState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading texture: $path" }
             null

@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.util.*
 import kotlin.math.roundToInt
 
 internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
@@ -173,4 +174,9 @@ object PlatformAssetsImpl : PlatformAssets {
 
         return ImageDecoder.loadBufferedImage(img, props)
     }
+}
+
+actual suspend fun decodeDataUri(dataUri: String): Uint8Buffer {
+    val dataIdx = dataUri.indexOf(";base64,") + 8
+    return Uint8BufferImpl(Base64.getDecoder().decode(dataUri.substring(dataIdx)))
 }

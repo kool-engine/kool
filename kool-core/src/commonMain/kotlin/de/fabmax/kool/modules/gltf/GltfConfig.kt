@@ -1,12 +1,13 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.ShadowMap
 
-class GltfLoadConfig(
+data class GltfLoadConfig(
     val generateNormals: Boolean = false,
     val applyMaterials: Boolean = true,
     val materialConfig: GltfMaterialConfig = GltfMaterialConfig(),
@@ -19,10 +20,11 @@ class GltfLoadConfig(
     val mergeMeshesByMaterial: Boolean = false,
     val sortNodesByAlpha: Boolean = true,
     val addInstanceAttributes: List<Attribute> = emptyList(),
+    val assetLoader: AssetLoader? = null,
     val pbrBlock: (KslPbrShader.Config.Builder.(GltfMesh.Primitive) -> Unit)? = null
 )
 
-class GltfMaterialConfig(
+data class GltfMaterialConfig(
     val shadowMaps: List<ShadowMap> = emptyList(),
     val scrSpcAmbientOcclusionMap: Texture2d? = null,
     val environmentMaps: EnvironmentMaps? = null,

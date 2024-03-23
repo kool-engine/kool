@@ -176,7 +176,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
-        if (!isVisible) {
+        if (!isVisibleRecursive()) {
             return
         }
 
@@ -241,6 +241,17 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         if (!ptr.isLeftButtonDown) {
             isDrag = false
         }
+    }
+
+    private fun isVisibleRecursive(): Boolean {
+        var it: Node? = this
+        while (it != null) {
+            if (!it.isVisible) {
+                return false
+            }
+            it = it.parent
+        }
+        return true
     }
 
     companion object {

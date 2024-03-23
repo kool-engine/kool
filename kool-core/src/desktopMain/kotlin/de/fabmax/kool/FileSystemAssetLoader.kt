@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.modules.filesystem.getFileOrNull
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.platform.imageAtlasTextureData
+import de.fabmax.kool.util.Uint8Buffer
 import java.io.ByteArrayInputStream
 
 actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader {
@@ -13,8 +14,8 @@ actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader {
 
 class FileSystemAssetLoader(val baseDir: FileSystemDirectory): AssetLoader() {
     override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
-        val blob = baseDir.getFileOrNull(blobRef.path)
-        return LoadedBlobAsset(blobRef, blob?.read())
+        val blob = loadData(blobRef.path)
+        return LoadedBlobAsset(blobRef, blob)
     }
 
     override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
@@ -33,8 +34,8 @@ class FileSystemAssetLoader(val baseDir: FileSystemDirectory): AssetLoader() {
     }
 
     override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
-        val tex = baseDir.getFileOrNull(textureData2dRef.path)
-        val texData = tex?.read()?.toArray()?.let { bytes ->
+        val tex = loadData(textureData2dRef.path)
+        val texData = tex?.toArray()?.let { bytes ->
             ByteArrayInputStream(bytes).use {
                 PlatformAssetsImpl.readImageData(it, MimeType.forFileName(textureData2dRef.path), textureData2dRef.props)
             }
@@ -48,5 +49,13 @@ class FileSystemAssetLoader(val baseDir: FileSystemDirectory): AssetLoader() {
             AudioClipImpl(buf.toArray(), audioRef.path.substringAfterLast('.').lowercase())
         }
         return LoadedAudioClipAsset(audioRef, clip)
+    }
+
+    private suspend fun loadData(path: String): Uint8Buffer? {
+        return if (Assets.isDataUri(path)) {
+            decodeDataUri(path)
+        } else {
+            baseDir.getFileOrNull(path)?.read()
+        }
     }
 }

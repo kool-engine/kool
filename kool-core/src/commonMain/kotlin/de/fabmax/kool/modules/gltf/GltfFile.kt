@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -14,7 +15,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.math.min
 
-suspend fun GltfFile(data: Uint8Buffer, filePath: String): GltfFile {
+suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoader = Assets.defaultLoader): GltfFile {
     val gltfData = if (filePath.lowercase().endsWith(".gz")) {
         data.inflate()
     } else {
@@ -33,8 +34,8 @@ suspend fun GltfFile(data: Uint8Buffer, filePath: String): GltfFile {
     gltfFile.let { m ->
         m.buffers.filter { it.uri != null }.forEach {
             val uri = it.uri!!
-            val bufferPath = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
-            it.data = Assets.loadBlobAsset(bufferPath)
+            val bufferUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
+            it.data = assetLoader.loadBlobAsset(bufferUri)
         }
         m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
         m.updateReferences()
@@ -620,7 +621,7 @@ data class GltfFile(
             val pbrConfig = DeferredKslPbrShader.Config.Builder().apply {
                 val material = prim.materialRef
                 if (material != null) {
-                    material.applyTo(this, useVertexColor, this@GltfFile)
+                    material.applyTo(this, useVertexColor, this@GltfFile, cfg.assetLoader ?: Assets.defaultLoader)
                 } else {
                     color {
                         uniformColor(Color.GRAY.toLinear())

@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
 import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.SamplerSettings
@@ -31,7 +32,7 @@ data class GltfTexture(
     @Transient
     private var createdTex: Texture2d? = null
 
-    fun makeTexture(): Texture2d {
+    fun makeTexture(assetLoader: AssetLoader): Texture2d {
         if (createdTex == null) {
             val uri = imageRef.uri
             val name = if (uri != null && !uri.startsWith("data:", true)) {
@@ -54,7 +55,7 @@ data class GltfTexture(
                 name
             ) {
                 if (uri != null) {
-                    Assets.loadTextureData(uri)
+                    assetLoader.loadTextureData(uri)
                 } else {
                     Assets.loadTextureDataFromBuffer(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
                 }

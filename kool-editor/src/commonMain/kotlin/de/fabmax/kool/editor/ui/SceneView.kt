@@ -93,16 +93,77 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
         if (isShowExportButton.use()) {
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
-            iconTextButton(
+            var isHovered by remember(false)
+            val button = iconTextButton(
                 icon = IconMap.small.DOWNLOAD,
-                text = "Save Project Files",
+                text = "Save Project",
                 bgColor = colors.componentBg,
                 bgColorHovered = colors.componentBgHovered,
                 bgColorClicked = colors.elevatedComponentBgHovered,
-                width = sizes.baseSize * 4.5f,
-                margin = sizes.gap
+                width = sizes.baseSize * 3.5f,
+                margin = sizes.gap,
+                boxBlock = {
+                    modifier
+                        .onEnter { isHovered = true }
+                        .onExit { isHovered = false }
+                }
             ) {
                 editor.exportProject()
+            }
+
+            if (isHovered) {
+                saveProjectTooltip(button)
+            }
+        }
+    }
+
+    private fun UiScope.saveProjectTooltip(button: UiScope) = Popup(
+        screenPxX = button.uiNode.rightPx - 250.dp.px,
+        screenPxY = button.uiNode.bottomPx + sizes.gap.px,
+        width = 250.dp,
+        height = FitContent,
+        layout = CellLayout
+    ) {
+        modifier
+            .background(RoundRectBackground(colors.background, sizes.smallGap))
+            .border(RoundRectBorder(colors.componentBg, sizes.smallGap, sizes.borderWidth))
+
+        Column(width = Grow.Std) {
+            modifier.margin(sizes.gap)
+
+            Text("Download Project Files") {
+                modifier.font(sizes.boldText)
+            }
+
+            Text("Save project and unzip it. Then open the unzipped folder in a terminal:") {
+                modifier
+                    .width(Grow.Std)
+                    .isWrapText(true)
+                    .margin(vertical = sizes.largeGap)
+            }
+
+            Text("Run editor locally:") { modifier.margin(top = sizes.largeGap) }
+
+            Text("./gradlew runEditor") {
+                modifier
+                    .font(ui.consoleFont.use())
+                    .margin(top = sizes.smallGap)
+                    .width(Grow.Std)
+                    .padding(sizes.smallGap)
+                    .background(RoundRectBackground(colors.backgroundVariant, sizes.smallGap))
+                    .border(RoundRectBorder(colors.componentBg, sizes.smallGap, sizes.borderWidth))
+            }
+
+            Text("Run app:") { modifier.margin(top = sizes.largeGap) }
+
+            Text("./gradlew runApp") {
+                modifier
+                    .font(ui.consoleFont.use())
+                    .margin(top = sizes.smallGap)
+                    .width(Grow.Std)
+                    .padding(sizes.smallGap)
+                    .background(RoundRectBackground(colors.backgroundVariant, sizes.smallGap))
+                    .border(RoundRectBorder(colors.componentBg, sizes.smallGap, sizes.borderWidth))
             }
         }
     }

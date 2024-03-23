@@ -5,13 +5,13 @@ import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.platform.imageAtlasTextureData
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.FileInputStream
 import java.io.InputStream
-import java.util.*
 
 class NativeAssetLoader(val basePath: String) : AssetLoader() {
     override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
@@ -23,7 +23,7 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     }
 
     private suspend fun loadLocalBlob(localRawRef: BlobAssetRef): LoadedBlobAsset {
-        var data: Uint8BufferImpl? = null
+        var data: Uint8Buffer? = null
         withContext(Dispatchers.IO) {
             try {
                 openLocalStream(localRawRef.path)?.use { data = Uint8BufferImpl(it.readBytes()) }
@@ -35,9 +35,9 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     }
 
     private suspend fun loadHttpBlob(httpRawRef: BlobAssetRef): LoadedBlobAsset {
-        var data: Uint8BufferImpl? = null
+        var data: Uint8Buffer? = null
         if (httpRawRef.path.startsWith("data:", true)) {
-            data = decodeDataUrl(httpRawRef.path)
+            data = decodeDataUri(httpRawRef.path)
         } else {
             withContext(Dispatchers.IO) {
                 try {
@@ -50,11 +50,6 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
             }
         }
         return LoadedBlobAsset(httpRawRef, data)
-    }
-
-    private fun decodeDataUrl(dataUrl: String): Uint8BufferImpl {
-        val dataIdx = dataUrl.indexOf(";base64,") + 8
-        return Uint8BufferImpl(Base64.getDecoder().decode(dataUrl.substring(dataIdx)))
     }
 
     private fun openLocalStream(assetPath: String): InputStream? {

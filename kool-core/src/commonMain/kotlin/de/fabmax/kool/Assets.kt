@@ -108,6 +108,8 @@ object Assets : CoroutineScope {
             assetPath.startsWith("https://", true) ||
             assetPath.startsWith("data:", true)
 
+    fun isDataUri(uri: String) = uri.startsWith("data:", true)
+
     /**
      * Loads the texture data from the given byte buffer using the image type specified in [mimeType] to decode the
      * image (e.g. 'image/png') and returns the image as [TextureData].
@@ -322,6 +324,8 @@ object Assets : CoroutineScope {
 }
 
 expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader
+
+expect suspend fun decodeDataUri(dataUri: String): Uint8Buffer
 
 data class FileFilterItem(val name: String, val fileExtensions: String)
 

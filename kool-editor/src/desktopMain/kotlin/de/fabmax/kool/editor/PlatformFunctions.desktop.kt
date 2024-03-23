@@ -8,8 +8,10 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.IOException
+import kotlin.io.path.Path
 import kotlin.io.path.pathString
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
@@ -86,5 +88,24 @@ actual object PlatformFunctions {
             return (result[0] as LoadableFileImpl).file.path
         }
         return null
+    }
+}
+
+fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {
+    return runBlocking {
+        val rootPath = Path(projectRoot)
+        val fs = PhysicalFileSystem(
+            rootPath,
+            excludePaths = setOf(
+                rootPath.resolve(".gradle"),
+                rootPath.resolve(".editor"),
+                rootPath.resolve(".httpCache"),
+                rootPath.resolve("kotlin-js-store"),
+                rootPath.resolve("build")
+            ),
+            isLaunchWatchService = true
+        )
+        val projFiles = ProjectFiles.createSafe(fs)
+        KoolEditor(projFiles, ctx)
     }
 }

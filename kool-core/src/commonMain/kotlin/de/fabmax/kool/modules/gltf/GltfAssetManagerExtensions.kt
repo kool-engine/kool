@@ -11,23 +11,24 @@ import kotlinx.coroutines.async
 
 suspend fun AssetLoader.loadGltfFile(assetPath: String): GltfFile = loadGltfFileAsync(assetPath).await()
 
+fun AssetLoader.loadGltfFileAsync(assetPath: String): Deferred<GltfFile> = Assets.async {
+    val blob = loadBlobAsset(assetPath)
+    GltfFile(blob, assetPath, this@loadGltfFileAsync)
+}
+
 suspend fun AssetLoader.loadGltfModel(
     assetPath: String,
     modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
 ): Model = loadGltfModelAsync(assetPath, modelCfg, scene).await()
 
-fun AssetLoader.loadGltfFileAsync(assetPath: String): Deferred<GltfFile> = Assets.async {
-    val blob = loadBlobAsset(assetPath)
-    GltfFile(blob, assetPath)
-}
-
 fun AssetLoader.loadGltfModelAsync(
     assetPath: String,
     modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
 ): Deferred<Model> = Assets.async {
-    loadGltfFileAsync(assetPath).await().makeModel(modelCfg, scene)
+    val cfg = if (modelCfg.assetLoader == null) modelCfg.copy(assetLoader = this@loadGltfModelAsync) else modelCfg
+    loadGltfFileAsync(assetPath).await().makeModel(cfg, scene)
 }
 
 suspend fun Assets.loadGltfFile(assetPath: String): GltfFile = defaultLoader.loadGltfFileAsync(assetPath).await()

@@ -155,7 +155,8 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
                 scrSpcAmbientOcclusionMap = ssao,
                 maxNumberOfLights = sceneModel.maxNumLightsState.value
             ),
-            applyMaterials = material == null
+            applyMaterials = material == null,
+            assetLoader = AppAssets.assetLoader
         )
         isIblShaded = ibl != null
         isSsaoEnabled = ssao != null

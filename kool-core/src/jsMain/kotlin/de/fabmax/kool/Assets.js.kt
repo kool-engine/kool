@@ -16,6 +16,7 @@ import kotlinx.browser.document
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Uint8Array
 import org.w3c.dom.Image
 import org.w3c.dom.ImageBitmap
 import org.w3c.files.Blob
@@ -127,4 +128,10 @@ external interface Response {
     fun arrayBuffer(): Promise<ArrayBuffer>
     fun blob(): Promise<Blob>
     fun text(): Promise<String>
+}
+
+actual suspend fun decodeDataUri(dataUri: String): Uint8Buffer {
+    val response = fetch(dataUri).await()
+    val arrayBuffer = response.arrayBuffer().await()
+    return Uint8BufferImpl(Uint8Array(arrayBuffer))
 }

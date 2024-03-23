@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.gltf
 
+import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
@@ -38,13 +39,13 @@ data class GltfMaterial(
     val doubleSided: Boolean = false
 ) {
 
-    fun applyTo(cfg: KslPbrShader.Config.Builder, useVertexColor: Boolean, gltfFile: GltfFile) {
-        val baseColorTexture: Texture2d? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile)
-        val emissiveTexture: Texture2d? = emissiveTexture?.getTexture(gltfFile)
-        val normalTexture: Texture2d? = this.normalTexture?.getTexture(gltfFile)
-        val metallicTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
-        val roughnessTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile)
-        val occlusionTexture: Texture2d? = occlusionTexture?.getTexture(gltfFile)
+    fun applyTo(cfg: KslPbrShader.Config.Builder, useVertexColor: Boolean, gltfFile: GltfFile, assetLoader: AssetLoader) {
+        val baseColorTexture: Texture2d? = pbrMetallicRoughness.baseColorTexture?.getTexture(gltfFile, assetLoader)
+        val emissiveTexture: Texture2d? = emissiveTexture?.getTexture(gltfFile, assetLoader)
+        val normalTexture: Texture2d? = this.normalTexture?.getTexture(gltfFile, assetLoader)
+        val metallicTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile, assetLoader)
+        val roughnessTexture: Texture2d? = pbrMetallicRoughness.metallicRoughnessTexture?.getTexture(gltfFile, assetLoader)
+        val occlusionTexture: Texture2d? = occlusionTexture?.getTexture(gltfFile, assetLoader)
         val colorFac = pbrMetallicRoughness.baseColorFactor
 
         cfg.alphaMode = when (alphaMode) {

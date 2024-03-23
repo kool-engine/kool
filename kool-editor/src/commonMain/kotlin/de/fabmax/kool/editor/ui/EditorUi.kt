@@ -1,3 +1,5 @@
+@file:Suppress("UnusedReceiverParameter")
+
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.Assets
