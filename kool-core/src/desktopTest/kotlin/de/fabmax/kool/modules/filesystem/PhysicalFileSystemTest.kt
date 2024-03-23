@@ -11,13 +11,13 @@ import kotlin.test.Test
 class PhysicalFileSystemTest : FileSystemTest() {
     @BeforeTest
     fun createTestDir() {
-        Path(FS_PATH).createDirectories()
+        FS_PATH.createDirectories()
     }
 
     @OptIn(ExperimentalPathApi::class)
     @AfterTest
     fun cleanupTestDir() {
-        Path(FS_PATH).deleteRecursively()
+        FS_PATH.deleteRecursively()
     }
 
     @Test
@@ -46,6 +46,6 @@ class PhysicalFileSystemTest : FileSystemTest() {
     }
 
     companion object {
-        const val FS_PATH = "fsTest"
+        val FS_PATH = Path("fsTest")
     }
 }

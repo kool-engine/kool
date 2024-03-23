@@ -12,10 +12,12 @@ import kotlin.io.path.*
 
 @OptIn(ExperimentalPathApi::class)
 class PhysicalFileSystem(
-    val rootPath: Path,
+    rootDir: Path,
     val excludePaths: Set<Path> = emptySet(),
     private val isLaunchWatchService: Boolean = false
 ) : WritableFileSystem, AutoCloseable {
+
+    val rootPath = rootDir.absolute()
 
     override val root: Directory
     private val fsItems = mutableMapOf<String, FsItem>()
@@ -278,7 +280,7 @@ class PhysicalFileSystem(
     }
 
     private fun Path.fsPath(): String {
-        return FileSystem.sanitizePath(relativeTo(rootPath).pathString)
+        return FileSystem.sanitizePath(absolute().relativeTo(rootPath).pathString)
     }
 
     override fun close() {
