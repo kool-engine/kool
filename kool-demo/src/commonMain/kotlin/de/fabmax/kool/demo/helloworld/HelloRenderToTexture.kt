@@ -48,7 +48,7 @@ class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
 
         addTextureMesh {
             generate {
-                centeredRect {
+                rect {
                     size.set(2f, 2f)
                 }
             }

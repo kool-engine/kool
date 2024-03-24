@@ -71,7 +71,7 @@ class HelloCompute : DemoScene("Hello Compute") {
         defaultOrbitCamera(0f, 0f)
         addTextureMesh {
             generate {
-                centeredRect {
+                rect {
                     size.set(8f, 8f)
                 }
             }

@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene.geometry
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
@@ -282,17 +281,12 @@ class IndexedVertexList(
     }
 
     fun shrinkIndices(newSize: Int) {
-        if (newSize > indices.position) {
-            throw KoolException("new size must be less (or equal) than old size")
-        }
-
+        check(newSize <= indices.position) { "new size must be less (or equal) than old size" }
         indices.position = newSize
     }
 
     fun shrinkVertices(newSize: Int) {
-        if (newSize > numVertices) {
-            throw KoolException("new size must be less (or equal) than old size")
-        }
+        check(newSize <= numVertices) { "new size must be less (or equal) than old size" }
 
         numVertices = newSize
         dataF.position = newSize * vertexSizeF
@@ -300,9 +294,7 @@ class IndexedVertexList(
     }
 
     operator fun get(i: Int): VertexView {
-        if (i < 0 || i >= dataF.capacity / vertexSizeF) {
-            throw KoolException("Vertex index out of bounds: $i")
-        }
+        check(i >= 0 && i < dataF.capacity / vertexSizeF) { "Vertex index out of bounds: $i" }
         return VertexView(this, i)
     }
 
@@ -417,9 +409,7 @@ class IndexedVertexList(
         if (!vertexAttributes.contains(Attribute.NORMALS)) {
             return
         }
-        if (primitiveType != PrimitiveType.TRIANGLES) {
-            throw KoolException("Normal generation is only supported for triangle meshes")
-        }
+        check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
 
         val v0 = this[0]
         val v1 = this[1]
@@ -466,9 +456,7 @@ class IndexedVertexList(
         if (!vertexAttributes.contains(Attribute.TANGENTS)) {
             return
         }
-        if (primitiveType != PrimitiveType.TRIANGLES) {
-            throw KoolException("Normal generation is only supported for triangle meshes")
-        }
+        check(primitiveType == PrimitiveType.TRIANGLES) { "Normal generation is only supported for triangle meshes" }
 
         val v0 = this[0]
         val v1 = this[1]

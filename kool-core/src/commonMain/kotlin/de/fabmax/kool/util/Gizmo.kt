@@ -298,7 +298,7 @@ class Gizmo : Node(), InputStack.PointerListener {
             val planeOriY = planeSzY * 0.5f + properties.planeHandleGap
             if (properties.hasPlaneXY && hoverPlane == PLANE_XY) {
                 color = properties.planeColorXY
-                centeredRect {
+                rect {
                     origin.set(planeOriX * camSign.x, planeOriY * camSign.y, 0f)
                     size.set(planeSzX, planeSzY)
                 }
@@ -307,7 +307,7 @@ class Gizmo : Node(), InputStack.PointerListener {
                 withTransform {
                     rotate(90f.deg, Vec3f.X_AXIS)
                     color = properties.planeColorXZ
-                    centeredRect {
+                    rect {
                         origin.set(planeOriX * camSign.x, planeOriY * camSign.z, 0f)
                         size.set(planeSzX, planeSzY)
                     }
@@ -317,7 +317,7 @@ class Gizmo : Node(), InputStack.PointerListener {
                 withTransform {
                     rotate((-90f).deg, Vec3f.Y_AXIS)
                     color = properties.planeColorYZ
-                    centeredRect {
+                    rect {
                         origin.set(planeOriX * camSign.z, planeOriY * camSign.y, 0f)
                         size.set(planeSzX, planeSzY)
                     }

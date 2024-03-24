@@ -97,12 +97,14 @@ fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {
         val fs = PhysicalFileSystem(
             rootPath,
             excludePaths = setOf(
-                rootPath.resolve(".gradle"),
                 rootPath.resolve(".editor"),
+                rootPath.resolve(".gradle"),
                 rootPath.resolve(".httpCache"),
-                rootPath.resolve("kotlin-js-store"),
+                rootPath.resolve(".idea"),
+                rootPath.resolve(".kotlin"),
                 rootPath.resolve("build"),
-                rootPath.resolve("dist")
+                rootPath.resolve("dist"),
+                rootPath.resolve("kotlin-js-store")
             ),
             isLaunchWatchService = true
         )

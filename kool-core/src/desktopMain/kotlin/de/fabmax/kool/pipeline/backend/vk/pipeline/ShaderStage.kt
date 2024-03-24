@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.backend.vk.util.Shaderc
 import de.fabmax.kool.util.LongHash
 import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT
@@ -30,7 +29,7 @@ class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val ent
                 VK_SHADER_STAGE_FRAGMENT_BIT -> Shaderc.compileFragmentShader(srcCode, name, entryPoint)
                 else -> throw IllegalArgumentException("Invalid shader stage: $stage")
             }
-            val data = compileResult.spirvData ?: throw KoolException("Shader compilation failed")
+            val data = checkNotNull(compileResult.spirvData)  { "Shader compilation failed" }
             val codeArray = ByteArray(data.remaining())
             data.get(codeArray)
             compileResult.free()

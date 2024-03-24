@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene.geometry
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.MsdfUiShader
 import de.fabmax.kool.pipeline.Attribute
@@ -393,16 +392,15 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
+    @Deprecated("centered rect is the default behavior, use rect { } instead", ReplaceWith("rect { block() }"))
     inline fun centeredRect(block: RectProps.() -> Unit) {
         val props = RectProps()
         props.block()
         rect(props)
     }
 
-    @Deprecated("Default behavior will change to centered origin", ReplaceWith("centeredRect { block() }"))
     inline fun rect(block: RectProps.() -> Unit) {
         val props = RectProps()
-        props.isCenteredOrigin = false
         props.block()
         rect(props)
     }
@@ -822,22 +820,20 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
     }
 
     fun geometry(geometry: IndexedVertexList, keepVertexColor: Boolean = false) {
-        if (geometry.primitiveType == PrimitiveType.TRIANGLES) {
-            val i0 = this.geometry.numVertices
-            val beforeColor = color
-            geometry.forEach {
-                if (keepVertexColor) {
-                    color = it.color
-                }
-                vertex(it.position, it.normal, it.texCoord)
+        check(geometry.primitiveType == PrimitiveType.TRIANGLES) { "Only triangle geometry can be added" }
+
+        val i0 = this.geometry.numVertices
+        val beforeColor = color
+        geometry.forEach {
+            if (keepVertexColor) {
+                color = it.color
             }
-            for (i in 0 until geometry.numIndices) {
-                this.geometry.addIndex(i0 + geometry.indices[i])
-            }
-            color = beforeColor
-        } else {
-            throw KoolException("Only triangle geometry can be added")
+            vertex(it.position, it.normal, it.texCoord)
         }
+        for (i in 0 until geometry.numIndices) {
+            this.geometry.addIndex(i0 + geometry.indices[i])
+        }
+        color = beforeColor
     }
 
     inline fun text(font: Font, block: TextProps.() -> Unit) {

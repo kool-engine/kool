@@ -59,7 +59,7 @@ class TitleBgRenderer(
         init {
             shader = bgShader
             generate {
-                centeredRect {
+                rect {
                     origin.set(0.5f, 0.5f, 0f)
                     size.set(1f, 1f)
                 }

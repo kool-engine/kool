@@ -92,10 +92,10 @@ class CloseButtonBackground : UiRenderer<UiNode> {
         getPlainBuilder().configured(fgColor) {
             translate(widthPx * 0.5f, heightPx * 0.5f, 0f)
             rotate(45f.deg, Vec3f.Z_AXIS)
-            centeredRect {
+            rect {
                 size.set(r * 1.3f, 1.dp.px)
             }
-            centeredRect {
+            rect {
                 size.set(1.dp.px, r * 1.3f)
             }
         }

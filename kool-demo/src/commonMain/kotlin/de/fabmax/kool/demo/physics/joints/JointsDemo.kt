@@ -94,7 +94,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             isCastingShadow = false
             generate {
                 rotate((-90f).deg, Vec3f.X_AXIS)
-                centeredRect {
+                rect {
                     size.set(250f, 250f)
                     origin.set(0f, 0f, -20f)
                     generateTexCoords(15f)

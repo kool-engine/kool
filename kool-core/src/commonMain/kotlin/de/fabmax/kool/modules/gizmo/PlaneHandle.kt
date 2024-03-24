@@ -112,7 +112,7 @@ class PlaneHandle(
     ) {
         generate {
             rotate(90f.deg, Vec3f.Y_AXIS)
-            centeredRect {
+            rect {
                 cornerRadius = planeSize * 0.1f
                 size.set(planeSize, planeSize)
                 origin.set(innerDistance + planeSize * 0.5f, innerDistance + planeSize * 0.5f, 0f)

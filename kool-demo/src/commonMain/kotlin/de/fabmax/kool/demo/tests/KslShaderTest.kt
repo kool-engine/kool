@@ -155,7 +155,7 @@ class KslShaderTest : DemoScene("KslShader") {
         ) {
             generate {
                 color = MdColor.LIGHT_GREEN
-                centeredRect {
+                rect {
                     isCenteredOrigin = false
                     origin.set(-1.25f, -1.25f, 0f)
                     size.set(2.4f, 2.4f)

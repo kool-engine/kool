@@ -57,9 +57,7 @@ internal object DesktopImpl {
         GLFWErrorCallback.createPrint(System.err).set()
 
         // initialize GLFW
-        if (!GLFW.glfwInit()) {
-            throw KoolException("Unable to initialize GLFW")
-        }
+        check(GLFW.glfwInit()) { "Unable to initialize GLFW" }
 
         val primMonId = GLFW.glfwGetPrimaryMonitor()
         val mons = GLFW.glfwGetMonitors()!!

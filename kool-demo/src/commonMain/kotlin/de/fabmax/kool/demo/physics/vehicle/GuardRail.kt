@@ -80,10 +80,14 @@ class GuardRail {
                     lamp(Vec3f(x * sz, y * sz, 0.15f), poly)
 
                     val pos = Vec2i(x, y)
-                    if (pos in arrowLtPos) { emmision.x = 1f }
-                    if (pos in arrowRtPos) { emmision.y = 1f }
+                    if (pos in arrowLtPos) {
+                        emmision.x = 1f
+                    }
+                    if (pos in arrowRtPos) {
+                        emmision.y = 1f
+                    }
                     color = bgColor
-                    centeredRect {
+                    rect {
                         size.set(sz, sz)
                         origin.set(x * sz, y * sz, 0.14f)
                     }

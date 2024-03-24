@@ -234,7 +234,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             generate {
                 rotate(90f.deg, Vec3f.NEG_X_AXIS)
                 color = Color.WHITE
-                centeredRect {
+                rect {
                     size.set(40f, 40f)
                     generateTexCoords(30f)
                 }

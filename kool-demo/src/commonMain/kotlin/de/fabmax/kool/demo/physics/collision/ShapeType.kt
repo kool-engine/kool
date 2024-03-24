@@ -159,7 +159,7 @@ enum class ShapeType {
     fun MeshBuilder.bevelBox(rBevel: Float = 0.02f) {
         withTransform {
             rotate(0f.deg, 90f.deg, 0f.deg)
-            centeredRect {
+            rect {
                 isCenteredOrigin = false
                 size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
                 origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)
@@ -167,7 +167,7 @@ enum class ShapeType {
         }
         withTransform {
             rotate(0f.deg, (-90f).deg, 0f.deg)
-            centeredRect {
+            rect {
                 isCenteredOrigin = false
                 size.set(1f - 2 * rBevel, 1f - 2 * rBevel)
                 origin.set(-0.5f + rBevel, -0.5f + rBevel, 0.5f)

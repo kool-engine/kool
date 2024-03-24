@@ -37,12 +37,10 @@ actual fun Double.toString(precision: Int): String {
 internal object JsImpl {
     private var ctx: JsContext? = null
     val canvas: HTMLCanvasElement
-        get() = ctx?.canvas ?: throw KoolException("Platform.createContext() not called")
+        get() = checkNotNull(ctx?.canvas) { "Platform.createContext() not called" }
 
     fun createContext(): KoolContext {
-        if (ctx != null) {
-            throw KoolException("Context was already created (multi-context is currently not supported in js")
-        }
+        check(ctx == null) { "Context was already created (multi-context is currently not supported in js" }
         ctx = JsContext()
         return ctx!!
     }

@@ -1,6 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_FLOAT
 import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_INT
 import de.fabmax.kool.util.MixedBuffer.Companion.SIZEOF_SHORT
@@ -21,9 +20,7 @@ abstract class GenericBuffer<B: ArrayBufferView>(
     override var limit = capacity
         get() = if (isAutoLimit) position else field
         set(value) {
-            if (value !in 0 .. capacity) {
-                throw KoolException("Limit is out of bounds: $value (capacity: $capacity)")
-            }
+            check(value in 0 .. capacity) { "Limit is out of bounds: $value (capacity: $capacity)" }
             field = value
             isAutoLimit = false
         }

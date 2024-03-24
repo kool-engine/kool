@@ -13,7 +13,7 @@ object FullscreenShaderUtil {
     fun Mesh.generateFullscreenQuad(mirrorTexCoordsY: Boolean = !KoolSystem.requireContext().backend.isInvertedNdcY) {
         isFrustumChecked = false
         generate {
-            centeredRect {
+            rect {
                 size.set(2f, 2f)
                 if (mirrorTexCoordsY) {
                     mirrorTexCoordsY()

@@ -1,6 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.clamp
 import kotlin.math.min
 
@@ -21,9 +20,7 @@ class ColorGradient(colors: List<Pair<Float, Color>>, n: Int = DEFAULT_N, toLine
     private val gradient = Array(n) { MutableColor() }
 
     init {
-        if (colors.size < 2) {
-            throw KoolException("ColorGradient requires at least two colors")
-        }
+        check(colors.size >= 2) { "ColorGradient requires at least two colors" }
 
         val sortedColors = colors.sortedBy { it.first }
         val mi = sortedColors.first().first

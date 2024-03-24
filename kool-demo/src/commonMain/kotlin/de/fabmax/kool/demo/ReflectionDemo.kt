@@ -107,7 +107,7 @@ class ReflectionDemo : DemoScene("Reflections") {
         deferredPipeline.sceneContent.apply {
             addTextureMesh(isNormalMapped = true) {
                 generate {
-                    centeredRect {
+                    rect {
                         rotate((-90f).deg, Vec3f.X_AXIS)
                         size.set(100f, 100f)
                         generateTexCoords(4f)

@@ -148,7 +148,7 @@ class ImageNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface), 
             val imgMesh = surface.getMeshLayer(modifier.zLayer + modifier.imageZ).addImage(it)
             imgMesh.builder.clear()
             imgMesh.builder.configured(modifier.tint) {
-                centeredRect {
+                rect {
                     isCenteredOrigin = false
 
                     texCoordLowerLeft.set(imgUvTpLt)

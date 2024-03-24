@@ -1,6 +1,5 @@
 package de.fabmax.kool.math.spatial
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
@@ -42,7 +41,7 @@ open class OcTree<T: Any>(
         }
 
         check(rootBounds.isNotEmpty) {
-            throw KoolException("Unable to determine initial OcTree bounds: Neither bounds specified nor initial list of items given")
+            "Unable to determine initial OcTree bounds: Neither bounds specified nor initial list of items given"
         }
 
         // cubify bounds and add padding
@@ -214,9 +213,7 @@ open class OcTree<T: Any>(
             get() = itemsUnbounded.indices
 
         init {
-            if (depth > maxDepth) {
-                throw KoolException("Octree is too deep")
-            }
+            check (depth <= maxDepth) { "Octree is too deep" }
         }
 
         fun clear() {

@@ -17,7 +17,7 @@ interface CommonPlaneGeometry : CollisionGeometry {
         target.apply {
             withTransform {
                 rotate(90f.deg, Vec3f.Y_AXIS)
-                centeredRect {
+                rect {
                     size.set(1000f, 1000f)
                 }
             }

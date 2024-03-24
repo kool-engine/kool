@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.pipeline.TexFormat
 import org.lwjgl.vulkan.VK10.*
 
@@ -29,7 +28,7 @@ abstract class VkRenderPass(val sys: VkSystem, val maxWidth: Int, val maxHeight:
             VK_FORMAT_R16G16B16_SFLOAT -> TexFormat.RGB_F16
             VK_FORMAT_R16G16B16A16_SFLOAT -> TexFormat.RGBA_F16
 
-            else -> throw KoolException("Unmapped format: ${colorFormats[attachment]}")
+            else -> error("Unmapped format: ${colorFormats[attachment]}")
         }
     }
 }

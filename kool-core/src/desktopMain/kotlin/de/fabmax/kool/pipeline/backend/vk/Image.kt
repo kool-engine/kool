@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolException
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
@@ -221,7 +220,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_ACCESS_TRANSFER_READ_BIT
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_ACCESS_SHADER_READ_BIT
-        else -> throw KoolException("Layout not supported / implemented: $srcLayout")
+        else -> error("Layout not supported / implemented: $srcLayout")
     }
 
     private fun dstAccessMask(dstLayout: Int): Int = when (dstLayout) {
@@ -230,7 +229,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_ACCESS_TRANSFER_READ_BIT
-        else -> throw KoolException("Destination layout not supported: $dstLayout")
+        else -> error("Destination layout not supported: $dstLayout")
     }
 
     private fun hasStencilComponent(): Boolean {

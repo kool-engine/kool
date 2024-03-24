@@ -37,7 +37,7 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
                 var fac = 0.1f + 0.1f * depthsToColors.size
                 depthsToColors.forEach { (z, color) ->
                     this.color = color
-                    centeredRect {
+                    rect {
                         origin.set(0f, 0f, -z)
                         val sz = z * fac
                         size.set(sz, sz)
@@ -70,7 +70,7 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
                 depthsToColors.forEach { (z, color) ->
                     this.color = color
 
-                    centeredRect {
+                    rect {
                         origin.set(0.9f, y, z)
                         size.set(0.1f, 0.1f)
                         y += 0.15f
