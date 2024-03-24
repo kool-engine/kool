@@ -2,8 +2,8 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    alias(commonLibs.plugins.kotlinMultiplatform)
-    alias(commonLibs.plugins.kotlinAtomicFu)
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinAtomicFu)
     `maven-publish`
     signing
 }
@@ -17,11 +17,11 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            api(commonLibs.kotlin.coroutines)
-            api(commonLibs.kotlin.serialization.core)
-            api(commonLibs.kotlin.serialization.json)
-            api(commonLibs.kotlin.reflect)
-            api(commonLibs.kotlin.atomicfu)
+            api(libs.kotlin.coroutines)
+            api(libs.kotlin.serialization.core)
+            api(libs.kotlin.serialization.json)
+            api(libs.kotlin.reflect)
+            api(libs.kotlin.atomicfu)
             api(project(":kool-core"))
             api(project(":kool-physics"))
             implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
@@ -30,20 +30,20 @@ kotlin {
         val desktopTest by getting
         desktopTest.dependencies {
             implementation(fileTree("${projectDir}/../kool-demo/runtimeLibs") { include("*.jar") })
-            implementation(jvmLibs.jsvg)
+            implementation(libs.jsvg)
 
             // add all native libs potentially needed for running demo as runtimeOnly dependencies, so that they can
             // be found by the cacheRuntimeLibs task
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                runtimeOnly("${jvmLibs.lwjgl.core.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.glfw.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.jemalloc.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.nfd.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.opengl.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.shaderc.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.stb.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.vma.get()}:$platform")
-                runtimeOnly("${jvmLibs.physxjni.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.core.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.glfw.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.jemalloc.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.nfd.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.opengl.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.shaderc.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.stb.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.vma.get()}:$platform")
+                runtimeOnly("${libs.physxjni.get()}:$platform")
             }
         }
     }

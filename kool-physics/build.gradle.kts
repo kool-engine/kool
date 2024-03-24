@@ -2,8 +2,8 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    alias(commonLibs.plugins.kotlinMultiplatform)
-    alias(commonLibs.plugins.kotlinDokka)
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinDokka)
 
     `maven-publish`
     signing
@@ -18,14 +18,14 @@ kotlin {
     sourceSets {
         val desktopMain by getting
         commonMain.dependencies {
-            implementation(commonLibs.kotlin.coroutines)
+            implementation(libs.kotlin.coroutines)
             api(project(":kool-core"))
         }
 
         desktopMain.dependencies {
-            api(jvmLibs.physxjni)
+            api(libs.physxjni)
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                runtimeOnly("${jvmLibs.physxjni.get()}:$platform")
+                runtimeOnly("${libs.physxjni.get()}:$platform")
             }
         }
 
