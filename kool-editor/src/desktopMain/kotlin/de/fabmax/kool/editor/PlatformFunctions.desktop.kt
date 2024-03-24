@@ -101,7 +101,8 @@ fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {
                 rootPath.resolve(".editor"),
                 rootPath.resolve(".httpCache"),
                 rootPath.resolve("kotlin-js-store"),
-                rootPath.resolve("build")
+                rootPath.resolve("build"),
+                rootPath.resolve("dist")
             ),
             isLaunchWatchService = true
         )

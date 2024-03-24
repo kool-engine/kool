@@ -63,6 +63,15 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             }
         }
 
+    val onFocusChanged = mutableListOf<(Boolean) -> Unit>()
+    var isFocused = false
+        private set(value) {
+            if (value != field) {
+                field = value
+                onFocusChanged.forEach { it(value) }
+            }
+        }
+
     private val fsMonitor: Long
     private var windowedWidth = KoolSystem.configJvm.windowSize.x
     private var windowedHeight = KoolSystem.configJvm.windowSize.y
@@ -72,6 +81,12 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     private var renderOnResizeFlag = false
 
     init {
+        fsMonitor = if (KoolSystem.configJvm.monitor < 0) {
+            DesktopImpl.primaryMonitor.monitor
+        } else {
+            DesktopImpl.monitors[KoolSystem.configJvm.monitor].monitor
+        }
+
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
@@ -83,9 +98,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             0L,
             0L
         )
-        if (windowPtr == MemoryUtil.NULL) {
-            throw KoolException("Failed to create the GLFW window")
-        }
+        check(windowPtr != MemoryUtil.NULL) { "Failed to create the GLFW window" }
 
         if (KoolSystem.configJvm.windowIcon.isNotEmpty()) {
             setWindowIcon(KoolSystem.configJvm.windowIcon)
@@ -103,7 +116,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         framebufferHeight = outInt2[0]
         glfwGetWindowContentScale(windowPtr, outFloat1, outFloat2)
         ctx.windowScale = outFloat1[0]
-        ctx.isWindowFocused = glfwGetWindowAttrib(windowPtr, GLFW_FOCUSED) == GLFW_TRUE
+        isFocused = glfwGetWindowAttrib(windowPtr, GLFW_FOCUSED) == GLFW_TRUE
 
         glfwSetWindowSizeCallback(windowPtr) { _, w, h -> onWindowSizeChanged(w, h) }
         glfwSetFramebufferSizeCallback(windowPtr) { _, w, h -> onFramebufferSizeChanged(w, h) }
@@ -113,11 +126,6 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         glfwSetWindowContentScaleCallback(windowPtr) { _, xScale, yScale -> onWindowContentScaleChanged(xScale, yScale) }
         glfwSetDropCallback(windowPtr) { _, numFiles, pathPtr -> onFileDrop(numFiles, pathPtr) }
 
-        fsMonitor = if (KoolSystem.configJvm.monitor < 0) {
-            DesktopImpl.primaryMonitor.monitor
-        } else {
-            DesktopImpl.monitors[KoolSystem.configJvm.monitor].monitor
-        }
         windowedWidth = windowWidth
         windowedHeight = windowHeight
         windowedPosX = windowPosX
@@ -167,7 +175,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     protected open fun onWindowFocusChanged(isFocused: Boolean) {
-        ctx.isWindowFocused = isFocused
+        this.isFocused = isFocused
     }
 
     protected open fun onWindowCloseRequest() {

@@ -9,6 +9,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.logE
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.awt.image.BufferedImage
@@ -75,11 +76,13 @@ class Lwjgl3Context : KoolContext() {
     }
 
     init {
-        backend = if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
-            TODO("Vulkan backend is currently under maintenance")
-            //VkRenderBackend(this)
-        } else {
-            RenderBackendGlImpl(this)
+        if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
+            logE { "Vulkan support is currently disabled, falling back to OpenGL" }
+        }
+        backend = RenderBackendGlImpl(this)
+        isWindowFocused = backend.glfwWindow.isFocused
+        backend.glfwWindow.onFocusChanged += {
+            isWindowFocused = it
         }
 
         SysInfo.set(backend.apiName, backend.deviceName)

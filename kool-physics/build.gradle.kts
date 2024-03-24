@@ -10,9 +10,7 @@ plugins {
 }
 
 kotlin {
-    jvm("desktop") {
-        jvmToolchain(11)
-    }
+    jvm("desktop") { }
     js(IR) {
         browser { }
     }
@@ -39,10 +37,6 @@ kotlin {
 
     sourceSets.all {
         languageSettings {
-            if (KoolBuildSettings.useK2) {
-                languageVersion = "2.0"
-            }
-
             optIn("kotlin.contracts.ExperimentalContracts")
         }
     }

@@ -8,9 +8,7 @@ plugins {
 }
 
 kotlin {
-    jvm("desktop") {
-        jvmToolchain(11)
-    }
+    jvm("desktop") { }
     js(IR) {
         binaries.executable()
         browser {
@@ -60,14 +58,6 @@ kotlin {
                 runtimeOnly("${jvmLibs.lwjgl.stb.get()}:$platform")
                 runtimeOnly("${jvmLibs.lwjgl.vma.get()}:$platform")
                 runtimeOnly("${jvmLibs.physxjni.get()}:$platform")
-            }
-        }
-    }
-
-    sourceSets.all {
-        languageSettings {
-            if (KoolBuildSettings.useK2) {
-                languageVersion = "2.0"
             }
         }
     }

@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.io.FileInputStream
 import java.util.*
 
@@ -13,9 +14,7 @@ plugins {
 }
 
 kotlin {
-    jvm("desktop") {
-        jvmToolchain(11)
-    }
+    jvm("desktop") { }
     js(IR) {
         browser { }
     }
@@ -28,12 +27,9 @@ kotlin {
     //    }
     //}
 
-    targets.all {
-        compilations.all {
-            kotlinOptions {
-                freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn"
-            }
-        }
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
 
     sourceSets {
@@ -90,10 +86,6 @@ kotlin {
 
     sourceSets.all {
         languageSettings {
-            if (KoolBuildSettings.useK2) {
-                languageVersion = "2.0"
-            }
-
             optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
             optIn("kotlin.contracts.ExperimentalContracts")
             optIn("kotlin.io.encoding.ExperimentalEncodingApi")

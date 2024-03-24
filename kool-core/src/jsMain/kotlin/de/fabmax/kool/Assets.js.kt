@@ -108,7 +108,6 @@ external fun fetch(resource: String): Promise<Response>
 
 external interface ImageBitmapOptions
 
-@Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
 fun ImageBitmapOptions(resize: Vec2i? = null, resizeQuality: String = "high"): ImageBitmapOptions {
     val o = js("({})")
     o["premultiplyAlpha"] = "none"

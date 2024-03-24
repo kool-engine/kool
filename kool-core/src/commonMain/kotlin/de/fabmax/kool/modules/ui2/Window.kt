@@ -3,8 +3,6 @@ package de.fabmax.kool.modules.ui2
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 fun UiScope.Window(
     windowDockable: UiDockable,
@@ -13,9 +11,7 @@ fun UiScope.Window(
     isResizable: Boolean = true,
     block: UiScope.() -> Unit
 ) {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
+    //contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     Box(scopeName = windowDockable.name) {
         backgroundColor?.let { color ->

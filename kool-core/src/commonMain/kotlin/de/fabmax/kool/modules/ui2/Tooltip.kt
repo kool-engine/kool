@@ -2,8 +2,6 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 class TooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(false), Hoverable {
     private var enterTime = 0.0
@@ -62,9 +60,7 @@ inline fun UiScope.Tooltip(
     scopeName: String? = null,
     block: UiScope.() -> Unit
 ) {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
+    //contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     target?.modifier?.hoverListener(tooltipState)
     if (tooltipState.use()) {

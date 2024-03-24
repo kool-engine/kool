@@ -29,7 +29,7 @@ abstract class KoolContext {
         }
 
     var isWindowFocused = true
-        internal set(value) {
+        protected set(value) {
             field = value
             onWindowFocusChanged.forEach { it(this) }
         }
@@ -133,6 +133,6 @@ abstract class KoolContext {
 
     companion object {
         // automatically updated by gradle script on build
-        const val KOOL_VERSION = "0.14.0-SNAPSHOT"
+        const val KOOL_VERSION = "0.15.0-SNAPSHOT"
     }
 }

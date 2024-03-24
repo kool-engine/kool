@@ -1,8 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Color
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 fun UiScope.ScrollArea(
     width: Dimension = Grow.Std,
@@ -19,9 +17,7 @@ fun UiScope.ScrollArea(
     scopeName: String? = null,
     block: ScrollPaneScope.() -> Unit
 ) {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
+    //contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     Box(scopeName = scopeName) {
         modifier

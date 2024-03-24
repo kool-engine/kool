@@ -6,8 +6,6 @@ import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.round
@@ -81,9 +79,7 @@ fun UiScope.LazyList(
     scopeName: String? = null,
     block: LazyListScope.() -> Unit
 ) {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
+    //contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     Box {
         modifier
