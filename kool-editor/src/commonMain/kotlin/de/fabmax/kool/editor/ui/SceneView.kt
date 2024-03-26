@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.Platform
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.DockNodeLeaf
@@ -21,7 +22,7 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
     }
 
     val isShowToolbar = mutableStateOf(true)
-    val isShowExportButton = mutableStateOf(KoolSystem.isJavascript)
+    val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.JAVASCRIPT)
     val toolbar = FloatingToolbar(ui)
 
     private var viewBox: UiNode? = null
