@@ -14,23 +14,15 @@ plugins {
 }
 
 kotlin {
-    jvm("desktop") { }
     androidTarget {
         publishLibraryVariants("release", "debug")
     }
+    jvm("desktop") { }
     jvmToolchain(11)
 
     js(IR) {
         browser { }
     }
-
-    //androidTarget {
-    //    compilations.all {
-    //        kotlinOptions {
-    //            jvmTarget = "1.8"
-    //        }
-    //    }
-    //}
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
@@ -101,10 +93,10 @@ kotlin {
 
 android {
     namespace = "de.fabmax.kool"
-    compileSdk = commonLibs.versions.android.compileSdk.get().toInt()
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        minSdk = commonLibs.versions.android.minSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

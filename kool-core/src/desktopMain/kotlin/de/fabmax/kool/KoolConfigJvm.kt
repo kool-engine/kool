@@ -40,7 +40,7 @@ data class KoolConfigJvm(
     val isVsync: Boolean = true,
     val maxFrameRate: Int = 0,
     val windowNotFocusedFrameRate: Int = 0,
-    val msaaSamples: Int = 8,
+    val msaaSamples: Int = 4,
     val customTtfFonts: Map<String, String> = emptyMap(),
 
 ) : KoolConfig {
@@ -55,7 +55,7 @@ data class KoolConfigJvm(
             KoolConfigJvm::class.java.classLoader
                 .getResourceAsStream("fonts/font-roboto-regular.json").use {
                     checkNotNull(it) { "Failed to load \"fonts/font-roboto-regular.json\" from resources" }
-                    val meta = Json.Default.decodeFromString<MsdfMeta>(it.readAllBytes().decodeToString())
+                    val meta = Json.Default.decodeFromString<MsdfMeta>(it.readBytes().decodeToString())
                     MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
                 }
         }
