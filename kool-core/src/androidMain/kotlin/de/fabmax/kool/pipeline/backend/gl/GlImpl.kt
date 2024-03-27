@@ -282,6 +282,7 @@ object GlImpl: GlApi {
 
         // check for anisotropic texture filtering support
         val extensions = glGetString(GL_EXTENSIONS)?.split(" ")?.toSet() ?: emptySet()
+        extensions.filter { it.isNotBlank() }.sorted().forEach { logD { "ext: $it" } }
 
         var maxAnisotropy = 1
         if ("GL_EXT_texture_filter_anisotropic" in extensions) {
@@ -289,6 +290,7 @@ object GlImpl: GlApi {
             glGetFloatv(GLES11Ext.GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, f, 0)
             maxAnisotropy = f[0].toInt()
             TEXTURE_MAX_ANISOTROPY_EXT = GLES11Ext.GL_TEXTURE_MAX_ANISOTROPY_EXT
+            logD { "Anisotropic filtering available, max anisotropy: ${f[0]}" }
         }
         val maxTexUnits = getInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
         val canFastCopyTextures = false
@@ -337,7 +339,7 @@ object GlImpl: GlApi {
 
         val deviceName = glGetString(GL_RENDERER) ?: "<unknown>"
         logI { "Detected OpenGLES version $major.$minor, device: $deviceName" }
-        return GlApiVersion(major, minor, GlFlavor.OpenGLES, versionStr.removePrefix("OpenGL ES").trim(), deviceName)
+        return GlApiVersion(major, minor, GlFlavor.OpenGLES, "$major.$minor", deviceName)
     }
 
     override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean {
@@ -363,16 +365,12 @@ object GlImpl: GlApi {
         intParam.position(0)
         block(intParam)
         return intParam.get(0)
-//        block(intParam)
-//        return intParam[0]
     }
 
     private fun sendInt(value: Int): IntBuffer {
         intParam.position(0)
         intParam.put(0, value)
         return intParam
-//        intParam[0] = value
-//        return intParam
     }
 
     private fun getActiveUniformsImpl(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray {

@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Base64
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData
@@ -14,7 +15,6 @@ import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
 
 actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader {
     TODO("Not yet implemented")
@@ -120,5 +120,5 @@ object PlatformAssetsImpl : PlatformAssets {
 
 actual suspend fun decodeDataUri(dataUri: String): Uint8Buffer {
     val dataIdx = dataUri.indexOf(";base64,") + 8
-    return Uint8BufferImpl(Base64.getDecoder().decode(dataUri.substring(dataIdx)))
+    return Uint8BufferImpl(Base64.decode(dataUri.substring(dataIdx), Base64.DEFAULT))
 }
