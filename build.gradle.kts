@@ -1,10 +1,10 @@
 plugins {
-    alias(commonLibs.plugins.androidApplication) apply false
-    alias(commonLibs.plugins.androidLibrary) apply false
-    alias(commonLibs.plugins.kotlinMultiplatform) apply false
-    alias(commonLibs.plugins.kotlinSerialization) apply false
-    alias(commonLibs.plugins.kotlinAtomicFu) apply false
-    alias(commonLibs.plugins.kotlinDokka) apply false
+    alias(libs.plugins.androidApplication) apply false
+    alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.kotlinMultiplatform) apply false
+    alias(libs.plugins.kotlinSerialization) apply false
+    alias(libs.plugins.kotlinAtomicFu) apply false
+    alias(libs.plugins.kotlinDokka) apply false
 }
 
 allprojects {

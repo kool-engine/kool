@@ -3,11 +3,11 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    alias(commonLibs.plugins.androidLibrary)
-    alias(commonLibs.plugins.kotlinMultiplatform)
-    alias(commonLibs.plugins.kotlinSerialization)
-    alias(commonLibs.plugins.kotlinAtomicFu)
-    alias(commonLibs.plugins.kotlinDokka)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.kotlinAtomicFu)
+    alias(libs.plugins.kotlinDokka)
 
     `maven-publish`
     signing
@@ -24,6 +24,14 @@ kotlin {
         browser { }
     }
 
+    //androidTarget {
+    //    compilations.all {
+    //        kotlinOptions {
+    //            jvmTarget = "1.8"
+    //        }
+    //    }
+    //}
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
@@ -34,42 +42,42 @@ kotlin {
         val desktopTest by getting
 
         commonMain.dependencies {
-            api(commonLibs.kotlin.coroutines)
-            implementation(commonLibs.kotlin.serialization.core)
-            implementation(commonLibs.kotlin.serialization.json)
-            implementation(commonLibs.kotlin.reflect)
-            implementation(commonLibs.kotlin.atomicfu)
+            api(libs.kotlin.coroutines)
+            implementation(libs.kotlin.serialization.core)
+            implementation(libs.kotlin.serialization.json)
+            implementation(libs.kotlin.reflect)
+            implementation(libs.kotlin.atomicfu)
         }
 
         commonTest.dependencies {
-            implementation(commonLibs.kotlin.test)
+            implementation(libs.kotlin.test)
         }
 
         desktopMain.dependencies {
-            implementation(jvmLibs.jsvg)
-            api(jvmLibs.lwjgl.core)
-            api(jvmLibs.lwjgl.glfw)
-            api(jvmLibs.lwjgl.jemalloc)
-            api(jvmLibs.lwjgl.nfd)
-            api(jvmLibs.lwjgl.opengl)
-            api(jvmLibs.lwjgl.shaderc)
-            api(jvmLibs.lwjgl.stb)
-            api(jvmLibs.lwjgl.vma)
-            api(jvmLibs.lwjgl.vulkan)
+            implementation(libs.jsvg)
+            api(libs.lwjgl.core)
+            api(libs.lwjgl.glfw)
+            api(libs.lwjgl.jemalloc)
+            api(libs.lwjgl.nfd)
+            api(libs.lwjgl.opengl)
+            api(libs.lwjgl.shaderc)
+            api(libs.lwjgl.stb)
+            api(libs.lwjgl.vma)
+            api(libs.lwjgl.vulkan)
 
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                runtimeOnly("${jvmLibs.lwjgl.core.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.glfw.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.jemalloc.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.nfd.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.opengl.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.shaderc.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.stb.get()}:$platform")
-                runtimeOnly("${jvmLibs.lwjgl.vma.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.core.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.glfw.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.jemalloc.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.nfd.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.opengl.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.shaderc.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.stb.get()}:$platform")
+                runtimeOnly("${libs.lwjgl.vma.get()}:$platform")
             }
         }
         desktopTest.dependencies {
-            implementation(commonLibs.kotlin.test.junit)
+            implementation(libs.kotlin.test.junit)
         }
 
         jsMain.dependencies {
