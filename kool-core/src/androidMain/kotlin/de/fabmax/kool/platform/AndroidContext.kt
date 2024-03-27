@@ -2,11 +2,13 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
+import java.util.*
 
 typealias AndroidLog = android.util.Log
 
@@ -24,6 +26,7 @@ class AndroidContext : KoolContext() {
         set(_) { }
 
     private var prevFrameTime = System.nanoTime()
+    private val sysInfo = SysInfo()
 
     init {
         check(!KoolSystem.isContextCreated) { "KoolContext was already created" }
@@ -39,15 +42,14 @@ class AndroidContext : KoolContext() {
         logE { "Open URL: $url" }
     }
 
-    override fun run() {
-
-    }
+    override fun run() { }
 
     override fun getSysInfos(): List<String> {
-        return emptyList()
+        return sysInfo.lines
     }
 
     internal fun renderFrame() {
+        sysInfo.update()
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         // determine time delta
@@ -79,6 +81,48 @@ class AndroidContext : KoolContext() {
                     }
                 }
             }
+        }
+    }
+
+    private inner class SysInfo {
+        val lines = ArrayList<String>()
+
+        private var isInitialized = false
+        private var prevHeapSz = 1e9
+        private var prevHeapSzTime = 0L
+        private var avgHeapGrowth = 0.0
+
+        fun init(api: String, deviceName: String) {
+            isInitialized = true
+            lines.clear()
+            lines.add("Android ${android.os.Build.VERSION.RELEASE}, API level: ${android.os.Build.VERSION.SDK_INT}")
+            lines.add(api)
+            lines.add(deviceName)
+            lines.add("")
+            update()
+        }
+
+        fun update() {
+            if (!isInitialized) {
+                init(backend.apiName, backend.deviceName)
+            }
+
+            val rt = Runtime.getRuntime()
+            val freeMem = rt.freeMemory()
+            val totalMem = rt.totalMemory()
+            val heapSz = (totalMem - freeMem) / 1024.0 / 1024.0
+            val t = System.currentTimeMillis()
+            if (heapSz > prevHeapSz) {
+                val growth = (heapSz - prevHeapSz)
+                val dt = (t - prevHeapSzTime) / 1000.0
+                if (dt > 0.0) {
+                    val w = dt.clamp(0.0, 0.5)
+                    avgHeapGrowth = avgHeapGrowth * (1.0 - w) + (growth / dt) * w
+                    prevHeapSzTime = t
+                }
+            }
+            prevHeapSz = heapSz
+            lines[3] = "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth)
         }
     }
 }
