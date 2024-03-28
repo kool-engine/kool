@@ -46,11 +46,9 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     init {
         val fpsFont = MsdfFont(sizePts = 20f)
-        val apiName = KoolSystem.requireContext().backend.apiName
 
         ui = UiScene("debug-overlay") {
             onUpdate += {
-
                 val frameTime = it.ctx.backend.frameGpuTime
                 if (frameTime != 0.0) {
                     frameTimeText.set("${frameTime.toString(2)} ms @ GPU")
@@ -113,7 +111,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
                 if (isExpanded.use()) {
                     Text("Kool v${KoolContext.KOOL_VERSION}") { debugTextStyle() }
-                    Text(apiName) { debugTextStyle(MdColor.LIGHT_BLUE) }
+                    Text(KoolSystem.requireContext().backend.apiName) { debugTextStyle(MdColor.LIGHT_BLUE) }
                     sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
                     Text(viewportText.use()) { debugTextStyle() }
                     Text(uptimeText.use()) { debugTextStyle() }

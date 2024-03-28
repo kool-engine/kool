@@ -1,5 +1,7 @@
 package de.fabmax.kool.platform
 
+import android.opengl.GLSurfaceView
+import de.fabmax.kool.KoolConfigAndroid
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
@@ -12,7 +14,9 @@ import java.util.*
 
 typealias AndroidLog = android.util.Log
 
-class AndroidContext : KoolContext() {
+class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
+    val surfaceView: GLSurfaceView?
+
     override val backend: RenderBackendGlImpl
 
     override val windowWidth: Int
@@ -35,6 +39,9 @@ class AndroidContext : KoolContext() {
         windowScale = 2f
 
         backend = RenderBackendGlImpl(this)
+        surfaceView = config.surfaceView ?: config.appContext?.let { KoolSurfaceView(config.numSamples, it) }
+        surfaceView?.setRenderer(backend)
+
         KoolSystem.onContextCreated(this)
     }
 
@@ -92,11 +99,10 @@ class AndroidContext : KoolContext() {
         private var prevHeapSzTime = 0L
         private var avgHeapGrowth = 0.0
 
-        fun init(api: String, deviceName: String) {
+        fun init(deviceName: String) {
             isInitialized = true
             lines.clear()
             lines.add("Android ${android.os.Build.VERSION.RELEASE}, API level: ${android.os.Build.VERSION.SDK_INT}")
-            lines.add(api)
             lines.add(deviceName)
             lines.add("")
             update()
@@ -104,7 +110,7 @@ class AndroidContext : KoolContext() {
 
         fun update() {
             if (!isInitialized) {
-                init(backend.apiName, backend.deviceName)
+                init(backend.deviceName)
             }
 
             val rt = Runtime.getRuntime()
@@ -122,7 +128,7 @@ class AndroidContext : KoolContext() {
                 }
             }
             prevHeapSz = heapSz
-            lines[3] = "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth)
+            lines[2] = "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth)
         }
     }
 }

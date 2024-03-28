@@ -1,5 +1,7 @@
 package de.fabmax.kool
 
+import android.content.Context
+import android.opengl.GLSurfaceView
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
 import kotlinx.serialization.json.Json
@@ -15,7 +17,10 @@ data class KoolConfigAndroid(
      */
     override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
-    val msaaSamples: Int = 4,
+    val forceFloatDepthBuffer: Boolean = true,
+    val numSamples: Int = 1,
+    val surfaceView: GLSurfaceView? = null,
+    val appContext: Context? = null,
 
 ) : KoolConfig {
     companion object {

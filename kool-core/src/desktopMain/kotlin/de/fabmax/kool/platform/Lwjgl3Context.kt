@@ -35,42 +35,8 @@ class Lwjgl3Context : KoolContext() {
     var windowNotFocusedFrameRate = KoolSystem.configJvm.windowNotFocusedFrameRate
 
     private var prevFrameTime = System.nanoTime()
+    private val sysInfo = SysInfo()
 
-    private object SysInfo {
-        val lines = ArrayList<String>()
-
-        private var prevHeapSz = 1e9
-        private var prevHeapSzTime = 0L
-        private var avgHeapGrowth = 0.0
-
-        fun set(api: String, deviceName: String) {
-            lines.clear()
-            lines.add(System.getProperty("java.version") + ": " + System.getProperty("java.vm.name"))
-            lines.add(api)
-            lines.add(deviceName)
-            lines.add("")
-            update()
-        }
-
-        fun update() {
-            val rt = Runtime.getRuntime()
-            val freeMem = rt.freeMemory()
-            val totalMem = rt.totalMemory()
-            val heapSz = (totalMem - freeMem) / 1024.0 / 1024.0
-            val t = System.currentTimeMillis()
-            if (heapSz > prevHeapSz) {
-                val growth = (heapSz - prevHeapSz)
-                val dt = (t - prevHeapSzTime) / 1000.0
-                if (dt > 0.0) {
-                    val w = dt.clamp(0.0, 0.5)
-                    avgHeapGrowth = avgHeapGrowth * (1.0 - w) + (growth / dt) * w
-                    prevHeapSzTime = t
-                }
-            }
-            prevHeapSz = heapSz
-            lines[3] = "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth)
-        }
-    }
 
     init {
         if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
@@ -81,8 +47,6 @@ class Lwjgl3Context : KoolContext() {
         backend.glfwWindow.onFocusChanged += {
             isWindowFocused = it
         }
-
-        SysInfo.set(backend.apiName, backend.deviceName)
 
         PlatformInputJvm.onContextCreated(this)
         KoolSystem.onContextCreated(this)
@@ -100,7 +64,7 @@ class Lwjgl3Context : KoolContext() {
 
     override fun run() {
         while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
-            SysInfo.update()
+            sysInfo.update()
             backend.glfwWindow.pollEvents()
             renderFrame()
         }
@@ -160,6 +124,47 @@ class Lwjgl3Context : KoolContext() {
         }
     }
 
-    override fun getSysInfos(): List<String> = SysInfo.lines
+    override fun getSysInfos(): List<String> = sysInfo.lines
+
+    private inner class SysInfo {
+        val lines = ArrayList<String>()
+
+        private var isInitialized = false
+        private var prevHeapSz = 1e9
+        private var prevHeapSzTime = 0L
+        private var avgHeapGrowth = 0.0
+
+        fun init(deviceName: String) {
+            isInitialized = true
+            lines.clear()
+            lines.add(System.getProperty("java.version") + ": " + System.getProperty("java.vm.name"))
+            lines.add(deviceName)
+            lines.add("")
+            update()
+        }
+
+        fun update() {
+            if (!isInitialized) {
+                init(backend.deviceName)
+            }
+
+            val rt = Runtime.getRuntime()
+            val freeMem = rt.freeMemory()
+            val totalMem = rt.totalMemory()
+            val heapSz = (totalMem - freeMem) / 1024.0 / 1024.0
+            val t = System.currentTimeMillis()
+            if (heapSz > prevHeapSz) {
+                val growth = (heapSz - prevHeapSz)
+                val dt = (t - prevHeapSzTime) / 1000.0
+                if (dt > 0.0) {
+                    val w = dt.clamp(0.0, 0.5)
+                    avgHeapGrowth = avgHeapGrowth * (1.0 - w) + (growth / dt) * w
+                    prevHeapSzTime = t
+                }
+            }
+            prevHeapSz = heapSz
+            lines[2] = "Heap: %.1f MB (+%.1f MB/s)".format(Locale.ENGLISH, heapSz, avgHeapGrowth)
+        }
+    }
 }
 

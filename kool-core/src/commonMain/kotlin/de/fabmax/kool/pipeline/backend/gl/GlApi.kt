@@ -288,10 +288,9 @@ data class GlApiVersion(
     val major: Int,
     val minor: Int,
     val flavor: GlFlavor,
-    val version: String,
     val deviceInfo: String
 ) {
-    val versionName: String = "${flavor.flavorName} $version"
+    val versionName: String = "${flavor.flavorName} $major.$minor"
 
     fun isHigherOrEqualThan(major: Int, minor: Int): Boolean {
         if (this.major < major) {

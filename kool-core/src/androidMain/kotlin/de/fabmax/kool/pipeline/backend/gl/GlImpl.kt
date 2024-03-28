@@ -339,7 +339,7 @@ object GlImpl: GlApi {
 
         val deviceName = glGetString(GL_RENDERER) ?: "<unknown>"
         logI { "Detected OpenGLES version $major.$minor, device: $deviceName" }
-        return GlApiVersion(major, minor, GlFlavor.OpenGLES, "$major.$minor", deviceName)
+        return GlApiVersion(major, minor, GlFlavor.OpenGLES, deviceName)
     }
 
     override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean {

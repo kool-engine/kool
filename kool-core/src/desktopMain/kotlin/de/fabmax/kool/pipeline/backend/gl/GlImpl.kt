@@ -369,7 +369,7 @@ object GlImpl : GlApi {
         }
 
         val deviceName = glGetString(GL_RENDERER) ?: "<unknown>"
-        return GlApiVersion(major, minor, GlFlavor.OpenGL, versionStr, deviceName)
+        return GlApiVersion(major, minor, GlFlavor.OpenGL, deviceName)
     }
 
     private fun getActiveUniformsImpl(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray {
