@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.logW
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
@@ -25,12 +26,13 @@ import kotlin.math.roundToInt
  */
 class JsContext internal constructor() : KoolContext() {
 
-    override val backend: RenderBackendJs
+    override var backend: RenderBackendJs
+        private set
 
     override val isJavascript = true
     override val isJvm = false
 
-    private val pixelRatio: Double
+    val pixelRatio: Double
         get() = min(KoolSystem.configJs.deviceScaleLimit, window.devicePixelRatio)
 
     override var windowWidth = 0
@@ -182,7 +184,24 @@ class JsContext internal constructor() : KoolContext() {
     override fun run() {
         Loader.launch {
             KoolSystem.configJs.loaderTasks.forEach { it() }
-            backend.startRenderLoop()
+
+            try {
+                backend.startRenderLoop()
+            } catch (e: Exception) {
+                if (backend is RenderBackendWebGpu && KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.PREFER_WEB_GPU) {
+                    // WebGPU-context creation failed (although the browser theoretically supports it)
+
+                    // fixme: KoolContext.run() is called relatively late and user code might have already done a lot
+                    //  of stuff by now, so recreating the backend at this point seems risky but there isn't much we
+                    //  can do about that.
+
+                    logW { "Failed initializing WebGPU context, falling back to WebGL" }
+                    backend = RenderBackendGlImpl(this@JsContext, canvas)
+                    backend.startRenderLoop()
+                } else {
+                    throw RuntimeException(e)
+                }
+            }
         }
     }
 
