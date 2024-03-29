@@ -10,26 +10,25 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * Desktop LWJGL3 platform implementation
- *
- * @author fabmax
- */
-
-actual fun defaultKoolConfig(): KoolConfig = KoolConfigJvm()
+actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)}f".format(Locale.ENGLISH, this)
 
 val KoolSystem.configJvm: KoolConfigJvm get() = config as KoolConfigJvm
 
 /**
- * Creates a new [KoolContext] based on the [KoolConfig] provided by [KoolSystem]. [KoolSystem.initialize] has to be
- * called before invoking this function.
+ * Creates a new [KoolContext] with the given [KoolConfigJvm]. Notice that there can only be one [KoolContext], calling
+ * this method multiple times is an error.
  */
-actual fun createContext(config: KoolConfig): KoolContext {
+fun createContext(config: KoolConfigJvm = KoolConfigJvm()): Lwjgl3Context {
     KoolSystem.initialize(config)
     return DesktopImpl.createContext()
 }
 
-actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)}f".format(Locale.ENGLISH, this)
+fun KoolApplication(config: KoolConfigJvm, appBlock: (KoolContext) -> Unit) = KoolApplication(createContext(config), appBlock)
+
+fun KoolApplication(ctx: Lwjgl3Context = createContext(), appBlock: (KoolContext) -> Unit) {
+    appBlock(ctx)
+    ctx.run()
+}
 
 internal object DesktopImpl {
     private var ctx: Lwjgl3Context? = null
@@ -39,7 +38,7 @@ internal object DesktopImpl {
 
     init {
         if (Log.printer == Log.DEFAULT_PRINTER) {
-            val dateFmt = SimpleDateFormat("HH:mm:ss.SSS")
+            val dateFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
             Log.printer = { lvl, tag, message ->
                 synchronized(dateFmt) {
                     val frmTxt = ctx?.let { "|f:${Time.frameCount}" } ?: ""
@@ -72,7 +71,7 @@ internal object DesktopImpl {
         primaryMonitor = primMon
     }
 
-    fun createContext(): KoolContext {
+    fun createContext(): Lwjgl3Context {
         synchronized(this) {
             if (ctx == null) {
                 ctx = Lwjgl3Context()

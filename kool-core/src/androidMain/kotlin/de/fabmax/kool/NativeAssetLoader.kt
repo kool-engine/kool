@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 
-class NativeAssetLoader(val basePath: String) : AssetLoader() {
+class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
     override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
         return if (blobRef.isHttp) {
             loadHttpBlob(blobRef)
@@ -41,9 +41,9 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
             val resPath = assetPath.replace('\\', '/')
             var inStream: InputStream? = this::class.java.classLoader?.getResourceAsStream(resPath)
             if (inStream == null) {
-                logE { "openLocalStream: $assetPath" }
                 // if asset wasn't found in resources try to load it from file system
-                //inStream = FileInputStream("${basePath}/$assetPath")
+                val systemAssets = KoolSystem.configAndroid.appContext.assets
+                inStream = systemAssets.open("${basePath}/$assetPath".removePrefix("/"))
             }
             inStream
         } catch (e: Exception) {

@@ -15,7 +15,7 @@ import java.util.*
 typealias AndroidLog = android.util.Log
 
 class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
-    val surfaceView: GLSurfaceView?
+    val surfaceView: GLSurfaceView = config.surfaceView ?: KoolSurfaceView(config.numSamples, config.appContext)
 
     override val backend: RenderBackendGlImpl
 
@@ -39,8 +39,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         windowScale = 2f
 
         backend = RenderBackendGlImpl(this)
-        surfaceView = config.surfaceView ?: config.appContext?.let { KoolSurfaceView(config.numSamples, it) }
-        surfaceView?.setRenderer(backend)
+        surfaceView.setRenderer(backend)
 
         KoolSystem.onContextCreated(this)
     }

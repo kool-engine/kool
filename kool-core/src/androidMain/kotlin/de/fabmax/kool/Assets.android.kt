@@ -8,12 +8,13 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.AtlasFont
+import de.fabmax.kool.util.CharMetrics
+import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.Uint8BufferImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.IOException
 import java.io.InputStream
 
 actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader {
@@ -24,30 +25,16 @@ internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
 
 object PlatformAssetsImpl : PlatformAssets {
 
-    private const val MAX_GENERATED_TEX_WIDTH = 2048
-    private const val MAX_GENERATED_TEX_HEIGHT = 2048
-
-    //private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
-    private var saveFileChooserPath = System.getProperty("user.home")
-    private var loadFileChooserPath = System.getProperty("user.home")
-
-    init {
-        //HttpCache.initCache(File(KoolSystem.configJvm.httpCacheDir))
-        //fontGenerator.loadCustomFonts(KoolSystem.configJvm.customTtfFonts)
-    }
-
     override suspend fun waitForFonts() {
         // on JVM all fonts should be immediately available -> nothing to wait for
     }
 
     override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
-        TODO()
-        //return fontGenerator.createFontMapData(font, fontScale, outMetrics)
+        TODO("AtlasFont is not yet supported on Android, use MsdfFont instead")
     }
 
     override suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
-        TODO()
-        //return openFileChooser(filterList, multiSelect).map { LoadableFileImpl(it) }
+        TODO("loadFileByUser")
     }
 
     override suspend fun saveFileByUser(
@@ -56,24 +43,7 @@ object PlatformAssetsImpl : PlatformAssets {
         filterList: List<FileFilterItem>,
         mimeType: String
     ): String? {
-        return saveFileChooser(defaultFileName, filterList)?.let { saveFile ->
-            saveFile.parentFile?.mkdirs()
-            try {
-                saveFile.writeBytes(data.toArray())
-            } catch (e: IOException) {
-                logE { "Saving file $saveFile failed: $e" }
-                e.printStackTrace()
-            }
-            saveFile.absolutePath
-        }
-    }
-
-    suspend fun openFileChooser(filterList: List<FileFilterItem> = emptyList(), multiSelect: Boolean = false): List<File> {
-        TODO()
-    }
-
-    suspend fun saveFileChooser(defaultFileName: String? = null, filterList: List<FileFilterItem> = emptyList()): File? {
-        TODO()
+        TODO("saveFileByUser")
     }
 
     override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
@@ -92,7 +62,7 @@ object PlatformAssetsImpl : PlatformAssets {
     }
 
     private fun renderSvg(inStream: InputStream, props: TextureProps?): TextureData2d {
-        TODO()
+        TODO("renderSvg")
     }
 
     private fun Bitmap.toTextureData(): TextureData2d {

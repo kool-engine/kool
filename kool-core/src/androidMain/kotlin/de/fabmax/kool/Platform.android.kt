@@ -9,15 +9,12 @@ actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)
 
 val KoolSystem.configAndroid: KoolConfigAndroid get() = config as KoolConfigAndroid
 
-actual fun defaultKoolConfig(): KoolConfig = KoolConfigAndroid()
-
-actual fun createContext(config: KoolConfig): KoolContext {
+fun createKoolContext(config: KoolConfigAndroid): KoolContextAndroid {
     KoolSystem.initialize(config)
-    return KoolContextAndroid(config as KoolConfigAndroid)
+    return KoolContextAndroid(config)
 }
 
-fun Activity.createContextAndroid(config: KoolConfigAndroid = KoolConfigAndroid()): KoolContextAndroid {
-    val configWithContext = config.copy(appContext = this)
-    val ctx = createContext(configWithContext)
-    return ctx as KoolContextAndroid
+fun Activity.createDefaultKoolContext(): KoolContextAndroid {
+    val ctx = createKoolContext(KoolConfigAndroid(this))
+    return ctx
 }

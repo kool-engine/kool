@@ -7,10 +7,12 @@ import de.fabmax.kool.util.MsdfMeta
 import kotlinx.serialization.json.Json
 
 data class KoolConfigAndroid(
+    val appContext: Context,
+
     /**
      * Default asset loader used by [Assets] to load textures, models, etc.
      */
-    override val defaultAssetLoader: AssetLoader = NativeAssetLoader("./assets"),
+    override val defaultAssetLoader: AssetLoader = NativeAssetLoader(),
 
     /**
      * Default font used by UI elements.
@@ -20,8 +22,6 @@ data class KoolConfigAndroid(
     val forceFloatDepthBuffer: Boolean = true,
     val numSamples: Int = 1,
     val surfaceView: GLSurfaceView? = null,
-    val appContext: Context? = null,
-
 ) : KoolConfig {
     companion object {
         val DEFAULT_MSDF_FONT_INFO: MsdfFontInfo by lazy {
