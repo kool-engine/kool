@@ -23,6 +23,7 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
     override val glslGeneratorHints: GlslGenerator.Hints
         get() = lateGlslGeneratorHints
 
+    private var timer: TimeQuery? = null
     override var frameGpuTime: Double = 0.0
 
     init {
@@ -39,6 +40,10 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
         GlImpl.initOpenGl(this)
         lateGlslGeneratorHints = GlslGenerator.Hints(glslVersionStr = "#version ${GlImpl.version.major}${GlImpl.version.minor}0 es")
         setupGl()
+
+        if (GlImpl.capabilities.hasTimestampQuery) {
+            timer = TimeQuery(GlImpl)
+        }
     }
 
     override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
@@ -48,5 +53,17 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
 
     override fun onDrawFrame(unused: GL10) {
         androidCtx.renderFrame()
+    }
+
+    override fun renderFrame(ctx: KoolContext) {
+        val t = timer
+        if (t != null) {
+            if (t.isAvailable) {
+                frameGpuTime = t.getQueryResultMillis()
+            }
+            t.timedScope { super.renderFrame(ctx) }
+        } else {
+            super.renderFrame(ctx)
+        }
     }
 }

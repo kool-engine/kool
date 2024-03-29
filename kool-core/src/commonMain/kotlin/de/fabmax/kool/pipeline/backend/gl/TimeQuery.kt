@@ -5,8 +5,8 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 class TimeQuery(private val gl: GlApi) : BaseReleasable() {
-    private val queryBegin = gl.createQuery()
-    private val queryEnd = gl.createQuery()
+    private val beginTime = gl.createQuery()
+    private val endTime = gl.createQuery()
 
     var isInFlight = false
         private set
@@ -15,12 +15,12 @@ class TimeQuery(private val gl: GlApi) : BaseReleasable() {
 
     val isAvailable: Boolean
         get() = isInFlight &&
-                gl.getQueryParameter(queryBegin, gl.QUERY_RESULT_AVAILABLE) == gl.TRUE &&
-                gl.getQueryParameter(queryEnd, gl.QUERY_RESULT_AVAILABLE) == gl.TRUE
+                gl.getQueryParameter(beginTime, gl.QUERY_RESULT_AVAILABLE) == gl.TRUE &&
+                gl.getQueryParameter(endTime, gl.QUERY_RESULT_AVAILABLE) == gl.TRUE
 
     fun getQueryResultMillis(): Double {
-        val begin = gl.getQueryParameterU64(queryBegin, gl.QUERY_RESULT)
-        val end = gl.getQueryParameterU64(queryEnd, gl.QUERY_RESULT)
+        val begin = gl.getQueryParameterU64(beginTime, gl.QUERY_RESULT)
+        val end = gl.getQueryParameterU64(endTime, gl.QUERY_RESULT)
         isInFlight = false
         return (end - begin) / 1e6
     }
@@ -29,14 +29,14 @@ class TimeQuery(private val gl: GlApi) : BaseReleasable() {
         if (gl.capabilities.hasTimestampQuery && !hasBegun && !isInFlight) {
             hasBegun = true
             isInFlight = true
-            gl.queryCounter(queryBegin, gl.TIMESTAMP)
+            gl.queryCounter(beginTime, gl.TIMESTAMP)
         }
     }
 
     fun end() {
         if (gl.capabilities.hasTimestampQuery && hasBegun) {
             hasBegun = false
-            gl.queryCounter(queryEnd, gl.TIMESTAMP)
+            gl.queryCounter(endTime, gl.TIMESTAMP)
         }
     }
 
@@ -51,7 +51,7 @@ class TimeQuery(private val gl: GlApi) : BaseReleasable() {
 
     override fun release() {
         super.release()
-        gl.deleteQuery(queryBegin)
-        gl.deleteQuery(queryEnd)
+        gl.deleteQuery(beginTime)
+        gl.deleteQuery(endTime)
     }
 }

@@ -41,11 +41,11 @@ object GlImpl: GlApi {
     override val LINEAR_MIPMAP_LINEAR = GL_LINEAR_MIPMAP_LINEAR
     override val LINES = GL_LINES
     override val LINK_STATUS = GL_LINK_STATUS
-    override val LOWER_LEFT = 0
+    override val LOWER_LEFT = GlesExtensions.LOWER_LEFT_EXT
     override val MIRRORED_REPEAT = GL_MIRRORED_REPEAT
     override val NEAREST = GL_NEAREST
     override val NEAREST_MIPMAP_NEAREST = GL_NEAREST_MIPMAP_NEAREST
-    override val NEGATIVE_ONE_TO_ONE = 0
+    override val NEGATIVE_ONE_TO_ONE = GlesExtensions.NEGATIVE_ONE_TO_ONE_EXT
     override val NONE = GL_NONE
     override val ONE = GL_ONE
     override val ONE_MINUS_SRC_ALPHA = GL_ONE_MINUS_SRC_ALPHA
@@ -80,18 +80,18 @@ object GlImpl: GlApi {
     override val TEXTURE_WRAP_S = GL_TEXTURE_WRAP_S
     override val TEXTURE_WRAP_T = GL_TEXTURE_WRAP_T
     override val TEXTURE0 = GL_TEXTURE0
-    override val TIME_ELAPSED = 0
-    override val TIMESTAMP = 0
+    override val TIME_ELAPSED = GlesExtensions.TIME_ELAPSED_EXT
+    override val TIMESTAMP = GlesExtensions.TIMESTAMP_EXT
     override val TRIANGLES = GL_TRIANGLES
     override val TRIANGLE_STRIP = GL_TRIANGLE_STRIP
     override val TRUE = GL_TRUE
     override val UNIFORM_BLOCK_DATA_SIZE = GL_UNIFORM_BLOCK_DATA_SIZE
     override val UNIFORM_BUFFER = GL_UNIFORM_BUFFER
     override val UNIFORM_OFFSET = GL_UNIFORM_OFFSET
-    override val UPPER_LEFT = 0
+    override val UPPER_LEFT = GlesExtensions.UPPER_LEFT_EXT
     override val VERTEX_SHADER = GL_VERTEX_SHADER
     override val WRITE_ONLY = GL_WRITE_ONLY
-    override val ZERO_TO_ONE = 0
+    override val ZERO_TO_ONE = GlesExtensions.ZERO_TO_ONE_EXT
 
     override val INT = GL_INT
     override val FLOAT = GL_FLOAT
@@ -190,7 +190,7 @@ object GlImpl: GlApi {
     override fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Buffer) = values.useRaw { glClearBufferfv(buffer, drawBuffer, it) }
     override fun clearColor(r: Float, g: Float, b: Float, a: Float) = glClearColor(r, g, b, a)
     override fun clearDepth(depth: Float) = glClearDepthf(depth)
-    override fun clipControl(origin: Int, depth: Int) = notSupported("glClipControl")
+    override fun clipControl(origin: Int, depth: Int) = GlesExtensions.clipControl(origin, depth)
     override fun createBuffer(): GlBuffer = GlBuffer(receiveInt { glGenBuffers(1, it) })
     override fun createFramebuffer(): GlFramebuffer = GlFramebuffer(receiveInt { glGenFramebuffers(1, it) })
     override fun createProgram(): GlProgram = GlProgram(glCreateProgram())
@@ -229,7 +229,7 @@ object GlImpl: GlApi {
     override fun getProgramInfoLog(program: GlProgram): String = glGetProgramInfoLog(program.handle)
     override fun getProgramParameter(program: GlProgram, param: Int): Int = receiveInt { glGetProgramiv(program.handle, param, it) }
     override fun getQueryParameter(query: GlQuery, param: Int): Any = receiveInt { glGetQueryObjectuiv(query.handle, param, it) }
-    override fun getQueryParameterU64(query: GlQuery, param: Int): Long = receiveInt { glGetQueryObjectuiv(query.handle, param, it) }.toLong()
+    override fun getQueryParameterU64(query: GlQuery, param: Int): Long = GlesExtensions.getQueryObjectui64(query.handle, param)
     override fun getShaderInfoLog(shader: GlShader): String = glGetShaderInfoLog(shader.handle)
     override fun getShaderParameter(shader: GlShader, param: Int): Int = receiveInt { glGetShaderiv(shader.handle, param, it) }
     override fun getUniformBlockIndex(program: GlProgram, uniformBlockName: String): Int = glGetUniformBlockIndex(program.handle, uniformBlockName)
@@ -238,7 +238,7 @@ object GlImpl: GlApi {
     override fun lineWidth(width: Float) = glLineWidth(width)
     override fun linkProgram(program: GlProgram) = glLinkProgram(program.handle)
     override fun memoryBarrier(barriers: Int) = glMemoryBarrier(barriers)
-    override fun queryCounter(query: GlQuery, target: Int) = notSupported("glQueryCounter")
+    override fun queryCounter(query: GlQuery, target: Int) = GlesExtensions.queryCounter(query.handle, target)
     override fun readBuffer(src: Int) = glReadBuffer(src)
     override fun renderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorage(target, internalformat, width, height)
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
@@ -282,7 +282,7 @@ object GlImpl: GlApi {
 
         // check for anisotropic texture filtering support
         val extensions = glGetString(GL_EXTENSIONS)?.split(" ")?.toSet() ?: emptySet()
-        extensions.filter { it.isNotBlank() }.sorted().forEach { logD { "ext: $it" } }
+        //extensions.filter { it.isNotBlank() }.sorted().forEach { logD { "ext: $it" } }
 
         var maxAnisotropy = 1
         if ("GL_EXT_texture_filter_anisotropic" in extensions) {
@@ -292,9 +292,21 @@ object GlImpl: GlApi {
             TEXTURE_MAX_ANISOTROPY_EXT = GLES11Ext.GL_TEXTURE_MAX_ANISOTROPY_EXT
             logD { "Anisotropic filtering available, max anisotropy: ${f[0]}" }
         }
+
+        var hasTimestampQuery = false
+        if ("GL_EXT_disjoint_timer_query" in extensions) {
+            hasTimestampQuery = GlesExtensions.enableEXTdisjointTimerQuery()
+            logD { "Enabled extension GL_EXT_disjoint_timer_query: $hasTimestampQuery" }
+        }
+
+        var hasClipControl = false
+        if ("GL_EXT_clip_control" in extensions) {
+            hasClipControl = GlesExtensions.enableEXTclipControl()
+            logD { "Enabled extension GL_EXT_clip_control: $hasClipControl" }
+        }
+
         val maxTexUnits = getInteger(GL_MAX_TEXTURE_IMAGE_UNITS)
         val canFastCopyTextures = false
-        val hasClipControl = false      // todo: check for GL_EXT_clip_control (and use it via ndk)
 
         val hasComputeShaders = version.isHigherOrEqualThan(3, 1)
         val workGroupCount = MutableVec3i()
@@ -319,7 +331,7 @@ object GlImpl: GlApi {
             maxAnisotropy = maxAnisotropy,
             canFastCopyTextures = canFastCopyTextures,
             hasClipControl = hasClipControl,
-            hasTimestampQuery = true,
+            hasTimestampQuery = hasTimestampQuery,
             hasComputeShaders = hasComputeShaders,
             maxWorkGroupCount = workGroupCount,
             maxWorkGroupSize = workGroupSize,
@@ -447,9 +459,5 @@ object GlImpl: GlApi {
             }
             else -> throw IllegalStateException("TextureData buffer must be either any of Uint8Buffer, Uint16Buffer, Int32Buffer, Float32Buffer")
         }
-    }
-
-    private fun notSupported(funcName: String): Nothing {
-        throw IllegalStateException("$funcName is not supported in WebGL")
     }
 }
