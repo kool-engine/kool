@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.modules.audio.AudioClipImpl
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.imageAtlasTextureData
@@ -86,12 +87,19 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
     }
 
     override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {
-        logE { "loadAudioClip not yet implemented" }
-        return LoadedAudioClipAsset(audioRef, null)
+        if (audioRef.isHttp) {
+            logE { "loadAudioClip from http not yet implemented" }
+            return LoadedAudioClipAsset(audioRef, null)
+        }
+
+        val clip = openLocalStream(audioRef.path)?.use { inStream ->
+            AudioClipImpl(inStream, audioRef.path, KoolSystem.configAndroid.appContext)
+        }
+        return LoadedAudioClipAsset(audioRef, clip)
     }
 
     private fun loadLocalTexture(path: String, props: TextureProps?): TextureData2d? {
-        return openLocalStream(path)?.let {
+        return openLocalStream(path)?.use {
             try {
                 PlatformAssetsImpl.readImageData(it, MimeType.forFileName(path), props)
             } catch (e: Exception) {
