@@ -10,7 +10,6 @@ import de.fabmax.kool.platform.elementX
 import de.fabmax.kool.platform.elementY
 import de.fabmax.kool.util.logI
 import kotlinx.browser.document
-import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
@@ -20,6 +19,9 @@ internal actual fun PlatformInput(): PlatformInput = PlatformInputJs
 internal object PlatformInputJs : PlatformInput {
 
     val excludedKeyCodes = mutableSetOf("F5", "F11", "F12")
+
+    private val pixelRatio: Double
+        get() = (KoolSystem.getContextOrNull() as JsContext?)?.pixelRatio ?: 1.0
 
     private val virtualPointerPos = MutableVec2d()
     private var currentCursorShape = CursorShape.DEFAULT
@@ -48,10 +50,10 @@ internal object PlatformInputJs : PlatformInput {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun pointerMovementX(ev: MouseEvent) = js("ev.movementX") as Double * window.devicePixelRatio
+    private fun pointerMovementX(ev: MouseEvent) = js("ev.movementX") as Double * pixelRatio
 
     @Suppress("UNUSED_PARAMETER")
-    private fun pointerMovementY(ev: MouseEvent) = js("ev.movementY") as Double * window.devicePixelRatio
+    private fun pointerMovementY(ev: MouseEvent) = js("ev.movementY") as Double * pixelRatio
 
     private fun installInputHandlers(canvas: HTMLCanvasElement) {
         // install mouse handlers
@@ -63,8 +65,8 @@ internal object PlatformInputJs : PlatformInput {
                 virtualPointerPos.x += pointerMovementX(ev)
                 virtualPointerPos.y += pointerMovementY(ev)
             } else {
-                virtualPointerPos.x = (ev.clientX * window.devicePixelRatio - bounds.left)
-                virtualPointerPos.y = (ev.clientY * window.devicePixelRatio - bounds.top)
+                virtualPointerPos.x = (ev.clientX * pixelRatio - bounds.left)
+                virtualPointerPos.y = (ev.clientY * pixelRatio - bounds.top)
             }
             PointerInput.handleMouseMove(virtualPointerPos.x, virtualPointerPos.y)
         }

@@ -8,7 +8,6 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
-import kotlinx.browser.window
 import org.khronos.webgl.get
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
@@ -29,8 +28,9 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
     val loadingFonts = mutableListOf<Promise<FontFace>>()
 
     init {
-        canvas.style.width = "${(maxWidth / window.devicePixelRatio).roundToInt()}"
-        canvas.style.height = "${(maxHeight / window.devicePixelRatio).roundToInt()}"
+        val pixelRatio = (KoolSystem.getContextOrNull() as JsContext?)?.pixelRatio ?: 1.0
+        canvas.style.width = "${(maxWidth / pixelRatio).roundToInt()}"
+        canvas.style.height = "${(maxHeight / pixelRatio).roundToInt()}"
         canvas.width = maxWidth
         canvas.height = maxHeight
         canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D
