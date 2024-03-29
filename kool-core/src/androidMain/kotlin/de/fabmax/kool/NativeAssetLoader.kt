@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.platform.imageAtlasTextureData
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logE
@@ -31,8 +32,12 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
     }
 
     private suspend fun loadHttpBlob(httpRawRef: BlobAssetRef): LoadedBlobAsset {
-        var data: Uint8Buffer? = null
-        logE { "loadHttpBlob not yet implemented" }
+        val data: Uint8Buffer? = if (httpRawRef.path.startsWith("data:", true)) {
+            decodeDataUri(httpRawRef.path)
+        } else {
+            logE { "http asset loading not implemented on Android" }
+            null
+        }
         return LoadedBlobAsset(httpRawRef, data)
     }
 
@@ -62,7 +67,7 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
         val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
         val texData = loadTextureData2d(refCopy).data as TextureData2d?
         val atlasData = texData?.let {
-//            imageAtlasTextureData(it, textureRef.tilesX, textureRef.tilesY)
+            imageAtlasTextureData(it, textureRef.tilesX, textureRef.tilesY)
             null
         }
         return LoadedTextureAsset(textureRef, atlasData)
@@ -71,7 +76,8 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
     override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
         val data: TextureData2d? = withContext(Dispatchers.IO) {
             if (textureData2dRef.isHttp) {
-                loadHttpTexture(textureData2dRef.path, textureData2dRef.props)
+                logE { "loadHttpTexture not yet implemented" }
+                null
             } else {
                 loadLocalTexture(textureData2dRef.path, textureData2dRef.props)
             }
@@ -93,10 +99,5 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
                 null
             }
         }
-    }
-
-    private fun loadHttpTexture(path: String, props: TextureProps?): TextureData2d? {
-        logE { "loadHttpTexture not yet implemented" }
-        return null
     }
 }

@@ -2,7 +2,9 @@ package de.fabmax.kool
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.util.Base64
+import com.caverock.androidsvg.SVG
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData
@@ -16,6 +18,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import kotlin.math.ceil
+
 
 actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader {
     TODO("Not yet implemented")
@@ -56,13 +60,32 @@ object PlatformAssetsImpl : PlatformAssets {
         return inStream.use {
             when (mimeType) {
                 MimeType.IMAGE_SVG -> renderSvg(inStream, props)
-                else -> BitmapFactory.decodeStream(inStream).toTextureData()
+                else -> {
+                    var bmp = BitmapFactory.decodeStream(inStream)
+                    if (props?.resolveSize != null) {
+                        bmp = Bitmap.createScaledBitmap(bmp, props.resolveSize.x, props.resolveSize.y, true)
+                    }
+                    bmp.toTextureData()
+                }
             }
         }
     }
 
     private fun renderSvg(inStream: InputStream, props: TextureProps?): TextureData2d {
-        TODO("renderSvg")
+        val svg = SVG.getFromInputStream(inStream)
+        var width = props?.resolveSize?.x ?: ceil(svg.documentViewBox.width()).toInt()
+        var height = props?.resolveSize?.y ?: ceil(svg.documentViewBox.height()).toInt()
+        if (width <= 0) {
+            width = 100
+        }
+        if (height <= 0) {
+            height = 100
+        }
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        svg.renderToCanvas(canvas)
+        return bitmap.toTextureData()
     }
 
     private fun Bitmap.toTextureData(): TextureData2d {
@@ -83,7 +106,6 @@ object PlatformAssetsImpl : PlatformAssets {
                 buffer.put(a.toByte())
             }
         }
-
         return TextureData2d(buffer, width, height, TexFormat.RGBA)
     }
 }

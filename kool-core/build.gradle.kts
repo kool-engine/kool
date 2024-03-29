@@ -78,7 +78,9 @@ kotlin {
             implementation(npm("file-saver", "2.0.4"))
         }
 
-        androidMain.dependencies { }
+        androidMain.dependencies {
+            implementation(libs.androidsvg)
+        }
     }
 
     sourceSets.all {
