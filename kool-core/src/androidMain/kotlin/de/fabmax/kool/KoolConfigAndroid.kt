@@ -19,8 +19,15 @@ data class KoolConfigAndroid(
      */
     override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
-    val forceFloatDepthBuffer: Boolean = true,
-    val numSamples: Int = 1,
+    val forceFloatDepthBuffer: Boolean = false,
+
+    /**
+     * With scaleModifier = 1, screen scale is computed to match Android's device independent pixels
+     * (i.e. scale = physical screen resolution / 160 dpi). scaleModifier can be used to easily adjust this scale
+     * for the entire app. This only affects the size of UI elements, render resolution remains unchanged.
+     */
+    val scaleModifier: Float = 1f,
+
     val surfaceView: GLSurfaceView? = null,
 ) : KoolConfig {
     companion object {

@@ -1,22 +1,19 @@
 package de.fabmax.kool.platform
 
 import android.opengl.GLSurfaceView
+import android.util.DisplayMetrics
 import de.fabmax.kool.KoolConfigAndroid
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.util.Log
-import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import java.util.*
+import kotlin.math.max
 
 typealias AndroidLog = android.util.Log
 
 class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
-    val surfaceView: GLSurfaceView = config.surfaceView ?: KoolSurfaceView(config.numSamples, config.appContext)
-
     override val backend: RenderBackendGlImpl
 
     override val windowWidth: Int
@@ -35,13 +32,20 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     init {
         check(!KoolSystem.isContextCreated) { "KoolContext was already created" }
 
-        // todo: set correct value
-        windowScale = 2f
+        val metrics = DisplayMetrics()
+        @Suppress("DEPRECATION")
+        config.appContext.display?.getMetrics(metrics)
+        windowScale = max(1f, metrics.densityDpi / 160f * config.scaleModifier)
+        logI { "window scale: $windowScale (screen dpi: ${metrics.densityDpi}, scale modifier: ${config.scaleModifier}, density: ${metrics.density})" }
 
         backend = RenderBackendGlImpl(this)
-        surfaceView.setRenderer(backend)
 
         KoolSystem.onContextCreated(this)
+    }
+
+    fun registerRenderer(surfaceView: GLSurfaceView) {
+        surfaceView.preserveEGLContextOnPause = true
+        surfaceView.setRenderer(backend)
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {

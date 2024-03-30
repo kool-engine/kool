@@ -9,7 +9,7 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class RenderBackendGlImpl(ctx: KoolContextAndroid) :
-    RenderBackendGl(KoolSystem.configAndroid.numSamples, GlImpl, ctx),
+    RenderBackendGl(1, GlImpl, ctx),
     GLSurfaceView.Renderer
 {
     private val androidCtx = ctx
@@ -26,6 +26,8 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
     private var timer: TimeQuery? = null
     override var frameGpuTime: Double = 0.0
 
+    private var isGlContextInitialized = false
+
     init {
         lateGlslGeneratorHints = GlslGenerator.Hints(glslVersionStr = "#version 300 es")
         sceneRenderer.resolveDirect = false
@@ -37,6 +39,13 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
     }
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig?) {
+        if (!isGlContextInitialized) {
+            initGlContext()
+            isGlContextInitialized = true
+        }
+    }
+
+    private fun initGlContext() {
         GlImpl.initOpenGl(this)
         lateGlslGeneratorHints = GlslGenerator.Hints(glslVersionStr = "#version ${GlImpl.version.major}${GlImpl.version.minor}0 es")
         setupGl()
