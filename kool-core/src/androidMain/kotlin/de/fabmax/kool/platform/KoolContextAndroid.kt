@@ -1,5 +1,7 @@
 package de.fabmax.kool.platform
 
+import android.content.Context
+import android.hardware.display.DisplayManager
 import android.opengl.GLSurfaceView
 import android.util.DisplayMetrics
 import de.fabmax.kool.KoolConfigAndroid
@@ -7,13 +9,18 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Log
+import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.logE
 import java.util.*
 import kotlin.math.max
 
 typealias AndroidLog = android.util.Log
 
 class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
+    val surfaceView: GLSurfaceView = config.surfaceView ?: KoolSurfaceView(config.appContext)
+
     override val backend: RenderBackendGlImpl
 
     override val windowWidth: Int
@@ -33,19 +40,26 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         check(!KoolSystem.isContextCreated) { "KoolContext was already created" }
 
         val metrics = DisplayMetrics()
+        val displayManager = config.appContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         @Suppress("DEPRECATION")
-        config.appContext.display?.getMetrics(metrics)
-        windowScale = max(1f, metrics.densityDpi / 160f * config.scaleModifier)
-        logI { "window scale: $windowScale (screen dpi: ${metrics.densityDpi}, scale modifier: ${config.scaleModifier}, density: ${metrics.density})" }
+        displayManager.displays[0].getMetrics(metrics)
 
+        windowScale = max(1f, metrics.density * config.scaleModifier)
         backend = RenderBackendGlImpl(this)
-
+        surfaceView.setRenderer(backend)
         KoolSystem.onContextCreated(this)
     }
 
-    fun registerRenderer(surfaceView: GLSurfaceView) {
-        surfaceView.preserveEGLContextOnPause = true
-        surfaceView.setRenderer(backend)
+    fun onPause() {
+        surfaceView.onPause()
+    }
+
+    fun onResume() {
+        surfaceView.onResume()
+    }
+
+    fun onDestroy() {
+        KoolSystem.destroyContext()
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {

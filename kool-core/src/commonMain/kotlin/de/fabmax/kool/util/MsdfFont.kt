@@ -151,6 +151,7 @@ class MsdfFont(
                 name = "MsdfFont:${fontInfo.fontMeta.name}",
                 loader = AsyncTextureLoader { Assets.loadTextureData("fonts/font-roboto-regular.png", MSDF_TEX_PROPS) }
             )
+            KoolSystem.onDestroyContext += { msdfMap.dispose() }
             MsdfFontData(msdfMap, fontInfo.fontMeta)
         }
         val DEFAULT_FONT: MsdfFont by lazy { MsdfFont(DEFAULT_FONT_DATA) }

@@ -1,11 +1,14 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.MsdfFontInfo
 
 object KoolSystem {
     private var initConfig: KoolConfig? = null
     private var defaultContext: KoolContext? = null
     private val properties: PlatformProperties = PlatformProperties()
+
+    internal val onDestroyContext = mutableListOf<() -> Unit>()
 
     val platform: Platform
         get() = properties.platform
@@ -25,6 +28,14 @@ object KoolSystem {
         }
         initConfig = config
         isInitialized = true
+    }
+
+    internal fun destroyContext() {
+        initConfig = null
+        defaultContext = null
+        isInitialized = false
+        BackendStats.onDestroy()
+        onDestroyContext.forEach { it() }
     }
 
     internal fun onContextCreated(ctx: KoolContext) {

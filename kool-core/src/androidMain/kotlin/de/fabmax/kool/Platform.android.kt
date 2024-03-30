@@ -15,6 +15,6 @@ fun createKoolContext(config: KoolConfigAndroid): KoolContextAndroid {
 }
 
 fun Activity.createDefaultKoolContext(): KoolContextAndroid {
-    val ctx = createKoolContext(KoolConfigAndroid(this))
+    val ctx = createKoolContext(KoolConfigAndroid(applicationContext))
     return ctx
 }

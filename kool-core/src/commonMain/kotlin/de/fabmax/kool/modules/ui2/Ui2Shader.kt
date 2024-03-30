@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ui2
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
@@ -57,5 +58,9 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
             cullMethod = CullMethod.NO_CULLING,
             depthTest = DepthCompareOp.ALWAYS
         )
+
+        init {
+            KoolSystem.onDestroyContext += { noFontTex.dispose() }
+        }
     }
 }
