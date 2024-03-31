@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
@@ -180,6 +181,10 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
 
     companion object {
         private val loadedTextures = mutableMapOf<TextureData, LoadedTextureGl>()
+
+        init {
+            KoolSystem.onDestroyContext += { loadedTextures.clear() }
+        }
 
         internal fun getLoadedTex(texData: TextureData, texture: Texture, backend: RenderBackendGl): LoadedTextureGl {
             loadedTextures.values.removeAll { it.isReleased }

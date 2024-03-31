@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClip
+import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
@@ -34,8 +35,10 @@ object Assets : CoroutineScope {
     /**
      * Returns the (cached or newly created) [FontMap] / texture for the given [AtlasFont] and display scale.
      */
+    @Deprecated("getOrCreateAtlasFontMap() is deprecated, use superior MsdfFont instead of AtlasFont")
     fun getOrCreateAtlasFontMap(font: AtlasFont, fontScale: Float): FontMap {
         return loadedAtlasFontMaps.getOrPut(font) {
+            @Suppress("DEPRECATION")
             updateAtlasFontMap(font, fontScale)
         }
     }
@@ -44,9 +47,11 @@ object Assets : CoroutineScope {
      * Updates the [FontMap] / texture for the given [AtlasFont] to match the given display scale. This is an expensive
      * operation as the font is rendered into a new image and the underlying font map texture is updated.
      */
+    @Deprecated("updateAtlasFontMap() is deprecated, use superior MsdfFont instead of AtlasFont")
     fun updateAtlasFontMap(font: AtlasFont, fontScale: Float): FontMap {
         var map = font.map
         val metrics = mutableMapOf<Char, CharMetrics>()
+        @Suppress("DEPRECATION")
         val texData = createAtlasFontMapData(font, fontScale, metrics)
 
         if (map == null) {
@@ -72,6 +77,7 @@ object Assets : CoroutineScope {
      * Renders the given [AtlasFont] into a new image and stores the individual character metrics into the
      * [outMetrics] map. This function is usually not called directly (but you can if you want to).
      */
+    @Deprecated("createAtlasFontMapData() is deprecated, use superior MsdfFont instead of AtlasFont")
     fun createAtlasFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
         return platformAssets.createFontMapData(font, fontScale, outMetrics)
     }
@@ -323,7 +329,7 @@ object Assets : CoroutineScope {
     suspend fun loadAudioClip(assetPath: String): AudioClip = defaultLoader.loadAudioClip(assetPath)
 }
 
-expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader
+expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader
 
 expect suspend fun decodeDataUri(dataUri: String): Uint8Buffer
 
@@ -335,6 +341,7 @@ internal interface PlatformAssets {
     suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData
 
     suspend fun waitForFonts()
+
     fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
 
     suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile>

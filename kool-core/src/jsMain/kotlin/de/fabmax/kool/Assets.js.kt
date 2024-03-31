@@ -1,6 +1,9 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
+import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderJs
+import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
@@ -26,6 +29,8 @@ import org.w3c.files.get
 import kotlin.js.Promise
 
 internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
+
+actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader = FileSystemAssetLoaderJs(baseDir)
 
 object PlatformAssetsImpl : PlatformAssets {
 

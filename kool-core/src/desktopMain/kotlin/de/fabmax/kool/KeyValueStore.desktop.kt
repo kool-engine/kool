@@ -56,6 +56,7 @@ object JvmKeyValueStore : PlatformKeyValueStore {
             FileOutputStream(File(storageDir, key)).use { it.write(data.toArray()) }
             true
         } catch (e: IOException) {
+            logE { "Failed writing blob [key = $key]. Key must be a valid file name!" }
             e.printStackTrace()
             false
         }

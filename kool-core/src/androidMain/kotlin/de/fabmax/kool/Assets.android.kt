@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.util.Base64
 import com.caverock.androidsvg.SVG
+import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
+import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderAndroid
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData
@@ -20,35 +22,11 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlin.math.ceil
 
-
-actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader {
-    TODO("Not yet implemented")
-}
-
 internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
 
+actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader = FileSystemAssetLoaderAndroid(baseDir)
+
 object PlatformAssetsImpl : PlatformAssets {
-
-    override suspend fun waitForFonts() {
-        // on JVM all fonts should be immediately available -> nothing to wait for
-    }
-
-    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
-        TODO("AtlasFont is not yet supported on Android, use MsdfFont instead")
-    }
-
-    override suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
-        TODO("loadFileByUser")
-    }
-
-    override suspend fun saveFileByUser(
-        data: Uint8Buffer,
-        defaultFileName: String?,
-        filterList: List<FileFilterItem>,
-        mimeType: String
-    ): String? {
-        TODO("saveFileByUser")
-    }
 
     override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
         return withContext(Dispatchers.IO) {
@@ -65,7 +43,7 @@ object PlatformAssetsImpl : PlatformAssets {
                     if (props?.resolveSize != null) {
                         bmp = Bitmap.createScaledBitmap(bmp, props.resolveSize.x, props.resolveSize.y, true)
                     }
-                    bmp.toTextureData()
+                    bmp.toTextureData().also { bmp.recycle() }
                 }
             }
         }
@@ -85,7 +63,7 @@ object PlatformAssetsImpl : PlatformAssets {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         svg.renderToCanvas(canvas)
-        return bitmap.toTextureData()
+        return bitmap.toTextureData().also { bitmap.recycle() }
     }
 
     private fun Bitmap.toTextureData(): TextureData2d {
@@ -107,6 +85,22 @@ object PlatformAssetsImpl : PlatformAssets {
             }
         }
         return TextureData2d(buffer, width, height, TexFormat.RGBA)
+    }
+
+    override suspend fun waitForFonts() {
+        // on JVM all fonts should be immediately available -> nothing to wait for
+    }
+
+    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+        error("AtlasFont is not supported on Android, use MsdfFont instead")
+    }
+
+    override suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
+        error("File choosing is not supported on Android")
+    }
+
+    override suspend fun saveFileByUser(data: Uint8Buffer, defaultFileName: String?, filterList: List<FileFilterItem>, mimeType: String): String? {
+        error("File choosing is not supported on Android")
     }
 }
 
