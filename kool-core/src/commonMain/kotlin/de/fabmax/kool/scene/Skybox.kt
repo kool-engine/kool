@@ -101,7 +101,7 @@ object Skybox {
                                 float4Value(0f.const, 0f.const, 0f.const, 1f.const),
                             )
                         )
-                        outPosition set (cam.projMat * viewRot * float4Value(localPos, 1f))
+                        outPosition set (cam.projMat * viewRot * float4Value(localPos * cam.clipNear * 5f.const, 1f))
                     }
                 }
                 fragmentStage {
