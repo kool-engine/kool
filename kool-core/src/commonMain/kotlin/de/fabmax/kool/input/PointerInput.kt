@@ -1,13 +1,12 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.logE
 
 object PointerInput {
 
     const val MAX_POINTERS = 10
 
-    private var lastPtrInput = 0.0
     private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
 
     private val platformInput = PlatformInput()
@@ -28,7 +27,7 @@ object PointerInput {
     internal fun onNewFrame(ctx: KoolContext) {
         platformInput.applyCursorShape(cursorShape)
         cursorShape = CursorShape.DEFAULT
-        pointerState.onNewFrame(inputPointers, lastPtrInput, ctx)
+        pointerState.onNewFrame(inputPointers, ctx)
     }
 
     private fun getFreeInputPointer(): BufferedPointerInput? {
@@ -50,14 +49,26 @@ object PointerInput {
     }
 
     internal fun handleTouchStart(pointerId: Int, x: Double, y: Double) {
-        lastPtrInput = Time.precisionTime
         val inPtr = getFreeInputPointer() ?: return
         inPtr.startPointer(pointerId, x, y)
-        inPtr.buttonMask = 1
+
+        if (pointerId == 0) {
+            inPtr.enqueueButtonEvent(0, true)
+        }
     }
 
     internal fun handleTouchEnd(pointerId: Int) {
-        findInputPointer(pointerId)?.endPointer()
+        val inPtr = findInputPointer(pointerId)
+        if (inPtr == null) {
+            logE { "Pointer not found: $pointerId" }
+            inputPointers.forEach { it.cancelPointer() }
+            return
+        }
+
+        inPtr.endPointer()
+        if (pointerId == 0) {
+            inPtr.enqueueButtonEvent(0, false)
+        }
     }
 
     internal fun handleTouchCancel(pointerId: Int) {
@@ -65,7 +76,6 @@ object PointerInput {
     }
 
     internal fun handleTouchMove(pointerId: Int, x: Double, y: Double) {
-        lastPtrInput = Time.precisionTime
         findInputPointer(pointerId)?.movePointer(x, y)
     }
 
@@ -74,7 +84,6 @@ object PointerInput {
     //
 
     internal fun handleMouseMove(x: Double, y: Double) {
-        lastPtrInput = Time.precisionTime
         val mousePtr = findInputPointer(MOUSE_POINTER_ID)
         if (mousePtr == null) {
             val startPtr = getFreeInputPointer() ?: return

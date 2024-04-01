@@ -4,8 +4,8 @@ import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
-import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
@@ -85,20 +85,23 @@ object Skybox {
                 val orientedPos = interStageFloat3()
                 vertexStage {
                     main {
-                        val mvpMat = mvpMatrix().matrix
+                        val cam = cameraData()
                         val skyOrientation = uniformMat3("uSkyOrientation")
                         val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
                         orientedPos.input set skyOrientation * localPos
 
-                        if (isInfiniteDepth) {
-                            // infinite depth comes with reversed depth, so we need clip z to be 0. i.e. the xyww
-                            // trick does not work here. On the upside we have practically infinite range so simple
-                            // scale the position to some *large* value.
-                            outPosition set (mvpMat * float4Value(localPos * 1e16f.const, 1f))
-                        } else {
-                            // by using xyww as output position clip depth is guaranteed to be w/w = 1 -> maximum depth
-                            outPosition set (mvpMat * float4Value(localPos, 0f)).float4("xyww")
-                        }
+                        val rotX = float3Var(normalize(cam.viewMat[0].xyz))
+                        val rotY = float3Var(normalize(cam.viewMat[1].xyz))
+                        val rotZ = float3Var(normalize(cam.viewMat[2].xyz))
+                        val viewRot = mat4Var(
+                            mat4Value(
+                                float4Value(rotX, 0f.const),
+                                float4Value(rotY, 0f.const),
+                                float4Value(rotZ, 0f.const),
+                                float4Value(0f.const, 0f.const, 0f.const, 1f.const),
+                            )
+                        )
+                        outPosition set (cam.projMat * viewRot * float4Value(localPos, 1f))
                     }
                 }
                 fragmentStage {
@@ -111,6 +114,7 @@ object Skybox {
                             color += sampleTexture(skies[1], orientedPos.output, texLod).rgb * skyWeights.y
                         }
                         colorOutput(convertColorSpace(color, colorSpaceConversion), 1f.const)
+                        outDepth set if (isInfiniteDepth) 0f.const else 1f.const
                     }
                 }
             }

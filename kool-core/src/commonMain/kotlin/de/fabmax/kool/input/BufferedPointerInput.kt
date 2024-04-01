@@ -94,8 +94,6 @@ internal class BufferedPointerInput : Pointer() {
             this.x = x
             this.y = y
         }
-
-        lastUpdate = Time.precisionTime
     }
 
     fun endPointer() {
@@ -120,12 +118,7 @@ internal class BufferedPointerInput : Pointer() {
         isValid = false
     }
 
-    fun update(target: Pointer, t: Double) {
-        if (updateState != UpdateState.INVALID && t - lastUpdate > 200) {
-            logW { "Pointer $id timed out!" }
-            cancelPointer()
-        }
-
+    fun update(target: Pointer) {
         processPointerEvents()
 
         target.id = id

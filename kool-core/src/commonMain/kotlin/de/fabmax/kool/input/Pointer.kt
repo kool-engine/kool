@@ -136,6 +136,10 @@ open class Pointer {
         return (isValid) && viewport.isInViewport(x.toFloat(), ptrY.toFloat())
     }
 
+    override fun toString(): String {
+        return "{ id: $id, x: $x, y: $y }"
+    }
+
     private fun updateButtonDownTimes() {
         val downEvents = buttonEventMask and buttonMask
         for (i in buttonDownTimes.indices) {

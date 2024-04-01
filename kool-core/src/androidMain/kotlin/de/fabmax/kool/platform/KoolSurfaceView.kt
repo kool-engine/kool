@@ -4,6 +4,7 @@ import android.content.Context
 import android.opengl.EGLExt.EGL_OPENGL_ES3_BIT_KHR
 import android.opengl.GLSurfaceView
 import android.opengl.GLSurfaceView.EGLConfigChooser
+import de.fabmax.kool.input.PlatformInputAndroid
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logE
 import javax.microedition.khronos.egl.EGL10
@@ -18,6 +19,8 @@ class KoolSurfaceView(context: Context) : GLSurfaceView(context) {
         //if (numSamples > 1) {
         //    setEGLConfigChooser(KoolConfigChooser(numSamples))
         //}
+
+        setOnTouchListener(PlatformInputAndroid)
     }
 }
 
