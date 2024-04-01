@@ -12,6 +12,7 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.util.AtlasFont
 import de.fabmax.kool.util.CharMetrics
 import de.fabmax.kool.util.Uint8Buffer
@@ -19,6 +20,7 @@ import de.fabmax.kool.util.Uint8BufferImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.io.InputStream
 import kotlin.math.ceil
 
@@ -27,6 +29,10 @@ internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
 actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader = FileSystemAssetLoaderAndroid(baseDir)
 
 object PlatformAssetsImpl : PlatformAssets {
+
+    init {
+        HttpCache.initCache(File(KoolSystem.configAndroid.appContext.cacheDir, "httpCache"))
+    }
 
     override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
         return withContext(Dispatchers.IO) {

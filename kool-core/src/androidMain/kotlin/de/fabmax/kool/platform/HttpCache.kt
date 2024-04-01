@@ -154,6 +154,7 @@ class HttpCache private constructor(private val cacheDir: File) {
         }
 
         return if (file.canRead()) {
+            file.setLastModified(System.currentTimeMillis())
             synchronized(cache) {
                 cache[file]?.lastAccess = System.currentTimeMillis()
             }
@@ -174,7 +175,7 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     companion object {
-        private const val MAX_CACHE_SIZE = 1024L * 1024L * 1024L
+        private const val MAX_CACHE_SIZE = 128L * 1024L * 1024L
         private var instance: HttpCache? = null
 
         private val credentialsMap = mutableMapOf<String, BasicAuthCredentials>()

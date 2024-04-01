@@ -3,6 +3,8 @@ package de.fabmax.kool.modules.audio
 import android.content.Context
 import android.media.MediaPlayer
 import android.net.Uri
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configAndroid
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
 import java.io.File
@@ -12,8 +14,14 @@ import kotlin.math.roundToInt
 
 fun AudioClipImpl(inStream: InputStream, srcPath: String, context: Context): AudioClipImpl {
     val tempName = srcPath.replace('/', '_').replace('.', '_')
-    val tempFile = File.createTempFile(tempName, ".cached")
-    FileOutputStream(tempFile).use { outStream -> inStream.copyTo(outStream) }
+    val audioCacheDir = File(KoolSystem.configAndroid.appContext.cacheDir, "audioClips")
+    if (!audioCacheDir.exists()) {
+        audioCacheDir.mkdirs()
+    }
+    val tempFile = File(audioCacheDir, tempName)
+    if (!tempFile.exists()) {
+        FileOutputStream(tempFile).use { outStream -> inStream.copyTo(outStream) }
+    }
     return AudioClipImpl(Uri.fromFile(tempFile), context)
 }
 

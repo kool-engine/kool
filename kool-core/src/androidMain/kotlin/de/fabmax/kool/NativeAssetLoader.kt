@@ -3,12 +3,14 @@ package de.fabmax.kool
 import de.fabmax.kool.modules.audio.AudioClipImpl
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.platform.imageAtlasTextureData
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.FileInputStream
 import java.io.InputStream
 
 class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
@@ -33,11 +35,19 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
     }
 
     private suspend fun loadHttpBlob(httpRawRef: BlobAssetRef): LoadedBlobAsset {
-        val data: Uint8Buffer? = if (httpRawRef.path.startsWith("data:", true)) {
-            decodeDataUri(httpRawRef.path)
+        var data: Uint8Buffer? = null
+        if (httpRawRef.path.startsWith("data:", true)) {
+            data = decodeDataUri(httpRawRef.path)
         } else {
-            logE { "http asset loading not implemented on Android" }
-            null
+            withContext(Dispatchers.IO) {
+                try {
+                    HttpCache.loadHttpResource(httpRawRef.path)?.let { f ->
+                        FileInputStream(f).use { data = Uint8BufferImpl(it.readBytes()) }
+                    }
+                } catch (e: Exception) {
+                    logE { "Failed loading asset ${httpRawRef.path}: $e" }
+                }
+            }
         }
         return LoadedBlobAsset(httpRawRef, data)
     }
@@ -77,8 +87,7 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
     override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
         val data: TextureData2d? = withContext(Dispatchers.IO) {
             if (textureData2dRef.isHttp) {
-                logE { "loadHttpTexture not yet implemented" }
-                null
+                loadHttpTexture(textureData2dRef.path, textureData2dRef.props)
             } else {
                 loadLocalTexture(textureData2dRef.path, textureData2dRef.props)
             }
@@ -102,6 +111,19 @@ class NativeAssetLoader(val basePath: String = "") : AssetLoader() {
         return openLocalStream(path)?.use {
             try {
                 PlatformAssetsImpl.readImageData(it, MimeType.forFileName(path), props)
+            } catch (e: Exception) {
+                logE { "Failed reading image at $path: $e" }
+                null
+            }
+        }
+    }
+
+    private fun loadHttpTexture(path: String, props: TextureProps?): TextureData2d? {
+        return HttpCache.loadHttpResource(path)?.let { f ->
+            try {
+                FileInputStream(f).use { data ->
+                    PlatformAssetsImpl.readImageData(data, MimeType.forFileName(path), props)
+                }
             } catch (e: Exception) {
                 logE { "Failed reading image at $path: $e" }
                 null
