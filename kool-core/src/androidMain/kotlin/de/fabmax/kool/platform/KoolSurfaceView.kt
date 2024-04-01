@@ -20,7 +20,10 @@ class KoolSurfaceView(context: Context) : GLSurfaceView(context) {
         //    setEGLConfigChooser(KoolConfigChooser(numSamples))
         //}
 
+        isFocusable = true
+        isFocusableInTouchMode = true
         setOnTouchListener(PlatformInputAndroid)
+        setOnKeyListener(PlatformInputAndroid)
     }
 }
 

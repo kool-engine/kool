@@ -9,7 +9,7 @@ object PointerInput {
 
     private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
 
-    private val platformInput = PlatformInput()
+    internal val platformInput = PlatformInput()
 
     val pointerState = PointerState()
     val primaryPointer: Pointer get() = pointerState.primaryPointer
@@ -142,6 +142,9 @@ internal expect fun PlatformInput(): PlatformInput
 internal interface PlatformInput {
     fun setCursorMode(cursorMode: CursorMode)
     fun applyCursorShape(cursorShape: CursorShape)
+
+    fun requestKeyboard() { }
+    fun hideKeyboard() { }
 }
 
 enum class CursorMode {

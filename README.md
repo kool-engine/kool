@@ -3,7 +3,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
 ![Build](https://github.com/fabmax/kool/workflows/Build/badge.svg)
 
-A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop Java and browsers.
+A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop Java, Android and browsers.
 
 I started working on a graphical scene editor.
 The editor is still in an early state and not very useful yet, but you can try the [Web Demo](https://fabmax.github.io/kool/kool-editor/)
@@ -69,24 +69,24 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
 Code for all demos is available in kool-demo sub-project.
 
-By default, the demos use the WebGPU backend and fall back to WebGL if WebGPU is not supported by your browser. The
+By default, the web demos use the WebGPU backend and fall back to WebGL if WebGPU is not supported by your browser. The
 used backend is printed in the extended info-panel in the lower right corner (click on the little `+`), apart from
 that there shouldn't be much visible difference in the WebGL and WebGPU backends. You can also force a certain backend
 by appending `&backend=webgpu` or `&backend=webgl` to the URL.
 
 ## Platform Support
 
-| Platform    | Backend | Implementation Status                |
-|-------------|---------|--------------------------------------|
-| Desktop JVM | OpenGL  | :white_check_mark: Fully working     |
-| Desktop JVM | Vulkan  | :x: Not working (under construction) |
-| Browser     | WebGL 2 | :white_check_mark: Fully working     |
-| Browser     | WebGPU  | :white_check_mark: Fully working     |
-| Android     | -       | :x: Not yet implemented              |
+| Platform    | Backend     | Implementation Status                                                |
+|-------------|-------------|----------------------------------------------------------------------|
+| Desktop JVM | OpenGL      | :white_check_mark: Fully working                                     |
+| Desktop JVM | Vulkan      | :x: Not working (under construction)                                 |
+| Browser     | WebGL 2     | :white_check_mark: Fully working                                     |
+| Browser     | WebGPU      | :white_check_mark: Fully working                                     |
+| Android     | OpenGL ES 3 | :eight_spoked_asterisk: kool-core fully working (but no physics yet) |
 
-WebGPU support is new and I took the chance to renovate the entire backend architecture (it's better than ever now!).
-However, to maintain a minimum degree of sanity, I disabled the Vulkan backend for the moment - I will re-enable it
-once things have stabilized. 
+Android support is very new and only available for `kool-core` for now. Therefore, the demos don't work on Android yet
+(because they also require `kool-physics`). However, there's a basic [kool-android-template](https://github.com/fabmax/kool-templates)
+project with a minimal kool Android app.
 
 ## Usage
 
