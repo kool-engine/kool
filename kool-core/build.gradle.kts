@@ -3,7 +3,7 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    //alias(commonLibs.plugins.androidLibrary)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinAtomicFu)
@@ -14,18 +14,15 @@ plugins {
 }
 
 kotlin {
+    androidTarget {
+        publishLibraryVariants("release", "debug")
+    }
     jvm("desktop") { }
+    jvmToolchain(11)
+
     js(IR) {
         browser { }
     }
-
-    //androidTarget {
-    //    compilations.all {
-    //        kotlinOptions {
-    //            jvmTarget = "1.8"
-    //        }
-    //    }
-    //}
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
@@ -81,7 +78,9 @@ kotlin {
             implementation(npm("file-saver", "2.0.4"))
         }
 
-        //androidMain.dependencies { }
+        androidMain.dependencies {
+            implementation(libs.androidsvg)
+        }
     }
 
     sourceSets.all {
@@ -94,18 +93,24 @@ kotlin {
     }
 }
 
-//android {
-//    namespace = "de.fabmax.kool"
-//    compileSdk = commonLibs.versions.android.compileSdk.get().toInt()
-//
-//    defaultConfig {
-//        minSdk = commonLibs.versions.android.minSdk.get().toInt()
-//    }
-//    compileOptions {
-//        sourceCompatibility = JavaVersion.VERSION_1_8
-//        targetCompatibility = JavaVersion.VERSION_1_8
-//    }
-//}
+android {
+    namespace = "de.fabmax.kool"
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
+
+    defaultConfig {
+        minSdk = libs.versions.android.minSdk.get().toInt()
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    externalNativeBuild {
+        cmake {
+            path = file("src/androidMain/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+}
 
 tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleAndIntVariants") {
     filesToUpdate = kotlin.sourceSets.findByName("commonMain")?.kotlin

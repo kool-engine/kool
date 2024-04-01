@@ -1,5 +1,7 @@
 [versions]
-agp = "8.1.4"
+agp = "8.2.0"
+android-compileSdk = "34"
+android-minSdk = "28"
 kotlin = "2.0.0-Beta5"
 kotlin-coroutines = "1.8.0"
 kotlin-serialization = "1.6.3"
@@ -7,6 +9,7 @@ kotlin-atomicfu = "0.23.2"
 kotlin-dokka = "1.9.20"
 lwjgl = "3.3.3"
 jsvg = "1.4.0"
+androidsvg = "1.4"
 physxjni = "2.3.2"
 
 [libraries]
@@ -18,6 +21,7 @@ kotlin-atomicfu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }
 jsvg = { group = "com.github.weisj", name = "jsvg", version.ref = "jsvg" }
+androidsvg = { group = "com.caverock", name = "androidsvg-aar", version.ref = "androidsvg" }
 lwjgl-core = { group = "org.lwjgl", name = "lwjgl", version.ref = "lwjgl" }
 lwjgl-glfw = { group = "org.lwjgl", name = "lwjgl-glfw", version.ref = "lwjgl" }
 lwjgl-jemalloc = { group = "org.lwjgl", name = "lwjgl-jemalloc", version.ref = "lwjgl" }

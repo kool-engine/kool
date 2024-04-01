@@ -29,9 +29,6 @@ class JsContext internal constructor() : KoolContext() {
     override var backend: RenderBackendJs
         private set
 
-    override val isJavascript = true
-    override val isJvm = false
-
     val pixelRatio: Double
         get() = min(KoolSystem.configJs.deviceScaleLimit, window.devicePixelRatio)
 

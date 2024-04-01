@@ -103,7 +103,7 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     }
 
     private fun loadLocalTexture(path: String, props: TextureProps?): TextureData2d? {
-        return openLocalStream(path)?.let {
+        return openLocalStream(path)?.use {
             try {
                 PlatformAssetsImpl.readImageData(it, MimeType.forFileName(path), props)
             } catch (e: Exception) {
@@ -116,7 +116,9 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     private fun loadHttpTexture(path: String, props: TextureProps?): TextureData2d? {
         return HttpCache.loadHttpResource(path)?.let { f ->
             try {
-                PlatformAssetsImpl.readImageData(FileInputStream(f), MimeType.forFileName(path), props)
+                FileInputStream(f).use { data ->
+                    PlatformAssetsImpl.readImageData(data, MimeType.forFileName(path), props)
+                }
             } catch (e: Exception) {
                 logE { "Failed reading image at $path: $e" }
                 null

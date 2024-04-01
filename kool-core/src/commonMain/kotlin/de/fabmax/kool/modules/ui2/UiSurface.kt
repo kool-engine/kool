@@ -89,6 +89,19 @@ open class UiSurface(
                     requiresUpdate = false
                     updateUi(it)
                 }
+
+                if (isFocused.value) {
+                    val focused = inputHandler.focusedNode as? UiNode?
+                    focused?.let { focusedNd ->
+                        val ptr = PointerInput.primaryPointer
+                        if (ptr.isAnyButtonEvent) {
+                            val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
+                            if (!focusedNd.isInBounds(ptrPos)) {
+                                requestFocus(null)
+                            }
+                        }
+                    }
+                }
             } else {
                 InputStack.remove(inputHandler)
             }
@@ -168,6 +181,15 @@ open class UiSurface(
 
     fun requestFocus(focusable: Focusable?) {
         inputHandler.requestFocus(focusable)
+
+        // todo: replace this by something better
+        //  - other nodes may want to show keyboard as well
+        //  - non-editable text fields / text areas should not show the keyboard
+        if (focusable is TextFieldNode || focusable is TextAreaNode) {
+            KeyboardInput.requestKeyboard()
+        } else {
+            KeyboardInput.hideKeyboard()
+        }
     }
 
     fun unfocus(focusable: Focusable) {
@@ -277,10 +299,11 @@ open class UiSurface(
 
     inner class UiInputHandler : InputStack.InputHandler(name) {
         private val nodeResult = mutableListOf<UiNode>()
-        private var focusedNode: Focusable? = null
         private var hoveredNode: UiNode? = null
         private var wasDrag = false
         private var dragNode: UiNode? = null
+
+        internal var focusedNode: Focusable? = null
 
         private var isCapturePointer = false
 

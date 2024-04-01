@@ -9,8 +9,6 @@ class TestKoolContext(
     override val backend: RenderBackend = MockBackend()
 ) : KoolContext() {
 
-    override val isJavascript: Boolean = false
-    override val isJvm: Boolean = true
     override val windowWidth: Int = 1600
     override val windowHeight: Int = 900
     override var isFullscreen: Boolean = false

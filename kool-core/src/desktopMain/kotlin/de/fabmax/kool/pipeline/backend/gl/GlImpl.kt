@@ -246,7 +246,7 @@ object GlImpl : GlApi {
     override fun texImage1d(target: Int, data: TextureData) = texImage2dImpl(target, data)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
     override fun texImage2d(target: Int, data: TextureData) = texImage2dImpl(target, data)
-    override fun texImage3d(target: Int, data: TextureData) = textImage3dImpl(target, data)
+    override fun texImage3d(target: Int, data: TextureData) = texImage3dImpl(target, data)
     override fun texParameteri(target: Int, pName: Int, param: Int) = glTexParameteri(target, pName, param)
     override fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = glTexStorage2D(target, levels, internalformat, width, height)
     override fun uniformBlockBinding(program: GlProgram, uniformBlockIndex: Int, uniformBlockBinding: Int) = glUniformBlockBinding(program.handle, uniformBlockIndex, uniformBlockBinding)
@@ -355,19 +355,21 @@ object GlImpl : GlApi {
 
     private fun checkApiVersion(): GlApiVersion {
         val versionStr = glGetString(GL_VERSION) ?: ""
-        var major = 0
-        var minor = 0
-        if (versionStr.matches(Regex("^[0-9]\\.[0-9].*"))) {
-            val parts = versionStr.split(Regex("[^0-9]"), 3)
-            major = parts[0].toInt()
-            minor = parts[1].toInt()
+        val match = Regex("\\D*([0-9])\\.([0-9]).*").find(versionStr)
+        if (match == null) {
+            logE { "Failed parsing OpenGL version string: \"$versionStr\" - assuming version 3.3" }
         }
-        if (major < 3 || (major == 3 && minor < 3)) {
-            throw RuntimeException("Minimum required OpenGL version is 3.3 but system version is $major.$minor")
+
+        val major = match?.groups?.get(1)?.value?.toInt() ?: 3
+        val minor = match?.groups?.get(2)?.value?.toInt() ?: 3
+        logI { "Detected OpenGL version $major.$minor" }
+
+        check(major > 3 || (major == 3 && minor >= 3)) {
+            "Minimum required OpenGL version is 3.3 but system version is $major.$minor (version string: $versionStr)"
         }
 
         val deviceName = glGetString(GL_RENDERER) ?: "<unknown>"
-        return GlApiVersion(major, minor, GlFlavor.OpenGL, versionStr, deviceName)
+        return GlApiVersion(major, minor, GlFlavor.OpenGL, deviceName)
     }
 
     private fun getActiveUniformsImpl(program: GlProgram, uniformIndices: IntArray, pName: Int): IntArray {
@@ -396,7 +398,7 @@ object GlImpl : GlApi {
         }
     }
 
-    private fun textImage1dImpl(target: Int, img: TextureData) {
+    private fun texImage1dImpl(target: Int, img: TextureData) {
         when (val buf = img.data) {
             is Uint8BufferImpl -> buf.useRaw {
                 glTexImage1D(target, 0, img.format.glInternalFormat(this), img.width, 0, img.format.glFormat(this), img.format.glType(this), it)
@@ -450,7 +452,7 @@ object GlImpl : GlApi {
         }
     }
 
-    private fun textImage3dImpl(target: Int, img: TextureData) {
+    private fun texImage3dImpl(target: Int, img: TextureData) {
         when (val buf = img.data) {
             is Uint8BufferImpl -> buf.useRaw {
                 glTexImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), it)

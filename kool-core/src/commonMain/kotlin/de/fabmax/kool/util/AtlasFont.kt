@@ -58,6 +58,7 @@ class AtlasFont(
         return "AtlasFont { family: $family, size: $sizePts, style: $style, isExternalMap: $isExternalMap }"
     }
 
+    @Suppress("DEPRECATION")
     fun getOrLoadFontMap(scale: Float): FontMap {
         if (isExternalMap) {
             return map ?: throw IllegalStateException("External font map has not yet been set for font $this")

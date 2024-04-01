@@ -14,7 +14,7 @@ class PointerState {
      */
     val primaryPointer = pointers[0]
 
-    fun getActivePointers(result: MutableList<Pointer>, consumedMask: Int = PointerInput.CONSUMED_ALL) {
+    fun getActivePointers(result: MutableList<Pointer>, consumedMask: Int = PointerInput.CONSUMED_ALL): List<Pointer> {
         result.clear()
         // pointers.filter { it.isValid }.forEach { result.add(it) }
         for (i in pointers.indices) {
@@ -22,11 +22,12 @@ class PointerState {
                 result.add(pointers[i])
             }
         }
+        return result
     }
 
-    internal fun onNewFrame(inputPointers: Array<BufferedPointerInput>, lastPtrInput: Double, ctx: KoolContext) {
+    internal fun onNewFrame(inputPointers: Array<BufferedPointerInput>, ctx: KoolContext) {
         for (i in pointers.indices) {
-            inputPointers[i].update(pointers[i], lastPtrInput)
+            inputPointers[i].update(pointers[i])
         }
 
         if (PointerInput.isEvaluatingCompatGestures) {

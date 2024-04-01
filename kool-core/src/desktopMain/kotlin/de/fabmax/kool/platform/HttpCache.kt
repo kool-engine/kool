@@ -106,7 +106,7 @@ class HttpCache private constructor(private val cacheDir: File) {
 
             var rmCnt = 0
             while (!removeQueue.isEmpty() && cacheSize > MAX_CACHE_SIZE * 0.8) {
-                val rmEntry = removeQueue.poll()
+                val rmEntry = removeQueue.poll()!!
                 rmEntry.file.delete()
                 logD { "Deleted from cache: ${rmEntry.file}" }
                 synchronized(cache) {
@@ -165,7 +165,7 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     private fun InputStream.copyTo(file: File): Long {
-        file.parentFile.mkdirs()
+        file.parentFile?.mkdirs()
         return use { inStream ->
             FileOutputStream(file).use { outStream ->
                 inStream.copyTo(outStream, 4096)

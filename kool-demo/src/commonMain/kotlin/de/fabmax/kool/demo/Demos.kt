@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.Platform
 import de.fabmax.kool.demo.Demos.PlatformFilter
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
@@ -28,7 +29,7 @@ object Demos {
 
     private val AllPlatforms = PlatformFilter { true }
     private val NeedsComputeShaders = PlatformFilter { KoolSystem.requireContext().backend.hasComputeShaders }
-    private val NonJavascript = PlatformFilter { !KoolSystem.isJavascript }
+    private val NonJavascript = PlatformFilter { KoolSystem.platform != Platform.JAVASCRIPT }
     private val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
     private val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
 

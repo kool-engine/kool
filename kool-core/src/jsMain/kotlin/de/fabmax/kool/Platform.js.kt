@@ -3,35 +3,30 @@ package de.fabmax.kool
 import de.fabmax.kool.platform.JsContext
 import org.w3c.dom.HTMLCanvasElement
 
-/**
- * Javascript / WebGL platform implementation
- *
- * @author fabmax
- */
-
-actual fun defaultKoolConfig(): KoolConfig = KoolConfigJs()
+actual fun Double.toString(precision: Int): String {
+    return when {
+        this.isNaN() -> "NaN"
+        this.isInfinite() -> "Infinity"
+        else -> asDynamic().toFixed(precision).toString()
+    }
+}
 
 val KoolSystem.configJs: KoolConfigJs get() = config as KoolConfigJs
 
 /**
- * Creates a new [KoolContext] based on the [KoolConfig] provided by [KoolSystem]. [KoolSystem.initialize] has to be
- * called before invoking this function.
+ * Creates a new [KoolContext] with the given [KoolConfigJs]. Notice that there can only be one [KoolContext], calling
+ * this method multiple times is an error.
  */
-actual fun createContext(config: KoolConfig): KoolContext {
+fun createContext(config: KoolConfigJs = KoolConfigJs()): JsContext {
     KoolSystem.initialize(config)
     return JsImpl.createContext()
 }
 
-actual fun Double.toString(precision: Int): String {
-    if (this.isNaN()) {
-        return "NaN"
-    } else if (this.isInfinite()) {
-        return "Infinity"
-    }
+fun KoolApplication(config: KoolConfigJs, appBlock: (KoolContext) -> Unit) = KoolApplication(createContext(config), appBlock)
 
-    @Suppress("UNUSED_VARIABLE")
-    val d = this
-    return js("d.toFixed(precision)").toString()
+fun KoolApplication(ctx: JsContext = createContext(), appBlock: (KoolContext) -> Unit) {
+    appBlock(ctx)
+    ctx.run()
 }
 
 internal object JsImpl {
@@ -39,7 +34,7 @@ internal object JsImpl {
     val canvas: HTMLCanvasElement
         get() = checkNotNull(ctx?.canvas) { "Platform.createContext() not called" }
 
-    fun createContext(): KoolContext {
+    fun createContext(): JsContext {
         check(ctx == null) { "Context was already created (multi-context is currently not supported in js" }
         ctx = JsContext()
         return ctx!!

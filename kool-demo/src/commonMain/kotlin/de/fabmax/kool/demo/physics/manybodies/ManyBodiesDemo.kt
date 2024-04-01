@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.physics.manybodies
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.Platform
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.Mat3f
@@ -64,7 +65,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
     }
 
     private fun spawnPhysicsBoxes() {
-        val ny = if (KoolSystem.isJavascript) 10 else 50
+        val ny = if (KoolSystem.platform == Platform.JAVASCRIPT) 10 else 50
 
         for (y in 0..ny) {
             for (x in -12..12) {

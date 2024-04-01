@@ -29,4 +29,15 @@ object BackendStats {
         numPrimitives += nPrimitives
         numDrawCommands += nCommands
     }
+
+    internal fun onDestroy() {
+        pipelines.clear()
+        offscreenPasses.clear()
+        allocatedBuffers.clear()
+        allocatedTextures.clear()
+        totalBufferSize = 0L
+        totalTextureSize = 0
+        numDrawCommands = 0
+        numPrimitives = 0
+    }
 }

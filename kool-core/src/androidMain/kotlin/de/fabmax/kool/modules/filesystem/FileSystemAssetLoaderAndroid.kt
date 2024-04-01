@@ -1,29 +1,12 @@
-package de.fabmax.kool
+package de.fabmax.kool.modules.filesystem
 
+import de.fabmax.kool.*
 import de.fabmax.kool.modules.audio.AudioClipImpl
-import de.fabmax.kool.modules.filesystem.FileSystemDirectory
-import de.fabmax.kool.modules.filesystem.getFileOrNull
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.platform.imageAtlasTextureData
-import de.fabmax.kool.util.Uint8Buffer
 import java.io.ByteArrayInputStream
 
-actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): AssetLoader {
-    return FileSystemAssetLoader(baseDir)
-}
-
-class FileSystemAssetLoader(val baseDir: FileSystemDirectory): AssetLoader() {
-    override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
-        val blob = loadData(blobRef.path)
-        return LoadedBlobAsset(blobRef, blob)
-    }
-
-    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        val texData = loadTextureData2d(refCopy).data as TextureData2d?
-        return LoadedTextureAsset(textureRef, texData)
-    }
-
+class FileSystemAssetLoaderAndroid(baseDir: FileSystemDirectory): FileSystemAssetLoader(baseDir) {
     override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
         val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
         val texData = loadTextureData2d(refCopy).data as TextureData2d?
@@ -46,16 +29,10 @@ class FileSystemAssetLoader(val baseDir: FileSystemDirectory): AssetLoader() {
     override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {
         val blob = loadBlob(BlobAssetRef(audioRef.path))
         val clip = blob.data?.let { buf ->
-            AudioClipImpl(buf.toArray(), audioRef.path.substringAfterLast('.').lowercase())
+            ByteArrayInputStream(buf.toArray()).use {
+                AudioClipImpl(it, audioRef.path, KoolSystem.configAndroid.appContext)
+            }
         }
         return LoadedAudioClipAsset(audioRef, clip)
-    }
-
-    private suspend fun loadData(path: String): Uint8Buffer? {
-        return if (Assets.isDataUri(path)) {
-            decodeDataUri(path)
-        } else {
-            baseDir.getFileOrNull(path)?.read()
-        }
     }
 }

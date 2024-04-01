@@ -1,6 +1,9 @@
 package de.fabmax.kool
 
 import com.github.weisj.jsvg.parser.SVGLoader
+import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
+import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderDesktop
+import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
@@ -23,6 +26,8 @@ import java.util.*
 import kotlin.math.roundToInt
 
 internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
+
+actual fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader = FileSystemAssetLoaderDesktop(baseDir)
 
 object PlatformAssetsImpl : PlatformAssets {
 

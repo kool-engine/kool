@@ -28,6 +28,14 @@ object KeyboardInput {
 
     fun getKeyCodeForChar(char: Char) = char.uppercaseChar().code
 
+    fun requestKeyboard() {
+        PointerInput.platformInput.requestKeyboard()
+    }
+
+    fun hideKeyboard() {
+        PointerInput.platformInput.hideKeyboard()
+    }
+
     internal fun onNewFrame(ctx: KoolContext) {
         InputStack.handleInput(queuedKeyEvents, ctx)
         queuedKeyEvents.clear()

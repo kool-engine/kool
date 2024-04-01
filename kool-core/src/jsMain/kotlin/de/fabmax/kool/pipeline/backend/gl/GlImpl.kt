@@ -168,7 +168,7 @@ object GlImpl : GlApi {
     override var ZERO_TO_ONE = 0
         private set
 
-    override val version = GlApiVersion(2, 0, GlFlavor.WebGL, "2.0", "WebGL")
+    override val version = GlApiVersion(2, 0, GlFlavor.WebGL, "WebGL")
 
     override lateinit var capabilities: GlCapabilities
         private set
