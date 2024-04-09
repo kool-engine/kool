@@ -49,8 +49,8 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 - [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltf): Various demo models loaded from glTF / glb format
   - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
   - Polly from [Blender](https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/polly)
-  - Coffee Cart from [3D Model Haven]((https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01))
-  - Camera Model also from [3D Model Haven](https://3dmodelhaven.com/model/?c=appliances&m=CoffeeCart_01)
+  - Coffee Cart from [Poly Haven](https://polyhaven.com/a/CoffeeCart_01)
+  - Camera Model also from [Poly Haven](https://polyhaven.com/a/CoffeeCart_01)
   - A few feature test models also from the [glTF sample model repository](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0)
 - [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferred): Thousands of dynamic
   light sources, bloom and ambient occlusion.
