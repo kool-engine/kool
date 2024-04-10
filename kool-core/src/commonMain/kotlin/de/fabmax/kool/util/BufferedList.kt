@@ -7,29 +7,29 @@ package de.fabmax.kool.util
 class BufferedList<T> private constructor(private val backingList: MutableList<T>) : List<T> by backingList {
     constructor() : this(mutableListOf())
 
-    private val staged = mutableSetOf<T>()
-    private val stagedRemove = mutableSetOf<T>()
+    private val stagedInsertions = mutableSetOf<StagedInsertion<T>>()
+    private val stagedRemovals = mutableSetOf<T>()
 
     val hasItemsStagedForAdd: Boolean
-        get() = staged.isNotEmpty()
+        get() = stagedInsertions.isNotEmpty()
     val hasItemsStagedForRemoval: Boolean
-        get() = stagedRemove.isNotEmpty()
+        get() = stagedRemovals.isNotEmpty()
     val hasStagedItems: Boolean
         get() = hasItemsStagedForAdd || hasItemsStagedForRemoval
 
     fun clear() {
         backingList.clear()
-        staged.clear()
-        stagedRemove.clear()
+        stagedInsertions.clear()
+        stagedRemovals.clear()
     }
 
     /**
      * Schedules the given element for addition to the list. If the item was staged for removal previously but
      * the list was not yet updated, it is removed from the removal staging buffer.
      */
-    fun stageAdd(item: T) {
-        stagedRemove -= item
-        staged += item
+    fun stageAdd(item: T, index: Int = -1) {
+        stagedRemovals -= item
+        stagedInsertions += StagedInsertion(item, index)
     }
 
     /**
@@ -37,8 +37,10 @@ class BufferedList<T> private constructor(private val backingList: MutableList<T
      * the list was not yet updated, it is removed from the staging buffer.
      */
     fun stageRemove(item: T) {
-        staged -= item
-        stagedRemove += item
+        if (stagedInsertions.isNotEmpty()) {
+            stagedInsertions.removeAll { it.item == item }
+        }
+        stagedRemovals += item
     }
 
     operator fun plusAssign(item: T) {
@@ -54,13 +56,19 @@ class BufferedList<T> private constructor(private val backingList: MutableList<T
      * @return true if list content changed, false otherwise
      */
     fun update(): Boolean {
-        return if (staged.isEmpty() && stagedRemove.isEmpty()) {
+        return if (stagedInsertions.isEmpty() && stagedRemovals.isEmpty()) {
             false
         } else {
-            backingList.removeAll(stagedRemove)
-            backingList.addAll(staged)
-            stagedRemove.clear()
-            staged.clear()
+            backingList.removeAll(stagedRemovals)
+            for ((item, index) in stagedInsertions) {
+                if (index < 0) {
+                    backingList.add(item)
+                } else {
+                    backingList.add(index, item)
+                }
+            }
+            stagedRemovals.clear()
+            stagedInsertions.clear()
             true
         }
     }
@@ -69,4 +77,6 @@ class BufferedList<T> private constructor(private val backingList: MutableList<T
         update()
         return this
     }
+
+    private data class StagedInsertion<T>(val item: T, val index: Int)
 }

@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.launchOnMainThread
 import org.w3c.dom.HTMLCanvasElement
 
 actual fun Double.toString(precision: Int): String {
@@ -22,10 +23,14 @@ fun createContext(config: KoolConfigJs = KoolConfigJs()): JsContext {
     return JsImpl.createContext()
 }
 
-fun KoolApplication(config: KoolConfigJs, appBlock: (KoolContext) -> Unit) = KoolApplication(createContext(config), appBlock)
+fun KoolApplication(config: KoolConfigJs, appBlock: suspend KoolApplication.() -> Unit) =
+    KoolApplication(createContext(config), appBlock)
 
-fun KoolApplication(ctx: JsContext = createContext(), appBlock: (KoolContext) -> Unit) {
-    appBlock(ctx)
+fun KoolApplication(ctx: JsContext = createContext(), appBlock: suspend KoolApplication.() -> Unit) {
+    val koolApp = KoolApplication(ctx)
+    launchOnMainThread {
+        koolApp.appBlock()
+    }
     ctx.run()
 }
 

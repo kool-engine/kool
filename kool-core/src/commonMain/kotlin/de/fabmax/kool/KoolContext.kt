@@ -57,7 +57,8 @@ abstract class KoolContext {
     var fps = 60.0
         private set
 
-    val scenes: MutableList<Scene> = mutableListOf()
+    val scenes: BufferedList<Scene> = BufferedList()
+
     val backgroundScene = Scene("backgroundScene")
     val backgroundPasses: BufferedList<OffscreenRenderPass>
         get() = backgroundScene.offscreenPasses
@@ -90,6 +91,14 @@ abstract class KoolContext {
         backgroundScene.removeOffscreenPass(renderPass)
     }
 
+    fun addScene(scene: Scene) {
+        scenes += scene
+    }
+
+    fun removeScene(scene: Scene) {
+        scenes -= scene
+    }
+
     protected fun render(dt: Double) {
         if (isProfileRenderPasses) {
             Profiling.enter("!main-render-loop")
@@ -117,6 +126,7 @@ abstract class KoolContext {
         }
 
         // draw scene contents (back to front)
+        scenes.update()
         for (i in scenes.indices) {
             if (scenes[i].isVisible) {
                 scenes[i].renderScene(this)

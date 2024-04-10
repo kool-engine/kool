@@ -27,7 +27,7 @@ fun main() = KoolApplication(
     //DemoLoader.setProperty("assets.base", ".")
 
     // launch demo
-    demo(params["demo"], it)
+    demo(params["demo"], ctx)
 }
 
 @Suppress("UNUSED_VARIABLE")

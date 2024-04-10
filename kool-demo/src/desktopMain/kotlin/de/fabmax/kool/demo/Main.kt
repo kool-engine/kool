@@ -13,11 +13,11 @@ fun main() = KoolApplication(
         windowTitle = "Kool Demo",
         windowSize = Vec2i(1600, 900)
     )
-) { ctx ->
+) {
     // uncomment to load assets locally instead of from web
     //Demo.setProperty("assets.base", ".")
 
-    // sub-directories for individual asset classes within asset base dir
+    // subdirectories for individual asset classes within asset base dir
     //Demo.setProperty("assets.hdri", "hdri")
     //Demo.setProperty("assets.materials", "materials")
     //Demo.setProperty("assets.models", "models")

@@ -74,7 +74,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                 if (it.demoState == DemoScene.State.RUNNING) {
                     // demo setup complete -> add scenes
                     ctx.scenes -= loadingScreen
-                    it.scenes.forEachIndexed { i, s -> ctx.scenes.add(i, s) }
+                    it.scenes.forEachIndexed { i, s -> ctx.scenes.stageAdd(s, i) }
                 }
 
             } else {
@@ -114,7 +114,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                 }
                 demo.onRelease(ctx)
             }
-            ctx.scenes.add(0, loadingScreen)
+            ctx.scenes.stageAdd(loadingScreen, 0)
 
             // set new demo
             currentDemo = newDemo.id to newDemo.newInstance(ctx).also {
@@ -157,7 +157,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
             demoProps[key] = value
         }
 
-        inline fun <reified T> getProperty(key: String, default: T): T {
+        private inline fun <reified T> getProperty(key: String, default: T): T {
             return demoProps[key] as? T ?: default
         }
     }

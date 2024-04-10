@@ -5,6 +5,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.launchOnMainThread
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.text.SimpleDateFormat
@@ -23,10 +24,14 @@ fun createContext(config: KoolConfigJvm = KoolConfigJvm()): Lwjgl3Context {
     return DesktopImpl.createContext()
 }
 
-fun KoolApplication(config: KoolConfigJvm, appBlock: (KoolContext) -> Unit) = KoolApplication(createContext(config), appBlock)
+fun KoolApplication(config: KoolConfigJvm, appBlock: suspend KoolApplication.() -> Unit) =
+    KoolApplication(createContext(config), appBlock)
 
-fun KoolApplication(ctx: Lwjgl3Context = createContext(), appBlock: (KoolContext) -> Unit) {
-    appBlock(ctx)
+fun KoolApplication(ctx: Lwjgl3Context = createContext(), appBlock: suspend KoolApplication.() -> Unit) {
+    val koolApp = KoolApplication(ctx)
+    launchOnMainThread {
+        koolApp.appBlock()
+    }
     ctx.run()
 }
 
