@@ -8,7 +8,7 @@ import de.fabmax.kool.util.MdColor
 
 class HelloUi : DemoScene("Hello UI") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        setupUiScene(clearScreen = true)
+        setupUiScene(Scene.DEFAULT_CLEAR_COLOR)
 
         addPanelSurface(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier

@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
 
 /**
  * Creates a new scene and sets it up as a UI scene.
@@ -10,10 +11,10 @@ import de.fabmax.kool.scene.Scene
  */
 fun UiScene(
     name: String = "UiScene",
-    clearScreen: Boolean = false,
+    clearColor: Color? = null,
     block: Scene.() -> Unit
 ) = Scene(name).apply {
-    setupUiScene(clearScreen)
+    setupUiScene(clearColor)
     block()
 }
 
@@ -22,10 +23,8 @@ fun UiScene(
  * clip size to the viewport size. Also, by default, screen-clearing is disabled, because UIs usually are drawn on
  * top of stuff, which should not be cleared away.
  */
-fun Scene.setupUiScene(clearScreen: Boolean = false) {
-    if (!clearScreen) {
-        clearColor = null
-    }
+fun Scene.setupUiScene(clearColor: Color? = null) {
+    this.clearColor = clearColor
 
     camera = OrthographicCamera()
     onUpdate += { ev ->

@@ -18,7 +18,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
     val loadingText2 = mutableStateOf("")
 
     init {
-        setupUiScene(true)
+        setupUiScene(DEFAULT_CLEAR_COLOR)
 
         addColorMesh {
             shader = KslUnlitShader {
