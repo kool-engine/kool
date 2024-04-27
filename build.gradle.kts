@@ -16,3 +16,23 @@ allprojects {
         mavenCentral()
     }
 }
+
+task("disableAndroidPlatform") {
+    group = "build config"
+    doFirst {
+        File(projectDir, "kool-core/build.gradle.kts").comment {
+            commentLines("alias(libs.plugins.androidLibrary)")
+            commentBlocks("android")
+        }
+    }
+}
+
+task("enableAndroidPlatform") {
+    group = "build config"
+    doFirst {
+        File(projectDir, "kool-core/build.gradle.kts").comment {
+            uncommentLines("alias(libs.plugins.androidLibrary)")
+            uncommentBlocks("android")
+        }
+    }
+}

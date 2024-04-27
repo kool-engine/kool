@@ -3,7 +3,7 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
-    alias(libs.plugins.androidLibrary)
+//    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinAtomicFu)
@@ -14,9 +14,9 @@ plugins {
 }
 
 kotlin {
-    androidTarget {
-        publishLibraryVariants("release", "debug")
-    }
+//    androidTarget {
+//        publishLibraryVariants("release", "debug")
+//    }
     jvm("desktop") { }
     jvmToolchain(11)
 
@@ -78,9 +78,9 @@ kotlin {
             implementation(npm("file-saver", "2.0.4"))
         }
 
-        androidMain.dependencies {
-            implementation(libs.androidsvg)
-        }
+//        androidMain.dependencies {
+//            implementation(libs.androidsvg)
+//        }
     }
 
     sourceSets.all {
@@ -93,24 +93,24 @@ kotlin {
     }
 }
 
-android {
-    namespace = "de.fabmax.kool"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    externalNativeBuild {
-        cmake {
-            path = file("src/androidMain/cpp/CMakeLists.txt")
-            version = "3.22.1"
-        }
-    }
-}
+//android {
+//    namespace = "de.fabmax.kool"
+//    compileSdk = libs.versions.android.compileSdk.get().toInt()
+//
+//    defaultConfig {
+//        minSdk = libs.versions.android.minSdk.get().toInt()
+//    }
+//    compileOptions {
+//        sourceCompatibility = JavaVersion.VERSION_11
+//        targetCompatibility = JavaVersion.VERSION_11
+//    }
+//    externalNativeBuild {
+//        cmake {
+//            path = file("src/androidMain/cpp/CMakeLists.txt")
+//            version = "3.22.1"
+//        }
+//    }
+//}
 
 tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleAndIntVariants") {
     filesToUpdate = kotlin.sourceSets.findByName("commonMain")?.kotlin

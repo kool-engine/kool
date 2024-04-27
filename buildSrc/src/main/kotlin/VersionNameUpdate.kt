@@ -1,8 +1,7 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
-import java.io.FileReader
-import java.io.FileWriter
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -15,29 +14,25 @@ open class VersionNameUpdate : DefaultTask() {
 
     @TaskAction
     fun updateVersions() {
-        filesToUpdate.forEach { file ->
-            val versionStr = versionName.replace("SNAPSHOT", SimpleDateFormat("yyMMdd.HHmm").format(Date()))
-            val text = mutableListOf<String>()
-            var updated = false
+        filesToUpdate.map { File(it) }.forEach { file ->
+            val versionStr = versionName.replace("SNAPSHOT", SimpleDateFormat("yyMMdd.HHmm", Locale.US).format(Date()))
+            val text = file.readText()
+            val lineSep = if ("\r\n" in text) "\r\n" else "\n"
 
             if (KoolBuildSettings.isRelease) {
-                FileReader(file).use {
-                    text += it.readLines()
-                    for (i in text.indices) {
-                        val startI = text[i].indexOf("const val KOOL_VERSION = ")
-                        if (startI >= 0) {
-                            text[i] = text[i].substring(0 until startI) + "const val KOOL_VERSION = \"$versionStr\""
-                            updated = true
-                            break
-                        }
+                var updated = false
+                val lines = text.lines().toMutableList()
+                for (i in lines.indices) {
+                    val startI = lines[i].indexOf("const val KOOL_VERSION = ")
+                    if (startI >= 0) {
+                        lines[i] = lines[i].substring(0 until startI) + "const val KOOL_VERSION = \"$versionStr\""
+                        updated = true
+                        break
                     }
                 }
+
                 if (updated) {
-                    FileWriter(file).use {
-                        text.forEach { line ->
-                            it.append(line).append(System.lineSeparator())
-                        }
-                    }
+                    file.writeText(lines.joinToString(lineSep))
                 }
             }
         }

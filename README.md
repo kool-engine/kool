@@ -5,18 +5,14 @@
 
 A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop Java, Android and browsers.
 
-I started working on a graphical scene editor.
-The editor is still in an early state and not very useful yet, but you can try the [Web Demo](https://fabmax.github.io/kool/kool-editor/)
-in case you are curious. However, there are a few rather essential features, which are only supported by the JVM
-version of the editor (e.g. hot-reloading code and importing additional assets). You can launch the JVM editor by
-cloning this project and running the gradle task `:kool-editor-template:runEditor` from a command line or your IDE).
-
-Apart from that, this is very much a code-only game engine. I recommend taking a look at the demos listed below in case
+This is very much a code-only game engine. I recommend taking a look at the demos listed below in case
 you are curious (all demo source code is available in the `kool-demo` subproject). The library is also published on
 maven central, see [below](#usage).
 
-I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
-Give it a try (it's free)!
+I also started working on a graphical scene editor.
+The editor is still in an early state and not very useful yet, but you can try the [Web Demo](https://fabmax.github.io/kool/kool-editor/)
+in case you are curious. You can also take a look at the `kool-editor-template` in the [kool-templates](https://github.com/fabmax/kool-templates)
+in case you want to play around with it a bit more.
 
 ## Get In Touch
 
@@ -74,6 +70,9 @@ used backend is printed in the extended info-panel in the lower right corner (cl
 that there shouldn't be much visible difference in the WebGL and WebGPU backends. You can also force a certain backend
 by appending `&backend=webgpu` or `&backend=webgl` to the URL.
 
+I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
+Give it a try (it's free)!
+
 ## Platform Support
 
 | Platform    | Backend     | Implementation Status                                                |
@@ -84,7 +83,12 @@ by appending `&backend=webgpu` or `&backend=webgl` to the URL.
 | Browser     | WebGPU      | :white_check_mark: Fully working                                     |
 | Android     | OpenGL ES 3 | :eight_spoked_asterisk: kool-core fully working (but no physics yet) |
 
-Android support is very new and only available for `kool-core` for now. Therefore, the demos don't work on Android yet
+### Android Support
+
+The Android target is disabled by default (to avoid having the Android SDK as a build requirement). You can
+enable the Android target by running the gradle task `enableAndroidPlatform`.
+
+Moreover, Android support is only available for `kool-core` for now. Therefore, the demos don't work on Android yet
 (because they also require `kool-physics`). However, there's a basic [kool-android-template](https://github.com/fabmax/kool-templates)
 project with a minimal kool Android app.
 

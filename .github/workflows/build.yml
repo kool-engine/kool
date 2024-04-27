@@ -18,5 +18,7 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Enable Android target
+        run: ./gradlew enableAndroidPlatform
       - name: Build everything
         run: ./gradlew build
