@@ -1,7 +1,9 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.SetRigidBodyMassAction
+import de.fabmax.kool.editor.actions.SetRigidBodyTypeAction
 import de.fabmax.kool.editor.components.RigidBodyComponent
+import de.fabmax.kool.editor.data.RigidBodyType
 import de.fabmax.kool.modules.ui2.*
 
 class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBodyComponent>(component) {
@@ -16,9 +18,19 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                 .padding(horizontal = sizes.gap)
                 .margin(bottom = sizes.smallGap)
 
+            val bodyProps = component.bodyState.use()
+
+            labeledCombobox(
+                label = "Body type:",
+                items = bodyOptions,
+                bodyOptions.indexOfFirst { it.type == bodyProps.bodyType }
+            ) {
+                SetRigidBodyTypeAction(component, bodyProps.bodyType, it.type).apply()
+            }
+
             labeledDoubleTextField(
                 label = "Mass:",
-                value = component.massState.use().toDouble(),
+                value = bodyProps.mass.toDouble(),
                 minValue = 0.001,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
@@ -28,4 +40,15 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
         }
     }
 
+    private class BodyTypeOption(val label: String, val type: RigidBodyType) {
+        override fun toString(): String = label
+    }
+
+    companion object {
+        private val bodyOptions = listOf(
+            BodyTypeOption("Dynamic", RigidBodyType.DYNAMIC),
+            BodyTypeOption("Kinematic", RigidBodyType.KINEMATIC),
+            BodyTypeOption("Static", RigidBodyType.STATIC),
+        )
+    }
 }
