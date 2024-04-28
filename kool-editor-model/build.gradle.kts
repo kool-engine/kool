@@ -2,6 +2,7 @@ import java.io.FileInputStream
 import java.util.*
 
 plugins {
+//    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinAtomicFu)
@@ -12,6 +13,9 @@ plugins {
 }
 
 kotlin {
+//    androidTarget {
+//        publishLibraryVariants("release", "debug")
+//    }
     jvm("desktop") { }
     jvmToolchain(11)
     js(IR) {
@@ -31,6 +35,19 @@ kotlin {
         }
     }
 }
+
+//android {
+//    namespace = "de.fabmax.kool"
+//    compileSdk = libs.versions.android.compileSdk.get().toInt()
+//
+//    defaultConfig {
+//        minSdk = libs.versions.android.minSdk.get().toInt()
+//    }
+//    compileOptions {
+//        sourceCompatibility = JavaVersion.VERSION_11
+//        targetCompatibility = JavaVersion.VERSION_11
+//    }
+//}
 
 publishing {
     publications {

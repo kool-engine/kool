@@ -20,9 +20,11 @@ allprojects {
 task("disableAndroidPlatform") {
     group = "build config"
     doFirst {
-        File(projectDir, "kool-core/build.gradle.kts").comment {
-            commentLines("alias(libs.plugins.androidLibrary)")
-            commentBlocks("android")
+        listOf("kool-core", "kool-editor-model").forEach { subProj ->
+            File(projectDir, "${subProj}/build.gradle.kts").comment {
+                commentLines("alias(libs.plugins.androidLibrary)")
+                commentBlocks("android")
+            }
         }
     }
 }
@@ -30,9 +32,11 @@ task("disableAndroidPlatform") {
 task("enableAndroidPlatform") {
     group = "build config"
     doFirst {
-        File(projectDir, "kool-core/build.gradle.kts").comment {
-            uncommentLines("alias(libs.plugins.androidLibrary)")
-            uncommentBlocks("android")
+        listOf("kool-core", "kool-editor-model").forEach { subProj ->
+            File(projectDir, "$subProj/build.gradle.kts").comment {
+                uncommentLines("alias(libs.plugins.androidLibrary)")
+                uncommentBlocks("android")
+            }
         }
     }
 }
