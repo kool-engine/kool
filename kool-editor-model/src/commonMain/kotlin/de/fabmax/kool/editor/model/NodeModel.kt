@@ -100,6 +100,8 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
                 is ShadowMapComponentData -> components += ShadowMapComponent(requireSceneNode, data)
                 is SsaoComponentData -> components += SsaoComponent(requireScene, data)
                 is TransformComponentData -> components += TransformComponent(requireSceneNode, data)
+
+                is PhysicsWorldComponentData -> components += PhysicsWorldComponent(requireScene, data)
                 is RigidBodyComponentData -> components += RigidBodyComponent(requireSceneNode, data)
             }
         }
@@ -147,6 +149,10 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
         if (component.isCreated) {
             component.destroyComponent()
         }
+    }
+
+    open fun onStart() {
+        components.forEach { it.onStart() }
     }
 
     inline fun <reified T: EditorModelComponent> getOrPutComponent(factory: () -> T): T {

@@ -71,6 +71,10 @@ class EditorProject(val projectData: ProjectData) {
         }
     }
 
+    fun onStart() {
+        getCreatedScenes().forEach { it.onStart() }
+    }
+
     fun getCreatedScenes(): List<SceneModel> = created.values.toList()
 
     fun nextId(): Long {

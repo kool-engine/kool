@@ -47,6 +47,11 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        behaviorInstance.value?.onStart()
+    }
+
     fun setProperty(name: String, value: Any): Boolean {
         return try {
             behaviorInstance.value?.let { BehaviorLoader.setProperty(it, name, value) }

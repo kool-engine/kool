@@ -6,8 +6,6 @@ import de.fabmax.kool.modules.ui2.*
 
 class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBodyComponent>(component) {
 
-    //private val rigidBodyData: RigidBodyComponentData get() = component.componentData
-
     override fun UiScope.compose() = componentPanel(
         title = "Rigid Body",
         imageIcon = IconMap.small.physics,

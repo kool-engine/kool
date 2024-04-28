@@ -28,7 +28,7 @@ class AppModeController(val editor: KoolEditor) {
         }
 
         AppState.appModeState.set(AppMode.PLAY)
-        app.startApp(KoolSystem.requireContext())
+        app.startApp(editor.projectModel, KoolSystem.requireContext())
         editor.setEditorOverlayVisibility(false)
         editor.ui.appStateInfo.set("App is running")
     }

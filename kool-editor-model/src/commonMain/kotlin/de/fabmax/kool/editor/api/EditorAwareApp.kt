@@ -19,7 +19,9 @@ interface EditorAwareApp {
      * directly after [loadApp] in case the app runs in standalone mode or when the user enables play mode in the
      * editor. The two modes can be distinguished via [AppState.isInEditor]
      */
-    fun startApp(ctx: KoolContext) { }
+    fun startApp(projectModel: EditorProject, ctx: KoolContext) {
+        projectModel.onStart()
+    }
 
     /**
      * Called on app shutdown - either because the app reloaded and the old version is about to be discarded or the
@@ -35,7 +37,7 @@ interface EditorAwareApp {
             createdScenes.forEach {
                 ctx.scenes += it.drawNode
             }
-            startApp(ctx)
+            startApp(projModel, ctx)
         }
 
         ctx.applicationCallbacks = object : ApplicationCallbacks {

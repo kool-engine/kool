@@ -97,6 +97,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
                     is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
                     is TransformComponent -> componentEditor(component) { TransformEditor(component) }
+                    is PhysicsWorldComponent -> componentEditor(component) { PhysicsWorldEditor(component) }
                     is RigidBodyComponent -> componentEditor(component) { RigidBodyEditor(component) }
                 }
             }
@@ -150,6 +151,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             ComponentAdder.AddScriptComponent,
             ComponentAdder.AddSsaoComponent,
             ComponentAdder.AddCameraComponent,
+            ComponentAdder.AddPhysicsWorldComponent,
             ComponentAdder.AddRigidBodyComponent,
         )
     }
@@ -219,6 +221,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             override fun createComponent(target: NodeModel): MaterialComponent = MaterialComponent(target as SceneNodeModel)
             override fun accept(nodeModel: NodeModel) = !nodeModel.hasComponent<MaterialComponent>()
                     && (nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>())
+        }
+
+        data object AddPhysicsWorldComponent : ComponentAdder<PhysicsWorldComponent>("Physics World") {
+            override fun createComponent(target: NodeModel): PhysicsWorldComponent = PhysicsWorldComponent(target as SceneModel)
+            override fun accept(nodeModel: NodeModel) =
+                nodeModel is SceneModel && !nodeModel.hasComponent<PhysicsWorldComponent>()
         }
 
         data object AddRigidBodyComponent : ComponentAdder<RigidBodyComponent>("Rigid Body") {

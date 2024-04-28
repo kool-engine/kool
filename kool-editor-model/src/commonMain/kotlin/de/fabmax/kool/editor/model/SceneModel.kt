@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.ScenePropertiesComponentData
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Camera
@@ -52,6 +53,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
     val sceneBackground = getOrPutComponent { SceneBackgroundComponent(this, MdColor.GREY toneLin 900) }
     private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
 
+    val physicsWorld: PhysicsWorld? get() = getComponent<PhysicsWorldComponent>()?.physicsWorld
+
     init {
         shaderData.maxNumberOfLights = maxNumLightsState.value
         project.entities += this
@@ -68,10 +71,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
         nodesToNodeModels[drawNode] = this
 
-        if (project.getComponentsInScene<PhysicsComponent>(this).isNotEmpty()) {
-            createPhysics()
-        }
-
         maxNumLightsState.set(sceneProperties.componentData.maxNumLights)
         drawNode.lighting.apply {
             clear()
@@ -79,10 +78,6 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
 
         createComponents()
-    }
-
-    private fun createPhysics() {
-        TODO()
     }
 
     override suspend fun createComponents() {
@@ -160,6 +155,11 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         launchDelayed(1) {
             nodeModel.destroyComponents()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        nodeModels.values.forEach { it.onStart() }
     }
 
     inline fun <reified T: Any> getComponentsInScene(): List<T> {

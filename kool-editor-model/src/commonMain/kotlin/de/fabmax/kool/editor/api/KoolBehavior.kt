@@ -32,6 +32,8 @@ abstract class KoolBehavior {
 
     open fun onInit() { }
 
+    open fun onStart() { }
+
     open fun onUpdate() { }
 
 }

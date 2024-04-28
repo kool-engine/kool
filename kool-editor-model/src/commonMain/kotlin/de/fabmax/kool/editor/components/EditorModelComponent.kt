@@ -26,6 +26,8 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
         isCreated = false
     }
 
+    open fun onStart() { }
+
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {
         _dependencies += ComponentDependency(componentType, isOptional)
     }
