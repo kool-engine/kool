@@ -45,7 +45,7 @@ open class Scene(name: String? = null) : Node(name) {
     internal val sortedOffscreenPasses = mutableListOf<OffscreenRenderPass>()
 
     val isEmpty: Boolean
-        get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedItems)
+        get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedMutations)
 
     fun tryEnableInfiniteDepth(): Boolean {
         val ctx = KoolSystem.getContextOrNull() ?: return false
