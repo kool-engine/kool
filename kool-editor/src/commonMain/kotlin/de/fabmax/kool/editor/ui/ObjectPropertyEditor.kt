@@ -97,6 +97,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
                     is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
                     is TransformComponent -> componentEditor(component) { TransformEditor(component) }
+                    is RigidBodyComponent -> componentEditor(component) { RigidBodyEditor(component) }
                 }
             }
 
@@ -149,6 +150,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             ComponentAdder.AddScriptComponent,
             ComponentAdder.AddSsaoComponent,
             ComponentAdder.AddCameraComponent,
+            ComponentAdder.AddRigidBodyComponent,
         )
     }
 
@@ -217,6 +219,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             override fun createComponent(target: NodeModel): MaterialComponent = MaterialComponent(target as SceneNodeModel)
             override fun accept(nodeModel: NodeModel) = !nodeModel.hasComponent<MaterialComponent>()
                     && (nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>())
+        }
+
+        data object AddRigidBodyComponent : ComponentAdder<RigidBodyComponent>("Rigid Body") {
+            override fun createComponent(target: NodeModel): RigidBodyComponent = RigidBodyComponent(target as SceneNodeModel)
+            override fun accept(nodeModel: NodeModel) =
+                nodeModel is SceneNodeModel && !nodeModel.hasComponent<RigidBodyComponent>()
         }
 
         data object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {

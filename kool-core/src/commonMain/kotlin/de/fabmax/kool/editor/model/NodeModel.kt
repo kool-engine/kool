@@ -100,6 +100,7 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
                 is ShadowMapComponentData -> components += ShadowMapComponent(requireSceneNode, data)
                 is SsaoComponentData -> components += SsaoComponent(requireScene, data)
                 is TransformComponentData -> components += TransformComponent(requireSceneNode, data)
+                is RigidBodyComponentData -> components += RigidBodyComponent(requireSceneNode, data)
             }
         }
         components.sortByDependencies()
