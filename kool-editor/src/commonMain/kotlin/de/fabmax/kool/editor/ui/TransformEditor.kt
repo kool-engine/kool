@@ -33,7 +33,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
         }
     }
 
-    override fun UiScope.compose() = collapsapsablePanel("Transform", IconMap.small.TRANSFORM) {
+    override fun UiScope.compose() = collapsapsablePanel("Transform", IconMap.small.transform) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
@@ -70,7 +70,7 @@ class TransformEditor(component: TransformComponent) : ComponentEditor<Transform
                     .width(Grow.Std)
             }
             iconButton(
-                icon = if (component.isFixedScaleRatio.use()) IconMap.small.LOCK else IconMap.small.LOCK_OPEN,
+                icon = if (component.isFixedScaleRatio.use()) IconMap.small.lock else IconMap.small.lockOpen,
                 tooltip = "Lock scale ratio",
                 margin = Dp.ZERO
             ) {

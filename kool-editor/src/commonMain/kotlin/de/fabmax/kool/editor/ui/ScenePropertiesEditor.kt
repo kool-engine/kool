@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.ui2.*
 
 class ScenePropertiesEditor(component: ScenePropertiesComponent) : ComponentEditor<ScenePropertiesComponent>(component) {
 
-    override fun UiScope.compose() = componentPanel("Scene Settings", IconMap.small.WORLD) {
+    override fun UiScope.compose() = componentPanel("Scene Settings", IconMap.small.world) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)

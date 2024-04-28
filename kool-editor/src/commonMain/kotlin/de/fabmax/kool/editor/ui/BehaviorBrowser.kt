@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.modules.ui2.UiScope
 
-class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.medium.CODE, ui) {
+class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.medium.code, ui) {
 
     override fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>) {
         val scriptDir = browserItems.getOrPut("/behaviors") {

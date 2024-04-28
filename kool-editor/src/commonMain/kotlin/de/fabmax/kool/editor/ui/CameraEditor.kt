@@ -12,7 +12,7 @@ class CameraEditor(component: CameraComponent) : ComponentEditor<CameraComponent
     private val camTypeIndex: Int
         get() = camTypes.indexOfFirst { it.camType.isInstance(currentCam) }
 
-    override fun UiScope.compose() = componentPanel("Camera", IconMap.small.CAMERA, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel("Camera", IconMap.small.camera, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)

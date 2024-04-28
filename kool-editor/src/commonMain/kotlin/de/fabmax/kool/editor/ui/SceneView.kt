@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.docking.DockNodeLeaf
 import de.fabmax.kool.scene.Scene
 import kotlin.math.roundToInt
 
-class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA, ui) {
+class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera, ui) {
 
     val isBoxSelectMode = mutableStateOf(false).onChange {
         if (it) {
@@ -96,7 +96,7 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.CAMERA,
 
             var isHovered by remember(false)
             val button = iconTextButton(
-                icon = IconMap.small.DOWNLOAD,
+                icon = IconMap.small.download,
                 text = "Save Project",
                 bgColor = colors.componentBg,
                 bgColorHovered = colors.componentBgHovered,

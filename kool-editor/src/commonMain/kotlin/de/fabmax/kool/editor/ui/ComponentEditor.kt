@@ -49,7 +49,7 @@ fun UiScope.componentPanel(
                     .background(CircularBackground(bgColor))
 
                 Image {
-                    modifier.iconImage(IconMap.small.TRASH, fgColor)
+                    modifier.iconImage(IconMap.small.trash, fgColor)
                 }
             }
         }

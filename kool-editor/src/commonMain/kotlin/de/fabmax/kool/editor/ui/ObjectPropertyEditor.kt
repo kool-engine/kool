@@ -12,7 +12,7 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.PROPERTIES, ui) {
+class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.properties, ui) {
 
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
         val selObjs = KoolEditor.instance.selectionOverlay.selection.use()
@@ -119,7 +119,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         var popupPos by remember(Vec2f.ZERO)
 
         val button = iconTextButton(
-            icon = IconMap.small.PLUS,
+            icon = IconMap.small.plus,
             text = "Add Component",
             width = sizes.baseSize * 5,
             margin = sizes.gap

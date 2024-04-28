@@ -280,13 +280,13 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         // type icon
         Image {
             val icon = when (item.type) {
-                SceneObjectType.NON_MODEL_NODE -> IconMap.small.NODE_CIRCLE
-                SceneObjectType.CAMERA -> IconMap.small.CAMERA
-                SceneObjectType.LIGHT -> IconMap.small.LIGHT
-                SceneObjectType.GROUP -> IconMap.small.QUAD_BOX
-                SceneObjectType.MESH -> IconMap.small.CUBE
-                SceneObjectType.MODEL -> IconMap.small.TREE
-                SceneObjectType.SCENE -> IconMap.small.WORLD
+                SceneObjectType.NON_MODEL_NODE -> IconMap.small.nodeCircle
+                SceneObjectType.CAMERA -> IconMap.small.camera
+                SceneObjectType.LIGHT -> IconMap.small.light
+                SceneObjectType.GROUP -> IconMap.small.quadBox
+                SceneObjectType.MESH -> IconMap.small.cube
+                SceneObjectType.MODEL -> IconMap.small.tree
+                SceneObjectType.SCENE -> IconMap.small.world
             }
             modifier
                 .alignX(AlignmentX.End)
@@ -313,7 +313,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                         .alignX(AlignmentX.End)
                         .alignY(AlignmentY.Center)
                         .margin(end = sizes.smallGap)
-                        .iconImage(if (isVisible) IconMap.small.EYE else IconMap.small.EYE_OFF, eyeColor)
+                        .iconImage(if (isVisible) IconMap.small.eye else IconMap.small.eyeOff, eyeColor)
                         .onClick { SetVisibilityAction(item.nodeModel as SceneNodeModel, !isVisible).apply() }
                 }
             }

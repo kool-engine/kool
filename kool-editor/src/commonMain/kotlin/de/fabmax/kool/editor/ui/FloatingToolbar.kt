@@ -54,22 +54,22 @@ class FloatingToolbar(val ui: EditorUi) : Composable {
 
         Box(height = sizes.smallGap * 0.5f) { }
 
-        iconButton(IconMap.medium.SELECT, "Box-select [B]", mode == EditActionMode.BOX_SELECT) {
+        iconButton(IconMap.medium.select, "Box-select [B]", mode == EditActionMode.BOX_SELECT) {
             toggleActionMode(EditActionMode.BOX_SELECT)
         }
-        iconButton(IconMap.medium.CIRCLE_CROSSHAIR, "Locate selected object [NP Decimal]") {
+        iconButton(IconMap.medium.circleCrosshair, "Locate selected object [NP Decimal]") {
             ui.editor.editorCameraTransform.focusSelectedObject()
         }
 
         menuDivider(color = colors.strongDividerColor)
 
-        iconButton(IconMap.medium.MOVE, "Move selected object [G]", mode == EditActionMode.MOVE) {
+        iconButton(IconMap.medium.move, "Move selected object [G]", mode == EditActionMode.MOVE) {
             toggleActionMode(EditActionMode.MOVE)
         }
-        iconButton(IconMap.medium.ROTATE, "Rotate selected object [R]", mode == EditActionMode.ROTATE) {
+        iconButton(IconMap.medium.rotate, "Rotate selected object [R]", mode == EditActionMode.ROTATE) {
             toggleActionMode(EditActionMode.ROTATE)
         }
-        iconButton(IconMap.medium.SCALE, "Scale selected object [S]", mode == EditActionMode.SCALE) {
+        iconButton(IconMap.medium.scale, "Scale selected object [S]", mode == EditActionMode.SCALE) {
             toggleActionMode(EditActionMode.SCALE)
         }
 
