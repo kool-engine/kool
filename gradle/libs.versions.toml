@@ -5,6 +5,7 @@ android-minSdk = "28"
 kotlin = "2.0.0-RC1"
 kotlin-coroutines = "1.8.0"
 kotlin-serialization = "1.6.3"
+kotlin-datetime = "0.5.0"
 kotlin-atomicfu = "0.23.2"
 kotlin-dokka = "1.9.20"
 lwjgl = "3.3.3"
@@ -17,6 +18,7 @@ kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutine
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlin-serialization" }
 kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization" }
+kotlin-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlin-datetime" }
 kotlin-atomicfu = { group = "org.jetbrains.kotlinx", name = "atomicfu", version.ref = "kotlin-atomicfu" }
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit", version.ref = "kotlin" }

@@ -68,6 +68,10 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
         nodesToNodeModels[drawNode] = this
 
+        if (project.getComponentsInScene<PhysicsComponent>(this).isNotEmpty()) {
+            createPhysics()
+        }
+
         maxNumLightsState.set(sceneProperties.componentData.maxNumLights)
         drawNode.lighting.apply {
             clear()
@@ -75,6 +79,10 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
 
         createComponents()
+    }
+
+    private fun createPhysics() {
+        TODO()
     }
 
     override suspend fun createComponents() {

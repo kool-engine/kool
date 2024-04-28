@@ -10,3 +10,5 @@ interface EditorDataComponent<T: ComponentData> {
 interface ContentComponent {
     val contentNode: Node?
 }
+
+interface PhysicsComponent

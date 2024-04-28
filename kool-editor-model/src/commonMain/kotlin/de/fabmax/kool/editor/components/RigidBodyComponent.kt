@@ -11,7 +11,8 @@ fun RigidBodyComponent(nodeModel: SceneNodeModel): RigidBodyComponent {
 
 class RigidBodyComponent(nodeModel: SceneNodeModel, override val componentData: RigidBodyComponentData) :
     SceneNodeComponent(nodeModel),
-    EditorDataComponent<RigidBodyComponentData>
+    EditorDataComponent<RigidBodyComponentData>,
+    PhysicsComponent
 {
     val massState = mutableStateOf(componentData.mass).onChange {
         if (AppState.isEditMode) {

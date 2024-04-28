@@ -3,7 +3,10 @@ import java.util.*
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.kotlinAtomicFu)
+    alias(libs.plugins.kotlinDokka)
+
     `maven-publish`
     signing
 }
@@ -11,55 +14,29 @@ plugins {
 kotlin {
     jvm("desktop") { }
     js(IR) {
-        binaries.library()
-        browser()
+        browser { }
     }
 
     sourceSets {
+        val desktopMain by getting
         commonMain.dependencies {
-            api(libs.kotlin.coroutines)
-            api(libs.kotlin.serialization.core)
-            api(libs.kotlin.serialization.json)
-            api(libs.kotlin.reflect)
-            api(libs.kotlin.atomicfu)
             api(project(":kool-core"))
             api(project(":kool-physics"))
-            api(project(":kool-editor-model"))
-            implementation(libs.kotlin.datetime)
-        }
 
-        val desktopTest by getting
-        desktopTest.dependencies {
-            implementation(fileTree("${projectDir}/../kool-demo/runtimeLibs") { include("*.jar") })
-            implementation(libs.jsvg)
-
-            // add all native libs potentially needed for running demo as runtimeOnly dependencies, so that they can
-            // be found by the cacheRuntimeLibs task
-            listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                runtimeOnly("${libs.lwjgl.core.get()}:$platform")
-                runtimeOnly("${libs.lwjgl.glfw.get()}:$platform")
-                runtimeOnly("${libs.lwjgl.jemalloc.get()}:$platform")
-                runtimeOnly("${libs.lwjgl.nfd.get()}:$platform")
-                runtimeOnly("${libs.lwjgl.opengl.get()}:$platform")
-                runtimeOnly("${libs.lwjgl.shaderc.get()}:$platform")
-                runtimeOnly("${libs.lwjgl.stb.get()}:$platform")
-                runtimeOnly("${libs.lwjgl.vma.get()}:$platform")
-                runtimeOnly("${libs.physxjni.get()}:$platform")
-            }
+            implementation(libs.kotlin.serialization.core)
+            implementation(libs.kotlin.serialization.json)
+            implementation(libs.kotlin.reflect)
+            implementation(libs.kotlin.atomicfu)
         }
     }
-}
-
-tasks["clean"].doLast {
-    delete("${rootDir}/dist/kool-editor")
 }
 
 publishing {
     publications {
         publications.filterIsInstance<MavenPublication>().forEach { pub ->
             pub.pom {
-                name.set("kool-editor")
-                description.set("kool project editor")
+                name.set("kool")
+                description.set("A multiplatform OpenGL / Vulkan graphics engine written in kotlin")
                 url.set("https://github.com/fabmax/kool")
                 developers {
                     developer {
