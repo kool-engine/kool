@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.actions.SetPhysicsWorldPropertiesAction
 import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.modules.ui2.*
 
@@ -15,11 +16,13 @@ class PhysicsWorldEditor(component: PhysicsWorldComponent) : ComponentEditor<Phy
                 .padding(horizontal = sizes.gap)
                 .margin(bottom = sizes.smallGap)
 
+            val worldProps = component.physicsWorldState.use()
+
             labeledCheckbox(
                 label = "Continuous collision detection",
-                component.physicsWorldState.use().isContinuousCollisionDetection,
+                worldProps.isContinuousCollisionDetection,
             ) {
-
+                SetPhysicsWorldPropertiesAction(component, worldProps, worldProps.copy(isContinuousCollisionDetection = it)).apply()
             }
         }
     }

@@ -3,10 +3,10 @@ package de.fabmax.kool.editor.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-class RigidBodyComponentData(var settings: RigidBodySettings = RigidBodySettings()) : ComponentData
+class RigidBodyComponentData(var properties: RigidBodyProperties = RigidBodyProperties()) : ComponentData
 
 @Serializable
-data class RigidBodySettings(
+data class RigidBodyProperties(
     val bodyType: RigidBodyType = RigidBodyType.DYNAMIC,
     val mass: Float = 1f,
 )

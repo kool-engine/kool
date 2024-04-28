@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.SetRigidBodyMassAction
-import de.fabmax.kool.editor.actions.SetRigidBodyTypeAction
+import de.fabmax.kool.editor.actions.SetRigidBodyPropertiesAction
 import de.fabmax.kool.editor.components.RigidBodyComponent
 import de.fabmax.kool.editor.data.RigidBodyType
 import de.fabmax.kool.modules.ui2.*
@@ -25,7 +24,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                 items = bodyOptions,
                 bodyOptions.indexOfFirst { it.type == bodyProps.bodyType }
             ) {
-                SetRigidBodyTypeAction(component, bodyProps.bodyType, it.type).apply()
+                SetRigidBodyPropertiesAction(component, bodyProps, bodyProps.copy(bodyType = it.type)).apply()
             }
 
             labeledDoubleTextField(
@@ -34,7 +33,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                 minValue = 0.001,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetRigidBodyMassAction(component, undo.toFloat(), apply.toFloat())
+                    SetRigidBodyPropertiesAction(component, bodyProps.copy(mass = undo.toFloat()), bodyProps.copy(mass = apply.toFloat()))
                 }
             )
         }

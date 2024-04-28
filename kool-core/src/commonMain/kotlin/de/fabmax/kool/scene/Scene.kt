@@ -51,7 +51,7 @@ open class Scene(name: String? = null) : Node(name) {
         val ctx = KoolSystem.getContextOrNull() ?: return false
         if (ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
             mainRenderPass.isReverseDepth = true
-            logI { "Enabled infinite depth mode" }
+            logD { "Enabled infinite depth mode" }
             return true
         } else {
             logW { "Failed to enable infinite depth mode: Incompatible clip depth range" }

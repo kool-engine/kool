@@ -11,7 +11,7 @@ import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 
 fun RigidBodyComponent(nodeModel: SceneNodeModel): RigidBodyComponent {
     return RigidBodyComponent(nodeModel, RigidBodyComponentData())
@@ -22,9 +22,9 @@ class RigidBodyComponent(nodeModel: SceneNodeModel, override val componentData: 
     EditorDataComponent<RigidBodyComponentData>,
     PhysicsComponent
 {
-    val bodyState = mutableStateOf(componentData.settings).onChange {
+    val bodyState = mutableStateOf(componentData.properties).onChange {
         if (AppState.isEditMode) {
-            componentData.settings = it
+            componentData.properties = it
         }
         updateRigidBody()
     }
@@ -33,12 +33,6 @@ class RigidBodyComponent(nodeModel: SceneNodeModel, override val componentData: 
 
     override suspend fun createComponent() {
         super.createComponent()
-
-        val physicsWorld = nodeModel.sceneModel.getComponent<PhysicsWorldComponent>()?.physicsWorld
-        if (physicsWorld == null) {
-            logE { "Unable to create RigidBodyComponent: parent scene has no PhysicsWorldComponent" }
-            return
-        }
 
         createRigidBody()
         nodeModel.transform.onTransformEdited += { setPhysicsTransformFromModel() }
@@ -55,7 +49,7 @@ class RigidBodyComponent(nodeModel: SceneNodeModel, override val componentData: 
 
     private fun updateRigidBody() {
         val actor = rigidActor
-        val isActorOk = when (componentData.settings.bodyType) {
+        val isActorOk = when (componentData.properties.bodyType) {
             RigidBodyType.DYNAMIC -> actor is RigidDynamic && !actor.isKinematic
             RigidBodyType.KINEMATIC -> actor is RigidDynamic && actor.isKinematic
             RigidBodyType.STATIC -> actor is RigidStatic
@@ -65,20 +59,28 @@ class RigidBodyComponent(nodeModel: SceneNodeModel, override val componentData: 
             createRigidBody()
 
         } else if (actor is RigidDynamic) {
-            actor.mass = componentData.settings.mass
+            actor.mass = componentData.properties.mass
         }
     }
 
     private fun createRigidBody() {
-        val physicsWorld = nodeModel.sceneModel.getComponent<PhysicsWorldComponent>()?.physicsWorld
+        val physicsWorldComponent = nodeModel.sceneModel.getOrPutComponent<PhysicsWorldComponent> {
+            logW { "Failed to find a PhysicsWorldComponent in parent scene, creating default one" }
+            PhysicsWorldComponent(nodeModel.sceneModel)
+        }
+        val physicsWorld = physicsWorldComponent.physicsWorld
+        if (physicsWorld == null) {
+            logW { "Unable to create rigid body: parent physics world was not yet created" }
+        }
+
         rigidActor?.let {
             physicsWorld?.removeActor(it)
             it.release()
         }
 
-        rigidActor = when (componentData.settings.bodyType) {
-            RigidBodyType.DYNAMIC -> RigidDynamic(componentData.settings.mass)
-            RigidBodyType.KINEMATIC -> RigidDynamic(componentData.settings.mass, isKinematic = true)
+        rigidActor = when (componentData.properties.bodyType) {
+            RigidBodyType.DYNAMIC -> RigidDynamic(componentData.properties.mass)
+            RigidBodyType.KINEMATIC -> RigidDynamic(componentData.properties.mass, isKinematic = true)
             RigidBodyType.STATIC -> RigidStatic()
         }
 

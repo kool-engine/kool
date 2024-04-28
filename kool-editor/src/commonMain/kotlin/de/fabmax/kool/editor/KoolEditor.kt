@@ -368,7 +368,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         Assets.launch {
             val text = jsonCodec.encodeToString(projectModel.projectData)
             projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
-            logI { "Saved project model" }
+            logD { "Saved project model" }
         }
     }
 
