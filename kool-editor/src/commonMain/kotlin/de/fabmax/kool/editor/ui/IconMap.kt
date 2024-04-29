@@ -117,6 +117,8 @@ object IconMap {
         val minus = IconProvider(this, iconMap.IconImageProvider(18, 2))
         val edit = IconProvider(this, iconMap.IconImageProvider(19, 2))
         val physics = IconProvider(this, iconMap.IconImageProvider(0, 3))
+        val alert = IconProvider(this, iconMap.IconImageProvider(1, 3))
+        val alertFilled = IconProvider(this, iconMap.IconImageProvider(2, 3))
     }
 }
 

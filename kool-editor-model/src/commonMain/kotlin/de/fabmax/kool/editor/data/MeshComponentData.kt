@@ -115,12 +115,12 @@ sealed class MeshShapeData {
     }
 
     @Serializable
-    data class Cylinder
-        (val topRadius: Double,
-         val bottomRadius: Double,
-         val height: Double,
-         val steps: Int,
-         override val common: CommonShapeData = CommonShapeData()
+    data class Cylinder(
+        val topRadius: Double,
+        val bottomRadius: Double,
+        val length: Double,
+        val steps: Int,
+        override val common: CommonShapeData = CommonShapeData()
     ) : MeshShapeData() {
 
         override val name: String get() = "Cylinder"
@@ -129,7 +129,7 @@ sealed class MeshShapeData {
         override fun generate(builder: MeshBuilder) {
             builder.apply {
                 cylinder {
-                    height = this@Cylinder.height.toFloat()
+                    height = this@Cylinder.length.toFloat()
                     topRadius = this@Cylinder.topRadius.toFloat()
                     bottomRadius = this@Cylinder.bottomRadius.toFloat()
                     steps = this@Cylinder.steps

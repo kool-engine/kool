@@ -193,11 +193,11 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             )
         }
         labeledDoubleTextField(
-            label = "Height:",
-            value = cylinder.height,
+            label = "Length:",
+            value = cylinder.length,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, cylinder.copy(height = undo), cylinder.copy(height = apply), shapeI)
+                SetShapeAction(component, cylinder.copy(length = undo), cylinder.copy(length = apply), shapeI)
             }
         )
         labeledIntTextField(

@@ -94,7 +94,7 @@ open class UiSurface(
                     val focused = inputHandler.focusedNode as? UiNode?
                     focused?.let { focusedNd ->
                         val ptr = PointerInput.primaryPointer
-                        if (ptr.isAnyButtonEvent) {
+                        if (ptr.isAnyButtonPressed) {
                             val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
                             if (!focusedNd.isInBounds(ptrPos)) {
                                 requestFocus(null)

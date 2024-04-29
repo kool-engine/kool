@@ -76,6 +76,12 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
 
         // force ray test mesh update
         mesh.rayTest.onMeshDataChanged(mesh)
+
+        if (isCreated) {
+            launchOnMainThread {
+                nodeModel.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(componentData) }
+            }
+        }
     }
 
     private suspend fun createMeshShader() {
@@ -170,4 +176,8 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
             }
         }
     }
+}
+
+interface UpdateMeshComponent {
+    fun updateMesh(mesh: MeshComponentData)
 }
