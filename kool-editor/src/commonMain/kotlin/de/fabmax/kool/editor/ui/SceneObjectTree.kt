@@ -46,7 +46,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewMesh(parent: SceneObjectItem, meshShape: MeshShapeData) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData("${meshShape.name}-$id", id)
+        val name = editor.projectModel.uniquifyName(meshShape.name)
+        val nodeData = SceneNodeData(name, id)
         nodeData.components += MeshComponentData(meshShape)
         nodeData.components += MaterialComponentData(-1)
         val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
@@ -56,7 +57,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData(modelAsset.name, id)
+        val name = editor.projectModel.uniquifyName(modelAsset.name)
+        val nodeData = SceneNodeData(name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
         val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
         AddNodeAction(mesh).apply()
@@ -65,7 +67,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData("${lightType.name}-$id", id)
+        val name = editor.projectModel.uniquifyName(lightType.name)
+        val nodeData = SceneNodeData(name, id)
         nodeData.components += DiscreteLightComponentData(lightType)
         val light = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
 
@@ -81,7 +84,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addEmptyNode(parent: SceneObjectItem) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData("Empty-$id", id)
+        val name = editor.projectModel.uniquifyName("Empty")
+        val nodeData = SceneNodeData(name, id)
         val empty = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
         AddNodeAction(empty).apply()
     }

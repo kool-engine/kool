@@ -37,10 +37,10 @@ object EditorClipboard {
                     if (copyData.isNotEmpty()) {
                         logD { "Pasting ${copyData.size} objects from clipboard" }
                         sanitizeCopiedNodeIds(copyData)
-
                         val selection = editor.selectionOverlay.getSelectedNodes()
-                        val parent = if (selection.size == 1) selection[0] else scene
+                        val parent = (selection.firstOrNull { it is SceneNodeModel } as SceneNodeModel?)?.parent ?: scene
                         val sceneNodes = copyData.map { SceneNodeModel(it, parent, scene) }
+
                         AddNodeAction(sceneNodes).apply()
                         editor.selectionOverlay.setSelection(sceneNodes)
                     }
@@ -74,6 +74,7 @@ object EditorClipboard {
         // todo: support pasting node hierarchies, for now hierarchies are flattened
         copyData.forEach {
             it.nodeId = editor.projectModel.nextId()
+            it.name = editor.projectModel.uniquifyName(it.name)
             it.childNodeIds.clear()
         }
     }

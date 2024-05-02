@@ -81,6 +81,30 @@ class EditorProject(val projectData: ProjectData) {
         return projectData.nextId++
     }
 
+    /**
+     * Checks if the given name exists and if so prepends an increasing number to it to make it unique. If the given
+     * name already ends with a number, the number is replaced.
+     */
+    fun uniquifyName(name: String): String {
+        val existingNames = sceneNodeData.values.map { it.name }.toSet()
+        if (name !in existingNames) {
+            return name
+        }
+
+        var nameBase = name
+        while (nameBase.isNotEmpty() && nameBase.last().isDigit()) {
+            nameBase = nameBase.substring(0 until nameBase.lastIndex)
+        }
+        nameBase = nameBase.trim()
+
+        var counter = 1
+        var uniqueName = "$nameBase ${counter++}"
+        while (uniqueName in existingNames) {
+            uniqueName = "$nameBase ${counter++}"
+        }
+        return uniqueName
+    }
+
     fun addSceneNodeData(data: SceneNodeData) {
         projectData.sceneNodes += data
         _sceneNodeData[data.nodeId] = data
