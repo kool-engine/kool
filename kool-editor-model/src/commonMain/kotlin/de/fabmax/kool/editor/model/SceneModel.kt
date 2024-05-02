@@ -143,7 +143,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
     }
 
     fun removeSceneNode(nodeModel: SceneNodeModel) {
-        nodeModel.nodeData.childNodeIds.mapNotNull { nodeModels[nodeId] }.forEach { removeSceneNode(it) }
+        nodeModel.nodeData.childNodeIds.mapNotNull { nodeModels[it] }.forEach { removeSceneNode(it) }
 
         project.entities -= nodeModel
         project.removeSceneNodeData(nodeModel.nodeData)

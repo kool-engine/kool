@@ -5,13 +5,22 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddNodeAction(
-    private val addNodeModels: List<SceneNodeModel>
+    private var addNodeModels: List<SceneNodeModel>
 ) : EditorAction {
 
     constructor(addNodeModel: SceneNodeModel): this(listOf(addNodeModel))
 
     override fun doAction() {
         launchOnMainThread {
+            // for undo -> redo action nodes were already destroyed and need to be recreated
+            addNodeModels = addNodeModels.map {
+                if (it.drawNode.isReleased) {
+                    SceneNodeModel(it.nodeData, it.parent, it.sceneModel)
+                } else {
+                    it
+                }
+            }
+
             // todo: the naive loop approach does not work if addNodeModels form a hierarchy
             addNodeModels.forEach {
                 it.sceneModel.addSceneNode(it)

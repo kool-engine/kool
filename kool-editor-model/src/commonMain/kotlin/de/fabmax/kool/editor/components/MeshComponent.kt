@@ -12,6 +12,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
@@ -55,6 +56,13 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
 
         updateGeometry()
         recreateShader()
+    }
+
+    override fun destroyComponent() {
+        super.destroyComponent()
+        mesh?.release()
+        mesh = null
+        nodeModel.setDrawNode(Node(nodeModel.name))
     }
 
     fun updateGeometry() {

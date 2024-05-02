@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
 class DeleteNodeAction(
-    private val removeNodeModels: List<SceneNodeModel>
+    private var removeNodeModels: List<SceneNodeModel>
 ) : EditorAction {
 
     constructor(removeNodeModel: SceneNodeModel): this(listOf(removeNodeModel))
@@ -22,6 +22,8 @@ class DeleteNodeAction(
         // fixme: this will not work in case removed nodes have children, because children will not be present in scene
         //  anymore -> deepcopy child node models before removal and re-add them in correct order on undo
         launchOnMainThread {
+            // removed node model was destroyed, crate a new one only using the old data
+            removeNodeModels = removeNodeModels.map { SceneNodeModel(it.nodeData, it.parent, it.sceneModel) }
             removeNodeModels.forEach {
                 it.sceneModel.addSceneNode(it)
             }

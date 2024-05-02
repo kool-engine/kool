@@ -44,7 +44,6 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
         }
 
         override fun onManipulationCanceled(startTransform: TrsTransformD) {
-            println("canceled")
             hasTransformAuthority = false
         }
 
