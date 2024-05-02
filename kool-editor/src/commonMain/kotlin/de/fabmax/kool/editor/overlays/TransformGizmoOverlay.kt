@@ -23,6 +23,7 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
         get() = selection.getOrNull(0)?.nodeModel
 
     private var hasTransformAuthority = false
+    val isTransformDrag: Boolean get() = hasTransformAuthority
 
 
     val transformFrame = mutableStateOf(gizmo.transformFrame).onChange {
@@ -43,6 +44,7 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
         }
 
         override fun onManipulationCanceled(startTransform: TrsTransformD) {
+            println("canceled")
             hasTransformAuthority = false
         }
 
@@ -62,6 +64,10 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
                 gizmo.updateGizmoFromClient()
             }
         }
+    }
+
+    fun cancelTransformOperation() {
+        gizmo.gizmoNode.cancelManipulation()
     }
 
     private fun applySelectionTransform(withUndo: Boolean) {

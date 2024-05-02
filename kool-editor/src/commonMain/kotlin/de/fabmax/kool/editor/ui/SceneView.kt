@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
+import de.fabmax.kool.editor.EditorEditMode
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.DockNodeLeaf
@@ -9,17 +10,6 @@ import de.fabmax.kool.scene.Scene
 import kotlin.math.roundToInt
 
 class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera, ui) {
-
-    val isBoxSelectMode = mutableStateOf(false).onChange {
-        if (it) {
-            // enabled box selection mode
-            windowSurface.inputMode = UiSurface.InputCaptureMode.CapturePassthrough
-        } else {
-            // disabled box selection mode
-            windowSurface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
-            boxSelector.isBoxSelect.set(false)
-        }
-    }
 
     val isShowToolbar = mutableStateOf(true)
     val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.JAVASCRIPT)
@@ -47,8 +37,14 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
                     .background(null)
                 viewBox = uiNode
 
-                if (isBoxSelectMode.use()) {
+                if (editor.editMode.mode.use() == EditorEditMode.Mode.BOX_SELECT) {
+                    // enabled box selection mode
+                    surface.inputMode = UiSurface.InputCaptureMode.CapturePassthrough
                     boxSelector()
+                } else {
+                    // disabled box selection mode
+                    surface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
+                    boxSelector.isBoxSelect.set(false)
                 }
             }
         }

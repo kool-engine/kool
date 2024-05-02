@@ -43,7 +43,10 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         overlayMesh.isVisible = false
         addNode(overlayMesh)
 
-        onSelectionChanged += { updateSelection = true }
+        onSelectionChanged += {
+            updateSelection = true
+            editor.editMode.updateGizmo()
+        }
 
         onUpdate {
             selectionColor = editor.ui.uiColors.value.primary
