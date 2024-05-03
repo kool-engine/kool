@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.io.FileInputStream
 import java.util.*
@@ -21,10 +23,13 @@ kotlin {
     jvmToolchain(11)
 
     js(IR) {
+        //compilerOptions {
+        //    running in browser fails with some error on require()
+        //    target.set("es2015")
+        //}
         browser { }
     }
 
-    @OptIn(ExperimentalKotlinGradlePluginApi::class)
     compilerOptions {
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
