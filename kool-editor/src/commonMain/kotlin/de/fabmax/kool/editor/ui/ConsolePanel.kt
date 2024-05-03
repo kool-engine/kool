@@ -225,7 +225,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
             isTextValid = level in levelFonts
             val spans = mutableListOf<Pair<String, TextAttributes>>()
             spans += fmtTime to timeFont
-            spans += "  f:${fmtStr("$frameIdx", 6)} " to frameFont
+            spans += " f:${fmtFrameCnt(frameIdx, 4)} " to frameFont
             spans += " ${level.indicator} " to (levelFonts[level] ?: defaultTextAttrs)
 
             if ('\u001b' in message && ansiRegex.containsMatchIn(message)) {
@@ -305,10 +305,14 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
             return "${fmtInt(date.hour)}:${fmtInt(date.minute)}:${fmtInt(date.second)}.${fmtInt((date.nanosecond / 1e6).toInt(), 3)}"
         }
 
-        private fun fmtStr(str: String, len: Int): String {
-            var fmt = str
-            while (fmt.length < len) {
-                fmt += " "
+        private fun fmtFrameCnt(frameCnt: Int, len: Int): String {
+            var fmt = "$frameCnt"
+            if (fmt.length >= len) {
+                fmt = "…${fmt.substring(fmt.length - (len-1))}"
+            } else {
+                while (fmt.length < len) {
+                    fmt = " $fmt"
+                }
             }
             return fmt
         }
@@ -322,7 +326,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
         }
 
         override fun toString(): String {
-            return "$fmtTime f:${fmtStr("$frameIdx", 6)} ${level.indicator}: ${message}${if (tag != null) " [${tag}]" else ""}"
+            return "$fmtTime f:${fmtFrameCnt(frameIdx, 4)} ${level.indicator}: ${message}${if (tag != null) " [${tag}]" else ""}"
         }
     }
 

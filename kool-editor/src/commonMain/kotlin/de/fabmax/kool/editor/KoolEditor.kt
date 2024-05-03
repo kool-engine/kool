@@ -220,7 +220,11 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             name = "Toggle box select",
             keyCode = LocalKeyCode('B')
         ) {
-            editMode.mode.set(EditorEditMode.Mode.BOX_SELECT)
+            if (editMode.mode.value == EditorEditMode.Mode.BOX_SELECT) {
+                editMode.mode.set(EditorEditMode.Mode.NONE)
+            } else {
+                editMode.mode.set(EditorEditMode.Mode.BOX_SELECT)
+            }
         }
         editorInputContext.addKeyListener(
             name = "Move selected object",
