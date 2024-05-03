@@ -1,20 +1,18 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddNodeAction(
     val addNodeDatas: List<SceneNodeData>,
-    parent: NodeModel,
-    sceneModel: SceneModel
+    val parentId: NodeId,
+    val sceneId: NodeId
 ) : EditorAction {
 
-    private val parentId = parent.nodeId
-    private val sceneId = sceneModel.nodeId
     private val parentModel: NodeModel? get() {
         val scene = sceneModel(sceneId)
         return if (parentId == sceneId) scene else scene?.nodeModels?.get(parentId)

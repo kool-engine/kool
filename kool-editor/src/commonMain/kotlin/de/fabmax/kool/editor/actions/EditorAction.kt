@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 
@@ -13,10 +14,10 @@ interface EditorAction {
     }
 }
 
-fun sceneModel(sceneId: Long): SceneModel? {
-    return KoolEditor.instance.projectModel.getCreatedScenes().find { it.nodeId == sceneId }
+fun sceneModel(sceneId: NodeId): SceneModel? {
+    return KoolEditor.instance.projectModel.createdScenes.values.find { it.nodeId == sceneId }
 }
 
-fun sceneNodeModel(nodeId: Long, sceneId: Long): SceneNodeModel? {
+fun sceneNodeModel(nodeId: NodeId, sceneId: NodeId): SceneNodeModel? {
     return sceneModel(sceneId)?.nodeModels?.get(nodeId)
 }

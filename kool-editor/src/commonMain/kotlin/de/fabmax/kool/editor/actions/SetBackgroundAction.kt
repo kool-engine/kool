@@ -2,16 +2,15 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.util.launchOnMainThread
 
 class SetBackgroundAction(
-    component: SceneBackgroundComponent,
+    nodeId: NodeId,
     val oldBackground: SceneBackgroundData,
     val newBackground: SceneBackgroundData
-) : ComponentAction<SceneBackgroundComponent>(component) {
-
-    private val component: SceneBackgroundComponent? get() = nodeModel?.getComponent()
+) : ComponentAction<SceneBackgroundComponent>(nodeId, SceneBackgroundComponent::class) {
 
     override fun doAction() {
         component?.backgroundState?.set(newBackground)

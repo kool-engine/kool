@@ -28,7 +28,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                 items = typeOptions,
                 typeOptions.indexOfFirst { it.type == bodyProps.type }
             ) {
-                SetRigidBodyPropertiesAction(component, bodyProps, bodyProps.copy(type = it.type)).apply()
+                SetRigidBodyPropertiesAction(nodeId, bodyProps, bodyProps.copy(type = it.type)).apply()
             }
 
             if (bodyProps.type == RigidBodyType.DYNAMIC) {
@@ -39,7 +39,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                     dragChangeSpeed = DragChangeRates.SIZE,
                     editHandler = ActionValueEditHandler { undo, apply ->
                         SetRigidBodyPropertiesAction(
-                            component,
+                            nodeId,
                             bodyProps.copy(mass = undo.toFloat()),
                             bodyProps.copy(mass = apply.toFloat())
                         )
@@ -65,7 +65,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                 ShapeOption.Cylinder -> bodyProps.copy(shape = RigidBodyShape.Cylinder(1f, 1f))
                 ShapeOption.Capsule -> bodyProps.copy(shape = RigidBodyShape.Capsule(1f, 1f))
             }
-            SetRigidBodyPropertiesAction(component, bodyProps, newProps).apply()
+            SetRigidBodyPropertiesAction(nodeId, bodyProps, newProps).apply()
         }
 
         when (val shape = bodyProps.shape) {
@@ -87,7 +87,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
             editHandler = ActionValueEditHandler { undo, apply ->
                 val undoShape = bodyProps.copy(shape = RigidBodyShape.Box(Vec3Data(undo)))
                 val applyShape = bodyProps.copy(shape = RigidBodyShape.Box(Vec3Data(apply)))
-                SetRigidBodyPropertiesAction(component, undoShape, applyShape)
+                SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
@@ -100,7 +100,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
             editHandler = ActionValueEditHandler { undo, apply ->
                 val undoShape = bodyProps.copy(shape = shape.copy(radius = undo.toFloat()))
                 val applyShape = bodyProps.copy(shape = shape.copy(radius = apply.toFloat()))
-                SetRigidBodyPropertiesAction(component, undoShape, applyShape)
+                SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
         labeledDoubleTextField(
@@ -110,7 +110,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
             editHandler = ActionValueEditHandler { undo, apply ->
                 val undoShape = bodyProps.copy(shape = shape.copy(length = undo.toFloat()))
                 val applyShape = bodyProps.copy(shape = shape.copy(length = apply.toFloat()))
-                SetRigidBodyPropertiesAction(component, undoShape, applyShape)
+                SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
@@ -123,7 +123,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
             editHandler = ActionValueEditHandler { undo, apply ->
                 val undoShape = bodyProps.copy(shape = shape.copy(radius = undo.toFloat()))
                 val applyShape = bodyProps.copy(shape = shape.copy(radius = apply.toFloat()))
-                SetRigidBodyPropertiesAction(component, undoShape, applyShape)
+                SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
         labeledDoubleTextField(
@@ -133,7 +133,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
             editHandler = ActionValueEditHandler { undo, apply ->
                 val undoShape = bodyProps.copy(shape = shape.copy(length = undo.toFloat()))
                 val applyShape = bodyProps.copy(shape = shape.copy(length = apply.toFloat()))
-                SetRigidBodyPropertiesAction(component, undoShape, applyShape)
+                SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
@@ -146,7 +146,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
             editHandler = ActionValueEditHandler { undo, apply ->
                 val undoShape = bodyProps.copy(shape = shape.copy(radius = undo.toFloat()))
                 val applyShape = bodyProps.copy(shape = shape.copy(radius = apply.toFloat()))
-                SetRigidBodyPropertiesAction(component, undoShape, applyShape)
+                SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }

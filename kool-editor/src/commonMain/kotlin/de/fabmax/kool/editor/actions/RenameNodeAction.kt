@@ -1,21 +1,17 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.util.nodeModel
 
 class RenameNodeAction(
-    nodeModel: NodeModel,
+    val nodeId: NodeId,
     val applyName: String,
     val undoName: String
 ) : EditorAction {
 
-    private val nodeId = nodeModel.nodeId
-    private val sceneId = if (nodeModel is SceneNodeModel) nodeModel.sceneModel.nodeId else nodeModel.nodeId
-    private val nodeModel: NodeModel? get() {
-        val scene = sceneModel(sceneId)
-        return if (nodeId == sceneId) scene else scene?.nodeModels?.get(nodeId)
-    }
+    private val nodeModel: NodeModel? get() = nodeId.nodeModel
 
     override fun doAction() {
         nodeModel?.let {

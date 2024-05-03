@@ -74,7 +74,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                                 editName = it
                             }
                             .onEnterPressed {
-                                RenameNodeAction(selectedObject, it, selectedObject.name).apply()
+                                RenameNodeAction(selectedObject.nodeId, it, selectedObject.name).apply()
                             }
                     }
                 }
@@ -165,7 +165,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         open fun createComponent(target: NodeModel): T? = null
 
         fun addComponent(target: NodeModel) {
-            createComponent(target)?.let { AddComponentAction(target, it).apply() }
+            createComponent(target)?.let { AddComponentAction(target.nodeId, it).apply() }
         }
 
         data object AddSsaoComponent : ComponentAdder<SsaoComponent>("Screen-space Ambient Occlusion") {
@@ -209,7 +209,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     parentMenu.subMenu(name) {
                         models.forEach { model ->
                             item(model.name) {
-                                AddComponentAction(it, ModelComponent(target as SceneNodeModel, ModelComponentData(model.path))).apply()
+                                AddComponentAction(it.nodeId, ModelComponent(target as SceneNodeModel, ModelComponentData(model.path))).apply()
                             }
                         }
                     }
@@ -244,7 +244,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     parentMenu.subMenu(name) {
                         scriptClasses.forEach { script ->
                             item(script.prettyName) {
-                                AddComponentAction(it, BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))).apply()
+                                AddComponentAction(it.nodeId, BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))).apply()
                             }
                         }
                     }

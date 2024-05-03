@@ -14,11 +14,11 @@ import kotlinx.serialization.Transient
 
 
 @Serializable
-data class MaterialComponentData(var materialId: Long) : ComponentData
+data class MaterialComponentData(var materialId: NodeId) : ComponentData
 
 @Serializable
 data class MaterialData(
-    val id: Long,
+    val id: NodeId,
     var name: String,
     var shaderData: MaterialShaderData
 ) {

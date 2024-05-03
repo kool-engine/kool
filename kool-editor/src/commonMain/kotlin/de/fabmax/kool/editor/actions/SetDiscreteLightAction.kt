@@ -2,14 +2,13 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.data.LightTypeData
+import de.fabmax.kool.editor.data.NodeId
 
 class SetDiscreteLightAction(
-    component: DiscreteLightComponent,
+    nodeId: NodeId,
     val setLightData: LightTypeData,
     val undoLightData: LightTypeData
-) : ComponentAction<DiscreteLightComponent>(component) {
-
-    private val component: DiscreteLightComponent? get() = nodeModel?.getComponent()
+) : ComponentAction<DiscreteLightComponent>(nodeId, DiscreteLightComponent::class) {
 
     override fun doAction() {
         component?.lightState?.set(setLightData)

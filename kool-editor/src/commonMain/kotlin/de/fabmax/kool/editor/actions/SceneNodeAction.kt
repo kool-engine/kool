@@ -1,23 +1,11 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.util.sceneNodeModel
 
 abstract class SceneNodeAction(sceneNodes: List<SceneNodeModel>): EditorAction {
-    val sceneId = sceneNodes.firstOrNull()?.sceneModel?.nodeId
-    val sceneNodeIds = sceneNodes.map { it.nodeId }
+    private val sceneNodeIds = sceneNodes.map { it.nodeId }
 
-    val sceneModel: SceneModel? get() = sceneId?.let { sceneModel(it) }
-    val nodeModels: List<SceneNodeModel>
-        get() = sceneModel?.let { scene -> sceneNodeIds.mapNotNull { scene.nodeModels[it] } } ?: emptyList()
-    val nodeModel: SceneNodeModel? get() = nodeModels.firstOrNull()
-
-    protected fun resolveNodeModel(parentId: Long): NodeModel? {
-        return if (sceneModel?.nodeId == parentId) {
-            sceneModel
-        } else {
-            sceneModel?.nodeModels?.get(parentId)
-        }
-    }
+    val sceneNodes: List<SceneNodeModel> get() = sceneNodeIds.mapNotNull { it.sceneNodeModel }
+    val sceneNode: SceneNodeModel? get() = sceneNodeIds.firstOrNull()?.sceneNodeModel
 }

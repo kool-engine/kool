@@ -25,7 +25,7 @@ class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(comp
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val oldSettings = component.ssaoState.value.copy(radius = undoValue.toFloat())
                         val newSettings = component.ssaoState.value.copy(radius = applyValue.toFloat())
-                        SetSsaoSettingsAction(component, oldSettings, newSettings)
+                        SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
                     }
                 )
 
@@ -34,7 +34,7 @@ class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(comp
                     val allowedMax = if (it) 1f else Float.POSITIVE_INFINITY
                     val clampedRadius = oldSettings.radius.clamp(0f, allowedMax)
                     val newSettings = component.ssaoState.value.copy(isRelativeRadius = it, radius = clampedRadius)
-                    SetSsaoSettingsAction(component, oldSettings, newSettings).apply()
+                    SetSsaoSettingsAction(nodeId, oldSettings, newSettings).apply()
                 }
 
                 labeledDoubleTextField(
@@ -47,7 +47,7 @@ class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(comp
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val oldSettings = component.ssaoState.value.copy(strength = undoValue.toFloat())
                         val newSettings = component.ssaoState.value.copy(strength = applyValue.toFloat())
-                        SetSsaoSettingsAction(component, oldSettings, newSettings)
+                        SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
                     }
                 )
 
@@ -61,7 +61,7 @@ class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(comp
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val oldSettings = component.ssaoState.value.copy(power = undoValue.toFloat())
                         val newSettings = component.ssaoState.value.copy(power = applyValue.toFloat())
-                        SetSsaoSettingsAction(component, oldSettings, newSettings)
+                        SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
                     }
                 )
 
@@ -77,7 +77,7 @@ class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(comp
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val oldSettings = component.ssaoState.value.copy(mapSize = undoValue.toFloat())
                         val newSettings = component.ssaoState.value.copy(mapSize = applyValue.toFloat())
-                        SetSsaoSettingsAction(component, oldSettings, newSettings)
+                        SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
                     }
                 )
 
@@ -90,7 +90,7 @@ class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(comp
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val oldSettings = component.ssaoState.value.copy(samples = undoValue)
                         val newSettings = component.ssaoState.value.copy(samples = applyValue)
-                        SetSsaoSettingsAction(component, oldSettings, newSettings)
+                        SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
                     }
                 )
 
@@ -102,7 +102,7 @@ class SsaoEditor(component: SsaoComponent) : ComponentEditor<SsaoComponent>(comp
                         .alignX(AlignmentX.Center)
                         .onClick {
                             val oldSettings = component.ssaoState.value
-                            SetSsaoSettingsAction(component, oldSettings, SsaoSettings()).apply()
+                            SetSsaoSettingsAction(nodeId, oldSettings, SsaoSettings()).apply()
                         }
                 }
             }

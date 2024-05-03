@@ -12,7 +12,7 @@ import kotlin.math.max
 
 sealed class NodeModel(val nodeData: SceneNodeData) {
 
-    val nodeId: Long
+    val nodeId: NodeId
         get() = nodeData.nodeId
 
     val nameState = mutableStateOf(nodeData.name).onChange {
@@ -83,7 +83,7 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
         drawNode.removeNode(child.drawNode)
     }
 
-    private fun getNodeById(id: Long): SceneNodeModel? {
+    private fun getNodeById(id: NodeId): SceneNodeModel? {
         return when (this) {
             is SceneModel -> nodeModels[id]
             is SceneNodeModel -> sceneModel.nodeModels[id]
@@ -188,7 +188,7 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
 
     sealed class InsertionPos {
         data object End : InsertionPos()
-        data class Before(val that: Long) : InsertionPos()
-        data class After(val that: Long) : InsertionPos()
+        data class Before(val that: NodeId) : InsertionPos()
+        data class After(val that: NodeId) : InsertionPos()
     }
 }

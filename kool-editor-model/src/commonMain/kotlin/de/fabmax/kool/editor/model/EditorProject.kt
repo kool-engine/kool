@@ -15,22 +15,23 @@ class EditorProject(val projectData: ProjectData) {
     val entities = mutableListOf<NodeModel>()
 
     private val _sceneNodeData = projectData.sceneNodes.associateBy { it.nodeId }.toMutableMap()
-    val sceneNodeData: Map<Long, SceneNodeData>
+    val sceneNodeData: Map<NodeId, SceneNodeData>
         get() = _sceneNodeData
 
     private val _materialsById = projectData.materials.associateBy { it.id }.toMutableMap()
-    val materialsById: Map<Long, MaterialData>
+    val materialsById: Map<NodeId, MaterialData>
         get() = _materialsById
     val materials = mutableStateListOf<MaterialData>().apply {
         addAll(projectData.materials)
         sortBy { it.name }
     }
 
-    private val created: MutableMap<Long, SceneModel> = mutableMapOf()
+    private val _createdScenes: MutableMap<NodeId, SceneModel> = mutableMapOf()
+    val createdScenes: Map<NodeId, SceneModel> get() = _createdScenes
 
     private fun checkProjectModelConsistency() {
         val nodeMap = projectData.sceneNodes.associateBy { it.nodeId }
-        val referencedNodeIds = mutableSetOf<Long>()
+        val referencedNodeIds = mutableSetOf<NodeId>()
 
         fun collectChildNodeIds(node: SceneNodeData) {
             node.childNodeIds.forEach { childId ->
@@ -65,20 +66,18 @@ class EditorProject(val projectData: ProjectData) {
         projectData.sceneNodeIds.forEach { sceneNodeId ->
             val sceneData = sceneNodeData[sceneNodeId]
             if (sceneData != null) {
-                val sceneModel = created.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }
+                val sceneModel = _createdScenes.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }
                 sceneModel.createScene()
             }
         }
     }
 
     fun onStart() {
-        getCreatedScenes().forEach { it.onStart() }
+        createdScenes.values.forEach { it.onStart() }
     }
 
-    fun getCreatedScenes(): List<SceneModel> = created.values.toList()
-
-    fun nextId(): Long {
-        return projectData.nextId++
+    fun nextId(): NodeId {
+        return NodeId(projectData.nextId++)
     }
 
     /**
@@ -160,10 +159,10 @@ class EditorProject(val projectData: ProjectData) {
 
         fun emptyProject(): EditorProject = EditorProject(
             ProjectData().apply {
-                val sceneId = nextId++
-                val camId = nextId++
-                val boxId = nextId++
-                val lightId = nextId++
+                val sceneId = NodeId(nextId++)
+                val camId = NodeId(nextId++)
+                val boxId = NodeId(nextId++)
+                val lightId = NodeId(nextId++)
                 sceneNodeIds += sceneId
                 sceneNodes += SceneNodeData("New Scene", sceneId).apply {
                     childNodeIds += listOf(camId, boxId, lightId)
@@ -178,7 +177,7 @@ class EditorProject(val projectData: ProjectData) {
                         TransformData.fromMatrix(
                             MutableMat4d()
                                 .translate(0.0, 2.5, 5.0)
-                                .rotate(-30.0.deg, Vec3d.X_AXIS)
+                                .rotate((-30.0).deg, Vec3d.X_AXIS)
                         ))
                 }
                 sceneNodes += SceneNodeData("Default Cube", boxId).apply {

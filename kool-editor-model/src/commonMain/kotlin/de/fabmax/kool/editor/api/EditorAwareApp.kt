@@ -33,8 +33,7 @@ interface EditorAwareApp {
         launchOnMainThread {
             val projModel = EditorProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
             loadApp(projModel, ctx)
-            val createdScenes = projModel.getCreatedScenes()
-            createdScenes.forEach {
+            projModel.createdScenes.values.forEach {
                 ctx.scenes += it.drawNode
             }
             startApp(projModel, ctx)

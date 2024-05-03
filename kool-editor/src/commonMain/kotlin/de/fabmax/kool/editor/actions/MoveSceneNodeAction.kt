@@ -1,16 +1,16 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.util.nodeModel
 
 class MoveSceneNodeAction(
     moveNodeModel: SceneNodeModel,
-    newParent: NodeModel,
+    val newParentId: NodeId,
     val insertionPos: NodeModel.InsertionPos
 ) : SceneNodeAction(listOf(moveNodeModel)) {
-
-    private val newParentId = newParent.nodeId
 
     private val undoParentId = moveNodeModel.parent.nodeId
     private val undoInsertionPos: NodeModel.InsertionPos
@@ -27,9 +27,9 @@ class MoveSceneNodeAction(
     }
 
     override fun doAction() {
-        val nodeModel = nodeModel ?: return
-        val undoParent = resolveNodeModel(undoParentId) ?: return
-        val newParent = resolveNodeModel(newParentId) ?: return
+        val nodeModel = sceneNode ?: return
+        val undoParent = undoParentId.nodeModel ?: return
+        val newParent = newParentId.nodeModel ?: return
 
         undoParent.removeChild(nodeModel)
         newParent.addChild(nodeModel, insertionPos)
@@ -37,9 +37,9 @@ class MoveSceneNodeAction(
     }
 
     override fun undoAction() {
-        val nodeModel = nodeModel ?: return
-        val undoParent = resolveNodeModel(undoParentId) ?: return
-        val newParent = resolveNodeModel(newParentId) ?: return
+        val nodeModel = sceneNode ?: return
+        val undoParent = undoParentId.nodeModel ?: return
+        val newParent = newParentId.nodeModel ?: return
 
         newParent.removeChild(nodeModel)
         undoParent.addChild(nodeModel, undoInsertionPos)

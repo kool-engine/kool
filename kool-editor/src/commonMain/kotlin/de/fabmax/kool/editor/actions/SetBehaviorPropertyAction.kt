@@ -1,17 +1,16 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.BehaviorComponent
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.PropertyValue
 
 class SetBehaviorPropertyAction(
-    component: BehaviorComponent,
+    nodeId: NodeId,
     val propName: String,
     val undoValue: PropertyValue,
     val newValue: PropertyValue,
     val setPropertyBlock: (BehaviorComponent, PropertyValue) -> Unit
-) : ComponentAction<BehaviorComponent>(component) {
-
-    private val component: BehaviorComponent? get() = nodeModel?.getComponent()
+) : ComponentAction<BehaviorComponent>(nodeId, BehaviorComponent::class) {
 
     override fun doAction() {
         component?.let { setPropertyBlock(it, newValue) }

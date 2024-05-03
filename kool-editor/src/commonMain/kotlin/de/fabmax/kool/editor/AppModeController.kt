@@ -12,7 +12,7 @@ class AppModeController(val editor: KoolEditor) {
 
     fun startApp() {
         val app = editor.loadedApp.value?.app ?: return
-        val sceneModel = editor.projectModel.getCreatedScenes().getOrNull(0) ?: return
+        val sceneModel = editor.projectModel.createdScenes.values.firstOrNull() ?: return
 
         logI { "Start app" }
 

@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.components.*
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.ScenePropertiesComponentData
@@ -34,7 +35,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
 
     val cameraState = mutableStateOf<CameraComponent?>(null).onChange {
         if (AppState.isEditMode) {
-            sceneProperties.componentData.cameraNodeId = it?.nodeModel?.nodeId ?: -1L
+            sceneProperties.componentData.cameraNodeId = it?.nodeModel?.nodeId ?: NodeId(-1L)
         } else {
             // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
             it?.camera?.let { cam -> drawNode.camera = cam }
@@ -47,7 +48,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
     override var drawNode: Scene = Scene(name)
 
     val nodesToNodeModels: MutableMap<Node, NodeModel> = mutableMapOf()
-    val nodeModels: MutableMap<Long, SceneNodeModel> = mutableMapOf()
+    val nodeModels: MutableMap<NodeId, SceneNodeModel> = mutableMapOf()
     val sceneNodes: List<SceneNodeModel> get() = nodesToNodeModels.values.filterIsInstance<SceneNodeModel>()
 
     val sceneBackground = getOrPutComponent { SceneBackgroundComponent(this, MdColor.GREY toneLin 900) }
@@ -110,7 +111,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         backgroundUpdater.skybox = null
     }
 
-    private fun resolveNode(nodeId: Long, parent: NodeModel): SceneNodeModel? {
+    private fun resolveNode(nodeId: NodeId, parent: NodeModel): SceneNodeModel? {
         val nodeModel = nodeModels[nodeId]
         return if (nodeModel != null) nodeModel else {
             val nodeData = project.sceneNodeData[nodeId]

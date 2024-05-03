@@ -16,7 +16,7 @@ class SetTransformAction(
     ) : this(listOf(nodeModel), listOf(undoTransform), listOf(applyTransform))
 
     override fun doAction() {
-        nodeModels.forEachIndexed { i, nodeModel ->
+        sceneNodes.forEachIndexed { i, nodeModel ->
             val applyTransform = applyTransforms[i]
             nodeModel.transform.transformState.set(applyTransform)
             applyTransform.toTransform(nodeModel.drawNode.transform)
@@ -24,7 +24,7 @@ class SetTransformAction(
     }
 
     override fun undoAction() {
-        nodeModels.forEachIndexed { i, nodeModel ->
+        sceneNodes.forEachIndexed { i, nodeModel ->
             val undoTransform = undoTransforms[i]
             nodeModel.transform.transformState.set(undoTransform)
             undoTransform.toTransform(nodeModel.drawNode.transform)

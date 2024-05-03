@@ -17,7 +17,7 @@ class ShadowMapEditor(component: ShadowMapComponent) : ComponentEditor<ShadowMap
             val shadowMap = component.shadowMapState.use()
             val selected = typeOptions.indexOfFirst { it.shadowMapType.isInstance(shadowMap) }
             labeledCombobox("Type:", typeOptions, selected) {
-                SetShadowMapTypeAction(component, it.create()).apply()
+                SetShadowMapTypeAction(nodeId, it.create()).apply()
             }
         }
     }

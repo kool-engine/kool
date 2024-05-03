@@ -1,9 +1,12 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.util.nodeModel
+import de.fabmax.kool.editor.util.sceneModel
 import de.fabmax.kool.util.launchOnMainThread
 
 class DeleteSceneNodeAction(
@@ -23,25 +26,23 @@ class DeleteSceneNodeAction(
     constructor(removeNodeModel: SceneNodeModel): this(listOf(removeNodeModel))
 
     override fun doAction() {
-        KoolEditor.instance.selectionOverlay.selection.removeAll(nodeModels)
-        nodeModels.forEach {
+        KoolEditor.instance.selectionOverlay.selection.removeAll(sceneNodes)
+        sceneNodes.forEach {
             it.sceneModel.removeSceneNode(it)
         }
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
     override fun undoAction() {
-        val scene = sceneModel ?: return
-
         // fixme: this will not work in case removed nodes have children, because children will not be present in scene
         //  anymore -> deepcopy child node models before removal and re-add them in correct order on undo
         launchOnMainThread {
             // removed node model was destroyed, crate a new one only using the old data
             removeNodeInfos.forEach { (nodeData, parentId, pos) ->
-                resolveNodeModel(parentId)?.let { parent ->
+                parentId.nodeModel?.let { parent ->
+                    val scene = parent.sceneModel
                     val node = SceneNodeModel(nodeData, parent, scene)
                     scene.addSceneNode(node)
-
                     parent.removeChild(node)
                     parent.addChild(node, pos)
                 }
@@ -50,5 +51,5 @@ class DeleteSceneNodeAction(
         }
     }
 
-    private data class NodeInfo(val nodeData: SceneNodeData, val parentId: Long, val position: NodeModel.InsertionPos)
+    private data class NodeInfo(val nodeData: SceneNodeData, val parentId: NodeId, val position: NodeModel.InsertionPos)
 }

@@ -30,7 +30,7 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
                         LightTypeData.Point::class -> LightTypeData.Point(color)
                         else -> throw IllegalStateException("Unsupported light type: ${it.lightType}")
                     }
-                    SetDiscreteLightAction(component, newLight, currentLight).apply()
+                    SetDiscreteLightAction(nodeId, newLight, currentLight).apply()
                 }
 
                 menuDivider()
@@ -64,7 +64,7 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
                         undoLight = light.copy(color = ColorData(undoValue.toLinear()))
                     }
                 }
-                SetDiscreteLightAction(component, applyLight, undoLight)
+                SetDiscreteLightAction(nodeId, applyLight, undoLight)
             }
         )
 
@@ -91,7 +91,7 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
                         undoLight = light.copy(intensity = undoValue.toFloat())
                     }
                 }
-                SetDiscreteLightAction(component, applyLight, undoLight)
+                SetDiscreteLightAction(nodeId, applyLight, undoLight)
             }
         )
     }
@@ -106,7 +106,7 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val applyLight = spot.copy(spotAngle = applyValue.toFloat())
                 val undoLight = spot.copy(spotAngle = undoValue.toFloat())
-                SetDiscreteLightAction(component, applyLight, undoLight)
+                SetDiscreteLightAction(nodeId, applyLight, undoLight)
             }
         )
         labeledDoubleTextField(
@@ -118,7 +118,7 @@ class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteL
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val applyLight = spot.copy(coreRatio = applyValue.toFloat())
                 val undoLight = spot.copy(coreRatio = undoValue.toFloat())
-                SetDiscreteLightAction(component, applyLight, undoLight)
+                SetDiscreteLightAction(nodeId, applyLight, undoLight)
             }
         )
     }

@@ -34,7 +34,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
                     .items(items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected {
-                        SetMaterialAction(component, items[it].getMaterialModel()).apply()
+                        SetMaterialAction(nodeId, items[it].getMaterialModel()).apply()
                     }
             }
         }

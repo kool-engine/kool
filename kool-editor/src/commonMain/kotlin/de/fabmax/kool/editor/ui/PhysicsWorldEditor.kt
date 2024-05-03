@@ -22,7 +22,7 @@ class PhysicsWorldEditor(component: PhysicsWorldComponent) : ComponentEditor<Phy
                 label = "Continuous collision detection",
                 worldProps.isContinuousCollisionDetection,
             ) {
-                SetPhysicsWorldPropertiesAction(component, worldProps, worldProps.copy(isContinuousCollisionDetection = it)).apply()
+                SetPhysicsWorldPropertiesAction(nodeId, worldProps, worldProps.copy(isContinuousCollisionDetection = it)).apply()
             }
         }
     }

@@ -49,8 +49,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val name = editor.projectModel.uniquifyName(meshShape.name)
         val nodeData = SceneNodeData(name, id)
         nodeData.components += MeshComponentData(meshShape)
-        nodeData.components += MaterialComponentData(-1)
-        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
+        nodeData.components += MaterialComponentData(NodeId(-1))
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
@@ -59,7 +59,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val name = editor.projectModel.uniquifyName(modelAsset.name)
         val nodeData = SceneNodeData(name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
-        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
@@ -75,7 +75,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
         nodeData.components += TransformComponentData(TransformData.fromMatrix(transform))
 
-        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
@@ -83,7 +83,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName("Empty")
         val nodeData = SceneNodeData(name, id)
-        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {
@@ -102,7 +102,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         if (!isTreeValid.use()) {
             treeItems.clear()
-            editor.projectModel.getCreatedScenes().forEach { sceneModel ->
+            editor.projectModel.createdScenes.values.forEach { sceneModel ->
                 sceneModel.drawNode.let {
                     treeItems.appendNode(sceneModel, it, sceneModel, 0)
                 }
@@ -436,12 +436,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             if (dragTreeItem != self) {
                 when {
                     insertPos.value == -1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.Before(self.nodeId)).apply()
+                        MoveSceneNodeAction(dragTreeItem, self.parent.nodeId, NodeModel.InsertionPos.Before(self.nodeId)).apply()
                     }
                     insertPos.value == 1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.After(self.nodeId)).apply()
+                        MoveSceneNodeAction(dragTreeItem, self.parent.nodeId, NodeModel.InsertionPos.After(self.nodeId)).apply()
                     }
-                    else -> MoveSceneNodeAction(dragTreeItem, self, NodeModel.InsertionPos.End).apply()
+                    else -> MoveSceneNodeAction(dragTreeItem, self.nodeId, NodeModel.InsertionPos.End).apply()
                 }
             }
         }

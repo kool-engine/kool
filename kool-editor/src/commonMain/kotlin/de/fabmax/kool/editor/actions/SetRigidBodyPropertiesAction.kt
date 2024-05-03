@@ -1,15 +1,14 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.RigidBodyComponent
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.RigidBodyProperties
 
 class SetRigidBodyPropertiesAction(
-    component: RigidBodyComponent,
+    nodeId: NodeId,
     private val oldProps: RigidBodyProperties,
     private val newProps: RigidBodyProperties
-) : ComponentAction<RigidBodyComponent>(component) {
-
-    private val component: RigidBodyComponent? get() = nodeModel?.getComponent()
+) : ComponentAction<RigidBodyComponent>(nodeId, RigidBodyComponent::class) {
 
     override fun doAction() {
         component?.bodyState?.set(newProps)

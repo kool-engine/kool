@@ -8,9 +8,7 @@ class SetMeshShapeAction(
     private val oldShape: MeshShapeData,
     private val newShape: MeshShapeData,
     private val replaceIndex: Int = component.shapesState.indexOf(oldShape)
-) : ComponentAction<MeshComponent>(component) {
-
-    private val component: MeshComponent? get() = nodeModel?.getComponent()
+) : ComponentAction<MeshComponent>(component.nodeModel.nodeId, MeshComponent::class) {
 
     override fun doAction() {
         component?.shapesState?.set(replaceIndex, newShape)

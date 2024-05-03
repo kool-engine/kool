@@ -9,11 +9,11 @@ class SetVisibilityAction(nodes: List<SceneNodeModel>, val visible: Boolean) : S
     constructor(node: SceneNodeModel, visible: Boolean): this(listOf(node), visible)
 
     override fun doAction() {
-        nodeModels.forEach { it.isVisibleState.set(visible) }
+        sceneNodes.forEach { it.isVisibleState.set(visible) }
     }
 
     override fun undoAction() {
-        nodeModels.forEach {
+        sceneNodes.forEach {
             undoVisibilities[it.nodeId]?.let { undoState -> it.isVisibleState.set(undoState) }
         }
     }

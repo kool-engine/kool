@@ -41,7 +41,7 @@ object EditorClipboard {
                         val selection = editor.selectionOverlay.getSelectedNodes()
                         val parent = (selection.firstOrNull { it is SceneNodeModel } as SceneNodeModel?)?.parent ?: scene
 
-                        AddNodeAction(copyData, parent, scene).apply()
+                        AddNodeAction(copyData, parent.nodeId, scene.nodeId).apply()
                         launchDelayed(1) {
                             val nodes = copyData.mapNotNull { scene.nodeModels[it.nodeId] }
                             editor.selectionOverlay.setSelection(nodes)
@@ -72,7 +72,7 @@ object EditorClipboard {
             copyData
         }
 
-        AddNodeAction(duplicatedNodes, parent, scene).apply()
+        AddNodeAction(duplicatedNodes, parent.nodeId, scene.nodeId).apply()
         launchDelayed(1) {
             val nodes = duplicatedNodes.mapNotNull { scene.nodeModels[it.nodeId] }
             editor.selectionOverlay.setSelection(nodes)

@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class ScenePropertiesComponentData(
-    var cameraNodeId: Long = -1L,
+    var cameraNodeId: NodeId = NodeId(-1L),
     var maxNumLights: Int = 4
 ) : ComponentData
