@@ -83,6 +83,127 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         }
     }
 
+    init {
+        gizmo.addTranslationHandles()
+    }
+
+    fun start(mode: EditorEditMode.Mode) {
+        if (isActive) {
+            return
+        }
+
+        activeOp = when (mode) {
+            EditorEditMode.Mode.MOVE_IMMEDIATE -> opCamPlaneTranslate
+            EditorEditMode.Mode.ROTATE_IMMEDIATE -> opCamPlaneRotate
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> opUniformScale
+            else -> opCamPlaneTranslate
+        }
+
+        selectionTransform = SelectionTransform(editor.selectionOverlay.getSelectedSceneNodes())
+        val primNode = selectionTransform?.primaryTransformNode ?: return
+
+        updateGizmoFromClient(primNode.drawNode)
+        selectionTransform?.startTransform()
+
+        InputStack.pushTop(inputHandler)
+    }
+
+    fun finish(isCanceled: Boolean) {
+        if (gizmo.isManipulating) {
+            if (isCanceled) {
+                gizmo.cancelManipulation()
+                // restore original / start transform
+                updateFromGizmo(gizmo.gizmoTransform)
+                selectionTransform?.updateTransform()
+                selectionTransform?.applyTransform(false)
+
+            } else {
+                gizmo.finishManipulation()
+                selectionTransform?.applyTransform(true)
+            }
+        }
+        selectionTransform = null
+
+        InputStack.remove(inputHandler)
+    }
+
+    private fun updateGizmoFromClient(client: Node) {
+        clientGlobalToParent.set(client.parent?.invModelMatD ?: Mat4d.IDENTITY)
+        clientTransformOffset.setIdentity()
+
+        val translation = client.modelMatD.transform(MutableVec3d(), 1.0)
+        val rotation = MutableQuatD(QuatD.IDENTITY)
+
+        when (editor.gizmoOverlay.transformFrame.value) {
+            GizmoFrame.LOCAL -> {
+                client.modelMatD.decompose(rotation = rotation)
+                gizmo.gizmoTransform.setCompositionOf(translation, rotation)
+                val localScale = MutableVec3d()
+                client.modelMatD.decompose(scale = localScale)
+                clientTransformOffset.scale(localScale)
+            }
+            GizmoFrame.PARENT -> {
+                client.parent?.modelMatD?.decompose(rotation = rotation)
+                gizmo.gizmoTransform.setCompositionOf(translation, rotation)
+                val localRotation = MutableQuatD()
+                val localScale = MutableVec3d()
+                client.transform.decompose(rotation = localRotation)
+                client.modelMatD.decompose(scale = localScale)
+                clientTransformOffset.rotate(localRotation).scale(localScale)
+            }
+            GizmoFrame.GLOBAL -> {
+                gizmo.gizmoTransform.setCompositionOf(translation)
+                val localRotation = MutableQuatD()
+                val localScale = MutableVec3d()
+                client.modelMatD.decompose(rotation = localRotation, scale = localScale)
+                clientTransformOffset.rotate(localRotation).scale(localScale)
+            }
+        }
+        globalToDragLocal.set(gizmo.gizmoTransform.invMatrixD)
+    }
+
+    private fun updateFromGizmo(transform: TrsTransformD) {
+        val client = selectionTransform?.primaryTransformNode?.drawNode ?: return
+
+        val localTransform = MutableMat4d().set(Mat4d.IDENTITY)
+            .mul(clientGlobalToParent)
+            .mul(transform.matrixD)
+            .mul(clientTransformOffset)
+        client.transform.setMatrix(localTransform)
+    }
+
+    override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
+        val ptr = pointerState.primaryPointer
+        val scene = editor.editorContent.findParentOfType<Scene>()
+        if (scene == null || !scene.computePickRay(ptr, globalRay)) {
+            return
+        }
+
+        globalRay.transformBy(globalToDragLocal, localRay)
+        val dragCtx = DragContext(gizmo, ptr, globalRay, localRay, globalToDragLocal, scene.camera)
+
+        if (!gizmo.isManipulating) {
+            dragCtxStart = dragCtx
+            activeOp?.onDragStart(dragCtx)
+        } else {
+            activeOp?.onDrag(dragCtx)
+            updateFromGizmo(gizmo.gizmoTransform)
+            selectionTransform?.updateTransform()
+            selectionTransform?.applyTransform(false)
+        }
+
+        if (ptr.isLeftButtonClicked) {
+            ptr.consume()
+            finish(false)
+            mode.set(EditorEditMode.Mode.NONE)
+
+        } else if (ptr.isRightButtonClicked) {
+            ptr.consume()
+            finish(true)
+            mode.set(EditorEditMode.Mode.NONE)
+        }
+    }
+
     private fun setXAxisOp() {
         when (mode.value) {
             EditorEditMode.Mode.MOVE_IMMEDIATE -> setOp(opXAxisTranslate)
@@ -141,123 +262,6 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         activeOp = op
         if (isActive) {
             dragCtxStart?.let { activeOp?.onDragStart(it) }
-        }
-    }
-
-    fun start(mode: EditorEditMode.Mode) {
-        if (isActive) {
-            return
-        }
-
-        activeOp = when (mode) {
-            EditorEditMode.Mode.MOVE_IMMEDIATE -> opCamPlaneTranslate
-            EditorEditMode.Mode.ROTATE_IMMEDIATE -> opCamPlaneRotate
-            EditorEditMode.Mode.SCALE_IMMEDIATE -> opUniformScale
-            else -> opCamPlaneTranslate
-        }
-
-        selectionTransform = SelectionTransform(editor.selectionOverlay.getSelectedSceneNodes())
-        val primNode = selectionTransform?.primaryTransformNode ?: return
-
-        updateGizmoFromClient(primNode.drawNode)
-        globalToDragLocal.set(primNode.drawNode.invModelMatD)
-        selectionTransform?.startTransform()
-
-        InputStack.pushTop(inputHandler)
-    }
-
-    fun finish(isCanceled: Boolean) {
-        if (gizmo.isManipulating) {
-            if (isCanceled) {
-                gizmo.cancelManipulation()
-                // restore original / start transform
-                updateFromGizmo(gizmo.gizmoTransform)
-                selectionTransform?.updateTransform()
-                selectionTransform?.applyTransform(false)
-
-            } else {
-                gizmo.finishManipulation()
-                selectionTransform?.applyTransform(true)
-            }
-        }
-        selectionTransform = null
-
-        InputStack.remove(inputHandler)
-    }
-
-    private fun updateGizmoFromClient(client: Node) {
-        clientGlobalToParent.set(client.parent?.invModelMatD ?: Mat4d.IDENTITY)
-        clientTransformOffset.setIdentity()
-
-        val translation = client.modelMatD.transform(MutableVec3d(), 1.0)
-        val rotation = MutableQuatD(QuatD.IDENTITY)
-
-        when (editor.gizmoOverlay.transformFrame.value) {
-            GizmoFrame.LOCAL -> {
-                client.modelMatD.decompose(rotation = rotation)
-                gizmo.gizmoTransform.setCompositionOf(translation, rotation)
-                val localScale = MutableVec3d()
-                client.modelMatD.decompose(scale = localScale)
-                clientTransformOffset.scale(localScale)
-            }
-            GizmoFrame.PARENT -> {
-                client.parent?.modelMatD?.decompose(rotation = rotation)
-                gizmo.gizmoTransform.setCompositionOf(translation, rotation)
-                val localRotation = MutableQuatD()
-                val localScale = MutableVec3d()
-                client.transform.decompose(rotation = localRotation)
-                client.modelMatD.decompose(scale = localScale)
-                clientTransformOffset.rotate(localRotation).scale(localScale)
-            }
-            GizmoFrame.GLOBAL -> {
-                gizmo.gizmoTransform.setCompositionOf(translation)
-                val localRotation = MutableQuatD()
-                val localScale = MutableVec3d()
-                client.modelMatD.decompose(rotation = localRotation, scale = localScale)
-                clientTransformOffset.rotate(localRotation).scale(localScale)
-            }
-        }
-    }
-
-    private fun updateFromGizmo(transform: TrsTransformD) {
-        val client = selectionTransform?.primaryTransformNode?.drawNode ?: return
-
-        val localTransform = MutableMat4d().set(Mat4d.IDENTITY)
-            .mul(clientGlobalToParent)
-            .mul(transform.matrixD)
-            .mul(clientTransformOffset)
-        client.transform.setMatrix(localTransform)
-    }
-
-    override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
-        val ptr = pointerState.primaryPointer
-        val scene = editor.editorContent.findParentOfType<Scene>()
-        if (scene == null || !scene.computePickRay(ptr, globalRay)) {
-            return
-        }
-
-        globalRay.transformBy(globalToDragLocal, localRay)
-        val dragCtx = DragContext(gizmo, ptr, globalRay, localRay, globalToDragLocal, scene.camera)
-
-        if (!gizmo.isManipulating) {
-            dragCtxStart = dragCtx
-            activeOp?.onDragStart(dragCtx)
-        } else {
-            activeOp?.onDrag(dragCtx)
-            updateFromGizmo(gizmo.gizmoTransform)
-            selectionTransform?.updateTransform()
-            selectionTransform?.applyTransform(false)
-        }
-
-        if (ptr.isLeftButtonClicked) {
-            ptr.consume()
-            finish(false)
-            mode.set(EditorEditMode.Mode.NONE)
-
-        } else if (ptr.isRightButtonClicked) {
-            ptr.consume()
-            finish(true)
-            mode.set(EditorEditMode.Mode.NONE)
         }
     }
 
