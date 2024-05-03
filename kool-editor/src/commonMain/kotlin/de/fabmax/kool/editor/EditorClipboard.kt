@@ -4,7 +4,7 @@ import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.encodeToString
@@ -42,7 +42,10 @@ object EditorClipboard {
                         val sceneNodes = copyData.map { SceneNodeModel(it, parent, scene) }
 
                         AddNodeAction(sceneNodes).apply()
-                        editor.selectionOverlay.setSelection(sceneNodes)
+                        launchDelayed(1) {
+                            editor.selectionOverlay.setSelection(sceneNodes)
+                            editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
+                        }
                     }
                 } catch (e: Exception) {
                     logW { "Unable to paste clipboard content: Invalid content" }
@@ -58,15 +61,14 @@ object EditorClipboard {
             val json = KoolEditor.jsonCodec.encodeToString(nodeModel.nodeData)
             val copyData = KoolEditor.jsonCodec.decodeFromString<SceneNodeData>(json)
             sanitizeCopiedNodeIds(listOf(copyData))
-
             val parent = nodeModel.parent
             SceneNodeModel(copyData, parent, nodeModel.sceneModel)
         }
+
         AddNodeAction(duplicatedNodes).apply()
-        // update selection via launchOnMainThread so that it is called after node is inserted and components
-        // are created
-        launchOnMainThread {
+        launchDelayed(1) {
             editor.selectionOverlay.setSelection(duplicatedNodes)
+            editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
         }
     }
 
