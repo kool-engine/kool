@@ -1,40 +1,46 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddNodeAction(
-    private var addNodeModels: List<SceneNodeModel>
+    val addNodeDatas: List<SceneNodeData>,
+    parent: NodeModel,
+    sceneModel: SceneModel
 ) : EditorAction {
 
-    constructor(addNodeModel: SceneNodeModel): this(listOf(addNodeModel))
+    private val parentId = parent.nodeId
+    private val sceneId = sceneModel.nodeId
+    private val parentModel: NodeModel? get() {
+        val scene = sceneModel(sceneId)
+        return if (parentId == sceneId) scene else scene?.nodeModels?.get(parentId)
+    }
 
     override fun doAction() {
-        launchOnMainThread {
-            // for undo -> redo action nodes were already destroyed and need to be recreated
-            addNodeModels = addNodeModels.map {
-                if (it.drawNode.isReleased) {
-                    SceneNodeModel(it.nodeData, it.parent, it.sceneModel)
-                } else {
-                    it
-                }
-            }
+        val scene = sceneModel(sceneId) ?: return
+        val parent = parentModel ?: return
 
-            // todo: the naive loop approach does not work if addNodeModels form a hierarchy
-            addNodeModels.forEach {
-                it.sceneModel.addSceneNode(it)
+        launchOnMainThread {
+            addNodeDatas.forEach {
+                scene.addSceneNode(SceneNodeModel(it, parent, scene))
             }
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }
 
     override fun undoAction() {
-        addNodeModels.forEach { addNodeModel ->
-            if (addNodeModel in KoolEditor.instance.selectionOverlay.selection) {
-                KoolEditor.instance.selectionOverlay.selection -= addNodeModel
+        val scene = sceneModel(sceneId) ?: return
+        addNodeDatas.forEach {
+            sceneNodeModel(it.nodeId, sceneId)?.let { nodeModel ->
+                if (nodeModel in KoolEditor.instance.selectionOverlay.selection) {
+                    KoolEditor.instance.selectionOverlay.selection -= nodeModel
+                }
+                scene.removeSceneNode(nodeModel)
             }
-            addNodeModel.sceneModel.removeSceneNode(addNodeModel)
         }
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }

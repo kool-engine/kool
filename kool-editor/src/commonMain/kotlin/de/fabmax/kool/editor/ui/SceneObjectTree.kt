@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddNodeAction
-import de.fabmax.kool.editor.actions.DeleteNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
 import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.components.*
@@ -50,8 +50,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val nodeData = SceneNodeData(name, id)
         nodeData.components += MeshComponentData(meshShape)
         nodeData.components += MaterialComponentData(-1)
-        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        AddNodeAction(mesh).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
@@ -60,8 +59,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val name = editor.projectModel.uniquifyName(modelAsset.name)
         val nodeData = SceneNodeData(name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
-        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        AddNodeAction(mesh).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
@@ -70,15 +68,14 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val name = editor.projectModel.uniquifyName(lightType.name)
         val nodeData = SceneNodeData(name, id)
         nodeData.components += DiscreteLightComponentData(lightType)
-        val light = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
 
         val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
         if (lightType !is LightTypeData.Point) {
             transform.mul(MutableMat4d().rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
         }
-        light.transform.componentData.transform = TransformData.fromMatrix(transform)
+        nodeData.components += TransformComponentData(TransformData.fromMatrix(transform))
 
-        AddNodeAction(light).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
@@ -86,13 +83,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName("Empty")
         val nodeData = SceneNodeData(name, id)
-        val empty = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        AddNodeAction(empty).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel, parentScene).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {
         val removeNode = node.nodeModel as? SceneNodeModel ?: return
-        DeleteNodeAction(removeNode).apply()
+        DeleteSceneNodeAction(removeNode).apply()
     }
 
     private fun focusNode(node: SceneObjectItem) {
@@ -440,10 +436,10 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             if (dragTreeItem != self) {
                 when {
                     insertPos.value == -1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.Before(self)).apply()
+                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.Before(self.nodeId)).apply()
                     }
                     insertPos.value == 1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.After(self)).apply()
+                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.After(self.nodeId)).apply()
                     }
                     else -> MoveSceneNodeAction(dragTreeItem, self, NodeModel.InsertionPos.End).apply()
                 }

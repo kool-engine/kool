@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
-import de.fabmax.kool.editor.actions.DeleteNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.AppAssets
@@ -191,7 +191,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             name = "Delete selected objects",
             keyCode = KeyboardInput.KEY_DEL
         ) {
-            DeleteNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
+            DeleteSceneNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
         }
         editorInputContext.addKeyListener(
             name = "Hide selected objects",

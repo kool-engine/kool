@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 
-abstract class NodeModel(val nodeData: SceneNodeData) {
+sealed class NodeModel(val nodeData: SceneNodeData) {
 
     val nodeId: Long
         get() = nodeData.nodeId
@@ -51,18 +51,20 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
         when (insertionPos) {
             is InsertionPos.After -> {
                 if (insertId) {
-                    val insertIdx = nodeData.childNodeIds.indexOf(insertionPos.that.nodeId) + 1
+                    val insertIdx = nodeData.childNodeIds.indexOf(insertionPos.that) + 1
                     nodeData.childNodeIds.add(insertIdx, child.nodeId)
                 }
-                val insertSceneIdx = drawNode.children.indexOf(insertionPos.that.drawNode) + 1
+                val thatNode = getNodeById(insertionPos.that)
+                val insertSceneIdx = drawNode.children.indexOf(thatNode?.drawNode) + 1
                 drawNode.addNode(child.drawNode, insertSceneIdx)
             }
             is InsertionPos.Before -> {
                 if (insertId) {
-                    val insertIdx = max(0, nodeData.childNodeIds.indexOf(insertionPos.that.nodeId))
+                    val insertIdx = max(0, nodeData.childNodeIds.indexOf(insertionPos.that))
                     nodeData.childNodeIds.add(insertIdx, child.nodeId)
                 }
-                val insertSceneIdx = max(0, drawNode.children.indexOf(insertionPos.that.drawNode))
+                val thatNode = getNodeById(insertionPos.that)
+                val insertSceneIdx = max(0, drawNode.children.indexOf(thatNode?.drawNode))
                 drawNode.addNode(child.drawNode, insertSceneIdx)
             }
             InsertionPos.End -> {
@@ -79,6 +81,13 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
     fun removeChild(child: SceneNodeModel) {
         nodeData.childNodeIds -= child.nodeId
         drawNode.removeNode(child.drawNode)
+    }
+
+    private fun getNodeById(id: Long): SceneNodeModel? {
+        return when (this) {
+            is SceneModel -> nodeModels[id]
+            is SceneNodeModel -> sceneModel.nodeModels[id]
+        }
     }
 
     private val requireSceneNode: SceneNodeModel
@@ -179,7 +188,7 @@ abstract class NodeModel(val nodeData: SceneNodeData) {
 
     sealed class InsertionPos {
         data object End : InsertionPos()
-        data class Before(val that: NodeModel) : InsertionPos()
-        data class After(val that: NodeModel) : InsertionPos()
+        data class Before(val that: Long) : InsertionPos()
+        data class After(val that: Long) : InsertionPos()
     }
 }

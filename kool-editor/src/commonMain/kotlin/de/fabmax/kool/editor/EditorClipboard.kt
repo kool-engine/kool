@@ -3,6 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
@@ -39,11 +40,11 @@ object EditorClipboard {
                         sanitizeCopiedNodeIds(copyData)
                         val selection = editor.selectionOverlay.getSelectedNodes()
                         val parent = (selection.firstOrNull { it is SceneNodeModel } as SceneNodeModel?)?.parent ?: scene
-                        val sceneNodes = copyData.map { SceneNodeModel(it, parent, scene) }
 
-                        AddNodeAction(sceneNodes).apply()
+                        AddNodeAction(copyData, parent, scene).apply()
                         launchDelayed(1) {
-                            editor.selectionOverlay.setSelection(sceneNodes)
+                            val nodes = copyData.mapNotNull { scene.nodeModels[it.nodeId] }
+                            editor.selectionOverlay.setSelection(nodes)
                             editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
                         }
                     }
@@ -57,17 +58,24 @@ object EditorClipboard {
     fun duplicateSelection() {
         val selection = editor.selectionOverlay.getSelectedSceneNodes()
         logD { "Duplicate ${selection.size} selected objects" }
+
+        val parent = selection.firstOrNull()?.parent ?: return
+        val scene = when (parent) {
+            is SceneModel -> parent
+            is SceneNodeModel -> parent.sceneModel
+        }
+
         val duplicatedNodes = selection.map { nodeModel ->
             val json = KoolEditor.jsonCodec.encodeToString(nodeModel.nodeData)
             val copyData = KoolEditor.jsonCodec.decodeFromString<SceneNodeData>(json)
             sanitizeCopiedNodeIds(listOf(copyData))
-            val parent = nodeModel.parent
-            SceneNodeModel(copyData, parent, nodeModel.sceneModel)
+            copyData
         }
 
-        AddNodeAction(duplicatedNodes).apply()
+        AddNodeAction(duplicatedNodes, parent, scene).apply()
         launchDelayed(1) {
-            editor.selectionOverlay.setSelection(duplicatedNodes)
+            val nodes = duplicatedNodes.mapNotNull { scene.nodeModels[it.nodeId] }
+            editor.selectionOverlay.setSelection(nodes)
             editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
         }
     }

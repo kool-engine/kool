@@ -4,10 +4,10 @@ import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.model.SceneNodeModel
 
 class SetTransformAction(
-    private val nodeModels: List<SceneNodeModel>,
+    nodeModels: List<SceneNodeModel>,
     private val undoTransforms: List<TransformData>,
     private val applyTransforms: List<TransformData>
-) : EditorAction {
+) : SceneNodeAction(nodeModels) {
 
     constructor(
         nodeModel: SceneNodeModel,

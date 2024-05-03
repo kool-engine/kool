@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.actions
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.MeshShapeData
 
-class SetShapeAction(
+class SetMeshShapeAction(
     private val editedMeshComponent: MeshComponent,
     private val oldShape: MeshShapeData,
     private val newShape: MeshShapeData,
