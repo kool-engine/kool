@@ -223,22 +223,22 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             editMode.mode.set(EditorEditMode.Mode.BOX_SELECT)
         }
         editorInputContext.addKeyListener(
-            name = "Toggle move object",
+            name = "Move selected object",
             keyCode = LocalKeyCode('G')
         ) {
-            editMode.mode.set(EditorEditMode.Mode.MOVE)
+            editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
         }
         editorInputContext.addKeyListener(
-            name = "Toggle rotate object",
+            name = "Rotate selected object",
             keyCode = LocalKeyCode('R')
         ) {
-            editMode.mode.set(EditorEditMode.Mode.ROTATE)
+            editMode.mode.set(EditorEditMode.Mode.ROTATE_IMMEDIATE)
         }
         editorInputContext.addKeyListener(
-            name = "Toggle scale object",
+            name = "Scale selected object",
             keyCode = LocalKeyCode('S')
         ) {
-            editMode.mode.set(EditorEditMode.Mode.SCALE)
+            editMode.mode.set(EditorEditMode.Mode.SCALE_IMMEDIATE)
         }
         editorInputContext.addKeyListener(
             name = "Cancel current operation",
