@@ -16,6 +16,8 @@ class RemoveComponentAction(
         return if (nodeId == sceneId) scene else scene?.nodeModels?.get(nodeId)
     }
 
+    // fixme: component is not recreated on undo / redo, therefore redo can fail
+
     override fun doAction() {
         nodeModel?.removeComponent(removeComponent)
     }

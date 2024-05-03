@@ -4,19 +4,21 @@ import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.MeshShapeData
 
 class SetMeshShapeAction(
-    private val editedMeshComponent: MeshComponent,
+    component: MeshComponent,
     private val oldShape: MeshShapeData,
     private val newShape: MeshShapeData,
-    private val replaceIndex: Int = editedMeshComponent.shapesState.indexOf(oldShape)
-) : EditorAction {
+    private val replaceIndex: Int = component.shapesState.indexOf(oldShape)
+) : ComponentAction<MeshComponent>(component) {
+
+    private val component: MeshComponent? get() = nodeModel?.getComponent()
 
     override fun doAction() {
-        editedMeshComponent.shapesState[replaceIndex] = newShape
-        editedMeshComponent.updateGeometry()
+        component?.shapesState?.set(replaceIndex, newShape)
+        component?.updateGeometry()
     }
 
     override fun undoAction() {
-        editedMeshComponent.shapesState[replaceIndex] = oldShape
-        editedMeshComponent.updateGeometry()
+        component?.shapesState?.set(replaceIndex, oldShape)
+        component?.updateGeometry()
     }
 }

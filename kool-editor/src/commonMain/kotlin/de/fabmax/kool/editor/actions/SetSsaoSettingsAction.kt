@@ -4,16 +4,18 @@ import de.fabmax.kool.editor.components.SsaoComponent
 import de.fabmax.kool.editor.data.SsaoSettings
 
 class SetSsaoSettingsAction(
-    val ssaoComponent: SsaoComponent,
+    component: SsaoComponent,
     val oldSettings: SsaoSettings,
     val newSettings: SsaoSettings
-) : EditorAction {
+) : ComponentAction<SsaoComponent>(component) {
+
+    private val component: SsaoComponent? get() = nodeModel?.getComponent()
 
     override fun doAction() {
-        ssaoComponent.ssaoState.set(newSettings)
+        component?.ssaoState?.set(newSettings)
     }
 
     override fun undoAction() {
-        ssaoComponent.ssaoState.set(oldSettings)
+        component?.ssaoState?.set(oldSettings)
     }
 }

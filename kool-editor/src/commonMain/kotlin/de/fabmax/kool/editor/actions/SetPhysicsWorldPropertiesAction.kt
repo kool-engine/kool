@@ -4,16 +4,18 @@ import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.editor.data.PhysicsWorldProperties
 
 class SetPhysicsWorldPropertiesAction(
-    private val editedPhysicsWorld: PhysicsWorldComponent,
+    component: PhysicsWorldComponent,
     private val oldProps: PhysicsWorldProperties,
     private val newProps: PhysicsWorldProperties
-) : EditorAction {
+) : ComponentAction<PhysicsWorldComponent>(component) {
+
+    private val component: PhysicsWorldComponent? get() = nodeModel?.getComponent()
 
     override fun doAction() {
-        editedPhysicsWorld.physicsWorldState.set(newProps)
+        component?.physicsWorldState?.set(newProps)
     }
 
     override fun undoAction() {
-        editedPhysicsWorld.physicsWorldState.set(oldProps)
+        component?.physicsWorldState?.set(oldProps)
     }
 }

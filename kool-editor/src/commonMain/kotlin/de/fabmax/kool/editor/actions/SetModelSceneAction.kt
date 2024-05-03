@@ -3,13 +3,18 @@ package de.fabmax.kool.editor.actions
 import de.fabmax.kool.editor.components.ModelComponent
 
 class SetModelSceneAction(
-    private val editComponent: ModelComponent,
+    component: ModelComponent,
     private val newScene: Int,
-) : EditorAction {
+) : ComponentAction<ModelComponent>(component) {
 
-    private val oldScene = editComponent.sceneIndexState.value
+    private val component: ModelComponent? get() = nodeModel?.getComponent()
+    private val oldScene = component.sceneIndexState.value
 
-    override fun doAction() = editComponent.sceneIndexState.set(newScene)
+    override fun doAction() {
+        component?.sceneIndexState?.set(newScene)
+    }
 
-    override fun undoAction() = editComponent.sceneIndexState.set(oldScene)
+    override fun undoAction() {
+        component?.sceneIndexState?.set(oldScene)
+    }
 }
