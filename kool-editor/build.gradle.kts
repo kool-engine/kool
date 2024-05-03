@@ -10,6 +10,7 @@ plugins {
 
 kotlin {
     jvm("desktop") { }
+    jvmToolchain(11)
     js(IR) {
         binaries.library()
         browser()
@@ -24,7 +25,8 @@ kotlin {
             api(libs.kotlin.atomicfu)
             api(project(":kool-core"))
             api(project(":kool-physics"))
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+            api(project(":kool-editor-model"))
+            implementation(libs.kotlin.datetime)
         }
 
         val desktopTest by getting

@@ -24,7 +24,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
     private val selectedHdri = mutableStateOf(0)
     private val skyLod = mutableStateOf(2f)
 
-    override fun UiScope.compose() = componentPanel("Scene Background", IconMap.small.BACKGROUND) {
+    override fun UiScope.compose() = componentPanel("Scene Background", IconMap.small.background) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
@@ -63,13 +63,13 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
 
         val oldBg = component.backgroundState.value
         val newBg = SceneBackgroundData.Hdri(hdriTexture.path, skyLod.value)
-        SetBackgroundAction(component, oldBg, newBg).apply()
+        SetBackgroundAction(nodeId, oldBg, newBg).apply()
     }
 
     private fun selectSingleColorBackground() {
         val oldBg = component.backgroundState.value
         val newBg = SceneBackgroundData.SingleColor(ColorData(editorSingleBgColor.value, false))
-        SetBackgroundAction(component, oldBg, newBg).apply()
+        SetBackgroundAction(nodeId, oldBg, newBg).apply()
     }
 
     private fun UiScope.singleColorBgProperties(singleColorBg: SceneBackgroundData.SingleColor) = Column(
@@ -83,7 +83,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val oldBg = SceneBackgroundData.SingleColor(ColorData(undoValue, false))
                 val newBg = SceneBackgroundData.SingleColor(ColorData(applyValue, false))
-                SetBackgroundAction(component, oldBg, newBg)
+                SetBackgroundAction(nodeId, oldBg, newBg)
             }
         )
     }
@@ -106,7 +106,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
                     sceneModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(it.path)
                     val oldBg = component.backgroundState.value
                     val newBg = SceneBackgroundData.Hdri(it.path, skyLod.value)
-                    SetBackgroundAction(component, oldBg, newBg).apply()
+                    SetBackgroundAction(nodeId, oldBg, newBg).apply()
                 }
             }
         }
@@ -122,7 +122,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
                 skyLod.set(applyValue.toFloat())
                 val oldBg = hdriBg.copy(skyLod = undoValue.toFloat())
                 val newBg = hdriBg.copy(skyLod = applyValue.toFloat())
-                SetBackgroundAction(component, oldBg, newBg)
+                SetBackgroundAction(nodeId, oldBg, newBg)
             }
         )
     }

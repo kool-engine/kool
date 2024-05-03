@@ -1,0 +1,12 @@
+package de.fabmax.kool.editor.data
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+class ProjectData {
+    var nextId = 1L
+
+    val sceneNodeIds: MutableList<NodeId> = mutableListOf()
+    val sceneNodes: MutableSet<SceneNodeData> = mutableSetOf()
+    val materials: MutableList<MaterialData> = mutableListOf()
+}

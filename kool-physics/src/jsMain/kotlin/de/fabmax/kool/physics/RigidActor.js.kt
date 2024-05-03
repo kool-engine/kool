@@ -110,6 +110,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override fun detachShape(shape: Shape) {
         _shapes -= shape
         shape.holder?.px?.release()
+        shape.holder = null
     }
 
     override fun release() {

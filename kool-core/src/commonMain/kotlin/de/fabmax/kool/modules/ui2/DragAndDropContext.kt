@@ -10,6 +10,8 @@ class DragAndDropContext<T: Any> {
     private var sourceHandler: DragAndDropHandler<T>? = null
     private var dragItem: T? = null
 
+    val isDrag: Boolean get() = dragItem != null
+
     fun registerHandler(handler: DragAndDropHandler<T>) {
         handlers += handler
     }

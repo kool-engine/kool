@@ -132,13 +132,13 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
             }
         }
 
-        logI { "Loading app from directory: $buildClasses" }
+        logD { "Loading app from directory: $buildClasses" }
         val loader = URLClassLoader(arrayOf(buildClasses.toUri().toURL()), this.javaClass.classLoader)
         BehaviorLoader.appBehaviorLoader = BehaviorLoader.ReflectionAppBehaviorLoader(loader)
         val behaviorClasses = examineClasses(loader, buildClasses)
 
         val jsGenOutput = physFs.rootPath.resolve(JS_BEHAVIOR_GEN_OUTPUT).pathString
-        logI { "Generating Javascript behavior bindings: $jsGenOutput" }
+        logD { "Generating Javascript behavior bindings: $jsGenOutput" }
         JsAppBehaviorBindingsGenerator.generateBehaviorBindings(behaviorClasses.values.toList(), jsGenOutput)
 
         val appClass = loader.loadClass(projectFiles.appMainClass)

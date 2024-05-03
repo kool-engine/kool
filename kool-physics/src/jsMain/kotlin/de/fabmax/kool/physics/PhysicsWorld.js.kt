@@ -87,9 +87,11 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         // set necessary ccd flags in case it is enabled for this scene
         val pxActor = actor.holder.px
         if (isContinuousCollisionDetection && actor is RigidBody) {
-            // in javascript we cannot check for pxActor being an instance of PxRigidBody (because it's an external
-            // interface), however if actor is RigidBody pxActor must be PxRigidBody...
-            pxActor.unsafeCast<PxRigidBody>().setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
+            if (actor is RigidDynamic && !actor.isKinematic) {
+                // in javascript we cannot check for pxActor being an instance of PxRigidBody (because it's an external
+                // interface), however if actor is RigidBody pxActor must be PxRigidBody...
+                pxActor.unsafeCast<PxRigidBody>().setRigidBodyFlag(PxRigidBodyFlagEnum.eENABLE_CCD, true)
+            }
             actor.simulationFilterData = FilterData {
                 set(actor.simulationFilterData)
                 word2 = PxPairFlagEnum.eDETECT_CCD_CONTACT

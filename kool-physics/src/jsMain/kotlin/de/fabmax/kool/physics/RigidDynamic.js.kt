@@ -15,7 +15,7 @@ actual fun RigidDynamic(mass: Float, pose: Mat4f, isKinematic: Boolean): RigidDy
 class RigidDynamicImpl(
     mass: Float,
     pose: Mat4f,
-    isKinematic: Boolean,
+    override val isKinematic: Boolean,
     pxActor: PxRigidDynamic?
 ) : RigidBodyImpl(), RigidDynamic {
 

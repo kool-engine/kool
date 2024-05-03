@@ -19,5 +19,6 @@ dependencyResolutionManagement {
 
 include("kool-core")
 include("kool-physics")
+include("kool-editor-model")
 include("kool-editor")
 include("kool-demo")

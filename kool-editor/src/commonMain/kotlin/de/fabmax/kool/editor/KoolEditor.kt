@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
-import de.fabmax.kool.editor.actions.DeleteNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.AppAssets
@@ -17,7 +17,6 @@ import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
-import de.fabmax.kool.editor.ui.FloatingToolbar
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.LocalKeyCode
@@ -55,6 +54,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val activeScene = mutableStateOf<SceneModel?>(null)
 
     val editorInputContext = InputStack.InputHandler("Editor input")
+    val editMode = EditorEditMode(this)
+
     val editorCameraTransform = EditorCamTransform(this)
     private val editorBackgroundScene = scene("editor-camera") {
         addNode(editorCameraTransform)
@@ -190,7 +191,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             name = "Delete selected objects",
             keyCode = KeyboardInput.KEY_DEL
         ) {
-            DeleteNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
+            DeleteSceneNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
         }
         editorInputContext.addKeyListener(
             name = "Hide selected objects",
@@ -219,25 +220,29 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             name = "Toggle box select",
             keyCode = LocalKeyCode('B')
         ) {
-            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.BOX_SELECT)
+            if (editMode.mode.value == EditorEditMode.Mode.BOX_SELECT) {
+                editMode.mode.set(EditorEditMode.Mode.NONE)
+            } else {
+                editMode.mode.set(EditorEditMode.Mode.BOX_SELECT)
+            }
         }
         editorInputContext.addKeyListener(
-            name = "Toggle move object",
+            name = "Move selected object",
             keyCode = LocalKeyCode('G')
         ) {
-            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.MOVE)
+            editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
         }
         editorInputContext.addKeyListener(
-            name = "Toggle rotate object",
+            name = "Rotate selected object",
             keyCode = LocalKeyCode('R')
         ) {
-            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.ROTATE)
+            editMode.mode.set(EditorEditMode.Mode.ROTATE_IMMEDIATE)
         }
         editorInputContext.addKeyListener(
-            name = "Toggle scale object",
+            name = "Scale selected object",
             keyCode = LocalKeyCode('S')
         ) {
-            ui.sceneView.toolbar.toggleActionMode(FloatingToolbar.EditActionMode.SCALE)
+            editMode.mode.set(EditorEditMode.Mode.SCALE_IMMEDIATE)
         }
         editorInputContext.addKeyListener(
             name = "Cancel current operation",
@@ -245,11 +250,12 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         ) {
             // for now, we take the naive approach and check any possible operation that can be canceled
             // this might not scale well when we have more possible operations...
-
-            // disable box select
-            ui.sceneView.isBoxSelectMode.set(false)
-            // cancel any ongoing drag
-            ui.dndController.dndContext.cancelDrag()
+            when {
+                gizmoOverlay.isTransformDrag -> gizmoOverlay.cancelTransformOperation()
+                ui.dndController.dndContext.isDrag -> ui.dndController.dndContext.cancelDrag()
+                editMode.mode.value != EditorEditMode.Mode.NONE -> editMode.mode.set(EditorEditMode.Mode.NONE)
+                selectionOverlay.selection.isNotEmpty() -> selectionOverlay.clearSelection()
+            }
         }
 
         InputStack.pushTop(editorInputContext)
@@ -291,7 +297,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         editorCameraTransform.addNode(editorOverlay.camera)
 
         // dispose old scene + objects
-        projectModel.getCreatedScenes().forEach { sceneModel ->
+        projectModel.createdScenes.values.forEach { sceneModel ->
             ctx.scenes -= sceneModel.drawNode
             sceneModel.drawNode.removeOffscreenPass(selectionOverlay.selectionPass)
         }
@@ -302,7 +308,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         loadedApp.app.loadApp(projectModel, ctx)
 
         // add scene objects from new app
-        projectModel.getCreatedScenes().let { newScenes ->
+        projectModel.createdScenes.values.let { newScenes ->
             if (newScenes.size != 1) {
                 logW { "Unsupported number of scene, currently only single scene setups are supported" }
             }
@@ -327,7 +333,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         this.loadedApp.set(loadedApp)
         if (activeScene.value == null) {
-            activeScene.set(projectModel.getCreatedScenes().getOrNull(0))
+            activeScene.set(projectModel.createdScenes.values.first())
         }
         if (selectionOverlay.selection.isEmpty()) {
             activeScene.value?.let { selectionOverlay.selection.add(it) }
@@ -368,7 +374,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         Assets.launch {
             val text = jsonCodec.encodeToString(projectModel.projectData)
             projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
-            logI { "Saved project model" }
+            logD { "Saved project model" }
         }
     }
 

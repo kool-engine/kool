@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddNodeAction
-import de.fabmax.kool.editor.actions.DeleteNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
 import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.components.*
@@ -46,49 +46,49 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewMesh(parent: SceneObjectItem, meshShape: MeshShapeData) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData("${meshShape.name}-$id", id)
+        val name = editor.projectModel.uniquifyName(meshShape.name)
+        val nodeData = SceneNodeData(name, id)
         nodeData.components += MeshComponentData(meshShape)
-        nodeData.components += MaterialComponentData(-1)
-        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        AddNodeAction(mesh).apply()
+        nodeData.components += MaterialComponentData(NodeId(-1))
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData(modelAsset.name, id)
+        val name = editor.projectModel.uniquifyName(modelAsset.name)
+        val nodeData = SceneNodeData(name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
-        val mesh = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        AddNodeAction(mesh).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData("${lightType.name}-$id", id)
+        val name = editor.projectModel.uniquifyName(lightType.name)
+        val nodeData = SceneNodeData(name, id)
         nodeData.components += DiscreteLightComponentData(lightType)
-        val light = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
 
         val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
         if (lightType !is LightTypeData.Point) {
             transform.mul(MutableMat4d().rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
         }
-        light.transform.componentData.transform = TransformData.fromMatrix(transform)
+        nodeData.components += TransformComponentData(TransformData.fromMatrix(transform))
 
-        AddNodeAction(light).apply()
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
         val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
-        val nodeData = SceneNodeData("Empty-$id", id)
-        val empty = SceneNodeModel(nodeData, parent.nodeModel, parentScene)
-        AddNodeAction(empty).apply()
+        val name = editor.projectModel.uniquifyName("Empty")
+        val nodeData = SceneNodeData(name, id)
+        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {
         val removeNode = node.nodeModel as? SceneNodeModel ?: return
-        DeleteNodeAction(removeNode).apply()
+        DeleteSceneNodeAction(removeNode).apply()
     }
 
     private fun focusNode(node: SceneObjectItem) {
@@ -102,7 +102,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         if (!isTreeValid.use()) {
             treeItems.clear()
-            editor.projectModel.getCreatedScenes().forEach { sceneModel ->
+            editor.projectModel.createdScenes.values.forEach { sceneModel ->
                 sceneModel.drawNode.let {
                     treeItems.appendNode(sceneModel, it, sceneModel, 0)
                 }
@@ -280,13 +280,13 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         // type icon
         Image {
             val icon = when (item.type) {
-                SceneObjectType.NON_MODEL_NODE -> IconMap.small.NODE_CIRCLE
-                SceneObjectType.CAMERA -> IconMap.small.CAMERA
-                SceneObjectType.LIGHT -> IconMap.small.LIGHT
-                SceneObjectType.GROUP -> IconMap.small.QUAD_BOX
-                SceneObjectType.MESH -> IconMap.small.CUBE
-                SceneObjectType.MODEL -> IconMap.small.TREE
-                SceneObjectType.SCENE -> IconMap.small.WORLD
+                SceneObjectType.NON_MODEL_NODE -> IconMap.small.nodeCircle
+                SceneObjectType.CAMERA -> IconMap.small.camera
+                SceneObjectType.LIGHT -> IconMap.small.light
+                SceneObjectType.GROUP -> IconMap.small.quadBox
+                SceneObjectType.MESH -> IconMap.small.cube
+                SceneObjectType.MODEL -> IconMap.small.tree
+                SceneObjectType.SCENE -> IconMap.small.world
             }
             modifier
                 .alignX(AlignmentX.End)
@@ -313,7 +313,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                         .alignX(AlignmentX.End)
                         .alignY(AlignmentY.Center)
                         .margin(end = sizes.smallGap)
-                        .iconImage(if (isVisible) IconMap.small.EYE else IconMap.small.EYE_OFF, eyeColor)
+                        .iconImage(if (isVisible) IconMap.small.eye else IconMap.small.eyeOff, eyeColor)
                         .onClick { SetVisibilityAction(item.nodeModel as SceneNodeModel, !isVisible).apply() }
                 }
             }
@@ -436,12 +436,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             if (dragTreeItem != self) {
                 when {
                     insertPos.value == -1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.Before(self)).apply()
+                        MoveSceneNodeAction(dragTreeItem, self.parent.nodeId, NodeModel.InsertionPos.Before(self.nodeId)).apply()
                     }
                     insertPos.value == 1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent, NodeModel.InsertionPos.After(self)).apply()
+                        MoveSceneNodeAction(dragTreeItem, self.parent.nodeId, NodeModel.InsertionPos.After(self.nodeId)).apply()
                     }
-                    else -> MoveSceneNodeAction(dragTreeItem, self, NodeModel.InsertionPos.End).apply()
+                    else -> MoveSceneNodeAction(dragTreeItem, self.nodeId, NodeModel.InsertionPos.End).apply()
                 }
             }
         }

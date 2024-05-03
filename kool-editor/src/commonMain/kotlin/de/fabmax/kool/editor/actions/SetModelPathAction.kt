@@ -1,15 +1,20 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.ModelComponent
+import de.fabmax.kool.editor.data.NodeId
 
 class SetModelPathAction(
-    private val editComponent: ModelComponent,
+    nodeId: NodeId,
     private val newPath: String,
-) : EditorAction {
+) : ComponentAction<ModelComponent>(nodeId, ModelComponent::class) {
 
-    private val oldPath = editComponent.modelPathState.value
+    private val oldPath = component?.modelPathState?.value
 
-    override fun doAction() = editComponent.modelPathState.set(newPath)
+    override fun doAction() {
+        component?.modelPathState?.set(newPath)
+    }
 
-    override fun undoAction() = editComponent.modelPathState.set(oldPath)
+    override fun undoAction() {
+        oldPath?.let { component?.modelPathState?.set(it) }
+    }
 }

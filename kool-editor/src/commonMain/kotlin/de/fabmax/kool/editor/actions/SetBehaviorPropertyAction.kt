@@ -1,22 +1,23 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.BehaviorComponent
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.PropertyValue
 
 class SetBehaviorPropertyAction(
-    val behaviorComponent: BehaviorComponent,
+    nodeId: NodeId,
     val propName: String,
     val undoValue: PropertyValue,
     val newValue: PropertyValue,
-    val setPropertyBlock: (PropertyValue) -> Unit
-) : EditorAction {
+    val setPropertyBlock: (BehaviorComponent, PropertyValue) -> Unit
+) : ComponentAction<BehaviorComponent>(nodeId, BehaviorComponent::class) {
 
     override fun doAction() {
-        setPropertyBlock(newValue)
+        component?.let { setPropertyBlock(it, newValue) }
     }
 
     override fun undoAction() {
-        setPropertyBlock(undoValue)
+        component?.let { setPropertyBlock(it, undoValue) }
     }
 
 }

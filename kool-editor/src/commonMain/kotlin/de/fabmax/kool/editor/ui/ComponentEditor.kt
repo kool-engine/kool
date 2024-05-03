@@ -1,22 +1,21 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.RemoveComponentAction
 import de.fabmax.kool.editor.components.EditorModelComponent
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.util.sceneModel
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 
 abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Composable {
-    open val nodeModel: NodeModel
-        get() = component.nodeModel
-
-    open val sceneModel: SceneModel
-        get() = requireNotNull(KoolEditor.instance.activeScene.value)
+    val nodeId: NodeId get() = component.nodeModel.nodeId
+    val nodeModel: NodeModel get() = component.nodeModel
+    val sceneModel: SceneModel get() = nodeModel.sceneModel
 
     protected fun removeComponent() {
-        RemoveComponentAction(nodeModel, component).apply()
+        RemoveComponentAction(nodeId, component).apply()
     }
 }
 
@@ -49,7 +48,7 @@ fun UiScope.componentPanel(
                     .background(CircularBackground(bgColor))
 
                 Image {
-                    modifier.iconImage(IconMap.small.TRASH, fgColor)
+                    modifier.iconImage(IconMap.small.trash, fgColor)
                 }
             }
         }

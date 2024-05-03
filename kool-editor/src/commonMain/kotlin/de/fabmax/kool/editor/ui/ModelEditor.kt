@@ -13,7 +13,7 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
 
     override fun UiScope.compose() = componentPanel(
         title = "Model",
-        imageIcon = IconMap.small.TREE,
+        imageIcon = IconMap.small.tree,
         onRemove = ::removeComponent,
         titleWidth = sizes.baseSize * 2.3f,
         headerContent = {
@@ -29,7 +29,7 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
                     .items(items)
                     .selectedIndex(selIndex)
                     .onItemSelected {
-                        SetModelPathAction(component, items[it].path).apply()
+                        SetModelPathAction(nodeId, items[it].path).apply()
                     }
 
                 val handler = remember { ModelDndHandler(uiNode) }
@@ -58,12 +58,12 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
             if (gltf != null) {
                 val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
                 labeledCombobox("Scene:", scenes, component.sceneIndexState.use()) {
-                    SetModelSceneAction(component, it.index).apply()
+                    SetModelSceneAction(nodeId, it.index).apply()
                 }
 
                 val animations = gltf.animationOptions()
                 labeledCombobox("Animation:", animations, component.animationIndexState.use() + 1) {
-                    SetModelAnimationAction(component, it.index).apply()
+                    SetModelAnimationAction(nodeId, it.index).apply()
                 }
             }
         }
@@ -93,7 +93,7 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
         ) {
             val dragModelItem = dragItem.get(DndItemFlavor.ASSET_ITEM_MODEL)
             if (dragModelItem.path != component.modelPathState.value) {
-                SetModelPathAction(component, dragModelItem.path).apply()
+                SetModelPathAction(nodeId, dragModelItem.path).apply()
             }
         }
     }

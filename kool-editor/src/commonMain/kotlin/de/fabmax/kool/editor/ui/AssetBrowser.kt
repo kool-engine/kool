@@ -8,7 +8,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.launchOnMainThread
 
-class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.PICTURE, ui) {
+class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.picture, ui) {
 
     override fun UiScope.titleBar() {
         Row {
@@ -23,7 +23,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
             val button = iconTextButton(
-                icon = IconMap.small.PLUS,
+                icon = IconMap.small.plus,
                 text = "Import Assets",
                 bgColor = colors.componentBg,
                 bgColorHovered = colors.componentBgHovered,

@@ -19,11 +19,11 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
 
     override fun UiScope.compose() = componentPanel(
         title = behaviorName,
-        imageIcon = IconMap.small.CODE,
+        imageIcon = IconMap.small.code,
         onRemove = ::removeComponent,
 
         headerContent = {
-            iconButton(IconMap.small.EDIT, "Edit source code") {
+            iconButton(IconMap.small.edit, "Edit source code") {
                 KoolEditor.instance.editBehaviorSource(component.componentData.behaviorClassName)
             }
             Box(width = sizes.smallGap) {  }
@@ -80,10 +80,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Double> { undoValue, applyValue ->
             val newValue = PropertyValue(d1 = applyValue)
             val oldValue = PropertyValue(d1 = undoValue)
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.d1!!)
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.d1!!)
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -103,10 +103,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(d2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(d2 = Vec2Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.d2!!.toVec2d())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.d2!!.toVec2d())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -125,10 +125,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(d3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(d3 = Vec3Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.d3!!.toVec3d())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.d3!!.toVec3d())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -147,10 +147,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(d4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(d4 = Vec4Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.d4!!.toVec4d())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.d4!!.toVec4d())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -169,10 +169,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Double> { undoValue, applyValue ->
             val newValue = PropertyValue(f1 = applyValue.toFloat())
             val oldValue = PropertyValue(f1 = undoValue.toFloat())
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.f1!!)
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.f1!!)
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -192,10 +192,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(f2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(f2 = Vec2Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.f2!!.toVec2f())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.f2!!.toVec2f())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -214,10 +214,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(f3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(f3 = Vec3Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.f3!!.toVec3f())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.f3!!.toVec3f())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -236,10 +236,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(f4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(f4 = Vec4Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.f4!!.toVec4f())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.f4!!.toVec4f())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -258,10 +258,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Int> { undoValue, applyValue ->
             val newValue = PropertyValue(i1 = applyValue)
             val oldValue = PropertyValue(i1 = undoValue)
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.i1!!)
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.i1!!)
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -280,10 +280,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec2d> { undoValue, applyValue ->
             val newValue = PropertyValue(i2 = Vec2Data(applyValue))
             val oldValue = PropertyValue(i2 = Vec2Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.i2!!.toVec2i())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.i2!!.toVec2i())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -302,10 +302,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec3d> { undoValue, applyValue ->
             val newValue = PropertyValue(i3 = Vec3Data(applyValue))
             val oldValue = PropertyValue(i3 = Vec3Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.i3!!.toVec3i())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.i3!!.toVec3i())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 
@@ -324,10 +324,10 @@ class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorCom
         val editHandler = ActionValueEditHandler<Vec4d> { undoValue, applyValue ->
             val newValue = PropertyValue(i4 = Vec4Data(applyValue))
             val oldValue = PropertyValue(i4 = Vec4Data(undoValue))
-            SetBehaviorPropertyAction(component, prop.name, oldValue, newValue) {
+            SetBehaviorPropertyAction(nodeId, prop.name, oldValue, newValue) { comp, value ->
                 surface.triggerUpdate()
-                prop.set(component, it.i4!!.toVec4i())
-                component.componentData.propertyValues[prop.name] = it
+                prop.set(comp, value.i4!!.toVec4i())
+                comp.componentData.propertyValues[prop.name] = value
             }
         }
 

@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.SetShapeAction
+import de.fabmax.kool.editor.actions.SetMeshShapeAction
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.MeshShapeData
 import de.fabmax.kool.editor.data.Vec2Data
@@ -16,7 +16,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
 
         componentPanel(
             title = "Mesh",
-            imageIcon = IconMap.small.CUBE,
+            imageIcon = IconMap.small.cube,
             onRemove = ::removeComponent,
             titleWidth = sizes.baseSize * 2.3f,
 
@@ -33,7 +33,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                         .items(ShapeOptions.items)
                         .selectedIndex(selectedIndex)
                         .onItemSelected {
-                            SetShapeAction(component, shape, ShapeOptions.items[it].factory()).apply()
+                            SetMeshShapeAction(component, shape, ShapeOptions.items[it].factory()).apply()
                         }
                 }
             }
@@ -64,7 +64,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                             val baseShape = component.shapesState[shapeI]
                             val undoShape = baseShape.copyShape(shape.common.copy(uvScale = Vec2Data(undoValue)))
                             val applyShape = baseShape.copyShape(shape.common.copy(uvScale = Vec2Data(applyValue)))
-                            SetShapeAction(component, undoShape, applyShape, shapeI)
+                            SetMeshShapeAction(component, undoShape, applyShape, shapeI)
                         }
                     )
                 }
@@ -82,7 +82,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             xyz = box.size.toVec3d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC3,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
+                SetMeshShapeAction(component, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
             }
         )
     }
@@ -97,7 +97,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             xy = rect.size.toVec2d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC2,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
+                SetMeshShapeAction(component, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
             }
         )
     }
@@ -112,7 +112,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             value = icoSphere.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
+                SetMeshShapeAction(component, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -122,7 +122,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 0,
             maxValue = 7,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, icoSphere.copy(subDivisions = undo), icoSphere.copy(subDivisions = apply), shapeI)
+                SetMeshShapeAction(component, icoSphere.copy(subDivisions = undo), icoSphere.copy(subDivisions = apply), shapeI)
             }
         )
     }
@@ -137,7 +137,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             value = uvSphere.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
+                SetMeshShapeAction(component, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -147,7 +147,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 3,
             maxValue = 100,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, uvSphere.copy(steps = undo), uvSphere.copy(steps = apply), shapeI)
+                SetMeshShapeAction(component, uvSphere.copy(steps = undo), uvSphere.copy(steps = apply), shapeI)
             }
         )
     }
@@ -162,7 +162,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         labeledCheckbox("Uniform radius:", isUniRadius) {
             isUniRadius = it
             if (isUniRadius && cylinder.topRadius != cylinder.bottomRadius) {
-                SetShapeAction(component, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius)).apply()
+                SetMeshShapeAction(component, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius)).apply()
             }
         }
         if (isUniRadius) {
@@ -171,7 +171,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                 value = cylinder.bottomRadius,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetShapeAction(component, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
+                    SetMeshShapeAction(component, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
                 }
             )
         } else {
@@ -180,7 +180,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                 value = cylinder.topRadius,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetShapeAction(component, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
+                    SetMeshShapeAction(component, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
                 }
             )
             labeledDoubleTextField(
@@ -188,16 +188,16 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                 value = cylinder.bottomRadius,
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetShapeAction(component, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
+                    SetMeshShapeAction(component, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
                 }
             )
         }
         labeledDoubleTextField(
-            label = "Height:",
-            value = cylinder.height,
+            label = "Length:",
+            value = cylinder.length,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, cylinder.copy(height = undo), cylinder.copy(height = apply), shapeI)
+                SetMeshShapeAction(component, cylinder.copy(length = undo), cylinder.copy(length = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -207,7 +207,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 3,
             maxValue = 100,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, cylinder.copy(steps = undo), cylinder.copy(steps = apply), shapeI)
+                SetMeshShapeAction(component, cylinder.copy(steps = undo), cylinder.copy(steps = apply), shapeI)
             }
         )
     }
@@ -222,7 +222,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             value = capsule.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
+                SetMeshShapeAction(component, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
             }
         )
         labeledDoubleTextField(
@@ -230,7 +230,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             value = capsule.length,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
+                SetMeshShapeAction(component, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
             }
         )
         labeledIntTextField(
@@ -240,7 +240,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             minValue = 3,
             maxValue = 100,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetShapeAction(component, capsule.copy(steps = undo), capsule.copy(steps = apply), shapeI)
+                SetMeshShapeAction(component, capsule.copy(steps = undo), capsule.copy(steps = apply), shapeI)
             }
         )
     }

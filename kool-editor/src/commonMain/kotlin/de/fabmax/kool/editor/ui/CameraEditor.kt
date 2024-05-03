@@ -12,7 +12,7 @@ class CameraEditor(component: CameraComponent) : ComponentEditor<CameraComponent
     private val camTypeIndex: Int
         get() = camTypes.indexOfFirst { it.camType.isInstance(currentCam) }
 
-    override fun UiScope.compose() = componentPanel("Camera", IconMap.small.CAMERA, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel("Camera", IconMap.small.camera, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
@@ -24,7 +24,7 @@ class CameraEditor(component: CameraComponent) : ComponentEditor<CameraComponent
                     CameraTypeData.Orthographic::class -> CameraTypeData.Orthographic(1f)
                     else -> throw IllegalStateException("Unsupported cam type: ${it.camType}")
                 }
-                SetCameraAction(component, newCam, currentCam).apply()
+                SetCameraAction(nodeId, newCam, currentCam).apply()
             }
 
             // todo: camToView
@@ -50,7 +50,7 @@ class CameraEditor(component: CameraComponent) : ComponentEditor<CameraComponent
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(clipNear = applyValue.toFloat())
                 val undoCam = camData.copy(clipNear = undoValue.toFloat())
-                SetCameraAction(component, applyCam, undoCam)
+                SetCameraAction(nodeId, applyCam, undoCam)
             }
         )
         labeledDoubleTextField(
@@ -62,7 +62,7 @@ class CameraEditor(component: CameraComponent) : ComponentEditor<CameraComponent
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(clipFar = applyValue.toFloat())
                 val undoCam = camData.copy(clipFar = undoValue.toFloat())
-                SetCameraAction(component, applyCam, undoCam)
+                SetCameraAction(nodeId, applyCam, undoCam)
             }
         )
         labeledDoubleTextField(
@@ -75,7 +75,7 @@ class CameraEditor(component: CameraComponent) : ComponentEditor<CameraComponent
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(fovY = applyValue.toFloat())
                 val undoCam = camData.copy(fovY = undoValue.toFloat())
-                SetCameraAction(component, applyCam, undoCam)
+                SetCameraAction(nodeId, applyCam, undoCam)
             }
         )
     }

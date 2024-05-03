@@ -1,14 +1,24 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.EditorModelComponent
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.util.nodeModel
 
 class RemoveComponentAction(
-    val nodeModel: NodeModel,
-    val removeComponent: EditorModelComponent
+    val nodeId: NodeId,
+    val component: EditorModelComponent
 ) : EditorAction {
 
-    override fun doAction() = nodeModel.removeComponent(removeComponent)
-    override fun undoAction() = nodeModel.addComponent(removeComponent)
+    private val nodeModel: NodeModel? get() = nodeId.nodeModel
 
+    // fixme: component is not recreated on undo / redo, therefore redo can fail
+
+    override fun doAction() {
+        nodeModel?.removeComponent(component)
+    }
+
+    override fun undoAction() {
+        nodeModel?.addComponent(component)
+    }
 }

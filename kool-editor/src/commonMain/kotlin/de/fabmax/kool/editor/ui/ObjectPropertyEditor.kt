@@ -12,7 +12,7 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.PROPERTIES, ui) {
+class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.properties, ui) {
 
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
         val selObjs = KoolEditor.instance.selectionOverlay.selection.use()
@@ -74,7 +74,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                                 editName = it
                             }
                             .onEnterPressed {
-                                RenameNodeAction(selectedObject, it, selectedObject.name).apply()
+                                RenameNodeAction(selectedObject.nodeId, it, selectedObject.name).apply()
                             }
                     }
                 }
@@ -97,6 +97,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
                     is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
                     is TransformComponent -> componentEditor(component) { TransformEditor(component) }
+                    is PhysicsWorldComponent -> componentEditor(component) { PhysicsWorldEditor(component) }
+                    is RigidBodyComponent -> componentEditor(component) { RigidBodyEditor(component) }
                 }
             }
 
@@ -117,7 +119,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         var popupPos by remember(Vec2f.ZERO)
 
         val button = iconTextButton(
-            icon = IconMap.small.PLUS,
+            icon = IconMap.small.plus,
             text = "Add Component",
             width = sizes.baseSize * 5,
             margin = sizes.gap
@@ -149,6 +151,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             ComponentAdder.AddScriptComponent,
             ComponentAdder.AddSsaoComponent,
             ComponentAdder.AddCameraComponent,
+            ComponentAdder.AddPhysicsWorldComponent,
+            ComponentAdder.AddRigidBodyComponent,
         )
     }
 
@@ -161,7 +165,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         open fun createComponent(target: NodeModel): T? = null
 
         fun addComponent(target: NodeModel) {
-            createComponent(target)?.let { AddComponentAction(target, it).apply() }
+            createComponent(target)?.let { AddComponentAction(target.nodeId, it).apply() }
         }
 
         data object AddSsaoComponent : ComponentAdder<SsaoComponent>("Screen-space Ambient Occlusion") {
@@ -205,7 +209,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     parentMenu.subMenu(name) {
                         models.forEach { model ->
                             item(model.name) {
-                                AddComponentAction(it, ModelComponent(target as SceneNodeModel, ModelComponentData(model.path))).apply()
+                                AddComponentAction(it.nodeId, ModelComponent(target as SceneNodeModel, ModelComponentData(model.path))).apply()
                             }
                         }
                     }
@@ -219,6 +223,18 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     && (nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>())
         }
 
+        data object AddPhysicsWorldComponent : ComponentAdder<PhysicsWorldComponent>("Physics World") {
+            override fun createComponent(target: NodeModel): PhysicsWorldComponent = PhysicsWorldComponent(target as SceneModel)
+            override fun accept(nodeModel: NodeModel) =
+                nodeModel is SceneModel && !nodeModel.hasComponent<PhysicsWorldComponent>()
+        }
+
+        data object AddRigidBodyComponent : ComponentAdder<RigidBodyComponent>("Rigid Body") {
+            override fun createComponent(target: NodeModel): RigidBodyComponent = RigidBodyComponent(target as SceneNodeModel)
+            override fun accept(nodeModel: NodeModel) =
+                nodeModel is SceneNodeModel && !nodeModel.hasComponent<RigidBodyComponent>()
+        }
+
         data object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {
             override fun accept(nodeModel: NodeModel) = true
 
@@ -228,7 +244,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     parentMenu.subMenu(name) {
                         scriptClasses.forEach { script ->
                             item(script.prettyName) {
-                                AddComponentAction(it, BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))).apply()
+                                AddComponentAction(it.nodeId, BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))).apply()
                             }
                         }
                     }

@@ -3,8 +3,9 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddNodeAction
 import de.fabmax.kool.editor.data.SceneNodeData
+import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.encodeToString
@@ -37,12 +38,15 @@ object EditorClipboard {
                     if (copyData.isNotEmpty()) {
                         logD { "Pasting ${copyData.size} objects from clipboard" }
                         sanitizeCopiedNodeIds(copyData)
-
                         val selection = editor.selectionOverlay.getSelectedNodes()
-                        val parent = if (selection.size == 1) selection[0] else scene
-                        val sceneNodes = copyData.map { SceneNodeModel(it, parent, scene) }
-                        AddNodeAction(sceneNodes).apply()
-                        editor.selectionOverlay.setSelection(sceneNodes)
+                        val parent = (selection.firstOrNull { it is SceneNodeModel } as SceneNodeModel?)?.parent ?: scene
+
+                        AddNodeAction(copyData, parent.nodeId, scene.nodeId).apply()
+                        launchDelayed(1) {
+                            val nodes = copyData.mapNotNull { scene.nodeModels[it.nodeId] }
+                            editor.selectionOverlay.setSelection(nodes)
+                            editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
+                        }
                     }
                 } catch (e: Exception) {
                     logW { "Unable to paste clipboard content: Invalid content" }
@@ -54,19 +58,25 @@ object EditorClipboard {
     fun duplicateSelection() {
         val selection = editor.selectionOverlay.getSelectedSceneNodes()
         logD { "Duplicate ${selection.size} selected objects" }
+
+        val parent = selection.firstOrNull()?.parent ?: return
+        val scene = when (parent) {
+            is SceneModel -> parent
+            is SceneNodeModel -> parent.sceneModel
+        }
+
         val duplicatedNodes = selection.map { nodeModel ->
             val json = KoolEditor.jsonCodec.encodeToString(nodeModel.nodeData)
             val copyData = KoolEditor.jsonCodec.decodeFromString<SceneNodeData>(json)
             sanitizeCopiedNodeIds(listOf(copyData))
-
-            val parent = nodeModel.parent
-            SceneNodeModel(copyData, parent, nodeModel.sceneModel)
+            copyData
         }
-        AddNodeAction(duplicatedNodes).apply()
-        // update selection via launchOnMainThread so that it is called after node is inserted and components
-        // are created
-        launchOnMainThread {
-            editor.selectionOverlay.setSelection(duplicatedNodes)
+
+        AddNodeAction(duplicatedNodes, parent.nodeId, scene.nodeId).apply()
+        launchDelayed(1) {
+            val nodes = duplicatedNodes.mapNotNull { scene.nodeModels[it.nodeId] }
+            editor.selectionOverlay.setSelection(nodes)
+            editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
         }
     }
 
@@ -74,6 +84,7 @@ object EditorClipboard {
         // todo: support pasting node hierarchies, for now hierarchies are flattened
         copyData.forEach {
             it.nodeId = editor.projectModel.nextId()
+            it.name = editor.projectModel.uniquifyName(it.name)
             it.childNodeIds.clear()
         }
     }

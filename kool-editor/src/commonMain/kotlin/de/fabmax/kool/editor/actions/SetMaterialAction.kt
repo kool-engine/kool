@@ -2,19 +2,20 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.MaterialData
+import de.fabmax.kool.editor.data.NodeId
 
 class SetMaterialAction(
-    val materialComponent: MaterialComponent,
+    nodeId: NodeId,
     val setMaterialModel: MaterialData?,
-) : EditorAction {
+) : ComponentAction<MaterialComponent>(nodeId, MaterialComponent::class) {
 
-    private val prevMaterial = materialComponent.materialData
+    private val prevMaterial = component?.materialData
 
     override fun doAction() {
-        materialComponent.materialState.set(setMaterialModel)
+        component?.materialState?.set(setMaterialModel)
     }
 
     override fun undoAction() {
-        materialComponent.materialState.set(prevMaterial)
+        component?.materialState?.set(prevMaterial)
     }
 }

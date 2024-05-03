@@ -1,38 +1,48 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.util.nodeModel
 
 class MoveSceneNodeAction(
-    val moveNode: SceneNodeModel,
-    val newParent: NodeModel,
+    moveNodeModel: SceneNodeModel,
+    val newParentId: NodeId,
     val insertionPos: NodeModel.InsertionPos
-) : EditorAction {
+) : SceneNodeAction(listOf(moveNodeModel)) {
 
-    val undoParent = moveNode.parent
-    val undoInsertionPos: NodeModel.InsertionPos
+    private val undoParentId = moveNodeModel.parent.nodeId
+    private val undoInsertionPos: NodeModel.InsertionPos
 
     init {
-        val oldIdx = moveNode.parent.nodeData.childNodeIds.indexOf(moveNode.nodeId)
+        val oldIdx = moveNodeModel.parent.nodeData.childNodeIds.indexOf(moveNodeModel.nodeId)
         undoInsertionPos = if (oldIdx > 0) {
-            val after = moveNode.sceneModel.nodeModels[moveNode.parent.nodeData.childNodeIds[oldIdx - 1]]
-            after?.let { NodeModel.InsertionPos.After(it) } ?: NodeModel.InsertionPos.End
+            val after = moveNodeModel.sceneModel.nodeModels[moveNodeModel.parent.nodeData.childNodeIds[oldIdx - 1]]
+            after?.let { NodeModel.InsertionPos.After(it.nodeId) } ?: NodeModel.InsertionPos.End
         } else {
-            val before = moveNode.sceneModel.nodeModels[moveNode.parent.nodeData.childNodeIds.getOrNull(oldIdx + 1)]
-            before?.let { NodeModel.InsertionPos.Before(it) } ?: NodeModel.InsertionPos.End
+            val before = moveNodeModel.sceneModel.nodeModels[moveNodeModel.parent.nodeData.childNodeIds.getOrNull(oldIdx + 1)]
+            before?.let { NodeModel.InsertionPos.Before(it.nodeId) } ?: NodeModel.InsertionPos.End
         }
     }
 
     override fun doAction() {
-        undoParent.removeChild(moveNode)
-        newParent.addChild(moveNode, insertionPos)
+        val nodeModel = sceneNode ?: return
+        val undoParent = undoParentId.nodeModel ?: return
+        val newParent = newParentId.nodeModel ?: return
+
+        undoParent.removeChild(nodeModel)
+        newParent.addChild(nodeModel, insertionPos)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
     override fun undoAction() {
-        newParent.removeChild(moveNode)
-        undoParent.addChild(moveNode, undoInsertionPos)
+        val nodeModel = sceneNode ?: return
+        val undoParent = undoParentId.nodeModel ?: return
+        val newParent = newParentId.nodeModel ?: return
+
+        newParent.removeChild(nodeModel)
+        undoParent.addChild(nodeModel, undoInsertionPos)
         KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 }

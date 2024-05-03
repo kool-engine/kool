@@ -42,7 +42,6 @@ kotlin {
             api(libs.kotlin.coroutines)
             implementation(libs.kotlin.serialization.core)
             implementation(libs.kotlin.serialization.json)
-            implementation(libs.kotlin.reflect)
             implementation(libs.kotlin.atomicfu)
         }
 

@@ -17,7 +17,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
 
     override fun UiScope.compose() = componentPanel(
         title = "Material",
-        imageIcon = IconMap.small.PALETTE,
+        imageIcon = IconMap.small.palette,
         onRemove = ::removeComponent,
         titleWidth = sizes.baseSize * 2.3f,
         headerContent = {
@@ -34,7 +34,7 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
                     .items(items)
                     .selectedIndex(selectedIndex)
                     .onItemSelected {
-                        SetMaterialAction(component, items[it].getMaterialModel()).apply()
+                        SetMaterialAction(nodeId, items[it].getMaterialModel()).apply()
                     }
             }
         }

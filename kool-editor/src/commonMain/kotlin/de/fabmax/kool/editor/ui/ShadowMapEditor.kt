@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
 class ShadowMapEditor(component: ShadowMapComponent) : ComponentEditor<ShadowMapComponent>(component) {
-    override fun UiScope.compose() = componentPanel("Shadow Map", IconMap.small.SHADOW, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel("Shadow Map", IconMap.small.shadow, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier
                 .padding(horizontal = sizes.gap)
@@ -17,7 +17,7 @@ class ShadowMapEditor(component: ShadowMapComponent) : ComponentEditor<ShadowMap
             val shadowMap = component.shadowMapState.use()
             val selected = typeOptions.indexOfFirst { it.shadowMapType.isInstance(shadowMap) }
             labeledCombobox("Type:", typeOptions, selected) {
-                SetShadowMapTypeAction(component, it.create()).apply()
+                SetShadowMapTypeAction(nodeId, it.create()).apply()
             }
         }
     }

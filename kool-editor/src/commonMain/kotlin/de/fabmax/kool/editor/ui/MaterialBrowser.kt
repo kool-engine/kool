@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.actions.DeleteMaterialAction
 import de.fabmax.kool.modules.ui2.UiScope
 
-class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.medium.PALETTE, ui) {
+class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.medium.palette, ui) {
 
     override fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>) {
         val materialDir = browserItems.getOrPut("/materials") {

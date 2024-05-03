@@ -7,6 +7,8 @@ import de.fabmax.kool.math.Vec3f
 expect fun RigidDynamic(mass: Float = 1f, pose: Mat4f = Mat4f.IDENTITY, isKinematic: Boolean = false): RigidDynamic
 
 interface RigidDynamic : RigidBody {
+    val isKinematic: Boolean
+
     fun wakeUp()
     fun putToSleep()
 
