@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
-import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.AppAssets
@@ -38,10 +38,16 @@ import kotlinx.serialization.json.Json
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
     val projectModel = try {
-        val data = Json.decodeFromString<ProjectData>(projectFiles.projectModelFile.read().decodeToString())
-        EditorProject(data)
+        val projModelJson = projectFiles.projectModelFile.read().decodeToString()
+        try {
+            val data = Json.decodeFromString<ProjectData>(projModelJson)
+            EditorProject(data)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            error("Failed deserializing project, fix / delete existing project file")
+        }
     } catch (e: Exception) {
-        logW("KoolEditor") { "Failed loading project model, creating empty" }
+        logI("KoolEditor") { "Failed loading project, creating empty" }
         EditorProject.emptyProject()
     }
     return KoolEditor(projectFiles, projectModel, ctx)
@@ -191,7 +197,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             name = "Delete selected objects",
             keyCode = KeyboardInput.KEY_DEL
         ) {
-            DeleteSceneNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
+            DeleteSceneNodesAction(selectionOverlay.getSelectedSceneNodes()).apply()
         }
         editorInputContext.addKeyListener(
             name = "Hide selected objects",

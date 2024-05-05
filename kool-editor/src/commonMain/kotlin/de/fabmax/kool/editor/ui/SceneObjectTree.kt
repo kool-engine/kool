@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddSceneNodeAction
-import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.components.*
@@ -105,7 +105,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private fun deleteNode(node: SceneObjectItem) {
         val removeNode = node.nodeModel as? SceneNodeModel ?: return
-        DeleteSceneNodeAction(removeNode).apply()
+        DeleteSceneNodesAction(listOf(removeNode)).apply()
     }
 
     private fun focusNode(node: SceneObjectItem) {
