@@ -87,9 +87,9 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         gizmo.addTranslationHandles()
     }
 
-    fun start(mode: EditorEditMode.Mode) {
+    fun start(mode: EditorEditMode.Mode): Boolean {
         if (isActive) {
-            return
+            return true
         }
 
         activeOp = when (mode) {
@@ -100,22 +100,19 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         }
 
         selectionTransform = SelectionTransform(editor.selectionOverlay.getSelectedSceneNodes())
-        val primNode = selectionTransform?.primaryTransformNode ?: return
-
-        updateGizmoFromClient(primNode.drawNode)
+        val primNode = selectionTransform?.primaryTransformNode
+        primNode?.let { updateGizmoFromClient(it.drawNode) }
         selectionTransform?.startTransform()
 
         InputStack.pushTop(inputHandler)
+        return true
     }
 
     fun finish(isCanceled: Boolean) {
         if (gizmo.isManipulating) {
             if (isCanceled) {
                 gizmo.cancelManipulation()
-                // restore original / start transform
-                updateFromGizmo(gizmo.gizmoTransform)
-                selectionTransform?.updateTransform()
-                selectionTransform?.applyTransform(false)
+                selectionTransform?.restoreInitialTransform()
 
             } else {
                 gizmo.finishManipulation()
@@ -173,6 +170,12 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
+        if (selectionTransform?.primaryTransformNode == null) {
+            // selection is empty
+            finish(false)
+            mode.set(EditorEditMode.Mode.NONE)
+        }
+
         val ptr = pointerState.primaryPointer
         val scene = editor.editorContent.findParentOfType<Scene>()
         if (scene == null || !scene.computePickRay(ptr, globalRay)) {

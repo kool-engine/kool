@@ -36,6 +36,7 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
 
         override fun onManipulationCanceled(startTransform: TrsTransformD) {
             hasTransformAuthority = false
+            selectionTransform?.restoreInitialTransform()
         }
 
         override fun onGizmoUpdate(transform: TrsTransformD) {
