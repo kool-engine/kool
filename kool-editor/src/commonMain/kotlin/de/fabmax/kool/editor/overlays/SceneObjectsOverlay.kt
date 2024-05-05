@@ -3,8 +3,10 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.ContentComponent
-import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.components.DiscreteLightComponent
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -16,6 +18,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.PI
 import kotlin.math.cos
@@ -23,15 +26,19 @@ import kotlin.math.sin
 
 class SceneObjectsOverlay : Node("Scene objects overlay") {
 
-    private val directionInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
-    private val spotInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
-    private val pointInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
+    private val lights = mutableListOf<LightComponentInstance>()
+    private val cameras = mutableListOf<CameraComponentInstance>()
+    private val groups = mutableListOf<GroupNodeInstance>()
+
+    private val dirLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
+    private val spotLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
+    private val pointLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
     private val cameraInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
     private val groupInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
 
-    private val directionalMesh = Mesh(
+    private val dirLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
-        instances = directionInstances,
+        instances = dirLightsInstances,
         name = "Directional lights"
     ).apply {
         isCastingShadow = false
@@ -74,9 +81,9 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    private val spotMesh = Mesh(
+    private val spotLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
-        instances = spotInstances,
+        instances = spotLightsInstances,
         name = "Spot lights"
     ).apply {
         isCastingShadow = false
@@ -114,9 +121,9 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    private val pointMesh = Mesh(
+    private val pointLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
-        instances = pointInstances,
+        instances = pointLightsInstances,
         name = "Point lights"
     ).apply {
         isCastingShadow = false
@@ -215,77 +222,62 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     }
 
     init {
-        addNode(spotMesh)
-        addNode(pointMesh)
-        addNode(directionalMesh)
+        addNode(spotLightMesh)
+        addNode(pointLightMesh)
+        addNode(dirLightMesh)
 
         addNode(cameraMesh)
         addNode(groupMesh)
 
         onUpdate {
-            KoolEditor.instance.activeScene.value?.let { sceneModel ->
-                addLightInstances(sceneModel)
-                addCameraInstances(sceneModel)
-                addGroupInstances(sceneModel)
+            updateLightInstances()
+            updateCameraInstances()
+            updateGroupInstances()
+        }
+    }
+
+    private fun updateLightInstances() {
+        dirLightsInstances.clear()
+        spotLightsInstances.clear()
+        pointLightsInstances.clear()
+
+        lights.forEach { lightInst ->
+            val light = lightInst.component.light
+            val instances = when (light) {
+                is Light.Directional -> dirLightsInstances
+                is Light.Point -> pointLightsInstances
+                is Light.Spot -> spotLightsInstances
+            }
+
+            instances.addInstance {
+                light.modelMatF.putTo(this)
+                light.color.putTo(this)
             }
         }
     }
 
-    private fun addLightInstances(sceneModel: SceneModel) {
-        directionInstances.clear()
-        spotInstances.clear()
-        pointInstances.clear()
-
-        sceneModel.drawNode.lighting.lights
-            .filter { it.isVisible }
-            .forEach { light ->
-                val instances = when (light) {
-                    is Light.Directional -> directionInstances
-                    is Light.Point -> pointInstances
-                    is Light.Spot -> spotInstances
-                }
-
-                instances.addInstance {
-                    light.modelMatF.putTo(this)
-                    light.color.putTo(this)
-                }
-            }
-    }
-
-    private fun addCameraInstances(sceneModel: SceneModel) {
+    private fun updateCameraInstances() {
         cameraInstances.clear()
-
-        // fixme: query is executed every frame and will become quite slow for larger scenes
-        sceneModel.project.getComponentsInScene<CameraComponent>(sceneModel)
-            .filter { it.nodeModel.isVisibleState.value }
-            .forEach {
-                val isActive = it.sceneModel.cameraState.value == it
+        cameraInstances.addInstances(cameras.size) { buf ->
+            cameras.forEach { camInst ->
+                val cam = camInst.component
+                val isActive = cam.sceneModel.cameraState.value == cam
                 val color = if (isActive) MdColor.GREY tone 300 else MdColor.GREY tone 700
-                cameraInstances.addInstance {
-                    it.nodeModel.drawNode.modelMatF.putTo(this)
-                    put(color.r)
-                    put(color.g)
-                    put(color.b)
-                    put(color.a)
-                }
+
+                cam.nodeModel.drawNode.modelMatF.putTo(buf)
+                color.putTo(buf)
             }
+        }
     }
 
-    private fun addGroupInstances(sceneModel: SceneModel) {
+    private fun updateGroupInstances() {
         groupInstances.clear()
-
-        // fixme: query is executed every frame and will become quite slow for larger scenes
-        sceneModel.nodeModels.values.filter { it.components.none { c -> c is ContentComponent } }
-            .filter { it.isVisibleState.value }
-            .forEach {
-                groupInstances.addInstance {
-                    it.drawNode.modelMatF.putTo(this)
-                    put(1f)
-                    put(1f)
-                    put(1f)
-                    put(1f)
-                }
+        groupInstances.addInstances(groups.size) { buf ->
+            groups.forEach {
+                it.nodeModel.drawNode.modelMatF.putTo(buf)
+                Color.WHITE.putTo(buf)
             }
+        }
     }
 
     private fun MeshBuilder.generateArrow() {
@@ -303,7 +295,32 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
+    fun updateOverlayInstances() {
+        cameras.clear()
+        lights.clear()
+        groups.clear()
+
+        val sceneModel = KoolEditor.instance.activeScene.value ?: return
+        sceneModel.project.getComponentsInScene<CameraComponent>(sceneModel)
+            .filter { it.nodeModel.isVisibleState.value }
+            .forEach { cameras += CameraComponentInstance(it) }
+        sceneModel.project.getComponentsInScene<DiscreteLightComponent>(sceneModel)
+            .filter { it.nodeModel.isVisibleState.value }
+            .forEach { lights += LightComponentInstance(it) }
+        sceneModel.nodeModels.values.filter { it.components.none { c -> c is ContentComponent } }
+            .filter { it.isVisibleState.value }
+            .forEach { groups += GroupNodeInstance(it) }
+    }
+
+    fun pick(rayTest: RayTest): SceneNodeModel? {
+        return null
+    }
+
     companion object {
         const val lineW = 0.06f
     }
+
+    private data class LightComponentInstance(val component: DiscreteLightComponent)
+    private data class CameraComponentInstance(val component: CameraComponent)
+    private data class GroupNodeInstance(val nodeModel: SceneNodeModel)
 }

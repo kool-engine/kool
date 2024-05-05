@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.Clipboard
-import de.fabmax.kool.editor.actions.AddNodeAction
+import de.fabmax.kool.editor.actions.AddSceneNodeAction
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
@@ -41,7 +41,7 @@ object EditorClipboard {
                         val selection = editor.selectionOverlay.getSelectedNodes()
                         val parent = (selection.firstOrNull { it is SceneNodeModel } as SceneNodeModel?)?.parent ?: scene
 
-                        AddNodeAction(copyData, parent.nodeId, scene.nodeId).apply()
+                        AddSceneNodeAction(copyData, parent.nodeId, scene.nodeId).apply()
                         launchDelayed(1) {
                             val nodes = copyData.mapNotNull { scene.nodeModels[it.nodeId] }
                             editor.selectionOverlay.setSelection(nodes)
@@ -72,7 +72,7 @@ object EditorClipboard {
             copyData
         }
 
-        AddNodeAction(duplicatedNodes, parent.nodeId, scene.nodeId).apply()
+        AddSceneNodeAction(duplicatedNodes, parent.nodeId, scene.nodeId).apply()
         launchDelayed(1) {
             val nodes = duplicatedNodes.mapNotNull { scene.nodeModels[it.nodeId] }
             editor.selectionOverlay.setSelection(nodes)

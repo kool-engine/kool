@@ -69,14 +69,14 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         tryEnableInfiniteDepth()
     }
     val gridOverlay = GridOverlay()
-    val lightOverlay = SceneObjectsOverlay()
+    val sceneObjectsOverlay = SceneObjectsOverlay()
     val gizmoOverlay = TransformGizmoOverlay()
     val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {
         tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
         addNode(gridOverlay)
-        addNode(lightOverlay)
+        addNode(sceneObjectsOverlay)
         addNode(selectionOverlay)
         addNode(gizmoOverlay)
 
@@ -272,6 +272,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
                     if (appScene.computePickRay(ptr, rayTest.ray)) {
                         rayTest.clear()
+                        val hitOverlayObject = sceneObjectsOverlay.pick(rayTest)
+
+                        rayTest.clear()
                         appScene.rayTest(rayTest)
 
                         var it = rayTest.hitNode
@@ -283,6 +286,16 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                             }
                             it = it.parent
                         }
+
+                        if (hitOverlayObject != null && selectedNodeModel != null) {
+                            val dOverlayObj = hitOverlayObject.drawNode.globalCenter.distance(appScene.camera.globalPos)
+                            val dSceneObj = selectedNodeModel.drawNode.globalCenter.distance(appScene.camera.globalPos)
+
+                            if (dOverlayObj < dSceneObj) {
+                                selectedNodeModel = hitOverlayObject
+                            }
+                        }
+
                         selectionOverlay.selectSingle(selectedNodeModel)
                     }
                 }
@@ -364,6 +377,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         ui.sceneBrowser.refreshSceneTree()
 
         selectionOverlay.invalidateSelection()
+        sceneObjectsOverlay.updateOverlayInstances()
     }
 
     private fun saveEditorConfig() {

@@ -4,7 +4,7 @@ import de.fabmax.kool.editor.AppReloadListener
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.actions.AddNodeAction
+import de.fabmax.kool.editor.actions.AddSceneNodeAction
 import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
 import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
@@ -50,7 +50,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val nodeData = SceneNodeData(name, id)
         nodeData.components += MeshComponentData(meshShape)
         nodeData.components += MaterialComponentData(NodeId(-1))
-        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
@@ -59,7 +59,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val name = editor.projectModel.uniquifyName(modelAsset.name)
         val nodeData = SceneNodeData(name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
-        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
@@ -75,7 +75,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
         nodeData.components += TransformComponentData(TransformData.fromMatrix(transform))
 
-        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
@@ -83,7 +83,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName("Empty")
         val nodeData = SceneNodeData(name, id)
-        AddNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {

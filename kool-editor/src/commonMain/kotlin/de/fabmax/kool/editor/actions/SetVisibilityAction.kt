@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.actions
 
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.SceneNodeModel
 
 class SetVisibilityAction(nodes: List<SceneNodeModel>, val visible: Boolean) : SceneNodeAction(nodes) {
@@ -10,11 +11,13 @@ class SetVisibilityAction(nodes: List<SceneNodeModel>, val visible: Boolean) : S
 
     override fun doAction() {
         sceneNodes.forEach { it.isVisibleState.set(visible) }
+        KoolEditor.instance.sceneObjectsOverlay.updateOverlayInstances()
     }
 
     override fun undoAction() {
         sceneNodes.forEach {
             undoVisibilities[it.nodeId]?.let { undoState -> it.isVisibleState.set(undoState) }
         }
+        KoolEditor.instance.sceneObjectsOverlay.updateOverlayInstances()
     }
 }

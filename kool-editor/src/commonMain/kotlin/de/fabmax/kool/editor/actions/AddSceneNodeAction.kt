@@ -7,7 +7,7 @@ import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
-class AddNodeAction(
+class AddSceneNodeAction(
     val addNodeDatas: List<SceneNodeData>,
     val parentId: NodeId,
     val sceneId: NodeId
@@ -26,7 +26,7 @@ class AddNodeAction(
             addNodeDatas.forEach {
                 scene.addSceneNode(SceneNodeModel(it, parent, scene))
             }
-            KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
+            refreshComponentViews()
         }
     }
 
@@ -40,6 +40,6 @@ class AddNodeAction(
                 scene.removeSceneNode(nodeModel)
             }
         }
-        KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
+        refreshComponentViews()
     }
 }

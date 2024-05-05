@@ -30,7 +30,7 @@ class DeleteSceneNodeAction(
         sceneNodes.forEach {
             it.sceneModel.removeSceneNode(it)
         }
-        KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
+        refreshComponentViews()
     }
 
     override fun undoAction() {
@@ -47,7 +47,7 @@ class DeleteSceneNodeAction(
                     parent.addChild(node, pos)
                 }
             }
-            KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
+            refreshComponentViews()
         }
     }
 
