@@ -13,6 +13,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
@@ -20,6 +21,8 @@ import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
+import kotlin.math.max
+import kotlin.math.min
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
@@ -28,14 +31,28 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
 
+    private var lastSelectionIndex = -1
+
     private val dndCtx: DragAndDropContext<EditorDndItem<*>> get() = sceneBrowser.dnd.dndContext
 
     private val editor: KoolEditor
-        get() = KoolEditor.instance
+        get() = sceneBrowser.editor
 
     init {
-        sceneBrowser.editor.appLoader.appReloadListeners += AppReloadListener {
+        editor.appLoader.appReloadListeners += AppReloadListener {
             nodeTreeItemMap.clear()
+        }
+
+        editor.selectionOverlay.onSelectionChanged += { selItems ->
+            if (selItems.isEmpty()) {
+                lastSelectionIndex = -1
+            } else {
+                val lastSelected = selItems.last()
+                val idx = treeItems.indexOfFirst { it.nodeModel == lastSelected }
+                if (idx >= 0) {
+                    lastSelectionIndex = idx
+                }
+            }
         }
     }
 
@@ -181,12 +198,26 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun UiScope.sceneObjectItem(item: SceneObjectItem, isHovered: Boolean) {
         modifier
             .margin(horizontal = sizes.smallGap)
-            .onClick {
-                if (it.pointer.isLeftButtonClicked) {
-                    editor.selectionOverlay.selectSingle(item.nodeModel)
-                    if (it.pointer.leftButtonRepeatedClickCount == 2 && item.isExpandable) {
+            .onClick { evt ->
+                if (evt.pointer.isLeftButtonClicked) {
+                    if (evt.pointer.leftButtonRepeatedClickCount == 2 && item.isExpandable) {
                         item.toggleExpanded()
+                    } else {
+                        if (KeyboardInput.isShiftDown && lastSelectionIndex >= 0) {
+                            // select range
+                            val clickIndex = treeItems.indexOf(item)
+                            if (clickIndex >= 0) {
+                                val selection = treeItems.subList(min(lastSelectionIndex, clickIndex), max(lastSelectionIndex, clickIndex) + 1)
+                                    .map { it.nodeModel }
+                                editor.selectionOverlay.expandSelection(selection)
+                            }
+
+                        } else {
+                            editor.selectionOverlay.selectSingle(item.nodeModel)
+                        }
                     }
+                } else if (evt.pointer.isMiddleButtonClicked && item.isExpandable) {
+                    item.toggleExpanded()
                 }
             }
         if (isHovered || item.nodeModel in editor.selectionOverlay.selectionState.use()) {
@@ -232,9 +263,18 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
             // install drag and drop handler (handles dragging / sending this item to somewhere else)
             if (item.nodeModel is SceneNodeModel) {
-                modifier.installDragAndDropHandler(dndCtx, dndHandler) { DndItemFlavor.SCENE_NODE_MODEL.itemOf(item.nodeModel) }
+                modifier.installDragAndDropHandler(dndCtx, dndHandler) {
+                    if (editor.selectionOverlay.isSelected(item.nodeModel)) {
+                        val selectedSceneNodes = editor.selectionOverlay.selection.filterIsInstance<SceneNodeModel>()
+                        DndItemFlavor.DndSceneNodeModels.itemOf(selectedSceneNodes)
+                    } else {
+                        DndItemFlavor.DndSceneNodeModel.itemOf(item.nodeModel)
+                    }
+                }
             } else if (item.nodeModel is SceneModel) {
-                modifier.installDragAndDropHandler(dndCtx, dndHandler) { DndItemFlavor.SCENE_MODEL.itemOf(item.nodeModel) }
+                modifier.installDragAndDropHandler(dndCtx, dndHandler) {
+                    DndItemFlavor.DndSceneModel.itemOf(item.nodeModel)
+                }
             }
         }
     }
@@ -403,7 +443,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private inner class TreeItemDndHandler(var treeItem: SceneObjectItem, dropTarget: UiNode) :
-        DndHandler(dropTarget, setOf(DndItemFlavor.SCENE_NODE_MODEL))
+        DndHandler(dropTarget, setOf(DndItemFlavor.DndSceneNodeModels))
     {
         // insert pos: -1 if top border is hovered, 0 if center is hovered, +1 if bottom border is hovered
         val insertPos = mutableStateOf(0)
@@ -431,17 +471,17 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             dragPointer: PointerEvent,
             source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
-            val dragTreeItem = dragItem.get(DndItemFlavor.SCENE_NODE_MODEL)
+            val nodeModels = dragItem.get(DndItemFlavor.DndSceneNodeModels)
             val self = treeItem.nodeModel
-            if (dragTreeItem != self) {
+            if (self !in nodeModels) {
                 when {
                     insertPos.value == -1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent.nodeId, NodeModel.InsertionPos.Before(self.nodeId)).apply()
+                        MoveSceneNodeAction(nodeModels, self.parent.nodeId, NodeModel.InsertionPos.Before(self.nodeId)).apply()
                     }
                     insertPos.value == 1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(dragTreeItem, self.parent.nodeId, NodeModel.InsertionPos.After(self.nodeId)).apply()
+                        MoveSceneNodeAction(nodeModels, self.parent.nodeId, NodeModel.InsertionPos.After(self.nodeId)).apply()
                     }
-                    else -> MoveSceneNodeAction(dragTreeItem, self.nodeId, NodeModel.InsertionPos.End).apply()
+                    else -> MoveSceneNodeAction(nodeModels, self.nodeId, NodeModel.InsertionPos.End).apply()
                 }
             }
         }

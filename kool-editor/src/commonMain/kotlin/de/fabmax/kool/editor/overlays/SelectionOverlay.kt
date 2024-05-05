@@ -86,12 +86,12 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         val selectList = selectModel?.let { listOf(it) } ?: emptyList()
 
         if (toggleSelect && selectModel in currentSelection) {
-            if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
+            if (expandIfShiftIsDown && (KeyboardInput.isShiftDown || KeyboardInput.isCtrlDown)) {
                 reduceSelection(selectList)
             } else {
                 clearSelection()
             }
-        } else if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
+        } else if (expandIfShiftIsDown && (KeyboardInput.isShiftDown || KeyboardInput.isCtrlDown)) {
             expandSelection(selectList)
         } else {
             setSelection(selectList)

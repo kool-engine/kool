@@ -84,14 +84,14 @@ class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(c
     }
 
     private inner class ModelDndHandler(dropTarget: UiNode) :
-        DndHandler(dropTarget, setOf(DndItemFlavor.ASSET_ITEM_MODEL))
+        DndHandler(dropTarget, setOf(DndItemFlavor.DndItemModel))
     {
         override fun onMatchingReceive(
             dragItem: EditorDndItem<*>,
             dragPointer: PointerEvent,
             source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
-            val dragModelItem = dragItem.get(DndItemFlavor.ASSET_ITEM_MODEL)
+            val dragModelItem = dragItem.get(DndItemFlavor.DndItemModel)
             if (dragModelItem.path != component.modelPathState.value) {
                 SetModelPathAction(nodeId, dragModelItem.path).apply()
             }
