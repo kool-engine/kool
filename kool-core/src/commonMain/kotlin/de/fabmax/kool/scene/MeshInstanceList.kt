@@ -76,6 +76,9 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     inline fun addInstance(block: Float32Buffer.() -> Unit) = addInstances(1) { it.block() }
 
     inline fun addInstances(n: Int, block: (Float32Buffer) -> Unit) {
+        if (n == 0) {
+            return
+        }
         checkBufferSize(n)
         val szBefore = dataF.position
         block(dataF)
@@ -88,6 +91,9 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     }
 
     fun clear() {
+        if (numInstances == 0) {
+            return
+        }
         numInstances = 0
         dataF.clear()
         hasChanged = true
