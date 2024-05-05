@@ -11,13 +11,13 @@ class SetVisibilityAction(nodes: List<SceneNodeModel>, val visible: Boolean) : S
 
     override fun doAction() {
         sceneNodes.forEach { it.isVisibleState.set(visible) }
-        KoolEditor.instance.sceneObjectsOverlay.updateOverlayInstances()
+        KoolEditor.instance.sceneObjectsOverlay.updateOverlayObjects()
     }
 
     override fun undoAction() {
         sceneNodes.forEach {
             undoVisibilities[it.nodeId]?.let { undoState -> it.isVisibleState.set(undoState) }
         }
-        KoolEditor.instance.sceneObjectsOverlay.updateOverlayInstances()
+        KoolEditor.instance.sceneObjectsOverlay.updateOverlayObjects()
     }
 }

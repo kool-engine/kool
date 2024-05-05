@@ -272,28 +272,22 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
                     if (appScene.computePickRay(ptr, rayTest.ray)) {
                         rayTest.clear()
-                        val hitOverlayObject = sceneObjectsOverlay.pick(rayTest)
+                        var selectedNodeModel: SceneNodeModel? = sceneObjectsOverlay.pick(rayTest)
+                        val distOv = if (rayTest.isHit) rayTest.hitDistanceSqr else Float.POSITIVE_INFINITY
 
                         rayTest.clear()
                         appScene.rayTest(rayTest)
-
-                        var it = rayTest.hitNode
-                        var selectedNodeModel: SceneNodeModel? = null
-                        while (it != null) {
-                            selectedNodeModel = sceneModel.nodesToNodeModels[it] as? SceneNodeModel
-                            if (selectedNodeModel != null) {
-                                break
+                        if (rayTest.isHit && rayTest.hitDistanceSqr < distOv) {
+                            var hitModel: SceneNodeModel? = null
+                            var it = rayTest.hitNode
+                            while (it != null) {
+                                hitModel = sceneModel.nodesToNodeModels[it] as? SceneNodeModel
+                                if (hitModel != null) {
+                                    break
+                                }
+                                it = it.parent
                             }
-                            it = it.parent
-                        }
-
-                        if (hitOverlayObject != null && selectedNodeModel != null) {
-                            val dOverlayObj = hitOverlayObject.drawNode.globalCenter.distance(appScene.camera.globalPos)
-                            val dSceneObj = selectedNodeModel.drawNode.globalCenter.distance(appScene.camera.globalPos)
-
-                            if (dOverlayObj < dSceneObj) {
-                                selectedNodeModel = hitOverlayObject
-                            }
+                            selectedNodeModel = hitModel ?: selectedNodeModel
                         }
 
                         selectionOverlay.selectSingle(selectedNodeModel)
@@ -349,7 +343,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             activeScene.set(projectModel.createdScenes.values.first())
         }
         if (selectionOverlay.selection.isEmpty()) {
-            activeScene.value?.let { selectionOverlay.selection.add(it) }
+            activeScene.value?.let { selectionOverlay.selectSingle(it) }
         }
 
         if (AppState.appMode == AppMode.EDIT) {
@@ -377,7 +371,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         ui.sceneBrowser.refreshSceneTree()
 
         selectionOverlay.invalidateSelection()
-        sceneObjectsOverlay.updateOverlayInstances()
+        sceneObjectsOverlay.updateOverlayObjects()
     }
 
     private fun saveEditorConfig() {

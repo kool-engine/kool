@@ -24,5 +24,5 @@ fun sceneNodeModel(nodeId: NodeId, sceneId: NodeId): SceneNodeModel? {
 
 fun refreshComponentViews() {
     KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
-    KoolEditor.instance.sceneObjectsOverlay.updateOverlayInstances()
+    KoolEditor.instance.sceneObjectsOverlay.updateOverlayObjects()
 }

@@ -116,6 +116,11 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         return selection.copy().filterIsInstance<SceneNodeModel>().filter(filter)
     }
 
+    fun isSelected(nodeModel: NodeModel): Boolean {
+        // todo: better use a set here
+        return nodeModel in selection
+    }
+
     fun invalidateSelection() {
         prevSelection.clear()
         meshSelection.clear()
