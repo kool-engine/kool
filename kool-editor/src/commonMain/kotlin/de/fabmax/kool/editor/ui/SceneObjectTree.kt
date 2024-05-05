@@ -189,7 +189,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                     }
                 }
             }
-        if (isHovered) {
+        if (isHovered || item.nodeModel in editor.selectionOverlay.selectionState.use()) {
             modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
         }
 

@@ -173,7 +173,7 @@ val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
 val Sizes.italicText: MsdfFont get() = (normalText as MsdfFont).copy(italic = MsdfFont.ITALIC_STD)
 
-// weak hovered background: hovered list items, hovered collapsable panel header
+// hovered background: hovered list items, hovered collapsable panel header
 val Colors.hoverBg: Color get() = secondaryVariantAlpha(0.35f)
 
 val Colors.weakComponentBg: Color get() = secondaryAlpha(0.15f)
@@ -203,6 +203,7 @@ object UiColors {
     val titleBg = Color("343a49ff")
     val titleText = Color("dbe6ffff")
     val secondaryBright = Color("a0b3d8ff")
+    val selectionChild = Color("ff7b0080")
 }
 
 object DragChangeRates {

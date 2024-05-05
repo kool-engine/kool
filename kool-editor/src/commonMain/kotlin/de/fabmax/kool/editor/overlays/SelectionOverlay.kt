@@ -2,8 +2,8 @@ package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.ui.UiColors
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
@@ -37,9 +37,10 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
     private val currentSelection = mutableSetOf<NodeModel>()
     private val prevSelection = mutableSetOf<NodeModel>()
-    private val meshSelection = mutableSetOf<Mesh>()
+    private val meshSelection = mutableMapOf<Mesh, SelectedMesh>()
 
-    var selectionColor by outlineShader::outlineColor
+    var selectionColor by outlineShader::outlineColorPrimary
+    var selectionColorChildren by outlineShader::outlineColorChild
 
     init {
         overlayMesh.generateFullscreenQuad()
@@ -54,6 +55,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
         onUpdate {
             selectionColor = editor.ui.uiColors.value.primary
+            selectionColorChildren = UiColors.selectionChild
 
             if (selectionPass.isEnabled) {
                 val vp = editor.editorOverlay.mainRenderPass.viewport
@@ -68,8 +70,8 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                 prevSelection += currentSelection
                 meshSelection.clear()
                 prevSelection
-                    .filter { it !is SceneModel }
-                    .forEach { it.drawNode.selectChildMeshes() }
+                    .filterIsInstance<SceneNodeModel>()
+                    .forEach { collectMeshes(it, it.drawNode) }
 
                 launchDelayed(1) {
                     // delay disable by 1 frame, so that selectionPass clears its output
@@ -133,11 +135,21 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
         selectionPass.disposePipelines()
     }
 
-    private fun Node.selectChildMeshes() {
-        if (this is Mesh) {
-            meshSelection += this
+    private fun collectMeshes(model: SceneNodeModel, node: Node) {
+        if (node is Mesh && meshSelection[node]?.type != MeshSelectionType.PRIMARY) {
+            var owner: NodeModel? = null
+            var it: Node? = node
+            while (owner == null && it != null) {
+                owner = model.sceneModel.nodesToNodeModels[it]
+                if (owner == null) {
+                    it = it.parent
+                }
+            }
+
+            val selectionType = if (owner == model) MeshSelectionType.PRIMARY else MeshSelectionType.CHILD_NODE
+            meshSelection[node] = SelectedMesh(node, selectionType)
         }
-        children.forEach { it.selectChildMeshes() }
+        node.children.forEach { collectMeshes(model, it) }
     }
 
     inner class SelectionPass(editor: KoolEditor) : OffscreenRenderPass2d(
@@ -158,18 +170,18 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             onAfterCollectDrawCommands += { ev ->
                 // replace regular object shaders by selection shader
                 val q = ev.view.drawQueue
-                var i = 0
                 q.forEach {
-                    setupDrawCommand(i++, it, ev)
+                    setupDrawCommand(it, ev)
                 }
             }
         }
 
-        private fun setupDrawCommand(i: Int, cmd: DrawCommand, updateEvent: UpdateEvent) {
+        private fun setupDrawCommand(cmd: DrawCommand, updateEvent: UpdateEvent) {
             cmd.isActive = false
-            if (cmd.mesh in meshSelection) {
+            val selection = meshSelection[cmd.mesh]
+            if (selection != null) {
                 getPipeline(cmd.mesh, updateEvent)?.let { (shader, pipeline) ->
-                    shader.color = selectionColors[i % selectionColors.size]
+                    shader.color = selectionColors[selection.type] ?: COLOR_OTHER_SEL
                     cmd.pipeline = pipeline
                     cmd.isActive = true
                 }
@@ -210,7 +222,21 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
     companion object {
         private const val defaultMaxNumberOfJoints = 16
-        private val selectionColors = (1..255).map { Color(it/255f, 0f, 0f, 1f) }
+
+        private val COLOR_PRIMARY_SEL = Color(255f/255f, 0f, 0f, 1f)
+        private val COLOR_CHILD_SEL = Color(254f/255f, 0f, 0f, 1f)
+        private val COLOR_OTHER_SEL = Color(1f/255f, 0f, 0f, 1f)
+        private val selectionColors = mapOf(
+            MeshSelectionType.PRIMARY to COLOR_PRIMARY_SEL,
+            MeshSelectionType.CHILD_NODE to COLOR_CHILD_SEL
+        )
+    }
+
+    private data class SelectedMesh(val mesh: Mesh, val type: MeshSelectionType)
+
+    private enum class MeshSelectionType {
+        PRIMARY,
+        CHILD_NODE
     }
 
     private data class ShaderAndPipeline(val shader: KslUnlitShader, val pipeline: DrawPipeline)
@@ -225,7 +251,8 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             )
         )
     {
-        var outlineColor by uniformColor("uOutlineColor", Color.WHITE)
+        var outlineColorPrimary by uniformColor("uOutlineColorPrim", Color.WHITE)
+        var outlineColorChild by uniformColor("uOutlineColorChild", Color.WHITE)
 
         init {
             texture2d("tSelectionMask", selectionMask)
@@ -235,6 +262,9 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             init {
                 val uv = interStageFloat2("uv")
                 fullscreenQuadVertexStage(uv)
+
+                val colorPrim = uniformFloat4("uOutlineColorPrim")
+                val colorChild = uniformFloat4("uOutlineColorChild")
 
                 fragmentStage {
                     main {
@@ -261,8 +291,13 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                         }
 
                         `if`(minMask ne maxMask) {
-                            val color = float4Var(uniformFloat4("uOutlineColor"))
-                            color.a set clamp(min(minMaskCount, maxMaskCount) / max(minMaskCount, maxMaskCount) * 2f.const, 0f.const, 1f.const)
+                            val color = float4Var(Color.MAGENTA.const)
+                            `if` (maxMask eq COLOR_PRIMARY_SEL.r.const) {
+                                color set colorPrim
+                            }.elseIf(maxMask eq COLOR_CHILD_SEL.r.const) {
+                                color set colorChild
+                            }
+                            color.a *= clamp(min(minMaskCount, maxMaskCount) / max(minMaskCount, maxMaskCount) * 2f.const, 0f.const, 1f.const)
                             colorOutput(color)
                         }.`else` {
                             discard()

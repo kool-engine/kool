@@ -7,7 +7,6 @@ import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
@@ -205,14 +204,14 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         isCastingShadow = false
         generate {
             color = MdColor.RED toneLin 200
-            line3d(Vec3f.ZERO, Vec3f.X_AXIS, Vec3f.Y_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f.X_AXIS, Vec3f.Z_AXIS, lineW)
+            line3d(Vec3f.NEG_X_AXIS * 0.5f, Vec3f.X_AXIS * 0.5f, Vec3f.Y_AXIS, lineW)
+            line3d(Vec3f.NEG_X_AXIS * 0.5f, Vec3f.X_AXIS * 0.5f, Vec3f.Z_AXIS, lineW)
             color = MdColor.GREEN toneLin 200
-            line3d(Vec3f.ZERO, Vec3f.Y_AXIS, Vec3f.X_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f.Y_AXIS, Vec3f.Z_AXIS, lineW)
+            line3d(Vec3f.NEG_Y_AXIS * 0.5f, Vec3f.Y_AXIS * 0.5f, Vec3f.X_AXIS, lineW)
+            line3d(Vec3f.NEG_Y_AXIS * 0.5f, Vec3f.Y_AXIS * 0.5f, Vec3f.Z_AXIS, lineW)
             color = MdColor.BLUE toneLin 200
-            line3d(Vec3f.ZERO, Vec3f.Z_AXIS, Vec3f.Y_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f.Z_AXIS, Vec3f.X_AXIS, lineW)
+            line3d(Vec3f.NEG_Z_AXIS * 0.5f, Vec3f.Z_AXIS * 0.5f, Vec3f.Y_AXIS, lineW)
+            line3d(Vec3f.NEG_Z_AXIS * 0.5f, Vec3f.Z_AXIS * 0.5f, Vec3f.X_AXIS, lineW)
         }
 
         shader = KslUnlitShader {
@@ -220,7 +219,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color {
                 instanceColor()
-                vertexColor(blendMode = ColorBlockConfig.BlendMode.Multiply)
+                //vertexColor(blendMode = ColorBlockConfig.BlendMode.Multiply)
             }
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         }
