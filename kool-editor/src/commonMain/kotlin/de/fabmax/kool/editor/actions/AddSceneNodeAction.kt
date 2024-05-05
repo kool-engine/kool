@@ -34,8 +34,8 @@ class AddSceneNodeAction(
         val scene = sceneModel(sceneId) ?: return
         addNodeDatas.forEach {
             sceneNodeModel(it.nodeId, sceneId)?.let { nodeModel ->
-                if (nodeModel in KoolEditor.instance.selectionOverlay.selection) {
-                    KoolEditor.instance.selectionOverlay.selection -= nodeModel
+                if (KoolEditor.instance.selectionOverlay.isSelected(nodeModel)) {
+                    KoolEditor.instance.selectionOverlay.reduceSelection(nodeModel)
                 }
                 scene.removeSceneNode(nodeModel)
             }

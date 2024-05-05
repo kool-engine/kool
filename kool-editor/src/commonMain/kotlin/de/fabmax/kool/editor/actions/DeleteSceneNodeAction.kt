@@ -26,7 +26,7 @@ class DeleteSceneNodeAction(
     constructor(removeNodeModel: SceneNodeModel): this(listOf(removeNodeModel))
 
     override fun doAction() {
-        KoolEditor.instance.selectionOverlay.selection.removeAll(sceneNodes)
+        KoolEditor.instance.selectionOverlay.reduceSelection(sceneNodes)
         sceneNodes.forEach {
             it.sceneModel.removeSceneNode(it)
         }

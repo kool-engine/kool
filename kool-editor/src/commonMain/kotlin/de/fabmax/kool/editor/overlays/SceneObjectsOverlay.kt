@@ -22,6 +22,7 @@ import de.fabmax.kool.util.MdColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class SceneObjectsOverlay : Node("Scene objects overlay") {
 
@@ -325,7 +326,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             if (n.distance(pos) < radius) {
                 val d = n.sqrDistance(rayTest.ray.origin)
                 if (d < rayTest.hitDistanceSqr) {
-                    rayTest.setHit(mesh, d)
+                    rayTest.setHit(mesh, sqrt(d))
                     return true
                 }
             }

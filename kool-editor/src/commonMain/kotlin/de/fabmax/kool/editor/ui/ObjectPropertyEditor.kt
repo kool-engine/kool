@@ -15,8 +15,8 @@ import de.fabmax.kool.modules.ui2.*
 class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.properties, ui) {
 
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
-        val selObjs = KoolEditor.instance.selectionOverlay.selection.use()
-        val selectedObject = if (selObjs.size == 1) selObjs[0] else null
+        val selObjs = KoolEditor.instance.selectionOverlay.selectionState.use()
+        val selectedObject = if (selObjs.size == 1) selObjs.first() else null
         val title = when (selectedObject) {
             is SceneModel -> "Scene Properties"
             is SceneNodeModel -> "Object Properties"

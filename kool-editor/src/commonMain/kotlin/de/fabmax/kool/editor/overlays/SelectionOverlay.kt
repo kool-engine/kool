@@ -10,7 +10,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
@@ -24,14 +24,18 @@ import kotlin.math.max
 
 class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
-    val selection = mutableStateListOf<NodeModel>()
-    val onSelectionChanged = mutableListOf<(List<NodeModel>) -> Unit>()
+    var selection: Set<NodeModel> = emptySet()
+        private set
+    val selectionState = mutableStateOf(selection)
+    val onSelectionChanged = mutableListOf<(Set<NodeModel>) -> Unit>()
 
     val selectionPass = SelectionPass(editor)
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
     private val outlineShader = SelectionOutlineShader(selectionPass.colorTexture)
 
     private var updateSelection = false
+
+    private val currentSelection = mutableSetOf<NodeModel>()
     private val prevSelection = mutableSetOf<NodeModel>()
     private val meshSelection = mutableSetOf<Mesh>()
 
@@ -61,7 +65,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
             if (updateSelection) {
                 updateSelection = false
                 prevSelection.clear()
-                prevSelection += selection
+                prevSelection += currentSelection
                 meshSelection.clear()
                 prevSelection
                     .filter { it !is SceneModel }
@@ -79,7 +83,7 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
     fun selectSingle(selectModel: NodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
         val selectList = selectModel?.let { listOf(it) } ?: emptyList()
 
-        if (toggleSelect && selectModel in selection) {
+        if (toggleSelect && selectModel in currentSelection) {
             if (expandIfShiftIsDown && KeyboardInput.isShiftDown) {
                 reduceSelection(selectList)
             } else {
@@ -94,31 +98,33 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
 
     fun clearSelection() = setSelection(emptyList())
 
-    fun expandSelection(addModels: List<NodeModel>) = setSelection(selection.toSet() + addModels.toSet())
+    fun expandSelection(addModels: List<NodeModel>) = setSelection(currentSelection + addModels.toSet())
 
-    fun reduceSelection(removeModels: List<NodeModel>) = setSelection(selection.toSet() - removeModels.toSet())
+    fun reduceSelection(removeModel: NodeModel) = setSelection(currentSelection - removeModel)
+    fun reduceSelection(removeModels: List<NodeModel>) = setSelection(currentSelection - removeModels.toSet())
 
     fun setSelection(selectModels: Collection<NodeModel>) {
-        if (selection != selectModels) {
-            selection.atomic {
-                clear()
-                addAll(selectModels)
+        if (currentSelection != selectModels) {
+            currentSelection.clear()
+            currentSelection += selectModels
+
+            selection = currentSelection.toSet().also { sel ->
+                selectionState.set(sel)
+                onSelectionChanged.forEach { it(sel) }
             }
-            onSelectionChanged.forEach { it(selection) }
         }
     }
 
     fun getSelectedNodes(filter: (NodeModel) -> Boolean = { true }): List<NodeModel> {
-        return selection.copy().filter(filter)
+        return currentSelection.filter(filter)
     }
 
     fun getSelectedSceneNodes(filter: (SceneNodeModel) -> Boolean = { true }): List<SceneNodeModel> {
-        return selection.copy().filterIsInstance<SceneNodeModel>().filter(filter)
+        return currentSelection.copy().filterIsInstance<SceneNodeModel>().filter(filter)
     }
 
     fun isSelected(nodeModel: NodeModel): Boolean {
-        // todo: better use a set here
-        return nodeModel in selection
+        return nodeModel in currentSelection
     }
 
     fun invalidateSelection() {

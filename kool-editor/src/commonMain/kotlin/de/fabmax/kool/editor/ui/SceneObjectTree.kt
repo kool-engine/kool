@@ -260,7 +260,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
-        val fgColor = if (item.nodeModel in editor.selectionOverlay.selection.use()) {
+        val fgColor = if (item.nodeModel in editor.selectionOverlay.selectionState.use()) {
             if (item.type != SceneObjectType.NON_MODEL_NODE) {
                 colors.primary
             } else {
