@@ -7,23 +7,33 @@ import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.util.nodeModel
 import de.fabmax.kool.editor.util.sceneModel
+import de.fabmax.kool.editor.util.sceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
-class DeleteSceneNodeAction(
+class DeleteSceneNodesAction(
     nodeModels: List<SceneNodeModel>
-) : SceneNodeAction(nodeModels) {
+) : SceneNodeAction(removeChildNodes(nodeModels)) {
 
-    private val removeNodeInfos = nodeModels.map {
-        val nodeIdx = it.parent.nodeData.childNodeIds.indexOf(it.nodeId)
-        val pos = if (nodeIdx < it.parent.nodeData.childNodeIds.lastIndex) {
-            NodeModel.InsertionPos.Before(it.parent.nodeData.childNodeIds[nodeIdx + 1])
-        } else {
-            NodeModel.InsertionPos.End
-        }
-        NodeInfo(it.nodeData, it.parent.nodeId, pos)
+    private val removeNodeInfos = mutableListOf<NodeInfo>()
+
+    init {
+        sceneNodes.forEach { appendNodeInfo(it) }
     }
 
-    constructor(removeNodeModel: SceneNodeModel): this(listOf(removeNodeModel))
+    private fun appendNodeInfo(nodeModel: SceneNodeModel) {
+        val nodeIdx = nodeModel.parent.nodeData.childNodeIds.indexOf(nodeModel.nodeId)
+        val pos = if (nodeIdx > 0) {
+            NodeModel.InsertionPos.After(nodeModel.parent.nodeData.childNodeIds[nodeIdx - 1])
+        } else {
+            val before = nodeModel.parent.nodeData.childNodeIds.getOrNull(1)
+            before?.let { NodeModel.InsertionPos.Before(it) } ?: NodeModel.InsertionPos.End
+        }
+        removeNodeInfos += NodeInfo(nodeModel.nodeData, nodeModel.parent.nodeId, pos)
+
+        nodeModel.nodeData.childNodeIds.mapNotNull { it.sceneNodeModel }.forEach { child ->
+            appendNodeInfo(child)
+        }
+    }
 
     override fun doAction() {
         KoolEditor.instance.selectionOverlay.reduceSelection(sceneNodes)
@@ -34,8 +44,6 @@ class DeleteSceneNodeAction(
     }
 
     override fun undoAction() {
-        // fixme: this will not work in case removed nodes have children, because children will not be present in scene
-        //  anymore -> deepcopy child node models before removal and re-add them in correct order on undo
         launchOnMainThread {
             // removed node model was destroyed, crate a new one only using the old data
             removeNodeInfos.forEach { (nodeData, parentId, pos) ->
@@ -52,4 +60,20 @@ class DeleteSceneNodeAction(
     }
 
     private data class NodeInfo(val nodeData: SceneNodeData, val parentId: NodeId, val position: NodeModel.InsertionPos)
+
+    companion object {
+        fun removeChildNodes(allNodes: List<SceneNodeModel>): List<SceneNodeModel> {
+            val asSet = allNodes.toSet()
+            return allNodes.filter {
+                var p = it.parent
+                while (p is SceneNodeModel) {
+                    if (p in asSet) {
+                        return@filter false
+                    }
+                    p = p.parent
+                }
+                true
+            }
+        }
+    }
 }

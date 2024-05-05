@@ -3,27 +3,28 @@ package de.fabmax.kool.editor.actions
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.SceneNodeData
-import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.util.nodeModel
+import de.fabmax.kool.editor.util.sceneModel
+import de.fabmax.kool.editor.util.sceneNodeModel
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddSceneNodeAction(
     val addNodeDatas: List<SceneNodeData>,
-    val parentId: NodeId,
-    val sceneId: NodeId
+    val parentId: NodeId
 ) : EditorAction {
 
-    private val parentModel: NodeModel? get() {
-        val scene = sceneModel(sceneId)
-        return if (parentId == sceneId) scene else scene?.nodeModels?.get(parentId)
-    }
-
     override fun doAction() {
-        val scene = sceneModel(sceneId) ?: return
-        val parent = parentModel ?: return
+        val parent = parentId.nodeModel ?: return
+        val scene = parent.sceneModel
 
         launchOnMainThread {
+            val topLevelNodes = addNodeDatas.associateBy { it.nodeId }.toMutableMap()
             addNodeDatas.forEach {
+                KoolEditor.instance.projectModel.addSceneNodeData(it)
+                topLevelNodes -= it.childNodeIds.toSet()
+            }
+            topLevelNodes.values.forEach {
                 scene.addSceneNode(SceneNodeModel(it, parent, scene))
             }
             refreshComponentViews()
@@ -31,15 +32,13 @@ class AddSceneNodeAction(
     }
 
     override fun undoAction() {
-        val scene = sceneModel(sceneId) ?: return
-        addNodeDatas.forEach {
-            sceneNodeModel(it.nodeId, sceneId)?.let { nodeModel ->
-                if (KoolEditor.instance.selectionOverlay.isSelected(nodeModel)) {
-                    KoolEditor.instance.selectionOverlay.reduceSelection(nodeModel)
-                }
-                scene.removeSceneNode(nodeModel)
-            }
-        }
+        val scene = parentId.nodeModel?.sceneModel ?: return
+        val nodes = addNodeDatas.mapNotNull { it.nodeId.sceneNodeModel }
+        val nonChildNodes = DeleteSceneNodesAction.removeChildNodes(nodes)
+
+        KoolEditor.instance.selectionOverlay.reduceSelection(nodes)
+        nonChildNodes.forEach { scene.removeSceneNode(it) }
+
         refreshComponentViews()
     }
 }

@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.NativeAssetLoader
 import de.fabmax.kool.util.logE
+import kotlinx.coroutines.launch
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object PlatformFunctions {
@@ -26,5 +27,11 @@ actual object PlatformFunctions {
     actual suspend fun chooseFilePath(): String? {
         logE { "chooseFilePath() not available on JS" }
         return null
+    }
+
+    actual fun saveProjectBlocking() {
+        Assets.launch {
+            KoolEditor.instance.saveProject()
+        }
     }
 }

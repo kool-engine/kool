@@ -11,4 +11,6 @@ expect object PlatformFunctions {
     fun editBehavior(behaviorClassName: String)
 
     suspend fun chooseFilePath(): String?
+
+    fun saveProjectBlocking()
 }

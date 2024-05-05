@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
-import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.AppAssets
@@ -37,14 +37,20 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
-    val projectModel = try {
-        val data = Json.decodeFromString<ProjectData>(projectFiles.projectModelFile.read().decodeToString())
-        EditorProject(data)
+    val projModelJson = try {
+        projectFiles.projectModelFile.read().decodeToString()
     } catch (e: Exception) {
-        logW("KoolEditor") { "Failed loading project model, creating empty" }
-        EditorProject.emptyProject()
+        logI("KoolEditor") { "Project file not found, creating empty" }
+        return KoolEditor(projectFiles, EditorProject.emptyProject(), ctx)
     }
-    return KoolEditor(projectFiles, projectModel, ctx)
+
+    val project = try {
+        EditorProject(Json.decodeFromString<ProjectData>(projModelJson))
+    } catch (e: Exception) {
+        e.printStackTrace()
+        error("Failed deserializing project, fix / delete existing project file")
+    }
+    return KoolEditor(projectFiles, project, ctx)
 }
 
 class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject, val ctx: KoolContext) {
@@ -90,7 +96,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-            saveProject()
+            PlatformFunctions.saveProjectBlocking()
             saveEditorConfig()
             return PlatformFunctions.onWindowCloseRequest(ctx)
         }
@@ -145,7 +151,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         var wasFocused = false
         editorContent.onUpdate {
             if (wasFocused && !ctx.isWindowFocused) {
-                saveProject()
+                Assets.launch { saveProject() }
             }
             wasFocused = ctx.isWindowFocused
         }
@@ -191,7 +197,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             name = "Delete selected objects",
             keyCode = KeyboardInput.KEY_DEL
         ) {
-            DeleteSceneNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
+            DeleteSceneNodesAction(selectionOverlay.getSelectedSceneNodes()).apply()
         }
         editorInputContext.addKeyListener(
             name = "Hide selected objects",
@@ -378,12 +384,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         DockLayout.saveLayout(ui.dock, "editor.ui.layout")
     }
 
-    fun saveProject() {
-        Assets.launch {
-            val text = jsonCodec.encodeToString(projectModel.projectData)
-            projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
-            logD { "Saved project model" }
-        }
+    suspend fun saveProject() {
+        val text = jsonCodec.encodeToString(projectModel.projectData)
+        projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
+        logD { "Saved project model" }
     }
 
     fun exportProject() {

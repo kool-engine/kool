@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddSceneNodeAction
-import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.components.*
@@ -61,26 +61,23 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun addNewMesh(parent: SceneObjectItem, meshShape: MeshShapeData) {
-        val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(meshShape.name)
         val nodeData = SceneNodeData(name, id)
         nodeData.components += MeshComponentData(meshShape)
         nodeData.components += MaterialComponentData(NodeId(-1))
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
-        val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(modelAsset.name)
         val nodeData = SceneNodeData(name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
-        val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(lightType.name)
         val nodeData = SceneNodeData(name, id)
@@ -92,20 +89,19 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
         nodeData.components += TransformComponentData(TransformData.fromMatrix(transform))
 
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
-        val parentScene = editor.activeScene.value ?: return
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName("Empty")
         val nodeData = SceneNodeData(name, id)
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId, parentScene.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {
         val removeNode = node.nodeModel as? SceneNodeModel ?: return
-        DeleteSceneNodeAction(removeNode).apply()
+        DeleteSceneNodesAction(listOf(removeNode)).apply()
     }
 
     private fun focusNode(node: SceneObjectItem) {
