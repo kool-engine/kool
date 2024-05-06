@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
+import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
@@ -12,10 +13,35 @@ class DndController(uiScene: Scene) {
     val dndContext = DragAndDropContext<EditorDndItem<*>>()
 
     private val surfaceHandlers = mutableMapOf<UiSurface, MutableSet<DragAndDropHandler<EditorDndItem<*>>>>()
+    private val dndCancelHandler = object : DragAndDropHandler<EditorDndItem<*>> {
+        val cancelListener = EditorKeyListener.cancelListener { dndContext.cancelDrag() }
+        override val dropTarget: UiNode? = null
+
+        override fun receive(
+            dragItem: EditorDndItem<*>,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<EditorDndItem<*>>?
+        ) = false
+
+        override fun onDragStart(
+            dragItem: EditorDndItem<*>,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<EditorDndItem<*>>?
+        ) = cancelListener.push()
+
+        override fun onDragEnd(
+            dragItem: EditorDndItem<*>,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<EditorDndItem<*>>?,
+            target: DragAndDropHandler<EditorDndItem<*>>?,
+            success: Boolean
+        ) = cancelListener.pop()
+    }
 
     init {
         uiScene.onRenderScene += {
             dndContext.clearHandlers()
+            dndContext.registerHandler(dndCancelHandler)
             surfaceHandlers.values.forEach {
                 dndContext.handlers += it
             }

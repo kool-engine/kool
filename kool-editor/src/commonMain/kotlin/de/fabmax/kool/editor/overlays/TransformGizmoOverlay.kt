@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.overlays
 
+import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.util.SelectionTransform
 import de.fabmax.kool.modules.gizmo.GizmoListener
@@ -23,20 +24,27 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
 
     var transformMode: GizmoMode by gizmo::mode
 
+    private val cancelListener = EditorKeyListener.cancelListener {
+        gizmo.gizmoNode.cancelManipulation()
+    }
+
     private val gizmoListener = object : GizmoListener {
         override fun onManipulationStart(startTransform: TrsTransformD) {
             hasTransformAuthority = true
             selectionTransform?.startTransform()
+            cancelListener.push()
         }
 
         override fun onManipulationFinished(startTransform: TrsTransformD, endTransform: TrsTransformD) {
             hasTransformAuthority = false
             selectionTransform?.applyTransform(true)
+            cancelListener.pop()
         }
 
         override fun onManipulationCanceled(startTransform: TrsTransformD) {
             hasTransformAuthority = false
             selectionTransform?.restoreInitialTransform()
+            cancelListener.pop()
         }
 
         override fun onGizmoUpdate(transform: TrsTransformD) {
@@ -54,10 +62,6 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
                 gizmo.updateGizmoFromClient()
             }
         }
-    }
-
-    fun cancelTransformOperation() {
-        gizmo.gizmoNode.cancelManipulation()
     }
 
     fun setTransformObject(nodeModel: SceneNodeModel?) {

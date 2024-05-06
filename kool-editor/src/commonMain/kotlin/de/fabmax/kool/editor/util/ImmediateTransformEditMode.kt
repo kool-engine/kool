@@ -2,8 +2,12 @@ package de.fabmax.kool.editor.util
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.EditorEditMode
+import de.fabmax.kool.editor.EditorKeyListener
+import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.input.*
+import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.KeyEvent
+import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gizmo.*
 import de.fabmax.kool.modules.ui2.MutableStateValue
@@ -50,37 +54,34 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
 
     val isActive: Boolean get() = gizmo.isManipulating
 
-    private val inputHandler = object : InputStack.InputHandler("Immediate transform mode") {
-        init {
-            blockAllKeyboardInput = true
-            pointerListeners += this@ImmediateTransformEditMode
+    private val inputHandler = EditorKeyListener("Immediate transform mode").apply {
+        pointerListeners += this@ImmediateTransformEditMode
 
-            addKeyListener(name = "Cancel transform", keyCode = KeyboardInput.KEY_ESC) {
-                finish(isCanceled = true)
-                mode.set(EditorEditMode.Mode.NONE)
-            }
-
-            addKeyListener(name = "Move", keyCode = LocalKeyCode('g')) {
-                mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
-                setOp(opCamPlaneTranslate)
-            }
-            addKeyListener(name = "Rotate", keyCode = LocalKeyCode('r')) {
-                mode.set(EditorEditMode.Mode.ROTATE_IMMEDIATE)
-                setOp(opCamPlaneRotate)
-            }
-            addKeyListener(name = "Scale", keyCode = LocalKeyCode('s')) {
-                mode.set(EditorEditMode.Mode.SCALE_IMMEDIATE)
-                setOp(opUniformScale)
-            }
-
-            addKeyListener(name = "X-axis", keyCode = LocalKeyCode('x'), filter = FILTER_NO_SHIFT) { setXAxisOp() }
-            addKeyListener(name = "Y-axis", keyCode = LocalKeyCode('y'), filter = FILTER_NO_SHIFT) { setYAxisOp() }
-            addKeyListener(name = "Z-axis", keyCode = LocalKeyCode('z'), filter = FILTER_NO_SHIFT) { setZAxisOp() }
-
-            addKeyListener(name = "X-plane", keyCode = LocalKeyCode('x'), filter = FILTER_SHIFT) { setXPlaneOp() }
-            addKeyListener(name = "Y-plane", keyCode = LocalKeyCode('y'), filter = FILTER_SHIFT) { setYPlaneOp() }
-            addKeyListener(name = "Z-plane", keyCode = LocalKeyCode('z'), filter = FILTER_SHIFT) { setZPlaneOp() }
+        addKeyListener(Key.CancelOperation) {
+            finish(isCanceled = true)
+            mode.set(EditorEditMode.Mode.NONE)
         }
+
+        addKeyListener(Key.ToggleImmediateMoveMode) {
+            setOp(opCamPlaneTranslate)
+            editor.editMode.toggleMode(EditorEditMode.Mode.MOVE_IMMEDIATE)
+        }
+        addKeyListener(Key.ToggleImmediateRotateMode) {
+            setOp(opCamPlaneRotate)
+            editor.editMode.toggleMode(EditorEditMode.Mode.ROTATE_IMMEDIATE)
+        }
+        addKeyListener(Key.ToggleImmediateScaleMode) {
+            setOp(opUniformScale)
+            editor.editMode.toggleMode(EditorEditMode.Mode.SCALE_IMMEDIATE)
+        }
+
+        addKeyListener(Key.LimitToXAxis) { setXAxisOp() }
+        addKeyListener(Key.LimitToYAxis) { setYAxisOp() }
+        addKeyListener(Key.LimitToZAxis) { setZAxisOp() }
+
+        addKeyListener(Key.LimitToXPlane) { setXPlaneOp() }
+        addKeyListener(Key.LimitToYPlane) { setYPlaneOp() }
+        addKeyListener(Key.LimitToZPlane) { setZPlaneOp() }
     }
 
     init {
@@ -104,7 +105,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         primNode?.let { updateGizmoFromClient(it.drawNode) }
         selectionTransform?.startTransform()
 
-        InputStack.pushTop(inputHandler)
+        inputHandler.push()
         return true
     }
 
@@ -120,8 +121,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             }
         }
         selectionTransform = null
-
-        InputStack.remove(inputHandler)
+        inputHandler.pop()
     }
 
     private fun updateGizmoFromClient(client: Node) {
@@ -174,6 +174,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             // selection is empty
             finish(false)
             mode.set(EditorEditMode.Mode.NONE)
+            return
         }
 
         val ptr = pointerState.primaryPointer
