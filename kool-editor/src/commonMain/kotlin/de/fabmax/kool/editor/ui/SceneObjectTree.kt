@@ -60,7 +60,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         isTreeValid.set(false)
     }
 
-    private fun addNewMesh(parent: SceneObjectItem, meshShape: MeshShapeData) {
+    private fun addNewMesh(parent: SceneObjectItem, meshShape: ShapeData) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(meshShape.name)
         val nodeData = SceneNodeData(name, id)
@@ -159,13 +159,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
         subMenu("Add child object") {
             subMenu("Mesh") {
-                item("Box") { addNewMesh(it, MeshShapeData.defaultBox) }
-                item("Rect") { addNewMesh(it, MeshShapeData.defaultRect) }
-                item("Ico-Sphere") { addNewMesh(it, MeshShapeData.defaultIcoSphere) }
-                item("UV-Sphere") { addNewMesh(it, MeshShapeData.defaultUvSphere) }
-                item("Cylinder") { addNewMesh(it, MeshShapeData.defaultCylinder) }
-                item("Capsule") { addNewMesh(it, MeshShapeData.defaultCapsule) }
-                item("Empty") { addNewMesh(it, MeshShapeData.defaultEmpty) }
+                item("Box") { addNewMesh(it, ShapeData.defaultBox) }
+                item("Rect") { addNewMesh(it, ShapeData.defaultRect) }
+                item("Sphere") { addNewMesh(it, ShapeData.defaultSphere) }
+                item("Cylinder") { addNewMesh(it, ShapeData.defaultCylinder) }
+                item("Capsule") { addNewMesh(it, ShapeData.defaultCapsule) }
+                item("Empty") { addNewMesh(it, ShapeData.defaultEmpty) }
             }
             subMenu("glTF model") {
                 item("Import model") { logE { "Not yet implemented" } }

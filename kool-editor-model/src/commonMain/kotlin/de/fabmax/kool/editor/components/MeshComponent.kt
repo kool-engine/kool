@@ -35,7 +35,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
 
     private val isRecreatingShader = atomic(false)
 
-    constructor(nodeModel: SceneNodeModel): this(nodeModel, MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
+    constructor(nodeModel: SceneNodeModel): this(nodeModel, MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)

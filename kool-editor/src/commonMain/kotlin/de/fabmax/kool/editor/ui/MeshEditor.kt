@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.SetMeshShapeAction
 import de.fabmax.kool.editor.components.MeshComponent
-import de.fabmax.kool.editor.data.MeshShapeData
+import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.modules.ui2.*
@@ -44,13 +44,13 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                     .margin(bottom = sizes.gap)
 
                 when (shape) {
-                    is MeshShapeData.Box -> boxProperties(shape)
-                    is MeshShapeData.Rect -> rectProperties(shape)
-                    is MeshShapeData.IcoSphere -> icoSphereProperties(shape)
-                    is MeshShapeData.UvSphere -> uvSphereProperties(shape)
-                    is MeshShapeData.Cylinder -> cylinderProperties(shape)
-                    is MeshShapeData.Capsule -> capsuleProperties(shape)
-                    is MeshShapeData.Empty -> { }
+                    is ShapeData.Box -> boxProperties(shape)
+                    is ShapeData.Rect -> rectProperties(shape)
+                    is ShapeData.Sphere -> icoSphereProperties(shape)
+                    is ShapeData.Cylinder -> cylinderProperties(shape)
+                    is ShapeData.Capsule -> capsuleProperties(shape)
+                    is ShapeData.Heightmap -> TODO()
+                    is ShapeData.Empty -> { }
                 }
 
                 if (shape.hasUvs) {
@@ -72,7 +72,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         }
     }
 
-    private fun UiScope.boxProperties(box: MeshShapeData.Box) = Column(
+    private fun UiScope.boxProperties(box: ShapeData.Box) = Column(
         width = Grow.Std,
         scopeName = "boxProperties"
     ) {
@@ -87,7 +87,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         )
     }
 
-    private fun UiScope.rectProperties(rect: MeshShapeData.Rect) = Column(
+    private fun UiScope.rectProperties(rect: ShapeData.Rect) = Column(
         width = Grow.Std,
         scopeName = "rectProperties"
     ) {
@@ -102,57 +102,51 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         )
     }
 
-    private fun UiScope.icoSphereProperties(icoSphere: MeshShapeData.IcoSphere) = Column(
+    private fun UiScope.icoSphereProperties(sphere: ShapeData.Sphere) = Column(
         width = Grow.Std,
         scopeName = "icoSphereProperties"
     ) {
-        val shapeI = component.shapesState.indexOf(icoSphere)
+        val shapeI = component.shapesState.indexOf(sphere)
         labeledDoubleTextField(
             label = "Radius:",
-            value = icoSphere.radius,
+            value = sphere.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, icoSphere.copy(radius = undo), icoSphere.copy(radius = apply), shapeI)
+                SetMeshShapeAction(component, sphere.copy(radius = undo), sphere.copy(radius = apply), shapeI)
             }
         )
-        labeledIntTextField(
-            label = "Sub-divisions:",
-            value = icoSphere.subDivisions,
-            dragChangeSpeed = 0.02,
-            minValue = 0,
-            maxValue = 7,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, icoSphere.copy(subDivisions = undo), icoSphere.copy(subDivisions = apply), shapeI)
-            }
-        )
+        val isIco = sphere.sphereType == "ico"
+        labeledCheckbox("Generate as ico-sphere", isIco) { setIco ->
+            val newType = if (setIco) "ico" else "uv"
+            val newSteps = if (setIco) 2 else 20
+            SetMeshShapeAction(component, sphere, sphere.copy(steps = newSteps, sphereType = newType), shapeI).apply()
+        }
+        if (isIco) {
+            labeledIntTextField(
+                label = "Sub-divisions:",
+                value = sphere.steps,
+                dragChangeSpeed = 0.02,
+                minValue = 0,
+                maxValue = 7,
+                editHandler = ActionValueEditHandler { undo, apply ->
+                    SetMeshShapeAction(component, sphere.copy(steps = undo), sphere.copy(steps = apply), shapeI)
+                }
+            )
+        } else {
+            labeledIntTextField(
+                label = "Steps:",
+                value = sphere.steps,
+                dragChangeSpeed = 0.1,
+                minValue = 3,
+                maxValue = 100,
+                editHandler = ActionValueEditHandler { undo, apply ->
+                    SetMeshShapeAction(component, sphere.copy(steps = undo), sphere.copy(steps = apply), shapeI)
+                }
+            )
+        }
     }
 
-    private fun UiScope.uvSphereProperties(uvSphere: MeshShapeData.UvSphere) = Column(
-        width = Grow.Std,
-        scopeName = "uvSphereProperties"
-    ) {
-        val shapeI = component.shapesState.indexOf(uvSphere)
-        labeledDoubleTextField(
-            label = "Radius:",
-            value = uvSphere.radius,
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, uvSphere.copy(radius = undo), uvSphere.copy(radius = apply), shapeI)
-            }
-        )
-        labeledIntTextField(
-            label = "Steps:",
-            value = uvSphere.steps,
-            dragChangeSpeed = 0.1,
-            minValue = 3,
-            maxValue = 100,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, uvSphere.copy(steps = undo), uvSphere.copy(steps = apply), shapeI)
-            }
-        )
-    }
-
-    private fun UiScope.cylinderProperties(cylinder: MeshShapeData.Cylinder) = Column(
+    private fun UiScope.cylinderProperties(cylinder: ShapeData.Cylinder) = Column(
         width = Grow.Std,
         scopeName = "cylinderProperties"
     ) {
@@ -212,7 +206,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         )
     }
 
-    private fun UiScope.capsuleProperties(capsule: MeshShapeData.Capsule) = Column(
+    private fun UiScope.capsuleProperties(capsule: ShapeData.Capsule) = Column(
         width = Grow.Std,
         scopeName = "capsuleProperties"
     ) {
@@ -245,30 +239,29 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         )
     }
 
-    private data class ShapeOption<T: MeshShapeData>(val name: String, val type: KClass<T>, val factory: () -> T) {
+    private data class ShapeOption<T: ShapeData>(val name: String, val type: KClass<T>, val factory: () -> T) {
         override fun toString() = name
     }
 
     private object ShapeOptions {
         val items = listOf(
-            ShapeOption("Box", MeshShapeData.Box::class) { MeshShapeData.defaultBox },
-            ShapeOption("Rect", MeshShapeData.Rect::class) { MeshShapeData.defaultRect },
-            ShapeOption("Ico-Sphere", MeshShapeData.IcoSphere::class) { MeshShapeData.defaultIcoSphere },
-            ShapeOption("UV-Sphere", MeshShapeData.UvSphere::class) { MeshShapeData.defaultUvSphere },
-            ShapeOption("Cylinder", MeshShapeData.Cylinder::class) { MeshShapeData.defaultCylinder },
-            ShapeOption("Capsule", MeshShapeData.Capsule::class) { MeshShapeData.defaultCapsule },
-            ShapeOption("Empty", MeshShapeData.Empty::class) { MeshShapeData.Empty() },
+            ShapeOption("Box", ShapeData.Box::class) { ShapeData.defaultBox },
+            ShapeOption("Rect", ShapeData.Rect::class) { ShapeData.defaultRect },
+            ShapeOption("Sphere", ShapeData.Sphere::class) { ShapeData.defaultSphere },
+            ShapeOption("Cylinder", ShapeData.Cylinder::class) { ShapeData.defaultCylinder },
+            ShapeOption("Capsule", ShapeData.Capsule::class) { ShapeData.defaultCapsule },
+            ShapeOption("Empty", ShapeData.Empty::class) { ShapeData.Empty() },
         )
 
-        fun indexOfShape(shape: MeshShapeData): Int {
+        fun indexOfShape(shape: ShapeData): Int {
             return when (shape) {
-                is MeshShapeData.Box -> 0
-                is MeshShapeData.Rect -> 1
-                is MeshShapeData.IcoSphere -> 2
-                is MeshShapeData.UvSphere -> 3
-                is MeshShapeData.Cylinder -> 4
-                is MeshShapeData.Capsule -> 5
-                is MeshShapeData.Empty -> 6
+                is ShapeData.Box -> 0
+                is ShapeData.Rect -> 1
+                is ShapeData.Sphere -> 2
+                is ShapeData.Cylinder -> 3
+                is ShapeData.Capsule -> 4
+                is ShapeData.Heightmap -> 5
+                is ShapeData.Empty -> 6
             }
         }
     }

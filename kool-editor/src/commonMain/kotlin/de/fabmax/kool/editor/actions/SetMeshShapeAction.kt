@@ -1,12 +1,12 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.MeshComponent
-import de.fabmax.kool.editor.data.MeshShapeData
+import de.fabmax.kool.editor.data.ShapeData
 
 class SetMeshShapeAction(
     component: MeshComponent,
-    private val oldShape: MeshShapeData,
-    private val newShape: MeshShapeData,
+    private val oldShape: ShapeData,
+    private val newShape: ShapeData,
     private val replaceIndex: Int = component.shapesState.indexOf(oldShape)
 ) : ComponentAction<MeshComponent>(component.nodeModel.nodeId, MeshComponent::class) {
 

@@ -3,11 +3,10 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.actions.SetRigidBodyPropertiesAction
 import de.fabmax.kool.editor.components.RigidActorComponent
 import de.fabmax.kool.editor.data.RigidActorProperties
-import de.fabmax.kool.editor.data.RigidActorShape
 import de.fabmax.kool.editor.data.RigidActorType
+import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.modules.ui2.*
-import kotlin.reflect.KClass
 
 class RigidActorEditor(component: RigidActorComponent) : ComponentEditor<RigidActorComponent>(component) {
 
@@ -56,104 +55,102 @@ class RigidActorEditor(component: RigidActorComponent) : ComponentEditor<RigidAc
         labeledCombobox(
             label = "Shape:",
             items = ShapeOption.entries,
-            selectedIndex = ShapeOption.entries.indexOfFirst { it.shapeType.isInstance(bodyProps.shape) }
+            selectedIndex = ShapeOption.entries.indexOfFirst { it.matches(bodyProps.shapes.firstOrNull()) }
         ) {
             val newProps = when (it) {
-                ShapeOption.UseMesh -> bodyProps.copy(shape = RigidActorShape.UseMesh)
-                ShapeOption.Box -> bodyProps.copy(shape = RigidActorShape.Box(Vec3Data(1.0, 1.0, 1.0)))
-                ShapeOption.Sphere -> bodyProps.copy(shape = RigidActorShape.Sphere(1f))
-                ShapeOption.Cylinder -> bodyProps.copy(shape = RigidActorShape.Cylinder(1f, 1f))
-                ShapeOption.Capsule -> bodyProps.copy(shape = RigidActorShape.Capsule(1f, 1f))
-                ShapeOption.Heightmap -> bodyProps.copy(shape = RigidActorShape.Heightmap(""))
+                ShapeOption.UseMesh -> bodyProps.copy(shapes = emptyList())
+                ShapeOption.Box -> bodyProps.copy(shapes = listOf(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
+                ShapeOption.Sphere -> bodyProps.copy(shapes = listOf(ShapeData.Sphere(1.0)))
+                ShapeOption.Cylinder -> bodyProps.copy(shapes = listOf(ShapeData.Cylinder(1.0, 1.0, 1.0)))
+                ShapeOption.Capsule -> bodyProps.copy(shapes = listOf(ShapeData.Capsule(1.0, 1.0)))
+                ShapeOption.Heightmap -> bodyProps.copy(shapes = listOf(ShapeData.Heightmap("")))
             }
             SetRigidBodyPropertiesAction(nodeId, bodyProps, newProps).apply()
         }
 
-        when (val shape = bodyProps.shape) {
-            is RigidActorShape.Box -> boxShapeEditor(shape, bodyProps)
-            is RigidActorShape.Capsule -> capsuleEditor(shape, bodyProps)
-            is RigidActorShape.Cylinder -> cylinderEditor(shape, bodyProps)
-            is RigidActorShape.Sphere -> sphereEditor(shape, bodyProps)
-            is RigidActorShape.Heightmap -> heightmapEditor(shape, bodyProps)
-            RigidActorShape.UseMesh -> {
-                // todo: check if mesh shape is a valid rigid body shape
-            }
+        when (val shape = bodyProps.shapes.firstOrNull()) {
+            is ShapeData.Box -> boxShapeEditor(shape, bodyProps)
+            is ShapeData.Capsule -> capsuleEditor(shape, bodyProps)
+            is ShapeData.Cylinder -> cylinderEditor(shape, bodyProps)
+            is ShapeData.Sphere -> sphereEditor(shape, bodyProps)
+            is ShapeData.Heightmap -> heightmapEditor(shape, bodyProps)
+            else -> { }
         }
     }
 
-    private fun ColumnScope.boxShapeEditor(shape: RigidActorShape.Box, bodyProps: RigidActorProperties) {
+    private fun ColumnScope.boxShapeEditor(shape: ShapeData.Box, bodyProps: RigidActorProperties) {
         labeledXyzRow(
             label = "Size:",
             xyz = shape.size.toVec3d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC3,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val undoShape = bodyProps.copy(shape = RigidActorShape.Box(Vec3Data(undo)))
-                val applyShape = bodyProps.copy(shape = RigidActorShape.Box(Vec3Data(apply)))
+                val undoShape = bodyProps.copy(shapes = listOf(ShapeData.Box(Vec3Data(undo))))
+                val applyShape = bodyProps.copy(shapes = listOf(ShapeData.Box(Vec3Data(apply))))
                 SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
 
-    private fun ColumnScope.capsuleEditor(shape: RigidActorShape.Capsule, bodyProps: RigidActorProperties) {
+    private fun ColumnScope.capsuleEditor(shape: ShapeData.Capsule, bodyProps: RigidActorProperties) {
         labeledDoubleTextField(
             label = "Radius:",
-            value = shape.radius.toDouble(),
+            value = shape.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val undoShape = bodyProps.copy(shape = shape.copy(radius = undo.toFloat()))
-                val applyShape = bodyProps.copy(shape = shape.copy(radius = apply.toFloat()))
+                val undoShape = bodyProps.copy(shapes = listOf(shape.copy(radius = undo)))
+                val applyShape = bodyProps.copy(shapes = listOf(shape.copy(radius = apply)))
                 SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
         labeledDoubleTextField(
             label = "Length:",
-            value = shape.length.toDouble(),
+            value = shape.length,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val undoShape = bodyProps.copy(shape = shape.copy(length = undo.toFloat()))
-                val applyShape = bodyProps.copy(shape = shape.copy(length = apply.toFloat()))
+                val undoShape = bodyProps.copy(shapes = listOf(shape.copy(length = undo)))
+                val applyShape = bodyProps.copy(shapes = listOf(shape.copy(length = apply)))
                 SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
 
-    private fun ColumnScope.cylinderEditor(shape: RigidActorShape.Cylinder, bodyProps: RigidActorProperties) {
+    private fun ColumnScope.cylinderEditor(shape: ShapeData.Cylinder, bodyProps: RigidActorProperties) {
         labeledDoubleTextField(
             label = "Radius:",
-            value = shape.radius.toDouble(),
+            value = shape.topRadius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val undoShape = bodyProps.copy(shape = shape.copy(radius = undo.toFloat()))
-                val applyShape = bodyProps.copy(shape = shape.copy(radius = apply.toFloat()))
+                val undoShape = bodyProps.copy(shapes = listOf(shape.copy(topRadius = undo)))
+                val applyShape = bodyProps.copy(shapes = listOf(shape.copy(topRadius = apply)))
                 SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
         labeledDoubleTextField(
             label = "Length:",
-            value = shape.length.toDouble(),
+            value = shape.length,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val undoShape = bodyProps.copy(shape = shape.copy(length = undo.toFloat()))
-                val applyShape = bodyProps.copy(shape = shape.copy(length = apply.toFloat()))
+                val undoShape = bodyProps.copy(shapes = listOf(shape.copy(length = undo)))
+                val applyShape = bodyProps.copy(shapes = listOf(shape.copy(length = apply)))
                 SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
 
-    private fun ColumnScope.sphereEditor(shape: RigidActorShape.Sphere, bodyProps: RigidActorProperties) {
+    private fun ColumnScope.sphereEditor(shape: ShapeData.Sphere, bodyProps: RigidActorProperties) {
         labeledDoubleTextField(
             label = "Radius:",
-            value = shape.radius.toDouble(),
+            value = shape.radius,
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val undoShape = bodyProps.copy(shape = shape.copy(radius = undo.toFloat()))
-                val applyShape = bodyProps.copy(shape = shape.copy(radius = apply.toFloat()))
+                val undoShape = bodyProps.copy(shapes = listOf(shape.copy(radius = undo)))
+                val applyShape = bodyProps.copy(shapes = listOf(shape.copy(radius = apply)))
                 SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
 
-    private fun ColumnScope.heightmapEditor(shape: RigidActorShape.Heightmap, bodyProps: RigidActorProperties) {
+    private fun ColumnScope.heightmapEditor(shape: ShapeData.Heightmap, bodyProps: RigidActorProperties) {
         TODO()
     }
 
@@ -161,13 +158,13 @@ class RigidActorEditor(component: RigidActorComponent) : ComponentEditor<RigidAc
         override fun toString(): String = label
     }
 
-    private enum class ShapeOption(val label: String, val shapeType: KClass<out RigidActorShape>) {
-        UseMesh("Use mesh", RigidActorShape.UseMesh::class),
-        Box("Box", RigidActorShape.Box::class),
-        Sphere("Sphere", RigidActorShape.Sphere::class),
-        Cylinder("Cylinder", RigidActorShape.Cylinder::class),
-        Capsule("Capsule", RigidActorShape.Capsule::class),
-        Heightmap("Heightmap", RigidActorShape.Heightmap::class);
+    private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean) {
+        UseMesh("Use mesh", { it == null }),
+        Box("Box", { it is ShapeData.Box }),
+        Sphere("Sphere", { it is ShapeData.Sphere }),
+        Cylinder("Cylinder", { it is ShapeData.Cylinder }),
+        Capsule("Capsule", { it is ShapeData.Capsule }),
+        Heightmap("Heightmap", { it is ShapeData.Heightmap });
 
         override fun toString(): String = label
     }
