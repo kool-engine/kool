@@ -17,20 +17,28 @@ class KeyInfo(val ui: EditorUi) : Composable {
             modifier
                 .width(Grow.Std)
                 .height(Grow(1f, min = FitContent, max = 400.dp))
-                .padding(start = sizes.largeGap, end = sizes.smallGap, bottom = sizes.gap)
+                .padding(start = sizes.largeGap, end = sizes.gap, bottom = sizes.gap)
                 .background(RoundRectBackground(colors.backgroundVariantAlpha(0.7f), sizes.gap))
                 .onPointer { it.pointer.consume() }
 
-            Text(ui.inputModeState.use()) {
-                modifier
-                    .font(sizes.boldText)
-                    .margin(sizes.gap * 1.5f)
+            Row(width = Grow.Std) {
+                Text("${ui.inputModeState.use()} - Keymap") {
+                    modifier
+                        .margin(vertical = sizes.gap * 1.5f)
+                        .width(Grow.Std)
+                        .font(sizes.boldText)
+                }
+                closeButton { ui.sceneView.isShowKeyInfo.set(false) }
             }
 
             val currentInput = InputStack.handlerStack.lastOrNull { it is EditorKeyListener } as EditorKeyListener?
             currentInput?.let { input ->
                 LazyList(
-                    containerModifier = { it.backgroundColor(null) }
+                    containerModifier = {
+                        it
+                            .margin(end = sizes.gap * 1.4f)
+                            .backgroundColor(null)
+                    }
                 ) {
                     items(input.registeredKeys.filter { it != Key.Help }) { key ->
                         Row(width = Grow.Std) {

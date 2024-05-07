@@ -5,10 +5,7 @@ import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ColorGradient
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.*
 import kotlin.math.cos
 import kotlin.math.round
 import kotlin.math.sin
@@ -64,7 +61,7 @@ fun UiScope.appModeControlButtons() {
                 .onExit { resetButtonBg.hoverAnimator.start(0f) }
                 .onClick {
                     resetButtonBg.clickAnimator.start()
-                    KoolEditor.instance.modeController.resetApp()
+                    KoolEditor.instance.resetApp()
                 }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
@@ -82,7 +79,19 @@ fun UiScope.appModeControlButtons() {
                 .onExit { pauseButtonBg.hoverAnimator.start(0f) }
                 .onClick {
                     pauseButtonBg.clickAnimator.start()
-                    KoolEditor.instance.modeController.togglePause()
+
+                    if (AppState.isPlayMode) {
+                        val editor = KoolEditor.instance
+                        if (AppState.appMode == AppMode.PLAY) {
+                            logI { "Pause app" }
+                            AppState.appModeState.set(AppMode.PAUSE)
+                            editor.ui.appStateInfo.set("App is paused")
+                        } else if (AppState.appMode == AppMode.PAUSE) {
+                            logI { "Unpause app" }
+                            AppState.appModeState.set(AppMode.PLAY)
+                            editor.ui.appStateInfo.set("App is running")
+                        }
+                    }
                 }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
@@ -99,9 +108,9 @@ fun UiScope.appModeControlButtons() {
                 .onClick {
                     playButtonBg.clickAnimator.start()
                     if (AppState.isEditMode) {
-                        KoolEditor.instance.modeController.startApp()
+                        KoolEditor.instance.startApp()
                     } else {
-                        KoolEditor.instance.modeController.stopApp()
+                        KoolEditor.instance.stopApp()
                     }
                 }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))

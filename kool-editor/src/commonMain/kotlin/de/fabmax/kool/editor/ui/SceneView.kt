@@ -11,7 +11,7 @@ import kotlin.math.roundToInt
 
 class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera, ui) {
 
-    val isShowToolbar = mutableStateOf(true)
+    val isShowOverlays = mutableStateOf(true)
     val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.JAVASCRIPT)
     val isShowKeyInfo = mutableStateOf(false)
     val toolbar = FloatingToolbar(editor)
@@ -33,30 +33,33 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
 
                 windowDockable.dockedTo.use()?.let { panelBar(it) }
             }
-            Box(width = Grow.Std, height = Grow.Std) {
-                modifier
-                    .padding(Dp.ZERO)
-                    .background(null)
-                viewBox = uiNode
 
-                if (editor.editMode.mode.use() == EditorEditMode.Mode.BOX_SELECT) {
-                    // enabled box selection mode
-                    surface.inputMode = UiSurface.InputCaptureMode.CapturePassthrough
-                    boxSelector()
-                } else {
-                    // disabled box selection mode
-                    surface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
-                    boxSelector.isBoxSelect.set(false)
+            if (isShowOverlays.use()) {
+                Box(width = Grow.Std, height = Grow.Std) {
+                    modifier
+                        .padding(Dp.ZERO)
+                        .background(null)
+                    viewBox = uiNode
+
+                    if (editor.editMode.mode.use() == EditorEditMode.Mode.BOX_SELECT) {
+                        // enabled box selection mode
+                        surface.inputMode = UiSurface.InputCaptureMode.CapturePassthrough
+                        boxSelector()
+                    } else {
+                        // disabled box selection mode
+                        surface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
+                        boxSelector.isBoxSelect.set(false)
+                    }
                 }
             }
         }
 
         appModeControlButtons()
-        if (isShowToolbar.use()) {
+        if (isShowOverlays.use()) {
             toolbar()
-        }
-        if (isShowKeyInfo.use()) {
-            keyInfo()
+            if (isShowKeyInfo.use()) {
+                keyInfo()
+            }
         }
     }
 

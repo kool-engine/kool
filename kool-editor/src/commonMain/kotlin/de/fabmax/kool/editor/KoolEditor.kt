@@ -88,7 +88,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     val appLoader = AppLoader(this)
-    val modeController = AppModeController(this)
     val availableAssets = AvailableAssets(projectFiles)
     val ui = EditorUi(this)
 
@@ -131,11 +130,48 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         appLoader.reloadApp()
     }
 
-    fun setEditorOverlayVisibility(isVisible: Boolean) {
+    fun startApp() {
+        val app = loadedApp.value?.app ?: return
+        val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return
+
+        logI { "Start app" }
+        InputStack.handlerStack.removeAll { it is EditorKeyListener }
+
+        // fixme: a bit hacky currently: restore app scene camera
+        //  it was replaced by custom editor cam during editor app load
+        sceneModel.cameraState.value?.camera?.let { cam ->
+            sceneModel.drawNode.camera = cam
+            (cam as? PerspectiveCamera)?.let {
+                val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
+                aoPipeline?.proxyCamera?.trackedCam = it
+            }
+        }
+
+        AppState.appModeState.set(AppMode.PLAY)
+        app.startApp(projectModel, KoolSystem.requireContext())
+        setEditorOverlayVisibility(false)
+        ui.appStateInfo.set("App is running")
+    }
+
+    fun stopApp() {
+        logI { "Stop app" }
+        AppState.appModeState.set(AppMode.EDIT)
+        setEditorOverlayVisibility(true)
+        appLoader.reloadApp()
+
+        editorInputContext.push()
+    }
+
+    fun resetApp() {
+        logI { "Reset app" }
+        appLoader.reloadApp()
+    }
+
+    private fun setEditorOverlayVisibility(isVisible: Boolean) {
         editorOverlay.children.forEach {
             it.isVisible = isVisible
         }
-        ui.sceneView.isShowToolbar.set(isVisible)
+        ui.sceneView.isShowOverlays.set(isVisible)
     }
 
     fun editBehaviorSource(behavior: AppBehavior) = editBehaviorSource(behavior.qualifiedName)
