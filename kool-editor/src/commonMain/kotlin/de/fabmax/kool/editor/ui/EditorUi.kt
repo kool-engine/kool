@@ -3,7 +3,12 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.editor.EditorKeyListener
+import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.api.AppMode
+import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*
@@ -46,10 +51,17 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val console = ConsolePanel(this)
 
     val appStateInfo = mutableStateOf("")
+    val inputModeState = mutableStateOf("")
 
     val dndController = DndController(this)
 
     init {
+        InputStack.onInputStackChanged += {
+            InputStack.handlerStack.lastOrNull { it is EditorKeyListener } ?.let { handler ->
+                inputModeState.set(handler.name)
+            }
+        }
+
         launchOnMainThread {
             val uiTex = Assets.loadTexture2d("assets/fonts/gidole/font-gidole-regular.png", MsdfFont.MSDF_TEX_PROPS)
             val uiMeta = Assets.loadBlobAsset("assets/fonts/gidole/font-gidole-regular.json")
@@ -136,14 +148,37 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     }
 
     private fun UiScope.statusBar() = Row(width = Grow.Std, height = Grow.Std) {
+        Row {
+            modifier
+                .width(sizes.baseSize * 8)
+                .alignY(AlignmentY.Center)
+                .onClick { editor.ui.sceneView.isShowKeyInfo.toggle() }
+
+            if (AppState.appModeState.use() == AppMode.EDIT) {
+                Text("${inputModeState.use()}:") {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .margin(horizontal = sizes.gap)
+                }
+                keyLabel(Key.Help)
+                Text("for key info") {
+                    modifier
+                        .margin(start = sizes.gap)
+                        .alignY(AlignmentY.Center)
+                }
+            }
+        }
+
+        divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap)
+
         Box(width = Grow.Std) {  }
 
-        divider(colors.strongDividerColor, marginStart = sizes.gap, marginEnd = sizes.gap)
+        divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap)
 
-        Box(width = sizes.baseSize * 6f, height = Grow.Std) {
-            Text(appStateInfo.use()) {
-                modifier.alignY(AlignmentY.Center)
-            }
+        Text(appStateInfo.use()) {
+            modifier
+                .width(sizes.baseSize * 6f)
+                .alignY(AlignmentY.Center)
         }
     }
 
@@ -170,6 +205,7 @@ val Sizes.lineHeightLarger: Dp get() = baseSize * 0.9f
 val Sizes.lineHeightTitle: Dp get() = baseSize
 val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f
 
+val Sizes.smallText: MsdfFont get() = (normalText as MsdfFont).copy(sizePts = normalText.sizePts * 0.8f)
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
 val Sizes.italicText: MsdfFont get() = (normalText as MsdfFont).copy(italic = MsdfFont.ITALIC_STD)
 

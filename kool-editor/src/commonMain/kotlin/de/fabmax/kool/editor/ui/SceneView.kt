@@ -13,7 +13,9 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
 
     val isShowToolbar = mutableStateOf(true)
     val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.JAVASCRIPT)
-    val toolbar = FloatingToolbar(ui)
+    val isShowKeyInfo = mutableStateOf(false)
+    val toolbar = FloatingToolbar(editor)
+    val keyInfo = KeyInfo(ui)
 
     private var viewBox: UiNode? = null
     private val boxSelector = BoxSelector()
@@ -52,6 +54,9 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
         appModeControlButtons()
         if (isShowToolbar.use()) {
             toolbar()
+        }
+        if (isShowKeyInfo.use()) {
+            keyInfo()
         }
     }
 

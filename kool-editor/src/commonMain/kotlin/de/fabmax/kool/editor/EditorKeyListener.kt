@@ -1,13 +1,15 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.input.*
+import de.fabmax.kool.modules.ui2.toggle
 
 open class EditorKeyListener(name: String) : InputStack.InputHandler(name) {
     private val _registeredKeys = mutableMapOf<Key, InputStack.SimpleKeyListener>()
-    val registeredKeys: List<Key> get() = _registeredKeys.keys.sorted()
+    val registeredKeys: List<Key> get() = _registeredKeys.keys.toList()
 
     init {
         blockAllKeyboardInput = true
+        addKeyListener(Key.Help) { KoolEditor.instance.ui.sceneView.isShowKeyInfo.toggle() }
     }
 
     fun push() {
@@ -29,15 +31,16 @@ open class EditorKeyListener(name: String) : InputStack.InputHandler(name) {
     }
 
     companion object {
-        fun cancelListener(name: String = "Cancel operation", block: (KeyEvent) -> Unit): EditorKeyListener {
+        fun cancelListener(name: String, block: (KeyEvent) -> Unit): EditorKeyListener {
             return EditorKeyListener(name).apply {
-                addKeyListener(Key.CancelOperation, block)
+                addKeyListener(Key.Cancel, block)
             }
         }
     }
 }
 
 enum class Key(val group: KeyGroup) {
+    Help(KeyGroup.General),
     Copy(KeyGroup.General),
     Paste(KeyGroup.General),
     Duplicate(KeyGroup.General),
@@ -45,7 +48,7 @@ enum class Key(val group: KeyGroup) {
     Undo(KeyGroup.General),
     Redo(KeyGroup.General),
 
-    CancelOperation(KeyGroup.General),
+    Cancel(KeyGroup.General),
     DeleteSelected(KeyGroup.General),
     HideSelected(KeyGroup.General),
     UnhideHidden(KeyGroup.General),
@@ -69,17 +72,19 @@ enum class Key(val group: KeyGroup) {
     ;
 
     val binding: KeyBinding get() = getBinding(this)
+    val description: String get() = getDescription(this)
 
     companion object {
         fun getBinding(key: Key): KeyBinding {
             // todo: load these from settings
             return when (key) {
+                Help -> KeyBinding(key, KeyboardInput.KEY_F1, KeyMod.none)
                 Copy -> KeyBinding(key, LocalKeyCode('C'), KeyMod.ctrl)
                 Paste -> KeyBinding(key, LocalKeyCode('V'), KeyMod.ctrl)
                 Duplicate -> KeyBinding(key, LocalKeyCode('D'), KeyMod.ctrl)
                 Undo -> KeyBinding(key, LocalKeyCode('Z'), KeyMod.ctrl)
                 Redo -> KeyBinding(key, LocalKeyCode('Y'), KeyMod.ctrl)
-                CancelOperation -> KeyBinding(key, KeyboardInput.KEY_ESC, KeyMod.none)
+                Cancel -> KeyBinding(key, KeyboardInput.KEY_ESC, KeyMod.none)
                 DeleteSelected -> KeyBinding(key, KeyboardInput.KEY_DEL, KeyMod.none)
                 HideSelected -> KeyBinding(key, LocalKeyCode('H'), KeyMod.none)
                 UnhideHidden -> KeyBinding(key, LocalKeyCode('H'), KeyMod.alt)
@@ -99,13 +104,38 @@ enum class Key(val group: KeyGroup) {
                 LimitToZPlane -> KeyBinding(key, LocalKeyCode('Z'), KeyMod.shift)
             }
         }
+
+        fun getDescription(key: Key): String {
+            return when (key) {
+                ToggleBoxSelectMode -> "Box select"
+                ToggleMoveMode -> "Move selected"
+                ToggleRotateMode -> "Rotate selected"
+                ToggleScaleMode -> "Scale selected"
+                ToggleImmediateMoveMode -> "Immediate move selected"
+                ToggleImmediateRotateMode -> "Immediate rotate selected"
+                ToggleImmediateScaleMode -> "Immediate scale selected"
+                DeleteSelected -> "Delete selected"
+                HideSelected -> "Hide selected"
+                UnhideHidden -> "Unhide all"
+                FocusSelected -> "Focus selected"
+
+                LimitToXAxis -> "X-axis only"
+                LimitToYAxis -> "Y-axis only"
+                LimitToZAxis -> "Z-axis only"
+                LimitToXPlane -> "X-plane only"
+                LimitToYPlane -> "Y-plane only"
+                LimitToZPlane -> "Z-plane only"
+
+                else -> key.toString()
+            }
+        }
     }
 }
 
 data class KeyBinding(val key: Key, val keyCode: KeyCode, val keyMod: KeyMod) {
     val name: String get() = key.toString()
 
-    val keyName: String get() {
+    val keyInfo: String get() {
         var s = keyMod.toString()
         if (s.isNotEmpty()) {
             s += " + "

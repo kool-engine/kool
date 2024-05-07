@@ -64,7 +64,7 @@ object IconMap {
         val circleCrosshair = IconProvider(this, iconMap.IconImageProvider(5, 0))
         val rectCrosshair = IconProvider(this, iconMap.IconImageProvider(6, 0))
         val picture = IconProvider(this, iconMap.IconImageProvider(7, 0))
-        val scale = IconProvider(this, iconMap.IconImageProvider(8, 0))
+        val fullscreen = IconProvider(this, iconMap.IconImageProvider(8, 0))
         val rotate = IconProvider(this, iconMap.IconImageProvider(9, 0))
         val move = IconProvider(this, iconMap.IconImageProvider(10, 0))
         val trash = IconProvider(this, iconMap.IconImageProvider(11, 0))
@@ -119,6 +119,7 @@ object IconMap {
         val physics = IconProvider(this, iconMap.IconImageProvider(0, 3))
         val alert = IconProvider(this, iconMap.IconImageProvider(1, 3))
         val alertFilled = IconProvider(this, iconMap.IconImageProvider(2, 3))
+        val resize = IconProvider(this, iconMap.IconImageProvider(3, 3))
     }
 }
 

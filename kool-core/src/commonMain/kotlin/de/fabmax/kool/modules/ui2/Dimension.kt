@@ -6,11 +6,7 @@ import kotlin.math.round
 
 sealed interface Dimension
 
-object FitContent : Dimension {
-    override fun toString(): String {
-        return "FitContent"
-    }
-}
+data object FitContent : Dimension
 
 data class Grow(val weight: Float, val min: Dimension = Dp.ZERO, val max: Dimension = Dp.UNBOUNDED) : Dimension {
     fun clampPx(px: Float, contentSize: Float): Float {

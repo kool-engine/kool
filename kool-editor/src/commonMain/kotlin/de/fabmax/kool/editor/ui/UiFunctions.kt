@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.CachedAppAssets
+import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.api.AppAssets
@@ -900,6 +901,35 @@ fun UiScope.iconTextButton(
 
 fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO, color: Color = colors.weakDividerColor) {
     divider(color, marginTop = marginTop, marginBottom = marginBottom)
+}
+
+fun UiScope.keyLabel(key: Key) = Row {
+    modifier.alignY(AlignmentY.Center)
+
+    val binding = key.binding
+    if (binding.keyMod.isCtrl) {
+        singleKey("Ctrl")
+        Box(width = sizes.smallGap) { }
+    }
+    if (binding.keyMod.isAlt) {
+        singleKey("Alt")
+        Box(width = sizes.smallGap) { }
+    }
+    if (binding.keyMod.isShift) {
+        singleKey("Shift")
+        Box(width = sizes.smallGap) { }
+    }
+    singleKey(binding.keyCode.name)
+}
+
+fun UiScope.singleKey(text: String) = Text(text) {
+    modifier
+        .height(sizes.largeGap)
+        .padding(sizes.smallGap * 0.9f)
+        .border(RoundRectBorder(colors.strongDividerColor, sizes.smallGap, borderWidth = 1.dp))
+        .font(sizes.smallText)
+        .textAlign(AlignmentX.Center, AlignmentY.Center)
+        .textColor(UiColors.secondaryBright)
 }
 
 fun ButtonScope.defaultButtonStyle() {

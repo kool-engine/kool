@@ -156,20 +156,15 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     private fun registerKeyBindings() {
-        editorInputContext.addKeyListener(Key.Undo) { EditorActions.undo() }
-        editorInputContext.addKeyListener(Key.Redo) { EditorActions.redo() }
-        editorInputContext.addKeyListener(Key.Copy) { EditorClipboard.copySelection() }
-        editorInputContext.addKeyListener(Key.Paste) { EditorClipboard.paste() }
-        editorInputContext.addKeyListener(Key.Duplicate) { EditorClipboard.duplicateSelection() }
-        editorInputContext.addKeyListener(Key.FocusSelected) { editorCameraTransform.focusSelectedObject() }
-
         editorInputContext.addKeyListener(Key.ToggleBoxSelectMode) { editMode.toggleMode(EditorEditMode.Mode.BOX_SELECT) }
-        editorInputContext.addKeyListener(Key.ToggleMoveMode) { editMode.toggleMode(EditorEditMode.Mode.MOVE) }
-        editorInputContext.addKeyListener(Key.ToggleRotateMode) { editMode.toggleMode(EditorEditMode.Mode.ROTATE) }
-        editorInputContext.addKeyListener(Key.ToggleScaleMode) { editMode.toggleMode(EditorEditMode.Mode.SCALE) }
         editorInputContext.addKeyListener(Key.ToggleImmediateMoveMode) { editMode.toggleMode(EditorEditMode.Mode.MOVE_IMMEDIATE) }
         editorInputContext.addKeyListener(Key.ToggleImmediateRotateMode) { editMode.toggleMode(EditorEditMode.Mode.ROTATE_IMMEDIATE) }
         editorInputContext.addKeyListener(Key.ToggleImmediateScaleMode) { editMode.toggleMode(EditorEditMode.Mode.SCALE_IMMEDIATE) }
+        editorInputContext.addKeyListener(Key.ToggleMoveMode) { editMode.toggleMode(EditorEditMode.Mode.MOVE) }
+        editorInputContext.addKeyListener(Key.ToggleRotateMode) { editMode.toggleMode(EditorEditMode.Mode.ROTATE) }
+        editorInputContext.addKeyListener(Key.ToggleScaleMode) { editMode.toggleMode(EditorEditMode.Mode.SCALE) }
+
+        editorInputContext.addKeyListener(Key.FocusSelected) { editorCameraTransform.focusSelectedObject() }
 
         editorInputContext.addKeyListener(Key.DeleteSelected) {
             DeleteSceneNodesAction(selectionOverlay.getSelectedSceneNodes()).apply()
@@ -183,7 +178,12 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             hidden?.let { nodes -> SetVisibilityAction(nodes, true).apply() }
         }
 
-        editorInputContext.addKeyListener(Key.CancelOperation) {
+        editorInputContext.addKeyListener(Key.Duplicate) { EditorClipboard.duplicateSelection() }
+        editorInputContext.addKeyListener(Key.Copy) { EditorClipboard.copySelection() }
+        editorInputContext.addKeyListener(Key.Paste) { EditorClipboard.paste() }
+        editorInputContext.addKeyListener(Key.Undo) { EditorActions.undo() }
+        editorInputContext.addKeyListener(Key.Redo) { EditorActions.redo() }
+        editorInputContext.addKeyListener(Key.Cancel) {
             when {
                 editMode.mode.value != EditorEditMode.Mode.NONE -> editMode.mode.set(EditorEditMode.Mode.NONE)
                 selectionOverlay.selection.isNotEmpty() -> selectionOverlay.clearSelection()

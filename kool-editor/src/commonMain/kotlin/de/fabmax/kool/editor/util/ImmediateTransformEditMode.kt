@@ -57,10 +57,13 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
     private val inputHandler = EditorKeyListener("Immediate transform mode").apply {
         pointerListeners += this@ImmediateTransformEditMode
 
-        addKeyListener(Key.CancelOperation) {
-            finish(isCanceled = true)
-            mode.set(EditorEditMode.Mode.NONE)
-        }
+        addKeyListener(Key.LimitToXAxis) { setXAxisOp() }
+        addKeyListener(Key.LimitToYAxis) { setYAxisOp() }
+        addKeyListener(Key.LimitToZAxis) { setZAxisOp() }
+
+        addKeyListener(Key.LimitToXPlane) { setXPlaneOp() }
+        addKeyListener(Key.LimitToYPlane) { setYPlaneOp() }
+        addKeyListener(Key.LimitToZPlane) { setZPlaneOp() }
 
         addKeyListener(Key.ToggleImmediateMoveMode) {
             setOp(opCamPlaneTranslate)
@@ -74,14 +77,10 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             setOp(opUniformScale)
             editor.editMode.toggleMode(EditorEditMode.Mode.SCALE_IMMEDIATE)
         }
-
-        addKeyListener(Key.LimitToXAxis) { setXAxisOp() }
-        addKeyListener(Key.LimitToYAxis) { setYAxisOp() }
-        addKeyListener(Key.LimitToZAxis) { setZAxisOp() }
-
-        addKeyListener(Key.LimitToXPlane) { setXPlaneOp() }
-        addKeyListener(Key.LimitToYPlane) { setYPlaneOp() }
-        addKeyListener(Key.LimitToZPlane) { setZPlaneOp() }
+        addKeyListener(Key.Cancel) {
+            finish(isCanceled = true)
+            mode.set(EditorEditMode.Mode.NONE)
+        }
     }
 
     init {

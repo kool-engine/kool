@@ -24,7 +24,7 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
 
     var transformMode: GizmoMode by gizmo::mode
 
-    private val cancelListener = EditorKeyListener.cancelListener {
+    private val cancelListener = EditorKeyListener.cancelListener("Object transform") {
         gizmo.gizmoNode.cancelManipulation()
     }
 

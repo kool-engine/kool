@@ -14,7 +14,7 @@ class DndController(uiScene: Scene) {
 
     private val surfaceHandlers = mutableMapOf<UiSurface, MutableSet<DragAndDropHandler<EditorDndItem<*>>>>()
     private val dndCancelHandler = object : DragAndDropHandler<EditorDndItem<*>> {
-        val cancelListener = EditorKeyListener.cancelListener { dndContext.cancelDrag() }
+        val cancelListener = EditorKeyListener.cancelListener("Drag & drop") { dndContext.cancelDrag() }
         override val dropTarget: UiNode? = null
 
         override fun receive(
