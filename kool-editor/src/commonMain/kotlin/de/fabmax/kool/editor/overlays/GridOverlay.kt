@@ -35,8 +35,8 @@ class GridOverlay : Node("Grid overlay") {
     private fun updateShader(cam: Camera, shader: GridShader) {
         val h = cam.globalPos.distance(cam.globalLookAt)
 
-        val scale = abs(h) / 16
-        var sDiscrete = 1f / 16f
+        val scale = abs(h) / 32
+        var sDiscrete = 1f / 32f
         while (sDiscrete < scale) {
             sDiscrete *= 4f
         }
@@ -57,7 +57,7 @@ class GridOverlay : Node("Grid overlay") {
         val superTick = Color.MAGENTA
         val majorColor = Color.RED
         val minorColor = Color.GREEN
-        val n = 200
+        val n = GRID_N
 
         for (x in -n..n) {
             val color = when {
@@ -75,6 +75,10 @@ class GridOverlay : Node("Grid overlay") {
             }
             addLine(Vec3f(-n.toFloat(), 0f, z.toFloat()), Vec3f(n.toFloat(), 0f, z.toFloat()), color)
         }
+    }
+
+    companion object {
+        private const val GRID_N = 400
     }
 
     private class GridShader(
@@ -105,8 +109,8 @@ class GridOverlay : Node("Grid overlay") {
 
                         val camData = cameraData()
                         val camDist = float1Var(length(camData.position - worldPos.output))
-                        val scaledDist = float1Var(camDist / (scale.x * 200f.const))
-                        val aMod = float1Var(1f.const - smoothStep(0.5f.const, 1f.const, scaledDist))
+                        val scaledDist = float1Var(camDist / (scale.x * (GRID_N.toFloat()).const))
+                        val aMod = float1Var(1f.const - smoothStep(0.25f.const, 1f.const, scaledDist))
 
                         val aLimit = float1Var(0.3f.const)
                         `if`(inColor.b gt 0.5f.const) {
