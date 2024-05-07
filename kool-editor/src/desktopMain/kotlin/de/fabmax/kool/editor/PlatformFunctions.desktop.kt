@@ -89,6 +89,12 @@ actual object PlatformFunctions {
         }
         return null
     }
+
+    actual fun saveProjectBlocking() {
+        runBlocking {
+            KoolEditor.instance.saveProject()
+        }
+    }
 }
 
 fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {

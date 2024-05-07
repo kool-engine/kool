@@ -3,10 +3,9 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.ContentComponent
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
+import de.fabmax.kool.editor.components.DiscreteLightComponent
+import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Attribute
@@ -16,22 +15,31 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MdColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 class SceneObjectsOverlay : Node("Scene objects overlay") {
 
-    private val directionInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
-    private val spotInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
-    private val pointInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
-    private val cameraInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
-    private val groupInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS))
+    private val dirLights = mutableListOf<DirLightComponentInstance>()
+    private val spotLights = mutableListOf<SpotLightComponentInstance>()
+    private val pointLights = mutableListOf<PointLightComponentInstance>()
+    private val cameras = mutableListOf<CameraComponentInstance>()
+    private val groups = mutableListOf<GroupNodeInstance>()
 
-    private val directionalMesh = Mesh(
+    private val dirLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val spotLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val pointLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val cameraInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val groupInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+
+    private val dirLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
-        instances = directionInstances,
+        instances = dirLightsInstances,
         name = "Directional lights"
     ).apply {
         isCastingShadow = false
@@ -69,14 +77,14 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         shader = KslUnlitShader {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
-            color { instanceColor(Attribute.COLORS) }
+            color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         }
     }
 
-    private val spotMesh = Mesh(
+    private val spotLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
-        instances = spotInstances,
+        instances = spotLightsInstances,
         name = "Spot lights"
     ).apply {
         isCastingShadow = false
@@ -109,14 +117,14 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         shader = KslUnlitShader {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
-            color { instanceColor(Attribute.COLORS) }
+            color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         }
     }
 
-    private val pointMesh = Mesh(
+    private val pointLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
-        instances = pointInstances,
+        instances = pointLightsInstances,
         name = "Point lights"
     ).apply {
         isCastingShadow = false
@@ -144,7 +152,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         shader = KslUnlitShader {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
-            color { instanceColor(Attribute.COLORS) }
+            color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         }
     }
@@ -183,7 +191,8 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         shader = KslUnlitShader {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
-            color { instanceColor(Attribute.COLORS) }
+            color { instanceColor() }
+            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         }
     }
 
@@ -194,98 +203,52 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     ).apply {
         isCastingShadow = false
         generate {
-            color = MdColor.RED
-            line3d(Vec3f.ZERO, Vec3f.X_AXIS, Vec3f.Y_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f.X_AXIS, Vec3f.Z_AXIS, lineW)
-            color = MdColor.GREEN
-            line3d(Vec3f.ZERO, Vec3f.Y_AXIS, Vec3f.X_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f.Y_AXIS, Vec3f.Z_AXIS, lineW)
-            color = MdColor.BLUE
-            line3d(Vec3f.ZERO, Vec3f.Z_AXIS, Vec3f.Y_AXIS, lineW)
-            line3d(Vec3f.ZERO, Vec3f.Z_AXIS, Vec3f.X_AXIS, lineW)
+            color = MdColor.RED toneLin 200
+            line3d(Vec3f.NEG_X_AXIS * 0.5f, Vec3f.X_AXIS * 0.5f, Vec3f.Y_AXIS, lineW)
+            line3d(Vec3f.NEG_X_AXIS * 0.5f, Vec3f.X_AXIS * 0.5f, Vec3f.Z_AXIS, lineW)
+            color = MdColor.GREEN toneLin 200
+            line3d(Vec3f.NEG_Y_AXIS * 0.5f, Vec3f.Y_AXIS * 0.5f, Vec3f.X_AXIS, lineW)
+            line3d(Vec3f.NEG_Y_AXIS * 0.5f, Vec3f.Y_AXIS * 0.5f, Vec3f.Z_AXIS, lineW)
+            color = MdColor.BLUE toneLin 200
+            line3d(Vec3f.NEG_Z_AXIS * 0.5f, Vec3f.Z_AXIS * 0.5f, Vec3f.Y_AXIS, lineW)
+            line3d(Vec3f.NEG_Z_AXIS * 0.5f, Vec3f.Z_AXIS * 0.5f, Vec3f.X_AXIS, lineW)
         }
 
         shader = KslUnlitShader {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color {
-                vertexColor()
+                instanceColor()
+                //vertexColor(blendMode = ColorBlockConfig.BlendMode.Multiply)
             }
+            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
         }
     }
 
     init {
-        addNode(spotMesh)
-        addNode(pointMesh)
-        addNode(directionalMesh)
-
+        addNode(pointLightMesh)
+        addNode(spotLightMesh)
+        addNode(dirLightMesh)
         addNode(cameraMesh)
         addNode(groupMesh)
 
         onUpdate {
-            KoolEditor.instance.activeScene.value?.let { sceneModel ->
-                addLightInstances(sceneModel)
-                addCameraInstances(sceneModel)
-                addGroupInstances(sceneModel)
-            }
+            updateOverlayInstances()
         }
     }
 
-    private fun addLightInstances(sceneModel: SceneModel) {
-        directionInstances.clear()
-        spotInstances.clear()
-        pointInstances.clear()
-
-        sceneModel.drawNode.lighting.lights
-            .filter { it.isVisible }
-            .forEach { light ->
-                val instances = when (light) {
-                    is Light.Directional -> directionInstances
-                    is Light.Point -> pointInstances
-                    is Light.Spot -> spotInstances
-                }
-
-                instances.addInstance {
-                    light.modelMatF.putTo(this)
-                    light.color.putTo(this)
-                }
-            }
-    }
-
-    private fun addCameraInstances(sceneModel: SceneModel) {
-        cameraInstances.clear()
-
-        // fixme: query is executed every frame and will become quite slow for larger scenes
-        sceneModel.project.getComponentsInScene<CameraComponent>(sceneModel)
-            .filter { it.nodeModel.isVisibleState.value }
-            .forEach {
-                val isActive = it.sceneModel.cameraState.value == it
-                val color = if (isActive) MdColor.GREY tone 300 else MdColor.GREY tone 700
-                cameraInstances.addInstance {
-                    it.nodeModel.drawNode.modelMatF.putTo(this)
-                    put(color.r)
-                    put(color.g)
-                    put(color.b)
-                    put(color.a)
-                }
-            }
-    }
-
-    private fun addGroupInstances(sceneModel: SceneModel) {
+    private fun updateOverlayInstances() {
         groupInstances.clear()
+        cameraInstances.clear()
+        dirLightsInstances.clear()
+        spotLightsInstances.clear()
+        pointLightsInstances.clear()
 
-        // fixme: query is executed every frame and will become quite slow for larger scenes
-        sceneModel.nodeModels.values.filter { it.components.none { c -> c is ContentComponent } }
-            .filter { it.isVisibleState.value }
-            .forEach {
-                groupInstances.addInstance {
-                    it.drawNode.modelMatF.putTo(this)
-                    put(1f)
-                    put(1f)
-                    put(1f)
-                    put(1f)
-                }
-            }
+        groupInstances.addInstances(groups.size) { buf -> groups.forEach { it.addInstance(buf) } }
+        cameraInstances.addInstances(cameras.size) { buf -> cameras.forEach { it.addInstance(buf) } }
+        dirLightsInstances.addInstances(dirLights.size) { buf -> dirLights.forEach { it.addInstance(buf) } }
+        spotLightsInstances.addInstances(spotLights.size) { buf -> spotLights.forEach { it.addInstance(buf) } }
+        pointLightsInstances.addInstances(pointLights.size) { buf -> pointLights.forEach { it.addInstance(buf) } }
     }
 
     private fun MeshBuilder.generateArrow() {
@@ -303,7 +266,111 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
+    fun updateOverlayObjects() {
+        cameras.clear()
+        groups.clear()
+        dirLights.clear()
+        spotLights.clear()
+        pointLights.clear()
+
+        val sceneModel = KoolEditor.instance.activeScene.value ?: return
+        sceneModel.project.getComponentsInScene<CameraComponent>(sceneModel)
+            .filter { it.nodeModel.isVisibleState.value }
+            .forEach { cameras += CameraComponentInstance(it) }
+        sceneModel.nodeModels.values.filter { it.components.none { c -> c is ContentComponent } }
+            .filter { it.isVisibleState.value }
+            .forEach { groups += GroupNodeInstance(it) }
+        sceneModel.project.getComponentsInScene<DiscreteLightComponent>(sceneModel)
+            .filter { it.nodeModel.isVisibleState.value }
+            .forEach {
+                when (it.light) {
+                    is Light.Directional -> dirLights += DirLightComponentInstance(it)
+                    is Light.Point -> pointLights += PointLightComponentInstance(it)
+                    is Light.Spot -> spotLights += SpotLightComponentInstance(it)
+                }
+            }
+    }
+
+    fun pick(rayTest: RayTest): SceneNodeModel? {
+        var closest: SceneNodeModel? = null
+        cameras.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
+        groups.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
+        dirLights.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
+        spotLights.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
+        pointLights.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
+        return closest
+    }
+
     companion object {
         const val lineW = 0.06f
+    }
+
+    private abstract class OverlayObject(val nodeModel: SceneNodeModel, val mesh: Mesh) {
+
+        abstract val modelMat: Mat4f
+        abstract val color: Color
+
+        val radius = mesh.geometry.bounds.size.length() * 0.5f
+
+        fun addInstance(target: Float32Buffer) {
+            val selectionOv = KoolEditor.instance.selectionOverlay
+            val color = if (selectionOv.isSelected(nodeModel)) selectionOv.selectionColor.toLinear() else color
+            modelMat.putTo(target)
+            color.putTo(target)
+        }
+
+        fun rayTest(rayTest: RayTest): Boolean {
+            val pos = modelMat.getTranslation()
+            val n = pos.nearestPointOnRay(rayTest.ray.origin, rayTest.ray.direction, MutableVec3f())
+            if (n.distance(pos) < radius) {
+                val d = n.sqrDistance(rayTest.ray.origin)
+                if (d < rayTest.hitDistanceSqr) {
+                    rayTest.setHit(mesh, sqrt(d))
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
+        OverlayObject(component.nodeModel, pointLightMesh)
+    {
+        override val modelMat: Mat4f get() = component.light.modelMatF
+        override val color: Color get() = component.light.color
+    }
+
+    private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) :
+        OverlayObject(component.nodeModel, spotLightMesh)
+    {
+        override val modelMat: Mat4f get() = component.light.modelMatF
+        override val color: Color get() = component.light.color
+    }
+
+    private inner class DirLightComponentInstance(val component: DiscreteLightComponent) :
+        OverlayObject(component.nodeModel, dirLightMesh)
+    {
+        override val modelMat: Mat4f get() = component.light.modelMatF
+        override val color: Color get() = component.light.color
+    }
+
+    private inner class CameraComponentInstance(val component: CameraComponent) :
+        OverlayObject(component.nodeModel, cameraMesh)
+    {
+        private val activeColor = MdColor.GREY toneLin 300
+        private val inactiveColor = MdColor.GREY toneLin 700
+
+        override val modelMat: Mat4f get() = nodeModel.drawNode.modelMatF
+        override val color: Color get() {
+            val isActive = component.sceneModel.cameraState.value == component
+            return if (isActive) activeColor else inactiveColor
+        }
+    }
+
+    private inner class GroupNodeInstance(nodeModel: SceneNodeModel) :
+        OverlayObject(nodeModel, groupMesh)
+    {
+        override val modelMat: Mat4f get() = nodeModel.drawNode.modelMatF
+        override val color: Color = Color.WHITE
     }
 }

@@ -4,7 +4,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.clamp
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.VertexView
 import de.fabmax.kool.util.Color
@@ -134,7 +133,8 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
                 if (isGrowAllowed) {
                     val min = dimensionToPx(dim.min, contentPx, 0f, false)
                     val max = dimensionToPx(dim.max, contentPx, 0f, false)
-                    (scaledGrowSpace * dim.weight).clamp(min, max)
+                    // max value has priority over min value
+                    (scaledGrowSpace * dim.weight).coerceAtLeast(min).coerceAtMost(max)
                 } else {
                     0f
                 }

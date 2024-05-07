@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.util.ImmediateTransformEditMode
 import de.fabmax.kool.modules.gizmo.GizmoMode
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.logD
 
 class EditorEditMode(val editor: KoolEditor) {
 
@@ -11,7 +12,16 @@ class EditorEditMode(val editor: KoolEditor) {
 
     private val immediateTransform = ImmediateTransformEditMode(editor)
 
+    fun toggleMode(mode: Mode) {
+        if (this.mode.value == mode) {
+            this.mode.set(Mode.NONE)
+        } else {
+            this.mode.set(mode)
+        }
+    }
+
     private fun applyMode(mode: Mode) {
+        logD { "Set editor mode: $mode" }
         when (mode) {
             Mode.MOVE_IMMEDIATE -> immediateTransform.start(mode)
             Mode.ROTATE_IMMEDIATE -> immediateTransform.start(mode)

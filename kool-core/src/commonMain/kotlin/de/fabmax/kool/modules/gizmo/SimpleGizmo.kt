@@ -190,7 +190,7 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
         }
         val client = transformNode ?: return
 
-        gizmoNode.startManipulation(cancelOnEscape = false)
+        gizmoNode.startManipulation()
 
         val transform = gizmoNode.gizmoTransform
         transform.translation.set(translation)

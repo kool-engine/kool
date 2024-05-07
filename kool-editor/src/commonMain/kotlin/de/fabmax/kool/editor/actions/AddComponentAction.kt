@@ -16,9 +16,11 @@ class AddComponentAction(
 
     override fun doAction() {
         nodeModel?.addComponent(component)
+        refreshComponentViews()
     }
 
     override fun undoAction() {
         nodeModel?.removeComponent(component)
+        refreshComponentViews()
     }
 }

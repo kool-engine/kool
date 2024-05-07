@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
-import de.fabmax.kool.editor.actions.DeleteSceneNodeAction
+import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.AppAssets
@@ -18,8 +18,6 @@ import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
@@ -37,14 +35,20 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
-    val projectModel = try {
-        val data = Json.decodeFromString<ProjectData>(projectFiles.projectModelFile.read().decodeToString())
-        EditorProject(data)
+    val projModelJson = try {
+        projectFiles.projectModelFile.read().decodeToString()
     } catch (e: Exception) {
-        logW("KoolEditor") { "Failed loading project model, creating empty" }
-        EditorProject.emptyProject()
+        logI("KoolEditor") { "Project file not found, creating empty" }
+        return KoolEditor(projectFiles, EditorProject.emptyProject(), ctx)
     }
-    return KoolEditor(projectFiles, projectModel, ctx)
+
+    val project = try {
+        EditorProject(Json.decodeFromString<ProjectData>(projModelJson))
+    } catch (e: Exception) {
+        e.printStackTrace()
+        error("Failed deserializing project, fix / delete existing project file")
+    }
+    return KoolEditor(projectFiles, project, ctx)
 }
 
 class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject, val ctx: KoolContext) {
@@ -53,7 +57,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val loadedApp = mutableStateOf<LoadedApp?>(null)
     val activeScene = mutableStateOf<SceneModel?>(null)
 
-    val editorInputContext = InputStack.InputHandler("Editor input")
+    val editorInputContext = EditorKeyListener("Edit mode")
     val editMode = EditorEditMode(this)
 
     val editorCameraTransform = EditorCamTransform(this)
@@ -69,14 +73,14 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         tryEnableInfiniteDepth()
     }
     val gridOverlay = GridOverlay()
-    val lightOverlay = SceneObjectsOverlay()
+    val sceneObjectsOverlay = SceneObjectsOverlay()
     val gizmoOverlay = TransformGizmoOverlay()
     val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {
         tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
         addNode(gridOverlay)
-        addNode(lightOverlay)
+        addNode(sceneObjectsOverlay)
         addNode(selectionOverlay)
         addNode(gizmoOverlay)
 
@@ -84,13 +88,12 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     val appLoader = AppLoader(this)
-    val modeController = AppModeController(this)
     val availableAssets = AvailableAssets(projectFiles)
     val ui = EditorUi(this)
 
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-            saveProject()
+            PlatformFunctions.saveProjectBlocking()
             saveEditorConfig()
             return PlatformFunctions.onWindowCloseRequest(ctx)
         }
@@ -127,11 +130,48 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         appLoader.reloadApp()
     }
 
-    fun setEditorOverlayVisibility(isVisible: Boolean) {
+    fun startApp() {
+        val app = loadedApp.value?.app ?: return
+        val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return
+
+        logI { "Start app" }
+        InputStack.handlerStack.removeAll { it is EditorKeyListener }
+
+        // fixme: a bit hacky currently: restore app scene camera
+        //  it was replaced by custom editor cam during editor app load
+        sceneModel.cameraState.value?.camera?.let { cam ->
+            sceneModel.drawNode.camera = cam
+            (cam as? PerspectiveCamera)?.let {
+                val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
+                aoPipeline?.proxyCamera?.trackedCam = it
+            }
+        }
+
+        AppState.appModeState.set(AppMode.PLAY)
+        app.startApp(projectModel, KoolSystem.requireContext())
+        setEditorOverlayVisibility(false)
+        ui.appStateInfo.set("App is running")
+    }
+
+    fun stopApp() {
+        logI { "Stop app" }
+        AppState.appModeState.set(AppMode.EDIT)
+        setEditorOverlayVisibility(true)
+        appLoader.reloadApp()
+
+        editorInputContext.push()
+    }
+
+    fun resetApp() {
+        logI { "Reset app" }
+        appLoader.reloadApp()
+    }
+
+    private fun setEditorOverlayVisibility(isVisible: Boolean) {
         editorOverlay.children.forEach {
             it.isVisible = isVisible
         }
-        ui.sceneView.isShowToolbar.set(isVisible)
+        ui.sceneView.isShowOverlays.set(isVisible)
     }
 
     fun editBehaviorSource(behavior: AppBehavior) = editBehaviorSource(behavior.qualifiedName)
@@ -145,120 +185,48 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         var wasFocused = false
         editorContent.onUpdate {
             if (wasFocused && !ctx.isWindowFocused) {
-                saveProject()
+                Assets.launch { saveProject() }
             }
             wasFocused = ctx.isWindowFocused
         }
     }
 
     private fun registerKeyBindings() {
-        editorInputContext.addKeyListener(
-            name = "Undo",
-            keyCode = LocalKeyCode('Z'),
-            filter = InputStack.KEY_FILTER_CTRL_PRESSED
-        ) {
-            EditorActions.undo()
+        editorInputContext.addKeyListener(Key.ToggleBoxSelectMode) { editMode.toggleMode(EditorEditMode.Mode.BOX_SELECT) }
+        editorInputContext.addKeyListener(Key.ToggleImmediateMoveMode) { editMode.toggleMode(EditorEditMode.Mode.MOVE_IMMEDIATE) }
+        editorInputContext.addKeyListener(Key.ToggleImmediateRotateMode) { editMode.toggleMode(EditorEditMode.Mode.ROTATE_IMMEDIATE) }
+        editorInputContext.addKeyListener(Key.ToggleImmediateScaleMode) { editMode.toggleMode(EditorEditMode.Mode.SCALE_IMMEDIATE) }
+        editorInputContext.addKeyListener(Key.ToggleMoveMode) { editMode.toggleMode(EditorEditMode.Mode.MOVE) }
+        editorInputContext.addKeyListener(Key.ToggleRotateMode) { editMode.toggleMode(EditorEditMode.Mode.ROTATE) }
+        editorInputContext.addKeyListener(Key.ToggleScaleMode) { editMode.toggleMode(EditorEditMode.Mode.SCALE) }
+
+        editorInputContext.addKeyListener(Key.FocusSelected) { editorCameraTransform.focusSelectedObject() }
+
+        editorInputContext.addKeyListener(Key.DeleteSelected) {
+            DeleteSceneNodesAction(selectionOverlay.getSelectedSceneNodes()).apply()
         }
-        editorInputContext.addKeyListener(
-            name = "Redo",
-            keyCode = LocalKeyCode('Y'),
-            filter = InputStack.KEY_FILTER_CTRL_PRESSED
-        ) {
-            EditorActions.redo()
-        }
-        editorInputContext.addKeyListener(
-            name = "Copy",
-            keyCode = LocalKeyCode('C'),
-            filter = InputStack.KEY_FILTER_CTRL_PRESSED
-        ) {
-            EditorClipboard.copySelection()
-        }
-        editorInputContext.addKeyListener(
-            name = "Paste",
-            keyCode = LocalKeyCode('V'),
-            filter = InputStack.KEY_FILTER_CTRL_PRESSED
-        ) {
-            EditorClipboard.paste()
-        }
-        editorInputContext.addKeyListener(
-            name = "Duplicate",
-            keyCode = LocalKeyCode('D'),
-            filter = InputStack.KEY_FILTER_CTRL_PRESSED
-        ) {
-            EditorClipboard.duplicateSelection()
-        }
-        editorInputContext.addKeyListener(
-            name = "Delete selected objects",
-            keyCode = KeyboardInput.KEY_DEL
-        ) {
-            DeleteSceneNodeAction(selectionOverlay.getSelectedSceneNodes()).apply()
-        }
-        editorInputContext.addKeyListener(
-            name = "Hide selected objects",
-            keyCode = LocalKeyCode('H'),
-            filter = { it.isPressed && !it.isAltDown }
-        ) {
+        editorInputContext.addKeyListener(Key.HideSelected) {
             val selection = selectionOverlay.getSelectedSceneNodes()
             SetVisibilityAction(selection, selection.any { !it.isVisibleState.value }).apply()
         }
-        editorInputContext.addKeyListener(
-            name = "Unhide all hidden objects",
-            keyCode = LocalKeyCode('H'),
-            filter = { it.isPressed && it.isAltDown }
-        ) {
-            activeScene.value?.sceneNodes?.filter { !it.isVisibleState.value } ?.let { nodes ->
-                SetVisibilityAction(nodes, true).apply()
-            }
+        editorInputContext.addKeyListener(Key.UnhideHidden) {
+            val hidden = activeScene.value?.sceneNodes?.filter { !it.isVisibleState.value }
+            hidden?.let { nodes -> SetVisibilityAction(nodes, true).apply() }
         }
-        editorInputContext.addKeyListener(
-            name = "Focus selected object",
-            keyCode = KeyboardInput.KEY_NP_DECIMAL
-        ) {
-            editorCameraTransform.focusSelectedObject()
-        }
-        editorInputContext.addKeyListener(
-            name = "Toggle box select",
-            keyCode = LocalKeyCode('B')
-        ) {
-            if (editMode.mode.value == EditorEditMode.Mode.BOX_SELECT) {
-                editMode.mode.set(EditorEditMode.Mode.NONE)
-            } else {
-                editMode.mode.set(EditorEditMode.Mode.BOX_SELECT)
-            }
-        }
-        editorInputContext.addKeyListener(
-            name = "Move selected object",
-            keyCode = LocalKeyCode('G')
-        ) {
-            editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
-        }
-        editorInputContext.addKeyListener(
-            name = "Rotate selected object",
-            keyCode = LocalKeyCode('R')
-        ) {
-            editMode.mode.set(EditorEditMode.Mode.ROTATE_IMMEDIATE)
-        }
-        editorInputContext.addKeyListener(
-            name = "Scale selected object",
-            keyCode = LocalKeyCode('S')
-        ) {
-            editMode.mode.set(EditorEditMode.Mode.SCALE_IMMEDIATE)
-        }
-        editorInputContext.addKeyListener(
-            name = "Cancel current operation",
-            keyCode = KeyboardInput.KEY_ESC
-        ) {
-            // for now, we take the naive approach and check any possible operation that can be canceled
-            // this might not scale well when we have more possible operations...
+
+        editorInputContext.addKeyListener(Key.Duplicate) { EditorClipboard.duplicateSelection() }
+        editorInputContext.addKeyListener(Key.Copy) { EditorClipboard.copySelection() }
+        editorInputContext.addKeyListener(Key.Paste) { EditorClipboard.paste() }
+        editorInputContext.addKeyListener(Key.Undo) { EditorActions.undo() }
+        editorInputContext.addKeyListener(Key.Redo) { EditorActions.redo() }
+        editorInputContext.addKeyListener(Key.Cancel) {
             when {
-                gizmoOverlay.isTransformDrag -> gizmoOverlay.cancelTransformOperation()
-                ui.dndController.dndContext.isDrag -> ui.dndController.dndContext.cancelDrag()
                 editMode.mode.value != EditorEditMode.Mode.NONE -> editMode.mode.set(EditorEditMode.Mode.NONE)
                 selectionOverlay.selection.isNotEmpty() -> selectionOverlay.clearSelection()
             }
         }
 
-        InputStack.pushTop(editorInputContext)
+        editorInputContext.push()
     }
 
     private fun registerSceneObjectPicking() {
@@ -272,17 +240,24 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
                     if (appScene.computePickRay(ptr, rayTest.ray)) {
                         rayTest.clear()
-                        appScene.rayTest(rayTest)
+                        var selectedNodeModel: SceneNodeModel? = sceneObjectsOverlay.pick(rayTest)
+                        val distOv = if (rayTest.isHit) rayTest.hitDistanceSqr else Float.POSITIVE_INFINITY
 
-                        var it = rayTest.hitNode
-                        var selectedNodeModel: SceneNodeModel? = null
-                        while (it != null) {
-                            selectedNodeModel = sceneModel.nodesToNodeModels[it] as? SceneNodeModel
-                            if (selectedNodeModel != null) {
-                                break
+                        rayTest.clear()
+                        appScene.rayTest(rayTest)
+                        if (rayTest.isHit && rayTest.hitDistanceSqr < distOv) {
+                            var hitModel: SceneNodeModel? = null
+                            var it = rayTest.hitNode
+                            while (it != null) {
+                                hitModel = sceneModel.nodesToNodeModels[it] as? SceneNodeModel
+                                if (hitModel != null) {
+                                    break
+                                }
+                                it = it.parent
                             }
-                            it = it.parent
+                            selectedNodeModel = hitModel ?: selectedNodeModel
                         }
+
                         selectionOverlay.selectSingle(selectedNodeModel)
                     }
                 }
@@ -336,7 +311,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             activeScene.set(projectModel.createdScenes.values.first())
         }
         if (selectionOverlay.selection.isEmpty()) {
-            activeScene.value?.let { selectionOverlay.selection.add(it) }
+            activeScene.value?.let { selectionOverlay.selectSingle(it) }
         }
 
         if (AppState.appMode == AppMode.EDIT) {
@@ -364,18 +339,17 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         ui.sceneBrowser.refreshSceneTree()
 
         selectionOverlay.invalidateSelection()
+        sceneObjectsOverlay.updateOverlayObjects()
     }
 
     private fun saveEditorConfig() {
         DockLayout.saveLayout(ui.dock, "editor.ui.layout")
     }
 
-    fun saveProject() {
-        Assets.launch {
-            val text = jsonCodec.encodeToString(projectModel.projectData)
-            projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
-            logD { "Saved project model" }
-        }
+    suspend fun saveProject() {
+        val text = jsonCodec.encodeToString(projectModel.projectData)
+        projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
+        logD { "Saved project model" }
     }
 
     fun exportProject() {

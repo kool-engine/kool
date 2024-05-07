@@ -260,14 +260,14 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     sealed class BrowserItem(val level: Int, val name: String, val path: String) {
         fun makeDndItem(): EditorDndItem<*>? {
             return when (this) {
-                is BrowserDir -> DndItemFlavor.BROWSER_ITEM.itemOf(this)
+                is BrowserDir -> DndItemFlavor.DndBrowserItem.itemOf(this)
                 is BrowserAssetItem -> {
                     when (this.asset.type) {
-                        AppAssetType.Unknown -> DndItemFlavor.BROWSER_ITEM.itemOf(this)
-                        AppAssetType.Directory -> DndItemFlavor.BROWSER_ITEM.itemOf(this)
-                        AppAssetType.Texture -> DndItemFlavor.BROWSER_ITEM_TEXTURE.itemOf(this)
-                        AppAssetType.Hdri -> DndItemFlavor.BROWSER_ITEM_HDRI.itemOf(this)
-                        AppAssetType.Model -> DndItemFlavor.BROWSER_ITEM_MODEL.itemOf(this)
+                        AppAssetType.Unknown -> DndItemFlavor.DndBrowserItem.itemOf(this)
+                        AppAssetType.Directory -> DndItemFlavor.DndBrowserItem.itemOf(this)
+                        AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this)
+                        AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this)
+                        AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this)
                     }
                 }
                 is BrowserMaterialItem -> null

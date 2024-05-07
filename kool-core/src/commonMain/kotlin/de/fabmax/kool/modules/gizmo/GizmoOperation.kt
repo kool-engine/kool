@@ -57,9 +57,9 @@ data class DragContext(
     val isManipulating: Boolean
         get() = gizmo.isManipulating
 
-    fun startManipulation(cancelOnEscape: Boolean = true) {
+    fun startManipulation() {
         if (!isManipulating) {
-            gizmo.startManipulation(cancelOnEscape)
+            gizmo.startManipulation()
         }
     }
 

@@ -371,14 +371,14 @@ class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialCom
         val shaderDataSetter: (MapAttribute) -> MaterialShaderData,
         dropTarget: UiNode
     ) :
-        DndHandler(dropTarget, setOf(DndItemFlavor.ASSET_ITEM_TEXTURE))
+        DndHandler(dropTarget, setOf(DndItemFlavor.DndItemTexture))
     {
         override fun onMatchingReceive(
             dragItem: EditorDndItem<*>,
             dragPointer: PointerEvent,
             source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
-            val dragTextureItem = dragItem.get(DndItemFlavor.ASSET_ITEM_TEXTURE)
+            val dragTextureItem = dragItem.get(DndItemFlavor.DndItemTexture)
             val applyMaterial = shaderDataSetter(MapAttribute(dragTextureItem.path))
             if (applyMaterial != material.shaderData) {
                 UpdateMaterialAction(material, applyMaterial, material.shaderData).apply()

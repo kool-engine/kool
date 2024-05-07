@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.gizmo
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
@@ -36,10 +35,6 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
     private val globalToDragLocal = MutableMat4d()
     private val gizmoRotation = MutableMat3d()
-
-    private val escListener = InputStack.SimpleKeyListener(KeyboardInput.KEY_ESC, "Cancel drag") {
-        cancelManipulation()
-    }
 
     var isDistanceIndependentSize = true
     var gizmoSize = 1f
@@ -103,14 +98,10 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         handleGroup.clearChildren()
     }
 
-    fun startManipulation(cancelOnEscape: Boolean = true) {
+    fun startManipulation() {
         startTransform.set(gizmoTransform)
         isManipulating = true
         gizmoListeners.forEach { it.onManipulationStart(startTransform) }
-
-        if (cancelOnEscape) {
-            InputStack.defaultInputHandler.addKeyListener(escListener)
-        }
     }
 
     fun finishManipulation() {
@@ -118,7 +109,6 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         isManipulating = false
         gizmoListeners.forEach { it.onManipulationFinished(startTransform, gizmoTransform) }
-        InputStack.defaultInputHandler.removeKeyListener(escListener)
     }
 
     fun cancelManipulation() {
@@ -127,7 +117,6 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         gizmoTransform.set(startTransform)
         isManipulating = false
         gizmoListeners.forEach { it.onManipulationCanceled(startTransform) }
-        InputStack.defaultInputHandler.removeKeyListener(escListener)
     }
 
     fun manipulateAxisTranslation(axis: GizmoHandle.Axis, distance: Double) {

@@ -56,6 +56,10 @@ class SelectionTransform(nodeModels: List<SceneNodeModel>) {
         }
     }
 
+    fun restoreInitialTransform() {
+        selection.forEach { it.restoreInitial() }
+    }
+
     private fun SceneNodeModel.hasNoParentIn(nodeModels: Set<SceneNodeModel>): Boolean {
         var parent = parent as? SceneNodeModel
         while (parent != null) {
@@ -99,6 +103,10 @@ class SelectionTransform(nodeModels: List<SceneNodeModel>) {
                     poseInParentFrame.decompose(currentPosition, currentRotation, currentScale)
                 }
             }
+        }
+
+        fun restoreInitial() {
+            nodeModel.drawNode.transform.setCompositionOf(startPosition, startRotation, startScale)
         }
     }
 }
