@@ -1,18 +1,18 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.SetRigidBodyPropertiesAction
-import de.fabmax.kool.editor.components.RigidBodyComponent
-import de.fabmax.kool.editor.data.RigidBodyProperties
-import de.fabmax.kool.editor.data.RigidBodyShape
-import de.fabmax.kool.editor.data.RigidBodyType
+import de.fabmax.kool.editor.components.RigidActorComponent
+import de.fabmax.kool.editor.data.RigidActorProperties
+import de.fabmax.kool.editor.data.RigidActorShape
+import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
-class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBodyComponent>(component) {
+class RigidActorEditor(component: RigidActorComponent) : ComponentEditor<RigidActorComponent>(component) {
 
     override fun UiScope.compose() = componentPanel(
-        title = "Collider",
+        title = "Rigid Actor",
         imageIcon = IconMap.small.physics,
         onRemove = ::removeComponent,
     ) {
@@ -21,7 +21,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                 .padding(horizontal = sizes.gap)
                 .margin(bottom = sizes.smallGap)
 
-            val bodyProps = component.bodyState.use()
+            val bodyProps = component.actorState.use()
 
             labeledCombobox(
                 label = "Type:",
@@ -31,7 +31,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
                 SetRigidBodyPropertiesAction(nodeId, bodyProps, bodyProps.copy(type = it.type)).apply()
             }
 
-            if (bodyProps.type == RigidBodyType.DYNAMIC) {
+            if (bodyProps.type == RigidActorType.DYNAMIC) {
                 labeledDoubleTextField(
                     label = "Mass:",
                     value = bodyProps.mass.toDouble(),
@@ -51,7 +51,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
         }
     }
 
-    private fun ColumnScope.shapeEditor(bodyProps: RigidBodyProperties) {
+    private fun ColumnScope.shapeEditor(bodyProps: RigidActorProperties) {
         menuDivider()
         labeledCombobox(
             label = "Shape:",
@@ -59,40 +59,42 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
             selectedIndex = ShapeOption.entries.indexOfFirst { it.shapeType.isInstance(bodyProps.shape) }
         ) {
             val newProps = when (it) {
-                ShapeOption.UseMesh -> bodyProps.copy(shape = RigidBodyShape.UseMesh)
-                ShapeOption.Box -> bodyProps.copy(shape = RigidBodyShape.Box(Vec3Data(1.0, 1.0, 1.0)))
-                ShapeOption.Sphere -> bodyProps.copy(shape = RigidBodyShape.Sphere(1f))
-                ShapeOption.Cylinder -> bodyProps.copy(shape = RigidBodyShape.Cylinder(1f, 1f))
-                ShapeOption.Capsule -> bodyProps.copy(shape = RigidBodyShape.Capsule(1f, 1f))
+                ShapeOption.UseMesh -> bodyProps.copy(shape = RigidActorShape.UseMesh)
+                ShapeOption.Box -> bodyProps.copy(shape = RigidActorShape.Box(Vec3Data(1.0, 1.0, 1.0)))
+                ShapeOption.Sphere -> bodyProps.copy(shape = RigidActorShape.Sphere(1f))
+                ShapeOption.Cylinder -> bodyProps.copy(shape = RigidActorShape.Cylinder(1f, 1f))
+                ShapeOption.Capsule -> bodyProps.copy(shape = RigidActorShape.Capsule(1f, 1f))
+                ShapeOption.Heightmap -> bodyProps.copy(shape = RigidActorShape.Heightmap(""))
             }
             SetRigidBodyPropertiesAction(nodeId, bodyProps, newProps).apply()
         }
 
         when (val shape = bodyProps.shape) {
-            is RigidBodyShape.Box -> boxShapeEditor(shape, bodyProps)
-            is RigidBodyShape.Capsule -> capsuleEditor(shape, bodyProps)
-            is RigidBodyShape.Cylinder -> cylinderEditor(shape, bodyProps)
-            is RigidBodyShape.Sphere -> sphereEditor(shape, bodyProps)
-            RigidBodyShape.UseMesh -> {
+            is RigidActorShape.Box -> boxShapeEditor(shape, bodyProps)
+            is RigidActorShape.Capsule -> capsuleEditor(shape, bodyProps)
+            is RigidActorShape.Cylinder -> cylinderEditor(shape, bodyProps)
+            is RigidActorShape.Sphere -> sphereEditor(shape, bodyProps)
+            is RigidActorShape.Heightmap -> heightmapEditor(shape, bodyProps)
+            RigidActorShape.UseMesh -> {
                 // todo: check if mesh shape is a valid rigid body shape
             }
         }
     }
 
-    private fun ColumnScope.boxShapeEditor(shape: RigidBodyShape.Box, bodyProps: RigidBodyProperties) {
+    private fun ColumnScope.boxShapeEditor(shape: RigidActorShape.Box, bodyProps: RigidActorProperties) {
         labeledXyzRow(
             label = "Size:",
             xyz = shape.size.toVec3d(),
             dragChangeSpeed = DragChangeRates.SIZE_VEC3,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val undoShape = bodyProps.copy(shape = RigidBodyShape.Box(Vec3Data(undo)))
-                val applyShape = bodyProps.copy(shape = RigidBodyShape.Box(Vec3Data(apply)))
+                val undoShape = bodyProps.copy(shape = RigidActorShape.Box(Vec3Data(undo)))
+                val applyShape = bodyProps.copy(shape = RigidActorShape.Box(Vec3Data(apply)))
                 SetRigidBodyPropertiesAction(nodeId, undoShape, applyShape)
             }
         )
     }
 
-    private fun ColumnScope.capsuleEditor(shape: RigidBodyShape.Capsule, bodyProps: RigidBodyProperties) {
+    private fun ColumnScope.capsuleEditor(shape: RigidActorShape.Capsule, bodyProps: RigidActorProperties) {
         labeledDoubleTextField(
             label = "Radius:",
             value = shape.radius.toDouble(),
@@ -115,7 +117,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
         )
     }
 
-    private fun ColumnScope.cylinderEditor(shape: RigidBodyShape.Cylinder, bodyProps: RigidBodyProperties) {
+    private fun ColumnScope.cylinderEditor(shape: RigidActorShape.Cylinder, bodyProps: RigidActorProperties) {
         labeledDoubleTextField(
             label = "Radius:",
             value = shape.radius.toDouble(),
@@ -138,7 +140,7 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
         )
     }
 
-    private fun ColumnScope.sphereEditor(shape: RigidBodyShape.Sphere, bodyProps: RigidBodyProperties) {
+    private fun ColumnScope.sphereEditor(shape: RigidActorShape.Sphere, bodyProps: RigidActorProperties) {
         labeledDoubleTextField(
             label = "Radius:",
             value = shape.radius.toDouble(),
@@ -151,25 +153,30 @@ class RigidBodyEditor(component: RigidBodyComponent) : ComponentEditor<RigidBody
         )
     }
 
-    private class TypeOption(val label: String, val type: RigidBodyType) {
+    private fun ColumnScope.heightmapEditor(shape: RigidActorShape.Heightmap, bodyProps: RigidActorProperties) {
+        TODO()
+    }
+
+    private class TypeOption(val label: String, val type: RigidActorType) {
         override fun toString(): String = label
     }
 
-    private enum class ShapeOption(val label: String, val shapeType: KClass<out RigidBodyShape>) {
-        UseMesh("Use mesh", RigidBodyShape.UseMesh::class),
-        Box("Box", RigidBodyShape.Box::class),
-        Sphere("Sphere", RigidBodyShape.Sphere::class),
-        Cylinder("Cylinder", RigidBodyShape.Cylinder::class),
-        Capsule("Capsule", RigidBodyShape.Capsule::class);
+    private enum class ShapeOption(val label: String, val shapeType: KClass<out RigidActorShape>) {
+        UseMesh("Use mesh", RigidActorShape.UseMesh::class),
+        Box("Box", RigidActorShape.Box::class),
+        Sphere("Sphere", RigidActorShape.Sphere::class),
+        Cylinder("Cylinder", RigidActorShape.Cylinder::class),
+        Capsule("Capsule", RigidActorShape.Capsule::class),
+        Heightmap("Heightmap", RigidActorShape.Heightmap::class);
 
         override fun toString(): String = label
     }
 
     companion object {
         private val typeOptions = listOf(
-            TypeOption("Dynamic", RigidBodyType.DYNAMIC),
-            TypeOption("Kinematic", RigidBodyType.KINEMATIC),
-            TypeOption("Static", RigidBodyType.STATIC),
+            TypeOption("Dynamic", RigidActorType.DYNAMIC),
+            TypeOption("Kinematic", RigidActorType.KINEMATIC),
+            TypeOption("Static", RigidActorType.STATIC),
         )
     }
 }

@@ -7,14 +7,16 @@ import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logE
 
 interface AppAssetsLoader {
     val assetLoader: AssetLoader
 
     suspend fun loadHdriEnvironment(path: String): EnvironmentMaps?
-    suspend fun loadModel(modelPath: String): GltfFile?
+    suspend fun loadModel(path: String): GltfFile?
     suspend fun loadTexture2d(path: String): Texture2d?
+    suspend fun loadBlob(path: String): Uint8Buffer?
 }
 
 object AppAssets : AppAssetsLoader {
@@ -23,8 +25,9 @@ object AppAssets : AppAssetsLoader {
         get() = impl.assetLoader
 
     override suspend fun loadHdriEnvironment(path: String): EnvironmentMaps? = impl.loadHdriEnvironment(path)
-    override suspend fun loadModel(modelPath: String): GltfFile? = impl.loadModel(modelPath)
+    override suspend fun loadModel(path: String): GltfFile? = impl.loadModel(path)
     override suspend fun loadTexture2d(path: String): Texture2d? = impl.loadTexture2d(path)
+    override suspend fun loadBlob(path: String): Uint8Buffer? = impl.loadBlob(path)
 
     class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
         override val assetLoader: AssetLoader
@@ -40,8 +43,8 @@ object AppAssets : AppAssetsLoader {
             }
         }
 
-        override suspend fun loadModel(modelPath: String): GltfFile? {
-            val prefixed = "${pathPrefix}/${modelPath}"
+        override suspend fun loadModel(path: String): GltfFile? {
+            val prefixed = "${pathPrefix}/${path}"
             return try {
                 Assets.loadGltfFile(prefixed)
             } catch (e: Exception) {
@@ -56,6 +59,16 @@ object AppAssets : AppAssetsLoader {
                 Assets.loadTexture2d(prefixed)
             } catch (e: Exception) {
                 logE { "Failed loading texture: $prefixed" }
+                null
+            }
+        }
+
+        override suspend fun loadBlob(path: String): Uint8Buffer? {
+            val prefixed = "${pathPrefix}/${path}"
+            return try {
+                Assets.loadBlobAsset(prefixed)
+            } catch (e: Exception) {
+                logE { "Failed loading blob: $prefixed" }
                 null
             }
         }

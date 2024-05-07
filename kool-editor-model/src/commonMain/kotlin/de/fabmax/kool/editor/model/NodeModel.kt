@@ -111,7 +111,7 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
                 is TransformComponentData -> components += TransformComponent(requireSceneNode, data)
 
                 is PhysicsWorldComponentData -> components += PhysicsWorldComponent(requireScene, data)
-                is RigidBodyComponentData -> components += RigidBodyComponent(requireSceneNode, data)
+                is RigidActorComponentData -> components += RigidActorComponent(requireSceneNode, data)
             }
         }
         components.sortByDependencies()

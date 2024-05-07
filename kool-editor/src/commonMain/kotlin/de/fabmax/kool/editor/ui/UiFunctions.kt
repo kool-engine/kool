@@ -772,9 +772,7 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     }
 
     if (selectedTexPath.isNotEmpty()) {
-        // fixme: this is awful
-        val tex = (AppAssets.impl as CachedAppAssets).getTextureIfLoaded(selectedTexPath).use()
-        //val tex = CachedAppAssets.getTextureIfLoaded(selectedTexPath).use()
+        val tex = (AppAssets.impl as CachedAppAssets).getTextureMutableState(selectedTexPath).use()
         Image(tex) {
             modifier
                 .margin(top = sizes.gap)
