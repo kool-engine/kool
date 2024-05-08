@@ -1,9 +1,13 @@
 package de.fabmax.kool.editor.components
 
+import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.MutableStateList
@@ -13,6 +17,8 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.geometry.MeshBuilder
+import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
@@ -65,20 +71,10 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
         nodeModel.setDrawNode(Node(nodeModel.name))
     }
 
-    fun updateGeometry() {
+    suspend fun updateGeometry() {
         val mesh = this.mesh ?: return
         mesh.generate {
-            shapesState.forEach { shape ->
-                withTransform {
-                    shape.common.pose.toMat4f(transform)
-                    color = shape.common.vertexColor.toColorLinear()
-                    vertexModFun = {
-                        texCoord.x *= shape.common.uvScale.x.toFloat()
-                        texCoord.y *= shape.common.uvScale.y.toFloat()
-                    }
-                    shape.generate(this)
-                }
-            }
+            shapesState.forEach { shape -> generateShape(shape) }
             geometry.generateTangents()
         }
 
@@ -89,6 +85,90 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
             launchOnMainThread {
                 nodeModel.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(componentData) }
             }
+        }
+    }
+
+    private suspend fun MeshBuilder.generateShape(shape: ShapeData) = withTransform {
+        shape.common.pose.toMat4f(transform)
+        color = shape.common.vertexColor.toColorLinear()
+        vertexModFun = {
+            texCoord.x *= shape.common.uvScale.x.toFloat()
+            texCoord.y *= shape.common.uvScale.y.toFloat()
+        }
+
+        when (shape) {
+            is ShapeData.Box -> cube { size.set(shape.size.toVec3f()) }
+            is ShapeData.Sphere -> generateSphere(shape)
+            is ShapeData.Cylinder -> generateCylinder(shape)
+            is ShapeData.Capsule -> generateCapsule(shape)
+            is ShapeData.Heightmap -> generateHeightmap(shape)
+            is ShapeData.Rect -> generateRect(shape)
+            is ShapeData.Empty -> { }
+        }
+    }
+
+    private fun MeshBuilder.generateSphere(shape: ShapeData.Sphere) {
+        if (shape.sphereType == "ico") {
+            icoSphere {
+                radius = shape.radius.toFloat()
+                steps = shape.steps
+            }
+        } else {
+            uvSphere {
+                radius = shape.radius.toFloat()
+                steps = shape.steps
+            }
+        }
+    }
+
+    private fun MeshBuilder.generateCylinder(shape: ShapeData.Cylinder) {
+        // generate cylinder in x-axis major orientation to make it align with physics geometry
+        rotate(90f.deg, Vec3f.Z_AXIS)
+        cylinder {
+            height = shape.length.toFloat()
+            topRadius = shape.topRadius.toFloat()
+            bottomRadius = shape.bottomRadius.toFloat()
+            steps = shape.steps
+        }
+    }
+
+    private fun MeshBuilder.generateCapsule(shape: ShapeData.Capsule) {
+        profile {
+            val r = shape.radius.toFloat()
+            val h = shape.length.toFloat()
+            val hh = h / 2f
+            simpleShape(false) {
+                xyArc(Vec2f(hh + r, 0f), Vec2f(hh, 0f), 90f.deg, shape.steps / 2, true)
+                xyArc(Vec2f(-hh, r), Vec2f(-hh, 0f), 90f.deg, shape.steps / 2, true)
+            }
+            for (i in 0 .. shape.steps) {
+                sample()
+                rotate(360f.deg / shape.steps, 0f.deg, 0f.deg)
+            }
+        }
+    }
+
+    private fun MeshBuilder.generateRect(shape: ShapeData.Rect) {
+        grid {
+            sizeX = shape.size.x.toFloat()
+            sizeY = shape.size.y.toFloat()
+        }
+    }
+
+    private suspend fun MeshBuilder.generateHeightmap(shape: ShapeData.Heightmap) {
+        if (shape.mapPath.isBlank()) {
+            return
+        }
+        val heightData = AppAssets.loadBlob(shape.mapPath) ?: return
+        val heightmap = HeightMap.fromRawData(heightData, shape.heightScale.toFloat(), heightOffset = shape.heightOffset.toFloat())
+
+        val szX = (heightmap.width - 1) * shape.rowScale.toFloat()
+        val szY = (heightmap.height - 1) * shape.colScale.toFloat()
+        translate(szX * 0.5f, 0f, szY * 0.5f)
+        grid {
+            sizeX = szX
+            sizeY = szY
+            useHeightMap(heightmap)
         }
     }
 

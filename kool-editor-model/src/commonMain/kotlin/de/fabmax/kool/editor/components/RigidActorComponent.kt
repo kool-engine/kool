@@ -15,7 +15,6 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.util.HeightMap
 import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
 fun RigidActorComponent(nodeModel: SceneNodeModel): RigidActorComponent {
@@ -112,19 +111,11 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         rigidActor?.apply {
             bodyShapes = componentData.properties.shapes
             geometry = if (bodyShapes.isEmpty()) {
-                makeMeshGeometry()
+                nodeModel.getComponent<MeshComponent>()?.componentData?.shapes
+                    ?.mapNotNull { shape -> shape.makeCollisionGeometry() }
+                    ?: emptyList()
             } else {
-                bodyShapes.mapNotNull { shape ->
-                    when (shape) {
-                        is ShapeData.Box -> BoxGeometry(shape.size.toVec3f())
-                        is ShapeData.Capsule -> CapsuleGeometry(shape.length.toFloat(), shape.radius.toFloat())
-                        is ShapeData.Cylinder -> CylinderGeometry(shape.length.toFloat(), shape.topRadius.toFloat())
-                        is ShapeData.Sphere -> SphereGeometry(shape.radius.toFloat())
-                        is ShapeData.Heightmap -> loadHeightmapGeometry(shape)
-                        is ShapeData.Rect -> null
-                        is ShapeData.Empty -> null
-                    }
-                }
+                bodyShapes.mapNotNull { shape -> shape.makeCollisionGeometry() }
             }
             geometry.forEach { attachShape(Shape(it)) }
             physicsWorld?.addActor(this)
@@ -132,35 +123,26 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         setPhysicsTransformFromModel()
     }
 
+    private suspend fun ShapeData.makeCollisionGeometry(): CollisionGeometry? {
+        return when (this) {
+            is ShapeData.Box -> BoxGeometry(size.toVec3f())
+            is ShapeData.Capsule -> CapsuleGeometry(length.toFloat(), radius.toFloat())
+            is ShapeData.Cylinder -> CylinderGeometry(length.toFloat(), topRadius.toFloat())
+            is ShapeData.Sphere -> SphereGeometry(radius.toFloat())
+            is ShapeData.Heightmap -> loadHeightmapGeometry(this)
+            is ShapeData.Rect -> null
+            is ShapeData.Empty -> null
+        }
+    }
+
     private suspend fun loadHeightmapGeometry(shapeData: ShapeData.Heightmap): CollisionGeometry? {
         if (shapeData.mapPath.isBlank()) {
             return null
         }
         val heightData = AppAssets.loadBlob(shapeData.mapPath) ?: return null
-        val heightMap = HeightMap.fromRawData(heightData, shapeData.heightScale, heightOffset = shapeData.heightOffset)
-        val heightField = HeightField(heightMap, shapeData.rowScale, shapeData.colScale)
+        val heightMap = HeightMap.fromRawData(heightData, shapeData.heightScale.toFloat(), heightOffset = shapeData.heightOffset.toFloat())
+        val heightField = HeightField(heightMap, shapeData.rowScale.toFloat(), shapeData.colScale.toFloat())
         return HeightFieldGeometry(heightField)
-    }
-
-    private fun makeMeshGeometry(): List<CollisionGeometry> {
-        val mesh = nodeModel.getComponent<MeshComponent>()
-        if (mesh == null) {
-            logE { "Node ${nodeModel.name}: Failed attaching mesh shape to rigid actor: has no attached MeshComponent" }
-            return emptyList()
-        }
-
-        return mesh.componentData.shapes.mapNotNull { meshShape ->
-            when (meshShape) {
-                is ShapeData.Box -> BoxGeometry(meshShape.size.toVec3f())
-                is ShapeData.Capsule -> CapsuleGeometry(meshShape.length.toFloat(), meshShape.radius.toFloat())
-                is ShapeData.Cylinder -> CylinderGeometry(meshShape.length.toFloat(), meshShape.topRadius.toFloat())
-                is ShapeData.Sphere -> SphereGeometry(meshShape.radius.toFloat())
-                else -> {
-                    logE { "Node ${nodeModel.name}: Mesh shape is not supported as rigid actor shape: $meshShape" }
-                    null
-                }
-            }
-        }
     }
 
     private fun setPhysicsTransformFromModel() {

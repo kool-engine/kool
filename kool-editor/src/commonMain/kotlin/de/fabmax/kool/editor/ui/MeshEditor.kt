@@ -49,7 +49,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
                     is ShapeData.Sphere -> icoSphereProperties(shape)
                     is ShapeData.Cylinder -> cylinderProperties(shape)
                     is ShapeData.Capsule -> capsuleProperties(shape)
-                    is ShapeData.Heightmap -> TODO()
+                    is ShapeData.Heightmap -> heightmapProperties(shape)
                     is ShapeData.Empty -> { }
                 }
 
@@ -239,6 +239,38 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
         )
     }
 
+    private fun UiScope.heightmapProperties(shape: ShapeData.Heightmap) = Column(
+        width = Grow.Std,
+        scopeName = "heightmapProperties"
+    ) {
+        val shapeI = component.shapesState.indexOf(shape)
+        heightmapSelector(shape.mapPath, true) {
+            SetMeshShapeAction(component, shape, shape.copy(mapPath = it?.path ?: ""), shapeI).apply()
+        }
+        // todo
+//        labeledXyRow(
+//            label = "Size:",
+//            xy = Vec2d(1.0, 1.0),
+//            editHandler = object: ValueEditHandler<Vec2d> {
+//                override fun onEdit(value: Vec2d) { }
+//                override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
+//                    val rowScale =
+//                        SetMeshShapeAction(component, shape, shape.copy(rowScale = endValue.toFloat()), shapeI).apply()
+//                }
+//            }
+//        )
+        labeledDoubleTextField(
+            label = "Height scale:",
+            value = shape.heightScale,
+            editHandler = object: ValueEditHandler<Double> {
+                override fun onEdit(value: Double) { }
+                override fun onEditEnd(startValue: Double, endValue: Double) {
+                    SetMeshShapeAction(component, shape, shape.copy(heightScale = endValue), shapeI).apply()
+                }
+            }
+        )
+    }
+
     private data class ShapeOption<T: ShapeData>(val name: String, val type: KClass<T>, val factory: () -> T) {
         override fun toString() = name
     }
@@ -250,6 +282,7 @@ class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(comp
             ShapeOption("Sphere", ShapeData.Sphere::class) { ShapeData.defaultSphere },
             ShapeOption("Cylinder", ShapeData.Cylinder::class) { ShapeData.defaultCylinder },
             ShapeOption("Capsule", ShapeData.Capsule::class) { ShapeData.defaultCapsule },
+            ShapeOption("Heightmap", ShapeData.Heightmap::class) { ShapeData.Heightmap("") },
             ShapeOption("Empty", ShapeData.Empty::class) { ShapeData.Empty() },
         )
 

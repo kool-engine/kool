@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.ShapeData
+import de.fabmax.kool.util.launchOnMainThread
 
 class SetMeshShapeAction(
     component: MeshComponent,
@@ -11,12 +12,16 @@ class SetMeshShapeAction(
 ) : ComponentAction<MeshComponent>(component.nodeModel.nodeId, MeshComponent::class) {
 
     override fun doAction() {
-        component?.shapesState?.set(replaceIndex, newShape)
-        component?.updateGeometry()
+        launchOnMainThread {
+            component?.shapesState?.set(replaceIndex, newShape)
+            component?.updateGeometry()
+        }
     }
 
     override fun undoAction() {
-        component?.shapesState?.set(replaceIndex, oldShape)
-        component?.updateGeometry()
+        launchOnMainThread {
+            component?.shapesState?.set(replaceIndex, oldShape)
+            component?.updateGeometry()
+        }
     }
 }

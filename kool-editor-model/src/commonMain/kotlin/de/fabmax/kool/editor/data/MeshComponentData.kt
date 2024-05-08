@@ -1,10 +1,5 @@
 package de.fabmax.kool.editor.data
 
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
-import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
 
@@ -23,8 +18,6 @@ sealed class ShapeData {
     abstract val name: String
     abstract val hasUvs: Boolean
     abstract val common: CommonShapeData
-
-    abstract fun generate(builder: MeshBuilder)
 
     fun copyShape(common: CommonShapeData = this.common): ShapeData {
         val copied = when (this) {
@@ -50,14 +43,6 @@ sealed class ShapeData {
     data class Box(val size: Vec3Data, override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
         override val name: String get() = "Box"
         override val hasUvs: Boolean = true
-
-        override fun generate(builder: MeshBuilder) {
-            builder.apply {
-                cube {
-                    size.set(this@Box.size.toVec3f())
-                }
-            }
-        }
     }
 
     @Serializable
@@ -70,37 +55,12 @@ sealed class ShapeData {
 
         override val name: String get() = "Sphere"
         override val hasUvs: Boolean = true
-
-        override fun generate(builder: MeshBuilder) {
-            builder.apply {
-                if (sphereType == "uv") {
-                    uvSphere {
-                        radius = this@Sphere.radius.toFloat()
-                        steps = this@Sphere.steps
-                    }
-                } else {
-                    icoSphere {
-                        radius = this@Sphere.radius.toFloat()
-                        steps = this@Sphere.steps
-                    }
-                }
-            }
-        }
     }
 
     @Serializable
     data class Rect(val size: Vec2Data, override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
         override val name: String get() = "Rect"
         override val hasUvs: Boolean = true
-
-        override fun generate(builder: MeshBuilder) {
-            builder.apply {
-                grid {
-                    sizeX = size.x.toFloat()
-                    sizeY = size.y.toFloat()
-                }
-            }
-        }
     }
 
     @Serializable
@@ -114,21 +74,6 @@ sealed class ShapeData {
 
         override val name: String get() = "Cylinder"
         override val hasUvs: Boolean = true
-
-        override fun generate(builder: MeshBuilder) {
-            builder.apply {
-                withTransform {
-                    // generate cylinder in x-axis major orientation to make it align with physics geometry
-                    rotate(90f.deg, Vec3f.Z_AXIS)
-                    cylinder {
-                        height = this@Cylinder.length.toFloat()
-                        topRadius = this@Cylinder.topRadius.toFloat()
-                        bottomRadius = this@Cylinder.bottomRadius.toFloat()
-                        steps = this@Cylinder.steps
-                    }
-                }
-            }
-        }
     }
 
     @Serializable
@@ -141,51 +86,25 @@ sealed class ShapeData {
 
         override val name: String get() = "Capsule"
         override val hasUvs: Boolean = false
-
-        override fun generate(builder: MeshBuilder) {
-            builder.withTransform {
-                profile {
-                    val r = radius.toFloat()
-                    val h = length.toFloat()
-                    val hh = h / 2f
-                    simpleShape(false) {
-                        xyArc(Vec2f(hh + r, 0f), Vec2f(hh, 0f), 90f.deg, steps / 2, true)
-                        xyArc(Vec2f(-hh, r), Vec2f(-hh, 0f), 90f.deg, steps / 2, true)
-                    }
-                    for (i in 0 .. steps) {
-                        sample()
-                        rotate(360f.deg / steps, 0f.deg, 0f.deg)
-                    }
-                }
-            }
-        }
     }
 
     @Serializable
     data class Heightmap(
         val mapPath: String,
-        val heightOffset: Float = 0f,
-        val heightScale: Float = 0.01f,
-        val rowScale: Float = 1f,
-        val colScale: Float = 1f,
+        val heightOffset: Double = 0.0,
+        val heightScale: Double = 100.0,
+        val rowScale: Double = 1.0,
+        val colScale: Double = 1.0,
         override val common: CommonShapeData = CommonShapeData()
     ) : ShapeData() {
         override val name: String get() = "Heightmap"
         override val hasUvs: Boolean = true
-
-        override fun generate(builder: MeshBuilder) {
-            TODO()
-        }
     }
 
     @Serializable
     data class Empty(override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
         override val name: String get() = "Empty"
         override val hasUvs: Boolean = false
-
-        override fun generate(builder: MeshBuilder) {
-            // empty - nothing to generate
-        }
     }
 
     companion object {

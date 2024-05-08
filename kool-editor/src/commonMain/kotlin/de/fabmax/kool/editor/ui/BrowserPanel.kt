@@ -268,6 +268,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                         AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this)
                         AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this)
                         AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this)
+                        AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this)
                     }
                 }
                 is BrowserMaterialItem -> null
@@ -289,6 +290,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             AppAssetType.Texture -> MdColor.LIGHT_GREEN
             AppAssetType.Hdri -> MdColor.LIME
             AppAssetType.Model -> MdColor.LIGHT_BLUE
+            AppAssetType.Heightmap -> MdColor.CYAN
         }
     }
 

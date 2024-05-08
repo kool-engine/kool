@@ -754,11 +754,11 @@ inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() ->
 }
 
 fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, onSelect: (AssetItem?) -> Unit) = Column {
-    val textures = mutableListOf<TextureOption>()
+    val textures = mutableListOf<AssetOption>()
     if (withNoneOption) {
-        textures += TextureOption("None", null)
+        textures += AssetOption("None", null)
     }
-    textures += KoolEditor.instance.availableAssets.textureAssets.map { TextureOption(it.name, it) }
+    textures += KoolEditor.instance.availableAssets.textureAssets.map { AssetOption(it.name, it) }
 
     ComboBox {
         defaultComboBoxStyle()
@@ -782,7 +782,24 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     }
 }
 
-private class TextureOption(val name: String, val assetItem: AssetItem?) {
+fun UiScope.heightmapSelector(
+    selectedHeightmapPath: String,
+    withNoneOption: Boolean,
+    onSelect: (AssetItem?) -> Unit
+) {
+    val textures = mutableListOf<AssetOption>()
+    if (withNoneOption) {
+        textures += AssetOption("None", null)
+    }
+    textures += KoolEditor.instance.availableAssets.heightmapAssets.map { AssetOption(it.name, it) }
+    val selectedIndex = textures.indexOfFirst { selectedHeightmapPath == it.assetItem?.path }
+
+    labeledCombobox("Heightmap:", textures, selectedIndex) {
+        onSelect(it.assetItem)
+    }
+}
+
+private class AssetOption(val name: String, val assetItem: AssetItem?) {
     override fun toString(): String = name
 }
 
