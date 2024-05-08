@@ -89,8 +89,8 @@ class HeightMap(val heightData: FloatArray, val width: Int, val height: Int) {
             // if width and / or height are not supplied, a square map is assumed
             val w = if (width > 0) width else sqrt(elems.toDouble()).toInt()
             val h = if (height > 0) height else w
-            if (w * h != elems) {
-                throw IllegalArgumentException("Raw data size ($elems) does not match supplied size: $width x $height")
+            check (w * h == elems) {
+                "Raw data size ($elems) does not match anticipated map size: $w x $h"
             }
 
             val heightData = FloatArray(elems)
