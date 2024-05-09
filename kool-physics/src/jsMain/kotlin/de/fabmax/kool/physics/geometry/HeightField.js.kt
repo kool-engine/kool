@@ -3,7 +3,7 @@ package de.fabmax.kool.physics.geometry
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.PxTopLevelFunctions
-import de.fabmax.kool.util.HeightMap
+import de.fabmax.kool.util.Heightmap
 import physx.PxArray_PxHeightFieldSample
 import physx.PxHeightField
 import physx.PxHeightFieldFormatEnum
@@ -11,14 +11,14 @@ import physx.PxHeightFieldGeometry
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-actual fun HeightField(heightMap: HeightMap, rowScale: Float, columnScale: Float): HeightField {
+actual fun HeightField(heightMap: Heightmap, rowScale: Float, columnScale: Float): HeightField {
     return HeightFieldImpl(heightMap, rowScale, columnScale)
 }
 
 val HeightField.pxHeightField: PxHeightField get() = (this as HeightFieldImpl).pxHeightField
 
 class HeightFieldImpl(
-    override val heightMap: HeightMap,
+    override val heightMap: Heightmap,
     override val rowScale: Float,
     override val columnScale: Float
 ) : HeightField() {
@@ -36,8 +36,8 @@ class HeightFieldImpl(
 
         PhysicsImpl.checkIsLoaded()
         MemoryStack.stackPush().use { mem ->
-            val rows = heightMap.width
-            val cols = heightMap.height
+            val rows = heightMap.columns
+            val cols = heightMap.rows
             val sample = mem.createPxHeightFieldSample()
             val samples = PxArray_PxHeightFieldSample()
             for (row in 0..rows) {

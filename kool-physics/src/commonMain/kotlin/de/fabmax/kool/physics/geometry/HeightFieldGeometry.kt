@@ -12,13 +12,13 @@ interface HeightFieldGeometry : CollisionGeometry {
     fun generateTiledMesh(target: MeshBuilder, gridX: Int, gridY: Int, gridSizeX: Int, gridSizeY: Int) {
         target.apply {
             withTransform {
-                val stepsX = heightField.heightMap.width / gridSizeX
-                val stepsY = heightField.heightMap.height / gridSizeY
+                val stepsX = heightField.heightMap.columns / gridSizeX
+                val stepsY = heightField.heightMap.rows / gridSizeY
                 val szX = stepsX * heightField.rowScale
                 val szY = stepsY * heightField.columnScale
 
                 val tx = gridX * stepsX * heightField.rowScale + szX * 0.5f
-                val tz = (heightField.heightMap.height - 1) * heightField.columnScale - ((gridY + 0.5f) * stepsY * heightField.columnScale)
+                val tz = (heightField.heightMap.rows - 1) * heightField.columnScale - ((gridY + 0.5f) * stepsY * heightField.columnScale)
                 translate(tx, 0f, tz)
 
                 grid {
@@ -41,8 +41,8 @@ interface HeightFieldGeometry : CollisionGeometry {
     override fun generateMesh(target: MeshBuilder) {
         target.apply {
             withTransform {
-                val szX = (heightField.heightMap.width - 1) * heightField.rowScale
-                val szY = (heightField.heightMap.height - 1) * heightField.columnScale
+                val szX = (heightField.heightMap.columns - 1) * heightField.rowScale
+                val szY = (heightField.heightMap.rows - 1) * heightField.columnScale
                 translate(szX * 0.5f, 0f, szY * 0.5f)
                 grid {
                     sizeX = szX
@@ -58,7 +58,7 @@ interface HeightFieldGeometry : CollisionGeometry {
         val columnScale = heightField.columnScale
         val map = heightField.heightMap
         return result.set(0f, map.minHeight, 0f,
-            map.width * rowScale, map.maxHeight, map.height * columnScale)
+            map.columns * rowScale, map.maxHeight, map.rows * columnScale)
     }
 
     override fun estimateInertiaForMass(mass: Float, result: MutableVec3f): MutableVec3f {

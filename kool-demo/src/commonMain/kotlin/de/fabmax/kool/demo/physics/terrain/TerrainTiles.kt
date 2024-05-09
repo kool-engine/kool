@@ -73,7 +73,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
     }
 
     private fun fitNormalsX(left: Mesh, right: Mesh, gridSz: Int) {
-        val meshSz = terrain.heightMap.width / gridSz + 1
+        val meshSz = terrain.heightMap.columns / gridSz + 1
         for (y in 0 until meshSz) {
             val ap = left.geometry[(y + 1) * meshSz - 1]
             val bp = right.geometry[y * meshSz]
@@ -85,7 +85,7 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
     }
 
     private fun fitNormalsY(left: Mesh, right: Mesh, gridSz: Int) {
-        val meshSz = terrain.heightMap.width / gridSz + 1
+        val meshSz = terrain.heightMap.columns / gridSz + 1
         for (y in 0 until meshSz) {
             val ap = left.geometry[right.geometry.numVertices - meshSz + y]
             val bp = right.geometry[y]

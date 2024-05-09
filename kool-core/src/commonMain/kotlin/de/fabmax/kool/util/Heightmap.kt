@@ -8,14 +8,14 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class HeightMap(val heightData: FloatArray, val width: Int, val height: Int) {
+class Heightmap(val heightData: FloatArray, val rows: Int, val columns: Int) {
 
     val minHeight: Float
     val maxHeight: Float
 
     init {
-        check(heightData.size == width * height) {
-            "Supplied height data has not the correct size: ${heightData.size} elements != $width x $height"
+        check(heightData.size == columns * rows) {
+            "Supplied height data has not the correct size: ${heightData.size} elements != $columns x $rows"
         }
 
         var min = Float.POSITIVE_INFINITY
@@ -47,17 +47,17 @@ class HeightMap(val heightData: FloatArray, val width: Int, val height: Int) {
     }
 
     fun getHeight(x: Int, y: Int): Float {
-        val cx = x.clamp(0, width - 1)
-        val cy = y.clamp(0, height - 1)
-        return heightData[cy * width + cx]
+        val cx = x.clamp(0, columns - 1)
+        val cy = y.clamp(0, rows - 1)
+        return heightData[cy * columns + cx]
     }
 
     companion object {
         /**
-         * Constructs a [HeightMap] from the provided [TextureData2d] object. Format must be either [TexFormat.R_F16]
+         * Constructs a [Heightmap] from the provided [TextureData2d] object. Format must be either [TexFormat.R_F16]
          * or [TexFormat.R]
          */
-        fun fromTextureData2d(textureData2d: TextureData2d, heightScale: Float, heightOffset: Float = 0f): HeightMap {
+        fun fromTextureData2d(textureData2d: TextureData2d, heightScale: Float, heightOffset: Float = 0f): Heightmap {
             check(textureData2d.format == TexFormat.R_F16 || textureData2d.format == TexFormat.R) {
                 "Texture format must be either TexFormat.R_F16 or TexFormat.R"
             }
@@ -75,20 +75,20 @@ class HeightMap(val heightData: FloatArray, val width: Int, val height: Int) {
                     heightData[i] = ((uint8Buf[i].toInt() and 0xff) / 255f) * heightScale + heightOffset
                 }
             }
-            return HeightMap(heightData, textureData2d.width, textureData2d.height)
+            return Heightmap(heightData, textureData2d.height, textureData2d.width)
         }
 
         /**
-         * Constructs a [HeightMap] from the provided binary buffer. Buffer content is expected to be a plain array of
-         * 16-bit integers with dimension [width] x [height]. If [width] and / or [height] are not specified, a square
+         * Constructs a [Heightmap] from the provided binary buffer. Buffer content is expected to be a plain array of
+         * 16-bit integers with dimension [columns] x [rows]. If [columns] and / or [rows] are not specified, a square
          * map is assumed.
          */
-        fun fromRawData(rawData: Uint8Buffer, heightScale: Float, width: Int = 0, height: Int = 0, heightOffset: Float = 0f): HeightMap {
+        fun fromRawData(rawData: Uint8Buffer, heightScale: Float, rows: Int = 0, columns: Int = 0, heightOffset: Float = 0f): Heightmap {
             val elems = rawData.capacity / 2
 
             // if width and / or height are not supplied, a square map is assumed
-            val w = if (width > 0) width else sqrt(elems.toDouble()).toInt()
-            val h = if (height > 0) height else w
+            val w = if (columns > 0) columns else sqrt(elems.toDouble()).toInt()
+            val h = if (rows > 0) rows else w
             check (w * h == elems) {
                 "Raw data size ($elems) does not match anticipated map size: $w x $h"
             }
@@ -99,7 +99,7 @@ class HeightMap(val heightData: FloatArray, val width: Int, val height: Int) {
                 val ib = rawData[i*2+1].toInt() and 0xff
                 heightData[i] = ((ia or (ib shl 8)) / 65535f) * heightScale + heightOffset
             }
-            return HeightMap(heightData, w, h)
+            return Heightmap(heightData, h, w)
         }
     }
 }
