@@ -164,20 +164,26 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
     }
 
     private suspend fun MeshBuilder.generateHeightmap(shape: ShapeData.Heightmap) {
-        if (shape.mapPath.isBlank()) {
-            return
+        var heightmap: Heightmap? = null
+        if (shape.mapPath.isNotBlank()) {
+            heightmap = AppAssets.loadHeightmap(shape.toAssetReference())
         }
-        val heightmapRef = shape.toAssetReference()
-        requiredAssets += heightmapRef
-        val heightmap = AppAssets.loadHeightmap(heightmapRef) ?: return
 
-        val szX = (heightmap.columns - 1) * shape.rowScale.toFloat()
-        val szY = (heightmap.rows - 1) * shape.colScale.toFloat()
+        val rows = heightmap?.rows ?: DEFAULT_HEIGHTMAP_ROWS
+        val cols = heightmap?.columns ?: DEFAULT_HEIGHTMAP_COLS
+
+        val szX = (cols - 1) * shape.colScale.toFloat()
+        val szY = (rows - 1) * shape.rowScale.toFloat()
         translate(szX * 0.5f, 0f, szY * 0.5f)
         grid {
             sizeX = szX
             sizeY = szY
-            useHeightMap(heightmap)
+            if (heightmap != null) {
+                useHeightMap(heightmap)
+            } else {
+                stepsX = cols
+                stepsY = rows
+            }
         }
     }
 
@@ -272,6 +278,11 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
                 createMeshShader()
             }
         }
+    }
+
+    companion object {
+        const val DEFAULT_HEIGHTMAP_ROWS = 129
+        const val DEFAULT_HEIGHTMAP_COLS = 129
     }
 }
 

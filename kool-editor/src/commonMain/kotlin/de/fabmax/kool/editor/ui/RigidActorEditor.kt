@@ -1,11 +1,16 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.actions.SetRigidBodyPropertiesAction
+import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.RigidActorComponent
+import de.fabmax.kool.editor.components.toAssetReference
 import de.fabmax.kool.editor.data.RigidActorProperties
 import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec3Data
+import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.modules.ui2.*
 
 class RigidActorEditor(component: RigidActorComponent) : ComponentEditor<RigidActorComponent>(component) {
@@ -151,8 +156,43 @@ class RigidActorEditor(component: RigidActorComponent) : ComponentEditor<RigidAc
     }
 
     private fun ColumnScope.heightmapEditor(shape: ShapeData.Heightmap, bodyProps: RigidActorProperties) {
-        TODO()
+        heightmapSelector(shape.mapPath, true) {
+            val applyShape = bodyProps.copy(shapes = listOf(shape.copy(mapPath = it?.path ?: "")))
+            SetRigidBodyPropertiesAction(nodeId, bodyProps, applyShape).apply()
+        }
+
+        val mapRef = shape.toAssetReference()
+        val heightmap = (AppAssets.impl as CachedAppAssets).getHeightmapMutableState(mapRef).use()
+        val numRows = heightmap?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
+        val numCols = heightmap?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
+        val sizeX = (numCols - 1) * shape.colScale
+        val sizeY = (numRows - 1) * shape.rowScale
+
+        labeledDoubleTextField(
+            label = "Height scale:",
+            value = shape.heightScale,
+            editHandler = object: ValueEditHandler<Double> {
+                override fun onEdit(value: Double) { }
+                override fun onEditEnd(startValue: Double, endValue: Double) {
+                    val applyShape = bodyProps.copy(shapes = listOf(shape.copy(heightScale = endValue)))
+                    SetRigidBodyPropertiesAction(nodeId, bodyProps, applyShape).apply()
+                }
+            }
+        )
+        labeledXyRow(
+            label = "Size:",
+            xy = Vec2d(sizeX, sizeY),
+            editHandler = object: ValueEditHandler<Vec2d> {
+                override fun onEdit(value: Vec2d) { }
+                override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
+                    val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
+                    val applyShape = bodyProps.copy(shapes = listOf(shape.copy(colScale = newScale.x, rowScale = newScale.y)))
+                    SetRigidBodyPropertiesAction(nodeId, bodyProps, applyShape).apply()
+                }
+            }
+        )
     }
+
 
     private class TypeOption(val label: String, val type: RigidActorType) {
         override fun toString(): String = label
