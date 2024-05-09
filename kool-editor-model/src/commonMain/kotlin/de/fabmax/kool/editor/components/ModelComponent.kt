@@ -2,7 +2,8 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.RequiredAsset
+import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.editor.api.loadModel
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -72,7 +73,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         dependsOn(MaterialComponent::class, isOptional = true)
 
         if (componentData.modelPath.isNotBlank()) {
-            requiredAssets += RequiredAsset.Model(componentData.modelPath)
+            requiredAssets += AssetReference.Model(componentData.modelPath)
         }
     }
 

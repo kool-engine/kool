@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.RequiredAsset
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.model.NodeModel
 import kotlin.reflect.KClass
 
@@ -10,7 +10,7 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
     val dependencies: List<ComponentDependency>
         get() = _dependencies
 
-    val requiredAssets = mutableSetOf<RequiredAsset>()
+    val requiredAssets = mutableSetOf<AssetReference>()
 
     var isCreated: Boolean = false
         protected set

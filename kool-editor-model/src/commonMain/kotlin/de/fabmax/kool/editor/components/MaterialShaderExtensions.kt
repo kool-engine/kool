@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ksl.KslLitShader

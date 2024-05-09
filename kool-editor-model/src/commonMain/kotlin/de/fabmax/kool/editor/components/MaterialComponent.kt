@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.RequiredAsset
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.data.MapAttribute
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MaterialData
@@ -49,7 +49,7 @@ class MaterialComponent(
         }
 
         material.shaderData.collectAttributes().filterIsInstance<MapAttribute>().forEach { matMap ->
-            requiredAssets += RequiredAsset.Texture(matMap.mapPath)
+            requiredAssets += AssetReference.Texture(matMap.mapPath)
         }
     }
 }

@@ -1,7 +1,9 @@
 package de.fabmax.kool.editor.model
 
+import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.RequiredAsset
+import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.editor.api.cacheAsset
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -78,10 +80,13 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         }
         nodeData.childNodeIds.forEach { rootId -> createSceneNode(rootId, this) }
 
-        val requiredAssets = mutableSetOf<RequiredAsset>()
+        val requiredAssets = mutableSetOf<AssetReference>()
         nodeModels.values.forEach { requiredAssets += it.requiredAssets }
-
-        // todo: load required resources
+        requiredAssets.forEach {
+            if (!AppAssets.cacheAsset(it)) {
+                logW{ "Failed pre-loading asset: ${it.path}" }
+            }
+        }
     }
 
     suspend fun createScene() {

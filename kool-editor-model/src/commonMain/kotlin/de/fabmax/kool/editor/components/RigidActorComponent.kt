@@ -2,7 +2,6 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.RequiredAsset
 import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
@@ -14,7 +13,6 @@ import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
-import de.fabmax.kool.util.HeightMap
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logW
 
@@ -49,7 +47,7 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         componentData.properties.shapes
             .filterIsInstance<ShapeData.Heightmap>()
             .filter{ it.mapPath.isNotBlank() }
-            .forEach { requiredAssets += RequiredAsset.Heightmap(it.mapPath) }
+            .forEach { requiredAssets += it.toAssetReference() }
     }
 
     override suspend fun createComponent() {
@@ -151,10 +149,10 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         if (shapeData.mapPath.isBlank()) {
             return null
         }
-        requiredAssets += RequiredAsset.Heightmap(shapeData.mapPath)
-        val heightData = AppAssets.loadBlob(shapeData.mapPath) ?: return null
-        val heightMap = HeightMap.fromRawData(heightData, shapeData.heightScale.toFloat(), heightOffset = shapeData.heightOffset.toFloat())
-        val heightField = HeightField(heightMap, shapeData.rowScale.toFloat(), shapeData.colScale.toFloat())
+        val heightmapRef = shapeData.toAssetReference()
+        requiredAssets += heightmapRef
+        val heightmap = AppAssets.loadHeightmap(heightmapRef) ?: return null
+        val heightField = HeightField(heightmap, shapeData.rowScale.toFloat(), shapeData.colScale.toFloat())
         return HeightFieldGeometry(heightField)
     }
 

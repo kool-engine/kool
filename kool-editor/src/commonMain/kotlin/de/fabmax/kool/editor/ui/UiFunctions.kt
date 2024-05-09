@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
@@ -772,7 +773,8 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     }
 
     if (selectedTexPath.isNotEmpty()) {
-        val tex = (AppAssets.impl as CachedAppAssets).getTextureMutableState(selectedTexPath).use()
+        val texRef = AssetReference.Texture(selectedTexPath)
+        val tex = (AppAssets.impl as CachedAppAssets).getTextureMutableState(texRef).use()
         Image(tex) {
             modifier
                 .margin(top = sizes.gap)

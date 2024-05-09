@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.RequiredAsset
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
@@ -50,7 +50,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
         componentData.shapes
             .filterIsInstance<ShapeData.Heightmap>()
             .filter{ it.mapPath.isNotBlank() }
-            .forEach { requiredAssets += RequiredAsset.Heightmap(it.mapPath) }
+            .forEach { requiredAssets += it.toAssetReference() }
     }
 
     override suspend fun createComponent() {
@@ -167,12 +167,12 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
         if (shape.mapPath.isBlank()) {
             return
         }
-        requiredAssets += RequiredAsset.Heightmap(shape.mapPath)
-        val heightData = AppAssets.loadBlob(shape.mapPath) ?: return
-        val heightmap = HeightMap.fromRawData(heightData, shape.heightScale.toFloat(), heightOffset = shape.heightOffset.toFloat())
+        val heightmapRef = shape.toAssetReference()
+        requiredAssets += heightmapRef
+        val heightmap = AppAssets.loadHeightmap(heightmapRef) ?: return
 
-        val szX = (heightmap.width - 1) * shape.rowScale.toFloat()
-        val szY = (heightmap.height - 1) * shape.colScale.toFloat()
+        val szX = (heightmap.columns - 1) * shape.rowScale.toFloat()
+        val szY = (heightmap.rows - 1) * shape.colScale.toFloat()
         translate(szX * 0.5f, 0f, szY * 0.5f)
         grid {
             sizeX = szX
@@ -278,3 +278,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
 interface UpdateMeshComponent {
     fun updateMesh(mesh: MeshComponentData)
 }
+
+fun ShapeData.Heightmap.toAssetReference() = AssetReference.Heightmap(
+    mapPath, heightScale.toFloat(), heightOffset.toFloat()
+)

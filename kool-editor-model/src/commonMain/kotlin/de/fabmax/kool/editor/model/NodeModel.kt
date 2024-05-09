@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.RequiredAsset
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
@@ -32,7 +32,7 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
     }
 
     val components = mutableStateListOf<EditorModelComponent>()
-    val requiredAssets: Set<RequiredAsset> get() = components.flatMap { it.requiredAssets }.toSet()
+    val requiredAssets: Set<AssetReference> get() = components.flatMap { it.requiredAssets }.toSet()
 
     abstract val drawNode: Node
 

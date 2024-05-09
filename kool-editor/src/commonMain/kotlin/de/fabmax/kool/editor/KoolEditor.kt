@@ -38,6 +38,9 @@ suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor
     val projModelJson = try {
         projectFiles.projectModelFile.read().decodeToString()
     } catch (e: Exception) {
+        ""
+    }
+    if (projModelJson.isEmpty()) {
         logI("KoolEditor") { "Project file not found, creating empty" }
         return KoolEditor(projectFiles, EditorProject.emptyProject(), ctx)
     }
