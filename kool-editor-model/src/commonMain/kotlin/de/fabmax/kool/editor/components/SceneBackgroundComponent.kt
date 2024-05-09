@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.RequiredAsset
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -27,6 +28,13 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
         applyBackground(it)
     }
 
+    init {
+        when (val bgData = componentData.sceneBackground) {
+            is SceneBackgroundData.Hdri -> requiredAssets += RequiredAsset.HdriEnvironment(bgData.hdriPath)
+            else -> { }
+        }
+    }
+
     override suspend fun createComponent() {
         super.createComponent()
 
@@ -45,8 +53,10 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
 
     private fun applyBackground(bgData: SceneBackgroundData) {
         launchOnMainThread {
+            requiredAssets.clear()
             when (bgData) {
                 is SceneBackgroundData.Hdri -> {
+                    requiredAssets += RequiredAsset.HdriEnvironment(bgData.hdriPath)
                     nodeModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(bgData.hdriPath)
                     UpdateSceneBackgroundComponent.updateSceneBackground(nodeModel)
                 }

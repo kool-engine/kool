@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.RequiredAsset
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
@@ -45,6 +46,11 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
+
+        componentData.shapes
+            .filterIsInstance<ShapeData.Heightmap>()
+            .filter{ it.mapPath.isNotBlank() }
+            .forEach { requiredAssets += RequiredAsset.Heightmap(it.mapPath) }
     }
 
     override suspend fun createComponent() {
@@ -73,6 +79,8 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
 
     suspend fun updateGeometry() {
         val mesh = this.mesh ?: return
+
+        requiredAssets.clear()
         mesh.generate {
             shapesState.forEach { shape -> generateShape(shape) }
             geometry.generateTangents()
@@ -159,6 +167,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
         if (shape.mapPath.isBlank()) {
             return
         }
+        requiredAssets += RequiredAsset.Heightmap(shape.mapPath)
         val heightData = AppAssets.loadBlob(shape.mapPath) ?: return
         val heightmap = HeightMap.fromRawData(heightData, shape.heightScale.toFloat(), heightOffset = shape.heightOffset.toFloat())
 

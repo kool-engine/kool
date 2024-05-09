@@ -67,6 +67,7 @@ class EditorProject(val projectData: ProjectData) {
             val sceneData = sceneNodeData[sceneNodeId]
             if (sceneData != null) {
                 val sceneModel = _createdScenes.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }
+                sceneModel.prepareScene()
                 sceneModel.createScene()
             }
         }

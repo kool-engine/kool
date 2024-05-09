@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.RequiredAsset
+import de.fabmax.kool.editor.data.MapAttribute
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.NodeId
@@ -9,14 +11,16 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.launchOnMainThread
 
-class MaterialComponent(nodeModel: SceneNodeModel, override val componentData: MaterialComponentData) :
+class MaterialComponent(
+    nodeModel: SceneNodeModel,
+    override val componentData: MaterialComponentData = MaterialComponentData(NodeId(-1L))
+) :
     SceneNodeComponent(nodeModel),
     EditorDataComponent<MaterialComponentData>
 {
 
-    constructor(nodeModel: SceneNodeModel): this(nodeModel, MaterialComponentData(NodeId(-1L)))
-
     val materialState = mutableStateOf<MaterialData?>(null).onChange { mat ->
+        collectRequiredAssets(mat)
         if (AppState.isEditMode) {
             componentData.materialId = mat?.id ?: NodeId( -1)
         }
@@ -30,13 +34,23 @@ class MaterialComponent(nodeModel: SceneNodeModel, override val componentData: M
     val materialData: MaterialData?
         get() = materialState.value
 
+    init {
+        materialState.set(sceneModel.project.materialsById[componentData.materialId])
+    }
+
     fun isHoldingMaterial(material: MaterialData?): Boolean {
         return material?.id == materialData?.id
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
-        materialState.set(sceneModel.project.materialsById[componentData.materialId])
+    private fun collectRequiredAssets(material: MaterialData?) {
+        requiredAssets.clear()
+        if (material == null) {
+            return
+        }
+
+        material.shaderData.collectAttributes().filterIsInstance<MapAttribute>().forEach { matMap ->
+            requiredAssets += RequiredAsset.Texture(matMap.mapPath)
+        }
     }
 }
 

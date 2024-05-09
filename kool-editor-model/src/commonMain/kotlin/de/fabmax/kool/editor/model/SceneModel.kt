@@ -1,11 +1,13 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.RequiredAsset
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.editor.data.SceneNodeData
 import de.fabmax.kool.editor.data.ScenePropertiesComponentData
+import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.pipeline.Texture2d
@@ -18,52 +20,71 @@ import de.fabmax.kool.util.*
 
 class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeModel(sceneData) {
 
-    val sceneProperties = getOrPutComponent { ScenePropertiesComponent(this, ScenePropertiesComponentData()) }
-
-    val shaderData = SceneShaderData()
-
-    val maxNumLightsState = mutableStateOf(sceneProperties.componentData.maxNumLights).onChange {
-        shaderData.maxNumberOfLights = it
-        if (AppState.isEditMode) {
-            sceneProperties.componentData.maxNumLights = it
-        }
-        drawNode.lighting.maxNumberOfLights = it
-        project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach { comp ->
-            comp.updateMaxNumLightsComponent(it)
-        }
-    }
-
-    val cameraState = mutableStateOf<CameraComponent?>(null).onChange {
-        if (AppState.isEditMode) {
-            sceneProperties.componentData.cameraNodeId = it?.nodeModel?.nodeId ?: NodeId(-1L)
-        } else {
-            // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
-            it?.camera?.let { cam -> drawNode.camera = cam }
-        }
-        project.getComponentsInScene<UpdateSceneCameraComponent>(this).forEach { comp ->
-            comp.updateSceneCameraComponent(it?.camera)
-        }
-    }
-
-    override var drawNode: Scene = Scene(name)
+    val sceneProperties: ScenePropertiesComponent
+    val maxNumLightsState: MutableStateValue<Int>
+    val cameraState: MutableStateValue<CameraComponent?>
+    val sceneBackground: SceneBackgroundComponent
+    private val backgroundUpdater: BackgroundUpdater
 
     val nodesToNodeModels: MutableMap<Node, NodeModel> = mutableMapOf()
     val nodeModels: MutableMap<NodeId, SceneNodeModel> = mutableMapOf()
     val sceneNodes: List<SceneNodeModel> get() = nodesToNodeModels.values.filterIsInstance<SceneNodeModel>()
 
-    val sceneBackground = getOrPutComponent { SceneBackgroundComponent(this, MdColor.GREY toneLin 900) }
-    private val backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
-
+    val shaderData = SceneShaderData()
+    override var drawNode: Scene = Scene(name)
     val physicsWorld: PhysicsWorld? get() = getComponent<PhysicsWorldComponent>()?.physicsWorld
 
     init {
+        createComponentsFromData(nodeData.components)
+
+        sceneProperties = getOrPutComponent { ScenePropertiesComponent(this, ScenePropertiesComponentData()) }
+        maxNumLightsState = mutableStateOf(sceneProperties.componentData.maxNumLights).onChange {
+            shaderData.maxNumberOfLights = it
+            if (AppState.isEditMode) {
+                sceneProperties.componentData.maxNumLights = it
+            }
+            drawNode.lighting.maxNumberOfLights = it
+            project.getComponentsInScene<UpdateMaxNumLightsComponent>(this).forEach { comp ->
+                comp.updateMaxNumLightsComponent(it)
+            }
+        }
+        cameraState = mutableStateOf<CameraComponent?>(null).onChange {
+            if (AppState.isEditMode) {
+                sceneProperties.componentData.cameraNodeId = it?.nodeModel?.nodeId ?: NodeId(-1L)
+            } else {
+                // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
+                it?.camera?.let { cam -> drawNode.camera = cam }
+            }
+            project.getComponentsInScene<UpdateSceneCameraComponent>(this).forEach { comp ->
+                comp.updateSceneCameraComponent(it?.camera)
+            }
+        }
+        sceneBackground = getOrPutComponent { SceneBackgroundComponent(this, MdColor.GREY toneLin 900) }
+        backgroundUpdater = getOrPutComponent { BackgroundUpdater() }
+
         shaderData.maxNumberOfLights = maxNumLightsState.value
         project.entities += this
     }
 
-    suspend fun createScene() {
+    suspend fun prepareScene() {
         disposeCreatedScene()
 
+        fun createSceneNode(id: NodeId, parent: NodeModel) {
+            resolveNode(id, parent)?.let { node ->
+                node.nodeData.childNodeIds.forEach { childId ->
+                    createSceneNode(childId, node)
+                }
+            }
+        }
+        nodeData.childNodeIds.forEach { rootId -> createSceneNode(rootId, this) }
+
+        val requiredAssets = mutableSetOf<RequiredAsset>()
+        nodeModels.values.forEach { requiredAssets += it.requiredAssets }
+
+        // todo: load required resources
+    }
+
+    suspend fun createScene() {
         drawNode = Scene(name).apply {
             onUpdate { ev ->
                 onNodeUpdate.forEach { it(ev) }
@@ -84,10 +105,8 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
     override suspend fun createComponents() {
         super.createComponents()
 
-        nodeData.childNodeIds.forEach { childId ->
-            resolveNode(childId, this)?.let {
-                addSceneNode(it)
-            }
+        nodeData.childNodeIds.forEach { rootId ->
+            resolveNode(rootId, this)?.let { addSceneNode(it) }
         }
 
         val cam = nodeModels[sceneProperties.componentData.cameraNodeId]?.getComponent<CameraComponent>()
@@ -116,7 +135,7 @@ class SceneModel(sceneData: SceneNodeData, val project: EditorProject) : NodeMod
         return if (nodeModel != null) nodeModel else {
             val nodeData = project.sceneNodeData[nodeId]
             if (nodeData != null) {
-                SceneNodeModel(nodeData, parent, this)
+                SceneNodeModel(nodeData, parent, this).also { nodeModels[nodeId] = it }
             } else {
                 logE { "Failed to resolve node with ID $nodeId in scene $name" }
                 null

@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.RequiredAsset
 import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
@@ -40,6 +41,16 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
 
     private var geometry: List<CollisionGeometry> = emptyList()
     private var bodyShapes: List<ShapeData> = emptyList()
+
+    init {
+        dependsOn(MeshComponent::class, isOptional = true)
+        dependsOn(ModelComponent::class, isOptional = true)
+
+        componentData.properties.shapes
+            .filterIsInstance<ShapeData.Heightmap>()
+            .filter{ it.mapPath.isNotBlank() }
+            .forEach { requiredAssets += RequiredAsset.Heightmap(it.mapPath) }
+    }
 
     override suspend fun createComponent() {
         super.createComponent()
@@ -108,6 +119,7 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
             RigidActorType.STATIC -> RigidStatic()
         }
 
+        requiredAssets.clear()
         rigidActor?.apply {
             bodyShapes = componentData.properties.shapes
             geometry = if (bodyShapes.isEmpty()) {
@@ -139,6 +151,7 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         if (shapeData.mapPath.isBlank()) {
             return null
         }
+        requiredAssets += RequiredAsset.Heightmap(shapeData.mapPath)
         val heightData = AppAssets.loadBlob(shapeData.mapPath) ?: return null
         val heightMap = HeightMap.fromRawData(heightData, shapeData.heightScale.toFloat(), heightOffset = shapeData.heightOffset.toFloat())
         val heightField = HeightField(heightMap, shapeData.rowScale.toFloat(), shapeData.colScale.toFloat())
