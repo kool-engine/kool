@@ -127,7 +127,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             containerModifier = { it.backgroundColor(null) }
         ) {
             var hoveredIndex by remember(-1)
-            val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>() }
+            val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>("scene-item-popup") }
 
             itemsIndexed(treeItems) { i, item ->
                 if (item.type != SceneObjectType.NON_MODEL_NODE && item.node != item.nodeModel.drawNode) {

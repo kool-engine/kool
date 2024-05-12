@@ -12,7 +12,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
 
     override fun UiScope.titleBar() {
         Row {
-            val popup = remember { ContextPopupMenu<BrowserItem>() }
+            val popup = remember { ContextPopupMenu<BrowserItem>("import-assets-popup") }
             var popupPos by remember(Vec2f.ZERO)
 
             // register drag callbacks, to block window drag

@@ -115,7 +115,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
     }
 
     private fun UiScope.addComponentSelector(nodeModel: NodeModel) {
-        val popup = remember { ContextPopupMenu<NodeModel>() }
+        val popup = remember { ContextPopupMenu<NodeModel>("add-component") }
         var popupPos by remember(Vec2f.ZERO)
 
         val button = iconTextButton(
