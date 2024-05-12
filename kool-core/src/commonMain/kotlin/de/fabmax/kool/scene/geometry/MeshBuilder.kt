@@ -1049,9 +1049,9 @@ class GridProps {
     var stepsY = 10
     var heightFun: (Int, Int) -> Float = ZERO_HEIGHT
 
-    fun useHeightMap(heightMap: HeightMap) {
-        stepsX = heightMap.width - 1
-        stepsY = heightMap.height - 1
+    fun useHeightMap(heightMap: Heightmap) {
+        stepsX = heightMap.columns - 1
+        stepsY = heightMap.rows - 1
         heightFun = { x, y -> heightMap.getHeight(x, y) }
     }
 

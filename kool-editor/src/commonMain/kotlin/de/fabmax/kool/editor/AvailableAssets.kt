@@ -11,6 +11,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
     val modelAssets = mutableStateListOf<AssetItem>()
     val textureAssets = mutableStateListOf<AssetItem>()
     val hdriAssets = mutableStateListOf<AssetItem>()
+    val heightmapAssets = mutableStateListOf<AssetItem>()
 
     private val assetPathPrefix = projectFiles.assets.path
     private val assetsByPath = mutableMapOf<String, AssetItem>()
@@ -135,6 +136,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
         assetsByPath.values.filterAssetsByType(AppAssetType.Model, modelAssets)
         assetsByPath.values.filterAssetsByType(AppAssetType.Texture, textureAssets)
         assetsByPath.values.filterAssetsByType(AppAssetType.Hdri, hdriAssets)
+        assetsByPath.values.filterAssetsByType(AppAssetType.Heightmap, heightmapAssets)
 
         rootAssets.atomic {
             clear()
@@ -193,7 +195,8 @@ enum class AppAssetType {
     Directory,
     Texture,
     Hdri,
-    Model;
+    Model,
+    Heightmap;
 
     companion object {
         fun fromFileItem(fileItem: FileSystemItem): AppAssetType {
@@ -202,6 +205,7 @@ enum class AppAssetType {
                 fileItem.path.isTexture() -> Texture
                 fileItem.path.isHdri() -> Hdri
                 fileItem.path.isModel() -> Model
+                fileItem.path.isHeightmap() -> Heightmap
                 else -> Unknown
             }
         }
@@ -223,7 +227,15 @@ enum class AppAssetType {
                 .lowercase() in modelFileExtensions
         }
 
+        private fun String.isHeightmap(): Boolean {
+            return this
+                .removeSuffix(".gz")
+                .substringAfterLast(".")
+                .lowercase() in heightmapFileExtensions
+        }
+
         private val imageFileExtensions = setOf("jpg", "jpeg", "png")
         private val modelFileExtensions = setOf("gltf", "glb", "glbz")
+        private val heightmapFileExtensions = setOf("hgt", "raw")
     }
 }

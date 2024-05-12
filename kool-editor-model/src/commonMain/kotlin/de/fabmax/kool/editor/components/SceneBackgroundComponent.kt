@@ -2,6 +2,8 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.editor.api.loadHdri
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -27,6 +29,13 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
         applyBackground(it)
     }
 
+    init {
+        when (val bgData = componentData.sceneBackground) {
+            is SceneBackgroundData.Hdri -> requiredAssets += AssetReference.Hdri(bgData.hdriPath)
+            else -> { }
+        }
+    }
+
     override suspend fun createComponent() {
         super.createComponent()
 
@@ -35,7 +44,7 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
 
         when (val bgState = backgroundState.value) {
             is SceneBackgroundData.Hdri -> {
-                nodeModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(bgState.hdriPath)
+                nodeModel.shaderData.environmentMaps = AppAssets.loadHdri(bgState.hdriPath)
             }
             is SceneBackgroundData.SingleColor -> {
                 nodeModel.shaderData.ambientColorLinear = bgState.color.toColorLinear()
@@ -45,9 +54,11 @@ class SceneBackgroundComponent(override val nodeModel: SceneModel, override val 
 
     private fun applyBackground(bgData: SceneBackgroundData) {
         launchOnMainThread {
+            requiredAssets.clear()
             when (bgData) {
                 is SceneBackgroundData.Hdri -> {
-                    nodeModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(bgData.hdriPath)
+                    requiredAssets += AssetReference.Hdri(bgData.hdriPath)
+                    nodeModel.shaderData.environmentMaps = AppAssets.loadHdri(bgData.hdriPath)
                     UpdateSceneBackgroundComponent.updateSceneBackground(nodeModel)
                 }
                 is SceneBackgroundData.SingleColor -> {

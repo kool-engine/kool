@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.model
 
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
@@ -31,16 +32,14 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
     }
 
     val components = mutableStateListOf<EditorModelComponent>()
+    val requiredAssets: Set<AssetReference> get() = components.flatMap { it.requiredAssets }.toSet()
+
     abstract val drawNode: Node
 
     var isCreated: Boolean = false
         private set
 
     val onNodeUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
-
-    init {
-        createComponentsFromData(nodeData.components)
-    }
 
     fun addChild(child: SceneNodeModel, insertionPos: InsertionPos = InsertionPos.End) {
         // addChild() is called during scene creation for all child nodes of this NodeModel, in that case
@@ -95,7 +94,7 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
     private val requireScene: SceneModel
         get() = requireNotNull(this as? SceneModel) { "$name is not a SceneModel" }
 
-    private fun createComponentsFromData(componentData: List<ComponentData>) {
+    protected fun createComponentsFromData(componentData: List<ComponentData>) {
         componentData.forEach { data ->
             when (data) {
                 is CameraComponentData -> components += CameraComponent(requireSceneNode, data)
@@ -111,7 +110,7 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
                 is TransformComponentData -> components += TransformComponent(requireSceneNode, data)
 
                 is PhysicsWorldComponentData -> components += PhysicsWorldComponent(requireScene, data)
-                is RigidBodyComponentData -> components += RigidBodyComponent(requireSceneNode, data)
+                is RigidActorComponentData -> components += RigidActorComponent(requireSceneNode, data)
             }
         }
         components.sortByDependencies()

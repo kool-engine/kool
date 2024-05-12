@@ -112,7 +112,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         mainScene.tryEnableInfiniteDepth()
 
         showLoadText("Loading height map...")
-        val heightMap = HeightMap.fromRawData(loadBlobAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw"), 200f, heightOffset = -50f)
+        val heightMap = Heightmap.fromRawData(loadBlobAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw"), 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 

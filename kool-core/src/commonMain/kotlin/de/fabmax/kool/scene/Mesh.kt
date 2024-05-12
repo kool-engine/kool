@@ -154,7 +154,7 @@ open class Mesh(
         localBounds.add(geometry.bounds)
     }
 
-    open fun generate(updateBounds: Boolean = true, generator: MeshBuilder.() -> Unit) {
+    inline fun generate(updateBounds: Boolean = true, generator: MeshBuilder.() -> Unit) {
         geometry.batchUpdate(updateBounds) {
             clear()
             MeshBuilder(this).generator()

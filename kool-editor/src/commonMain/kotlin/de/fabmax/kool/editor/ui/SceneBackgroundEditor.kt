@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetBackgroundAction
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.loadHdri
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
@@ -103,7 +104,7 @@ class SceneBackgroundEditor(component: SceneBackgroundComponent) :
         ) {
             if (it.path != hdriBg.hdriPath) {
                 launchOnMainThread {
-                    sceneModel.shaderData.environmentMaps = AppAssets.loadHdriEnvironment(it.path)
+                    sceneModel.shaderData.environmentMaps = AppAssets.loadHdri(it.path)
                     val oldBg = component.backgroundState.value
                     val newBg = SceneBackgroundData.Hdri(it.path, skyLod.value)
                     SetBackgroundAction(nodeId, oldBg, newBg).apply()

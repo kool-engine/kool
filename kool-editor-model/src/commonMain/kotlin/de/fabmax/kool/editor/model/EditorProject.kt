@@ -67,6 +67,7 @@ class EditorProject(val projectData: ProjectData) {
             val sceneData = sceneNodeData[sceneNodeId]
             if (sceneData != null) {
                 val sceneModel = _createdScenes.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }
+                sceneModel.prepareScene()
                 sceneModel.createScene()
             }
         }
@@ -181,7 +182,7 @@ class EditorProject(val projectData: ProjectData) {
                         ))
                 }
                 sceneNodes += SceneNodeData("Default Cube", boxId).apply {
-                    components += MeshComponentData(MeshShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
+                    components += MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
                 }
                 sceneNodes += SceneNodeData("Directional Light", lightId).apply {
                     components += DiscreteLightComponentData(LightTypeData.Directional())

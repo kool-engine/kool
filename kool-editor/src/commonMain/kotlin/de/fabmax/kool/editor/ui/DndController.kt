@@ -176,6 +176,15 @@ abstract class DndItemFlavor<T: Any> {
         override fun getTyped(item: Any): AssetItem = item as AssetItem
     }
 
+    data object DndItemHeightmap : DndItemFlavor<AssetItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (AssetItem) -> Any> = mapOf(
+            this to { it },
+            DndAssetItem to { it }
+        )
+
+        override fun getTyped(item: Any): AssetItem = item as AssetItem
+    }
+
     data object DndBrowserItem : DndItemFlavor<BrowserPanel.BrowserItem>() {
         override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserItem) -> Any> = mapOf(this to { it })
 
@@ -216,6 +225,16 @@ abstract class DndItemFlavor<T: Any> {
             this to { it },
             DndAssetItem to { it.asset },
             DndItemModel to { it.asset }
+        )
+
+        override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
+    }
+
+    data object DndBrowserItemHeightmap : DndItemFlavor<BrowserPanel.BrowserAssetItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserAssetItem) -> Any> = mapOf(
+            this to { it },
+            DndAssetItem to { it.asset },
+            DndItemHeightmap to { it.asset }
         )
 
         override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem

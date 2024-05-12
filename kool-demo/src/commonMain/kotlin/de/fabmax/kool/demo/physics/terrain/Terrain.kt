@@ -20,7 +20,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
-class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
+class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
 
     val splatMapData: TextureData2d = generateSplatMap(2)
     val splatMap = Texture2d(name = "terrain-splat", loader = BufferedTextureLoader(splatMapData)).also { it.releaseWith(demo.mainScene) }
@@ -60,8 +60,8 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
     }
 
     private fun generateSplatMap(sampleStep: Int): TextureData2d {
-        val width = heightMap.width / sampleStep
-        val height = heightMap.height / sampleStep
+        val width = heightMap.columns / sampleStep
+        val height = heightMap.rows / sampleStep
         val data = Uint8Buffer(width * height * 4)
 
         // water floor weight - height based
@@ -79,7 +79,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: HeightMap) {
         for (y in 0 until height) {
             for (x in 0 until width) {
                 val sx = ((x + 0.5f) * sampleStep).roundToInt()
-                val sy = (heightMap.height - 1 - (y + 0.5f) * sampleStep).roundToInt()
+                val sy = (heightMap.rows - 1 - (y + 0.5f) * sampleStep).roundToInt()
                 val h = heightMap.getHeight(sx, sy)
 
                 val sr = 0.75f

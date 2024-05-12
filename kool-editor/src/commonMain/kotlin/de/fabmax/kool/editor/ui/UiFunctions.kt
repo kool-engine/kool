@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
@@ -754,11 +755,11 @@ inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() ->
 }
 
 fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, onSelect: (AssetItem?) -> Unit) = Column {
-    val textures = mutableListOf<TextureOption>()
+    val textures = mutableListOf<AssetOption>()
     if (withNoneOption) {
-        textures += TextureOption("None", null)
+        textures += AssetOption("None", null)
     }
-    textures += KoolEditor.instance.availableAssets.textureAssets.map { TextureOption(it.name, it) }
+    textures += KoolEditor.instance.availableAssets.textureAssets.map { AssetOption(it.name, it) }
 
     ComboBox {
         defaultComboBoxStyle()
@@ -772,9 +773,8 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     }
 
     if (selectedTexPath.isNotEmpty()) {
-        // fixme: this is awful
-        val tex = (AppAssets.impl as CachedAppAssets).getTextureIfLoaded(selectedTexPath).use()
-        //val tex = CachedAppAssets.getTextureIfLoaded(selectedTexPath).use()
+        val texRef = AssetReference.Texture(selectedTexPath)
+        val tex = (AppAssets.impl as CachedAppAssets).getTextureMutableState(texRef).use()
         Image(tex) {
             modifier
                 .margin(top = sizes.gap)
@@ -784,7 +784,24 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     }
 }
 
-private class TextureOption(val name: String, val assetItem: AssetItem?) {
+fun UiScope.heightmapSelector(
+    selectedHeightmapPath: String,
+    withNoneOption: Boolean,
+    onSelect: (AssetItem?) -> Unit
+) {
+    val textures = mutableListOf<AssetOption>()
+    if (withNoneOption) {
+        textures += AssetOption("None", null)
+    }
+    textures += KoolEditor.instance.availableAssets.heightmapAssets.map { AssetOption(it.name, it) }
+    val selectedIndex = textures.indexOfFirst { selectedHeightmapPath == it.assetItem?.path }
+
+    labeledCombobox("Heightmap:", textures, selectedIndex) {
+        onSelect(it.assetItem)
+    }
+}
+
+private class AssetOption(val name: String, val assetItem: AssetItem?) {
     override fun toString(): String = name
 }
 

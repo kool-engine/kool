@@ -2,6 +2,8 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.editor.api.loadModel
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -69,6 +71,10 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
+
+        if (componentData.modelPath.isNotBlank()) {
+            requiredAssets += AssetReference.Model(componentData.modelPath)
+        }
     }
 
     override suspend fun createComponent() {
@@ -168,14 +174,21 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         if (material != null) {
             model.meshes.forEach { (name, mesh) ->
                 val shader = material.createShader(sceneModel.shaderData)
-                val requiredAttribs = shader.findRequiredVertexAttributes()
-                if (mesh.geometry.hasAttributes(requiredAttribs)) {
-                    mesh.shader = shader
-                } else {
-                    logE {
-                        "Model ${componentData.modelPath}: sub-mesh $name misses required vertex attributes to apply " +
-                                "material: ${(requiredAttribs - mesh.geometry.vertexAttributes.toSet())}"
+                val shaderOk = when (shader) {
+                    is KslPbrShader -> {
+                        val requiredAttribs = shader.findRequiredVertexAttributes()
+                        if (mesh.geometry.hasAttributes(requiredAttribs)) true else {
+                            logE {
+                                "Model ${componentData.modelPath}: sub-mesh $name misses required vertex attributes " +
+                                "to apply material: ${(requiredAttribs - mesh.geometry.vertexAttributes.toSet())}"
+                            }
+                            false
+                        }
                     }
+                    else -> true
+                }
+                if (shaderOk) {
+                    mesh.shader = shader
                 }
             }
         }

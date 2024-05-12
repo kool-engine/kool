@@ -12,11 +12,17 @@ class SceneNodeModel(nodeData: SceneNodeData, var parent: NodeModel, val sceneMo
     override var drawNode: Node = Node(nodeData.name)
         private set
 
-    val transform = getOrPutComponent { TransformComponent(this, TransformComponentData(TransformData.IDENTITY)) }
+    val transform: TransformComponent
 
     private val nodeUpdateCb: (RenderPass.UpdateEvent) -> Unit = { ev -> onNodeUpdate.forEach { cb -> cb(ev) } }
 
     init {
+        createComponentsFromData(nodeData.components)
+
+        transform = getOrPutComponent {
+            TransformComponent(this, TransformComponentData(TransformData.IDENTITY))
+        }
+
         nameState.onChange { drawNode.name = it }
         drawNode.onUpdate += nodeUpdateCb
         transform.applyTransformTo(drawNode)
