@@ -9,7 +9,10 @@ import de.fabmax.kool.editor.util.sceneModel
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 
-abstract class ComponentEditor<T: EditorModelComponent>(var component: T ) : Composable {
+abstract class ComponentEditor<T: EditorModelComponent>() : Composable {
+    var components: List<T> = emptyList()
+    val component: T get() = components[0]
+
     val nodeId: NodeId get() = component.nodeModel.nodeId
     val nodeModel: NodeModel get() = component.nodeModel
     val sceneModel: SceneModel get() = nodeModel.sceneModel

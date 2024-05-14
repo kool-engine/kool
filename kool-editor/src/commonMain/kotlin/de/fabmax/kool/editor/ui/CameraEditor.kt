@@ -6,7 +6,7 @@ import de.fabmax.kool.editor.data.CameraTypeData
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
-class CameraEditor(component: CameraComponent) : ComponentEditor<CameraComponent>(component) {
+class CameraEditor : ComponentEditor<CameraComponent>() {
 
     private val currentCam: CameraTypeData get() = component.cameraState.value
     private val camTypeIndex: Int

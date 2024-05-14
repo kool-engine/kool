@@ -11,7 +11,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class MaterialEditor(component: MaterialComponent) : ComponentEditor<MaterialComponent>(component) {
+class MaterialEditor : ComponentEditor<MaterialComponent>() {
 
     private val material: MaterialData get() = component.materialState.value!!
 

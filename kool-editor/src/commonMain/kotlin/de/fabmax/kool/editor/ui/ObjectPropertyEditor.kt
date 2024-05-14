@@ -94,37 +94,38 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
     }
 
     private fun ColumnScope.componentEditors(objects: List<NodeModel>) {
-        val components = mutableMapOf<String, MutableList<EditorModelComponent>>()
-        for (obj in objects) {
-            for (comp in obj.components.use()) {
-                components.getOrPut(comp.componentType) { mutableListOf() } += comp
+        val primary = objects[0]
+        val componentTypes = buildSet {
+            primary.components.forEach { add(it.componentType) }
+            for (i in 1 until objects.size) {
+                retainAll(objects[i].components.map { it.componentType })
             }
         }
-        components.keys.removeAll { components[it]!!.size < objects.size }
 
-        components.values.forEach {
-            when (val component = it[0]) {
-                is CameraComponent -> componentEditor(component) { CameraEditor(component) }
-                is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
-                is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
-                is MeshComponent -> componentEditor(component) { MeshEditor(component) }
-                is ModelComponent -> componentEditor(component) { ModelEditor(component) }
-                is ScenePropertiesComponent -> componentEditor(component) { ScenePropertiesEditor(component) }
-                is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
-                is BehaviorComponent -> componentEditor(component) { BehaviorEditor(component) }
-                is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
-                is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
-                is TransformComponent -> componentEditor(component) { TransformEditor(component) }
-                is PhysicsWorldComponent -> componentEditor(component) { PhysicsWorldEditor(component) }
-                is RigidActorComponent -> componentEditor(component) { RigidActorEditor(component) }
+        for (type in componentTypes) {
+            val component = primary.components.first { it.componentType == type }
+            when (component) {
+                is CameraComponent -> componentEditor(objects) { CameraEditor() }
+                is DiscreteLightComponent -> componentEditor(objects) { LightEditor() }
+                is MaterialComponent -> componentEditor(objects) { MaterialEditor() }
+                is MeshComponent -> componentEditor(objects) { MeshEditor() }
+                is ModelComponent -> componentEditor(objects) { ModelEditor() }
+                is ScenePropertiesComponent -> componentEditor(objects) { ScenePropertiesEditor() }
+                is SceneBackgroundComponent -> componentEditor(objects) { SceneBackgroundEditor() }
+                is BehaviorComponent -> componentEditor(objects) { BehaviorEditor() }
+                is ShadowMapComponent -> componentEditor(objects) { ShadowMapEditor() }
+                is SsaoComponent -> componentEditor(objects) { SsaoEditor() }
+                is TransformComponent -> componentEditor(objects) { TransformEditor() }
+                is PhysicsWorldComponent -> componentEditor(objects) { PhysicsWorldEditor() }
+                is RigidActorComponent -> componentEditor(objects) { RigidActorEditor() }
             }
         }
     }
 
-    private inline fun <reified T: EditorModelComponent> UiScope.componentEditor(component: T, editorProvider: () -> ComponentEditor<T>) {
-        Box(width = Grow.Std, scopeName = "comp-${T::class.simpleName}") {
+    private inline fun <reified T: EditorModelComponent> UiScope.componentEditor(nodeModels: List<NodeModel>, editorProvider: () -> ComponentEditor<T>) {
+        Box(width = Grow.Std, scopeName = nodeModels[0].requireComponent<T>().componentType) {
             val editor = remember(editorProvider)
-            editor.component = component
+            editor.components = nodeModels.map { it.requireComponent() }
             editor()
         }
     }

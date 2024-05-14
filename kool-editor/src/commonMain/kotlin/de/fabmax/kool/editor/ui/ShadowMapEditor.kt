@@ -7,7 +7,7 @@ import de.fabmax.kool.editor.data.ShadowMapTypeData
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
-class ShadowMapEditor(component: ShadowMapComponent) : ComponentEditor<ShadowMapComponent>(component) {
+class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
     override fun UiScope.compose() = componentPanel("Shadow Map", IconMap.small.shadow, ::removeComponent) {
         Column(width = Grow.Std) {
             modifier

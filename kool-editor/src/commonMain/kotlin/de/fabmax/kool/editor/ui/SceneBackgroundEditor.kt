@@ -16,9 +16,7 @@ import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logW
 import kotlin.reflect.KClass
 
-class SceneBackgroundEditor(component: SceneBackgroundComponent) :
-    ComponentEditor<SceneBackgroundComponent>(component)
-{
+class SceneBackgroundEditor : ComponentEditor<SceneBackgroundComponent>() {
 
     private val editorSingleBgColor = mutableStateOf(MdColor.GREY tone 900)
 

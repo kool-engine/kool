@@ -181,6 +181,10 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
         return components.filterIsInstance<T>().firstOrNull()
     }
 
+    inline fun <reified T: Any> requireComponent(): T {
+        return components.filterIsInstance<T>().first()
+    }
+
     inline fun <reified T: Any> getComponents(): List<T> {
         return components.filterIsInstance<T>()
     }

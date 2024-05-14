@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 
-class ModelEditor(component: ModelComponent) : ComponentEditor<ModelComponent>(component) {
+class ModelEditor : ComponentEditor<ModelComponent>() {
 
     override fun UiScope.compose() = componentPanel(
         title = "Model",

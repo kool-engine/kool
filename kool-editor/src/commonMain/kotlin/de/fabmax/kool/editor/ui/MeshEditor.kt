@@ -12,7 +12,7 @@ import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
-class MeshEditor(component: MeshComponent) : ComponentEditor<MeshComponent>(component) {
+class MeshEditor : ComponentEditor<MeshComponent>() {
 
     override fun UiScope.compose() {
         // todo: support multiple primitives per mesh

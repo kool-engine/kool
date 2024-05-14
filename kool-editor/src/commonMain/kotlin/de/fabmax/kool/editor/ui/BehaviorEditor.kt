@@ -13,7 +13,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
-class BehaviorEditor(component: BehaviorComponent) : ComponentEditor<BehaviorComponent>(component) {
+class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
     private val behaviorName: String get() = camelCaseToWords(component.behaviorClassNameState.value)
 

@@ -13,7 +13,7 @@ import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.modules.ui2.*
 
-class RigidActorEditor(component: RigidActorComponent) : ComponentEditor<RigidActorComponent>(component) {
+class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
     override fun UiScope.compose() = componentPanel(
         title = "Rigid Actor",

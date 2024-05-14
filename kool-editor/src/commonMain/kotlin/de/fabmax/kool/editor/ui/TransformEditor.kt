@@ -13,7 +13,7 @@ import de.fabmax.kool.modules.ui2.*
 import kotlin.math.abs
 
 
-class TransformEditor(component: TransformComponent) : ComponentEditor<TransformComponent>(component) {
+class TransformEditor : ComponentEditor<TransformComponent>() {
 
     private val transformProperties = TransformProperties()
 
