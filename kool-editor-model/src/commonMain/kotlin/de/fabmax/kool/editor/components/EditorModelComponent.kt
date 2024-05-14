@@ -6,6 +6,9 @@ import kotlin.reflect.KClass
 
 abstract class EditorModelComponent(open val nodeModel: NodeModel) {
 
+    open val componentType: String
+        get() = this::class.simpleName!!
+
     private val _dependencies: MutableList<ComponentDependency> = mutableListOf()
     val dependencies: List<ComponentDependency>
         get() = _dependencies

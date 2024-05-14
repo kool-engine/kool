@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
+import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
@@ -15,94 +16,108 @@ import de.fabmax.kool.modules.ui2.*
 class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.properties, ui) {
 
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
-        val selObjs = KoolEditor.instance.selectionOverlay.selectionState.use()
-        val selectedObject = if (selObjs.size == 1) selObjs.first() else null
-        val title = when (selectedObject) {
-            is SceneModel -> "Scene Properties"
-            is SceneNodeModel -> "Object Properties"
-            null -> "Object Properties"
-            else -> "Object Properties <unknown type>"
+        val selObjs = KoolEditor.instance.selectionOverlay.selectionState.use().toMutableList()
+
+        if (selObjs.size > 1) {
+            selObjs.removeAll { it is SceneModel }
         }
+
+        val title = if (selObjs.size == 1 && selObjs[0] is SceneModel) "Scene Properties" else "Object Properties"
 
         Column(Grow.Std, Grow.Std) {
             editorTitleBar(windowDockable, icon, title)
-            objectProperties(selectedObject)
+            objectProperties(selObjs)
         }
     }
 
-    private fun UiScope.objectProperties(selectedObject: NodeModel?) = ScrollArea(
+    private fun UiScope.objectProperties(objects: List<NodeModel>) = ScrollArea(
         containerModifier = { it.backgroundColor(null) },
         isScrollableHorizontal = false
     ) {
         modifier.width(Grow.Std)
 
-        Column(Grow.Std, Grow.Std, scopeName = "node-${selectedObject?.nodeId}") {
-            Row(width = Grow.Std, height = sizes.baseSize) {
+        val scopeName = objects.joinToString("") { "${it.nodeId}" }
+        Column(Grow.Std, Grow.Std, scopeName = scopeName) {
+            objectNameOrCount(objects)
+            if (objects.isEmpty()) return@Column
+
+            componentEditors(objects)
+            addComponentSelector(objects)
+        }
+    }
+
+    private fun ColumnScope.objectNameOrCount(objects: List<NodeModel>) = Row(Grow.Std, sizes.baseSize) {
+        modifier.padding(horizontal = sizes.gap)
+
+        if (objects.size == 1) {
+            Text("Name:") {
                 modifier
-                    .padding(horizontal = sizes.gap)
+                    .alignY(AlignmentY.Center)
+                    .margin(end = sizes.largeGap)
+            }
 
-                if (selectedObject == null) {
-                    val n = KoolEditor.instance.selectionOverlay.selection.size
-                    val txt = if (n == 0) "Nothing selected" else "$n objects selected"
-                    Text(txt) {
-                        modifier
-                            .width(Grow.Std)
-                            .alignY(AlignmentY.Center)
-                            .textAlignX(AlignmentX.Center)
-                            .font(sizes.italicText)
-                    }
-                } else {
-                    Text("Name:") {
-                        modifier
-                            .alignY(AlignmentY.Center)
-                            .margin(end = sizes.largeGap)
-                    }
-
-                    var editName by remember(selectedObject.name)
-                    TextField(editName) {
-                        if (!isFocused.use()) {
-                            editName = selectedObject.name
-                        }
-
-                        defaultTextfieldStyle()
-                        modifier
-                            .hint("Object name")
-                            .width(Grow.Std)
-                            .alignY(AlignmentY.Center)
-                            .padding(vertical = sizes.smallGap)
-                            .onChange {
-                                editName = it
-                            }
-                            .onEnterPressed {
-                                RenameNodeAction(selectedObject.nodeId, it, selectedObject.name).apply()
-                            }
-                    }
+            var editName by remember(objects[0].name)
+            TextField(editName) {
+                if (!isFocused.use()) {
+                    editName = objects[0].name
                 }
-            }
 
-            if (selectedObject == null) {
-                return@Column
+                defaultTextfieldStyle()
+                modifier
+                    .hint("Object name")
+                    .width(Grow.Std)
+                    .alignY(AlignmentY.Center)
+                    .padding(vertical = sizes.smallGap)
+                    .onChange { editName = it }
+                    .onEnterPressed {
+                        RenameNodeAction(objects[0].nodeId, it, objects[0].name).apply()
+                        surface.unfocus(this)
+                    }
             }
-
-            for (component in selectedObject.components.use()) {
-                when (component) {
-                    is CameraComponent -> componentEditor(component) { CameraEditor(component) }
-                    is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
-                    is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
-                    is MeshComponent -> componentEditor(component) { MeshEditor(component) }
-                    is ModelComponent -> componentEditor(component) { ModelEditor(component) }
-                    is ScenePropertiesComponent -> componentEditor(component) { ScenePropertiesEditor(component) }
-                    is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
-                    is BehaviorComponent -> componentEditor(component) { BehaviorEditor(component) }
-                    is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
-                    is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
-                    is TransformComponent -> componentEditor(component) { TransformEditor(component) }
-                    is PhysicsWorldComponent -> componentEditor(component) { PhysicsWorldEditor(component) }
-                    is RigidActorComponent -> componentEditor(component) { RigidActorEditor(component) }
-                }
+        } else if (objects.isNotEmpty()) {
+            Text("${objects.size} objects selected") {
+                modifier
+                    .width(Grow.Std)
+                    .alignY(AlignmentY.Center)
+                    .textAlignX(AlignmentX.Center)
+                    .font(sizes.italicText)
             }
+        } else {
+            Text("Nothing selected") {
+                modifier
+                    .width(Grow.Std)
+                    .alignY(AlignmentY.Center)
+                    .textAlignX(AlignmentX.Center)
+                    .font(sizes.italicText)
+            }
+        }
+    }
 
-            addComponentSelector(selectedObject)
+    private fun ColumnScope.componentEditors(objects: List<NodeModel>) {
+        val components = mutableMapOf<String, MutableList<EditorModelComponent>>()
+        for (obj in objects) {
+            for (comp in obj.components.use()) {
+                components.getOrPut(comp.componentType) { mutableListOf() } += comp
+            }
+        }
+        components.keys.removeAll { components[it]!!.size < objects.size }
+
+        components.values.forEach {
+            when (val component = it[0]) {
+                is CameraComponent -> componentEditor(component) { CameraEditor(component) }
+                is DiscreteLightComponent -> componentEditor(component) { LightEditor(component) }
+                is MaterialComponent -> componentEditor(component) { MaterialEditor(component) }
+                is MeshComponent -> componentEditor(component) { MeshEditor(component) }
+                is ModelComponent -> componentEditor(component) { ModelEditor(component) }
+                is ScenePropertiesComponent -> componentEditor(component) { ScenePropertiesEditor(component) }
+                is SceneBackgroundComponent -> componentEditor(component) { SceneBackgroundEditor(component) }
+                is BehaviorComponent -> componentEditor(component) { BehaviorEditor(component) }
+                is ShadowMapComponent -> componentEditor(component) { ShadowMapEditor(component) }
+                is SsaoComponent -> componentEditor(component) { SsaoEditor(component) }
+                is TransformComponent -> componentEditor(component) { TransformEditor(component) }
+                is PhysicsWorldComponent -> componentEditor(component) { PhysicsWorldEditor(component) }
+                is RigidActorComponent -> componentEditor(component) { RigidActorEditor(component) }
+            }
         }
     }
 
@@ -114,8 +129,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         }
     }
 
-    private fun UiScope.addComponentSelector(nodeModel: NodeModel) {
-        val popup = remember { ContextPopupMenu<NodeModel>("add-component") }
+    private fun UiScope.addComponentSelector(objects: List<NodeModel>) {
+        val popup = remember { ContextPopupMenu<List<NodeModel>>("add-component") }
         var popupPos by remember(Vec2f.ZERO)
 
         val button = iconTextButton(
@@ -125,7 +140,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             margin = sizes.gap
         ) {
             if (!popup.isVisible.use()) {
-                popup.show(popupPos, makeAddComponentMenu(nodeModel), nodeModel)
+                popup.show(popupPos, makeAddComponentMenu(objects), objects)
             } else {
                 popup.hide()
             }
@@ -135,10 +150,14 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         popup()
     }
 
-    private fun makeAddComponentMenu(node: NodeModel): SubMenuItem<NodeModel> = SubMenuItem {
+    private fun makeAddComponentMenu(objects: List<NodeModel>): SubMenuItem<List<NodeModel>> = SubMenuItem {
         addComponentOptions
-            .filter { it.accept(node) }
-            .forEach { it.addMenuItems(node, this) }
+            .filter { option ->
+                objects.any { !option.hasComponent(it) } && objects.all { option.accept(it) }
+            }
+            .forEach {
+                it.addMenuItems(objects, this)
+            }
     }
 
     companion object {
@@ -157,59 +176,76 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
     }
 
     private sealed class ComponentAdder<T: EditorModelComponent>(val name: String) {
+        abstract fun hasComponent(nodeModel: NodeModel): Boolean
         abstract fun accept(nodeModel: NodeModel): Boolean
 
-        open fun addMenuItems(target: NodeModel, parentMenu: SubMenuItem<NodeModel>) {
+        open fun addMenuItems(targetObjs: List<NodeModel>, parentMenu: SubMenuItem<List<NodeModel>>) {
             parentMenu.item(name) { addComponent(it) }
         }
+
         open fun createComponent(target: NodeModel): T? = null
 
-        fun addComponent(target: NodeModel) {
-            createComponent(target)?.let { AddComponentAction(target.nodeId, it).apply() }
+        fun addComponent(targetObjs: List<NodeModel>) {
+            val addActions = targetObjs
+                .filter { target ->
+                    !hasComponent(target)
+                }
+                .mapNotNull { target ->
+                    createComponent(target)?.let { AddComponentAction(target.nodeId, it) }
+                }
+            FusedAction(addActions).apply()
         }
 
         data object AddSsaoComponent : ComponentAdder<SsaoComponent>("Screen-space Ambient Occlusion") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<SsaoComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneModel
             override fun createComponent(target: NodeModel): SsaoComponent = SsaoComponent(target as SceneModel)
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel is SceneModel && !nodeModel.hasComponent<SsaoComponent>()
         }
 
         data object AddCameraComponent : ComponentAdder<CameraComponent>("Camera") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<ContentComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneModel
             override fun createComponent(target: NodeModel): CameraComponent = CameraComponent(target as SceneNodeModel)
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
         }
 
 
         data object AddLightComponent : ComponentAdder<DiscreteLightComponent>("Light") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<ContentComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneNodeModel
             override fun createComponent(target: NodeModel): DiscreteLightComponent = DiscreteLightComponent(target as SceneNodeModel)
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
         }
 
         data object AddShadowMapComponent : ComponentAdder<ShadowMapComponent>("Shadow") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<ShadowMapComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel.hasComponent<DiscreteLightComponent>()
             override fun createComponent(target: NodeModel): ShadowMapComponent = ShadowMapComponent(target as SceneNodeModel)
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel.hasComponent<DiscreteLightComponent>() && !nodeModel.hasComponent<ShadowMapComponent>()
         }
 
         data object AddMeshComponent : ComponentAdder<MeshComponent>("Mesh") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<ContentComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneNodeModel
             override fun createComponent(target: NodeModel): MeshComponent = MeshComponent(target as SceneNodeModel)
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
         }
 
         data object AddModelComponent : ComponentAdder<ModelComponent>("Model") {
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel is SceneNodeModel && !nodeModel.hasComponent<ContentComponent>()
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<ContentComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneNodeModel
 
-            override fun addMenuItems(target: NodeModel, parentMenu: SubMenuItem<NodeModel>) {
+            override fun addMenuItems(targetObjs: List<NodeModel>, parentMenu: SubMenuItem<List<NodeModel>>) {
                 val models = KoolEditor.instance.availableAssets.modelAssets
                 if (models.isNotEmpty()) {
                     parentMenu.subMenu(name) {
                         models.forEach { model ->
-                            item(model.name) {
-                                AddComponentAction(it.nodeId, ModelComponent(target as SceneNodeModel, ModelComponentData(model.path))).apply()
+                            item(model.name) { objs ->
+                                val addActions = objs
+                                    .filter { target ->
+                                        !hasComponent(target)
+                                    }
+                                    .map { target ->
+                                        val modelComp = ModelComponent(target as SceneNodeModel, ModelComponentData(model.path))
+                                        AddComponentAction(target.nodeId, modelComp)
+                                    }
+                                FusedAction(addActions).apply()
                             }
                         }
                     }
@@ -218,33 +254,39 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         }
 
         data object AddMaterialComponent : ComponentAdder<MaterialComponent>("Material") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<MaterialComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>()
             override fun createComponent(target: NodeModel): MaterialComponent = MaterialComponent(target as SceneNodeModel)
-            override fun accept(nodeModel: NodeModel) = !nodeModel.hasComponent<MaterialComponent>()
-                    && (nodeModel.hasComponent<MeshComponent>() || nodeModel.hasComponent<ModelComponent>())
         }
 
         data object AddPhysicsWorldComponent : ComponentAdder<PhysicsWorldComponent>("Physics World") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<PhysicsWorldComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneModel
             override fun createComponent(target: NodeModel): PhysicsWorldComponent = PhysicsWorldComponent(target as SceneModel)
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel is SceneModel && !nodeModel.hasComponent<PhysicsWorldComponent>()
         }
 
         data object AddRigidBodyComponent : ComponentAdder<RigidActorComponent>("Rigid Actor") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<RigidActorComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneNodeModel
             override fun createComponent(target: NodeModel): RigidActorComponent = RigidActorComponent(target as SceneNodeModel)
-            override fun accept(nodeModel: NodeModel) =
-                nodeModel is SceneNodeModel && !nodeModel.hasComponent<RigidActorComponent>()
         }
 
         data object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {
+            override fun hasComponent(nodeModel: NodeModel) = false
             override fun accept(nodeModel: NodeModel) = true
 
-            override fun addMenuItems(target: NodeModel, parentMenu: SubMenuItem<NodeModel>) {
-                val scriptClasses = KoolEditor.instance.loadedApp.value?.behaviorClasses?.values ?: emptyList()
-                if (scriptClasses.isNotEmpty()) {
+            override fun addMenuItems(targetObjs: List<NodeModel>, parentMenu: SubMenuItem<List<NodeModel>>) {
+                val behaviorClasses = KoolEditor.instance.loadedApp.value?.behaviorClasses?.values ?: emptyList()
+                if (behaviorClasses.isNotEmpty()) {
                     parentMenu.subMenu(name) {
-                        scriptClasses.forEach { script ->
-                            item(script.prettyName) {
-                                AddComponentAction(it.nodeId, BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))).apply()
+                        behaviorClasses.forEach { script ->
+                            item(script.prettyName) { objs ->
+                                val addActions = objs.filter { true }
+                                    .map { target ->
+                                        val behaviorComp = BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))
+                                        AddComponentAction(target.nodeId, behaviorComp)
+                                    }
+                                FusedAction(addActions).apply()
                             }
                         }
                     }
