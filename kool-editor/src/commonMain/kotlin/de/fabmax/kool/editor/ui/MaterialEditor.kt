@@ -20,7 +20,6 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
         val allTheSameMaterial = components.all {
             it.componentData.materialId == components[0].componentData.materialId
         }
-
         componentPanel(
             title = "Material",
             imageIcon = IconMap.small.palette,

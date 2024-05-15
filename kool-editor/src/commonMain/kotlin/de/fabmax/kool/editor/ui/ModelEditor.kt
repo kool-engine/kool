@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetModelAnimationAction
 import de.fabmax.kool.editor.actions.SetModelPathAction
 import de.fabmax.kool.editor.actions.SetModelSceneAction
@@ -11,59 +13,69 @@ import de.fabmax.kool.util.MdColor
 
 class ModelEditor : ComponentEditor<ModelComponent>() {
 
-    override fun UiScope.compose() = componentPanel(
-        title = "Model",
-        imageIcon = IconMap.small.tree,
-        onRemove = ::removeComponent,
-        titleWidth = sizes.baseSize * 2.3f,
-        headerContent = {
-            val items = KoolEditor.instance.availableAssets.modelAssets.use()
-            val selModel = component.modelPathState.use()
-            val selIndex = items.indexOfFirst { it.path == selModel }
-            ComboBox {
-                defaultComboBoxStyle()
-                modifier
-                    .margin(horizontal = sizes.gap)
-                    .width(Grow.Std)
-                    .alignY(AlignmentY.Center)
-                    .items(items)
-                    .selectedIndex(selIndex)
-                    .onItemSelected {
-                        SetModelPathAction(nodeId, items[it].path).apply()
-                    }
-
-                val handler = remember { ModelDndHandler(uiNode) }
-                KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
-
-                if (handler.isDrag.use()) {
-                    val w = if (handler.isHovered.use()) 0.5f else 0.3f
+    override fun UiScope.compose() {
+        val allTheSameModel = components.all {
+            it.componentData.modelPath == components[0].componentData.modelPath
+        }
+        componentPanel(
+            title = "Model",
+            imageIcon = IconMap.small.tree,
+            onRemove = ::removeComponent,
+            titleWidth = sizes.baseSize * 2.3f,
+            headerContent = {
+                val (items, idx) = makeModelItemsAndIndex(allTheSameModel)
+                ComboBox {
+                    defaultComboBoxStyle()
                     modifier
-                        .border(RoundRectBorder(MdColor.GREEN, sizes.smallGap, sizes.borderWidth))
-                        .colors(
-                            textBackgroundColor = colors.componentBg.mix(MdColor.GREEN, w),
-                            textBackgroundHoverColor = colors.componentBgHovered.mix(MdColor.GREEN, w),
-                            expanderColor = colors.elevatedComponentBg.mix(MdColor.GREEN, w),
-                            expanderHoverColor = colors.elevatedComponentBgHovered.mix(MdColor.GREEN, w)
-                        )
+                        .margin(horizontal = sizes.gap)
+                        .width(Grow.Std)
+                        .alignY(AlignmentY.Center)
+                        .items(items)
+                        .selectedIndex(idx)
+                        .onItemSelected { index ->
+                            if (allTheSameModel || index > 0) {
+                                val actions = components.mapNotNull { comp ->
+                                    items[index].model?.let { SetModelPathAction(comp.nodeModel.nodeId, it.path) }
+                                }
+                                FusedAction(actions).apply()
+                            }
+                        }
+
+                    val handler = remember { ModelDndHandler(uiNode) }
+                    KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
+
+                    if (handler.isDrag.use()) {
+                        val w = if (handler.isHovered.use()) 0.5f else 0.3f
+                        modifier
+                            .border(RoundRectBorder(MdColor.GREEN, sizes.smallGap, sizes.borderWidth))
+                            .colors(
+                                textBackgroundColor = colors.componentBg.mix(MdColor.GREEN, w),
+                                textBackgroundHoverColor = colors.componentBgHovered.mix(MdColor.GREEN, w),
+                                expanderColor = colors.elevatedComponentBg.mix(MdColor.GREEN, w),
+                                expanderHoverColor = colors.elevatedComponentBgHovered.mix(MdColor.GREEN, w)
+                            )
+                    }
                 }
             }
-        }
-    ) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.gap)
+        ) {
+            if (allTheSameModel) {
+                Column(width = Grow.Std) {
+                    modifier
+                        .padding(horizontal = sizes.gap)
+                        .margin(bottom = sizes.gap)
 
-            val gltf = component.gltfState.use()
-            if (gltf != null) {
-                val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
-                labeledCombobox("Scene:", scenes, component.sceneIndexState.use()) {
-                    SetModelSceneAction(nodeId, it.index).apply()
-                }
+                    val gltf = component.gltfState.use()
+                    if (gltf != null) {
+                        val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
+                        labeledCombobox("Model scene:", scenes, component.sceneIndexState.use()) {
+                            SetModelSceneAction(nodeId, it.index).apply()
+                        }
 
-                val animations = gltf.animationOptions()
-                labeledCombobox("Animation:", animations, component.animationIndexState.use() + 1) {
-                    SetModelAnimationAction(nodeId, it.index).apply()
+                        val animations = gltf.animationOptions()
+                        labeledCombobox("Animation:", animations, component.animationIndexState.use() + 1) {
+                            SetModelAnimationAction(nodeId, it.index).apply()
+                        }
+                    }
                 }
             }
         }
@@ -73,6 +85,27 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
         return listOf(NoneAnimation) + animations.mapIndexed { i, animation ->
             AnimationOption(animation.name ?: "Animation $i", i)
         }
+    }
+
+    private fun UiScope.makeModelItemsAndIndex(allTheSame: Boolean): Pair<List<ModelItem>, Int> {
+        val items = mutableListOf<ModelItem>()
+
+        if (!allTheSame) {
+            items.add(0, ModelItem("", null))
+        }
+
+        var index = 0
+        KoolEditor.instance.availableAssets.modelAssets.use().forEachIndexed { i, model ->
+            if (allTheSame && components[0].componentData.modelPath == model.path) {
+                index = i
+            }
+            items += ModelItem(model.name, model)
+        }
+        return items to index
+    }
+
+    private class ModelItem(val itemText: String, val model: AssetItem?) {
+        override fun toString(): String = itemText
     }
 
     private data class SceneOption(val name: String, val index: Int) {
