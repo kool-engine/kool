@@ -114,7 +114,7 @@ fun UiScope.doubleTextField(
     editHandler: ValueEditHandler<Double>,
     textFieldModifier: ((TextFieldModifier) -> Unit)? = null
 ) = TextField {
-    var text by remember(value.toString(precision))
+    var text by remember(if (value.isFinite()) value.toString(precision) else "")
     var wasFocuesd by remember(false)
     var dragStartValue by remember(value)
 
@@ -123,7 +123,7 @@ fun UiScope.doubleTextField(
             // focus lost, apply edited value
             text.parseDouble(minValue, maxValue)?.let { editHandler.onEditEnd(dragStartValue, it) }
         } else {
-            text = value.toString(precision)
+            text = if (value.isFinite()) value.toString(precision) else ""
         }
     } else if (!wasFocuesd) {
         // gained focus

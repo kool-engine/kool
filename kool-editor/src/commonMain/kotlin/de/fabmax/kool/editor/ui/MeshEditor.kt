@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.CachedAppAssets
+import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetMeshShapeAction
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
@@ -10,13 +11,14 @@ import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.modules.ui2.*
-import kotlin.reflect.KClass
+import kotlin.math.roundToInt
 
 class MeshEditor : ComponentEditor<MeshComponent>() {
 
     override fun UiScope.compose() {
-        // todo: support multiple primitives per mesh
-        val shape = component.shapesState.use().getOrNull(0) ?: return
+        val componentShapes = components.map { it.shapesState.use().first().shapeOption }
+        val isAllTheSameShape = componentShapes.all { it == componentShapes[0] }
+        val (shapeItems, shapeIdx) = shapeOptions.getOptionsAndIndex(componentShapes)
 
         componentPanel(
             title = "Mesh",
@@ -25,247 +27,382 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             titleWidth = sizes.baseSize * 2.3f,
 
             headerContent = {
-                var selectedIndex by remember(0)
-                selectedIndex = ShapeOptions.indexOfShape(shape)
-
                 ComboBox {
                     defaultComboBoxStyle()
                     modifier
                         .margin(horizontal = sizes.gap)
                         .width(Grow.Std)
                         .alignY(AlignmentY.Center)
-                        .items(ShapeOptions.items)
-                        .selectedIndex(selectedIndex)
-                        .onItemSelected {
-                            SetMeshShapeAction(component, shape, ShapeOptions.items[it].factory()).apply()
+                        .items(shapeItems)
+                        .selectedIndex(shapeIdx)
+                        .onItemSelected { index ->
+                            shapeItems[index].item?.let { applyNewShape(it) }
                         }
                 }
             }
         ) {
-            Column(width = Grow.Std) {
-                modifier
-                    .padding(horizontal = sizes.gap)
-                    .margin(bottom = sizes.gap)
-
-                when (shape) {
-                    is ShapeData.Box -> boxProperties(shape)
-                    is ShapeData.Rect -> rectProperties(shape)
-                    is ShapeData.Sphere -> icoSphereProperties(shape)
-                    is ShapeData.Cylinder -> cylinderProperties(shape)
-                    is ShapeData.Capsule -> capsuleProperties(shape)
-                    is ShapeData.Heightmap -> heightmapProperties(shape)
-                    is ShapeData.Empty -> { }
-                }
-
-                if (shape.hasUvs) {
-                    val shapeI = component.shapesState.indexOf(shape)
-                    labeledXyRow(
-                        label = "Texture scale:",
-                        xy = shape.common.uvScale.toVec2d(),
-                        dragChangeSpeed = DragChangeRates.SIZE_VEC2,
-                        editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                            // make sure up-to-date shape is used as base for SetShapeAction
-                            val baseShape = component.shapesState[shapeI]
-                            val undoShape = baseShape.copyShape(shape.common.copy(uvScale = Vec2Data(undoValue)))
-                            val applyShape = baseShape.copyShape(shape.common.copy(uvScale = Vec2Data(applyValue)))
-                            SetMeshShapeAction(component, undoShape, applyShape, shapeI)
-                        }
-                    )
-                }
+            if (isAllTheSameShape) {
+                editorBody()
             }
         }
     }
 
-    private fun UiScope.boxProperties(box: ShapeData.Box) = Column(
+    private fun applyNewShape(shape: ShapeOption) {
+        val newShapes = when (shape) {
+            ShapeOption.Box -> listOf(ShapeData.defaultBox)
+            ShapeOption.Rect -> listOf(ShapeData.defaultRect)
+            ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
+            ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
+            ShapeOption.Capsule -> listOf(ShapeData.defaultCylinder)
+            ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
+            ShapeOption.Empty -> listOf(ShapeData.defaultEmpty)
+        }
+        val actions = components
+            .filter { it.shapesState != newShapes }
+            .map { SetMeshShapeAction(it, it.shapesState.first(), newShapes[0]) }
+        if (actions.isNotEmpty()) {
+            FusedAction(actions).apply()
+        }
+    }
+
+    private fun ColumnScope.editorBody() {
+        Column(width = Grow.Std) {
+            modifier
+                .padding(horizontal = sizes.gap)
+                .margin(bottom = sizes.gap)
+
+            val shape = components[0].shapesState.use()[0]
+            when (shape) {
+                is ShapeData.Box -> boxProperties()
+                is ShapeData.Rect -> rectProperties()
+                is ShapeData.Sphere -> sphereProperties()
+                is ShapeData.Cylinder -> cylinderProperties()
+                is ShapeData.Capsule -> capsuleProperties()
+                is ShapeData.Heightmap -> heightmapProperties()
+                is ShapeData.Empty -> { }
+            }
+
+            if (shape.hasUvs) {
+                labeledXyRow(
+                    label = "Texture scale:",
+                    xy = condenseVec2(components.map { it.shapesState[0].common.uvScale.toVec2d() }),
+                    dragChangeSpeed = DragChangeRates.SIZE_VEC2,
+                    editHandler = ActionValueEditHandler { undo, apply ->
+                        val shapes = components.map { it.shapesState[0] }
+                        val actions = components.mapIndexed { i, component ->
+                            val uv = shapes[i].common.uvScale.toVec2d()
+                            val mergedUndo = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(undo, uv))))
+                            val mergedApply = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(apply, uv))))
+                            SetMeshShapeAction(component, mergedUndo, mergedApply)
+                        }
+                        FusedAction(actions)
+                    }
+                )
+            }
+        }
+    }
+
+    private inline fun <reified T: ShapeData> getShapes(): List<T> {
+        return components.map { (it.shapesState[0] as T) }
+    }
+
+    private fun UiScope.boxProperties() = Column(
         width = Grow.Std,
         scopeName = "boxProperties"
     ) {
-        val shapeI = component.shapesState.indexOf(box)
         labeledXyzRow(
             label = "Size:",
-            xyz = box.size.toVec3d(),
+            xyz = condenseVec3(getShapes<ShapeData.Box>().map { it.size.toVec3d() }),
             dragChangeSpeed = DragChangeRates.SIZE_VEC3,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, box.copy(size = Vec3Data(undo)), box.copy(size = Vec3Data(apply)), shapeI)
+                val boxes = getShapes<ShapeData.Box>()
+                val actions = components.mapIndexed { i, component ->
+                    val size = boxes[i].size.toVec3d()
+                    val mergedUndo = Vec3Data(mergeVec3(undo, size))
+                    val mergedApply = Vec3Data(mergeVec3(apply, size))
+                    SetMeshShapeAction(component, boxes[i].copy(size = mergedUndo), boxes[i].copy(size = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
     }
 
-    private fun UiScope.rectProperties(rect: ShapeData.Rect) = Column(
+    private fun UiScope.rectProperties() = Column(
         width = Grow.Std,
         scopeName = "rectProperties"
     ) {
-        val shapeI = component.shapesState.indexOf(rect)
         labeledXyRow(
             label = "Size:",
-            xy = rect.size.toVec2d(),
+            xy = condenseVec2(getShapes<ShapeData.Rect>().map { it.size.toVec2d() }),
             dragChangeSpeed = DragChangeRates.SIZE_VEC2,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, rect.copy(size = Vec2Data(undo)), rect.copy(size = Vec2Data(apply)), shapeI)
+                val rects = getShapes<ShapeData.Rect>()
+                val actions = components.mapIndexed { i, component ->
+                    val size = rects[i].size.toVec2d()
+                    val mergedUndo = Vec2Data(mergeVec2(undo, size))
+                    val mergedApply = Vec2Data(mergeVec2(apply, size))
+                    SetMeshShapeAction(component, rects[i].copy(size = mergedUndo), rects[i].copy(size = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
     }
 
-    private fun UiScope.icoSphereProperties(sphere: ShapeData.Sphere) = Column(
+    private fun UiScope.sphereProperties() = Column(
         width = Grow.Std,
-        scopeName = "icoSphereProperties"
+        scopeName = "sphereProperties"
     ) {
-        val shapeI = component.shapesState.indexOf(sphere)
+        val spheres = getShapes<ShapeData.Sphere>()
         labeledDoubleTextField(
             label = "Radius:",
-            value = sphere.radius,
+            value = condenseDouble(spheres.map { it.radius }),
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, sphere.copy(radius = undo), sphere.copy(radius = apply), shapeI)
+                val editSpheres = getShapes<ShapeData.Sphere>()
+                val actions = components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, editSpheres[i].radius)
+                    val mergedApply = mergeDouble(apply, editSpheres[i].radius)
+                    SetMeshShapeAction(component, editSpheres[i].copy(radius = mergedUndo), editSpheres[i].copy(radius = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
-        val isIco = sphere.sphereType == "ico"
+        val isIco = spheres.all { it.sphereType == "ico" }
         labeledCheckbox("Generate as ico-sphere", isIco) { setIco ->
             val newType = if (setIco) "ico" else "uv"
             val newSteps = if (setIco) 2 else 20
-            SetMeshShapeAction(component, sphere, sphere.copy(steps = newSteps, sphereType = newType), shapeI).apply()
+            val editSpheres = getShapes<ShapeData.Sphere>()
+            val actions = components.mapIndexed { i, component ->
+                SetMeshShapeAction(component, editSpheres[i], editSpheres[i].copy(steps = newSteps, sphereType = newType))
+            }
+            FusedAction(actions).apply()
         }
         if (isIco) {
-            labeledIntTextField(
+            labeledDoubleTextField(
                 label = "Sub-divisions:",
-                value = sphere.steps,
+                value = condenseDouble(spheres.map { it.steps.toDouble() }),
+                precision = 0,
                 dragChangeSpeed = 0.02,
-                minValue = 0,
-                maxValue = 7,
+                minValue = 0.0,
+                maxValue = 7.0,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetMeshShapeAction(component, sphere.copy(steps = undo), sphere.copy(steps = apply), shapeI)
+                    val editSpheres = getShapes<ShapeData.Sphere>()
+                    val actions = components.mapIndexed { i, component ->
+                        val mergedUndo = mergeDouble(undo, editSpheres[i].steps.toDouble()).roundToInt()
+                        val mergedApply = mergeDouble(apply, editSpheres[i].steps.toDouble()).roundToInt()
+                        SetMeshShapeAction(component, editSpheres[i].copy(steps = mergedUndo), editSpheres[i].copy(steps = mergedApply))
+                    }
+                    FusedAction(actions)
                 }
             )
         } else {
-            labeledIntTextField(
+            labeledDoubleTextField(
                 label = "Steps:",
-                value = sphere.steps,
+                value = condenseDouble(spheres.map { it.steps.toDouble() }),
+                precision = 0,
                 dragChangeSpeed = 0.1,
-                minValue = 3,
-                maxValue = 100,
+                minValue = 3.0,
+                maxValue = 100.0,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetMeshShapeAction(component, sphere.copy(steps = undo), sphere.copy(steps = apply), shapeI)
+                    val editSpheres = getShapes<ShapeData.Sphere>()
+                    val actions = components.mapIndexed { i, component ->
+                        val mergedUndo = mergeDouble(undo, editSpheres[i].steps.toDouble()).roundToInt()
+                        val mergedApply = mergeDouble(apply, editSpheres[i].steps.toDouble()).roundToInt()
+                        SetMeshShapeAction(component, editSpheres[i].copy(steps = mergedUndo), editSpheres[i].copy(steps = mergedApply))
+                    }
+                    FusedAction(actions)
                 }
             )
         }
     }
 
-    private fun UiScope.cylinderProperties(cylinder: ShapeData.Cylinder) = Column(
+    private fun UiScope.cylinderProperties() = Column(
         width = Grow.Std,
         scopeName = "cylinderProperties"
     ) {
-        val shapeI = component.shapesState.indexOf(cylinder)
-
-        var isUniRadius by remember(cylinder.topRadius == cylinder.bottomRadius)
+        val cylinders = getShapes<ShapeData.Cylinder>()
+        var isUniRadius by remember(cylinders.all { it.topRadius == it.bottomRadius })
         labeledCheckbox("Uniform radius:", isUniRadius) {
             isUniRadius = it
-            if (isUniRadius && cylinder.topRadius != cylinder.bottomRadius) {
-                SetMeshShapeAction(component, cylinder, cylinder.copy(topRadius = cylinder.bottomRadius)).apply()
+            if (isUniRadius) {
+                val editCyls = getShapes<ShapeData.Cylinder>()
+                val actions = components.mapIndexed { i, component ->
+                    SetMeshShapeAction(component, editCyls[i], editCyls[i].copy(topRadius = editCyls[i].bottomRadius))
+                }
+                FusedAction(actions).apply()
             }
         }
         if (isUniRadius) {
             labeledDoubleTextField(
                 label = "Radius:",
-                value = cylinder.bottomRadius,
+                value = condenseDouble(cylinders.map { it.bottomRadius }),
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetMeshShapeAction(component, cylinder.copy(bottomRadius = undo, topRadius = undo), cylinder.copy(bottomRadius = apply, topRadius = apply), shapeI)
+                    val editCyls = getShapes<ShapeData.Cylinder>()
+                    val actions = components.mapIndexed { i, component ->
+                        val mergedUndo = mergeDouble(undo, editCyls[i].bottomRadius)
+                        val mergedApply = mergeDouble(apply, editCyls[i].bottomRadius)
+                        SetMeshShapeAction(
+                            component,
+                            editCyls[i].copy(bottomRadius = mergedUndo, topRadius = mergedUndo),
+                            editCyls[i].copy(bottomRadius = mergedApply, topRadius = mergedApply)
+                        )
+                    }
+                    FusedAction(actions)
                 }
             )
         } else {
             labeledDoubleTextField(
                 label = "Top-radius:",
-                value = cylinder.topRadius,
+                value = condenseDouble(cylinders.map { it.topRadius }),
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetMeshShapeAction(component, cylinder.copy(topRadius = undo), cylinder.copy(topRadius = apply), shapeI)
+                    val editCyls = getShapes<ShapeData.Cylinder>()
+                    val actions = components.mapIndexed { i, component ->
+                        val mergedUndo = mergeDouble(undo, editCyls[i].topRadius)
+                        val mergedApply = mergeDouble(apply, editCyls[i].topRadius)
+                        SetMeshShapeAction(component, editCyls[i].copy(topRadius = mergedUndo), editCyls[i].copy(topRadius = mergedApply))
+                    }
+                    FusedAction(actions)
                 }
             )
             labeledDoubleTextField(
                 label = "Bottom-radius:",
-                value = cylinder.bottomRadius,
+                value = condenseDouble(cylinders.map { it.bottomRadius }),
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
-                    SetMeshShapeAction(component, cylinder.copy(bottomRadius = undo), cylinder.copy(bottomRadius = apply), shapeI)
+                    val editCyls = getShapes<ShapeData.Cylinder>()
+                    val actions = components.mapIndexed { i, component ->
+                        val mergedUndo = mergeDouble(undo, editCyls[i].bottomRadius)
+                        val mergedApply = mergeDouble(apply, editCyls[i].bottomRadius)
+                        SetMeshShapeAction(component, editCyls[i].copy(bottomRadius = mergedUndo), editCyls[i].copy(bottomRadius = mergedApply))
+                    }
+                    FusedAction(actions)
                 }
             )
         }
         labeledDoubleTextField(
             label = "Length:",
-            value = cylinder.length,
+            value = condenseDouble(cylinders.map { it.length }),
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, cylinder.copy(length = undo), cylinder.copy(length = apply), shapeI)
+                val editCyls = getShapes<ShapeData.Cylinder>()
+                val actions = components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, editCyls[i].length)
+                    val mergedApply = mergeDouble(apply, editCyls[i].length)
+                    SetMeshShapeAction(component, editCyls[i].copy(length = mergedUndo), editCyls[i].copy(length = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
-        labeledIntTextField(
+        labeledDoubleTextField(
             label = "Steps:",
-            value = cylinder.steps,
+            value = condenseDouble(cylinders.map { it.steps.toDouble() }),
+            precision = 0,
             dragChangeSpeed = 0.1,
-            minValue = 3,
-            maxValue = 100,
+            minValue = 3.0,
+            maxValue = 100.0,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, cylinder.copy(steps = undo), cylinder.copy(steps = apply), shapeI)
+                val editCyls = getShapes<ShapeData.Cylinder>()
+                val actions = components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, editCyls[i].steps.toDouble()).roundToInt()
+                    val mergedApply = mergeDouble(apply, editCyls[i].steps.toDouble()).roundToInt()
+                    SetMeshShapeAction(component, editCyls[i].copy(steps = mergedUndo), editCyls[i].copy(steps = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
     }
 
-    private fun UiScope.capsuleProperties(capsule: ShapeData.Capsule) = Column(
+    private fun UiScope.capsuleProperties() = Column(
         width = Grow.Std,
         scopeName = "capsuleProperties"
     ) {
-        val shapeI = component.shapesState.indexOf(capsule)
+        val capsules = getShapes<ShapeData.Capsule>()
         labeledDoubleTextField(
             label = "Radius:",
-            value = capsule.radius,
+            value = condenseDouble(capsules.map { it.radius }),
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, capsule.copy(radius = undo), capsule.copy(radius = apply), shapeI)
+                val editCaps = getShapes<ShapeData.Capsule>()
+                val actions = components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, editCaps[i].radius)
+                    val mergedApply = mergeDouble(apply, editCaps[i].radius)
+                    SetMeshShapeAction(component, editCaps[i].copy(radius = mergedUndo), editCaps[i].copy(radius = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
         labeledDoubleTextField(
             label = "Length:",
-            value = capsule.length,
+            value = condenseDouble(capsules.map { it.length }),
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, capsule.copy(length = undo), capsule.copy(length = apply), shapeI)
+                val editCaps = getShapes<ShapeData.Capsule>()
+                val actions = components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, editCaps[i].length)
+                    val mergedApply = mergeDouble(apply, editCaps[i].length)
+                    SetMeshShapeAction(component, editCaps[i].copy(length = mergedUndo), editCaps[i].copy(length = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
-        labeledIntTextField(
+        labeledDoubleTextField(
             label = "Steps:",
-            value = capsule.steps,
+            value = condenseDouble(capsules.map { it.steps.toDouble() }),
+            precision = 0,
             dragChangeSpeed = 0.1,
-            minValue = 3,
-            maxValue = 100,
+            minValue = 3.0,
+            maxValue = 100.0,
             editHandler = ActionValueEditHandler { undo, apply ->
-                SetMeshShapeAction(component, capsule.copy(steps = undo), capsule.copy(steps = apply), shapeI)
+                val editCaps = getShapes<ShapeData.Capsule>()
+                val actions = components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, editCaps[i].steps.toDouble()).roundToInt()
+                    val mergedApply = mergeDouble(apply, editCaps[i].steps.toDouble()).roundToInt()
+                    SetMeshShapeAction(component, editCaps[i].copy(steps = mergedUndo), editCaps[i].copy(steps = mergedApply))
+                }
+                FusedAction(actions)
             }
         )
     }
 
-    private fun UiScope.heightmapProperties(shape: ShapeData.Heightmap) = Column(
+    private fun UiScope.heightmapProperties() = Column(
         width = Grow.Std,
         scopeName = "heightmapProperties"
     ) {
-        val shapeI = component.shapesState.indexOf(shape)
-        heightmapSelector(shape.mapPath, true) {
-            SetMeshShapeAction(component, shape, shape.copy(mapPath = it?.path ?: ""), shapeI).apply()
+        val heightmaps = getShapes<ShapeData.Heightmap>()
+        val mapPath = if (heightmaps.all { it.mapPath == heightmaps[0].mapPath }) heightmaps[0].mapPath else ""
+        heightmapSelector(mapPath, true) {
+            val editMaps = getShapes<ShapeData.Heightmap>()
+            val actions = components.mapIndexed { i, component ->
+                SetMeshShapeAction(component, editMaps[i], editMaps[i].copy(mapPath = it?.path ?: ""))
+            }
+            FusedAction(actions).apply()
         }
 
-        val mapRef = shape.toAssetReference()
-        val heightmap = (AppAssets.impl as CachedAppAssets).getHeightmapMutableState(mapRef).use()
-        val numRows = heightmap?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
-        val numCols = heightmap?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
-        val sizeX = (numCols - 1) * shape.colScale
-        val sizeY = (numRows - 1) * shape.rowScale
+        val loaded = heightmaps.map {
+            (AppAssets.impl as CachedAppAssets).getHeightmapMutableState(it.toAssetReference()).use()
+        }
+        val sizeX = condenseDouble(heightmaps.mapIndexed { i, heightmap ->
+            val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
+            (numCols - 1) * heightmap.colScale
+        })
+        val sizeY = condenseDouble(heightmaps.mapIndexed { i, heightmap ->
+            val numRows = loaded[i]?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
+            (numRows - 1) * heightmap.rowScale
+        })
 
         labeledDoubleTextField(
             label = "Height scale:",
-            value = shape.heightScale,
+            value = condenseDouble(heightmaps.map { it.heightScale }),
             editHandler = object: ValueEditHandler<Double> {
                 override fun onEdit(value: Double) { }
                 override fun onEditEnd(startValue: Double, endValue: Double) {
-                    SetMeshShapeAction(component, shape, shape.copy(heightScale = endValue), shapeI).apply()
+                    val editMaps = getShapes<ShapeData.Heightmap>()
+                    val actions = components.mapIndexed { i, component ->
+                        SetMeshShapeAction(component, editMaps[i], editMaps[i].copy(heightScale = endValue))
+                    }
+                    FusedAction(actions).apply()
                 }
             }
         )
@@ -275,39 +412,32 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             editHandler = object: ValueEditHandler<Vec2d> {
                 override fun onEdit(value: Vec2d) { }
                 override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
-                    val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
-                    SetMeshShapeAction(component, shape, shape.copy(colScale = newScale.x, rowScale = newScale.y), shapeI).apply()
+                    val editMaps = getShapes<ShapeData.Heightmap>()
+                    val actions = components.mapIndexed { i, component ->
+                        val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
+                        val numRows = loaded[i]?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
+                        val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
+                        SetMeshShapeAction(component, editMaps[i], editMaps[i].copy(colScale = newScale.x, rowScale = newScale.y))
+                    }
+                    FusedAction(actions).apply()
                 }
             }
         )
     }
 
-    private data class ShapeOption<T: ShapeData>(val name: String, val type: KClass<T>, val factory: () -> T) {
-        override fun toString() = name
+    private val ShapeData.shapeOption: ShapeOption get() = ShapeOption.entries.first { it.matches(this) }
+
+    private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean) {
+        Box("Box", { it is ShapeData.Box }),
+        Rect("Rect", { it is ShapeData.Rect }),
+        Sphere("Sphere", { it is ShapeData.Sphere }),
+        Cylinder("Cylinder", { it is ShapeData.Cylinder }),
+        Capsule("Capsule", { it is ShapeData.Capsule }),
+        Heightmap("Heightmap", { it is ShapeData.Heightmap }),
+        Empty("Empty", { it is ShapeData.Empty })
     }
 
-    private object ShapeOptions {
-        val items = listOf(
-            ShapeOption("Box", ShapeData.Box::class) { ShapeData.defaultBox },
-            ShapeOption("Rect", ShapeData.Rect::class) { ShapeData.defaultRect },
-            ShapeOption("Sphere", ShapeData.Sphere::class) { ShapeData.defaultSphere },
-            ShapeOption("Cylinder", ShapeData.Cylinder::class) { ShapeData.defaultCylinder },
-            ShapeOption("Capsule", ShapeData.Capsule::class) { ShapeData.defaultCapsule },
-            ShapeOption("Heightmap", ShapeData.Heightmap::class) { ShapeData.Heightmap("") },
-            ShapeOption("Empty", ShapeData.Empty::class) { ShapeData.Empty() },
-        )
-
-        fun indexOfShape(shape: ShapeData): Int {
-            return when (shape) {
-                is ShapeData.Box -> 0
-                is ShapeData.Rect -> 1
-                is ShapeData.Sphere -> 2
-                is ShapeData.Cylinder -> 3
-                is ShapeData.Capsule -> 4
-                is ShapeData.Heightmap -> 5
-                is ShapeData.Empty -> 6
-            }
-        }
+    companion object {
+        private val shapeOptions = ComboBoxItems(ShapeOption.entries) { it.label }
     }
-
 }
