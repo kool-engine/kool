@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.RenameMaterialAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
@@ -15,44 +16,52 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
 
     private val material: MaterialData get() = component.materialState.value!!
 
-    override fun UiScope.compose() = componentPanel(
-        title = "Material",
-        imageIcon = IconMap.small.palette,
-        onRemove = ::removeComponent,
-        titleWidth = sizes.baseSize * 2.3f,
-        headerContent = {
-            val (items, idx) = makeMaterialItemsAndIndex()
-            var selectedIndex by remember(idx)
-            selectedIndex = idx
-
-            ComboBox {
-                defaultComboBoxStyle()
-                modifier
-                    .margin(horizontal = sizes.gap)
-                    .width(Grow.Std)
-                    .alignY(AlignmentY.Center)
-                    .items(items)
-                    .selectedIndex(selectedIndex)
-                    .onItemSelected {
-                        SetMaterialAction(nodeId, items[it].getMaterialModel()).apply()
-                    }
-            }
+    override fun UiScope.compose() {
+        val allTheSameMaterial = components.all {
+            it.componentData.materialId == components[0].componentData.materialId
         }
-    ) {
-        component.materialState.use()?.let { selectedMaterial ->
-            Column(width = Grow.Std) {
-                modifier
-                    .padding(horizontal = sizes.gap)
-                    .margin(bottom = sizes.smallGap)
 
-                labeledTextField("Name:", selectedMaterial.name) {
-                    RenameMaterialAction(selectedMaterial, it, selectedMaterial.name).apply()
+        componentPanel(
+            title = "Material",
+            imageIcon = IconMap.small.palette,
+            onRemove = ::removeComponent,
+            titleWidth = sizes.baseSize * 2.3f,
+            headerContent = {
+                val (items, idx) = makeMaterialItemsAndIndex(allTheSameMaterial)
+                ComboBox {
+                    defaultComboBoxStyle()
+                    modifier
+                        .margin(horizontal = sizes.gap)
+                        .width(Grow.Std)
+                        .alignY(AlignmentY.Center)
+                        .items(items)
+                        .selectedIndex(idx)
+                        .onItemSelected { index ->
+                            if (allTheSameMaterial || index > 0) {
+                                val actions = components.map { SetMaterialAction(it.nodeModel.nodeId, items[index].getMaterialModel()) }
+                                FusedAction(actions).apply()
+                            }
+                        }
                 }
+            }
+        ) {
+            if (allTheSameMaterial) {
+                components[0].materialState.use()?.let { selectedMaterial ->
+                    Column(width = Grow.Std) {
+                        modifier
+                            .padding(horizontal = sizes.gap)
+                            .margin(bottom = sizes.smallGap)
 
-                menuDivider()
-                materialEditor()
-                menuDivider()
-                genericSettings()
+                        labeledTextField("Name:", selectedMaterial.name) {
+                            RenameMaterialAction(selectedMaterial, it, selectedMaterial.name).apply()
+                        }
+
+                        menuDivider()
+                        materialEditor()
+                        menuDivider()
+                        genericSettings()
+                    }
+                }
             }
         }
     }
@@ -341,14 +350,19 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
         }
     }
 
-    private fun UiScope.makeMaterialItemsAndIndex(): Pair<List<MaterialItem>, Int> {
+    private fun UiScope.makeMaterialItemsAndIndex(allTheSameMaterial: Boolean): Pair<List<MaterialItem>, Int> {
         val items = mutableListOf(
             MaterialItem("Default", null),
             MaterialItem("New material", null)
         )
+
+        if (!allTheSameMaterial) {
+            items.add(0, MaterialItem("", null))
+        }
+
         var index = 0
         KoolEditor.instance.projectModel.materials.use().forEachIndexed { i, material ->
-            if (component.isHoldingMaterial(material)) {
+            if (allTheSameMaterial && components[0].isHoldingMaterial(material)) {
                 index = i + 2
             }
             items += MaterialItem(material.name, material)
