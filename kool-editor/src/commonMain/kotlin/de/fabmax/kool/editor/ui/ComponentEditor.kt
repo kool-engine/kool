@@ -6,9 +6,7 @@ import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.util.sceneModel
-import de.fabmax.kool.math.Vec2d
-import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 
@@ -24,28 +22,28 @@ abstract class ComponentEditor<T: EditorModelComponent>() : Composable {
         RemoveComponentAction(nodeId, component).apply()
     }
 
-    protected fun condenseDouble(doubles: List<Double>): Double {
-        return if (doubles.all { it == doubles[0] }) doubles[0] else Double.NaN
+    protected fun condenseDouble(doubles: List<Double>, eps: Double = FUZZY_EQ_D): Double {
+        return if (doubles.all { isFuzzyEqual(it, doubles[0], eps) }) doubles[0] else Double.NaN
     }
 
-    protected fun condenseVec2(vecs: List<Vec2d>): Vec2d {
-        val x = if (vecs.all { it.x == vecs[0].x }) vecs[0].x else Double.NaN
-        val y = if (vecs.all { it.y == vecs[0].y }) vecs[0].y else Double.NaN
+    protected fun condenseVec2(vecs: List<Vec2d>, eps: Double = FUZZY_EQ_D): Vec2d {
+        val x = if (vecs.all { isFuzzyEqual(it.x, vecs[0].x, eps) }) vecs[0].x else Double.NaN
+        val y = if (vecs.all { isFuzzyEqual(it.y, vecs[0].y, eps) }) vecs[0].y else Double.NaN
         return Vec2d(x, y)
     }
 
-    protected fun condenseVec3(vecs: List<Vec3d>): Vec3d {
-        val x = if (vecs.all { it.x == vecs[0].x }) vecs[0].x else Double.NaN
-        val y = if (vecs.all { it.y == vecs[0].y }) vecs[0].y else Double.NaN
-        val z = if (vecs.all { it.z == vecs[0].z }) vecs[0].z else Double.NaN
+    protected fun condenseVec3(vecs: List<Vec3d>, eps: Double = FUZZY_EQ_D): Vec3d {
+        val x = if (vecs.all { isFuzzyEqual(it.x, vecs[0].x, eps) }) vecs[0].x else Double.NaN
+        val y = if (vecs.all { isFuzzyEqual(it.y, vecs[0].y, eps) }) vecs[0].y else Double.NaN
+        val z = if (vecs.all { isFuzzyEqual(it.z, vecs[0].z, eps) }) vecs[0].z else Double.NaN
         return Vec3d(x, y, z)
     }
 
-    protected fun condenseVec4(vecs: List<Vec4d>): Vec4d {
-        val x = if (vecs.all { it.x == vecs[0].x }) vecs[0].x else Double.NaN
-        val y = if (vecs.all { it.y == vecs[0].y }) vecs[0].y else Double.NaN
-        val z = if (vecs.all { it.z == vecs[0].z }) vecs[0].z else Double.NaN
-        val w = if (vecs.all { it.w == vecs[0].w }) vecs[0].w else Double.NaN
+    protected fun condenseVec4(vecs: List<Vec4d>, eps: Double = FUZZY_EQ_D): Vec4d {
+        val x = if (vecs.all { isFuzzyEqual(it.x, vecs[0].x, eps) }) vecs[0].x else Double.NaN
+        val y = if (vecs.all { isFuzzyEqual(it.y, vecs[0].y, eps) }) vecs[0].y else Double.NaN
+        val z = if (vecs.all { isFuzzyEqual(it.z, vecs[0].z, eps) }) vecs[0].z else Double.NaN
+        val w = if (vecs.all { isFuzzyEqual(it.w, vecs[0].w, eps) }) vecs[0].w else Double.NaN
         return Vec4d(x, y, z, w)
     }
 

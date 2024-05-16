@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.TransformData
@@ -18,17 +19,24 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
     private val transformProperties = TransformProperties()
 
     init {
-        transformProperties.editHandlers += object : ValueEditHandler<TransformData> {
-            override fun onEdit(value: TransformData) {
-                value.toTransform(component.nodeModel.drawNode.transform)
+        transformProperties.editHandlers += object : ValueEditHandler<List<TransformData>> {
+            override fun onEdit(value: List<TransformData>) {
+                value.forEachIndexed { i, transformData ->
+                    transformData.toTransform(components[i].nodeModel.drawNode.transform)
+                }
             }
 
-            override fun onEditEnd(startValue: TransformData, endValue: TransformData) {
-                SetTransformAction(
-                    nodeModel = component.nodeModel,
-                    undoTransform = startValue,
-                    applyTransform = endValue
-                ).apply()
+            override fun onEditEnd(startValue: List<TransformData>, endValue: List<TransformData>) {
+                val actions = buildList {
+                    for (i in startValue.indices) {
+                        add(SetTransformAction(
+                            nodeModel = components[i].nodeModel,
+                            undoTransform = startValue[i],
+                            applyTransform = endValue[i]
+                        ))
+                    }
+                }
+                FusedAction(actions).apply()
             }
         }
     }
@@ -44,7 +52,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
             scale()
         }
 
-        val transformData = component.transformState.use()
+        val transformData = components.map { it.transformState.use() }
         transformProperties.setTransformData(transformData, KoolEditor.instance.gizmoOverlay.transformFrame.use())
     }
 
@@ -70,11 +78,12 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                     .width(Grow.Std)
             }
             iconButton(
-                icon = if (component.isFixedScaleRatio.use()) IconMap.small.lock else IconMap.small.lockOpen,
+                icon = if (components.all { it.isFixedScaleRatio.use() }) IconMap.small.lock else IconMap.small.lockOpen,
                 tooltip = "Lock scale ratio",
                 margin = Dp.ZERO
             ) {
-                component.isFixedScaleRatio.set(!component.isFixedScaleRatio.value)
+                val toggleVal = !components.all { it.isFixedScaleRatio.value }
+                components.forEach { it.isFixedScaleRatio.set(toggleVal) }
             }
         }
         xyzRow(
@@ -102,18 +111,15 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
         val sy = mutableStateOf(0.0)
         val sz = mutableStateOf(0.0)
 
-        val editHandlers = mutableListOf<ValueEditHandler<TransformData>>()
+        val editHandlers = mutableListOf<ValueEditHandler<List<TransformData>>>()
 
-        private var editTransformData = TransformData.IDENTITY
-        private var startTransformData = TransformData.IDENTITY
-        private var startTransformDataParentFrame = TransformData.IDENTITY
+        private var editTransformFrame = GizmoFrame.GLOBAL
+        private var editTransformData = listOf(TransformData.IDENTITY)
+        private var startTransformData = listOf(TransformData.IDENTITY)
+        private var startTransformDataParentFrame = listOf(TransformData.IDENTITY)
 
         private fun captureTransform() {
-            startTransformData = TransformData(
-                Vec3Data(px.value, py.value, pz.value),
-                Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value),
-                Vec3Data(sx.value, sy.value, sz.value)
-            )
+            startTransformData = fromComponentToSelectedReferenceFrame(editTransformData, editTransformFrame)
             startTransformDataParentFrame = editTransformData
         }
 
@@ -124,15 +130,23 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
             }
             override fun onEdit(value: Vec3d) {
                 setPosition(value)
-                val editData = startTransformData.copy(position = Vec3Data(value))
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEdit(parentFrameData) }
+
+                val editVals = startTransformData.mapIndexed { i, transformData ->
+                    val mergePos = mergeVec3(value, transformData.position.toVec3d())
+                    val editData = transformData.copy(position = Vec3Data(mergePos))
+                    fromSelectedReferenceFrameToComponent(i, editData)
+                }
+                editHandlers.forEach { it.onEdit(editVals) }
             }
             override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
                 setPosition(endValue)
-                val editData = startTransformData.copy(position = Vec3Data(endValue))
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, parentFrameData) }
+
+                val editVals = startTransformData.mapIndexed { i, transformData ->
+                    val mergePos = mergeVec3(endValue, transformData.position.toVec3d())
+                    val editData = transformData.copy(position = Vec3Data(mergePos))
+                    fromSelectedReferenceFrameToComponent(i, editData)
+                }
+                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, editVals) }
             }
         }
 
@@ -143,119 +157,123 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
             }
             override fun onEdit(value: Vec3d) {
                 setRotation(value)
-                val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEdit(parentFrameData) }
+
+                val editVals = startTransformData.mapIndexed { i, transformData ->
+                val mergeRot = mergeVec3(value, transformData.rotation.toQuatD().toEulers())
+                    val mat = Mat3d.rotation(mergeRot.x.deg, mergeRot.y.deg, mergeRot.z.deg)
+                    val q = MutableQuatD()
+                    mat.decompose(q)
+                    val editData = transformData.copy(rotation = Vec4Data(q))
+                    fromSelectedReferenceFrameToComponent(i, editData)
+                }
+                editHandlers.forEach { it.onEdit(editVals) }
             }
             override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
                 setRotation(endValue)
-                val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, parentFrameData) }
-            }
-        }
 
-        val rotQuaternionEditHandler = object : ValueEditHandler<Vec4d> {
-            override fun onEditStart(startValue: Vec4d) {
-                captureTransform()
-                editHandlers.forEach { it.onEditStart(startTransformData) }
-            }
-            override fun onEdit(value: Vec4d) {
-                setRotation(value)
-                val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEdit(parentFrameData) }
-            }
-            override fun onEditEnd(startValue: Vec4d, endValue: Vec4d) {
-                setRotation(endValue)
-                val editData = startTransformData.copy(rotation = Vec4Data(rQuatX.value, rQuatY.value, rQuatZ.value, rQuatW.value))
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, parentFrameData) }
+                val editVals = startTransformData.mapIndexed { i, transformData ->
+                    val mergeRot = mergeVec3(endValue, transformData.rotation.toQuatD().toEulers())
+                    val mat = Mat3d.rotation(mergeRot.x.deg, mergeRot.y.deg, mergeRot.z.deg)
+                    val q = MutableQuatD()
+                    mat.decompose(q)
+                    val editData = transformData.copy(rotation = Vec4Data(q))
+                    fromSelectedReferenceFrameToComponent(i, editData)
+                }
+                editHandlers.forEach { it.onEditEnd(startTransformDataParentFrame, editVals) }
             }
         }
 
         val scaleEditHandler = object : ValueEditHandler<Vec3d> {
-            private val lastEditVal = MutableVec3d()
+            private val lastEditVal = mutableListOf<MutableVec3d>()
 
             override fun onEditStart(startValue: Vec3d) {
                 captureTransform()
-                lastEditVal.set(startValue)
+                lastEditVal.clear()
+                startTransformData.forEach { lastEditVal += MutableVec3d(mergeVec3(startValue, it.scale.toVec3d())) }
                 editHandlers.forEach { it.onEditStart(startTransformData) }
             }
 
             override fun onEdit(value: Vec3d) {
-                val editData = computeScale(value)
-                setScale(editData.scale.toVec3d())
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEdit(parentFrameData) }
+                val editVals = List(startTransformData.size) { i ->
+                    val editData = computeScale(i, value)
+                    setScale(editData.scale.toVec3d())
+                    fromSelectedReferenceFrameToComponent(i, editData)
+                }
+                editHandlers.forEach { it.onEdit(editVals) }
             }
 
             override fun onEditEnd(startValue: Vec3d, endValue: Vec3d) {
-                val editData = computeScale(endValue)
-                setScale(editData.scale.toVec3d())
-                val parentFrameData = fromSelectedReferenceFrameToComponent(editData)
-                editHandlers.forEach { it.onEditEnd(startTransformData, parentFrameData) }
+                val editVals = List(startTransformData.size) { i ->
+                    val editData = computeScale(i, endValue)
+                    setScale(editData.scale.toVec3d())
+                    fromSelectedReferenceFrameToComponent(i, editData)
+                }
+                editHandlers.forEach { it.onEditEnd(startTransformData, editVals) }
             }
 
-            private fun computeScale(scaleValue: Vec3d): TransformData {
-                return if (component.isFixedScaleRatio.value) {
-                    val fx = abs(scaleValue.x / lastEditVal.x - 1.0)
-                    val fy = abs(scaleValue.y / lastEditVal.y - 1.0)
-                    val fz = abs(scaleValue.z / lastEditVal.z - 1.0)
-                    lastEditVal.set(scaleValue)
+            private fun computeScale(componentI: Int, scaleValue: Vec3d): TransformData {
+                val mergedScale = mergeVec3(scaleValue, startTransformData[componentI].scale.toVec3d())
+                val scaleVec = if (components[componentI].isFixedScaleRatio.value) {
+                    val last = lastEditVal[componentI]
+                    val fx = abs(mergedScale.x / last.x - 1.0)
+                    val fy = abs(mergedScale.y / last.y - 1.0)
+                    val fz = abs(mergedScale.z / last.z - 1.0)
+                    last.set(mergedScale)
                     val s = when {
-                        fx > fy && fx > fz -> scaleValue.x / startTransformData.scale.x
-                        fy > fx && fy > fz -> scaleValue.y / startTransformData.scale.y
-                        else -> scaleValue.z / startTransformData.scale.z
+                        fx > fy && fx > fz -> mergedScale.x / startTransformData[componentI].scale.x
+                        fy > fx && fy > fz -> mergedScale.y / startTransformData[componentI].scale.y
+                        else -> mergedScale.z / startTransformData[componentI].scale.z
                     }
-                    startTransformData.copy(scale = Vec3Data(startTransformData.scale.toVec3d().mul(s)))
+                    startTransformData[componentI].scale.toVec3d().mul(s)
                 } else {
-                    return startTransformData.copy(scale = Vec3Data(scaleValue))
+                    mergedScale
                 }
+                return startTransformData[componentI].copy(scale = Vec3Data(scaleVec))
             }
         }
 
-        fun setTransformData(transformData: TransformData, transformFrame: GizmoFrame) {
+        fun setTransformData(transformData: List<TransformData>, transformFrame: GizmoFrame) {
+            editTransformFrame = transformFrame
             editTransformData = transformData
 
             val translatedTd = fromComponentToSelectedReferenceFrame(transformData, transformFrame)
-            setPosition(translatedTd.position.toVec3d())
-            setScale(translatedTd.scale.toVec3d())
-
-            val rotMat = Mat3d.rotation(translatedTd.rotation.toQuatD())
-            setRotation(rotMat.getEulerAngles(MutableVec3d()))
+            setPosition(condenseVec3(translatedTd.map { it.position.toVec3d() }, eps = 1e-4))
+            setScale(condenseVec3(translatedTd.map { it.scale.toVec3d() }, eps = 1e-4))
+            setRotation(condenseVec3(translatedTd.map { it.rotation.toQuatD().toEulers() }, eps = 1e-4))
         }
 
         private fun fromComponentToSelectedReferenceFrame(
-            transformData: TransformData,
+            transformData: List<TransformData>,
             transformFrame: GizmoFrame
-        ): TransformData {
-            return when (transformFrame) {
-                GizmoFrame.LOCAL -> {
-                    // local orientation doesn't make much sense for the transform editor -> use default (parent)
-                    // frame instead
-                    transformData
-                    // todo: maybe local mode would make sense to apply relative orientation changes:
-                    //  in idle, pos / rot are 0.0, scale is 1.0, entering a value then changes the property by that
-                    //  amount within the local orientation
-                }
-                GizmoFrame.PARENT -> {
-                    // component transform data already is in parent frame -> no further transforming needed
-                    transformData
-                }
-                GizmoFrame.GLOBAL -> {
-                    val parent = component.nodeModel.parent
-                    if (parent is SceneNodeModel) {
-                        TransformData.fromMatrix(component.nodeModel.drawNode.modelMatD)
-                    } else {
-                        // parent node is the scene -> parent reference frame == global reference frame
-                        transformData
+        ): List<TransformData> {
+            return transformData.mapIndexed { i, td ->
+                when (transformFrame) {
+                    GizmoFrame.LOCAL -> {
+                        // local orientation doesn't make much sense for the transform editor -> use default (parent)
+                        // frame instead
+                        td
+                        // todo: maybe local mode would make sense to apply relative orientation changes:
+                        //  in idle, pos / rot are 0.0, scale is 1.0, entering a value then changes the property by that
+                        //  amount within the local orientation
+                    }
+                    GizmoFrame.PARENT -> {
+                        // component transform data already is in parent frame -> no further transforming needed
+                        td
+                    }
+                    GizmoFrame.GLOBAL -> {
+                        val parent = components[i].nodeModel.parent
+                        if (parent is SceneNodeModel) {
+                            TransformData.fromMatrix(components[i].nodeModel.drawNode.modelMatD)
+                        } else {
+                            // parent node is the scene -> parent reference frame == global reference frame
+                            td
+                        }
                     }
                 }
             }
         }
 
-        private fun fromSelectedReferenceFrameToComponent(transformData: TransformData): TransformData {
+        private fun fromSelectedReferenceFrameToComponent(componentI: Int, transformData: TransformData): TransformData {
             // reverse transform transformData into component parent frame
             return when (KoolEditor.instance.gizmoOverlay.transformFrame.value) {
                 GizmoFrame.LOCAL -> {
@@ -265,7 +283,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                     transformData
                 }
                 GizmoFrame.GLOBAL -> {
-                    val parent = component.nodeModel.parent
+                    val parent = components[componentI].nodeModel.parent
                     if (parent is SceneNodeModel) {
                         val globalToParent = parent.drawNode.invModelMatD
                         val m = globalToParent.mul(transformData.toMat4d(MutableMat4d()), MutableMat4d())
