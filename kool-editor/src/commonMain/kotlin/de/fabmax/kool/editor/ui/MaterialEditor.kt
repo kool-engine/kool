@@ -14,7 +14,7 @@ import de.fabmax.kool.util.MdColor
 
 class MaterialEditor : ComponentEditor<MaterialComponent>() {
 
-    private val material: MaterialData get() = component.materialState.value!!
+    private val material: MaterialData get() = components[0].materialState.value!!
 
     override fun UiScope.compose() {
         val allTheSameMaterial = components.all {

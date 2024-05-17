@@ -145,7 +145,7 @@ fun UiScope.doubleTextField(
             surface.requestFocus(null)
         }
 
-    if (!wasFocuesd && dragChangeSpeed != 0.0) {
+    if (!wasFocuesd && dragChangeSpeed != 0.0 && value.isFinite()) {
         modifier.clearDragCallbacks()
         modifier.clearHoverCallbacks()
         modifier
