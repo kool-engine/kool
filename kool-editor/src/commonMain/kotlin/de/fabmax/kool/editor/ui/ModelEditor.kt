@@ -64,16 +64,22 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                         .padding(horizontal = sizes.gap)
                         .margin(bottom = sizes.gap)
 
-                    val gltf = component.gltfState.use()
+                    val gltf = components[0].gltfState.use()
                     if (gltf != null) {
                         val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
-                        labeledCombobox("Model scene:", scenes, component.sceneIndexState.use()) {
-                            SetModelSceneAction(nodeId, it.index).apply()
+                        labeledCombobox("Model scene:", scenes, components[0].sceneIndexState.use()) { selected ->
+                            val actions = components.map {
+                                SetModelSceneAction(it.nodeModel.nodeId, selected.index)
+                            }
+                            FusedAction(actions).apply()
                         }
 
                         val animations = gltf.animationOptions()
-                        labeledCombobox("Animation:", animations, component.animationIndexState.use() + 1) {
-                            SetModelAnimationAction(nodeId, it.index).apply()
+                        labeledCombobox("Animation:", animations, components[0].animationIndexState.use() + 1) { selected ->
+                            val actions = components.map {
+                                SetModelAnimationAction(it.nodeModel.nodeId, selected.index)
+                            }
+                            FusedAction(actions).apply()
                         }
                     }
                 }
@@ -125,8 +131,11 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
             source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
             val dragModelItem = dragItem.get(DndItemFlavor.DndItemModel)
-            if (dragModelItem.path != component.modelPathState.value) {
-                SetModelPathAction(nodeId, dragModelItem.path).apply()
+            val actions = components
+                .filter { it.modelPathState.value != dragModelItem.path }
+                .map { SetModelPathAction(it.nodeModel.nodeId, dragModelItem.path) }
+            if (actions.isNotEmpty()) {
+                FusedAction(actions).apply()
             }
         }
     }
