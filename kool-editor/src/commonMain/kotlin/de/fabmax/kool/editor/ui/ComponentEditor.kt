@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.RemoveComponentAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.EditorModelComponent
 import de.fabmax.kool.editor.data.NodeId
 import de.fabmax.kool.editor.model.NodeModel
@@ -19,7 +20,7 @@ abstract class ComponentEditor<T: EditorModelComponent>() : Composable {
     val sceneModel: SceneModel get() = nodeModel.sceneModel
 
     protected fun removeComponent() {
-        RemoveComponentAction(nodeId, component).apply()
+        components.map { RemoveComponentAction(it.nodeModel.nodeId, it) }.fused().apply()
     }
 
     protected fun condenseDouble(doubles: List<Double>, eps: Double = FUZZY_EQ_D): Double {
