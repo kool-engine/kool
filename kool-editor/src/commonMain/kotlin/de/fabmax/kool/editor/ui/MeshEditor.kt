@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetMeshShapeAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.toAssetReference
@@ -89,13 +90,12 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                     dragChangeSpeed = DragChangeRates.SIZE_VEC2,
                     editHandler = ActionValueEditHandler { undo, apply ->
                         val shapes = components.map { it.shapesState[0] }
-                        val actions = components.mapIndexed { i, component ->
+                        components.mapIndexed { i, component ->
                             val uv = shapes[i].common.uvScale.toVec2d()
                             val mergedUndo = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(undo, uv))))
                             val mergedApply = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(apply, uv))))
                             SetMeshShapeAction(component, mergedUndo, mergedApply)
-                        }
-                        FusedAction(actions)
+                        }.fused()
                     }
                 )
             }
@@ -116,13 +116,12 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             dragChangeSpeed = DragChangeRates.SIZE_VEC3,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val boxes = getShapes<ShapeData.Box>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val size = boxes[i].size.toVec3d()
                     val mergedUndo = Vec3Data(mergeVec3(undo, size))
                     val mergedApply = Vec3Data(mergeVec3(apply, size))
                     SetMeshShapeAction(component, boxes[i].copy(size = mergedUndo), boxes[i].copy(size = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -137,13 +136,12 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             dragChangeSpeed = DragChangeRates.SIZE_VEC2,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val rects = getShapes<ShapeData.Rect>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val size = rects[i].size.toVec2d()
                     val mergedUndo = Vec2Data(mergeVec2(undo, size))
                     val mergedApply = Vec2Data(mergeVec2(apply, size))
                     SetMeshShapeAction(component, rects[i].copy(size = mergedUndo), rects[i].copy(size = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -159,12 +157,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val editSpheres = getShapes<ShapeData.Sphere>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, editSpheres[i].radius)
                     val mergedApply = mergeDouble(apply, editSpheres[i].radius)
                     SetMeshShapeAction(component, editSpheres[i].copy(radius = mergedUndo), editSpheres[i].copy(radius = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
         val isIco = spheres.all { it.sphereType == "ico" }
@@ -172,10 +169,9 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             val newType = if (setIco) "ico" else "uv"
             val newSteps = if (setIco) 2 else 20
             val editSpheres = getShapes<ShapeData.Sphere>()
-            val actions = components.mapIndexed { i, component ->
+            components.mapIndexed { i, component ->
                 SetMeshShapeAction(component, editSpheres[i], editSpheres[i].copy(steps = newSteps, sphereType = newType))
-            }
-            FusedAction(actions).apply()
+            }.fused().apply()
         }
         if (isIco) {
             labeledDoubleTextField(
@@ -187,12 +183,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 maxValue = 7.0,
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val editSpheres = getShapes<ShapeData.Sphere>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val mergedUndo = mergeDouble(undo, editSpheres[i].steps.toDouble()).roundToInt()
                         val mergedApply = mergeDouble(apply, editSpheres[i].steps.toDouble()).roundToInt()
                         SetMeshShapeAction(component, editSpheres[i].copy(steps = mergedUndo), editSpheres[i].copy(steps = mergedApply))
-                    }
-                    FusedAction(actions)
+                    }.fused()
                 }
             )
         } else {
@@ -205,12 +200,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 maxValue = 100.0,
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val editSpheres = getShapes<ShapeData.Sphere>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val mergedUndo = mergeDouble(undo, editSpheres[i].steps.toDouble()).roundToInt()
                         val mergedApply = mergeDouble(apply, editSpheres[i].steps.toDouble()).roundToInt()
                         SetMeshShapeAction(component, editSpheres[i].copy(steps = mergedUndo), editSpheres[i].copy(steps = mergedApply))
-                    }
-                    FusedAction(actions)
+                    }.fused()
                 }
             )
         }
@@ -226,10 +220,9 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             isUniRadius = it
             if (isUniRadius) {
                 val editCyls = getShapes<ShapeData.Cylinder>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     SetMeshShapeAction(component, editCyls[i], editCyls[i].copy(topRadius = editCyls[i].bottomRadius))
-                }
-                FusedAction(actions).apply()
+                }.fused().apply()
             }
         }
         if (isUniRadius) {
@@ -239,7 +232,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val editCyls = getShapes<ShapeData.Cylinder>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val mergedUndo = mergeDouble(undo, editCyls[i].bottomRadius)
                         val mergedApply = mergeDouble(apply, editCyls[i].bottomRadius)
                         SetMeshShapeAction(
@@ -247,8 +240,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                             editCyls[i].copy(bottomRadius = mergedUndo, topRadius = mergedUndo),
                             editCyls[i].copy(bottomRadius = mergedApply, topRadius = mergedApply)
                         )
-                    }
-                    FusedAction(actions)
+                    }.fused()
                 }
             )
         } else {
@@ -258,12 +250,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val editCyls = getShapes<ShapeData.Cylinder>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val mergedUndo = mergeDouble(undo, editCyls[i].topRadius)
                         val mergedApply = mergeDouble(apply, editCyls[i].topRadius)
                         SetMeshShapeAction(component, editCyls[i].copy(topRadius = mergedUndo), editCyls[i].copy(topRadius = mergedApply))
-                    }
-                    FusedAction(actions)
+                    }.fused()
                 }
             )
             labeledDoubleTextField(
@@ -272,12 +263,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val editCyls = getShapes<ShapeData.Cylinder>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val mergedUndo = mergeDouble(undo, editCyls[i].bottomRadius)
                         val mergedApply = mergeDouble(apply, editCyls[i].bottomRadius)
                         SetMeshShapeAction(component, editCyls[i].copy(bottomRadius = mergedUndo), editCyls[i].copy(bottomRadius = mergedApply))
-                    }
-                    FusedAction(actions)
+                    }.fused()
                 }
             )
         }
@@ -287,12 +277,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val editCyls = getShapes<ShapeData.Cylinder>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, editCyls[i].length)
                     val mergedApply = mergeDouble(apply, editCyls[i].length)
                     SetMeshShapeAction(component, editCyls[i].copy(length = mergedUndo), editCyls[i].copy(length = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
         labeledDoubleTextField(
@@ -304,12 +293,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             maxValue = 100.0,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val editCyls = getShapes<ShapeData.Cylinder>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, editCyls[i].steps.toDouble()).roundToInt()
                     val mergedApply = mergeDouble(apply, editCyls[i].steps.toDouble()).roundToInt()
                     SetMeshShapeAction(component, editCyls[i].copy(steps = mergedUndo), editCyls[i].copy(steps = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -325,12 +313,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val editCaps = getShapes<ShapeData.Capsule>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, editCaps[i].radius)
                     val mergedApply = mergeDouble(apply, editCaps[i].radius)
                     SetMeshShapeAction(component, editCaps[i].copy(radius = mergedUndo), editCaps[i].copy(radius = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
         labeledDoubleTextField(
@@ -339,12 +326,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             dragChangeSpeed = DragChangeRates.SIZE,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val editCaps = getShapes<ShapeData.Capsule>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, editCaps[i].length)
                     val mergedApply = mergeDouble(apply, editCaps[i].length)
                     SetMeshShapeAction(component, editCaps[i].copy(length = mergedUndo), editCaps[i].copy(length = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
         labeledDoubleTextField(
@@ -356,12 +342,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             maxValue = 100.0,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val editCaps = getShapes<ShapeData.Capsule>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, editCaps[i].steps.toDouble()).roundToInt()
                     val mergedApply = mergeDouble(apply, editCaps[i].steps.toDouble()).roundToInt()
                     SetMeshShapeAction(component, editCaps[i].copy(steps = mergedUndo), editCaps[i].copy(steps = mergedApply))
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -374,10 +359,9 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         val mapPath = if (heightmaps.all { it.mapPath == heightmaps[0].mapPath }) heightmaps[0].mapPath else ""
         heightmapSelector(mapPath, true) {
             val editMaps = getShapes<ShapeData.Heightmap>()
-            val actions = components.mapIndexed { i, component ->
+            components.mapIndexed { i, component ->
                 SetMeshShapeAction(component, editMaps[i], editMaps[i].copy(mapPath = it?.path ?: ""))
-            }
-            FusedAction(actions).apply()
+            }.fused().apply()
         }
 
         val loaded = heightmaps.map {
@@ -399,10 +383,9 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 override fun onEdit(value: Double) { }
                 override fun onEditEnd(startValue: Double, endValue: Double) {
                     val editMaps = getShapes<ShapeData.Heightmap>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         SetMeshShapeAction(component, editMaps[i], editMaps[i].copy(heightScale = endValue))
-                    }
-                    FusedAction(actions).apply()
+                    }.fused().apply()
                 }
             }
         )
@@ -413,13 +396,12 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 override fun onEdit(value: Vec2d) { }
                 override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
                     val editMaps = getShapes<ShapeData.Heightmap>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
                         val numRows = loaded[i]?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
                         val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
                         SetMeshShapeAction(component, editMaps[i], editMaps[i].copy(colScale = newScale.x, rowScale = newScale.y))
-                    }
-                    FusedAction(actions).apply()
+                    }.fused().apply()
                 }
             }
         )

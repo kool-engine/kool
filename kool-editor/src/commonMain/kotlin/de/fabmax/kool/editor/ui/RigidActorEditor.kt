@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetRigidBodyPropertiesAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.RigidActorComponent
@@ -33,11 +34,10 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 selectedIndex = typeIdx
             ) { selected ->
                 selected.item?.type?.let { actorType ->
-                    val actions = components.map {
+                    components.map {
                         val bodyProps = it.actorState.value
                         SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType))
-                    }
-                    FusedAction(actions).apply()
+                    }.fused().apply()
                 }
             }
 
@@ -48,13 +48,12 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     minValue = 0.001,
                     dragChangeSpeed = DragChangeRates.SIZE,
                     editHandler = ActionValueEditHandler { undo, apply ->
-                        val actions = components.map {
+                        components.map {
                             val bodyProps = it.actorState.value
                             val mergedUndo = bodyProps.copy(mass = mergeDouble(undo, bodyProps.mass))
                             val mergedApply = bodyProps.copy(mass = mergeDouble(apply, bodyProps.mass))
                             SetRigidBodyPropertiesAction( it.nodeModel.nodeId, mergedUndo, mergedApply)
-                        }
-                        FusedAction(actions)
+                        }.fused()
                     }
                 )
             }
@@ -117,15 +116,14 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.actorState.value }
                 val boxes = getShapes<ShapeData.Box>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val size = boxes[i].size.toVec3d()
                     val mergedUndo = Vec3Data(mergeVec3(undo, size))
                     val mergedApply = Vec3Data(mergeVec3(apply, size))
                     val undoProps = props[i].copy(shapes = listOf(boxes[i].copy(size = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(boxes[i].copy(size = mergedApply)))
                     SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -138,14 +136,13 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.actorState.value }
                 val caps = getShapes<ShapeData.Capsule>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, caps[i].radius)
                     val mergedApply = mergeDouble(apply, caps[i].radius)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedApply)))
                     SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
         labeledDoubleTextField(
@@ -155,14 +152,13 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.actorState.value }
                 val caps = getShapes<ShapeData.Capsule>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, caps[i].length)
                     val mergedApply = mergeDouble(apply, caps[i].length)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedApply)))
                     SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -175,14 +171,13 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.actorState.value }
                 val caps = getShapes<ShapeData.Cylinder>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, caps[i].topRadius)
                     val mergedApply = mergeDouble(apply, caps[i].topRadius)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(topRadius = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(topRadius = mergedApply)))
                     SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
         labeledDoubleTextField(
@@ -192,14 +187,13 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.actorState.value }
                 val caps = getShapes<ShapeData.Cylinder>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, caps[i].length)
                     val mergedApply = mergeDouble(apply, caps[i].length)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedApply)))
                     SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -212,14 +206,13 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.actorState.value }
                 val caps = getShapes<ShapeData.Sphere>()
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, caps[i].radius)
                     val mergedApply = mergeDouble(apply, caps[i].radius)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedApply)))
                     SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -229,12 +222,11 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         val mapPath = if (heightmaps.all { it.mapPath == heightmaps[0].mapPath }) heightmaps[0].mapPath else ""
         heightmapSelector(mapPath, true) {
             val editMaps = getShapes<ShapeData.Heightmap>()
-            val actions = components.mapIndexed { i, component ->
+            components.mapIndexed { i, component ->
                 val bodyProps = component.actorState.value
                 val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(mapPath = it?.path ?: "")))
                 SetRigidBodyPropertiesAction(component.nodeModel.nodeId, bodyProps, applyShape)
-            }
-            FusedAction(actions).apply()
+            }.fused().apply()
         }
 
         val loaded = heightmaps.map {
@@ -256,12 +248,11 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 override fun onEdit(value: Double) { }
                 override fun onEditEnd(startValue: Double, endValue: Double) {
                     val editMaps = getShapes<ShapeData.Heightmap>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val bodyProps = component.actorState.value
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(heightScale = endValue)))
                         SetRigidBodyPropertiesAction(component.nodeModel.nodeId, bodyProps, applyShape)
-                    }
-                    FusedAction(actions).apply()
+                    }.fused().apply()
                 }
             }
         )
@@ -272,15 +263,14 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 override fun onEdit(value: Vec2d) { }
                 override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
                     val editMaps = getShapes<ShapeData.Heightmap>()
-                    val actions = components.mapIndexed { i, component ->
+                    components.mapIndexed { i, component ->
                         val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
                         val numRows = loaded[i]?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
                         val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
                         val bodyProps = component.actorState.value
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(colScale = newScale.x, rowScale = newScale.y)))
                         SetRigidBodyPropertiesAction(component.nodeModel.nodeId, bodyProps, applyShape)
-                    }
-                    FusedAction(actions).apply()
+                    }.fused().apply()
                 }
             }
         )

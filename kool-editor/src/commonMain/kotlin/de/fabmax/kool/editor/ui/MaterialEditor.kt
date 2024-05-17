@@ -1,10 +1,10 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.RenameMaterialAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.UpdateMaterialAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec2f
@@ -37,8 +37,9 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
                         .selectedIndex(idx)
                         .onItemSelected { index ->
                             if (allTheSameMaterial || index > 0) {
-                                val actions = components.map { SetMaterialAction(it.nodeModel.nodeId, items[index].getMaterialModel()) }
-                                FusedAction(actions).apply()
+                                components
+                                    .map { SetMaterialAction(it.nodeModel.nodeId, items[index].getMaterialModel()) }
+                                    .fused().apply()
                             }
                         }
                 }

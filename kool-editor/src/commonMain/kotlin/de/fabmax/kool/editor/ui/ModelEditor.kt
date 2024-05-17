@@ -2,10 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.actions.FusedAction
-import de.fabmax.kool.editor.actions.SetModelAnimationAction
-import de.fabmax.kool.editor.actions.SetModelPathAction
-import de.fabmax.kool.editor.actions.SetModelSceneAction
+import de.fabmax.kool.editor.actions.*
 import de.fabmax.kool.editor.components.ModelComponent
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ui2.*
@@ -34,10 +31,9 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                         .selectedIndex(idx)
                         .onItemSelected { index ->
                             if (allTheSameModel || index > 0) {
-                                val actions = components.mapNotNull { comp ->
+                                components.mapNotNull { comp ->
                                     items[index].model?.let { SetModelPathAction(comp.nodeModel.nodeId, it.path) }
-                                }
-                                FusedAction(actions).apply()
+                                }.fused().apply()
                             }
                         }
 
@@ -68,18 +64,16 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                     if (gltf != null) {
                         val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
                         labeledCombobox("Model scene:", scenes, components[0].sceneIndexState.use()) { selected ->
-                            val actions = components.map {
+                            components.map {
                                 SetModelSceneAction(it.nodeModel.nodeId, selected.index)
-                            }
-                            FusedAction(actions).apply()
+                            }.fused().apply()
                         }
 
                         val animations = gltf.animationOptions()
                         labeledCombobox("Animation:", animations, components[0].animationIndexState.use() + 1) { selected ->
-                            val actions = components.map {
+                            components.map {
                                 SetModelAnimationAction(it.nodeModel.nodeId, selected.index)
-                            }
-                            FusedAction(actions).apply()
+                            }.fused().apply()
                         }
                     }
                 }

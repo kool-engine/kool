@@ -2,8 +2,8 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
-import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.RenameNodeAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ModelComponentData
@@ -187,14 +187,14 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
         open fun createComponent(target: NodeModel): T? = null
 
         fun addComponent(targetObjs: List<NodeModel>) {
-            val addActions = targetObjs
+            targetObjs
                 .filter { target ->
                     !hasComponent(target)
                 }
                 .mapNotNull { target ->
                     createComponent(target)?.let { AddComponentAction(target.nodeId, it) }
                 }
-            FusedAction(addActions).apply()
+                .fused().apply()
         }
 
         data object AddSsaoComponent : ComponentAdder<SsaoComponent>("Screen-space Ambient Occlusion") {
@@ -238,7 +238,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     parentMenu.subMenu(name) {
                         models.forEach { model ->
                             item(model.name) { objs ->
-                                val addActions = objs
+                                objs
                                     .filter { target ->
                                         !hasComponent(target)
                                     }
@@ -246,7 +246,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                                         val modelComp = ModelComponent(target as SceneNodeModel, ModelComponentData(model.path))
                                         AddComponentAction(target.nodeId, modelComp)
                                     }
-                                FusedAction(addActions).apply()
+                                    .fused().apply()
                             }
                         }
                     }
@@ -282,12 +282,12 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                     parentMenu.subMenu(name) {
                         behaviorClasses.forEach { script ->
                             item(script.prettyName) { objs ->
-                                val addActions = objs.filter { true }
+                                objs
                                     .map { target ->
                                         val behaviorComp = BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))
                                         AddComponentAction(target.nodeId, behaviorComp)
                                     }
-                                FusedAction(addActions).apply()
+                                    .fused().apply()
                             }
                         }
                     }

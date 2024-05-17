@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetDiscreteLightAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.LightTypeData
@@ -69,7 +70,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                 }
 
                 override fun makeEditAction(undoValue: Color, applyValue: Color): EditorAction {
-                    val actions = components.mapIndexed { i, component ->
+                    return components.mapIndexed { i, component ->
                         val applyLight: LightTypeData
                         val undoLight: LightTypeData = editLightsStart[i]
                         when (val light = component.lightState.value) {
@@ -84,8 +85,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                             }
                         }
                         SetDiscreteLightAction(component.nodeModel.nodeId, applyLight, undoLight)
-                    }
-                    return FusedAction(actions)
+                    }.fused()
                 }
 
             }
@@ -99,7 +99,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
             minValue = 0.0,
             dragChangeSpeed = dragChangeSpeed,
             editHandler = ActionValueEditHandler { undo, apply ->
-                val actions = components.map { component ->
+                components.map { component ->
                     val mergedUndo = mergeDouble(undo, component.lightState.value.intensity.toDouble()).toFloat()
                     val mergedApply = mergeDouble(apply, component.lightState.value.intensity.toDouble()).toFloat()
                     val applyLight: LightTypeData
@@ -119,8 +119,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                         }
                     }
                     SetDiscreteLightAction(component.nodeModel.nodeId, applyLight, undoLight)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
@@ -135,14 +134,13 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * 90,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.lightState.value as LightTypeData.Spot }
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, props[i].spotAngle.toDouble())
                     val mergedApply = mergeDouble(apply, props[i].spotAngle.toDouble())
                     val undoProps = props[i].copy(spotAngle = mergedUndo.toFloat())
                     val applyProps = props[i].copy(spotAngle = mergedApply.toFloat())
                     SetDiscreteLightAction(component.nodeModel.nodeId, applyProps, undoProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
         labeledDoubleTextField(
@@ -153,14 +151,13 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
             editHandler = ActionValueEditHandler { undo, apply ->
                 val props = components.map { it.lightState.value as LightTypeData.Spot }
-                val actions = components.mapIndexed { i, component ->
+                components.mapIndexed { i, component ->
                     val mergedUndo = mergeDouble(undo, props[i].coreRatio.toDouble())
                     val mergedApply = mergeDouble(apply, props[i].coreRatio.toDouble())
                     val undoProps = props[i].copy(coreRatio = mergedUndo.toFloat())
                     val applyProps = props[i].copy(coreRatio = mergedApply.toFloat())
                     SetDiscreteLightAction(component.nodeModel.nodeId, applyProps, undoProps)
-                }
-                FusedAction(actions)
+                }.fused()
             }
         )
     }
