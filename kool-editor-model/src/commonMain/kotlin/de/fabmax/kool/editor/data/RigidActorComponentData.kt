@@ -9,7 +9,7 @@ class RigidActorComponentData(var properties: RigidActorProperties = RigidActorP
 data class RigidActorProperties(
     val type: RigidActorType = RigidActorType.DYNAMIC,
     val shapes: List<ShapeData> = emptyList(),
-    val mass: Float = 1f,
+    val mass: Double = 1.0,
 )
 
 enum class RigidActorType {

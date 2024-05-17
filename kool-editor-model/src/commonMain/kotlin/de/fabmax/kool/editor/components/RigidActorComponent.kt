@@ -91,7 +91,7 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
             createRigidBody()
 
         } else if (actor is RigidDynamic) {
-            actor.mass = componentData.properties.mass
+            actor.mass = componentData.properties.mass.toFloat()
         }
     }
 
@@ -112,8 +112,8 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         geometry.forEach { it.release() }
 
         rigidActor = when (componentData.properties.type) {
-            RigidActorType.DYNAMIC -> RigidDynamic(componentData.properties.mass)
-            RigidActorType.KINEMATIC -> RigidDynamic(componentData.properties.mass, isKinematic = true)
+            RigidActorType.DYNAMIC -> RigidDynamic(componentData.properties.mass.toFloat())
+            RigidActorType.KINEMATIC -> RigidDynamic(componentData.properties.mass.toFloat(), isKinematic = true)
             RigidActorType.STATIC -> RigidStatic()
         }
 
@@ -137,7 +137,7 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         return when (this) {
             is ShapeData.Box -> BoxGeometry(size.toVec3f())
             is ShapeData.Capsule -> CapsuleGeometry(length.toFloat(), radius.toFloat())
-            is ShapeData.Cylinder -> CylinderGeometry(length.toFloat(), topRadius.toFloat())
+            is ShapeData.Cylinder -> CylinderGeometry(length.toFloat(), bottomRadius.toFloat())
             is ShapeData.Sphere -> SphereGeometry(radius.toFloat())
             is ShapeData.Heightmap -> loadHeightmapGeometry(this)
             is ShapeData.Rect -> null
