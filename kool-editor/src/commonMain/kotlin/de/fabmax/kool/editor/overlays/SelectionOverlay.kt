@@ -5,6 +5,8 @@ import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.ui.UiColors
 import de.fabmax.kool.input.KeyboardInput
+import de.fabmax.kool.input.Pointer
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
@@ -22,7 +24,7 @@ import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
 import kotlin.math.max
 
-class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
+class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
     var selection: Set<NodeModel> = emptySet()
         private set
@@ -79,6 +81,35 @@ class SelectionOverlay(editor: KoolEditor) : Node("Selection overlay") {
                     overlayMesh.isVisible = meshSelection.isNotEmpty()
                 }
             }
+        }
+    }
+
+    fun clickSelect(ptr: Pointer) {
+        val sceneModel = editor.activeScene.value ?: return
+        val appScene = sceneModel.drawNode
+
+        val rayTest = RayTest()
+        if (appScene.computePickRay(ptr, rayTest.ray)) {
+            rayTest.clear()
+            var selectedNodeModel: SceneNodeModel? = editor.sceneObjectsOverlay.pick(rayTest)
+            val distOv = if (rayTest.isHit) rayTest.hitDistanceSqr else Float.POSITIVE_INFINITY
+
+            rayTest.clear()
+            appScene.rayTest(rayTest)
+            if (rayTest.isHit && rayTest.hitDistanceSqr < distOv) {
+                var hitModel: SceneNodeModel? = null
+                var it = rayTest.hitNode
+                while (it != null) {
+                    hitModel = sceneModel.nodesToNodeModels[it] as? SceneNodeModel
+                    if (hitModel != null) {
+                        break
+                    }
+                    it = it.parent
+                }
+                selectedNodeModel = hitModel ?: selectedNodeModel
+            }
+
+            selectSingle(selectedNodeModel)
         }
     }
 

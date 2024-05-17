@@ -41,6 +41,17 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
 
     val onNodeUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
 
+    fun isVisibleWithParents(): Boolean {
+        if (!isVisibleState.value) {
+            return false
+        }
+        return if (this is SceneNodeModel) {
+            parent.isVisibleWithParents()
+        } else {
+            true
+        }
+    }
+
     fun addChild(child: SceneNodeModel, insertionPos: InsertionPos = InsertionPos.End) {
         // addChild() is called during scene creation for all child nodes of this NodeModel, in that case
         // the IDs of the children already exist in nodeData.childNodeIds -> only insert node ID if it isn't
