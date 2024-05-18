@@ -19,6 +19,7 @@ class TransformComponent(nodeModel: SceneNodeModel, override val componentData: 
         }
         if (nodeModel.isCreated) {
             it.toTransform(nodeModel.drawNode.transform)
+            nodeModel.drawNode.updateModelMat()
         }
         onTransformEdited.forEach { it(this) }
     }
@@ -40,5 +41,6 @@ class TransformComponent(nodeModel: SceneNodeModel, override val componentData: 
 
     fun applyTransformTo(drawNode: Node) {
         componentData.transform.toTransform(drawNode.transform)
+        drawNode.updateModelMat()
     }
 }

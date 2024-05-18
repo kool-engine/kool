@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.components
 
+import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.PhysicsWorldComponentData
 import de.fabmax.kool.editor.model.SceneModel
@@ -33,6 +34,12 @@ class PhysicsWorldComponent(override val nodeModel: SceneModel, override val com
 
         Physics.loadAndAwaitPhysics()
         physicsWorld = PhysicsWorld(null, componentData.properties.isContinuousCollisionDetection)
+
+        onUpdate {
+            physicsWorld?.let { world ->
+                world.isPauseSimulation = AppState.appMode == AppMode.PAUSE
+            }
+        }
     }
 
     override fun destroyComponent() {

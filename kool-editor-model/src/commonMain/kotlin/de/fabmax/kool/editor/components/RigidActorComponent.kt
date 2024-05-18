@@ -71,6 +71,11 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        setPhysicsTransformFromModel()
+    }
+
     override fun destroyComponent() {
         super.destroyComponent()
         rigidActor?.let {

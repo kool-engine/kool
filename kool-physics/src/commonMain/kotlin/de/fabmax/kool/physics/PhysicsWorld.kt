@@ -22,6 +22,7 @@ abstract class PhysicsWorld : BaseReleasable() {
     var physicsTime = 0.0
 
     var simStepper: PhysicsStepper = ConstantPhysicsStepperSync()
+    var isPauseSimulation = false
     var isStepInProgress = false
     var prevStepTime = 0f
 
@@ -40,7 +41,9 @@ abstract class PhysicsWorld : BaseReleasable() {
 
     private var registeredAtScene: Scene? = null
     private val onRenderSceneHook: (KoolContext) -> Unit = { ctx ->
-        physicsTime += simStepper.stepSimulation(this, ctx)
+        if (!isPauseSimulation) {
+            physicsTime += simStepper.stepSimulation(this, ctx)
+        }
     }
 
     abstract var gravity: Vec3f
