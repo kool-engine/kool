@@ -139,7 +139,9 @@ class BoxSelector : Composable {
                 is Model -> drawNode.meshes.values.any { testMesh(it) }
                 is Light -> true
                 is Camera -> true
-                else -> true
+
+                // do not box-select groups
+                else -> false
             }
         }
 

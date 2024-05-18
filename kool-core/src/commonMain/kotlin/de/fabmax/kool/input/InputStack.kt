@@ -38,7 +38,7 @@ object InputStack {
     fun updateHandlerStack(): Boolean {
         val hasChanged = handlerStack.update()
         if (hasChanged) {
-            onInputStackChanged.forEach { it() }
+            onInputStackChanged.updated().forEach { it() }
         }
         return hasChanged
     }

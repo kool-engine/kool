@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.filesystem
 
 import de.fabmax.kool.*
-import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.Uint8Buffer
 
 abstract class FileSystemAssetLoader(val baseDir: FileSystemDirectory) : AssetLoader() {
@@ -12,7 +11,7 @@ abstract class FileSystemAssetLoader(val baseDir: FileSystemDirectory) : AssetLo
 
     override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
         val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        val texData = loadTextureData2d(refCopy).data as TextureData2d?
+        val texData = loadTextureData2d(refCopy).data
         return LoadedTextureAsset(textureRef, texData)
     }
 
