@@ -51,7 +51,7 @@ open class UiSurface(
     val onCompose = mutableListOf<() -> Unit>()
 
     var lastInputTime = 0.0
-    var isFocused = mutableStateOf(false).onChange { if (it) setFocusedSurface(this) }
+    val isFocused = mutableStateOf(false).onChange { if (it) setFocusedSurface(this) }
 
     var colors: Colors by colorsState::value
     var sizes: Sizes by sizesState::value
@@ -85,6 +85,8 @@ open class UiSurface(
 
             if (isVisible) {
                 inputHandler.checkInputHandler(it.ctx)
+                InputStack.updateHandlerStack()
+
                 if (requiresUpdate) {
                     requiresUpdate = false
                     updateUi(it)

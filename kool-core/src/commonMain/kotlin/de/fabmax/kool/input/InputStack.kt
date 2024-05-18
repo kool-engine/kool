@@ -35,6 +35,14 @@ object InputStack {
         }
     }
 
+    fun updateHandlerStack(): Boolean {
+        val hasChanged = handlerStack.update()
+        if (hasChanged) {
+            onInputStackChanged.forEach { it() }
+        }
+        return hasChanged
+    }
+
     fun popAboveAndIncluding(inputHandler: InputHandler) {
         for (i in handlerStack.indices.reversed()) {
             val it = handlerStack[i]
@@ -48,9 +56,7 @@ object InputStack {
     internal fun handleInput(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
         var pointerBlocked = false
 
-        if (handlerStack.update()) {
-            onInputStackChanged.forEach { it() }
-        }
+        updateHandlerStack()
 
         for (i in handlerStack.lastIndex downTo 0) {
             val handler = handlerStack[i]
