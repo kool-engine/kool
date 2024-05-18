@@ -98,6 +98,9 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
                     if (updateFail) {
                         recreateModel()
                     }
+                    model.meshes.values.forEach {
+                        it.isCastingShadow = material.shaderData.genericSettings.isCastingShadow
+                    }
                 }
             }
         }
@@ -189,6 +192,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
                 }
                 if (shaderOk) {
                     mesh.shader = shader
+                    mesh.isCastingShadow = material.shaderData.genericSettings.isCastingShadow
                 }
             }
         }

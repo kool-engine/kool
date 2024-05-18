@@ -144,7 +144,10 @@ class MapAttribute(val mapPath: String, val channels: String? = null) : Material
 }
 
 @Serializable
-data class GenericMaterialSettings(val isTwoSided: Boolean = false) {
+data class GenericMaterialSettings(
+    val isTwoSided: Boolean = false,
+    val isCastingShadow: Boolean = true
+) {
     fun matchesPipelineConfig(cfg: PipelineConfig): Boolean {
         return isTwoSided == (cfg.cullMethod == CullMethod.NO_CULLING)
     }

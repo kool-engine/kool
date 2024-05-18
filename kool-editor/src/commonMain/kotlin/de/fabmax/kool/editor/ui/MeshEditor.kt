@@ -165,7 +165,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             }
         )
         val isIco = spheres.all { it.sphereType == "ico" }
-        labeledCheckbox("Generate as ico-sphere", isIco) { setIco ->
+        labeledCheckbox("Generate ico-sphere:", isIco) { setIco ->
             val newType = if (setIco) "ico" else "uv"
             val newSteps = if (setIco) 2 else 20
             val editSpheres = getShapes<ShapeData.Sphere>()

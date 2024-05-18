@@ -96,7 +96,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
     private fun ColumnScope.componentEditors(objects: List<NodeModel>) {
         val primary = objects[0]
         val componentTypes = buildSet {
-            primary.components.forEach { add(it.componentType) }
+            primary.components.use().forEach { add(it.componentType) }
             for (i in 1 until objects.size) {
                 retainAll(objects[i].components.map { it.componentType })
             }

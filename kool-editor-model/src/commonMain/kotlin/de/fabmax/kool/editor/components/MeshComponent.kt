@@ -197,6 +197,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
             logD { "${nodeModel.name}: (re-)creating shader for material: ${materialData.name}" }
 
             mesh.shader = materialData.createShader(sceneShaderData)
+            mesh.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
 
         } else {
             logD { "${nodeModel.name}: (re-)creating shader for default material" }
@@ -226,6 +227,7 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
                 if (material == null || !material.updateShader(mesh.shader, sceneModel.shaderData)) {
                     createMeshShader()
                 }
+                mesh.isCastingShadow = material?.shaderData?.genericSettings?.isCastingShadow ?: true
             }
         }
     }

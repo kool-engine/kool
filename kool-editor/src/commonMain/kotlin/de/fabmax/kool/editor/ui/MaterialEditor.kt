@@ -72,7 +72,15 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
             isTwoSided = it
 
             val undoMaterial = material.shaderData
-            val applyMaterial = material.shaderData.copy(genericSettings = material.shaderData.genericSettings.copy(it))
+            val applyMaterial = material.shaderData.copy(genericSettings = material.shaderData.genericSettings.copy(isTwoSided = it))
+            UpdateMaterialAction(material, applyMaterial, undoMaterial).apply()
+        }
+        var isCastingShadow by remember(material.shaderData.genericSettings.isCastingShadow)
+        labeledCheckbox("Is casting shadow:", isCastingShadow) {
+            isCastingShadow = it
+
+            val undoMaterial = material.shaderData
+            val applyMaterial = material.shaderData.copy(genericSettings = material.shaderData.genericSettings.copy(isCastingShadow = it))
             UpdateMaterialAction(material, applyMaterial, undoMaterial).apply()
         }
     }
