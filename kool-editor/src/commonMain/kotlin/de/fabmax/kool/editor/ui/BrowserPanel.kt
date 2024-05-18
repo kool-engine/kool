@@ -92,7 +92,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             selectDefaultDir()
         }
 
-        val dirPopupMenu = remember { ContextPopupMenu<BrowserItem>() }
+        val dirPopupMenu = remember { ContextPopupMenu<BrowserItem>("dir-popup") }
         dirPopupMenu()
 
         LazyList(
@@ -170,7 +170,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         val dir = selectedDirectory.use()
         val dirItems = dir?.children ?: emptyList()
 
-        val popupMenu = remember { ContextPopupMenu<BrowserItem>() }
+        val popupMenu = remember { ContextPopupMenu<BrowserItem>("dir-content-popup") }
         popupMenu()
 
         if (dir != null) {

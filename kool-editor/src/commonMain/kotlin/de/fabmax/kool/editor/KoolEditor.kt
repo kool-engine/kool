@@ -11,7 +11,6 @@ import de.fabmax.kool.editor.components.SsaoComponent
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
@@ -19,7 +18,6 @@ import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
-import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
 import de.fabmax.kool.modules.filesystem.toZip
 import de.fabmax.kool.modules.ui2.docking.DockLayout
@@ -138,7 +136,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return
 
         logI { "Start app" }
-        InputStack.handlerStack.removeAll { it is EditorKeyListener }
+        editMode.mode.set(EditorEditMode.Mode.NONE)
+        InputStack.handlerStack.filterIsInstance<EditorKeyListener>().forEach {
+            InputStack.handlerStack.stageRemove(it)
+        }
 
         // fixme: a bit hacky currently: restore app scene camera
         //  it was replaced by custom editor cam during editor app load
@@ -234,35 +235,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
     private fun registerSceneObjectPicking() {
         editorInputContext.pointerListeners += object : InputStack.PointerListener {
-            val rayTest = RayTest()
-
             override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
-                val sceneModel = activeScene.value ?: return
-                val appScene = sceneModel.drawNode
                 val ptr = pointerState.primaryPointer
                 if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
-                    if (appScene.computePickRay(ptr, rayTest.ray)) {
-                        rayTest.clear()
-                        var selectedNodeModel: SceneNodeModel? = sceneObjectsOverlay.pick(rayTest)
-                        val distOv = if (rayTest.isHit) rayTest.hitDistanceSqr else Float.POSITIVE_INFINITY
-
-                        rayTest.clear()
-                        appScene.rayTest(rayTest)
-                        if (rayTest.isHit && rayTest.hitDistanceSqr < distOv) {
-                            var hitModel: SceneNodeModel? = null
-                            var it = rayTest.hitNode
-                            while (it != null) {
-                                hitModel = sceneModel.nodesToNodeModels[it] as? SceneNodeModel
-                                if (hitModel != null) {
-                                    break
-                                }
-                                it = it.parent
-                            }
-                            selectedNodeModel = hitModel ?: selectedNodeModel
-                        }
-
-                        selectionOverlay.selectSingle(selectedNodeModel)
-                    }
+                    selectionOverlay.clickSelect(ptr)
                 }
             }
         }

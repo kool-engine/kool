@@ -106,7 +106,13 @@ class SelectionTransform(nodeModels: List<SceneNodeModel>) {
         }
 
         fun restoreInitial() {
-            nodeModel.drawNode.transform.setCompositionOf(startPosition, startRotation, startScale)
+            nodeModel.transform.transformState.set(
+                TransformData(
+                    Vec3Data(startPosition),
+                    Vec4Data(startRotation),
+                    Vec3Data(startScale),
+                )
+            )
         }
     }
 }

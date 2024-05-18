@@ -12,6 +12,8 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
     EditorDataComponent<BehaviorComponentData>
 {
 
+    override val componentType: String = "${this::class.simpleName}<${componentData.behaviorClassName}>"
+
     val behaviorClassNameState = mutableStateOf(componentData.behaviorClassName).onChange { componentData.behaviorClassName = it }
     val runInEditMode = mutableStateOf(componentData.runInEditMode).onChange { componentData.runInEditMode = it }
 

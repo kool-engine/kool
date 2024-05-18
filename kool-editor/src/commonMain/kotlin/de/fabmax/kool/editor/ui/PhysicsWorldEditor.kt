@@ -4,7 +4,7 @@ import de.fabmax.kool.editor.actions.SetPhysicsWorldPropertiesAction
 import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.modules.ui2.*
 
-class PhysicsWorldEditor(component: PhysicsWorldComponent) : ComponentEditor<PhysicsWorldComponent>(component) {
+class PhysicsWorldEditor : ComponentEditor<PhysicsWorldComponent>() {
 
     override fun UiScope.compose() = componentPanel(
         title = "Physics World",

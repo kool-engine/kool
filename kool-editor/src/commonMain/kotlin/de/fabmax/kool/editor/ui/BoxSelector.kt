@@ -67,6 +67,9 @@ class BoxSelector : Composable {
                     it.reject()
                 }
             }
+            .onClick { ev ->
+                KoolEditor.instance.selectionOverlay.clickSelect(ev.pointer)
+            }
 
 
         if (isBoxSelect.use()) {
@@ -104,7 +107,9 @@ class BoxSelector : Composable {
             TODO()
         }
 
-        val boxSelection = scene.sceneNodes.filter { camHelper.testSceneNode(it) }.toSet()
+        val boxSelection = scene.sceneNodes.filter {
+            it.isVisibleWithParents() && camHelper.testSceneNode(it)
+        }.toSet()
         val newSelection = if (KeyboardInput.isAltDown) {
             startSelection - boxSelection
         } else {
@@ -134,7 +139,9 @@ class BoxSelector : Composable {
                 is Model -> drawNode.meshes.values.any { testMesh(it) }
                 is Light -> true
                 is Camera -> true
-                else -> true
+
+                // do not box-select groups
+                else -> false
             }
         }
 
@@ -206,6 +213,7 @@ class BoxSelector : Composable {
                         isIntersect = isIntersect || testBoxPointInsideAbc(boxMinX, boxMaxY)
                         isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMinY)
                         isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMaxY)
+                        isIntersect = isIntersect || testTriEdgesVsBoxEdges()
                         if (isIntersect) break
                     }
                 }
@@ -225,6 +233,50 @@ class BoxSelector : Composable {
                 val hasPos = (d1 > 0) || (d2 > 0) || (d3 > 0)
                 return !(hasNeg && hasPos)
             }
+
+            private fun testTriEdgesVsBoxEdges(): Boolean {
+                return testEdgeVsBox(tmpA, tmpB) || testEdgeVsBox(tmpB, tmpC) || testEdgeVsBox(tmpC, tmpA)
+            }
+
+            private fun testEdgeVsBox(p1: Vec3f, p2: Vec3f): Boolean {
+                val c1 = computeOutCode(p1)
+                val c2 = computeOutCode(p2)
+                val ored = c1 or c2
+
+                return if (c1 == INSIDE || c2 == INSIDE || ored == 3 || ored == 12) {
+                    // guaranteed intersection
+                    true
+                } else if (c1 and c2 != 0) {
+                    // guaranteed outside
+                    false
+                } else {
+                    // todo: test edge vs. individual box edges
+                    false
+                }
+            }
+
+            private fun computeOutCode(triPt: Vec3f): Int {
+                var code = INSIDE
+                if (triPt.x < boxMinX) {
+                    code = code or LEFT
+                } else if (triPt.x > boxMaxX) {
+                    code = code or RIGHT
+                }
+                if (triPt.y < boxMinY) {
+                    code = code or BOTTOM
+                } else if (triPt.y > boxMaxY) {
+                    code = code or TOP
+                }
+                return code
+            }
+        }
+
+        companion object {
+            const val INSIDE = 0
+            const val LEFT = 1
+            const val RIGHT = 2
+            const val BOTTOM = 4
+            const val TOP = 8
         }
     }
 

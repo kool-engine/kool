@@ -114,5 +114,6 @@ sealed class ShapeData {
         val defaultRect = Rect(Vec2Data(1.0, 1.0))
         val defaultCylinder = Cylinder(1.0, 1.0, 1.0)
         val defaultCapsule = Capsule(1.0, 1.0)
+        val defaultHeightmap = Heightmap("")
     }
 }

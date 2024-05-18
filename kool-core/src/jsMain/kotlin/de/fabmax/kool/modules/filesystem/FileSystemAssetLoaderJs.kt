@@ -2,10 +2,7 @@ package de.fabmax.kool.modules.filesystem
 
 import de.fabmax.kool.*
 import de.fabmax.kool.modules.audio.AudioClipImpl
-import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.ImageAtlasTextureData
-import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.Uint8BufferImpl
 import kotlinx.coroutines.await
 import org.w3c.dom.url.URL
@@ -29,20 +26,11 @@ class FileSystemAssetLoaderJs(baseDir: FileSystemDirectory): FileSystemAssetLoad
     }
 
     override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
-        val refCopy = TextureAssetRef(textureData2dRef.path, textureData2dRef.props)
-        val texData = loadTexture(refCopy).data?.let { bmpData ->
-            val props = textureData2dRef.props ?: TextureProps()
-            val texData = bmpData as ImageTextureData
-            val buffer = ImageTextureData.imageBitmapToBuffer(texData.data, props)
-
-            TextureData2d(
-                buffer,
-                texData.width,
-                texData.height,
-                props.format
-            )
+        val data = loadData(textureData2dRef.path)?.let { texData ->
+            val mime = MimeType.forFileName(textureData2dRef.path)
+            PlatformAssetsImpl.loadTextureDataFromBuffer(texData, mime, textureData2dRef.props)
         }
-        return LoadedTextureAsset(textureData2dRef, texData)
+        return LoadedTextureAsset(textureData2dRef, data)
     }
 
     override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {

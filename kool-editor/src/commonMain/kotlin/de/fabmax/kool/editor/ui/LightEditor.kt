@@ -1,137 +1,176 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.actions.EditorAction
+import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetDiscreteLightAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.LightTypeData
+import de.fabmax.kool.math.toVec4d
 import de.fabmax.kool.modules.ui2.*
-import kotlin.reflect.KClass
+import de.fabmax.kool.util.Color
 
-class LightEditor(component: DiscreteLightComponent) : ComponentEditor<DiscreteLightComponent>(component) {
+class LightEditor : ComponentEditor<DiscreteLightComponent>() {
 
-    private val currentLight: LightTypeData get() = component.lightState.value
-    private val lightTypeIndex: Int
-        get() = lightTypes.indexOfFirst { it.lightType.isInstance(currentLight) }
+    private var editLightsStart = listOf<LightTypeData>()
 
     override fun UiScope.compose() = componentPanel("Light", IconMap.small.light, ::removeComponent) {
-        component.lightState.use().let { light ->
-            Column(width = Grow.Std) {
-                modifier
-                    .padding(horizontal = sizes.gap)
-                    .margin(bottom = sizes.smallGap)
+        Column(width = Grow.Std) {
+            modifier
+                .padding(horizontal = sizes.gap)
+                .margin(bottom = sizes.smallGap)
 
-                labeledCombobox("Type:", lightTypes, lightTypeIndex) {
-                    // keep color when switching light type, but not intensity (because directional lights have
-                    // drastically different intensity range than point- / spot-lights)
-                    val color = currentLight.color
-                    val newLight = when (it.lightType) {
-                        LightTypeData.Directional::class -> LightTypeData.Directional(color)
-                        LightTypeData.Spot::class -> LightTypeData.Spot(color)
-                        LightTypeData.Point::class -> LightTypeData.Point(color)
-                        else -> throw IllegalStateException("Unsupported light type: ${it.lightType}")
+            val lightData = components.map { it.lightState.use() }
+            val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(lightData.map { it.typeOption })
+            labeledCombobox(
+                label = "Type:",
+                items = typeItems,
+                selectedIndex = typeIdx
+            ) { selected ->
+                selected.item?.let { lightType ->
+                    val actions = components.map { component ->
+                        // keep color when switching light type, but not intensity (because directional lights have
+                        // drastically different intensity range than point- / spot-lights)
+                        val color = component.lightState.value.color
+                        val newLight = when (lightType) {
+                            TypeOption.Directional -> LightTypeData.Directional(color)
+                            TypeOption.Spot -> LightTypeData.Spot(color)
+                            TypeOption.Point -> LightTypeData.Point(color)
+                        }
+                        SetDiscreteLightAction(component.nodeModel.nodeId, newLight, component.lightState.value)
                     }
-                    SetDiscreteLightAction(nodeId, newLight, currentLight).apply()
+                    FusedAction(actions).apply()
                 }
+            }
 
-                menuDivider()
-                colorSettings()
+            menuDivider()
+            colorSettings()
 
-                if (light is LightTypeData.Spot) {
-                    spotSettings(light)
-                }
+            if (lightData.all { it is LightTypeData.Spot }) {
+                spotSettings()
             }
         }
     }
 
     private fun UiScope.colorSettings() {
+        val colors = condenseVec4(components.map { it.lightState.value.color.toColorSrgb().toVec4f().toVec4d() })
+        val color = if (colors.x.isFinite() && colors.y.isFinite() && colors.z.isFinite() && colors.w.isFinite()) {
+            Color(colors.x.toFloat(), colors.y.toFloat(), colors.z.toFloat(), colors.w.toFloat())
+        } else {
+            Color.WHITE
+        }
+
         labeledColorPicker(
             label = "Color:",
-            pickerColor = currentLight.color.toColorSrgb(),
-            editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val applyLight: LightTypeData
-                val undoLight: LightTypeData
-                when (val light = currentLight) {
-                    is LightTypeData.Directional -> {
-                        applyLight = light.copy(color = ColorData(applyValue.toLinear()))
-                        undoLight = light.copy(color = ColorData(undoValue.toLinear()))
-                    }
-                    is LightTypeData.Point -> {
-                        applyLight = light.copy(color = ColorData(applyValue.toLinear()))
-                        undoLight = light.copy(color = ColorData(undoValue.toLinear()))
-                    }
-                    is LightTypeData.Spot -> {
-                        applyLight = light.copy(color = ColorData(applyValue.toLinear()))
-                        undoLight = light.copy(color = ColorData(undoValue.toLinear()))
-                    }
+            pickerColor = color,
+            editHandler = object : ActionValueEditHandler<Color> {
+                override fun onEditStart(startValue: Color) {
+                    editLightsStart = components.map { it.lightState.value }
                 }
-                SetDiscreteLightAction(nodeId, applyLight, undoLight)
+
+                override fun makeEditAction(undoValue: Color, applyValue: Color): EditorAction {
+                    return components.mapIndexed { i, component ->
+                        val applyLight: LightTypeData
+                        val undoLight: LightTypeData = editLightsStart[i]
+                        when (val light = component.lightState.value) {
+                            is LightTypeData.Directional -> {
+                                applyLight = light.copy(color = ColorData(applyValue.toLinear()))
+                            }
+                            is LightTypeData.Point -> {
+                                applyLight = light.copy(color = ColorData(applyValue.toLinear()))
+                            }
+                            is LightTypeData.Spot -> {
+                                applyLight = light.copy(color = ColorData(applyValue.toLinear()))
+                            }
+                        }
+                        SetDiscreteLightAction(component.nodeModel.nodeId, applyLight, undoLight)
+                    }.fused()
+                }
+
             }
         )
 
-        val dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * if (currentLight is LightTypeData.Directional) 5.0 else 1000.0
+        val isAnyDirectional = components.any { it.lightState.value is LightTypeData.Directional }
+        val dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * if (isAnyDirectional) 5.0 else 1000.0
         labeledDoubleTextField(
             label = "Strength:",
-            value = currentLight.intensity.toDouble(),
+            value = condenseDouble(components.map { it.lightState.value.intensity.toDouble() }),
             minValue = 0.0,
             dragChangeSpeed = dragChangeSpeed,
-            editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val applyLight: LightTypeData
-                val undoLight: LightTypeData
-                when (val light = currentLight) {
-                    is LightTypeData.Directional -> {
-                        applyLight = light.copy(intensity = applyValue.toFloat())
-                        undoLight = light.copy(intensity = undoValue.toFloat())
+            editHandler = ActionValueEditHandler { undo, apply ->
+                components.map { component ->
+                    val mergedUndo = mergeDouble(undo, component.lightState.value.intensity.toDouble()).toFloat()
+                    val mergedApply = mergeDouble(apply, component.lightState.value.intensity.toDouble()).toFloat()
+                    val applyLight: LightTypeData
+                    val undoLight: LightTypeData
+                    when (val light = component.lightState.value) {
+                        is LightTypeData.Directional -> {
+                            applyLight = light.copy(intensity = mergedApply)
+                            undoLight = light.copy(intensity = mergedUndo)
+                        }
+                        is LightTypeData.Point -> {
+                            applyLight = light.copy(intensity = mergedApply)
+                            undoLight = light.copy(intensity = mergedUndo)
+                        }
+                        is LightTypeData.Spot -> {
+                            applyLight = light.copy(intensity = mergedApply)
+                            undoLight = light.copy(intensity = mergedUndo)
+                        }
                     }
-                    is LightTypeData.Point -> {
-                        applyLight = light.copy(intensity = applyValue.toFloat())
-                        undoLight = light.copy(intensity = undoValue.toFloat())
-                    }
-                    is LightTypeData.Spot -> {
-                        applyLight = light.copy(intensity = applyValue.toFloat())
-                        undoLight = light.copy(intensity = undoValue.toFloat())
-                    }
-                }
-                SetDiscreteLightAction(nodeId, applyLight, undoLight)
+                    SetDiscreteLightAction(component.nodeModel.nodeId, applyLight, undoLight)
+                }.fused()
             }
         )
     }
 
-    private fun UiScope.spotSettings(spot: LightTypeData.Spot) {
+    private fun UiScope.spotSettings() {
+        val spots = components.map { it.lightState.value as LightTypeData.Spot }
         labeledDoubleTextField(
             label = "Angle:",
-            value = spot.spotAngle.toDouble(),
+            value = condenseDouble(spots.map { it.spotAngle.toDouble() }),
             minValue = 0.0,
             maxValue = 120.0,
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * 90,
-            editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val applyLight = spot.copy(spotAngle = applyValue.toFloat())
-                val undoLight = spot.copy(spotAngle = undoValue.toFloat())
-                SetDiscreteLightAction(nodeId, applyLight, undoLight)
+            editHandler = ActionValueEditHandler { undo, apply ->
+                val props = components.map { it.lightState.value as LightTypeData.Spot }
+                components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, props[i].spotAngle.toDouble())
+                    val mergedApply = mergeDouble(apply, props[i].spotAngle.toDouble())
+                    val undoProps = props[i].copy(spotAngle = mergedUndo.toFloat())
+                    val applyProps = props[i].copy(spotAngle = mergedApply.toFloat())
+                    SetDiscreteLightAction(component.nodeModel.nodeId, applyProps, undoProps)
+                }.fused()
             }
         )
         labeledDoubleTextField(
             label = "Hardness:",
-            value = spot.coreRatio.toDouble(),
+            value = condenseDouble(spots.map { it.coreRatio.toDouble() }),
             minValue = 0.0,
             maxValue = 1.0,
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
-            editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val applyLight = spot.copy(coreRatio = applyValue.toFloat())
-                val undoLight = spot.copy(coreRatio = undoValue.toFloat())
-                SetDiscreteLightAction(nodeId, applyLight, undoLight)
+            editHandler = ActionValueEditHandler { undo, apply ->
+                val props = components.map { it.lightState.value as LightTypeData.Spot }
+                components.mapIndexed { i, component ->
+                    val mergedUndo = mergeDouble(undo, props[i].coreRatio.toDouble())
+                    val mergedApply = mergeDouble(apply, props[i].coreRatio.toDouble())
+                    val undoProps = props[i].copy(coreRatio = mergedUndo.toFloat())
+                    val applyProps = props[i].copy(coreRatio = mergedApply.toFloat())
+                    SetDiscreteLightAction(component.nodeModel.nodeId, applyProps, undoProps)
+                }.fused()
             }
         )
     }
 
-    private class LightTypeOption<T: LightTypeData>(val name: String, val lightType: KClass<T>) {
-        override fun toString(): String = name
+    private val LightTypeData.typeOption: TypeOption get() = TypeOption.entries.first { it.matches(this) }
+
+    private enum class TypeOption(val label: String, val matches: (LightTypeData?) -> Boolean) {
+        Directional("Directional", { it is LightTypeData.Directional }),
+        Spot("Spot", { it is LightTypeData.Spot }),
+        Point("Point", { it is LightTypeData.Point }),
     }
 
     companion object {
-        private val lightTypes = listOf(
-            LightTypeOption("Directional", LightTypeData.Directional::class),
-            LightTypeOption("Spot", LightTypeData.Spot::class),
-            LightTypeOption("Point", LightTypeData.Point::class)
-        )
+        private val typeOptions = ComboBoxItems(TypeOption.entries) { it.label }
     }
 }
