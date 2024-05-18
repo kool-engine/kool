@@ -136,7 +136,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return
 
         logI { "Start app" }
-        InputStack.handlerStack.removeAll { it is EditorKeyListener }
+        editMode.mode.set(EditorEditMode.Mode.NONE)
+        InputStack.handlerStack.filterIsInstance<EditorKeyListener>().forEach {
+            InputStack.handlerStack.stageRemove(it)
+        }
 
         // fixme: a bit hacky currently: restore app scene camera
         //  it was replaced by custom editor cam during editor app load

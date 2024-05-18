@@ -8,8 +8,8 @@ object InputStack {
 
     val defaultInputHandler = InputHandler("InputStack.defaultInputHandler")
 
-    val handlerStack = mutableListOf(defaultInputHandler)
-    val onInputStackChanged = mutableListOf<() -> Unit>()
+    val handlerStack = BufferedList<InputHandler>().apply { this += defaultInputHandler }
+    val onInputStackChanged = BufferedList<() -> Unit>()
 
     fun pushTop(inputHandler: InputHandler) {
         if (handlerStack.lastOrNull() != inputHandler) {
@@ -17,7 +17,6 @@ object InputStack {
                 remove(inputHandler)
             }
             handlerStack += inputHandler
-            fireInputStackChanged()
         }
     }
 
@@ -26,33 +25,32 @@ object InputStack {
             if (inputHandler in handlerStack) {
                 remove(inputHandler)
             }
-            handlerStack.add(0, inputHandler)
-            fireInputStackChanged()
+            handlerStack.stageAdd(inputHandler, 0)
         }
     }
 
     fun remove(inputHandler: InputHandler) {
-        if (handlerStack.remove(inputHandler)) {
-            fireInputStackChanged()
+        if (inputHandler in handlerStack) {
+            handlerStack -= inputHandler
         }
     }
 
     fun popAboveAndIncluding(inputHandler: InputHandler) {
-        while (handlerStack.isNotEmpty()) {
-            val removed = handlerStack.removeLast()
-            if (removed === inputHandler) {
+        for (i in handlerStack.indices.reversed()) {
+            val it = handlerStack[i]
+            handlerStack -= it
+            if (it === inputHandler) {
                 break
             }
         }
-        fireInputStackChanged()
-    }
-
-    private fun fireInputStackChanged() {
-        onInputStackChanged.forEach { it() }
     }
 
     internal fun handleInput(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
         var pointerBlocked = false
+
+        if (handlerStack.update()) {
+            onInputStackChanged.forEach { it() }
+        }
 
         for (i in handlerStack.lastIndex downTo 0) {
             val handler = handlerStack[i]
