@@ -7,6 +7,10 @@ import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.math.MutableMat4d
+import de.fabmax.kool.math.MutableQuatF
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
@@ -55,6 +59,16 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
 
         createRigidBody()
         nodeModel.transform.onTransformEdited += { setPhysicsTransformFromModel() }
+
+        val tmpMat4 = MutableMat4d()
+        onUpdate {
+            if (isStarted) {
+                rigidActor?.let { actor ->
+                    nodeModel.parent.drawNode.invModelMatD.mul(actor.transform.matrixD, tmpMat4)
+                    nodeModel.drawNode.transform.setMatrix(tmpMat4)
+                }
+            }
+        }
     }
 
     override fun destroyComponent() {
@@ -66,17 +80,6 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         geometry.forEach { it.release() }
         geometry = emptyList()
         rigidActor = null
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-        // make sure the draw node uses the physics transform
-        rigidActor?.let { actor ->
-            if (nodeModel.drawNode.transform != actor.transform) {
-                nodeModel.drawNode.transform = actor.transform
-            }
-        }
     }
 
     private suspend fun updateRigidActor() {
@@ -157,9 +160,18 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
     }
 
     private fun setPhysicsTransformFromModel() {
+        val t = MutableVec3f()
+        val r = MutableQuatF()
+        val s = MutableVec3f()
+        nodeModel.drawNode.modelMatF.decompose(t, r, s)
+
+        if (!s.isFuzzyEqual(Vec3f.ONES)) {
+            logW { "RigidActorComponent transform contains a scaling component, which may lead to unexpected behavior." }
+        }
+
         rigidActor?.apply {
-            position = nodeModel.transform.componentData.transform.position.toVec3f()
-            rotation = nodeModel.transform.componentData.transform.rotation.toQuatF()
+            position = t
+            rotation = r
         }
     }
 

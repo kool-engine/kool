@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.pipeline.RenderPass
 import kotlin.reflect.KClass
 
 abstract class EditorModelComponent(open val nodeModel: NodeModel) {
@@ -16,10 +17,14 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
     val requiredAssets = mutableSetOf<AssetReference>()
 
     var isCreated: Boolean = false
-        protected set
+        private set
+    var isStarted: Boolean = false
+        private set
 
     var componentOrder = COMPONENT_ORDER_DEFAULT
         protected set
+
+    private val onUpdateListeners = mutableSetOf<(RenderPass.UpdateEvent) -> Unit>()
 
     open suspend fun createComponent() {
         isCreated = true
@@ -29,10 +34,19 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
     }
 
     open fun destroyComponent() {
+        nodeModel.onNodeUpdate -= onUpdateListeners
+        onUpdateListeners.clear()
         isCreated = false
+        isStarted = false
     }
 
-    open fun onStart() { }
+    open fun onStart() {
+        isStarted = true
+    }
+
+    fun onUpdate(block: (RenderPass.UpdateEvent) -> Unit) {
+        nodeModel.onNodeUpdate += block
+    }
 
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {
         _dependencies += ComponentDependency(componentType, isOptional)
