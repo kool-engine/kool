@@ -118,7 +118,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                 is TransformComponent -> componentEditor(objects) { TransformEditor() }
                 is PhysicsWorldComponent -> componentEditor(objects) { PhysicsWorldEditor() }
                 is RigidActorComponent -> componentEditor(objects) { RigidActorEditor() }
-                is CharacterControllerComponent -> componentEditor(objects) { CharcterControllerEditor() }
+                is CharacterControllerComponent -> componentEditor(objects) { CharacterControllerEditor() }
             }
         }
     }

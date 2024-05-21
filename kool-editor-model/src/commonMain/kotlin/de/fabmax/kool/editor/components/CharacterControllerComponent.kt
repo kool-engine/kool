@@ -1,12 +1,15 @@
 package de.fabmax.kool.editor.components
 
+import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.CharacterControllerComponentData
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.QuatD
 import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.character.CharacterController
 import de.fabmax.kool.physics.character.CharacterControllerProperties
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 
 class CharacterControllerComponent(
@@ -16,6 +19,15 @@ class CharacterControllerComponent(
     PhysicsNodeComponent(nodeModel),
     EditorDataComponent<CharacterControllerComponentData>
 {
+
+    val charControllerState = mutableStateOf(componentData.properties).onChange {
+        if (AppState.isEditMode) {
+            componentData.properties = it
+        }
+        launchOnMainThread {
+            createCharController()
+        }
+    }
 
     var charController: CharacterController? = null
         private set
