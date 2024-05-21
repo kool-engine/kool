@@ -7,26 +7,26 @@ import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.math.MutableMat4d
-import de.fabmax.kool.math.MutableQuatF
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.QuatD
+import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.toQuatF
+import de.fabmax.kool.math.toVec3f
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
+import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.logE
 
 class RigidActorComponent(
     nodeModel: SceneNodeModel,
     override val componentData: RigidActorComponentData = RigidActorComponentData()
 ) :
-    SceneNodeComponent(nodeModel),
+    PhysicsNodeComponent(nodeModel),
     EditorDataComponent<RigidActorComponentData>,
-    PhysicsComponent,
     UpdateMeshComponent
 {
     val actorState = mutableStateOf(componentData.properties).onChange {
@@ -43,6 +43,8 @@ class RigidActorComponent(
     private var geometry: List<CollisionGeometry> = emptyList()
     private var bodyShapes: List<ShapeData> = emptyList()
 
+    override val actorTransform: TrsTransformF? get() = rigidActor?.transform
+
     init {
         dependsOn(MeshComponent::class, isOptional = true)
         dependsOn(ModelComponent::class, isOptional = true)
@@ -55,35 +57,18 @@ class RigidActorComponent(
 
     override suspend fun createComponent() {
         super.createComponent()
-
         createRigidBody()
-        nodeModel.transform.onTransformEdited += { setPhysicsTransformFromModel() }
-
-        val tmpMat4 = MutableMat4d()
-        onUpdate {
-            if (isStarted) {
-                rigidActor?.let { actor ->
-                    nodeModel.parent.drawNode.invModelMatD.mul(actor.transform.matrixD, tmpMat4)
-                    nodeModel.drawNode.transform.setMatrix(tmpMat4)
-                }
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        setPhysicsTransformFromModel()
     }
 
     override fun destroyComponent() {
         super.destroyComponent()
         rigidActor?.let {
-            nodeModel.sceneModel.getComponent<PhysicsWorldComponent>()?.physicsWorld?.removeActor(it)
+            physicsWorld?.removeActor(it)
             it.release()
         }
+        rigidActor = null
         geometry.forEach { it.release() }
         geometry = emptyList()
-        rigidActor = null
     }
 
     private suspend fun updateRigidActor() {
@@ -103,13 +88,10 @@ class RigidActorComponent(
     }
 
     private suspend fun createRigidBody() {
-        val physicsWorldComponent = nodeModel.sceneModel.getOrPutComponent<PhysicsWorldComponent> {
-            logW { "Failed to find a PhysicsWorldComponent in parent scene, creating default one" }
-            PhysicsWorldComponent(nodeModel.sceneModel)
-        }
+        val physicsWorldComponent = getOrCreatePhysicsWorldComponent()
         val physicsWorld = physicsWorldComponent.physicsWorld
         if (physicsWorld == null) {
-            logW { "Unable to create rigid body: parent physics world was not yet created" }
+            logE { "Unable to create rigid body: parent physics world was not yet created" }
         }
 
         rigidActor?.let {
@@ -137,7 +119,8 @@ class RigidActorComponent(
             geometry.forEach { attachShape(Shape(it)) }
             physicsWorld?.addActor(this)
         }
-        setPhysicsTransformFromModel()
+
+        setPhysicsTransformFromDrawNode()
     }
 
     private suspend fun ShapeData.makeCollisionGeometry(): CollisionGeometry? {
@@ -163,19 +146,10 @@ class RigidActorComponent(
         return HeightFieldGeometry(heightField)
     }
 
-    private fun setPhysicsTransformFromModel() {
-        val t = MutableVec3f()
-        val r = MutableQuatF()
-        val s = MutableVec3f()
-        nodeModel.drawNode.modelMatF.decompose(t, r, s)
-
-        if (!s.isFuzzyEqual(Vec3f.ONES)) {
-            logW { "RigidActorComponent transform contains a scaling component, which may lead to unexpected behavior." }
-        }
-
+    override fun applyPose(position: Vec3d, rotation: QuatD) {
         rigidActor?.apply {
-            position = t
-            rotation = r
+            this.position = position.toVec3f()
+            this.rotation = rotation.toQuatF()
         }
     }
 

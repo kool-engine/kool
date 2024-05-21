@@ -149,12 +149,12 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
         isCreated = false
     }
 
-    fun addComponent(component: EditorModelComponent) {
+    fun addComponent(component: EditorModelComponent, autoCreateComponent: Boolean = true) {
         components += component
         if (component is EditorDataComponent<*>) {
             nodeData.components += component.componentData
         }
-        if (isCreated) {
+        if (isCreated && autoCreateComponent) {
             launchOnMainThread {
                 component.createComponent()
             }
@@ -175,14 +175,11 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
         components.forEach { it.onStart() }
     }
 
-    inline fun <reified T: EditorModelComponent> getOrPutComponent(factory: () -> T): T {
+    inline fun <reified T: EditorModelComponent> getOrPutComponent(createComponent: Boolean = true, factory: () -> T): T {
         var c = components.find { it is T }
         if (c == null) {
             c = factory()
-            if (c is EditorDataComponent<*>) {
-                nodeData.components.add(c.componentData)
-            }
-            components += c
+            addComponent(c, createComponent)
         }
         return c as T
     }
