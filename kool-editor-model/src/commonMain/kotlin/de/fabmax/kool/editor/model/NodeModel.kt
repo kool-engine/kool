@@ -122,6 +122,7 @@ sealed class NodeModel(val nodeData: SceneNodeData) {
 
                 is PhysicsWorldComponentData -> components += PhysicsWorldComponent(requireScene, data)
                 is RigidActorComponentData -> components += RigidActorComponent(requireSceneNode, data)
+                is CharacterControllerComponentData -> components += CharacterControllerComponent(requireSceneNode, data)
             }
         }
         components.sortByDependencies()
