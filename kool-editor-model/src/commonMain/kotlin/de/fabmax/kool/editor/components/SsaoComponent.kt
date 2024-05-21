@@ -8,12 +8,13 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 
-class SsaoComponent(override val nodeModel: SceneModel, override val componentData: SsaoComponentData) :
+class SsaoComponent(
+    override val nodeModel: SceneModel,
+    override val componentData: SsaoComponentData = SsaoComponentData()
+) :
     EditorModelComponent(nodeModel),
     EditorDataComponent<SsaoComponentData>
 {
-
-    constructor(nodeModel: SceneModel): this(nodeModel, SsaoComponentData())
 
     val ssaoState = mutableStateOf(componentData.settings).onChange {
         if (AppState.isEditMode) {

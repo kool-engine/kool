@@ -20,11 +20,10 @@ import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logW
 
-fun RigidActorComponent(nodeModel: SceneNodeModel): RigidActorComponent {
-    return RigidActorComponent(nodeModel, RigidActorComponentData())
-}
-
-class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData: RigidActorComponentData) :
+class RigidActorComponent(
+    nodeModel: SceneNodeModel,
+    override val componentData: RigidActorComponentData = RigidActorComponentData()
+) :
     SceneNodeComponent(nodeModel),
     EditorDataComponent<RigidActorComponentData>,
     PhysicsComponent,

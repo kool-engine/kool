@@ -10,7 +10,10 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.util.*
 
-class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: ShadowMapComponentData) :
+class ShadowMapComponent(
+    nodeModel: SceneNodeModel,
+    override val componentData: ShadowMapComponentData = ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
+) :
     SceneNodeComponent(nodeModel),
     EditorDataComponent<ShadowMapComponentData>
 {
@@ -30,10 +33,6 @@ class ShadowMapComponent(nodeModel: SceneNodeModel, override val componentData: 
     }
 
     private var shadowMap: ShadowMap? = null
-
-    constructor(nodeModel: SceneNodeModel) : this(
-        nodeModel, ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
-    )
 
     init {
         dependsOn(DiscreteLightComponent::class)

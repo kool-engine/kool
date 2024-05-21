@@ -9,11 +9,10 @@ import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.util.logW
 
-fun PhysicsWorldComponent(nodeModel: SceneModel): PhysicsWorldComponent {
-    return PhysicsWorldComponent(nodeModel, PhysicsWorldComponentData())
-}
-
-class PhysicsWorldComponent(override val nodeModel: SceneModel, override val componentData: PhysicsWorldComponentData) :
+class PhysicsWorldComponent(
+    override val nodeModel: SceneModel,
+    override val componentData: PhysicsWorldComponentData = PhysicsWorldComponentData()
+) :
     EditorModelComponent(nodeModel),
     EditorDataComponent<PhysicsWorldComponentData>,
     PhysicsComponent

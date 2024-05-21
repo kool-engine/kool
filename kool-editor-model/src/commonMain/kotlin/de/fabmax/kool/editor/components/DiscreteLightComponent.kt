@@ -9,7 +9,10 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.util.Color
 
-class DiscreteLightComponent(nodeModel: SceneNodeModel, override val componentData: DiscreteLightComponentData) :
+class DiscreteLightComponent(
+    nodeModel: SceneNodeModel,
+    override val componentData: DiscreteLightComponentData = DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f))
+) :
     SceneNodeComponent(nodeModel),
     EditorDataComponent<DiscreteLightComponentData>,
     ContentComponent
@@ -26,8 +29,6 @@ class DiscreteLightComponent(nodeModel: SceneNodeModel, override val componentDa
 
     override val contentNode: Light
         get() = light
-
-    constructor(nodeModel: SceneNodeModel): this(nodeModel, DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f)))
 
     override suspend fun createComponent() {
         super.createComponent()
