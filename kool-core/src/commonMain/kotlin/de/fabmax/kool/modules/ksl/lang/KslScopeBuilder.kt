@@ -538,6 +538,11 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <V> dot(a: KslVectorExpression<V, KslFloat1>, b: KslVectorExpression<V, KslFloat1>)
         where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinDot(a, b)
 
+    fun dpdx(value: KslScalarExpression<KslFloat1>) = KslBuiltinDpdxScalar(value)
+    fun <V> dpdx(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinDpdxVector(vec)
+    fun dpdy(value: KslScalarExpression<KslFloat1>) = KslBuiltinDpdyScalar(value)
+    fun <V> dpdy(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinDpdyVector(vec)
+
     fun exp(value: KslScalarExpression<KslFloat1>) = KslBuiltinExpScalar(value)
     fun <V> exp(vec: KslVectorExpression<V, KslFloat1>) where V: KslFloatType, V: KslVector<KslFloat1> = KslBuiltinExpVector(vec)
     fun exp2(value: KslScalarExpression<KslFloat1>) = KslBuiltinExpScalar(value)

@@ -95,6 +95,30 @@ class KslBuiltinDot<V>(a: KslVectorExpression<V, KslFloat1>, b: KslVectorExpress
     override fun generateExpression(generator: KslGenerator) = generator.builtinDot(this)
 }
 
+class KslBuiltinDpdxScalar(value: KslExprFloat1)
+    : KslBuiltinFunctionScalar<KslFloat1>(value.expressionType, value) {
+    override val name = "dpdx"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinDpdx(this)
+}
+
+class KslBuiltinDpdxVector<V>(vec: KslVectorExpression<V, KslFloat1>)
+    : KslBuiltinFunctionVector<V, KslFloat1>(vec.expressionType, vec) where V: KslFloatType, V: KslVector<KslFloat1> {
+    override val name = "dpdx"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinDpdx(this)
+}
+
+class KslBuiltinDpdyScalar(value: KslExprFloat1)
+    : KslBuiltinFunctionScalar<KslFloat1>(value.expressionType, value) {
+    override val name = "dpdy"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinDpdy(this)
+}
+
+class KslBuiltinDpdyVector<V>(vec: KslVectorExpression<V, KslFloat1>)
+    : KslBuiltinFunctionVector<V, KslFloat1>(vec.expressionType, vec) where V: KslFloatType, V: KslVector<KslFloat1> {
+    override val name = "dpdy"
+    override fun generateExpression(generator: KslGenerator) = generator.builtinDpdy(this)
+}
+
 class KslBuiltinExpScalar(value: KslExprFloat1)
     : KslBuiltinFunctionScalar<KslFloat1>(value.expressionType, value) {
     override val name = "exp"

@@ -136,6 +136,10 @@ abstract class KslGenerator {
     abstract fun builtinDegrees(func: KslBuiltinDegreesVector<*>): String
     abstract fun builtinDistance(func: KslBuiltinDistanceScalar<*>): String
     abstract fun builtinDot(func: KslBuiltinDot<*>): String
+    abstract fun builtinDpdx(func: KslBuiltinDpdxScalar): String
+    abstract fun builtinDpdx(func: KslBuiltinDpdxVector<*>): String
+    abstract fun builtinDpdy(func: KslBuiltinDpdyScalar): String
+    abstract fun builtinDpdy(func: KslBuiltinDpdyVector<*>): String
     abstract fun builtinExp(func: KslBuiltinExpScalar): String
     abstract fun builtinExp(func: KslBuiltinExpVector<*>): String
     abstract fun builtinExp2(func: KslBuiltinExp2Scalar): String
