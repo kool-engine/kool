@@ -111,5 +111,7 @@ fun UiScope.componentPanel(
             }
         }
     },
-    block = block
-)
+) {
+    modifier.padding(start = sizes.largeGap, end = sizes.gap, bottom = sizes.smallGap)
+    block()
+}

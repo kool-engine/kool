@@ -15,18 +15,23 @@ abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeCompon
 
     abstract val actorTransform: TrsTransformF?
 
+    private val tmpMat4 = MutableMat4d()
+
     override suspend fun createComponent() {
         super.createComponent()
         nodeModel.transform.onTransformEdited += { setPhysicsTransformFromDrawNode() }
 
-        val tmpMat4 = MutableMat4d()
         onUpdate {
             if (isStarted) {
-                actorTransform?.let {
-                    nodeModel.parent.drawNode.invModelMatD.mul(it.matrixD, tmpMat4)
-                    nodeModel.drawNode.transform.setMatrix(tmpMat4)
-                }
+                updatePhysics()
             }
+        }
+    }
+
+    protected open fun updatePhysics() {
+        actorTransform?.let {
+            nodeModel.parent.drawNode.invModelMatD.mul(it.matrixD, tmpMat4)
+            nodeModel.drawNode.transform.setMatrix(tmpMat4)
         }
     }
 

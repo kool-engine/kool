@@ -9,7 +9,10 @@ import de.fabmax.kool.util.checkIsNotReleased
 import kotlin.math.abs
 import kotlin.math.max
 
-open class InputAxes(ctx: KoolContext) : BaseReleasable() {
+open class InputAxes(
+    ctx: KoolContext,
+    val inputHandler: InputStack.InputHandler = InputStack.defaultInputHandler
+) : BaseReleasable() {
     private val axesList = mutableListOf<Axis>()
     private val axes = mutableMapOf<String, Axis>()
 
@@ -33,7 +36,7 @@ open class InputAxes(ctx: KoolContext) : BaseReleasable() {
     fun registerAxis(name: String, posKeyCodes: Set<KeyCode>, negKeyCodes: Set<KeyCode>): Axis {
         val axis = Axis(name)
         for (key in posKeyCodes) {
-            axis.keyListeners += InputStack.defaultInputHandler.addKeyListener(
+            axis.keyListeners += inputHandler.addKeyListener(
                 key,
                 name,
                 InputStack.KEY_FILTER_ALL,
@@ -41,7 +44,7 @@ open class InputAxes(ctx: KoolContext) : BaseReleasable() {
             )
         }
         for (key in negKeyCodes) {
-            axis.keyListeners += InputStack.defaultInputHandler.addKeyListener(
+            axis.keyListeners += inputHandler.addKeyListener(
                 key,
                 name,
                 InputStack.KEY_FILTER_ALL,
@@ -62,7 +65,7 @@ open class InputAxes(ctx: KoolContext) : BaseReleasable() {
     override fun release() {
         KoolSystem.requireContext().onRender -= updateAxes
         axesList.forEach { ax ->
-            ax.keyListeners.forEach { InputStack.defaultInputHandler.removeKeyListener(it) }
+            ax.keyListeners.forEach { inputHandler.removeKeyListener(it) }
         }
         axesList.clear()
         axes.clear()
@@ -126,7 +129,11 @@ open class InputAxes(ctx: KoolContext) : BaseReleasable() {
     }
 }
 
-class DriveAxes(ctx: KoolContext) : InputAxes(ctx) {
+class DriveAxes(
+    ctx: KoolContext,
+    inputHandler: InputStack.InputHandler = InputStack.defaultInputHandler
+) : InputAxes(ctx, inputHandler) {
+
     val steerAx: Axis
     val throttleAx: Axis
     val brakeAx: Axis
@@ -155,7 +162,11 @@ class DriveAxes(ctx: KoolContext) : InputAxes(ctx) {
     }
 }
 
-class WalkAxes(ctx: KoolContext) : InputAxes(ctx) {
+class WalkAxes(
+    ctx: KoolContext,
+    inputHandler: InputStack.InputHandler = InputStack.defaultInputHandler
+) : InputAxes(ctx, inputHandler) {
+
     val forwardBackwardAx: Axis
     val leftRightAx: Axis
 

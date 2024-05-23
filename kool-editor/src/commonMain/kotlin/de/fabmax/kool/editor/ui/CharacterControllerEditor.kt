@@ -83,16 +83,31 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
                 }
             )
             labeledDoubleTextField(
-                label = "Jump strength:",
-                value = condenseDouble(charProps.map { it.jumpStrength }),
+                label = "Crouch speed:",
+                value = condenseDouble(charProps.map { it.crouchSpeed }),
                 dragChangeSpeed = DragChangeRates.SIZE,
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val props = components.map { it.charControllerState.value }
                     components.mapIndexed { i, component ->
-                        val mergedUndo = mergeDouble(undo, props[i].jumpStrength)
-                        val mergedApply = mergeDouble(apply, props[i].jumpStrength)
-                        val undoProps = props[i].copy(jumpStrength = mergedUndo)
-                        val applyProps = props[i].copy(jumpStrength = mergedApply)
+                        val mergedUndo = mergeDouble(undo, props[i].crouchSpeed)
+                        val mergedApply = mergeDouble(apply, props[i].crouchSpeed)
+                        val undoProps = props[i].copy(crouchSpeed = mergedUndo)
+                        val applyProps = props[i].copy(crouchSpeed = mergedApply)
+                        SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
+                    }.fused()
+                }
+            )
+            labeledDoubleTextField(
+                label = "Jump speed:",
+                value = condenseDouble(charProps.map { it.jumpSpeed }),
+                dragChangeSpeed = DragChangeRates.SIZE,
+                editHandler = ActionValueEditHandler { undo, apply ->
+                    val props = components.map { it.charControllerState.value }
+                    components.mapIndexed { i, component ->
+                        val mergedUndo = mergeDouble(undo, props[i].jumpSpeed)
+                        val mergedApply = mergeDouble(apply, props[i].jumpSpeed)
+                        val undoProps = props[i].copy(jumpSpeed = mergedUndo)
+                        val applyProps = props[i].copy(jumpSpeed = mergedApply)
                         SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
                     }.fused()
                 }
@@ -112,6 +127,25 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
                     }.fused()
                 }
             )
+
+            menuDivider()
+
+            val isKeyboardCtrl = charProps.all { it.enableDefaultControls }
+
+            labeledCheckbox("Default keyboard controls", isKeyboardCtrl) { enabled ->
+                val props = components.map { it.charControllerState.value }
+                components.mapIndexed { i, component ->
+                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, props[i], props[i].copy(enableDefaultControls = enabled))
+                }.fused().apply()
+            }
+            if (isKeyboardCtrl) {
+                labeledCheckbox("Run by default", charProps.all { it.runByDefault }) { enabled ->
+                    val props = components.map { it.charControllerState.value }
+                    components.mapIndexed { i, component ->
+                        SetCharControllerPropertiesAction(component.nodeModel.nodeId, props[i], props[i].copy(runByDefault = enabled))
+                    }.fused().apply()
+                }
+            }
         }
     }
 
