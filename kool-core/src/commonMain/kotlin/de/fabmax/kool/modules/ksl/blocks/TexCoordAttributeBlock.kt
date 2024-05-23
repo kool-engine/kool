@@ -16,7 +16,7 @@ class TexCoordAttributeBlock(name: String, parentScope: KslScopeBuilder) : KslBl
         check(parentScope.parentStage is KslVertexStage) { "TexCoordAttributeBlock must be added to KslVertexStage" }
     }
 
-    fun getAttributeCoords(attribute: Attribute): KslExprFloat2 {
+    fun getTextureCoords(attribute: Attribute = Attribute.TEXTURE_COORDS): KslExprFloat2 {
         return texCoords.getOrPut(attribute.name) {
             body.run {
                 val vertexStage = parentStage as KslVertexStage

@@ -16,7 +16,10 @@ import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BufferedTextureLoader
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
@@ -120,7 +123,8 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
 
     companion object {
         const val TERRAIN_SHADER_DISCARD_HEIGHT = "uDiscardHeight"
-        val TERRAIN_GRID_COORDS = Attribute("aGridCoords", GpuType.FLOAT2)
+        const val TEXTURE_SCALE = 64f
+        const val SPLAT_MAP_SCALE = 1f / TEXTURE_SCALE
 
         fun makeTerrainShader(
             colorMap: Texture2d,
@@ -132,8 +136,8 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
         ): KslShader {
 
             fun KslLitShader.LitShaderConfig.Builder.terrainConfig() {
-                color { textureColor(colorMap, coordAttribute = TERRAIN_GRID_COORDS) }
-                normalMapping { setNormalMap(normalMap, coordAttribute = TERRAIN_GRID_COORDS) }
+                color { textureColor(colorMap) }
+                normalMapping { setNormalMap(normalMap) }
                 shadow { addShadowMap(shadowMap) }
                 colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
                 enableSsao(ssaoMap)
@@ -157,7 +161,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
                     fragmentStage {
                         main {
                             val texCoordBlock = vertexStage?.findBlock<TexCoordAttributeBlock>()!!
-                            val splatCoords = texCoordBlock.getAttributeCoords(Attribute.TEXTURE_COORDS)
+                            val splatCoords = float2Var(texCoordBlock.getTextureCoords() * SPLAT_MAP_SCALE.const)
 
                             val material = findBlock<PbrMaterialBlock>() ?: findBlock<BlinnPhongMaterialBlock>()!!
                             val baseColor = material.inBaseColor.input!!

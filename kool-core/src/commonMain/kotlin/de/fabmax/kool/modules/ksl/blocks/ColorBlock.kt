@@ -67,7 +67,7 @@ class ColorBlockFragmentStage(
                     is ColorBlockConfig.InstanceColor -> vertexBlock(parentStage).instanceColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.TextureColor ->  {
                         val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
-                        val texCoords = texCoordBlock(parentStage).getAttributeCoords(source.coordAttribute)
+                        val texCoords = texCoordBlock(parentStage).getTextureCoords()
                         val texColor = float4Var(sampleTexture(tex, texCoords))
                         if (source.gamma != 1f) {
                             texColor.rgb set pow(texColor.rgb, Vec3f(source.gamma).const)
@@ -151,7 +151,6 @@ data class ColorBlockConfig(
          *
          * @param defaultTexture Texture to bind to this attribute
          * @param textureName Name of the texture used in the generated shader code
-         * @param coordAttribute Vertex attribute to use for the texture coordinates
          * @param gamma Color space conversion gama value. Default is 2.2 (sRGB -> linear), use a value of 1.0 to disable
          *              color space conversion
          * @param blendMode Blend mode for this color value. This is useful to combine multiple color sources (e.g.
@@ -160,11 +159,10 @@ data class ColorBlockConfig(
         fun textureColor(
             defaultTexture: Texture2d? = null,
             textureName: String = "t${colorName}",
-            coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
             gamma: Float = Color.GAMMA_sRGB_TO_LINEAR,
             blendMode: BlendMode = BlendMode.Set
         ): Builder {
-            colorSources += TextureColor(defaultTexture, textureName, coordAttribute, gamma, blendMode)
+            colorSources += TextureColor(defaultTexture, textureName, gamma, blendMode)
             return this
         }
 
@@ -174,16 +172,14 @@ data class ColorBlockConfig(
          *
          * @param defaultTexture Texture to bind to this attribute
          * @param textureName Name of the texture used in the generated shader code
-         * @param coordAttribute Vertex attribute to use for the texture coordinates
          * @param blendMode Blend mode for this color value. This is useful to combine multiple color sources (e.g.
          *                texture color and an instance color based color tint)
          */
         fun textureData(
             defaultTexture: Texture2d? = null,
             textureName: String = "tColor",
-            coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
             blendMode: BlendMode = BlendMode.Set
-        ) = textureColor(defaultTexture, textureName, coordAttribute, 1f, blendMode)
+        ) = textureColor(defaultTexture, textureName, 1f, blendMode)
 
         fun instanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, blendMode: BlendMode = BlendMode.Set): Builder {
             colorSources += InstanceColor(attribute, blendMode)
@@ -199,7 +195,7 @@ data class ColorBlockConfig(
     data class ConstColor(val constColor: Color, override val blendMode: BlendMode) : ColorSource
     data class UniformColor(val defaultColor: Color?, val uniformName: String, override val blendMode: BlendMode) : ColorSource
     data class VertexColor(val colorAttrib: Attribute, override val blendMode: BlendMode) : ColorSource
-    data class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val coordAttribute: Attribute, val gamma: Float, override val blendMode: BlendMode) : ColorSource
+    data class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val gamma: Float, override val blendMode: BlendMode) : ColorSource
     data class InstanceColor(val colorAttrib: Attribute, override val blendMode: BlendMode) : ColorSource
 
     enum class BlendMode {

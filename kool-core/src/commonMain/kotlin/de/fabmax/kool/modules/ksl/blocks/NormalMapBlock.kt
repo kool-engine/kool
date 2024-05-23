@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 
 fun KslScopeBuilder.normalMapBlock(cfg: NormalMapConfig, block: NormalMapBlock.() -> Unit): NormalMapBlock {
@@ -10,8 +9,9 @@ fun KslScopeBuilder.normalMapBlock(cfg: NormalMapConfig, block: NormalMapBlock.(
     return normalMapBlock
 }
 
-class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBuilder)
-    : KslBlock(name, parentScope) {
+class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBuilder) :
+    KslBlock(name, parentScope)
+{
 
     val inNormalWorldSpace = inFloat3("inNormalWorldSpace")
     val inTangentWorldSpace = inFloat4("inTangentWorldSpace")
@@ -37,14 +37,12 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
 data class NormalMapConfig(
     val isNormalMapped: Boolean,
     val normalMapName: String,
-    val coordAttribute: Attribute,
     val defaultNormalMap: Texture2d?,
     val strengthCfg: PropertyBlockConfig
 ) {
     class Builder {
         var isNormalMapped: Boolean = false
         var normalMapName: String = "tNormalMap"
-        var coordAttribute: Attribute = Attribute.TEXTURE_COORDS
         var defaultNormalMap: Texture2d? = null
         val strengthCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("normalMapStrength").constProperty(1f)
 
@@ -54,14 +52,13 @@ data class NormalMapConfig(
             return this
         }
 
-        fun setNormalMap(texture: Texture2d? = null, normalMapName: String = "tNormalMap", coordAttribute: Attribute = Attribute.TEXTURE_COORDS): Builder {
+        fun setNormalMap(texture: Texture2d? = null, normalMapName: String = "tNormalMap"): Builder {
             this.isNormalMapped = true
             this.normalMapName = normalMapName
-            this.coordAttribute = coordAttribute
             this.defaultNormalMap = texture
             return this
         }
 
-        fun build() = NormalMapConfig(isNormalMapped, normalMapName, coordAttribute, defaultNormalMap, strengthCfg.build())
+        fun build() = NormalMapConfig(isNormalMapped, normalMapName, defaultNormalMap, strengthCfg.build())
     }
 }

@@ -15,7 +15,7 @@ class VertexDisplacementBlock(
 ) : KslBlock(cfg.propertyName, parentScope) {
 
     val outProperty = outFloat1(parentScope.nextName("${opName}_outProperty"))
-    val outSamplerValues = mutableMapOf<Pair<String, Attribute>, KslVectorExpression<KslFloat4, KslFloat1>>()
+    val outSamplerValues = mutableMapOf<String, KslVectorExpression<KslFloat4, KslFloat1>>()
 
     val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslColorSampler2d>>()
 
@@ -34,13 +34,13 @@ class VertexDisplacementBlock(
                     is PropertyBlockConfig.VertexProperty -> parentStage.vertexAttribFloat1(source.propertyAttrib.name)
                     is PropertyBlockConfig.InstanceProperty -> parentStage.instanceAttribFloat1(source.propertyAttrib.name)
                     is PropertyBlockConfig.TextureProperty ->  {
-                        var sampleValue = findExistingSampleValue(source.textureName, source.coordAttribute, parentStage)
+                        var sampleValue = findExistingSampleValue(source.textureName, parentStage)
                         if (sampleValue == null) {
                             val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
                             sampleValue = parentScope.run {
-                                val texCoords = this@apply.parentStage.vertexAttribFloat2(source.coordAttribute.name)
+                                val texCoords = this@apply.parentStage.vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
                                 float4Var(sampleTexture(tex, texCoords, 0f.const)).also {
-                                    outSamplerValues[source.textureName to source.coordAttribute] = it
+                                    outSamplerValues[source.textureName] = it
                                 }
                             }
                         }
@@ -62,10 +62,10 @@ class VertexDisplacementBlock(
         return parentStage.findBlock() ?: parentStage.main.run { texCoordAttributeBlock() }
     }
 
-    private fun findExistingSampleValue(texName: String, attrib: Attribute, parentStage: KslVertexStage): KslExprFloat4? {
+    private fun findExistingSampleValue(texName: String, parentStage: KslVertexStage): KslExprFloat4? {
         return parentStage.main.getBlocks(null, mutableListOf())
             .filterIsInstance<VertexDisplacementBlock>()
-            .map { it.outSamplerValues[texName to attrib] }
+            .map { it.outSamplerValues[texName] }
             .find { it != null }
     }
 

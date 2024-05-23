@@ -244,7 +244,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                             inTangentWorldSpace(tangentWorldSpace!!.output)
                             inNormalWorldSpace(vertexNormal)
                             inStrength(normalMapStrength)
-                            inTexCoords(texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute))
+                            inTexCoords(texCoordBlock.getTextureCoords())
                         }.outBumpNormal
                     } else {
                         vertexNormal
