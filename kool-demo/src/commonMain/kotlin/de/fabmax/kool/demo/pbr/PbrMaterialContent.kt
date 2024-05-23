@@ -9,7 +9,9 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.SingleColorTexture
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -19,13 +21,22 @@ import de.fabmax.kool.util.*
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<KslPbrShader>()
-    private var iblContent: Node? = null
-    private var nonIblContent: Node? = null
+    private var vertexDisplacedContent: Mesh? = null
+    private var parallaxContent: Mesh? = null
 
+    private val useParallaxMapping = mutableStateOf(true).onChange {
+        parallaxContent?.isVisible = it
+        vertexDisplacedContent?.isVisible = !it
+    }
     private val selectedMatIdx = mutableStateOf(3)
     private val loadedMaterials = Array<MaterialMaps?>(materialLoaders.size) { null }
 
-    private val displacement = mutableStateOf(0.25f).onChange { disp -> shaders.forEach { it.displacement = disp } }
+    private val displacement = mutableStateOf(0.35f).onChange { disp ->
+        shaders.forEach {
+            it.parallaxStrength = disp
+            it.vertexDisplacementStrength = disp
+        }
+    }
 
     private fun updatePbrMaterial() {
         launchOnMainThread {
@@ -41,7 +52,8 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
                 it.roughnessMap = maps.roughness
                 it.metallicMap = maps.metallic ?: defaultMetallicTex
                 it.materialAoMap = maps.ao ?: defaultAoTex
-                it.displacementMap = maps.displacement ?: defaultDispTex
+                it.vertexDisplacementMap = maps.displacement ?: defaultDispTex
+                it.parallaxMap = maps.displacement ?: defaultParallaxTex
             }
         }
     }
@@ -61,27 +73,23 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
                     }
             }
         }
-        MenuRow {
-            val txtSize = UiSizes.baseSize * 0.75f
-            Text("Displacement") { labelStyle(FitContent) }
-            MenuSlider(displacement.use(), 0f, 1f, txtWidth = txtSize) { displacement.set(it) }
-        }
-    }
 
-    override fun setUseImageBasedLighting(enabled: Boolean) {
-        iblContent?.isVisible = enabled
-        nonIblContent?.isVisible = !enabled
+        MenuSlider2("Displacement Strength:", displacement.use(), 0f, 1f) { displacement.set(it) }
+
+        MenuRow {
+            Text("Displacement Method:") { labelStyle(Grow.Std) }
+        }
+        val isParallax = useParallaxMapping.use()
+        LabeledRadioButton("Parallax Mapping", isParallax) { useParallaxMapping.set(true) }
+        LabeledRadioButton("Vertex Displacement", !isParallax) { useParallaxMapping.set(false) }
     }
 
     override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
         content = Node().apply {
             isVisible = false
 
-            val ibl = makeSphere(true, envMaps)
-            val nonIbl = makeSphere(false, envMaps).apply { isVisible = false }
-
-            iblContent = ibl
-            nonIblContent = nonIbl
+            vertexDisplacedContent = makeVertexSphere(envMaps).apply { isVisible = !useParallaxMapping.value }
+            parallaxContent = makeParallaxSphere(envMaps).apply { isVisible = useParallaxMapping.value }
 
             onUpdate += {
                 if (autoRotate) {
@@ -93,15 +101,21 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
     }
 
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
-        (iblContent as Mesh?)?.let {
+        vertexDisplacedContent?.let {
+            val pbrShader = it.shader as KslPbrShader
+            pbrShader.ambientMap = envMaps.irradianceMap
+            pbrShader.reflectionMap = envMaps.reflectionMap
+        }
+        parallaxContent?.let {
             val pbrShader = it.shader as KslPbrShader
             pbrShader.ambientMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap
         }
     }
 
-    private fun Node.makeSphere(withIbl: Boolean, envMaps: EnvironmentMaps) = addTextureMesh(isNormalMapped = true) {
+    private fun Node.makeVertexSphere(envMaps: EnvironmentMaps) = addTextureMesh(isNormalMapped = true) {
         geometry.addGeometry(sphereProto.detailSphere)
+
         val shader = KslPbrShader {
             color { textureColor() }
             normalMapping { setNormalMap() }
@@ -114,10 +128,30 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
                     uniformProperty(displacement.value, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             }
-            if (withIbl) {
-                imageBasedAmbientColor(envMaps.irradianceMap)
-                reflectionMap = envMaps.reflectionMap
+            imageBasedAmbientColor(envMaps.irradianceMap)
+            reflectionMap = envMaps.reflectionMap
+        }
+        this.shader = shader
+        shaders += shader
+
+        updatePbrMaterial()
+    }
+
+    private fun Node.makeParallaxSphere(envMaps: EnvironmentMaps) = addTextureMesh(isNormalMapped = true) {
+        geometry.addGeometry(sphereProto.parallaxSphere)
+
+        val shader = KslPbrShader {
+            color { textureColor() }
+            normalMapping { setNormalMap() }
+            roughness { textureProperty() }
+            metallic { textureProperty() }
+            ao { materialAo { textureProperty() } }
+            parallaxMapping {
+                useParallaxMap(strength = displacement.value, maxSteps = 16)
             }
+
+            imageBasedAmbientColor(envMaps.irradianceMap)
+            reflectionMap = envMaps.reflectionMap
         }
         this.shader = shader
         shaders += shader
@@ -148,6 +182,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
         private val defaultMetallicTex = SingleColorTexture(Color.BLACK)
         private val defaultAoTex = SingleColorTexture(Color.WHITE)
         private val defaultDispTex = SingleColorTexture(Color.BLACK)
+        private val defaultParallaxTex = SingleColorTexture(Color.WHITE)
 
         private val assetPath = DemoLoader.materialPath
 
@@ -159,12 +194,13 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
             aoPath: String?,
             displacementPath: String?,
         ): MaterialMaps {
+            val singleChProps = TextureProps(format = TexFormat.R)
             val albedo = Assets.loadTexture2dAsync(albedoPath)
             val normal = Assets.loadTexture2dAsync(normalPath)
-            val roughness = Assets.loadTexture2dAsync(roughnessPath)
-            val metallic = metallicPath?.let { Assets.loadTexture2dAsync(it) }
-            val ao = aoPath?.let { Assets.loadTexture2dAsync(it) }
-            val displacement = displacementPath?.let { Assets.loadTexture2dAsync(it) }
+            val roughness = Assets.loadTexture2dAsync(roughnessPath, props = singleChProps)
+            val metallic = metallicPath?.let { Assets.loadTexture2dAsync(it, props = singleChProps) }
+            val ao = aoPath?.let { Assets.loadTexture2dAsync(it, props = singleChProps) }
+            val displacement = displacementPath?.let { Assets.loadTexture2dAsync(it, props = singleChProps) }
             return MaterialMaps(albedo.await(), normal.await(), roughness.await(), metallic?.await(), ao?.await(), displacement?.await())
         }
 

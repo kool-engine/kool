@@ -65,6 +65,26 @@ fun UiScope.MenuSlider2(
     }
 }
 
+fun UiScope.LabeledRadioButton(label: String, toggleState: Boolean, indent: Dp = sizes.gap, onActivate: () -> Unit) {
+    MenuRow {
+        modifier.padding(start = indent)
+        RadioButton(toggleState) {
+            modifier
+                .alignY(AlignmentY.Center)
+                .margin(end = sizes.gap)
+                .onToggle {
+                    if (it) {
+                        onActivate()
+                    }
+                }
+        }
+        Text(label) {
+            labelStyle(Grow.Std)
+            modifier.onClick { onActivate() }
+        }
+    }
+}
+
 fun UiScope.LabeledSwitch(label: String, toggleState: MutableStateValue<Boolean>, onToggle: ((Boolean) -> Unit)? = null) {
     MenuRow {
         Text(label) {

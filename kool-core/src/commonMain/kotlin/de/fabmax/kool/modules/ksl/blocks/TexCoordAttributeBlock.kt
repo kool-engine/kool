@@ -1,6 +1,9 @@
 package de.fabmax.kool.modules.ksl.blocks
 
-import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.modules.ksl.lang.KslBlock
+import de.fabmax.kool.modules.ksl.lang.KslExprFloat2
+import de.fabmax.kool.modules.ksl.lang.KslScopeBuilder
+import de.fabmax.kool.modules.ksl.lang.KslVertexStage
 import de.fabmax.kool.pipeline.Attribute
 
 fun KslScopeBuilder.texCoordAttributeBlock(): TexCoordAttributeBlock {
@@ -10,7 +13,7 @@ fun KslScopeBuilder.texCoordAttributeBlock(): TexCoordAttributeBlock {
 }
 
 class TexCoordAttributeBlock(name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
-    val texCoords = mutableMapOf<String, KslInterStageVector<KslFloat2, KslFloat1>>()
+    val texCoords = mutableMapOf<String, KslExprFloat2>()
 
     init {
         check(parentScope.parentStage is KslVertexStage) { "TexCoordAttributeBlock must be added to KslVertexStage" }
@@ -23,8 +26,8 @@ class TexCoordAttributeBlock(name: String, parentScope: KslScopeBuilder) : KslBl
 
                 val uv = vertexStage.program.interStageFloat2()
                 uv.input set vertexStage.vertexAttribFloat2(attribute.name)
-                uv
+                uv.output
             }
-        }.output
+        }
     }
 }

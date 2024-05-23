@@ -26,8 +26,12 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     var materialAo: Float by propertyUniform(cfg.aoCfg.materialAo)
     var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg.materialAo)
 
-    var displacement: Float by propertyUniform(cfg.vertexCfg.displacementCfg)
-    var displacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
+    var parallaxMap: Texture2d? by texture2d(cfg.parallaxCfg.parallaxMapName, cfg.parallaxCfg.defaultParallaxMap)
+    var parallaxStrength: Float by uniform1f("uParallaxStrength", cfg.parallaxCfg.strength)
+    var parallaxMapSteps: Int by uniform1i("uParallaxMaxSteps", cfg.parallaxCfg.maxSteps)
+
+    var vertexDisplacementMap: Texture2d? by propertyTexture(cfg.vertexCfg.displacementCfg)
+    var vertexDisplacementStrength: Float by propertyUniform(cfg.vertexCfg.displacementCfg)
 
     var ambientFactor: Color by uniformColor("uAmbientColor")
     var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri")
@@ -74,6 +78,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
         val colorCfg: ColorBlockConfig = builder.colorCfg.build()
         val normalMapCfg: NormalMapConfig = builder.normalMapCfg.build()
         val aoCfg: AmbientOcclusionConfig = builder.aoCfg.build()
+        val parallaxCfg: ParallaxMapConfig = builder.parallaxCfg.build()
         val pipelineCfg: PipelineConfig = builder.pipelineCfg.build()
         val shadowCfg: ShadowConfig = builder.shadowCfg.build()
         val emissionCfg: ColorBlockConfig = builder.emissionCfg.build()
@@ -86,11 +91,22 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
 
         val modelCustomizer: (KslProgram.() -> Unit)? = builder.modelCustomizer
 
+        open fun requiresTextureCoords(): Boolean {
+            if (vertexCfg.displacementCfg.primaryTexture != null) return true
+            if (colorCfg.primaryTexture != null) return true
+            if (normalMapCfg.isNormalMapped) return true
+            if (aoCfg.materialAo.primaryTexture != null) return true
+            if (parallaxCfg.isParallaxMapped) return true
+            if (emissionCfg.primaryTexture != null) return true
+            return false
+        }
+
         open class Builder {
             val vertexCfg = BasicVertexConfig.Builder()
             val colorCfg = ColorBlockConfig.Builder("baseColor").constColor(Color.GRAY)
             val normalMapCfg = NormalMapConfig.Builder()
             val aoCfg = AmbientOcclusionConfig.Builder()
+            val parallaxCfg = ParallaxMapConfig.Builder()
             val pipelineCfg = PipelineConfig.Builder()
             val shadowCfg = ShadowConfig.Builder()
             val emissionCfg = ColorBlockConfig.Builder("emissionColor").constColor(Color(0f, 0f, 0f, 0f))
@@ -139,6 +155,10 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
 
             inline fun normalMapping(block: NormalMapConfig.Builder.() -> Unit) {
                 normalMapCfg.block()
+            }
+
+            inline fun parallaxMapping(block: ParallaxMapConfig.Builder.() -> Unit) {
+                parallaxCfg.block()
             }
 
             inline fun pipeline(block: PipelineConfig.Builder.() -> Unit) {
@@ -211,6 +231,30 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                 val lightData = sceneLightData(cfg.maxNumberOfLights)
 
                 main {
+                    val vertexWorldPos = float3Var(positionWorldSpace.output)
+                    val vertexNormal = float3Var(normalize(normalWorldSpace.output))
+
+                    // compute displaced texture coordinates if parallax mapping is enabled
+                    if (cfg.parallaxCfg.isParallaxMapped) {
+                        val parallaxMapping = parallaxMapBlock(cfg.parallaxCfg) {
+                            inPositionClipSpace(projPosition.output)
+                            inPositionWorldSpace(vertexWorldPos)
+                            inNormalWorldSpace(vertexNormal)
+                            inTexCoords(texCoordBlock.getTextureCoords())
+                            inStrength(uniformFloat1("uParallaxStrength"))
+                            inMaxSteps(uniformInt1("uParallaxMaxSteps"))
+                        }
+                        vertexWorldPos set parallaxMapping.outDisplacedWorldPos
+                        texCoordBlock.texCoords[Attribute.TEXTURE_COORDS.name] = parallaxMapping.outDisplacedTexCoords
+                    }
+
+                    // flip backside normal after parallax mapping, so that displacement always happens in front direction
+                    if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.vertexCfg.isFlipBacksideNormals) {
+                        `if`(!inIsFrontFacing) {
+                            vertexNormal *= (-1f).const3
+                        }
+                    }
+
                     // determine main color (albedo)
                     val colorBlock = fragmentColorBlock(cfg.colorCfg)
                     val baseColorPort = float4Port("baseColor", colorBlock.outColor)
@@ -230,13 +274,6 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     val emissionBlock = fragmentColorBlock(cfg.emissionCfg)
                     val emissionColorPort = float4Port("emissionColor", emissionBlock.outColor)
 
-                    val vertexNormal = float3Var(normalize(normalWorldSpace.output))
-                    if (cfg.pipelineCfg.cullMethod.isBackVisible && cfg.vertexCfg.isFlipBacksideNormals) {
-                        `if`(!inIsFrontFacing) {
-                            vertexNormal *= (-1f).const3
-                        }
-                    }
-
                     // do normal map computations (if enabled)
                     val bumpedNormal = if (cfg.normalMapCfg.isNormalMapped) {
                         val normalMapStrength = fragmentPropertyBlock(cfg.normalMapCfg.strengthCfg).outProperty
@@ -251,7 +288,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     }
                     // make final normal value available to model customizer
                     val normal = float3Port("normal", bumpedNormal)
-                    val worldPos = float3Port("worldPos", positionWorldSpace.output)
+                    val worldPos = float3Port("worldPos", vertexWorldPos)
 
                     // create an array with light strength values per light source (1.0 = full strength)
                     val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
