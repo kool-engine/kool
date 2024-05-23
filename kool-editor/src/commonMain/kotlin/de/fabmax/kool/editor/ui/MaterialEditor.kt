@@ -46,22 +46,15 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
             }
         ) {
             if (allTheSameMaterial) {
-                components[0].materialState.use()?.let { selectedMaterial ->
-                    Column(width = Grow.Std) {
-                        modifier
-                            .padding(horizontal = sizes.gap)
-                            .margin(bottom = sizes.smallGap)
-
-                        labeledTextField("Name:", selectedMaterial.name) {
-                            RenameMaterialAction(selectedMaterial, it, selectedMaterial.name).apply()
-                        }
-
-                        menuDivider()
-                        materialEditor()
-                        menuDivider()
-                        genericSettings()
-                    }
+                val material = components[0].materialState.use() ?: return@componentPanel Unit
+                labeledTextField("Name:", material.name) {
+                    RenameMaterialAction(material, it, material.name).apply()
                 }
+
+                menuDivider()
+                materialEditor()
+                menuDivider()
+                genericSettings()
             }
         }
     }

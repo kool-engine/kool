@@ -10,7 +10,8 @@ import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
 import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.Box
+import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlin.math.roundToInt
@@ -31,47 +32,39 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
             Box(width = sizes.smallGap) {  }
         }
     ) {
+        labeledSwitch("Run in edit mode", components[0].runInEditMode.use()) { enabled ->
+            components.forEach { it.runInEditMode.set(enabled) }
+        }
 
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .padding(top = sizes.gap)
-                .margin(bottom = sizes.gap)
+        val behavior = components[0].behaviorInstance.use() ?: return@componentPanel Unit
+        val behaviorProperties = KoolEditor.instance.loadedApp.use()?.behaviorClasses?.get(behavior::class)?.properties
+        if (behaviorProperties == null) {
+            logE { "Unable to get KoolBehavior class for behavior ${components[0].behaviorInstance.value}" }
+        }
 
-            labeledSwitch("Run in edit mode", components[0].runInEditMode.use()) { enabled ->
-                components.forEach { it.runInEditMode.set(enabled) }
-            }
+        if (!behaviorProperties.isNullOrEmpty()) {
+            menuDivider()
+        }
 
-            val behavior = components[0].behaviorInstance.use() ?: return@Column
-            val behaviorProperties = KoolEditor.instance.loadedApp.use()?.behaviorClasses?.get(behavior::class)?.properties
-            if (behaviorProperties == null) {
-                logE { "Unable to get KoolBehavior class for behavior ${components[0].behaviorInstance.value}" }
-            }
+        behaviorProperties?.forEach { prop ->
+            when (prop.type) {
+                Double::class -> doubleEditor(prop)
+                Vec2d::class -> vec2dEditor(prop)
+                Vec3d::class -> vec3dEditor(prop)
+                Vec4d::class -> vec4dEditor(prop)
 
-            if (!behaviorProperties.isNullOrEmpty()) {
-                menuDivider()
-            }
+                Float::class -> floatEditor(prop)
+                Vec2f::class -> vec2fEditor(prop)
+                Vec3f::class -> vec3fEditor(prop)
+                Vec4f::class -> vec4fEditor(prop)
 
-            behaviorProperties?.forEach { prop ->
-                when (prop.type) {
-                    Double::class -> doubleEditor(prop)
-                    Vec2d::class -> vec2dEditor(prop)
-                    Vec3d::class -> vec3dEditor(prop)
-                    Vec4d::class -> vec4dEditor(prop)
+                Int::class -> intEditor(prop)
+                Vec2i::class -> vec2iEditor(prop)
+                Vec3i::class -> vec3iEditor(prop)
+                Vec4i::class -> vec4iEditor(prop)
 
-                    Float::class -> floatEditor(prop)
-                    Vec2f::class -> vec2fEditor(prop)
-                    Vec3f::class -> vec3fEditor(prop)
-                    Vec4f::class -> vec4fEditor(prop)
-
-                    Int::class -> intEditor(prop)
-                    Vec2i::class -> vec2iEditor(prop)
-                    Vec3i::class -> vec3iEditor(prop)
-                    Vec4i::class -> vec4iEditor(prop)
-
-                    else -> {
-                        logW { "Type is not editable: ${prop.type} (in behavior: ${components[0].behaviorInstance})" }
-                    }
+                else -> {
+                    logW { "Type is not editable: ${prop.type} (in behavior: ${components[0].behaviorInstance})" }
                 }
             }
         }

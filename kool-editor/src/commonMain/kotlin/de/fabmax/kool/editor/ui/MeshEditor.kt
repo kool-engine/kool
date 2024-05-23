@@ -67,38 +67,32 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
     }
 
     private fun ColumnScope.editorBody() {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.gap)
+        val shape = components[0].shapesState.use()[0]
+        when (shape) {
+            is ShapeData.Box -> boxProperties()
+            is ShapeData.Rect -> rectProperties()
+            is ShapeData.Sphere -> sphereProperties()
+            is ShapeData.Cylinder -> cylinderProperties()
+            is ShapeData.Capsule -> capsuleProperties()
+            is ShapeData.Heightmap -> heightmapProperties()
+            is ShapeData.Empty -> { }
+        }
 
-            val shape = components[0].shapesState.use()[0]
-            when (shape) {
-                is ShapeData.Box -> boxProperties()
-                is ShapeData.Rect -> rectProperties()
-                is ShapeData.Sphere -> sphereProperties()
-                is ShapeData.Cylinder -> cylinderProperties()
-                is ShapeData.Capsule -> capsuleProperties()
-                is ShapeData.Heightmap -> heightmapProperties()
-                is ShapeData.Empty -> { }
-            }
-
-            if (shape.hasUvs) {
-                labeledXyRow(
-                    label = "Texture scale:",
-                    xy = condenseVec2(components.map { it.shapesState[0].common.uvScale.toVec2d() }),
-                    dragChangeSpeed = DragChangeRates.SIZE_VEC2,
-                    editHandler = ActionValueEditHandler { undo, apply ->
-                        val shapes = components.map { it.shapesState[0] }
-                        components.mapIndexed { i, component ->
-                            val uv = shapes[i].common.uvScale.toVec2d()
-                            val mergedUndo = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(undo, uv))))
-                            val mergedApply = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(apply, uv))))
-                            SetMeshShapeAction(component, mergedUndo, mergedApply)
-                        }.fused()
-                    }
-                )
-            }
+        if (shape.hasUvs) {
+            labeledXyRow(
+                label = "Texture scale:",
+                xy = condenseVec2(components.map { it.shapesState[0].common.uvScale.toVec2d() }),
+                dragChangeSpeed = DragChangeRates.SIZE_VEC2,
+                editHandler = ActionValueEditHandler { undo, apply ->
+                    val shapes = components.map { it.shapesState[0] }
+                    components.mapIndexed { i, component ->
+                        val uv = shapes[i].common.uvScale.toVec2d()
+                        val mergedUndo = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(undo, uv))))
+                        val mergedApply = shapes[i].copyShape(shapes[i].common.copy(uvScale = Vec2Data(mergeVec2(apply, uv))))
+                        SetMeshShapeAction(component, mergedUndo, mergedApply)
+                    }.fused()
+                }
+            )
         }
     }
 

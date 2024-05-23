@@ -55,27 +55,19 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
             }
         ) {
             if (allTheSameModel) {
-                Column(width = Grow.Std) {
-                    modifier
-                        .padding(horizontal = sizes.gap)
-                        .margin(bottom = sizes.gap)
+                val gltf = components[0].gltfState.use() ?: return@componentPanel Unit
+                val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
+                labeledCombobox("Model scene:", scenes, components[0].sceneIndexState.use()) { selected ->
+                    components.map {
+                        SetModelSceneAction(it.nodeModel.nodeId, selected.index)
+                    }.fused().apply()
+                }
 
-                    val gltf = components[0].gltfState.use()
-                    if (gltf != null) {
-                        val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
-                        labeledCombobox("Model scene:", scenes, components[0].sceneIndexState.use()) { selected ->
-                            components.map {
-                                SetModelSceneAction(it.nodeModel.nodeId, selected.index)
-                            }.fused().apply()
-                        }
-
-                        val animations = gltf.animationOptions()
-                        labeledCombobox("Animation:", animations, components[0].animationIndexState.use() + 1) { selected ->
-                            components.map {
-                                SetModelAnimationAction(it.nodeModel.nodeId, selected.index)
-                            }.fused().apply()
-                        }
-                    }
+                val animations = gltf.animationOptions()
+                labeledCombobox("Animation:", animations, components[0].animationIndexState.use() + 1) { selected ->
+                    components.map {
+                        SetModelAnimationAction(it.nodeModel.nodeId, selected.index)
+                    }.fused().apply()
                 }
             }
         }

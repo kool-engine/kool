@@ -8,7 +8,7 @@ import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.LightTypeData
 import de.fabmax.kool.math.toVec4d
-import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.util.Color
 
 class LightEditor : ComponentEditor<DiscreteLightComponent>() {
@@ -16,40 +16,34 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
     private var editLightsStart = listOf<LightTypeData>()
 
     override fun UiScope.compose() = componentPanel("Light", IconMap.small.light, ::removeComponent) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.smallGap)
-
-            val lightData = components.map { it.lightState.use() }
-            val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(lightData.map { it.typeOption })
-            labeledCombobox(
-                label = "Type:",
-                items = typeItems,
-                selectedIndex = typeIdx
-            ) { selected ->
-                selected.item?.let { lightType ->
-                    val actions = components.map { component ->
-                        // keep color when switching light type, but not intensity (because directional lights have
-                        // drastically different intensity range than point- / spot-lights)
-                        val color = component.lightState.value.color
-                        val newLight = when (lightType) {
-                            TypeOption.Directional -> LightTypeData.Directional(color)
-                            TypeOption.Spot -> LightTypeData.Spot(color)
-                            TypeOption.Point -> LightTypeData.Point(color)
-                        }
-                        SetDiscreteLightAction(component.nodeModel.nodeId, newLight, component.lightState.value)
+        val lightData = components.map { it.lightState.use() }
+        val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(lightData.map { it.typeOption })
+        labeledCombobox(
+            label = "Type:",
+            items = typeItems,
+            selectedIndex = typeIdx
+        ) { selected ->
+            selected.item?.let { lightType ->
+                val actions = components.map { component ->
+                    // keep color when switching light type, but not intensity (because directional lights have
+                    // drastically different intensity range than point- / spot-lights)
+                    val color = component.lightState.value.color
+                    val newLight = when (lightType) {
+                        TypeOption.Directional -> LightTypeData.Directional(color)
+                        TypeOption.Spot -> LightTypeData.Spot(color)
+                        TypeOption.Point -> LightTypeData.Point(color)
                     }
-                    FusedAction(actions).apply()
+                    SetDiscreteLightAction(component.nodeModel.nodeId, newLight, component.lightState.value)
                 }
+                FusedAction(actions).apply()
             }
+        }
 
-            menuDivider()
-            colorSettings()
+        menuDivider()
+        colorSettings()
 
-            if (lightData.all { it is LightTypeData.Spot }) {
-                spotSettings()
-            }
+        if (lightData.all { it is LightTypeData.Spot }) {
+            spotSettings()
         }
     }
 

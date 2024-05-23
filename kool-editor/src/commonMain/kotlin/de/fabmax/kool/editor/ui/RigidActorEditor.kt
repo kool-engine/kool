@@ -13,7 +13,8 @@ import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec2d
-import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.ColumnScope
+import de.fabmax.kool.modules.ui2.UiScope
 
 class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
@@ -22,44 +23,38 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         imageIcon = IconMap.small.physics,
         onRemove = ::removeComponent,
     ) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.smallGap)
+        val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.actorState.use().typeOption })
+        labeledCombobox(
+            label = "Type:",
+            items = typeItems,
+            selectedIndex = typeIdx
+        ) { selected ->
+            selected.item?.type?.let { actorType ->
+                components.map {
+                    val bodyProps = it.actorState.value
+                    SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType))
+                }.fused().apply()
+            }
+        }
 
-            val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.actorState.use().typeOption })
-            labeledCombobox(
-                label = "Type:",
-                items = typeItems,
-                selectedIndex = typeIdx
-            ) { selected ->
-                selected.item?.type?.let { actorType ->
+        if (components.all { it.actorState.value.type == RigidActorType.DYNAMIC }) {
+            labeledDoubleTextField(
+                label = "Mass:",
+                value = condenseDouble(components.map { it.actorState.value.mass }),
+                minValue = 0.001,
+                dragChangeSpeed = DragChangeRates.SIZE,
+                editHandler = ActionValueEditHandler { undo, apply ->
                     components.map {
                         val bodyProps = it.actorState.value
-                        SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType))
-                    }.fused().apply()
+                        val mergedUndo = bodyProps.copy(mass = mergeDouble(undo, bodyProps.mass))
+                        val mergedApply = bodyProps.copy(mass = mergeDouble(apply, bodyProps.mass))
+                        SetRigidBodyPropertiesAction( it.nodeModel.nodeId, mergedUndo, mergedApply)
+                    }.fused()
                 }
-            }
-
-            if (components.all { it.actorState.value.type == RigidActorType.DYNAMIC }) {
-                labeledDoubleTextField(
-                    label = "Mass:",
-                    value = condenseDouble(components.map { it.actorState.value.mass }),
-                    minValue = 0.001,
-                    dragChangeSpeed = DragChangeRates.SIZE,
-                    editHandler = ActionValueEditHandler { undo, apply ->
-                        components.map {
-                            val bodyProps = it.actorState.value
-                            val mergedUndo = bodyProps.copy(mass = mergeDouble(undo, bodyProps.mass))
-                            val mergedApply = bodyProps.copy(mass = mergeDouble(apply, bodyProps.mass))
-                            SetRigidBodyPropertiesAction( it.nodeModel.nodeId, mergedUndo, mergedApply)
-                        }.fused()
-                    }
-                )
-            }
-
-            shapeEditor()
+            )
         }
+
+        shapeEditor()
     }
 
     private fun ColumnScope.shapeEditor() {
