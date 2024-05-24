@@ -157,7 +157,7 @@ suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: Sc
     }
     pbrShader.normalMap = normalMap
     pbrShader.materialAoMap = aoMap
-    pbrShader.displacementMap = displacementMap
+    pbrShader.vertexDisplacementMap = displacementMap
     ibl?.let {
         pbrShader.ambientMap = ibl.irradianceMap
         pbrShader.reflectionMap = ibl.reflectionMap

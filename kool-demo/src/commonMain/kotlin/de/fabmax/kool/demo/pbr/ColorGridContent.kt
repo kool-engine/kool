@@ -18,8 +18,7 @@ import de.fabmax.kool.util.MdColor
 
 class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Color grid") {
     private val shaders = mutableListOf<KslPbrShader>()
-    private var iblContent: Mesh? = null
-    private var nonIblContent: Mesh? = null
+    private var contentMesh: Mesh? = null
 
     private val roughness = mutableStateOf(0.3f).onChange { shaders.forEach { s -> s.roughness = it } }
     private val metallic = mutableStateOf(0f).onChange { shaders.forEach { s -> s.metallic = it } }
@@ -37,27 +36,17 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         }
     }
 
-    override fun setUseImageBasedLighting(enabled: Boolean) {
-        iblContent?.isVisible = enabled
-        nonIblContent?.isVisible = !enabled
-    }
-
     override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
         content = Node().apply {
             isVisible = false
             isFrustumChecked = false
-
-            val ibl = makeSpheres(true, envMaps)
-            val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
-
-            iblContent = ibl
-            nonIblContent = nonIbl
+            contentMesh = makeSpheres(true, envMaps)
         }
         return content!!
     }
 
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
-        iblContent?.let {
+        contentMesh?.let {
             val pbrShader = it.shader as KslPbrShader
             pbrShader.ambientMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap

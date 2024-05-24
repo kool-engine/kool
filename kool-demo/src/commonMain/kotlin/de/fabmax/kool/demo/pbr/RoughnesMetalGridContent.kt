@@ -17,8 +17,7 @@ import kotlin.math.max
 
 class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Material grid") {
     private val shaders = mutableListOf<KslPbrShader>()
-    private var iblContent: Mesh? = null
-    private var nonIblContent: Mesh? = null
+    private var contentMesh: Mesh? = null
 
     private val selectedColorIdx = mutableStateOf(0)
 
@@ -38,27 +37,17 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         }
     }
 
-    override fun setUseImageBasedLighting(enabled: Boolean) {
-        iblContent?.isVisible = enabled
-        nonIblContent?.isVisible = !enabled
-    }
-
     override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
         content = Node().apply {
             isVisible = false
             isFrustumChecked = false
-
-            val ibl = makeSpheres(true, envMaps)
-            val nonIbl = makeSpheres(false, envMaps).apply { isVisible = false }
-
-            iblContent = ibl
-            nonIblContent = nonIbl
+            contentMesh = makeSpheres(true, envMaps)
         }
         return content!!
     }
 
     override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
-        iblContent?.let {
+        contentMesh?.let {
             val pbrShader = it.shader as KslPbrShader
             pbrShader.ambientMap = envMaps.irradianceMap
             pbrShader.reflectionMap = envMaps.reflectionMap

@@ -61,6 +61,7 @@ abstract class KslGenerator {
         "!(${expression.expr.generateExpression(this)})"
 
     abstract fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String
+    abstract fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String
     abstract fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String
     abstract fun textureSize(textureSize: KslTextureSize<*, *>): String
     abstract fun texelFetch(expression: KslTexelFetch<*>): String

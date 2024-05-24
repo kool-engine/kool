@@ -16,79 +16,79 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
 
     private fun nextName(suffix: String): String = parentScopeBuilder.parentStage.program.nextName("${opName}_$suffix")
 
-    protected fun inFloat1(name: String? = null, defaultValue: KslScalarExpression<KslFloat1>? = null): ScalarInput<KslFloat1> =
-        ScalarInput(name ?: nextName("inF1"), KslFloat1, defaultValue).also {
+    protected fun inFloat1(name: String? = null, defaultValue: KslScalarExpression<KslFloat1>? = null, isOptional: Boolean = false): ScalarInput<KslFloat1> =
+        ScalarInput(name ?: nextName("inF1"), KslFloat1, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inFloat2(name: String? = null, defaultValue: KslVectorExpression<KslFloat2, KslFloat1>? = null): VectorInput<KslFloat2, KslFloat1> =
-        VectorInput(name ?: nextName("inF2"), KslFloat2, defaultValue).also {
+    protected fun inFloat2(name: String? = null, defaultValue: KslVectorExpression<KslFloat2, KslFloat1>? = null, isOptional: Boolean = false): VectorInput<KslFloat2, KslFloat1> =
+        VectorInput(name ?: nextName("inF2"), KslFloat2, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inFloat3(name: String? = null, defaultValue: KslVectorExpression<KslFloat3, KslFloat1>? = null): VectorInput<KslFloat3, KslFloat1> =
-        VectorInput(name ?: nextName("inF3"), KslFloat3, defaultValue).also {
+    protected fun inFloat3(name: String? = null, defaultValue: KslVectorExpression<KslFloat3, KslFloat1>? = null, isOptional: Boolean = false): VectorInput<KslFloat3, KslFloat1> =
+        VectorInput(name ?: nextName("inF3"), KslFloat3, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inFloat4(name: String? = null, defaultValue: KslVectorExpression<KslFloat4, KslFloat1>? = null): VectorInput<KslFloat4, KslFloat1> =
-        VectorInput(name ?: nextName("inF4"), KslFloat4, defaultValue).also {
-            updateDependencies(it, defaultValue)
-        }
-
-    protected fun inInt1(name: String? = null, defaultValue: KslScalarExpression<KslInt1>? = null): ScalarInput<KslInt1> =
-        ScalarInput(name ?: nextName("inI1"), KslInt1, defaultValue).also {
-            updateDependencies(it, defaultValue)
-        }
-    protected fun inInt2(name: String? = null, defaultValue: KslVectorExpression<KslInt2, KslInt1>? = null): VectorInput<KslInt2, KslInt1> =
-        VectorInput(name ?: nextName("inI2"), KslInt2, defaultValue).also {
-            updateDependencies(it, defaultValue)
-        }
-    protected fun inInt3(name: String? = null, defaultValue: KslVectorExpression<KslInt3, KslInt1>? = null): VectorInput<KslInt3, KslInt1> =
-        VectorInput(name ?: nextName("inI3"), KslInt3, defaultValue).also {
-            updateDependencies(it, defaultValue)
-        }
-    protected fun inInt4(name: String? = null, defaultValue: KslVectorExpression<KslInt4, KslInt1>? = null): VectorInput<KslInt4, KslInt1> =
-        VectorInput(name ?: nextName("inI4"), KslInt4, defaultValue).also {
+    protected fun inFloat4(name: String? = null, defaultValue: KslVectorExpression<KslFloat4, KslFloat1>? = null, isOptional: Boolean = false): VectorInput<KslFloat4, KslFloat1> =
+        VectorInput(name ?: nextName("inF4"), KslFloat4, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
 
-    protected fun inMat2(name: String? = null, defaultValue: KslMatrixExpression<KslMat2, KslFloat2>? = null): MatrixInput<KslMat2, KslFloat2> =
-        MatrixInput(name ?: nextName("inM2"), KslMat2, defaultValue).also {
+    protected fun inInt1(name: String? = null, defaultValue: KslScalarExpression<KslInt1>? = null, isOptional: Boolean = false): ScalarInput<KslInt1> =
+        ScalarInput(name ?: nextName("inI1"), KslInt1, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inMat3(name: String? = null, defaultValue: KslMatrixExpression<KslMat3, KslFloat3>? = null): MatrixInput<KslMat3, KslFloat3> =
-        MatrixInput(name ?: nextName("inM3"), KslMat3, defaultValue).also {
+    protected fun inInt2(name: String? = null, defaultValue: KslVectorExpression<KslInt2, KslInt1>? = null, isOptional: Boolean = false): VectorInput<KslInt2, KslInt1> =
+        VectorInput(name ?: nextName("inI2"), KslInt2, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inMat4(name: String? = null, defaultValue: KslMatrixExpression<KslMat4, KslFloat4>? = null): MatrixInput<KslMat4, KslFloat4> =
-        MatrixInput(name ?: nextName("inM4"), KslMat4, defaultValue).also {
+    protected fun inInt3(name: String? = null, defaultValue: KslVectorExpression<KslInt3, KslInt1>? = null, isOptional: Boolean = false): VectorInput<KslInt3, KslInt1> =
+        VectorInput(name ?: nextName("inI3"), KslInt3, isOptional, defaultValue).also {
+            updateDependencies(it, defaultValue)
+        }
+    protected fun inInt4(name: String? = null, defaultValue: KslVectorExpression<KslInt4, KslInt1>? = null, isOptional: Boolean = false): VectorInput<KslInt4, KslInt1> =
+        VectorInput(name ?: nextName("inI4"), KslInt4, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
 
-    protected fun inFloat1Array(arraySize: Int, name: String? = null, defaultValue: KslScalarArrayExpression<KslFloat1>? = null): ScalarArrayInput<KslFloat1> =
-        ScalarArrayInput(name ?: nextName("inArrF1"), arraySize, KslFloat1).also {
+    protected fun inMat2(name: String? = null, defaultValue: KslMatrixExpression<KslMat2, KslFloat2>? = null, isOptional: Boolean = false): MatrixInput<KslMat2, KslFloat2> =
+        MatrixInput(name ?: nextName("inM2"), KslMat2, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inFloat2Array(arraySize: Int, name: String? = null, defaultValue: KslVectorArrayExpression<KslFloat2, KslFloat1>? = null): VectorArrayInput<KslFloat2, KslFloat1> =
-        VectorArrayInput(name ?: nextName("inArrF2"), arraySize, KslFloat2).also {
+    protected fun inMat3(name: String? = null, defaultValue: KslMatrixExpression<KslMat3, KslFloat3>? = null, isOptional: Boolean = false): MatrixInput<KslMat3, KslFloat3> =
+        MatrixInput(name ?: nextName("inM3"), KslMat3, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inFloat3Array(arraySize: Int, name: String? = null, defaultValue: KslVectorArrayExpression<KslFloat3, KslFloat1>? = null): VectorArrayInput<KslFloat3, KslFloat1> =
-        VectorArrayInput(name ?: nextName("inArrF3"), arraySize, KslFloat3).also {
+    protected fun inMat4(name: String? = null, defaultValue: KslMatrixExpression<KslMat4, KslFloat4>? = null, isOptional: Boolean = false): MatrixInput<KslMat4, KslFloat4> =
+        MatrixInput(name ?: nextName("inM4"), KslMat4, isOptional, defaultValue).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inFloat4Array(arraySize: Int, name: String? = null, defaultValue: KslVectorArrayExpression<KslFloat4, KslFloat1>? = null): VectorArrayInput<KslFloat4, KslFloat1> =
-        VectorArrayInput(name ?: nextName("inArrF4"), arraySize, KslFloat4).also {
+
+    protected fun inFloat1Array(arraySize: Int, name: String? = null, defaultValue: KslScalarArrayExpression<KslFloat1>? = null, isOptional: Boolean = false): ScalarArrayInput<KslFloat1> =
+        ScalarArrayInput(name ?: nextName("inArrF1"), arraySize, KslFloat1, isOptional).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inMat2Array(arraySize: Int, name: String? = null, defaultValue: KslMatrixArrayExpression<KslMat2, KslFloat2>? = null): MatrixArrayInput<KslMat2, KslFloat2> =
-        MatrixArrayInput(name ?: nextName("inArrMat2"), arraySize, KslMat2).also {
+    protected fun inFloat2Array(arraySize: Int, name: String? = null, defaultValue: KslVectorArrayExpression<KslFloat2, KslFloat1>? = null, isOptional: Boolean = false): VectorArrayInput<KslFloat2, KslFloat1> =
+        VectorArrayInput(name ?: nextName("inArrF2"), arraySize, KslFloat2, isOptional).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inMat3Array(arraySize: Int, name: String? = null, defaultValue: KslMatrixArrayExpression<KslMat3, KslFloat3>? = null): MatrixArrayInput<KslMat3, KslFloat3> =
-        MatrixArrayInput(name ?: nextName("inArrMat3"), arraySize, KslMat3).also {
+    protected fun inFloat3Array(arraySize: Int, name: String? = null, defaultValue: KslVectorArrayExpression<KslFloat3, KslFloat1>? = null, isOptional: Boolean = false): VectorArrayInput<KslFloat3, KslFloat1> =
+        VectorArrayInput(name ?: nextName("inArrF3"), arraySize, KslFloat3, isOptional).also {
             updateDependencies(it, defaultValue)
         }
-    protected fun inMat4Array(arraySize: Int, name: String? = null, defaultValue: KslMatrixArrayExpression<KslMat4, KslFloat4>? = null): MatrixArrayInput<KslMat4, KslFloat4> =
-        MatrixArrayInput(name ?: nextName("inArrMat4"), arraySize, KslMat4).also {
+    protected fun inFloat4Array(arraySize: Int, name: String? = null, defaultValue: KslVectorArrayExpression<KslFloat4, KslFloat1>? = null, isOptional: Boolean = false): VectorArrayInput<KslFloat4, KslFloat1> =
+        VectorArrayInput(name ?: nextName("inArrF4"), arraySize, KslFloat4, isOptional).also {
+            updateDependencies(it, defaultValue)
+        }
+    protected fun inMat2Array(arraySize: Int, name: String? = null, defaultValue: KslMatrixArrayExpression<KslMat2, KslFloat2>? = null, isOptional: Boolean = false): MatrixArrayInput<KslMat2, KslFloat2> =
+        MatrixArrayInput(name ?: nextName("inArrMat2"), arraySize, KslMat2, isOptional).also {
+            updateDependencies(it, defaultValue)
+        }
+    protected fun inMat3Array(arraySize: Int, name: String? = null, defaultValue: KslMatrixArrayExpression<KslMat3, KslFloat3>? = null, isOptional: Boolean = false): MatrixArrayInput<KslMat3, KslFloat3> =
+        MatrixArrayInput(name ?: nextName("inArrMat3"), arraySize, KslMat3, isOptional).also {
+            updateDependencies(it, defaultValue)
+        }
+    protected fun inMat4Array(arraySize: Int, name: String? = null, defaultValue: KslMatrixArrayExpression<KslMat4, KslFloat4>? = null, isOptional: Boolean = false): MatrixArrayInput<KslMat4, KslFloat4> =
+        MatrixArrayInput(name ?: nextName("inArrMat4"), arraySize, KslMat4, isOptional).also {
             updateDependencies(it, defaultValue)
         }
 
@@ -122,7 +122,7 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
     override fun validate() {
         super.validate()
         inputDependencies.keys.forEach {
-            if (it.input == null) {
+            if (it.input == null && !it.isOptional) {
                 throw IllegalStateException("Missing input value for input ${it.name} of block $opName")
             }
         }
@@ -131,6 +131,7 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
     abstract inner class BlockInput<T: KslType, E: KslExpression<T>>(
         val name: String,
         override val expressionType: T,
+        val isOptional: Boolean,
         defaultValue: E?
     ) : KslExpression<T> {
 
@@ -139,6 +140,8 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
                 updateDependencies(this, value)
                 field = value
             }
+
+        val isSet: Boolean get() = input != null
 
         operator fun invoke(assignExpression: E) {
             input = assignExpression
@@ -158,28 +161,28 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
         }
     }
 
-    inner class ScalarInput<S>(name: String, expressionType: S, defaultValue: KslScalarExpression<S>?) :
-        BlockInput<S, KslScalarExpression<S>>(name, expressionType, defaultValue), KslScalarExpression<S>
+    inner class ScalarInput<S>(name: String, expressionType: S, isOptional: Boolean, defaultValue: KslScalarExpression<S>?) :
+        BlockInput<S, KslScalarExpression<S>>(name, expressionType, isOptional, defaultValue), KslScalarExpression<S>
             where S : KslType, S : KslScalar
 
-    inner class VectorInput<V, S>(name: String, expressionType: V, defaultValue: KslVectorExpression<V, S>?) :
-        BlockInput<V, KslVectorExpression<V, S>>(name, expressionType, defaultValue), KslVectorExpression<V, S>
+    inner class VectorInput<V, S>(name: String, expressionType: V, isOptional: Boolean, defaultValue: KslVectorExpression<V, S>?) :
+        BlockInput<V, KslVectorExpression<V, S>>(name, expressionType, isOptional, defaultValue), KslVectorExpression<V, S>
             where V : KslType, V : KslVector<S>, S : KslType, S : KslScalar
 
-    inner class MatrixInput<M, V>(name: String, expressionType: M, defaultValue: KslMatrixExpression<M, V>?) :
-        BlockInput<M, KslMatrixExpression<M, V>>(name, expressionType, defaultValue), KslMatrixExpression<M, V>
+    inner class MatrixInput<M, V>(name: String, expressionType: M, isOptional: Boolean, defaultValue: KslMatrixExpression<M, V>?) :
+        BlockInput<M, KslMatrixExpression<M, V>>(name, expressionType, isOptional, defaultValue), KslMatrixExpression<M, V>
             where M : KslType, M : KslMatrix<V>, V : KslType, V : KslVector<*>
 
-    inner class ScalarArrayInput<S>(name: String, arraySize: Int, expressionType: S) :
-        BlockInput<KslArrayType<S>, KslScalarArrayExpression<S>>(name, KslArrayType(expressionType, arraySize), null), KslScalarArrayExpression<S>
+    inner class ScalarArrayInput<S>(name: String, arraySize: Int, expressionType: S, isOptional: Boolean) :
+        BlockInput<KslArrayType<S>, KslScalarArrayExpression<S>>(name, KslArrayType(expressionType, arraySize), isOptional, null), KslScalarArrayExpression<S>
             where S : KslType, S : KslScalar
 
-    inner class VectorArrayInput<V, S>(name: String, arraySize: Int, expressionType: V) :
-        BlockInput<KslArrayType<V>, KslVectorArrayExpression<V, S>>(name, KslArrayType(expressionType, arraySize), null), KslVectorArrayExpression<V, S>
+    inner class VectorArrayInput<V, S>(name: String, arraySize: Int, expressionType: V, isOptional: Boolean) :
+        BlockInput<KslArrayType<V>, KslVectorArrayExpression<V, S>>(name, KslArrayType(expressionType, arraySize), isOptional, null), KslVectorArrayExpression<V, S>
             where V : KslType, V : KslVector<S>, S : KslType, S : KslScalar
 
-    inner class MatrixArrayInput<M, V>(name: String, arraySize: Int, expressionType: M) :
-        BlockInput<KslArrayType<M>, KslMatrixArrayExpression<M, V>>(name, KslArrayType(expressionType, arraySize), null), KslMatrixArrayExpression<M, V>
+    inner class MatrixArrayInput<M, V>(name: String, arraySize: Int, expressionType: M, isOptional: Boolean) :
+        BlockInput<KslArrayType<M>, KslMatrixArrayExpression<M, V>>(name, KslArrayType(expressionType, arraySize), isOptional, null), KslMatrixArrayExpression<M, V>
             where M : KslType, M : KslMatrix<V>, V : KslType, V : KslVector<*>
 
 }

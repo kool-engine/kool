@@ -27,6 +27,39 @@ fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, sha
     return shadowBlock
 }
 
+fun KslScopeBuilder.fragmentOnlyShadowBlock(
+    cfg: ShadowConfig,
+    positionWorldSPace: KslExprFloat3,
+    normalWorldSPace: KslExprFloat3,
+    shadowFactors: KslArrayScalar<KslFloat1>
+): ShadowBlockFragmentStage {
+    val shadowData = parentStage.program.shadowData(cfg)
+    val normalZs = List(shadowData.numSubMaps) { float1Var() }
+    val lightSpacePos = List(shadowData.numSubMaps) { float4Var() }
+
+    shadowData.shadowMapInfos.forEach { mapInfo ->
+        mapInfo.subMaps.forEachIndexed { i, subMap ->
+            val subMapIdx = mapInfo.fromIndexIncl + i
+            val viewProj = shadowData.shadowMapViewProjMats[subMapIdx]
+            val normalLightSpace = float3Var(normalize((viewProj * float4Value(normalWorldSPace, 0f.const)).xyz))
+            normalZs[subMapIdx] set normalLightSpace.z
+            lightSpacePos[subMapIdx] set viewProj * float4Value(positionWorldSPace, 1f.const)
+            lightSpacePos[subMapIdx].xyz += normalLightSpace * subMap.shaderDepthOffset.const * sign(normalLightSpace.z)
+        }
+    }
+
+    val shadowBlock = ShadowBlockFragmentStage(
+        lightSpacePositions = lightSpacePos,
+        lightSpaceNormalZs = normalZs,
+        shadowData = shadowData,
+        shadowFactors = shadowFactors,
+        name = parentStage.program.nextName("shadowBlock"),
+        parentScope = this
+    )
+    ops += shadowBlock
+    return shadowBlock
+}
+
 fun KslScopeBuilder.fragmentShadowBlock(
     lightSpacePositions: List<KslExprFloat4>,
     lightSpaceNormalZs: List<KslExprFloat1>,

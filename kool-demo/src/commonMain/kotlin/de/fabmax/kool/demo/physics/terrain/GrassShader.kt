@@ -116,7 +116,7 @@ object GrassShader {
             fragmentStage {
                 main {
                     val tex = texture2d("grassAlpha")
-                    val uv = texCoords.getAttributeCoords(Attribute.TEXTURE_COORDS)
+                    val uv = texCoords.getTextureCoords()
                     val texAlpha = float1Var(sampleTexture(tex, uv).a)
                     `if`(texAlpha lt 0.35f.const) {
                         discard()

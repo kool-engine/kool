@@ -123,7 +123,7 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
                             inTangentWorldSpace(tangentViewSpace!!.output)
                             inNormalWorldSpace(vertexNormal)
                             inStrength(normalMapStrength)
-                            inTexCoords(texCoordBlock.getAttributeCoords(cfg.normalMapCfg.coordAttribute))
+                            inTexCoords(texCoordBlock.getTextureCoords())
                         }.outBumpNormal
                     } else {
                         vertexNormal
