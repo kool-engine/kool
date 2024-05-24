@@ -194,7 +194,7 @@ class PbrDemo : DemoScene("PBR Materials") {
                 }
                 uvSphere {
                     steps = 250
-                    radius = 7.25f
+                    radius = 7f
                 }
             }
 

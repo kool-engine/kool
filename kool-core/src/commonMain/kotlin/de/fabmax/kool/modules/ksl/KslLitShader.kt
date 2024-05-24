@@ -234,6 +234,9 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     val vertexWorldPos = float3Var(positionWorldSpace.output)
                     val vertexNormal = float3Var(normalize(normalWorldSpace.output))
 
+                    var ddx: KslExprFloat2? = null
+                    var ddy: KslExprFloat2? = null
+
                     // compute displaced texture coordinates if parallax mapping is enabled
                     if (cfg.parallaxCfg.isParallaxMapped) {
                         val parallaxMapping = parallaxMapBlock(cfg.parallaxCfg) {
@@ -244,8 +247,16 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                             inStrength(uniformFloat1("uParallaxStrength"))
                             inMaxSteps(uniformInt1("uParallaxMaxSteps"))
                         }
+                        ddx = parallaxMapping.outDdx
+                        ddy = parallaxMapping.outDdy
+
                         vertexWorldPos set parallaxMapping.outDisplacedWorldPos
                         texCoordBlock.texCoords[Attribute.TEXTURE_COORDS.name] = parallaxMapping.outDisplacedTexCoords
+
+                        if (cfg.parallaxCfg.isAdjustFragmentDepth) {
+                            val displacedPos = float4Var(camData.viewProjMat * float4Value(vertexWorldPos, 1f.const))
+                            outDepth set displacedPos.z / displacedPos.w
+                        }
                     }
 
                     // flip backside normal after parallax mapping, so that displacement always happens in front direction
@@ -256,7 +267,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     }
 
                     // determine main color (albedo)
-                    val colorBlock = fragmentColorBlock(cfg.colorCfg)
+                    val colorBlock = fragmentColorBlock(cfg.colorCfg, ddx, ddy)
                     val baseColorPort = float4Port("baseColor", colorBlock.outColor)
 
                     val baseColor = float4Var(baseColorPort)
@@ -271,13 +282,13 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                         }
                     }
 
-                    val emissionBlock = fragmentColorBlock(cfg.emissionCfg)
+                    val emissionBlock = fragmentColorBlock(cfg.emissionCfg, ddx, ddy)
                     val emissionColorPort = float4Port("emissionColor", emissionBlock.outColor)
 
                     // do normal map computations (if enabled)
                     val bumpedNormal = if (cfg.normalMapCfg.isNormalMapped) {
-                        val normalMapStrength = fragmentPropertyBlock(cfg.normalMapCfg.strengthCfg).outProperty
-                        normalMapBlock(cfg.normalMapCfg) {
+                        val normalMapStrength = fragmentPropertyBlock(cfg.normalMapCfg.strengthCfg, ddx, ddy).outProperty
+                        normalMapBlock(cfg.normalMapCfg, ddx, ddy) {
                             inTangentWorldSpace(tangentWorldSpace!!.output)
                             inNormalWorldSpace(vertexNormal)
                             inStrength(normalMapStrength)
@@ -295,7 +306,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     // adjust light strength values by shadow maps
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
 
-                    val aoFactor = float1Var(fragmentPropertyBlock(cfg.aoCfg.materialAo).outProperty)
+                    val aoFactor = float1Var(fragmentPropertyBlock(cfg.aoCfg.materialAo, ddx, ddy).outProperty)
                     if (cfg.aoCfg.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
                         val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
@@ -307,15 +318,15 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                         is AmbientColor.ImageBased -> {
                             val ambientOri = uniformMat3("uAmbientTextureOri")
                             val ambientTex = textureCube("tAmbientTexture")
-                            (sampleTexture(ambientTex, ambientOri * normal) * uniformFloat4("uAmbientColor")).rgb
+                            (sampleTexture(ambientTex, ambientOri * normal, 0f.const) * uniformFloat4("uAmbientColor")).rgb
                         }
                         is AmbientColor.DualImageBased -> {
                             val ambientOri = uniformMat3("uAmbientTextureOri")
                             val ambientTexs = List(2) { textureCube("tAmbientTexture_$it") }
                             val ambientWeights = uniformFloat2("tAmbientWeights")
-                            val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * normal) * ambientWeights.x)
+                            val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * normal, 0f.const) * ambientWeights.x)
                             `if`(ambientWeights.y gt 0f.const) {
-                                ambientColor += float4Var(sampleTexture(ambientTexs[1], ambientOri * normal) * ambientWeights.y)
+                                ambientColor += float4Var(sampleTexture(ambientTexs[1], ambientOri * normal, 0f.const) * ambientWeights.y)
                             }
                             (ambientColor * uniformFloat4("uAmbientColor")).rgb
                         }
@@ -332,7 +343,9 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                         normal = normal,
                         fragmentWorldPos = worldPos,
                         baseColor = baseColor,
-                        emissionColor = emissionColorPort
+                        emissionColor = emissionColorPort,
+                        ddx = ddx,
+                        ddy = ddy
                     )
 
                     val materialColorPort = float4Port("materialColor", materialColor)
@@ -366,6 +379,8 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
             fragmentWorldPos: KslExprFloat3,
             baseColor: KslExprFloat4,
             emissionColor: KslExprFloat4,
+            ddx: KslExprFloat2?,
+            ddy: KslExprFloat2?,
         ): KslExprFloat4
     }
 }

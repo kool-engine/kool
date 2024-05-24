@@ -1,5 +1,6 @@
 package de.fabmax.kool.modules.ksl.blocks
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Texture2d
 
@@ -21,6 +22,8 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
 
     val outDisplacedTexCoords = outFloat2()
     val outDisplacedWorldPos = outFloat3()
+    val outDdx = outFloat2()
+    val outDdy = outFloat2()
 
     init {
         body.apply {
@@ -39,17 +42,26 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
 
         val step = float1Var(1f.const / inMaxSteps.toFloat1())
 
-        val uvdx = float2Var(dpdx(inTexCoords))
-        val uvdy = float2Var(dpdy(inTexCoords))
+        outDdx set dpdx(inTexCoords)
+        outDdy set dpdy(inTexCoords)
         val viewDir = float3Var(normalize(inPositionWorldSpace - camData.position))
-        val pixelPos = float2Var((inPositionClipSpace.xy / inPositionClipSpace.w + 1f.const) * 0.5f.const * camData.viewport.zw)
+
+        val proj = float2Var((inPositionClipSpace.xy / inPositionClipSpace.w + 1f.const) * 0.5f.const)
+        if (KoolSystem.requireContext().backend.isInvertedNdcY) {
+            proj.y set 1f.const - proj.y
+        }
+        val pixelPos = float2Var(proj * camData.viewport.zw)
 
         val sampleScale = float1Var(inStrength / abs(dot(inNormalWorldSpace, viewDir)))
         val sampleDir = float3Var(viewDir - inNormalWorldSpace * dot(viewDir, inNormalWorldSpace))
 
         val sampleExt = float3Var(inPositionWorldSpace + sampleDir * sampleScale)
         val sampleExtProj = float4Var(camData.viewProjMat * float4Value(sampleExt, 1f.const))
-        val sampleExtPixel = float2Var((sampleExtProj.xy / sampleExtProj.w + 1f.const) * 0.5f.const * camData.viewport.zw - pixelPos)
+        proj set (sampleExtProj.xy / sampleExtProj.w + 1f.const) * 0.5f.const
+        if (KoolSystem.requireContext().backend.isInvertedNdcY) {
+            proj.y set 1f.const - proj.y
+        }
+        val sampleExtPixel = float2Var(proj * camData.viewport.zw - pixelPos)
 
         val sampleUv = float2Var(inTexCoords)
         val prevSampleUv = float2Var(inTexCoords)
@@ -58,13 +70,14 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
 
         repeat(inMaxSteps) { i ->
             val hLimit = float1Var(hStart + i.toFloat1() * step)
-            val h = float1Var(1f.const - sampleTexture(parallaxMap, sampleUv).x)
+            val h = float1Var(1f.const - sampleTextureGrad(parallaxMap, sampleUv, outDdx, outDdy).x)
 
             `if` (h lt hLimit) {
                 val afterDepth = float1Var(h - hLimit)
                 val beforeDepth = float1Var(prevH - hLimit + step)
                 val weight = float1Var(afterDepth / (afterDepth - beforeDepth))
                 sampleUv set prevSampleUv * weight + sampleUv * (1f.const - weight)
+                prevH set prevH * weight + h * (1f.const - weight)
                 `break`()
 
             }.`else` {
@@ -72,13 +85,12 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
                 prevSampleUv set sampleUv
 
                 val sampleOffset = float2Var(sampleExtPixel * min(h, hLimit))
-                sampleUv set inTexCoords + uvdx * sampleOffset.x + uvdy * sampleOffset.y
+                sampleUv set inTexCoords + outDdx * sampleOffset.x + outDdy * sampleOffset.y
             }
         }
 
         outDisplacedTexCoords set sampleUv
-        // todo:
-        outDisplacedWorldPos set inPositionWorldSpace
+        outDisplacedWorldPos set inPositionWorldSpace + viewDir * (prevH * sampleScale)
     }
 }
 
@@ -89,6 +101,7 @@ data class ParallaxMapConfig(
     val strength: Float = 0f,
     val maxSteps: Int = 0,
     val textureChannel: Int = 0,
+    val isAdjustFragmentDepth: Boolean = true,
 ) {
     class Builder {
         var isParallaxMapped: Boolean = false

@@ -10,8 +10,15 @@ fun KslScopeBuilder.vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlock
     return propertyBlock
 }
 
-fun KslScopeBuilder.fragmentPropertyBlock(cfg: PropertyBlockConfig, vertexStage: PropertyBlockVertexStage? = null): PropertyBlockFragmentStage {
+fun KslScopeBuilder.fragmentPropertyBlock(
+    cfg: PropertyBlockConfig,
+    ddx: KslExprFloat2? = null,
+    ddy: KslExprFloat2? = null,
+    vertexStage: PropertyBlockVertexStage? = null
+): PropertyBlockFragmentStage {
     val propertyBlock = PropertyBlockFragmentStage(cfg, vertexStage, this)
+    ddx?.let { propertyBlock.inDdx(it) }
+    ddy?.let { propertyBlock.inDdy(it) }
     ops += propertyBlock
     return propertyBlock
 }
@@ -74,6 +81,9 @@ class PropertyBlockFragmentStage(
     parentScope: KslScopeBuilder
 ) : KslBlock(cfg.propertyName, parentScope) {
 
+    val inDdx = inFloat2(isOptional = true)
+    val inDdy = inFloat2(isOptional = true)
+
     val outProperty = outFloat1(parentScope.nextName("${opName}_outProperty"))
     val outSamplerValues = mutableMapOf<String, KslVectorExpression<KslFloat4, KslFloat1>>()
 
@@ -99,9 +109,13 @@ class PropertyBlockFragmentStage(
                             val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
                             sampleValue = parentScope.run {
                                 val texCoords = texCoordBlock(parentStage).getTextureCoords()
-                                float4Var(sampleTexture(tex, texCoords)).also {
-                                    outSamplerValues[source.textureName] = it
+                                val sample = if (inDdx.isSet) {
+                                    float4Var(sampleTextureGrad(tex, texCoords, inDdx, inDdy))
+                                } else {
+                                    float4Var(sampleTexture(tex, texCoords))
                                 }
+                                outSamplerValues[source.textureName] = sample
+                                sample
                             }
                         }
                         when (source.channel) {

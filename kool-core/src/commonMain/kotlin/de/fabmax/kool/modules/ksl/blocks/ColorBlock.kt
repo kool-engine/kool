@@ -13,8 +13,15 @@ fun KslScopeBuilder.vertexColorBlock(cfg: ColorBlockConfig): ColorBlockVertexSta
     return colorBlock
 }
 
-fun KslScopeBuilder.fragmentColorBlock(cfg: ColorBlockConfig, vertexStage: ColorBlockVertexStage? = null): ColorBlockFragmentStage {
+fun KslScopeBuilder.fragmentColorBlock(
+    cfg: ColorBlockConfig,
+    ddx: KslExprFloat2? = null,
+    ddy: KslExprFloat2? = null,
+    vertexStage: ColorBlockVertexStage? = null
+): ColorBlockFragmentStage {
     val colorBlock = ColorBlockFragmentStage(cfg, vertexStage, this)
+    ddx?.let { colorBlock.inDdx(it) }
+    ddy?.let { colorBlock.inDdy(it) }
     ops += colorBlock
     return colorBlock
 }
@@ -47,6 +54,9 @@ class ColorBlockFragmentStage(
     parentScope: KslScopeBuilder
 ) : KslBlock(cfg.colorName, parentScope) {
 
+    val inDdx = inFloat2(isOptional = true)
+    val inDdy = inFloat2(isOptional = true)
+
     val outColor = outFloat4(parentScope.nextName("${opName}_outColor"))
 
     val textures = mutableMapOf<ColorBlockConfig.TextureColor, KslUniform<KslColorSampler2d>>()
@@ -68,7 +78,11 @@ class ColorBlockFragmentStage(
                     is ColorBlockConfig.TextureColor ->  {
                         val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
                         val texCoords = texCoordBlock(parentStage).getTextureCoords()
-                        val texColor = float4Var(sampleTexture(tex, texCoords))
+                        val texColor = if (inDdx.isSet) {
+                            float4Var(sampleTextureGrad(tex, texCoords, inDdx, inDdy))
+                        } else {
+                            float4Var(sampleTexture(tex, texCoords))
+                        }
                         if (source.gamma != 1f) {
                             texColor.rgb set pow(texColor.rgb, Vec3f(source.gamma).const)
                         }

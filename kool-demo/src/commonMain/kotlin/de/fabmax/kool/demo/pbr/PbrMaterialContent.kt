@@ -125,6 +125,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
             vertices {
                 displacement {
                     textureProperty()
+                    constProperty(-0.5f, blendMode = PropertyBlockConfig.BlendMode.Add)
                     uniformProperty(displacement.value, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             }
@@ -146,6 +147,12 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
             roughness { textureProperty() }
             metallic { textureProperty() }
             ao { materialAo { textureProperty() } }
+            vertices {
+                displacement {
+                    constProperty(0.5f)
+                    uniformProperty(displacement.value, blendMode = PropertyBlockConfig.BlendMode.Multiply)
+                }
+            }
             parallaxMapping {
                 useParallaxMap(strength = displacement.value, maxSteps = 16)
             }

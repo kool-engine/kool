@@ -3,8 +3,15 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Texture2d
 
-fun KslScopeBuilder.normalMapBlock(cfg: NormalMapConfig, block: NormalMapBlock.() -> Unit): NormalMapBlock {
+fun KslScopeBuilder.normalMapBlock(
+    cfg: NormalMapConfig,
+    ddx: KslExprFloat2? = null,
+    ddy: KslExprFloat2? = null,
+    block: NormalMapBlock.() -> Unit
+): NormalMapBlock {
     val normalMapBlock = NormalMapBlock(cfg, parentStage.program.nextName("normalMapBlock"), this)
+    ddx?.let { normalMapBlock.inDdx(it) }
+    ddy?.let { normalMapBlock.inDdy(it) }
     ops += normalMapBlock.apply(block)
     return normalMapBlock
 }
@@ -17,6 +24,8 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
     val inTangentWorldSpace = inFloat4("inTangentWorldSpace")
     val inTexCoords = inFloat2("inTexCoords")
     val inStrength = inFloat1("inStrength", KslValueFloat1(1f))
+    val inDdx = inFloat2(isOptional = true)
+    val inDdy = inFloat2(isOptional = true)
 
     val outBumpNormal = outFloat3()
 
@@ -24,7 +33,12 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
         body.apply {
             if (cfg.isNormalMapped) {
                 val normalMap = parentStage.program.texture2d(cfg.normalMapName)
-                val mapNormal = normalize(sampleTexture(normalMap, inTexCoords).xyz * 2f.const - 1f.const)
+                val sample = if (inDdx.isSet) {
+                    sampleTextureGrad(normalMap, inTexCoords, inDdx, inDdy)
+                } else {
+                    sampleTexture(normalMap, inTexCoords)
+                }
+                val mapNormal = float3Var(normalize(sample.xyz * 2f.const - 1f.const))
                 outBumpNormal set calcBumpedNormal(inNormalWorldSpace, inTangentWorldSpace, mapNormal, inStrength)
 
             } else {
