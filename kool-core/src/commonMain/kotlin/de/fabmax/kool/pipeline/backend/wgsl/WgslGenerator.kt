@@ -207,6 +207,14 @@ class WgslGenerator : KslGenerator() {
         }
     }
 
+    override fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String {
+        val textureName = sampleTextureGrad.sampler.generateExpression(this)
+        val coord = sampleTextureGrad.coord.generateExpression(this)
+        val ddx = sampleTextureGrad.ddx.generateExpression(this)
+        val ddy = sampleTextureGrad.ddy.generateExpression(this)
+        return "textureSampleGrad(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $ddx, $ddy)"
+    }
+
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
         val textureName = sampleTexture.sampler.generateExpression(this)
         val coordExpr = sampleTexture.coord.generateExpression(this)
