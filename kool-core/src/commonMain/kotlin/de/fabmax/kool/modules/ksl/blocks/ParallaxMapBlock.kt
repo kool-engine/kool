@@ -102,6 +102,7 @@ data class ParallaxMapConfig(
     val maxSteps: Int = 0,
     val textureChannel: Int = 0,
     val isAdjustFragmentDepth: Boolean = true,
+    val isPreciseShadows: Boolean = true,
 ) {
     class Builder {
         var isParallaxMapped: Boolean = false
@@ -110,6 +111,8 @@ data class ParallaxMapConfig(
         var strength: Float = 0.5f
         var maxSteps = 8
         var textureChannel = 0
+        var isAdjustFragmentDepth: Boolean = true
+        var isPreciseShadows: Boolean = true
 
         fun clearParallaxMap(): Builder {
             isParallaxMapped = false
@@ -140,6 +143,8 @@ data class ParallaxMapConfig(
             strength = strength,
             maxSteps = maxSteps,
             textureChannel = textureChannel,
+            isAdjustFragmentDepth = isAdjustFragmentDepth,
+            isPreciseShadows = isPreciseShadows
         )
     }
 }

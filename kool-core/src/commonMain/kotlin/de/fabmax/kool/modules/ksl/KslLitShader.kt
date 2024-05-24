@@ -187,7 +187,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
             var tangentWorldSpace: KslInterStageVector<KslFloat4, KslFloat1>? = null
 
             val texCoordBlock: TexCoordAttributeBlock
-            val shadowMapVertexStage: ShadowBlockVertexStage
+            val shadowMapVertexStage: ShadowBlockVertexStage?
 
             vertexStage {
                 main {
@@ -220,9 +220,12 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     texCoordBlock = texCoordAttributeBlock()
 
                     // project coordinates into shadow map / light space
-                    shadowMapVertexStage = vertexShadowBlock(cfg.shadowCfg) {
-                        inPositionWorldSpace(worldPos)
-                        inNormalWorldSpace(worldNormal)
+                    val perFragmentShadow = cfg.parallaxCfg.isParallaxMapped && cfg.parallaxCfg.isPreciseShadows
+                    shadowMapVertexStage = if (perFragmentShadow || cfg.shadowCfg.shadowMaps.isEmpty()) null else {
+                        vertexShadowBlock(cfg.shadowCfg) {
+                            inPositionWorldSpace(worldPos)
+                            inNormalWorldSpace(worldNormal)
+                        }
                     }
                 }
             }
@@ -304,7 +307,11 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     // create an array with light strength values per light source (1.0 = full strength)
                     val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
                     // adjust light strength values by shadow maps
-                    fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
+                    if (shadowMapVertexStage != null) {
+                        fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
+                    } else if (cfg.shadowCfg.shadowMaps.isNotEmpty()) {
+                        fragmentOnlyShadowBlock(cfg.shadowCfg, worldPos, normal, shadowFactors)
+                    }
 
                     val aoFactor = float1Var(fragmentPropertyBlock(cfg.aoCfg.materialAo, ddx, ddy).outProperty)
                     if (cfg.aoCfg.isSsao) {
