@@ -183,6 +183,20 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         }
     }
 
+    override fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String {
+        val sampler = sampleTextureGrad.sampler.generateExpression(this)
+        val coord = if (sampleTextureGrad.sampler.expressionType is KslSampler1dType && sampleTextureGrad.coord.expressionType is KslFloat1) {
+            // for better OpenGL ES compatibility 1d textures actually are 2d textures...
+            "vec2(${sampleTextureGrad.coord.generateExpression(this)}, 0.5)"
+        } else {
+            sampleTextureGrad.coord.generateExpression(this)
+        }
+        val ddx = sampleTextureGrad.ddx.generateExpression(this)
+        val ddy = sampleTextureGrad.ddy.generateExpression(this)
+
+        return "textureGrad($sampler, $coord, $ddx, $ddy)"
+    }
+
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
         // always use mip-level 0 when sampling depth textures
         return "textureLod(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)}, 0.0)"

@@ -41,9 +41,6 @@ class PbrDemo : DemoScene("PBR Materials") {
     private val selectedContent: PbrContent get() = pbrContent[selectedContentIdx.value]
     private val selectedLightSetup: LightSetup get() = lightSetups[selectedLightIdx.value]
 
-    private val isIbl = mutableStateOf(true).onChange {
-        pbrContent.forEach { c -> c.setUseImageBasedLighting(it) }
-    }
     private val isAutoRotate = mutableStateOf(true).onChange {
         pbrContent.forEach { c -> c.autoRotate = it }
     }
@@ -98,8 +95,7 @@ class PbrDemo : DemoScene("PBR Materials") {
         }
         with(selectedContent) { createContentMenu() }
 
-        Text("Settings") { sectionTitleStyle() }
-        LabeledSwitch("Image based lighting", isIbl)
+        Text("View") { sectionTitleStyle() }
         MenuRow {
             Text("Environment") { labelStyle(Grow.Std) }
             ComboBox {
@@ -170,13 +166,13 @@ class PbrDemo : DemoScene("PBR Materials") {
         override fun toString() = name
 
         abstract fun UiScope.createContentMenu()
-        abstract fun setUseImageBasedLighting(enabled: Boolean)
         abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node
         abstract fun updateEnvironmentMap(envMaps: EnvironmentMaps)
     }
 
     class SphereProto {
         val detailSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.NORMALS, Attribute.TANGENTS)
+        val parallaxSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, Attribute.NORMALS, Attribute.TANGENTS)
         val simpleSphere = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)
 
         init {
@@ -190,7 +186,17 @@ class PbrDemo : DemoScene("PBR Materials") {
                     radius = 7f
                 }
             }
-            detailSphere.generateTangents()
+
+            MeshBuilder(parallaxSphere).apply {
+                vertexModFun = {
+                    texCoord.x *= 4
+                    texCoord.y *= 2
+                }
+                uvSphere {
+                    steps = 250
+                    radius = 7f
+                }
+            }
 
             MeshBuilder(simpleSphere).apply {
                 uvSphere {

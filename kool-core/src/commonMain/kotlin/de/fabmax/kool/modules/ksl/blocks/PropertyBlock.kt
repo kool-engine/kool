@@ -10,8 +10,15 @@ fun KslScopeBuilder.vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlock
     return propertyBlock
 }
 
-fun KslScopeBuilder.fragmentPropertyBlock(cfg: PropertyBlockConfig, vertexStage: PropertyBlockVertexStage? = null): PropertyBlockFragmentStage {
+fun KslScopeBuilder.fragmentPropertyBlock(
+    cfg: PropertyBlockConfig,
+    ddx: KslExprFloat2? = null,
+    ddy: KslExprFloat2? = null,
+    vertexStage: PropertyBlockVertexStage? = null
+): PropertyBlockFragmentStage {
     val propertyBlock = PropertyBlockFragmentStage(cfg, vertexStage, this)
+    ddx?.let { propertyBlock.inDdx(it) }
+    ddy?.let { propertyBlock.inDdy(it) }
     ops += propertyBlock
     return propertyBlock
 }
@@ -74,8 +81,11 @@ class PropertyBlockFragmentStage(
     parentScope: KslScopeBuilder
 ) : KslBlock(cfg.propertyName, parentScope) {
 
+    val inDdx = inFloat2(isOptional = true)
+    val inDdy = inFloat2(isOptional = true)
+
     val outProperty = outFloat1(parentScope.nextName("${opName}_outProperty"))
-    val outSamplerValues = mutableMapOf<Pair<String, Attribute>, KslVectorExpression<KslFloat4, KslFloat1>>()
+    val outSamplerValues = mutableMapOf<String, KslVectorExpression<KslFloat4, KslFloat1>>()
 
     val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslColorSampler2d>>()
 
@@ -94,14 +104,18 @@ class PropertyBlockFragmentStage(
                     is PropertyBlockConfig.VertexProperty -> vertexBlock(parentStage).vertexProperties[source]?.output ?: 0f.const
                     is PropertyBlockConfig.InstanceProperty -> vertexBlock(parentStage).instanceProperties[source]?.output ?: 0f.const
                     is PropertyBlockConfig.TextureProperty ->  {
-                        var sampleValue = findExistingSampleValue(source.textureName, source.coordAttribute, parentStage)
+                        var sampleValue = findExistingSampleValue(source.textureName, parentStage)
                         if (sampleValue == null) {
                             val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
                             sampleValue = parentScope.run {
-                                val texCoords = texCoordBlock(parentStage).getAttributeCoords(source.coordAttribute)
-                                float4Var(sampleTexture(tex, texCoords)).also {
-                                    outSamplerValues[source.textureName to source.coordAttribute] = it
+                                val texCoords = texCoordBlock(parentStage).getTextureCoords()
+                                val sample = if (inDdx.isSet) {
+                                    float4Var(sampleTextureGrad(tex, texCoords, inDdx, inDdy))
+                                } else {
+                                    float4Var(sampleTexture(tex, texCoords))
                                 }
+                                outSamplerValues[source.textureName] = sample
+                                sample
                             }
                         }
                         when (source.channel) {
@@ -109,7 +123,7 @@ class PropertyBlockFragmentStage(
                             1 -> sampleValue.g
                             2 -> sampleValue.b
                             3 -> sampleValue.a
-                            else -> throw IllegalArgumentException("Invalid TextureProperty channel: ${source.channel}")
+                            else -> error("Invalid TextureProperty channel: ${source.channel}")
                         }
                     }
                 }
@@ -138,10 +152,10 @@ class PropertyBlockFragmentStage(
         return block!!
     }
 
-    private fun findExistingSampleValue(texName: String, attrib: Attribute, parentStage: KslFragmentStage): KslExprFloat4? {
+    private fun findExistingSampleValue(texName: String, parentStage: KslFragmentStage): KslExprFloat4? {
         return parentStage.main.getBlocks(null, mutableListOf())
             .filterIsInstance<PropertyBlockFragmentStage>()
-            .map { it.outSamplerValues[texName to attrib] }
+            .map { it.outSamplerValues[texName] }
             .find { it != null }
     }
 
@@ -179,7 +193,7 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
     data class ConstProperty(val value: Float, override val blendMode: BlendMode) : PropertySource
     data class UniformProperty(val defaultValue: Float?, val uniformName: String, override val blendMode: BlendMode) : PropertySource
     data class VertexProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
-    data class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, val coordAttribute: Attribute, override val blendMode: BlendMode) : PropertySource
+    data class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, override val blendMode: BlendMode) : PropertySource
     data class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
 
     enum class BlendMode {
@@ -221,10 +235,9 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
             defaultTexture: Texture2d? = null,
             channel: Int = 0,
             textureName: String = "t${propertyName}",
-            coordAttribute: Attribute = Attribute.TEXTURE_COORDS,
             blendMode: BlendMode = BlendMode.Set
         ): Builder {
-            propertySources += TextureProperty(defaultTexture, channel, textureName, coordAttribute, blendMode)
+            propertySources += TextureProperty(defaultTexture, channel, textureName, blendMode)
             return this
         }
 

@@ -132,7 +132,8 @@ the libs are resolved and added to the IntelliJ module classpath.
   - Optional Screen-space reflections
   - Optional Bloom
 - Screen-space ambient occlusion
-- Normal, roughness, metallic, ambient occlusion and displacement mapping
+- Normal, roughness, metallic, ambient occlusion
+- Vertex and parallax occlusion displacement mapping
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - Basic audio support

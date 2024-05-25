@@ -23,14 +23,13 @@ class TerrainTiles(val terrain: Terrain, val sky: Sky) : Node() {
                     Attribute.POSITIONS,
                     Attribute.NORMALS,
                     Attribute.TEXTURE_COORDS,
-                    Terrain.TERRAIN_GRID_COORDS,
                     Attribute.TANGENTS,
                     name = "terrain-tile[$x,$y]"
                 ) {
                     meshes[Vec2i(x, y)] = this
                     generate {
                         vertexModFun = {
-                            getVec2fAttribute(Terrain.TERRAIN_GRID_COORDS)?.set(texCoord.x * 64f, texCoord.y * 64f)
+                            texCoord *= Terrain.TEXTURE_SCALE
                         }
                         withTransform {
                             transform.set(terrain.terrainTransform)

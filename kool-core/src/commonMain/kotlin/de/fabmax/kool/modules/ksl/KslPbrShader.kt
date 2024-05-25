@@ -118,11 +118,13 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
             normal: KslExprFloat3,
             fragmentWorldPos: KslExprFloat3,
             baseColor: KslExprFloat4,
-            emissionColor: KslExprFloat4
+            emissionColor: KslExprFloat4,
+            ddx: KslExprFloat2?,
+            ddy: KslExprFloat2?
         ): KslExprFloat4 {
 
-            val roughness = fragmentPropertyBlock(cfg.roughnessCfg).outProperty
-            val metallic = fragmentPropertyBlock(cfg.metallicCfg).outProperty
+            val roughness = fragmentPropertyBlock(cfg.roughnessCfg, ddx, ddy).outProperty
+            val metallic = fragmentPropertyBlock(cfg.metallicCfg, ddx, ddy).outProperty
 
             val ambientOri = uniformMat3("uAmbientTextureOri")
             val brdfLut = texture2d("tBrdfLut")

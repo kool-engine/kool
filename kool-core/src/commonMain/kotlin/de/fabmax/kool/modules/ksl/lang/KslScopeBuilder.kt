@@ -674,6 +674,13 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         lod: KslScalarExpression<KslFloat1>? = null
     ) = KslSampleColorTexture(sampler, coord, lod)
 
+    fun <T: KslColorSampler<C>, C: KslFloatType> sampleTextureGrad(
+        sampler: KslExpression<T>,
+        coord: KslExpression<C>,
+        ddx: KslExpression<C>,
+        ddy: KslExpression<C>,
+    ) = KslSampleColorTextureGrad(sampler, coord, ddx, ddy)
+
     fun <T: KslDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
         KslSampleDepthTexture(sampler, coord)
 
