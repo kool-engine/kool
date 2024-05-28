@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Heightmap
@@ -45,7 +46,7 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d? {
         val texState = loadedTextures2d.getOrPut(ref) { mutableStateOf(null) }
         return try {
-            texState.value ?: assetLoader.loadTexture2d(ref.path).also { texState.set(it) }
+            texState.value ?: assetLoader.loadTexture2d(ref.path, TextureProps(ref.texFormat)).also { texState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading texture: ${ref.path}" }
             null

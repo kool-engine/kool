@@ -1,15 +1,13 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.DrawShader
-import de.fabmax.kool.pipeline.GpuType
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 
 suspend fun MaterialData.createShader(sceneShaderData: SceneModel.SceneShaderData): DrawShader {
@@ -86,11 +84,14 @@ suspend fun PbrShaderData.createShader(sceneShaderData: SceneModel.SceneShaderDa
                 }
             }
         }
-        this@createShader.displacementMap?.let {
+        this@createShader.parallaxMap?.let {
             vertices {
                 displacement {
-                    textureProperty(null, it.singleChannelIndex)
+                    uniformProperty(parallaxOffset)
                 }
+            }
+            parallaxMapping {
+                useParallaxMap(null, parallaxStrength, maxSteps = parallaxSteps, textureChannel = it.singleChannelIndex)
             }
         }
         this@createShader.normalMap?.let {
@@ -129,7 +130,7 @@ suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: Sc
     val emissionMap = (emission as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
     val normalMap = normalMap?.let { AppAssets.loadTexture2d(it.mapPath) }
     val aoMap = aoMap?.let { AppAssets.loadTexture2d(it.mapPath) }
-    val displacementMap = displacementMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+    val displacementMap = parallaxMap?.let { AppAssets.loadTexture2d(AssetReference.Texture(it.mapPath, TexFormat.R)) }
 
     when (val color = baseColor) {
         is ConstColorAttribute -> pbrShader.color = color.color.toColorLinear()
@@ -157,7 +158,10 @@ suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: Sc
     }
     pbrShader.normalMap = normalMap
     pbrShader.materialAoMap = aoMap
-    pbrShader.vertexDisplacementMap = displacementMap
+    pbrShader.parallaxMap = displacementMap
+    pbrShader.parallaxMapSteps = parallaxSteps
+    pbrShader.parallaxStrength = parallaxStrength
+    pbrShader.vertexDisplacementStrength = parallaxOffset
     ibl?.let {
         pbrShader.ambientMap = ibl.irradianceMap
         pbrShader.reflectionMap = ibl.reflectionMap
@@ -174,7 +178,7 @@ fun PbrShaderData.matchesShader(shader: DrawShader?): Boolean {
             && metallic.matchesCfg(shader.metallicCfg)
             && emission.matchesCfg(shader.emissionCfg)
             && aoMap?.matchesCfg(shader.materialAoCfg) != false
-            && displacementMap?.matchesCfg(shader.displacementCfg) != false
+            && shader.isParallaxMapped == (parallaxMap != null)
             && shader.isNormalMapped == (normalMap != null)
             && genericSettings.matchesPipelineConfig(shader.pipelineConfig)
 }
