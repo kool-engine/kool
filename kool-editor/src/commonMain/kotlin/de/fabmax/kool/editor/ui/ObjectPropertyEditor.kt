@@ -34,6 +34,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
 
     private fun UiScope.objectProperties(objects: List<NodeModel>) = ScrollArea(
         containerModifier = { it.backgroundColor(null) },
+        vScrollbarModifier = { it.width(sizes.scrollbarWidth) },
         isScrollableHorizontal = false
     ) {
         modifier.width(Grow.Std)
