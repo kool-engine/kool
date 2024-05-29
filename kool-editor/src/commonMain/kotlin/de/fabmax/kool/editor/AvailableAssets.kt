@@ -38,7 +38,9 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
                         AppAssetType.Texture -> textureAssets += assetItem
                         AppAssetType.Hdri -> hdriAssets += assetItem
                         AppAssetType.Model -> modelAssets += assetItem
-                        else -> { }
+                        AppAssetType.Heightmap -> heightmapAssets += assetItem
+                        AppAssetType.Directory -> { }
+                        AppAssetType.Unknown -> { }
                     }
                 }
             }
@@ -57,7 +59,9 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
                     AppAssetType.Texture -> textureAssets -= deletedAsset
                     AppAssetType.Hdri -> hdriAssets -= deletedAsset
                     AppAssetType.Model -> modelAssets -= deletedAsset
-                    else -> { }
+                    AppAssetType.Heightmap -> heightmapAssets -= deletedAsset
+                    AppAssetType.Directory -> { }
+                    AppAssetType.Unknown -> { }
                 }
             }
         }
