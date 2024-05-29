@@ -1,6 +1,9 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.components.BehaviorComponent
+import de.fabmax.kool.editor.components.EditorModelComponent
+import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import kotlin.reflect.KType
 
@@ -19,7 +22,7 @@ class BehaviorProperty(
         return behaviorComponent.getProperty(name)
     }
 
-    fun set(behaviorComponent: BehaviorComponent, value: Any): Boolean {
+    fun set(behaviorComponent: BehaviorComponent, value: Any?): Boolean {
         return behaviorComponent.setProperty(name, value)
     }
 }
@@ -44,3 +47,7 @@ fun BehaviorProperty.getInt(behaviorComponent: BehaviorComponent): Int = get(beh
 fun BehaviorProperty.getVec2i(behaviorComponent: BehaviorComponent): Vec2i = get(behaviorComponent) as Vec2i? ?: Vec2i.ZERO
 fun BehaviorProperty.getVec3i(behaviorComponent: BehaviorComponent): Vec3i = get(behaviorComponent) as Vec3i? ?: Vec3i.ZERO
 fun BehaviorProperty.getVec4i(behaviorComponent: BehaviorComponent): Vec4i = get(behaviorComponent) as Vec4i? ?: Vec4i.ZERO
+
+fun BehaviorProperty.getComponent(behaviorComponent: BehaviorComponent): EditorModelComponent? = get(behaviorComponent) as EditorModelComponent?
+fun BehaviorProperty.getScene(behaviorComponent: BehaviorComponent): SceneModel? = get(behaviorComponent) as SceneModel?
+fun BehaviorProperty.getSceneNode(behaviorComponent: BehaviorComponent): SceneNodeModel? = get(behaviorComponent) as SceneNodeModel?

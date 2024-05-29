@@ -28,7 +28,9 @@ data class PropertyValue(
 
     val color: ColorData? = null,
     val transform: TransformData? = null,
-    val str: String? = null
+    val str: String? = null,
+    val nodeRef: NodeId? = null,
+    val componentRef: ComponentRef? = null,
 ) {
     fun get(): Any {
         return when {
@@ -50,7 +52,14 @@ data class PropertyValue(
             color != null -> color.toColorLinear()
             transform != null -> transform.toMat4d()
             str != null -> str
+            nodeRef != null -> nodeRef
             else -> throw IllegalStateException("PropertyValue has no non-null value")
         }
     }
 }
+
+@Serializable
+data class ComponentRef(
+    val nodeId: NodeId,
+    val componentClassName: String
+)

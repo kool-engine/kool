@@ -214,7 +214,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
 
         var valueColor: Color? = null
         var text: String? = null
-        var labelWidth = sizes.baseSize * 5
+        var labelWidth = sizes.editorLabelWidthLarge
         var textAlign = AlignmentX.Start
         when (colorAttr) {
             is ConstColorAttribute -> {
@@ -226,7 +226,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
             }
             is MapAttribute -> {
                 text = colorAttr.mapName
-                labelWidth = sizes.baseSize * 3
+                labelWidth = sizes.editorLabelWidthSmall
             }
             is VertexAttribute -> {
                 text = "Vertex"
@@ -266,7 +266,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
         val doubleVal: Double
         val text: String
         val isTextField: Boolean
-        var labelWidth = sizes.baseSize * 5
+        var labelWidth = sizes.editorLabelWidthLarge
         var textAlign = AlignmentX.Start
         when (floatAttr) {
             is ConstColorAttribute -> {

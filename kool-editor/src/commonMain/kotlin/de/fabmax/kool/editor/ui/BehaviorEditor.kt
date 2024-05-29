@@ -4,18 +4,18 @@ import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.BehaviorComponent
-import de.fabmax.kool.editor.data.PropertyValue
-import de.fabmax.kool.editor.data.Vec2Data
-import de.fabmax.kool.editor.data.Vec3Data
-import de.fabmax.kool.editor.data.Vec4Data
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.util.nodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.Box
 import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlin.math.roundToInt
+import kotlin.reflect.KClass
 
 class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
@@ -61,12 +61,43 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
                 else -> {
                     if (prop.type == BehaviorPropertyType.COMPONENT) {
-                        println("component editor: ${prop.kType}")
+                        componentEditor(prop)
+                    } else {
+                        val behaviorName = components[0].behaviorInstance.value?.let { it::class.simpleName } ?: "null"
+                        logW { "Type is not editable: ${prop.kType} (in behavior: $behaviorName)" }
                     }
-
-                    logW { "Type is not editable: ${prop.kType} (in behavior: ${components[0].behaviorInstance})" }
                 }
             }
+        }
+    }
+
+    private fun UiScope.componentEditor(prop: BehaviorProperty) {
+        val klass = prop.kType.classifier as KClass<*>
+        val items = remember {
+            val selComponents = listOf(null) + sceneModel.nodeModels.values
+                .flatMap { it.components }
+                .filter { klass.isInstance(it) }
+
+            ComboBoxItems(selComponents) { it?.nodeModel?.name ?: "None" }
+        }
+
+        val selected = components.map { prop.getComponent(it) }
+        val (options, index) = items.getOptionsAndIndex(selected)
+        labeledCombobox(prop.label, options, index) { item ->
+            components.map { edit ->
+                val undo = PropertyValue(componentRef = ComponentRef(prop.getComponent(edit)?.nodeModel?.nodeId ?: NodeId(-1L), klass.qualifiedName!!))
+                val apply = PropertyValue(componentRef = ComponentRef(item.item?.nodeModel?.nodeId ?: NodeId(-1L), klass.qualifiedName!!))
+                SetBehaviorPropertyAction(edit.nodeModel.nodeId, prop.name, undo, apply) { comp, value ->
+                    val nodeId = value.componentRef!!.nodeId
+                    val setComponent = if (nodeId.id == -1L) null else {
+                        nodeId.nodeModel?.components?.find { klass.isInstance(it) }
+                    }
+
+                    surface.triggerUpdate()
+                    prop.set(comp, setComponent)
+                    comp.componentData.propertyValues[prop.name] = value
+                }
+            }.fused().apply()
         }
     }
 

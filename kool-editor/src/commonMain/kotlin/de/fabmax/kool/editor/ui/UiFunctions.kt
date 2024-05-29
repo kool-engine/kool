@@ -480,7 +480,7 @@ fun <T: Any> UiScope.labeledCombobox(
     label: String,
     items: List<T>,
     selectedIndex: Int,
-    labelWidth: Dimension = sizes.baseSize * 3,
+    labelWidth: Dimension = sizes.editorLabelWidthSmall,
     valueWidth: Dimension = Grow.Std,
     onItemSelected: (T) -> Unit
 ) = menuRow {
@@ -587,7 +587,7 @@ fun UiScope.labeledDoubleTextField(
     label: String,
     value: Double,
     precision: Int = precisionForValue(value),
-    labelWidth: Dimension = sizes.baseSize * 5,
+    labelWidth: Dimension = sizes.editorLabelWidthLarge,
     valueWidth: Dimension = Grow.Std,
     dragChangeSpeed: Double = 0.0,
     minValue: Double = Double.NEGATIVE_INFINITY,
@@ -606,7 +606,7 @@ fun UiScope.labeledDoubleTextField(
 fun UiScope.labeledIntTextField(
     label: String,
     value: Int,
-    labelWidth: Dimension = sizes.baseSize * 5,
+    labelWidth: Dimension = sizes.editorLabelWidthLarge,
     valueWidth: Dimension = Grow.Std,
     dragChangeSpeed: Double = 0.0,
     minValue: Int = Int.MIN_VALUE,
@@ -625,7 +625,7 @@ fun UiScope.labeledIntTextField(
 fun UiScope.labeledTextField(
     label: String,
     text: String,
-    labelWidth: Dimension = sizes.baseSize * 3,
+    labelWidth: Dimension = sizes.editorLabelWidthLarge,
     valueWidth: Dimension = Grow.Std,
     textFieldModifier: ((TextFieldModifier) -> Unit)? = null,
     onEdited: (String) -> Unit
@@ -660,7 +660,7 @@ fun UiScope.labeledSlider(
     min: Double = 0.0,
     max: Double = 1.0,
     precision: Int = precisionForValue(max - min),
-    labelWidth: Dimension = sizes.baseSize * 5,
+    labelWidth: Dimension = sizes.editorLabelWidthLarge,
     valueWidth: Dimension = Grow.Std,
     editHandler: ValueEditHandler<Double>,
 ) = Column(Grow.Std, scopeName = label) {
