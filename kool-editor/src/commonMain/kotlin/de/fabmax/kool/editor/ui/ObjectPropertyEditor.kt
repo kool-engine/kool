@@ -20,6 +20,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
 
         if (selObjs.size > 1) {
             selObjs.removeAll { it is SceneModel }
+        } else if (selObjs.isEmpty()) {
+            editor.activeScene.value?.let { selObjs += it }
         }
 
         val title = if (selObjs.size == 1 && selObjs[0] is SceneModel) "Scene Properties" else "Object Properties"

@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.BehaviorProperty
-import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.BehaviorComponent
@@ -9,6 +8,8 @@ import de.fabmax.kool.editor.data.PropertyValue
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
+import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.Box
 import de.fabmax.kool.modules.ui2.UiScope
@@ -32,22 +33,14 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
             Box(width = sizes.smallGap) {  }
         }
     ) {
-        labeledSwitch("Run in edit mode", components[0].runInEditMode.use()) { enabled ->
-            components.forEach { it.runInEditMode.set(enabled) }
-        }
-
         val behavior = components[0].behaviorInstance.use() ?: return@componentPanel Unit
         val behaviorProperties = KoolEditor.instance.loadedApp.use()?.behaviorClasses?.get(behavior::class)?.properties
         if (behaviorProperties == null) {
             logE { "Unable to get KoolBehavior class for behavior ${components[0].behaviorInstance.value}" }
         }
 
-        if (!behaviorProperties.isNullOrEmpty()) {
-            menuDivider()
-        }
-
         behaviorProperties?.forEach { prop ->
-            when (prop.type) {
+            when (prop.kType.classifier) {
                 Double::class -> doubleEditor(prop)
                 Vec2d::class -> vec2dEditor(prop)
                 Vec3d::class -> vec3dEditor(prop)
@@ -63,8 +56,15 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
                 Vec3i::class -> vec3iEditor(prop)
                 Vec4i::class -> vec4iEditor(prop)
 
+                SceneModel::class -> { }
+                SceneNodeModel::class -> { }
+
                 else -> {
-                    logW { "Type is not editable: ${prop.type} (in behavior: ${components[0].behaviorInstance})" }
+                    if (prop.type == BehaviorPropertyType.COMPONENT) {
+                        println("component editor: ${prop.kType}")
+                    }
+
+                    logW { "Type is not editable: ${prop.kType} (in behavior: ${components[0].behaviorInstance})" }
                 }
             }
         }

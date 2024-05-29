@@ -36,7 +36,7 @@ class AppBehavior(val simpleName: String, val qualifiedName: String, val propert
     fun printProperties() {
         println(qualifiedName)
         properties.forEach {
-            println("    ${it.name}: ${it.type}")
+            println("    ${it.name}: ${it.kType}")
         }
     }
 }

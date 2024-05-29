@@ -318,7 +318,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.NON_MODEL_NODE -> IconMap.small.nodeCircle
                 SceneObjectType.CAMERA -> IconMap.small.camera
                 SceneObjectType.LIGHT -> IconMap.small.light
-                SceneObjectType.GROUP -> IconMap.small.quadBox
+                SceneObjectType.GROUP -> IconMap.small.rectCrosshair
                 SceneObjectType.MESH -> IconMap.small.cube
                 SceneObjectType.MODEL -> IconMap.small.tree
                 SceneObjectType.SCENE -> IconMap.small.world
