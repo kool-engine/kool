@@ -28,6 +28,7 @@ data class PropertyValue(
     val i3: Vec3Data? = null,
     val i4: Vec4Data? = null,
 
+    val bool: Boolean? = null,
     val color: ColorData? = null,
     val transform: TransformData? = null,
     val str: String? = null,
@@ -51,6 +52,7 @@ data class PropertyValue(
             i3 != null -> i3.toVec3i()
             i4 != null -> i4.toVec4i()
 
+            bool != null -> bool
             color != null -> color.toColorLinear()
             transform != null -> transform.toMat4d()
             str != null -> str

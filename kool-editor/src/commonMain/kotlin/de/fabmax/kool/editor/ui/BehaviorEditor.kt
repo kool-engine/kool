@@ -57,6 +57,8 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
                 Vec3i::class -> vec3iEditor(prop)
                 Vec4i::class -> vec4iEditor(prop)
 
+                Boolean::class -> boolEditor(prop)
+
                 SceneModel::class -> { }
                 SceneNodeModel::class -> { }
 
@@ -89,6 +91,14 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
             label = prop.label
         )
     }
+
+    private fun UiScope.boolEditor(prop: BehaviorProperty) = booleanPropertyEditor(
+        dataGetter = { PropertyValue(bool = prop.getBoolean(it)) },
+        valueGetter = { it.bool!! },
+        valueSetter = { _, newValue -> PropertyValue(bool = newValue) },
+        actionMapper = SetBehaviorPropertyAction(prop),
+        label = prop.label
+    )
 
     private fun UiScope.doubleEditor(prop: BehaviorProperty) = doublePropertyEditor(
         dataGetter = { PropertyValue(d1 = prop.getDouble(it)) },
@@ -221,6 +231,8 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
     private fun BehaviorProperty.setProperty(behaviorComponent: BehaviorComponent, value: PropertyValue): Boolean {
         return when {
+            value.bool != null -> set(behaviorComponent, value.bool)
+
             value.d1 != null -> set(behaviorComponent, value.d1)
             value.d2 != null -> set(behaviorComponent, value.d2!!.toVec2d())
             value.d3 != null -> set(behaviorComponent, value.d3!!.toVec3d())

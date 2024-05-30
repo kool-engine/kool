@@ -48,6 +48,8 @@ fun BehaviorProperty.getVec2i(behaviorComponent: BehaviorComponent): Vec2i = get
 fun BehaviorProperty.getVec3i(behaviorComponent: BehaviorComponent): Vec3i = get(behaviorComponent) as Vec3i? ?: Vec3i.ZERO
 fun BehaviorProperty.getVec4i(behaviorComponent: BehaviorComponent): Vec4i = get(behaviorComponent) as Vec4i? ?: Vec4i.ZERO
 
+fun BehaviorProperty.getBoolean(behaviorComponent: BehaviorComponent): Boolean = get(behaviorComponent) as Boolean? ?: false
+
 fun BehaviorProperty.getComponent(behaviorComponent: BehaviorComponent): EditorModelComponent? = get(behaviorComponent) as EditorModelComponent?
 fun BehaviorProperty.getScene(behaviorComponent: BehaviorComponent): SceneModel? = get(behaviorComponent) as SceneModel?
 fun BehaviorProperty.getSceneNode(behaviorComponent: BehaviorComponent): SceneNodeModel? = get(behaviorComponent) as SceneNodeModel?

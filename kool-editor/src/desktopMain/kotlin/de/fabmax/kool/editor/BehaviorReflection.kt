@@ -59,6 +59,7 @@ object BehaviorReflection {
         typeOf<Vec3d?>(),
         typeOf<Vec4d?>(),
 
+        typeOf<Boolean?>(),
         typeOf<Color?>(),
         typeOf<String?>(),
 
