@@ -62,7 +62,7 @@ abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeCompon
         nodeModel.drawNode.modelMatD.decompose(t, r, s)
 
         if (!s.isFuzzyEqual(Vec3d.ONES, eps = 1e-3)) {
-            logW { "CharacterControllerComponent transform contains a scaling component, which may lead to unexpected behavior." }
+            logW { "${nodeModel.name} / ${this::class.simpleName}: transform contains a scaling component $s, which may lead to unexpected behavior." }
         }
         applyPose(t, r)
     }

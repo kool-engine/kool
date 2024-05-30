@@ -245,6 +245,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     private suspend fun handleAppReload(loadedApp: LoadedApp) {
+        if (!AppState.isEditMode) {
+            stopApp()
+        }
+
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
         editorCameraTransform.addNode(editorBackgroundScene.camera)

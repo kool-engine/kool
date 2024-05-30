@@ -6,6 +6,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
+import de.fabmax.kool.scene.MatrixTransformF
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformF
@@ -50,6 +51,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
 
     init {
         isCursorLocked = enableCursorLock
+        transform = MatrixTransformF()
 
         onUpdate {
             if (isCursorLocked) {

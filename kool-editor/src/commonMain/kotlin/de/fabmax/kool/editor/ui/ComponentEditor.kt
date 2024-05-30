@@ -1,5 +1,7 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.actions.EditorAction
+import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.RemoveComponentAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.EditorModelComponent
@@ -74,6 +76,98 @@ abstract class ComponentEditor<T: EditorModelComponent>() : Composable {
             if (masked.z.isFinite()) masked.z else fromComponent.z,
             if (masked.w.isFinite()) masked.w else fromComponent.w,
         )
+    }
+
+    protected fun <D> UiScope.doublePropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> Double,
+        valueSetter: (oldData: D, newValue: Double) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        precision: (Double) -> Int = { precisionForValue(it) },
+        labelWidth: Dimension = sizes.editorLabelWidthLarge,
+        valueWidth: Dimension = Grow.Std,
+        dragChangeSpeed: Double = 0.0,
+        minValue: Double = Double.NEGATIVE_INFINITY,
+        maxValue: Double = Double.POSITIVE_INFINITY,
+    ) {
+        val value = condenseDouble(components.map { valueGetter(dataGetter(it)) })
+        labeledDoubleTextField(
+            label = label,
+            value = value,
+            precision = precision(value),
+            labelWidth = labelWidth,
+            valueWidth = valueWidth,
+            dragChangeSpeed = dragChangeSpeed,
+            minValue = minValue,
+            maxValue = maxValue,
+            editHandler = ActionValueEditHandler { undo, apply ->
+                components.map { component ->
+                    val componentData = dataGetter(component)
+                    val mergedUndo = mergeDouble(undo, valueGetter(componentData))
+                    val mergedApply = mergeDouble(apply, valueGetter(componentData))
+                    val undoData = valueSetter(componentData, mergedUndo)
+                    val applyData = valueSetter(componentData, mergedApply)
+                    actionMapper(component, undoData, applyData)
+                }.fused()
+            }
+        )
+    }
+
+    protected fun <C, D> UiScope.choicePropertyEditor(
+        choices: ComboBoxItems<C>,
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> C,
+        valueSetter: (oldData: D, newValue: C) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        labelWidth: Dimension = sizes.editorLabelWidthSmall,
+    ) {
+        val (items, index) = choices.getOptionsAndIndex(components.map { valueGetter(dataGetter(it)) })
+        labeledCombobox(
+            label = label,
+            labelWidth = labelWidth,
+            items = items,
+            selectedIndex = index
+        ) { selected ->
+            selected.item?.let { choice ->
+                val actions = components
+                    .filter { valueGetter(dataGetter(it)) != choice }
+                    .map {
+                        val oldData = dataGetter(it)
+                        val newData = valueSetter(oldData, choice)
+                        actionMapper(it, oldData, newData)
+                    }
+                if (actions.isNotEmpty()) {
+                    FusedAction(actions).apply()
+                }
+            }
+        }
+    }
+
+    protected fun <D> UiScope.booleanPropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> Boolean,
+        valueSetter: (oldData: D, newValue: Boolean) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+    ) {
+        val flag = components.all { valueGetter(dataGetter(it)) }
+        labeledCheckbox(label, flag) { newFlag ->
+            val actions = components
+                .filter { valueGetter(dataGetter(it)) != newFlag }
+                .map {
+                    val oldData = dataGetter(it)
+                    val newData = valueSetter(oldData, newFlag)
+                    actionMapper(it, oldData, newData)
+                }
+            if (actions.isNotEmpty()) {
+                FusedAction(actions).apply()
+            }
+        }
     }
 }
 

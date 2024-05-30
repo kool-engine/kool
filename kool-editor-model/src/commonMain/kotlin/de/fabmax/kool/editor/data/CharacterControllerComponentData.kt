@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.physics.character.HitActorBehavior
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,6 +17,8 @@ data class CharacterControllerComponentProperties(
     val jumpSpeed: Double = 6.0,
     val slopeLimit: Double = 50.0,
     val contactOffset: Double = 0.1,
+    val pushForce: Double = 10.0,
+    val hitActorMode: HitActorBehavior = HitActorBehavior.DEFAULT,
 
     val enableDefaultControls: Boolean = true,
     val runByDefault: Boolean = true,

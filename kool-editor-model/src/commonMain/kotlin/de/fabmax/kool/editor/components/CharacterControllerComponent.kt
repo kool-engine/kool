@@ -7,8 +7,9 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.physics.character.CharacterController
-import de.fabmax.kool.physics.character.CharacterControllerProperties
+import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.RigidDynamic
+import de.fabmax.kool.physics.character.*
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
@@ -21,7 +22,9 @@ class CharacterControllerComponent(
     override val componentData: CharacterControllerComponentData = CharacterControllerComponentData()
 ) :
     PhysicsNodeComponent(nodeModel),
-    EditorDataComponent<CharacterControllerComponentData>
+    EditorDataComponent<CharacterControllerComponentData>,
+    OnHitActorListener,
+    HitActorBehaviorCallback
 {
 
     val charControllerState = mutableStateOf(componentData.properties).onChange {
@@ -36,7 +39,22 @@ class CharacterControllerComponent(
     var charController: CharacterController? = null
         private set
 
+    var referenceFrontDirection = 0f.deg
+
     private var axes: WalkAxes? = null
+
+    val isRun: Boolean get() = axes?.isRun == !charControllerState.value.runByDefault
+    val isJump: Boolean get() = axes?.isJump == true
+    val isCrouch: Boolean get() = axes?.isCrouch == true
+
+    val crouchFactor: Float get() = axes?.crouchFactor ?: 0f
+    val runFactor: Float get() {
+        var fac = axes?.runFactor ?: 0f
+        if (charControllerState.value.runByDefault) {
+            fac = 1f - fac
+        }
+        return fac
+    }
 
     override val actorTransform: TrsTransformF? get() = charController?.actor?.transform
 
@@ -92,7 +110,10 @@ class CharacterControllerComponent(
                 contactOffset = it.contactOffset.toFloat(),
             )
         }
-        charController = charManager.createController(props)
+        charController = charManager.createController(props).also {
+            it.onHitActorListeners += this
+            it.hitActorBehaviorCallback = this
+        }
 
         if (oldPos != null) {
             applyPose(oldPos!!, QuatD.IDENTITY)
@@ -111,31 +132,41 @@ class CharacterControllerComponent(
         val walkSpeed = props.walkSpeed.toFloat()
         val runSpeed = props.runSpeed.toFloat()
 
-        var moveHeading = 0f
+        var moveHeading = referenceFrontDirection.deg
         val walkDir = Vec2f(-axes.leftRight, axes.forwardBackward)
         if (walkDir.length() > 0f) {
             moveHeading += atan2(walkDir.x, walkDir.y).toDeg()
         }
 
+        val runFactor = this.runFactor
+        val crouchFactor = this.crouchFactor
         val speedFactor = max(abs(axes.forwardBackward), abs(axes.leftRight))
-        var runFactor = axes.runFactor
-        if (props.runByDefault) {
-            runFactor = 1f - runFactor
-        }
-
         var moveSpeed = walkSpeed * speedFactor
         if (runFactor > 0f) {
             moveSpeed = moveSpeed * (1f - runFactor) + runSpeed * speedFactor * runFactor
         }
-        if (axes.crouchFactor > 0f) {
-            moveSpeed = moveSpeed * (1f - axes.crouchFactor) + crouchSpeed * speedFactor * axes.crouchFactor
+        if (crouchFactor > 0f) {
+            moveSpeed = moveSpeed * (1f - crouchFactor) + crouchSpeed * speedFactor * crouchFactor
         }
 
         // set controller.movement according to user input
         controller.movement.set(0f, 0f, -moveSpeed)
         controller.movement.rotate(moveHeading.deg, Vec3f.Y_AXIS)
         controller.jumpSpeed = props.jumpSpeed.toFloat()
-        controller.jump = axes.isJump
+        controller.jump = isJump
     }
 
+    override fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
+        val pushForceFac = charControllerState.value.pushForce.toFloat()
+        if (pushForceFac > 0f && actor is RigidDynamic) {
+            val runMod = if (axes?.isRun == true) 2f else 1f
+            val force = actor.mass * runMod * pushForceFac
+            val forceVec = hitWorldNormal * -force
+            actor.addForceAtPos(forceVec, hitWorldPos, isLocalForce = false, isLocalPos = false)
+        }
+    }
+
+    override fun hitActorBehavior(actor: RigidActor): HitActorBehavior {
+        return charControllerState.value.hitActorMode
+    }
 }

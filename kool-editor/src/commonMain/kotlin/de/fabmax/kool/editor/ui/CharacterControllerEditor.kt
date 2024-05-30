@@ -1,9 +1,11 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.SetCharControllerPropertiesAction
-import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.CharacterControllerComponent
+import de.fabmax.kool.editor.data.CharacterControllerComponentProperties
 import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.physics.character.HitActorBehavior
 
 class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>() {
 
@@ -12,133 +14,123 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
         imageIcon = IconMap.small.physics,
         onRemove = ::removeComponent,
     ) {
-        val charProps = components.map { it.charControllerState.use() }
+        components.forEach { it.charControllerState.use() }
 
-        labeledDoubleTextField(
+        charDoublePropertyEditor(
+            valueGetter = { it.shape.radius },
+            valueSetter = { oldData, newValue -> oldData.copy(shape = oldData.shape.copy(radius = newValue)) },
             label = "Radius:",
-            value = condenseDouble(charProps.map { it.shape.radius }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, props[i].shape.radius)
-                    val mergedApply = mergeDouble(apply, props[i].shape.radius)
-                    val undoProps = props[i].copy(shape = props[i].shape.copy(radius = mergedUndo))
-                    val applyProps = props[i].copy(shape = props[i].shape.copy(radius = mergedApply))
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }.fused()
-            }
+            minValue = 0.01
         )
-        labeledDoubleTextField(
-            label = "Height:",
-            value = condenseDouble(charProps.map { it.shape.length }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, props[i].shape.length)
-                    val mergedApply = mergeDouble(apply, props[i].shape.length)
-                    val undoProps = props[i].copy(shape = props[i].shape.copy(length = mergedUndo))
-                    val applyProps = props[i].copy(shape = props[i].shape.copy(length = mergedApply))
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }.fused()
-            }
+        charDoublePropertyEditor(
+            valueGetter = { it.shape.length },
+            valueSetter = { oldData, newValue -> oldData.copy(shape = oldData.shape.copy(length = newValue)) },
+            label = "Height:"
         )
 
         menuDivider()
 
-        labeledDoubleTextField(
-            label = "Walk speed:",
-            value = condenseDouble(charProps.map { it.walkSpeed }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, props[i].walkSpeed)
-                    val mergedApply = mergeDouble(apply, props[i].walkSpeed)
-                    val undoProps = props[i].copy(walkSpeed = mergedUndo)
-                    val applyProps = props[i].copy(walkSpeed = mergedApply)
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }.fused()
-            }
+        charDoublePropertyEditor(
+            valueGetter = { it.walkSpeed },
+            valueSetter = { oldData, newValue -> oldData.copy(walkSpeed = newValue) },
+            label = "Walk speed:"
         )
-        labeledDoubleTextField(
-            label = "Run speed:",
-            value = condenseDouble(charProps.map { it.runSpeed }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, props[i].runSpeed)
-                    val mergedApply = mergeDouble(apply, props[i].runSpeed)
-                    val undoProps = props[i].copy(runSpeed = mergedUndo)
-                    val applyProps = props[i].copy(runSpeed = mergedApply)
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }.fused()
-            }
+        charDoublePropertyEditor(
+            valueGetter = { it.runSpeed },
+            valueSetter = { oldData, newValue -> oldData.copy(runSpeed = newValue) },
+            label = "Run speed:"
         )
-        labeledDoubleTextField(
-            label = "Crouch speed:",
-            value = condenseDouble(charProps.map { it.crouchSpeed }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, props[i].crouchSpeed)
-                    val mergedApply = mergeDouble(apply, props[i].crouchSpeed)
-                    val undoProps = props[i].copy(crouchSpeed = mergedUndo)
-                    val applyProps = props[i].copy(crouchSpeed = mergedApply)
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }.fused()
-            }
+        charDoublePropertyEditor(
+            valueGetter = { it.crouchSpeed },
+            valueSetter = { oldData, newValue -> oldData.copy(crouchSpeed = newValue) },
+            label = "Crouch speed:"
         )
-        labeledDoubleTextField(
-            label = "Jump speed:",
-            value = condenseDouble(charProps.map { it.jumpSpeed }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, props[i].jumpSpeed)
-                    val mergedApply = mergeDouble(apply, props[i].jumpSpeed)
-                    val undoProps = props[i].copy(jumpSpeed = mergedUndo)
-                    val applyProps = props[i].copy(jumpSpeed = mergedApply)
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }.fused()
-            }
+        charDoublePropertyEditor(
+            valueGetter = { it.jumpSpeed },
+            valueSetter = { oldData, newValue -> oldData.copy(jumpSpeed = newValue) },
+            label = "Jump speed:"
         )
-        labeledDoubleTextField(
+        charDoublePropertyEditor(
+            valueGetter = { it.slopeLimit },
+            valueSetter = { oldData, newValue -> oldData.copy(slopeLimit = newValue) },
             label = "Slope limit:",
-            value = condenseDouble(charProps.map { it.slopeLimit }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, props[i].slopeLimit)
-                    val mergedApply = mergeDouble(apply, props[i].slopeLimit)
-                    val undoProps = props[i].copy(slopeLimit = mergedUndo)
-                    val applyProps = props[i].copy(slopeLimit = mergedApply)
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoProps, applyProps)
-                }.fused()
-            }
+            maxValue = 90.0
+        )
+        charDoublePropertyEditor(
+            valueGetter = { it.pushForce },
+            valueSetter = { oldData, newValue -> oldData.copy(pushForce = newValue) },
+            label = "Push force:"
+        )
+        choicePropertyEditor(
+            choices = hitBehaviorOptions,
+            dataGetter = { it.charControllerState.value },
+            valueGetter = { it.hitActorMode },
+            valueSetter = { oldData, newValue -> oldData.copy(hitActorMode = newValue) },
+            actionMapper = setCharProps,
+            label = "Default hit behavior:",
+            labelWidth = sizes.editorLabelWidthLarge
         )
 
         menuDivider()
 
-        val isKeyboardCtrl = charProps.all { it.enableDefaultControls }
+        charBooleanPropertyEditor(
+            valueGetter = { it.enableDefaultControls },
+            valueSetter = { oldData, newValue -> oldData.copy(enableDefaultControls = newValue) },
+            "Default keyboard controls"
+        )
 
-        labeledCheckbox("Default keyboard controls", isKeyboardCtrl) { enabled ->
-            val props = components.map { it.charControllerState.value }
-            components.mapIndexed { i, component ->
-                SetCharControllerPropertiesAction(component.nodeModel.nodeId, props[i], props[i].copy(enableDefaultControls = enabled))
-            }.fused().apply()
+        if (components.all { it.charControllerState.value.enableDefaultControls }) {
+            charBooleanPropertyEditor(
+                valueGetter = { it.runByDefault },
+                valueSetter = { oldData, newValue -> oldData.copy(runByDefault = newValue) },
+                "Run by default"
+            )
         }
-        if (isKeyboardCtrl) {
-            labeledCheckbox("Run by default", charProps.all { it.runByDefault }) { enabled ->
-                val props = components.map { it.charControllerState.value }
-                components.mapIndexed { i, component ->
-                    SetCharControllerPropertiesAction(component.nodeModel.nodeId, props[i], props[i].copy(runByDefault = enabled))
-                }.fused().apply()
+    }
+
+    private fun UiScope.charDoublePropertyEditor(
+        valueGetter: (CharacterControllerComponentProperties) -> Double,
+        valueSetter: (oldData: CharacterControllerComponentProperties, newValue: Double) -> CharacterControllerComponentProperties,
+        label: String,
+        minValue: Double = 0.0,
+        maxValue: Double = Double.POSITIVE_INFINITY,
+    ) = doublePropertyEditor(
+        dataGetter = { it.charControllerState.value },
+        valueGetter = valueGetter,
+        valueSetter = valueSetter,
+        actionMapper = setCharProps,
+        label = label,
+        dragChangeSpeed = DragChangeRates.SIZE,
+        minValue = minValue,
+        maxValue = maxValue
+    )
+
+    private fun UiScope.charBooleanPropertyEditor(
+        valueGetter: (CharacterControllerComponentProperties) -> Boolean,
+        valueSetter: (oldData: CharacterControllerComponentProperties, newValue: Boolean) -> CharacterControllerComponentProperties,
+        label: String,
+    ) = booleanPropertyEditor(
+        dataGetter = { it.charControllerState.value },
+        valueGetter = valueGetter,
+        valueSetter = valueSetter,
+        actionMapper = setCharProps,
+        label
+    )
+
+    companion object {
+        private val setCharProps: (
+            component: CharacterControllerComponent,
+            undoData: CharacterControllerComponentProperties,
+            applyData: CharacterControllerComponentProperties
+        ) -> EditorAction = { component, undoData, applyData ->
+            SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoData, applyData)
+        }
+
+        private val hitBehaviorOptions = ComboBoxItems(HitActorBehavior.entries) {
+            when (it) {
+                HitActorBehavior.DEFAULT -> "Standard"
+                HitActorBehavior.SLIDE -> "Slide"
+                HitActorBehavior.RIDE -> "Ride"
             }
         }
     }
