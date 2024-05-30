@@ -11,6 +11,7 @@ import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.DockLayout
@@ -254,6 +255,7 @@ object DragChangeRates {
 
     val SIZE_VEC2 = Vec2d(SIZE)
     val SIZE_VEC3 = Vec3d(SIZE)
+    val SIZE_VEC4 = Vec4d(SIZE)
     val POSITION_VEC3 = Vec3d(POSITION)
     val SCALE_VEC3 = Vec3d(SCALE)
     val ROTATION_VEC3 = Vec3d(ROTATION)

@@ -15,7 +15,7 @@ val NodeId.nodeModel: NodeModel? get() {
     } else {
         KoolEditor.instance.projectModel.createdScenes.values.find { this in it.nodeModels }?.nodeModels?.get(this)
     }
-    if (nodeModel == null) {
+    if (nodeModel == null && id != -1L) {
         logE { "node model not found: $this" }
     }
     return nodeModel

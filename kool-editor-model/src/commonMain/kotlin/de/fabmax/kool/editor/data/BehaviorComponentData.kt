@@ -55,7 +55,8 @@ data class PropertyValue(
             transform != null -> transform.toMat4d()
             str != null -> str
             nodeRef != null -> nodeRef
-            else -> throw IllegalStateException("PropertyValue has no non-null value")
+            componentRef != null -> componentRef
+            else -> error("PropertyValue has no non-null value")
         }
     }
 }

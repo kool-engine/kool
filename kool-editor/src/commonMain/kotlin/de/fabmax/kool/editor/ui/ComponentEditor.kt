@@ -88,7 +88,7 @@ abstract class ComponentEditor<T: EditorModelComponent>() : Composable {
         precision: (Double) -> Int = { precisionForValue(it) },
         labelWidth: Dimension = sizes.editorLabelWidthLarge,
         valueWidth: Dimension = Grow.Std,
-        dragChangeSpeed: Double = 0.0,
+        dragChangeSpeed: Double = DragChangeRates.SIZE,
         minValue: Double = Double.NEGATIVE_INFINITY,
         maxValue: Double = Double.POSITIVE_INFINITY,
     ) {
@@ -107,6 +107,105 @@ abstract class ComponentEditor<T: EditorModelComponent>() : Composable {
                     val componentData = dataGetter(component)
                     val mergedUndo = mergeDouble(undo, valueGetter(componentData))
                     val mergedApply = mergeDouble(apply, valueGetter(componentData))
+                    val undoData = valueSetter(componentData, mergedUndo)
+                    val applyData = valueSetter(componentData, mergedApply)
+                    actionMapper(component, undoData, applyData)
+                }.fused()
+            }
+        )
+    }
+
+    protected fun <D> UiScope.vec2dPropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> Vec2d,
+        valueSetter: (oldData: D, newValue: Vec2d) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        precision: (Vec2d) -> Vec2i = { Vec2i(precisionForValue(it.x), precisionForValue(it.y)) },
+        minValues: Vec2d? = null,
+        maxValues: Vec2d? = null,
+        dragChangeSpeed: Vec2d = DragChangeRates.SIZE_VEC2,
+    ) {
+        val value = condenseVec2(components.map { valueGetter(dataGetter(it)) })
+        labeledXyRow(
+            label = label,
+            xy = value,
+            precision = precision(value),
+            minValues = minValues,
+            maxValues = maxValues,
+            dragChangeSpeed = dragChangeSpeed,
+            editHandler = ActionValueEditHandler { undo, apply ->
+                components.map { component ->
+                    val componentData = dataGetter(component)
+                    val mergedUndo = mergeVec2(undo, valueGetter(componentData))
+                    val mergedApply = mergeVec2(apply, valueGetter(componentData))
+                    val undoData = valueSetter(componentData, mergedUndo)
+                    val applyData = valueSetter(componentData, mergedApply)
+                    actionMapper(component, undoData, applyData)
+                }.fused()
+            }
+        )
+    }
+
+    protected fun <D> UiScope.vec3dPropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> Vec3d,
+        valueSetter: (oldData: D, newValue: Vec3d) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        precision: (Vec3d) -> Vec3i = { Vec3i(precisionForValue(it.x), precisionForValue(it.y), precisionForValue(it.z)) },
+        minValues: Vec3d? = null,
+        maxValues: Vec3d? = null,
+        dragChangeSpeed: Vec3d = DragChangeRates.SIZE_VEC3,
+    ) {
+        val value = condenseVec3(components.map { valueGetter(dataGetter(it)) })
+        labeledXyzRow(
+            label = label,
+            xyz = value,
+            precision = precision(value),
+            minValues = minValues,
+            maxValues = maxValues,
+            dragChangeSpeed = dragChangeSpeed,
+            editHandler = ActionValueEditHandler { undo, apply ->
+                components.map { component ->
+                    val componentData = dataGetter(component)
+                    val mergedUndo = mergeVec3(undo, valueGetter(componentData))
+                    val mergedApply = mergeVec3(apply, valueGetter(componentData))
+                    val undoData = valueSetter(componentData, mergedUndo)
+                    val applyData = valueSetter(componentData, mergedApply)
+                    actionMapper(component, undoData, applyData)
+                }.fused()
+            }
+        )
+    }
+
+    protected fun <D> UiScope.vec4dPropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> Vec4d,
+        valueSetter: (oldData: D, newValue: Vec4d) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        precision: (Vec4d) -> Vec4i = { Vec4i(precisionForValue(it.x), precisionForValue(it.y), precisionForValue(it.z), precisionForValue(it.w)) },
+        minValues: Vec4d? = null,
+        maxValues: Vec4d? = null,
+        dragChangeSpeed: Vec4d = DragChangeRates.SIZE_VEC4,
+    ) {
+        val value = condenseVec4(components.map { valueGetter(dataGetter(it)) })
+        labeledXyzwRow(
+            label = label,
+            xyzw = value,
+            precision = precision(value),
+            minValues = minValues,
+            maxValues = maxValues,
+            dragChangeSpeed = dragChangeSpeed,
+            editHandler = ActionValueEditHandler { undo, apply ->
+                components.map { component ->
+                    val componentData = dataGetter(component)
+                    val mergedUndo = mergeVec4(undo, valueGetter(componentData))
+                    val mergedApply = mergeVec4(apply, valueGetter(componentData))
                     val undoData = valueSetter(componentData, mergedUndo)
                     val applyData = valueSetter(componentData, mergedApply)
                     actionMapper(component, undoData, applyData)

@@ -100,7 +100,6 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
         valueSetter = valueSetter,
         actionMapper = setCharProps,
         label = label,
-        dragChangeSpeed = DragChangeRates.SIZE,
         minValue = minValue,
         maxValue = maxValue
     )
