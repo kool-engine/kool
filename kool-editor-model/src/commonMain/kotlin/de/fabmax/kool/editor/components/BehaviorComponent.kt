@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.api.BehaviorLoader
 import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.getComponent
 import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.model.SceneNodeModel
@@ -49,10 +50,7 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
             componentData.propertyValues.forEach { (name, value) ->
                 val setValue = when {
                     value.nodeRef != null -> value.nodeRef.nodeModel
-                    value.componentRef != null -> {
-                        val refNode = value.componentRef.nodeId.nodeModel
-                        refNode?.components?.find { value.componentRef.componentClassName == it::class.qualifiedName }
-                    }
+                    value.componentRef != null -> value.componentRef.nodeId.nodeModel?.getComponent(value.componentRef)
                     else -> value.get()
                 }
                 if (!setProperty(name, setValue)) {

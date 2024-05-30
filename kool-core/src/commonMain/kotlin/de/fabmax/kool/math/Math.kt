@@ -2,6 +2,7 @@
 
 package de.fabmax.kool.math
 
+import de.fabmax.kool.util.Time
 import kotlin.math.*
 
 const val DEG_2_RAD = PI / 180.0
@@ -49,6 +50,14 @@ inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
     this < min -> min
     this > max -> max
     else -> this
+}
+
+fun Float.expDecay(target: Float, decay: Float, deltaT: Float = Time.deltaT): Float {
+    return target + (this - target) * exp(-decay * deltaT)
+}
+
+fun Double.expDecay(target: Double, decay: Double, deltaT: Float = Time.deltaT): Double {
+    return target + (this - target) * exp(-decay * deltaT)
 }
 
 fun stableAsin(x: Float): Float {

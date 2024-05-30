@@ -85,8 +85,8 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         val (options, index) = items.getOptionsAndIndex(selected)
         labeledCombobox(prop.label, options, index) { item ->
             components.map { edit ->
-                val undo = PropertyValue(componentRef = ComponentRef(prop.getComponent(edit)?.nodeModel?.nodeId ?: NodeId(-1L), klass.qualifiedName!!))
-                val apply = PropertyValue(componentRef = ComponentRef(item.item?.nodeModel?.nodeId ?: NodeId(-1L), klass.qualifiedName!!))
+                val undo = PropertyValue(componentRef = ComponentRef(prop.getComponent(edit)))
+                val apply = PropertyValue(componentRef = ComponentRef(item.item))
                 SetBehaviorPropertyAction(edit.nodeModel.nodeId, prop.name, undo, apply) { comp, value ->
                     val nodeId = value.componentRef!!.nodeId
                     val setComponent = if (nodeId.id == -1L) null else {

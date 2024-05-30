@@ -1,5 +1,7 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.editor.components.EditorModelComponent
+import de.fabmax.kool.editor.model.NodeModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -63,3 +65,21 @@ data class ComponentRef(
     val nodeId: NodeId,
     val componentClassName: String
 )
+
+fun ComponentRef(component: EditorModelComponent?): ComponentRef {
+    // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
+    return if (component != null) {
+        ComponentRef(component.nodeModel.nodeId, component::class.simpleName!!)
+    } else {
+        ComponentRef(NodeId(-1L), "<null>")
+    }
+}
+
+fun ComponentRef.matchesComponent(component: EditorModelComponent): Boolean {
+    // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
+    return nodeId == component.nodeModel.nodeId && component::class.simpleName == componentClassName
+}
+
+fun NodeModel.getComponent(ref: ComponentRef): EditorModelComponent? {
+    return components.find { ref.matchesComponent(it) }
+}

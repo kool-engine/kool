@@ -23,7 +23,7 @@ class ControllerBahaviorCallback(private val world: PhysicsWorldImpl) {
         }
 
         // not used
-        getControllerBehaviorFlags = { _ -> 0}
+        getControllerBehaviorFlags = { _ -> 0 }
         getObstacleBehaviorFlags = { _ -> 0 }
     }
 }

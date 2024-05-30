@@ -84,6 +84,7 @@ class RigidActorComponent(
 
         } else if (actor is RigidDynamic) {
             actor.mass = componentData.properties.mass.toFloat()
+            actor.updateInertiaFromShapesAndMass()
         }
     }
 
@@ -117,6 +118,10 @@ class RigidActorComponent(
                 bodyShapes.mapNotNull { shape -> shape.makeCollisionGeometry() }
             }
             geometry.forEach { attachShape(Shape(it)) }
+
+            if (this is RigidDynamic) {
+                updateInertiaFromShapesAndMass()
+            }
             physicsWorld?.addActor(this)
         }
 
