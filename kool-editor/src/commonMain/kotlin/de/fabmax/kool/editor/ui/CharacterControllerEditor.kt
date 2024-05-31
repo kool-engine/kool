@@ -61,6 +61,11 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             valueSetter = { oldData, newValue -> oldData.copy(pushForce = newValue) },
             label = "Push force:"
         )
+        charDoublePropertyEditor(
+            valueGetter = { it.downForce },
+            valueSetter = { oldData, newValue -> oldData.copy(downForce = newValue) },
+            label = "Down force:"
+        )
         choicePropertyEditor(
             choices = hitBehaviorOptions,
             dataGetter = { it.charControllerState.value },

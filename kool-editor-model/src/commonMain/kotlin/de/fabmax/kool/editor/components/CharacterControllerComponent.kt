@@ -158,9 +158,12 @@ class CharacterControllerComponent(
 
     override fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
         val pushForceFac = charControllerState.value.pushForce.toFloat()
-        if (pushForceFac > 0f && actor is RigidDynamic) {
+        val downForceFac = charControllerState.value.downForce.toFloat()
+        if ((pushForceFac + downForceFac) > 0f && actor is RigidDynamic) {
             val runMod = if (axes?.isRun == true) 2f else 1f
-            val force = actor.mass * runMod * pushForceFac
+            val downBlend = abs(hitWorldNormal dot Vec3f.Y_AXIS)
+            val forceFac = downForceFac * downBlend + pushForceFac * (1f - downBlend)
+            val force = actor.mass * runMod * forceFac
             val forceVec = hitWorldNormal * -force
             actor.addForceAtPos(forceVec, hitWorldPos, isLocalForce = false, isLocalPos = false)
         }
