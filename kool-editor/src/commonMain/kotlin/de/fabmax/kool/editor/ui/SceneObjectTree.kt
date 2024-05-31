@@ -165,7 +165,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 item("Sphere") { addNewMesh(it, ShapeData.defaultSphere) }
                 item("Cylinder") { addNewMesh(it, ShapeData.defaultCylinder) }
                 item("Capsule") { addNewMesh(it, ShapeData.defaultCapsule) }
-                item("Empty") { addNewMesh(it, ShapeData.defaultEmpty) }
+                item("Heightmap") { addNewMesh(it, ShapeData.defaultHeightmap) }
+                item("Custom") { addNewMesh(it, ShapeData.defaultCustom) }
             }
             subMenu("glTF model") {
                 item("Import model") { logE { "Not yet implemented" } }

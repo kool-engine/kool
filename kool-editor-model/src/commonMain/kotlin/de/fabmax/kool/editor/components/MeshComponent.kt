@@ -112,7 +112,8 @@ class MeshComponent(
             is ShapeData.Capsule -> generateCapsule(shape)
             is ShapeData.Heightmap -> generateHeightmap(shape)
             is ShapeData.Rect -> generateRect(shape)
-            is ShapeData.Empty -> { }
+            is ShapeData.Custom -> { }
+            is ShapeData.Plane -> error("Plane shape is not supported as mesh shape")
         }
     }
 

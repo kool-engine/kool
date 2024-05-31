@@ -58,7 +58,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
             ShapeOption.Capsule -> listOf(ShapeData.defaultCylinder)
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
-            ShapeOption.Empty -> listOf(ShapeData.defaultEmpty)
+            ShapeOption.Empty -> listOf(ShapeData.defaultCustom)
         }
         val actions = components
             .filter { it.shapesState != newShapes }
@@ -77,7 +77,8 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             is ShapeData.Cylinder -> cylinderProperties()
             is ShapeData.Capsule -> capsuleProperties()
             is ShapeData.Heightmap -> heightmapProperties()
-            is ShapeData.Empty -> { }
+            is ShapeData.Custom -> { }
+            is ShapeData.Plane -> error("Plane shape is not supported as mesh shape")
         }
 
         if (shape.hasUvs) {
@@ -340,7 +341,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         Cylinder("Cylinder", { it is ShapeData.Cylinder }),
         Capsule("Capsule", { it is ShapeData.Capsule }),
         Heightmap("Heightmap", { it is ShapeData.Heightmap }),
-        Empty("Empty", { it is ShapeData.Empty })
+        Empty("Custom", { it is ShapeData.Custom })
     }
 
     companion object {

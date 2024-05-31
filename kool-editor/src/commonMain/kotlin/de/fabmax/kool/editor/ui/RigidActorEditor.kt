@@ -37,7 +37,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             }
         }
 
-        if (components.all { it.actorState.value.type == RigidActorType.DYNAMIC }) {
+        val isDynamicActor = components.any { it.actorState.value.type == RigidActorType.DYNAMIC }
+        if (isDynamicActor) {
             labeledDoubleTextField(
                 label = "Mass:",
                 value = condenseDouble(components.map { it.actorState.value.mass }),
@@ -54,13 +55,13 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             )
         }
 
-        shapeEditor()
+        shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
     }
 
-    private fun ColumnScope.shapeEditor() {
+    private fun ColumnScope.shapeEditor(choices: ComboBoxItems<ShapeOption>) {
         menuDivider()
 
-        val (shapeItems, shapeIdx) = shapeOptions.getOptionsAndIndex(components.map { it.actorState.use().shapeOption })
+        val (shapeItems, shapeIdx) = choices.getOptionsAndIndex(components.map { it.actorState.use().shapeOption })
         labeledCombobox(
             label = "Shape:",
             items = shapeItems,
@@ -74,7 +75,10 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 is ShapeData.Cylinder -> cylinderEditor()
                 is ShapeData.Sphere -> sphereEditor()
                 is ShapeData.Heightmap -> heightmapEditor()
-                else -> { }
+                is ShapeData.Plane -> { }
+                is ShapeData.Rect -> { }    // todo: triangle mesh geometry
+                is ShapeData.Custom -> { }
+                null -> { }                 // "Use mesh"
             }
         }
     }
@@ -86,6 +90,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
             ShapeOption.Capsule -> listOf(ShapeData.defaultCapsule)
+            ShapeOption.Plane -> listOf(ShapeData.defaultPlane)
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
         }
         val actions = components
@@ -283,17 +288,19 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         Static("Static", RigidActorType.STATIC),
     }
 
-    private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean) {
-        UseMesh("Use mesh", { it == null }),
+    private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean, val isDynamic: Boolean = true) {
+        UseMesh("Draw shape", { it == null || it is ShapeData.Custom }),
         Box("Box", { it is ShapeData.Box }),
         Sphere("Sphere", { it is ShapeData.Sphere }),
         Cylinder("Cylinder", { it is ShapeData.Cylinder }),
         Capsule("Capsule", { it is ShapeData.Capsule }),
-        Heightmap("Heightmap", { it is ShapeData.Heightmap })
+        Plane("Infinite plane", { it is ShapeData.Plane }, isDynamic = false),
+        Heightmap("Heightmap", { it is ShapeData.Heightmap }, isDynamic = false)
     }
 
     companion object {
         private val shapeOptions = ComboBoxItems(ShapeOption.entries) { it.label }
+        private val shapeOptionsDynamic = ComboBoxItems(ShapeOption.entries.filter { it.isDynamic }) { it.label }
         private val typeOptions = ComboBoxItems(TypeOption.entries) { it.label }
     }
 }
