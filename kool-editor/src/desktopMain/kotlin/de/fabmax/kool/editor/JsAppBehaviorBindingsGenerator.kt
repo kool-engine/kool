@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor
 
 import java.io.File
+import kotlin.reflect.KClass
+import kotlin.reflect.KType
 
 object JsAppBehaviorBindingsGenerator {
 
@@ -17,7 +19,7 @@ object JsAppBehaviorBindingsGenerator {
                     }
                 }
 
-                override fun getProperty(behavior: KoolBehavior, propertyName: String): Any {
+                override fun getProperty(behavior: KoolBehavior, propertyName: String): Any? {
                     return when (behavior) {${makePropertyGetterMappings(appBehaviors)}
                         else -> throw IllegalArgumentException("Unknown behavior class: ${"\$"}{behavior::class}")
                     }
@@ -69,12 +71,13 @@ object JsAppBehaviorBindingsGenerator {
 
     private fun StringBuilder.appendPropertyGetters(appBehaviors: List<AppBehavior>) {
         appBehaviors.forEach { behavior ->
+            val nullable = if (behavior.properties.any { it.kType.isMarkedNullable }) "?" else ""
             val properties = behavior.properties.joinToString("") {
                 "\n            \"${it.name}\" -> behavior.${it.name}"
             }
             appendLine()
             appendLine("""
-                |    private fun get${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String): Any {
+                |    private fun get${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String): Any$nullable {
                 |        return when (propertyName) {$properties
                 |            else -> throw IllegalArgumentException("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
                 |        }
@@ -86,7 +89,7 @@ object JsAppBehaviorBindingsGenerator {
     private fun StringBuilder.appendPropertySetters(appBehaviors: List<AppBehavior>) {
         appBehaviors.forEach { behavior ->
             val properties = behavior.properties.joinToString("") {
-                "\n            \"${it.name}\" -> behavior.${it.name} = value as ${it.type.qualifiedName!!.removePrefix("kotlin.")}"
+                "\n            \"${it.name}\" -> behavior.${it.name} = value as ${it.kType.qualifiedName}"
             }
             appendLine()
             appendLine("""
@@ -103,7 +106,10 @@ object JsAppBehaviorBindingsGenerator {
         appendLine("\n    val behaviorClasses = mapOf<KClass<*>, AppBehavior>(")
         appBehaviors.forEach { behavior ->
             val properties = behavior.properties.joinToString("") {
-                "\n                BehaviorProperty(\"${it.name}\", ${it.type.qualifiedName!!.removePrefix("kotlin.")}::class, \"${it.label}\", ${it.min}, ${it.max}),"
+                val min = if (it.min.isFinite()) ", min = ${it.min}" else ""
+                val max = if (it.max.isFinite()) ", max = ${it.max}" else ""
+
+                "\n                BehaviorProperty(\"${it.name}\", BehaviorPropertyType.${it.type}, typeOf<${it.kType.qualifiedName}>(), \"${it.label}\"$min$max),"
             }
             appendLine("""
                 |        ${behavior.simpleName}::class to AppBehavior(
@@ -119,9 +125,14 @@ object JsAppBehaviorBindingsGenerator {
 
     private val defaultImports = listOf(
         "kotlin.reflect.KClass",
+        "kotlin.reflect.typeOf",
         "de.fabmax.kool.editor.AppBehavior",
         "de.fabmax.kool.editor.BehaviorProperty",
+        "de.fabmax.kool.editor.BehaviorPropertyType",
         "de.fabmax.kool.editor.api.KoolBehavior",
         "de.fabmax.kool.editor.api.BehaviorLoader"
     )
+
+    private val KType.qualifiedName: String
+        get() = (classifier as KClass<*>).qualifiedName!!.removePrefix("kotlin.") + if (isMarkedNullable) "?" else ""
 }

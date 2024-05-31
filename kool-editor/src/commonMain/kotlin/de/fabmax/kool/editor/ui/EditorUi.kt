@@ -11,6 +11,7 @@ import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.Vec4d
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.DockLayout
@@ -204,6 +205,9 @@ val Sizes.editItemHeight: Dp get() = largeGap * 1.25f
 val Sizes.lineHeightLarger: Dp get() = baseSize * 0.9f
 val Sizes.lineHeightTitle: Dp get() = baseSize
 val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f
+val Sizes.scrollbarWidth: Dp get() = gap * 0.3f
+val Sizes.editorLabelWidthSmall: Dp get() = baseSize * 3
+val Sizes.editorLabelWidthLarge: Dp get() = baseSize * 5
 
 val Sizes.smallText: MsdfFont get() = (normalText as MsdfFont).copy(sizePts = normalText.sizePts * 0.8f)
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)
@@ -251,6 +255,7 @@ object DragChangeRates {
 
     val SIZE_VEC2 = Vec2d(SIZE)
     val SIZE_VEC3 = Vec3d(SIZE)
+    val SIZE_VEC4 = Vec4d(SIZE)
     val POSITION_VEC3 = Vec3d(POSITION)
     val SCALE_VEC3 = Vec3d(SCALE)
     val ROTATION_VEC3 = Vec3d(ROTATION)

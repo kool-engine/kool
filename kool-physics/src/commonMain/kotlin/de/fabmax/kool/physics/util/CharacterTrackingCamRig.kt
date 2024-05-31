@@ -6,6 +6,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.HitResult
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.geometry.BoxGeometry
+import de.fabmax.kool.scene.MatrixTransformF
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformF
@@ -37,6 +38,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     val pivotPoint = MutableVec3f()
 
     val lookDirection = MutableVec3f(Vec3f.NEG_Z_AXIS)
+    var frontAngle = 0f.deg
 
     var zoomModifier: (Float) -> Float = { it }
 
@@ -49,6 +51,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
 
     init {
         isCursorLocked = enableCursorLock
+        transform = MatrixTransformF()
 
         onUpdate {
             if (isCursorLocked) {
@@ -76,6 +79,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     fun applyLookDirection() {
         lookPhi = atan2(lookDirection.z, lookDirection.x)
         lookTheta = acos(lookDirection.y)
+        frontAngle = lookPhi.rad + 90f.deg
     }
 
     private fun handlePointerInput() {
@@ -106,9 +110,7 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         transform.translate(pivotPoint)
         transform.rotate((lookTheta.toDeg() - 90f).deg, Vec3f.X_AXIS)
 
-        val modZoom = zoomModifier(zoom)
-        val wMod = (15f * deltaT).clamp(0.05f, 0.95f)
-        actualZoom = modZoom * wMod + actualZoom * (1f - wMod)
+        actualZoom = actualZoom.expDecay(zoomModifier(zoom), 16f, deltaT)
         transform.scale(actualZoom)
     }
 }

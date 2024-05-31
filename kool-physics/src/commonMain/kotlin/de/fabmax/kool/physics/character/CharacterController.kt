@@ -9,7 +9,7 @@ import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.util.BaseReleasable
 
-abstract class CharacterController(private val manager: CharacterControllerManager, world: PhysicsWorld) : BaseReleasable() {
+abstract class CharacterController(private val manager: CharacterControllerManager, val world: PhysicsWorld) : BaseReleasable() {
 
     abstract val actor: RigidDynamic
     abstract var position: Vec3d
@@ -23,7 +23,8 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     private val displacement = MutableVec3f()
     private val mutVelocity = MutableVec3f()
 
-    val gravity = MutableVec3f(world.gravity)
+    private val gravity: Vec3f get() = world.gravity
+
     val movement = MutableVec3f()
     val velocity: Vec3f
         get() = mutVelocity

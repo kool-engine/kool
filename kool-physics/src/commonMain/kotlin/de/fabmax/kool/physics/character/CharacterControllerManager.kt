@@ -22,8 +22,8 @@ abstract class CharacterControllerManager : BaseReleasable() {
         }
     }
 
-    fun createController(): CharacterController {
-        val ctrl = doCreateController()
+    fun createController(charProperties: CharacterControllerProperties = CharacterControllerProperties()): CharacterController {
+        val ctrl = doCreateController(charProperties)
         _controllers += ctrl
         return ctrl
     }
@@ -32,7 +32,7 @@ abstract class CharacterControllerManager : BaseReleasable() {
         _controllers -= charController
     }
 
-    protected abstract fun doCreateController(): CharacterController
+    protected abstract fun doCreateController(charProperties: CharacterControllerProperties): CharacterController
 
     override fun release() {
         val copyControllers = mutableListOf<CharacterController>()
@@ -42,3 +42,10 @@ abstract class CharacterControllerManager : BaseReleasable() {
         super.release()
     }
 }
+
+data class CharacterControllerProperties(
+    val height: Float = 1f,
+    val radius: Float = 0.3f,
+    val slopeLimit: Float = 50f,
+    val contactOffset: Float = 0.1f
+)

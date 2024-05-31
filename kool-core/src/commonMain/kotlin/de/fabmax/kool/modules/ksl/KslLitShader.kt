@@ -46,7 +46,9 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     val emissionCfg: ColorBlockConfig get() = cfg.emissionCfg
     val materialAoCfg: PropertyBlockConfig get() = cfg.aoCfg.materialAo
     val displacementCfg: PropertyBlockConfig get() = cfg.vertexCfg.displacementCfg
+    val parallaxCfg: ParallaxMapConfig get() = cfg.parallaxCfg
     val isNormalMapped: Boolean get() = cfg.normalMapCfg.isNormalMapped
+    val isParallaxMapped: Boolean get() = cfg.parallaxCfg.isParallaxMapped
     val isSsao: Boolean get() = cfg.aoCfg.isSsao
 
     /**

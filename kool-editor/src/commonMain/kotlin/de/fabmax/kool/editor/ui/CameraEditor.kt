@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.actions.SetCameraAction
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.data.CameraTypeData
-import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.UiScope
 import kotlin.reflect.KClass
 
 class CameraEditor : ComponentEditor<CameraComponent>() {
@@ -13,30 +13,24 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
         get() = camTypes.indexOfFirst { it.camType.isInstance(currentCam) }
 
     override fun UiScope.compose() = componentPanel("Camera", IconMap.small.camera, ::removeComponent) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.smallGap)
-
-            labeledCombobox("Type:", camTypes, camTypeIndex) {
-                val newCam = when (it.camType) {
-                    CameraTypeData.Perspective::class -> CameraTypeData.Perspective()
-                    CameraTypeData.Orthographic::class -> CameraTypeData.Orthographic(1f)
-                    else -> throw IllegalStateException("Unsupported cam type: ${it.camType}")
-                }
-                SetCameraAction(nodeId, newCam, currentCam).apply()
+        labeledCombobox("Type:", camTypes, camTypeIndex) {
+            val newCam = when (it.camType) {
+                CameraTypeData.Perspective::class -> CameraTypeData.Perspective()
+                CameraTypeData.Orthographic::class -> CameraTypeData.Orthographic(1f)
+                else -> throw IllegalStateException("Unsupported cam type: ${it.camType}")
             }
+            SetCameraAction(nodeId, newCam, currentCam).apply()
+        }
 
-            // todo: camToView
-            //var camToView by remember(false)
-            //labeledSwitch("Camera to view", camToView) { camToView = it }
+        // todo: camToView
+        //var camToView by remember(false)
+        //labeledSwitch("Camera to view", camToView) { camToView = it }
 
-            menuDivider()
+        menuDivider()
 
-            when (component.cameraState.use()) {
-                is CameraTypeData.Perspective -> perspectiveSettings()
-                is CameraTypeData.Orthographic -> TODO()
-            }
+        when (component.cameraState.use()) {
+            is CameraTypeData.Perspective -> perspectiveSettings()
+            is CameraTypeData.Orthographic -> TODO()
         }
     }
 

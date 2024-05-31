@@ -25,7 +25,7 @@ class FloatingToolbar(val editor: KoolEditor) : Composable {
             editor.editorCameraTransform.focusSelectedObject()
         }
 
-        menuDivider(color = colors.strongDividerColor)
+        toolbarDivider(color = colors.strongDividerColor)
 
         iconButton(IconMap.medium.move, "Move selected object [${Key.ToggleMoveMode.binding.keyInfo}]", mode == EditorEditMode.Mode.MOVE) {
             editor.editMode.toggleMode(EditorEditMode.Mode.MOVE)

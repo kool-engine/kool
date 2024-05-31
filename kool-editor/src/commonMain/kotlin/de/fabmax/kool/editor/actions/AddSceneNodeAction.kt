@@ -27,6 +27,7 @@ class AddSceneNodeAction(
             topLevelNodes.values.forEach {
                 scene.addSceneNode(SceneNodeModel(it, parent, scene))
             }
+            KoolEditor.instance.selectionOverlay.setSelection(topLevelNodes.keys.mapNotNull { it.nodeModel })
             refreshComponentViews()
         }
     }

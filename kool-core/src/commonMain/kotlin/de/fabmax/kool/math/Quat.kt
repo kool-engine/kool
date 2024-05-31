@@ -122,6 +122,11 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     fun normed(result: MutableQuatF = MutableQuatF()): MutableQuatF = result.set(this).norm()
 
     /**
+     * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatF].
+     */
+    fun inverted(result: MutableQuatF = MutableQuatF()): MutableQuatF = result.set(this).invert()
+
+    /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
      * have a difference less or equal [eps].
      */
@@ -317,6 +322,18 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
         }
         return this
     }
+
+    /**
+     * Inplace operation: Inverts this quaternion representing the inverse rotation.
+     */
+    fun invert(): MutableQuatF {
+        val s = 1f / (x*x + y*y + z*z + w*w)
+        x = -x * s
+        y = -y * s
+        z = -z * s
+        w = w * s
+        return this
+    }
 }
 
 fun QuatF(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
@@ -426,6 +443,11 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
      * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatD].
      */
     fun normed(result: MutableQuatD = MutableQuatD()): MutableQuatD = result.set(this).norm()
+
+    /**
+     * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatD].
+     */
+    fun inverted(result: MutableQuatD = MutableQuatD()): MutableQuatD = result.set(this).invert()
 
     /**
      * Checks vector components for equality using [de.fabmax.kool.math.isFuzzyEqual], that is all components must
@@ -621,6 +643,18 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         } else {
             set(IDENTITY)
         }
+        return this
+    }
+
+    /**
+     * Inplace operation: Inverts this quaternion representing the inverse rotation.
+     */
+    fun invert(): MutableQuatD {
+        val s = 1.0 / (x*x + y*y + z*z + w*w)
+        x = -x * s
+        y = -y * s
+        z = -z * s
+        w = w * s
         return this
     }
 }

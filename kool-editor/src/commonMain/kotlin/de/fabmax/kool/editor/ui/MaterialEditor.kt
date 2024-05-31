@@ -46,22 +46,15 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
             }
         ) {
             if (allTheSameMaterial) {
-                components[0].materialState.use()?.let { selectedMaterial ->
-                    Column(width = Grow.Std) {
-                        modifier
-                            .padding(horizontal = sizes.gap)
-                            .margin(bottom = sizes.smallGap)
-
-                        labeledTextField("Name:", selectedMaterial.name) {
-                            RenameMaterialAction(selectedMaterial, it, selectedMaterial.name).apply()
-                        }
-
-                        menuDivider()
-                        materialEditor()
-                        menuDivider()
-                        genericSettings()
-                    }
+                val material = components[0].materialState.use() ?: return@componentPanel Unit
+                labeledTextField("Name:", material.name) {
+                    RenameMaterialAction(material, it, material.name).apply()
                 }
+
+                menuDivider()
+                materialEditor()
+                menuDivider()
+                genericSettings()
             }
         }
     }
@@ -98,19 +91,58 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
         // pbrData is captured on first invocation and will never be updated
 
         colorSetting("Base color:", pbrData.baseColor, MdColor.GREY.toLinear()) {
-            (material.shaderData as PbrShaderData).copy(baseColor = it)
+            pbrData.copy(baseColor = it)
         }
         floatSetting("Roughness:", pbrData.roughness, 0f, 1f, 0.5f) {
-            (material.shaderData as PbrShaderData).copy(roughness = it)
+            pbrData.copy(roughness = it)
         }
         floatSetting("Metallic:", pbrData.metallic, 0f, 1f, 0f) {
-            (material.shaderData as PbrShaderData).copy(metallic = it)
+            pbrData.copy(metallic = it)
         }
         colorSetting("Emission color:", pbrData.emission, Color.BLACK) {
-            (material.shaderData as PbrShaderData).copy(emission = it)
+            pbrData.copy(emission = it)
         }
         textureSetting("Normal map:", pbrData.normalMap) {
-            (material.shaderData as PbrShaderData).copy(normalMap = it)
+            pbrData.copy(normalMap = it)
+        }
+        textureSetting("Displacement:", pbrData.parallaxMap) {
+            pbrData.copy(parallaxMap = it)
+        }
+
+        if (pbrData.parallaxMap != null) {
+            labeledDoubleTextField(
+                label = "Strength:",
+                value = pbrData.parallaxStrength.toDouble(),
+                dragChangeSpeed = DragChangeRates.SIZE,
+                editHandler = ActionValueEditHandler { undo, apply ->
+                    val undoData = pbrData.copy(parallaxStrength = undo.toFloat())
+                    val applyData = pbrData.copy(parallaxStrength = apply.toFloat())
+                    UpdateMaterialAction(material, applyData, undoData)
+                }
+            )
+            labeledDoubleTextField(
+                label = "Offset:",
+                value = pbrData.parallaxOffset.toDouble(),
+                dragChangeSpeed = DragChangeRates.SIZE,
+                editHandler = ActionValueEditHandler { undo, apply ->
+                    val undoData = pbrData.copy(parallaxOffset = undo.toFloat())
+                    val applyData = pbrData.copy(parallaxOffset = apply.toFloat())
+                    UpdateMaterialAction(material, applyData, undoData)
+                }
+            )
+            labeledDoubleTextField(
+                label = "Steps:",
+                value = pbrData.parallaxSteps.toDouble(),
+                minValue = 2.0,
+                maxValue = 64.0,
+                precision = 0,
+                dragChangeSpeed = DragChangeRates.SIZE,
+                editHandler = ActionValueEditHandler { undo, apply ->
+                    val undoData = pbrData.copy(parallaxSteps = undo.toInt())
+                    val applyData = pbrData.copy(parallaxSteps = apply.toInt())
+                    UpdateMaterialAction(material, applyData, undoData)
+                }
+            )
         }
     }
 
@@ -136,7 +168,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
             val hover = isHovered || dndHandler.isHovered.use()
             val drag = dndHandler.isDrag.use()
 
-            val bgColor =  when {
+            val bgColor = when {
                 valueColor != null -> when {
                     drag && hover -> valueColor.mix(MdColor.GREEN, 0.5f)
                     drag -> valueColor.mix(MdColor.GREEN, 0.3f)
@@ -182,7 +214,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
 
         var valueColor: Color? = null
         var text: String? = null
-        var labelWidth = sizes.baseSize * 5
+        var labelWidth = sizes.editorLabelWidthLarge
         var textAlign = AlignmentX.Start
         when (colorAttr) {
             is ConstColorAttribute -> {
@@ -194,7 +226,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
             }
             is MapAttribute -> {
                 text = colorAttr.mapName
-                labelWidth = sizes.baseSize * 3
+                labelWidth = sizes.editorLabelWidthSmall
             }
             is VertexAttribute -> {
                 text = "Vertex"
@@ -234,7 +266,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
         val doubleVal: Double
         val text: String
         val isTextField: Boolean
-        var labelWidth = sizes.baseSize * 5
+        var labelWidth = sizes.editorLabelWidthLarge
         var textAlign = AlignmentX.Start
         when (floatAttr) {
             is ConstColorAttribute -> {

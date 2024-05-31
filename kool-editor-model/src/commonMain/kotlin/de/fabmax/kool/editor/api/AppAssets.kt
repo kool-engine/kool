@@ -5,6 +5,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Heightmap
@@ -86,7 +87,8 @@ object AppAssets : AppAssetsLoader {
         override suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d? {
             val prefixed = "${pathPrefix}/${ref.path}"
             return try {
-                Assets.loadTexture2d(prefixed).also { cache[ref] = it }
+                val props = TextureProps(ref.texFormat)
+                Assets.loadTexture2d(prefixed, props).also { cache[ref] = it }
             } catch (e: Exception) {
                 logE { "Failed loading texture: $prefixed" }
                 null

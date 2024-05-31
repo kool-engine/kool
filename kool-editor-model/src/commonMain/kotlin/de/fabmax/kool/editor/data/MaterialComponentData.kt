@@ -49,7 +49,10 @@ data class PbrShaderData(
     val emission: MaterialAttribute = ConstColorAttribute(ColorData(Color.BLACK.toLinear())),
     val normalMap: MapAttribute? = null,
     val aoMap: MapAttribute? = null,
-    val displacementMap: MapAttribute? = null,
+    val parallaxMap: MapAttribute? = null,
+    val parallaxStrength: Float = 1f,
+    val parallaxOffset: Float = 0f,
+    val parallaxSteps: Int = 16,
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
     override fun collectAttributes(): List<MaterialAttribute> = listOf(
@@ -59,7 +62,7 @@ data class PbrShaderData(
         emission,
         normalMap,
         aoMap,
-        displacementMap
+        parallaxMap
     ).filterNotNull()
 }
 

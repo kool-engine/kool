@@ -24,32 +24,26 @@ class SceneBackgroundEditor : ComponentEditor<SceneBackgroundComponent>() {
     private val skyLod = mutableStateOf(2f)
 
     override fun UiScope.compose() = componentPanel("Scene Background", IconMap.small.background) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.gap)
-
-            var selectedIndex by remember(0)
-            selectedIndex = BackgroundTypeOptions.indexOfBackground(component.componentData)
-            labeledCombobox(
-                label = "Type:",
-                items = BackgroundTypeOptions.items,
-                selectedIndex = selectedIndex
-            ) {
-                if (!it.type.isInstance(component.backgroundState.use())) {
-                    when (it.type) {
-                        SceneBackgroundData.Hdri::class -> selectHdriBackground()
-                        SceneBackgroundData.SingleColor::class -> selectSingleColorBackground()
-                    }
+        var selectedIndex by remember(0)
+        selectedIndex = BackgroundTypeOptions.indexOfBackground(component.componentData)
+        labeledCombobox(
+            label = "Type:",
+            items = BackgroundTypeOptions.items,
+            selectedIndex = selectedIndex
+        ) {
+            if (!it.type.isInstance(component.backgroundState.use())) {
+                when (it.type) {
+                    SceneBackgroundData.Hdri::class -> selectHdriBackground()
+                    SceneBackgroundData.SingleColor::class -> selectSingleColorBackground()
                 }
             }
+        }
 
-            menuDivider()
+        menuDivider()
 
-            when (val type = component.backgroundState.use()) {
-                is SceneBackgroundData.Hdri -> hdriBgProperties(type)
-                is SceneBackgroundData.SingleColor -> singleColorBgProperties(type)
-            }
+        when (val type = component.backgroundState.use()) {
+            is SceneBackgroundData.Hdri -> hdriBgProperties(type)
+            is SceneBackgroundData.SingleColor -> singleColorBgProperties(type)
         }
     }
 

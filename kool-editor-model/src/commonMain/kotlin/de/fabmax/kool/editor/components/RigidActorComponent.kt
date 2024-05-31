@@ -7,27 +7,23 @@ import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.math.MutableMat4d
-import de.fabmax.kool.math.MutableQuatF
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.*
+import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.logE
 
-fun RigidActorComponent(nodeModel: SceneNodeModel): RigidActorComponent {
-    return RigidActorComponent(nodeModel, RigidActorComponentData())
-}
-
-class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData: RigidActorComponentData) :
-    SceneNodeComponent(nodeModel),
+class RigidActorComponent(
+    nodeModel: SceneNodeModel,
+    override val componentData: RigidActorComponentData = RigidActorComponentData()
+) :
+    PhysicsNodeComponent(nodeModel),
     EditorDataComponent<RigidActorComponentData>,
-    PhysicsComponent,
     UpdateMeshComponent
 {
     val actorState = mutableStateOf(componentData.properties).onChange {
@@ -44,6 +40,8 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
     private var geometry: List<CollisionGeometry> = emptyList()
     private var bodyShapes: List<ShapeData> = emptyList()
 
+    override val actorTransform: TrsTransformF? get() = rigidActor?.transform
+
     init {
         dependsOn(MeshComponent::class, isOptional = true)
         dependsOn(ModelComponent::class, isOptional = true)
@@ -56,35 +54,18 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
 
     override suspend fun createComponent() {
         super.createComponent()
-
         createRigidBody()
-        nodeModel.transform.onTransformEdited += { setPhysicsTransformFromModel() }
-
-        val tmpMat4 = MutableMat4d()
-        onUpdate {
-            if (isStarted) {
-                rigidActor?.let { actor ->
-                    nodeModel.parent.drawNode.invModelMatD.mul(actor.transform.matrixD, tmpMat4)
-                    nodeModel.drawNode.transform.setMatrix(tmpMat4)
-                }
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        setPhysicsTransformFromModel()
     }
 
     override fun destroyComponent() {
         super.destroyComponent()
         rigidActor?.let {
-            nodeModel.sceneModel.getComponent<PhysicsWorldComponent>()?.physicsWorld?.removeActor(it)
+            physicsWorld?.removeActor(it)
             it.release()
         }
+        rigidActor = null
         geometry.forEach { it.release() }
         geometry = emptyList()
-        rigidActor = null
     }
 
     private suspend fun updateRigidActor() {
@@ -100,17 +81,15 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
 
         } else if (actor is RigidDynamic) {
             actor.mass = componentData.properties.mass.toFloat()
+            actor.updateInertiaFromShapesAndMass()
         }
     }
 
     private suspend fun createRigidBody() {
-        val physicsWorldComponent = nodeModel.sceneModel.getOrPutComponent<PhysicsWorldComponent> {
-            logW { "Failed to find a PhysicsWorldComponent in parent scene, creating default one" }
-            PhysicsWorldComponent(nodeModel.sceneModel)
-        }
+        val physicsWorldComponent = getOrCreatePhysicsWorldComponent()
         val physicsWorld = physicsWorldComponent.physicsWorld
         if (physicsWorld == null) {
-            logW { "Unable to create rigid body: parent physics world was not yet created" }
+            logE { "Unable to create rigid body: parent physics world was not yet created" }
         }
 
         rigidActor?.let {
@@ -128,28 +107,35 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         requiredAssets.clear()
         rigidActor?.apply {
             bodyShapes = componentData.properties.shapes
-            geometry = if (bodyShapes.isEmpty()) {
+            val shapes = if (bodyShapes.isEmpty()) {
                 nodeModel.getComponent<MeshComponent>()?.componentData?.shapes
                     ?.mapNotNull { shape -> shape.makeCollisionGeometry() }
                     ?: emptyList()
             } else {
                 bodyShapes.mapNotNull { shape -> shape.makeCollisionGeometry() }
             }
-            geometry.forEach { attachShape(Shape(it)) }
+            shapes.forEach { (shape, pose) -> attachShape(Shape(shape, localPose = pose)) }
+            geometry = shapes.map { it.first }
+
+            if (this is RigidDynamic) {
+                updateInertiaFromShapesAndMass()
+            }
             physicsWorld?.addActor(this)
         }
-        setPhysicsTransformFromModel()
+
+        setPhysicsTransformFromDrawNode()
     }
 
-    private suspend fun ShapeData.makeCollisionGeometry(): CollisionGeometry? {
+    private suspend fun ShapeData.makeCollisionGeometry(): Pair<CollisionGeometry, Mat4f>? {
         return when (this) {
-            is ShapeData.Box -> BoxGeometry(size.toVec3f())
-            is ShapeData.Capsule -> CapsuleGeometry(length.toFloat(), radius.toFloat())
-            is ShapeData.Cylinder -> CylinderGeometry(length.toFloat(), bottomRadius.toFloat())
-            is ShapeData.Sphere -> SphereGeometry(radius.toFloat())
-            is ShapeData.Heightmap -> loadHeightmapGeometry(this)
+            is ShapeData.Box -> BoxGeometry(size.toVec3f()) to Mat4f.IDENTITY
+            is ShapeData.Capsule -> CapsuleGeometry(length.toFloat(), radius.toFloat()) to Mat4f.IDENTITY
+            is ShapeData.Cylinder -> CylinderGeometry(length.toFloat(), bottomRadius.toFloat()) to Mat4f.IDENTITY
+            is ShapeData.Sphere -> SphereGeometry(radius.toFloat()) to Mat4f.IDENTITY
+            is ShapeData.Heightmap -> loadHeightmapGeometry(this)?.let { it to Mat4f.IDENTITY }
+            is ShapeData.Plane -> PlaneGeometry() to Mat4f.rotation(90f.deg, Vec3f.Z_AXIS)
             is ShapeData.Rect -> null
-            is ShapeData.Empty -> null
+            is ShapeData.Custom -> null
         }
     }
 
@@ -164,19 +150,10 @@ class RigidActorComponent(nodeModel: SceneNodeModel, override val componentData:
         return HeightFieldGeometry(heightField)
     }
 
-    private fun setPhysicsTransformFromModel() {
-        val t = MutableVec3f()
-        val r = MutableQuatF()
-        val s = MutableVec3f()
-        nodeModel.drawNode.modelMatF.decompose(t, r, s)
-
-        if (!s.isFuzzyEqual(Vec3f.ONES)) {
-            logW { "RigidActorComponent transform contains a scaling component, which may lead to unexpected behavior." }
-        }
-
+    override fun applyPose(position: Vec3d, rotation: QuatD) {
         rigidActor?.apply {
-            position = t
-            rotation = r
+            this.position = position.toVec3f()
+            this.rotation = rotation.toQuatF()
         }
     }
 

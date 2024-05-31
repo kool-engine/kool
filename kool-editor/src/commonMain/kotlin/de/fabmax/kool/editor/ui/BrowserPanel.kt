@@ -53,9 +53,6 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             .onDragEnd { KeyValueStore.setFloat("editor.ui.[$name].treeSize", treePanelSize.value.value) }
 
         Box(width = sizes.smallGap, height = Grow.Std) {
-            modifier.backgroundColor(colors.background)
-        }
-        Box(width = sizes.smallGap, height = Grow.Std) {
             modifier.backgroundColor(colors.backgroundVariant)
         }
     }
@@ -96,7 +93,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         dirPopupMenu()
 
         LazyList(
-            containerModifier = { it.backgroundColor(colors.background) }
+            containerModifier = { it.backgroundColor(colors.background) },
+            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
         ) {
             var hoveredIndex by remember(-1)
             itemsIndexed(expandedDirTree) { i, dir ->
@@ -181,11 +179,12 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             }
         }
 
-        ScrollArea(containerModifier = {
-            it.onPositioned { nd ->
-                areaWidth = nd.widthPx - sizes.largeGap.px
-            }
-        }) {
+        ScrollArea(
+            containerModifier = {
+                it.onPositioned { nd -> areaWidth = nd.widthPx - sizes.largeGap.px }
+            },
+            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
+        ) {
             modifier.margin(sizes.gap)
             if (areaWidth > 0f) {
                 val cols = max(1, floor(areaWidth / gridSize.px).toInt())

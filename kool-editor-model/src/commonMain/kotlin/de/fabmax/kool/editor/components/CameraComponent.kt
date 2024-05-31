@@ -7,7 +7,10 @@ import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Camera
 
-class CameraComponent(nodeModel: SceneNodeModel, override val componentData: CameraComponentData) :
+class CameraComponent(
+    nodeModel: SceneNodeModel,
+    override val componentData: CameraComponentData = CameraComponentData(CameraTypeData.Perspective())
+) :
     SceneNodeComponent(nodeModel),
     EditorDataComponent<CameraComponentData>,
     ContentComponent
@@ -24,8 +27,6 @@ class CameraComponent(nodeModel: SceneNodeModel, override val componentData: Cam
 
     override val contentNode: Camera
         get() = camera
-
-    constructor(nodeModel: SceneNodeModel): this(nodeModel, CameraComponentData(CameraTypeData.Perspective()))
 
     override suspend fun createComponent() {
         super.createComponent()

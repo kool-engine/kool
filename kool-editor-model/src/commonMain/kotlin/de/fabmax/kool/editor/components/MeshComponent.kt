@@ -23,7 +23,10 @@ import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
-class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshComponentData) :
+class MeshComponent(
+    nodeModel: SceneNodeModel,
+    override val componentData: MeshComponentData = MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
+) :
     SceneNodeComponent(nodeModel),
     EditorDataComponent<MeshComponentData>,
     ContentComponent,
@@ -41,8 +44,6 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
         get() = mesh
 
     private val isRecreatingShader = atomic(false)
-
-    constructor(nodeModel: SceneNodeModel): this(nodeModel, MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
@@ -111,7 +112,8 @@ class MeshComponent(nodeModel: SceneNodeModel, override val componentData: MeshC
             is ShapeData.Capsule -> generateCapsule(shape)
             is ShapeData.Heightmap -> generateHeightmap(shape)
             is ShapeData.Rect -> generateRect(shape)
-            is ShapeData.Empty -> { }
+            is ShapeData.Custom -> { }
+            is ShapeData.Plane -> error("Plane shape is not supported as mesh shape")
         }
     }
 

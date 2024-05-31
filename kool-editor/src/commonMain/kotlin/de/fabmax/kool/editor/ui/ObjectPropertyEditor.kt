@@ -20,6 +20,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
 
         if (selObjs.size > 1) {
             selObjs.removeAll { it is SceneModel }
+        } else if (selObjs.isEmpty()) {
+            editor.activeScene.value?.let { selObjs += it }
         }
 
         val title = if (selObjs.size == 1 && selObjs[0] is SceneModel) "Scene Properties" else "Object Properties"
@@ -32,6 +34,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
 
     private fun UiScope.objectProperties(objects: List<NodeModel>) = ScrollArea(
         containerModifier = { it.backgroundColor(null) },
+        vScrollbarModifier = { it.width(sizes.scrollbarWidth) },
         isScrollableHorizontal = false
     ) {
         modifier.width(Grow.Std)
@@ -118,6 +121,7 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
                 is TransformComponent -> componentEditor(objects) { TransformEditor() }
                 is PhysicsWorldComponent -> componentEditor(objects) { PhysicsWorldEditor() }
                 is RigidActorComponent -> componentEditor(objects) { RigidActorEditor() }
+                is CharacterControllerComponent -> componentEditor(objects) { CharacterControllerEditor() }
             }
         }
     }
@@ -172,7 +176,8 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             ComponentAdder.AddSsaoComponent,
             ComponentAdder.AddCameraComponent,
             ComponentAdder.AddPhysicsWorldComponent,
-            ComponentAdder.AddRigidBodyComponent,
+            ComponentAdder.AddRigidActorComponent,
+            ComponentAdder.AddCharacterControllerComponent,
         )
     }
 
@@ -266,10 +271,16 @@ class ObjectPropertyEditor(ui: EditorUi) : EditorPanel("Object Properties", Icon
             override fun createComponent(target: NodeModel): PhysicsWorldComponent = PhysicsWorldComponent(target as SceneModel)
         }
 
-        data object AddRigidBodyComponent : ComponentAdder<RigidActorComponent>("Rigid Actor") {
+        data object AddRigidActorComponent : ComponentAdder<RigidActorComponent>("Rigid Actor") {
             override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<RigidActorComponent>()
-            override fun accept(nodeModel: NodeModel) = nodeModel is SceneNodeModel
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneNodeModel && !nodeModel.hasComponent<CharacterControllerComponent>()
             override fun createComponent(target: NodeModel): RigidActorComponent = RigidActorComponent(target as SceneNodeModel)
+        }
+
+        data object AddCharacterControllerComponent : ComponentAdder<CharacterControllerComponent>("Character Controller") {
+            override fun hasComponent(nodeModel: NodeModel) = nodeModel.hasComponent<CharacterControllerComponent>()
+            override fun accept(nodeModel: NodeModel) = nodeModel is SceneNodeModel && !nodeModel.hasComponent<RigidActorComponent>()
+            override fun createComponent(target: NodeModel): CharacterControllerComponent = CharacterControllerComponent(target as SceneNodeModel)
         }
 
         data object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {

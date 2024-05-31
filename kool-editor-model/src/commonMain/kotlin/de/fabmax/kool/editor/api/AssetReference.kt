@@ -1,9 +1,14 @@
 package de.fabmax.kool.editor.api
 
+import de.fabmax.kool.pipeline.TexFormat
+
 sealed interface AssetReference {
     val path: String
 
-    data class Texture(override val path: String) : AssetReference
+    data class Texture(
+        override val path: String,
+        val texFormat: TexFormat = TexFormat.RGBA
+    ) : AssetReference
 
     data class Hdri(override val path: String) : AssetReference
 

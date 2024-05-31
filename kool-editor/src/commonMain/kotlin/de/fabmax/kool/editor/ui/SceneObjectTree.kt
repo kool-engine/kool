@@ -124,7 +124,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
 
         LazyList(
-            containerModifier = { it.backgroundColor(null) }
+            containerModifier = { it.backgroundColor(null) },
+            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
         ) {
             var hoveredIndex by remember(-1)
             val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>("scene-item-popup") }
@@ -164,7 +165,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 item("Sphere") { addNewMesh(it, ShapeData.defaultSphere) }
                 item("Cylinder") { addNewMesh(it, ShapeData.defaultCylinder) }
                 item("Capsule") { addNewMesh(it, ShapeData.defaultCapsule) }
-                item("Empty") { addNewMesh(it, ShapeData.defaultEmpty) }
+                item("Heightmap") { addNewMesh(it, ShapeData.defaultHeightmap) }
+                item("Custom") { addNewMesh(it, ShapeData.defaultCustom) }
             }
             subMenu("glTF model") {
                 item("Import model") { logE { "Not yet implemented" } }
@@ -318,7 +320,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.NON_MODEL_NODE -> IconMap.small.nodeCircle
                 SceneObjectType.CAMERA -> IconMap.small.camera
                 SceneObjectType.LIGHT -> IconMap.small.light
-                SceneObjectType.GROUP -> IconMap.small.quadBox
+                SceneObjectType.GROUP -> IconMap.small.rectCrosshair
                 SceneObjectType.MESH -> IconMap.small.cube
                 SceneObjectType.MODEL -> IconMap.small.tree
                 SceneObjectType.SCENE -> IconMap.small.world

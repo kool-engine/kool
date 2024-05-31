@@ -3,7 +3,11 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.BehaviorLoader
 import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.data.BehaviorComponentData
+import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.getComponent
 import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.logE
 
@@ -18,6 +22,16 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
     val runInEditMode = mutableStateOf(componentData.runInEditMode).onChange { componentData.runInEditMode = it }
 
     val behaviorInstance = mutableStateOf<KoolBehavior?>(null)
+
+    private val sceneModel: SceneModel get() = when (val nd = this@BehaviorComponent.nodeModel) {
+        is SceneNodeModel -> nd.sceneModel
+        is SceneModel -> nd
+    }
+
+    private val NodeId.nodeModel: NodeModel? get() {
+        val scene = sceneModel
+        return scene.nodeModels[this] ?: if (this == scene.nodeId) scene else null
+    }
 
     init {
         componentOrder = COMPONENT_ORDER_LATE
@@ -34,7 +48,12 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
             // because script has changed)
             val removeProps = mutableListOf<String>()
             componentData.propertyValues.forEach { (name, value) ->
-                if (!setProperty(name, value.get())) {
+                val setValue = when {
+                    value.nodeRef != null -> value.nodeRef.nodeModel
+                    value.componentRef != null -> value.componentRef.nodeId.nodeModel?.getComponent(value.componentRef)
+                    else -> value.get()
+                }
+                if (!setProperty(name, setValue)) {
                     removeProps += name
                 }
             }
@@ -54,7 +73,7 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
         behaviorInstance.value?.onStart()
     }
 
-    fun setProperty(name: String, value: Any): Boolean {
+    fun setProperty(name: String, value: Any?): Boolean {
         return try {
             behaviorInstance.value?.let { BehaviorLoader.setProperty(it, name, value) }
             true

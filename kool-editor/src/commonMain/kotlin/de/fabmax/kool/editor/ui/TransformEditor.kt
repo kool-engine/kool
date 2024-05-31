@@ -41,16 +41,10 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
         }
     }
 
-    override fun UiScope.compose() = collapsapsablePanel("Transform", IconMap.small.transform) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.gap)
-
-            position()
-            rotation()
-            scale()
-        }
+    override fun UiScope.compose() = componentPanel("Transform", IconMap.small.transform) {
+        position()
+        rotation()
+        scale()
 
         val transformData = components.map { it.transformState.use() }
         transformProperties.setTransformData(transformData, KoolEditor.instance.gizmoOverlay.transformFrame.use())

@@ -1,5 +1,7 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.editor.components.EditorModelComponent
+import de.fabmax.kool.editor.model.NodeModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,9 +28,12 @@ data class PropertyValue(
     val i3: Vec3Data? = null,
     val i4: Vec4Data? = null,
 
+    val bool: Boolean? = null,
     val color: ColorData? = null,
     val transform: TransformData? = null,
-    val str: String? = null
+    val str: String? = null,
+    val nodeRef: NodeId? = null,
+    val componentRef: ComponentRef? = null,
 ) {
     fun get(): Any {
         return when {
@@ -47,10 +52,37 @@ data class PropertyValue(
             i3 != null -> i3.toVec3i()
             i4 != null -> i4.toVec4i()
 
+            bool != null -> bool
             color != null -> color.toColorLinear()
             transform != null -> transform.toMat4d()
             str != null -> str
-            else -> throw IllegalStateException("PropertyValue has no non-null value")
+            nodeRef != null -> nodeRef
+            componentRef != null -> componentRef
+            else -> error("PropertyValue has no non-null value")
         }
     }
+}
+
+@Serializable
+data class ComponentRef(
+    val nodeId: NodeId,
+    val componentClassName: String
+)
+
+fun ComponentRef(component: EditorModelComponent?): ComponentRef {
+    // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
+    return if (component != null) {
+        ComponentRef(component.nodeModel.nodeId, component::class.simpleName!!)
+    } else {
+        ComponentRef(NodeId(-1L), "<null>")
+    }
+}
+
+fun ComponentRef.matchesComponent(component: EditorModelComponent): Boolean {
+    // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
+    return nodeId == component.nodeModel.nodeId && component::class.simpleName == componentClassName
+}
+
+fun NodeModel.getComponent(ref: ComponentRef): EditorModelComponent? {
+    return components.find { ref.matchesComponent(it) }
 }

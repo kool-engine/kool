@@ -13,14 +13,20 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchOnMainThread
 
-class SceneBackgroundComponent(override val nodeModel: SceneModel, override val componentData: SceneBackgroundComponentData) :
+fun SceneBackgroundComponent(nodeModel: SceneModel, color: Color, isLinear: Boolean = true): SceneBackgroundComponent {
+    return SceneBackgroundComponent(
+        nodeModel,
+        SceneBackgroundComponentData(SceneBackgroundData.SingleColor(ColorData(color, isLinear)))
+    )
+}
+
+class SceneBackgroundComponent(
+    override val nodeModel: SceneModel,
+    override val componentData: SceneBackgroundComponentData
+) :
     EditorModelComponent(nodeModel),
     EditorDataComponent<SceneBackgroundComponentData>
 {
-
-    constructor(nodeModel: SceneModel, color: Color, isLinear: Boolean = true) : this(
-        nodeModel, SceneBackgroundComponentData(SceneBackgroundData.SingleColor(ColorData(color, isLinear)))
-    )
 
     val backgroundState = mutableStateOf(componentData.sceneBackground).onChange {
         if (AppState.isEditMode) {

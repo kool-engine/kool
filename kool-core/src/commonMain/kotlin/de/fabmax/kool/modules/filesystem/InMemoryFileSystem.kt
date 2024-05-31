@@ -148,13 +148,19 @@ class InMemoryFileSystem : WritableFileSystem {
 
 suspend fun InMemoryFileSystem(copyFrom: FileSystem): InMemoryFileSystem {
     val fs = InMemoryFileSystem()
-    copyFrom.listAll().filter { it.path != "/" }.forEach {
-        when (it) {
-            is FileSystemDirectory -> fs.createDirectory(it.path)
-            is FileSystemFile -> fs.createFile(it.path, it.read())
-        }
-    }
+    fs.merge(copyFrom)
     return fs
+}
+
+suspend fun InMemoryFileSystem.merge(from: FileSystem) {
+    from.listAll()
+        .filter { it.path != "/" && it.path !in this }
+        .forEach {
+            when (it) {
+                is FileSystemDirectory -> createDirectory(it.path)
+                is FileSystemFile -> createFile(it.path, it.read())
+            }
+        }
 }
 
 expect suspend fun InMemoryFileSystem.toZip(): Uint8Buffer

@@ -148,19 +148,11 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
         TextArea(
             lineProvider = lineProvider,
             state = listState,
-            hScrollbarModifier = {
-                it
-                    //.colors(colors.secondaryVariant.withAlpha(0.5f), colors.secondary)
-                    .margin(start = sizes.gap * 0.75f, end = sizes.gap * 2f, bottom = sizes.gap * 0.75f)
-            },
-            vScrollbarModifier = {
-                it
-                    //.colors(colors.secondaryVariant.withAlpha(0.5f), colors.secondary)
-                    .margin(sizes.gap * 0.75f)
-            }
+            scrollPaneModifier = { it.margin(horizontal = sizes.gap) },
+            hScrollbarModifier = { it.height(sizes.scrollbarWidth) },
+            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
         ) {
             modifier
-                .padding(horizontal = sizes.gap)
                 .lastLineBottomPadding(sizes.largeGap)
                 .backgroundColor(null)
                 .onWheelY { ev ->

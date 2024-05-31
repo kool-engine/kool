@@ -13,7 +13,8 @@ import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec2d
-import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.modules.ui2.ColumnScope
+import de.fabmax.kool.modules.ui2.UiScope
 
 class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
@@ -22,50 +23,45 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         imageIcon = IconMap.small.physics,
         onRemove = ::removeComponent,
     ) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(horizontal = sizes.gap)
-                .margin(bottom = sizes.smallGap)
+        val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.actorState.use().typeOption })
+        labeledCombobox(
+            label = "Type:",
+            items = typeItems,
+            selectedIndex = typeIdx
+        ) { selected ->
+            selected.item?.type?.let { actorType ->
+                components.map {
+                    val bodyProps = it.actorState.value
+                    SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType))
+                }.fused().apply()
+            }
+        }
 
-            val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.actorState.use().typeOption })
-            labeledCombobox(
-                label = "Type:",
-                items = typeItems,
-                selectedIndex = typeIdx
-            ) { selected ->
-                selected.item?.type?.let { actorType ->
+        val isDynamicActor = components.any { it.actorState.value.type == RigidActorType.DYNAMIC }
+        if (isDynamicActor) {
+            labeledDoubleTextField(
+                label = "Mass:",
+                value = condenseDouble(components.map { it.actorState.value.mass }),
+                minValue = 0.001,
+                dragChangeSpeed = DragChangeRates.SIZE,
+                editHandler = ActionValueEditHandler { undo, apply ->
                     components.map {
                         val bodyProps = it.actorState.value
-                        SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType))
-                    }.fused().apply()
+                        val mergedUndo = bodyProps.copy(mass = mergeDouble(undo, bodyProps.mass))
+                        val mergedApply = bodyProps.copy(mass = mergeDouble(apply, bodyProps.mass))
+                        SetRigidBodyPropertiesAction( it.nodeModel.nodeId, mergedUndo, mergedApply)
+                    }.fused()
                 }
-            }
-
-            if (components.all { it.actorState.value.type == RigidActorType.DYNAMIC }) {
-                labeledDoubleTextField(
-                    label = "Mass:",
-                    value = condenseDouble(components.map { it.actorState.value.mass }),
-                    minValue = 0.001,
-                    dragChangeSpeed = DragChangeRates.SIZE,
-                    editHandler = ActionValueEditHandler { undo, apply ->
-                        components.map {
-                            val bodyProps = it.actorState.value
-                            val mergedUndo = bodyProps.copy(mass = mergeDouble(undo, bodyProps.mass))
-                            val mergedApply = bodyProps.copy(mass = mergeDouble(apply, bodyProps.mass))
-                            SetRigidBodyPropertiesAction( it.nodeModel.nodeId, mergedUndo, mergedApply)
-                        }.fused()
-                    }
-                )
-            }
-
-            shapeEditor()
+            )
         }
+
+        shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
     }
 
-    private fun ColumnScope.shapeEditor() {
+    private fun ColumnScope.shapeEditor(choices: ComboBoxItems<ShapeOption>) {
         menuDivider()
 
-        val (shapeItems, shapeIdx) = shapeOptions.getOptionsAndIndex(components.map { it.actorState.use().shapeOption })
+        val (shapeItems, shapeIdx) = choices.getOptionsAndIndex(components.map { it.actorState.use().shapeOption })
         labeledCombobox(
             label = "Shape:",
             items = shapeItems,
@@ -79,7 +75,10 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 is ShapeData.Cylinder -> cylinderEditor()
                 is ShapeData.Sphere -> sphereEditor()
                 is ShapeData.Heightmap -> heightmapEditor()
-                else -> { }
+                is ShapeData.Plane -> { }
+                is ShapeData.Rect -> { }    // todo: triangle mesh geometry
+                is ShapeData.Custom -> { }
+                null -> { }                 // "Use mesh"
             }
         }
     }
@@ -91,6 +90,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
             ShapeOption.Capsule -> listOf(ShapeData.defaultCapsule)
+            ShapeOption.Plane -> listOf(ShapeData.defaultPlane)
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
         }
         val actions = components
@@ -288,17 +288,19 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         Static("Static", RigidActorType.STATIC),
     }
 
-    private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean) {
-        UseMesh("Use mesh", { it == null }),
+    private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean, val isDynamic: Boolean = true) {
+        UseMesh("Draw shape", { it == null || it is ShapeData.Custom }),
         Box("Box", { it is ShapeData.Box }),
         Sphere("Sphere", { it is ShapeData.Sphere }),
         Cylinder("Cylinder", { it is ShapeData.Cylinder }),
         Capsule("Capsule", { it is ShapeData.Capsule }),
-        Heightmap("Heightmap", { it is ShapeData.Heightmap })
+        Plane("Infinite plane", { it is ShapeData.Plane }, isDynamic = false),
+        Heightmap("Heightmap", { it is ShapeData.Heightmap }, isDynamic = false)
     }
 
     companion object {
         private val shapeOptions = ComboBoxItems(ShapeOption.entries) { it.label }
+        private val shapeOptionsDynamic = ComboBoxItems(ShapeOption.entries.filter { it.isDynamic }) { it.label }
         private val typeOptions = ComboBoxItems(TypeOption.entries) { it.label }
     }
 }

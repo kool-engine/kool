@@ -22,19 +22,19 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         world.onPhysicsUpdate += onUpdateListener
     }
 
-    override fun doCreateController(): CharacterController {
+    override fun doCreateController(charProperties: CharacterControllerProperties): CharacterController {
         // create controller with default configuration
         world as PhysicsWorldImpl
         val hitCallback = ControllerHitListener(world)
         val behaviorCallback = ControllerBahaviorCallback(world)
         val desc = PxCapsuleControllerDesc()
-        desc.height = 1f
-        desc.radius = 0.3f
+        desc.height = charProperties.height
+        desc.radius = charProperties.radius
         desc.climbingMode = PxCapsuleClimbingModeEnum.eEASY
         desc.nonWalkableMode = PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
-        desc.slopeLimit = cos(50f.toRad())
+        desc.slopeLimit = cos(charProperties.slopeLimit.toRad())
         desc.material = Physics.defaultMaterial.pxMaterial
-        desc.contactOffset = 0.1f
+        desc.contactOffset = charProperties.contactOffset
         desc.reportCallback = hitCallback.callback
         desc.behaviorCallback = behaviorCallback.callback
         val pxCharacter = pxManager.createController(desc)
