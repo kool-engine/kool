@@ -35,7 +35,8 @@ class RigidActorComponent(
         }
     }
 
-    private var rigidActor: RigidActor? = null
+    var rigidActor: RigidActor? = null
+        private set
 
     private var geometry: List<CollisionGeometry> = emptyList()
     private var bodyShapes: List<ShapeData> = emptyList()

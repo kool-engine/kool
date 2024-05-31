@@ -70,11 +70,9 @@ class CharacterControllerComponent(
         }
     }
 
-    override fun updatePhysics() {
-        super.updatePhysics()
-        axes?.let {
-            updateMovement(charController!!, it)
-        }
+    override fun updatePhysics(dt: Float) {
+        super.updatePhysics(dt)
+        axes?.let { updateMovement(charController!!, it) }
     }
 
     override fun destroyComponent() {
@@ -159,7 +157,7 @@ class CharacterControllerComponent(
     override fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
         val pushForceFac = charControllerState.value.pushForce.toFloat()
         val downForceFac = charControllerState.value.downForce.toFloat()
-        if ((pushForceFac + downForceFac) > 0f && actor is RigidDynamic) {
+        if ((pushForceFac + downForceFac) > 0f && actor is RigidDynamic && !actor.isKinematic) {
             val runMod = if (axes?.isRun == true) 2f else 1f
             val downBlend = abs(hitWorldNormal dot Vec3f.Y_AXIS)
             val forceFac = downForceFac * downBlend + pushForceFac * (1f - downBlend)

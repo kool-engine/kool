@@ -20,15 +20,9 @@ abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeCompon
     override suspend fun createComponent() {
         super.createComponent()
         nodeModel.transform.onTransformEdited += { setPhysicsTransformFromDrawNode() }
-
-        onUpdate {
-            if (isStarted) {
-                updatePhysics()
-            }
-        }
     }
 
-    protected open fun updatePhysics() {
+    protected open fun updatePhysics(dt: Float) {
         actorTransform?.let {
             nodeModel.parent.drawNode.invModelMatD.mul(it.matrixD, tmpMat4)
             nodeModel.drawNode.transform.setMatrix(tmpMat4)
@@ -38,6 +32,9 @@ abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeCompon
     override fun onStart() {
         super.onStart()
         setPhysicsTransformFromDrawNode()
+        physicsWorld?.let { world ->
+            world.onPhysicsUpdate += this::updatePhysics
+        }
     }
 
     suspend fun getOrCreatePhysicsWorldComponent(): PhysicsWorldComponent {

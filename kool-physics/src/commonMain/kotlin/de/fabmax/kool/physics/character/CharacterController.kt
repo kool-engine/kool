@@ -49,17 +49,18 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     open fun onAdvancePhysics(timeStep: Float) {
         if (!isDownCollision) {
             // character falls
-            lastGroundTuch += timeStep
             gravityVelocity.add(tmpVec.set(gravity).mul(timeStep))
+            lastGroundTuch += timeStep
         } else {
+            // character touches ground, small downwards velocity component need to be kept to stay in touch with ground
+            gravityVelocity.set(gravity * timeStep)
             lastGroundTuch = 0f
-            gravityVelocity.set(Vec3f.ZERO)
         }
 
         val fallSpeed = tmpVec.set(gravity).norm().dot(gravityVelocity)
         if (jump && lastGroundTuch < 0.25f && fallSpeed >= 0f) {
             // character touches ground (or did so recently) and jump is requested but not yet executed
-            gravityVelocity.add(tmpVec.set(gravity).norm().mul(-jumpSpeed))
+            gravityVelocity.set(tmpVec.set(gravity).norm().mul(-jumpSpeed))
         }
 
         displacement.set(movement).mul(timeStep).add(tmpVec.set(gravityVelocity).mul(timeStep))
