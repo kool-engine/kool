@@ -3,12 +3,13 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.data.PhysicsWorldComponentData
+import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.model.SceneModel
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.character.CharacterControllerManager
-import de.fabmax.kool.util.logW
 
 class PhysicsWorldComponent(
     override val nodeModel: SceneModel,
@@ -19,11 +20,12 @@ class PhysicsWorldComponent(
 {
 
     val physicsWorldState = mutableStateOf(componentData.properties).onChange {
-        if (AppState.isEditMode) {
-            componentData.properties = it
-        } else {
-            logW { "Physics world properties can only be changed in edit mode" }
-        }
+        componentData.properties = it
+    }
+
+    val gravityState = mutableStateOf<Vec3f>(componentData.properties.gravity.toVec3f()).onChange {
+        physicsWorldState.set(physicsWorldState.value.copy(gravity = Vec3Data(it)))
+        physicsWorld?.gravity = it
     }
 
     var physicsWorld: PhysicsWorld? = null
@@ -35,6 +37,7 @@ class PhysicsWorldComponent(
 
         Physics.loadAndAwaitPhysics()
         physicsWorld = PhysicsWorld(null, componentData.properties.isContinuousCollisionDetection).also {
+            it.gravity = componentData.properties.gravity.toVec3f()
             characterControllerManager = CharacterControllerManager(it)
         }
 
