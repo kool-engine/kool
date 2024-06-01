@@ -83,6 +83,7 @@ class RigidActorComponent(
         } else if (actor is RigidDynamic) {
             actor.mass = componentData.properties.mass.toFloat()
             actor.updateInertiaFromShapesAndMass()
+            actor.characterControllerHitBehavior = componentData.properties.characterControllerHitBehavior
         }
     }
 
@@ -117,6 +118,7 @@ class RigidActorComponent(
             }
             shapes.forEach { (shape, pose) -> attachShape(Shape(shape, localPose = pose)) }
             geometry = shapes.map { it.first }
+            characterControllerHitBehavior = componentData.properties.characterControllerHitBehavior
 
             if (this is RigidDynamic) {
                 updateInertiaFromShapesAndMass()

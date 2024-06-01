@@ -5,6 +5,7 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBoxF
+import de.fabmax.kool.physics.character.HitActorBehavior
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
@@ -31,6 +32,8 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
             field = value
             updateFilterData()
         }
+
+    override var characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE
 
     private val bufBounds = BoundingBoxF()
     private val bufPosition = MutableVec3f()

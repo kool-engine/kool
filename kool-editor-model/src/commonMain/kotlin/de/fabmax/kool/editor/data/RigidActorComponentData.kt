@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.physics.character.HitActorBehavior
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,6 +11,7 @@ data class RigidActorProperties(
     val type: RigidActorType = RigidActorType.DYNAMIC,
     val shapes: List<ShapeData> = emptyList(),
     val mass: Double = 1.0,
+    val characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE,
 )
 
 enum class RigidActorType {

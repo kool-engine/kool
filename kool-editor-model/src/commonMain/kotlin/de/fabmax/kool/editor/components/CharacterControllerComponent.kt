@@ -9,7 +9,9 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
-import de.fabmax.kool.physics.character.*
+import de.fabmax.kool.physics.character.CharacterController
+import de.fabmax.kool.physics.character.CharacterControllerProperties
+import de.fabmax.kool.physics.character.OnHitActorListener
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
@@ -23,8 +25,7 @@ class CharacterControllerComponent(
 ) :
     PhysicsNodeComponent(nodeModel),
     EditorDataComponent<CharacterControllerComponentData>,
-    OnHitActorListener,
-    HitActorBehaviorCallback
+    OnHitActorListener
 {
 
     val charControllerState = mutableStateOf(componentData.properties).onChange {
@@ -110,7 +111,6 @@ class CharacterControllerComponent(
         }
         charController = charManager.createController(props).also {
             it.onHitActorListeners += this
-            it.hitActorBehaviorCallback = this
         }
 
         if (oldPos != null) {
@@ -165,10 +165,6 @@ class CharacterControllerComponent(
             val forceVec = hitWorldNormal * -force
             actor.addForceAtPos(forceVec, hitWorldPos, isLocalForce = false, isLocalPos = false)
         }
-    }
-
-    override fun hitActorBehavior(actor: RigidActor): HitActorBehavior {
-        return charControllerState.value.hitActorMode
     }
 
     companion object {

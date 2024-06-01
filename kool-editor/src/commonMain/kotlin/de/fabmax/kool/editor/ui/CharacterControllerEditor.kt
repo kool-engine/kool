@@ -66,15 +66,6 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             valueSetter = { oldData, newValue -> oldData.copy(downForce = newValue) },
             label = "Down force:"
         )
-        choicePropertyEditor(
-            choices = hitBehaviorOptions,
-            dataGetter = { it.charControllerState.value },
-            valueGetter = { it.hitActorMode },
-            valueSetter = { oldData, newValue -> oldData.copy(hitActorMode = newValue) },
-            actionMapper = setCharProps,
-            label = "Default hit behavior:",
-            labelWidth = sizes.editorLabelWidthLarge
-        )
 
         menuDivider()
 

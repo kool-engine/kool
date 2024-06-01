@@ -15,6 +15,7 @@ import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.physics.character.HitActorBehavior
 
 class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
@@ -27,7 +28,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         labeledCombobox(
             label = "Type:",
             items = typeItems,
-            selectedIndex = typeIdx
+            selectedIndex = typeIdx,
+            labelWidth = sizes.editorLabelWidthMedium
         ) { selected ->
             selected.item?.type?.let { actorType ->
                 components.map {
@@ -36,6 +38,16 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 }.fused().apply()
             }
         }
+
+        choicePropertyEditor(
+            choices = charHitOptions,
+            dataGetter = { it.actorState.value },
+            valueGetter = { it.characterControllerHitBehavior },
+            valueSetter = { oldData, newValue -> oldData.copy(characterControllerHitBehavior = newValue) },
+            actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoData, applyData) },
+            label = "Controller hit behavior:",
+            labelWidth = sizes.editorLabelWidthMedium
+        )
 
         val isDynamicActor = components.any { it.actorState.value.type == RigidActorType.DYNAMIC }
         if (isDynamicActor) {
@@ -65,7 +77,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         labeledCombobox(
             label = "Shape:",
             items = shapeItems,
-            selectedIndex = shapeIdx
+            selectedIndex = shapeIdx,
+            labelWidth = sizes.editorLabelWidthMedium
         ) { selected -> selected.item?.let { applyNewShape(it) } }
 
         if (components.all { it.actorState.value.shapes == components[0].actorState.value.shapes }) {
@@ -302,5 +315,12 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         private val shapeOptions = ComboBoxItems(ShapeOption.entries) { it.label }
         private val shapeOptionsDynamic = ComboBoxItems(ShapeOption.entries.filter { it.isDynamic }) { it.label }
         private val typeOptions = ComboBoxItems(TypeOption.entries) { it.label }
+        private val charHitOptions = ComboBoxItems(HitActorBehavior.entries) {
+            when (it) {
+                HitActorBehavior.DEFAULT -> "Default"
+                HitActorBehavior.SLIDE -> "Slide"
+                HitActorBehavior.RIDE -> "Ride"
+            }
+        }
     }
 }

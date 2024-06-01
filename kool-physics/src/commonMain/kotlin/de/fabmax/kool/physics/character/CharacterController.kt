@@ -44,7 +44,9 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
     val onHitActorListeners = mutableListOf<OnHitActorListener>()
-    var hitActorBehaviorCallback: HitActorBehaviorCallback? = null
+    var hitActorBehaviorCallback: HitActorBehaviorCallback? = HitActorBehaviorCallback { actor: RigidActor ->
+        actor.characterControllerHitBehavior
+    }
 
     open fun onAdvancePhysics(timeStep: Float) {
         if (!isDownCollision) {
