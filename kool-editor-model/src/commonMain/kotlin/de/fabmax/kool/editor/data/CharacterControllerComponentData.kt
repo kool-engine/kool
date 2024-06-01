@@ -16,7 +16,6 @@ data class CharacterControllerComponentProperties(
     val runSpeed: Double = 7.0,
     val jumpSpeed: Double = 6.0,
     val slopeLimit: Double = 50.0,
-    val contactOffset: Double = 0.1,
     val pushForce: Double = 10.0,
     val downForce: Double = 1.0,
     val hitActorMode: HitActorBehavior = HitActorBehavior.DEFAULT,

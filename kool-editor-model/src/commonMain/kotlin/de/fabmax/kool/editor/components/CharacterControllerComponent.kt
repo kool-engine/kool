@@ -103,9 +103,9 @@ class CharacterControllerComponent(
         val props = componentData.properties.let {
             CharacterControllerProperties(
                 height = it.shape.length.toFloat(),
-                radius = it.shape.radius.toFloat(),
+                radius = it.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
                 slopeLimit = it.slopeLimit.toFloat(),
-                contactOffset = it.contactOffset.toFloat(),
+                contactOffset = CHARACTER_CONTACT_OFFSET
             )
         }
         charController = charManager.createController(props).also {
@@ -169,5 +169,9 @@ class CharacterControllerComponent(
 
     override fun hitActorBehavior(actor: RigidActor): HitActorBehavior {
         return charControllerState.value.hitActorMode
+    }
+
+    companion object {
+        const val CHARACTER_CONTACT_OFFSET = 0.1f
     }
 }

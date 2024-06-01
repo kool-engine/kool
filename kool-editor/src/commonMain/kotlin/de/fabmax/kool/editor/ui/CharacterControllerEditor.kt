@@ -20,7 +20,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             valueGetter = { it.shape.radius },
             valueSetter = { oldData, newValue -> oldData.copy(shape = oldData.shape.copy(radius = newValue)) },
             label = "Radius:",
-            minValue = 0.01
+            minValue = CharacterControllerComponent.CHARACTER_CONTACT_OFFSET + 0.01
         )
         charDoublePropertyEditor(
             valueGetter = { it.shape.length },
