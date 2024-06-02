@@ -16,6 +16,7 @@ import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
+import de.fabmax.kool.editor.util.nodeModel
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
@@ -249,6 +250,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             stopApp()
         }
 
+        val prevSelection = selectionOverlay.selection.map { it.nodeId }
+        selectionOverlay.clearSelection()
+
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
         editorCameraTransform.addNode(editorBackgroundScene.camera)
@@ -293,9 +297,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         if (activeScene.value == null) {
             activeScene.set(projectModel.createdScenes.values.first())
         }
-        if (selectionOverlay.selection.isEmpty()) {
-            activeScene.value?.let { selectionOverlay.selectSingle(it) }
-        }
+
+        selectionOverlay.setSelection(prevSelection.mapNotNull { it.nodeModel })
+        ui.objectProperties.windowSurface.triggerUpdate()
 
         if (AppState.appMode == AppMode.EDIT) {
             ui.appStateInfo.set("App is in edit mode")

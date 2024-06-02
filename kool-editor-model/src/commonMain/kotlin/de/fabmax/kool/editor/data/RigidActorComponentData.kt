@@ -8,7 +8,7 @@ class RigidActorComponentData(var properties: RigidActorProperties = RigidActorP
 
 @Serializable
 data class RigidActorProperties(
-    val type: RigidActorType = RigidActorType.DYNAMIC,
+    val type: RigidActorType = RigidActorType.STATIC,
     val shapes: List<ShapeData> = emptyList(),
     val mass: Double = 1.0,
     val characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE,

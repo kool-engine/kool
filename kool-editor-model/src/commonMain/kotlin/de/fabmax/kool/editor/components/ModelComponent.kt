@@ -38,14 +38,14 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
             componentData.modelPath = it
         }
         gltfState.set(null)
-        recreateModel()
+        recreateModelAsync()
     }
 
     val sceneIndexState = mutableStateOf(componentData.sceneIndex).onChange {
         if (AppState.isEditMode) {
             componentData.sceneIndex = it
         }
-        recreateModel()
+        recreateModelAsync()
     }
 
     val animationIndexState = mutableStateOf(componentData.animationIndex).onChange {
@@ -109,7 +109,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     override fun updateSingleColorBg(bgColorLinear: Color) {
         if (isIblShaded) {
             // recreate models without ibl lighting
-            recreateModel()
+            recreateModelAsync()
         } else {
             model?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientFactor = bgColorLinear
@@ -120,7 +120,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
         if (!isIblShaded) {
             // recreate models with ibl lighting
-            recreateModel()
+            recreateModelAsync()
         } else {
             model?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
@@ -131,7 +131,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
 
     override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
         if (shadowMaps != shaderShadowMaps) {
-            recreateModel()
+            recreateModelAsync()
         }
     }
 
@@ -139,7 +139,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         val needsSsaoEnabled = ssaoMap != null
         if (needsSsaoEnabled != isSsaoEnabled) {
             // recreate models with changed ssao setting
-            recreateModel()
+            recreateModelAsync()
         }
         model?.meshes?.values?.forEach { mesh ->
             (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
@@ -147,7 +147,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     }
 
     override fun updateMaxNumLightsComponent(newMaxNumLights: Int) {
-        recreateModel()
+        recreateModelAsync()
     }
 
     private suspend fun createModel(): Model? {
@@ -222,16 +222,20 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         return model
     }
 
-    private fun recreateModel() {
+    private fun recreateModelAsync() {
         if (!isRecreatingModel.getAndSet(true)) {
             launchOnMainThread {
+                recreateModel()
                 isRecreatingModel.lazySet(false)
-                model = createModel()
-
-                // set newly created model as new content node (or an empty Node in case model loading failed)
-                // this also disposes any previous model
-                nodeModel.setDrawNode(model ?: Node(nodeModel.name))
             }
         }
+    }
+
+    private suspend fun recreateModel() {
+        model = createModel()
+
+        // set newly created model as new content node (or an empty Node in case model loading failed)
+        // this also disposes any previous model
+        nodeModel.setDrawNode(model ?: Node(nodeModel.name))
     }
 }

@@ -98,7 +98,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
     private fun applyNewShape(shape: ShapeOption) {
         val newShapes = when (shape) {
-            ShapeOption.UseMesh -> emptyList()
+            ShapeOption.DrawShape -> emptyList()
             ShapeOption.Box -> listOf(ShapeData.defaultBox)
             ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
@@ -302,7 +302,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
     }
 
     private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean, val isDynamic: Boolean = true) {
-        UseMesh("Draw shape", { it == null || it is ShapeData.Custom }),
+        DrawShape("Draw shape", { it == null || it is ShapeData.Custom }),
         Box("Box", { it is ShapeData.Box }),
         Sphere("Sphere", { it is ShapeData.Sphere }),
         Cylinder("Cylinder", { it is ShapeData.Cylinder }),
