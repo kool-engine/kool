@@ -10,6 +10,7 @@ import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.extensions.PxRigidActorExt
 import physx.physics.PxRigidActor
@@ -83,9 +84,9 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override val tags: Tags = Tags()
 
     private fun updateFilterData() {
-        MemoryStack.stackPush().use { mem ->
-            val sfd = simulationFilterData.toPxFilterData(mem.createPxFilterData())
-            val qfd = queryFilterData.toPxFilterData(mem.createPxFilterData())
+        memStack {
+            val sfd = simulationFilterData.toPxFilterData(createPxFilterData())
+            val qfd = queryFilterData.toPxFilterData(createPxFilterData())
             shapes.forEach { shape ->
                 shape.holder?.let {
                     it.simulationFilterData = sfd

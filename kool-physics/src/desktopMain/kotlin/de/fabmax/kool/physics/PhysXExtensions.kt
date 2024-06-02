@@ -14,6 +14,7 @@ import physx.cooking.PxTriangleMeshDesc
 import physx.extensions.PxRevoluteJointFlags
 import physx.geometry.*
 import physx.physics.*
+import physx.support.PxArray_PxShapePtr
 import physx.support.PxArray_PxU32
 import physx.support.PxArray_PxVec3
 
@@ -103,6 +104,7 @@ fun MemoryStack.createPxArray_PxU32() = PxArray_PxU32.createAt(this, MemoryStack
 fun MemoryStack.createPxArray_PxU32(size: Int) = PxArray_PxU32.createAt(this, MemoryStack::nmalloc, size)
 fun MemoryStack.createPxArray_PxVec3() = PxArray_PxVec3.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxArray_PxVec3(size: Int) = PxArray_PxVec3.createAt(this, MemoryStack::nmalloc, size)
+fun MemoryStack.createPxArray_PxShapePtr(size: Int) = PxArray_PxShapePtr.createAt(this, MemoryStack::nmalloc, size)
 fun MemoryStack.createPxArticulationDrive() = PxArticulationDrive.createAt(this, MemoryStack::nmalloc)
 fun MemoryStack.createPxArticulationLimit(low: Float, high: Float) = PxArticulationLimit.createAt(this, MemoryStack::nmalloc, low, high)
 fun MemoryStack.createPxBoundedData() = PxBoundedData.createAt(this, MemoryStack::nmalloc)

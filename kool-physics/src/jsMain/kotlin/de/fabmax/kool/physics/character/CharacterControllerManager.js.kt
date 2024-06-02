@@ -43,6 +43,15 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
 
         val pxCharacter = PxCapsuleControllerFromPointer(pxManager.createController(desc).ptr)
         desc.destroy()
+
+        MemoryStack.stackPush().use { mem ->
+            val shapes = mem.createPxArray_PxShapePtr(1)
+            pxCharacter.actor.getShapes(shapes.begin(), 1, 0)
+            val shape = shapes.get(0)
+            shape.simulationFilterData = charProperties.simulationFilterData.toPxFilterData(mem.createPxFilterData())
+            shape.queryFilterData = charProperties.queryFilterData.toPxFilterData(mem.createPxFilterData())
+        }
+
         return JsCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 

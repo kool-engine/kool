@@ -9,15 +9,13 @@ import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.RigidDynamic
-import de.fabmax.kool.physics.RigidStatic
-import de.fabmax.kool.physics.Shape
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 
@@ -44,6 +42,21 @@ class RigidActorComponent(
     private var geometry: List<CollisionGeometry> = emptyList()
     private var bodyShapes: List<ShapeData> = emptyList()
 
+    val triggerListeners = BufferedList<TriggerListener>()
+    private val proxyTriggerListener = object : TriggerListener {
+        override fun onActorEntered(trigger: RigidActor, actor: RigidActor) {
+            triggerListeners.updated().forEach {
+                it.onActorEntered(trigger, actor)
+            }
+        }
+
+        override fun onActorExited(trigger: RigidActor, actor: RigidActor) {
+            triggerListeners.updated().forEach {
+                it.onActorExited(trigger, actor)
+            }
+        }
+    }
+
     override val actorTransform: TrsTransformF? get() = rigidActor?.transform
 
     init {
@@ -54,6 +67,14 @@ class RigidActorComponent(
             .filterIsInstance<ShapeData.Heightmap>()
             .filter{ it.mapPath.isNotBlank() }
             .forEach { requiredAssets += it.toAssetReference() }
+    }
+
+    fun addTriggerListener(listener: TriggerListener) {
+        triggerListeners += listener
+    }
+
+    fun removeTriggerListener(listener: TriggerListener) {
+        triggerListeners += listener
     }
 
     override suspend fun createComponent() {
@@ -87,6 +108,17 @@ class RigidActorComponent(
             actor.mass = componentData.properties.mass.toFloat()
             actor.updateInertiaFromShapesAndMass()
             actor.characterControllerHitBehavior = componentData.properties.characterControllerHitBehavior
+        }
+
+        actor?.apply {
+            if (isTrigger != componentData.properties.isTrigger) {
+                isTrigger = componentData.properties.isTrigger
+                if (isTrigger) {
+                    physicsWorld?.registerTriggerListener(this, proxyTriggerListener)
+                } else {
+                    physicsWorld?.unregisterTriggerListener(proxyTriggerListener)
+                }
+            }
         }
     }
 
@@ -127,14 +159,10 @@ class RigidActorComponent(
 
             shapes.forEach { (shape, pose) -> attachShape(Shape(shape, localPose = pose)) }
             geometry = shapes.map { it.first }
-            characterControllerHitBehavior = componentData.properties.characterControllerHitBehavior
-
-            if (this is RigidDynamic) {
-                updateInertiaFromShapesAndMass()
-            }
             physicsWorld?.addActor(this)
         }
 
+        updateRigidActor()
         setPhysicsTransformFromDrawNode()
     }
 

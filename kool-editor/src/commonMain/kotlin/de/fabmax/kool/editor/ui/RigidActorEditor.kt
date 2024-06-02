@@ -34,23 +34,26 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             selected.item?.type?.let { actorType ->
                 components.map {
                     val bodyProps = it.actorState.value
-                    SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType))
+                    val isTrigger = if (actorType == RigidActorType.STATIC) bodyProps.isTrigger else false
+                    SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType, isTrigger = isTrigger))
                 }.fused().apply()
             }
         }
 
-        choicePropertyEditor(
-            choices = charHitOptions,
-            dataGetter = { it.actorState.value },
-            valueGetter = { it.characterControllerHitBehavior },
-            valueSetter = { oldData, newValue -> oldData.copy(characterControllerHitBehavior = newValue) },
-            actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoData, applyData) },
-            label = "Controller hit behavior:",
-            labelWidth = sizes.editorLabelWidthMedium
-        )
-
         val isDynamicActor = components.any { it.actorState.value.type == RigidActorType.DYNAMIC }
+        shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
+
         if (isDynamicActor) {
+            choicePropertyEditor(
+                choices = charHitOptions,
+                dataGetter = { it.actorState.value },
+                valueGetter = { it.characterControllerHitBehavior },
+                valueSetter = { oldData, newValue -> oldData.copy(characterControllerHitBehavior = newValue) },
+                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoData, applyData) },
+                label = "Controller hit behavior:",
+                labelWidth = sizes.editorLabelWidthMedium
+            )
+
             labeledDoubleTextField(
                 label = "Mass:",
                 value = condenseDouble(components.map { it.actorState.value.mass }),
@@ -65,9 +68,15 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     }.fused()
                 }
             )
+        } else {
+            booleanPropertyEditor(
+                dataGetter = { it.actorState.value },
+                valueGetter = { it.isTrigger },
+                valueSetter = { oldData, newValue -> oldData.copy(isTrigger = newValue) },
+                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoData, applyData) },
+                label = "Is trigger:",
+            )
         }
-
-        shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
     }
 
     private fun ColumnScope.shapeEditor(choices: ComboBoxItems<ShapeOption>) {

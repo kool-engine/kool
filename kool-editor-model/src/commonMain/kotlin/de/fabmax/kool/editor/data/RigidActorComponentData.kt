@@ -11,6 +11,7 @@ data class RigidActorProperties(
     val type: RigidActorType = RigidActorType.STATIC,
     val shapes: List<ShapeData> = emptyList(),
     val mass: Double = 1.0,
+    val isTrigger: Boolean = false,
     val characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE,
 )
 

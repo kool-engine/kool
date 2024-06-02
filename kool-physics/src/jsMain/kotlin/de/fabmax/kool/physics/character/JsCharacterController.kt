@@ -11,18 +11,13 @@ class JsCharacterController(
     hitListener: ControllerHitListener,
     private val behaviorCallback: ControllerBahaviorCallback,
     manager: CharacterControllerManager,
-    world: PhysicsWorld
+    world: PhysicsWorldImpl
 ) : CharacterController(manager, world) {
 
     private val bufPosition = MutableVec3d()
     private val bufPxPosition = PxExtendedVec3()
     private val bufPxVec3 = PxVec3()
     private val pxControllerFilters = PxControllerFilters()
-
-    init {
-        hitListener.controller = this
-        behaviorCallback.controller = this
-    }
 
     override var position: Vec3d
         get() = pxController.position.toVec3d(bufPosition)
@@ -64,6 +59,12 @@ class JsCharacterController(
             }
         }
 
+    init {
+        hitListener.controller = this
+        behaviorCallback.controller = this
+        world.registerActorReference(actor)
+    }
+
     override fun move(displacement: Vec3f, timeStep: Float) {
         val flags = pxController.move(displacement.toPxVec3(bufPxVec3), 0.001f, timeStep, pxControllerFilters)
 
@@ -78,6 +79,7 @@ class JsCharacterController(
 
     override fun release() {
         super.release()
+        (world as PhysicsWorldImpl).deleteActorReference(actor)
         pxController.release()
         bufPxPosition.destroy()
         bufPxVec3.destroy()

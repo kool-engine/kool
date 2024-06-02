@@ -2,6 +2,7 @@ package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.util.memStack
 import physx.PxTopLevelFunctions
 import physx.character.*
 import kotlin.math.cos
@@ -44,6 +45,15 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
 
         val pxCharacter = PxCapsuleController.wrapPointer(pxManager.createController(desc).address)
         desc.destroy()
+
+        memStack {
+            val shapes = createPxArray_PxShapePtr(1)
+            pxCharacter.actor.getShapes(shapes.begin(), 1, 0)
+            val shape = shapes.get(0)
+            shape.simulationFilterData = charProperties.simulationFilterData.toPxFilterData(createPxFilterData())
+            shape.queryFilterData = charProperties.queryFilterData.toPxFilterData(createPxFilterData())
+        }
+
         return JvmCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 

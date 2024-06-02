@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.FilterData
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
@@ -132,8 +133,10 @@ data class CharacterControllerProperties(
     val height: Float = 1f,
     val radius: Float = 0.3f,
     val slopeLimit: Float = 50f,
-    val nonWalkableMode: NonWalkableMode = NonWalkableMode.PREVENT_CLIMBING,
-    val contactOffset: Float = 0.1f
+    val nonWalkableMode: NonWalkableMode = NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING,
+    val contactOffset: Float = 0.05f,
+    val simulationFilterData: FilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() },
+    val queryFilterData: FilterData = FilterData()
 )
 
 enum class NonWalkableMode {
