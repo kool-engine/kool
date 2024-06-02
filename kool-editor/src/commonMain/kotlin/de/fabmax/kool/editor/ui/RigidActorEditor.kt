@@ -315,7 +315,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         private val shapeOptions = ComboBoxItems(ShapeOption.entries) { it.label }
         private val shapeOptionsDynamic = ComboBoxItems(ShapeOption.entries.filter { it.isDynamic }) { it.label }
         private val typeOptions = ComboBoxItems(TypeOption.entries) { it.label }
-        private val charHitOptions = ComboBoxItems(HitActorBehavior.entries) {
+        private val charHitOptions = ComboBoxItems(listOf(HitActorBehavior.SLIDE, HitActorBehavior.RIDE)) {
             when (it) {
                 HitActorBehavior.DEFAULT -> "Default"
                 HitActorBehavior.SLIDE -> "Slide"

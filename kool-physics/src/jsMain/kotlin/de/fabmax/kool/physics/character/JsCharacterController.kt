@@ -1,11 +1,10 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.math.MutableMat4f
-import de.fabmax.kool.math.MutableVec3d
-import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
 import physx.*
+import kotlin.math.acos
+import kotlin.math.cos
 
 class JsCharacterController(
     private val pxController: PxCapsuleController,
@@ -34,25 +33,31 @@ class JsCharacterController(
 
     override val actor: RigidDynamic = RigidDynamicImpl(1f, MutableMat4f(), false, pxController.actor)
 
-    override var height: Float
-        get() = pxController.height
-        set(value) { pxController.height = value }
+    override var height: Float = pxController.height
+        set(value) {
+            field = value
+            pxController.height = value
+        }
 
-    override var radius: Float
-        get() = pxController.radius
-        set(value) { pxController.radius = value }
+    override var radius: Float = pxController.radius
+        set(value) {
+            field = value
+            pxController.radius = value
+        }
 
-    override var slopeLimit: Float
-        get() = pxController.slopeLimit
-        set(value) { pxController.slopeLimit = value }
+    override var slopeLimitDeg: Float = acos(pxController.slopeLimit).toDeg()
+        set(value) {
+            field = value
+            pxController.slopeLimit = cos(value.toRad())
+        }
 
-    override var nonWalkableMode: NonWalkableMode
-        get() = when (pxController.nonWalkableMode) {
+    override var nonWalkableMode: NonWalkableMode = when (pxController.nonWalkableMode) {
             PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING -> NonWalkableMode.PREVENT_CLIMBING
             PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING -> NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING
             else -> error("Invalid nonWalkable mode")
         }
         set(value) {
+            field = value
             pxController.nonWalkableMode = when (value) {
                 NonWalkableMode.PREVENT_CLIMBING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
                 NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING

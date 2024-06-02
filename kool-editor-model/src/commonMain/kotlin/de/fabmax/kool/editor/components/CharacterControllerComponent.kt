@@ -133,7 +133,7 @@ class CharacterControllerComponent(
 
         charCtrl.jumpSpeed = props.jumpSpeed.toFloat()
         charCtrl.maxFallSpeed = props.maxFallSpeed.toFloat()
-        charCtrl.slopeLimit = props.slopeLimit.toFloat()
+        charCtrl.slopeLimitDeg = props.slopeLimit.toFloat()
         charCtrl.nonWalkableMode = props.nonWalkableMode
     }
 
@@ -184,6 +184,6 @@ class CharacterControllerComponent(
     }
 
     companion object {
-        const val CHARACTER_CONTACT_OFFSET = 0.1f
+        const val CHARACTER_CONTACT_OFFSET = 0.05f
     }
 }
