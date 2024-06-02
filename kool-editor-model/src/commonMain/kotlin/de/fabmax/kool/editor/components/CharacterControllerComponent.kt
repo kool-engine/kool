@@ -33,7 +33,7 @@ class CharacterControllerComponent(
             componentData.properties = it
         }
         launchOnMainThread {
-            createCharController()
+            updateControllerProps()
         }
     }
 
@@ -62,6 +62,7 @@ class CharacterControllerComponent(
     override suspend fun createComponent() {
         super.createComponent()
         createCharController()
+        updateControllerProps()
     }
 
     override fun onStart() {
@@ -120,6 +121,22 @@ class CharacterControllerComponent(
         }
     }
 
+    private fun updateControllerProps() {
+        val charCtrl = charController ?: return
+        val props = charControllerState.value
+
+        val height = props.shape.length.toFloat()
+        if (charCtrl.height != height) {
+            charCtrl.resize(height)
+        }
+        charCtrl.radius = props.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET
+
+        charCtrl.jumpSpeed = props.jumpSpeed.toFloat()
+        charCtrl.maxFallSpeed = props.maxFallSpeed.toFloat()
+        charCtrl.slopeLimit = props.slopeLimit.toFloat()
+        charCtrl.nonWalkableMode = props.nonWalkableMode
+    }
+
     override fun applyPose(position: Vec3d, rotation: QuatD) {
         charController?.position = position
     }
@@ -150,7 +167,6 @@ class CharacterControllerComponent(
         // set controller.movement according to user input
         controller.movement.set(0f, 0f, -moveSpeed)
         controller.movement.rotate(moveHeading.deg, Vec3f.Y_AXIS)
-        controller.jumpSpeed = props.jumpSpeed.toFloat()
         controller.jump = isJump
     }
 

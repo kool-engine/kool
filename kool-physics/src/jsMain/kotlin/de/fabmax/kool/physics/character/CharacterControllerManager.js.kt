@@ -31,13 +31,17 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         desc.height = charProperties.height
         desc.radius = charProperties.radius
         desc.climbingMode = PxCapsuleClimbingModeEnum.eEASY
-        desc.nonWalkableMode = PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
         desc.slopeLimit = cos(charProperties.slopeLimit.toRad())
         desc.material = Physics.defaultMaterial.pxMaterial
         desc.contactOffset = charProperties.contactOffset
         desc.reportCallback = hitCallback.callback
         desc.behaviorCallback = behaviorCallback.callback
-        val pxCharacter = pxManager.createController(desc)
+        desc.nonWalkableMode = when (charProperties.nonWalkableMode) {
+            NonWalkableMode.PREVENT_CLIMBING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
+            NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING
+        }
+
+        val pxCharacter = PxCapsuleControllerFromPointer(pxManager.createController(desc).ptr)
         desc.destroy()
         return JsCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
     }

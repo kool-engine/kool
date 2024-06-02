@@ -13,6 +13,12 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     abstract val actor: RigidDynamic
     abstract var position: Vec3d
+
+    abstract var height: Float
+    abstract var radius: Float
+    abstract var slopeLimit: Float
+    abstract var nonWalkableMode: NonWalkableMode
+
     protected val prevPosition = MutableVec3d()
 
     private val posBuffer = MutableVec3d()
@@ -54,8 +60,9 @@ abstract class CharacterController(private val manager: CharacterControllerManag
             gravityVelocity.add(tmpVec.set(gravity).mul(timeStep))
             lastGroundTuch += timeStep
         } else {
-            // character touches ground, small downwards velocity component need to be kept to stay in touch with ground
-            gravityVelocity.set(gravity * timeStep)
+            // character touches ground, keep a downwards velocity component to stay in touch with ground and
+            // slide downwards at a plausible speed if sliding is enabled
+            gravityVelocity.set(gravity * 0.25f)
             lastGroundTuch = 0f
         }
 
@@ -94,8 +101,23 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     protected abstract fun move(displacement: Vec3f, timeStep: Float)
 
+    abstract fun resize(height: Float)
+
     override fun release() {
         manager.removeController(this)
         super.release()
     }
+}
+
+data class CharacterControllerProperties(
+    val height: Float = 1f,
+    val radius: Float = 0.3f,
+    val slopeLimit: Float = 50f,
+    val nonWalkableMode: NonWalkableMode = NonWalkableMode.PREVENT_CLIMBING,
+    val contactOffset: Float = 0.1f
+)
+
+enum class NonWalkableMode {
+    PREVENT_CLIMBING,
+    PREVENT_CLIMBING_AND_FORCE_SLIDING,
 }

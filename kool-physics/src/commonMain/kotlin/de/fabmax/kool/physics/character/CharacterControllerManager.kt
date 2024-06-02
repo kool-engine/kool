@@ -42,10 +42,3 @@ abstract class CharacterControllerManager : BaseReleasable() {
         super.release()
     }
 }
-
-data class CharacterControllerProperties(
-    val height: Float = 1f,
-    val radius: Float = 0.3f,
-    val slopeLimit: Float = 50f,
-    val contactOffset: Float = 0.1f
-)
