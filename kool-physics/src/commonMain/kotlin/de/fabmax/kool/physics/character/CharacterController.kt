@@ -1,18 +1,25 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.math.MutableVec3d
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.FilterData
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Time
+import kotlin.math.acos
+import kotlin.math.min
 
 abstract class CharacterController(private val manager: CharacterControllerManager, val world: PhysicsWorld) : BaseReleasable() {
 
     abstract val actor: RigidDynamic
     abstract var position: Vec3d
+
+    abstract var height: Float
+    abstract var radius: Float
+    abstract var slopeLimit: AngleF
+    abstract var nonWalkableMode: NonWalkableMode
+
     protected val prevPosition = MutableVec3d()
 
     private val posBuffer = MutableVec3d()
@@ -40,26 +47,38 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     var isSideCollision = false
         protected set
 
-    private var lastGroundTuch = 0f
+    private var lastGroundTouch = 0f
+    private val slopeObserver = GroundSlopeObserver()
+    private val slopeSlideFac: Float
+        get() = if (nonWalkableMode == NonWalkableMode.PREVENT_CLIMBING) 0f else {
+            smoothStep(slopeLimit.rad * 0.7f, slopeLimit.rad, slopeObserver.groundSlopeRad)
+        }
 
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
     val onHitActorListeners = mutableListOf<OnHitActorListener>()
-    var hitActorBehaviorCallback: HitActorBehaviorCallback? = null
+    var hitActorBehaviorCallback: HitActorBehaviorCallback? = HitActorBehaviorCallback { actor: RigidActor ->
+        actor.characterControllerHitBehavior
+    }
 
     open fun onAdvancePhysics(timeStep: Float) {
         if (!isDownCollision) {
             // character falls
-            lastGroundTuch += timeStep
+            if (lastGroundTouch == 0f) {
+                gravityVelocity.set(Vec3f(0f, velocity.y, 0f))
+            }
             gravityVelocity.add(tmpVec.set(gravity).mul(timeStep))
+            lastGroundTouch += timeStep
         } else {
-            lastGroundTuch = 0f
-            gravityVelocity.set(Vec3f.ZERO)
+            // character touches ground, keep a downwards velocity component to stay in touch with ground and
+            // slide downwards at a plausible speed if sliding is enabled
+            gravityVelocity.set(gravity * (0.25f * slopeSlideFac).coerceAtLeast(0.001f))
+            lastGroundTouch = 0f
         }
 
         val fallSpeed = tmpVec.set(gravity).norm().dot(gravityVelocity)
-        if (jump && lastGroundTuch < 0.25f && fallSpeed >= 0f) {
+        if (jump && lastGroundTouch < 0.25f && fallSpeed >= 0f) {
             // character touches ground (or did so recently) and jump is requested but not yet executed
-            gravityVelocity.add(tmpVec.set(gravity).norm().mul(-jumpSpeed))
+            gravityVelocity.set(tmpVec.set(gravity).norm().mul(-jumpSpeed))
         }
 
         displacement.set(movement).mul(timeStep).add(tmpVec.set(gravityVelocity).mul(timeStep))
@@ -84,6 +103,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     }
 
     internal fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
+        slopeObserver.onTouch(hitWorldNormal)
         for (i in onHitActorListeners.indices) {
             onHitActorListeners[i].onHitActor(actor, hitWorldPos, hitWorldNormal)
         }
@@ -91,8 +111,35 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     protected abstract fun move(displacement: Vec3f, timeStep: Float)
 
+    abstract fun resize(height: Float)
+
     override fun release() {
         manager.removeController(this)
         super.release()
     }
+
+    private class GroundSlopeObserver {
+        var groundSlopeRad = 0f
+        private var frameIdx = -1
+
+        fun onTouch(normal: Vec3f) {
+            val slope = acos(normal dot Vec3f.Y_AXIS)
+            groundSlopeRad = if (Time.frameCount != frameIdx) slope else min(slope, groundSlopeRad)
+        }
+    }
+}
+
+data class CharacterControllerProperties(
+    val height: Float = 1f,
+    val radius: Float = 0.3f,
+    val slopeLimit: AngleF = 45f.deg,
+    val nonWalkableMode: NonWalkableMode = NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING,
+    val contactOffset: Float = 0.05f,
+    val simulationFilterData: FilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() },
+    val queryFilterData: FilterData = FilterData()
+)
+
+enum class NonWalkableMode {
+    PREVENT_CLIMBING,
+    PREVENT_CLIMBING_AND_FORCE_SLIDING,
 }

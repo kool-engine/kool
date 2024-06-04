@@ -156,6 +156,14 @@ fun PxVehicleWheelsPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxShapePtr
+
+fun PxShapePtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxShapePtr = js("_module.wrapPointer(ptr, _module.PxShapePtr)")
+
+fun PxShapePtr.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface NativeArrayHelpers {
     /**
      * Native object address.
@@ -1046,6 +1054,56 @@ fun Vector_PxHeightFieldSample(size: Int, _module: dynamic = PhysXJsLoader.physX
 fun Vector_PxHeightFieldSampleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): Vector_PxHeightFieldSample = js("_module.wrapPointer(ptr, _module.Vector_PxHeightFieldSample)")
 
 fun Vector_PxHeightFieldSample.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxArray_PxShapePtr {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @return WebIDL type: [PxShape]
+     */
+    fun get(index: Int): PxShape
+
+    /**
+     * @param index WebIDL type: unsigned long
+     * @param value WebIDL type: [PxShapePtr] (Const, Ref)
+     */
+    fun set(index: Int, value: PxShapePtr)
+
+    /**
+     * @return WebIDL type: [PxShapePtr]
+     */
+    fun begin(): PxShapePtr
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun size(): Int
+
+    /**
+     * @param value WebIDL type: [PxShape]
+     */
+    fun pushBack(value: PxShape)
+
+    fun clear()
+
+}
+
+fun PxArray_PxShapePtr(_module: dynamic = PhysXJsLoader.physXJs): PxArray_PxShapePtr = js("new _module.PxArray_PxShapePtr()")
+
+/**
+ * @param size WebIDL type: unsigned long
+ */
+fun PxArray_PxShapePtr(size: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxShapePtr = js("new _module.PxArray_PxShapePtr(size)")
+
+fun PxArray_PxShapePtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArray_PxShapePtr = js("_module.wrapPointer(ptr, _module.PxArray_PxShapePtr)")
+
+fun PxArray_PxShapePtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 

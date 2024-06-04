@@ -207,6 +207,7 @@ val Sizes.lineHeightTitle: Dp get() = baseSize
 val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f
 val Sizes.scrollbarWidth: Dp get() = gap * 0.3f
 val Sizes.editorLabelWidthSmall: Dp get() = baseSize * 3
+val Sizes.editorLabelWidthMedium: Dp get() = baseSize * 4
 val Sizes.editorLabelWidthLarge: Dp get() = baseSize * 5
 
 val Sizes.smallText: MsdfFont get() = (normalText as MsdfFont).copy(sizePts = normalText.sizePts * 0.8f)

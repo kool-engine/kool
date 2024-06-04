@@ -31,7 +31,7 @@ kotlin {
         }
 
         jsMain.dependencies {
-            api(npm("physx-js-webidl", "2.3.1"))
+            api(npm(libs.physxjswebidl.get().name, libs.versions.physxjswebidl.get()))
 //            api(npm(File("$projectDir/npm/physx-js-webidl")))
         }
     }

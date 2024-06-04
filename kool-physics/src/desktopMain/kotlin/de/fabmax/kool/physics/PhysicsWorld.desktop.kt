@@ -94,6 +94,14 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         super.fetchAsyncStepResults()
     }
 
+    internal fun registerActorReference(actor: RigidActor) {
+        pxActors[actor.holder] = actor
+    }
+
+    internal fun deleteActorReference(actor: RigidActor) {
+        pxActors -= actor.holder
+    }
+
     fun getActor(pxActor: PxActor): RigidActor? {
         return pxActors[pxActor]
     }
@@ -101,7 +109,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     override fun addActor(actor: RigidActor) {
         super.addActor(actor)
         pxScene.addActor(actor.holder)
-        pxActors[actor.holder] = actor
+        registerActorReference(actor)
 
         // set necessary ccd flags in case it is enabled for this scene
         val pxActor = actor.holder
@@ -119,7 +127,7 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
     override fun removeActor(actor: RigidActor) {
         super.removeActor(actor)
         pxScene.removeActor(actor.holder)
-        pxActors -= actor.holder
+        deleteActorReference(actor)
     }
 
     override fun addArticulation(articulation: Articulation) {

@@ -9,7 +9,9 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
-import de.fabmax.kool.physics.character.*
+import de.fabmax.kool.physics.character.CharacterController
+import de.fabmax.kool.physics.character.CharacterControllerProperties
+import de.fabmax.kool.physics.character.OnHitActorListener
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
@@ -23,8 +25,7 @@ class CharacterControllerComponent(
 ) :
     PhysicsNodeComponent(nodeModel),
     EditorDataComponent<CharacterControllerComponentData>,
-    OnHitActorListener,
-    HitActorBehaviorCallback
+    OnHitActorListener
 {
 
     val charControllerState = mutableStateOf(componentData.properties).onChange {
@@ -32,7 +33,7 @@ class CharacterControllerComponent(
             componentData.properties = it
         }
         launchOnMainThread {
-            createCharController()
+            updateControllerProps()
         }
     }
 
@@ -61,6 +62,7 @@ class CharacterControllerComponent(
     override suspend fun createComponent() {
         super.createComponent()
         createCharController()
+        updateControllerProps()
     }
 
     override fun onStart() {
@@ -70,11 +72,9 @@ class CharacterControllerComponent(
         }
     }
 
-    override fun updatePhysics() {
-        super.updatePhysics()
-        axes?.let {
-            updateMovement(charController!!, it)
-        }
+    override fun updatePhysics(dt: Float) {
+        super.updatePhysics(dt)
+        axes?.let { updateMovement(charController!!, it) }
     }
 
     override fun destroyComponent() {
@@ -105,14 +105,13 @@ class CharacterControllerComponent(
         val props = componentData.properties.let {
             CharacterControllerProperties(
                 height = it.shape.length.toFloat(),
-                radius = it.shape.radius.toFloat(),
-                slopeLimit = it.slopeLimit.toFloat(),
-                contactOffset = it.contactOffset.toFloat(),
+                radius = it.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
+                slopeLimit = it.slopeLimit.toFloat().deg,
+                contactOffset = CHARACTER_CONTACT_OFFSET
             )
         }
         charController = charManager.createController(props).also {
             it.onHitActorListeners += this
-            it.hitActorBehaviorCallback = this
         }
 
         if (oldPos != null) {
@@ -120,6 +119,22 @@ class CharacterControllerComponent(
         } else {
             setPhysicsTransformFromDrawNode()
         }
+    }
+
+    private fun updateControllerProps() {
+        val charCtrl = charController ?: return
+        val props = charControllerState.value
+
+        val height = props.shape.length.toFloat()
+        if (charCtrl.height != height) {
+            charCtrl.resize(height)
+        }
+        charCtrl.radius = props.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET
+
+        charCtrl.jumpSpeed = props.jumpSpeed.toFloat()
+        charCtrl.maxFallSpeed = props.maxFallSpeed.toFloat()
+        charCtrl.slopeLimit = props.slopeLimit.toFloat().deg
+        charCtrl.nonWalkableMode = props.nonWalkableMode
     }
 
     override fun applyPose(position: Vec3d, rotation: QuatD) {
@@ -152,14 +167,13 @@ class CharacterControllerComponent(
         // set controller.movement according to user input
         controller.movement.set(0f, 0f, -moveSpeed)
         controller.movement.rotate(moveHeading.deg, Vec3f.Y_AXIS)
-        controller.jumpSpeed = props.jumpSpeed.toFloat()
         controller.jump = isJump
     }
 
     override fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
         val pushForceFac = charControllerState.value.pushForce.toFloat()
         val downForceFac = charControllerState.value.downForce.toFloat()
-        if ((pushForceFac + downForceFac) > 0f && actor is RigidDynamic) {
+        if ((pushForceFac + downForceFac) > 0f && actor is RigidDynamic && !actor.isKinematic) {
             val runMod = if (axes?.isRun == true) 2f else 1f
             val downBlend = abs(hitWorldNormal dot Vec3f.Y_AXIS)
             val forceFac = downForceFac * downBlend + pushForceFac * (1f - downBlend)
@@ -169,7 +183,7 @@ class CharacterControllerComponent(
         }
     }
 
-    override fun hitActorBehavior(actor: RigidActor): HitActorBehavior {
-        return charControllerState.value.hitActorMode
+    companion object {
+        const val CHARACTER_CONTACT_OFFSET = 0.05f
     }
 }

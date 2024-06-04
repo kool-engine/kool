@@ -1,12 +1,9 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.util.memStack
 import physx.PxTopLevelFunctions
-import physx.character.PxCapsuleClimbingModeEnum
-import physx.character.PxCapsuleControllerDesc
-import physx.character.PxControllerManager
-import physx.character.PxControllerNonWalkableModeEnum
+import physx.character.*
 import kotlin.math.cos
 
 actual fun CharacterControllerManager(world: PhysicsWorld): CharacterControllerManager {
@@ -35,14 +32,27 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         desc.height = charProperties.height
         desc.radius = charProperties.radius
         desc.climbingMode = PxCapsuleClimbingModeEnum.eEASY
-        desc.nonWalkableMode = PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
-        desc.slopeLimit = cos(charProperties.slopeLimit.toRad())
+        desc.slopeLimit = cos(charProperties.slopeLimit.rad)
         desc.material = Physics.defaultMaterial.pxMaterial
         desc.contactOffset = charProperties.contactOffset
         desc.reportCallback = hitCallback
         desc.behaviorCallback = behaviorCallback
-        val pxCharacter = pxManager.createController(desc)
+        desc.nonWalkableMode = when (charProperties.nonWalkableMode) {
+            NonWalkableMode.PREVENT_CLIMBING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING
+            NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> PxControllerNonWalkableModeEnum.ePREVENT_CLIMBING_AND_FORCE_SLIDING
+        }
+
+        val pxCharacter = PxCapsuleController.wrapPointer(pxManager.createController(desc).address)
         desc.destroy()
+
+        memStack {
+            val shapes = createPxArray_PxShapePtr(1)
+            pxCharacter.actor.getShapes(shapes.begin(), 1, 0)
+            val shape = shapes.get(0)
+            shape.simulationFilterData = charProperties.simulationFilterData.toPxFilterData(createPxFilterData())
+            shape.queryFilterData = charProperties.queryFilterData.toPxFilterData(createPxFilterData())
+        }
+
         return JvmCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 

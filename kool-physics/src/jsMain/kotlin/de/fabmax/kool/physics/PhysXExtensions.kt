@@ -114,6 +114,7 @@ class MemoryStack private constructor() {
         fun stackPush(): MemoryStack = MemoryStack()
     }
 
+    fun createPxArray_PxShapePtr(size: Int) = autoDelete(PxArray_PxShapePtr(size))
     fun createPxArticulationDrive() = autoDelete(PxArticulationDrive())
     fun createPxArticulationLimit(low: Float, high: Float) = autoDelete(PxArticulationLimit(low, high))
     fun createPxBoundedData() = autoDelete(PxBoundedData())

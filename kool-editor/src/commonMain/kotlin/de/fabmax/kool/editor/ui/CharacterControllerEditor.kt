@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.actions.SetCharControllerPropertiesAction
 import de.fabmax.kool.editor.components.CharacterControllerComponent
 import de.fabmax.kool.editor.data.CharacterControllerComponentProperties
 import de.fabmax.kool.modules.ui2.UiScope
-import de.fabmax.kool.physics.character.HitActorBehavior
+import de.fabmax.kool.physics.character.NonWalkableMode
 
 class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>() {
 
@@ -20,7 +20,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             valueGetter = { it.shape.radius },
             valueSetter = { oldData, newValue -> oldData.copy(shape = oldData.shape.copy(radius = newValue)) },
             label = "Radius:",
-            minValue = 0.01
+            minValue = CharacterControllerComponent.CHARACTER_CONTACT_OFFSET + 0.01
         )
         charDoublePropertyEditor(
             valueGetter = { it.shape.length },
@@ -51,10 +51,23 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             label = "Jump speed:"
         )
         charDoublePropertyEditor(
+            valueGetter = { it.maxFallSpeed },
+            valueSetter = { oldData, newValue -> oldData.copy(maxFallSpeed = newValue) },
+            label = "Max fall speed:"
+        )
+        charDoublePropertyEditor(
             valueGetter = { it.slopeLimit },
             valueSetter = { oldData, newValue -> oldData.copy(slopeLimit = newValue) },
             label = "Slope limit:",
             maxValue = 90.0
+        )
+        choicePropertyEditor(
+            choices = nonWalkableOptions,
+            dataGetter = { it.charControllerState.value },
+            valueGetter = { it.nonWalkableMode },
+            valueSetter = { oldData, newValue -> oldData.copy(nonWalkableMode = newValue) },
+            actionMapper = setCharProps,
+            label = "Slope behavior:"
         )
         charDoublePropertyEditor(
             valueGetter = { it.pushForce },
@@ -65,15 +78,6 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             valueGetter = { it.downForce },
             valueSetter = { oldData, newValue -> oldData.copy(downForce = newValue) },
             label = "Down force:"
-        )
-        choicePropertyEditor(
-            choices = hitBehaviorOptions,
-            dataGetter = { it.charControllerState.value },
-            valueGetter = { it.hitActorMode },
-            valueSetter = { oldData, newValue -> oldData.copy(hitActorMode = newValue) },
-            actionMapper = setCharProps,
-            label = "Default hit behavior:",
-            labelWidth = sizes.editorLabelWidthLarge
         )
 
         menuDivider()
@@ -130,11 +134,10 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoData, applyData)
         }
 
-        private val hitBehaviorOptions = ComboBoxItems(HitActorBehavior.entries) {
+        private val nonWalkableOptions = ComboBoxItems(NonWalkableMode.entries) {
             when (it) {
-                HitActorBehavior.DEFAULT -> "Standard"
-                HitActorBehavior.SLIDE -> "Slide"
-                HitActorBehavior.RIDE -> "Ride"
+                NonWalkableMode.PREVENT_CLIMBING -> "Prevent climbing"
+                NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING -> "Sliding"
             }
         }
     }

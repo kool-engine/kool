@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.data
 
-import de.fabmax.kool.physics.character.HitActorBehavior
+import de.fabmax.kool.physics.character.NonWalkableMode
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -15,11 +15,11 @@ data class CharacterControllerComponentProperties(
     val walkSpeed: Double = 2.0,
     val runSpeed: Double = 7.0,
     val jumpSpeed: Double = 6.0,
-    val slopeLimit: Double = 50.0,
-    val contactOffset: Double = 0.1,
+    val maxFallSpeed: Double = 30.0,
+    val slopeLimit: Double = 45.0,
+    val nonWalkableMode: NonWalkableMode = NonWalkableMode.PREVENT_CLIMBING,
     val pushForce: Double = 10.0,
     val downForce: Double = 1.0,
-    val hitActorMode: HitActorBehavior = HitActorBehavior.DEFAULT,
 
     val enableDefaultControls: Boolean = true,
     val runByDefault: Boolean = true,

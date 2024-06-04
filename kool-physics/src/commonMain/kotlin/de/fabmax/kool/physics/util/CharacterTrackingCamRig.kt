@@ -68,9 +68,9 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
         zoomModifier = { desiredZoom ->
             var zoom = desiredZoom
             transform.transform(testDir.set(0f, 0f, 1f).norm(), 0f)
-            hitSweepGeometryPose.set(transform.matrixF)
+            hitSweepGeometryPose.set(transform.matrixF).translate(pivotPoint).translate(0f, 0f, 1f)
             if (world.sweepTest(hitSweepGeometry, hitSweepGeometryPose, testDir, desiredZoom, hitResult)) {
-                zoom = max(minZoom, hitResult.hitDistance)
+                zoom = max(minZoom, hitResult.hitDistance - 1f)
             }
             zoom
         }

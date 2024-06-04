@@ -3,6 +3,7 @@ package de.fabmax.kool.physics
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.physics.character.HitActorBehavior
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Tags
@@ -18,6 +19,7 @@ interface RigidActor : Releasable {
 
     var simulationFilterData: FilterData
     var queryFilterData: FilterData
+    var characterControllerHitBehavior: HitActorBehavior
 
     var position: Vec3f
     var rotation: QuatF

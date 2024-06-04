@@ -5,711 +5,6 @@
 
 package physx
 
-external interface BaseVehicleParams {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVehicleAxleDescription] (Value)
-     */
-    var axleDescription: PxVehicleAxleDescription
-    /**
-     * WebIDL type: [PxVehicleFrame] (Value)
-     */
-    var frame: PxVehicleFrame
-    /**
-     * WebIDL type: [PxVehicleScale] (Value)
-     */
-    var scale: PxVehicleScale
-    /**
-     * WebIDL type: [PxVehicleSuspensionStateCalculationParams] (Value)
-     */
-    var suspensionStateCalculationParams: PxVehicleSuspensionStateCalculationParams
-    /**
-     * WebIDL type: [PxVehicleBrakeCommandResponseParams] (Value)
-     */
-    fun get_brakeResponseParams(index: Int): PxVehicleBrakeCommandResponseParams
-    fun set_brakeResponseParams(index: Int, value: PxVehicleBrakeCommandResponseParams)
-    /**
-     * WebIDL type: [PxVehicleSteerCommandResponseParams] (Value)
-     */
-    var steerResponseParams: PxVehicleSteerCommandResponseParams
-    /**
-     * WebIDL type: [PxVehicleAckermannParams] (Value)
-     */
-    fun get_ackermannParams(index: Int): PxVehicleAckermannParams
-    fun set_ackermannParams(index: Int, value: PxVehicleAckermannParams)
-    /**
-     * WebIDL type: [PxVehicleSuspensionParams] (Value)
-     */
-    fun get_suspensionParams(index: Int): PxVehicleSuspensionParams
-    fun set_suspensionParams(index: Int, value: PxVehicleSuspensionParams)
-    /**
-     * WebIDL type: [PxVehicleSuspensionComplianceParams] (Value)
-     */
-    fun get_suspensionComplianceParams(index: Int): PxVehicleSuspensionComplianceParams
-    fun set_suspensionComplianceParams(index: Int, value: PxVehicleSuspensionComplianceParams)
-    /**
-     * WebIDL type: [PxVehicleSuspensionForceParams] (Value)
-     */
-    fun get_suspensionForceParams(index: Int): PxVehicleSuspensionForceParams
-    fun set_suspensionForceParams(index: Int, value: PxVehicleSuspensionForceParams)
-    /**
-     * WebIDL type: [PxVehicleAntiRollForceParams] (Value)
-     */
-    fun get_antiRollForceParams(index: Int): PxVehicleAntiRollForceParams
-    fun set_antiRollForceParams(index: Int, value: PxVehicleAntiRollForceParams)
-    /**
-     * WebIDL type: unsigned long
-     */
-    var nbAntiRollForceParams: Int
-    /**
-     * WebIDL type: [PxVehicleTireForceParams] (Value)
-     */
-    fun get_tireForceParams(index: Int): PxVehicleTireForceParams
-    fun set_tireForceParams(index: Int, value: PxVehicleTireForceParams)
-    /**
-     * WebIDL type: [PxVehicleWheelParams] (Value)
-     */
-    fun get_wheelParams(index: Int): PxVehicleWheelParams
-    fun set_wheelParams(index: Int, value: PxVehicleWheelParams)
-    /**
-     * WebIDL type: [PxVehicleRigidBodyParams] (Value)
-     */
-    var rigidBodyParams: PxVehicleRigidBodyParams
-
-    /**
-     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @return WebIDL type: [BaseVehicleParams] (Value)
-     */
-    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): BaseVehicleParams
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun isValid(): Boolean
-
-}
-
-fun BaseVehicleParams(_module: dynamic = PhysXJsLoader.physXJs): BaseVehicleParams = js("new _module.BaseVehicleParams()")
-
-fun BaseVehicleParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): BaseVehicleParams = js("_module.wrapPointer(ptr, _module.BaseVehicleParams)")
-
-fun BaseVehicleParams.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface BaseVehicleState {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: float
-     */
-    fun get_brakeCommandResponseStates(index: Int): Float
-    fun set_brakeCommandResponseStates(index: Int, value: Float)
-    /**
-     * WebIDL type: float
-     */
-    fun get_steerCommandResponseStates(index: Int): Float
-    fun set_steerCommandResponseStates(index: Int, value: Float)
-    /**
-     * WebIDL type: [PxVehicleWheelActuationState] (Value)
-     */
-    fun get_actuationStates(index: Int): PxVehicleWheelActuationState
-    fun set_actuationStates(index: Int, value: PxVehicleWheelActuationState)
-    /**
-     * WebIDL type: [PxVehicleRoadGeometryState] (Value)
-     */
-    fun get_roadGeomStates(index: Int): PxVehicleRoadGeometryState
-    fun set_roadGeomStates(index: Int, value: PxVehicleRoadGeometryState)
-    /**
-     * WebIDL type: [PxVehicleSuspensionState] (Value)
-     */
-    fun get_suspensionStates(index: Int): PxVehicleSuspensionState
-    fun set_suspensionStates(index: Int, value: PxVehicleSuspensionState)
-    /**
-     * WebIDL type: [PxVehicleSuspensionComplianceState] (Value)
-     */
-    fun get_suspensionComplianceStates(index: Int): PxVehicleSuspensionComplianceState
-    fun set_suspensionComplianceStates(index: Int, value: PxVehicleSuspensionComplianceState)
-    /**
-     * WebIDL type: [PxVehicleSuspensionForce] (Value)
-     */
-    fun get_suspensionForces(index: Int): PxVehicleSuspensionForce
-    fun set_suspensionForces(index: Int, value: PxVehicleSuspensionForce)
-    /**
-     * WebIDL type: [PxVehicleAntiRollTorque] (Value)
-     */
-    var antiRollTorque: PxVehicleAntiRollTorque
-    /**
-     * WebIDL type: [PxVehicleTireGripState] (Value)
-     */
-    fun get_tireGripStates(index: Int): PxVehicleTireGripState
-    fun set_tireGripStates(index: Int, value: PxVehicleTireGripState)
-    /**
-     * WebIDL type: [PxVehicleTireDirectionState] (Value)
-     */
-    fun get_tireDirectionStates(index: Int): PxVehicleTireDirectionState
-    fun set_tireDirectionStates(index: Int, value: PxVehicleTireDirectionState)
-    /**
-     * WebIDL type: [PxVehicleTireSpeedState] (Value)
-     */
-    fun get_tireSpeedStates(index: Int): PxVehicleTireSpeedState
-    fun set_tireSpeedStates(index: Int, value: PxVehicleTireSpeedState)
-    /**
-     * WebIDL type: [PxVehicleTireSlipState] (Value)
-     */
-    fun get_tireSlipStates(index: Int): PxVehicleTireSlipState
-    fun set_tireSlipStates(index: Int, value: PxVehicleTireSlipState)
-    /**
-     * WebIDL type: [PxVehicleTireCamberAngleState] (Value)
-     */
-    fun get_tireCamberAngleStates(index: Int): PxVehicleTireCamberAngleState
-    fun set_tireCamberAngleStates(index: Int, value: PxVehicleTireCamberAngleState)
-    /**
-     * WebIDL type: [PxVehicleTireStickyState] (Value)
-     */
-    fun get_tireStickyStates(index: Int): PxVehicleTireStickyState
-    fun set_tireStickyStates(index: Int, value: PxVehicleTireStickyState)
-    /**
-     * WebIDL type: [PxVehicleTireForce] (Value)
-     */
-    fun get_tireForces(index: Int): PxVehicleTireForce
-    fun set_tireForces(index: Int, value: PxVehicleTireForce)
-    /**
-     * WebIDL type: [PxVehicleWheelRigidBody1dState] (Value)
-     */
-    fun get_wheelRigidBody1dStates(index: Int): PxVehicleWheelRigidBody1dState
-    fun set_wheelRigidBody1dStates(index: Int, value: PxVehicleWheelRigidBody1dState)
-    /**
-     * WebIDL type: [PxVehicleWheelLocalPose] (Value)
-     */
-    fun get_wheelLocalPoses(index: Int): PxVehicleWheelLocalPose
-    fun set_wheelLocalPoses(index: Int, value: PxVehicleWheelLocalPose)
-    /**
-     * WebIDL type: [PxVehicleRigidBodyState] (Value)
-     */
-    var rigidBodyState: PxVehicleRigidBodyState
-
-    fun setToDefault()
-
-}
-
-fun BaseVehicleState(_module: dynamic = PhysXJsLoader.physXJs): BaseVehicleState = js("new _module.BaseVehicleState()")
-
-fun BaseVehicleStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): BaseVehicleState = js("_module.wrapPointer(ptr, _module.BaseVehicleState)")
-
-fun BaseVehicleState.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PhysXIntegrationParams {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVehiclePhysXRoadGeometryQueryParams] (Value)
-     */
-    var physxRoadGeometryQueryParams: PxVehiclePhysXRoadGeometryQueryParams
-    /**
-     * WebIDL type: [PxVehiclePhysXMaterialFrictionParams] (Value)
-     */
-    fun get_physxMaterialFrictionParams(index: Int): PxVehiclePhysXMaterialFrictionParams
-    fun set_physxMaterialFrictionParams(index: Int, value: PxVehiclePhysXMaterialFrictionParams)
-    /**
-     * WebIDL type: [PxVehiclePhysXSuspensionLimitConstraintParams] (Value)
-     */
-    fun get_physxSuspensionLimitConstraintParams(index: Int): PxVehiclePhysXSuspensionLimitConstraintParams
-    fun set_physxSuspensionLimitConstraintParams(index: Int, value: PxVehiclePhysXSuspensionLimitConstraintParams)
-    /**
-     * WebIDL type: [PxTransform] (Value)
-     */
-    var physxActorCMassLocalPose: PxTransform
-    /**
-     * WebIDL type: [PxGeometry]
-     */
-    var physxActorGeometry: PxGeometry
-    /**
-     * WebIDL type: [PxTransform] (Value)
-     */
-    var physxActorBoxShapeLocalPose: PxTransform
-    /**
-     * WebIDL type: [PxTransform] (Value)
-     */
-    fun get_physxWheelShapeLocalPoses(index: Int): PxTransform
-    fun set_physxWheelShapeLocalPoses(index: Int, value: PxTransform)
-    /**
-     * WebIDL type: [PxShapeFlags] (Value)
-     */
-    var physxActorShapeFlags: PxShapeFlags
-    /**
-     * WebIDL type: [PxFilterData] (Value)
-     */
-    var physxActorSimulationFilterData: PxFilterData
-    /**
-     * WebIDL type: [PxFilterData] (Value)
-     */
-    var physxActorQueryFilterData: PxFilterData
-    /**
-     * WebIDL type: [PxShapeFlags] (Value)
-     */
-    var physxActorWheelShapeFlags: PxShapeFlags
-    /**
-     * WebIDL type: [PxFilterData] (Value)
-     */
-    var physxActorWheelSimulationFilterData: PxFilterData
-    /**
-     * WebIDL type: [PxFilterData] (Value)
-     */
-    var physxActorWheelQueryFilterData: PxFilterData
-
-    /**
-     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @return WebIDL type: [PhysXIntegrationParams] (Value)
-     */
-    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): PhysXIntegrationParams
-
-    /**
-     * @param axleDesc WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
-     * @return WebIDL type: boolean
-     */
-    fun isValid(axleDesc: PxVehicleAxleDescription): Boolean
-
-    /**
-     * @param axleDesc                    WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
-     * @param roadQueryFilterData         WebIDL type: [PxQueryFilterData] (Const, Ref)
-     * @param roadQueryFilterCallback     WebIDL type: [PxQueryFilterCallback] (Nullable)
-     * @param materialFrictions           WebIDL type: [PxVehiclePhysXMaterialFriction]
-     * @param nbMaterialFrictions         WebIDL type: unsigned long
-     * @param defaultFriction             WebIDL type: float
-     * @param physxActorCMassLocalPose    WebIDL type: [PxTransform] (Const, Ref)
-     * @param actorGeometry               WebIDL type: [PxGeometry] (Ref)
-     * @param physxActorBoxShapeLocalPose WebIDL type: [PxTransform] (Const, Ref)
-     * @param roadGeometryQueryType       WebIDL type: [PxVehiclePhysXRoadGeometryQueryTypeEnum] (enum)
-     */
-    fun create(axleDesc: PxVehicleAxleDescription, roadQueryFilterData: PxQueryFilterData, roadQueryFilterCallback: PxQueryFilterCallback?, materialFrictions: PxVehiclePhysXMaterialFriction, nbMaterialFrictions: Int, defaultFriction: Float, physxActorCMassLocalPose: PxTransform, actorGeometry: PxGeometry, physxActorBoxShapeLocalPose: PxTransform, roadGeometryQueryType: Int)
-
-}
-
-fun PhysXIntegrationParams(_module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationParams = js("new _module.PhysXIntegrationParams()")
-
-fun PhysXIntegrationParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationParams = js("_module.wrapPointer(ptr, _module.PhysXIntegrationParams)")
-
-fun PhysXIntegrationParams.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PhysXIntegrationState {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVehiclePhysXActor] (Value)
-     */
-    var physxActor: PxVehiclePhysXActor
-    /**
-     * WebIDL type: [PxVehiclePhysXSteerState] (Value)
-     */
-    var physxSteerState: PxVehiclePhysXSteerState
-    /**
-     * WebIDL type: [PxVehiclePhysXConstraints] (Value)
-     */
-    var physxConstraints: PxVehiclePhysXConstraints
-
-    fun destroyState()
-
-    fun setToDefault()
-
-    /**
-     * @param baseParams      WebIDL type: [BaseVehicleParams] (Const, Ref)
-     * @param physxParams     WebIDL type: [PhysXIntegrationParams] (Const, Ref)
-     * @param physics         WebIDL type: [PxPhysics] (Ref)
-     * @param params          WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param defaultMaterial WebIDL type: [PxMaterial] (Ref)
-     */
-    fun create(baseParams: BaseVehicleParams, physxParams: PhysXIntegrationParams, physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial)
-
-}
-
-fun PhysXIntegrationState(_module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationState = js("new _module.PhysXIntegrationState()")
-
-fun PhysXIntegrationStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationState = js("_module.wrapPointer(ptr, _module.PhysXIntegrationState)")
-
-fun PhysXIntegrationState.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface DirectDrivetrainParams {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVehicleDirectDriveThrottleCommandResponseParams] (Value)
-     */
-    var directDriveThrottleResponseParams: PxVehicleDirectDriveThrottleCommandResponseParams
-
-    /**
-     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @return WebIDL type: [DirectDrivetrainParams] (Value)
-     */
-    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): DirectDrivetrainParams
-
-    /**
-     * @param axleDesc WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
-     * @return WebIDL type: boolean
-     */
-    fun isValid(axleDesc: PxVehicleAxleDescription): Boolean
-
-}
-
-fun DirectDrivetrainParams(_module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainParams = js("new _module.DirectDrivetrainParams()")
-
-fun DirectDrivetrainParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainParams = js("_module.wrapPointer(ptr, _module.DirectDrivetrainParams)")
-
-fun DirectDrivetrainParams.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface DirectDrivetrainState {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: float
-     */
-    fun get_directDriveThrottleResponseStates(index: Int): Float
-    fun set_directDriveThrottleResponseStates(index: Int, value: Float)
-
-    fun setToDefault()
-
-}
-
-fun DirectDrivetrainState(_module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainState = js("new _module.DirectDrivetrainState()")
-
-fun DirectDrivetrainStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainState = js("_module.wrapPointer(ptr, _module.DirectDrivetrainState)")
-
-fun DirectDrivetrainState.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface EngineDrivetrainParams {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVehicleAutoboxParams] (Value)
-     */
-    var autoboxParams: PxVehicleAutoboxParams
-    /**
-     * WebIDL type: [PxVehicleClutchCommandResponseParams] (Value)
-     */
-    var clutchCommandResponseParams: PxVehicleClutchCommandResponseParams
-    /**
-     * WebIDL type: [PxVehicleEngineParams] (Value)
-     */
-    var engineParams: PxVehicleEngineParams
-    /**
-     * WebIDL type: [PxVehicleGearboxParams] (Value)
-     */
-    var gearBoxParams: PxVehicleGearboxParams
-    /**
-     * WebIDL type: [PxVehicleMultiWheelDriveDifferentialParams] (Value)
-     */
-    var multiWheelDifferentialParams: PxVehicleMultiWheelDriveDifferentialParams
-    /**
-     * WebIDL type: [PxVehicleFourWheelDriveDifferentialParams] (Value)
-     */
-    var fourWheelDifferentialParams: PxVehicleFourWheelDriveDifferentialParams
-    /**
-     * WebIDL type: [PxVehicleTankDriveDifferentialParams] (Value)
-     */
-    var tankDifferentialParams: PxVehicleTankDriveDifferentialParams
-    /**
-     * WebIDL type: [PxVehicleClutchParams] (Value)
-     */
-    var clutchParams: PxVehicleClutchParams
-
-    /**
-     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
-     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
-     * @return WebIDL type: [EngineDrivetrainParams] (Value)
-     */
-    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): EngineDrivetrainParams
-
-    /**
-     * @param axleDesc WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
-     * @return WebIDL type: boolean
-     */
-    fun isValid(axleDesc: PxVehicleAxleDescription): Boolean
-
-}
-
-fun EngineDrivetrainParams(_module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainParams = js("new _module.EngineDrivetrainParams()")
-
-fun EngineDrivetrainParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainParams = js("_module.wrapPointer(ptr, _module.EngineDrivetrainParams)")
-
-fun EngineDrivetrainParams.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface EngineDrivetrainState {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVehicleEngineDriveThrottleCommandResponseState] (Value)
-     */
-    var throttleCommandResponseState: PxVehicleEngineDriveThrottleCommandResponseState
-    /**
-     * WebIDL type: [PxVehicleAutoboxState] (Value)
-     */
-    var autoboxState: PxVehicleAutoboxState
-    /**
-     * WebIDL type: [PxVehicleClutchCommandResponseState] (Value)
-     */
-    var clutchCommandResponseState: PxVehicleClutchCommandResponseState
-    /**
-     * WebIDL type: [PxVehicleDifferentialState] (Value)
-     */
-    var differentialState: PxVehicleDifferentialState
-    /**
-     * WebIDL type: [PxVehicleWheelConstraintGroupState] (Value)
-     */
-    var wheelConstraintGroupState: PxVehicleWheelConstraintGroupState
-    /**
-     * WebIDL type: [PxVehicleEngineState] (Value)
-     */
-    var engineState: PxVehicleEngineState
-    /**
-     * WebIDL type: [PxVehicleGearboxState] (Value)
-     */
-    var gearboxState: PxVehicleGearboxState
-    /**
-     * WebIDL type: [PxVehicleClutchSlipState] (Value)
-     */
-    var clutchState: PxVehicleClutchSlipState
-
-    fun setToDefault()
-
-}
-
-fun EngineDrivetrainState(_module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainState = js("new _module.EngineDrivetrainState()")
-
-fun EngineDrivetrainStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainState = js("_module.wrapPointer(ptr, _module.EngineDrivetrainState)")
-
-fun EngineDrivetrainState.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface BaseVehicle {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [BaseVehicleParams] (Value)
-     */
-    var baseParams: BaseVehicleParams
-    /**
-     * WebIDL type: [BaseVehicleState] (Value)
-     */
-    var baseState: BaseVehicleState
-    /**
-     * WebIDL type: [PxVehicleComponentSequence] (Value)
-     */
-    var componentSequence: PxVehicleComponentSequence
-    /**
-     * WebIDL type: octet
-     */
-    var componentSequenceSubstepGroupHandle: Byte
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun initialize(): Boolean
-
-    fun destroyState()
-
-    /**
-     * @param addPhysXBeginEndComponents WebIDL type: boolean
-     */
-    fun initComponentSequence(addPhysXBeginEndComponents: Boolean)
-
-    /**
-     * @param dt      WebIDL type: float
-     * @param context WebIDL type: [PxVehicleSimulationContext] (Const, Ref)
-     */
-    fun step(dt: Float, context: PxVehicleSimulationContext)
-
-}
-
-fun BaseVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): BaseVehicle = js("_module.wrapPointer(ptr, _module.BaseVehicle)")
-
-fun BaseVehicle.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PhysXActorVehicle : BaseVehicle {
-    /**
-     * WebIDL type: [PhysXIntegrationParams] (Value)
-     */
-    var physXParams: PhysXIntegrationParams
-    /**
-     * WebIDL type: [PhysXIntegrationState] (Value)
-     */
-    var physXState: PhysXIntegrationState
-    /**
-     * WebIDL type: [PxVehicleCommandState] (Value)
-     */
-    var commandState: PxVehicleCommandState
-
-    /**
-     * @param physics         WebIDL type: [PxPhysics] (Ref)
-     * @param params          WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param defaultMaterial WebIDL type: [PxMaterial] (Ref)
-     * @return WebIDL type: boolean
-     */
-    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial): Boolean
-
-}
-
-fun PhysXActorVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PhysXActorVehicle = js("_module.wrapPointer(ptr, _module.PhysXActorVehicle)")
-
-fun PhysXActorVehicle.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface DirectDriveVehicle : PhysXActorVehicle {
-    /**
-     * WebIDL type: [DirectDrivetrainParams] (Value)
-     */
-    var directDriveParams: DirectDrivetrainParams
-    /**
-     * WebIDL type: [DirectDrivetrainState] (Value)
-     */
-    var directDriveState: DirectDrivetrainState
-    /**
-     * WebIDL type: [PxVehicleDirectDriveTransmissionCommandState] (Value)
-     */
-    var transmissionCommandState: PxVehicleDirectDriveTransmissionCommandState
-
-    /**
-     * @param physics         WebIDL type: [PxPhysics] (Ref)
-     * @param params          WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param defaultMaterial WebIDL type: [PxMaterial] (Ref)
-     * @return WebIDL type: boolean
-     */
-    override fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial): Boolean
-
-    /**
-     * @param physics                    WebIDL type: [PxPhysics] (Ref)
-     * @param params                     WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param defaultMaterial            WebIDL type: [PxMaterial] (Ref)
-     * @param addPhysXBeginEndComponents WebIDL type: boolean
-     * @return WebIDL type: boolean
-     */
-    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, addPhysXBeginEndComponents: Boolean): Boolean
-
-    /**
-     * @param addPhysXBeginEndComponents WebIDL type: boolean
-     */
-    override fun initComponentSequence(addPhysXBeginEndComponents: Boolean)
-
-}
-
-fun DirectDriveVehicle(_module: dynamic = PhysXJsLoader.physXJs): DirectDriveVehicle = js("new _module.DirectDriveVehicle()")
-
-fun DirectDriveVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): DirectDriveVehicle = js("_module.wrapPointer(ptr, _module.DirectDriveVehicle)")
-
-fun DirectDriveVehicle.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface EngineDriveVehicle : PhysXActorVehicle {
-    /**
-     * WebIDL type: [EngineDrivetrainParams] (Value)
-     */
-    var engineDriveParams: EngineDrivetrainParams
-    /**
-     * WebIDL type: [EngineDrivetrainState] (Value)
-     */
-    var engineDriveState: EngineDrivetrainState
-    /**
-     * WebIDL type: [PxVehicleEngineDriveTransmissionCommandState] (Value)
-     */
-    var transmissionCommandState: PxVehicleEngineDriveTransmissionCommandState
-    /**
-     * WebIDL type: [PxVehicleTankDriveTransmissionCommandState] (Value)
-     */
-    var tankDriveTransmissionCommandState: PxVehicleTankDriveTransmissionCommandState
-    /**
-     * WebIDL type: [EngineDriveVehicleEnum] (enum)
-     */
-    var differentialType: Int
-
-    /**
-     * @param physics          WebIDL type: [PxPhysics] (Ref)
-     * @param params           WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param defaultMaterial  WebIDL type: [PxMaterial] (Ref)
-     * @param differentialType WebIDL type: [EngineDriveVehicleEnum] (enum)
-     * @return WebIDL type: boolean
-     */
-    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: Int): Boolean
-
-    /**
-     * @param physics                    WebIDL type: [PxPhysics] (Ref)
-     * @param params                     WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param defaultMaterial            WebIDL type: [PxMaterial] (Ref)
-     * @param differentialType           WebIDL type: [EngineDriveVehicleEnum] (enum)
-     * @param addPhysXBeginEndComponents WebIDL type: boolean
-     * @return WebIDL type: boolean
-     */
-    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: Int, addPhysXBeginEndComponents: Boolean): Boolean
-
-    /**
-     * @param addPhysXBeginEndComponents WebIDL type: boolean
-     */
-    override fun initComponentSequence(addPhysXBeginEndComponents: Boolean)
-
-}
-
-fun EngineDriveVehicle(_module: dynamic = PhysXJsLoader.physXJs): EngineDriveVehicle = js("new _module.EngineDriveVehicle()")
-
-fun EngineDriveVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): EngineDriveVehicle = js("_module.wrapPointer(ptr, _module.EngineDriveVehicle)")
-
-fun EngineDriveVehicle.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
 external interface PxVehicleTopLevelFunctions {
     /**
      * Native object address.
@@ -3487,10 +2782,709 @@ fun PxVehicleWheelRigidBody1dState.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-object EngineDriveVehicleEnum {
-    val eDIFFTYPE_FOURWHEELDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_FOURWHEELDRIVE()
-    val eDIFFTYPE_MULTIWHEELDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_MULTIWHEELDRIVE()
-    val eDIFFTYPE_TANKDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_TANKDRIVE()
+external interface BaseVehicleParams {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVehicleAxleDescription] (Value)
+     */
+    var axleDescription: PxVehicleAxleDescription
+    /**
+     * WebIDL type: [PxVehicleFrame] (Value)
+     */
+    var frame: PxVehicleFrame
+    /**
+     * WebIDL type: [PxVehicleScale] (Value)
+     */
+    var scale: PxVehicleScale
+    /**
+     * WebIDL type: [PxVehicleSuspensionStateCalculationParams] (Value)
+     */
+    var suspensionStateCalculationParams: PxVehicleSuspensionStateCalculationParams
+    /**
+     * WebIDL type: [PxVehicleBrakeCommandResponseParams] (Value)
+     */
+    fun get_brakeResponseParams(index: Int): PxVehicleBrakeCommandResponseParams
+    fun set_brakeResponseParams(index: Int, value: PxVehicleBrakeCommandResponseParams)
+    /**
+     * WebIDL type: [PxVehicleSteerCommandResponseParams] (Value)
+     */
+    var steerResponseParams: PxVehicleSteerCommandResponseParams
+    /**
+     * WebIDL type: [PxVehicleAckermannParams] (Value)
+     */
+    fun get_ackermannParams(index: Int): PxVehicleAckermannParams
+    fun set_ackermannParams(index: Int, value: PxVehicleAckermannParams)
+    /**
+     * WebIDL type: [PxVehicleSuspensionParams] (Value)
+     */
+    fun get_suspensionParams(index: Int): PxVehicleSuspensionParams
+    fun set_suspensionParams(index: Int, value: PxVehicleSuspensionParams)
+    /**
+     * WebIDL type: [PxVehicleSuspensionComplianceParams] (Value)
+     */
+    fun get_suspensionComplianceParams(index: Int): PxVehicleSuspensionComplianceParams
+    fun set_suspensionComplianceParams(index: Int, value: PxVehicleSuspensionComplianceParams)
+    /**
+     * WebIDL type: [PxVehicleSuspensionForceParams] (Value)
+     */
+    fun get_suspensionForceParams(index: Int): PxVehicleSuspensionForceParams
+    fun set_suspensionForceParams(index: Int, value: PxVehicleSuspensionForceParams)
+    /**
+     * WebIDL type: [PxVehicleAntiRollForceParams] (Value)
+     */
+    fun get_antiRollForceParams(index: Int): PxVehicleAntiRollForceParams
+    fun set_antiRollForceParams(index: Int, value: PxVehicleAntiRollForceParams)
+    /**
+     * WebIDL type: unsigned long
+     */
+    var nbAntiRollForceParams: Int
+    /**
+     * WebIDL type: [PxVehicleTireForceParams] (Value)
+     */
+    fun get_tireForceParams(index: Int): PxVehicleTireForceParams
+    fun set_tireForceParams(index: Int, value: PxVehicleTireForceParams)
+    /**
+     * WebIDL type: [PxVehicleWheelParams] (Value)
+     */
+    fun get_wheelParams(index: Int): PxVehicleWheelParams
+    fun set_wheelParams(index: Int, value: PxVehicleWheelParams)
+    /**
+     * WebIDL type: [PxVehicleRigidBodyParams] (Value)
+     */
+    var rigidBodyParams: PxVehicleRigidBodyParams
+
+    /**
+     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @return WebIDL type: [BaseVehicleParams] (Value)
+     */
+    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): BaseVehicleParams
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
+
+fun BaseVehicleParams(_module: dynamic = PhysXJsLoader.physXJs): BaseVehicleParams = js("new _module.BaseVehicleParams()")
+
+fun BaseVehicleParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): BaseVehicleParams = js("_module.wrapPointer(ptr, _module.BaseVehicleParams)")
+
+fun BaseVehicleParams.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface BaseVehicleState {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: float
+     */
+    fun get_brakeCommandResponseStates(index: Int): Float
+    fun set_brakeCommandResponseStates(index: Int, value: Float)
+    /**
+     * WebIDL type: float
+     */
+    fun get_steerCommandResponseStates(index: Int): Float
+    fun set_steerCommandResponseStates(index: Int, value: Float)
+    /**
+     * WebIDL type: [PxVehicleWheelActuationState] (Value)
+     */
+    fun get_actuationStates(index: Int): PxVehicleWheelActuationState
+    fun set_actuationStates(index: Int, value: PxVehicleWheelActuationState)
+    /**
+     * WebIDL type: [PxVehicleRoadGeometryState] (Value)
+     */
+    fun get_roadGeomStates(index: Int): PxVehicleRoadGeometryState
+    fun set_roadGeomStates(index: Int, value: PxVehicleRoadGeometryState)
+    /**
+     * WebIDL type: [PxVehicleSuspensionState] (Value)
+     */
+    fun get_suspensionStates(index: Int): PxVehicleSuspensionState
+    fun set_suspensionStates(index: Int, value: PxVehicleSuspensionState)
+    /**
+     * WebIDL type: [PxVehicleSuspensionComplianceState] (Value)
+     */
+    fun get_suspensionComplianceStates(index: Int): PxVehicleSuspensionComplianceState
+    fun set_suspensionComplianceStates(index: Int, value: PxVehicleSuspensionComplianceState)
+    /**
+     * WebIDL type: [PxVehicleSuspensionForce] (Value)
+     */
+    fun get_suspensionForces(index: Int): PxVehicleSuspensionForce
+    fun set_suspensionForces(index: Int, value: PxVehicleSuspensionForce)
+    /**
+     * WebIDL type: [PxVehicleAntiRollTorque] (Value)
+     */
+    var antiRollTorque: PxVehicleAntiRollTorque
+    /**
+     * WebIDL type: [PxVehicleTireGripState] (Value)
+     */
+    fun get_tireGripStates(index: Int): PxVehicleTireGripState
+    fun set_tireGripStates(index: Int, value: PxVehicleTireGripState)
+    /**
+     * WebIDL type: [PxVehicleTireDirectionState] (Value)
+     */
+    fun get_tireDirectionStates(index: Int): PxVehicleTireDirectionState
+    fun set_tireDirectionStates(index: Int, value: PxVehicleTireDirectionState)
+    /**
+     * WebIDL type: [PxVehicleTireSpeedState] (Value)
+     */
+    fun get_tireSpeedStates(index: Int): PxVehicleTireSpeedState
+    fun set_tireSpeedStates(index: Int, value: PxVehicleTireSpeedState)
+    /**
+     * WebIDL type: [PxVehicleTireSlipState] (Value)
+     */
+    fun get_tireSlipStates(index: Int): PxVehicleTireSlipState
+    fun set_tireSlipStates(index: Int, value: PxVehicleTireSlipState)
+    /**
+     * WebIDL type: [PxVehicleTireCamberAngleState] (Value)
+     */
+    fun get_tireCamberAngleStates(index: Int): PxVehicleTireCamberAngleState
+    fun set_tireCamberAngleStates(index: Int, value: PxVehicleTireCamberAngleState)
+    /**
+     * WebIDL type: [PxVehicleTireStickyState] (Value)
+     */
+    fun get_tireStickyStates(index: Int): PxVehicleTireStickyState
+    fun set_tireStickyStates(index: Int, value: PxVehicleTireStickyState)
+    /**
+     * WebIDL type: [PxVehicleTireForce] (Value)
+     */
+    fun get_tireForces(index: Int): PxVehicleTireForce
+    fun set_tireForces(index: Int, value: PxVehicleTireForce)
+    /**
+     * WebIDL type: [PxVehicleWheelRigidBody1dState] (Value)
+     */
+    fun get_wheelRigidBody1dStates(index: Int): PxVehicleWheelRigidBody1dState
+    fun set_wheelRigidBody1dStates(index: Int, value: PxVehicleWheelRigidBody1dState)
+    /**
+     * WebIDL type: [PxVehicleWheelLocalPose] (Value)
+     */
+    fun get_wheelLocalPoses(index: Int): PxVehicleWheelLocalPose
+    fun set_wheelLocalPoses(index: Int, value: PxVehicleWheelLocalPose)
+    /**
+     * WebIDL type: [PxVehicleRigidBodyState] (Value)
+     */
+    var rigidBodyState: PxVehicleRigidBodyState
+
+    fun setToDefault()
+
+}
+
+fun BaseVehicleState(_module: dynamic = PhysXJsLoader.physXJs): BaseVehicleState = js("new _module.BaseVehicleState()")
+
+fun BaseVehicleStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): BaseVehicleState = js("_module.wrapPointer(ptr, _module.BaseVehicleState)")
+
+fun BaseVehicleState.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PhysXIntegrationParams {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVehiclePhysXRoadGeometryQueryParams] (Value)
+     */
+    var physxRoadGeometryQueryParams: PxVehiclePhysXRoadGeometryQueryParams
+    /**
+     * WebIDL type: [PxVehiclePhysXMaterialFrictionParams] (Value)
+     */
+    fun get_physxMaterialFrictionParams(index: Int): PxVehiclePhysXMaterialFrictionParams
+    fun set_physxMaterialFrictionParams(index: Int, value: PxVehiclePhysXMaterialFrictionParams)
+    /**
+     * WebIDL type: [PxVehiclePhysXSuspensionLimitConstraintParams] (Value)
+     */
+    fun get_physxSuspensionLimitConstraintParams(index: Int): PxVehiclePhysXSuspensionLimitConstraintParams
+    fun set_physxSuspensionLimitConstraintParams(index: Int, value: PxVehiclePhysXSuspensionLimitConstraintParams)
+    /**
+     * WebIDL type: [PxTransform] (Value)
+     */
+    var physxActorCMassLocalPose: PxTransform
+    /**
+     * WebIDL type: [PxGeometry]
+     */
+    var physxActorGeometry: PxGeometry
+    /**
+     * WebIDL type: [PxTransform] (Value)
+     */
+    var physxActorBoxShapeLocalPose: PxTransform
+    /**
+     * WebIDL type: [PxTransform] (Value)
+     */
+    fun get_physxWheelShapeLocalPoses(index: Int): PxTransform
+    fun set_physxWheelShapeLocalPoses(index: Int, value: PxTransform)
+    /**
+     * WebIDL type: [PxShapeFlags] (Value)
+     */
+    var physxActorShapeFlags: PxShapeFlags
+    /**
+     * WebIDL type: [PxFilterData] (Value)
+     */
+    var physxActorSimulationFilterData: PxFilterData
+    /**
+     * WebIDL type: [PxFilterData] (Value)
+     */
+    var physxActorQueryFilterData: PxFilterData
+    /**
+     * WebIDL type: [PxShapeFlags] (Value)
+     */
+    var physxActorWheelShapeFlags: PxShapeFlags
+    /**
+     * WebIDL type: [PxFilterData] (Value)
+     */
+    var physxActorWheelSimulationFilterData: PxFilterData
+    /**
+     * WebIDL type: [PxFilterData] (Value)
+     */
+    var physxActorWheelQueryFilterData: PxFilterData
+
+    /**
+     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @return WebIDL type: [PhysXIntegrationParams] (Value)
+     */
+    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): PhysXIntegrationParams
+
+    /**
+     * @param axleDesc WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isValid(axleDesc: PxVehicleAxleDescription): Boolean
+
+    /**
+     * @param axleDesc                    WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
+     * @param roadQueryFilterData         WebIDL type: [PxQueryFilterData] (Const, Ref)
+     * @param roadQueryFilterCallback     WebIDL type: [PxQueryFilterCallback] (Nullable)
+     * @param materialFrictions           WebIDL type: [PxVehiclePhysXMaterialFriction]
+     * @param nbMaterialFrictions         WebIDL type: unsigned long
+     * @param defaultFriction             WebIDL type: float
+     * @param physxActorCMassLocalPose    WebIDL type: [PxTransform] (Const, Ref)
+     * @param actorGeometry               WebIDL type: [PxGeometry] (Ref)
+     * @param physxActorBoxShapeLocalPose WebIDL type: [PxTransform] (Const, Ref)
+     * @param roadGeometryQueryType       WebIDL type: [PxVehiclePhysXRoadGeometryQueryTypeEnum] (enum)
+     */
+    fun create(axleDesc: PxVehicleAxleDescription, roadQueryFilterData: PxQueryFilterData, roadQueryFilterCallback: PxQueryFilterCallback?, materialFrictions: PxVehiclePhysXMaterialFriction, nbMaterialFrictions: Int, defaultFriction: Float, physxActorCMassLocalPose: PxTransform, actorGeometry: PxGeometry, physxActorBoxShapeLocalPose: PxTransform, roadGeometryQueryType: Int)
+
+}
+
+fun PhysXIntegrationParams(_module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationParams = js("new _module.PhysXIntegrationParams()")
+
+fun PhysXIntegrationParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationParams = js("_module.wrapPointer(ptr, _module.PhysXIntegrationParams)")
+
+fun PhysXIntegrationParams.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PhysXIntegrationState {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVehiclePhysXActor] (Value)
+     */
+    var physxActor: PxVehiclePhysXActor
+    /**
+     * WebIDL type: [PxVehiclePhysXSteerState] (Value)
+     */
+    var physxSteerState: PxVehiclePhysXSteerState
+    /**
+     * WebIDL type: [PxVehiclePhysXConstraints] (Value)
+     */
+    var physxConstraints: PxVehiclePhysXConstraints
+
+    fun destroyState()
+
+    fun setToDefault()
+
+    /**
+     * @param baseParams      WebIDL type: [BaseVehicleParams] (Const, Ref)
+     * @param physxParams     WebIDL type: [PhysXIntegrationParams] (Const, Ref)
+     * @param physics         WebIDL type: [PxPhysics] (Ref)
+     * @param params          WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param defaultMaterial WebIDL type: [PxMaterial] (Ref)
+     */
+    fun create(baseParams: BaseVehicleParams, physxParams: PhysXIntegrationParams, physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial)
+
+}
+
+fun PhysXIntegrationState(_module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationState = js("new _module.PhysXIntegrationState()")
+
+fun PhysXIntegrationStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PhysXIntegrationState = js("_module.wrapPointer(ptr, _module.PhysXIntegrationState)")
+
+fun PhysXIntegrationState.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface DirectDrivetrainParams {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVehicleDirectDriveThrottleCommandResponseParams] (Value)
+     */
+    var directDriveThrottleResponseParams: PxVehicleDirectDriveThrottleCommandResponseParams
+
+    /**
+     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @return WebIDL type: [DirectDrivetrainParams] (Value)
+     */
+    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): DirectDrivetrainParams
+
+    /**
+     * @param axleDesc WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isValid(axleDesc: PxVehicleAxleDescription): Boolean
+
+}
+
+fun DirectDrivetrainParams(_module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainParams = js("new _module.DirectDrivetrainParams()")
+
+fun DirectDrivetrainParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainParams = js("_module.wrapPointer(ptr, _module.DirectDrivetrainParams)")
+
+fun DirectDrivetrainParams.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface DirectDrivetrainState {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: float
+     */
+    fun get_directDriveThrottleResponseStates(index: Int): Float
+    fun set_directDriveThrottleResponseStates(index: Int, value: Float)
+
+    fun setToDefault()
+
+}
+
+fun DirectDrivetrainState(_module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainState = js("new _module.DirectDrivetrainState()")
+
+fun DirectDrivetrainStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): DirectDrivetrainState = js("_module.wrapPointer(ptr, _module.DirectDrivetrainState)")
+
+fun DirectDrivetrainState.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface EngineDrivetrainParams {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVehicleAutoboxParams] (Value)
+     */
+    var autoboxParams: PxVehicleAutoboxParams
+    /**
+     * WebIDL type: [PxVehicleClutchCommandResponseParams] (Value)
+     */
+    var clutchCommandResponseParams: PxVehicleClutchCommandResponseParams
+    /**
+     * WebIDL type: [PxVehicleEngineParams] (Value)
+     */
+    var engineParams: PxVehicleEngineParams
+    /**
+     * WebIDL type: [PxVehicleGearboxParams] (Value)
+     */
+    var gearBoxParams: PxVehicleGearboxParams
+    /**
+     * WebIDL type: [PxVehicleMultiWheelDriveDifferentialParams] (Value)
+     */
+    var multiWheelDifferentialParams: PxVehicleMultiWheelDriveDifferentialParams
+    /**
+     * WebIDL type: [PxVehicleFourWheelDriveDifferentialParams] (Value)
+     */
+    var fourWheelDifferentialParams: PxVehicleFourWheelDriveDifferentialParams
+    /**
+     * WebIDL type: [PxVehicleTankDriveDifferentialParams] (Value)
+     */
+    var tankDifferentialParams: PxVehicleTankDriveDifferentialParams
+    /**
+     * WebIDL type: [PxVehicleClutchParams] (Value)
+     */
+    var clutchParams: PxVehicleClutchParams
+
+    /**
+     * @param srcFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param trgFrame WebIDL type: [PxVehicleFrame] (Const, Ref)
+     * @param srcScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @param trgScale WebIDL type: [PxVehicleScale] (Const, Ref)
+     * @return WebIDL type: [EngineDrivetrainParams] (Value)
+     */
+    fun transformAndScale(srcFrame: PxVehicleFrame, trgFrame: PxVehicleFrame, srcScale: PxVehicleScale, trgScale: PxVehicleScale): EngineDrivetrainParams
+
+    /**
+     * @param axleDesc WebIDL type: [PxVehicleAxleDescription] (Const, Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isValid(axleDesc: PxVehicleAxleDescription): Boolean
+
+}
+
+fun EngineDrivetrainParams(_module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainParams = js("new _module.EngineDrivetrainParams()")
+
+fun EngineDrivetrainParamsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainParams = js("_module.wrapPointer(ptr, _module.EngineDrivetrainParams)")
+
+fun EngineDrivetrainParams.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface EngineDrivetrainState {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVehicleEngineDriveThrottleCommandResponseState] (Value)
+     */
+    var throttleCommandResponseState: PxVehicleEngineDriveThrottleCommandResponseState
+    /**
+     * WebIDL type: [PxVehicleAutoboxState] (Value)
+     */
+    var autoboxState: PxVehicleAutoboxState
+    /**
+     * WebIDL type: [PxVehicleClutchCommandResponseState] (Value)
+     */
+    var clutchCommandResponseState: PxVehicleClutchCommandResponseState
+    /**
+     * WebIDL type: [PxVehicleDifferentialState] (Value)
+     */
+    var differentialState: PxVehicleDifferentialState
+    /**
+     * WebIDL type: [PxVehicleWheelConstraintGroupState] (Value)
+     */
+    var wheelConstraintGroupState: PxVehicleWheelConstraintGroupState
+    /**
+     * WebIDL type: [PxVehicleEngineState] (Value)
+     */
+    var engineState: PxVehicleEngineState
+    /**
+     * WebIDL type: [PxVehicleGearboxState] (Value)
+     */
+    var gearboxState: PxVehicleGearboxState
+    /**
+     * WebIDL type: [PxVehicleClutchSlipState] (Value)
+     */
+    var clutchState: PxVehicleClutchSlipState
+
+    fun setToDefault()
+
+}
+
+fun EngineDrivetrainState(_module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainState = js("new _module.EngineDrivetrainState()")
+
+fun EngineDrivetrainStateFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): EngineDrivetrainState = js("_module.wrapPointer(ptr, _module.EngineDrivetrainState)")
+
+fun EngineDrivetrainState.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface BaseVehicle {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [BaseVehicleParams] (Value)
+     */
+    var baseParams: BaseVehicleParams
+    /**
+     * WebIDL type: [BaseVehicleState] (Value)
+     */
+    var baseState: BaseVehicleState
+    /**
+     * WebIDL type: [PxVehicleComponentSequence] (Value)
+     */
+    var componentSequence: PxVehicleComponentSequence
+    /**
+     * WebIDL type: octet
+     */
+    var componentSequenceSubstepGroupHandle: Byte
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun initialize(): Boolean
+
+    fun destroyState()
+
+    /**
+     * @param addPhysXBeginEndComponents WebIDL type: boolean
+     */
+    fun initComponentSequence(addPhysXBeginEndComponents: Boolean)
+
+    /**
+     * @param dt      WebIDL type: float
+     * @param context WebIDL type: [PxVehicleSimulationContext] (Const, Ref)
+     */
+    fun step(dt: Float, context: PxVehicleSimulationContext)
+
+}
+
+fun BaseVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): BaseVehicle = js("_module.wrapPointer(ptr, _module.BaseVehicle)")
+
+fun BaseVehicle.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PhysXActorVehicle : BaseVehicle {
+    /**
+     * WebIDL type: [PhysXIntegrationParams] (Value)
+     */
+    var physXParams: PhysXIntegrationParams
+    /**
+     * WebIDL type: [PhysXIntegrationState] (Value)
+     */
+    var physXState: PhysXIntegrationState
+    /**
+     * WebIDL type: [PxVehicleCommandState] (Value)
+     */
+    var commandState: PxVehicleCommandState
+
+    /**
+     * @param physics         WebIDL type: [PxPhysics] (Ref)
+     * @param params          WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param defaultMaterial WebIDL type: [PxMaterial] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial): Boolean
+
+}
+
+fun PhysXActorVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PhysXActorVehicle = js("_module.wrapPointer(ptr, _module.PhysXActorVehicle)")
+
+fun PhysXActorVehicle.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface DirectDriveVehicle : PhysXActorVehicle {
+    /**
+     * WebIDL type: [DirectDrivetrainParams] (Value)
+     */
+    var directDriveParams: DirectDrivetrainParams
+    /**
+     * WebIDL type: [DirectDrivetrainState] (Value)
+     */
+    var directDriveState: DirectDrivetrainState
+    /**
+     * WebIDL type: [PxVehicleDirectDriveTransmissionCommandState] (Value)
+     */
+    var transmissionCommandState: PxVehicleDirectDriveTransmissionCommandState
+
+    /**
+     * @param physics         WebIDL type: [PxPhysics] (Ref)
+     * @param params          WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param defaultMaterial WebIDL type: [PxMaterial] (Ref)
+     * @return WebIDL type: boolean
+     */
+    override fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial): Boolean
+
+    /**
+     * @param physics                    WebIDL type: [PxPhysics] (Ref)
+     * @param params                     WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param defaultMaterial            WebIDL type: [PxMaterial] (Ref)
+     * @param addPhysXBeginEndComponents WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, addPhysXBeginEndComponents: Boolean): Boolean
+
+    /**
+     * @param addPhysXBeginEndComponents WebIDL type: boolean
+     */
+    override fun initComponentSequence(addPhysXBeginEndComponents: Boolean)
+
+}
+
+fun DirectDriveVehicle(_module: dynamic = PhysXJsLoader.physXJs): DirectDriveVehicle = js("new _module.DirectDriveVehicle()")
+
+fun DirectDriveVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): DirectDriveVehicle = js("_module.wrapPointer(ptr, _module.DirectDriveVehicle)")
+
+fun DirectDriveVehicle.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface EngineDriveVehicle : PhysXActorVehicle {
+    /**
+     * WebIDL type: [EngineDrivetrainParams] (Value)
+     */
+    var engineDriveParams: EngineDrivetrainParams
+    /**
+     * WebIDL type: [EngineDrivetrainState] (Value)
+     */
+    var engineDriveState: EngineDrivetrainState
+    /**
+     * WebIDL type: [PxVehicleEngineDriveTransmissionCommandState] (Value)
+     */
+    var transmissionCommandState: PxVehicleEngineDriveTransmissionCommandState
+    /**
+     * WebIDL type: [PxVehicleTankDriveTransmissionCommandState] (Value)
+     */
+    var tankDriveTransmissionCommandState: PxVehicleTankDriveTransmissionCommandState
+    /**
+     * WebIDL type: [EngineDriveVehicleEnum] (enum)
+     */
+    var differentialType: Int
+
+    /**
+     * @param physics          WebIDL type: [PxPhysics] (Ref)
+     * @param params           WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param defaultMaterial  WebIDL type: [PxMaterial] (Ref)
+     * @param differentialType WebIDL type: [EngineDriveVehicleEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: Int): Boolean
+
+    /**
+     * @param physics                    WebIDL type: [PxPhysics] (Ref)
+     * @param params                     WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param defaultMaterial            WebIDL type: [PxMaterial] (Ref)
+     * @param differentialType           WebIDL type: [EngineDriveVehicleEnum] (enum)
+     * @param addPhysXBeginEndComponents WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun initialize(physics: PxPhysics, params: PxCookingParams, defaultMaterial: PxMaterial, differentialType: Int, addPhysXBeginEndComponents: Boolean): Boolean
+
+    /**
+     * @param addPhysXBeginEndComponents WebIDL type: boolean
+     */
+    override fun initComponentSequence(addPhysXBeginEndComponents: Boolean)
+
+}
+
+fun EngineDriveVehicle(_module: dynamic = PhysXJsLoader.physXJs): EngineDriveVehicle = js("new _module.EngineDriveVehicle()")
+
+fun EngineDriveVehicleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): EngineDriveVehicle = js("_module.wrapPointer(ptr, _module.EngineDriveVehicle)")
+
+fun EngineDriveVehicle.destroy() {
+    PhysXJsLoader.destroy(this)
 }
 
 object PxVehicleAxesEnum {
@@ -3571,5 +3565,11 @@ object PxVehicleSuspensionJounceCalculationTypeEnum {
 object PxVehicleTireDirectionModesEnum {
     val eLONGITUDINAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleTireDirectionModesEnum_eLONGITUDINAL()
     val eLATERAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxVehicleTireDirectionModesEnum_eLATERAL()
+}
+
+object EngineDriveVehicleEnum {
+    val eDIFFTYPE_FOURWHEELDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_FOURWHEELDRIVE()
+    val eDIFFTYPE_MULTIWHEELDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_MULTIWHEELDRIVE()
+    val eDIFFTYPE_TANKDRIVE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_EngineDriveVehicleEnum_eDIFFTYPE_TANKDRIVE()
 }
 

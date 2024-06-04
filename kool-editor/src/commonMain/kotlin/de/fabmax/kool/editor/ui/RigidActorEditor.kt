@@ -15,6 +15,7 @@ import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.physics.character.HitActorBehavior
 
 class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
@@ -27,18 +28,32 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         labeledCombobox(
             label = "Type:",
             items = typeItems,
-            selectedIndex = typeIdx
+            selectedIndex = typeIdx,
+            labelWidth = sizes.editorLabelWidthMedium
         ) { selected ->
             selected.item?.type?.let { actorType ->
                 components.map {
                     val bodyProps = it.actorState.value
-                    SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType))
+                    val isTrigger = if (actorType == RigidActorType.STATIC) bodyProps.isTrigger else false
+                    SetRigidBodyPropertiesAction(it.nodeModel.nodeId, bodyProps, bodyProps.copy(type = actorType, isTrigger = isTrigger))
                 }.fused().apply()
             }
         }
 
         val isDynamicActor = components.any { it.actorState.value.type == RigidActorType.DYNAMIC }
+        shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
+
         if (isDynamicActor) {
+            choicePropertyEditor(
+                choices = charHitOptions,
+                dataGetter = { it.actorState.value },
+                valueGetter = { it.characterControllerHitBehavior },
+                valueSetter = { oldData, newValue -> oldData.copy(characterControllerHitBehavior = newValue) },
+                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoData, applyData) },
+                label = "Controller hit behavior:",
+                labelWidth = sizes.editorLabelWidthMedium
+            )
+
             labeledDoubleTextField(
                 label = "Mass:",
                 value = condenseDouble(components.map { it.actorState.value.mass }),
@@ -53,9 +68,15 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     }.fused()
                 }
             )
+        } else {
+            booleanPropertyEditor(
+                dataGetter = { it.actorState.value },
+                valueGetter = { it.isTrigger },
+                valueSetter = { oldData, newValue -> oldData.copy(isTrigger = newValue) },
+                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.nodeModel.nodeId, undoData, applyData) },
+                label = "Is trigger:",
+            )
         }
-
-        shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
     }
 
     private fun ColumnScope.shapeEditor(choices: ComboBoxItems<ShapeOption>) {
@@ -65,7 +86,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         labeledCombobox(
             label = "Shape:",
             items = shapeItems,
-            selectedIndex = shapeIdx
+            selectedIndex = shapeIdx,
+            labelWidth = sizes.editorLabelWidthMedium
         ) { selected -> selected.item?.let { applyNewShape(it) } }
 
         if (components.all { it.actorState.value.shapes == components[0].actorState.value.shapes }) {
@@ -85,7 +107,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
     private fun applyNewShape(shape: ShapeOption) {
         val newShapes = when (shape) {
-            ShapeOption.UseMesh -> emptyList()
+            ShapeOption.DrawShape -> emptyList()
             ShapeOption.Box -> listOf(ShapeData.defaultBox)
             ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
@@ -289,7 +311,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
     }
 
     private enum class ShapeOption(val label: String, val matches: (ShapeData?) -> Boolean, val isDynamic: Boolean = true) {
-        UseMesh("Draw shape", { it == null || it is ShapeData.Custom }),
+        DrawShape("Draw shape", { it == null || it is ShapeData.Custom }),
         Box("Box", { it is ShapeData.Box }),
         Sphere("Sphere", { it is ShapeData.Sphere }),
         Cylinder("Cylinder", { it is ShapeData.Cylinder }),
@@ -302,5 +324,12 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         private val shapeOptions = ComboBoxItems(ShapeOption.entries) { it.label }
         private val shapeOptionsDynamic = ComboBoxItems(ShapeOption.entries.filter { it.isDynamic }) { it.label }
         private val typeOptions = ComboBoxItems(TypeOption.entries) { it.label }
+        private val charHitOptions = ComboBoxItems(listOf(HitActorBehavior.SLIDE, HitActorBehavior.RIDE)) {
+            when (it) {
+                HitActorBehavior.DEFAULT -> "Default"
+                HitActorBehavior.SLIDE -> "Slide"
+                HitActorBehavior.RIDE -> "Ride"
+            }
+        }
     }
 }
