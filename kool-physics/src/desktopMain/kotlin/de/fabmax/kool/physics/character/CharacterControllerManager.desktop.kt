@@ -1,6 +1,5 @@
 package de.fabmax.kool.physics.character
 
-import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.memStack
 import physx.PxTopLevelFunctions
@@ -33,7 +32,7 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         desc.height = charProperties.height
         desc.radius = charProperties.radius
         desc.climbingMode = PxCapsuleClimbingModeEnum.eEASY
-        desc.slopeLimit = cos(charProperties.slopeLimit.toRad())
+        desc.slopeLimit = cos(charProperties.slopeLimit.rad)
         desc.material = Physics.defaultMaterial.pxMaterial
         desc.contactOffset = charProperties.contactOffset
         desc.reportCallback = hitCallback

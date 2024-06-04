@@ -17,7 +17,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     abstract var height: Float
     abstract var radius: Float
-    abstract var slopeLimitDeg: Float
+    abstract var slopeLimit: AngleF
     abstract var nonWalkableMode: NonWalkableMode
 
     protected val prevPosition = MutableVec3d()
@@ -51,7 +51,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     private val slopeObserver = GroundSlopeObserver()
     private val slopeSlideFac: Float
         get() = if (nonWalkableMode == NonWalkableMode.PREVENT_CLIMBING) 0f else {
-            smoothStep(slopeLimitDeg * 0.7f, slopeLimitDeg, slopeObserver.groundSlopeDeg)
+            smoothStep(slopeLimit.rad * 0.7f, slopeLimit.rad, slopeObserver.groundSlopeRad)
         }
 
     val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
@@ -64,7 +64,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         if (!isDownCollision) {
             // character falls
             if (lastGroundTouch == 0f) {
-                gravityVelocity.set(Vec3f.ZERO)
+                gravityVelocity.set(Vec3f(0f, velocity.y, 0f))
             }
             gravityVelocity.add(tmpVec.set(gravity).mul(timeStep))
             lastGroundTouch += timeStep
@@ -119,12 +119,12 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     }
 
     private class GroundSlopeObserver {
-        var groundSlopeDeg = 0f
+        var groundSlopeRad = 0f
         private var frameIdx = -1
 
         fun onTouch(normal: Vec3f) {
-            val slope = acos(normal dot Vec3f.Y_AXIS).toDeg()
-            groundSlopeDeg = if (Time.frameCount != frameIdx) slope else min(slope, groundSlopeDeg)
+            val slope = acos(normal dot Vec3f.Y_AXIS)
+            groundSlopeRad = if (Time.frameCount != frameIdx) slope else min(slope, groundSlopeRad)
         }
     }
 }
@@ -132,7 +132,7 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 data class CharacterControllerProperties(
     val height: Float = 1f,
     val radius: Float = 0.3f,
-    val slopeLimit: Float = 50f,
+    val slopeLimit: AngleF = 45f.deg,
     val nonWalkableMode: NonWalkableMode = NonWalkableMode.PREVENT_CLIMBING_AND_FORCE_SLIDING,
     val contactOffset: Float = 0.05f,
     val simulationFilterData: FilterData = FilterData { setCollisionGroup(0); setCollidesWithEverything() },

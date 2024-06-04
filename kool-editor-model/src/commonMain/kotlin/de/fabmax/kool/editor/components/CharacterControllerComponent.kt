@@ -106,7 +106,7 @@ class CharacterControllerComponent(
             CharacterControllerProperties(
                 height = it.shape.length.toFloat(),
                 radius = it.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
-                slopeLimit = it.slopeLimit.toFloat(),
+                slopeLimit = it.slopeLimit.toFloat().deg,
                 contactOffset = CHARACTER_CONTACT_OFFSET
             )
         }
@@ -133,7 +133,7 @@ class CharacterControllerComponent(
 
         charCtrl.jumpSpeed = props.jumpSpeed.toFloat()
         charCtrl.maxFallSpeed = props.maxFallSpeed.toFloat()
-        charCtrl.slopeLimitDeg = props.slopeLimit.toFloat()
+        charCtrl.slopeLimit = props.slopeLimit.toFloat().deg
         charCtrl.nonWalkableMode = props.nonWalkableMode
     }
 

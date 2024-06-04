@@ -41,10 +41,10 @@ class JvmCharacterController(
             pxController.radius = value
         }
 
-    override var slopeLimitDeg: Float = acos(pxController.slopeLimit).toDeg()
+    override var slopeLimit: AngleF = acos(pxController.slopeLimit).rad
         set(value) {
             field = value
-            pxController.slopeLimit = cos(value.toRad())
+            pxController.slopeLimit = cos(value.rad)
         }
 
     override var nonWalkableMode: NonWalkableMode = when (pxController.nonWalkableMode!!) {
