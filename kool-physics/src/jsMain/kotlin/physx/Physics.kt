@@ -841,13 +841,13 @@ external interface PxArticulationCache {
      */
     var linkAcceleration: PxSpatialVelocity
     /**
+     * WebIDL type: [PxSpatialForce]
+     */
+    var linkIncomingJointForce: PxSpatialForce
+    /**
      * WebIDL type: [PxArticulationRootLinkData]
      */
     var rootLinkData: PxArticulationRootLinkData
-    /**
-     * WebIDL type: [PxSpatialForce]
-     */
-    var sensorForces: PxSpatialForce
     /**
      * WebIDL type: [PxRealPtr] (Value)
      */
@@ -1694,13 +1694,6 @@ external interface PxArticulationReducedCoordinate : PxBase {
     fun createFixedTendon(): PxArticulationFixedTendon
 
     /**
-     * @param link         WebIDL type: [PxArticulationLink]
-     * @param relativePose WebIDL type: [PxTransform] (Const, Ref)
-     * @return WebIDL type: [PxArticulationSensor]
-     */
-    fun createSensor(link: PxArticulationLink, relativePose: PxTransform): PxArticulationSensor
-
-    /**
      * @return WebIDL type: unsigned long
      */
     fun getNbSpatialTendons(): Int
@@ -1709,11 +1702,6 @@ external interface PxArticulationReducedCoordinate : PxBase {
      * @return WebIDL type: unsigned long
      */
     fun getNbFixedTendons(): Int
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getNbSensors(): Int
 
     /**
      * @param flags WebIDL type: [PxArticulationKinematicFlags] (Ref)
@@ -1752,8 +1740,6 @@ val PxArticulationReducedCoordinate.nbSpatialTendons
     get() = getNbSpatialTendons()
 val PxArticulationReducedCoordinate.nbFixedTendons
     get() = getNbFixedTendons()
-val PxArticulationReducedCoordinate.nbSensors
-    get() = getNbSensors()
 
 var PxArticulationReducedCoordinate.sleepThreshold
     get() = getSleepThreshold()
@@ -1785,111 +1771,6 @@ var PxArticulationReducedCoordinate.rootLinearVelocity
 var PxArticulationReducedCoordinate.rootAngularVelocity
     get() = getRootAngularVelocity()
     set(value) { setRootAngularVelocity(value) }
-
-external interface PxArticulationSensor : PxBase {
-    /**
-     * WebIDL type: VoidPtr
-     */
-    var userData: Any
-
-    /**
-     * @return WebIDL type: [PxSpatialForce] (Value)
-     */
-    fun getForces(): PxSpatialForce
-
-    /**
-     * @return WebIDL type: [PxTransform] (Value)
-     */
-    fun getRelativePose(): PxTransform
-
-    /**
-     * @param pose WebIDL type: [PxTransform] (Const, Ref)
-     */
-    fun setRelativePose(pose: PxTransform)
-
-    /**
-     * @return WebIDL type: [PxArticulationLink]
-     */
-    fun getLink(): PxArticulationLink
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getIndex(): Int
-
-    /**
-     * @return WebIDL type: [PxArticulationReducedCoordinate]
-     */
-    fun getArticulation(): PxArticulationReducedCoordinate
-
-    /**
-     * @return WebIDL type: [PxArticulationSensorFlags] (Value)
-     */
-    fun getFlags(): PxArticulationSensorFlags
-
-    /**
-     * @param flag    WebIDL type: [PxArticulationSensorFlagEnum] (enum)
-     * @param enabled WebIDL type: boolean
-     */
-    fun setFlag(flag: Int, enabled: Boolean)
-
-}
-
-fun PxArticulationSensorFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationSensor = js("_module.wrapPointer(ptr, _module.PxArticulationSensor)")
-
-fun PxArticulationSensor.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-val PxArticulationSensor.forces
-    get() = getForces()
-val PxArticulationSensor.link
-    get() = getLink()
-val PxArticulationSensor.index
-    get() = getIndex()
-val PxArticulationSensor.articulation
-    get() = getArticulation()
-val PxArticulationSensor.flags
-    get() = getFlags()
-
-var PxArticulationSensor.relativePose
-    get() = getRelativePose()
-    set(value) { setRelativePose(value) }
-
-external interface PxArticulationSensorFlags {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param flag WebIDL type: [PxArticulationSensorFlagEnum] (enum)
-     * @return WebIDL type: boolean
-     */
-    fun isSet(flag: Int): Boolean
-
-    /**
-     * @param flag WebIDL type: [PxArticulationSensorFlagEnum] (enum)
-     */
-    fun raise(flag: Int)
-
-    /**
-     * @param flag WebIDL type: [PxArticulationSensorFlagEnum] (enum)
-     */
-    fun clear(flag: Int)
-
-}
-
-/**
- * @param flags WebIDL type: octet
- */
-fun PxArticulationSensorFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationSensorFlags = js("new _module.PxArticulationSensorFlags(flags)")
-
-fun PxArticulationSensorFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxArticulationSensorFlags = js("_module.wrapPointer(ptr, _module.PxArticulationSensorFlags)")
-
-fun PxArticulationSensorFlags.destroy() {
-    PhysXJsLoader.destroy(this)
-}
 
 external interface PxArticulationSpatialTendon : PxArticulationTendon {
     /**
@@ -5409,8 +5290,6 @@ object PxActorTypeEnum {
     val eSOFTBODY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eSOFTBODY()
     val eFEMCLOTH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eFEMCLOTH()
     val ePBD_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_ePBD_PARTICLESYSTEM()
-    val eFLIP_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eFLIP_PARTICLESYSTEM()
-    val eMPM_PARTICLESYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eMPM_PARTICLESYSTEM()
     val eHAIRSYSTEM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxActorTypeEnum_eHAIRSYSTEM()
 }
 
@@ -5457,8 +5336,9 @@ object PxArticulationCacheFlagEnum {
     val eLINK_ACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_ACCELERATION()
     val eROOT_TRANSFORM: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eROOT_TRANSFORM()
     val eROOT_VELOCITIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eROOT_VELOCITIES()
-    val eSENSOR_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eSENSOR_FORCES()
-    val eJOINT_SOLVER_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_SOLVER_FORCES()
+    val eLINK_INCOMING_JOINT_FORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eLINK_INCOMING_JOINT_FORCE()
+    val eJOINT_TARGET_POSITIONS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_POSITIONS()
+    val eJOINT_TARGET_VELOCITIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eJOINT_TARGET_VELOCITIES()
     val eALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationCacheFlagEnum_eALL()
 }
 
@@ -5474,7 +5354,6 @@ object PxArticulationFlagEnum {
     val eFIX_BASE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eFIX_BASE()
     val eDRIVE_LIMITS_ARE_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eDRIVE_LIMITS_ARE_FORCES()
     val eDISABLE_SELF_COLLISION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eDISABLE_SELF_COLLISION()
-    val eCOMPUTE_JOINT_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationFlagEnum_eCOMPUTE_JOINT_FORCES()
 }
 
 object PxArticulationJointTypeEnum {
@@ -5494,12 +5373,6 @@ object PxArticulationMotionEnum {
     val eLOCKED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eLOCKED()
     val eLIMITED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eLIMITED()
     val eFREE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationMotionEnum_eFREE()
-}
-
-object PxArticulationSensorFlagEnum {
-    val eFORWARD_DYNAMICS_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationSensorFlagEnum_eFORWARD_DYNAMICS_FORCES()
-    val eCONSTRAINT_SOLVER_FORCES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationSensorFlagEnum_eCONSTRAINT_SOLVER_FORCES()
-    val eWORLD_FRAME: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationSensorFlagEnum_eWORLD_FRAME()
 }
 
 object PxBroadPhaseTypeEnum {

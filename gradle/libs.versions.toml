@@ -11,7 +11,8 @@ kotlin-dokka = "1.9.20"
 lwjgl = "3.3.3"
 jsvg = "1.4.0"
 androidsvg = "1.4"
-physxjni = "2.3.3-SNAPSHOT"
+physxjni = "2.4.0"
+physxjswebidl = "2.4.0"
 
 [libraries]
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -34,6 +35,7 @@ lwjgl-shaderc = { group = "org.lwjgl", name = "lwjgl-shaderc", version.ref = "lw
 lwjgl-nfd = { group = "org.lwjgl", name = "lwjgl-nfd", version.ref = "lwjgl" }
 lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
+physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
