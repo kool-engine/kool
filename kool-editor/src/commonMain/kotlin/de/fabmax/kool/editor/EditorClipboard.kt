@@ -3,7 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddSceneNodeAction
 import de.fabmax.kool.editor.api.EditorScene
-import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.toHierarchy
 import de.fabmax.kool.editor.data.GameEntityData
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
@@ -38,16 +38,9 @@ object EditorClipboard {
     private fun serializeSelectedNodes(): String {
         val selection = editor.selectionOverlay.getSelectedSceneNodes()
         return if (selection.isEmpty()) "" else {
-            val copyNodes = mutableSetOf<GameEntityData>()
-            fun collect(node: GameEntity) {
-                if (copyNodes.add(node.entityData)) {
-                    node.children.forEach { collect(it) }
-                }
-            }
-            selection.forEach { collect(it) }
-
-            logD { "Copy ${copyNodes.size} selected nodes" }
-            KoolEditor.jsonCodec.encodeToString(copyNodes)
+            val copyData = selection.toHierarchy().flatMap { it.flatten() }
+            logD { "Copy ${copyData.size} selected entities" }
+            KoolEditor.jsonCodec.encodeToString(copyData)
         }
     }
 
@@ -61,8 +54,9 @@ object EditorClipboard {
 
                     val selection = editor.selectionOverlay.getSelectedNodes()
                     val parent = selection.firstOrNull()?.parent ?: scene.sceneEntity
+                    copyData.toHierarchy().forEach { root -> root.entityData.parentId = parent.id }
 
-                    AddSceneNodeAction(copyData, parent.id).apply()
+                    AddSceneNodeAction(copyData).apply()
                     launchDelayed(1) {
                         val nodes = copyData.mapNotNull { scene.sceneEntities[it.id] }
                         editor.selectionOverlay.setSelection(nodes)

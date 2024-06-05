@@ -13,7 +13,7 @@ import de.fabmax.kool.util.logW
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.scene
 
-class EditorScene(val sceneData: GameEntityData, val project: EditorProject) : BaseReleasable() {
+class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseReleasable() {
 
     var sceneEntity: GameEntity = GameEntity(sceneData, this)
         private set
@@ -84,32 +84,37 @@ class EditorScene(val sceneData: GameEntityData, val project: EditorProject) : B
         nodesToEntities.clear()
     }
 
-    private fun resolveEntity(entityId: EntityId): GameEntity? {
-        val entity = sceneEntities[entityId]
-        return if (entity != null) entity else {
-            val entityData = project.entityData[entityId]
-            if (entityData != null) {
-                GameEntity(entityData, this).also {
-                    sceneEntities[entityId] = it
-                }
-            } else {
-                logE { "Failed to resolve node with ID $entityId in scene ${sceneEntity.name}" }
-                null
-            }
-        }
+    suspend fun addEntityDataHierarchy(
+        hierarchy: GameEntityDataHierarchy,
+        insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
+    ) {
+        val gameEntity = GameEntity(hierarchy.entityData, this)
+        addGameEntity(gameEntity, insertionPos)
+        hierarchy.children.forEach { addEntityDataHierarchy(it) }
     }
 
-    suspend fun addEntity(gameEntity: GameEntity) {
-//        if (!gameEntity.isCreated) {
-//            gameEntity.applyComponents()
-//        } else {
-//            logW { "Adding a scene node which is already created" }
-//        }
+    suspend fun addGameEntity(
+        gameEntity: GameEntity,
+        insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
+    ) {
+        val parent = gameEntity.parent ?: sceneEntities[gameEntity.entityData.parentId]?.also {
+            it.addChild(gameEntity, insertionPos)
+        }
+        if (parent == null) {
+            logE { "Parent of ${gameEntity.name} is not part of this scene (parent-id: ${gameEntity.entityData.parentId})" }
+            return
+        }
+
+        // fixme: do some proper lifecycle stuff
+        if (!gameEntity.isCreated) {
+            gameEntity.applyComponents()
+        } else {
+            logW { "Adding a scene node which is already created" }
+        }
 
         project.addEntityData(gameEntity.entityData)
         sceneEntities[gameEntity.id] = gameEntity
         nodesToEntities[gameEntity.drawNode] = gameEntity
-        gameEntity.parent?.addChild(gameEntity)
 
 //        sceneEntity.getComponent<SceneBackgroundComponent>()?.let { sceneBackground ->
 //            gameEntity.getComponents<UpdateSceneBackgroundComponent>().forEach { it.updateBackground(sceneBackground) }
@@ -119,8 +124,9 @@ class EditorScene(val sceneData: GameEntityData, val project: EditorProject) : B
 //            .forEach { addEntity(it) }
     }
 
-    fun removeEntity(gameEntity: GameEntity) {
-        gameEntity.children.forEach { removeEntity(it) }
+    fun removeGameEntity(gameEntity: GameEntity) {
+        val removeChildren = gameEntity.children.toList()
+        removeChildren.forEach { removeGameEntity(it) }
 
         project.removeEntityData(gameEntity.entityData)
         sceneEntities -= gameEntity.id

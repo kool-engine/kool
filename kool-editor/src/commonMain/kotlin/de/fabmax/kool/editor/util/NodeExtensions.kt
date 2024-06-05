@@ -13,7 +13,7 @@ val EntityId.gameEntity: GameEntity? get() {
     } else {
         KoolEditor.instance.projectModel.createdScenes.values.find { this in it.sceneEntities }?.sceneEntities?.get(this)
     }
-    if (gameEntity == null && value != -1L) {
+    if (gameEntity == null && value > 0L) {
         logE { "GameEntity with id $this not found" }
     }
     return gameEntity

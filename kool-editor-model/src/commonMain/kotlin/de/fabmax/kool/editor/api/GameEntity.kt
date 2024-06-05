@@ -115,22 +115,26 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     fun addChild(child: GameEntity, insertionPos: InsertionPos = InsertionPos.End) {
         when (insertionPos) {
             is InsertionPos.After -> {
-                val thatNode = scene.sceneEntities[insertionPos.that]
-                val insertSceneIdx = drawNode.children.indexOf(thatNode?.drawNode) + 1
-                drawNode.addNode(child.drawNode, insertSceneIdx)
+                val thatEntity = scene.sceneEntities[insertionPos.that]
+                val insertEntityIdx = children.indexOf(thatEntity) + 1
+                val insertNodeIdx = drawNode.children.indexOf(thatEntity?.drawNode) + 1
+                _children.add(insertEntityIdx, child)
+                drawNode.addNode(child.drawNode, insertNodeIdx)
             }
             is InsertionPos.Before -> {
-                val thatNode = scene.sceneEntities[insertionPos.that]
-                val insertSceneIdx = max(0, drawNode.children.indexOf(thatNode?.drawNode))
-                drawNode.addNode(child.drawNode, insertSceneIdx)
+                val thatEntity = scene.sceneEntities[insertionPos.that]
+                val insertEntityIdx = max(0, children.indexOf(thatEntity) )
+                val insertNodeIdx = max(0, drawNode.children.indexOf(thatEntity?.drawNode))
+                _children.add(insertEntityIdx, child)
+                drawNode.addNode(child.drawNode, insertNodeIdx)
             }
             InsertionPos.End -> {
+                _children.add(child)
                 drawNode.addNode(child.drawNode)
             }
         }
 
         child.parent = this
-        _children += child
         children.forEachIndexed { i, it -> it.entityData.order = i }
     }
 
@@ -139,7 +143,8 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
         drawNode.removeNode(child.drawNode)
         _children -= child
-        child.parent = null
+        // do not clear the parent of the child: doing so also clears the entity data parentId, making it difficult
+        // to undo the remove op
     }
 
     private val requireSceneChild: GameEntity

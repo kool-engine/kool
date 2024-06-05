@@ -60,7 +60,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
         val unreferencedIds = entityMap.keys - referencedEntityIds
         if (unreferencedIds.isNotEmpty()) {
-            logE { "Project contains unreferenced entities: ${unreferencedIds.map { "$it: ${entityMap[it]?.name}" }}" }
+            logE { "Project contains unreferenced entities: ${unreferencedIds.joinToString { "\n  $it: ${entityMap[it]?.name}" }}" }
         }
     }
 
@@ -165,7 +165,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                 val camId = EntityId(2L)
                 val boxId = EntityId(3L)
                 val lightId = EntityId(4L)
-                entities += GameEntityData("New Scene", sceneId).apply {
+                entities += GameEntityData("New Scene", sceneId, null).apply {
                     components += SceneComponentData(cameraEntityId = camId)
                     components += SceneBackgroundComponentData(
                         SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
