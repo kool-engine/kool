@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.model
+package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.editor.data.*
@@ -12,73 +12,69 @@ import kotlinx.serialization.json.Json
 
 class EditorProject(val projectData: ProjectData) {
 
-    val entities = mutableListOf<NodeModel>()
+    private var nextId = projectData.entities.maxOf { it.id.value } + 1
 
-    private val _sceneNodeData = projectData.sceneNodes.associateBy { it.nodeId }.toMutableMap()
-    val sceneNodeData: Map<NodeId, SceneNodeData>
+    private val _sceneNodeData = projectData.entities.associateBy { it.id }.toMutableMap()
+    val sceneNodeData: Map<EntityId, GameEntityData>
         get() = _sceneNodeData
 
     private val _materialsById = projectData.materials.associateBy { it.id }.toMutableMap()
-    val materialsById: Map<NodeId, MaterialData>
+    val materialsById: Map<EntityId, MaterialData>
         get() = _materialsById
     val materials = mutableStateListOf<MaterialData>().apply {
         addAll(projectData.materials)
         sortBy { it.name }
     }
 
-    private val _createdScenes: MutableMap<NodeId, SceneModel> = mutableMapOf()
-    val createdScenes: Map<NodeId, SceneModel> get() = _createdScenes
+    private val _createdScenes: MutableMap<EntityId, EditorScene> = mutableMapOf()
+    val createdScenes: Map<EntityId, EditorScene> get() = _createdScenes
 
     private fun checkProjectModelConsistency() {
-        val nodeMap = projectData.sceneNodes.associateBy { it.nodeId }
-        val referencedNodeIds = mutableSetOf<NodeId>()
+        val entityMap = projectData.entities.associateBy { it.id }
+        val referencedEntityIds = mutableSetOf<EntityId>()
 
-        fun collectChildNodeIds(node: SceneNodeData) {
-            node.childNodeIds.forEach { childId ->
-                val child = nodeMap[childId]
+        fun collectChildNodeIds(node: GameEntityData) {
+            node.childEntityIds.forEach { childId ->
+                val child = entityMap[childId]
                 if (child == null) {
                     logE { "Node \"${node.name}\" references non-existing child node $childId" }
                 } else {
-                    referencedNodeIds += childId
+                    referencedEntityIds += childId
                     collectChildNodeIds(child)
                 }
             }
         }
 
-        projectData.sceneNodeIds.forEach { sceneId ->
-            val scene = nodeMap[sceneId]
-            if (scene == null) {
-                logE { "Project references non-existing scene $sceneId" }
-            } else {
-                referencedNodeIds += sceneId
+        projectData.entities
+            .filter { it.components.any { c -> c is SceneComponentData } }
+            .forEach { scene ->
+                referencedEntityIds += scene.id
                 collectChildNodeIds(scene)
             }
-        }
 
-        val unreferencedIds = nodeMap.keys - referencedNodeIds
+        val unreferencedIds = entityMap.keys - referencedEntityIds
         if (unreferencedIds.isNotEmpty()) {
-            logE { "Project contains unreferenced nodes: ${unreferencedIds.map { "$it: ${nodeMap[it]?.name}" }}" }
+            logE { "Project contains unreferenced entities: ${unreferencedIds.map { "$it: ${entityMap[it]?.name}" }}" }
         }
     }
 
     suspend fun create() {
         checkProjectModelConsistency()
-        projectData.sceneNodeIds.forEach { sceneNodeId ->
-            val sceneData = sceneNodeData[sceneNodeId]
-            if (sceneData != null) {
-                val sceneModel = _createdScenes.getOrPut(sceneNodeId) { SceneModel(sceneData, this) }
+        projectData.entities
+            .filter { it.components.any { c -> c is SceneComponentData } }
+            .forEach { sceneData ->
+                val sceneModel = _createdScenes.getOrPut(sceneData.id) { EditorScene(sceneData, this) }
                 sceneModel.prepareScene()
-                sceneModel.createScene()
+                sceneModel.applyComponents()
             }
-        }
     }
 
     fun onStart() {
         createdScenes.values.forEach { it.onStart() }
     }
 
-    fun nextId(): NodeId {
-        return NodeId(projectData.nextId++)
+    fun nextId(): EntityId {
+        return EntityId(nextId++)
     }
 
     /**
@@ -105,14 +101,14 @@ class EditorProject(val projectData: ProjectData) {
         return uniqueName
     }
 
-    fun addSceneNodeData(data: SceneNodeData) {
-        projectData.sceneNodes += data
-        _sceneNodeData[data.nodeId] = data
+    fun addSceneNodeData(data: GameEntityData) {
+        projectData.entities += data
+        _sceneNodeData[data.id] = data
     }
 
-    fun removeSceneNodeData(data: SceneNodeData) {
-        projectData.sceneNodes -= data
-        _sceneNodeData -= data.nodeId
+    fun removeSceneNodeData(data: GameEntityData) {
+        projectData.entities -= data
+        _sceneNodeData -= data.id
     }
 
     fun createNewMaterial(): MaterialData {
@@ -135,18 +131,6 @@ class EditorProject(val projectData: ProjectData) {
         materials.sortBy { it.name }
     }
 
-    inline fun <reified T: Any> getAllComponents(): List<T> {
-        return entities.flatMap { it.components.filterIsInstance<T>() }
-    }
-
-    inline fun <reified T: Any> getComponentsFromEntities(predicate: (NodeModel) -> Boolean): List<T> {
-        return entities.filter(predicate).flatMap { it.components.filterIsInstance<T>() }
-    }
-
-    inline fun <reified T: Any> getComponentsInScene(sceneModel: SceneModel): List<T> {
-        return getComponentsFromEntities { it === sceneModel || (it is SceneNodeModel && it.sceneModel === sceneModel) }
-    }
-
     companion object {
         suspend fun loadFromAssets(path: String = "kool-project.json"): EditorProject? {
             return try {
@@ -160,19 +144,18 @@ class EditorProject(val projectData: ProjectData) {
 
         fun emptyProject(): EditorProject = EditorProject(
             ProjectData().apply {
-                val sceneId = NodeId(nextId++)
-                val camId = NodeId(nextId++)
-                val boxId = NodeId(nextId++)
-                val lightId = NodeId(nextId++)
-                sceneNodeIds += sceneId
-                sceneNodes += SceneNodeData("New Scene", sceneId).apply {
-                    childNodeIds += listOf(camId, boxId, lightId)
-                    components += ScenePropertiesComponentData(cameraNodeId = camId)
+                val sceneId = EntityId(1L)
+                val camId = EntityId(2L)
+                val boxId = EntityId(3L)
+                val lightId = EntityId(4L)
+                entities += GameEntityData("New Scene", sceneId).apply {
+                    childEntityIds += listOf(camId, boxId, lightId)
+                    components += SceneComponentData(cameraEntityId = camId)
                     components += SceneBackgroundComponentData(
                         SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
                     )
                 }
-                sceneNodes += SceneNodeData("Camera", camId).apply {
+                entities += GameEntityData("Camera", camId).apply {
                     components += CameraComponentData(CameraTypeData.Perspective())
                     components += TransformComponentData(
                         TransformData.fromMatrix(
@@ -181,10 +164,10 @@ class EditorProject(val projectData: ProjectData) {
                                 .rotate((-30.0).deg, Vec3d.X_AXIS)
                         ))
                 }
-                sceneNodes += SceneNodeData("Default Cube", boxId).apply {
+                entities += GameEntityData("Default Cube", boxId).apply {
                     components += MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
                 }
-                sceneNodes += SceneNodeData("Directional Light", lightId).apply {
+                entities += GameEntityData("Directional Light", lightId).apply {
                     components += DiscreteLightComponentData(LightTypeData.Directional())
                     components += TransformComponentData(
                         TransformData.fromMatrix(

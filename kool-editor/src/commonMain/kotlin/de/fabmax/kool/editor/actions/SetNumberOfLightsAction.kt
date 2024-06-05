@@ -1,12 +1,13 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.util.sceneModel
+import de.fabmax.kool.editor.api.sceneComponent
+import de.fabmax.kool.editor.components.SceneComponent
+import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.util.gameEntity
 
-class SetNumberOfLightsAction(val sceneId: NodeId, val newMaxNumLights: Int) : EditorAction {
+class SetNumberOfLightsAction(val sceneId: EntityId, val newMaxNumLights: Int) : EditorAction {
 
-    private val sceneModel: SceneModel? get() = sceneId.sceneModel
+    private val sceneModel: SceneComponent? get() = sceneId.gameEntity?.sceneComponent
     private val oldMaxNumLights = sceneModel?.maxNumLightsState?.value
 
     override fun doAction() {

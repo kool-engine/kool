@@ -1,8 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec2f
@@ -21,7 +20,7 @@ class BoxSelector : Composable {
 
     val isBoxSelect = mutableStateOf(false)
 
-    private val startSelection = mutableSetOf<NodeModel>()
+    private val startSelection = mutableSetOf<GameEntity>()
 
     override fun UiScope.compose() {
         var boxSelectStart by remember(Vec2f.ZERO)
@@ -107,7 +106,7 @@ class BoxSelector : Composable {
             TODO()
         }
 
-        val boxSelection = scene.sceneNodes.filter {
+        val boxSelection = scene.sceneEntities.values.filter {
             it.isVisibleWithParents() && camHelper.testSceneNode(it)
         }.toSet()
         val newSelection = if (KeyboardInput.isAltDown) {
@@ -129,7 +128,7 @@ class BoxSelector : Composable {
 
         abstract fun testBoundingSphere(globalCenter: Vec3f, globalRadius: Float): Boolean
 
-        fun testSceneNode(sceneNodeModel: SceneNodeModel): Boolean {
+        fun testSceneNode(sceneNodeModel: GameEntity): Boolean {
             val drawNode = sceneNodeModel.drawNode
             if (!testBoundingSphere(drawNode.globalCenter, drawNode.globalRadius)) {
                 return false

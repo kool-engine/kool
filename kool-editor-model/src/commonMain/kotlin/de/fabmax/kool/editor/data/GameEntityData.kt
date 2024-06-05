@@ -4,15 +4,15 @@ import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 
 @Serializable
-class SceneNodeData(
+class GameEntityData(
     var name: String,
-    var nodeId: NodeId,
+    var id: EntityId,
     var isVisible: Boolean = true
 ) {
     val components: MutableList<ComponentData> = mutableListOf()
-    val childNodeIds: MutableList<NodeId> = mutableListOf()
+    val childEntityIds: MutableList<EntityId> = mutableListOf()
 }
 
 @Serializable
 @JvmInline
-value class NodeId(val id: Long)
+value class EntityId(val value: Long)

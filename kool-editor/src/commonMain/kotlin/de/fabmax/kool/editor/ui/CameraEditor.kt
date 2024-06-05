@@ -19,7 +19,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 CameraTypeData.Orthographic::class -> CameraTypeData.Orthographic(1f)
                 else -> throw IllegalStateException("Unsupported cam type: ${it.camType}")
             }
-            SetCameraAction(nodeId, newCam, currentCam).apply()
+            SetCameraAction(entityId, newCam, currentCam).apply()
         }
 
         // todo: camToView
@@ -44,7 +44,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(clipNear = applyValue.toFloat())
                 val undoCam = camData.copy(clipNear = undoValue.toFloat())
-                SetCameraAction(nodeId, applyCam, undoCam)
+                SetCameraAction(entityId, applyCam, undoCam)
             }
         )
         labeledDoubleTextField(
@@ -56,7 +56,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(clipFar = applyValue.toFloat())
                 val undoCam = camData.copy(clipFar = undoValue.toFloat())
-                SetCameraAction(nodeId, applyCam, undoCam)
+                SetCameraAction(entityId, applyCam, undoCam)
             }
         )
         labeledDoubleTextField(
@@ -69,7 +69,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(fovY = applyValue.toFloat())
                 val undoCam = camData.copy(fovY = undoValue.toFloat())
-                SetCameraAction(nodeId, applyCam, undoCam)
+                SetCameraAction(entityId, applyCam, undoCam)
             }
         )
     }

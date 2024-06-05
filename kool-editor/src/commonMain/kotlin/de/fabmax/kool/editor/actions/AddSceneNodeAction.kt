@@ -1,44 +1,42 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.data.SceneNodeData
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.util.nodeModel
-import de.fabmax.kool.editor.util.sceneModel
-import de.fabmax.kool.editor.util.sceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.data.GameEntityData
+import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddSceneNodeAction(
-    val addNodeDatas: List<SceneNodeData>,
-    val parentId: NodeId
+    val addNodeDatas: List<GameEntityData>,
+    val parentId: EntityId
 ) : EditorAction {
 
     override fun doAction() {
-        val parent = parentId.nodeModel ?: return
-        val scene = parent.sceneModel
+        val parent = parentId.gameEntity ?: return
+        val scene = parent.scene
 
         launchOnMainThread {
-            val topLevelNodes = addNodeDatas.associateBy { it.nodeId }.toMutableMap()
+            val topLevelNodes = addNodeDatas.associateBy { it.id }.toMutableMap()
             addNodeDatas.forEach {
                 KoolEditor.instance.projectModel.addSceneNodeData(it)
-                topLevelNodes -= it.childNodeIds.toSet()
+                topLevelNodes -= it.childEntityIds.toSet()
             }
             topLevelNodes.values.forEach {
-                scene.addSceneNode(SceneNodeModel(it, parent, scene))
+                scene.addEntity(GameEntity(it, scene))
             }
-            KoolEditor.instance.selectionOverlay.setSelection(topLevelNodes.keys.mapNotNull { it.nodeModel })
+            KoolEditor.instance.selectionOverlay.setSelection(topLevelNodes.keys.mapNotNull { it.gameEntity })
             refreshComponentViews()
         }
     }
 
     override fun undoAction() {
-        val scene = parentId.nodeModel?.sceneModel ?: return
-        val nodes = addNodeDatas.mapNotNull { it.nodeId.sceneNodeModel }
+        val scene = parentId.gameEntity?.scene ?: return
+        val nodes = addNodeDatas.mapNotNull { it.id.gameEntity }
         val nonChildNodes = DeleteSceneNodesAction.removeChildNodes(nodes)
 
         KoolEditor.instance.selectionOverlay.reduceSelection(nodes)
-        nonChildNodes.forEach { scene.removeSceneNode(it) }
+        nonChildNodes.forEach { scene.removeEntity(it) }
 
         refreshComponentViews()
     }

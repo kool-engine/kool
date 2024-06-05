@@ -2,13 +2,13 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.CharacterControllerComponent
 import de.fabmax.kool.editor.data.CharacterControllerComponentProperties
-import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.EntityId
 
 class SetCharControllerPropertiesAction(
-    nodeId: NodeId,
+    entityId: EntityId,
     private val oldProps: CharacterControllerComponentProperties,
     private val newProps: CharacterControllerComponentProperties
-) : ComponentAction<CharacterControllerComponent>(nodeId, CharacterControllerComponent::class) {
+) : ComponentAction<CharacterControllerComponent>(entityId, CharacterControllerComponent::class) {
 
     override fun doAction() {
         component?.charControllerState?.set(newProps)

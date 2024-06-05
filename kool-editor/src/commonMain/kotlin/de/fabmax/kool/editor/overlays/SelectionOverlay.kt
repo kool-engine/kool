@@ -1,8 +1,8 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.ui.UiColors
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.Pointer
@@ -19,17 +19,16 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.copy
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
 import kotlin.math.max
 
 class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
-    var selection: Set<NodeModel> = emptySet()
+    var selection: Set<GameEntity> = emptySet()
         private set
     val selectionState = mutableStateOf(selection)
-    val onSelectionChanged = mutableListOf<(Set<NodeModel>) -> Unit>()
+    val onSelectionChanged = mutableListOf<(Set<GameEntity>) -> Unit>()
 
     val selectionPass = SelectionPass(editor)
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
@@ -37,8 +36,8 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
     private var updateSelection = false
 
-    private val currentSelection = mutableSetOf<NodeModel>()
-    private val prevSelection = mutableSetOf<NodeModel>()
+    private val currentSelection = mutableSetOf<GameEntity>()
+    private val prevSelection = mutableSetOf<GameEntity>()
     private val meshSelection = mutableMapOf<Mesh, SelectedMesh>()
 
     var selectionColor by outlineShader::outlineColorPrimary
@@ -72,7 +71,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
                 prevSelection += currentSelection
                 meshSelection.clear()
                 prevSelection
-                    .filterIsInstance<SceneNodeModel>()
+                    .filter { it.isSceneChild }
                     .forEach { collectMeshes(it, it.drawNode) }
 
                 launchDelayed(1) {
@@ -86,21 +85,21 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
     fun clickSelect(ptr: Pointer) {
         val sceneModel = editor.activeScene.value ?: return
-        val appScene = sceneModel.drawNode
+        val appScene = sceneModel.scene
 
         val rayTest = RayTest()
         if (appScene.computePickRay(ptr, rayTest.ray)) {
             rayTest.clear()
-            var selectedNodeModel: SceneNodeModel? = editor.sceneObjectsOverlay.pick(rayTest)
+            var selectedNodeModel: GameEntity? = editor.sceneObjectsOverlay.pick(rayTest)
             val distOv = if (rayTest.isHit) rayTest.hitDistanceSqr else Float.POSITIVE_INFINITY
 
             rayTest.clear()
             appScene.rayTest(rayTest)
             if (rayTest.isHit && rayTest.hitDistanceSqr < distOv) {
-                var hitModel: SceneNodeModel? = null
+                var hitModel: GameEntity? = null
                 var it = rayTest.hitNode
                 while (it != null) {
-                    hitModel = sceneModel.nodesToNodeModels[it] as? SceneNodeModel
+                    hitModel = sceneModel.nodesToEntities[it]
                     if (hitModel != null) {
                         break
                     }
@@ -113,7 +112,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         }
     }
 
-    fun selectSingle(selectModel: NodeModel?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
+    fun selectSingle(selectModel: GameEntity?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
         val selectList = selectModel?.let { listOf(it) } ?: emptyList()
 
         if (toggleSelect && selectModel in currentSelection) {
@@ -131,12 +130,12 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
     fun clearSelection() = setSelection(emptyList())
 
-    fun expandSelection(addModels: List<NodeModel>) = setSelection(currentSelection + addModels.toSet())
+    fun expandSelection(addModels: List<GameEntity>) = setSelection(currentSelection + addModels.toSet())
 
-    fun reduceSelection(removeModel: NodeModel) = setSelection(currentSelection - removeModel)
-    fun reduceSelection(removeModels: List<NodeModel>) = setSelection(currentSelection - removeModels.toSet())
+    fun reduceSelection(removeModel: GameEntity) = setSelection(currentSelection - removeModel)
+    fun reduceSelection(removeModels: List<GameEntity>) = setSelection(currentSelection - removeModels.toSet())
 
-    fun setSelection(selectModels: Collection<NodeModel>) {
+    fun setSelection(selectModels: Collection<GameEntity>) {
         if (currentSelection != selectModels) {
             currentSelection.clear()
             currentSelection += selectModels
@@ -148,16 +147,16 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         }
     }
 
-    fun getSelectedNodes(filter: (NodeModel) -> Boolean = { true }): List<NodeModel> {
+    fun getSelectedNodes(filter: (GameEntity) -> Boolean = { true }): List<GameEntity> {
         return currentSelection.filter(filter)
     }
 
-    fun getSelectedSceneNodes(filter: (SceneNodeModel) -> Boolean = { true }): List<SceneNodeModel> {
-        return currentSelection.copy().filterIsInstance<SceneNodeModel>().filter(filter)
+    fun getSelectedSceneNodes(filter: (GameEntity) -> Boolean = { true }): List<GameEntity> {
+        return currentSelection.filter { it.isSceneChild && filter(it) }
     }
 
-    fun isSelected(nodeModel: NodeModel): Boolean {
-        return nodeModel in currentSelection
+    fun isSelected(gameEntity: GameEntity): Boolean {
+        return gameEntity in currentSelection
     }
 
     fun invalidateSelection() {
@@ -166,12 +165,12 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         selectionPass.disposePipelines()
     }
 
-    private fun collectMeshes(model: SceneNodeModel, node: Node) {
+    private fun collectMeshes(model: GameEntity, node: Node) {
         if (node is Mesh && meshSelection[node]?.type != MeshSelectionType.PRIMARY) {
-            var owner: NodeModel? = null
+            var owner: GameEntity? = null
             var it: Node? = node
             while (owner == null && it != null) {
-                owner = model.sceneModel.nodesToNodeModels[it]
+                owner = model.scene.nodesToEntities[it]
                 if (owner == null) {
                     it = it.parent
                 }

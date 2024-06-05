@@ -1,21 +1,21 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.DiscreteLightComponentData
 import de.fabmax.kool.editor.data.LightTypeData
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Light
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 
 class DiscreteLightComponent(
-    nodeModel: SceneNodeModel,
-    override val componentData: DiscreteLightComponentData = DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f))
+    gameEntity: GameEntity,
+    componentData: DiscreteLightComponentData = DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f))
 ) :
-    SceneNodeComponent(nodeModel),
-    EditorDataComponent<DiscreteLightComponentData>,
-    ContentComponent
+    GameEntityDataComponent<DiscreteLightComponentData>(gameEntity, componentData),
+    DrawNodeComponent<Light>
 {
     val lightState = mutableStateOf(componentData.light).onChange {
         if (AppState.isEditMode) {
@@ -24,35 +24,34 @@ class DiscreteLightComponent(
         updateLight(it, false)
     }
 
-    var light: Light = componentData.light.createLight()
+    override var typedDrawNode: Light = componentData.light.createLight()
         private set
 
-    override val contentNode: Light
-        get() = light
-
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
         lightState.set(componentData.light)
         updateLight(componentData.light, true)
     }
 
     override fun destroyComponent() {
-        sceneModel.drawNode.lighting.removeLight(light)
+        val scene = sceneEntity.drawNode as Scene
+        scene.lighting.removeLight(typedDrawNode)
         super.destroyComponent()
     }
 
     private fun updateLight(lightData: LightTypeData, forceReplaceNode: Boolean) {
-        val updateLight = lightData.updateOrCreateLight(light)
+        val updateLight = lightData.updateOrCreateLight(typedDrawNode)
 
-        if (forceReplaceNode || updateLight != light) {
-            val lighting = sceneModel.drawNode.lighting
-            lighting.removeLight(light)
+        if (forceReplaceNode || updateLight != typedDrawNode) {
+            val scene = sceneEntity.drawNode as Scene
+            val lighting = scene.lighting
+            lighting.removeLight(typedDrawNode)
 
-            light = updateLight
-            nodeModel.setDrawNode(light)
-            lighting.addLight(light)
+            typedDrawNode = updateLight
+            gameEntity.replaceDrawNode(typedDrawNode)
+            lighting.addLight(typedDrawNode)
         }
 
-        nodeModel.getComponent<ShadowMapComponent>()?.updateLight(light)
+        gameEntity.getComponent<ShadowMapComponent>()?.updateLight(typedDrawNode)
     }
 }

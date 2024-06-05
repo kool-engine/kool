@@ -2,7 +2,6 @@ package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.util.launchOnMainThread
 
 interface EditorAwareApp {
@@ -34,7 +33,7 @@ interface EditorAwareApp {
             val projModel = EditorProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
             loadApp(projModel, ctx)
             projModel.createdScenes.values.forEach {
-                ctx.scenes += it.drawNode
+                ctx.scenes += it.scene
             }
             startApp(projModel, ctx)
         }

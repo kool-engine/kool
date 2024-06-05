@@ -1,14 +1,13 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.TransformComponentData
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Node
 
-class TransformComponent(nodeModel: SceneNodeModel, override val componentData: TransformComponentData) :
-    SceneNodeComponent(nodeModel),
-    EditorDataComponent<TransformComponentData>
+class TransformComponent(gameEntity: GameEntity, componentData: TransformComponentData) :
+    GameEntityDataComponent<TransformComponentData>(gameEntity, componentData)
 {
 
     val onTransformEdited = mutableListOf<(TransformComponent) -> Unit>()
@@ -17,9 +16,9 @@ class TransformComponent(nodeModel: SceneNodeModel, override val componentData: 
         if (AppState.isEditMode) {
             componentData.transform = it
         }
-        if (nodeModel.isCreated) {
-            it.toTransform(nodeModel.drawNode.transform)
-            nodeModel.drawNode.updateModelMat()
+        if (gameEntity.isCreated) {
+            it.toTransform(gameEntity.drawNode.transform)
+            gameEntity.drawNode.updateModelMat()
         }
         onTransformEdited.forEach { it(this) }
     }
@@ -34,8 +33,8 @@ class TransformComponent(nodeModel: SceneNodeModel, override val componentData: 
         componentOrder = COMPONENT_ORDER_EARLY
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
         transformState.set(componentData.transform)
     }
 

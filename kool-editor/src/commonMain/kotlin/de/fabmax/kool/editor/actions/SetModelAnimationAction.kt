@@ -1,12 +1,12 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.ModelComponent
-import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.EntityId
 
 class SetModelAnimationAction(
-    nodeId: NodeId,
+    entityId: EntityId,
     private val newAnimation: Int,
-) : ComponentAction<ModelComponent>(nodeId, ModelComponent::class) {
+) : ComponentAction<ModelComponent>(entityId, ModelComponent::class) {
 
     private val oldAnimation = component?.animationIndexState?.value
 

@@ -2,10 +2,10 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddSceneNodeAction
-import de.fabmax.kool.editor.data.SceneNodeData
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.util.sceneNodeModel
+import de.fabmax.kool.editor.api.EditorScene
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.data.GameEntityData
+import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
@@ -39,11 +39,11 @@ object EditorClipboard {
     private fun serializeSelectedNodes(): String {
         val selection = editor.selectionOverlay.getSelectedSceneNodes()
         return if (selection.isEmpty()) "" else {
-            val copyNodes = mutableSetOf<SceneNodeData>()
-            fun collect(node: SceneNodeModel) {
-                if (copyNodes.add(node.nodeData)) {
-                    node.nodeData.childNodeIds
-                        .mapNotNull { it.sceneNodeModel }
+            val copyNodes = mutableSetOf<GameEntityData>()
+            fun collect(node: GameEntity) {
+                if (copyNodes.add(node.entityData)) {
+                    node.entityData.childEntityIds
+                        .mapNotNull { it.gameEntity }
                         .forEach { collect(it) }
                 }
             }
@@ -58,16 +58,16 @@ object EditorClipboard {
         val scene = editor.activeScene.value
         if (json.isNotBlank() && scene != null) {
             try {
-                val copyData = KoolEditor.jsonCodec.decodeFromString<List<SceneNodeData>>(json)
+                val copyData = KoolEditor.jsonCodec.decodeFromString<List<GameEntityData>>(json)
                 if (copyData.isNotEmpty()) {
-                    sanitizeCopiedNodeIds(copyData, scene)
+                    sanitizeCopiedEntityIds(copyData, scene)
 
                     val selection = editor.selectionOverlay.getSelectedNodes()
-                    val parent = (selection.firstOrNull { it is SceneNodeModel } as SceneNodeModel?)?.parent ?: scene
+                    val parent = selection.firstOrNull()?.parent ?: scene.sceneEntity
 
-                    AddSceneNodeAction(copyData, parent.nodeId).apply()
+                    AddSceneNodeAction(copyData, parent.entityId).apply()
                     launchDelayed(1) {
-                        val nodes = copyData.mapNotNull { scene.nodeModels[it.nodeId] }
+                        val nodes = copyData.mapNotNull { scene.sceneEntities[it.id] }
                         editor.selectionOverlay.setSelection(nodes)
                         editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
                     }
@@ -78,19 +78,19 @@ object EditorClipboard {
         }
     }
 
-    private fun sanitizeCopiedNodeIds(nodeData: List<SceneNodeData>, scene: SceneModel) {
-        val existingNames = scene.nodeModels.values.map { it.name }.toMutableSet()
-        val nodesByIds = nodeData.associateBy { it.nodeId }
+    private fun sanitizeCopiedEntityIds(entityData: List<GameEntityData>, scene: EditorScene) {
+        val existingNames = scene.sceneEntities.values.map { it.name }.toMutableSet()
+        val nodesByIds = entityData.associateBy { it.id }
 
-        nodeData.forEach {
-            it.nodeId = editor.projectModel.nextId()
+        entityData.forEach {
+            it.id = editor.projectModel.nextId()
             it.name = uniquifyName(it.name, existingNames)
             existingNames += it.name
         }
-        nodeData.forEach {
-            val newChildIds = it.childNodeIds.mapNotNull { oldId -> nodesByIds[oldId]?.nodeId }
-            it.childNodeIds.clear()
-            it.childNodeIds += newChildIds
+        entityData.forEach {
+            val newChildIds = it.childEntityIds.mapNotNull { oldId -> nodesByIds[oldId]?.id }
+            it.childEntityIds.clear()
+            it.childEntityIds += newChildIds
         }
     }
 

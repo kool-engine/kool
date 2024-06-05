@@ -5,14 +5,15 @@ import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddSceneNodeAction
+import de.fabmax.kool.editor.actions.ChangeEntityHierarchyAction
 import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
-import de.fabmax.kool.editor.actions.MoveSceneNodeAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
+import de.fabmax.kool.editor.api.EditorScene
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.scene
+import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.modules.ui2.*
@@ -26,7 +27,7 @@ import kotlin.math.min
 
 class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
-    private val modelTreeItemMap = mutableMapOf<NodeModel, SceneObjectItem>()
+    private val modelTreeItemMap = mutableMapOf<GameEntity, SceneObjectItem>()
     private val nodeTreeItemMap = mutableMapOf<Node, SceneObjectItem>()
     private val treeItems = mutableListOf<SceneObjectItem>()
     private val isTreeValid = mutableStateOf(false)
@@ -48,7 +49,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 lastSelectionIndex = -1
             } else {
                 val lastSelected = selItems.last()
-                val idx = treeItems.indexOfFirst { it.nodeModel == lastSelected }
+                val idx = treeItems.indexOfFirst { it.gameEntity == lastSelected }
                 if (idx >= 0) {
                     lastSelectionIndex = idx
                 }
@@ -63,24 +64,24 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewMesh(parent: SceneObjectItem, meshShape: ShapeData) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(meshShape.name)
-        val nodeData = SceneNodeData(name, id)
+        val nodeData = GameEntityData(name, id)
         nodeData.components += MeshComponentData(meshShape)
-        nodeData.components += MaterialComponentData(NodeId(-1))
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
+        nodeData.components += MaterialComponentData(EntityId(-1))
+        AddSceneNodeAction(listOf(nodeData), parent.gameEntity.entityId).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(modelAsset.name)
-        val nodeData = SceneNodeData(name, id)
+        val nodeData = GameEntityData(name, id)
         nodeData.components += ModelComponentData(modelAsset.path)
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.gameEntity.entityId).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(lightType.name)
-        val nodeData = SceneNodeData(name, id)
+        val nodeData = GameEntityData(name, id)
         nodeData.components += DiscreteLightComponentData(lightType)
 
         val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
@@ -89,25 +90,23 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
         nodeData.components += TransformComponentData(TransformData.fromMatrix(transform))
 
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
+        AddSceneNodeAction(listOf(nodeData), parent.gameEntity.entityId).apply()
     }
 
     private fun addEmptyNode(parent: SceneObjectItem) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName("Empty")
-        val nodeData = SceneNodeData(name, id)
-        AddSceneNodeAction(listOf(nodeData), parent.nodeModel.nodeId).apply()
+        val nodeData = GameEntityData(name, id)
+        AddSceneNodeAction(listOf(nodeData), parent.gameEntity.entityId).apply()
     }
 
     private fun deleteNode(node: SceneObjectItem) {
-        val removeNode = node.nodeModel as? SceneNodeModel ?: return
+        val removeNode = node.gameEntity
         DeleteSceneNodesAction(listOf(removeNode)).apply()
     }
 
     private fun focusNode(node: SceneObjectItem) {
-        (node.nodeModel as? SceneNodeModel)?.let { nodeModel ->
-            sceneBrowser.editor.editorCameraTransform.focusObject(nodeModel)
-        }
+        sceneBrowser.editor.editorCameraTransform.focusObject(node.gameEntity)
     }
 
     override fun UiScope.compose() {
@@ -116,8 +115,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         if (!isTreeValid.use()) {
             treeItems.clear()
             editor.projectModel.createdScenes.values.forEach { sceneModel ->
-                sceneModel.drawNode.let {
-                    treeItems.appendNode(sceneModel, it, sceneModel, 0)
+                sceneModel.scene.let {
+                    treeItems.appendNode(sceneModel, it, sceneModel.sceneEntity, 0)
                 }
             }
             isTreeValid.set(true)
@@ -131,7 +130,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>("scene-item-popup") }
 
             itemsIndexed(treeItems) { i, item ->
-                if (item.type != SceneObjectType.NON_MODEL_NODE && item.node != item.nodeModel.drawNode) {
+                if (item.type != SceneObjectType.NON_MODEL_NODE && item.node != item.gameEntity.drawNode) {
                     refreshSceneTree()
                 }
                 sceneObjectItem(item, hoveredIndex == i).apply {
@@ -176,7 +175,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 }
             }
             editor.activeScene.value?.let { sceneModel ->
-                if (sceneModel.drawNode.lighting.lights.size < sceneModel.maxNumLightsState.value) {
+                if (sceneModel.scene.lighting.lights.size < sceneModel.sceneComponent.maxNumLightsState.value) {
                     subMenu("Light") {
                         item("Directional") { addNewLight(it, LightTypeData.Directional()) }
                         item("Spot") { addNewLight(it, LightTypeData.Spot()) }
@@ -205,19 +204,19 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                             val clickIndex = treeItems.indexOf(item)
                             if (clickIndex >= 0) {
                                 val selection = treeItems.subList(min(lastSelectionIndex, clickIndex), max(lastSelectionIndex, clickIndex) + 1)
-                                    .map { it.nodeModel }
+                                    .map { it.gameEntity }
                                 editor.selectionOverlay.expandSelection(selection)
                             }
 
                         } else {
-                            editor.selectionOverlay.selectSingle(item.nodeModel)
+                            editor.selectionOverlay.selectSingle(item.gameEntity)
                         }
                     }
                 } else if (evt.pointer.isMiddleButtonClicked && item.isExpandable) {
                     item.toggleExpanded()
                 }
             }
-        if (isHovered || item.nodeModel in editor.selectionOverlay.selectionState.use()) {
+        if (isHovered || item.gameEntity in editor.selectionOverlay.selectionState.use()) {
             modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
         }
 
@@ -259,18 +258,18 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
 
             // install drag and drop handler (handles dragging / sending this item to somewhere else)
-            if (item.nodeModel is SceneNodeModel) {
+            if (item.gameEntity.isSceneChild) {
                 modifier.installDragAndDropHandler(dndCtx, dndHandler) {
-                    if (editor.selectionOverlay.isSelected(item.nodeModel)) {
-                        val selectedSceneNodes = editor.selectionOverlay.selection.filterIsInstance<SceneNodeModel>()
-                        DndItemFlavor.DndSceneNodeModels.itemOf(selectedSceneNodes)
+                    if (editor.selectionOverlay.isSelected(item.gameEntity)) {
+                        val selectedSceneNodes = editor.selectionOverlay.selection.filter { it.isSceneChild }
+                        DndItemFlavor.DndGameEntities.itemOf(selectedSceneNodes)
                     } else {
-                        DndItemFlavor.DndSceneNodeModel.itemOf(item.nodeModel)
+                        DndItemFlavor.DndGameEntity.itemOf(item.gameEntity)
                     }
                 }
-            } else if (item.nodeModel is SceneModel) {
+            } else if (item.gameEntity.isSceneRoot) {
                 modifier.installDragAndDropHandler(dndCtx, dndHandler) {
-                    DndItemFlavor.DndSceneModel.itemOf(item.nodeModel)
+                    DndItemFlavor.DndGameEntity.itemOf(item.gameEntity)
                 }
             }
         }
@@ -297,7 +296,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
-        val fgColor = if (item.nodeModel in editor.selectionOverlay.selectionState.use()) {
+        val fgColor = if (item.gameEntity in editor.selectionOverlay.selectionState.use()) {
             if (item.type != SceneObjectType.NON_MODEL_NODE) {
                 colors.primary
             } else {
@@ -311,7 +310,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
-        val isVisible = item.nodeModel.isVisibleState.use()
+        val isVisible = item.gameEntity.isVisibleState.use()
         val fgColorVis = if (isVisible) fgColor else fgColor.withAlpha(0.5f)
 
         // type icon
@@ -351,16 +350,16 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                         .alignY(AlignmentY.Center)
                         .margin(end = sizes.smallGap)
                         .iconImage(if (isVisible) IconMap.small.eye else IconMap.small.eyeOff, eyeColor)
-                        .onClick { SetVisibilityAction(item.nodeModel as SceneNodeModel, !isVisible).apply() }
+                        .onClick { SetVisibilityAction(item.gameEntity, !isVisible).apply() }
                 }
             }
         }
     }
 
-    private fun MutableList<SceneObjectItem>.appendNode(scene: SceneModel, node: Node, selectModel: NodeModel, depth: Int) {
+    private fun MutableList<SceneObjectItem>.appendNode(scene: EditorScene, node: Node, selectModel: GameEntity, depth: Int) {
         // get nodeModel for node, this should be equal to [selectModel] for regular objects but can be null if node
         // does not correspond to a scene model item (e.g. child meshes of a gltf model)
-        val nodeModel = scene.nodesToNodeModels[node]
+        val nodeModel = scene.nodesToEntities[node]
 
         val item = if (nodeModel != null) {
             modelTreeItemMap.getOrPut(nodeModel) {
@@ -380,7 +379,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         if (item.isExpanded.value) {
             node.children.forEach {
                 if (!it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
-                    val childNodeModel = scene.nodesToNodeModels[it]
+                    val childNodeModel = scene.nodesToEntities[it]
                     appendNode(scene, it, childNodeModel ?: selectModel, depth + 1)
                 }
             }
@@ -389,7 +388,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
     private inner class SceneObjectItem(
         node: Node,
-        val nodeModel: NodeModel,
+        val gameEntity: GameEntity,
         val forcedType: SceneObjectType? = null
     ) {
         var depth = 0
@@ -411,11 +410,11 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 return forcedType
             }
 
-            if (nodeModel is SceneModel) {
+            if (gameEntity.isSceneRoot) {
                 return SceneObjectType.SCENE
             }
 
-            return when (nodeModel.getComponent<ContentComponent>()) {
+            return when (gameEntity.getComponent<DrawNodeComponent<*>>()) {
                 is MeshComponent -> SceneObjectType.MESH
                 is ModelComponent -> SceneObjectType.MODEL
                 is DiscreteLightComponent -> SceneObjectType.LIGHT
@@ -440,7 +439,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private inner class TreeItemDndHandler(var treeItem: SceneObjectItem, dropTarget: UiNode) :
-        DndHandler(dropTarget, setOf(DndItemFlavor.DndSceneNodeModels))
+        DndHandler(dropTarget, setOf(DndItemFlavor.DndGameEntities))
     {
         // insert pos: -1 if top border is hovered, 0 if center is hovered, +1 if bottom border is hovered
         val insertPos = mutableStateOf(0)
@@ -468,17 +467,17 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             dragPointer: PointerEvent,
             source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
-            val nodeModels = dragItem.get(DndItemFlavor.DndSceneNodeModels)
-            val self = treeItem.nodeModel
+            val nodeModels = dragItem.get(DndItemFlavor.DndGameEntities)
+            val self = treeItem.gameEntity
             if (self !in nodeModels) {
                 when {
-                    insertPos.value == -1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(nodeModels, self.parent.nodeId, NodeModel.InsertionPos.Before(self.nodeId)).apply()
+                    insertPos.value == -1 && self.isSceneChild -> {
+                        ChangeEntityHierarchyAction(nodeModels, self.parent!!.entityId, GameEntity.InsertionPos.Before(self.entityId)).apply()
                     }
-                    insertPos.value == 1 && self is SceneNodeModel -> {
-                        MoveSceneNodeAction(nodeModels, self.parent.nodeId, NodeModel.InsertionPos.After(self.nodeId)).apply()
+                    insertPos.value == 1 && self.isSceneChild -> {
+                        ChangeEntityHierarchyAction(nodeModels, self.parent!!.entityId, GameEntity.InsertionPos.After(self.entityId)).apply()
                     }
-                    else -> MoveSceneNodeAction(nodeModels, self.nodeId, NodeModel.InsertionPos.End).apply()
+                    else -> ChangeEntityHierarchyAction(nodeModels, self.entityId, GameEntity.InsertionPos.End).apply()
                 }
             }
         }

@@ -1,35 +1,20 @@
 package de.fabmax.kool.editor.util
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.util.logE
 
-val NodeId.isSceneId: Boolean get() = this in KoolEditor.instance.projectModel.createdScenes.keys
+val EntityId.isSceneId: Boolean get() = this in KoolEditor.instance.projectModel.createdScenes.keys
 
-val NodeId.nodeModel: NodeModel? get() {
-    val nodeModel = if (isSceneId) {
-        KoolEditor.instance.projectModel.createdScenes[this]
+val EntityId.gameEntity: GameEntity? get() {
+    val gameEntity = if (isSceneId) {
+        KoolEditor.instance.projectModel.createdScenes[this]?.sceneEntity
     } else {
-        KoolEditor.instance.projectModel.createdScenes.values.find { this in it.nodeModels }?.nodeModels?.get(this)
+        KoolEditor.instance.projectModel.createdScenes.values.find { this in it.sceneEntities }?.sceneEntities?.get(this)
     }
-    if (nodeModel == null && id != -1L) {
-        logE { "node model not found: $this" }
+    if (gameEntity == null && value != -1L) {
+        logE { "GameEntity with id $this not found" }
     }
-    return nodeModel
-}
-
-val NodeId.sceneModel: SceneModel? get() {
-    return nodeModel as? SceneModel?
-}
-
-val NodeId.sceneNodeModel: SceneNodeModel? get() {
-    return nodeModel as? SceneNodeModel?
-}
-
-val NodeModel.sceneModel: SceneModel get() = when (this) {
-    is SceneModel -> this
-    is SceneNodeModel -> sceneModel
+    return gameEntity
 }

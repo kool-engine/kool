@@ -1,13 +1,13 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.ShadowMapComponent
-import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.ShadowMapTypeData
 
 class SetShadowMapTypeAction(
-    nodeId: NodeId,
+    entityId: EntityId,
     private val newShadowMapTypeData: ShadowMapTypeData
-) : ComponentAction<ShadowMapComponent>(nodeId, ShadowMapComponent::class) {
+) : ComponentAction<ShadowMapComponent>(entityId, ShadowMapComponent::class) {
 
     private val oldShadowMapTypeData = component?.shadowMapState?.value
 

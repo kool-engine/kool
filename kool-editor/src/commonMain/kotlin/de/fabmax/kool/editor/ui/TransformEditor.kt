@@ -7,7 +7,6 @@ import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
@@ -22,7 +21,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
         transformProperties.editHandlers += object : ValueEditHandler<List<TransformData>> {
             override fun onEdit(value: List<TransformData>) {
                 value.forEachIndexed { i, transformData ->
-                    transformData.toTransform(components[i].nodeModel.drawNode.transform)
+                    transformData.toTransform(components[i].gameEntity.drawNode.transform)
                 }
             }
 
@@ -30,7 +29,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                 val actions = buildList {
                     for (i in startValue.indices) {
                         add(SetTransformAction(
-                            nodeModel = components[i].nodeModel,
+                            nodeModel = components[i].gameEntity,
                             undoTransform = startValue[i],
                             applyTransform = endValue[i]
                         ))
@@ -255,9 +254,9 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                         td
                     }
                     GizmoFrame.GLOBAL -> {
-                        val parent = components[i].nodeModel.parent
-                        if (parent is SceneNodeModel) {
-                            TransformData.fromMatrix(components[i].nodeModel.drawNode.modelMatD)
+                        val parent = components[i].gameEntity.parent
+                        if (parent?.isSceneChild == true) {
+                            TransformData.fromMatrix(components[i].gameEntity.drawNode.modelMatD)
                         } else {
                             // parent node is the scene -> parent reference frame == global reference frame
                             td
@@ -277,8 +276,8 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                     transformData
                 }
                 GizmoFrame.GLOBAL -> {
-                    val parent = components[componentI].nodeModel.parent
-                    if (parent is SceneNodeModel) {
+                    val parent = components[componentI].gameEntity.parent
+                    if (parent?.isSceneChild == true) {
                         val globalToParent = parent.drawNode.invModelMatD
                         val m = globalToParent.mul(transformData.toMat4d(MutableMat4d()), MutableMat4d())
                         TransformData.fromMatrix(m)

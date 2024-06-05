@@ -131,7 +131,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             undoData: CharacterControllerComponentProperties,
             applyData: CharacterControllerComponentProperties
         ) -> EditorAction = { component, undoData, applyData ->
-            SetCharControllerPropertiesAction(component.nodeModel.nodeId, undoData, applyData)
+            SetCharControllerPropertiesAction(component.gameEntity.entityId, undoData, applyData)
         }
 
         private val nonWalkableOptions = ComboBoxItems(NonWalkableMode.entries) {

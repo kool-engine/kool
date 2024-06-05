@@ -1,11 +1,16 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.api.EditorProject
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.pipeline.RenderPass
 import kotlin.reflect.KClass
 
-abstract class EditorModelComponent(open val nodeModel: NodeModel) {
+val GameEntityComponent.project: EditorProject get() = gameEntity.scene.project
+val GameEntityComponent.sceneEntity: GameEntity get() = gameEntity.scene.sceneEntity
+val GameEntityComponent.sceneComponent: SceneComponent get() = sceneEntity.requireComponent()
+
+abstract class GameEntityComponent(val gameEntity: GameEntity) {
 
     open val componentType: String
         get() = this::class.simpleName!!
@@ -16,7 +21,7 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
 
     val requiredAssets = mutableSetOf<AssetReference>()
 
-    var isCreated: Boolean = false
+    var isApplied: Boolean = false
         private set
     var isStarted: Boolean = false
         private set
@@ -26,17 +31,17 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
 
     private val onUpdateListeners = mutableSetOf<(RenderPass.UpdateEvent) -> Unit>()
 
-    open suspend fun createComponent() {
-        isCreated = true
-        require(areDependenciesMetBy(nodeModel.components)) {
-            "Unable to create component ${this::class.simpleName} in node ${nodeModel.name}: There are unmet component dependencies"
+    open suspend fun applyComponent() {
+        isApplied = true
+        require(areDependenciesMetBy(gameEntity.components)) {
+            "Unable to create component ${this::class.simpleName} in node ${gameEntity.name}: There are unmet component dependencies"
         }
     }
 
     open fun destroyComponent() {
-        nodeModel.onNodeUpdate -= onUpdateListeners
+        gameEntity.onNodeUpdate -= onUpdateListeners
         onUpdateListeners.clear()
-        isCreated = false
+        isApplied = false
         isStarted = false
     }
 
@@ -45,14 +50,14 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
     }
 
     fun onUpdate(block: (RenderPass.UpdateEvent) -> Unit) {
-        nodeModel.onNodeUpdate += block
+        gameEntity.onNodeUpdate += block
     }
 
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {
         _dependencies += ComponentDependency(componentType, isOptional)
     }
 
-    fun areDependenciesMetBy(components: List<EditorModelComponent>): Boolean {
+    fun areDependenciesMetBy(components: List<GameEntityComponent>): Boolean {
         return dependencies.all { dep -> dep.isOptional || components.any { s -> dep.type.isInstance(s) } }
     }
 
@@ -65,15 +70,15 @@ abstract class EditorModelComponent(open val nodeModel: NodeModel) {
     }
 }
 
-fun MutableList<EditorModelComponent>.sortByDependencies() {
-    val sorted = mutableListOf<EditorModelComponent>()
+fun MutableList<GameEntityComponent>.sortByDependencies() {
+    val sorted = mutableListOf<GameEntityComponent>()
 
     // pre sort components: early order first
     sortBy { it.componentOrder }
 
     while (isNotEmpty()) {
         val iter = iterator()
-        var lastAdded: EditorModelComponent? = null
+        var lastAdded: GameEntityComponent? = null
         while (iter.hasNext()) {
             val candidate = iter.next()
 

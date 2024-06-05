@@ -38,7 +38,7 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
                         .onItemSelected { index ->
                             if (allTheSameMaterial || index > 0) {
                                 components
-                                    .map { SetMaterialAction(it.nodeModel.nodeId, items[index].getMaterialModel()) }
+                                    .map { SetMaterialAction(it.gameEntity.entityId, items[index].getMaterialModel()) }
                                     .fused().apply()
                             }
                         }

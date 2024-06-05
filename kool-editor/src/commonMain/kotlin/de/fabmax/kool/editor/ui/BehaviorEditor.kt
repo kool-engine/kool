@@ -3,12 +3,11 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.BehaviorComponent
-import de.fabmax.kool.editor.components.EditorModelComponent
+import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.util.nodeModel
+import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.Box
 import de.fabmax.kool.modules.ui2.UiScope
@@ -59,8 +58,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
                 Boolean::class -> boolEditor(prop)
 
-                SceneModel::class -> { }
-                SceneNodeModel::class -> { }
+                GameEntity::class -> { }
 
                 else -> {
                     if (prop.type == BehaviorPropertyType.COMPONENT) {
@@ -77,7 +75,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
     private fun UiScope.componentEditor(prop: BehaviorProperty) {
         val choices = remember {
             val klass = prop.kType.classifier as KClass<*>
-            val selComponents = listOf(null) + sceneModel.nodeModels.values
+            val selComponents = listOf(null) + scene.sceneEntities.values
                 .flatMap { it.components }
                 .filter { klass.isInstance(it) }
             ComboBoxItems(selComponents.map { ComponentChoice(it) })
@@ -85,7 +83,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         choicePropertyEditor(
             choices = choices,
             dataGetter = { PropertyValue(componentRef = ComponentRef(prop.getComponent(it))) },
-            valueGetter = { ComponentChoice(it.componentRef!!.nodeId.nodeModel?.getComponent(it.componentRef!!)) },
+            valueGetter = { ComponentChoice(it.componentRef!!.entityId.gameEntity?.getComponent(it.componentRef!!)) },
             valueSetter = { _, newValue -> PropertyValue(componentRef = ComponentRef(newValue.component)) },
             actionMapper = SetBehaviorPropertyAction(prop),
             label = prop.label
@@ -251,15 +249,15 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
             value.color != null -> set(behaviorComponent, value.color!!.toColorLinear())
             value.transform != null -> set(behaviorComponent, value.transform!!.toMat4d())
             value.str != null -> set(behaviorComponent, value.str)
-            value.nodeRef != null -> set(behaviorComponent, value.nodeRef!!.nodeModel)
-            value.componentRef != null -> set(behaviorComponent, value.componentRef!!.nodeId.nodeModel?.getComponent(value.componentRef!!))
+            value.nodeRef != null -> set(behaviorComponent, value.nodeRef!!.gameEntity)
+            value.componentRef != null -> set(behaviorComponent, value.componentRef!!.entityId.gameEntity?.getComponent(value.componentRef!!))
             else -> error("PropertyValue has no non-null value")
         }
     }
 
     private fun UiScope.SetBehaviorPropertyAction(prop: BehaviorProperty): (BehaviorComponent, PropertyValue, PropertyValue) -> EditorAction {
         return { component: BehaviorComponent, undoData: PropertyValue, applyData: PropertyValue ->
-            SetBehaviorPropertyAction(component.nodeModel.nodeId, prop.name, undoData, applyData) { comp, value ->
+            SetBehaviorPropertyAction(component.gameEntity.entityId, prop.name, undoData, applyData) { comp, value ->
                 prop.setProperty(comp, value)
                 comp.componentData.propertyValues[prop.name] = value
                 surface.triggerUpdate()
@@ -267,8 +265,8 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         }
     }
 
-    private data class ComponentChoice(val component: EditorModelComponent?) {
-        override fun toString(): String = component?.nodeModel?.name ?: "None"
+    private data class ComponentChoice(val component: GameEntityComponent?) {
+        override fun toString(): String = component?.gameEntity?.name ?: "None"
     }
 
     companion object {

@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.EditorKeyListener
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.util.SelectionTransform
 import de.fabmax.kool.modules.gizmo.GizmoListener
 import de.fabmax.kool.modules.gizmo.GizmoMode
@@ -64,7 +64,7 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
         }
     }
 
-    fun setTransformObject(nodeModel: SceneNodeModel?) {
+    fun setTransformObject(nodeModel: GameEntity?) {
         if (nodeModel != null) {
             setTransformObjects(listOf(nodeModel))
         } else {
@@ -72,7 +72,7 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
         }
     }
 
-    fun setTransformObjects(nodeModels: List<SceneNodeModel>) {
+    fun setTransformObjects(nodeModels: List<GameEntity>) {
         selectionTransform = SelectionTransform(nodeModels)
 
         val prim = selectionTransform?.primaryTransformNode

@@ -2,8 +2,8 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.CharacterControllerComponentData
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -20,11 +20,10 @@ import kotlin.math.atan2
 import kotlin.math.max
 
 class CharacterControllerComponent(
-    nodeModel: SceneNodeModel,
-    override val componentData: CharacterControllerComponentData = CharacterControllerComponentData()
+    gameEntity: GameEntity,
+    componentData: CharacterControllerComponentData = CharacterControllerComponentData()
 ) :
-    PhysicsNodeComponent(nodeModel),
-    EditorDataComponent<CharacterControllerComponentData>,
+    PhysicsNodeComponent<CharacterControllerComponentData>(gameEntity, componentData),
     OnHitActorListener
 {
 
@@ -59,8 +58,8 @@ class CharacterControllerComponent(
 
     override val actorTransform: TrsTransformF? get() = charController?.actor?.transform
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
         createCharController()
         updateControllerProps()
     }

@@ -20,7 +20,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val oldSettings = component.ssaoState.value.copy(radius = undoValue.toFloat())
                 val newSettings = component.ssaoState.value.copy(radius = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                SetSsaoSettingsAction(entityId, oldSettings, newSettings)
             }
         )
 
@@ -29,7 +29,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             val allowedMax = if (it) 1f else Float.POSITIVE_INFINITY
             val clampedRadius = oldSettings.radius.clamp(0f, allowedMax)
             val newSettings = component.ssaoState.value.copy(isRelativeRadius = it, radius = clampedRadius)
-            SetSsaoSettingsAction(nodeId, oldSettings, newSettings).apply()
+            SetSsaoSettingsAction(entityId, oldSettings, newSettings).apply()
         }
 
         labeledDoubleTextField(
@@ -42,7 +42,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val oldSettings = component.ssaoState.value.copy(strength = undoValue.toFloat())
                 val newSettings = component.ssaoState.value.copy(strength = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                SetSsaoSettingsAction(entityId, oldSettings, newSettings)
             }
         )
 
@@ -56,7 +56,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val oldSettings = component.ssaoState.value.copy(power = undoValue.toFloat())
                 val newSettings = component.ssaoState.value.copy(power = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                SetSsaoSettingsAction(entityId, oldSettings, newSettings)
             }
         )
 
@@ -72,7 +72,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val oldSettings = component.ssaoState.value.copy(mapSize = undoValue.toFloat())
                 val newSettings = component.ssaoState.value.copy(mapSize = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                SetSsaoSettingsAction(entityId, oldSettings, newSettings)
             }
         )
 
@@ -85,7 +85,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
                 val oldSettings = component.ssaoState.value.copy(samples = undoValue)
                 val newSettings = component.ssaoState.value.copy(samples = applyValue)
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                SetSsaoSettingsAction(entityId, oldSettings, newSettings)
             }
         )
 
@@ -97,7 +97,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
                 .alignX(AlignmentX.Center)
                 .onClick {
                     val oldSettings = component.ssaoState.value
-                    SetSsaoSettingsAction(nodeId, oldSettings, SsaoSettings()).apply()
+                    SetSsaoSettingsAction(entityId, oldSettings, SsaoSettings()).apply()
                 }
         }
     }

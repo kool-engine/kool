@@ -21,7 +21,7 @@ class PhysicsWorldEditor : ComponentEditor<PhysicsWorldComponent>() {
             valueGetter = { it.isContinuousCollisionDetection },
             valueSetter = { oldData, newValue -> oldData.copy(isContinuousCollisionDetection = newValue) },
             actionMapper = { component, undoData, applyData ->
-                SetPhysicsWorldPropertiesAction(component.nodeModel.nodeId, undoData, applyData)
+                SetPhysicsWorldPropertiesAction(component.gameEntity.entityId, undoData, applyData)
             },
             label = "Continuous collision detection",
         )
@@ -31,7 +31,7 @@ class PhysicsWorldEditor : ComponentEditor<PhysicsWorldComponent>() {
             valueGetter = { it },
             valueSetter = { _, newValue -> newValue },
             actionMapper = { component, undoData, applyData ->
-                SetPhysicsWorldGravityAction(component.nodeModel.nodeId, undoData.toVec3f(), applyData.toVec3f())
+                SetPhysicsWorldGravityAction(component.gameEntity.entityId, undoData.toVec3f(), applyData.toVec3f())
             },
             "Gravity:"
         )

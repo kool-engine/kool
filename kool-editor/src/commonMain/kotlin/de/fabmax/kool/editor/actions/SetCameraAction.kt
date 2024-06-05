@@ -2,13 +2,13 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.data.CameraTypeData
-import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.EntityId
 
 class SetCameraAction(
-    nodeId: NodeId,
+    entityId: EntityId,
     val setCameraData: CameraTypeData,
     val undoCamData: CameraTypeData
-) : ComponentAction<CameraComponent>(nodeId, CameraComponent::class) {
+) : ComponentAction<CameraComponent>(entityId, CameraComponent::class) {
 
     override fun doAction() {
         component?.cameraState?.set(setCameraData)

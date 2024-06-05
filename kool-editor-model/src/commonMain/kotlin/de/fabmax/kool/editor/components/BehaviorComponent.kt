@@ -1,44 +1,34 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.BehaviorLoader
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.data.BehaviorComponentData
-import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.getComponent
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.logE
 
-class BehaviorComponent(nodeModel: NodeModel, override val componentData: BehaviorComponentData) :
-    EditorModelComponent(nodeModel),
-    EditorDataComponent<BehaviorComponentData>
+class BehaviorComponent(gameEntity: GameEntity, componentData: BehaviorComponentData) :
+    GameEntityDataComponent<BehaviorComponentData>(gameEntity, componentData)
 {
 
     override val componentType: String = "${this::class.simpleName}<${componentData.behaviorClassName}>"
 
     val behaviorClassNameState = mutableStateOf(componentData.behaviorClassName).onChange { componentData.behaviorClassName = it }
-    val runInEditMode = mutableStateOf(componentData.runInEditMode).onChange { componentData.runInEditMode = it }
 
     val behaviorInstance = mutableStateOf<KoolBehavior?>(null)
 
-    private val sceneModel: SceneModel get() = when (val nd = this@BehaviorComponent.nodeModel) {
-        is SceneNodeModel -> nd.sceneModel
-        is SceneModel -> nd
-    }
-
-    private val NodeId.nodeModel: NodeModel? get() {
-        val scene = sceneModel
-        return scene.nodeModels[this] ?: if (this == scene.nodeId) scene else null
+    private val EntityId.gameEntity: GameEntity? get() {
+        return this@BehaviorComponent.gameEntity.scene.sceneEntities[this]
     }
 
     init {
         componentOrder = COMPONENT_ORDER_LATE
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
 
         try {
             val behavior = BehaviorLoader.newInstance(componentData.behaviorClassName)
@@ -49,8 +39,8 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
             val removeProps = mutableListOf<String>()
             componentData.propertyValues.forEach { (name, value) ->
                 val setValue = when {
-                    value.nodeRef != null -> value.nodeRef.nodeModel
-                    value.componentRef != null -> value.componentRef.nodeId.nodeModel?.getComponent(value.componentRef)
+                    value.nodeRef != null -> value.nodeRef.gameEntity
+                    value.componentRef != null -> value.componentRef.entityId.gameEntity?.getComponent(value.componentRef)
                     else -> value.get()
                 }
                 if (!setProperty(name, setValue)) {
@@ -60,10 +50,10 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
             removeProps.forEach { componentData.propertyValues -= it }
 
             // invoke script init callback
-            behavior.init(nodeModel, this)
+            behavior.init(gameEntity, this)
 
         } catch (e: Exception) {
-            logE { "Failed to initialize BehaviorComponent for node ${nodeModel.name}: $e" }
+            logE { "Failed to initialize BehaviorComponent for node ${gameEntity.name}: $e" }
             e.printStackTrace()
         }
     }

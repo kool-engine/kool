@@ -4,29 +4,28 @@ import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 
-suspend fun MaterialData.createShader(sceneShaderData: SceneModel.SceneShaderData): DrawShader {
+suspend fun MaterialData.createShader(sceneShaderData: SceneComponent.SceneShaderData): DrawShader {
     return shaderData.createShader(sceneShaderData)
 }
 
-suspend fun MaterialData.updateShader(shader: DrawShader?, sceneShaderData: SceneModel.SceneShaderData): Boolean {
+suspend fun MaterialData.updateShader(shader: DrawShader?, sceneShaderData: SceneComponent.SceneShaderData): Boolean {
     return shaderData.updateShader(shader, sceneShaderData)
 }
 
 fun MaterialData.matchesShader(shader: DrawShader?): Boolean = shaderData.matchesShader(shader)
 
-suspend fun MaterialShaderData.createShader(sceneShaderData: SceneModel.SceneShaderData): DrawShader = when (this) {
+suspend fun MaterialShaderData.createShader(sceneShaderData: SceneComponent.SceneShaderData): DrawShader = when (this) {
     is PbrShaderData -> createShader(sceneShaderData)
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
 }
 
-suspend fun MaterialShaderData.updateShader(shader: DrawShader?, sceneShaderData: SceneModel.SceneShaderData): Boolean = when (this) {
+suspend fun MaterialShaderData.updateShader(shader: DrawShader?, sceneShaderData: SceneComponent.SceneShaderData): Boolean = when (this) {
     is PbrShaderData -> (shader as? KslPbrShader)?.let { updateShader(it, sceneShaderData) } ?: false
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
@@ -38,7 +37,7 @@ fun MaterialShaderData.matchesShader(shader: DrawShader?): Boolean = when (this)
     is UnlitShaderData -> TODO()
 }
 
-suspend fun PbrShaderData.createShader(sceneShaderData: SceneModel.SceneShaderData): KslPbrShader {
+suspend fun PbrShaderData.createShader(sceneShaderData: SceneComponent.SceneShaderData): KslPbrShader {
     val shader = KslPbrShader {
         pipeline {
             if (genericSettings.isTwoSided) {
@@ -113,7 +112,7 @@ suspend fun PbrShaderData.createShader(sceneShaderData: SceneModel.SceneShaderDa
     return shader
 }
 
-suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: SceneModel.SceneShaderData): Boolean {
+suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: SceneComponent.SceneShaderData): Boolean {
     if (!matchesShader(shader)) {
         return false
     }

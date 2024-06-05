@@ -1,22 +1,22 @@
 package de.fabmax.kool.editor.actions
 
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.TransformData
-import de.fabmax.kool.editor.model.SceneNodeModel
+
+fun SetTransformAction(
+    nodeModel: GameEntity,
+    undoTransform: TransformData,
+    applyTransform: TransformData
+) = SetTransformAction(listOf(nodeModel), listOf(undoTransform), listOf(applyTransform))
 
 class SetTransformAction(
-    nodeModels: List<SceneNodeModel>,
+    nodeModels: List<GameEntity>,
     private val undoTransforms: List<TransformData>,
     private val applyTransforms: List<TransformData>
-) : SceneNodeAction(nodeModels) {
-
-    constructor(
-        nodeModel: SceneNodeModel,
-        undoTransform: TransformData,
-        applyTransform: TransformData
-    ) : this(listOf(nodeModel), listOf(undoTransform), listOf(applyTransform))
+) : GameEntityAction(nodeModels) {
 
     override fun doAction() {
-        sceneNodes.forEachIndexed { i, nodeModel ->
+        gameEntities.forEachIndexed { i, nodeModel ->
             val applyTransform = applyTransforms[i]
             nodeModel.transform.transformState.set(applyTransform)
             applyTransform.toTransform(nodeModel.drawNode.transform)
@@ -24,7 +24,7 @@ class SetTransformAction(
     }
 
     override fun undoAction() {
-        sceneNodes.forEachIndexed { i, nodeModel ->
+        gameEntities.forEachIndexed { i, nodeModel ->
             val undoTransform = undoTransforms[i]
             nodeModel.transform.transformState.set(undoTransform)
             undoTransform.toTransform(nodeModel.drawNode.transform)

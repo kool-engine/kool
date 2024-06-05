@@ -1,13 +1,12 @@
 package de.fabmax.kool.editor.data
 
-import de.fabmax.kool.editor.components.EditorModelComponent
-import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.GameEntityComponent
 import kotlinx.serialization.Serializable
 
 @Serializable
 class BehaviorComponentData(
     var behaviorClassName: String,
-    var runInEditMode: Boolean = false,
     var propertyValues: MutableMap<String, PropertyValue> = mutableMapOf()
 ) : ComponentData
 
@@ -32,7 +31,7 @@ data class PropertyValue(
     val color: ColorData? = null,
     val transform: TransformData? = null,
     val str: String? = null,
-    val nodeRef: NodeId? = null,
+    val nodeRef: EntityId? = null,
     val componentRef: ComponentRef? = null,
 ) {
     fun get(): Any {
@@ -65,24 +64,24 @@ data class PropertyValue(
 
 @Serializable
 data class ComponentRef(
-    val nodeId: NodeId,
+    val entityId: EntityId,
     val componentClassName: String
 )
 
-fun ComponentRef(component: EditorModelComponent?): ComponentRef {
+fun ComponentRef(component: GameEntityComponent?): ComponentRef {
     // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
     return if (component != null) {
-        ComponentRef(component.nodeModel.nodeId, component::class.simpleName!!)
+        ComponentRef(component.gameEntity.entityId, component::class.simpleName!!)
     } else {
-        ComponentRef(NodeId(-1L), "<null>")
+        ComponentRef(EntityId(-1L), "<null>")
     }
 }
 
-fun ComponentRef.matchesComponent(component: EditorModelComponent): Boolean {
+fun ComponentRef.matchesComponent(component: GameEntityComponent): Boolean {
     // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
-    return nodeId == component.nodeModel.nodeId && component::class.simpleName == componentClassName
+    return entityId == component.gameEntity.entityId && component::class.simpleName == componentClassName
 }
 
-fun NodeModel.getComponent(ref: ComponentRef): EditorModelComponent? {
+fun GameEntity.getComponent(ref: ComponentRef): GameEntityComponent? {
     return components.find { ref.matchesComponent(it) }
 }

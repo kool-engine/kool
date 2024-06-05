@@ -1,20 +1,18 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.editor.data.SsaoSettings
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
 
 class SsaoComponent(
-    override val nodeModel: SceneModel,
-    override val componentData: SsaoComponentData = SsaoComponentData()
-) :
-    EditorModelComponent(nodeModel),
-    EditorDataComponent<SsaoComponentData>
-{
+    gameEntity: GameEntity,
+    componentData: SsaoComponentData = SsaoComponentData()
+) : GameEntityDataComponent<SsaoComponentData>(gameEntity, componentData) {
 
     val ssaoState = mutableStateOf(componentData.settings).onChange {
         if (AppState.isEditMode) {
@@ -25,11 +23,16 @@ class SsaoComponent(
 
     var aoPipeline: AoPipeline? = null
 
-    override suspend fun createComponent() {
-        super.createComponent()
-        aoPipeline = AoPipeline.createForward(nodeModel.drawNode)
-        nodeModel.shaderData.ssaoMap = aoPipeline?.aoMap
-        UpdateSsaoComponent.updateSceneSsao(nodeModel)
+    init {
+        dependsOn(SceneComponent::class)
+    }
+
+    override suspend fun applyComponent() {
+        super.applyComponent()
+
+        aoPipeline = AoPipeline.createForward(sceneComponent.scene)
+        sceneComponent.shaderData.ssaoMap = aoPipeline?.aoMap
+        UpdateSsaoComponent.updateSceneSsao(gameEntity)
 
         // re-sync public state with componentData state
         ssaoState.set(componentData.settings)
@@ -38,8 +41,8 @@ class SsaoComponent(
 
     override fun destroyComponent() {
         aoPipeline?.release()
-        nodeModel.shaderData.ssaoMap = null
-        UpdateSsaoComponent.updateSceneSsao(nodeModel)
+        sceneComponent.shaderData.ssaoMap = null
+        UpdateSsaoComponent.updateSceneSsao(gameEntity)
         super.destroyComponent()
     }
 
@@ -59,9 +62,9 @@ interface UpdateSsaoComponent {
     fun updateSsao(ssaoMap: Texture2d?)
 
     companion object {
-        fun updateSceneSsao(sceneModel: SceneModel) {
-            sceneModel.project.getComponentsInScene<UpdateSsaoComponent>(sceneModel).forEach {
-                it.updateSsao(sceneModel.shaderData.ssaoMap)
+        fun updateSceneSsao(sceneEntity: GameEntity) {
+            sceneEntity.scene.getAllComponents<UpdateSsaoComponent>().forEach {
+                it.updateSsao(sceneEntity.sceneComponent.shaderData.ssaoMap)
             }
         }
     }

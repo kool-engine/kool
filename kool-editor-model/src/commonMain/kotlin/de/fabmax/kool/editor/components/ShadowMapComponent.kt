@@ -1,22 +1,19 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
 import de.fabmax.kool.editor.data.ShadowMapTypeData
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.util.*
 
 class ShadowMapComponent(
-    nodeModel: SceneNodeModel,
-    override val componentData: ShadowMapComponentData = ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
-) :
-    SceneNodeComponent(nodeModel),
-    EditorDataComponent<ShadowMapComponentData>
-{
+    gameEntity: GameEntity,
+    componentData: ShadowMapComponentData = ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
+) : GameEntityDataComponent<ShadowMapComponentData>(gameEntity, componentData) {
     val shadowMapState = mutableStateOf(componentData.shadowMap).onChange {
         if (AppState.isEditMode) { componentData.shadowMap = it }
         updateShadowMap(it, componentData.clipNear, componentData.clipFar)
@@ -38,15 +35,15 @@ class ShadowMapComponent(
         dependsOn(DiscreteLightComponent::class)
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
         shadowMapState.set(componentData.shadowMap)
         updateShadowMap()
     }
 
     override fun destroyComponent() {
         disposeShadowMap()
-        UpdateShadowMapsComponent.updateShadowMaps(sceneModel)
+        UpdateShadowMapsComponent.updateShadowMaps(sceneEntity)
         super.destroyComponent()
     }
 
@@ -66,9 +63,9 @@ class ShadowMapComponent(
     private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {
         logD { "Update shadow map: ${shadowMapInfo::class.simpleName}, near: $clipNear, far: $clipFar" }
 
-        val light = nodeModel.getComponent<DiscreteLightComponent>()?.light
+        val light = gameEntity.getComponent<DiscreteLightComponent>()?.typedDrawNode
         if (light == null) {
-            logE { "Unable to get DiscreteLightComponent of sceneNode ${nodeModel.name}" }
+            logE { "Unable to get DiscreteLightComponent of sceneNode ${gameEntity.name}" }
             return
         }
         if (light is Light.Point) {
@@ -82,14 +79,14 @@ class ShadowMapComponent(
         // create new shadow map
         shadowMap = when (shadowMapInfo) {
             is ShadowMapTypeData.Single -> {
-                SimpleShadowMap(sceneModel.drawNode, light, mapSize = shadowMapInfo.mapInfo.mapSize).apply {
+                SimpleShadowMap(sceneComponent.scene, light, mapSize = shadowMapInfo.mapInfo.mapSize).apply {
                     this.clipNear = clipNear
                     this.clipFar = clipFar
                 }
             }
             is ShadowMapTypeData.Cascaded -> {
                 CascadedShadowMap(
-                    sceneModel.drawNode,
+                    sceneComponent.scene,
                     light,
                     clipFar,
                     shadowMapInfo.mapInfos.size,
@@ -102,15 +99,15 @@ class ShadowMapComponent(
                 }
             }
         }.also {
-            sceneModel.shaderData.shadowMaps += it
-            UpdateShadowMapsComponent.updateShadowMaps(sceneModel)
+            sceneComponent.shaderData.shadowMaps += it
+            UpdateShadowMapsComponent.updateShadowMaps(sceneEntity)
         }
     }
 
     private fun disposeShadowMap() {
-        val scene = sceneModel.drawNode
+        val scene = sceneComponent.scene
         shadowMap?.let {
-            sceneModel.shaderData.shadowMaps -= it
+            sceneComponent.shaderData.shadowMaps -= it
             when (it) {
                 is SimpleShadowMap -> {
                     scene.removeOffscreenPass(it)
@@ -131,9 +128,9 @@ interface UpdateShadowMapsComponent {
     fun updateShadowMaps(shadowMaps: List<ShadowMap>)
 
     companion object {
-        fun updateShadowMaps(sceneModel: SceneModel) {
-            sceneModel.project.getComponentsInScene<UpdateShadowMapsComponent>(sceneModel).forEach {
-                it.updateShadowMaps(sceneModel.shaderData.shadowMaps)
+        fun updateShadowMaps(sceneEntity: GameEntity) {
+            sceneEntity.scene.getAllComponents<UpdateShadowMapsComponent>().forEach {
+                it.updateShadowMaps(sceneEntity.sceneComponent.shaderData.shadowMaps)
             }
         }
     }

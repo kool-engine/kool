@@ -2,8 +2,8 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorInfo
 import de.fabmax.kool.editor.api.EditorOrder
-import de.fabmax.kool.editor.components.EditorModelComponent
-import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
 import kotlin.reflect.KClass
@@ -31,7 +31,7 @@ object BehaviorReflection {
                 val min = info?.min ?: Double.NEGATIVE_INFINITY
                 val max = info?.max ?: Double.POSITIVE_INFINITY
                 val type = when {
-                    nodeModelType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.NODE_MODEL
+                    gameEntityType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.NODE_MODEL
                     modelComponentType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.COMPONENT
                     else -> BehaviorPropertyType.STD
                 }
@@ -40,8 +40,8 @@ object BehaviorReflection {
             }
     }
 
-    private val nodeModelType = typeOf<NodeModel?>()
-    private val modelComponentType = typeOf<EditorModelComponent?>()
+    private val gameEntityType = typeOf<GameEntity?>()
+    private val modelComponentType = typeOf<GameEntityComponent?>()
 
     private val editableTypes = listOf(
         typeOf<Int?>(),
@@ -63,7 +63,7 @@ object BehaviorReflection {
         typeOf<Color?>(),
         typeOf<String?>(),
 
-        nodeModelType,
+        gameEntityType,
         modelComponentType,
     )
 }

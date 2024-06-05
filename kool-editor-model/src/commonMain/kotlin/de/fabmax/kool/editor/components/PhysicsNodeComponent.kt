@@ -1,15 +1,18 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.data.ComponentData
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.logW
 
-abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeComponent(nodeModel) {
+abstract class PhysicsNodeComponent<T: ComponentData>(gameEntity: GameEntity, componentData: T) :
+    GameEntityDataComponent<T>(gameEntity, componentData)
+{
 
     val physicsWorldComponent: PhysicsWorldComponent?
-        get() = nodeModel.sceneModel.getComponent<PhysicsWorldComponent>()
+        get() = gameEntity.scene.sceneEntity.getComponent<PhysicsWorldComponent>()
     val physicsWorld: PhysicsWorld?
         get() = physicsWorldComponent?.physicsWorld
 
@@ -18,16 +21,16 @@ abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeCompon
     private val tmpMat4 = MutableMat4d()
     protected val scale = MutableVec3d(Vec3d.ONES)
 
-    override suspend fun createComponent() {
-        super.createComponent()
-        nodeModel.transform.onTransformEdited += { setPhysicsTransformFromDrawNode() }
+    override suspend fun applyComponent() {
+        super.applyComponent()
+        gameEntity.transform.onTransformEdited += { setPhysicsTransformFromDrawNode() }
     }
 
     protected open fun updatePhysics(dt: Float) {
         actorTransform?.let {
-            nodeModel.parent.drawNode.invModelMatD.mul(it.matrixD, tmpMat4)
+            gameEntity.parent!!.drawNode.invModelMatD.mul(it.matrixD, tmpMat4)
             tmpMat4.scale(scale)
-            nodeModel.drawNode.transform.setMatrix(tmpMat4)
+            gameEntity.drawNode.transform.setMatrix(tmpMat4)
         }
     }
 
@@ -40,15 +43,16 @@ abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeCompon
     }
 
     suspend fun getOrCreatePhysicsWorldComponent(): PhysicsWorldComponent {
-        var physicsWorldComponent = nodeModel.sceneModel.getComponent<PhysicsWorldComponent>()
+        val sceneEntity = gameEntity.scene.sceneEntity
+        var physicsWorldComponent = sceneEntity.getComponent<PhysicsWorldComponent>()
         if (physicsWorldComponent == null) {
             logW { "Failed to find a PhysicsWorldComponent in parent scene, creating default one" }
-            physicsWorldComponent = PhysicsWorldComponent(nodeModel.sceneModel)
+            physicsWorldComponent = PhysicsWorldComponent(sceneEntity)
 
             // add component and explicitly create it, so that the physics world is immediately available
-            nodeModel.sceneModel.addComponent(physicsWorldComponent, autoCreateComponent = false)
-            if (isCreated) {
-                physicsWorldComponent.createComponent()
+            sceneEntity.addComponent(physicsWorldComponent, autoCreateComponent = false)
+            if (isApplied) {
+                physicsWorldComponent.applyComponent()
             }
         }
         return physicsWorldComponent
@@ -58,10 +62,10 @@ abstract class PhysicsNodeComponent(nodeModel: SceneNodeModel) : SceneNodeCompon
         val t = MutableVec3d()
         val r = MutableQuatD()
         val s = MutableVec3d()
-        nodeModel.drawNode.modelMatD.decompose(t, r, s)
+        gameEntity.drawNode.modelMatD.decompose(t, r, s)
 
         if (!s.isFuzzyEqual(Vec3d.ONES, eps = 1e-3)) {
-            logW { "${nodeModel.name} / ${this::class.simpleName}: transform contains a scaling component $s, which may lead to unexpected behavior." }
+            logW { "${gameEntity.name} / ${this::class.simpleName}: transform contains a scaling component $s, which may lead to unexpected behavior." }
         }
         applyPose(t, r)
     }

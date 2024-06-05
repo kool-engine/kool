@@ -2,11 +2,11 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.*
@@ -20,11 +20,10 @@ import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 
 class RigidActorComponent(
-    nodeModel: SceneNodeModel,
-    override val componentData: RigidActorComponentData = RigidActorComponentData()
+    gameEntity: GameEntity,
+    componentData: RigidActorComponentData = RigidActorComponentData()
 ) :
-    PhysicsNodeComponent(nodeModel),
-    EditorDataComponent<RigidActorComponentData>,
+    PhysicsNodeComponent<RigidActorComponentData>(gameEntity, componentData),
     UpdateMeshComponent
 {
     val actorState = mutableStateOf(componentData.properties).onChange {
@@ -77,8 +76,8 @@ class RigidActorComponent(
         triggerListeners += listener
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
         createRigidBody()
     }
 
@@ -147,8 +146,8 @@ class RigidActorComponent(
         rigidActor?.apply {
             bodyShapes = componentData.properties.shapes
 
-            val meshComp = nodeModel.getComponent<MeshComponent>()
-            val modelComp = nodeModel.getComponent<ModelComponent>()
+            val meshComp = gameEntity.getComponent<MeshComponent>()
+            val modelComp = gameEntity.getComponent<ModelComponent>()
 
             val shapes = when {
                 bodyShapes.isNotEmpty() -> bodyShapes.mapNotNull { shape -> shape.makeCollisionGeometry() }
@@ -167,11 +166,11 @@ class RigidActorComponent(
     }
 
     private suspend fun MeshComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        return componentData.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(mesh) }
+        return componentData.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(typedDrawNode) }
     }
 
     private fun ModelComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        val model = this.model ?: return emptyList()
+        val model = typedDrawNode ?: return emptyList()
 
         model.transform.decompose(scale = scale)
 

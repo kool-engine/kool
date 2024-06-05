@@ -1,14 +1,9 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.loadModel
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
@@ -23,10 +18,9 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
-class ModelComponent(nodeModel: SceneNodeModel, override val componentData: ModelComponentData) :
-    SceneNodeComponent(nodeModel),
-    EditorDataComponent<ModelComponentData>,
-    ContentComponent,
+class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) :
+    GameEntityDataComponent<ModelComponentData>(gameEntity, componentData),
+    DrawNodeComponent<Model>,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
     UpdateShadowMapsComponent,
@@ -52,17 +46,15 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         if (AppState.isEditMode) {
             componentData.animationIndex = it
         }
-        model?.apply {
+        typedDrawNode?.apply {
             enableAnimation(it)
         }
     }
 
     val gltfState = mutableStateOf<GltfFile?>(null)
 
-    var model: Model? = null
-
-    override val contentNode: Model?
-        get() = model
+    override var typedDrawNode: Model? = null
+        private set
 
     private val isRecreatingModel = atomic(false)
     private var isIblShaded = false
@@ -77,14 +69,14 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         }
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
         recreateModel()
     }
 
     override fun updateMaterial(material: MaterialData?) {
-        val holder = nodeModel.getComponent<MaterialComponent>() ?: return
-        val model = this.model
+        val holder = gameEntity.getComponent<MaterialComponent>() ?: return
+        val model = typedDrawNode
         if (holder.isHoldingMaterial(material)) {
             launchOnMainThread {
                 if (material == null || model == null) {
@@ -93,7 +85,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
                 } else {
                     // update model shaders and recreate model in case update fails
                     val updateFail = model.meshes.values.any {
-                        !material.updateShader(it.shader, sceneModel.shaderData)
+                        !material.updateShader(it.shader, sceneComponent.shaderData)
                     }
                     if (updateFail) {
                         recreateModel()
@@ -111,7 +103,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
             // recreate models without ibl lighting
             recreateModelAsync()
         } else {
-            model?.meshes?.values?.forEach { mesh ->
+            typedDrawNode?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientFactor = bgColorLinear
             }
         }
@@ -122,7 +114,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
             // recreate models with ibl lighting
             recreateModelAsync()
         } else {
-            model?.meshes?.values?.forEach { mesh ->
+            typedDrawNode?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
                 (mesh.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
             }
@@ -141,7 +133,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
             // recreate models with changed ssao setting
             recreateModelAsync()
         }
-        model?.meshes?.values?.forEach { mesh ->
+        typedDrawNode?.meshes?.values?.forEach { mesh ->
             (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
         }
     }
@@ -151,18 +143,19 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     }
 
     private suspend fun createModel(): Model? {
-        logD { "${nodeModel.name}: (re-)loading model" }
+        logD { "${gameEntity.name}: (re-)loading model" }
 
-        shaderShadowMaps = sceneModel.shaderData.shadowMaps.copy()
-        val ibl = sceneModel.shaderData.environmentMaps
-        val ssao = sceneModel.shaderData.ssaoMap
-        val material = nodeModel.getComponent<MaterialComponent>()?.materialData
+        val shaderData = sceneComponent.shaderData
+        shaderShadowMaps = shaderData.shadowMaps.copy()
+        val ibl = shaderData.environmentMaps
+        val ssao = shaderData.ssaoMap
+        val material = gameEntity.getComponent<MaterialComponent>()?.materialData
         val modelCfg = GltfLoadConfig(
             materialConfig = GltfMaterialConfig(
                 environmentMaps = ibl,
                 shadowMaps = shaderShadowMaps,
                 scrSpcAmbientOcclusionMap = ssao,
-                maxNumberOfLights = sceneModel.maxNumLightsState.value
+                maxNumberOfLights = sceneComponent.maxNumLightsState.value
             ),
             applyMaterials = material == null,
             assetLoader = AppAssets.assetLoader
@@ -176,7 +169,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         val model = gltfFile.makeModel(modelCfg, loadScene)
         if (material != null) {
             model.meshes.forEach { (name, mesh) ->
-                val shader = material.createShader(sceneModel.shaderData)
+                val shader = material.createShader(shaderData)
                 val shaderOk = when (shader) {
                     is KslPbrShader -> {
                         val requiredAttribs = shader.findRequiredVertexAttributes()
@@ -198,7 +191,7 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
         }
 
         if (!isIblShaded) {
-            val bgColor = sceneModel.shaderData.ambientColorLinear
+            val bgColor = shaderData.ambientColorLinear
             model.meshes.values.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientFactor = bgColor
             }
@@ -217,8 +210,8 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
             }
         }
 
-        model.name = nodeModel.name
-        model.isVisible = nodeModel.isVisibleState.value
+        model.name = gameEntity.name
+        model.isVisible = gameEntity.isVisibleState.value
         return model
     }
 
@@ -232,10 +225,10 @@ class ModelComponent(nodeModel: SceneNodeModel, override val componentData: Mode
     }
 
     private suspend fun recreateModel() {
-        model = createModel()
+        typedDrawNode = createModel()
 
         // set newly created model as new content node (or an empty Node in case model loading failed)
         // this also disposes any previous model
-        nodeModel.setDrawNode(model ?: Node(nodeModel.name))
+        gameEntity.replaceDrawNode(typedDrawNode ?: Node(gameEntity.name))
     }
 }

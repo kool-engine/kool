@@ -1,17 +1,17 @@
 package de.fabmax.kool.editor.util
 
 import de.fabmax.kool.editor.actions.SetTransformAction
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.math.MutableQuatD
 import de.fabmax.kool.math.MutableVec3d
 
-class SelectionTransform(nodeModels: List<SceneNodeModel>) {
+class SelectionTransform(nodeModels: List<GameEntity>) {
     val selection: List<NodeTransformData>
-    val primaryTransformNode: SceneNodeModel?
+    val primaryTransformNode: GameEntity?
         get() = selection.getOrNull(0)?.nodeModel
 
     init {
@@ -31,7 +31,7 @@ class SelectionTransform(nodeModels: List<SceneNodeModel>) {
     }
 
     fun applyTransform(isUndoable: Boolean) {
-        val transformNodes = mutableListOf<SceneNodeModel>()
+        val transformNodes = mutableListOf<GameEntity>()
         val undoTransforms = mutableListOf<TransformData>()
         val applyTransforms = mutableListOf<TransformData>()
 
@@ -60,18 +60,18 @@ class SelectionTransform(nodeModels: List<SceneNodeModel>) {
         selection.forEach { it.restoreInitial() }
     }
 
-    private fun SceneNodeModel.hasNoParentIn(nodeModels: Set<SceneNodeModel>): Boolean {
-        var parent = parent as? SceneNodeModel
-        while (parent != null) {
+    private fun GameEntity.hasNoParentIn(nodeModels: Set<GameEntity>): Boolean {
+        var parent = parent
+        while (parent != null && parent.isSceneChild) {
             if (parent in nodeModels) {
                 return false
             }
-            parent = parent.parent as? SceneNodeModel
+            parent = parent.parent
         }
         return true
     }
 
-    inner class NodeTransformData(val nodeModel: SceneNodeModel) {
+    inner class NodeTransformData(val nodeModel: GameEntity) {
         private val poseInPrimaryFrame = MutableMat4d()
 
         val startPosition = MutableVec3d()
