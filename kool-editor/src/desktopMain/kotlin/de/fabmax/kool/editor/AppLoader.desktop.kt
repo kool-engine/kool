@@ -183,7 +183,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
 
     private class EmptyApp : EditorAwareApp {
         override suspend fun loadApp(projectModel: EditorProject, ctx: KoolContext) {
-            projectModel.create()
+            projectModel.createScenes()
         }
     }
 }

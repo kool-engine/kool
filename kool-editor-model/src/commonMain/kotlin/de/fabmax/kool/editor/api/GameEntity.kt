@@ -65,6 +65,8 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
 
     init {
+        check(entityId.value > 0L)
+
         createComponentsFromData(entityData.components)
         transform = getOrPutComponent { TransformComponent(this, TransformComponentData()) }
 

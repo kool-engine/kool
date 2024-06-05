@@ -6,11 +6,13 @@ import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logI
 import kotlinx.serialization.json.Json
 
-class EditorProject(val projectData: ProjectData) {
+class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
     private var nextId = projectData.entities.maxOf { it.id.value } + 1
 
@@ -58,7 +60,8 @@ class EditorProject(val projectData: ProjectData) {
         }
     }
 
-    suspend fun create() {
+    suspend fun createScenes() {
+        logI { "Load project scenes" }
         checkProjectModelConsistency()
         projectData.entities
             .filter { it.components.any { c -> c is SceneComponentData } }
@@ -71,6 +74,16 @@ class EditorProject(val projectData: ProjectData) {
 
     fun onStart() {
         createdScenes.values.forEach { it.onStart() }
+    }
+
+    fun releaseScenes() {
+        createdScenes.values.forEach { it.release() }
+        _createdScenes.clear()
+    }
+
+    override fun release() {
+        super.release()
+        releaseScenes()
     }
 
     fun nextId(): EntityId {

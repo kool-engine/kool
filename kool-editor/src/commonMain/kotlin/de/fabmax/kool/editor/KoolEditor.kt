@@ -248,6 +248,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         val prevSelection = selectionOverlay.selection.map { it.entityId }
         selectionOverlay.clearSelection()
+        ctx.scenes -= editorOverlay
 
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
@@ -261,6 +262,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
         this.loadedApp.value?.app?.onDispose(ctx)
         selectionOverlay.selectionPass.disposePipelines()
+        projectModel.releaseScenes()
 
         // initialize newly loaded app
         loadedApp.app.loadApp(projectModel, ctx)

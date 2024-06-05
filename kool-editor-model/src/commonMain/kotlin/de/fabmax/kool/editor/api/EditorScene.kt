@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.GameEntityData
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
@@ -14,9 +15,10 @@ import de.fabmax.kool.util.logW
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.scene
 
-class EditorScene(val sceneData: GameEntityData, val project: EditorProject) {
+class EditorScene(val sceneData: GameEntityData, val project: EditorProject) : BaseReleasable() {
 
-    val sceneEntity: GameEntity = GameEntity(sceneData, this)
+    var sceneEntity: GameEntity = GameEntity(sceneData, this)
+        private set
     val name: String get() = sceneEntity.name
 
     val nodesToEntities: MutableMap<Node, GameEntity> = mutableMapOf()
@@ -28,7 +30,6 @@ class EditorScene(val sceneData: GameEntityData, val project: EditorProject) {
         sceneEntities[sceneEntity.entityId] = sceneEntity
     }
 
-
     inline fun <reified T: Any> getAllComponents(): List<T> {
         return sceneEntities.values.flatMap { it.components.filterIsInstance<T>() }
     }
@@ -38,8 +39,6 @@ class EditorScene(val sceneData: GameEntityData, val project: EditorProject) {
     }
 
     suspend fun prepareScene() {
-        //disposeCreatedScene()
-
         fun createEntity(id: EntityId, parent: GameEntity) {
             resolveNode(id, parent)?.let { node ->
                 node.entityData.childEntityIds.forEach { childId ->
@@ -64,15 +63,14 @@ class EditorScene(val sceneData: GameEntityData, val project: EditorProject) {
         }
     }
 
-    private fun disposeCreatedScene() {
+    override fun release() {
+        super.release()
+
         sceneEntities.values.forEach {
             it.destroyComponents()
         }
         sceneEntities.clear()
         nodesToEntities.clear()
-
-//        drawNode.release()
-//        backgroundUpdater.skybox = null
     }
 
     private fun resolveNode(entityId: EntityId, parent: GameEntity): GameEntity? {
