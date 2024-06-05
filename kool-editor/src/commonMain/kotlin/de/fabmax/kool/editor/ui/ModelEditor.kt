@@ -32,7 +32,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                         .onItemSelected { index ->
                             if (allTheSameModel || index > 0) {
                                 components.mapNotNull { comp ->
-                                    items[index].model?.let { SetModelPathAction(comp.gameEntity.entityId, it.path) }
+                                    items[index].model?.let { SetModelPathAction(comp.gameEntity.id, it.path) }
                                 }.fused().apply()
                             }
                         }
@@ -59,14 +59,14 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                 val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
                 labeledCombobox("Model scene:", scenes, components[0].sceneIndexState.use()) { selected ->
                     components.map {
-                        SetModelSceneAction(it.gameEntity.entityId, selected.index)
+                        SetModelSceneAction(it.gameEntity.id, selected.index)
                     }.fused().apply()
                 }
 
                 val animations = gltf.animationOptions()
                 labeledCombobox("Animation:", animations, components[0].animationIndexState.use() + 1) { selected ->
                     components.map {
-                        SetModelAnimationAction(it.gameEntity.entityId, selected.index)
+                        SetModelAnimationAction(it.gameEntity.id, selected.index)
                     }.fused().apply()
                 }
             }
@@ -119,7 +119,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
             val dragModelItem = dragItem.get(DndItemFlavor.DndItemModel)
             val actions = components
                 .filter { it.modelPathState.value != dragModelItem.path }
-                .map { SetModelPathAction(it.gameEntity.entityId, dragModelItem.path) }
+                .map { SetModelPathAction(it.gameEntity.id, dragModelItem.path) }
             if (actions.isNotEmpty()) {
                 FusedAction(actions).apply()
             }

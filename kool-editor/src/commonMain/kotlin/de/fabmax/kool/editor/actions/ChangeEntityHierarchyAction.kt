@@ -16,15 +16,15 @@ class ChangeEntityHierarchyAction(
     init {
         moveNodeModels.forEach { moveNodeModel ->
             val parent = checkNotNull(moveNodeModel.parent)
-            val undoIdx = parent.entityData.childEntityIds.indexOf(moveNodeModel.entityId)
+            val undoIdx = parent.children.indexOf(moveNodeModel)
             val undoPos = if (undoIdx > 0) {
-                val after = moveNodeModel.scene.sceneEntities[parent.entityData.childEntityIds[undoIdx - 1]]
-                after?.let { GameEntity.InsertionPos.After(it.entityId) } ?: GameEntity.InsertionPos.End
+                val after = parent.children[undoIdx - 1]
+                GameEntity.InsertionPos.After(after.id)
             } else {
-                val before = moveNodeModel.scene.sceneEntities[parent.entityData.childEntityIds.getOrNull(undoIdx + 1)]
-                before?.let { GameEntity.InsertionPos.Before(it.entityId) } ?: GameEntity.InsertionPos.End
+                val before = parent.children.getOrNull(undoIdx + 1)
+                before?.let { GameEntity.InsertionPos.Before(it.id) } ?: GameEntity.InsertionPos.End
             }
-            undoInfos[moveNodeModel.entityId] = UndoInfo(parent.entityId, undoPos)
+            undoInfos[moveNodeModel.id] = UndoInfo(parent.id, undoPos)
         }
     }
 
@@ -33,12 +33,12 @@ class ChangeEntityHierarchyAction(
         var insertionPos = this.insertionPos
 
         gameEntities.forEach { nodeModel ->
-            undoInfos[nodeModel.entityId]?.let { undoInfo ->
+            undoInfos[nodeModel.id]?.let { undoInfo ->
                 val oldParent = undoInfo.parent.gameEntity
                 if (oldParent != null) {
                     oldParent.removeChild(nodeModel)
                     newParent.addChild(nodeModel, insertionPos)
-                    insertionPos = GameEntity.InsertionPos.After(nodeModel.entityId)
+                    insertionPos = GameEntity.InsertionPos.After(nodeModel.id)
                 }
             }
         }
@@ -49,7 +49,7 @@ class ChangeEntityHierarchyAction(
         val oldParent = newParentId.gameEntity ?: return
 
         gameEntities.forEach { nodeModel ->
-            undoInfos[nodeModel.entityId]?.let { undoInfo ->
+            undoInfos[nodeModel.id]?.let { undoInfo ->
                 val newParent = undoInfo.parent.gameEntity
                 if (newParent != null) {
                     oldParent.removeChild(nodeModel)

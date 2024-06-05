@@ -24,7 +24,7 @@ class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
                     )
                 }
                 components.map {
-                    SetShadowMapTypeAction(it.gameEntity.entityId, shadowMap)
+                    SetShadowMapTypeAction(it.gameEntity.id, shadowMap)
                 }.fused().apply()
             }
         }

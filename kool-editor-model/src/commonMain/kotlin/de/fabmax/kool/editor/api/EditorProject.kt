@@ -6,19 +6,16 @@ import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.mutableStateListOf
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.*
 import kotlinx.serialization.json.Json
 
 class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
     private var nextId = projectData.entities.maxOf { it.id.value } + 1
 
-    private val _sceneNodeData = projectData.entities.associateBy { it.id }.toMutableMap()
-    val sceneNodeData: Map<EntityId, GameEntityData>
-        get() = _sceneNodeData
+    private val _entityData = projectData.entities.associateBy { it.id }.toMutableMap()
+    val entityData: Map<EntityId, GameEntityData>
+        get() = _entityData
 
     private val _materialsById = projectData.materials.associateBy { it.id }.toMutableMap()
     val materialsById: Map<EntityId, MaterialData>
@@ -33,26 +30,33 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
     private fun checkProjectModelConsistency() {
         val entityMap = projectData.entities.associateBy { it.id }
+        val parentsToChildren = mutableMapOf<EntityId?, MutableList<EntityId>>()
         val referencedEntityIds = mutableSetOf<EntityId>()
 
-        fun collectChildNodeIds(node: GameEntityData) {
-            node.childEntityIds.forEach { childId ->
-                val child = entityMap[childId]
-                if (child == null) {
-                    logE { "Node \"${node.name}\" references non-existing child node $childId" }
-                } else {
-                    referencedEntityIds += childId
-                    collectChildNodeIds(child)
-                }
+        projectData.entities.forEach {
+            if (it.parentId != null && it.parentId !in entityMap) {
+                logE { "Entity ${it.name} references non-existing parent" }
+            } else {
+                parentsToChildren.getOrPut(it.parentId) { mutableListOf() } += it.id
             }
         }
 
-        projectData.entities
-            .filter { it.components.any { c -> c is SceneComponentData } }
-            .forEach { scene ->
-                referencedEntityIds += scene.id
-                collectChildNodeIds(scene)
+        fun collectChildNodeIds(entity: GameEntityData) {
+            parentsToChildren[entity.id]?.forEach { childId ->
+                val child = checkNotNull(entityMap[childId])
+                referencedEntityIds += childId
+                collectChildNodeIds(child)
             }
+        }
+
+        val roots = parentsToChildren[null]?.mapNotNull { entityMap[it] } ?: emptyList()
+        roots.forEach { scene ->
+            if (scene.components.none { c -> c is SceneComponentData }) {
+                logW { "Root entity ${scene.name} has no scene component" }
+            }
+            referencedEntityIds += scene.id
+            collectChildNodeIds(scene)
+        }
 
         val unreferencedIds = entityMap.keys - referencedEntityIds
         if (unreferencedIds.isNotEmpty()) {
@@ -95,7 +99,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
      * name already ends with a number, the number is replaced.
      */
     fun uniquifyName(name: String): String {
-        val existingNames = sceneNodeData.values.map { it.name }.toSet()
+        val existingNames = entityData.values.map { it.name }.toSet()
         if (name !in existingNames) {
             return name
         }
@@ -114,14 +118,14 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
         return uniqueName
     }
 
-    fun addSceneNodeData(data: GameEntityData) {
+    fun addEntityData(data: GameEntityData) {
         projectData.entities += data
-        _sceneNodeData[data.id] = data
+        _entityData[data.id] = data
     }
 
-    fun removeSceneNodeData(data: GameEntityData) {
+    fun removeEntityData(data: GameEntityData) {
         projectData.entities -= data
-        _sceneNodeData -= data.id
+        _entityData -= data.id
     }
 
     fun createNewMaterial(): MaterialData {
@@ -162,13 +166,12 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                 val boxId = EntityId(3L)
                 val lightId = EntityId(4L)
                 entities += GameEntityData("New Scene", sceneId).apply {
-                    childEntityIds += listOf(camId, boxId, lightId)
                     components += SceneComponentData(cameraEntityId = camId)
                     components += SceneBackgroundComponentData(
                         SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
                     )
                 }
-                entities += GameEntityData("Camera", camId).apply {
+                entities += GameEntityData("Camera", camId, sceneId).apply {
                     components += CameraComponentData(CameraTypeData.Perspective())
                     components += TransformComponentData(
                         TransformData.fromMatrix(
@@ -177,10 +180,10 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                                 .rotate((-30.0).deg, Vec3d.X_AXIS)
                         ))
                 }
-                entities += GameEntityData("Default Cube", boxId).apply {
+                entities += GameEntityData("Default Cube", boxId, sceneId).apply {
                     components += MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
                 }
-                entities += GameEntityData("Directional Light", lightId).apply {
+                entities += GameEntityData("Directional Light", lightId, sceneId).apply {
                     components += DiscreteLightComponentData(LightTypeData.Directional())
                     components += TransformComponentData(
                         TransformData.fromMatrix(

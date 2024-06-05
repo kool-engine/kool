@@ -5,7 +5,6 @@ import de.fabmax.kool.editor.actions.AddSceneNodeAction
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.GameEntityData
-import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
@@ -42,9 +41,7 @@ object EditorClipboard {
             val copyNodes = mutableSetOf<GameEntityData>()
             fun collect(node: GameEntity) {
                 if (copyNodes.add(node.entityData)) {
-                    node.entityData.childEntityIds
-                        .mapNotNull { it.gameEntity }
-                        .forEach { collect(it) }
+                    node.children.forEach { collect(it) }
                 }
             }
             selection.forEach { collect(it) }
@@ -65,7 +62,7 @@ object EditorClipboard {
                     val selection = editor.selectionOverlay.getSelectedNodes()
                     val parent = selection.firstOrNull()?.parent ?: scene.sceneEntity
 
-                    AddSceneNodeAction(copyData, parent.entityId).apply()
+                    AddSceneNodeAction(copyData, parent.id).apply()
                     launchDelayed(1) {
                         val nodes = copyData.mapNotNull { scene.sceneEntities[it.id] }
                         editor.selectionOverlay.setSelection(nodes)
@@ -88,9 +85,7 @@ object EditorClipboard {
             existingNames += it.name
         }
         entityData.forEach {
-            val newChildIds = it.childEntityIds.mapNotNull { oldId -> nodesByIds[oldId]?.id }
-            it.childEntityIds.clear()
-            it.childEntityIds += newChildIds
+            it.parentId = nodesByIds[it.parentId]?.id
         }
     }
 

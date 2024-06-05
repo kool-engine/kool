@@ -16,12 +16,12 @@ abstract class ComponentEditor<T: GameEntityComponent> : Composable {
     var components: List<T> = emptyList()
     val component: T get() = components[0]
 
-    val entityId: EntityId get() = component.gameEntity.entityId
+    val entityId: EntityId get() = component.gameEntity.id
     val gameEntity: GameEntity get() = component.gameEntity
     val scene: EditorScene get() = gameEntity.scene
 
     protected fun removeComponent() {
-        components.map { RemoveComponentAction(it.gameEntity.entityId, it) }.fused().apply()
+        components.map { RemoveComponentAction(it.gameEntity.id, it) }.fused().apply()
     }
 
     protected fun condenseDouble(doubles: List<Double>, eps: Double = FUZZY_EQ_D): Double {

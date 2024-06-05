@@ -50,7 +50,7 @@ class SceneComponent(gameEntity: GameEntity, componentData: SceneComponentData) 
         }
         cameraState = mutableStateOf<CameraComponent?>(null).onChange {
             if (AppState.isEditMode) {
-                componentData.cameraEntityId = it?.gameEntity?.entityId ?: EntityId(-1L)
+                componentData.cameraEntityId = it?.gameEntity?.id ?: EntityId(-1L)
             } else {
                 // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
                 it?.typedDrawNode?.let { cam -> scene.camera = cam }

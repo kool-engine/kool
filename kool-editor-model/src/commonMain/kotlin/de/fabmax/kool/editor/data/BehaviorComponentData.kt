@@ -71,7 +71,7 @@ data class ComponentRef(
 fun ComponentRef(component: GameEntityComponent?): ComponentRef {
     // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
     return if (component != null) {
-        ComponentRef(component.gameEntity.entityId, component::class.simpleName!!)
+        ComponentRef(component.gameEntity.id, component::class.simpleName!!)
     } else {
         ComponentRef(EntityId(-1L), "<null>")
     }
@@ -79,7 +79,7 @@ fun ComponentRef(component: GameEntityComponent?): ComponentRef {
 
 fun ComponentRef.matchesComponent(component: GameEntityComponent): Boolean {
     // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
-    return entityId == component.gameEntity.entityId && component::class.simpleName == componentClassName
+    return entityId == component.gameEntity.id && component::class.simpleName == componentClassName
 }
 
 fun GameEntity.getComponent(ref: ComponentRef): GameEntityComponent? {

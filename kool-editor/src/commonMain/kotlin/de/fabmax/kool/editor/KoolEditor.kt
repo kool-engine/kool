@@ -246,7 +246,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             stopApp()
         }
 
-        val prevSelection = selectionOverlay.selection.map { it.entityId }
+        val prevSelection = selectionOverlay.selection.map { it.id }
         selectionOverlay.clearSelection()
         ctx.scenes -= editorOverlay
 

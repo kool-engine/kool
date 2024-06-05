@@ -17,18 +17,18 @@ class DeleteSceneNodesAction(
         gameEntities.forEach { appendNodeInfo(it) }
     }
 
-    private fun appendNodeInfo(nodeModel: GameEntity) {
-        val parent = nodeModel.parent!!
-        val nodeIdx = parent.entityData.childEntityIds.indexOf(nodeModel.entityId)
-        val pos = if (nodeIdx > 0) {
-            GameEntity.InsertionPos.After(parent.entityData.childEntityIds[nodeIdx - 1])
+    private fun appendNodeInfo(gameEntity: GameEntity) {
+        val parent = gameEntity.parent!!
+        val entityIdx = parent.children.indexOf(gameEntity)
+        val pos = if (entityIdx > 0) {
+            GameEntity.InsertionPos.After(parent.children[entityIdx - 1].id)
         } else {
-            val before = parent.entityData.childEntityIds.getOrNull(1)
-            before?.let { GameEntity.InsertionPos.Before(it) } ?: GameEntity.InsertionPos.End
+            val before = parent.children.getOrNull(1)
+            before?.let { GameEntity.InsertionPos.Before(it.id) } ?: GameEntity.InsertionPos.End
         }
-        removeNodeInfos += NodeInfo(nodeModel.entityData, parent.entityId, pos)
+        removeNodeInfos += NodeInfo(gameEntity.entityData, parent.id, pos)
 
-        nodeModel.entityData.childEntityIds.mapNotNull { it.gameEntity }.forEach { child ->
+        gameEntity.children.forEach { child ->
             appendNodeInfo(child)
         }
     }

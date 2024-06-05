@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.api.GameEntity
 
 class SetVisibilityAction(nodes: List<GameEntity>, val visible: Boolean) : GameEntityAction(nodes) {
 
-    private val undoVisibilities = nodes.associate { it.entityId to it.isVisibleState.value }
+    private val undoVisibilities = nodes.associate { it.id to it.isVisibleState.value }
 
     constructor(gameEntity: GameEntity, visible: Boolean): this(listOf(gameEntity), visible)
 
@@ -16,7 +16,7 @@ class SetVisibilityAction(nodes: List<GameEntity>, val visible: Boolean) : GameE
 
     override fun undoAction() {
         gameEntities.forEach {
-            undoVisibilities[it.entityId]?.let { undoState -> it.isVisibleState.set(undoState) }
+            undoVisibilities[it.id]?.let { undoState -> it.isVisibleState.set(undoState) }
         }
         KoolEditor.instance.sceneObjectsOverlay.updateOverlayObjects()
     }

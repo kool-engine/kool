@@ -7,10 +7,11 @@ import kotlin.jvm.JvmInline
 class GameEntityData(
     var name: String,
     var id: EntityId,
+    var parentId: EntityId? = null,
+    var order: Int = 0,
     var isVisible: Boolean = true
 ) {
     val components: MutableList<ComponentData> = mutableListOf()
-    val childEntityIds: MutableList<EntityId> = mutableListOf()
 }
 
 @Serializable

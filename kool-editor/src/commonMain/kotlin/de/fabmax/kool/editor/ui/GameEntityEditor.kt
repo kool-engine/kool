@@ -37,7 +37,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
     ) {
         modifier.width(Grow.Std)
 
-        val scopeName = objects.joinToString("") { "${it.entityId}" }
+        val scopeName = objects.joinToString("") { "${it.id}" }
         Column(Grow.Std, Grow.Std, scopeName = scopeName) {
             objectNameOrCount(objects)
             if (objects.isEmpty()) return@Column
@@ -71,7 +71,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                     .padding(vertical = sizes.smallGap)
                     .onChange { editName = it }
                     .onEnterPressed {
-                        RenameNodeAction(objects[0].entityId, it, objects[0].name).apply()
+                        RenameNodeAction(objects[0].id, it, objects[0].name).apply()
                         surface.unfocus(this)
                     }
             }
@@ -197,7 +197,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                     !hasComponent(target)
                 }
                 .mapNotNull { target ->
-                    createComponent(target)?.let { AddComponentAction(target.entityId, it) }
+                    createComponent(target)?.let { AddComponentAction(target.id, it) }
                 }
                 .fused().apply()
         }
@@ -249,7 +249,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                                     }
                                     .map { target ->
                                         val modelComp = ModelComponent(target, ModelComponentData(model.path))
-                                        AddComponentAction(target.entityId, modelComp)
+                                        AddComponentAction(target.id, modelComp)
                                     }
                                     .fused().apply()
                             }
@@ -296,7 +296,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                                 objs
                                     .map { target ->
                                         val behaviorComp = BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))
-                                        AddComponentAction(target.entityId, behaviorComp)
+                                        AddComponentAction(target.id, behaviorComp)
                                     }
                                     .fused().apply()
                             }

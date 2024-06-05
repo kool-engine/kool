@@ -9,7 +9,7 @@ class SetMeshShapeAction(
     private val oldShape: ShapeData,
     private val newShape: ShapeData,
     private val replaceIndex: Int = 0
-) : ComponentAction<MeshComponent>(component.gameEntity.entityId, MeshComponent::class) {
+) : ComponentAction<MeshComponent>(component.gameEntity.id, MeshComponent::class) {
 
     override fun doAction() {
         launchOnMainThread {

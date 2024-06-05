@@ -257,7 +257,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
     private fun UiScope.SetBehaviorPropertyAction(prop: BehaviorProperty): (BehaviorComponent, PropertyValue, PropertyValue) -> EditorAction {
         return { component: BehaviorComponent, undoData: PropertyValue, applyData: PropertyValue ->
-            SetBehaviorPropertyAction(component.gameEntity.entityId, prop.name, undoData, applyData) { comp, value ->
+            SetBehaviorPropertyAction(component.gameEntity.id, prop.name, undoData, applyData) { comp, value ->
                 prop.setProperty(comp, value)
                 comp.componentData.propertyValues[prop.name] = value
                 surface.triggerUpdate()

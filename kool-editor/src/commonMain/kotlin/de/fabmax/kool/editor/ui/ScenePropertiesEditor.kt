@@ -13,7 +13,7 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
         val sceneComponent = scene.sceneComponent
         val cameraNodes = listOf(CameraItem(EntityId(-1L), "None", null)) +
                 scene.getAllComponents<CameraComponent>().map { CameraItem(it) }.sortedBy { it.label }
-        val selectedNodeId = sceneComponent.cameraState.use()?.gameEntity?.entityId ?: -1L
+        val selectedNodeId = sceneComponent.cameraState.use()?.gameEntity?.id ?: -1L
         val selectedIndex = cameraNodes.indexOfFirst { it.entityId == selectedNodeId }
         labeledCombobox("Camera:", cameraNodes, selectedIndex) {
             sceneComponent.cameraState.set(it.camComponent)
@@ -25,7 +25,7 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
     }
 
     private class CameraItem(val entityId: EntityId, val label: String, val camComponent: CameraComponent?) {
-        constructor(cam: CameraComponent) : this(cam.gameEntity.entityId, cam.gameEntity.name, cam)
+        constructor(cam: CameraComponent) : this(cam.gameEntity.id, cam.gameEntity.name, cam)
 
         override fun toString() = label
     }

@@ -16,7 +16,7 @@ val GameEntity.sceneComponent: SceneComponent get() = scene.sceneEntity.requireC
 
 class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
-    val entityId: EntityId get() = entityData.id
+    val id: EntityId get() = entityData.id
     val name: String get() = entityData.name
     val components = mutableStateListOf<GameEntityComponent>()
 
@@ -24,7 +24,10 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     val isSceneChild: Boolean = !isSceneRoot
 
     var parent: GameEntity? = null
-        //private set
+        private set(value) {
+            field = value
+            entityData.parentId = value?.id
+        }
 
     private val _children = mutableListOf<GameEntity>()
     val children: List<GameEntity> get() = _children
@@ -65,7 +68,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
 
     init {
-        check(entityId.value > 0L)
+        check(id.value > 0L)
 
         createComponentsFromData(entityData.components)
         transform = getOrPutComponent { TransformComponent(this, TransformComponentData()) }
@@ -83,8 +86,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             parent.removeNode(oldDrawNode)
             parent.addNode(newDrawNode, ndIdx)
         }
-        val childEntities = entityData.childEntityIds.mapNotNull { scene.sceneEntities[it] }
-        childEntities.forEach {
+        children.forEach {
             oldDrawNode.removeNode(it.drawNode)
             newDrawNode.addNode(it.drawNode)
         }
@@ -111,44 +113,33 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     fun addChild(child: GameEntity, insertionPos: InsertionPos = InsertionPos.End) {
-        // addChild() is called during scene creation for all child nodes of this NodeModel, in that case
-        // the IDs of the children already exist in nodeData.childNodeIds -> only insert node ID if it isn't
-        // already present
-        val insertId = child.entityId !in entityData.childEntityIds
-
         when (insertionPos) {
             is InsertionPos.After -> {
-                if (insertId) {
-                    val insertIdx = entityData.childEntityIds.indexOf(insertionPos.that) + 1
-                    entityData.childEntityIds.add(insertIdx, child.entityId)
-                }
                 val thatNode = scene.sceneEntities[insertionPos.that]
                 val insertSceneIdx = drawNode.children.indexOf(thatNode?.drawNode) + 1
                 drawNode.addNode(child.drawNode, insertSceneIdx)
             }
             is InsertionPos.Before -> {
-                if (insertId) {
-                    val insertIdx = max(0, entityData.childEntityIds.indexOf(insertionPos.that))
-                    entityData.childEntityIds.add(insertIdx, child.entityId)
-                }
                 val thatNode = scene.sceneEntities[insertionPos.that]
                 val insertSceneIdx = max(0, drawNode.children.indexOf(thatNode?.drawNode))
                 drawNode.addNode(child.drawNode, insertSceneIdx)
             }
             InsertionPos.End -> {
-                if (insertId) {
-                    entityData.childEntityIds += child.entityId
-                }
                 drawNode.addNode(child.drawNode)
             }
         }
 
         child.parent = this
+        _children += child
+        children.forEachIndexed { i, it -> it.entityData.order = i }
     }
 
     fun removeChild(child: GameEntity) {
-        entityData.childEntityIds -= child.entityId
+        check(child.parent == this)
+
         drawNode.removeNode(child.drawNode)
+        _children -= child
+        child.parent = null
     }
 
     private val requireSceneChild: GameEntity

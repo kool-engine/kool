@@ -35,7 +35,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 components.map {
                     val bodyProps = it.actorState.value
                     val isTrigger = if (actorType == RigidActorType.STATIC) bodyProps.isTrigger else false
-                    SetRigidBodyPropertiesAction(it.gameEntity.entityId, bodyProps, bodyProps.copy(type = actorType, isTrigger = isTrigger))
+                    SetRigidBodyPropertiesAction(it.gameEntity.id, bodyProps, bodyProps.copy(type = actorType, isTrigger = isTrigger))
                 }.fused().apply()
             }
         }
@@ -49,7 +49,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 dataGetter = { it.actorState.value },
                 valueGetter = { it.characterControllerHitBehavior },
                 valueSetter = { oldData, newValue -> oldData.copy(characterControllerHitBehavior = newValue) },
-                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoData, applyData) },
+                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.gameEntity.id, undoData, applyData) },
                 label = "Controller hit behavior:",
                 labelWidth = sizes.editorLabelWidthMedium
             )
@@ -64,7 +64,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                         val bodyProps = it.actorState.value
                         val mergedUndo = bodyProps.copy(mass = mergeDouble(undo, bodyProps.mass))
                         val mergedApply = bodyProps.copy(mass = mergeDouble(apply, bodyProps.mass))
-                        SetRigidBodyPropertiesAction( it.gameEntity.entityId, mergedUndo, mergedApply)
+                        SetRigidBodyPropertiesAction( it.gameEntity.id, mergedUndo, mergedApply)
                     }.fused()
                 }
             )
@@ -73,7 +73,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 dataGetter = { it.actorState.value },
                 valueGetter = { it.isTrigger },
                 valueSetter = { oldData, newValue -> oldData.copy(isTrigger = newValue) },
-                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoData, applyData) },
+                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.gameEntity.id, undoData, applyData) },
                 label = "Is trigger:",
             )
         }
@@ -119,7 +119,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             .filter { it.actorState.value.shapes != newShapes }
             .map {
                 val props = it.actorState.value
-                SetRigidBodyPropertiesAction(it.gameEntity.entityId, props, props.copy(shapes = newShapes))
+                SetRigidBodyPropertiesAction(it.gameEntity.id, props, props.copy(shapes = newShapes))
             }
         if (actions.isNotEmpty()) {
             FusedAction(actions).apply()
@@ -144,7 +144,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     val mergedApply = Vec3Data(mergeVec3(apply, size))
                     val undoProps = props[i].copy(shapes = listOf(boxes[i].copy(size = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(boxes[i].copy(size = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoProps, applyProps)
+                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
                 }.fused()
             }
         )
@@ -163,7 +163,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     val mergedApply = mergeDouble(apply, caps[i].radius)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoProps, applyProps)
+                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
                 }.fused()
             }
         )
@@ -179,7 +179,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     val mergedApply = mergeDouble(apply, caps[i].length)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoProps, applyProps)
+                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
                 }.fused()
             }
         )
@@ -198,7 +198,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     val mergedApply = mergeDouble(apply, caps[i].topRadius)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(topRadius = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(topRadius = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoProps, applyProps)
+                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
                 }.fused()
             }
         )
@@ -214,7 +214,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     val mergedApply = mergeDouble(apply, caps[i].length)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoProps, applyProps)
+                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
                 }.fused()
             }
         )
@@ -233,7 +233,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     val mergedApply = mergeDouble(apply, caps[i].radius)
                     val undoProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedUndo)))
                     val applyProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.entityId, undoProps, applyProps)
+                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
                 }.fused()
             }
         )
@@ -247,7 +247,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             components.mapIndexed { i, component ->
                 val bodyProps = component.actorState.value
                 val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(mapPath = it?.path ?: "")))
-                SetRigidBodyPropertiesAction(component.gameEntity.entityId, bodyProps, applyShape)
+                SetRigidBodyPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
             }.fused().apply()
         }
 
@@ -273,7 +273,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     components.mapIndexed { i, component ->
                         val bodyProps = component.actorState.value
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(heightScale = endValue)))
-                        SetRigidBodyPropertiesAction(component.gameEntity.entityId, bodyProps, applyShape)
+                        SetRigidBodyPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
                     }.fused().apply()
                 }
             }
@@ -291,7 +291,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                         val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
                         val bodyProps = component.actorState.value
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(colScale = newScale.x, rowScale = newScale.y)))
-                        SetRigidBodyPropertiesAction(component.gameEntity.entityId, bodyProps, applyShape)
+                        SetRigidBodyPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
                     }.fused().apply()
                 }
             }
