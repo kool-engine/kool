@@ -11,7 +11,7 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
-val EditorScene.scene: Scene get() = sceneComponent.scene
+val EditorScene.scene: Scene get() = sceneComponent.drawNode
 
 class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseReleasable() {
 

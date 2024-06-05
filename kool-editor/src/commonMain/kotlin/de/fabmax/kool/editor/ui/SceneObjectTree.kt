@@ -412,7 +412,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 return SceneObjectType.SCENE
             }
 
-            return when (gameEntity.getComponent<DrawNodeComponent<*>>()) {
+            return when (gameEntity.getComponent<DrawNodeComponent>()) {
                 is MeshComponent -> SceneObjectType.MESH
                 is ModelComponent -> SceneObjectType.MODEL
                 is DiscreteLightComponent -> SceneObjectType.LIGHT

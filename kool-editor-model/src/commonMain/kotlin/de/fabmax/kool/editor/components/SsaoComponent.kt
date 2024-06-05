@@ -30,7 +30,7 @@ class SsaoComponent(
     override suspend fun applyComponent() {
         super.applyComponent()
 
-        aoPipeline = AoPipeline.createForward(sceneComponent.scene)
+        aoPipeline = AoPipeline.createForward(sceneComponent.drawNode)
         sceneComponent.shaderData.ssaoMap = aoPipeline?.aoMap
         UpdateSsaoComponent.updateSceneSsao(gameEntity)
 

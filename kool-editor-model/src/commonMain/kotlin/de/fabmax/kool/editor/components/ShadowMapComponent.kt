@@ -63,7 +63,7 @@ class ShadowMapComponent(
     private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {
         logD { "Update shadow map: ${shadowMapInfo::class.simpleName}, near: $clipNear, far: $clipFar" }
 
-        val light = gameEntity.getComponent<DiscreteLightComponent>()?.typedDrawNode
+        val light = gameEntity.getComponent<DiscreteLightComponent>()?.drawNode
         if (light == null) {
             logE { "Unable to get DiscreteLightComponent of sceneNode ${gameEntity.name}" }
             return
@@ -79,14 +79,14 @@ class ShadowMapComponent(
         // create new shadow map
         shadowMap = when (shadowMapInfo) {
             is ShadowMapTypeData.Single -> {
-                SimpleShadowMap(sceneComponent.scene, light, mapSize = shadowMapInfo.mapInfo.mapSize).apply {
+                SimpleShadowMap(sceneComponent.drawNode, light, mapSize = shadowMapInfo.mapInfo.mapSize).apply {
                     this.clipNear = clipNear
                     this.clipFar = clipFar
                 }
             }
             is ShadowMapTypeData.Cascaded -> {
                 CascadedShadowMap(
-                    sceneComponent.scene,
+                    sceneComponent.drawNode,
                     light,
                     clipFar,
                     shadowMapInfo.mapInfos.size,
@@ -105,7 +105,7 @@ class ShadowMapComponent(
     }
 
     private fun disposeShadowMap() {
-        val scene = sceneComponent.scene
+        val scene = sceneComponent.drawNode
         shadowMap?.let {
             sceneComponent.shaderData.shadowMaps -= it
             when (it) {

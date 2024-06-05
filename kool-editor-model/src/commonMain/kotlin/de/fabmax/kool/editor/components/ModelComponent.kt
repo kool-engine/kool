@@ -20,7 +20,7 @@ import kotlinx.atomicfu.atomic
 
 class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) :
     GameEntityDataComponent<ModelComponentData>(gameEntity, componentData),
-    DrawNodeComponent<Model>,
+    DrawNodeComponent,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
     UpdateShadowMapsComponent,
@@ -46,14 +46,14 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
         if (AppState.isEditMode) {
             componentData.animationIndex = it
         }
-        typedDrawNode?.apply {
+        drawNode?.apply {
             enableAnimation(it)
         }
     }
 
     val gltfState = mutableStateOf<GltfFile?>(null)
 
-    override var typedDrawNode: Model? = null
+    override var drawNode: Model? = null
         private set
 
     private val isRecreatingModel = atomic(false)
@@ -76,7 +76,7 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
 
     override fun updateMaterial(material: MaterialData?) {
         val holder = gameEntity.getComponent<MaterialComponent>() ?: return
-        val model = typedDrawNode
+        val model = drawNode
         if (holder.isHoldingMaterial(material)) {
             launchOnMainThread {
                 if (material == null || model == null) {
@@ -103,7 +103,7 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
             // recreate models without ibl lighting
             recreateModelAsync()
         } else {
-            typedDrawNode?.meshes?.values?.forEach { mesh ->
+            drawNode?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientFactor = bgColorLinear
             }
         }
@@ -114,7 +114,7 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
             // recreate models with ibl lighting
             recreateModelAsync()
         } else {
-            typedDrawNode?.meshes?.values?.forEach { mesh ->
+            drawNode?.meshes?.values?.forEach { mesh ->
                 (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
                 (mesh.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
             }
@@ -133,7 +133,7 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
             // recreate models with changed ssao setting
             recreateModelAsync()
         }
-        typedDrawNode?.meshes?.values?.forEach { mesh ->
+        drawNode?.meshes?.values?.forEach { mesh ->
             (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
         }
     }
@@ -225,10 +225,10 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
     }
 
     private suspend fun recreateModel() {
-        typedDrawNode = createModel()
+        drawNode = createModel()
 
         // set newly created model as new content node (or an empty Node in case model loading failed)
         // this also disposes any previous model
-        gameEntity.replaceDrawNode(typedDrawNode ?: Node(gameEntity.name))
+        gameEntity.replaceDrawNode(drawNode ?: Node(gameEntity.name))
     }
 }

@@ -166,11 +166,11 @@ class RigidActorComponent(
     }
 
     private suspend fun MeshComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        return componentData.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(typedDrawNode) }
+        return componentData.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(drawNode) }
     }
 
     private fun ModelComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        val model = typedDrawNode ?: return emptyList()
+        val model = drawNode ?: return emptyList()
 
         model.transform.decompose(scale = scale)
 

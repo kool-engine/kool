@@ -15,7 +15,7 @@ class DiscreteLightComponent(
     componentData: DiscreteLightComponentData = DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f))
 ) :
     GameEntityDataComponent<DiscreteLightComponentData>(gameEntity, componentData),
-    DrawNodeComponent<Light>
+    DrawNodeComponent
 {
     val lightState = mutableStateOf(componentData.light).onChange {
         if (AppState.isEditMode) {
@@ -24,7 +24,7 @@ class DiscreteLightComponent(
         updateLight(it, false)
     }
 
-    override var typedDrawNode: Light = componentData.light.createLight()
+    override var drawNode: Light = componentData.light.createLight()
         private set
 
     override suspend fun applyComponent() {
@@ -35,23 +35,23 @@ class DiscreteLightComponent(
 
     override fun destroyComponent() {
         val scene = sceneEntity.drawNode as Scene
-        scene.lighting.removeLight(typedDrawNode)
+        scene.lighting.removeLight(drawNode)
         super.destroyComponent()
     }
 
     private fun updateLight(lightData: LightTypeData, forceReplaceNode: Boolean) {
-        val updateLight = lightData.updateOrCreateLight(typedDrawNode)
+        val updateLight = lightData.updateOrCreateLight(drawNode)
 
-        if (forceReplaceNode || updateLight != typedDrawNode) {
+        if (forceReplaceNode || updateLight != drawNode) {
             val scene = sceneEntity.drawNode as Scene
             val lighting = scene.lighting
-            lighting.removeLight(typedDrawNode)
+            lighting.removeLight(drawNode)
 
-            typedDrawNode = updateLight
-            gameEntity.replaceDrawNode(typedDrawNode)
-            lighting.addLight(typedDrawNode)
+            drawNode = updateLight
+            gameEntity.replaceDrawNode(drawNode)
+            lighting.addLight(drawNode)
         }
 
-        gameEntity.getComponent<ShadowMapComponent>()?.updateLight(typedDrawNode)
+        gameEntity.getComponent<ShadowMapComponent>()?.updateLight(drawNode)
     }
 }

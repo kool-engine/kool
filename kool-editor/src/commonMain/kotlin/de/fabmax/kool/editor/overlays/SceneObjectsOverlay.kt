@@ -278,13 +278,13 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         sceneModel.getAllComponents<CameraComponent>()
             .filter { it.gameEntity.isVisibleState.value }
             .forEach { cameras += CameraComponentInstance(it) }
-        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is DrawNodeComponent<*> } }
+        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is DrawNodeComponent } }
             .filter { it.isVisibleState.value }
             .forEach { groups += GroupNodeInstance(it) }
         sceneModel.getAllComponents<DiscreteLightComponent>()
             .filter { it.gameEntity.isVisibleState.value }
             .forEach {
-                when (it.typedDrawNode) {
+                when (it.drawNode) {
                     is Light.Directional -> dirLights += DirLightComponentInstance(it)
                     is Light.Point -> pointLights += PointLightComponentInstance(it)
                     is Light.Spot -> spotLights += SpotLightComponentInstance(it)
@@ -337,22 +337,22 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, pointLightMesh)
     {
-        override val modelMat: Mat4f get() = component.typedDrawNode.modelMatF
-        override val color: Color get() = component.typedDrawNode.color
+        override val modelMat: Mat4f get() = component.drawNode.modelMatF
+        override val color: Color get() = component.drawNode.color
     }
 
     private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, spotLightMesh)
     {
-        override val modelMat: Mat4f get() = component.typedDrawNode.modelMatF
-        override val color: Color get() = component.typedDrawNode.color
+        override val modelMat: Mat4f get() = component.drawNode.modelMatF
+        override val color: Color get() = component.drawNode.color
     }
 
     private inner class DirLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, dirLightMesh)
     {
-        override val modelMat: Mat4f get() = component.typedDrawNode.modelMatF
-        override val color: Color get() = component.typedDrawNode.color
+        override val modelMat: Mat4f get() = component.drawNode.modelMatF
+        override val color: Color get() = component.drawNode.color
     }
 
     private inner class CameraComponentInstance(val component: CameraComponent) :

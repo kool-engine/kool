@@ -209,14 +209,14 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
         }
 
         data object AddCameraComponent : ComponentAdder<CameraComponent>("Camera") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent<*>>()
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneRoot
             override fun createComponent(target: GameEntity): CameraComponent = CameraComponent(target)
         }
 
 
         data object AddLightComponent : ComponentAdder<DiscreteLightComponent>("Light") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent<*>>()
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild
             override fun createComponent(target: GameEntity): DiscreteLightComponent = DiscreteLightComponent(target)
         }
@@ -228,13 +228,13 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
         }
 
         data object AddMeshComponent : ComponentAdder<MeshComponent>("Mesh") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent<*>>()
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild
             override fun createComponent(target: GameEntity): MeshComponent = MeshComponent(target)
         }
 
         data object AddModelComponent : ComponentAdder<ModelComponent>("Model") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent<*>>()
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild
 
             override fun addMenuItems(targetObjs: List<GameEntity>, parentMenu: SubMenuItem<List<GameEntity>>) {

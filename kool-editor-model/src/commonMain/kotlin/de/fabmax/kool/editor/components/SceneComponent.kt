@@ -18,9 +18,11 @@ import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.logW
 
 class SceneComponent(gameEntity: GameEntity, componentData: SceneComponentData) :
-    GameEntityDataComponent<SceneComponentData>(gameEntity, componentData)
+    GameEntityDataComponent<SceneComponentData>(gameEntity, componentData),
+    DrawNodeComponent
 {
-    val scene: Scene get() = gameEntity.drawNode as Scene
+
+    override val drawNode: Scene = Scene(gameEntity.name).apply { tryEnableInfiniteDepth() }
 
     val shaderData = SceneShaderData()
 
@@ -43,7 +45,7 @@ class SceneComponent(gameEntity: GameEntity, componentData: SceneComponentData) 
             if (AppState.isEditMode) {
                 componentData.maxNumLights = it
             }
-            scene.lighting.maxNumberOfLights = it
+            drawNode.lighting.maxNumberOfLights = it
             gameEntity.scene.getAllComponents<UpdateMaxNumLightsComponent>().forEach { comp ->
                 comp.updateMaxNumLightsComponent(it)
             }
@@ -53,10 +55,10 @@ class SceneComponent(gameEntity: GameEntity, componentData: SceneComponentData) 
                 componentData.cameraEntityId = it?.gameEntity?.id ?: EntityId(-1L)
             } else {
                 // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
-                it?.typedDrawNode?.let { cam -> scene.camera = cam }
+                it?.drawNode?.let { cam -> drawNode.camera = cam }
             }
             gameEntity.scene.getAllComponents<UpdateSceneCameraComponent>().forEach { comp ->
-                comp.updateSceneCameraComponent(it?.typedDrawNode)
+                comp.updateSceneCameraComponent(it?.drawNode)
             }
         }
 
@@ -69,7 +71,7 @@ class SceneComponent(gameEntity: GameEntity, componentData: SceneComponentData) 
         val cam = gameEntity.scene.sceneEntities[componentData.cameraEntityId]?.getComponent<CameraComponent>()
         if (cam != null) {
             cameraState.set(cam)
-            scene.camera = cam.typedDrawNode
+            drawNode.camera = cam.drawNode
         } else {
             logW { "Scene ${gameEntity.name} has no camera attached" }
         }
@@ -87,12 +89,12 @@ class SceneComponent(gameEntity: GameEntity, componentData: SceneComponentData) 
         }
 
         override fun updateSingleColorBg(bgColorLinear: Color) {
-            scene.clearColor = bgColorLinear.toSrgb()
+            drawNode.clearColor = bgColorLinear.toSrgb()
             skybox?.isVisible = false
         }
 
         override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-            scene.clearColor = null
+            drawNode.clearColor = null
             val skybox = this.skybox ?: Skybox.Cube()
             skybox.name = "Skybox"
             skybox.isVisible = true
@@ -101,8 +103,8 @@ class SceneComponent(gameEntity: GameEntity, componentData: SceneComponentData) 
             if (this.skybox == null) {
                 this.skybox = skybox
             }
-            scene.removeNode(skybox)
-            scene.addNode(skybox, 0)
+            drawNode.removeNode(skybox)
+            drawNode.addNode(skybox, 0)
         }
     }
 

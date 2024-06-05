@@ -6,7 +6,6 @@ import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 
@@ -19,6 +18,9 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     val id: EntityId get() = entityData.id
     val name: String get() = entityData.name
     val components = mutableStateListOf<GameEntityComponent>()
+    val transform: TransformComponent
+
+    val requiredAssets: Set<AssetReference> get() = components.flatMap { it.requiredAssets }.toSet()
 
     val isSceneRoot: Boolean = entityData.components.any { it is SceneComponentData }
     val isSceneChild: Boolean = !isSceneRoot
@@ -32,39 +34,18 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     private val _children = mutableListOf<GameEntity>()
     val children: List<GameEntity> get() = _children
 
-    var drawNode: Node = if (isSceneRoot) Scene().apply { tryEnableInfiniteDepth() } else Node(name)
+    var drawNode: Node
         private set
 
-    val transform: TransformComponent
 
 
-
-
-    val nameState = mutableStateOf(entityData.name).onChange {
-        entityData.name = it
-        drawNode.name = it
-    }
-
-
-    val isVisibleState = mutableStateOf(entityData.isVisible).onChange {
-        if (AppState.isEditMode) {
-            entityData.isVisible = it
-        }
-        drawNode.isVisible = it
-    }
-
-
-    val requiredAssets: Set<AssetReference> get() = components.flatMap { it.requiredAssets }.toSet()
 
     var isCreated: Boolean = false
         private set
-
     val onNodeUpdate: MutableList<(RenderPass.UpdateEvent) -> Unit> = mutableListOf()
-
-
-
-
     private val nodeUpdateCb: (RenderPass.UpdateEvent) -> Unit = { ev -> onNodeUpdate.forEach { cb -> cb(ev) } }
+
+
 
 
     init {
@@ -73,12 +54,27 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         createComponentsFromData(entityData.components)
         transform = getOrPutComponent { TransformComponent(this, TransformComponentData()) }
 
-        nameState.onChange { drawNode.name = it }
+        drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(name)
         drawNode.onUpdate += nodeUpdateCb
         transform.applyTransformTo(drawNode)
     }
 
+    val nameState = mutableStateOf(entityData.name).onChange {
+        entityData.name = it
+        drawNode.name = it
+    }
+
+    val isVisibleState = mutableStateOf(entityData.isVisible).onChange {
+        drawNode.isVisible = it
+        if (AppState.isEditMode) {
+            entityData.isVisible = it
+        }
+    }
+
     fun replaceDrawNode(newDrawNode: Node) {
+        if (drawNode == newDrawNode) {
+            return
+        }
         val oldDrawNode = drawNode
 
         oldDrawNode.parent?.let { parent ->

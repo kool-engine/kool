@@ -13,7 +13,7 @@ class CameraComponent(
     componentData: CameraComponentData = CameraComponentData(CameraTypeData.Perspective())
 ) :
     GameEntityDataComponent<CameraComponentData>(gameEntity, componentData),
-    DrawNodeComponent<Camera>
+    DrawNodeComponent
 {
     val cameraState = mutableStateOf(componentData.camera).onChange {
         if (AppState.isEditMode) {
@@ -22,7 +22,7 @@ class CameraComponent(
         updateCamera(it, false)
     }
 
-    override var typedDrawNode: Camera = componentData.camera.createCamera()
+    override var drawNode: Camera = componentData.camera.createCamera()
         private set
 
     override suspend fun applyComponent() {
@@ -32,15 +32,16 @@ class CameraComponent(
     }
 
     private fun updateCamera(cameraData: CameraTypeData, forceReplaceNode: Boolean) {
-        val updateCamera = cameraData.updateOrCreateCamera(typedDrawNode)
-        if (forceReplaceNode || updateCamera != typedDrawNode) {
-            val scene = gameEntity.sceneComponent.scene
-            if (scene.camera == typedDrawNode) {
+        val updateCamera = cameraData.updateOrCreateCamera(drawNode)
+        updateCamera.name = gameEntity.name
+        if (forceReplaceNode || updateCamera != drawNode) {
+            val scene = gameEntity.sceneComponent.drawNode
+            if (scene.camera == drawNode) {
                 scene.camera = updateCamera
             }
 
-            typedDrawNode = updateCamera
-            gameEntity.replaceDrawNode(typedDrawNode)
+            drawNode = updateCamera
+            gameEntity.replaceDrawNode(drawNode)
         }
     }
 }
