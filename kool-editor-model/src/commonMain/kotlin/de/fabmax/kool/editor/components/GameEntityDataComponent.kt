@@ -20,11 +20,10 @@ abstract class GameEntityDataComponent<C: GameEntityDataComponent<C, D>, D: Comp
     init {
         dataState.onChange { newData ->
             onDataChanged(data, newData)
-            val thisRef = this.thisRef
-            if (thisRef != null) {
+            thisRef?.let { ref ->
                 changeListenerComponents?.let { listeners ->
                     for (i in listeners.indices) {
-                        listeners[i].onComponentDataChanged(thisRef, newData)
+                        listeners[i].onComponentDataChanged(ref, newData)
                     }
                 }
             }

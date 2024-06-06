@@ -9,7 +9,7 @@ class CachedComponents<T: Any>(val gameEntity: GameEntity, val componentClass: K
     private var modCnt = 0
     private val cache = mutableListOf<T>()
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = cache
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = getComponents()
 
     fun getComponents(): List<T> {
         return when (scope) {

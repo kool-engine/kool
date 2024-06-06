@@ -55,37 +55,6 @@ class SceneComponent(
         }
     }
 
-//    private inner class BackgroundUpdater :
-//        GameEntityComponent(gameEntity),
-//        UpdateSceneBackgroundComponent
-//    {
-//        var skybox: Skybox.Cube? = null
-//
-//        override suspend fun applyComponent() {
-//            super.applyComponent()
-//            updateBackground(sceneBackground)
-//        }
-//
-//        override fun updateSingleColorBg(bgColorLinear: Color) {
-//            drawNode.clearColor = bgColorLinear.toSrgb()
-//            skybox?.isVisible = false
-//        }
-//
-//        override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-//            drawNode.clearColor = null
-//            val skybox = this.skybox ?: Skybox.Cube()
-//            skybox.name = "Skybox"
-//            skybox.isVisible = true
-//            skybox.skyboxShader.setSingleSky(ibl.reflectionMap)
-//            skybox.skyboxShader.lod = hdriBg.skyLod
-//            if (this.skybox == null) {
-//                this.skybox = skybox
-//            }
-//            drawNode.removeNode(skybox)
-//            drawNode.addNode(skybox, 0)
-//        }
-//    }
-
     class SceneShaderData {
         var maxNumberOfLights: Int = 4
         var environmentMaps: EnvironmentMaps? = null

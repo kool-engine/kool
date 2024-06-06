@@ -25,7 +25,7 @@ class MeshComponent(
     GameEntityDataComponent<MeshComponent, MeshComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
     UpdateMaterialComponent,
-    UpdateSceneBackgroundComponent,
+    SceneBackgroundComponent.ListenerComponent,
     UpdateShadowMapsComponent,
     UpdateSsaoComponent,
     UpdateMaxNumLightsComponent

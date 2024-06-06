@@ -26,7 +26,7 @@ class ModelComponent(
     GameEntityDataComponent<ModelComponent, ModelComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
     UpdateMaterialComponent,
-    UpdateSceneBackgroundComponent,
+    SceneBackgroundComponent.ListenerComponent,
     UpdateShadowMapsComponent,
     UpdateSsaoComponent,
     UpdateMaxNumLightsComponent

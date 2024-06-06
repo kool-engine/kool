@@ -175,6 +175,12 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             }
         }
         components.sortByDependencies()
+        incComponentModCount()
+    }
+
+    private fun incComponentModCount() {
+        componentModCnt++
+        scene.componentModCnt++
     }
 
     suspend fun applyComponents() {
@@ -208,9 +214,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
                 component.applyComponent()
             }
         }
-
-        componentModCnt++
-        scene.componentModCnt++
+        incComponentModCount()
     }
 
     fun removeComponent(component: GameEntityComponent) {
@@ -221,9 +225,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         if (component.isApplied) {
             component.destroyComponent()
         }
-
-        componentModCnt++
-        scene.componentModCnt++
+        incComponentModCount()
     }
 
     fun onStart() {
