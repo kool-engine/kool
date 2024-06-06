@@ -46,10 +46,10 @@ class SceneBackgroundComponent(
         super.applyComponent()
         when (val bgState = data.sceneBackground) {
             is SceneBackgroundData.Hdri -> {
-                sceneComponent.shaderData.environmentMaps = AppAssets.loadHdri(bgState.hdriPath)
+                scene.shaderData.environmentMaps = AppAssets.loadHdri(bgState.hdriPath)
             }
             is SceneBackgroundData.SingleColor -> {
-                sceneComponent.shaderData.ambientColorLinear = bgState.color.toColorLinear()
+                scene.shaderData.ambientColorLinear = bgState.color.toColorLinear()
             }
         }
         applyBackground(data, null)
@@ -62,13 +62,13 @@ class SceneBackgroundComponent(
                 is SceneBackgroundData.Hdri -> {
                     if (bgData.hdriPath != prevHdriPath) {
                         requiredAssets += AssetReference.Hdri(bgData.hdriPath)
-                        sceneComponent.shaderData.environmentMaps = AppAssets.loadHdri(bgData.hdriPath)
+                        scene.shaderData.environmentMaps = AppAssets.loadHdri(bgData.hdriPath)
                     }
-                    updateSkybox(bgData, sceneComponent.shaderData.environmentMaps!!)
+                    updateSkybox(bgData, scene.shaderData.environmentMaps!!)
                 }
                 is SceneBackgroundData.SingleColor -> {
-                    sceneComponent.shaderData.environmentMaps = null
-                    sceneComponent.shaderData.ambientColorLinear = bgData.color.toColorLinear()
+                    scene.shaderData.environmentMaps = null
+                    scene.shaderData.ambientColorLinear = bgData.color.toColorLinear()
                     skybox?.isVisible = false
                 }
             }
@@ -94,10 +94,10 @@ class SceneBackgroundComponent(
 
     interface ListenerComponent : DataChangeListenerComponent<SceneBackgroundComponent, SceneBackgroundComponentData> {
         override fun onComponentDataChanged(component: SceneBackgroundComponent, newData: SceneBackgroundComponentData) {
-            val sceneComponent = component.sceneComponent
+            val scene = component.scene
             when (val bg = component.data.sceneBackground) {
-                is SceneBackgroundData.Hdri -> sceneComponent.shaderData.environmentMaps?.let { updateHdriBg(bg, it) }
-                is SceneBackgroundData.SingleColor -> updateSingleColorBg(sceneComponent.shaderData.ambientColorLinear)
+                is SceneBackgroundData.Hdri -> scene.shaderData.environmentMaps?.let { updateHdriBg(bg, it) }
+                is SceneBackgroundData.SingleColor -> updateSingleColorBg(scene.shaderData.ambientColorLinear)
             }
         }
 

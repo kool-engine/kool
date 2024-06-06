@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
@@ -90,7 +89,7 @@ class ShadowMapComponent(
                 }
             }
         }.also {
-            sceneComponent.shaderData.shadowMaps += it
+            scene.shaderData.shadowMaps += it
             UpdateShadowMapsComponent.updateShadowMaps(sceneEntity)
         }
     }
@@ -98,7 +97,7 @@ class ShadowMapComponent(
     private fun disposeShadowMap() {
         val scene = sceneComponent.drawNode
         shadowMap?.let {
-            sceneComponent.shaderData.shadowMaps -= it
+            gameEntity.scene.shaderData.shadowMaps -= it
             when (it) {
                 is SimpleShadowMap -> {
                     scene.removeOffscreenPass(it)
@@ -121,7 +120,7 @@ interface UpdateShadowMapsComponent {
     companion object {
         fun updateShadowMaps(sceneEntity: GameEntity) {
             sceneEntity.scene.getAllComponents<UpdateShadowMapsComponent>().forEach {
-                it.updateShadowMaps(sceneEntity.sceneComponent.shaderData.shadowMaps)
+                it.updateShadowMaps(sceneEntity.scene.shaderData.shadowMaps)
             }
         }
     }

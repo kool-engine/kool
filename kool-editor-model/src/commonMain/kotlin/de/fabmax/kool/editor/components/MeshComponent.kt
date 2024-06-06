@@ -1,6 +1,9 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.*
+import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
@@ -186,7 +189,7 @@ class MeshComponent(
     private suspend fun createMeshShader() {
         val mesh = drawNode ?: return
 
-        val sceneShaderData = gameEntity.sceneComponent.shaderData
+        val sceneShaderData = gameEntity.scene.shaderData
 
         val materialData = gameEntity.getComponent<MaterialComponent>()?.material
         if (materialData != null) {
@@ -220,7 +223,7 @@ class MeshComponent(
         val holder = gameEntity.getComponent<MaterialComponent>()
         if (holder?.isHoldingMaterial(material) == true) {
             launchOnMainThread {
-                val sceneShaderData = gameEntity.scene.sceneEntity.getComponent<SceneComponent>()!!.shaderData
+                val sceneShaderData = gameEntity.scene.shaderData
                 if (material == null || !material.updateShader(mesh.shader, sceneShaderData)) {
                     createMeshShader()
                 }

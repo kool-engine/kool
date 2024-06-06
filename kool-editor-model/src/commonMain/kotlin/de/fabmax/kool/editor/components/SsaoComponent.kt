@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.pipeline.Texture2d
@@ -27,14 +26,14 @@ class SsaoComponent(
         super.applyComponent()
 
         aoPipeline = AoPipeline.createForward(sceneComponent.drawNode)
-        sceneComponent.shaderData.ssaoMap = aoPipeline?.aoMap
+        scene.shaderData.ssaoMap = aoPipeline?.aoMap
         UpdateSsaoComponent.updateSceneSsao(gameEntity)
         applySettings(data)
     }
 
     override fun destroyComponent() {
         aoPipeline?.release()
-        sceneComponent.shaderData.ssaoMap = null
+        scene.shaderData.ssaoMap = null
         UpdateSsaoComponent.updateSceneSsao(gameEntity)
         super.destroyComponent()
     }
@@ -57,7 +56,7 @@ interface UpdateSsaoComponent {
     companion object {
         fun updateSceneSsao(sceneEntity: GameEntity) {
             sceneEntity.scene.getAllComponents<UpdateSsaoComponent>().forEach {
-                it.updateSsao(sceneEntity.sceneComponent.shaderData.ssaoMap)
+                it.updateSsao(sceneEntity.scene.shaderData.ssaoMap)
             }
         }
     }

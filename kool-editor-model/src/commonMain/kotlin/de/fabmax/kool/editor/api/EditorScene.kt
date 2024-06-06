@@ -3,21 +3,16 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.GameEntityData
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.drawNode
 
 class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseReleasable() {
-
-    var sceneEntity: GameEntity = GameEntity(sceneData, this)
-        private set
-    val name: String get() = sceneEntity.name
 
     val nodesToEntities: MutableMap<Node, GameEntity> = mutableMapOf()
     val sceneEntities: MutableMap<EntityId, GameEntity> = mutableMapOf()
@@ -25,6 +20,11 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
 
     var componentModCnt = 0
         internal set
+
+    val shaderData = SceneShaderData()
+    var sceneEntity: GameEntity = GameEntity(sceneData, this)
+        private set
+    val name: String get() = sceneEntity.name
 
     init {
         nodesToEntities[sceneEntity.drawNode] = sceneEntity
@@ -118,13 +118,6 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
         project.addEntityData(gameEntity.entityData)
         sceneEntities[gameEntity.id] = gameEntity
         nodesToEntities[gameEntity.drawNode] = gameEntity
-
-//        sceneEntity.getComponent<SceneBackgroundComponent>()?.let { sceneBackground ->
-//            gameEntity.getComponents<UpdateSceneBackgroundComponent>().forEach { it.updateBackground(sceneBackground) }
-//        }
-//        gameEntity.entityData.childEntityIds
-//            .mapNotNull { resolveEntity(it, gameEntity) }
-//            .forEach { addEntity(it) }
     }
 
     fun removeGameEntity(gameEntity: GameEntity) {
@@ -140,5 +133,13 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
         launchDelayed(1) {
             gameEntity.destroyComponents()
         }
+    }
+
+    class SceneShaderData {
+        var maxNumberOfLights: Int = 4
+        var environmentMaps: EnvironmentMaps? = null
+        var ambientColorLinear: Color = Color.BLACK
+        val shadowMaps = mutableListOf<ShadowMap>()
+        var ssaoMap: Texture2d? = null
     }
 }

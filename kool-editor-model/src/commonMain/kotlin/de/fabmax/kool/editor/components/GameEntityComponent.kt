@@ -2,11 +2,13 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.EditorProject
+import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.pipeline.RenderPass
 import kotlin.reflect.KClass
 
 val GameEntityComponent.project: EditorProject get() = gameEntity.scene.project
+val GameEntityComponent.scene: EditorScene get() = gameEntity.scene
 val GameEntityComponent.sceneEntity: GameEntity get() = gameEntity.scene.sceneEntity
 val GameEntityComponent.sceneComponent: SceneComponent get() = sceneEntity.requireComponent()
 

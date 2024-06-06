@@ -89,7 +89,7 @@ class ModelComponent(
                 } else {
                     // update model shaders and recreate model in case update fails
                     val updateFail = model.meshes.values.any {
-                        !material.updateShader(it.shader, sceneComponent.shaderData)
+                        !material.updateShader(it.shader, scene.shaderData)
                     }
                     if (updateFail) {
                         recreateModel()
@@ -149,7 +149,7 @@ class ModelComponent(
     private suspend fun createModel(): Model? {
         logD { "${gameEntity.name}: (re-)loading model" }
 
-        val shaderData = sceneComponent.shaderData
+        val shaderData = scene.shaderData
         shaderShadowMaps = shaderData.shadowMaps.copy()
         val ibl = shaderData.environmentMaps
         val ssao = shaderData.ssaoMap

@@ -292,9 +292,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
 
         this.loadedApp.set(loadedApp)
-        if (activeScene.value == null) {
-            activeScene.set(projectModel.createdScenes.values.first())
-        }
+        activeScene.set(projectModel.createdScenes.values.first())
 
         selectionOverlay.setSelection(prevSelection.mapNotNull { it.gameEntity })
         ui.objectProperties.windowSurface.triggerUpdate()

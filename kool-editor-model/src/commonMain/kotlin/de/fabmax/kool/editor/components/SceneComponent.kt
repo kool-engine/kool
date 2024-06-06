@@ -3,12 +3,8 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneComponentData
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.logW
 
 class SceneComponent(
@@ -20,14 +16,12 @@ class SceneComponent(
 {
     override val drawNode: Scene = Scene(gameEntity.name).apply { tryEnableInfiniteDepth() }
 
-    val shaderData = SceneShaderData()
-
     val maxNumLights: Int get() = data.maxNumLights
     val cameraComponent: CameraComponent? get() = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
 
     init {
         componentOrder = COMPONENT_ORDER_EARLY
-        shaderData.maxNumberOfLights = data.maxNumLights
+        gameEntity.scene.shaderData.maxNumberOfLights = data.maxNumLights
     }
 
     override fun onDataChanged(oldData: SceneComponentData, newData: SceneComponentData) {
@@ -53,14 +47,6 @@ class SceneComponent(
         } else {
             logW { "Scene ${gameEntity.name} has no camera attached" }
         }
-    }
-
-    class SceneShaderData {
-        var maxNumberOfLights: Int = 4
-        var environmentMaps: EnvironmentMaps? = null
-        var ambientColorLinear: Color = Color.BLACK
-        val shadowMaps = mutableListOf<ShadowMap>()
-        var ssaoMap: Texture2d? = null
     }
 }
 
