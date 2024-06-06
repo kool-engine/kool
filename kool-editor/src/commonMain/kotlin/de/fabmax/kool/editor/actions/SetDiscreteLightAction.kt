@@ -6,15 +6,15 @@ import de.fabmax.kool.editor.data.LightTypeData
 
 class SetDiscreteLightAction(
     entityId: EntityId,
-    val setLightData: LightTypeData,
+    val applyLightData: LightTypeData,
     val undoLightData: LightTypeData
 ) : ComponentAction<DiscreteLightComponent>(entityId, DiscreteLightComponent::class) {
 
     override fun doAction() {
-        component?.lightState?.set(setLightData)
+        component?.let { it.setPersistent(it.data.copy(light = applyLightData)) }
     }
 
     override fun undoAction() {
-        component?.lightState?.set(undoLightData)
+        component?.let { it.setPersistent(it.data.copy(light = undoLightData)) }
     }
 }

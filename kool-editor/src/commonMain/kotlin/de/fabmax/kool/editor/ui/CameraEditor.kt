@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 
 class CameraEditor : ComponentEditor<CameraComponent>() {
 
-    private val currentCam: CameraTypeData get() = component.cameraState.value
+    private val currentCam: CameraTypeData get() = component.data.camera
     private val camTypeIndex: Int
         get() = camTypes.indexOfFirst { it.camType.isInstance(currentCam) }
 
@@ -28,7 +28,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
 
         menuDivider()
 
-        when (component.cameraState.use()) {
+        when (component.dataState.use().camera) {
             is CameraTypeData.Perspective -> perspectiveSettings()
             is CameraTypeData.Orthographic -> TODO()
         }

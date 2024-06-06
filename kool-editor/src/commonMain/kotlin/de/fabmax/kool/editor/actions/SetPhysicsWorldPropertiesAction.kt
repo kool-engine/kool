@@ -2,21 +2,22 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.PhysicsWorldProperties
+import de.fabmax.kool.editor.data.PhysicsWorldComponentData
+import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec3f
 
 class SetPhysicsWorldPropertiesAction(
     entityId: EntityId,
-    private val oldProps: PhysicsWorldProperties,
-    private val newProps: PhysicsWorldProperties
+    private val oldProps: PhysicsWorldComponentData,
+    private val newProps: PhysicsWorldComponentData
 ) : ComponentAction<PhysicsWorldComponent>(entityId, PhysicsWorldComponent::class) {
 
     override fun doAction() {
-        component?.physicsWorldState?.set(newProps)
+        component?.setPersistent(newProps)
     }
 
     override fun undoAction() {
-        component?.physicsWorldState?.set(oldProps)
+        component?.setPersistent(oldProps)
     }
 }
 
@@ -27,10 +28,10 @@ class SetPhysicsWorldGravityAction(
 ) : ComponentAction<PhysicsWorldComponent>(entityId, PhysicsWorldComponent::class) {
 
     override fun doAction() {
-        component?.gravityState?.set(newGravity)
+        component?.let { it.setPersistent(it.data.copy(gravity = Vec3Data(newGravity))) }
     }
 
     override fun undoAction() {
-        component?.gravityState?.set(oldGravity)
+        component?.let { it.setPersistent(it.data.copy(gravity = Vec3Data(oldGravity))) }
     }
 }

@@ -1,18 +1,20 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.CachedAppAssets
+import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
-import de.fabmax.kool.editor.actions.SetRigidBodyPropertiesAction
+import de.fabmax.kool.editor.actions.SetRigidActorPropertiesAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.RigidActorComponent
 import de.fabmax.kool.editor.components.toAssetReference
-import de.fabmax.kool.editor.data.RigidActorProperties
+import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec2d
+import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.physics.character.HitActorBehavior
@@ -24,7 +26,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         imageIcon = IconMap.small.physics,
         onRemove = ::removeComponent,
     ) {
-        val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.actorState.use().typeOption })
+        val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.dataState.use().typeOption })
         labeledCombobox(
             label = "Type:",
             items = typeItems,
@@ -33,47 +35,37 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         ) { selected ->
             selected.item?.type?.let { actorType ->
                 components.map {
-                    val bodyProps = it.actorState.value
-                    val isTrigger = if (actorType == RigidActorType.STATIC) bodyProps.isTrigger else false
-                    SetRigidBodyPropertiesAction(it.gameEntity.id, bodyProps, bodyProps.copy(type = actorType, isTrigger = isTrigger))
+                    val isTrigger = if (actorType == RigidActorType.STATIC) it.data.isTrigger else false
+                    SetRigidActorPropertiesAction(it.gameEntity.id, it.data, it.data.copy(type = actorType, isTrigger = isTrigger))
                 }.fused().apply()
             }
         }
 
-        val isDynamicActor = components.any { it.actorState.value.type == RigidActorType.DYNAMIC }
+        val isDynamicActor = components.any { it.data.type == RigidActorType.DYNAMIC }
         shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
 
         if (isDynamicActor) {
             choicePropertyEditor(
                 choices = charHitOptions,
-                dataGetter = { it.actorState.value },
+                dataGetter = { it.data },
                 valueGetter = { it.characterControllerHitBehavior },
                 valueSetter = { oldData, newValue -> oldData.copy(characterControllerHitBehavior = newValue) },
-                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.gameEntity.id, undoData, applyData) },
+                actionMapper = setActorActionMapper,
                 label = "Controller hit behavior:",
                 labelWidth = sizes.editorLabelWidthMedium
             )
-
-            labeledDoubleTextField(
+            actorDoubleEditor(
+                valueGetter = { it.mass },
+                valueSetter = { oldData, newValue -> oldData.copy(mass = newValue) },
                 label = "Mass:",
-                value = condenseDouble(components.map { it.actorState.value.mass }),
                 minValue = 0.001,
-                dragChangeSpeed = DragChangeRates.SIZE,
-                editHandler = ActionValueEditHandler { undo, apply ->
-                    components.map {
-                        val bodyProps = it.actorState.value
-                        val mergedUndo = bodyProps.copy(mass = mergeDouble(undo, bodyProps.mass))
-                        val mergedApply = bodyProps.copy(mass = mergeDouble(apply, bodyProps.mass))
-                        SetRigidBodyPropertiesAction( it.gameEntity.id, mergedUndo, mergedApply)
-                    }.fused()
-                }
             )
         } else {
             booleanPropertyEditor(
-                dataGetter = { it.actorState.value },
+                dataGetter = { it.data },
                 valueGetter = { it.isTrigger },
                 valueSetter = { oldData, newValue -> oldData.copy(isTrigger = newValue) },
-                actionMapper = { component, undoData, applyData -> SetRigidBodyPropertiesAction(component.gameEntity.id, undoData, applyData) },
+                actionMapper = setActorActionMapper,
                 label = "Is trigger:",
             )
         }
@@ -82,7 +74,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
     private fun ColumnScope.shapeEditor(choices: ComboBoxItems<ShapeOption>) {
         menuDivider()
 
-        val (shapeItems, shapeIdx) = choices.getOptionsAndIndex(components.map { it.actorState.use().shapeOption })
+        val (shapeItems, shapeIdx) = choices.getOptionsAndIndex(components.map { it.data.shapeOption })
         labeledCombobox(
             label = "Shape:",
             items = shapeItems,
@@ -90,8 +82,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             labelWidth = sizes.editorLabelWidthMedium
         ) { selected -> selected.item?.let { applyNewShape(it) } }
 
-        if (components.all { it.actorState.value.shapes == components[0].actorState.value.shapes }) {
-            when (components[0].actorState.value.shapes.firstOrNull()) {
+        if (components.all { it.data.shapes == components[0].data.shapes }) {
+            when (components[0].data.shapes.firstOrNull()) {
                 is ShapeData.Box -> boxShapeEditor()
                 is ShapeData.Capsule -> capsuleEditor()
                 is ShapeData.Cylinder -> cylinderEditor()
@@ -116,126 +108,78 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
         }
         val actions = components
-            .filter { it.actorState.value.shapes != newShapes }
-            .map {
-                val props = it.actorState.value
-                SetRigidBodyPropertiesAction(it.gameEntity.id, props, props.copy(shapes = newShapes))
-            }
+            .filter { it.data.shapes != newShapes }
+            .map { SetRigidActorPropertiesAction(it.gameEntity.id, it.data, it.data.copy(shapes = newShapes)) }
         if (actions.isNotEmpty()) {
             FusedAction(actions).apply()
         }
     }
 
     private inline fun <reified T: ShapeData> getShapes(): List<T> {
-        return components.map { (it.actorState.value.shapes[0] as T) }
+        return components.map { (it.data.shapes[0] as T) }
+    }
+
+    private inline fun <reified T: ShapeData> List<ShapeData>.getShape(): T {
+        return this[0] as T
     }
 
     private fun ColumnScope.boxShapeEditor() {
-        labeledXyzRow(
+        actorVec3Editor(
+            valueGetter = { it.shapes.getShape<ShapeData.Box>().size.toVec3d() },
+            valueSetter = { oldData, newValue ->
+                oldData.copy(shapes = listOf(oldData.shapes.getShape<ShapeData.Box>().copy(size = Vec3Data(newValue))))
+            },
             label = "Size:",
-            xyz = condenseVec3(getShapes<ShapeData.Box>().map { it.size.toVec3d() }),
-            dragChangeSpeed = DragChangeRates.SIZE_VEC3,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.actorState.value }
-                val boxes = getShapes<ShapeData.Box>()
-                components.mapIndexed { i, component ->
-                    val size = boxes[i].size.toVec3d()
-                    val mergedUndo = Vec3Data(mergeVec3(undo, size))
-                    val mergedApply = Vec3Data(mergeVec3(apply, size))
-                    val undoProps = props[i].copy(shapes = listOf(boxes[i].copy(size = mergedUndo)))
-                    val applyProps = props[i].copy(shapes = listOf(boxes[i].copy(size = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
-                }.fused()
-            }
+            minValues = Vec3d(0.01, 0.01, 0.01)
         )
     }
 
     private fun ColumnScope.capsuleEditor() {
-        labeledDoubleTextField(
+        actorDoubleEditor(
+            valueGetter = { it.shapes.getShape<ShapeData.Capsule>().radius },
+            valueSetter = { oldData, newValue ->
+                oldData.copy(shapes = listOf(oldData.shapes.getShape<ShapeData.Capsule>().copy(radius = newValue)))
+            },
             label = "Radius:",
-            value = condenseDouble(getShapes<ShapeData.Capsule>().map { it.radius }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.actorState.value }
-                val caps = getShapes<ShapeData.Capsule>()
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, caps[i].radius)
-                    val mergedApply = mergeDouble(apply, caps[i].radius)
-                    val undoProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedUndo)))
-                    val applyProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
-                }.fused()
-            }
+            minValue = 0.01
         )
-        labeledDoubleTextField(
+        actorDoubleEditor(
+            valueGetter = { it.shapes.getShape<ShapeData.Capsule>().length },
+            valueSetter = { oldData, newValue ->
+                oldData.copy(shapes = listOf(oldData.shapes.getShape<ShapeData.Capsule>().copy(length = newValue)))
+            },
             label = "Length:",
-            value = condenseDouble(getShapes<ShapeData.Capsule>().map { it.length }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.actorState.value }
-                val caps = getShapes<ShapeData.Capsule>()
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, caps[i].length)
-                    val mergedApply = mergeDouble(apply, caps[i].length)
-                    val undoProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedUndo)))
-                    val applyProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
-                }.fused()
-            }
+            minValue = 0.0
         )
     }
 
     private fun ColumnScope.cylinderEditor() {
-        labeledDoubleTextField(
+        actorDoubleEditor(
+            valueGetter = { it.shapes.getShape<ShapeData.Cylinder>().topRadius },
+            valueSetter = { oldData, newValue ->
+                oldData.copy(shapes = listOf(oldData.shapes.getShape<ShapeData.Cylinder>().copy(bottomRadius = newValue, topRadius = newValue)))
+            },
             label = "Radius:",
-            value = condenseDouble(getShapes<ShapeData.Cylinder>().map { it.topRadius }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.actorState.value }
-                val caps = getShapes<ShapeData.Cylinder>()
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, caps[i].topRadius)
-                    val mergedApply = mergeDouble(apply, caps[i].topRadius)
-                    val undoProps = props[i].copy(shapes = listOf(caps[i].copy(topRadius = mergedUndo)))
-                    val applyProps = props[i].copy(shapes = listOf(caps[i].copy(topRadius = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
-                }.fused()
-            }
+            minValue = 0.01
         )
-        labeledDoubleTextField(
+        actorDoubleEditor(
+            valueGetter = { it.shapes.getShape<ShapeData.Cylinder>().length },
+            valueSetter = { oldData, newValue ->
+                oldData.copy(shapes = listOf(oldData.shapes.getShape<ShapeData.Cylinder>().copy(length = newValue)))
+            },
             label = "Length:",
-            value = condenseDouble(getShapes<ShapeData.Cylinder>().map { it.length }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.actorState.value }
-                val caps = getShapes<ShapeData.Cylinder>()
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, caps[i].length)
-                    val mergedApply = mergeDouble(apply, caps[i].length)
-                    val undoProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedUndo)))
-                    val applyProps = props[i].copy(shapes = listOf(caps[i].copy(length = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
-                }.fused()
-            }
+            minValue = 0.01
         )
     }
 
     private fun ColumnScope.sphereEditor() {
-        labeledDoubleTextField(
+        actorDoubleEditor(
+            valueGetter = { it.shapes.getShape<ShapeData.Sphere>().radius },
+            valueSetter = { oldData, newValue ->
+                oldData.copy(shapes = listOf(oldData.shapes.getShape<ShapeData.Sphere>().copy(radius = newValue)))
+            },
             label = "Radius:",
-            value = condenseDouble(getShapes<ShapeData.Sphere>().map { it.radius }),
-            dragChangeSpeed = DragChangeRates.SIZE,
-            editHandler = ActionValueEditHandler { undo, apply ->
-                val props = components.map { it.actorState.value }
-                val caps = getShapes<ShapeData.Sphere>()
-                components.mapIndexed { i, component ->
-                    val mergedUndo = mergeDouble(undo, caps[i].radius)
-                    val mergedApply = mergeDouble(apply, caps[i].radius)
-                    val undoProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedUndo)))
-                    val applyProps = props[i].copy(shapes = listOf(caps[i].copy(radius = mergedApply)))
-                    SetRigidBodyPropertiesAction(component.gameEntity.id, undoProps, applyProps)
-                }.fused()
-            }
+            minValue = 0.01
         )
     }
 
@@ -245,9 +189,9 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         heightmapSelector(mapPath, true) {
             val editMaps = getShapes<ShapeData.Heightmap>()
             components.mapIndexed { i, component ->
-                val bodyProps = component.actorState.value
+                val bodyProps = component.data
                 val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(mapPath = it?.path ?: "")))
-                SetRigidBodyPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
+                SetRigidActorPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
             }.fused().apply()
         }
 
@@ -266,21 +210,23 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         labeledDoubleTextField(
             label = "Height scale:",
             value = condenseDouble(heightmaps.map { it.heightScale }),
+            minValue = 0.0,
             editHandler = object: ValueEditHandler<Double> {
                 override fun onEdit(value: Double) { }
                 override fun onEditEnd(startValue: Double, endValue: Double) {
                     val editMaps = getShapes<ShapeData.Heightmap>()
                     components.mapIndexed { i, component ->
-                        val bodyProps = component.actorState.value
+                        val bodyProps = component.data
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(heightScale = endValue)))
-                        SetRigidBodyPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
+                        SetRigidActorPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
                     }.fused().apply()
                 }
-            }
+            },
         )
         labeledXyRow(
             label = "Size:",
             xy = Vec2d(sizeX, sizeY),
+            minValues = Vec2d.ZERO,
             editHandler = object: ValueEditHandler<Vec2d> {
                 override fun onEdit(value: Vec2d) { }
                 override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
@@ -289,19 +235,53 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                         val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
                         val numRows = loaded[i]?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
                         val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
-                        val bodyProps = component.actorState.value
+                        val bodyProps = component.data
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(colScale = newScale.x, rowScale = newScale.y)))
-                        SetRigidBodyPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
+                        SetRigidActorPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
                     }.fused().apply()
                 }
             }
         )
     }
 
-    private val RigidActorProperties.shapeOption: ShapeOption get() =
+    private fun UiScope.actorDoubleEditor(
+        valueGetter: (RigidActorComponentData) -> Double,
+        valueSetter: (oldData: RigidActorComponentData, newValue: Double) -> RigidActorComponentData,
+        label: String,
+        precision: (Double) -> Int = { precisionForValue(it) },
+        minValue: Double = Double.NEGATIVE_INFINITY,
+        maxValue: Double = Double.POSITIVE_INFINITY,
+    ) = doublePropertyEditor(
+        dataGetter = { it.data },
+        valueGetter = valueGetter,
+        valueSetter = valueSetter,
+        actionMapper = setActorActionMapper,
+        label = label,
+        precision = precision,
+        minValue = minValue,
+        maxValue = maxValue
+    )
+
+    private fun UiScope.actorVec3Editor(
+        valueGetter: (RigidActorComponentData) -> Vec3d,
+        valueSetter: (oldData: RigidActorComponentData, newValue: Vec3d) -> RigidActorComponentData,
+        label: String,
+        minValues: Vec3d? = null,
+        maxValues: Vec3d? = null,
+    ) = vec3dPropertyEditor(
+        dataGetter = { it.data },
+        valueGetter = valueGetter,
+        valueSetter = valueSetter,
+        actionMapper = setActorActionMapper,
+        label = label,
+        minValues = minValues,
+        maxValues = maxValues
+    )
+
+    private val RigidActorComponentData.shapeOption: ShapeOption get() =
         ShapeOption.entries.first { it.matches(shapes.firstOrNull()) }
 
-    private val RigidActorProperties.typeOption: TypeOption get() =
+    private val RigidActorComponentData.typeOption: TypeOption get() =
         TypeOption.entries.first { it.type == type }
 
     private enum class TypeOption(val label: String, val type: RigidActorType) {
@@ -330,6 +310,10 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 HitActorBehavior.SLIDE -> "Slide"
                 HitActorBehavior.RIDE -> "Ride"
             }
+        }
+
+        private val setActorActionMapper: (RigidActorComponent, RigidActorComponentData, RigidActorComponentData) -> EditorAction = { component, undoData, applyData ->
+            SetRigidActorPropertiesAction(component.gameEntity.id, undoData, applyData)
         }
     }
 }

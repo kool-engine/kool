@@ -9,13 +9,14 @@ class SetShadowMapTypeAction(
     private val newShadowMapTypeData: ShadowMapTypeData
 ) : ComponentAction<ShadowMapComponent>(entityId, ShadowMapComponent::class) {
 
-    private val oldShadowMapTypeData = component?.shadowMapState?.value
+    private val oldShadowMapTypeData = component?.shadowMapType
 
     override fun doAction() {
-        component?.shadowMapState?.set(newShadowMapTypeData)
+        component?.let { it.setPersistent(it.data.copy(shadowMap = newShadowMapTypeData)) }
     }
 
     override fun undoAction() {
-        oldShadowMapTypeData?.let { component?.shadowMapState?.set(it) }
+        val oldData = oldShadowMapTypeData ?: return
+        component?.let { it.setPersistent(it.data.copy(shadowMap = oldData)) }
     }
 }

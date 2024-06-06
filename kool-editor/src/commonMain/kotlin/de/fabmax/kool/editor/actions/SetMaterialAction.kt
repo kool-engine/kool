@@ -6,16 +6,17 @@ import de.fabmax.kool.editor.data.MaterialData
 
 class SetMaterialAction(
     entityId: EntityId,
-    val setMaterialModel: MaterialData?,
+    setMaterial: MaterialData?,
 ) : ComponentAction<MaterialComponent>(entityId, MaterialComponent::class) {
 
-    private val prevMaterial = component?.materialData
+    private val applyMaterialId = setMaterial?.id ?: EntityId(0L)
+    private val undoMaterialId = component?.material?.id ?: EntityId(0L)
 
     override fun doAction() {
-        component?.materialState?.set(setMaterialModel)
+        component?.let { it.setPersistent(it.data.copy(materialId = applyMaterialId)) }
     }
 
     override fun undoAction() {
-        component?.materialState?.set(prevMaterial)
+        component?.let { it.setPersistent(it.data.copy(materialId = undoMaterialId)) }
     }
 }

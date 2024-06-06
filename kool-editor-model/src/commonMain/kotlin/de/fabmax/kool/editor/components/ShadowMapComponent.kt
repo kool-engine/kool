@@ -1,13 +1,11 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
 import de.fabmax.kool.editor.data.ShadowMapTypeData
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.util.*
 
@@ -17,31 +15,25 @@ class ShadowMapComponent(
         ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
     )
 ) : GameEntityDataComponent<ShadowMapComponent, ShadowMapComponentData>(gameEntity, componentInfo) {
-    val shadowMapState = mutableStateOf(data.shadowMap).onChange {
-        if (AppState.isEditMode) { data.shadowMap = it }
-        updateShadowMap(it, data.clipNear, data.clipFar)
-    }
 
-    val clipNear = mutableStateOf(data.clipNear).onChange {
-        if (AppState.isEditMode) { data.clipNear = it }
-        updateShadowMap(data.shadowMap, it, data.clipFar)
-    }
+    val shadowMapType: ShadowMapTypeData get() = data.shadowMap
+    val clipNear: Float get() = data.clipNear
+    val clipFar: Float get() = data.clipFar
 
-    val clipFar = mutableStateOf(data.clipNear).onChange {
-        if (AppState.isEditMode) { data.clipFar = it }
-        updateShadowMap(data.shadowMap, data.clipNear, it)
-    }
-
-    private var shadowMap: ShadowMap? = null
+    var shadowMap: ShadowMap? = null
+        private set
 
     init {
         dependsOn(DiscreteLightComponent::class)
     }
 
+    override fun onDataChanged(oldData: ShadowMapComponentData, newData: ShadowMapComponentData) {
+        updateShadowMap(newData)
+    }
+
     override suspend fun applyComponent() {
         super.applyComponent()
-        shadowMapState.set(data.shadowMap)
-        updateShadowMap()
+        updateShadowMap(data)
     }
 
     override fun destroyComponent() {
@@ -55,16 +47,12 @@ class ShadowMapComponent(
         if (current != null && current::class == light::class) {
             shadowMap?.light = light
         } else {
-            updateShadowMap()
+            updateShadowMap(data)
         }
     }
 
-    private fun updateShadowMap() {
-        updateShadowMap(data.shadowMap, data.clipNear, data.clipFar)
-    }
-
-    private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {
-        logD { "Update shadow map: ${shadowMapInfo::class.simpleName}, near: $clipNear, far: $clipFar" }
+    private fun updateShadowMap(data: ShadowMapComponentData) {
+        logD { "Update shadow map: ${data.shadowMap::class.simpleName}, near: $clipNear, far: $clipFar" }
 
         val light = gameEntity.getComponent<DiscreteLightComponent>()?.drawNode
         if (light == null) {
@@ -80,22 +68,22 @@ class ShadowMapComponent(
         disposeShadowMap()
 
         // create new shadow map
-        shadowMap = when (shadowMapInfo) {
+        shadowMap = when (data.shadowMap) {
             is ShadowMapTypeData.Single -> {
-                SimpleShadowMap(sceneComponent.drawNode, light, mapSize = shadowMapInfo.mapInfo.mapSize).apply {
-                    this.clipNear = clipNear
-                    this.clipFar = clipFar
+                SimpleShadowMap(sceneComponent.drawNode, light, mapSize = data.shadowMap.mapInfo.mapSize).apply {
+                    this.clipNear = data.clipNear
+                    this.clipFar = data.clipFar
                 }
             }
             is ShadowMapTypeData.Cascaded -> {
                 CascadedShadowMap(
                     sceneComponent.drawNode,
                     light,
-                    clipFar,
-                    shadowMapInfo.mapInfos.size,
-                    mapSizes = shadowMapInfo.mapInfos.map { it.mapSize }
+                    data.clipFar,
+                    data.shadowMap.mapInfos.size,
+                    mapSizes = data.shadowMap.mapInfos.map { it.mapSize }
                 ).apply {
-                    shadowMapInfo.mapInfos.forEachIndexed { i, info ->
+                    data.shadowMap.mapInfos.forEachIndexed { i, info ->
                         mapRanges[i].near = info.rangeNear
                         mapRanges[i].far = info.rangeFar
                     }

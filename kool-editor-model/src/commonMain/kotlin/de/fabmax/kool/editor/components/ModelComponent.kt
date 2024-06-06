@@ -153,13 +153,13 @@ class ModelComponent(
         shaderShadowMaps = shaderData.shadowMaps.copy()
         val ibl = shaderData.environmentMaps
         val ssao = shaderData.ssaoMap
-        val material = gameEntity.getComponent<MaterialComponent>()?.materialData
+        val material = gameEntity.getComponent<MaterialComponent>()?.material
         val modelCfg = GltfLoadConfig(
             materialConfig = GltfMaterialConfig(
                 environmentMaps = ibl,
                 shadowMaps = shaderShadowMaps,
                 scrSpcAmbientOcclusionMap = ssao,
-                maxNumberOfLights = sceneComponent.maxNumLightsState.value
+                maxNumberOfLights = sceneComponent.maxNumLights
             ),
             applyMaterials = material == null,
             assetLoader = AppAssets.assetLoader

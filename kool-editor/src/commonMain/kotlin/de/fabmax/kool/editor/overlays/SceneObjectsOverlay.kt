@@ -363,7 +363,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
 
         override val modelMat: Mat4f get() = gameEntity.drawNode.modelMatF
         override val color: Color get() {
-            val isActive = component.sceneComponent.cameraState.value == component
+            val isActive = component.sceneComponent.cameraComponent == component
             return if (isActive) activeColor else inactiveColor
         }
     }

@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.ui2.UiScope
 
 class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
     override fun UiScope.compose() = componentPanel("Shadow Map", IconMap.small.shadow, ::removeComponent) {
-        val shadowMapTypes = components.map { it.shadowMapState.use().typeOption }
+        val shadowMapTypes = components.map { it.dataState.use().shadowMap.typeOption }
         val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(shadowMapTypes)
         labeledCombobox("Type:", typeItems, typeIdx) { selected ->
             selected.item?.let { type ->

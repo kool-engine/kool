@@ -14,11 +14,11 @@ import de.fabmax.kool.util.MdColor
 
 class MaterialEditor : ComponentEditor<MaterialComponent>() {
 
-    private val material: MaterialData get() = components[0].materialState.value!!
+    private val material: MaterialData get() = components[0].material!!
 
     override fun UiScope.compose() {
         val allTheSameMaterial = components.all {
-            it.data.materialId == components[0].data.materialId
+            it.dataState.use().materialId == components[0].data.materialId
         }
         componentPanel(
             title = "Material",
@@ -46,9 +46,9 @@ class MaterialEditor : ComponentEditor<MaterialComponent>() {
             }
         ) {
             if (allTheSameMaterial) {
-                val material = components[0].materialState.use() ?: return@componentPanel Unit
-                labeledTextField("Name:", material.name) {
-                    RenameMaterialAction(material, it, material.name).apply()
+                val checkedMaterial = components[0].material ?: return@componentPanel Unit
+                labeledTextField("Name:", checkedMaterial.name) {
+                    RenameMaterialAction(checkedMaterial, it, checkedMaterial.name).apply()
                 }
 
                 menuDivider()

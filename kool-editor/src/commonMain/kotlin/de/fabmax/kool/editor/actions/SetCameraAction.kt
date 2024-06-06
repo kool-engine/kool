@@ -11,10 +11,12 @@ class SetCameraAction(
 ) : ComponentAction<CameraComponent>(entityId, CameraComponent::class) {
 
     override fun doAction() {
-        component?.cameraState?.set(setCameraData)
+        val component = component ?: return
+        component.setPersistent(component.data.copy(camera = setCameraData))
     }
 
     override fun undoAction() {
-        component?.cameraState?.set(undoCamData)
+        val component = component ?: return
+        component.setPersistent(component.data.copy(camera = undoCamData))
     }
 }

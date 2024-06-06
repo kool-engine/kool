@@ -7,7 +7,7 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import kotlinx.serialization.Serializable
 
 @Serializable
-class CameraComponentData(var camera: CameraTypeData) : ComponentData
+data class CameraComponentData(val camera: CameraTypeData) : ComponentData
 
 @Serializable
 sealed class CameraTypeData {

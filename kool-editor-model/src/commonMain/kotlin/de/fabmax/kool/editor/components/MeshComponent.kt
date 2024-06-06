@@ -7,7 +7,6 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -31,8 +30,6 @@ class MeshComponent(
     UpdateSsaoComponent,
     UpdateMaxNumLightsComponent
 {
-    val shapesState = MutableStateList(data.shapes)
-
     override var drawNode: Mesh? = null
         private set
 
@@ -45,6 +42,12 @@ class MeshComponent(
             .filterIsInstance<ShapeData.Heightmap>()
             .filter{ it.mapPath.isNotBlank() }
             .forEach { requiredAssets += it.toAssetReference() }
+    }
+
+    override fun onDataChanged(oldData: MeshComponentData, newData: MeshComponentData) {
+        launchOnMainThread {
+            updateGeometry()
+        }
     }
 
     override suspend fun applyComponent() {
@@ -76,7 +79,7 @@ class MeshComponent(
 
         requiredAssets.clear()
         mesh.generate {
-            shapesState.forEach { shape -> generateShape(shape) }
+            data.shapes.forEach { shape -> generateShape(shape) }
             geometry.generateTangents()
         }
 
@@ -84,9 +87,7 @@ class MeshComponent(
         mesh.rayTest.onMeshDataChanged(mesh)
 
         if (isApplied) {
-            launchOnMainThread {
-                gameEntity.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(data) }
-            }
+            gameEntity.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(data) }
         }
     }
 
@@ -187,7 +188,7 @@ class MeshComponent(
 
         val sceneShaderData = gameEntity.sceneComponent.shaderData
 
-        val materialData = gameEntity.getComponent<MaterialComponent>()?.materialData
+        val materialData = gameEntity.getComponent<MaterialComponent>()?.material
         if (materialData != null) {
             logD { "${gameEntity.name}: (re-)creating shader for material: ${materialData.name}" }
 

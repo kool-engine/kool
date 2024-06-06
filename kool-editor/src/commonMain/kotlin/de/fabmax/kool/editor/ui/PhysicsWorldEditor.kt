@@ -14,10 +14,10 @@ class PhysicsWorldEditor : ComponentEditor<PhysicsWorldComponent>() {
         imageIcon = IconMap.small.physics,
         onRemove = ::removeComponent,
     ) {
-        components.forEach { it.physicsWorldState.use() }
+        components.forEach { it.dataState.use() }
 
         booleanPropertyEditor(
-            dataGetter = { it.physicsWorldState.value },
+            dataGetter = { it.data },
             valueGetter = { it.isContinuousCollisionDetection },
             valueSetter = { oldData, newValue -> oldData.copy(isContinuousCollisionDetection = newValue) },
             actionMapper = { component, undoData, applyData ->
@@ -27,7 +27,7 @@ class PhysicsWorldEditor : ComponentEditor<PhysicsWorldComponent>() {
         )
 
         vec3dPropertyEditor<Vec3d>(
-            dataGetter = { it.physicsWorldState.value.gravity.toVec3d() },
+            dataGetter = { it.data.gravity.toVec3d() },
             valueGetter = { it },
             valueSetter = { _, newValue -> newValue },
             actionMapper = { component, undoData, applyData ->

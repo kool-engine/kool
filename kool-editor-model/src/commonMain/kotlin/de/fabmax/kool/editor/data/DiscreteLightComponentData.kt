@@ -6,7 +6,7 @@ import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
 
 @Serializable
-class DiscreteLightComponentData(var light: LightTypeData) : ComponentData
+data class DiscreteLightComponentData(val light: LightTypeData) : ComponentData
 
 @Serializable
 sealed class LightTypeData {

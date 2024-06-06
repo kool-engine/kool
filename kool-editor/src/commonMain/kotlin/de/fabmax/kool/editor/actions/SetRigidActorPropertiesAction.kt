@@ -2,19 +2,19 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.RigidActorComponent
 import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.RigidActorProperties
+import de.fabmax.kool.editor.data.RigidActorComponentData
 
-class SetRigidBodyPropertiesAction(
+class SetRigidActorPropertiesAction(
     entityId: EntityId,
-    private val oldProps: RigidActorProperties,
-    private val newProps: RigidActorProperties
+    private val oldProps: RigidActorComponentData,
+    private val newProps: RigidActorComponentData
 ) : ComponentAction<RigidActorComponent>(entityId, RigidActorComponent::class) {
 
     override fun doAction() {
-        component?.actorState?.set(newProps)
+        component?.setPersistent(newProps)
     }
 
     override fun undoAction() {
-        component?.actorState?.set(oldProps)
+        component?.setPersistent(oldProps)
     }
 }

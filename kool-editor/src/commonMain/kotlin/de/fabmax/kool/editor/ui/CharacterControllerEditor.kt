@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.SetCharControllerPropertiesAction
 import de.fabmax.kool.editor.components.CharacterControllerComponent
-import de.fabmax.kool.editor.data.CharacterControllerComponentProperties
+import de.fabmax.kool.editor.data.CharacterControllerComponentData
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.physics.character.NonWalkableMode
 
@@ -14,7 +14,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
         imageIcon = IconMap.small.physics,
         onRemove = ::removeComponent,
     ) {
-        components.forEach { it.charControllerState.use() }
+        components.forEach { it.dataState.use() }
 
         charDoublePropertyEditor(
             valueGetter = { it.shape.radius },
@@ -63,7 +63,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
         )
         choicePropertyEditor(
             choices = nonWalkableOptions,
-            dataGetter = { it.charControllerState.value },
+            dataGetter = { it.data },
             valueGetter = { it.nonWalkableMode },
             valueSetter = { oldData, newValue -> oldData.copy(nonWalkableMode = newValue) },
             actionMapper = setCharProps,
@@ -88,7 +88,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             "Default keyboard controls"
         )
 
-        if (components.all { it.charControllerState.value.enableDefaultControls }) {
+        if (components.all { it.data.enableDefaultControls }) {
             charBooleanPropertyEditor(
                 valueGetter = { it.runByDefault },
                 valueSetter = { oldData, newValue -> oldData.copy(runByDefault = newValue) },
@@ -98,13 +98,13 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
     }
 
     private fun UiScope.charDoublePropertyEditor(
-        valueGetter: (CharacterControllerComponentProperties) -> Double,
-        valueSetter: (oldData: CharacterControllerComponentProperties, newValue: Double) -> CharacterControllerComponentProperties,
+        valueGetter: (CharacterControllerComponentData) -> Double,
+        valueSetter: (oldData: CharacterControllerComponentData, newValue: Double) -> CharacterControllerComponentData,
         label: String,
         minValue: Double = 0.0,
         maxValue: Double = Double.POSITIVE_INFINITY,
     ) = doublePropertyEditor(
-        dataGetter = { it.charControllerState.value },
+        dataGetter = { it.data },
         valueGetter = valueGetter,
         valueSetter = valueSetter,
         actionMapper = setCharProps,
@@ -114,11 +114,11 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
     )
 
     private fun UiScope.charBooleanPropertyEditor(
-        valueGetter: (CharacterControllerComponentProperties) -> Boolean,
-        valueSetter: (oldData: CharacterControllerComponentProperties, newValue: Boolean) -> CharacterControllerComponentProperties,
+        valueGetter: (CharacterControllerComponentData) -> Boolean,
+        valueSetter: (oldData: CharacterControllerComponentData, newValue: Boolean) -> CharacterControllerComponentData,
         label: String,
     ) = booleanPropertyEditor(
-        dataGetter = { it.charControllerState.value },
+        dataGetter = { it.data },
         valueGetter = valueGetter,
         valueSetter = valueSetter,
         actionMapper = setCharProps,
@@ -128,8 +128,8 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
     companion object {
         private val setCharProps: (
             component: CharacterControllerComponent,
-            undoData: CharacterControllerComponentProperties,
-            applyData: CharacterControllerComponentProperties
+            undoData: CharacterControllerComponentData,
+            applyData: CharacterControllerComponentData
         ) -> EditorAction = { component, undoData, applyData ->
             SetCharControllerPropertiesAction(component.gameEntity.id, undoData, applyData)
         }

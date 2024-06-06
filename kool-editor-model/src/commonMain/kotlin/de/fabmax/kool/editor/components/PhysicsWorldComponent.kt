@@ -7,35 +7,39 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.PhysicsWorldComponentData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.character.CharacterControllerManager
+import de.fabmax.kool.util.logW
 
 class PhysicsWorldComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<PhysicsWorldComponentData> = ComponentInfo(PhysicsWorldComponentData())
 ) : GameEntityDataComponent<PhysicsWorldComponent, PhysicsWorldComponentData>(gameEntity, componentInfo) {
 
-    val physicsWorldState = mutableStateOf(data.properties).onChange {
-        data.properties = it
-    }
-
-    val gravityState = mutableStateOf<Vec3f>(data.properties.gravity.toVec3f()).onChange {
-        physicsWorldState.set(physicsWorldState.value.copy(gravity = Vec3Data(it)))
-        physicsWorld?.gravity = it
-    }
-
     var physicsWorld: PhysicsWorld? = null
+        private set
+    var gravity: Vec3f
+        get() = data.gravity.toVec3f()
+        set(value) { data = data.copy(gravity = Vec3Data(value)) }
 
     var characterControllerManager: CharacterControllerManager? = null
+
+    override fun onDataChanged(oldData: PhysicsWorldComponentData, newData: PhysicsWorldComponentData) {
+        physicsWorld?.let { world ->
+            world.gravity = newData.gravity.toVec3f()
+            if (oldData.isContinuousCollisionDetection != newData.isContinuousCollisionDetection) {
+                logW { "Continuous collision detection can not be changed after physics world was created" }
+            }
+        }
+    }
 
     override suspend fun applyComponent() {
         super.applyComponent()
 
         Physics.loadAndAwaitPhysics()
-        physicsWorld = PhysicsWorld(null, data.properties.isContinuousCollisionDetection).also {
-            it.gravity = data.properties.gravity.toVec3f()
+        physicsWorld = PhysicsWorld(null, data.isContinuousCollisionDetection).also {
+            it.gravity = gravity
             characterControllerManager = CharacterControllerManager(it)
         }
 

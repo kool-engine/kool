@@ -1,12 +1,8 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.ComponentInfo
-import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.SceneComponentData
-import de.fabmax.kool.modules.ui2.MutableStateValue
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Camera
@@ -22,56 +18,37 @@ class SceneComponent(
     GameEntityDataComponent<SceneComponent, SceneComponentData>(gameEntity, componentInfo),
     DrawNodeComponent
 {
-
     override val drawNode: Scene = Scene(gameEntity.name).apply { tryEnableInfiniteDepth() }
 
     val shaderData = SceneShaderData()
 
-    val maxNumLightsState: MutableStateValue<Int>
-    val cameraState: MutableStateValue<CameraComponent?>
-
-//    @Deprecated("remove this?")
-//    val sceneBackground: SceneBackgroundComponent by lazy {
-//        gameEntity.getOrPutComponent<SceneBackgroundComponent> { SceneBackgroundComponent(gameEntity, MdColor.GREY toneLin 900) }
-//    }
-//    private val backgroundUpdater: BackgroundUpdater by lazy {
-//        gameEntity.getOrPutComponent { BackgroundUpdater() }
-//    }
+    val maxNumLights: Int get() = data.maxNumLights
+    val cameraComponent: CameraComponent? get() = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
 
     init {
         componentOrder = COMPONENT_ORDER_EARLY
+        shaderData.maxNumberOfLights = data.maxNumLights
+    }
 
-        maxNumLightsState = mutableStateOf(data.maxNumLights).onChange {
-            shaderData.maxNumberOfLights = it
-            if (AppState.isEditMode) {
-                data.maxNumLights = it
-            }
-            drawNode.lighting.maxNumberOfLights = it
+    override fun onDataChanged(oldData: SceneComponentData, newData: SceneComponentData) {
+        if (oldData.maxNumLights != newData.maxNumLights) {
             gameEntity.scene.getAllComponents<UpdateMaxNumLightsComponent>().forEach { comp ->
-                comp.updateMaxNumLightsComponent(it)
+                comp.updateMaxNumLightsComponent(newData.maxNumLights)
             }
         }
-        cameraState = mutableStateOf<CameraComponent?>(null).onChange {
-            if (AppState.isEditMode) {
-                data.cameraEntityId = it?.gameEntity?.id ?: EntityId(-1L)
-            } else {
-                // only set scene cam if not in edit mode. In edit mode, editor camera is used instead
-                it?.drawNode?.let { cam -> drawNode.camera = cam }
-            }
+        if (oldData.cameraEntityId != newData.cameraEntityId) {
+            val newCam: CameraComponent? = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
             gameEntity.scene.getAllComponents<UpdateSceneCameraComponent>().forEach { comp ->
-                comp.updateSceneCameraComponent(it?.drawNode)
+                comp.updateSceneCameraComponent(newCam?.drawNode)
             }
         }
-
-        shaderData.maxNumberOfLights = maxNumLightsState.value
     }
 
     override suspend fun applyComponent() {
         super.applyComponent()
 
-        val cam = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent<CameraComponent>()
+        val cam = cameraComponent
         if (cam != null) {
-            cameraState.set(cam)
             drawNode.camera = cam.drawNode
         } else {
             logW { "Scene ${gameEntity.name} has no camera attached" }

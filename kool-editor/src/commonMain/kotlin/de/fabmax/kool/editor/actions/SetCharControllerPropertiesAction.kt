@@ -1,20 +1,20 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.CharacterControllerComponent
-import de.fabmax.kool.editor.data.CharacterControllerComponentProperties
+import de.fabmax.kool.editor.data.CharacterControllerComponentData
 import de.fabmax.kool.editor.data.EntityId
 
 class SetCharControllerPropertiesAction(
     entityId: EntityId,
-    private val oldProps: CharacterControllerComponentProperties,
-    private val newProps: CharacterControllerComponentProperties
+    private val oldProps: CharacterControllerComponentData,
+    private val newProps: CharacterControllerComponentData
 ) : ComponentAction<CharacterControllerComponent>(entityId, CharacterControllerComponent::class) {
 
     override fun doAction() {
-        component?.charControllerState?.set(newProps)
+        component?.setPersistent(newProps)
     }
 
     override fun undoAction() {
-        component?.charControllerState?.set(oldProps)
+        component?.setPersistent(oldProps)
     }
 }

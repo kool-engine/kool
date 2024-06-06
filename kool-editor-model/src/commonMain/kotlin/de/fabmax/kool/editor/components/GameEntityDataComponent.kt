@@ -14,23 +14,29 @@ abstract class GameEntityDataComponent<C: GameEntityDataComponent<C, D>, D: Comp
     protected var thisRef: C? = null
     protected open val changeListenerComponents: List<DataChangeListenerComponent<C, D>>? = null
 
-    val dataState = mutableStateOf(componentInfo.data).onChange { data ->
-        val thisRef = this.thisRef
-        if (thisRef != null) {
-            changeListenerComponents?.let { listeners ->
-                for (i in listeners.indices) {
-                    listeners[i].onComponentDataChanged(thisRef, data)
+    val dataState = mutableStateOf(componentInfo.data)
+    var data: D by dataState::value
+
+    init {
+        dataState.onChange { newData ->
+            onDataChanged(data, newData)
+            val thisRef = this.thisRef
+            if (thisRef != null) {
+                changeListenerComponents?.let { listeners ->
+                    for (i in listeners.indices) {
+                        listeners[i].onComponentDataChanged(thisRef, newData)
+                    }
                 }
             }
         }
     }
 
-    var data: D by dataState::value
-
     fun setPersistent(componentData: D) {
         componentInfo.data = componentData
         dataState.set(componentData)
     }
+
+    protected open fun onDataChanged(oldData: D, newData: D) { }
 }
 
 inline fun <reified T: Any> GameEntityDataComponent<*,*>.cachedEntityComponents(): CachedComponents<T> {

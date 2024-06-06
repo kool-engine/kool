@@ -140,7 +140,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         // fixme: a bit hacky currently: restore app scene camera
         //  it was replaced by custom editor cam during editor app load
-        sceneModel.sceneComponent.cameraState.value?.drawNode?.let { cam ->
+        sceneModel.sceneComponent.cameraComponent?.drawNode?.let { cam ->
             sceneModel.scene.camera = cam
             (cam as? PerspectiveCamera)?.let {
                 val aoPipeline = sceneModel.sceneEntity.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline

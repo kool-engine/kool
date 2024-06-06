@@ -1,13 +1,11 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.CharacterControllerComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.CharacterController
@@ -27,16 +25,6 @@ class CharacterControllerComponent(
     PhysicsNodeComponent<CharacterControllerComponentData>(gameEntity, componentInfo),
     OnHitActorListener
 {
-
-    val charControllerState = mutableStateOf(data.properties).onChange {
-        if (AppState.isEditMode) {
-            data.properties = it
-        }
-        launchOnMainThread {
-            updateControllerProps()
-        }
-    }
-
     var charController: CharacterController? = null
         private set
 
@@ -44,14 +32,14 @@ class CharacterControllerComponent(
 
     private var axes: WalkAxes? = null
 
-    val isRun: Boolean get() = axes?.isRun == !charControllerState.value.runByDefault
+    val isRun: Boolean get() = axes?.isRun == !data.runByDefault
     val isJump: Boolean get() = axes?.isJump == true
     val isCrouch: Boolean get() = axes?.isCrouch == true
 
     val crouchFactor: Float get() = axes?.crouchFactor ?: 0f
     val runFactor: Float get() {
         var fac = axes?.runFactor ?: 0f
-        if (charControllerState.value.runByDefault) {
+        if (data.runByDefault) {
             fac = 1f - fac
         }
         return fac
@@ -59,15 +47,21 @@ class CharacterControllerComponent(
 
     override val actorTransform: TrsTransformF? get() = charController?.actor?.transform
 
+    override fun onDataChanged(oldData: CharacterControllerComponentData, newData: CharacterControllerComponentData) {
+        launchOnMainThread {
+            updateControllerProps(newData)
+        }
+    }
+
     override suspend fun applyComponent() {
         super.applyComponent()
         createCharController()
-        updateControllerProps()
+        updateControllerProps(data)
     }
 
     override fun onStart() {
         super.onStart()
-        if (data.properties.enableDefaultControls) {
+        if (data.enableDefaultControls) {
             axes = WalkAxes(KoolSystem.requireContext())
         }
     }
@@ -102,14 +96,12 @@ class CharacterControllerComponent(
             existing.release()
         }
 
-        val props = data.properties.let {
-            CharacterControllerProperties(
-                height = it.shape.length.toFloat(),
-                radius = it.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
-                slopeLimit = it.slopeLimit.toFloat().deg,
-                contactOffset = CHARACTER_CONTACT_OFFSET
-            )
-        }
+        val props = CharacterControllerProperties(
+            height = data.shape.length.toFloat(),
+            radius = data.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
+            slopeLimit = data.slopeLimit.toFloat().deg,
+            contactOffset = CHARACTER_CONTACT_OFFSET
+        )
         charController = charManager.createController(props).also {
             it.onHitActorListeners += this
         }
@@ -121,9 +113,8 @@ class CharacterControllerComponent(
         }
     }
 
-    private fun updateControllerProps() {
+    private fun updateControllerProps(props: CharacterControllerComponentData) {
         val charCtrl = charController ?: return
-        val props = charControllerState.value
 
         val height = props.shape.length.toFloat()
         if (charCtrl.height != height) {
@@ -142,10 +133,9 @@ class CharacterControllerComponent(
     }
 
     private fun updateMovement(controller: CharacterController, axes: WalkAxes) {
-        val props = charControllerState.value
-        val crouchSpeed = props.crouchSpeed.toFloat()
-        val walkSpeed = props.walkSpeed.toFloat()
-        val runSpeed = props.runSpeed.toFloat()
+        val crouchSpeed = data.crouchSpeed.toFloat()
+        val walkSpeed = data.walkSpeed.toFloat()
+        val runSpeed = data.runSpeed.toFloat()
 
         var moveHeading = referenceFrontDirection.deg
         val walkDir = Vec2f(-axes.leftRight, axes.forwardBackward)
@@ -171,8 +161,8 @@ class CharacterControllerComponent(
     }
 
     override fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
-        val pushForceFac = charControllerState.value.pushForce.toFloat()
-        val downForceFac = charControllerState.value.downForce.toFloat()
+        val pushForceFac = data.pushForce.toFloat()
+        val downForceFac = data.downForce.toFloat()
         if ((pushForceFac + downForceFac) > 0f && actor is RigidDynamic && !actor.isKinematic) {
             val runMod = if (axes?.isRun == true) 2f else 1f
             val downBlend = abs(hitWorldNormal dot Vec3f.Y_AXIS)

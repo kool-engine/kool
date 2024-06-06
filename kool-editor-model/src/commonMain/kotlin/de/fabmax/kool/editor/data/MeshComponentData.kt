@@ -2,11 +2,7 @@ package de.fabmax.kool.editor.data
 
 import kotlinx.serialization.Serializable
 
-@Serializable
-class MeshComponentData() : ComponentData {
-    val shapes = mutableListOf<ShapeData>()
+fun MeshComponentData(shape: ShapeData): MeshComponentData = MeshComponentData(listOf(shape))
 
-    constructor(singleShape: ShapeData) : this() {
-        shapes += singleShape
-    }
-}
+@Serializable
+data class MeshComponentData(val shapes: List<ShapeData>) : ComponentData

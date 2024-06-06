@@ -1,11 +1,13 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.*
+import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.loadHdri
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchOnMainThread
@@ -22,13 +24,6 @@ class SceneBackgroundComponent(
     componentInfo: ComponentInfo<SceneBackgroundComponentData>
 ) : GameEntityDataComponent<SceneBackgroundComponent, SceneBackgroundComponentData>(gameEntity, componentInfo) {
 
-    val backgroundState = mutableStateOf(data.sceneBackground).onChange {
-        if (AppState.isEditMode) {
-            data.sceneBackground = it
-        }
-        applyBackground(it)
-    }
-
     init {
         when (val bgData = data.sceneBackground) {
             is SceneBackgroundData.Hdri -> requiredAssets += AssetReference.Hdri(bgData.hdriPath)
@@ -36,13 +31,13 @@ class SceneBackgroundComponent(
         }
     }
 
+    override fun onDataChanged(oldData: SceneBackgroundComponentData, newData: SceneBackgroundComponentData) {
+        applyBackground(newData.sceneBackground)
+    }
+
     override suspend fun applyComponent() {
         super.applyComponent()
-
-        // re-sync public state with componentData state
-        backgroundState.set(data.sceneBackground)
-
-        when (val bgState = backgroundState.value) {
+        when (val bgState = data.sceneBackground) {
             is SceneBackgroundData.Hdri -> {
                 sceneComponent.shaderData.environmentMaps = AppAssets.loadHdri(bgState.hdriPath)
             }
@@ -74,7 +69,7 @@ class SceneBackgroundComponent(
 interface UpdateSceneBackgroundComponent {
     fun updateBackground(sceneBackground: SceneBackgroundComponent) {
         val sceneComponent = sceneBackground.sceneComponent
-        when (val bg = sceneBackground.backgroundState.value) {
+        when (val bg = sceneBackground.data.sceneBackground) {
             is SceneBackgroundData.Hdri -> sceneComponent.shaderData.environmentMaps?.let { updateHdriBg(bg, it) }
             is SceneBackgroundData.SingleColor -> updateSingleColorBg(sceneComponent.shaderData.ambientColorLinear)
         }

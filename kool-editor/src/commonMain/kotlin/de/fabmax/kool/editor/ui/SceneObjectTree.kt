@@ -173,7 +173,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 }
             }
             editor.activeScene.value?.let { sceneModel ->
-                if (sceneModel.scene.lighting.lights.size < sceneModel.sceneComponent.maxNumLightsState.value) {
+                if (sceneModel.scene.lighting.lights.size < sceneModel.sceneComponent.maxNumLights) {
                     subMenu("Light") {
                         item("Directional") { addNewLight(it, LightTypeData.Directional()) }
                         item("Spot") { addNewLight(it, LightTypeData.Spot()) }

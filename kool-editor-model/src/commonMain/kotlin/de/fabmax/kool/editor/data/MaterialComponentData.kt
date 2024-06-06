@@ -12,7 +12,7 @@ import kotlinx.serialization.Transient
 
 
 @Serializable
-data class MaterialComponentData(var materialId: EntityId) : ComponentData
+data class MaterialComponentData(val materialId: EntityId) : ComponentData
 
 @Serializable
 data class MaterialData(
