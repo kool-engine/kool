@@ -4,15 +4,18 @@ import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmInline
 
 @Serializable
-class GameEntityData(
+data class GameEntityData(
+    val id: EntityId,
     var name: String,
-    var id: EntityId,
     var parentId: EntityId?,
     var order: Int = 0,
     var isVisible: Boolean = true
 ) {
-    val components: MutableList<ComponentData> = mutableListOf()
+    val components: MutableList<ComponentInfo<*>> = mutableListOf()
 }
+
+@Serializable
+data class ComponentInfo<T: ComponentData>(var data: T)
 
 @Serializable
 @JvmInline

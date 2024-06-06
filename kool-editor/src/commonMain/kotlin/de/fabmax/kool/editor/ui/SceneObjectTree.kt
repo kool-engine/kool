@@ -64,31 +64,31 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewMesh(parent: SceneObjectItem, meshShape: ShapeData) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(meshShape.name)
-        val entityData = GameEntityData(name, id, parent.gameEntity.id)
-        entityData.components += MeshComponentData(meshShape)
-        entityData.components += MaterialComponentData(EntityId(-1))
+        val entityData = GameEntityData(id, name, parent.gameEntity.id)
+        entityData.components += ComponentInfo(MeshComponentData(meshShape))
+        entityData.components += ComponentInfo(MaterialComponentData(EntityId(-1)))
         AddSceneNodeAction(listOf(entityData)).apply()
     }
 
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(modelAsset.name)
-        val nodeData = GameEntityData(name, id, parent.gameEntity.id)
-        nodeData.components += ModelComponentData(modelAsset.path)
+        val nodeData = GameEntityData(id, name, parent.gameEntity.id)
+        nodeData.components += ComponentInfo(ModelComponentData(modelAsset.path))
         AddSceneNodeAction(listOf(nodeData)).apply()
     }
 
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(lightType.name)
-        val nodeData = GameEntityData(name, id, parent.gameEntity.id)
-        nodeData.components += DiscreteLightComponentData(lightType)
+        val nodeData = GameEntityData(id, name, parent.gameEntity.id)
+        nodeData.components += ComponentInfo(DiscreteLightComponentData(lightType))
 
         val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
         if (lightType !is LightTypeData.Point) {
             transform.mul(MutableMat4d().rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
         }
-        nodeData.components += TransformComponentData(TransformData.fromMatrix(transform))
+        nodeData.components += ComponentInfo(TransformComponentData(TransformData.fromMatrix(transform)))
 
         AddSceneNodeAction(listOf(nodeData)).apply()
     }
@@ -96,7 +96,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addEmptyNode(parent: SceneObjectItem) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName("Empty")
-        val nodeData = GameEntityData(name, id, parent.gameEntity.id)
+        val nodeData = GameEntityData(id, name, parent.gameEntity.id)
         AddSceneNodeAction(listOf(nodeData)).apply()
     }
 

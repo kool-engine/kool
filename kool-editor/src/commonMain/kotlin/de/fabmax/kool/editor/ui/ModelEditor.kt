@@ -12,7 +12,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
 
     override fun UiScope.compose() {
         val allTheSameModel = components.all {
-            it.componentData.modelPath == components[0].componentData.modelPath
+            it.data.modelPath == components[0].data.modelPath
         }
         componentPanel(
             title = "Model",
@@ -88,7 +88,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
 
         var index = 0
         KoolEditor.instance.availableAssets.modelAssets.use().forEachIndexed { i, model ->
-            if (allTheSame && components[0].componentData.modelPath == model.path) {
+            if (allTheSame && components[0].data.modelPath == model.path) {
                 index = i
             }
             items += ModelItem(model.name, model)

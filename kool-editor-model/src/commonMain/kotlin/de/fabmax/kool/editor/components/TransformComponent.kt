@@ -2,19 +2,23 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Node
 
-class TransformComponent(gameEntity: GameEntity, componentData: TransformComponentData) :
-    GameEntityDataComponent<TransformComponentData>(gameEntity, componentData)
-{
+class TransformComponent(
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<TransformComponentData> = ComponentInfo(TransformComponentData())
+) : GameEntityDataComponent<TransformComponent, TransformComponentData>(gameEntity, componentInfo) {
+
+    override val changeListenerComponents by cachedEntityComponents<TransformChangedListenerComponent>()
 
     val onTransformEdited = mutableListOf<(TransformComponent) -> Unit>()
 
-    val transformState = mutableStateOf(componentData.transform).onChange {
+    val transformState = mutableStateOf(data.transform).onChange {
         if (AppState.isEditMode) {
-            componentData.transform = it
+            data.transform = it
         }
         if (gameEntity.isCreated) {
             it.toTransform(gameEntity.drawNode.transform)
@@ -23,23 +27,26 @@ class TransformComponent(gameEntity: GameEntity, componentData: TransformCompone
         onTransformEdited.forEach { it(this) }
     }
 
-    val isFixedScaleRatio = mutableStateOf(componentData.isFixedScaleRatio).onChange {
+    val isFixedScaleRatio = mutableStateOf(data.isFixedScaleRatio).onChange {
         if (AppState.isEditMode) {
-            componentData.isFixedScaleRatio = it
+            data.isFixedScaleRatio = it
         }
     }
 
     init {
+        thisRef = this
         componentOrder = COMPONENT_ORDER_EARLY
     }
 
     override suspend fun applyComponent() {
         super.applyComponent()
-        transformState.set(componentData.transform)
+        transformState.set(data.transform)
     }
 
     fun applyTransformTo(drawNode: Node) {
-        componentData.transform.toTransform(drawNode.transform)
+        data.transform.toTransform(drawNode.transform)
         drawNode.updateModelMat()
     }
+
+    interface TransformChangedListenerComponent : DataChangeListenerComponent<TransformComponent, TransformComponentData>
 }

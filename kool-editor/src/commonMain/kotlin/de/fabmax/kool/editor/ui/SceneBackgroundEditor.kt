@@ -26,7 +26,7 @@ class SceneBackgroundEditor : ComponentEditor<SceneBackgroundComponent>() {
 
     override fun UiScope.compose() = componentPanel("Scene Background", IconMap.small.background) {
         var selectedIndex by remember(0)
-        selectedIndex = BackgroundTypeOptions.indexOfBackground(component.componentData)
+        selectedIndex = BackgroundTypeOptions.indexOfBackground(component.data)
         labeledCombobox(
             label = "Type:",
             items = BackgroundTypeOptions.items,

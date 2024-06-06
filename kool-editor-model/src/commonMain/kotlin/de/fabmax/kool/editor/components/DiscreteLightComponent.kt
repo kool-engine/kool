@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.ColorData
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.DiscreteLightComponentData
 import de.fabmax.kool.editor.data.LightTypeData
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -12,25 +13,27 @@ import de.fabmax.kool.util.Color
 
 class DiscreteLightComponent(
     gameEntity: GameEntity,
-    componentData: DiscreteLightComponentData = DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f))
+    componentInfo: ComponentInfo<DiscreteLightComponentData> = ComponentInfo(
+        DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f))
+    )
 ) :
-    GameEntityDataComponent<DiscreteLightComponentData>(gameEntity, componentData),
+    GameEntityDataComponent<DiscreteLightComponent, DiscreteLightComponentData>(gameEntity, componentInfo),
     DrawNodeComponent
 {
-    val lightState = mutableStateOf(componentData.light).onChange {
+    val lightState = mutableStateOf(data.light).onChange {
         if (AppState.isEditMode) {
-            componentData.light = it
+            data.light = it
         }
         updateLight(it, false)
     }
 
-    override var drawNode: Light = componentData.light.createLight()
+    override var drawNode: Light = data.light.createLight()
         private set
 
     override suspend fun applyComponent() {
         super.applyComponent()
-        lightState.set(componentData.light)
-        updateLight(componentData.light, true)
+        lightState.set(data.light)
+        updateLight(data.light, true)
     }
 
     override fun destroyComponent() {

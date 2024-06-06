@@ -5,30 +5,31 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.data.CameraComponentData
 import de.fabmax.kool.editor.data.CameraTypeData
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Camera
 
 class CameraComponent(
     gameEntity: GameEntity,
-    componentData: CameraComponentData = CameraComponentData(CameraTypeData.Perspective())
+    componentInfo: ComponentInfo<CameraComponentData> = ComponentInfo(CameraComponentData(CameraTypeData.Perspective()))
 ) :
-    GameEntityDataComponent<CameraComponentData>(gameEntity, componentData),
+    GameEntityDataComponent<CameraComponent, CameraComponentData>(gameEntity, componentInfo),
     DrawNodeComponent
 {
-    val cameraState = mutableStateOf(componentData.camera).onChange {
+    val cameraState = mutableStateOf(data.camera).onChange {
         if (AppState.isEditMode) {
-            componentData.camera = it
+            data.camera = it
         }
         updateCamera(it, false)
     }
 
-    override var drawNode: Camera = componentData.camera.createCamera()
+    override var drawNode: Camera = data.camera.createCamera()
         private set
 
     override suspend fun applyComponent() {
         super.applyComponent()
-        cameraState.set(componentData.camera)
-        updateCamera(componentData.camera, true)
+        cameraState.set(data.camera)
+        updateCamera(data.camera, true)
     }
 
     private fun updateCamera(cameraData: CameraTypeData, forceReplaceNode: Boolean) {

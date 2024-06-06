@@ -23,6 +23,9 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
     val sceneEntities: MutableMap<EntityId, GameEntity> = mutableMapOf()
     val sceneChildren: List<GameEntity> get() = nodesToEntities.values.filter { it.isSceneChild }
 
+    var componentModCnt = 0
+        internal set
+
     init {
         nodesToEntities[sceneEntity.drawNode] = sceneEntity
         sceneEntities[sceneEntity.id] = sceneEntity

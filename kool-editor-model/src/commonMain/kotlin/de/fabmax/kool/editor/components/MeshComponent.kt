@@ -21,9 +21,9 @@ import kotlinx.atomicfu.atomic
 
 class MeshComponent(
     gameEntity: GameEntity,
-    componentData: MeshComponentData = MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
+    componentInfo: ComponentInfo<MeshComponentData> = ComponentInfo(MeshComponentData(ShapeData.Box()))
 ) :
-    GameEntityDataComponent<MeshComponentData>(gameEntity, componentData),
+    GameEntityDataComponent<MeshComponent, MeshComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
@@ -31,7 +31,7 @@ class MeshComponent(
     UpdateSsaoComponent,
     UpdateMaxNumLightsComponent
 {
-    val shapesState = MutableStateList(componentData.shapes)
+    val shapesState = MutableStateList(data.shapes)
 
     override var drawNode: Mesh? = null
         private set
@@ -41,7 +41,7 @@ class MeshComponent(
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
 
-        componentData.shapes
+        data.shapes
             .filterIsInstance<ShapeData.Heightmap>()
             .filter{ it.mapPath.isNotBlank() }
             .forEach { requiredAssets += it.toAssetReference() }
@@ -85,7 +85,7 @@ class MeshComponent(
 
         if (isApplied) {
             launchOnMainThread {
-                gameEntity.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(componentData) }
+                gameEntity.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(data) }
             }
         }
     }

@@ -2,14 +2,16 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.ComponentData
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.logW
 
-abstract class PhysicsNodeComponent<T: ComponentData>(gameEntity: GameEntity, componentData: T) :
-    GameEntityDataComponent<T>(gameEntity, componentData)
-{
+abstract class PhysicsNodeComponent<T: ComponentData>(
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<T>
+) : GameEntityDataComponent<PhysicsNodeComponent<T>, T>(gameEntity, componentInfo) {
 
     val physicsWorldComponent: PhysicsWorldComponent?
         get() = gameEntity.scene.sceneEntity.getComponent<PhysicsWorldComponent>()

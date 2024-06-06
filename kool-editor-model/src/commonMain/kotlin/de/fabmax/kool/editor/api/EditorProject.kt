@@ -51,7 +51,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
         val roots = parentsToChildren[null]?.mapNotNull { entityMap[it] } ?: emptyList()
         roots.forEach { scene ->
-            if (scene.components.none { c -> c is SceneComponentData }) {
+            if (scene.components.none { c -> c.data is SceneComponentData }) {
                 logW { "Root entity ${scene.name} has no scene component" }
             }
             referencedEntityIds += scene.id
@@ -68,7 +68,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
         logI { "Load project scenes" }
         checkProjectModelConsistency()
         projectData.entities
-            .filter { it.components.any { c -> c is SceneComponentData } }
+            .filter { it.components.any { c -> c.data is SceneComponentData } }
             .forEach { sceneData ->
                 val sceneModel = _createdScenes.getOrPut(sceneData.id) { EditorScene(sceneData, this) }
                 sceneModel.prepareScene()
@@ -165,32 +165,32 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                 val camId = EntityId(2L)
                 val boxId = EntityId(3L)
                 val lightId = EntityId(4L)
-                entities += GameEntityData("New Scene", sceneId, null).apply {
-                    components += SceneComponentData(cameraEntityId = camId)
-                    components += SceneBackgroundComponentData(
+                entities += GameEntityData(sceneId, "New Scene", null).apply {
+                    components += ComponentInfo(SceneComponentData(cameraEntityId = camId))
+                    components += ComponentInfo(SceneBackgroundComponentData(
                         SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
-                    )
+                    ))
                 }
-                entities += GameEntityData("Camera", camId, sceneId).apply {
-                    components += CameraComponentData(CameraTypeData.Perspective())
-                    components += TransformComponentData(
+                entities += GameEntityData(camId, "Camera", sceneId).apply {
+                    components += ComponentInfo(CameraComponentData(CameraTypeData.Perspective()))
+                    components += ComponentInfo(TransformComponentData(
                         TransformData.fromMatrix(
                             MutableMat4d()
                                 .translate(0.0, 2.5, 5.0)
                                 .rotate((-30.0).deg, Vec3d.X_AXIS)
-                        ))
+                        )))
                 }
-                entities += GameEntityData("Default Cube", boxId, sceneId).apply {
-                    components += MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
+                entities += GameEntityData(boxId, "Default Cube", sceneId).apply {
+                    components += ComponentInfo(MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
                 }
-                entities += GameEntityData("Directional Light", lightId, sceneId).apply {
-                    components += DiscreteLightComponentData(LightTypeData.Directional())
-                    components += TransformComponentData(
+                entities += GameEntityData(lightId, "Directional Light", sceneId).apply {
+                    components += ComponentInfo(DiscreteLightComponentData(LightTypeData.Directional()))
+                    components += ComponentInfo(TransformComponentData(
                         TransformData.fromMatrix(
                             MutableMat4d()
                                 .translate(5.0, 5.0, 5.0)
                                 .rotate(0.0.deg, 30.0.deg, (-120.0).deg)
-                        ))
+                        )))
                 }
             }
         )

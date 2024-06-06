@@ -17,12 +17,16 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
     val id: EntityId get() = entityData.id
     val name: String get() = entityData.name
+
     val components = mutableStateListOf<GameEntityComponent>()
+    var componentModCnt = 0
+        private set
+
     val transform: TransformComponent
 
     val requiredAssets: Set<AssetReference> get() = components.flatMap { it.requiredAssets }.toSet()
 
-    val isSceneRoot: Boolean = entityData.components.any { it is SceneComponentData }
+    val isSceneRoot: Boolean = entityData.components.any { it.data is SceneComponentData }
     val isSceneChild: Boolean = !isSceneRoot
 
     var parent: GameEntity? = null
@@ -52,7 +56,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         check(id.value > 0L)
 
         createComponentsFromData(entityData.components)
-        transform = getOrPutComponent { TransformComponent(this, TransformComponentData()) }
+        transform = getOrPutComponent { TransformComponent(this) }
 
         drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(name)
         drawNode.onUpdate += nodeUpdateCb
@@ -148,24 +152,26 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     private val requireScene: GameEntity
         get() = this.also { require(isSceneRoot) { "$name is not a scene" } }
 
-    private fun createComponentsFromData(componentData: List<ComponentData>) {
-        componentData.forEach { data ->
-            when (data) {
-                is CameraComponentData -> components += CameraComponent(requireSceneChild, data)
-                is DiscreteLightComponentData -> components += DiscreteLightComponent(requireSceneChild, data)
-                is MaterialComponentData -> components += MaterialComponent(requireSceneChild, data)
-                is MeshComponentData -> components += MeshComponent(requireSceneChild, data)
-                is ModelComponentData -> components += ModelComponent(requireSceneChild, data)
-                is SceneBackgroundComponentData -> components += SceneBackgroundComponent(requireScene, data)
-                is SceneComponentData -> components += SceneComponent(requireScene, data)
-                is BehaviorComponentData -> components += BehaviorComponent(this, data)
-                is ShadowMapComponentData -> components += ShadowMapComponent(requireSceneChild, data)
-                is SsaoComponentData -> components += SsaoComponent(requireScene, data)
-                is TransformComponentData -> components += TransformComponent(this, data)
+    @Suppress("UNCHECKED_CAST")
+    private fun createComponentsFromData(componentInfo: List<ComponentInfo<*>>) {
+        componentInfo.forEach { info ->
+            when (info.data) {
+                is BehaviorComponentData -> components += BehaviorComponent(this, info as ComponentInfo<BehaviorComponentData>)
+                is TransformComponentData -> components += TransformComponent(this, info as ComponentInfo<TransformComponentData>)
 
-                is PhysicsWorldComponentData -> components += PhysicsWorldComponent(requireScene, data)
-                is RigidActorComponentData -> components += RigidActorComponent(requireSceneChild, data)
-                is CharacterControllerComponentData -> components += CharacterControllerComponent(requireSceneChild, data)
+                is CameraComponentData -> components += CameraComponent(requireSceneChild, info as ComponentInfo<CameraComponentData>)
+                is CharacterControllerComponentData -> components += CharacterControllerComponent(requireSceneChild, info as ComponentInfo<CharacterControllerComponentData>)
+                is DiscreteLightComponentData -> components += DiscreteLightComponent(requireSceneChild, info as ComponentInfo<DiscreteLightComponentData>)
+                is MaterialComponentData -> components += MaterialComponent(requireSceneChild, info as ComponentInfo<MaterialComponentData>)
+                is MeshComponentData -> components += MeshComponent(requireSceneChild, info as ComponentInfo<MeshComponentData>)
+                is ModelComponentData -> components += ModelComponent(requireSceneChild, info as ComponentInfo<ModelComponentData>)
+                is RigidActorComponentData -> components += RigidActorComponent(requireSceneChild, info as ComponentInfo<RigidActorComponentData>)
+                is ShadowMapComponentData -> components += ShadowMapComponent(requireSceneChild, info as ComponentInfo<ShadowMapComponentData>)
+
+                is PhysicsWorldComponentData -> components += PhysicsWorldComponent(requireScene, info as ComponentInfo<PhysicsWorldComponentData>)
+                is SceneBackgroundComponentData -> components += SceneBackgroundComponent(requireScene, info as ComponentInfo<SceneBackgroundComponentData>)
+                is SceneComponentData -> components += SceneComponent(requireScene, info as ComponentInfo<SceneComponentData>)
+                is SsaoComponentData -> components += SsaoComponent(requireScene, info as ComponentInfo<SsaoComponentData>)
             }
         }
         components.sortByDependencies()
@@ -194,24 +200,30 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
     fun addComponent(component: GameEntityComponent, autoCreateComponent: Boolean = true) {
         components += component
-        if (component is GameEntityDataComponent<*>) {
-            entityData.components += component.componentData
+        if (component is GameEntityDataComponent<*,*>) {
+            entityData.components += component.componentInfo
         }
         if (isCreated && autoCreateComponent) {
             launchOnMainThread {
                 component.applyComponent()
             }
         }
+
+        componentModCnt++
+        scene.componentModCnt++
     }
 
     fun removeComponent(component: GameEntityComponent) {
         components -= component
-        if (component is GameEntityDataComponent<*>) {
-            entityData.components -= component.componentData
+        if (component is GameEntityDataComponent<*,*>) {
+            entityData.components -= component.componentInfo
         }
         if (component.isApplied) {
             component.destroyComponent()
         }
+
+        componentModCnt++
+        scene.componentModCnt++
     }
 
     fun onStart() {

@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.*
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.MaterialData
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
@@ -18,8 +19,11 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 
-class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) :
-    GameEntityDataComponent<ModelComponentData>(gameEntity, componentData),
+class ModelComponent(
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<ModelComponentData>
+) :
+    GameEntityDataComponent<ModelComponent, ModelComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
     UpdateMaterialComponent,
     UpdateSceneBackgroundComponent,
@@ -27,24 +31,24 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
     UpdateSsaoComponent,
     UpdateMaxNumLightsComponent
 {
-    val modelPathState = mutableStateOf(componentData.modelPath).onChange {
+    val modelPathState = mutableStateOf(data.modelPath).onChange {
         if (AppState.isEditMode) {
-            componentData.modelPath = it
+            data.modelPath = it
         }
         gltfState.set(null)
         recreateModelAsync()
     }
 
-    val sceneIndexState = mutableStateOf(componentData.sceneIndex).onChange {
+    val sceneIndexState = mutableStateOf(data.sceneIndex).onChange {
         if (AppState.isEditMode) {
-            componentData.sceneIndex = it
+            data.sceneIndex = it
         }
         recreateModelAsync()
     }
 
-    val animationIndexState = mutableStateOf(componentData.animationIndex).onChange {
+    val animationIndexState = mutableStateOf(data.animationIndex).onChange {
         if (AppState.isEditMode) {
-            componentData.animationIndex = it
+            data.animationIndex = it
         }
         drawNode?.apply {
             enableAnimation(it)
@@ -64,8 +68,8 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
     init {
         dependsOn(MaterialComponent::class, isOptional = true)
 
-        if (componentData.modelPath.isNotBlank()) {
-            requiredAssets += AssetReference.Model(componentData.modelPath)
+        if (data.modelPath.isNotBlank()) {
+            requiredAssets += AssetReference.Model(data.modelPath)
         }
     }
 
@@ -163,7 +167,7 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
         isIblShaded = ibl != null
         isSsaoEnabled = ssao != null
 
-        val gltfFile = gltfState.value ?: AppAssets.loadModel(componentData.modelPath).also { gltfState.set(it) } ?: return null
+        val gltfFile = gltfState.value ?: AppAssets.loadModel(data.modelPath).also { gltfState.set(it) } ?: return null
         val loadScene = if (sceneIndexState.value in gltfFile.scenes.indices) sceneIndexState.value else 0
 
         val model = gltfFile.makeModel(modelCfg, loadScene)
@@ -175,7 +179,7 @@ class ModelComponent(gameEntity: GameEntity, componentData: ModelComponentData) 
                         val requiredAttribs = shader.findRequiredVertexAttributes()
                         if (mesh.geometry.hasAttributes(requiredAttribs)) true else {
                             logE {
-                                "Model ${componentData.modelPath}: sub-mesh $name misses required vertex attributes " +
+                                "Model ${data.modelPath}: sub-mesh $name misses required vertex attributes " +
                                 "to apply material: ${(requiredAttribs - mesh.geometry.vertexAttributes.toSet())}"
                             }
                             false

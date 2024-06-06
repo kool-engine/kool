@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ColorData
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -12,24 +13,24 @@ import de.fabmax.kool.util.launchOnMainThread
 fun SceneBackgroundComponent(gameEntity: GameEntity, color: Color, isLinear: Boolean = true): SceneBackgroundComponent {
     return SceneBackgroundComponent(
         gameEntity,
-        SceneBackgroundComponentData(SceneBackgroundData.SingleColor(ColorData(color, isLinear)))
+        ComponentInfo(SceneBackgroundComponentData(SceneBackgroundData.SingleColor(ColorData(color, isLinear))))
     )
 }
 
 class SceneBackgroundComponent(
     gameEntity: GameEntity,
-    componentData: SceneBackgroundComponentData
-) : GameEntityDataComponent<SceneBackgroundComponentData>(gameEntity, componentData) {
+    componentInfo: ComponentInfo<SceneBackgroundComponentData>
+) : GameEntityDataComponent<SceneBackgroundComponent, SceneBackgroundComponentData>(gameEntity, componentInfo) {
 
-    val backgroundState = mutableStateOf(componentData.sceneBackground).onChange {
+    val backgroundState = mutableStateOf(data.sceneBackground).onChange {
         if (AppState.isEditMode) {
-            componentData.sceneBackground = it
+            data.sceneBackground = it
         }
         applyBackground(it)
     }
 
     init {
-        when (val bgData = componentData.sceneBackground) {
+        when (val bgData = data.sceneBackground) {
             is SceneBackgroundData.Hdri -> requiredAssets += AssetReference.Hdri(bgData.hdriPath)
             else -> { }
         }
@@ -39,7 +40,7 @@ class SceneBackgroundComponent(
         super.applyComponent()
 
         // re-sync public state with componentData state
-        backgroundState.set(componentData.sceneBackground)
+        backgroundState.set(data.sceneBackground)
 
         when (val bgState = backgroundState.value) {
             is SceneBackgroundData.Hdri -> {

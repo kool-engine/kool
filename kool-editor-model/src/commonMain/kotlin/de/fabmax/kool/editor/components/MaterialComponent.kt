@@ -4,22 +4,19 @@ import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.EditorProject
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.MapAttribute
-import de.fabmax.kool.editor.data.MaterialComponentData
-import de.fabmax.kool.editor.data.MaterialData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.launchOnMainThread
 
 class MaterialComponent(
     gameEntity: GameEntity,
-    componentData: MaterialComponentData = MaterialComponentData(EntityId(-1L))
-) : GameEntityDataComponent<MaterialComponentData>(gameEntity, componentData) {
+    componentInfo: ComponentInfo<MaterialComponentData> = ComponentInfo(MaterialComponentData(EntityId(-1L)))
+) : GameEntityDataComponent<MaterialComponent, MaterialComponentData>(gameEntity, componentInfo) {
 
     val materialState = mutableStateOf<MaterialData?>(null).onChange { mat ->
         collectRequiredAssets(mat)
         if (AppState.isEditMode) {
-            componentData.materialId = mat?.id ?: EntityId( -1)
+            data.materialId = mat?.id ?: EntityId( -1)
         }
         if (isApplied) {
             launchOnMainThread {
@@ -32,7 +29,7 @@ class MaterialComponent(
         get() = materialState.value
 
     init {
-        materialState.set(project.materialsById[componentData.materialId])
+        materialState.set(project.materialsById[data.materialId])
     }
 
     fun isHoldingMaterial(material: MaterialData?): Boolean {

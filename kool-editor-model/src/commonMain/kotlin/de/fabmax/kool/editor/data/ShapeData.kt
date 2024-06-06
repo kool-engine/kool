@@ -32,14 +32,17 @@ sealed class ShapeData {
     )
 
     @Serializable
-    data class Box(val size: Vec3Data, override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
+    data class Box(
+        val size: Vec3Data = Vec3Data(1.0, 1.0, 1.0),
+        override val common: CommonShapeData = CommonShapeData()
+    ) : ShapeData() {
         override val name: String get() = "Box"
         override val hasUvs: Boolean = true
     }
 
     @Serializable
     data class Sphere(
-        val radius: Double,
+        val radius: Double = 1.0,
         val steps: Int = 20,
         val sphereType: String = "uv",
         override val common: CommonShapeData = CommonShapeData()
@@ -50,16 +53,19 @@ sealed class ShapeData {
     }
 
     @Serializable
-    data class Rect(val size: Vec2Data, override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
+    data class Rect(
+        val size: Vec2Data = Vec2Data(1.0, 1.0),
+        override val common: CommonShapeData = CommonShapeData()
+    ) : ShapeData() {
         override val name: String get() = "Rect"
         override val hasUvs: Boolean = true
     }
 
     @Serializable
     data class Cylinder(
-        val topRadius: Double,
-        val bottomRadius: Double,
-        val length: Double,
+        val topRadius: Double = 1.0,
+        val bottomRadius: Double = 1.0,
+        val length: Double = 1.0,
         val steps: Int = 32,
         override val common: CommonShapeData = CommonShapeData()
     ) : ShapeData() {
@@ -70,8 +76,8 @@ sealed class ShapeData {
 
     @Serializable
     data class Capsule(
-        val radius: Double,
-        val length: Double,
+        val radius: Double = 1.0,
+        val length: Double = 1.0,
         val steps: Int = 32,
         override val common: CommonShapeData = CommonShapeData()
     ) : ShapeData() {
@@ -88,7 +94,7 @@ sealed class ShapeData {
 
     @Serializable
     data class Heightmap(
-        val mapPath: String,
+        val mapPath: String = "",
         val heightOffset: Double = 0.0,
         val heightScale: Double = 100.0,
         val rowScale: Double = 1.0,
@@ -107,12 +113,12 @@ sealed class ShapeData {
 
     companion object {
         val defaultCustom = Custom()
-        val defaultBox = Box(Vec3Data(1.0, 1.0, 1.0))
-        val defaultSphere = Sphere(1.0)
-        val defaultRect = Rect(Vec2Data(1.0, 1.0))
-        val defaultCylinder = Cylinder(1.0, 1.0, 1.0)
-        val defaultCapsule = Capsule(1.0, 1.0)
-        val defaultHeightmap = Heightmap("")
+        val defaultBox = Box()
+        val defaultSphere = Sphere()
+        val defaultRect = Rect()
+        val defaultCylinder = Cylinder()
+        val defaultCapsule = Capsule()
+        val defaultHeightmap = Heightmap()
         val defaultPlane = Plane()
     }
 }

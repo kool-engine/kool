@@ -4,18 +4,22 @@ import de.fabmax.kool.editor.api.BehaviorLoader
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.data.BehaviorComponentData
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.getComponent
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.logE
 
-class BehaviorComponent(gameEntity: GameEntity, componentData: BehaviorComponentData) :
-    GameEntityDataComponent<BehaviorComponentData>(gameEntity, componentData)
-{
+class BehaviorComponent(
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<BehaviorComponentData>
+) : GameEntityDataComponent<BehaviorComponent, BehaviorComponentData>(gameEntity, componentInfo) {
 
-    override val componentType: String = "${this::class.simpleName}<${componentData.behaviorClassName}>"
+    override val componentType: String = "${this::class.simpleName}<${data.behaviorClassName}>"
 
-    val behaviorClassNameState = mutableStateOf(componentData.behaviorClassName).onChange { componentData.behaviorClassName = it }
+    val behaviorClassNameState = mutableStateOf(data.behaviorClassName).onChange {
+        data = data.copy(behaviorClassName = it)
+    }
 
     val behaviorInstance = mutableStateOf<KoolBehavior?>(null)
 
@@ -31,13 +35,13 @@ class BehaviorComponent(gameEntity: GameEntity, componentData: BehaviorComponent
         super.applyComponent()
 
         try {
-            val behavior = BehaviorLoader.newInstance(componentData.behaviorClassName)
+            val behavior = BehaviorLoader.newInstance(data.behaviorClassName)
             behaviorInstance.set(behavior)
 
             // set script member properties from componentData, remove them in case they don't exist anymore (e.g.
             // because script has changed)
             val removeProps = mutableListOf<String>()
-            componentData.propertyValues.forEach { (name, value) ->
+            data.propertyValues.forEach { (name, value) ->
                 val setValue = when {
                     value.nodeRef != null -> value.nodeRef.gameEntity
                     value.componentRef != null -> value.componentRef.entityId.gameEntity?.getComponent(value.componentRef)
@@ -47,7 +51,9 @@ class BehaviorComponent(gameEntity: GameEntity, componentData: BehaviorComponent
                     removeProps += name
                 }
             }
-            removeProps.forEach { componentData.propertyValues -= it }
+            if (removeProps.isNotEmpty()) {
+                setPersistent(data.copy(propertyValues = data.propertyValues - removeProps))
+            }
 
             // invoke script init callback
             behavior.init(gameEntity, this)
@@ -68,7 +74,7 @@ class BehaviorComponent(gameEntity: GameEntity, componentData: BehaviorComponent
             behaviorInstance.value?.let { BehaviorLoader.setProperty(it, name, value) }
             true
         } catch (e: Exception) {
-            logE { "${componentData.behaviorClassName}: Failed setting property $name to value $value: $e" }
+            logE { "${data.behaviorClassName}: Failed setting property $name to value $value: $e" }
             false
         }
     }

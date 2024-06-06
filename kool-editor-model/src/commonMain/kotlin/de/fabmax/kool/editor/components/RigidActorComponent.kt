@@ -3,10 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.data.MeshComponentData
-import de.fabmax.kool.editor.data.RigidActorComponentData
-import de.fabmax.kool.editor.data.RigidActorType
-import de.fabmax.kool.editor.data.ShapeData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.*
@@ -21,14 +18,14 @@ import de.fabmax.kool.util.logE
 
 class RigidActorComponent(
     gameEntity: GameEntity,
-    componentData: RigidActorComponentData = RigidActorComponentData()
+    componentInfo: ComponentInfo<RigidActorComponentData> = ComponentInfo(RigidActorComponentData())
 ) :
-    PhysicsNodeComponent<RigidActorComponentData>(gameEntity, componentData),
+    PhysicsNodeComponent<RigidActorComponentData>(gameEntity, componentInfo),
     UpdateMeshComponent
 {
-    val actorState = mutableStateOf(componentData.properties).onChange {
+    val actorState = mutableStateOf(data.properties).onChange {
         if (AppState.isEditMode) {
-            componentData.properties = it
+            data.properties = it
         }
         launchOnMainThread {
             updateRigidActor()
@@ -62,7 +59,7 @@ class RigidActorComponent(
         dependsOn(MeshComponent::class, isOptional = true)
         dependsOn(ModelComponent::class, isOptional = true)
 
-        componentData.properties.shapes
+        data.properties.shapes
             .filterIsInstance<ShapeData.Heightmap>()
             .filter{ it.mapPath.isNotBlank() }
             .forEach { requiredAssets += it.toAssetReference() }
@@ -94,24 +91,24 @@ class RigidActorComponent(
 
     private suspend fun updateRigidActor() {
         val actor = rigidActor
-        val isActorOk = when (componentData.properties.type) {
+        val isActorOk = when (data.properties.type) {
             RigidActorType.DYNAMIC -> actor is RigidDynamic && !actor.isKinematic
             RigidActorType.KINEMATIC -> actor is RigidDynamic && actor.isKinematic
             RigidActorType.STATIC -> actor is RigidStatic
         }
 
-        if (!isActorOk || componentData.properties.shapes != bodyShapes) {
+        if (!isActorOk || data.properties.shapes != bodyShapes) {
             createRigidBody()
 
         } else if (actor is RigidDynamic) {
-            actor.mass = componentData.properties.mass.toFloat()
+            actor.mass = data.properties.mass.toFloat()
             actor.updateInertiaFromShapesAndMass()
-            actor.characterControllerHitBehavior = componentData.properties.characterControllerHitBehavior
+            actor.characterControllerHitBehavior = data.properties.characterControllerHitBehavior
         }
 
         actor?.apply {
-            if (isTrigger != componentData.properties.isTrigger) {
-                isTrigger = componentData.properties.isTrigger
+            if (isTrigger != data.properties.isTrigger) {
+                isTrigger = data.properties.isTrigger
                 if (isTrigger) {
                     physicsWorld?.registerTriggerListener(this, proxyTriggerListener)
                 } else {
@@ -134,9 +131,9 @@ class RigidActorComponent(
         }
         geometry.forEach { it.release() }
 
-        rigidActor = when (componentData.properties.type) {
-            RigidActorType.DYNAMIC -> RigidDynamic(componentData.properties.mass.toFloat())
-            RigidActorType.KINEMATIC -> RigidDynamic(componentData.properties.mass.toFloat(), isKinematic = true)
+        rigidActor = when (data.properties.type) {
+            RigidActorType.DYNAMIC -> RigidDynamic(data.properties.mass.toFloat())
+            RigidActorType.KINEMATIC -> RigidDynamic(data.properties.mass.toFloat(), isKinematic = true)
             RigidActorType.STATIC -> RigidStatic()
         }
 
@@ -144,7 +141,7 @@ class RigidActorComponent(
 
         requiredAssets.clear()
         rigidActor?.apply {
-            bodyShapes = componentData.properties.shapes
+            bodyShapes = data.properties.shapes
 
             val meshComp = gameEntity.getComponent<MeshComponent>()
             val modelComp = gameEntity.getComponent<ModelComponent>()
@@ -166,7 +163,7 @@ class RigidActorComponent(
     }
 
     private suspend fun MeshComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        return componentData.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(drawNode) }
+        return data.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(drawNode) }
     }
 
     private fun ModelComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
@@ -221,7 +218,7 @@ class RigidActorComponent(
     }
 
     override fun updateMesh(mesh: MeshComponentData) {
-        if (componentData.properties.shapes.isEmpty()) {
+        if (data.properties.shapes.isEmpty()) {
             launchOnMainThread {
                 createRigidBody()
             }

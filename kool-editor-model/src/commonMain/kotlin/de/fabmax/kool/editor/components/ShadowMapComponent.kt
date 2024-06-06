@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.sceneComponent
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
 import de.fabmax.kool.editor.data.ShadowMapTypeData
@@ -12,21 +13,23 @@ import de.fabmax.kool.util.*
 
 class ShadowMapComponent(
     gameEntity: GameEntity,
-    componentData: ShadowMapComponentData = ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
-) : GameEntityDataComponent<ShadowMapComponentData>(gameEntity, componentData) {
-    val shadowMapState = mutableStateOf(componentData.shadowMap).onChange {
-        if (AppState.isEditMode) { componentData.shadowMap = it }
-        updateShadowMap(it, componentData.clipNear, componentData.clipFar)
+    componentInfo: ComponentInfo<ShadowMapComponentData> = ComponentInfo(
+        ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
+    )
+) : GameEntityDataComponent<ShadowMapComponent, ShadowMapComponentData>(gameEntity, componentInfo) {
+    val shadowMapState = mutableStateOf(data.shadowMap).onChange {
+        if (AppState.isEditMode) { data.shadowMap = it }
+        updateShadowMap(it, data.clipNear, data.clipFar)
     }
 
-    val clipNear = mutableStateOf(componentData.clipNear).onChange {
-        if (AppState.isEditMode) { componentData.clipNear = it }
-        updateShadowMap(componentData.shadowMap, it, componentData.clipFar)
+    val clipNear = mutableStateOf(data.clipNear).onChange {
+        if (AppState.isEditMode) { data.clipNear = it }
+        updateShadowMap(data.shadowMap, it, data.clipFar)
     }
 
-    val clipFar = mutableStateOf(componentData.clipNear).onChange {
-        if (AppState.isEditMode) { componentData.clipFar = it }
-        updateShadowMap(componentData.shadowMap, componentData.clipNear, it)
+    val clipFar = mutableStateOf(data.clipNear).onChange {
+        if (AppState.isEditMode) { data.clipFar = it }
+        updateShadowMap(data.shadowMap, data.clipNear, it)
     }
 
     private var shadowMap: ShadowMap? = null
@@ -37,7 +40,7 @@ class ShadowMapComponent(
 
     override suspend fun applyComponent() {
         super.applyComponent()
-        shadowMapState.set(componentData.shadowMap)
+        shadowMapState.set(data.shadowMap)
         updateShadowMap()
     }
 
@@ -57,7 +60,7 @@ class ShadowMapComponent(
     }
 
     private fun updateShadowMap() {
-        updateShadowMap(componentData.shadowMap, componentData.clipNear, componentData.clipFar)
+        updateShadowMap(data.shadowMap, data.clipNear, data.clipFar)
     }
 
     private fun updateShadowMap(shadowMapInfo: ShadowMapTypeData, clipNear: Float, clipFar: Float) {

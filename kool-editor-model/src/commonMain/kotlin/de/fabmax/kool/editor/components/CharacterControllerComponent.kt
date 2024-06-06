@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.CharacterControllerComponentData
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.input.WalkAxes
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -21,15 +22,15 @@ import kotlin.math.max
 
 class CharacterControllerComponent(
     gameEntity: GameEntity,
-    componentData: CharacterControllerComponentData = CharacterControllerComponentData()
+    componentInfo: ComponentInfo<CharacterControllerComponentData> = ComponentInfo(CharacterControllerComponentData())
 ) :
-    PhysicsNodeComponent<CharacterControllerComponentData>(gameEntity, componentData),
+    PhysicsNodeComponent<CharacterControllerComponentData>(gameEntity, componentInfo),
     OnHitActorListener
 {
 
-    val charControllerState = mutableStateOf(componentData.properties).onChange {
+    val charControllerState = mutableStateOf(data.properties).onChange {
         if (AppState.isEditMode) {
-            componentData.properties = it
+            data.properties = it
         }
         launchOnMainThread {
             updateControllerProps()
@@ -66,7 +67,7 @@ class CharacterControllerComponent(
 
     override fun onStart() {
         super.onStart()
-        if (componentData.properties.enableDefaultControls) {
+        if (data.properties.enableDefaultControls) {
             axes = WalkAxes(KoolSystem.requireContext())
         }
     }
@@ -101,7 +102,7 @@ class CharacterControllerComponent(
             existing.release()
         }
 
-        val props = componentData.properties.let {
+        val props = data.properties.let {
             CharacterControllerProperties(
                 height = it.shape.length.toFloat(),
                 radius = it.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,

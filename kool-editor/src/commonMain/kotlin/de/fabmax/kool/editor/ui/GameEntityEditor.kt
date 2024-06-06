@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
@@ -248,7 +249,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                                         !hasComponent(target)
                                     }
                                     .map { target ->
-                                        val modelComp = ModelComponent(target, ModelComponentData(model.path))
+                                        val modelComp = ModelComponent(target, ComponentInfo(ModelComponentData(model.path)))
                                         AddComponentAction(target.id, modelComp)
                                     }
                                     .fused().apply()
@@ -295,7 +296,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                             item(script.prettyName) { objs ->
                                 objs
                                     .map { target ->
-                                        val behaviorComp = BehaviorComponent(target, BehaviorComponentData(script.qualifiedName))
+                                        val behaviorComp = BehaviorComponent(target, ComponentInfo(BehaviorComponentData(script.qualifiedName)))
                                         AddComponentAction(target.id, behaviorComp)
                                     }
                                     .fused().apply()

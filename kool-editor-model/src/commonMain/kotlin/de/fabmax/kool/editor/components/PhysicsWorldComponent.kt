@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.PhysicsWorldComponentData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec3f
@@ -13,14 +14,14 @@ import de.fabmax.kool.physics.character.CharacterControllerManager
 
 class PhysicsWorldComponent(
     gameEntity: GameEntity,
-    componentData: PhysicsWorldComponentData = PhysicsWorldComponentData()
-) : GameEntityDataComponent<PhysicsWorldComponentData>(gameEntity, componentData) {
+    componentInfo: ComponentInfo<PhysicsWorldComponentData> = ComponentInfo(PhysicsWorldComponentData())
+) : GameEntityDataComponent<PhysicsWorldComponent, PhysicsWorldComponentData>(gameEntity, componentInfo) {
 
-    val physicsWorldState = mutableStateOf(componentData.properties).onChange {
-        componentData.properties = it
+    val physicsWorldState = mutableStateOf(data.properties).onChange {
+        data.properties = it
     }
 
-    val gravityState = mutableStateOf<Vec3f>(componentData.properties.gravity.toVec3f()).onChange {
+    val gravityState = mutableStateOf<Vec3f>(data.properties.gravity.toVec3f()).onChange {
         physicsWorldState.set(physicsWorldState.value.copy(gravity = Vec3Data(it)))
         physicsWorld?.gravity = it
     }
@@ -33,8 +34,8 @@ class PhysicsWorldComponent(
         super.applyComponent()
 
         Physics.loadAndAwaitPhysics()
-        physicsWorld = PhysicsWorld(null, componentData.properties.isContinuousCollisionDetection).also {
-            it.gravity = componentData.properties.gravity.toVec3f()
+        physicsWorld = PhysicsWorld(null, data.properties.isContinuousCollisionDetection).also {
+            it.gravity = data.properties.gravity.toVec3f()
             characterControllerManager = CharacterControllerManager(it)
         }
 

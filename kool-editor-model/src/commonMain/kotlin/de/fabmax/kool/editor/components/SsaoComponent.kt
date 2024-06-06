@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.sceneComponent
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.editor.data.SsaoSettings
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -11,12 +12,12 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 
 class SsaoComponent(
     gameEntity: GameEntity,
-    componentData: SsaoComponentData = SsaoComponentData()
-) : GameEntityDataComponent<SsaoComponentData>(gameEntity, componentData) {
+    componentInfo: ComponentInfo<SsaoComponentData> = ComponentInfo(SsaoComponentData())
+) : GameEntityDataComponent<SsaoComponent, SsaoComponentData>(gameEntity, componentInfo) {
 
-    val ssaoState = mutableStateOf(componentData.settings).onChange {
+    val ssaoState = mutableStateOf(data.settings).onChange {
         if (AppState.isEditMode) {
-            componentData.settings = it
+            data.settings = it
         }
         applySettings(it)
     }
@@ -35,7 +36,7 @@ class SsaoComponent(
         UpdateSsaoComponent.updateSceneSsao(gameEntity)
 
         // re-sync public state with componentData state
-        ssaoState.set(componentData.settings)
+        ssaoState.set(data.settings)
         applySettings(ssaoState.value)
     }
 

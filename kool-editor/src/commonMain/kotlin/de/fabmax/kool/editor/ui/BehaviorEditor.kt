@@ -28,7 +28,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
         headerContent = {
             iconButton(IconMap.small.edit, "Edit source code") {
-                KoolEditor.instance.editBehaviorSource(components[0].componentData.behaviorClassName)
+                KoolEditor.instance.editBehaviorSource(components[0].data.behaviorClassName)
             }
             Box(width = sizes.smallGap) {  }
         }
@@ -259,7 +259,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         return { component: BehaviorComponent, undoData: PropertyValue, applyData: PropertyValue ->
             SetBehaviorPropertyAction(component.gameEntity.id, prop.name, undoData, applyData) { comp, value ->
                 prop.setProperty(comp, value)
-                comp.componentData.propertyValues[prop.name] = value
+                val props = comp.data.propertyValues.toMutableMap()
+                props[prop.name] = value
+                comp.setPersistent(comp.data.copy(propertyValues = props))
                 surface.triggerUpdate()
             }
         }

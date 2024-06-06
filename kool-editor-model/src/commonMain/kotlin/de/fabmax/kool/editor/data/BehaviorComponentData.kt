@@ -5,9 +5,9 @@ import de.fabmax.kool.editor.components.GameEntityComponent
 import kotlinx.serialization.Serializable
 
 @Serializable
-class BehaviorComponentData(
-    var behaviorClassName: String,
-    var propertyValues: MutableMap<String, PropertyValue> = mutableMapOf()
+data class BehaviorComponentData(
+    val behaviorClassName: String,
+    val propertyValues: Map<String, PropertyValue> = mapOf()
 ) : ComponentData
 
 @Serializable

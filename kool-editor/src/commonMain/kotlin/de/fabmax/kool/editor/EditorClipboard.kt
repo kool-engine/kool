@@ -50,15 +50,15 @@ object EditorClipboard {
             try {
                 val copyData = KoolEditor.jsonCodec.decodeFromString<List<GameEntityData>>(json)
                 if (copyData.isNotEmpty()) {
-                    sanitizeCopiedEntityIds(copyData, scene)
+                    val sanitized = sanitizeCopiedEntityIds(copyData, scene)
 
                     val selection = editor.selectionOverlay.getSelectedNodes()
                     val parent = selection.firstOrNull()?.parent ?: scene.sceneEntity
-                    copyData.toHierarchy().forEach { root -> root.entityData.parentId = parent.id }
+                    sanitized.toHierarchy().forEach { root -> root.entityData.parentId = parent.id }
 
-                    AddSceneNodeAction(copyData).apply()
+                    AddSceneNodeAction(sanitized).apply()
                     launchDelayed(1) {
-                        val nodes = copyData.mapNotNull { scene.sceneEntities[it.id] }
+                        val nodes = sanitized.mapNotNull { scene.sceneEntities[it.id] }
                         editor.selectionOverlay.setSelection(nodes)
                         editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
                     }
@@ -69,17 +69,19 @@ object EditorClipboard {
         }
     }
 
-    private fun sanitizeCopiedEntityIds(entityData: List<GameEntityData>, scene: EditorScene) {
+    private fun sanitizeCopiedEntityIds(entityData: List<GameEntityData>, scene: EditorScene): List<GameEntityData> {
         val existingNames = scene.sceneEntities.values.map { it.name }.toMutableSet()
-        val nodesByIds = entityData.associateBy { it.id }
+        val sanitizedIds = entityData.associate { it.id to editor.projectModel.nextId() }
 
-        entityData.forEach {
-            it.id = editor.projectModel.nextId()
-            it.name = uniquifyName(it.name, existingNames)
-            existingNames += it.name
-        }
-        entityData.forEach {
-            it.parentId = nodesByIds[it.parentId]?.id
+        return entityData.map { data ->
+            data.copy(
+                name = uniquifyName(data.name, existingNames),
+                id = sanitizedIds[data.id]!!,
+                parentId = sanitizedIds[data.parentId]
+            ).also {
+                it.components.addAll(data.components)
+                existingNames.add(it.name)
+            }
         }
     }
 
