@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
-import de.fabmax.kool.editor.actions.SetDiscreteLightAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.data.ColorData
@@ -33,7 +33,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                         TypeOption.Spot -> LightTypeData.Spot(color)
                         TypeOption.Point -> LightTypeData.Point(color)
                     }
-                    SetDiscreteLightAction(component.gameEntity.id, newLight, component.data.light)
+                    setLightDataAction(component, component.data.light, newLight)
                 }
                 FusedAction(actions).apply()
             }
@@ -78,7 +78,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                                 applyLight = light.copy(color = ColorData(applyValue.toLinear()))
                             }
                         }
-                        SetDiscreteLightAction(component.gameEntity.id, applyLight, undoLight)
+                        setLightDataAction(component, undoLight, applyLight)
                     }.fused()
                 }
 
@@ -112,7 +112,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                             undoLight = light.copy(intensity = mergedUndo)
                         }
                     }
-                    SetDiscreteLightAction(component.gameEntity.id, applyLight, undoLight)
+                    setLightDataAction(component, undoLight, applyLight)
                 }.fused()
             }
         )
@@ -133,7 +133,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                     val mergedApply = mergeDouble(apply, props[i].spotAngle.toDouble())
                     val undoProps = props[i].copy(spotAngle = mergedUndo.toFloat())
                     val applyProps = props[i].copy(spotAngle = mergedApply.toFloat())
-                    SetDiscreteLightAction(component.gameEntity.id, applyProps, undoProps)
+                    setLightDataAction(component, undoProps, applyProps)
                 }.fused()
             }
         )
@@ -150,11 +150,14 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
                     val mergedApply = mergeDouble(apply, props[i].coreRatio.toDouble())
                     val undoProps = props[i].copy(coreRatio = mergedUndo.toFloat())
                     val applyProps = props[i].copy(coreRatio = mergedApply.toFloat())
-                    SetDiscreteLightAction(component.gameEntity.id, applyProps, undoProps)
+                    setLightDataAction(component, undoProps, applyProps)
                 }.fused()
             }
         )
     }
+
+    private fun setLightDataAction(component: DiscreteLightComponent, oldLightData: LightTypeData, newLightData: LightTypeData) =
+        SetComponentDataAction(component, component.data.copy(light = oldLightData), component.data.copy(light = newLightData))
 
     private val LightTypeData.typeOption: TypeOption get() = TypeOption.entries.first { it.matches(this) }
 

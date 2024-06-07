@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.SetScenePropertiesAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.EntityId
@@ -18,11 +18,11 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
         val selectedCamId = component.data.cameraEntityId
         val selectedIndex = cameraNodes.indexOfFirst { it.entityId == selectedCamId }
         labeledCombobox("Camera:", cameraNodes, selectedIndex) {
-            SetScenePropertiesAction(entityId, component.data, component.data.copy(cameraEntityId = it.camComponentId)).apply()
+            SetComponentDataAction(component, component.data, component.data.copy(cameraEntityId = it.camComponentId)).apply()
         }
 
         labeledIntTextField("Max number of lights:", component.data.maxNumLights, minValue = 0, maxValue = 8) {
-            SetScenePropertiesAction(entityId, component.data, component.data.copy(maxNumLights = it)).apply()
+            SetComponentDataAction(component, component.data, component.data.copy(maxNumLights = it)).apply()
         }
     }
 

@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.FusedAction
-import de.fabmax.kool.editor.actions.SetModelDataAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.ModelComponent
 import de.fabmax.kool.modules.gltf.GltfFile
@@ -35,7 +35,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                             if (allTheSameModel || index > 0) {
                                 components.mapNotNull { comp ->
                                     items[index].model?.let {
-                                        SetModelDataAction(comp, comp.data, comp.data.copy(modelPath = it.path))
+                                        SetComponentDataAction(comp, comp.data, comp.data.copy(modelPath = it.path))
                                     }
                                 }.fused().apply()
                             }
@@ -63,14 +63,14 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                 val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
                 labeledCombobox("Model scene:", scenes, components[0].data.sceneIndex) { selected ->
                     components.map {
-                        SetModelDataAction(it, it.data, it.data.copy(sceneIndex = selected.index))
+                        SetComponentDataAction(it, it.data, it.data.copy(sceneIndex = selected.index))
                     }.fused().apply()
                 }
 
                 val animations = gltf.animationOptions()
                 labeledCombobox("Animation:", animations, components[0].data.animationIndex + 1) { selected ->
                     components.map {
-                        SetModelDataAction(it, it.data, it.data.copy(animationIndex = selected.index))
+                        SetComponentDataAction(it, it.data, it.data.copy(animationIndex = selected.index))
                     }.fused().apply()
                 }
             }
@@ -123,7 +123,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
             val dragModelItem = dragItem.get(DndItemFlavor.DndItemModel)
             val actions = components
                 .filter { it.data.modelPath != dragModelItem.path }
-                .map { SetModelDataAction(it, it.data, it.data.copy(modelPath = dragModelItem.path)) }
+                .map { SetComponentDataAction(it, it.data, it.data.copy(modelPath = dragModelItem.path)) }
             if (actions.isNotEmpty()) {
                 FusedAction(actions).apply()
             }

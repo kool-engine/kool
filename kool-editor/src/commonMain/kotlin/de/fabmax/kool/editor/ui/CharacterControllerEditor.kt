@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.actions.EditorAction
-import de.fabmax.kool.editor.actions.SetCharControllerPropertiesAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.CharacterControllerComponent
 import de.fabmax.kool.editor.data.CharacterControllerComponentData
 import de.fabmax.kool.modules.ui2.UiScope
@@ -131,7 +131,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             undoData: CharacterControllerComponentData,
             applyData: CharacterControllerComponentData
         ) -> EditorAction = { component, undoData, applyData ->
-            SetCharControllerPropertiesAction(component.gameEntity.id, undoData, applyData)
+            SetComponentDataAction(component, undoData, applyData)
         }
 
         private val nonWalkableOptions = ComboBoxItems(NonWalkableMode.entries) {

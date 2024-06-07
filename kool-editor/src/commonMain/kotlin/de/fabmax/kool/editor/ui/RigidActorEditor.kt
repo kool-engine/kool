@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
-import de.fabmax.kool.editor.actions.SetRigidActorPropertiesAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
@@ -36,7 +36,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             selected.item?.type?.let { actorType ->
                 components.map {
                     val isTrigger = if (actorType == RigidActorType.STATIC) it.data.isTrigger else false
-                    SetRigidActorPropertiesAction(it.gameEntity.id, it.data, it.data.copy(type = actorType, isTrigger = isTrigger))
+                    SetComponentDataAction(it, it.data, it.data.copy(type = actorType, isTrigger = isTrigger))
                 }.fused().apply()
             }
         }
@@ -109,7 +109,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         }
         val actions = components
             .filter { it.data.shapes != newShapes }
-            .map { SetRigidActorPropertiesAction(it.gameEntity.id, it.data, it.data.copy(shapes = newShapes)) }
+            .map { SetComponentDataAction(it, it.data, it.data.copy(shapes = newShapes)) }
         if (actions.isNotEmpty()) {
             FusedAction(actions).apply()
         }
@@ -191,7 +191,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             components.mapIndexed { i, component ->
                 val bodyProps = component.data
                 val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(mapPath = it?.path ?: "")))
-                SetRigidActorPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
+                SetComponentDataAction(component, bodyProps, applyShape)
             }.fused().apply()
         }
 
@@ -218,7 +218,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                     components.mapIndexed { i, component ->
                         val bodyProps = component.data
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(heightScale = endValue)))
-                        SetRigidActorPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
+                        SetComponentDataAction(component, bodyProps, applyShape)
                     }.fused().apply()
                 }
             },
@@ -237,7 +237,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                         val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
                         val bodyProps = component.data
                         val applyShape = bodyProps.copy(shapes = listOf(editMaps[i].copy(colScale = newScale.x, rowScale = newScale.y)))
-                        SetRigidActorPropertiesAction(component.gameEntity.id, bodyProps, applyShape)
+                        SetComponentDataAction(component, bodyProps, applyShape)
                     }.fused().apply()
                 }
             }
@@ -313,7 +313,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         }
 
         private val setActorActionMapper: (RigidActorComponent, RigidActorComponentData, RigidActorComponentData) -> EditorAction = { component, undoData, applyData ->
-            SetRigidActorPropertiesAction(component.gameEntity.id, undoData, applyData)
+            SetComponentDataAction(component, undoData, applyData)
         }
     }
 }

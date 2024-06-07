@@ -1,8 +1,8 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
-import de.fabmax.kool.editor.actions.UpdateMaterialAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.components.MaterialReferenceComponent
@@ -54,7 +54,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 labeledTextField("Name:", checkedMaterial.name) {
                     val oldData = checkedMaterial.data
                     val newData = oldData.copy(name = it)
-                    UpdateMaterialAction(checkedMaterial, oldData, newData).apply()
+                    SetComponentDataAction(checkedMaterial, oldData, newData).apply()
                 }
 
                 menuDivider()
@@ -74,7 +74,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             val applyMaterial = material.data.copy(
                 shaderData = material.data.shaderData.copy(genericSettings = material.shaderData.genericSettings.copy(isTwoSided = it))
             )
-            UpdateMaterialAction(material, undoMaterial, applyMaterial).apply()
+            SetComponentDataAction(material, undoMaterial, applyMaterial).apply()
         }
         var isCastingShadow by remember(material.shaderData.genericSettings.isCastingShadow)
         labeledCheckbox("Is casting shadow:", isCastingShadow) {
@@ -84,7 +84,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             val applyMaterial = material.data.copy(
                 shaderData = material.data.shaderData.copy(genericSettings = material.shaderData.genericSettings.copy(isCastingShadow = it))
             )
-            UpdateMaterialAction(material, undoMaterial, applyMaterial).apply()
+            SetComponentDataAction(material, undoMaterial, applyMaterial).apply()
         }
     }
 
@@ -127,7 +127,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val undoData = material.data.copy(shaderData = pbrData.copy(parallaxStrength = undo.toFloat()))
                     val applyData = material.data.copy(shaderData = pbrData.copy(parallaxStrength = apply.toFloat()))
-                    UpdateMaterialAction(material, undoData, applyData)
+                    SetComponentDataAction(material, undoData, applyData)
                 }
             )
             labeledDoubleTextField(
@@ -137,7 +137,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val undoData = material.data.copy(shaderData = pbrData.copy(parallaxOffset = undo.toFloat()))
                     val applyData = material.data.copy(shaderData = pbrData.copy(parallaxOffset = apply.toFloat()))
-                    UpdateMaterialAction(material, undoData, applyData)
+                    SetComponentDataAction(material, undoData, applyData)
                 }
             )
             labeledDoubleTextField(
@@ -150,7 +150,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 editHandler = ActionValueEditHandler { undo, apply ->
                     val undoData = material.data.copy(shaderData = pbrData.copy(parallaxSteps = undo.toInt()))
                     val applyData = material.data.copy(shaderData = pbrData.copy(parallaxSteps = apply.toInt()))
-                    UpdateMaterialAction(material, undoData, applyData)
+                    SetComponentDataAction(material, undoData, applyData)
                 }
             )
         }
@@ -248,7 +248,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             MaterialAttributeSourcePopup(colorAttr, true, default) { undoValue, applyValue ->
                 val undoMaterial = material.data.copy(shaderData = shaderDataSetter(undoValue))
                 val applyMaterial = material.data.copy(shaderData = shaderDataSetter(applyValue))
-                UpdateMaterialAction(material, undoMaterial, applyMaterial)
+                SetComponentDataAction(material, undoMaterial, applyMaterial)
             }
         }
         sourcePopup.editMatAttr = colorAttr
@@ -307,7 +307,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             MaterialAttributeSourcePopup(floatAttr, false, minValue = min, maxValue = max, defaultValue = default) { undoValue, applyValue ->
                 val undoMaterial = material.data.copy(shaderData = shaderDataSetter(undoValue))
                 val applyMaterial = material.data.copy(shaderData = shaderDataSetter(applyValue))
-                UpdateMaterialAction(material, undoMaterial, applyMaterial)
+                SetComponentDataAction(material, undoMaterial, applyMaterial)
             }
         }
         sourcePopup.editMatAttr = floatAttr
@@ -338,7 +338,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val undoMaterial = material.data.copy(shaderData = shaderDataSetter(ConstValueAttribute(undoValue.toFloat())))
                         val applyMaterial = material.data.copy(shaderData = shaderDataSetter(ConstValueAttribute(applyValue.toFloat())))
-                        UpdateMaterialAction(material, undoMaterial, applyMaterial)
+                        SetComponentDataAction(material, undoMaterial, applyMaterial)
                     },
                     textFieldModifier = {
                         if (isDrag) {
@@ -369,7 +369,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         val editHandler = ActionValueEditHandler<MapAttribute?> { undoValue, applyValue ->
             val undoMaterial = material.data.copy(shaderData = shaderDataSetter(undoValue))
             val applyMaterial = material.data.copy(shaderData = shaderDataSetter(applyValue))
-            UpdateMaterialAction(material, undoMaterial, applyMaterial)
+            SetComponentDataAction(material, undoMaterial, applyMaterial)
         }
         val texPopup = remember {
             AutoPopup().apply {
@@ -445,7 +445,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             val dragTextureItem = dragItem.get(DndItemFlavor.DndItemTexture)
             val applyMaterial = material.data.copy(shaderData = shaderDataSetter(MapAttribute(dragTextureItem.path)))
             if (applyMaterial.shaderData != material.shaderData) {
-                UpdateMaterialAction(material, material.data, applyMaterial).apply()
+                SetComponentDataAction(material, material.data, applyMaterial).apply()
             }
         }
     }

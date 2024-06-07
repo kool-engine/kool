@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.SetShadowMapTypeAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.ShadowMapComponent
 import de.fabmax.kool.editor.data.ShadowMapInfo
@@ -24,11 +24,14 @@ class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
                     )
                 }
                 components.map {
-                    SetShadowMapTypeAction(it.gameEntity.id, shadowMap)
+                    setShadowMapAction(it, it.data.shadowMap, shadowMap)
                 }.fused().apply()
             }
         }
     }
+
+    private fun setShadowMapAction(component: ShadowMapComponent, oldShadow: ShadowMapTypeData, newShadow: ShadowMapTypeData) =
+        SetComponentDataAction(component, component.data.copy(shadowMap = oldShadow), component.data.copy(shadowMap = newShadow))
 
     private val ShadowMapTypeData.typeOption: TypeOption get() =
         TypeOption.entries.first { it.matches(this) }
