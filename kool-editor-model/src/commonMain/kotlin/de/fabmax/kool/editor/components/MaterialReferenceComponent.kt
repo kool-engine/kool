@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.cachedProjectComponents
+import de.fabmax.kool.editor.api.cachedEntityComponents
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MapAttribute
@@ -15,7 +15,7 @@ class MaterialReferenceComponent(
 
     val material: MaterialComponent? get() = project.materialsById[data.materialId]
 
-    private val listeners by cachedProjectComponents<ListenerComponent>()
+    private val listeners by cachedEntityComponents<ListenerComponent>()
 
     init {
         collectRequiredAssets(material)

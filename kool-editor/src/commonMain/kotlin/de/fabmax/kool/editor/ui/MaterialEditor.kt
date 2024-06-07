@@ -19,6 +19,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
 
     override fun UiScope.compose() {
         val allTheSameMaterial = components.all {
+            it.material?.dataState?.use()
             it.dataState.use().materialId == components[0].data.materialId
         }
         componentPanel(

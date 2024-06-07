@@ -2,11 +2,12 @@ package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.launchDelayed
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.drawNode
@@ -20,7 +21,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     var componentModCnt = 0
         internal set
 
-    val shaderData = SceneShaderData()
+    val shaderData = SceneShaderData(this)
     val sceneEntity: GameEntity = GameEntity(sceneData.getOrAddSceneEntityData(), this)
     val name: String get() = sceneEntity.name
 
@@ -174,59 +175,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         }
     }
 
-    inner class SceneShaderData {
-        private val listeners by CachedSceneComponents(this@EditorScene, SceneShaderDataListener::class)
-
-        var maxNumberOfLights: Int = 4
-            set(value) {
-                if (value != field) {
-                    field = value
-                    listeners.forEach { it.onSceneShaderDataChanged(this) }
-                }
-            }
-
-        var environmentMaps: EnvironmentMaps? = null
-            set(value) {
-                if (value != field) {
-                    field = value
-                    listeners.forEach { it.onSceneShaderDataChanged(this) }
-                }
-            }
-
-        var ambientColorLinear: Color = Color.BLACK
-            set(value) {
-                if (value != field) {
-                    field = value
-                    listeners.forEach { it.onSceneShaderDataChanged(this) }
-                }
-            }
-
-        var shadowMaps = emptyList<ShadowMap>()
-            set(value) {
-                if (value != field) {
-                    field = value
-                    listeners.forEach { it.onSceneShaderDataChanged(this) }
-                }
-            }
-
-        var ssaoMap: Texture2d? = null
-            set(value) {
-                if (value != field) {
-                    field = value
-                    listeners.forEach { it.onSceneShaderDataChanged(this) }
-                }
-            }
-
-        fun addShadowMap(shadowMap: ShadowMap) {
-            shadowMaps = shadowMaps + shadowMap
-        }
-
-        fun removeShadowMap(shadowMap: ShadowMap) {
-            shadowMaps = shadowMaps - shadowMap
-        }
-    }
-
     fun interface SceneShaderDataListener {
-        fun onSceneShaderDataChanged(sceneShaderData: SceneShaderData)
+        fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData)
     }
 }

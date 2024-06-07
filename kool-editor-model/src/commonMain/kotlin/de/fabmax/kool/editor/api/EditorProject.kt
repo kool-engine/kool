@@ -21,15 +21,18 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     private val _createdScenes: MutableMap<EntityId, EditorScene> = mutableMapOf()
     val createdScenes: Map<EntityId, EditorScene> get() = _createdScenes
 
-    private val materialScene: EditorScene
     private val _materialsById: MutableMap<EntityId, MaterialComponent> = mutableMapOf()
+    val materialScene: EditorScene
     val materialsById: Map<EntityId, MaterialComponent> get() = _materialsById
     val materials = mutableStateListOf<MaterialComponent>()
+    var defaultMaterial: MaterialComponent? = null
 
     init {
         projectData.checkConsistency()
         materialScene = EditorScene(SceneData("materials", projectData.materials), this)
-        materialScene.getAllComponents<MaterialComponent>().forEach { _materialsById[it.gameEntity.id] = it }
+        materialScene.getAllComponents<MaterialComponent>()
+            .filter { it.gameEntity.isVisibleState.value }
+            .forEach { _materialsById[it.gameEntity.id] = it }
         materials.apply {
             addAll(materialsById.values)
             sortBy { it.name }
@@ -37,6 +40,19 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     }
 
     suspend fun createScenes() {
+        // todo: if (materials.notcreated) materials.create()
+
+        if (defaultMaterial == null) {
+            defaultMaterial = materialScene.getAllComponents<MaterialComponent>().find {
+                it.name == "<\\Default/>"
+            } ?: createNewMaterial().apply {
+                gameEntity.isVisibleState.set(false)
+                materials.remove(this)
+                _materialsById -= id
+                setPersistent(MaterialComponentData("<\\Default/>", PbrShaderData()))
+            }
+        }
+
         logI { "Load project scenes" }
         projectData.checkConsistency()
         projectData.scenes.forEach { sceneData ->

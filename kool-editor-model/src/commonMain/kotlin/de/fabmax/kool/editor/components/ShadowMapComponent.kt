@@ -41,11 +41,13 @@ class ShadowMapComponent(
     }
 
     fun updateLight(light: Light) {
-        val current = shadowMap?.light
-        if (current != null && current::class == light::class) {
-            shadowMap?.light = light
-        } else {
-            updateShadowMap(data)
+        if (isApplied) {
+            val current = shadowMap?.light
+            if (current != null && current::class == light::class) {
+                shadowMap?.light = light
+            } else {
+                updateShadowMap(data)
+            }
         }
     }
 

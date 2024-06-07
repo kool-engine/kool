@@ -66,6 +66,7 @@ class SceneBackgroundComponent(
                 is SceneBackgroundData.SingleColor -> {
                     scene.shaderData.environmentMaps = null
                     scene.shaderData.ambientColorLinear = bgData.color.toColorLinear()
+                    scene.scene.clearColor = bgData.color.toColorSrgb()
                     skybox?.isVisible = false
                 }
             }

@@ -50,7 +50,7 @@ class CachedProjectComponents<T: Any>(val project: EditorProject, val componentC
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = getComponents()
 
     fun getComponents(): List<T> {
-        val scenes = project.createdScenes.values.toList()
+        val scenes = project.createdScenes.values.toList() + project.materialScene
         if (modCnts.size != scenes.size) {
             modCnts = IntArray(scenes.size)
         }

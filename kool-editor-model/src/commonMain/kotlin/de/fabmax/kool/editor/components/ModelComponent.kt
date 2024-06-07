@@ -4,14 +4,11 @@ import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.ModelComponentData
-import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.Node
@@ -26,34 +23,11 @@ class ModelComponent(
     DrawNodeComponent,
     MaterialComponent.ListenerComponent,
     MaterialReferenceComponent.ListenerComponent,
-    SceneBackgroundComponent.ListenerComponent,
     EditorScene.SceneShaderDataListener
 {
-    val modelPathState = mutableStateOf(data.modelPath).onChange {
-        if (AppState.isEditMode) {
-            data.modelPath = it
-        }
-        gltfState.set(null)
-        recreateModelAsync()
-    }
-
-    val sceneIndexState = mutableStateOf(data.sceneIndex).onChange {
-        if (AppState.isEditMode) {
-            data.sceneIndex = it
-        }
-        recreateModelAsync()
-    }
-
-    val animationIndexState = mutableStateOf(data.animationIndex).onChange {
-        if (AppState.isEditMode) {
-            data.animationIndex = it
-        }
-        drawNode?.apply {
-            enableAnimation(it)
-        }
-    }
-
-    val gltfState = mutableStateOf<GltfFile?>(null)
+    private var gltfPath: String? = null
+    var gltfFile: GltfFile? = null
+        private set
 
     override var drawNode: Model? = null
         private set
@@ -72,79 +46,79 @@ class ModelComponent(
         }
     }
 
+    override fun onDataChanged(oldData: ModelComponentData, newData: ModelComponentData) {
+        recreateModelAsync(newData)
+    }
+
     override suspend fun applyComponent() {
         super.applyComponent()
-        recreateModel()
+        recreateModel(data)
     }
 
     override fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?) {
+        val model = drawNode ?: return
         launchOnMainThread {
-            recreateModel()
+            if (material != null) {
+                val updateFail = model.meshes.values.any { !material.applyMaterialTo(gameEntity, it) }
+                if (updateFail) {
+                    recreateModel(data)
+                }
+            } else {
+                recreateModel(data)
+            }
         }
     }
 
-    override fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
+    override suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
         val model = drawNode ?: return
         val holder = gameEntity.getComponent<MaterialReferenceComponent>() ?: return
 
         if (holder.isHoldingMaterial(component)) {
-            launchOnMainThread {
-                // update model shaders and recreate model in case update fails
-                val updateFail = model.meshes.values.any {
-                    !materialData.updateShader(it.shader, scene.shaderData)
-                }
-                if (updateFail) {
-                    recreateModel()
-                }
-                model.meshes.values.forEach {
-                    it.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
-                }
+            val updateFail = model.meshes.values.any { !component.applyMaterialTo(gameEntity, it) }
+            if (updateFail) {
+                recreateModel(data)
             }
         }
     }
 
-    override fun updateSingleColorBg(bgColorLinear: Color) {
-        if (isIblShaded) {
-            // recreate models without ibl lighting
-            recreateModelAsync()
-        } else {
-            drawNode?.meshes?.values?.forEach { mesh ->
-                (mesh.shader as? KslLitShader)?.ambientFactor = bgColorLinear
-            }
+    override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
+        if (gameEntity.hasComponent<MaterialReferenceComponent>()) {
+            return
         }
-    }
 
-    override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-        if (!isIblShaded) {
-            // recreate models with ibl lighting
-            recreateModelAsync()
-        } else {
-            drawNode?.meshes?.values?.forEach { mesh ->
-                (mesh.shader as? KslLitShader)?.ambientMap = ibl.irradianceMap
-                (mesh.shader as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
-            }
+        val ibl = sceneShaderData.environmentMaps
+        val isIbl = ibl != null
+        val isSsao = sceneShaderData.ssaoMap != null
+
+        if (isIblShaded != isIbl) {
+            recreateModelAsync(data)
         }
-    }
-
-    override fun onSceneShaderDataChanged(sceneShaderData: EditorScene.SceneShaderData) {
-        if (sceneShaderData.maxNumberOfLights != maxNumLights) {
-            recreateModelAsync()
+        if (maxNumLights != sceneShaderData.maxNumberOfLights) {
+            recreateModelAsync(data)
         }
         if (shaderShadowMaps != sceneShaderData.shadowMaps) {
-            recreateModelAsync()
+            recreateModelAsync(data)
+        }
+        if (isSsaoEnabled != isSsao) {
+            recreateModelAsync(data)
         }
 
-        val hasSsao = sceneShaderData.ssaoMap != null
-        if (isSsaoEnabled != hasSsao) {
-            recreateModelAsync()
-        }
         drawNode?.meshes?.values?.forEach { mesh ->
-            (mesh.shader as? KslLitShader)?.ssaoMap = sceneShaderData.ssaoMap
+            (mesh.shader as? KslLitShader)?.apply {
+                ssaoMap = sceneShaderData.ssaoMap
+                if (ibl != null) {
+                    ambientFactor = Color.WHITE
+                    ambientMap = ibl.irradianceMap
+                    (this as? KslPbrShader)?.reflectionMap = ibl.reflectionMap
+                } else {
+                    ambientFactor = sceneShaderData.ambientColorLinear
+                }
+            }
         }
     }
 
-    private suspend fun createModel(): Model? {
-        logD { "${gameEntity.name}: (re-)loading model" }
+    private suspend fun createModel(data: ModelComponentData): Model? {
+        logD { "${gameEntity.name}: (re-)loading model ${data.modelPath}" }
 
         val shaderData = scene.shaderData
         shaderShadowMaps = shaderData.shadowMaps.copy()
@@ -165,31 +139,17 @@ class ModelComponent(
         isSsaoEnabled = ssao != null
         maxNumLights = shaderData.maxNumberOfLights
 
-        val gltfFile = gltfState.value ?: AppAssets.loadModel(data.modelPath).also { gltfState.set(it) } ?: return null
-        val loadScene = if (sceneIndexState.value in gltfFile.scenes.indices) sceneIndexState.value else 0
+        if (gltfPath != data.modelPath) {
+            gltfPath = data.modelPath
+            gltfFile = AppAssets.loadModel(data.modelPath)
+        }
 
-        val model = gltfFile.makeModel(modelCfg, loadScene)
+        val gltf = gltfFile ?: return null
+        val loadScene = if (data.sceneIndex in gltf.scenes.indices) data.sceneIndex else 0
+
+        val model = gltf.makeModel(modelCfg, loadScene)
         if (materialRef != null) {
-            model.meshes.forEach { (name, mesh) ->
-                val shader = materialRef.data.createShader(shaderData)
-                val shaderOk = when (shader) {
-                    is KslPbrShader -> {
-                        val requiredAttribs = shader.findRequiredVertexAttributes()
-                        if (mesh.geometry.hasAttributes(requiredAttribs)) true else {
-                            logE {
-                                "Model ${data.modelPath}: sub-mesh $name misses required vertex attributes " +
-                                "to apply material: ${(requiredAttribs - mesh.geometry.vertexAttributes.toSet())}"
-                            }
-                            false
-                        }
-                    }
-                    else -> true
-                }
-                if (shaderOk) {
-                    mesh.shader = shader
-                    mesh.isCastingShadow = materialRef.shaderData.genericSettings.isCastingShadow
-                }
-            }
+            model.meshes.values.forEach { materialRef.applyMaterialTo(gameEntity, it) }
         }
 
         if (!isIblShaded) {
@@ -203,11 +163,11 @@ class ModelComponent(
             model.meshes.values.forEach { it.rayTest = MeshRayTest.geometryTest(it) }
         }
 
-        if (animationIndexState.value >= 0) {
-            model.animations.getOrNull(animationIndexState.value)?.weight = 1f
+        if (data.animationIndex >= 0) {
+            model.animations.getOrNull(data.animationIndex)?.weight = 1f
         }
         model.onUpdate {
-            if (animationIndexState.value >= 0) {
+            if (data.animationIndex >= 0) {
                 model.applyAnimation(Time.deltaT)
             }
         }
@@ -217,17 +177,17 @@ class ModelComponent(
         return model
     }
 
-    private fun recreateModelAsync() {
+    private fun recreateModelAsync(data: ModelComponentData) {
         if (!isRecreatingModel.getAndSet(true)) {
             launchOnMainThread {
-                recreateModel()
+                recreateModel(data)
                 isRecreatingModel.lazySet(false)
             }
         }
     }
 
-    private suspend fun recreateModel() {
-        drawNode = createModel()
+    private suspend fun recreateModel(data: ModelComponentData) {
+        drawNode = createModel(data)
 
         // set newly created model as new content node (or an empty Node in case model loading failed)
         // this also disposes any previous model

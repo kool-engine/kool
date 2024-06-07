@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.EditorScene
+import de.fabmax.kool.editor.api.SceneShaderData
 import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ksl.KslLitShader
@@ -10,23 +10,23 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 
-suspend fun MaterialComponentData.createShader(sceneShaderData: EditorScene.SceneShaderData): DrawShader {
+suspend fun MaterialComponentData.createShader(sceneShaderData: SceneShaderData): DrawShader {
     return shaderData.createShader(sceneShaderData)
 }
 
-suspend fun MaterialComponentData.updateShader(shader: DrawShader?, sceneShaderData: EditorScene.SceneShaderData): Boolean {
+suspend fun MaterialComponentData.updateShader(shader: DrawShader?, sceneShaderData: SceneShaderData): Boolean {
     return shaderData.updateShader(shader, sceneShaderData)
 }
 
 fun MaterialComponentData.matchesShader(shader: DrawShader?): Boolean = shaderData.matchesShader(shader)
 
-suspend fun MaterialShaderData.createShader(sceneShaderData: EditorScene.SceneShaderData): DrawShader = when (this) {
+suspend fun MaterialShaderData.createShader(sceneShaderData: SceneShaderData): DrawShader = when (this) {
     is PbrShaderData -> createShader(sceneShaderData)
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
 }
 
-suspend fun MaterialShaderData.updateShader(shader: DrawShader?, sceneShaderData: EditorScene.SceneShaderData): Boolean = when (this) {
+suspend fun MaterialShaderData.updateShader(shader: DrawShader?, sceneShaderData: SceneShaderData): Boolean = when (this) {
     is PbrShaderData -> (shader as? KslPbrShader)?.let { updateShader(it, sceneShaderData) } ?: false
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
@@ -38,7 +38,7 @@ fun MaterialShaderData.matchesShader(shader: DrawShader?): Boolean = when (this)
     is UnlitShaderData -> TODO()
 }
 
-suspend fun PbrShaderData.createShader(sceneShaderData: EditorScene.SceneShaderData): KslPbrShader {
+suspend fun PbrShaderData.createShader(sceneShaderData: SceneShaderData): KslPbrShader {
     val shader = KslPbrShader {
         pipeline {
             if (genericSettings.isTwoSided) {
@@ -113,14 +113,26 @@ suspend fun PbrShaderData.createShader(sceneShaderData: EditorScene.SceneShaderD
     return shader
 }
 
-suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: EditorScene.SceneShaderData): Boolean {
+suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: SceneShaderData): Boolean {
     if (!matchesShader(shader)) {
         return false
     }
     val pbrShader = shader as? KslPbrShader ?: return false
 
     val ibl = sceneShaderData.environmentMaps
-    if (ibl != null && shader.ambientCfg is KslLitShader.AmbientColor.Uniform) {
+    val isIbl = ibl != null
+    val isSsao = sceneShaderData.ssaoMap != null
+
+    if ((shader.ambientCfg is KslLitShader.AmbientColor.ImageBased) != isIbl) {
+        return false
+    }
+    if (shader.isSsao != isSsao) {
+        return false
+    }
+    if (shader.cfg.maxNumberOfLights != sceneShaderData.maxNumberOfLights) {
+        return false
+    }
+    if (shader.shadowMaps != sceneShaderData.shadowMaps) {
         return false
     }
 
@@ -162,9 +174,13 @@ suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: Ed
     pbrShader.parallaxMapSteps = parallaxSteps
     pbrShader.parallaxStrength = parallaxStrength
     pbrShader.vertexDisplacementStrength = parallaxOffset
-    ibl?.let {
+
+    if (ibl != null) {
+        pbrShader.ambientFactor = Color.WHITE
         pbrShader.ambientMap = ibl.irradianceMap
         pbrShader.reflectionMap = ibl.reflectionMap
+    } else {
+        pbrShader.ambientFactor = sceneShaderData.ambientColorLinear
     }
     return true
 }

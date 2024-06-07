@@ -2,7 +2,9 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.actions.*
+import de.fabmax.kool.editor.actions.FusedAction
+import de.fabmax.kool.editor.actions.SetModelDataAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.ModelComponent
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ui2.*
@@ -12,7 +14,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
 
     override fun UiScope.compose() {
         val allTheSameModel = components.all {
-            it.data.modelPath == components[0].data.modelPath
+            it.dataState.use().modelPath == components[0].data.modelPath
         }
         componentPanel(
             title = "Model",
@@ -32,7 +34,9 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
                         .onItemSelected { index ->
                             if (allTheSameModel || index > 0) {
                                 components.mapNotNull { comp ->
-                                    items[index].model?.let { SetModelPathAction(comp.gameEntity.id, it.path) }
+                                    items[index].model?.let {
+                                        SetModelDataAction(comp, comp.data, comp.data.copy(modelPath = it.path))
+                                    }
                                 }.fused().apply()
                             }
                         }
@@ -55,18 +59,18 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
             }
         ) {
             if (allTheSameModel) {
-                val gltf = components[0].gltfState.use() ?: return@componentPanel Unit
+                val gltf = components[0].gltfFile ?: return@componentPanel Unit
                 val scenes = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
-                labeledCombobox("Model scene:", scenes, components[0].sceneIndexState.use()) { selected ->
+                labeledCombobox("Model scene:", scenes, components[0].data.sceneIndex) { selected ->
                     components.map {
-                        SetModelSceneAction(it.gameEntity.id, selected.index)
+                        SetModelDataAction(it, it.data, it.data.copy(sceneIndex = selected.index))
                     }.fused().apply()
                 }
 
                 val animations = gltf.animationOptions()
-                labeledCombobox("Animation:", animations, components[0].animationIndexState.use() + 1) { selected ->
+                labeledCombobox("Animation:", animations, components[0].data.animationIndex + 1) { selected ->
                     components.map {
-                        SetModelAnimationAction(it.gameEntity.id, selected.index)
+                        SetModelDataAction(it, it.data, it.data.copy(animationIndex = selected.index))
                     }.fused().apply()
                 }
             }
@@ -118,8 +122,8 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
         ) {
             val dragModelItem = dragItem.get(DndItemFlavor.DndItemModel)
             val actions = components
-                .filter { it.modelPathState.value != dragModelItem.path }
-                .map { SetModelPathAction(it.gameEntity.id, dragModelItem.path) }
+                .filter { it.data.modelPath != dragModelItem.path }
+                .map { SetModelDataAction(it, it.data, it.data.copy(modelPath = dragModelItem.path)) }
             if (actions.isNotEmpty()) {
                 FusedAction(actions).apply()
             }
