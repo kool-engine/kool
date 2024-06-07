@@ -13,13 +13,9 @@ import de.fabmax.kool.util.logE
 class BehaviorComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<BehaviorComponentData>
-) : GameEntityDataComponent<BehaviorComponent, BehaviorComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<BehaviorComponentData>(gameEntity, componentInfo) {
 
     override val componentType: String = "${this::class.simpleName}<${data.behaviorClassName}>"
-
-    val behaviorClassNameState = mutableStateOf(data.behaviorClassName).onChange {
-        data = data.copy(behaviorClassName = it)
-    }
 
     val behaviorInstance = mutableStateOf<KoolBehavior?>(null)
 

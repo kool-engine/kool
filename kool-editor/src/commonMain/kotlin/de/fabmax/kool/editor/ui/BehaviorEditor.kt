@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
 
 class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
-    private val behaviorName: String get() = camelCaseToWords(components[0].behaviorClassNameState.value)
+    private val behaviorName: String get() = camelCaseToWords(components[0].data.behaviorClassName)
 
     override fun UiScope.compose() = componentPanel(
         title = behaviorName,

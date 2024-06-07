@@ -11,7 +11,7 @@ import de.fabmax.kool.util.logW
 abstract class PhysicsNodeComponent<T: ComponentData>(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<T>
-) : GameEntityDataComponent<PhysicsNodeComponent<T>, T>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<T>(gameEntity, componentInfo) {
 
     val physicsWorldComponent: PhysicsWorldComponent?
         get() = gameEntity.scene.sceneEntity.getComponent<PhysicsWorldComponent>()

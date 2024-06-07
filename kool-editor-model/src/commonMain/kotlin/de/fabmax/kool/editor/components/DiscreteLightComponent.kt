@@ -15,7 +15,7 @@ class DiscreteLightComponent(
         DiscreteLightComponentData(LightTypeData.Directional(ColorData(Color.WHITE), 3f))
     )
 ) :
-    GameEntityDataComponent<DiscreteLightComponent, DiscreteLightComponentData>(gameEntity, componentInfo),
+    GameEntityDataComponent<DiscreteLightComponentData>(gameEntity, componentInfo),
     DrawNodeComponent
 {
     override var drawNode: Light = data.light.createLight()

@@ -15,13 +15,13 @@ import de.fabmax.kool.util.logW
 class PhysicsWorldComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<PhysicsWorldComponentData> = ComponentInfo(PhysicsWorldComponentData())
-) : GameEntityDataComponent<PhysicsWorldComponent, PhysicsWorldComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<PhysicsWorldComponentData>(gameEntity, componentInfo) {
 
     var physicsWorld: PhysicsWorld? = null
         private set
     var gravity: Vec3f
         get() = data.gravity.toVec3f()
-        set(value) { data = data.copy(gravity = Vec3Data(value)) }
+        set(value) { dataState.set(data.copy(gravity = Vec3Data(value))) }
 
     var characterControllerManager: CharacterControllerManager? = null
 

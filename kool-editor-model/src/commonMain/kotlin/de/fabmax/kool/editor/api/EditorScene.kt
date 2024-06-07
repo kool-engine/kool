@@ -135,11 +135,59 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
         }
     }
 
-    class SceneShaderData {
+    inner class SceneShaderData {
+        private val listeners by CachedSceneComponents(this@EditorScene, SceneShaderDataListener::class)
+
         var maxNumberOfLights: Int = 4
+            set(value) {
+                if (value != field) {
+                    field = value
+                    listeners.forEach { it.onSceneShaderDataChanged(this) }
+                }
+            }
+
         var environmentMaps: EnvironmentMaps? = null
+            set(value) {
+                if (value != field) {
+                    field = value
+                    listeners.forEach { it.onSceneShaderDataChanged(this) }
+                }
+            }
+
         var ambientColorLinear: Color = Color.BLACK
-        val shadowMaps = mutableListOf<ShadowMap>()
+            set(value) {
+                if (value != field) {
+                    field = value
+                    listeners.forEach { it.onSceneShaderDataChanged(this) }
+                }
+            }
+
+        var shadowMaps = emptyList<ShadowMap>()
+            set(value) {
+                if (value != field) {
+                    field = value
+                    listeners.forEach { it.onSceneShaderDataChanged(this) }
+                }
+            }
+
         var ssaoMap: Texture2d? = null
+            set(value) {
+                if (value != field) {
+                    field = value
+                    listeners.forEach { it.onSceneShaderDataChanged(this) }
+                }
+            }
+
+        fun addShadowMap(shadowMap: ShadowMap) {
+            shadowMaps = shadowMaps + shadowMap
+        }
+
+        fun removeShadowMap(shadowMap: ShadowMap) {
+            shadowMaps = shadowMaps - shadowMap
+        }
+    }
+
+    fun interface SceneShaderDataListener {
+        fun onSceneShaderDataChanged(sceneShaderData: SceneShaderData)
     }
 }

@@ -26,6 +26,10 @@ data class MaterialData(
     val shaderDataState = mutableStateOf(shaderData).onChange { shaderData = it }
 }
 
+fun interface MaterialDataListenerComponent {
+    fun onMaterialChanged(materialData: MaterialData?)
+}
+
 @Serializable
 sealed interface MaterialShaderData {
     val genericSettings: GenericMaterialSettings

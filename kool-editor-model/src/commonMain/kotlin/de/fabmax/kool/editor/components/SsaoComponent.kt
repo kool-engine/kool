@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.cachedSceneComponents
+import de.fabmax.kool.editor.components.SceneBackgroundComponent.ListenerComponent
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.pipeline.Texture2d
@@ -9,10 +11,13 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 class SsaoComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<SsaoComponentData> = ComponentInfo(SsaoComponentData())
-) : GameEntityDataComponent<SsaoComponent, SsaoComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<SsaoComponentData>(gameEntity, componentInfo) {
 
     var aoPipeline: AoPipeline? = null
         private set
+    val ssaoMap: Texture2d? get() = aoPipeline?.aoMap
+
+    private val listeners by cachedSceneComponents<ListenerComponent>()
 
     init {
         dependsOn(SceneComponent::class)
@@ -27,14 +32,18 @@ class SsaoComponent(
 
         aoPipeline = AoPipeline.createForward(sceneComponent.drawNode)
         scene.shaderData.ssaoMap = aoPipeline?.aoMap
-        UpdateSsaoComponent.updateSceneSsao(gameEntity)
         applySettings(data)
+
+        listeners.forEach { it.onSsaoChanged(this) }
     }
 
     override fun destroyComponent() {
         aoPipeline?.release()
+        aoPipeline = null
         scene.shaderData.ssaoMap = null
-        UpdateSsaoComponent.updateSceneSsao(gameEntity)
+
+        listeners.forEach { it.onSsaoChanged(this) }
+
         super.destroyComponent()
     }
 
@@ -48,16 +57,8 @@ class SsaoComponent(
             power = ssaoSettings.power
         }
     }
-}
 
-interface UpdateSsaoComponent {
-    fun updateSsao(ssaoMap: Texture2d?)
-
-    companion object {
-        fun updateSceneSsao(sceneEntity: GameEntity) {
-            sceneEntity.scene.getAllComponents<UpdateSsaoComponent>().forEach {
-                it.updateSsao(sceneEntity.scene.shaderData.ssaoMap)
-            }
-        }
+    fun interface ListenerComponent {
+        fun onSsaoChanged(component: SsaoComponent)
     }
 }

@@ -11,7 +11,6 @@ import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.scene
-import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.input.KeyboardInput
@@ -173,7 +172,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 }
             }
             editor.activeScene.value?.let { sceneModel ->
-                if (sceneModel.scene.lighting.lights.size < sceneModel.sceneComponent.maxNumLights) {
+                if (sceneModel.scene.lighting.lights.size < sceneModel.shaderData.maxNumberOfLights) {
                     subMenu("Light") {
                         item("Directional") { addNewLight(it, LightTypeData.Directional()) }
                         item("Spot") { addNewLight(it, LightTypeData.Spot()) }

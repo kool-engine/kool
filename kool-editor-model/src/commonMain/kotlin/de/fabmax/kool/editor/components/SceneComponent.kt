@@ -1,9 +1,9 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.cachedSceneComponents
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneComponentData
-import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logW
 
@@ -11,13 +11,14 @@ class SceneComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<SceneComponentData>
 ) :
-    GameEntityDataComponent<SceneComponent, SceneComponentData>(gameEntity, componentInfo),
+    GameEntityDataComponent<SceneComponentData>(gameEntity, componentInfo),
     DrawNodeComponent
 {
     override val drawNode: Scene = Scene(gameEntity.name).apply { tryEnableInfiniteDepth() }
 
-    val maxNumLights: Int get() = data.maxNumLights
     val cameraComponent: CameraComponent? get() = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
+
+    private val listeners by cachedSceneComponents<ListenerComponent>()
 
     init {
         componentOrder = COMPONENT_ORDER_EARLY
@@ -25,16 +26,11 @@ class SceneComponent(
     }
 
     override fun onDataChanged(oldData: SceneComponentData, newData: SceneComponentData) {
-        if (oldData.maxNumLights != newData.maxNumLights) {
-            gameEntity.scene.getAllComponents<UpdateMaxNumLightsComponent>().forEach { comp ->
-                comp.updateMaxNumLightsComponent(newData.maxNumLights)
-            }
-        }
+        scene.shaderData.maxNumberOfLights = newData.maxNumLights
+
         if (oldData.cameraEntityId != newData.cameraEntityId) {
-            val newCam: CameraComponent? = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
-            gameEntity.scene.getAllComponents<UpdateSceneCameraComponent>().forEach { comp ->
-                comp.updateSceneCameraComponent(newCam?.drawNode)
-            }
+            val newCam: CameraComponent? = gameEntity.scene.sceneEntities[newData.cameraEntityId]?.getComponent()
+            listeners.forEach { it.onSceneCameraChanged(this, newCam) }
         }
     }
 
@@ -48,12 +44,8 @@ class SceneComponent(
             logW { "Scene ${gameEntity.name} has no camera attached" }
         }
     }
-}
 
-interface UpdateMaxNumLightsComponent {
-    fun updateMaxNumLightsComponent(newMaxNumLights: Int)
-}
-
-interface UpdateSceneCameraComponent {
-    fun updateSceneCameraComponent(newCamera: Camera?)
+    fun interface ListenerComponent {
+        fun onSceneCameraChanged(component: SceneComponent, newCamComponent: CameraComponent?)
+    }
 }

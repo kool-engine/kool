@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.cachedEntityComponents
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -10,9 +11,9 @@ import de.fabmax.kool.scene.Node
 class TransformComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<TransformComponentData> = ComponentInfo(TransformComponentData())
-) : GameEntityDataComponent<TransformComponent, TransformComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<TransformComponentData>(gameEntity, componentInfo) {
 
-    override val changeListenerComponents by cachedEntityComponents<TransformChangedListenerComponent>()
+    private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
     val onTransformEdited = mutableListOf<(TransformComponent) -> Unit>()
 
@@ -34,8 +35,16 @@ class TransformComponent(
     }
 
     init {
-        thisRef = this
         componentOrder = COMPONENT_ORDER_EARLY
+    }
+
+    override fun onDataChanged(oldData: TransformComponentData, newData: TransformComponentData) {
+        super.onDataChanged(oldData, newData)
+        changeListeners.let { listeners ->
+            for (i in listeners.indices) {
+                listeners[i].onTransformChanged(this, newData)
+            }
+        }
     }
 
     override suspend fun applyComponent() {
@@ -48,5 +57,7 @@ class TransformComponent(
         drawNode.updateModelMat()
     }
 
-    interface TransformChangedListenerComponent : DataChangeListenerComponent<TransformComponent, TransformComponentData>
+    fun interface ListenerComponent {
+        fun onTransformChanged(component: TransformComponent, transformData: TransformComponentData)
+    }
 }

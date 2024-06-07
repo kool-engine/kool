@@ -13,7 +13,7 @@ class ShadowMapComponent(
     componentInfo: ComponentInfo<ShadowMapComponentData> = ComponentInfo(
         ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
     )
-) : GameEntityDataComponent<ShadowMapComponent, ShadowMapComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<ShadowMapComponentData>(gameEntity, componentInfo) {
 
     val shadowMapType: ShadowMapTypeData get() = data.shadowMap
     val clipNear: Float get() = data.clipNear
@@ -36,8 +36,7 @@ class ShadowMapComponent(
     }
 
     override fun destroyComponent() {
-        disposeShadowMap()
-        UpdateShadowMapsComponent.updateShadowMaps(sceneEntity)
+        disposeShadowMap(null)
         super.destroyComponent()
     }
 
@@ -63,11 +62,8 @@ class ShadowMapComponent(
             return
         }
 
-        // dispose old shadow map
-        disposeShadowMap()
-
         // create new shadow map
-        shadowMap = when (data.shadowMap) {
+        val newShadowMap = when (data.shadowMap) {
             is ShadowMapTypeData.Single -> {
                 SimpleShadowMap(sceneComponent.drawNode, light, mapSize = data.shadowMap.mapInfo.mapSize).apply {
                     this.clipNear = data.clipNear
@@ -88,16 +84,19 @@ class ShadowMapComponent(
                     }
                 }
             }
-        }.also {
-            scene.shaderData.shadowMaps += it
-            UpdateShadowMapsComponent.updateShadowMaps(sceneEntity)
         }
+        disposeShadowMap(replaceMap = newShadowMap)
     }
 
-    private fun disposeShadowMap() {
-        val scene = sceneComponent.drawNode
+    private fun disposeShadowMap(replaceMap: ShadowMap?) {
+        val updateShadowMaps = gameEntity.scene.shaderData.shadowMaps.toMutableList()
+        shadowMap?.let { updateShadowMaps -= it }
+        replaceMap?.let { updateShadowMaps += it }
+
+        gameEntity.scene.shaderData.shadowMaps = updateShadowMaps
+
         shadowMap?.let {
-            gameEntity.scene.shaderData.shadowMaps -= it
+            val scene = sceneComponent.drawNode
             when (it) {
                 is SimpleShadowMap -> {
                     scene.removeOffscreenPass(it)
@@ -111,17 +110,6 @@ class ShadowMapComponent(
                 }
             }
         }
-    }
-}
-
-interface UpdateShadowMapsComponent {
-    fun updateShadowMaps(shadowMaps: List<ShadowMap>)
-
-    companion object {
-        fun updateShadowMaps(sceneEntity: GameEntity) {
-            sceneEntity.scene.getAllComponents<UpdateShadowMapsComponent>().forEach {
-                it.updateShadowMaps(sceneEntity.scene.shaderData.shadowMaps)
-            }
-        }
+        shadowMap = replaceMap
     }
 }

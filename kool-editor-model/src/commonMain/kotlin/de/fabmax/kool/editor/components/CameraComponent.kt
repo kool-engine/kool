@@ -11,7 +11,7 @@ class CameraComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<CameraComponentData> = ComponentInfo(CameraComponentData(CameraTypeData.Perspective()))
 ) :
-    GameEntityDataComponent<CameraComponent, CameraComponentData>(gameEntity, componentInfo),
+    GameEntityDataComponent<CameraComponentData>(gameEntity, componentInfo),
     DrawNodeComponent
 {
     override var drawNode: Camera = data.camera.createCamera()

@@ -23,8 +23,11 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
 
     val requiredAssets = mutableSetOf<AssetReference>()
 
+    @Deprecated("replace by lifecycle")
     var isApplied: Boolean = false
         private set
+
+    @Deprecated("replace by lifecycle")
     var isStarted: Boolean = false
         private set
 
@@ -41,7 +44,7 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
     }
 
     open fun destroyComponent() {
-        gameEntity.onNodeUpdate -= onUpdateListeners
+        onUpdateListeners.forEach { gameEntity.onUpdate -= it }
         onUpdateListeners.clear()
         isApplied = false
         isStarted = false
@@ -52,7 +55,7 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
     }
 
     fun onUpdate(block: (RenderPass.UpdateEvent) -> Unit) {
-        gameEntity.onNodeUpdate += block
+        gameEntity.onUpdate += block
     }
 
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {

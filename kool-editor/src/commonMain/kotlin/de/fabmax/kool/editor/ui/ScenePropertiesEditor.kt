@@ -21,7 +21,7 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
             SetScenePropertiesAction(entityId, component.data, component.data.copy(cameraEntityId = it.camComponentId)).apply()
         }
 
-        labeledIntTextField("Max number of lights:", component.maxNumLights, minValue = 0, maxValue = 8) {
+        labeledIntTextField("Max number of lights:", component.data.maxNumLights, minValue = 0, maxValue = 8) {
             SetScenePropertiesAction(entityId, component.data, component.data.copy(maxNumLights = it)).apply()
         }
     }

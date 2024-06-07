@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
@@ -11,7 +8,6 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
@@ -25,13 +21,13 @@ class MeshComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<MeshComponentData> = ComponentInfo(MeshComponentData(ShapeData.Box()))
 ) :
-    GameEntityDataComponent<MeshComponent, MeshComponentData>(gameEntity, componentInfo),
+    GameEntityDataComponent<MeshComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
-    UpdateMaterialComponent,
+    MaterialComponent.ListenerComponent,
+    EditorScene.SceneShaderDataListener,
     SceneBackgroundComponent.ListenerComponent,
-    UpdateShadowMapsComponent,
-    UpdateSsaoComponent,
-    UpdateMaxNumLightsComponent
+
+    MaterialDataListenerComponent
 {
     override var drawNode: Mesh? = null
         private set
@@ -218,16 +214,21 @@ class MeshComponent(
         }
     }
 
-    override fun updateMaterial(material: MaterialData?) {
+    override fun onMaterialChanged(component: MaterialComponent, materialData: MaterialData?) {
+        onMaterialChanged(materialData)
+    }
+
+    override fun onMaterialChanged(materialData: MaterialData?) {
         val mesh = drawNode ?: return
         val holder = gameEntity.getComponent<MaterialComponent>()
-        if (holder?.isHoldingMaterial(material) == true) {
+
+        if (holder?.isHoldingMaterial(materialData) == true) {
             launchOnMainThread {
                 val sceneShaderData = gameEntity.scene.shaderData
-                if (material == null || !material.updateShader(mesh.shader, sceneShaderData)) {
+                if (materialData == null || !materialData.updateShader(mesh.shader, sceneShaderData)) {
                     createMeshShader()
                 }
-                mesh.isCastingShadow = material?.shaderData?.genericSettings?.isCastingShadow ?: true
+                mesh.isCastingShadow = materialData?.shaderData?.genericSettings?.isCastingShadow ?: true
             }
         }
     }
@@ -252,25 +253,21 @@ class MeshComponent(
         }
     }
 
-    override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        (drawNode?.shader as? KslLitShader)?.let {
-            if (shadowMaps != it.shadowMaps) {
-                recreateShader()
-            }
-        }
-    }
+    override fun onSceneShaderDataChanged(sceneShaderData: EditorScene.SceneShaderData) {
+        val litShader = drawNode?.shader as? KslLitShader ?: return
 
-    override fun updateSsao(ssaoMap: Texture2d?) {
-        val shader = drawNode?.shader as? KslLitShader ?: return
-        val needsSsaoEnabled = ssaoMap != null
-        if (shader.isSsao != needsSsaoEnabled) {
+        if (sceneShaderData.maxNumberOfLights != litShader.cfg.maxNumberOfLights) {
             recreateShader()
         }
-        shader.ssaoMap = ssaoMap
-    }
+        if (litShader.shadowMaps != sceneShaderData.shadowMaps) {
+            recreateShader()
+        }
 
-    override fun updateMaxNumLightsComponent(newMaxNumLights: Int) {
-        recreateShader()
+        val hasSsao = sceneShaderData.ssaoMap != null
+        if (litShader.isSsao != hasSsao) {
+            recreateShader()
+        }
+        litShader.ssaoMap = sceneShaderData.ssaoMap
     }
 
     private fun recreateShader() {

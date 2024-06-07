@@ -1,17 +1,13 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.*
-import de.fabmax.kool.editor.data.ComponentInfo
-import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.data.ModelComponentData
-import de.fabmax.kool.editor.data.SceneBackgroundData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Model
@@ -23,13 +19,13 @@ class ModelComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<ModelComponentData>
 ) :
-    GameEntityDataComponent<ModelComponent, ModelComponentData>(gameEntity, componentInfo),
+    GameEntityDataComponent<ModelComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
-    UpdateMaterialComponent,
+    MaterialComponent.ListenerComponent,
+    EditorScene.SceneShaderDataListener,
     SceneBackgroundComponent.ListenerComponent,
-    UpdateShadowMapsComponent,
-    UpdateSsaoComponent,
-    UpdateMaxNumLightsComponent
+
+    MaterialDataListenerComponent
 {
     val modelPathState = mutableStateOf(data.modelPath).onChange {
         if (AppState.isEditMode) {
@@ -63,6 +59,7 @@ class ModelComponent(
     private val isRecreatingModel = atomic(false)
     private var isIblShaded = false
     private var isSsaoEnabled = false
+    private var maxNumLights = 4
     private var shaderShadowMaps: List<ShadowMap> = emptyList()
 
     init {
@@ -78,24 +75,28 @@ class ModelComponent(
         recreateModel()
     }
 
-    override fun updateMaterial(material: MaterialData?) {
+    override fun onMaterialChanged(component: MaterialComponent, materialData: MaterialData?) {
+        onMaterialChanged(materialData)
+    }
+
+    override fun onMaterialChanged(materialData: MaterialData?) {
         val holder = gameEntity.getComponent<MaterialComponent>() ?: return
         val model = drawNode
-        if (holder.isHoldingMaterial(material)) {
+        if (holder.isHoldingMaterial(materialData)) {
             launchOnMainThread {
-                if (material == null || model == null) {
+                if (materialData == null || model == null) {
                     // recreate model with default materials
                     recreateModel()
                 } else {
                     // update model shaders and recreate model in case update fails
                     val updateFail = model.meshes.values.any {
-                        !material.updateShader(it.shader, scene.shaderData)
+                        !materialData.updateShader(it.shader, scene.shaderData)
                     }
                     if (updateFail) {
                         recreateModel()
                     }
                     model.meshes.values.forEach {
-                        it.isCastingShadow = material.shaderData.genericSettings.isCastingShadow
+                        it.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
                     }
                 }
             }
@@ -125,25 +126,21 @@ class ModelComponent(
         }
     }
 
-    override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        if (shadowMaps != shaderShadowMaps) {
+    override fun onSceneShaderDataChanged(sceneShaderData: EditorScene.SceneShaderData) {
+        if (sceneShaderData.maxNumberOfLights != maxNumLights) {
             recreateModelAsync()
         }
-    }
+        if (shaderShadowMaps != sceneShaderData.shadowMaps) {
+            recreateModelAsync()
+        }
 
-    override fun updateSsao(ssaoMap: Texture2d?) {
-        val needsSsaoEnabled = ssaoMap != null
-        if (needsSsaoEnabled != isSsaoEnabled) {
-            // recreate models with changed ssao setting
+        val hasSsao = sceneShaderData.ssaoMap != null
+        if (isSsaoEnabled != hasSsao) {
             recreateModelAsync()
         }
         drawNode?.meshes?.values?.forEach { mesh ->
-            (mesh.shader as? KslLitShader)?.ssaoMap = ssaoMap
+            (mesh.shader as? KslLitShader)?.ssaoMap = sceneShaderData.ssaoMap
         }
-    }
-
-    override fun updateMaxNumLightsComponent(newMaxNumLights: Int) {
-        recreateModelAsync()
     }
 
     private suspend fun createModel(): Model? {
@@ -159,13 +156,14 @@ class ModelComponent(
                 environmentMaps = ibl,
                 shadowMaps = shaderShadowMaps,
                 scrSpcAmbientOcclusionMap = ssao,
-                maxNumberOfLights = sceneComponent.maxNumLights
+                maxNumberOfLights = shaderData.maxNumberOfLights
             ),
             applyMaterials = material == null,
             assetLoader = AppAssets.assetLoader
         )
         isIblShaded = ibl != null
         isSsaoEnabled = ssao != null
+        maxNumLights = shaderData.maxNumberOfLights
 
         val gltfFile = gltfState.value ?: AppAssets.loadModel(data.modelPath).also { gltfState.set(it) } ?: return null
         val loadScene = if (sceneIndexState.value in gltfFile.scenes.indices) sceneIndexState.value else 0

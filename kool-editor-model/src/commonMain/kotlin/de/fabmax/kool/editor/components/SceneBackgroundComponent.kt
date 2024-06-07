@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.loadHdri
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
@@ -23,7 +20,7 @@ fun SceneBackgroundComponent(gameEntity: GameEntity, color: Color, isLinear: Boo
 class SceneBackgroundComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<SceneBackgroundComponentData>
-) : GameEntityDataComponent<SceneBackgroundComponent, SceneBackgroundComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<SceneBackgroundComponentData>(gameEntity, componentInfo) {
 
     private val listeners by cachedSceneComponents<ListenerComponent>()
 
@@ -72,7 +69,7 @@ class SceneBackgroundComponent(
                     skybox?.isVisible = false
                 }
             }
-            listeners.forEach { it.onComponentDataChanged(this, data) }
+            listeners.forEach { it.onBackgroundChanged(this, data) }
         }
     }
 
@@ -92,8 +89,8 @@ class SceneBackgroundComponent(
         scene.addNode(skybox, 0)
     }
 
-    interface ListenerComponent : DataChangeListenerComponent<SceneBackgroundComponent, SceneBackgroundComponentData> {
-        override fun onComponentDataChanged(component: SceneBackgroundComponent, newData: SceneBackgroundComponentData) {
+    interface ListenerComponent {
+        fun onBackgroundChanged(component: SceneBackgroundComponent, backgroundData: SceneBackgroundComponentData) {
             val scene = component.scene
             when (val bg = component.data.sceneBackground) {
                 is SceneBackgroundData.Hdri -> scene.shaderData.environmentMaps?.let { updateHdriBg(bg, it) }

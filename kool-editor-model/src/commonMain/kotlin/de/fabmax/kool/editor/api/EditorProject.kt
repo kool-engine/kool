@@ -17,6 +17,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     val entityData: Map<EntityId, GameEntityData>
         get() = _entityData
 
+    // fixme: use GameEntities for materials
     private val _materialsById = projectData.materials.associateBy { it.id }.toMutableMap()
     val materialsById: Map<EntityId, MaterialData>
         get() = _materialsById
@@ -146,6 +147,12 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
         projectData.materials += material
         materials += material
         materials.sortBy { it.name }
+    }
+
+    private val materialListeners by CachedProjectComponents(this, MaterialDataListenerComponent::class)
+    fun updateMaterial(material: MaterialData) {
+        check(material.id in materialsById)
+        materialListeners.forEach { it.onMaterialChanged(material) }
     }
 
     companion object {

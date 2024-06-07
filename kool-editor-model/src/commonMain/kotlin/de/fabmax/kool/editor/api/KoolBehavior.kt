@@ -20,12 +20,12 @@ abstract class KoolBehavior {
 
     fun init(gameEntity: GameEntity, behaviorComponent: BehaviorComponent) {
         _gameEntity?.let { old ->
-            old.onNodeUpdate -= onUpdateHandler
+            old.onUpdate -= onUpdateHandler
         }
         this.behaviorComponent = behaviorComponent
 
         this._gameEntity = gameEntity
-        gameEntity.onNodeUpdate += onUpdateHandler
+        gameEntity.onUpdate += onUpdateHandler
         onInit()
     }
 
