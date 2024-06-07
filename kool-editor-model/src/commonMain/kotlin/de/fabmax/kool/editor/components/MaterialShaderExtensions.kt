@@ -10,15 +10,15 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 
-suspend fun MaterialData.createShader(sceneShaderData: EditorScene.SceneShaderData): DrawShader {
+suspend fun MaterialComponentData.createShader(sceneShaderData: EditorScene.SceneShaderData): DrawShader {
     return shaderData.createShader(sceneShaderData)
 }
 
-suspend fun MaterialData.updateShader(shader: DrawShader?, sceneShaderData: EditorScene.SceneShaderData): Boolean {
+suspend fun MaterialComponentData.updateShader(shader: DrawShader?, sceneShaderData: EditorScene.SceneShaderData): Boolean {
     return shaderData.updateShader(shader, sceneShaderData)
 }
 
-fun MaterialData.matchesShader(shader: DrawShader?): Boolean = shaderData.matchesShader(shader)
+fun MaterialComponentData.matchesShader(shader: DrawShader?): Boolean = shaderData.matchesShader(shader)
 
 suspend fun MaterialShaderData.createShader(sceneShaderData: EditorScene.SceneShaderData): DrawShader = when (this) {
     is PbrShaderData -> createShader(sceneShaderData)

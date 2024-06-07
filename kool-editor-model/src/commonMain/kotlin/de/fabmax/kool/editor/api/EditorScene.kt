@@ -1,8 +1,7 @@
 package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.SceneComponent
-import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.GameEntityData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Node
@@ -12,7 +11,7 @@ import de.fabmax.kool.util.*
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.drawNode
 
-class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseReleasable() {
+class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseReleasable() {
 
     val nodesToEntities: MutableMap<Node, GameEntity> = mutableMapOf()
     val sceneEntities: MutableMap<EntityId, GameEntity> = mutableMapOf()
@@ -22,8 +21,7 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
         internal set
 
     val shaderData = SceneShaderData()
-    var sceneEntity: GameEntity = GameEntity(sceneData, this)
-        private set
+    val sceneEntity: GameEntity = GameEntity(sceneData.getOrAddSceneEntityData(), this)
     val name: String get() = sceneEntity.name
 
     init {
@@ -44,7 +42,39 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
             }
             parentsToChildren[entityData.id]?.sortedBy { it.order }?.forEach { createEntity(it) }
         }
-        parentsToChildren[sceneData.id]?.sortedBy { it.order }?.forEach { createEntity(it) }
+        parentsToChildren[sceneEntity.id]?.sortedBy { it.order }?.forEach { createEntity(it) }
+
+        // fix entities with missing parents by adding them to the scene root entity
+        sceneData.entities.filter { it.parentId != null && it.parentId !in sceneEntities }.forEach {
+            it.parentId = sceneEntity.id
+            createEntity(it)
+        }
+    }
+
+    private fun SceneData.getOrAddSceneEntityData(): GameEntityData {
+        var entityData = entities.find { it.parentId == null }
+        if (entityData == null) {
+            entityData = GameEntityData(project.nextId(), sceneData.name, null).also {
+                entities += it
+            }
+        }
+        if (entityData.components.none { it.data is SceneComponentData }) {
+            entityData.components += ComponentInfo(SceneComponentData())
+        }
+        return entityData
+    }
+
+    private fun addEntityData(data: GameEntityData) {
+        if (data.id in project.entityData) {
+            logE { "addEntityData: Duplicate ID ${data.id} of entity ${data.name}" }
+        }
+        sceneData.entities += data
+        project._entityData[data.id] = data
+    }
+
+    private fun removeEntityData(data: GameEntityData) {
+        sceneData.entities -= data
+        project._entityData -= data.id
     }
 
     inline fun <reified T: Any> getAllComponents(): List<T> {
@@ -87,16 +117,25 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
         nodesToEntities.clear()
     }
 
-    suspend fun addEntityDataHierarchy(
+    suspend fun addGameEntities(
         hierarchy: GameEntityDataHierarchy,
         insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
     ) {
         val gameEntity = GameEntity(hierarchy.entityData, this)
         addGameEntity(gameEntity, insertionPos)
-        hierarchy.children.forEach { addEntityDataHierarchy(it) }
+        hierarchy.children.forEach { addGameEntities(it) }
     }
 
     suspend fun addGameEntity(
+        data: GameEntityData,
+        insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
+    ): GameEntity {
+        val entity = GameEntity(data, this)
+        addGameEntity(entity, insertionPos)
+        return entity
+    }
+
+    private suspend fun addGameEntity(
         gameEntity: GameEntity,
         insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
     ) {
@@ -115,7 +154,7 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
             logW { "Adding a scene node which is already created" }
         }
 
-        project.addEntityData(gameEntity.entityData)
+        addEntityData(gameEntity.entityData)
         sceneEntities[gameEntity.id] = gameEntity
         nodesToEntities[gameEntity.drawNode] = gameEntity
     }
@@ -124,7 +163,7 @@ class EditorScene(sceneData: GameEntityData, val project: EditorProject) : BaseR
         val removeChildren = gameEntity.children.toList()
         removeChildren.forEach { removeGameEntity(it) }
 
-        project.removeEntityData(gameEntity.entityData)
+        removeEntityData(gameEntity.entityData)
         sceneEntities -= gameEntity.id
         nodesToEntities -= gameEntity.drawNode
 

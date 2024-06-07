@@ -1,7 +1,10 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.*
-import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.MaterialComponentData
+import de.fabmax.kool.editor.data.ModelComponentData
+import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
@@ -22,10 +25,9 @@ class ModelComponent(
     GameEntityDataComponent<ModelComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
     MaterialComponent.ListenerComponent,
-    EditorScene.SceneShaderDataListener,
+    MaterialReferenceComponent.ListenerComponent,
     SceneBackgroundComponent.ListenerComponent,
-
-    MaterialDataListenerComponent
+    EditorScene.SceneShaderDataListener
 {
     val modelPathState = mutableStateOf(data.modelPath).onChange {
         if (AppState.isEditMode) {
@@ -63,7 +65,7 @@ class ModelComponent(
     private var shaderShadowMaps: List<ShadowMap> = emptyList()
 
     init {
-        dependsOn(MaterialComponent::class, isOptional = true)
+        dependsOn(MaterialReferenceComponent::class, isOptional = true)
 
         if (data.modelPath.isNotBlank()) {
             requiredAssets += AssetReference.Model(data.modelPath)
@@ -75,29 +77,27 @@ class ModelComponent(
         recreateModel()
     }
 
-    override fun onMaterialChanged(component: MaterialComponent, materialData: MaterialData?) {
-        onMaterialChanged(materialData)
+    override fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?) {
+        launchOnMainThread {
+            recreateModel()
+        }
     }
 
-    override fun onMaterialChanged(materialData: MaterialData?) {
-        val holder = gameEntity.getComponent<MaterialComponent>() ?: return
-        val model = drawNode
-        if (holder.isHoldingMaterial(materialData)) {
+    override fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
+        val model = drawNode ?: return
+        val holder = gameEntity.getComponent<MaterialReferenceComponent>() ?: return
+
+        if (holder.isHoldingMaterial(component)) {
             launchOnMainThread {
-                if (materialData == null || model == null) {
-                    // recreate model with default materials
+                // update model shaders and recreate model in case update fails
+                val updateFail = model.meshes.values.any {
+                    !materialData.updateShader(it.shader, scene.shaderData)
+                }
+                if (updateFail) {
                     recreateModel()
-                } else {
-                    // update model shaders and recreate model in case update fails
-                    val updateFail = model.meshes.values.any {
-                        !materialData.updateShader(it.shader, scene.shaderData)
-                    }
-                    if (updateFail) {
-                        recreateModel()
-                    }
-                    model.meshes.values.forEach {
-                        it.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
-                    }
+                }
+                model.meshes.values.forEach {
+                    it.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
                 }
             }
         }
@@ -150,7 +150,7 @@ class ModelComponent(
         shaderShadowMaps = shaderData.shadowMaps.copy()
         val ibl = shaderData.environmentMaps
         val ssao = shaderData.ssaoMap
-        val material = gameEntity.getComponent<MaterialComponent>()?.material
+        val materialRef = gameEntity.getComponent<MaterialReferenceComponent>()?.material
         val modelCfg = GltfLoadConfig(
             materialConfig = GltfMaterialConfig(
                 environmentMaps = ibl,
@@ -158,7 +158,7 @@ class ModelComponent(
                 scrSpcAmbientOcclusionMap = ssao,
                 maxNumberOfLights = shaderData.maxNumberOfLights
             ),
-            applyMaterials = material == null,
+            applyMaterials = materialRef == null,
             assetLoader = AppAssets.assetLoader
         )
         isIblShaded = ibl != null
@@ -169,9 +169,9 @@ class ModelComponent(
         val loadScene = if (sceneIndexState.value in gltfFile.scenes.indices) sceneIndexState.value else 0
 
         val model = gltfFile.makeModel(modelCfg, loadScene)
-        if (material != null) {
+        if (materialRef != null) {
             model.meshes.forEach { (name, mesh) ->
-                val shader = material.createShader(shaderData)
+                val shader = materialRef.data.createShader(shaderData)
                 val shaderOk = when (shader) {
                     is KslPbrShader -> {
                         val requiredAttribs = shader.findRequiredVertexAttributes()
@@ -187,7 +187,7 @@ class ModelComponent(
                 }
                 if (shaderOk) {
                     mesh.shader = shader
-                    mesh.isCastingShadow = material.shaderData.genericSettings.isCastingShadow
+                    mesh.isCastingShadow = materialRef.shaderData.genericSettings.isCastingShadow
                 }
             }
         }

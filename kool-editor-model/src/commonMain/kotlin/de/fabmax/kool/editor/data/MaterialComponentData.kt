@@ -2,33 +2,18 @@ package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
 
 
 @Serializable
-data class MaterialComponentData(val materialId: EntityId) : ComponentData
+data class MaterialReferenceComponentData(val materialId: EntityId) : ComponentData
 
 @Serializable
-data class MaterialData(
-    val id: EntityId,
-    var name: String,
-    var shaderData: MaterialShaderData
-) {
-    @Transient
-    val nameState = mutableStateOf(name).onChange { name = it }
-    @Transient
-    val shaderDataState = mutableStateOf(shaderData).onChange { shaderData = it }
-}
-
-fun interface MaterialDataListenerComponent {
-    fun onMaterialChanged(materialData: MaterialData?)
-}
+data class MaterialComponentData(val name: String, val shaderData: MaterialShaderData) : ComponentData
 
 @Serializable
 sealed interface MaterialShaderData {

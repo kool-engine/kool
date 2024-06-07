@@ -89,11 +89,12 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             when (info.data) {
                 is BehaviorComponentData -> components += BehaviorComponent(this, info as ComponentInfo<BehaviorComponentData>)
                 is TransformComponentData -> components += TransformComponent(this, info as ComponentInfo<TransformComponentData>)
+                is MaterialComponentData -> components += MaterialComponent(this, info as ComponentInfo<MaterialComponentData>)
 
                 is CameraComponentData -> components += CameraComponent(requireSceneChild, info as ComponentInfo<CameraComponentData>)
                 is CharacterControllerComponentData -> components += CharacterControllerComponent(requireSceneChild, info as ComponentInfo<CharacterControllerComponentData>)
                 is DiscreteLightComponentData -> components += DiscreteLightComponent(requireSceneChild, info as ComponentInfo<DiscreteLightComponentData>)
-                is MaterialComponentData -> components += MaterialComponent(requireSceneChild, info as ComponentInfo<MaterialComponentData>)
+                is MaterialReferenceComponentData -> components += MaterialReferenceComponent(requireSceneChild, info as ComponentInfo<MaterialReferenceComponentData>)
                 is MeshComponentData -> components += MeshComponent(requireSceneChild, info as ComponentInfo<MeshComponentData>)
                 is ModelComponentData -> components += ModelComponent(requireSceneChild, info as ComponentInfo<ModelComponentData>)
                 is RigidActorComponentData -> components += RigidActorComponent(requireSceneChild, info as ComponentInfo<RigidActorComponentData>)

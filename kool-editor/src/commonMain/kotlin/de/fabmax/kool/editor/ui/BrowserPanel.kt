@@ -4,7 +4,7 @@ import de.fabmax.kool.KeyValueStore
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AppBehavior
 import de.fabmax.kool.editor.AssetItem
-import de.fabmax.kool.editor.data.MaterialData
+import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.modules.ui2.*
@@ -293,7 +293,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         }
     }
 
-    class BrowserMaterialItem(level: Int, val material: MaterialData) : BrowserItem(level, material.name, "/materials/${material.name}")
+    class BrowserMaterialItem(level: Int, val material: MaterialComponent) : BrowserItem(level, material.name, "/materials/${material.name}")
 
     class BrowserBehaviorItem(level: Int, val behavior: AppBehavior) : BrowserItem(level, behavior.prettyName, "/paths/${behavior.qualifiedName}")
 }

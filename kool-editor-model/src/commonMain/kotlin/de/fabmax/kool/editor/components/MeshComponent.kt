@@ -24,10 +24,9 @@ class MeshComponent(
     GameEntityDataComponent<MeshComponentData>(gameEntity, componentInfo),
     DrawNodeComponent,
     MaterialComponent.ListenerComponent,
-    EditorScene.SceneShaderDataListener,
+    MaterialReferenceComponent.ListenerComponent,
     SceneBackgroundComponent.ListenerComponent,
-
-    MaterialDataListenerComponent
+    EditorScene.SceneShaderDataListener
 {
     override var drawNode: Mesh? = null
         private set
@@ -35,7 +34,7 @@ class MeshComponent(
     private val isRecreatingShader = atomic(false)
 
     init {
-        dependsOn(MaterialComponent::class, isOptional = true)
+        dependsOn(MaterialReferenceComponent::class, isOptional = true)
 
         data.shapes
             .filterIsInstance<ShapeData.Heightmap>()
@@ -187,12 +186,12 @@ class MeshComponent(
 
         val sceneShaderData = gameEntity.scene.shaderData
 
-        val materialData = gameEntity.getComponent<MaterialComponent>()?.material
-        if (materialData != null) {
-            logD { "${gameEntity.name}: (re-)creating shader for material: ${materialData.name}" }
+        val materialRef = gameEntity.getComponent<MaterialReferenceComponent>()?.material
+        if (materialRef != null) {
+            logD { "${gameEntity.name}: (re-)creating shader for material: ${materialRef.name}" }
 
-            mesh.shader = materialData.createShader(sceneShaderData)
-            mesh.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
+            mesh.shader = materialRef.data.createShader(sceneShaderData)
+            mesh.isCastingShadow = materialRef.shaderData.genericSettings.isCastingShadow
 
         } else {
             logD { "${gameEntity.name}: (re-)creating shader for default material" }
@@ -214,21 +213,23 @@ class MeshComponent(
         }
     }
 
-    override fun onMaterialChanged(component: MaterialComponent, materialData: MaterialData?) {
-        onMaterialChanged(materialData)
+    override fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?) {
+        launchOnMainThread {
+            createMeshShader()
+        }
     }
 
-    override fun onMaterialChanged(materialData: MaterialData?) {
+    override fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
         val mesh = drawNode ?: return
-        val holder = gameEntity.getComponent<MaterialComponent>()
+        val holder = gameEntity.getComponent<MaterialReferenceComponent>() ?: return
 
-        if (holder?.isHoldingMaterial(materialData) == true) {
+        if (holder.isHoldingMaterial(component)) {
             launchOnMainThread {
                 val sceneShaderData = gameEntity.scene.shaderData
-                if (materialData == null || !materialData.updateShader(mesh.shader, sceneShaderData)) {
+                if (!materialData.updateShader(mesh.shader, sceneShaderData)) {
                     createMeshShader()
                 }
-                mesh.isCastingShadow = materialData?.shaderData?.genericSettings?.isCastingShadow ?: true
+                mesh.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
             }
         }
     }

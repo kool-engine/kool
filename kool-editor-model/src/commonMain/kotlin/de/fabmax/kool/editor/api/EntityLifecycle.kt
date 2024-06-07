@@ -5,7 +5,7 @@ enum class EntityLifecycle {
      * Initial state: Entity and components are instantiated but not yet fully set up.
      */
     CREATED {
-        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(PREPARED) }
+        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(PREPARED, DESTROYED) }
     },
 
     /**
@@ -18,7 +18,7 @@ enum class EntityLifecycle {
      * This is the state, where the editor edit mode operates.
      */
     PREPARED {
-        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(RUNNING, DETACHED) }
+        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(RUNNING, DETACHED, DESTROYED) }
     },
 
     /**

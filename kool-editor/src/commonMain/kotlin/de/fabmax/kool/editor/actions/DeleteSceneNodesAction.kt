@@ -41,7 +41,7 @@ class DeleteSceneNodesAction(
         launchOnMainThread {
             hierarchy.forEach {
                 val scene = it.entityData.parentId?.gameEntity?.scene
-                scene?.addEntityDataHierarchy(it, positions[it.entityData.id] ?: GameEntity.InsertionPos.End)
+                scene?.addGameEntities(it, positions[it.entityData.id] ?: GameEntity.InsertionPos.End)
             }
             refreshComponentViews()
         }

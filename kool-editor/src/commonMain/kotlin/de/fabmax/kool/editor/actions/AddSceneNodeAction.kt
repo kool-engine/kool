@@ -16,7 +16,7 @@ class AddSceneNodeAction(
         launchOnMainThread {
             hierarchy.forEach {
                 val scene = it.entityData.parentId?.gameEntity?.scene
-                scene?.addEntityDataHierarchy(it)
+                scene?.addGameEntities(it)
             }
             KoolEditor.instance.selectionOverlay.setSelection(hierarchy.mapNotNull { it.entityData.id.gameEntity })
             refreshComponentViews()

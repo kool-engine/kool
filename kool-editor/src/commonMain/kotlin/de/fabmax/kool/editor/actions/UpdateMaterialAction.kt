@@ -1,21 +1,19 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.data.MaterialShaderData
+import de.fabmax.kool.editor.components.MaterialComponent
+import de.fabmax.kool.editor.data.MaterialComponentData
 
 class UpdateMaterialAction(
-    val materialData: MaterialData,
-    val applyMaterial: MaterialShaderData,
-    val undoMaterial: MaterialShaderData
-) : EditorAction {
+    component: MaterialComponent,
+    val oldData: MaterialComponentData,
+    val newData: MaterialComponentData
+) : ComponentAction<MaterialComponent>(component.gameEntity.id, MaterialComponent::class) {
+
     override fun doAction() {
-        materialData.shaderDataState.set(applyMaterial)
-        KoolEditor.instance.projectModel.updateMaterial(materialData)
+        component?.setPersistent(newData)
     }
 
     override fun undoAction() {
-        materialData.shaderDataState.set(undoMaterial)
-        KoolEditor.instance.projectModel.updateMaterial(materialData)
+        component?.setPersistent(oldData)
     }
 }

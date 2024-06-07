@@ -111,7 +111,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
             when (component) {
                 is CameraComponent -> componentEditor(objects) { CameraEditor() }
                 is DiscreteLightComponent -> componentEditor(objects) { LightEditor() }
-                is MaterialComponent -> componentEditor(objects) { MaterialEditor() }
+                is MaterialReferenceComponent -> componentEditor(objects) { MaterialEditor() }
                 is MeshComponent -> componentEditor(objects) { MeshEditor() }
                 is ModelComponent -> componentEditor(objects) { ModelEditor() }
                 is SceneComponent -> componentEditor(objects) { ScenePropertiesEditor() }
@@ -260,10 +260,10 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
             }
         }
 
-        data object AddMaterialComponent : ComponentAdder<MaterialComponent>("Material") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<MaterialComponent>()
+        data object AddMaterialComponent : ComponentAdder<MaterialReferenceComponent>("Material") {
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<MaterialReferenceComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.hasComponent<MeshComponent>() || gameEntity.hasComponent<ModelComponent>()
-            override fun createComponent(target: GameEntity): MaterialComponent = MaterialComponent(target)
+            override fun createComponent(target: GameEntity): MaterialReferenceComponent = MaterialReferenceComponent(target)
         }
 
         data object AddPhysicsWorldComponent : ComponentAdder<PhysicsWorldComponent>("Physics World") {
