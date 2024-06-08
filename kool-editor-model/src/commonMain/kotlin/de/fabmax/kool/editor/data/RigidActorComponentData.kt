@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RigidActorComponentData(
-    val type: RigidActorType = RigidActorType.STATIC,
+    val actorType: RigidActorType = RigidActorType.STATIC,
     val shapes: List<ShapeData> = emptyList(),
     val mass: Double = 1.0,
     val isTrigger: Boolean = false,

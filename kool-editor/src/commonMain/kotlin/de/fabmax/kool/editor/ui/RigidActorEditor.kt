@@ -36,12 +36,12 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             selected.item?.type?.let { actorType ->
                 components.map {
                     val isTrigger = if (actorType == RigidActorType.STATIC) it.data.isTrigger else false
-                    SetComponentDataAction(it, it.data, it.data.copy(type = actorType, isTrigger = isTrigger))
+                    SetComponentDataAction(it, it.data, it.data.copy(actorType = actorType, isTrigger = isTrigger))
                 }.fused().apply()
             }
         }
 
-        val isDynamicActor = components.any { it.data.type == RigidActorType.DYNAMIC }
+        val isDynamicActor = components.any { it.data.actorType == RigidActorType.DYNAMIC }
         shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
 
         if (isDynamicActor) {
@@ -282,7 +282,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         ShapeOption.entries.first { it.matches(shapes.firstOrNull()) }
 
     private val RigidActorComponentData.typeOption: TypeOption get() =
-        TypeOption.entries.first { it.type == type }
+        TypeOption.entries.first { it.type == actorType }
 
     private enum class TypeOption(val label: String, val type: RigidActorType) {
         Dynamic("Dynamic", RigidActorType.DYNAMIC),

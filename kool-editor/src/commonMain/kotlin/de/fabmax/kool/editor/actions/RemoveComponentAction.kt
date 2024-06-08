@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.util.gameEntity
+import de.fabmax.kool.util.launchOnMainThread
 
 class RemoveComponentAction(
     val entityId: EntityId,
@@ -20,7 +21,9 @@ class RemoveComponentAction(
     }
 
     override fun undoAction() {
-        gameEntity?.addComponent(component)
-        refreshComponentViews()
+        launchOnMainThread {
+            gameEntity?.addComponentLifecycleAware(component)
+            refreshComponentViews()
+        }
     }
 }

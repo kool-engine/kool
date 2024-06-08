@@ -1,10 +1,8 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.EditorProject
-import de.fabmax.kool.editor.api.EditorScene
-import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.util.logW
 import kotlin.reflect.KClass
 
 val GameEntityComponent.project: EditorProject get() = gameEntity.scene.project
@@ -23,13 +21,13 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
 
     val requiredAssets = mutableSetOf<AssetReference>()
 
-    @Deprecated("replace by lifecycle")
-    var isApplied: Boolean = false
-        private set
-
-    @Deprecated("replace by lifecycle")
-    var isStarted: Boolean = false
-        private set
+    var lifecycle = EntityLifecycle.CREATED
+        private set(value) {
+            check(field.isAllowedAsNext(value)) {
+                "GameEntityComponent $componentType (entity: ${gameEntity.name}): Transitioning from lifecycle state $field to $value is not allowed"
+            }
+            field = value
+        }
 
     var componentOrder = COMPONENT_ORDER_DEFAULT
         protected set
@@ -37,21 +35,23 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
     private val onUpdateListeners = mutableSetOf<(RenderPass.UpdateEvent) -> Unit>()
 
     open suspend fun applyComponent() {
-        isApplied = true
-        require(areDependenciesMetBy(gameEntity.components)) {
+        check(areDependenciesMetBy(gameEntity.components)) {
             "Unable to create component ${this::class.simpleName} in node ${gameEntity.name}: There are unmet component dependencies"
         }
+        lifecycle = EntityLifecycle.PREPARED
     }
 
     open fun destroyComponent() {
+        if (isDestroyed) {
+            logW { "Component $componentType destroyed multiple times (entity: ${gameEntity.name})" }
+        }
         onUpdateListeners.forEach { gameEntity.onUpdate -= it }
         onUpdateListeners.clear()
-        isApplied = false
-        isStarted = false
+        lifecycle = EntityLifecycle.DESTROYED
     }
 
     open fun onStart() {
-        isStarted = true
+        lifecycle = EntityLifecycle.RUNNING
     }
 
     fun onUpdate(block: (RenderPass.UpdateEvent) -> Unit) {

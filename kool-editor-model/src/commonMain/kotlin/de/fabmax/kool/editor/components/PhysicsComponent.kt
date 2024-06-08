@@ -8,7 +8,7 @@ import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.logW
 
-abstract class PhysicsNodeComponent<T: ComponentData>(
+abstract class PhysicsComponent<T: ComponentData>(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<T>
 ) : GameEntityDataComponent<T>(gameEntity, componentInfo) {
@@ -46,16 +46,8 @@ abstract class PhysicsNodeComponent<T: ComponentData>(
 
     suspend fun getOrCreatePhysicsWorldComponent(): PhysicsWorldComponent {
         val sceneEntity = gameEntity.scene.sceneEntity
-        var physicsWorldComponent = sceneEntity.getComponent<PhysicsWorldComponent>()
-        if (physicsWorldComponent == null) {
-            logW { "Failed to find a PhysicsWorldComponent in parent scene, creating default one" }
-            physicsWorldComponent = PhysicsWorldComponent(sceneEntity)
-
-            // add component and explicitly create it, so that the physics world is immediately available
-            sceneEntity.addComponent(physicsWorldComponent, autoCreateComponent = false)
-            if (isApplied) {
-                physicsWorldComponent.applyComponent()
-            }
+        val physicsWorldComponent = sceneEntity.getOrPutComponentLifecycleAware<PhysicsWorldComponent> {
+            PhysicsWorldComponent(sceneEntity)
         }
         return physicsWorldComponent
     }

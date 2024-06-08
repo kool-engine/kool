@@ -18,8 +18,8 @@ class RigidActorComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<RigidActorComponentData> = ComponentInfo(RigidActorComponentData())
 ) :
-    PhysicsNodeComponent<RigidActorComponentData>(gameEntity, componentInfo),
-    UpdateMeshComponent
+    PhysicsComponent<RigidActorComponentData>(gameEntity, componentInfo),
+    MeshComponent.ListenerComponent
 {
     var rigidActor: RigidActor? = null
         private set
@@ -74,7 +74,6 @@ class RigidActorComponent(
     }
 
     override fun destroyComponent() {
-        super.destroyComponent()
         rigidActor?.let {
             physicsWorld?.removeActor(it)
             it.release()
@@ -82,11 +81,12 @@ class RigidActorComponent(
         rigidActor = null
         geometry.forEach { it.release() }
         geometry = emptyList()
+        super.destroyComponent()
     }
 
     private suspend fun updateRigidActor(actorData: RigidActorComponentData) {
         val actor = rigidActor
-        val isActorOk = when (actorData.type) {
+        val isActorOk = when (actorData.actorType) {
             RigidActorType.DYNAMIC -> actor is RigidDynamic && !actor.isKinematic
             RigidActorType.KINEMATIC -> actor is RigidDynamic && actor.isKinematic
             RigidActorType.STATIC -> actor is RigidStatic
@@ -126,7 +126,7 @@ class RigidActorComponent(
         }
         geometry.forEach { it.release() }
 
-        rigidActor = when (actorData.type) {
+        rigidActor = when (actorData.actorType) {
             RigidActorType.DYNAMIC -> RigidDynamic(actorData.mass.toFloat())
             RigidActorType.KINEMATIC -> RigidDynamic(actorData.mass.toFloat(), isKinematic = true)
             RigidActorType.STATIC -> RigidStatic()
@@ -212,11 +212,9 @@ class RigidActorComponent(
         }
     }
 
-    override fun updateMesh(mesh: MeshComponentData) {
+    override suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData) {
         if (data.shapes.isEmpty()) {
-            launchOnMainThread {
-                createRigidBody(data)
-            }
+            createRigidBody(data)
         }
     }
 }

@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MeshComponentData
@@ -32,6 +29,8 @@ class MeshComponent(
     override var drawNode: Mesh? = null
         private set
 
+    private val listeners by cachedEntityComponents<ListenerComponent>()
+
     init {
         dependsOn(MaterialReferenceComponent::class, isOptional = true)
 
@@ -43,7 +42,7 @@ class MeshComponent(
 
     override fun onDataChanged(oldData: MeshComponentData, newData: MeshComponentData) {
         launchOnMainThread {
-            updateGeometry()
+            updateGeometry(newData)
         }
     }
 
@@ -60,7 +59,7 @@ class MeshComponent(
             gameEntity.replaceDrawNode(this)
         }
 
-        updateGeometry()
+        updateGeometry(data)
         createMeshShader()
     }
 
@@ -71,7 +70,7 @@ class MeshComponent(
         gameEntity.replaceDrawNode(Node(gameEntity.name))
     }
 
-    suspend fun updateGeometry() {
+    private suspend fun updateGeometry(data: MeshComponentData) {
         val mesh = drawNode ?: return
 
         requiredAssets.clear()
@@ -83,9 +82,7 @@ class MeshComponent(
         // force ray test mesh update
         mesh.rayTest.onMeshDataChanged(mesh)
 
-        if (isApplied) {
-            gameEntity.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(data) }
-        }
+        listeners.forEach { it.onMeshGeometryChanged(this, data) }
     }
 
     private suspend fun MeshBuilder.generateShape(shape: ShapeData) = withTransform {
@@ -204,10 +201,10 @@ class MeshComponent(
         const val DEFAULT_HEIGHTMAP_ROWS = 129
         const val DEFAULT_HEIGHTMAP_COLS = 129
     }
-}
 
-interface UpdateMeshComponent {
-    fun updateMesh(mesh: MeshComponentData)
+    interface ListenerComponent {
+        suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData)
+    }
 }
 
 fun ShapeData.Heightmap.toAssetReference() = AssetReference.Heightmap(

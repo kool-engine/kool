@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.isPreparedOrRunning
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
@@ -41,7 +42,7 @@ class ShadowMapComponent(
     }
 
     fun updateLight(light: Light) {
-        if (isApplied) {
+        if (isPreparedOrRunning) {
             val current = shadowMap?.light
             if (current != null && current::class == light::class) {
                 shadowMap?.light = light

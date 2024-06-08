@@ -21,10 +21,8 @@ class TransformComponent(
         if (AppState.isEditMode) {
             data.transform = it
         }
-        if (gameEntity.isCreated) {
-            it.toTransform(gameEntity.drawNode.transform)
-            gameEntity.drawNode.updateModelMat()
-        }
+        it.toTransform(gameEntity.drawNode.transform)
+        gameEntity.drawNode.updateModelMat()
         onTransformEdited.forEach { it(this) }
     }
 

@@ -25,6 +25,14 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     val sceneEntity: GameEntity = GameEntity(sceneData.getOrAddSceneEntityData(), this)
     val name: String get() = sceneEntity.name
 
+    var lifecycle = EntityLifecycle.CREATED
+        private set(value) {
+            check(field.isAllowedAsNext(value)) {
+                "EditorScene $name: Transitioning from lifecycle state $field to $value is not allowed"
+            }
+            field = value
+        }
+
     init {
         nodesToEntities[sceneEntity.drawNode] = sceneEntity
         sceneEntities[sceneEntity.id] = sceneEntity
@@ -102,20 +110,24 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             children.forEach { it.applyComponentsRecursive() }
         }
         sceneEntity.applyComponentsRecursive()
+        lifecycle = EntityLifecycle.PREPARED
     }
 
     fun onStart() {
         sceneEntities.values.forEach { it.onStart() }
+        lifecycle = EntityLifecycle.RUNNING
     }
 
     override fun release() {
         super.release()
 
         sceneEntities.values.forEach {
-            it.destroyComponents()
+            if (it != sceneEntity) {
+                it.destroyComponents()
+            }
         }
-        sceneEntities.clear()
-        nodesToEntities.clear()
+        sceneEntity.destroyComponents()
+        lifecycle = EntityLifecycle.DESTROYED
     }
 
     suspend fun addGameEntities(
@@ -140,6 +152,10 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         gameEntity: GameEntity,
         insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
     ) {
+        check(gameEntity.isCreated) {
+            "addGameEntity called with entity ${gameEntity.name} which lifecycle state is ${gameEntity.lifecycle} (expected CREATED)"
+        }
+
         val parent = gameEntity.parent ?: sceneEntities[gameEntity.entityData.parentId]?.also {
             it.addChild(gameEntity, insertionPos)
         }
@@ -148,11 +164,11 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             return
         }
 
-        // fixme: do some proper lifecycle stuff
-        if (!gameEntity.isCreated) {
+        if (isPreparedOrRunning) {
             gameEntity.applyComponents()
-        } else {
-            logW { "Adding a scene node which is already created" }
+            if (isRunning) {
+                gameEntity.onStart()
+            }
         }
 
         addEntityData(gameEntity.entityData)

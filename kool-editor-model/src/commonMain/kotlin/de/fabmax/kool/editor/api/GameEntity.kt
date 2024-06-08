@@ -7,7 +7,6 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 
 val GameEntity.project: EditorProject get() = scene.project
@@ -50,22 +49,12 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     var lifecycle = EntityLifecycle.CREATED
-        internal set(value) {
+        private set(value) {
             check(field.isAllowedAsNext(value)) {
                 "GameEntity $name: Transitioning from lifecycle state $field to $value is not allowed"
             }
             field = value
         }
-
-
-
-
-    @Deprecated("replace by lifecycle")
-    var isCreated: Boolean = false
-        private set
-
-
-
 
     init {
         check(id.value > 0L)
@@ -79,9 +68,9 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     private val requireSceneChild: GameEntity
-        get() = this.also { require(isSceneChild) { "$name is not a scene child" } }
+        get() = this.also { check(isSceneChild) { "$name is not a scene child" } }
     private val requireScene: GameEntity
-        get() = this.also { require(isSceneRoot) { "$name is not a scene" } }
+        get() = this.also { check(isSceneRoot) { "$name is not a scene" } }
 
     @Suppress("UNCHECKED_CAST")
     private fun createComponentsFromData(componentInfo: List<ComponentInfo<*>>) {
@@ -198,41 +187,47 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     suspend fun applyComponents() {
-        isCreated = true
         isVisibleState.set(entityData.isVisible)
         components.forEach {
             it.applyComponent()
-            check(it.isApplied) { "Component not created: $it" }
+            check(it.isPrepared) { "Component not applied (missed calling super?): $it" }
         }
-
         lifecycle = EntityLifecycle.PREPARED
+    }
+
+    fun onStart() {
+        components.forEach {
+            it.onStart()
+            check(it.isRunning) { "Component not started (missed calling super?): $it" }
+        }
+        lifecycle = EntityLifecycle.RUNNING
     }
 
     fun destroyComponents() {
         components.forEach {
             it.destroyComponent()
-            check(!it.isApplied) { "Component not destroyed: $it" }
+            check(it.isDestroyed) { "Component not destroyed (missed calling super?): $it" }
         }
-        components.clear()
-        onUpdate.clear()
         drawNode.release()
-        drawNode.parent?.removeNode(drawNode)
-        isCreated = false
-
         lifecycle = EntityLifecycle.DESTROYED
     }
 
-    fun addComponent(component: GameEntityComponent, autoCreateComponent: Boolean = true) {
+    fun addComponent(component: GameEntityComponent) {
         components += component
         if (component is GameEntityDataComponent<*>) {
             entityData.components += component.componentInfo
         }
-        if (isCreated && autoCreateComponent) {
-            launchOnMainThread {
-                component.applyComponent()
+        incComponentModCount()
+    }
+
+    suspend fun addComponentLifecycleAware(component: GameEntityComponent) {
+        addComponent(component)
+        if (isPreparedOrRunning) {
+            component.applyComponent()
+            if (isRunning) {
+                component.onStart()
             }
         }
-        incComponentModCount()
     }
 
     fun removeComponent(component: GameEntityComponent) {
@@ -240,24 +235,8 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         if (component is GameEntityDataComponent<*>) {
             entityData.components -= component.componentInfo
         }
-        if (component.isApplied) {
-            component.destroyComponent()
-        }
+        component.destroyComponent()
         incComponentModCount()
-    }
-
-    fun onStart() {
-        components.forEach { it.onStart() }
-        lifecycle = EntityLifecycle.RUNNING
-    }
-
-    inline fun <reified T: GameEntityComponent> getOrPutComponent(createComponent: Boolean = true, factory: () -> T): T {
-        var c = components.find { it is T }
-        if (c == null) {
-            c = factory()
-            addComponent(c, createComponent)
-        }
-        return c as T
     }
 
     inline fun <reified T: Any> getComponents(): List<T> = components.filterIsInstance<T>()
@@ -267,6 +246,12 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     inline fun <reified T: Any> requireComponent(): T = checkNotNull(getComponent())
 
     inline fun <reified T: Any> hasComponent(): Boolean = getComponent<T>() != null
+
+    inline fun <reified T: GameEntityComponent> getOrPutComponent(factory: () -> T): T =
+        getComponent<T>() ?: factory().also { addComponent(it) }
+
+    suspend inline fun <reified T: GameEntityComponent> getOrPutComponentLifecycleAware(factory: () -> T): T =
+        getComponent<T>() ?: factory().also { addComponentLifecycleAware(it) }
 
     private fun incComponentModCount() {
         componentModCnt++

@@ -1,5 +1,7 @@
 package de.fabmax.kool.editor.api
 
+import de.fabmax.kool.editor.components.GameEntityComponent
+
 enum class EntityLifecycle {
     /**
      * Initial state: Entity and components are instantiated but not yet fully set up.
@@ -18,14 +20,14 @@ enum class EntityLifecycle {
      * This is the state, where the editor edit mode operates.
      */
     PREPARED {
-        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(RUNNING, DETACHED, DESTROYED) }
+        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(RUNNING, DESTROYED) }
     },
 
     /**
      * The main play state. All systems active.
      */
     RUNNING {
-        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(DESTROYED, DETACHED) }
+        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(DESTROYED) }
     },
 
     /**
@@ -34,17 +36,32 @@ enum class EntityLifecycle {
      */
     DESTROYED {
         override val allowedNextStates: List<EntityLifecycle> = emptyList()
-    },
-
-    /**
-     * todo: yes or no?
-     * Somewhat special state for entities, that are not yet destroyed but also not attached to an active scene.
-     */
-    DETACHED {
-        override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(PREPARED, RUNNING) }
     };
 
     abstract val allowedNextStates: List<EntityLifecycle>
 
     fun isAllowedAsNext(lifecycle: EntityLifecycle) = lifecycle in allowedNextStates
 }
+
+val GameEntity.isCreated: Boolean get() = lifecycle == EntityLifecycle.CREATED
+val GameEntity.isPrepared: Boolean get() = lifecycle == EntityLifecycle.PREPARED
+val GameEntity.isRunning: Boolean get() = lifecycle == EntityLifecycle.RUNNING
+val GameEntity.isDestroyed: Boolean get() = lifecycle == EntityLifecycle.DESTROYED
+val GameEntity.isPreparedOrRunning: Boolean
+    get() = lifecycle == EntityLifecycle.PREPARED || lifecycle == EntityLifecycle.RUNNING
+
+
+val GameEntityComponent.isCreated: Boolean get() = lifecycle == EntityLifecycle.CREATED
+val GameEntityComponent.isPrepared: Boolean get() = lifecycle == EntityLifecycle.PREPARED
+val GameEntityComponent.isRunning: Boolean get() = lifecycle == EntityLifecycle.RUNNING
+val GameEntityComponent.isDestroyed: Boolean get() = lifecycle == EntityLifecycle.DESTROYED
+val GameEntityComponent.isPreparedOrRunning: Boolean
+    get() = lifecycle == EntityLifecycle.PREPARED || lifecycle == EntityLifecycle.RUNNING
+
+
+val EditorScene.isCreated: Boolean get() = lifecycle == EntityLifecycle.CREATED
+val EditorScene.isPrepared: Boolean get() = lifecycle == EntityLifecycle.PREPARED
+val EditorScene.isRunning: Boolean get() = lifecycle == EntityLifecycle.RUNNING
+val EditorScene.isDestroyed: Boolean get() = lifecycle == EntityLifecycle.DESTROYED
+val EditorScene.isPreparedOrRunning: Boolean
+    get() = lifecycle == EntityLifecycle.PREPARED || lifecycle == EntityLifecycle.RUNNING

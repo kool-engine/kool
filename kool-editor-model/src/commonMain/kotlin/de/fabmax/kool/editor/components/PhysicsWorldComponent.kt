@@ -51,12 +51,14 @@ class PhysicsWorldComponent(
     }
 
     override fun destroyComponent() {
-        super.destroyComponent()
+        characterControllerManager?.release()
+        characterControllerManager = null
         physicsWorld?.let {
             it.unregisterHandlers()
             it.release()
         }
         physicsWorld = null
+        super.destroyComponent()
     }
 
     override fun onStart() {

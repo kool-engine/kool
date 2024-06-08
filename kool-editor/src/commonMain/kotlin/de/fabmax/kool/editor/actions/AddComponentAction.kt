@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.util.gameEntity
+import de.fabmax.kool.util.launchOnMainThread
 
 class AddComponentAction(
     val entityId: EntityId,
@@ -15,8 +16,10 @@ class AddComponentAction(
     // fixme: component is not recreated on undo / redo, therefore redo can fail
 
     override fun doAction() {
-        gameEntity?.addComponent(component)
-        refreshComponentViews()
+        launchOnMainThread {
+            gameEntity?.addComponentLifecycleAware(component)
+            refreshComponentViews()
+        }
     }
 
     override fun undoAction() {
