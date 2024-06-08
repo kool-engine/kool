@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.AddComponentAction
-import de.fabmax.kool.editor.actions.RenameNodeAction
+import de.fabmax.kool.editor.actions.RenameEntityAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.*
@@ -72,7 +72,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                     .padding(vertical = sizes.smallGap)
                     .onChange { editName = it }
                     .onEnterPressed {
-                        RenameNodeAction(objects[0].id, it, objects[0].name).apply()
+                        RenameEntityAction(objects[0].id, it, objects[0].name).apply()
                         surface.unfocus(this)
                     }
             }

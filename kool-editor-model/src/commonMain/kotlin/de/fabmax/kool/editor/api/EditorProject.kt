@@ -31,7 +31,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
         projectData.checkConsistency()
         materialScene = EditorScene(SceneData("materials", projectData.materials), this)
         materialScene.getAllComponents<MaterialComponent>()
-            .filter { it.gameEntity.isVisibleState.value }
+            .filter { it.gameEntity.isVisible }
             .forEach { _materialsById[it.gameEntity.id] = it }
         materials.apply {
             addAll(materialsById.values)
@@ -46,7 +46,8 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
             defaultMaterial = materialScene.getAllComponents<MaterialComponent>().find {
                 it.name == "<\\Default/>"
             } ?: createNewMaterial().apply {
-                gameEntity.isVisibleState.set(false)
+                gameEntity.isVisible = false
+                gameEntity.entityData.isVisible = false
                 materials.remove(this)
                 _materialsById -= id
                 setPersistent(MaterialComponentData("<\\Default/>", PbrShaderData()))
@@ -64,7 +65,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     }
 
     fun onStart() {
-        createdScenes.values.forEach { it.onStart() }
+        createdScenes.values.forEach { it.startScene() }
     }
 
     fun releaseScenes() {

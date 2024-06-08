@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.util.gameEntity
 
-class RenameNodeAction(
+class RenameEntityAction(
     val entityId: EntityId,
     val applyName: String,
     val undoName: String
@@ -15,14 +15,16 @@ class RenameNodeAction(
 
     override fun doAction() {
         gameEntity?.let {
-            it.nameState.set(applyName)
+            it.name = applyName
+            it.entityData.name = applyName
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }
 
     override fun undoAction() {
         gameEntity?.let {
-            it.nameState.set(undoName)
+            it.name = undoName
+            it.entityData.name = undoName
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }

@@ -307,7 +307,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             }
         }
 
-        val isVisible = item.gameEntity.isVisibleState.use()
+        val isVisible = item.gameEntity.isVisible
         val fgColorVis = if (isVisible) fgColor else fgColor.withAlpha(0.5f)
 
         // type icon

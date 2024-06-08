@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.api
 
+import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.scene.Node
@@ -16,7 +17,6 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
     val nodesToEntities: MutableMap<Node, GameEntity> = mutableMapOf()
     val sceneEntities: MutableMap<EntityId, GameEntity> = mutableMapOf()
-    val sceneChildren: List<GameEntity> get() = nodesToEntities.values.filter { it.isSceneChild }
 
     var componentModCnt = 0
         internal set
@@ -113,8 +113,15 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         lifecycle = EntityLifecycle.PREPARED
     }
 
-    fun onStart() {
+    fun startScene() {
         sceneEntities.values.forEach { it.onStart() }
+        sceneEntity.getComponent<PhysicsWorldComponent>()?.physicsWorld?.let { physics ->
+            physics.onPhysicsUpdate += { timeStep ->
+                for (entity in sceneEntities.values) {
+                    entity.onPhysicsUpdate(timeStep)
+                }
+            }
+        }
         lifecycle = EntityLifecycle.RUNNING
     }
 

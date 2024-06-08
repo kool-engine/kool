@@ -51,7 +51,7 @@ class MeshComponent(
 
         drawNode = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS).apply {
             name = gameEntity.name
-            isVisible = gameEntity.isVisibleState.value
+            isVisible = gameEntity.isVisible
 
             if (AppState.isInEditor) {
                 rayTest = MeshRayTest.geometryTest(this)

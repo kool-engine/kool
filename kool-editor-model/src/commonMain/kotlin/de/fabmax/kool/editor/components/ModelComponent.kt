@@ -173,7 +173,7 @@ class ModelComponent(
         }
 
         model.name = gameEntity.name
-        model.isVisible = gameEntity.isVisibleState.value
+        model.isVisible = gameEntity.isVisible
         return model
     }
 

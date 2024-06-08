@@ -276,13 +276,13 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
 
         val sceneModel = KoolEditor.instance.activeScene.value ?: return
         sceneModel.getAllComponents<CameraComponent>()
-            .filter { it.gameEntity.isVisibleState.value }
+            .filter { it.gameEntity.isVisible }
             .forEach { cameras += CameraComponentInstance(it) }
         sceneModel.sceneEntities.values.filter { it.components.none { c -> c is DrawNodeComponent } }
-            .filter { it.isVisibleState.value }
+            .filter { it.isVisible }
             .forEach { groups += GroupNodeInstance(it) }
         sceneModel.getAllComponents<DiscreteLightComponent>()
-            .filter { it.gameEntity.isVisibleState.value }
+            .filter { it.gameEntity.isVisible }
             .forEach {
                 when (it.drawNode) {
                     is Light.Directional -> dirLights += DirLightComponentInstance(it)

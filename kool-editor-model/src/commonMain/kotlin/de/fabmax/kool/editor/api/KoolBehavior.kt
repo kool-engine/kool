@@ -5,27 +5,16 @@ import de.fabmax.kool.pipeline.RenderPass
 
 abstract class KoolBehavior {
 
-    private var _gameEntity: GameEntity? = null
-    protected val gameEntity: GameEntity
-        get() = _gameEntity ?: throw IllegalStateException("KoolBehavior is not yet initialized")
+    var isUpdateInEditMode = false
 
-    protected lateinit var behaviorComponent: BehaviorComponent
-        private set
+    private var _behaviorComponent: BehaviorComponent? = null
+    val behaviorComponent: BehaviorComponent
+        get() = checkNotNull(_behaviorComponent) { "KoolBehavior is not yet initialized" }
 
-    private val onUpdateHandler: (RenderPass.UpdateEvent) -> Unit = {
-        if (AppState.appMode == AppMode.PLAY) {
-            onUpdate()
-        }
-    }
+    val gameEntity: GameEntity get() = behaviorComponent.gameEntity
 
-    fun init(gameEntity: GameEntity, behaviorComponent: BehaviorComponent) {
-        _gameEntity?.let { old ->
-            old.onUpdate -= onUpdateHandler
-        }
-        this.behaviorComponent = behaviorComponent
-
-        this._gameEntity = gameEntity
-        gameEntity.onUpdate += onUpdateHandler
+    fun init(behaviorComponent: BehaviorComponent) {
+        this._behaviorComponent = behaviorComponent
         onInit()
     }
 
@@ -33,6 +22,10 @@ abstract class KoolBehavior {
 
     open fun onStart() { }
 
-    open fun onUpdate() { }
+    open fun onUpdate(ev: RenderPass.UpdateEvent) { }
+
+    open fun onPhysicsUpdate(timeStep: Float) { }
+
+    open fun onDestroy() { }
 
 }

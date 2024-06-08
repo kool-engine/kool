@@ -10,6 +10,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.character.CharacterControllerManager
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.logW
 
 class PhysicsWorldComponent(
@@ -42,11 +43,11 @@ class PhysicsWorldComponent(
             it.gravity = gravity
             characterControllerManager = CharacterControllerManager(it)
         }
+    }
 
-        onUpdate {
-            physicsWorld?.let { world ->
-                world.isPauseSimulation = AppState.appMode == AppMode.PAUSE
-            }
+    override fun onUpdate(ev: RenderPass.UpdateEvent) {
+        physicsWorld?.let { world ->
+            world.isPauseSimulation = AppState.appMode == AppMode.PAUSE
         }
     }
 

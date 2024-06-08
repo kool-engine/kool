@@ -1,13 +1,12 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.BehaviorLoader
-import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.KoolBehavior
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.getComponent
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.logE
 
 class BehaviorComponent(
@@ -52,7 +51,7 @@ class BehaviorComponent(
             }
 
             // invoke script init callback
-            behavior.init(gameEntity, this)
+            behavior.init( this)
 
         } catch (e: Exception) {
             logE { "Failed to initialize BehaviorComponent for node ${gameEntity.name}: $e" }
@@ -63,6 +62,22 @@ class BehaviorComponent(
     override fun onStart() {
         super.onStart()
         behaviorInstance.value?.onStart()
+    }
+
+    override fun onUpdate(ev: RenderPass.UpdateEvent) {
+        val instance = behaviorInstance.value ?: return
+        if (AppState.appMode == AppMode.PLAY || instance.isUpdateInEditMode) {
+            instance.onUpdate(ev)
+        }
+    }
+
+    override fun onPhysicsUpdate(timeStep: Float) {
+        behaviorInstance.value?.onPhysicsUpdate(timeStep)
+    }
+
+    override fun destroyComponent() {
+        super.destroyComponent()
+        behaviorInstance.value?.onDestroy()
     }
 
     fun setProperty(name: String, value: Any?): Boolean {

@@ -45,8 +45,13 @@ class MaterialComponent(
         return true
     }
 
+    override fun setPersistent(componentData: MaterialComponentData) {
+        super.setPersistent(componentData)
+        gameEntity.entityData.name = componentData.name
+    }
+
     override fun onDataChanged(oldData: MaterialComponentData, newData: MaterialComponentData) {
-        gameEntity.nameState.set(newData.name)
+        gameEntity.name = newData.name
 
         launchOnMainThread {
             project.createdScenes.values.forEach { scene ->

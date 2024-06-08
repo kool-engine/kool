@@ -3,10 +3,8 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.BufferedList
 import kotlin.math.max
 
 val GameEntity.project: EditorProject get() = scene.project
@@ -16,14 +14,22 @@ val GameEntity.sceneComponent: SceneComponent get() = scene.sceneEntity.requireC
 class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
     val id: EntityId get() = entityData.id
-    val name: String get() = entityData.name
+
+    var name: String
+        get() = drawNode.name
+        set(value) { drawNode.name = value }
+
+    var isVisible: Boolean
+        get() = drawNode.isVisible
+        set(value) { drawNode.isVisible = value }
+
+    val isVisibleInScene: Boolean
+        get() = if (!isVisible) false else parent?.isVisibleInScene != false
 
     val components = mutableStateListOf<GameEntityComponent>()
     var componentModCnt = 0
         private set
-
     val transform: TransformComponent
-
     val requiredAssets: Set<AssetReference> get() = components.flatMap { it.requiredAssets }.toSet()
 
     val isSceneRoot: Boolean = entityData.components.any { it.data is SceneComponentData }
@@ -41,11 +47,10 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     var drawNode: Node
         private set
 
-    // todo: one more for physics update
-    //  also consider using component wise callbacks instead of entity
-    val onUpdate: BufferedList<(RenderPass.UpdateEvent) -> Unit> = BufferedList()
     private val nodeUpdateCb: (RenderPass.UpdateEvent) -> Unit = { ev ->
-        onUpdate.updated().forEach { cb -> cb(ev) }
+        for (i in components.indices) {
+            components[i].onUpdate(ev)
+        }
     }
 
     var lifecycle = EntityLifecycle.CREATED
@@ -62,7 +67,8 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         createComponentsFromData(entityData.components)
         transform = getOrPutComponent { TransformComponent(this) }
 
-        drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(name)
+        drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(entityData.name)
+        drawNode.isVisible = entityData.isVisible
         drawNode.onUpdate += nodeUpdateCb
         transform.applyTransformTo(drawNode)
     }
@@ -99,25 +105,18 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         incComponentModCount()
     }
 
-    // fixme
-    val nameState = mutableStateOf(entityData.name).onChange {
-        entityData.name = it
-        drawNode.name = it
-    }
-
-    // fixme
-    val isVisibleState = mutableStateOf(entityData.isVisible).onChange {
-        drawNode.isVisible = it
-        if (AppState.isEditMode) {
-            entityData.isVisible = it
-        }
-    }
-
     fun replaceDrawNode(newDrawNode: Node) {
         if (drawNode == newDrawNode) {
             return
         }
+
+        newDrawNode.name = name
+        newDrawNode.isVisible = isVisible
+        transform.transformState.value.toTransform(newDrawNode.transform)
+
         val oldDrawNode = drawNode
+        oldDrawNode.onUpdate -= nodeUpdateCb
+        newDrawNode.onUpdate += nodeUpdateCb
 
         oldDrawNode.parent?.let { parent ->
             val ndIdx = parent.children.indexOf(oldDrawNode)
@@ -129,26 +128,13 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             newDrawNode.addNode(it.drawNode)
         }
 
-        oldDrawNode.onUpdate -= nodeUpdateCb
         oldDrawNode.release()
-
-        transform.transformState.value.toTransform(newDrawNode.transform)
-        newDrawNode.name = name
         drawNode = newDrawNode
-        drawNode.onUpdate += nodeUpdateCb
 
         val wasInScene = scene.nodesToEntities.remove(oldDrawNode) != null
         if (wasInScene) {
             scene.nodesToEntities[newDrawNode] = this
         }
-    }
-
-    // todo: better naming?
-    fun isVisibleWithParents(): Boolean {
-        if (!isVisibleState.value) {
-            return false
-        }
-        return parent?.isVisibleWithParents() != false
     }
 
     fun addChild(child: GameEntity, insertionPos: InsertionPos = InsertionPos.End) {
@@ -187,7 +173,6 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     suspend fun applyComponents() {
-        isVisibleState.set(entityData.isVisible)
         components.forEach {
             it.applyComponent()
             check(it.isPrepared) { "Component not applied (missed calling super?): $it" }
@@ -203,6 +188,12 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         lifecycle = EntityLifecycle.RUNNING
     }
 
+    fun onPhysicsUpdate(timeStep: Float) {
+        for (i in components.indices) {
+            components[i].onPhysicsUpdate(timeStep)
+        }
+    }
+
     fun destroyComponents() {
         components.forEach {
             it.destroyComponent()
@@ -213,6 +204,10 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     fun addComponent(component: GameEntityComponent) {
+        check(component.isCreated) {
+            "addComponent called on GameEntity $name with component ${component.componentType} which lifecycle " +
+                    "state is ${component.lifecycle} (expected CREATED)"
+        }
         components += component
         if (component is GameEntityDataComponent<*>) {
             entityData.components += component.componentInfo

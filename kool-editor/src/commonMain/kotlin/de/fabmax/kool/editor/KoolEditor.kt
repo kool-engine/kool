@@ -208,10 +208,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
         editorInputContext.addKeyListener(Key.HideSelected) {
             val selection = selectionOverlay.getSelectedSceneNodes()
-            SetVisibilityAction(selection, selection.any { !it.isVisibleState.value }).apply()
+            SetVisibilityAction(selection, selection.any { !it.isVisible }).apply()
         }
         editorInputContext.addKeyListener(Key.UnhideHidden) {
-            val hidden = activeScene.value?.sceneEntities?.values?.filter { !it.isVisibleState.value }
+            val hidden = activeScene.value?.sceneEntities?.values?.filter { !it.isVisible }
             hidden?.let { nodes -> SetVisibilityAction(nodes, true).apply() }
         }
 

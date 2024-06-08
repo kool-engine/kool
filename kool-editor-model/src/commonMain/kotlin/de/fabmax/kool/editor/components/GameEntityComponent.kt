@@ -32,8 +32,6 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
     var componentOrder = COMPONENT_ORDER_DEFAULT
         protected set
 
-    private val onUpdateListeners = mutableSetOf<(RenderPass.UpdateEvent) -> Unit>()
-
     open suspend fun applyComponent() {
         check(areDependenciesMetBy(gameEntity.components)) {
             "Unable to create component ${this::class.simpleName} in node ${gameEntity.name}: There are unmet component dependencies"
@@ -45,8 +43,6 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
         if (isDestroyed) {
             logW { "Component $componentType destroyed multiple times (entity: ${gameEntity.name})" }
         }
-        onUpdateListeners.forEach { gameEntity.onUpdate -= it }
-        onUpdateListeners.clear()
         lifecycle = EntityLifecycle.DESTROYED
     }
 
@@ -54,9 +50,9 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
         lifecycle = EntityLifecycle.RUNNING
     }
 
-    fun onUpdate(block: (RenderPass.UpdateEvent) -> Unit) {
-        gameEntity.onUpdate += block
-    }
+    open fun onUpdate(ev: RenderPass.UpdateEvent) { }
+
+    open fun onPhysicsUpdate(timeStep: Float) { }
 
     protected fun dependsOn(componentType: KClass<*>, isOptional: Boolean = false) {
         _dependencies += ComponentDependency(componentType, isOptional)

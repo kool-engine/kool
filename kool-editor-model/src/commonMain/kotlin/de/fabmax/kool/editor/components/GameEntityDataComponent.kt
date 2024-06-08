@@ -17,7 +17,7 @@ abstract class GameEntityDataComponent<D: ComponentData>(
         dataState.onChange { newData -> onDataChanged(data, newData) }
     }
 
-    fun setPersistent(componentData: D) {
+    open fun setPersistent(componentData: D) {
         componentInfo.data = componentData
         dataState.set(componentData)
     }
