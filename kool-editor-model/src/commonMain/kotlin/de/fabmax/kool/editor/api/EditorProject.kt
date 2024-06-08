@@ -161,7 +161,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                     entities += GameEntityData(camId, "Camera", sceneId).apply {
                         components += ComponentInfo(CameraComponentData(CameraTypeData.Perspective()))
                         components += ComponentInfo(TransformComponentData(
-                            TransformData.fromMatrix(
+                            TransformData(
                                 MutableMat4d()
                                     .translate(0.0, 2.5, 5.0)
                                     .rotate((-30.0).deg, Vec3d.X_AXIS)
@@ -173,7 +173,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                     entities += GameEntityData(lightId, "Directional Light", sceneId).apply {
                         components += ComponentInfo(DiscreteLightComponentData(LightTypeData.Directional()))
                         components += ComponentInfo(TransformComponentData(
-                            TransformData.fromMatrix(
+                            TransformData(
                                 MutableMat4d()
                                     .translate(5.0, 5.0, 5.0)
                                     .rotate(0.0.deg, 30.0.deg, (-120.0).deg)

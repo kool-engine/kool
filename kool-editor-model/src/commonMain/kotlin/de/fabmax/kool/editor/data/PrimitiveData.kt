@@ -6,6 +6,22 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 import kotlinx.serialization.Serializable
 
+fun TransformData(matrix: Mat4d): TransformData {
+    val translation = MutableVec3d()
+    val rotation = MutableQuatD()
+    val scale = MutableVec3d()
+    matrix.decompose(translation, rotation, scale)
+    return TransformData(Vec3Data(translation), Vec4Data(rotation), Vec3Data(scale))
+}
+
+fun TransformData(transform: Transform): TransformData {
+    val translation = MutableVec3d()
+    val rotation = MutableQuatD()
+    val scale = MutableVec3d()
+    transform.decompose(translation, rotation, scale)
+    return TransformData(Vec3Data(translation), Vec4Data(rotation), Vec3Data(scale))
+}
+
 @Serializable
 data class TransformData(
     val position: Vec3Data,
@@ -30,14 +46,6 @@ data class TransformData(
             rotation = Vec4Data(Vec4d.W_AXIS),
             scale = Vec3Data(Vec3d(1.0, 1.0, 1.0))
         )
-
-        fun fromMatrix(matrix: Mat4d): TransformData {
-            val translation = MutableVec3d()
-            val rotation = MutableQuatD()
-            val scale = MutableVec3d()
-            matrix.decompose(translation, rotation, scale)
-            return TransformData(Vec3Data(translation), Vec4Data(rotation), Vec3Data(scale))
-        }
     }
 }
 

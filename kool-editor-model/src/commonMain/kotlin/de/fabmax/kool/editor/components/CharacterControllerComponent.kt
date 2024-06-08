@@ -66,8 +66,8 @@ class CharacterControllerComponent(
         }
     }
 
-    override fun updatePhysics(dt: Float) {
-        super.updatePhysics(dt)
+    override fun onPhysicsUpdate(timeStep: Float) {
+        super.onPhysicsUpdate(timeStep)
         axes?.let { updateMovement(charController!!, it) }
     }
 

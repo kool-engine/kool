@@ -70,7 +70,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(entityData.name)
         drawNode.isVisible = entityData.isVisible
         drawNode.onUpdate += nodeUpdateCb
-        transform.applyTransformTo(drawNode)
+        drawNode.transform = transform.transform
     }
 
     private val requireSceneChild: GameEntity
@@ -112,7 +112,6 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
         newDrawNode.name = name
         newDrawNode.isVisible = isVisible
-        transform.transformState.value.toTransform(newDrawNode.transform)
 
         val oldDrawNode = drawNode
         oldDrawNode.onUpdate -= nodeUpdateCb

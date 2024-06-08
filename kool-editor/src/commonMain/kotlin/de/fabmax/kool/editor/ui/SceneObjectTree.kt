@@ -87,7 +87,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         if (lightType !is LightTypeData.Point) {
             transform.mul(MutableMat4d().rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
         }
-        entityData.components += ComponentInfo(TransformComponentData(TransformData.fromMatrix(transform)))
+        entityData.components += ComponentInfo(TransformComponentData(TransformData(transform)))
 
         AddSceneNodeAction(listOf(entityData)).apply()
     }
