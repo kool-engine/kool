@@ -17,7 +17,9 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
     init {
         PhysicsImpl.checkIsLoaded()
         world as PhysicsWorldImpl
-        pxManager = PxTopLevelFunctions.CreateControllerManager(world.pxScene)
+        pxManager = checkNotNull(PxTopLevelFunctions.CreateControllerManager(world.pxScene)) {
+            "Failed creating PxControllerManager"
+        }
 
         world.onAdvancePhysics += onAdvanceListener
         world.onPhysicsUpdate += onUpdateListener

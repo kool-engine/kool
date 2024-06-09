@@ -19,7 +19,7 @@ import kotlin.math.roundToInt
 class MeshEditor : ComponentEditor<MeshComponent>() {
 
     override fun UiScope.compose() {
-        val componentShapes = components.map { it.shapesState.use().first().shapeOption }
+        val componentShapes = components.map { it.dataState.use().shapes.first().shapeOption }
         val isAllTheSameShape = componentShapes.all { it == componentShapes[0] }
         val (shapeItems, shapeIdx) = shapeOptions.getOptionsAndIndex(componentShapes)
 
@@ -56,20 +56,20 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             ShapeOption.Rect -> listOf(ShapeData.defaultRect)
             ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
-            ShapeOption.Capsule -> listOf(ShapeData.defaultCylinder)
+            ShapeOption.Capsule -> listOf(ShapeData.defaultCapsule)
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
             ShapeOption.Empty -> listOf(ShapeData.defaultCustom)
         }
         val actions = components
-            .filter { it.shapesState != newShapes }
-            .map { SetMeshShapeAction(it, it.shapesState.first(), newShapes[0]) }
+            .filter { it.data.shapes != newShapes }
+            .map { SetMeshShapeAction(it, it.data.shapes[0], newShapes[0]) }
         if (actions.isNotEmpty()) {
             FusedAction(actions).apply()
         }
     }
 
     private fun ColumnScope.editorBody() {
-        val shape = components[0].shapesState.use()[0]
+        val shape = components[0].data.shapes[0]
         when (shape) {
             is ShapeData.Box -> boxProperties()
             is ShapeData.Rect -> rectProperties()
@@ -116,12 +116,12 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             minValue = 0.0
         )
 
-        val isIco = components.all { (it.shapesState[0] as ShapeData.Sphere).sphereType == "ico" }
+        val isIco = components.all { (it.data.shapes[0] as ShapeData.Sphere).sphereType == "ico" }
         labeledCheckbox("Generate ico-sphere:", isIco) { setIco ->
             val newType = if (setIco) "ico" else "uv"
             val newSteps = if (setIco) 2 else 20
             components.map { component ->
-                val sphere = component.shapesState[0] as ShapeData.Sphere
+                val sphere = component.data.shapes[0] as ShapeData.Sphere
                 SetMeshShapeAction(component, sphere, sphere.copy(steps = newSteps, sphereType = newType))
             }.fused().apply()
         }
@@ -151,12 +151,12 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         width = Grow.Std,
         scopeName = "cylinderProperties"
     ) {
-        var isUniRadius by remember(components.map { (it.shapesState[0] as ShapeData.Cylinder) }.all { it.topRadius == it.bottomRadius })
+        var isUniRadius by remember(components.map { (it.data.shapes[0] as ShapeData.Cylinder) }.all { it.topRadius == it.bottomRadius })
         labeledCheckbox("Uniform radius:", isUniRadius) {
             isUniRadius = it
             if (isUniRadius) {
                 components.map { component ->
-                    val cyl = component.shapesState[0] as ShapeData.Cylinder
+                    val cyl = component.data.shapes[0] as ShapeData.Cylinder
                     SetMeshShapeAction(component, cyl, cyl.copy(topRadius = cyl.bottomRadius))
                 }.fused().apply()
             }
@@ -188,7 +188,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             label = "Length:",
             minValue = 0.0
         )
-        shapeDoubleEditor<ShapeData.Sphere>(
+        shapeDoubleEditor<ShapeData.Cylinder>(
             valueGetter = { it.steps.toDouble() },
             valueSetter = { oldData, newValue -> oldData.copy(steps = newValue.roundToInt()) },
             label = "Steps:",
@@ -228,11 +228,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         width = Grow.Std,
         scopeName = "heightmapProperties"
     ) {
-        val heightmaps = components.map { it.shapesState[0] as ShapeData.Heightmap }
+        val heightmaps = components.map { it.data.shapes[0] as ShapeData.Heightmap }
         val mapPath = if (heightmaps.all { it.mapPath == heightmaps[0].mapPath }) heightmaps[0].mapPath else ""
         heightmapSelector(mapPath, true) {
             components.map { component ->
-                val hgt = component.shapesState[0] as ShapeData.Heightmap
+                val hgt = component.data.shapes[0] as ShapeData.Heightmap
                 SetMeshShapeAction(component, hgt, hgt.copy(mapPath = it?.path ?: ""))
             }.fused().apply()
         }
@@ -257,7 +257,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 override fun onEdit(value: Double) { }
                 override fun onEditEnd(startValue: Double, endValue: Double) {
                     components.map { component ->
-                        val hgt = component.shapesState[0] as ShapeData.Heightmap
+                        val hgt = component.data.shapes[0] as ShapeData.Heightmap
                         SetMeshShapeAction(component, hgt, hgt.copy(heightScale = endValue))
                     }.fused().apply()
                 }
@@ -271,7 +271,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 override fun onEdit(value: Vec2d) { }
                 override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
                     components.mapIndexed { i, component ->
-                        val hgt = component.shapesState[0] as ShapeData.Heightmap
+                        val hgt = component.data.shapes[0] as ShapeData.Heightmap
                         val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
                         val numRows = loaded[i]?.rows ?: MeshComponent.DEFAULT_HEIGHTMAP_ROWS
                         val newScale = endValue / Vec2d(numCols -1.0, numRows - 1.0)
@@ -290,7 +290,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         minValue: Double = Double.NEGATIVE_INFINITY,
         maxValue: Double = Double.POSITIVE_INFINITY,
     ) = doublePropertyEditor(
-        dataGetter = { it.shapesState[0] as T },
+        dataGetter = { it.data.shapes[0] as T },
         valueGetter = valueGetter,
         valueSetter = valueSetter,
         actionMapper = meshShapeActionMapper,
@@ -307,7 +307,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         minValues: Vec2d? = null,
         maxValues: Vec2d? = null,
     ) = vec2dPropertyEditor(
-        dataGetter = { it.shapesState[0] as T },
+        dataGetter = { it.data.shapes[0] as T },
         valueGetter = valueGetter,
         valueSetter = valueSetter,
         actionMapper = meshShapeActionMapper,
@@ -323,7 +323,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         minValues: Vec3d? = null,
         maxValues: Vec3d? = null,
     ) = vec3dPropertyEditor(
-        dataGetter = { it.shapesState[0] as T },
+        dataGetter = { it.data.shapes[0] as T },
         valueGetter = valueGetter,
         valueSetter = valueSetter,
         actionMapper = meshShapeActionMapper,

@@ -1,32 +1,20 @@
 package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.BehaviorComponent
-import de.fabmax.kool.editor.model.NodeModel
 import de.fabmax.kool.pipeline.RenderPass
 
 abstract class KoolBehavior {
 
-    private var _node: NodeModel? = null
-    protected val node: NodeModel
-        get() = _node ?: throw IllegalStateException("KoolBehavior is not yet initialized")
+    var isUpdateInEditMode = false
 
-    protected lateinit var behaviorComponent: BehaviorComponent
-        private set
+    private var _behaviorComponent: BehaviorComponent? = null
+    val behaviorComponent: BehaviorComponent
+        get() = checkNotNull(_behaviorComponent) { "KoolBehavior is not yet initialized" }
 
-    private val onUpdateHandler: (RenderPass.UpdateEvent) -> Unit = {
-        if (AppState.appMode == AppMode.PLAY || behaviorComponent.componentData.runInEditMode) {
-            onUpdate()
-        }
-    }
+    val gameEntity: GameEntity get() = behaviorComponent.gameEntity
 
-    fun init(nodeModel: NodeModel, behaviorComponent: BehaviorComponent) {
-        _node?.let { old ->
-            old.onNodeUpdate -= onUpdateHandler
-        }
-        this.behaviorComponent = behaviorComponent
-
-        this._node = nodeModel
-        nodeModel.onNodeUpdate += onUpdateHandler
+    fun init(behaviorComponent: BehaviorComponent) {
+        this._behaviorComponent = behaviorComponent
         onInit()
     }
 
@@ -34,6 +22,10 @@ abstract class KoolBehavior {
 
     open fun onStart() { }
 
-    open fun onUpdate() { }
+    open fun onUpdate(ev: RenderPass.UpdateEvent) { }
+
+    open fun onPhysicsUpdate(timeStep: Float) { }
+
+    open fun onDestroy() { }
 
 }

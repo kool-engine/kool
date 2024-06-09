@@ -1,9 +1,10 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorInfo
-import de.fabmax.kool.editor.api.EditorOrder
-import de.fabmax.kool.editor.components.EditorModelComponent
-import de.fabmax.kool.editor.model.NodeModel
+import de.fabmax.kool.editor.api.EditorRange
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.GameEntityComponent
+import de.fabmax.kool.editor.ui.BehaviorEditor
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
 import kotlin.reflect.KClass
@@ -23,25 +24,26 @@ object BehaviorReflection {
                     && it.annotations.none { anno -> anno is EditorInfo && anno.hideInEditor }
                     && editableTypes.any { type -> type.isSupertypeOf(it.setter.parameters[1].type) }
             }
-            .sortedBy { (it.annotations.find { anno -> anno is EditorOrder } as EditorOrder?)?.order }
-            .map {
-                val propertyKType = it.setter.parameters[1].type
-                val info = it.annotations.filterIsInstance<EditorInfo>().firstOrNull()
-                val label = if (info != null && info.label.isNotBlank()) info.label else it.name
-                val min = info?.min ?: Double.NEGATIVE_INFINITY
-                val max = info?.max ?: Double.POSITIVE_INFINITY
+            .sortedBy { (it.annotations.find { anno -> anno is EditorInfo } as EditorInfo?)?.order }
+            .map { p ->
+                val propertyKType = p.setter.parameters[1].type
+                val info = p.annotations.filterIsInstance<EditorInfo>().firstOrNull()
+                val label = if (info != null && info.label.isNotBlank()) info.label else BehaviorEditor.camelCaseToWords(p.name, allUppercase = false)
+                val rng = p.annotations.filterIsInstance<EditorRange>().firstOrNull()
+                val min = rng?.let { Vec4d(it.minX, it.minY, it.minZ, it.minW) } ?: Vec4d(Double.NEGATIVE_INFINITY)
+                val max = rng?.let { Vec4d(it.maxX, it.maxY, it.maxZ, it.maxW) } ?: Vec4d(Double.POSITIVE_INFINITY)
                 val type = when {
-                    nodeModelType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.NODE_MODEL
+                    gameEntityType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.NODE_MODEL
                     modelComponentType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.COMPONENT
                     else -> BehaviorPropertyType.STD
                 }
 
-                BehaviorProperty(it.name, type, propertyKType, label, min, max)
+                BehaviorProperty(p.name, type, propertyKType, label, min, max)
             }
     }
 
-    private val nodeModelType = typeOf<NodeModel?>()
-    private val modelComponentType = typeOf<EditorModelComponent?>()
+    private val gameEntityType = typeOf<GameEntity?>()
+    private val modelComponentType = typeOf<GameEntityComponent?>()
 
     private val editableTypes = listOf(
         typeOf<Int?>(),
@@ -63,7 +65,7 @@ object BehaviorReflection {
         typeOf<Color?>(),
         typeOf<String?>(),
 
-        nodeModelType,
+        gameEntityType,
         modelComponentType,
     )
 }

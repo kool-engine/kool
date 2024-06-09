@@ -14,6 +14,7 @@ class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.m
 
         materialDir.children.clear()
         editor.projectModel.materials.use().forEach {
+            it.dataState.use()
             val materialItem = browserItems.getOrPut("/materials/${it.name}") {
                 BrowserMaterialItem(1, it)
             }

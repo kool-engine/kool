@@ -2,9 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorKeyListener
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 
@@ -240,36 +238,19 @@ abstract class DndItemFlavor<T: Any> {
         override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
     }
 
-    data object DndNodeModel : DndItemFlavor<NodeModel>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (NodeModel) -> Any> = mapOf(this to { it })
-
-        override fun getTyped(item: Any): NodeModel = item as NodeModel
-    }
-
-    data object DndSceneNodeModel : DndItemFlavor<SceneNodeModel>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (SceneNodeModel) -> Any> = mapOf(
+    data object DndGameEntity : DndItemFlavor<GameEntity>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (GameEntity) -> Any> = mapOf(
             this to { it },
-            DndNodeModel to { it },
-            DndSceneNodeModels to { listOf(it) }
+            DndGameEntities to { listOf(it) }
         )
 
-        override fun getTyped(item: Any): SceneNodeModel = item as SceneNodeModel
+        override fun getTyped(item: Any): GameEntity = item as GameEntity
     }
 
-    data object DndSceneNodeModels : DndItemFlavor<List<SceneNodeModel>>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (List<SceneNodeModel>) -> Any> = mapOf(this to { it })
+    data object DndGameEntities : DndItemFlavor<List<GameEntity>>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (List<GameEntity>) -> Any> = mapOf(this to { it })
 
         @Suppress("UNCHECKED_CAST")
-        override fun getTyped(item: Any): List<SceneNodeModel> = item as List<SceneNodeModel>
+        override fun getTyped(item: Any): List<GameEntity> = item as List<GameEntity>
     }
-
-    data object DndSceneModel : DndItemFlavor<SceneModel>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (SceneModel) -> Any> = mapOf(
-            this to { it },
-            DndNodeModel to { it }
-        )
-
-        override fun getTyped(item: Any): SceneModel = item as SceneModel
-    }
-
 }

@@ -4,23 +4,20 @@ import de.fabmax.kool.*
 import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AppMode
-import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.components.SsaoComponent
-import de.fabmax.kool.editor.data.ProjectData
-import de.fabmax.kool.editor.model.EditorProject
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
-import de.fabmax.kool.editor.util.nodeModel
+import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
+import de.fabmax.kool.modules.filesystem.copyRecursively
 import de.fabmax.kool.modules.filesystem.toZip
+import de.fabmax.kool.modules.filesystem.writeText
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ao.AoPipeline
@@ -29,35 +26,39 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
-    val projModelJson = try {
-        projectFiles.projectModelFile.read().decodeToString()
-    } catch (e: Exception) {
-        ""
+    val projDataDir = projectFiles.projectModelDir
+    val reader = ProjectReader(projDataDir)
+    val data = reader.loadTree() ?: EditorProject.emptyProjectData()
+    if (reader.parserErrors > 0) {
+        fun Int.toString(len: Int): String {
+            var str = "$this"
+            while (str.length < len) str = "0$str"
+            return str
+        }
+        val dateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val backupName = "project_backup_" +
+                "${dateTime.year}${dateTime.monthNumber.toString(2)}${dateTime.dayOfMonth.toString(2)}_" +
+                "${dateTime.hour.toString(2)}${dateTime.minute.toString(2)}${dateTime.second.toString(2)}"
+        logE("KoolEditor") { "ProjectReader reported errors, backing up original project data as $backupName" }
+        val backupDir = projectFiles.fileSystem.createDirectory("src/commonMain/resources/$backupName")
+        projDataDir.copyRecursively(backupDir)
     }
-    if (projModelJson.isEmpty()) {
-        logI("KoolEditor") { "Project file not found, creating empty" }
-        return KoolEditor(projectFiles, EditorProject.emptyProject(), ctx)
-    }
-
-    val project = try {
-        EditorProject(Json.decodeFromString<ProjectData>(projModelJson))
-    } catch (e: Exception) {
-        e.printStackTrace()
-        error("Failed deserializing project, fix / delete existing project file")
-    }
-    return KoolEditor(projectFiles, project, ctx)
+    return KoolEditor(projectFiles, EditorProject(data), ctx)
 }
 
 class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject, val ctx: KoolContext) {
     init { instance = this }
 
     val loadedApp = mutableStateOf<LoadedApp?>(null)
-    val activeScene = mutableStateOf<SceneModel?>(null)
+    val activeScene = mutableStateOf<EditorScene?>(null)
 
     val editorInputContext = EditorKeyListener("Edit mode")
     val editMode = EditorEditMode(this)
@@ -144,10 +145,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         // fixme: a bit hacky currently: restore app scene camera
         //  it was replaced by custom editor cam during editor app load
-        sceneModel.cameraState.value?.camera?.let { cam ->
-            sceneModel.drawNode.camera = cam
+        sceneModel.sceneComponent.cameraComponent?.drawNode?.let { cam ->
+            sceneModel.scene.camera = cam
             (cam as? PerspectiveCamera)?.let {
-                val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
+                val aoPipeline = sceneModel.sceneEntity.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
                 aoPipeline?.proxyCamera?.trackedCam = it
             }
         }
@@ -212,10 +213,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
         editorInputContext.addKeyListener(Key.HideSelected) {
             val selection = selectionOverlay.getSelectedSceneNodes()
-            SetVisibilityAction(selection, selection.any { !it.isVisibleState.value }).apply()
+            SetVisibilityAction(selection, selection.any { !it.isVisible }).apply()
         }
         editorInputContext.addKeyListener(Key.UnhideHidden) {
-            val hidden = activeScene.value?.sceneNodes?.filter { !it.isVisibleState.value }
+            val hidden = activeScene.value?.sceneEntities?.values?.filter { !it.isVisible }
             hidden?.let { nodes -> SetVisibilityAction(nodes, true).apply() }
         }
 
@@ -250,8 +251,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             stopApp()
         }
 
-        val prevSelection = selectionOverlay.selection.map { it.nodeId }
+        val prevSelection = selectionOverlay.selection.map { it.id }
         selectionOverlay.clearSelection()
+        ctx.scenes -= editorOverlay
 
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
@@ -259,12 +261,13 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         editorCameraTransform.addNode(editorOverlay.camera)
 
         // dispose old scene + objects
-        projectModel.createdScenes.values.forEach { sceneModel ->
-            ctx.scenes -= sceneModel.drawNode
-            sceneModel.drawNode.removeOffscreenPass(selectionOverlay.selectionPass)
+        projectModel.createdScenes.values.forEach { editorScene ->
+            ctx.scenes -= editorScene.scene
+            editorScene.scene.removeOffscreenPass(selectionOverlay.selectionPass)
         }
         this.loadedApp.value?.app?.onDispose(ctx)
         selectionOverlay.selectionPass.disposePipelines()
+        projectModel.releaseScenes()
 
         // initialize newly loaded app
         loadedApp.app.loadApp(projectModel, ctx)
@@ -274,8 +277,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             if (newScenes.size != 1) {
                 logW { "Unsupported number of scene, currently only single scene setups are supported" }
             }
-            newScenes.firstOrNull()?.let { sceneModel ->
-                val scene = sceneModel.drawNode
+            newScenes.firstOrNull()?.let { editorScene ->
+                val scene = editorScene.scene
                 ctx.scenes += scene
 
                 scene.addOffscreenPass(selectionOverlay.selectionPass)
@@ -288,17 +291,15 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
 
-                val aoPipeline = sceneModel.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
+                val aoPipeline = editorScene.sceneEntity.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
                 aoPipeline?.proxyCamera?.trackedCam = editorCam
             }
         }
 
         this.loadedApp.set(loadedApp)
-        if (activeScene.value == null) {
-            activeScene.set(projectModel.createdScenes.values.first())
-        }
+        activeScene.set(projectModel.createdScenes.values.first())
 
-        selectionOverlay.setSelection(prevSelection.mapNotNull { it.nodeModel })
+        selectionOverlay.setSelection(prevSelection.mapNotNull { it.gameEntity })
         ui.objectProperties.windowSurface.triggerUpdate()
 
         if (AppState.appMode == AppMode.EDIT) {
@@ -334,8 +335,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     suspend fun saveProject() {
-        val text = jsonCodec.encodeToString(projectModel.projectData)
-        projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
+        ProjectWriter.saveProjectData(projectModel.projectData, projectFiles.projectModelDir)
+        // also save single file version
+        projectFiles.getProjectFileMonolithic().writeText(jsonCodec.encodeToString(projectModel.projectData))
         logD { "Saved project model" }
     }
 

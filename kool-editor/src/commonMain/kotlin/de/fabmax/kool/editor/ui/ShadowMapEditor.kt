@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.SetShadowMapTypeAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.ShadowMapComponent
 import de.fabmax.kool.editor.data.ShadowMapInfo
@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.ui2.UiScope
 
 class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
     override fun UiScope.compose() = componentPanel("Shadow Map", IconMap.small.shadow, ::removeComponent) {
-        val shadowMapTypes = components.map { it.shadowMapState.use().typeOption }
+        val shadowMapTypes = components.map { it.dataState.use().shadowMap.typeOption }
         val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(shadowMapTypes)
         labeledCombobox("Type:", typeItems, typeIdx) { selected ->
             selected.item?.let { type ->
@@ -24,11 +24,14 @@ class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
                     )
                 }
                 components.map {
-                    SetShadowMapTypeAction(it.nodeModel.nodeId, shadowMap)
+                    setShadowMapAction(it, it.data.shadowMap, shadowMap)
                 }.fused().apply()
             }
         }
     }
+
+    private fun setShadowMapAction(component: ShadowMapComponent, oldShadow: ShadowMapTypeData, newShadow: ShadowMapTypeData) =
+        SetComponentDataAction(component, component.data.copy(shadowMap = oldShadow), component.data.copy(shadowMap = newShadow))
 
     private val ShadowMapTypeData.typeOption: TypeOption get() =
         TypeOption.entries.first { it.matches(this) }

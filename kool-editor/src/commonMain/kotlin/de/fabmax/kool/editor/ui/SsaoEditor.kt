@@ -1,15 +1,16 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.SetSsaoSettingsAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.SsaoComponent
-import de.fabmax.kool.editor.data.SsaoSettings
+import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
 
 class SsaoEditor : ComponentEditor<SsaoComponent>() {
 
     override fun UiScope.compose() = componentPanel("Screen-Space Ambient Occlusion", IconMap.small.shadowInner, ::removeComponent) {
-        val ssao = component.ssaoState.use()
+        val ssao = component.dataState.use()
+
         labeledDoubleTextField(
             label = "Radius:",
             value = ssao.radius.toDouble(),
@@ -18,18 +19,18 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             maxValue = if (ssao.isRelativeRadius) 1.0 else Double.POSITIVE_INFINITY,
             dragChangeSpeed = if (ssao.isRelativeRadius) DragChangeRates.RANGE_0_TO_1 else DragChangeRates.RANGE_0_TO_1 * 10.0,
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val oldSettings = component.ssaoState.value.copy(radius = undoValue.toFloat())
-                val newSettings = component.ssaoState.value.copy(radius = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                val oldSettings = component.data.copy(radius = undoValue.toFloat())
+                val newSettings = component.data.copy(radius = applyValue.toFloat())
+                SetComponentDataAction(component, oldSettings, newSettings)
             }
         )
 
         labeledCheckbox("Distance-based radius:", ssao.isRelativeRadius) {
-            val oldSettings = component.ssaoState.value
+            val oldSettings = component.data
             val allowedMax = if (it) 1f else Float.POSITIVE_INFINITY
             val clampedRadius = oldSettings.radius.clamp(0f, allowedMax)
-            val newSettings = component.ssaoState.value.copy(isRelativeRadius = it, radius = clampedRadius)
-            SetSsaoSettingsAction(nodeId, oldSettings, newSettings).apply()
+            val newSettings = component.data.copy(isRelativeRadius = it, radius = clampedRadius)
+            SetComponentDataAction(component, oldSettings, newSettings).apply()
         }
 
         labeledDoubleTextField(
@@ -40,9 +41,9 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             maxValue = 5.0,
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * 5.0,
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val oldSettings = component.ssaoState.value.copy(strength = undoValue.toFloat())
-                val newSettings = component.ssaoState.value.copy(strength = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                val oldSettings = component.data.copy(strength = undoValue.toFloat())
+                val newSettings = component.data.copy(strength = applyValue.toFloat())
+                SetComponentDataAction(component, oldSettings, newSettings)
             }
         )
 
@@ -54,9 +55,9 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             maxValue = 10.0,
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * 10.0,
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val oldSettings = component.ssaoState.value.copy(power = undoValue.toFloat())
-                val newSettings = component.ssaoState.value.copy(power = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                val oldSettings = component.data.copy(power = undoValue.toFloat())
+                val newSettings = component.data.copy(power = applyValue.toFloat())
+                SetComponentDataAction(component, oldSettings, newSettings)
             }
         )
 
@@ -70,9 +71,9 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             maxValue = 1.0,
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val oldSettings = component.ssaoState.value.copy(mapSize = undoValue.toFloat())
-                val newSettings = component.ssaoState.value.copy(mapSize = applyValue.toFloat())
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                val oldSettings = component.data.copy(mapSize = undoValue.toFloat())
+                val newSettings = component.data.copy(mapSize = applyValue.toFloat())
+                SetComponentDataAction(component, oldSettings, newSettings)
             }
         )
 
@@ -83,9 +84,9 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             maxValue = 64,
             dragChangeSpeed = DragChangeRates.RANGE_0_TO_1 * 64.0,
             editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                val oldSettings = component.ssaoState.value.copy(samples = undoValue)
-                val newSettings = component.ssaoState.value.copy(samples = applyValue)
-                SetSsaoSettingsAction(nodeId, oldSettings, newSettings)
+                val oldSettings = component.data.copy(samples = undoValue)
+                val newSettings = component.data.copy(samples = applyValue)
+                SetComponentDataAction(component, oldSettings, newSettings)
             }
         )
 
@@ -96,8 +97,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
                 .margin(vertical = sizes.smallGap)
                 .alignX(AlignmentX.Center)
                 .onClick {
-                    val oldSettings = component.ssaoState.value
-                    SetSsaoSettingsAction(nodeId, oldSettings, SsaoSettings()).apply()
+                    SetComponentDataAction(component, component.data, SsaoComponentData()).apply()
                 }
         }
     }

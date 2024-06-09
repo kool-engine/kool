@@ -4,25 +4,24 @@ import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.RemoveComponentAction
 import de.fabmax.kool.editor.actions.fused
-import de.fabmax.kool.editor.components.EditorModelComponent
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.util.sceneModel
+import de.fabmax.kool.editor.api.EditorScene
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.GameEntityComponent
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 
-abstract class ComponentEditor<T: EditorModelComponent>() : Composable {
+abstract class ComponentEditor<T: GameEntityComponent> : Composable {
     var components: List<T> = emptyList()
     val component: T get() = components[0]
 
-    val nodeId: NodeId get() = component.nodeModel.nodeId
-    val nodeModel: NodeModel get() = component.nodeModel
-    val sceneModel: SceneModel get() = nodeModel.sceneModel
+    val entityId: EntityId get() = component.gameEntity.id
+    val gameEntity: GameEntity get() = component.gameEntity
+    val scene: EditorScene get() = gameEntity.scene
 
     protected fun removeComponent() {
-        components.map { RemoveComponentAction(it.nodeModel.nodeId, it) }.fused().apply()
+        components.map { RemoveComponentAction(it.gameEntity.id, it) }.fused().apply()
     }
 
     protected fun condenseDouble(doubles: List<Double>, eps: Double = FUZZY_EQ_D): Double {

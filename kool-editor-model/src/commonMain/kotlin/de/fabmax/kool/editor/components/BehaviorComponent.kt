@@ -1,69 +1,60 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.BehaviorLoader
-import de.fabmax.kool.editor.api.KoolBehavior
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
-import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.getComponent
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.logE
 
-class BehaviorComponent(nodeModel: NodeModel, override val componentData: BehaviorComponentData) :
-    EditorModelComponent(nodeModel),
-    EditorDataComponent<BehaviorComponentData>
-{
+class BehaviorComponent(
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<BehaviorComponentData>
+) : GameEntityDataComponent<BehaviorComponentData>(gameEntity, componentInfo) {
 
-    override val componentType: String = "${this::class.simpleName}<${componentData.behaviorClassName}>"
-
-    val behaviorClassNameState = mutableStateOf(componentData.behaviorClassName).onChange { componentData.behaviorClassName = it }
-    val runInEditMode = mutableStateOf(componentData.runInEditMode).onChange { componentData.runInEditMode = it }
+    override val componentType: String = "${this::class.simpleName}<${data.behaviorClassName}>"
 
     val behaviorInstance = mutableStateOf<KoolBehavior?>(null)
 
-    private val sceneModel: SceneModel get() = when (val nd = this@BehaviorComponent.nodeModel) {
-        is SceneNodeModel -> nd.sceneModel
-        is SceneModel -> nd
-    }
-
-    private val NodeId.nodeModel: NodeModel? get() {
-        val scene = sceneModel
-        return scene.nodeModels[this] ?: if (this == scene.nodeId) scene else null
+    private val EntityId.gameEntity: GameEntity? get() {
+        return this@BehaviorComponent.gameEntity.scene.sceneEntities[this]
     }
 
     init {
         componentOrder = COMPONENT_ORDER_LATE
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override suspend fun applyComponent() {
+        super.applyComponent()
 
         try {
-            val behavior = BehaviorLoader.newInstance(componentData.behaviorClassName)
+            val behavior = BehaviorLoader.newInstance(data.behaviorClassName)
             behaviorInstance.set(behavior)
 
             // set script member properties from componentData, remove them in case they don't exist anymore (e.g.
             // because script has changed)
             val removeProps = mutableListOf<String>()
-            componentData.propertyValues.forEach { (name, value) ->
+            data.propertyValues.forEach { (name, value) ->
                 val setValue = when {
-                    value.nodeRef != null -> value.nodeRef.nodeModel
-                    value.componentRef != null -> value.componentRef.nodeId.nodeModel?.getComponent(value.componentRef)
+                    value.gameEntityRef != null -> value.gameEntityRef.gameEntity
+                    value.componentRef != null -> value.componentRef.entityId.gameEntity?.getComponent(value.componentRef)
                     else -> value.get()
                 }
                 if (!setProperty(name, setValue)) {
                     removeProps += name
                 }
             }
-            removeProps.forEach { componentData.propertyValues -= it }
+            if (removeProps.isNotEmpty()) {
+                setPersistent(data.copy(propertyValues = data.propertyValues - removeProps))
+            }
 
             // invoke script init callback
-            behavior.init(nodeModel, this)
+            behavior.init( this)
 
         } catch (e: Exception) {
-            logE { "Failed to initialize BehaviorComponent for node ${nodeModel.name}: $e" }
+            logE { "Failed to initialize BehaviorComponent for node ${gameEntity.name}: $e" }
             e.printStackTrace()
         }
     }
@@ -73,12 +64,28 @@ class BehaviorComponent(nodeModel: NodeModel, override val componentData: Behavi
         behaviorInstance.value?.onStart()
     }
 
+    override fun onUpdate(ev: RenderPass.UpdateEvent) {
+        val instance = behaviorInstance.value ?: return
+        if (AppState.appMode == AppMode.PLAY || instance.isUpdateInEditMode) {
+            instance.onUpdate(ev)
+        }
+    }
+
+    override fun onPhysicsUpdate(timeStep: Float) {
+        behaviorInstance.value?.onPhysicsUpdate(timeStep)
+    }
+
+    override fun destroyComponent() {
+        super.destroyComponent()
+        behaviorInstance.value?.onDestroy()
+    }
+
     fun setProperty(name: String, value: Any?): Boolean {
         return try {
             behaviorInstance.value?.let { BehaviorLoader.setProperty(it, name, value) }
             true
         } catch (e: Exception) {
-            logE { "${componentData.behaviorClassName}: Failed setting property $name to value $value: $e" }
+            logE { "${data.behaviorClassName}: Failed setting property $name to value $value: $e" }
             false
         }
     }

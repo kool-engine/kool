@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.actions.SetCameraAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.data.CameraTypeData
 import de.fabmax.kool.modules.ui2.UiScope
@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 
 class CameraEditor : ComponentEditor<CameraComponent>() {
 
-    private val currentCam: CameraTypeData get() = component.cameraState.value
+    private val currentCam: CameraTypeData get() = component.data.camera
     private val camTypeIndex: Int
         get() = camTypes.indexOfFirst { it.camType.isInstance(currentCam) }
 
@@ -19,7 +19,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 CameraTypeData.Orthographic::class -> CameraTypeData.Orthographic(1f)
                 else -> throw IllegalStateException("Unsupported cam type: ${it.camType}")
             }
-            SetCameraAction(nodeId, newCam, currentCam).apply()
+            setCamDataAction(component, currentCam, newCam).apply()
         }
 
         // todo: camToView
@@ -28,7 +28,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
 
         menuDivider()
 
-        when (component.cameraState.use()) {
+        when (component.dataState.use().camera) {
             is CameraTypeData.Perspective -> perspectiveSettings()
             is CameraTypeData.Orthographic -> TODO()
         }
@@ -44,7 +44,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(clipNear = applyValue.toFloat())
                 val undoCam = camData.copy(clipNear = undoValue.toFloat())
-                SetCameraAction(nodeId, applyCam, undoCam)
+                setCamDataAction(component, undoCam, applyCam)
             }
         )
         labeledDoubleTextField(
@@ -56,7 +56,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(clipFar = applyValue.toFloat())
                 val undoCam = camData.copy(clipFar = undoValue.toFloat())
-                SetCameraAction(nodeId, applyCam, undoCam)
+                setCamDataAction(component, undoCam, applyCam)
             }
         )
         labeledDoubleTextField(
@@ -69,10 +69,13 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
                 val camData = currentCam as CameraTypeData.Perspective
                 val applyCam = camData.copy(fovY = applyValue.toFloat())
                 val undoCam = camData.copy(fovY = undoValue.toFloat())
-                SetCameraAction(nodeId, applyCam, undoCam)
+                setCamDataAction(component, undoCam, applyCam)
             }
         )
     }
+
+    private fun setCamDataAction(component: CameraComponent, oldCamData: CameraTypeData, newCameraData: CameraTypeData) =
+        SetComponentDataAction(component, component.data.copy(camera = oldCamData), component.data.copy(camera = newCameraData))
 
     private class CameraTypeOption<T: CameraTypeData>(val name: String, val camType: KClass<T>) {
         override fun toString(): String = name

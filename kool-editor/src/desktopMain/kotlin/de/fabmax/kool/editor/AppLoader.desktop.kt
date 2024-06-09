@@ -3,8 +3,8 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.api.BehaviorLoader
 import de.fabmax.kool.editor.api.EditorAwareApp
+import de.fabmax.kool.editor.api.EditorProject
 import de.fabmax.kool.editor.api.KoolBehavior
-import de.fabmax.kool.editor.model.EditorProject
 import de.fabmax.kool.modules.filesystem.FileSystemFile
 import de.fabmax.kool.modules.filesystem.FileSystemWatcher
 import de.fabmax.kool.modules.filesystem.PhysicalFileSystem
@@ -183,7 +183,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
 
     private class EmptyApp : EditorAwareApp {
         override suspend fun loadApp(projectModel: EditorProject, ctx: KoolContext) {
-            projectModel.create()
+            projectModel.createScenes()
         }
     }
 }

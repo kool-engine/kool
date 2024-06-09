@@ -3,10 +3,10 @@ package de.fabmax.kool.editor.data
 import kotlinx.serialization.Serializable
 
 @Serializable
-class ShadowMapComponentData(
-    var shadowMap: ShadowMapTypeData,
-    var clipNear: Float = 0.5f,
-    var clipFar: Float = 200f
+data class ShadowMapComponentData(
+    val shadowMap: ShadowMapTypeData,
+    val clipNear: Float = 0.5f,
+    val clipFar: Float = 200f
 ) : ComponentData
 
 @Serializable

@@ -2,10 +2,9 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddSceneNodeAction
-import de.fabmax.kool.editor.data.SceneNodeData
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.util.sceneNodeModel
+import de.fabmax.kool.editor.api.EditorScene
+import de.fabmax.kool.editor.api.toHierarchy
+import de.fabmax.kool.editor.data.GameEntityData
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
@@ -39,18 +38,9 @@ object EditorClipboard {
     private fun serializeSelectedNodes(): String {
         val selection = editor.selectionOverlay.getSelectedSceneNodes()
         return if (selection.isEmpty()) "" else {
-            val copyNodes = mutableSetOf<SceneNodeData>()
-            fun collect(node: SceneNodeModel) {
-                if (copyNodes.add(node.nodeData)) {
-                    node.nodeData.childNodeIds
-                        .mapNotNull { it.sceneNodeModel }
-                        .forEach { collect(it) }
-                }
-            }
-            selection.forEach { collect(it) }
-
-            logD { "Copy ${copyNodes.size} selected nodes" }
-            KoolEditor.jsonCodec.encodeToString(copyNodes)
+            val copyData = selection.toHierarchy().flatMap { it.flatten() }
+            logD { "Copy ${copyData.size} selected entities" }
+            KoolEditor.jsonCodec.encodeToString(copyData)
         }
     }
 
@@ -58,16 +48,17 @@ object EditorClipboard {
         val scene = editor.activeScene.value
         if (json.isNotBlank() && scene != null) {
             try {
-                val copyData = KoolEditor.jsonCodec.decodeFromString<List<SceneNodeData>>(json)
+                val copyData = KoolEditor.jsonCodec.decodeFromString<List<GameEntityData>>(json)
                 if (copyData.isNotEmpty()) {
-                    sanitizeCopiedNodeIds(copyData, scene)
+                    val sanitized = sanitizeCopiedEntityIds(copyData, scene)
 
                     val selection = editor.selectionOverlay.getSelectedNodes()
-                    val parent = (selection.firstOrNull { it is SceneNodeModel } as SceneNodeModel?)?.parent ?: scene
+                    val parent = selection.firstOrNull()?.parent ?: scene.sceneEntity
+                    sanitized.toHierarchy().forEach { root -> root.entityData.parentId = parent.id }
 
-                    AddSceneNodeAction(copyData, parent.nodeId).apply()
+                    AddSceneNodeAction(sanitized).apply()
                     launchDelayed(1) {
-                        val nodes = copyData.mapNotNull { scene.nodeModels[it.nodeId] }
+                        val nodes = sanitized.mapNotNull { scene.sceneEntities[it.id] }
                         editor.selectionOverlay.setSelection(nodes)
                         editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)
                     }
@@ -78,19 +69,19 @@ object EditorClipboard {
         }
     }
 
-    private fun sanitizeCopiedNodeIds(nodeData: List<SceneNodeData>, scene: SceneModel) {
-        val existingNames = scene.nodeModels.values.map { it.name }.toMutableSet()
-        val nodesByIds = nodeData.associateBy { it.nodeId }
+    private fun sanitizeCopiedEntityIds(entityData: List<GameEntityData>, scene: EditorScene): List<GameEntityData> {
+        val existingNames = scene.sceneEntities.values.map { it.name }.toMutableSet()
+        val sanitizedIds = entityData.associate { it.id to editor.projectModel.nextId() }
 
-        nodeData.forEach {
-            it.nodeId = editor.projectModel.nextId()
-            it.name = uniquifyName(it.name, existingNames)
-            existingNames += it.name
-        }
-        nodeData.forEach {
-            val newChildIds = it.childNodeIds.mapNotNull { oldId -> nodesByIds[oldId]?.nodeId }
-            it.childNodeIds.clear()
-            it.childNodeIds += newChildIds
+        return entityData.map { data ->
+            data.copy(
+                name = uniquifyName(data.name, existingNames),
+                id = sanitizedIds[data.id]!!,
+                parentId = sanitizedIds[data.parentId]
+            ).also {
+                it.components.addAll(data.components)
+                existingNames.add(it.name)
+            }
         }
     }
 

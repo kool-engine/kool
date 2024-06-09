@@ -1,10 +1,11 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.CameraComponent
-import de.fabmax.kool.editor.components.ContentComponent
 import de.fabmax.kool.editor.components.DiscreteLightComponent
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.components.DrawNodeComponent
+import de.fabmax.kool.editor.components.sceneComponent
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -274,16 +275,16 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         pointLights.clear()
 
         val sceneModel = KoolEditor.instance.activeScene.value ?: return
-        sceneModel.project.getComponentsInScene<CameraComponent>(sceneModel)
-            .filter { it.nodeModel.isVisibleState.value }
+        sceneModel.getAllComponents<CameraComponent>()
+            .filter { it.gameEntity.isVisible }
             .forEach { cameras += CameraComponentInstance(it) }
-        sceneModel.nodeModels.values.filter { it.components.none { c -> c is ContentComponent } }
-            .filter { it.isVisibleState.value }
+        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is DrawNodeComponent } }
+            .filter { it.isVisible }
             .forEach { groups += GroupNodeInstance(it) }
-        sceneModel.project.getComponentsInScene<DiscreteLightComponent>(sceneModel)
-            .filter { it.nodeModel.isVisibleState.value }
+        sceneModel.getAllComponents<DiscreteLightComponent>()
+            .filter { it.gameEntity.isVisible }
             .forEach {
-                when (it.light) {
+                when (it.drawNode) {
                     is Light.Directional -> dirLights += DirLightComponentInstance(it)
                     is Light.Point -> pointLights += PointLightComponentInstance(it)
                     is Light.Spot -> spotLights += SpotLightComponentInstance(it)
@@ -291,13 +292,13 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             }
     }
 
-    fun pick(rayTest: RayTest): SceneNodeModel? {
-        var closest: SceneNodeModel? = null
-        cameras.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
-        groups.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
-        dirLights.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
-        spotLights.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
-        pointLights.forEach { if (it.rayTest(rayTest)) { closest = it.nodeModel } }
+    fun pick(rayTest: RayTest): GameEntity? {
+        var closest: GameEntity? = null
+        cameras.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
+        groups.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
+        dirLights.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
+        spotLights.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
+        pointLights.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
         return closest
     }
 
@@ -305,7 +306,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         const val lineW = 0.06f
     }
 
-    private abstract class OverlayObject(val nodeModel: SceneNodeModel, val mesh: Mesh) {
+    private abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
 
         abstract val modelMat: Mat4f
         abstract val color: Color
@@ -314,7 +315,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
 
         fun addInstance(target: Float32Buffer) {
             val selectionOv = KoolEditor.instance.selectionOverlay
-            val color = if (selectionOv.isSelected(nodeModel)) selectionOv.selectionColor.toLinear() else color
+            val color = if (selectionOv.isSelected(gameEntity)) selectionOv.selectionColor.toLinear() else color
             modelMat.putTo(target)
             color.putTo(target)
         }
@@ -334,43 +335,43 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     }
 
     private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.nodeModel, pointLightMesh)
+        OverlayObject(component.gameEntity, pointLightMesh)
     {
-        override val modelMat: Mat4f get() = component.light.modelMatF
-        override val color: Color get() = component.light.color
+        override val modelMat: Mat4f get() = component.drawNode.modelMatF
+        override val color: Color get() = component.drawNode.color
     }
 
     private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.nodeModel, spotLightMesh)
+        OverlayObject(component.gameEntity, spotLightMesh)
     {
-        override val modelMat: Mat4f get() = component.light.modelMatF
-        override val color: Color get() = component.light.color
+        override val modelMat: Mat4f get() = component.drawNode.modelMatF
+        override val color: Color get() = component.drawNode.color
     }
 
     private inner class DirLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.nodeModel, dirLightMesh)
+        OverlayObject(component.gameEntity, dirLightMesh)
     {
-        override val modelMat: Mat4f get() = component.light.modelMatF
-        override val color: Color get() = component.light.color
+        override val modelMat: Mat4f get() = component.drawNode.modelMatF
+        override val color: Color get() = component.drawNode.color
     }
 
     private inner class CameraComponentInstance(val component: CameraComponent) :
-        OverlayObject(component.nodeModel, cameraMesh)
+        OverlayObject(component.gameEntity, cameraMesh)
     {
         private val activeColor = MdColor.GREY toneLin 300
         private val inactiveColor = MdColor.GREY toneLin 700
 
-        override val modelMat: Mat4f get() = nodeModel.drawNode.modelMatF
+        override val modelMat: Mat4f get() = gameEntity.drawNode.modelMatF
         override val color: Color get() {
-            val isActive = component.sceneModel.cameraState.value == component
+            val isActive = component.sceneComponent.cameraComponent == component
             return if (isActive) activeColor else inactiveColor
         }
     }
 
-    private inner class GroupNodeInstance(nodeModel: SceneNodeModel) :
+    private inner class GroupNodeInstance(nodeModel: GameEntity) :
         OverlayObject(nodeModel, groupMesh)
     {
-        override val modelMat: Mat4f get() = nodeModel.drawNode.modelMatF
+        override val modelMat: Mat4f get() = gameEntity.drawNode.modelMatF
         override val color: Color = Color.WHITE
     }
 }

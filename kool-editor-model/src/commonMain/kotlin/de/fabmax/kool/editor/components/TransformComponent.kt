@@ -1,46 +1,57 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.cachedEntityComponents
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.TransformComponentData
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.editor.data.TransformData
+import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.scene.Transform
+import de.fabmax.kool.scene.TrsTransformF
 
-class TransformComponent(nodeModel: SceneNodeModel, override val componentData: TransformComponentData) :
-    SceneNodeComponent(nodeModel),
-    EditorDataComponent<TransformComponentData>
-{
+class TransformComponent(
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<TransformComponentData> = ComponentInfo(TransformComponentData())
+) : GameEntityDataComponent<TransformComponentData>(gameEntity, componentInfo) {
 
-    val onTransformEdited = mutableListOf<(TransformComponent) -> Unit>()
+    private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
-    val transformState = mutableStateOf(componentData.transform).onChange {
-        if (AppState.isEditMode) {
-            componentData.transform = it
+    var transform: Transform = TrsTransformF()
+        set(value) {
+            field = value
+            gameEntity.drawNode.transform = transform
         }
-        if (nodeModel.isCreated) {
-            it.toTransform(nodeModel.drawNode.transform)
-            nodeModel.drawNode.updateModelMat()
-        }
-        onTransformEdited.forEach { it(this) }
-    }
-
-    val isFixedScaleRatio = mutableStateOf(componentData.isFixedScaleRatio).onChange {
-        if (AppState.isEditMode) {
-            componentData.isFixedScaleRatio = it
-        }
-    }
 
     init {
         componentOrder = COMPONENT_ORDER_EARLY
+        data.transform.toTransform(transform)
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
-        transformState.set(componentData.transform)
+    override suspend fun applyComponent() {
+        super.applyComponent()
+        gameEntity.drawNode.transform = transform
+        gameEntity.drawNode.updateModelMat()
     }
 
-    fun applyTransformTo(drawNode: Node) {
-        componentData.transform.toTransform(drawNode.transform)
-        drawNode.updateModelMat()
+    fun updateDataFromTransform() {
+        dataState.set(data.copy(transform = TransformData(transform)))
+    }
+
+    override fun onDataChanged(oldData: TransformComponentData, newData: TransformComponentData) {
+        super.onDataChanged(oldData, newData)
+        newData.transform.toTransform(transform)
+        changeListeners.let { listeners ->
+            for (i in listeners.indices) {
+                listeners[i].onTransformChanged(this, newData)
+            }
+        }
+    }
+
+    override fun onUpdate(ev: RenderPass.UpdateEvent) {
+        gameEntity.drawNode.transform = transform
+    }
+
+    fun interface ListenerComponent {
+        fun onTransformChanged(component: TransformComponent, transformData: TransformComponentData)
     }
 }

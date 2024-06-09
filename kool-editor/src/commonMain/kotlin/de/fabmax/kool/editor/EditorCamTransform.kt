@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.MutableVec3d
@@ -53,11 +53,11 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
 
     fun focusSelectedObject() = focusObjects(editor.selectionOverlay.getSelectedSceneNodes())
 
-    fun focusObject(objectModel: SceneNodeModel) = focusObjects(listOf(objectModel))
+    fun focusObject(gameEntity: GameEntity) = focusObjects(listOf(gameEntity))
 
-    fun focusObjects(objects: List<SceneNodeModel>) {
+    fun focusObjects(gameEntities: List<GameEntity>) {
         val bounds = BoundingBoxF()
-        objects.forEach { nodeModel ->
+        gameEntities.forEach { nodeModel ->
             val c = nodeModel.drawNode.globalCenter
             val r = max(1f, nodeModel.drawNode.globalRadius)
             bounds.add(c, r)

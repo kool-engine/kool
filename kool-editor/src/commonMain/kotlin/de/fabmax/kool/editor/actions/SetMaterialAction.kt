@@ -1,21 +1,22 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.MaterialComponent
-import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.data.NodeId
+import de.fabmax.kool.editor.components.MaterialReferenceComponent
+import de.fabmax.kool.editor.data.EntityId
 
 class SetMaterialAction(
-    nodeId: NodeId,
-    val setMaterialModel: MaterialData?,
-) : ComponentAction<MaterialComponent>(nodeId, MaterialComponent::class) {
+    component: MaterialReferenceComponent,
+    applyMaterial: MaterialComponent?,
+) : ComponentAction<MaterialReferenceComponent>(component.gameEntity.id, MaterialReferenceComponent::class) {
 
-    private val prevMaterial = component?.materialData
+    private val applyMaterialId = applyMaterial?.id ?: EntityId(0L)
+    private val undoMaterialId = component.material?.id ?: EntityId(0L)
 
     override fun doAction() {
-        component?.materialState?.set(setMaterialModel)
+        component?.let { it.setPersistent(it.data.copy(materialId = applyMaterialId)) }
     }
 
     override fun undoAction() {
-        component?.materialState?.set(prevMaterial)
+        component?.let { it.setPersistent(it.data.copy(materialId = undoMaterialId)) }
     }
 }

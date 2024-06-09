@@ -2,63 +2,68 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.PhysicsWorldComponentData
 import de.fabmax.kool.editor.data.Vec3Data
-import de.fabmax.kool.editor.model.SceneModel
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.character.CharacterControllerManager
+import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.util.logW
 
 class PhysicsWorldComponent(
-    override val nodeModel: SceneModel,
-    override val componentData: PhysicsWorldComponentData = PhysicsWorldComponentData()
-) :
-    EditorModelComponent(nodeModel),
-    EditorDataComponent<PhysicsWorldComponentData>
-{
-
-    val physicsWorldState = mutableStateOf(componentData.properties).onChange {
-        componentData.properties = it
-    }
-
-    val gravityState = mutableStateOf<Vec3f>(componentData.properties.gravity.toVec3f()).onChange {
-        physicsWorldState.set(physicsWorldState.value.copy(gravity = Vec3Data(it)))
-        physicsWorld?.gravity = it
-    }
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<PhysicsWorldComponentData> = ComponentInfo(PhysicsWorldComponentData())
+) : GameEntityDataComponent<PhysicsWorldComponentData>(gameEntity, componentInfo) {
 
     var physicsWorld: PhysicsWorld? = null
+        private set
+    var gravity: Vec3f
+        get() = data.gravity.toVec3f()
+        set(value) { dataState.set(data.copy(gravity = Vec3Data(value))) }
 
     var characterControllerManager: CharacterControllerManager? = null
 
-    override suspend fun createComponent() {
-        super.createComponent()
-
-        Physics.loadAndAwaitPhysics()
-        physicsWorld = PhysicsWorld(null, componentData.properties.isContinuousCollisionDetection).also {
-            it.gravity = componentData.properties.gravity.toVec3f()
-            characterControllerManager = CharacterControllerManager(it)
-        }
-
-        onUpdate {
-            physicsWorld?.let { world ->
-                world.isPauseSimulation = AppState.appMode == AppMode.PAUSE
+    override fun onDataChanged(oldData: PhysicsWorldComponentData, newData: PhysicsWorldComponentData) {
+        physicsWorld?.let { world ->
+            world.gravity = newData.gravity.toVec3f()
+            if (oldData.isContinuousCollisionDetection != newData.isContinuousCollisionDetection) {
+                logW { "Continuous collision detection can not be changed after physics world was created" }
             }
         }
     }
 
+    override suspend fun applyComponent() {
+        super.applyComponent()
+
+        Physics.loadAndAwaitPhysics()
+        physicsWorld = PhysicsWorld(null, data.isContinuousCollisionDetection).also {
+            it.gravity = gravity
+            characterControllerManager = CharacterControllerManager(it)
+        }
+    }
+
+    override fun onUpdate(ev: RenderPass.UpdateEvent) {
+        physicsWorld?.let { world ->
+            world.isPauseSimulation = AppState.appMode == AppMode.PAUSE
+        }
+    }
+
     override fun destroyComponent() {
-        super.destroyComponent()
+        characterControllerManager?.release()
+        characterControllerManager = null
         physicsWorld?.let {
             it.unregisterHandlers()
             it.release()
         }
         physicsWorld = null
+        super.destroyComponent()
     }
 
     override fun onStart() {
         super.onStart()
-        physicsWorld?.registerHandlers(nodeModel.drawNode)
+        physicsWorld?.registerHandlers(sceneComponent.drawNode)
     }
 }

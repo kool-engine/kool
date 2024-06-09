@@ -45,7 +45,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val sceneView = SceneView(this)
     val sceneBrowser = SceneBrowser(this)
-    val objectProperties = ObjectPropertyEditor(this)
+    val objectProperties = GameEntityEditor(this)
     val assetBrowser = AssetBrowser(this)
     val materialBrowser = MaterialBrowser(this)
     val behaviorBrowser = BehaviorBrowser(this)

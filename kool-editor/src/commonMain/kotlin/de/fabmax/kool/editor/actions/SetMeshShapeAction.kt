@@ -2,26 +2,27 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.ShapeData
-import de.fabmax.kool.util.launchOnMainThread
 
 class SetMeshShapeAction(
     component: MeshComponent,
     private val oldShape: ShapeData,
     private val newShape: ShapeData,
     private val replaceIndex: Int = 0
-) : ComponentAction<MeshComponent>(component.nodeModel.nodeId, MeshComponent::class) {
+) : ComponentAction<MeshComponent>(component.gameEntity.id, MeshComponent::class) {
 
     override fun doAction() {
-        launchOnMainThread {
-            component?.shapesState?.set(replaceIndex, newShape)
-            component?.updateGeometry()
+        component?.let {
+            val applyShapes = it.data.shapes.toMutableList()
+            applyShapes[replaceIndex] = newShape
+            it.setPersistent(it.data.copy(shapes = applyShapes))
         }
     }
 
     override fun undoAction() {
-        launchOnMainThread {
-            component?.shapesState?.set(replaceIndex, oldShape)
-            component?.updateGeometry()
+        component?.let {
+            val undoShapes = it.data.shapes.toMutableList()
+            undoShapes[replaceIndex] = oldShape
+            it.setPersistent(it.data.copy(shapes = undoShapes))
         }
     }
 }

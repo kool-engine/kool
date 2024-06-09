@@ -1,26 +1,29 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.components.EditorModelComponent
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.util.nodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.GameEntityComponent
+import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.util.gameEntity
+import de.fabmax.kool.util.launchOnMainThread
 
 class AddComponentAction(
-    val nodeId: NodeId,
-    val component: EditorModelComponent
+    val entityId: EntityId,
+    val component: GameEntityComponent
 ) : EditorAction {
 
-    private val nodeModel: NodeModel? get() = nodeId.nodeModel
+    private val gameEntity: GameEntity? get() = entityId.gameEntity
 
     // fixme: component is not recreated on undo / redo, therefore redo can fail
 
     override fun doAction() {
-        nodeModel?.addComponent(component)
-        refreshComponentViews()
+        launchOnMainThread {
+            gameEntity?.addComponentLifecycleAware(component)
+            refreshComponentViews()
+        }
     }
 
     override fun undoAction() {
-        nodeModel?.removeComponent(component)
+        gameEntity?.removeComponent(component)
         refreshComponentViews()
     }
 }

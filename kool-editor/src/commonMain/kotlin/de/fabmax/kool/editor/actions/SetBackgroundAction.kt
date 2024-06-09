@@ -2,18 +2,18 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.SceneBackgroundComponent
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.data.SceneBackgroundData
+import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.util.launchOnMainThread
 
 class SetBackgroundAction(
-    nodeId: NodeId,
-    val oldBackground: SceneBackgroundData,
-    val newBackground: SceneBackgroundData
-) : ComponentAction<SceneBackgroundComponent>(nodeId, SceneBackgroundComponent::class) {
+    entityId: EntityId,
+    val oldBackground: SceneBackgroundComponentData,
+    val newBackground: SceneBackgroundComponentData
+) : ComponentAction<SceneBackgroundComponent>(entityId, SceneBackgroundComponent::class) {
 
     override fun doAction() {
-        component?.backgroundState?.set(newBackground)
+        component?.setPersistent(newBackground)
         launchOnMainThread {
             // refresh scene tree to update skybox visibility (delayed, so that it's called after bg was applied)
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
@@ -21,7 +21,7 @@ class SetBackgroundAction(
     }
 
     override fun undoAction() {
-        component?.backgroundState?.set(oldBackground)
+        component?.setPersistent(oldBackground)
         launchOnMainThread {
             // refresh scene tree to update skybox visibility (delayed, so that it's called after bg was applied)
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()

@@ -1,65 +1,79 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.data.MapAttribute
+import de.fabmax.kool.editor.api.*
+import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MaterialComponentData
-import de.fabmax.kool.editor.data.MaterialData
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.model.EditorProject
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.editor.data.MaterialShaderData
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logW
 
 class MaterialComponent(
-    nodeModel: SceneNodeModel,
-    override val componentData: MaterialComponentData = MaterialComponentData(NodeId(-1L))
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<MaterialComponentData>
 ) :
-    SceneNodeComponent(nodeModel),
-    EditorDataComponent<MaterialComponentData>
+    GameEntityDataComponent<MaterialComponentData>(gameEntity, componentInfo),
+    EditorScene.SceneShaderDataListener
 {
 
-    val materialState = mutableStateOf<MaterialData?>(null).onChange { mat ->
-        collectRequiredAssets(mat)
-        if (AppState.isEditMode) {
-            componentData.materialId = mat?.id ?: NodeId( -1)
+    val id: EntityId get() = gameEntity.id
+    val name: String get() = gameEntity.name
+
+    val shaderData: MaterialShaderData get() = data.shaderData
+
+    private val listeners by cachedProjectComponents<ListenerComponent>()
+
+    suspend fun applyMaterialTo(gameEntity: GameEntity, mesh: Mesh): Boolean {
+        mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
+        val sceneShaderData = gameEntity.scene.shaderData
+
+        val meshKey = MeshShaderKey(gameEntity, mesh)
+        val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
+            logD { "Creating new material shader $name (for mesh: ${mesh.name})" }
+            data.createShader(sceneShaderData)
         }
-        if (isCreated) {
-            launchOnMainThread {
-                nodeModel.getComponents<UpdateMaterialComponent>().forEach { it.updateMaterial(mat) }
+
+        if (shader is KslShader && shader.findRequiredVertexAttributes().any { it !in mesh.geometry.vertexAttributes }) {
+            val missing = shader.findRequiredVertexAttributes() - mesh.geometry.vertexAttributes.toSet()
+            logW { "Material $name: Unable to apply material to mesh ${mesh.name}, missing attributes: $missing" }
+            return false
+        }
+        mesh.shader = shader
+        return true
+    }
+
+    override fun setPersistent(componentData: MaterialComponentData) {
+        super.setPersistent(componentData)
+        gameEntity.entityData.name = componentData.name
+    }
+
+    override fun onDataChanged(oldData: MaterialComponentData, newData: MaterialComponentData) {
+        gameEntity.name = newData.name
+
+        launchOnMainThread {
+            project.createdScenes.values.forEach { scene ->
+                scene.shaderData.shaderCache.getShaderCache(this)?.let { shaders ->
+                    val removeShaders = shaders.values.filter { !newData.updateShader(it, scene.shaderData) }
+                    shaders.values -= removeShaders.toSet()
+                }
             }
+            listeners.forEach { it.onMaterialChanged(this, data) }
         }
     }
 
-    val materialData: MaterialData?
-        get() = materialState.value
-
-    init {
-        materialState.set(sceneModel.project.materialsById[componentData.materialId])
-    }
-
-    fun isHoldingMaterial(material: MaterialData?): Boolean {
-        return material?.id == materialData?.id
-    }
-
-    private fun collectRequiredAssets(material: MaterialData?) {
-        requiredAssets.clear()
-        if (material == null) {
-            return
-        }
-
-        material.shaderData.collectAttributes().filterIsInstance<MapAttribute>().forEach { matMap ->
-            requiredAssets += AssetReference.Texture(matMap.mapPath)
+    override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
+        val sceneShaders = scene.shaderData.shaderCache.getShaderCache(this) ?: return
+        launchOnMainThread {
+            val removeShaders = sceneShaders.values.filter { !data.updateShader(it, sceneShaderData) }
+            sceneShaders.values -= removeShaders.toSet()
+            listeners.forEach { it.onMaterialChanged(this, data) }
         }
     }
-}
 
-interface UpdateMaterialComponent {
-    fun updateMaterial(material: MaterialData?)
-}
-
-fun EditorProject.updateMaterial(material: MaterialData) {
-    getAllComponents<UpdateMaterialComponent>().forEach {
-        it.updateMaterial(material)
+    fun interface ListenerComponent {
+        suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData)
     }
 }

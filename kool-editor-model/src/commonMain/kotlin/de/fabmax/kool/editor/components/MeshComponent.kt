@@ -1,100 +1,88 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AppState
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.model.UpdateMaxNumLightsComponent
+import de.fabmax.kool.editor.api.*
+import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.MaterialComponentData
+import de.fabmax.kool.editor.data.MeshComponentData
+import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
-import de.fabmax.kool.modules.ksl.KslLitShader
-import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.modules.ui2.MutableStateList
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.util.*
-import kotlinx.atomicfu.atomic
+import de.fabmax.kool.util.Heightmap
+import de.fabmax.kool.util.launchOnMainThread
 
 class MeshComponent(
-    nodeModel: SceneNodeModel,
-    override val componentData: MeshComponentData = MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0)))
+    gameEntity: GameEntity,
+    componentInfo: ComponentInfo<MeshComponentData> = ComponentInfo(MeshComponentData(ShapeData.Box()))
 ) :
-    SceneNodeComponent(nodeModel),
-    EditorDataComponent<MeshComponentData>,
-    ContentComponent,
-    UpdateMaterialComponent,
-    UpdateSceneBackgroundComponent,
-    UpdateShadowMapsComponent,
-    UpdateSsaoComponent,
-    UpdateMaxNumLightsComponent
+    GameEntityDataComponent<MeshComponentData>(gameEntity, componentInfo),
+    DrawNodeComponent,
+    MaterialComponent.ListenerComponent,
+    MaterialReferenceComponent.ListenerComponent
 {
-    val shapesState = MutableStateList(componentData.shapes)
+    override var drawNode: Mesh? = null
+        private set
 
-    var mesh: Mesh? = null
-
-    override val contentNode: Mesh?
-        get() = mesh
-
-    private val isRecreatingShader = atomic(false)
+    private val listeners by cachedEntityComponents<ListenerComponent>()
 
     init {
-        dependsOn(MaterialComponent::class, isOptional = true)
+        dependsOn(MaterialReferenceComponent::class, isOptional = true)
 
-        componentData.shapes
+        data.shapes
             .filterIsInstance<ShapeData.Heightmap>()
             .filter{ it.mapPath.isNotBlank() }
             .forEach { requiredAssets += it.toAssetReference() }
     }
 
-    override suspend fun createComponent() {
-        super.createComponent()
+    override fun onDataChanged(oldData: MeshComponentData, newData: MeshComponentData) {
+        launchOnMainThread {
+            updateGeometry(newData)
+        }
+    }
 
-        mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS).apply {
-            name = nodeModel.name
-            isVisible = nodeModel.isVisibleState.value
+    override suspend fun applyComponent() {
+        super.applyComponent()
+
+        drawNode = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS).apply {
+            name = gameEntity.name
+            isVisible = gameEntity.isVisible
 
             if (AppState.isInEditor) {
                 rayTest = MeshRayTest.geometryTest(this)
             }
-            nodeModel.setDrawNode(this)
+            gameEntity.replaceDrawNode(this)
         }
 
-        updateGeometry()
-        recreateShader()
+        updateGeometry(data)
+        createMeshShader()
     }
 
     override fun destroyComponent() {
         super.destroyComponent()
-        mesh?.release()
-        mesh = null
-        nodeModel.setDrawNode(Node(nodeModel.name))
+        drawNode?.release()
+        drawNode = null
+        gameEntity.replaceDrawNode(Node(gameEntity.name))
     }
 
-    suspend fun updateGeometry() {
-        val mesh = this.mesh ?: return
+    private suspend fun updateGeometry(data: MeshComponentData) {
+        val mesh = drawNode ?: return
 
         requiredAssets.clear()
         mesh.generate {
-            shapesState.forEach { shape -> generateShape(shape) }
+            data.shapes.forEach { shape -> generateShape(shape) }
             geometry.generateTangents()
         }
 
         // force ray test mesh update
         mesh.rayTest.onMeshDataChanged(mesh)
 
-        if (isCreated) {
-            launchOnMainThread {
-                nodeModel.getComponents<UpdateMeshComponent>().forEach { it.updateMesh(componentData) }
-            }
-        }
+        listeners.forEach { it.onMeshGeometryChanged(this, data) }
     }
 
     private suspend fun MeshBuilder.generateShape(shape: ShapeData) = withTransform {
@@ -189,109 +177,34 @@ class MeshComponent(
         }
     }
 
+    override fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?) {
+        launchOnMainThread {
+            createMeshShader()
+        }
+    }
+
+    override suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
+        val mesh = drawNode ?: return
+        val holder = gameEntity.getComponent<MaterialReferenceComponent>() ?: return
+        if (holder.isHoldingMaterial(component)) {
+            component.applyMaterialTo(gameEntity, mesh)
+        }
+    }
+
     private suspend fun createMeshShader() {
-        val mesh = this.mesh ?: return
-
-        val sceneShaderData = sceneModel.shaderData
-
-        val materialData = nodeModel.getComponent<MaterialComponent>()?.materialData
-        if (materialData != null) {
-            logD { "${nodeModel.name}: (re-)creating shader for material: ${materialData.name}" }
-
-            mesh.shader = materialData.createShader(sceneShaderData)
-            mesh.isCastingShadow = materialData.shaderData.genericSettings.isCastingShadow
-
-        } else {
-            logD { "${nodeModel.name}: (re-)creating shader for default material" }
-            mesh.shader = KslPbrShader {
-                color { uniformColor(MdColor.GREY.toLinear()) }
-                shadow { addShadowMaps(sceneShaderData.shadowMaps) }
-                maxNumberOfLights = sceneShaderData.maxNumberOfLights
-                sceneShaderData.environmentMaps?.let {
-                    enableImageBasedLighting(it)
-                }
-                sceneShaderData.ssaoMap?.let {
-                    ao { enableSsao(it) }
-                }
-            }.apply {
-                if (sceneShaderData.environmentMaps == null) {
-                    ambientFactor = sceneShaderData.ambientColorLinear
-                }
-            }
-        }
-    }
-
-    override fun updateMaterial(material: MaterialData?) {
-        val mesh = this.mesh ?: return
-        val holder = nodeModel.getComponent<MaterialComponent>()
-        if (holder?.isHoldingMaterial(material) == true) {
-            launchOnMainThread {
-                if (material == null || !material.updateShader(mesh.shader, sceneModel.shaderData)) {
-                    createMeshShader()
-                }
-                mesh.isCastingShadow = material?.shaderData?.genericSettings?.isCastingShadow ?: true
-            }
-        }
-    }
-
-    override fun updateSingleColorBg(bgColorLinear: Color) {
-        val shader = mesh?.shader as? KslLitShader ?: return
-        if (shader.ambientCfg !is KslLitShader.AmbientColor.Uniform) {
-            recreateShader()
-        } else {
-            (mesh?.shader as? KslLitShader)?.ambientFactor = bgColorLinear
-        }
-    }
-
-    override fun updateHdriBg(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-        val shader = mesh?.shader as? KslLitShader ?: return
-        val pbrShader = shader as? KslPbrShader
-        if (shader.ambientCfg !is KslLitShader.AmbientColor.ImageBased) {
-            recreateShader()
-        } else {
-            shader.ambientMap = ibl.irradianceMap
-            pbrShader?.reflectionMap = ibl.reflectionMap
-        }
-    }
-
-    override fun updateShadowMaps(shadowMaps: List<ShadowMap>) {
-        (mesh?.shader as? KslLitShader)?.let {
-            if (shadowMaps != it.shadowMaps) {
-                recreateShader()
-            }
-        }
-    }
-
-    override fun updateSsao(ssaoMap: Texture2d?) {
-        val shader = mesh?.shader as? KslLitShader ?: return
-        val needsSsaoEnabled = ssaoMap != null
-        if (shader.isSsao != needsSsaoEnabled) {
-            recreateShader()
-        }
-        shader.ssaoMap = ssaoMap
-    }
-
-    override fun updateMaxNumLightsComponent(newMaxNumLights: Int) {
-        recreateShader()
-    }
-
-    private fun recreateShader() {
-        if (!isRecreatingShader.getAndSet(true)) {
-            launchOnMainThread {
-                isRecreatingShader.lazySet(false)
-                createMeshShader()
-            }
-        }
+        val mesh = drawNode ?: return
+        val material = gameEntity.getComponent<MaterialReferenceComponent>()?.material ?: project.defaultMaterial
+        material?.applyMaterialTo(gameEntity, mesh)
     }
 
     companion object {
         const val DEFAULT_HEIGHTMAP_ROWS = 129
         const val DEFAULT_HEIGHTMAP_COLS = 129
     }
-}
 
-interface UpdateMeshComponent {
-    fun updateMesh(mesh: MeshComponentData)
+    interface ListenerComponent {
+        suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData)
+    }
 }
 
 fun ShapeData.Heightmap.toAssetReference() = AssetReference.Heightmap(

@@ -2,12 +2,12 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.FusedAction
-import de.fabmax.kool.editor.actions.SetTransformAction
+import de.fabmax.kool.editor.actions.SetComponentDataAction
+import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.TransformComponent
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
-import de.fabmax.kool.editor.model.SceneNodeModel
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
@@ -18,22 +18,26 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
 
     private val transformProperties = TransformProperties()
 
+    private val lastTranslation = MutableVec3d()
+    private val lastRotation = MutableQuatD()
+    private val lastScale = MutableVec3d()
+
+    private val currentTranslation = MutableVec3d()
+    private val currentRotation = MutableQuatD()
+    private val currentScale = MutableVec3d()
+
     init {
         transformProperties.editHandlers += object : ValueEditHandler<List<TransformData>> {
             override fun onEdit(value: List<TransformData>) {
                 value.forEachIndexed { i, transformData ->
-                    transformData.toTransform(components[i].nodeModel.drawNode.transform)
+                    transformData.toTransform(components[i].gameEntity.drawNode.transform)
                 }
             }
 
             override fun onEditEnd(startValue: List<TransformData>, endValue: List<TransformData>) {
                 val actions = buildList {
                     for (i in startValue.indices) {
-                        add(SetTransformAction(
-                            nodeModel = components[i].nodeModel,
-                            undoTransform = startValue[i],
-                            applyTransform = endValue[i]
-                        ))
+                        add(setTransformAction(components[i], startValue[i], endValue[i]))
                     }
                 }
                 FusedAction(actions).apply()
@@ -41,13 +45,26 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
         }
     }
 
+    private fun setTransformAction(component: TransformComponent, undoData: TransformData, applyData: TransformData) =
+        SetComponentDataAction(component, component.data.copy(transform = undoData), component.data.copy(transform = applyData))
+
     override fun UiScope.compose() = componentPanel("Transform", IconMap.small.transform) {
         position()
         rotation()
         scale()
 
-        val transformData = components.map { it.transformState.use() }
+        val transformData = components.map { it.dataState.use().transform }
         transformProperties.setTransformData(transformData, KoolEditor.instance.gizmoOverlay.transformFrame.use())
+
+        surface.onEachFrame {
+            components[0].gameEntity.drawNode.modelMatD.decompose(currentTranslation, currentRotation, currentScale)
+            if (!currentTranslation.isFuzzyEqual(lastTranslation, 1e-3) || !currentRotation.isFuzzyEqual(lastRotation, 1e-4) || !currentScale.isFuzzyEqual(lastScale, 1e-3)) {
+                components.forEach { it.updateDataFromTransform() }
+                lastTranslation.set(currentTranslation)
+                lastRotation.set(currentRotation)
+                lastScale.set(currentScale)
+            }
+        }
     }
 
     private fun UiScope.position() = labeledXyzRow(
@@ -72,12 +89,14 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                     .width(Grow.Std)
             }
             iconButton(
-                icon = if (components.all { it.isFixedScaleRatio.use() }) IconMap.small.lock else IconMap.small.lockOpen,
+                icon = if (components.all { it.data.isFixedScaleRatio }) IconMap.small.lock else IconMap.small.lockOpen,
                 tooltip = "Lock scale ratio",
                 margin = Dp.ZERO
             ) {
-                val toggleVal = !components.all { it.isFixedScaleRatio.value }
-                components.forEach { it.isFixedScaleRatio.set(toggleVal) }
+                val toggleVal = !components.all { it.data.isFixedScaleRatio }
+                components.map {
+                    SetComponentDataAction(it, it.data, it.data.copy(isFixedScaleRatio = toggleVal))
+                }.fused().apply()
             }
         }
         xyzRow(
@@ -207,7 +226,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
 
             private fun computeScale(componentI: Int, scaleValue: Vec3d): TransformData {
                 val mergedScale = mergeVec3(scaleValue, startTransformData[componentI].scale.toVec3d())
-                val scaleVec = if (components[componentI].isFixedScaleRatio.value) {
+                val scaleVec = if (components[componentI].data.isFixedScaleRatio) {
                     val last = lastEditVal[componentI]
                     val fx = abs(mergedScale.x / last.x - 1.0)
                     val fy = abs(mergedScale.y / last.y - 1.0)
@@ -255,9 +274,9 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                         td
                     }
                     GizmoFrame.GLOBAL -> {
-                        val parent = components[i].nodeModel.parent
-                        if (parent is SceneNodeModel) {
-                            TransformData.fromMatrix(components[i].nodeModel.drawNode.modelMatD)
+                        val parent = components[i].gameEntity.parent
+                        if (parent?.isSceneChild == true) {
+                            TransformData(components[i].gameEntity.drawNode.modelMatD)
                         } else {
                             // parent node is the scene -> parent reference frame == global reference frame
                             td
@@ -277,11 +296,11 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                     transformData
                 }
                 GizmoFrame.GLOBAL -> {
-                    val parent = components[componentI].nodeModel.parent
-                    if (parent is SceneNodeModel) {
+                    val parent = components[componentI].gameEntity.parent
+                    if (parent?.isSceneChild == true) {
                         val globalToParent = parent.drawNode.invModelMatD
                         val m = globalToParent.mul(transformData.toMat4d(MutableMat4d()), MutableMat4d())
-                        TransformData.fromMatrix(m)
+                        TransformData(m)
                     } else {
                         // parent node is the scene -> parent reference frame == global reference frame
                         transformData

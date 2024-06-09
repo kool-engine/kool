@@ -1,79 +1,49 @@
 package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.data.NodeId
-import de.fabmax.kool.editor.data.SceneNodeData
-import de.fabmax.kool.editor.model.NodeModel
-import de.fabmax.kool.editor.model.SceneNodeModel
-import de.fabmax.kool.editor.util.nodeModel
-import de.fabmax.kool.editor.util.sceneModel
-import de.fabmax.kool.editor.util.sceneNodeModel
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.toHierarchy
+import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.util.launchOnMainThread
 
 class DeleteSceneNodesAction(
-    nodeModels: List<SceneNodeModel>
-) : SceneNodeAction(removeChildNodes(nodeModels)) {
+    gameEntities: List<GameEntity>
+) : EditorAction {
 
-    private val removeNodeInfos = mutableListOf<NodeInfo>()
+    private val hierarchy = gameEntities.toHierarchy()
+    private val positions = mutableMapOf<EntityId, GameEntity.InsertionPos>()
 
     init {
-        sceneNodes.forEach { appendNodeInfo(it) }
-    }
-
-    private fun appendNodeInfo(nodeModel: SceneNodeModel) {
-        val nodeIdx = nodeModel.parent.nodeData.childNodeIds.indexOf(nodeModel.nodeId)
-        val pos = if (nodeIdx > 0) {
-            NodeModel.InsertionPos.After(nodeModel.parent.nodeData.childNodeIds[nodeIdx - 1])
-        } else {
-            val before = nodeModel.parent.nodeData.childNodeIds.getOrNull(1)
-            before?.let { NodeModel.InsertionPos.Before(it) } ?: NodeModel.InsertionPos.End
-        }
-        removeNodeInfos += NodeInfo(nodeModel.nodeData, nodeModel.parent.nodeId, pos)
-
-        nodeModel.nodeData.childNodeIds.mapNotNull { it.sceneNodeModel }.forEach { child ->
-            appendNodeInfo(child)
+        gameEntities.forEach { gameEntity ->
+            val parent = gameEntity.parent!!
+            val entityIdx = parent.children.indexOf(gameEntity)
+            positions[gameEntity.id] = if (entityIdx > 0) {
+                GameEntity.InsertionPos.After(parent.children[entityIdx - 1].id)
+            } else {
+                val before = parent.children.getOrNull(1)
+                before?.let { GameEntity.InsertionPos.Before(it.id) } ?: GameEntity.InsertionPos.End
+            }
         }
     }
 
     override fun doAction() {
-        KoolEditor.instance.selectionOverlay.reduceSelection(sceneNodes)
-        sceneNodes.forEach {
-            it.sceneModel.removeSceneNode(it)
+        KoolEditor.instance.selectionOverlay.reduceSelection(hierarchy.mapNotNull { it.entityData.id.gameEntity })
+        hierarchy.forEach { root ->
+            val entity = root.entityData.id.gameEntity
+            val scene = entity?.scene
+            entity?.let { scene?.removeGameEntity(it) }
         }
         refreshComponentViews()
     }
 
     override fun undoAction() {
         launchOnMainThread {
-            // removed node model was destroyed, crate a new one only using the old data
-            removeNodeInfos.forEach { (nodeData, parentId, pos) ->
-                parentId.nodeModel?.let { parent ->
-                    val scene = parent.sceneModel
-                    val node = SceneNodeModel(nodeData, parent, scene)
-                    scene.addSceneNode(node)
-                    parent.removeChild(node)
-                    parent.addChild(node, pos)
-                }
+            hierarchy.forEach {
+                val scene = it.entityData.parentId?.gameEntity?.scene
+                scene?.addGameEntities(it, positions[it.entityData.id] ?: GameEntity.InsertionPos.End)
             }
             refreshComponentViews()
-        }
-    }
-
-    private data class NodeInfo(val nodeData: SceneNodeData, val parentId: NodeId, val position: NodeModel.InsertionPos)
-
-    companion object {
-        fun removeChildNodes(allNodes: List<SceneNodeModel>): List<SceneNodeModel> {
-            val asSet = allNodes.toSet()
-            return allNodes.filter {
-                var p = it.parent
-                while (p is SceneNodeModel) {
-                    if (p in asSet) {
-                        return@filter false
-                    }
-                    p = p.parent
-                }
-                true
-            }
         }
     }
 }

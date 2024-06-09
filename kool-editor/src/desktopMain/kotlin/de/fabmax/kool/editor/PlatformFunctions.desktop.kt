@@ -114,7 +114,7 @@ fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {
             ),
             isLaunchWatchService = true
         )
-        val projFiles = ProjectFiles.createSafe(fs)
+        val projFiles = ProjectFiles(fs)
         KoolEditor(projFiles, ctx)
     }
 }

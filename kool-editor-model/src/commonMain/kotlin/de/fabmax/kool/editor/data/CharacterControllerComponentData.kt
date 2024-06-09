@@ -4,12 +4,7 @@ import de.fabmax.kool.physics.character.NonWalkableMode
 import kotlinx.serialization.Serializable
 
 @Serializable
-class CharacterControllerComponentData(
-    var properties: CharacterControllerComponentProperties = CharacterControllerComponentProperties(),
-) : ComponentData
-
-@Serializable
-data class CharacterControllerComponentProperties(
+data class CharacterControllerComponentData(
     val shape: ShapeData.Capsule = ShapeData.Capsule(0.4, 1.0),
     val crouchSpeed: Double = 1.0,
     val walkSpeed: Double = 2.0,
@@ -23,4 +18,4 @@ data class CharacterControllerComponentProperties(
 
     val enableDefaultControls: Boolean = true,
     val runByDefault: Boolean = true,
-)
+) : ComponentData

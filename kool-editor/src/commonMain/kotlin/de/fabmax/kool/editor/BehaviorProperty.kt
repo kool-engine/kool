@@ -1,9 +1,8 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.BehaviorComponent
-import de.fabmax.kool.editor.components.EditorModelComponent
-import de.fabmax.kool.editor.model.SceneModel
-import de.fabmax.kool.editor.model.SceneNodeModel
+import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.math.*
 import kotlin.reflect.KType
 
@@ -12,12 +11,9 @@ class BehaviorProperty(
     val type: BehaviorPropertyType,
     val kType: KType,
     val label: String,
-    val min: Double = Double.NEGATIVE_INFINITY,
-    val max: Double = Double.POSITIVE_INFINITY
+    val min: Vec4d = Vec4d(Double.NEGATIVE_INFINITY),
+    val max: Vec4d = Vec4d(Double.POSITIVE_INFINITY),
 ) {
-    val isRanged: Boolean
-        get() = min > Float.NEGATIVE_INFINITY && max < Float.POSITIVE_INFINITY
-
     fun get(behaviorComponent: BehaviorComponent): Any? {
         return behaviorComponent.getProperty(name)
     }
@@ -50,6 +46,5 @@ fun BehaviorProperty.getVec4i(behaviorComponent: BehaviorComponent): Vec4i = get
 
 fun BehaviorProperty.getBoolean(behaviorComponent: BehaviorComponent): Boolean = get(behaviorComponent) as Boolean? ?: false
 
-fun BehaviorProperty.getComponent(behaviorComponent: BehaviorComponent): EditorModelComponent? = get(behaviorComponent) as EditorModelComponent?
-fun BehaviorProperty.getScene(behaviorComponent: BehaviorComponent): SceneModel? = get(behaviorComponent) as SceneModel?
-fun BehaviorProperty.getSceneNode(behaviorComponent: BehaviorComponent): SceneNodeModel? = get(behaviorComponent) as SceneNodeModel?
+fun BehaviorProperty.getComponent(behaviorComponent: BehaviorComponent): GameEntityComponent? = get(behaviorComponent) as GameEntityComponent?
+fun BehaviorProperty.getGameEntity(behaviorComponent: BehaviorComponent): GameEntity? = get(behaviorComponent) as GameEntity?
