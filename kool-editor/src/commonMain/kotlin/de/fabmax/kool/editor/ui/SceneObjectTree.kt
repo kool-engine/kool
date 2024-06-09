@@ -64,8 +64,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(meshShape.name)
         val entityData = GameEntityData(id, name, parent.gameEntity.id)
-        entityData.components += ComponentInfo(MeshComponentData(meshShape))
-        entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)))
+        entityData.components += ComponentInfo(MeshComponentData(meshShape), displayOrder = 1)
+        entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)), displayOrder = 2)
         AddSceneNodeAction(listOf(entityData)).apply()
     }
 
@@ -73,7 +73,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(modelAsset.name)
         val entityData = GameEntityData(id, name, parent.gameEntity.id)
-        entityData.components += ComponentInfo(ModelComponentData(modelAsset.path))
+        entityData.components += ComponentInfo(ModelComponentData(modelAsset.path), displayOrder = 1)
         AddSceneNodeAction(listOf(entityData)).apply()
     }
 
@@ -81,13 +81,13 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(lightType.name)
         val entityData = GameEntityData(id, name, parent.gameEntity.id)
-        entityData.components += ComponentInfo(DiscreteLightComponentData(lightType))
+        entityData.components += ComponentInfo(DiscreteLightComponentData(lightType), displayOrder = 1)
 
         val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
         if (lightType !is LightTypeData.Point) {
             transform.mul(MutableMat4d().rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
         }
-        entityData.components += ComponentInfo(TransformComponentData(TransformData(transform)))
+        entityData.components += ComponentInfo(TransformComponentData(TransformData(transform)), displayOrder = 0)
 
         AddSceneNodeAction(listOf(entityData)).apply()
     }

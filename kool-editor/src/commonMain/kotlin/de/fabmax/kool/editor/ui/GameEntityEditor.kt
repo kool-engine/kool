@@ -102,29 +102,31 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
                 .filter { primary.isSceneChild || it !is TransformComponent }
                 .forEach { add(it.componentType) }
             for (i in 1 until objects.size) {
-                retainAll(objects[i].components.map { it.componentType })
+                retainAll(objects[i].components.map { it.componentType }.toSet())
             }
         }
 
-        for (type in componentTypes) {
-            val component = primary.components.first { it.componentType == type }
-            when (component) {
-                is CameraComponent -> componentEditor(objects) { CameraEditor() }
-                is DiscreteLightComponent -> componentEditor(objects) { LightEditor() }
-                is MaterialReferenceComponent -> componentEditor(objects) { MaterialEditor() }
-                is MeshComponent -> componentEditor(objects) { MeshEditor() }
-                is ModelComponent -> componentEditor(objects) { ModelEditor() }
-                is SceneComponent -> componentEditor(objects) { ScenePropertiesEditor() }
-                is SceneBackgroundComponent -> componentEditor(objects) { SceneBackgroundEditor() }
-                is BehaviorComponent -> componentEditor(objects) { BehaviorEditor() }
-                is ShadowMapComponent -> componentEditor(objects) { ShadowMapEditor() }
-                is SsaoComponent -> componentEditor(objects) { SsaoEditor() }
-                is TransformComponent -> componentEditor(objects) { TransformEditor() }
-                is PhysicsWorldComponent -> componentEditor(objects) { PhysicsWorldEditor() }
-                is RigidActorComponent -> componentEditor(objects) { RigidActorEditor() }
-                is CharacterControllerComponent -> componentEditor(objects) { CharacterControllerEditor() }
+        primary.components
+            .filter { it.componentType in componentTypes }
+            .sortedBy { (it as? GameEntityDataComponent<*>)?.componentInfo?.displayOrder }
+            .forEach { component ->
+                when (component) {
+                    is CameraComponent -> componentEditor(objects) { CameraEditor() }
+                    is DiscreteLightComponent -> componentEditor(objects) { LightEditor() }
+                    is MaterialReferenceComponent -> componentEditor(objects) { MaterialEditor() }
+                    is MeshComponent -> componentEditor(objects) { MeshEditor() }
+                    is ModelComponent -> componentEditor(objects) { ModelEditor() }
+                    is SceneComponent -> componentEditor(objects) { ScenePropertiesEditor() }
+                    is SceneBackgroundComponent -> componentEditor(objects) { SceneBackgroundEditor() }
+                    is BehaviorComponent -> componentEditor(objects) { BehaviorEditor() }
+                    is ShadowMapComponent -> componentEditor(objects) { ShadowMapEditor() }
+                    is SsaoComponent -> componentEditor(objects) { SsaoEditor() }
+                    is TransformComponent -> componentEditor(objects) { TransformEditor() }
+                    is PhysicsWorldComponent -> componentEditor(objects) { PhysicsWorldEditor() }
+                    is RigidActorComponent -> componentEditor(objects) { RigidActorEditor() }
+                    is CharacterControllerComponent -> componentEditor(objects) { CharacterControllerEditor() }
+                }
             }
-        }
     }
 
     private inline fun <reified T: GameEntityComponent> UiScope.componentEditor(gameEntities: List<GameEntity>, editorProvider: () -> ComponentEditor<T>) {

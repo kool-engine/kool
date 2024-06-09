@@ -15,7 +15,7 @@ data class GameEntityData(
 }
 
 @Serializable
-data class ComponentInfo<T: ComponentData>(var data: T)
+data class ComponentInfo<T: ComponentData>(var data: T, var displayOrder: Int = -1)
 
 @Serializable
 @JvmInline

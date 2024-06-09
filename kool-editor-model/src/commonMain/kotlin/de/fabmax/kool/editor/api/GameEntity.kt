@@ -65,7 +65,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         check(id.value > 0L)
 
         createComponentsFromData(entityData.components)
-        transform = getOrPutComponent { TransformComponent(this) }
+        transform = getOrPutComponent { TransformComponent(this).apply { componentInfo.displayOrder = 0 } }
 
         drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(entityData.name)
         drawNode.isVisible = entityData.isVisible
@@ -209,10 +209,13 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             "addComponent called on GameEntity $name with component ${component.componentType} which lifecycle " +
                     "state is ${component.lifecycle} (expected CREATED)"
         }
-        components += component
-        if (component is GameEntityDataComponent<*>) {
+        if (component is GameEntityDataComponent<*> && component.componentInfo.displayOrder < 0) {
+            component.componentInfo.displayOrder = components
+                .filterIsInstance<GameEntityDataComponent<*>>()
+                .maxOf { it.componentInfo.displayOrder } + 1
             entityData.components += component.componentInfo
         }
+        components += component
         incComponentModCount()
     }
 
