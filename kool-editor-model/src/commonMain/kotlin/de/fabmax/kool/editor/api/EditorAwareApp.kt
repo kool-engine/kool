@@ -30,7 +30,7 @@ interface EditorAwareApp {
 
     fun launchStandalone(ctx: KoolContext) {
         launchOnMainThread {
-            val projModel = EditorProject.loadFromAssets() ?: throw IllegalStateException("kool-project.json not found")
+            val projModel = checkNotNull(EditorProject.loadFromAssets()) { "kool-project.json not found" }
             loadApp(projModel, ctx)
             projModel.createdScenes.values.forEach {
                 ctx.scenes += it.scene

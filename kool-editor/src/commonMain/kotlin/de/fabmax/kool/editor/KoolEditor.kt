@@ -17,6 +17,7 @@ import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
 import de.fabmax.kool.modules.filesystem.copyRecursively
 import de.fabmax.kool.modules.filesystem.toZip
+import de.fabmax.kool.modules.filesystem.writeText
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ao.AoPipeline
@@ -29,6 +30,7 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
@@ -334,6 +336,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
     suspend fun saveProject() {
         ProjectWriter.saveProjectData(projectModel.projectData, projectFiles.projectModelDir)
+        // also save single file version
+        projectFiles.getProjectFileMonolithic().writeText(jsonCodec.encodeToString(projectModel.projectData))
         logD { "Saved project model" }
     }
 

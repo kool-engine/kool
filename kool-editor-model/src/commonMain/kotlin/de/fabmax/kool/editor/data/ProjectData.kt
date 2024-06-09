@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class ProjectData(
-    var meta: ProjectMeta = ProjectMeta(MODEL_VERSION),
+    var meta: ProjectMeta,
     val scenes: MutableList<SceneData> = mutableListOf(),
     val materials: MutableList<GameEntityData> = mutableListOf()
 ) {

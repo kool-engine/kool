@@ -112,6 +112,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
         newDrawNode.name = name
         newDrawNode.isVisible = isVisible
+        newDrawNode.transform = transform.transform
 
         val oldDrawNode = drawNode
         oldDrawNode.onUpdate -= nodeUpdateCb
@@ -129,6 +130,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
         oldDrawNode.release()
         drawNode = newDrawNode
+        newDrawNode.updateModelMat()
 
         val wasInScene = scene.nodesToEntities.remove(oldDrawNode) != null
         if (wasInScene) {

@@ -65,7 +65,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         val name = editor.projectModel.uniquifyName(meshShape.name)
         val entityData = GameEntityData(id, name, parent.gameEntity.id)
         entityData.components += ComponentInfo(MeshComponentData(meshShape))
-        entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(-1)))
+        entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)))
         AddSceneNodeAction(listOf(entityData)).apply()
     }
 

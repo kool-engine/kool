@@ -17,10 +17,20 @@ class TransformComponent(
     private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
     var transform: Transform = TrsTransformF()
+        set(value) {
+            field = value
+            gameEntity.drawNode.transform = transform
+        }
 
     init {
         componentOrder = COMPONENT_ORDER_EARLY
         data.transform.toTransform(transform)
+    }
+
+    override suspend fun applyComponent() {
+        super.applyComponent()
+        gameEntity.drawNode.transform = transform
+        gameEntity.drawNode.updateModelMat()
     }
 
     fun updateDataFromTransform() {

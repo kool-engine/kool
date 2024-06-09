@@ -239,7 +239,10 @@ abstract class DndItemFlavor<T: Any> {
     }
 
     data object DndGameEntity : DndItemFlavor<GameEntity>() {
-        override val flavorMappings: Map<DndItemFlavor<*>, (GameEntity) -> Any> = mapOf(this to { it })
+        override val flavorMappings: Map<DndItemFlavor<*>, (GameEntity) -> Any> = mapOf(
+            this to { it },
+            DndGameEntities to { listOf(it) }
+        )
 
         override fun getTyped(item: Any): GameEntity = item as GameEntity
     }

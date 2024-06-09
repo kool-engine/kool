@@ -82,12 +82,12 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             logE { "addEntityData: Duplicate ID ${data.id} of entity ${data.name}" }
         }
         sceneData.entities += data
-        project._entityData[data.id] = data
+        project.entityData[data.id] = data
     }
 
     private fun removeEntityData(data: GameEntityData) {
         sceneData.entities -= data
-        project._entityData -= data.id
+        project.entityData -= data.id
     }
 
     inline fun <reified T: Any> getAllComponents(): List<T> {

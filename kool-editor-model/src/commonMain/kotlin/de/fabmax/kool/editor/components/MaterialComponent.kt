@@ -32,7 +32,7 @@ class MaterialComponent(
 
         val meshKey = MeshShaderKey(gameEntity, mesh)
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
-            logD { "Creating new material shader instance for material $name (for mesh ${mesh.name})" }
+            logD { "Creating new material shader $name (for mesh: ${mesh.name})" }
             data.createShader(sceneShaderData)
         }
 

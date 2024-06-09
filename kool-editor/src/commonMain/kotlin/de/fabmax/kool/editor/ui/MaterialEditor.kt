@@ -17,6 +17,8 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
 
     private val material: MaterialComponent get() = components[0].material!!
 
+    private val pbrData: PbrShaderData get() = material.shaderData as PbrShaderData
+
     override fun UiScope.compose() {
         val allTheSameMaterial = components.all {
             it.material?.dataState?.use()
@@ -40,8 +42,9 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                         .onItemSelected { index ->
                             if (allTheSameMaterial || index > 0) {
                                 launchOnMainThread {
+                                    val setMaterial = items[index].getMaterial()
                                     components
-                                        .map { SetMaterialAction(it, items[index].getMaterial()) }
+                                        .map { SetMaterialAction(it, setMaterial) }
                                         .fused().apply()
                                 }
                             }
@@ -89,14 +92,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
     }
 
     private fun UiScope.materialEditor() {
-        when (val shaderData = material.shaderData) {
+        when (material.shaderData) {
             is BlinnPhongShaderData -> TODO()
-            is PbrShaderData -> pbrMaterialEditor(shaderData)
+            is PbrShaderData -> pbrMaterialEditor()
             is UnlitShaderData -> TODO()
         }
     }
 
-    private fun UiScope.pbrMaterialEditor(pbrData: PbrShaderData) {
+    private fun UiScope.pbrMaterialEditor() {
         // shader setting callback functions need to use cast material.shaderData instead of pbrData because otherwise
         // pbrData is captured on first invocation and will never be updated
 

@@ -29,7 +29,7 @@ class ProjectReader(private val srcDir: FileSystemDirectory) {
                 val metas = scenesDir.listFiles()
                     .filter { it.name.endsWith("meta.json") }
                     .mapNotNull { it.parseFile<SceneMeta>() }
-                    .map { meta -> meta to scenesDir.listDirectories().find { it.name.startsWith("${meta.rootId.value}") } }
+                    .map { meta -> meta to scenesDir.listDirectories().find { it.name.endsWith("${meta.rootId.value}") } }
 
                 metas.forEach { (meta, dir) ->
                     val sceneEntities = dir?.let { loadSceneEntities(it) } ?: emptyList()
@@ -85,7 +85,7 @@ class ProjectWriter private constructor(
 
         val scenesDir = targetDir.createProjDir("scenes")
         projData.scenes.forEach { scene ->
-            val sceneName = "${scene.meta.rootId.value}_${scene.meta.name.fileNameSafe()}"
+            val sceneName = "${scene.meta.name.fileNameSafe()}#${scene.meta.rootId.value}"
             scenesDir.createProjFile("$sceneName-meta.json", codec.encodeToString(scene.meta))
             val sceneDir = scenesDir.createProjDir(sceneName)
             scene.entities.toHierarchy().forEach { it.saveEntities(sceneDir) }
@@ -128,7 +128,7 @@ class ProjectWriter private constructor(
         }
     }
 
-    private val GameEntityData.dirName: String get() = "${id.value}_${name.fileNameSafe()}"
+    private val GameEntityData.dirName: String get() = "${name.fileNameSafe()}#${id.value}"
     private val GameEntityData.fileName: String get() = "$dirName.json"
 
     companion object {

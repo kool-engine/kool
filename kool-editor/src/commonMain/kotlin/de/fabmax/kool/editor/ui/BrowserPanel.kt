@@ -5,6 +5,8 @@ import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AppBehavior
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.components.MaterialComponent
+import de.fabmax.kool.editor.data.ConstColorAttribute
+import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.modules.ui2.*
@@ -212,7 +214,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         val color = when (item) {
             is BrowserDir -> MdColor.AMBER
             is BrowserAssetItem -> item.itemColor
-            is BrowserMaterialItem -> MdColor.GREY
+            is BrowserMaterialItem -> item.color
             is BrowserBehaviorItem -> MdColor.PURPLE
         }
 
@@ -293,7 +295,12 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         }
     }
 
-    class BrowserMaterialItem(level: Int, val material: MaterialComponent) : BrowserItem(level, material.name, "/materials/${material.name}")
+    class BrowserMaterialItem(level: Int, val material: MaterialComponent) : BrowserItem(level, material.name, "/materials/${material.name}") {
+        val color: Color get() {
+            val constColor = (material.data.shaderData as? PbrShaderData)?.baseColor as? ConstColorAttribute
+            return constColor?.color?.toColorSrgb() ?: MdColor.GREY
+        }
+    }
 
     class BrowserBehaviorItem(level: Int, val behavior: AppBehavior) : BrowserItem(level, behavior.prettyName, "/paths/${behavior.qualifiedName}")
 }

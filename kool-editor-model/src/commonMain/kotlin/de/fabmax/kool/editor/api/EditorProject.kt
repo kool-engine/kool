@@ -12,9 +12,7 @@ import kotlinx.serialization.json.Json
 
 class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
-    internal val _entityData = projectData.allEntities().associateBy { it.id }.toMutableMap()
-    val entityData: Map<EntityId, GameEntityData>
-        get() = _entityData
+    internal val entityData = projectData.allEntities().associateBy { it.id }.toMutableMap()
 
     private var nextId = entityData.values.maxOf { it.id.value } + 1
 
@@ -146,7 +144,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
             }
         }
 
-        fun emptyProjectData(): ProjectData = ProjectData().apply {
+        fun emptyProjectData(): ProjectData = ProjectData(ProjectMeta(ProjectData.MODEL_VERSION)).apply {
             val sceneId = EntityId(1L)
             val camId = EntityId(2L)
             val boxId = EntityId(3L)
@@ -170,6 +168,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                 }
                 entities += GameEntityData(boxId, "Default Cube", sceneId).apply {
                     components += ComponentInfo(MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
+                    components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)))
                 }
                 entities += GameEntityData(lightId, "Directional Light", sceneId).apply {
                     components += ComponentInfo(DiscreteLightComponentData(LightTypeData.Directional()))
