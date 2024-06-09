@@ -8,7 +8,9 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.decodeToString
 import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.toBuffer
 
 interface FileSystemItem {
     val path: String
@@ -30,6 +32,8 @@ interface FileSystemFile : FileSystemItem {
     suspend fun read(): Uint8Buffer
 }
 
+suspend fun FileSystemFile.readText(): String = read().decodeToString()
+
 interface FileSystemDirectory : FileSystemItem {
     override val isDirectory: Boolean
         get() = true
@@ -40,6 +44,28 @@ interface FileSystemDirectory : FileSystemItem {
     operator fun contains(name: String): Boolean
 }
 
+fun FileSystemDirectory.listFiles() = list().filterIsInstance<FileSystemFile>()
+fun FileSystemDirectory.listDirectories() = list().filterIsInstance<FileSystemDirectory>()
+fun FileSystemDirectory.listRecursively(): List<FileSystemItem> {
+    val result = mutableListOf<FileSystemItem>()
+    val files = list()
+    result += files
+    files.filterIsInstance<FileSystemDirectory>().forEach {
+        result += it.listRecursively()
+    }
+    return result
+}
+
+suspend fun FileSystemDirectory.copyRecursively(target: WritableFileSystemDirectory) {
+    list().forEach { file ->
+        if (file is FileSystemFile) {
+            target.getOrCreateFile(file.name).write(file.read())
+        } else if (file is FileSystemDirectory) {
+            file.copyRecursively(target.getOrCreateDirectory(file.name))
+        }
+    }
+}
+
 interface WritableFileSystemItem : FileSystemItem {
     fun delete()
 }
@@ -47,6 +73,8 @@ interface WritableFileSystemItem : FileSystemItem {
 interface WritableFileSystemFile : FileSystemFile, WritableFileSystemItem {
     suspend fun write(data: Uint8Buffer)
 }
+
+suspend fun WritableFileSystemFile.writeText(text: String) = write(text.encodeToByteArray().toBuffer())
 
 interface WritableFileSystemDirectory : FileSystemDirectory, WritableFileSystemItem {
     fun createDirectory(name: String): WritableFileSystemDirectory

@@ -6,7 +6,6 @@ import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.components.SsaoComponent
-import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
@@ -16,6 +15,7 @@ import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
+import de.fabmax.kool.modules.filesystem.copyRecursively
 import de.fabmax.kool.modules.filesystem.toZip
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
@@ -25,28 +25,31 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
-    val projModelJson = try {
-        projectFiles.projectModelFile.read().decodeToString()
-    } catch (e: Exception) {
-        ""
+    val projDataDir = projectFiles.projectModelDir
+    val reader = ProjectReader(projDataDir)
+    val data = reader.loadTree() ?: EditorProject.emptyProjectData()
+    if (reader.parserErrors > 0) {
+        fun Int.toString(len: Int): String {
+            var str = "$this"
+            while (str.length < len) str = "0$str"
+            return str
+        }
+        val dateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val backupName = "project_backup_" +
+                "${dateTime.year}${dateTime.monthNumber.toString(2)}${dateTime.dayOfMonth.toString(2)}_" +
+                "${dateTime.hour.toString(2)}${dateTime.minute.toString(2)}${dateTime.second.toString(2)}"
+        logE("KoolEditor") { "ProjectReader reported errors, backing up original project data as $backupName" }
+        val backupDir = projectFiles.fileSystem.createDirectory("src/commonMain/resources/$backupName")
+        projDataDir.copyRecursively(backupDir)
     }
-    if (projModelJson.isEmpty()) {
-        logI("KoolEditor") { "Project file not found, creating empty" }
-        return KoolEditor(projectFiles, EditorProject.emptyProject(), ctx)
-    }
-
-    val project = try {
-        EditorProject(Json.decodeFromString<ProjectData>(projModelJson))
-    } catch (e: Exception) {
-        e.printStackTrace()
-        error("Failed deserializing project, fix / delete existing project file")
-    }
-    return KoolEditor(projectFiles, project, ctx)
+    return KoolEditor(projectFiles, EditorProject(data), ctx)
 }
 
 class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject, val ctx: KoolContext) {
@@ -330,8 +333,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     suspend fun saveProject() {
-        val text = jsonCodec.encodeToString(projectModel.projectData)
-        projectFiles.projectModelFile.write(text.encodeToByteArray().toBuffer())
+        ProjectWriter.saveProjectData(projectModel.projectData, projectFiles.projectModelDir)
         logD { "Saved project model" }
     }
 

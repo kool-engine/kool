@@ -29,7 +29,9 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
     init {
         projectData.checkConsistency()
-        materialScene = EditorScene(SceneData("materials", projectData.materials), this)
+
+        val materialSceneId = projectData.materials.find { it.components.any { c -> c.data is SceneComponentData } }?.id ?: nextId()
+        materialScene = EditorScene(SceneData(SceneMeta(materialSceneId, "materials"), projectData.materials), this)
         materialScene.getAllComponents<MaterialComponent>()
             .filter { it.gameEntity.isVisible }
             .forEach { _materialsById[it.gameEntity.id] = it }
@@ -144,44 +146,42 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
             }
         }
 
-        fun emptyProject(): EditorProject = EditorProject(
-            ProjectData().apply {
-                scenes += SceneData("New Scene").apply {
-                    val sceneId = EntityId(1L)
-                    val camId = EntityId(2L)
-                    val boxId = EntityId(3L)
-                    val lightId = EntityId(4L)
+        fun emptyProjectData(): ProjectData = ProjectData().apply {
+            val sceneId = EntityId(1L)
+            val camId = EntityId(2L)
+            val boxId = EntityId(3L)
+            val lightId = EntityId(4L)
 
-                    entities += GameEntityData(sceneId, name, null).apply {
-                        components += ComponentInfo(SceneComponentData(cameraEntityId = camId))
-                        components += ComponentInfo(SceneBackgroundComponentData(
-                            SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
-                        ))
-                    }
-                    entities += GameEntityData(camId, "Camera", sceneId).apply {
-                        components += ComponentInfo(CameraComponentData(CameraTypeData.Perspective()))
-                        components += ComponentInfo(TransformComponentData(
-                            TransformData(
-                                MutableMat4d()
-                                    .translate(0.0, 2.5, 5.0)
-                                    .rotate((-30.0).deg, Vec3d.X_AXIS)
-                            )))
-                    }
-                    entities += GameEntityData(boxId, "Default Cube", sceneId).apply {
-                        components += ComponentInfo(MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
-                    }
-                    entities += GameEntityData(lightId, "Directional Light", sceneId).apply {
-                        components += ComponentInfo(DiscreteLightComponentData(LightTypeData.Directional()))
-                        components += ComponentInfo(TransformComponentData(
-                            TransformData(
-                                MutableMat4d()
-                                    .translate(5.0, 5.0, 5.0)
-                                    .rotate(0.0.deg, 30.0.deg, (-120.0).deg)
-                            )))
-                    }
+            scenes += SceneData(SceneMeta(sceneId, "New Scene")).apply {
+                entities += GameEntityData(sceneId, meta.name, null).apply {
+                    components += ComponentInfo(SceneComponentData(cameraEntityId = camId))
+                    components += ComponentInfo(SceneBackgroundComponentData(
+                        SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
+                    ))
+                }
+                entities += GameEntityData(camId, "Camera", sceneId).apply {
+                    components += ComponentInfo(CameraComponentData(CameraTypeData.Perspective()))
+                    components += ComponentInfo(TransformComponentData(
+                        TransformData(
+                            MutableMat4d()
+                                .translate(0.0, 2.5, 5.0)
+                                .rotate((-30.0).deg, Vec3d.X_AXIS)
+                        )))
+                }
+                entities += GameEntityData(boxId, "Default Cube", sceneId).apply {
+                    components += ComponentInfo(MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
+                }
+                entities += GameEntityData(lightId, "Directional Light", sceneId).apply {
+                    components += ComponentInfo(DiscreteLightComponentData(LightTypeData.Directional()))
+                    components += ComponentInfo(TransformComponentData(
+                        TransformData(
+                            MutableMat4d()
+                                .translate(5.0, 5.0, 5.0)
+                                .rotate(0.0.deg, 30.0.deg, (-120.0).deg)
+                        )))
                 }
             }
-        )
+        }
     }
 }
 
@@ -193,6 +193,10 @@ fun ProjectData.allEntities(): List<GameEntityData> {
 }
 
 fun ProjectData.checkConsistency() {
+    if (meta.modelVersion != ProjectData.MODEL_VERSION) {
+        logW { "Project data model version mismatch: ${meta.modelVersion} (supported version is ${ProjectData.MODEL_VERSION})" }
+    }
+
     scenes.forEach { scene ->
         val entityMap = scene.entities.associateBy { it.id }
         val parentsToChildren = mutableMapOf<EntityId?, MutableList<EntityId>>()
@@ -215,7 +219,7 @@ fun ProjectData.checkConsistency() {
         }
         val roots = parentsToChildren[null]?.mapNotNull { entityMap[it] } ?: emptyList()
         if (roots.size != 1) {
-            logE { "Scene ${scene.name} has ${roots.size} root entities" }
+            logE { "Scene ${scene.meta.name} has ${roots.size} root entities" }
         }
 
         roots.forEach { root ->

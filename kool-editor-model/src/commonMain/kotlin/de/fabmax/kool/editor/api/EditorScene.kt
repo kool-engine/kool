@@ -61,11 +61,15 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     }
 
     private fun SceneData.getOrAddSceneEntityData(): GameEntityData {
-        var entityData = entities.find { it.parentId == null }
+        var entityData = entities.find { it.id == meta.rootId } ?: entities.find { it.parentId == null }
         if (entityData == null) {
-            entityData = GameEntityData(project.nextId(), sceneData.name, null).also {
+            entityData = GameEntityData(meta.rootId, sceneData.meta.name, null).also {
                 entities += it
             }
+        }
+        if (entityData.id != meta.rootId) {
+            logW { "Fixing scene root id mismatch" }
+            entityData = entityData.copy(id = meta.rootId)
         }
         if (entityData.components.none { it.data is SceneComponentData }) {
             entityData.components += ComponentInfo(SceneComponentData())
