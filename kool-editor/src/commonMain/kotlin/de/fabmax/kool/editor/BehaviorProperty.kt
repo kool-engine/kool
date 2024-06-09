@@ -11,12 +11,9 @@ class BehaviorProperty(
     val type: BehaviorPropertyType,
     val kType: KType,
     val label: String,
-    val min: Double = Double.NEGATIVE_INFINITY,
-    val max: Double = Double.POSITIVE_INFINITY
+    val min: Vec4d = Vec4d(Double.NEGATIVE_INFINITY),
+    val max: Vec4d = Vec4d(Double.POSITIVE_INFINITY),
 ) {
-    val isRanged: Boolean
-        get() = min > Float.NEGATIVE_INFINITY && max < Float.POSITIVE_INFINITY
-
     fun get(behaviorComponent: BehaviorComponent): Any? {
         return behaviorComponent.getProperty(name)
     }

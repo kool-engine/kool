@@ -57,10 +57,9 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
         transformProperties.setTransformData(transformData, KoolEditor.instance.gizmoOverlay.transformFrame.use())
 
         surface.onEachFrame {
-            components[0].transform.decompose(currentTranslation, currentRotation, currentScale)
+            components[0].gameEntity.drawNode.modelMatD.decompose(currentTranslation, currentRotation, currentScale)
             if (!currentTranslation.isFuzzyEqual(lastTranslation, 1e-3) || !currentRotation.isFuzzyEqual(lastRotation, 1e-4) || !currentScale.isFuzzyEqual(lastScale, 1e-3)) {
-                components.forEach { it.updateTransformDataFromTransform() }
-                surface.triggerUpdate()
+                components.forEach { it.updateDataFromTransform() }
                 lastTranslation.set(currentTranslation)
                 lastRotation.set(currentRotation)
                 lastScale.set(currentScale)

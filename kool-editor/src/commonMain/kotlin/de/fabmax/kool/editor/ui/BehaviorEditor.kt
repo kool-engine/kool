@@ -104,7 +104,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(d1 = newValue) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = prop.dragChangeSpeed
+        dragChangeSpeed = prop.dragChangeSpeed,
+        minValue = prop.min.x,
+        maxValue = prop.max.x,
     )
 
     private fun UiScope.vec2dEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
@@ -113,7 +115,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(d2 = Vec2Data(newValue)) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = Vec2d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
+        minValues = prop.min.xy,
+        maxValues = prop.max.xy,
     )
 
     private fun UiScope.vec3dEditor(prop: BehaviorProperty) = vec3dPropertyEditor(
@@ -122,7 +126,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(d3 = Vec3Data(newValue)) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = Vec3d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
+        minValues = prop.min.xyz,
+        maxValues = prop.max.xyz,
     )
 
     private fun UiScope.vec4dEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
@@ -131,7 +137,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(d4 = Vec4Data(newValue)) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = Vec4d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
+        minValues = prop.min,
+        maxValues = prop.max,
     )
 
     private fun UiScope.floatEditor(prop: BehaviorProperty) = doublePropertyEditor(
@@ -140,7 +148,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(f1 = newValue.toFloat()) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = prop.dragChangeSpeed
+        dragChangeSpeed = prop.dragChangeSpeed,
+        minValue = prop.min.x,
+        maxValue = prop.max.x,
     )
 
     private fun UiScope.vec2fEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
@@ -149,7 +159,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(f2 = Vec2Data(newValue)) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = Vec2d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
+        minValues = prop.min.xy,
+        maxValues = prop.max.xy,
     )
 
     private fun UiScope.vec3fEditor(prop: BehaviorProperty)  = vec3dPropertyEditor(
@@ -158,7 +170,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(f3 = Vec3Data(newValue)) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = Vec3d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
+        minValues = prop.min.xyz,
+        maxValues = prop.max.xyz,
     )
 
     private fun UiScope.vec4fEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
@@ -167,7 +181,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         valueSetter = { _, newValue -> PropertyValue(f4 = Vec4Data(newValue)) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
-        dragChangeSpeed = Vec4d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
+        minValues = prop.min,
+        maxValues = prop.max,
     )
 
     private fun UiScope.intEditor(prop: BehaviorProperty) = doublePropertyEditor(
@@ -177,7 +193,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
         precision = { 0 },
-        dragChangeSpeed = prop.dragChangeSpeed
+        dragChangeSpeed = prop.dragChangeSpeed,
+        minValue = prop.min.x,
+        maxValue = prop.max.x,
     )
 
     private fun UiScope.vec2iEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
@@ -187,7 +205,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
         precision = { Vec2i.ZERO },
-        dragChangeSpeed = Vec2d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
+        minValues = prop.min.xy,
+        maxValues = prop.max.xy,
     )
 
     private fun UiScope.vec3iEditor(prop: BehaviorProperty) = vec3dPropertyEditor(
@@ -197,7 +217,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
         precision = { Vec3i.ZERO },
-        dragChangeSpeed = Vec3d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
+        minValues = prop.min.xyz,
+        maxValues = prop.max.xyz,
     )
 
     private fun UiScope.vec4iEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
@@ -207,7 +229,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label,
         precision = { Vec4i.ZERO },
-        dragChangeSpeed = Vec4d(prop.dragChangeSpeed)
+        dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
+        minValues = prop.min,
+        maxValues = prop.max,
     )
 
     private fun Vec2i.toVec2d() = Vec2d(x.toDouble(), y.toDouble())
@@ -215,11 +239,11 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
     private fun Vec4i.toVec4d() = Vec4d(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
 
     private val BehaviorProperty.dragChangeSpeed: Double
-        get() = if (isRanged) (max - min) / 1000.0 else 0.05
+        get() = if (isRanged) (max.x - min.x) / 1000.0 else 0.05
 
     private fun BehaviorProperty.getPrecision(value: Double): Int {
         return if (isRanged) {
-            precisionForValue(max - min)
+            precisionForValue(max.x - min.x)
         } else if (value.isFinite()) {
             precisionForValue(value)
         } else {
@@ -270,6 +294,12 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
     private data class ComponentChoice(val component: GameEntityComponent?) {
         override fun toString(): String = component?.gameEntity?.name ?: "None"
     }
+
+    private val BehaviorProperty.isRanged: Boolean
+        get() = min.x > Double.NEGATIVE_INFINITY && max.x < Double.POSITIVE_INFINITY &&
+                min.y > Double.NEGATIVE_INFINITY && max.y < Double.POSITIVE_INFINITY &&
+                min.z > Double.NEGATIVE_INFINITY && max.z < Double.POSITIVE_INFINITY &&
+                min.w > Double.NEGATIVE_INFINITY && max.w < Double.POSITIVE_INFINITY
 
     companion object {
         fun camelCaseToWords(camelCase: String, allUppercase: Boolean = true): String {

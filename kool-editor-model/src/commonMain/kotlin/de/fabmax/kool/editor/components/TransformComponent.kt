@@ -23,7 +23,7 @@ class TransformComponent(
         data.transform.toTransform(transform)
     }
 
-    fun updateTransformDataFromTransform() {
+    fun updateDataFromTransform() {
         dataState.set(data.copy(transform = TransformData(transform)))
     }
 

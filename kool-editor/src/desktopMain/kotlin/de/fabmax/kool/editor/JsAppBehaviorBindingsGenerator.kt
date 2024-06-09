@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.math.Vec4d
 import java.io.File
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -105,11 +106,10 @@ object JsAppBehaviorBindingsGenerator {
     private fun StringBuilder.appendBehaviorMap(appBehaviors: List<AppBehavior>) {
         appendLine("\n    val behaviorClasses = mapOf<KClass<*>, AppBehavior>(")
         appBehaviors.forEach { behavior ->
-            val properties = behavior.properties.joinToString("") {
-                val min = if (it.min.isFinite()) ", min = ${it.min}" else ""
-                val max = if (it.max.isFinite()) ", max = ${it.max}" else ""
-
-                "\n                BehaviorProperty(\"${it.name}\", BehaviorPropertyType.${it.type}, typeOf<${it.kType.qualifiedName}>(), \"${it.label}\"$min$max),"
+            val properties = behavior.properties.joinToString("") { p ->
+                val min = p.min.toSrc()?.let { ", min = $it" } ?: ""
+                val max = p.min.toSrc()?.let { ", max = $it" } ?: ""
+                "\n                BehaviorProperty(\"${p.name}\", BehaviorPropertyType.${p.type}, typeOf<${p.kType.qualifiedName}>(), \"${p.label}\"$min$max),"
             }
             appendLine("""
                 |        ${behavior.simpleName}::class to AppBehavior(
@@ -123,6 +123,18 @@ object JsAppBehaviorBindingsGenerator {
         appendLine("    )")
     }
 
+    private fun Vec4d.toSrc(): String? {
+        return if (x.isFinite() || y.isFinite() || z.isFinite() || w.isFinite()) {
+            val x = if (x.isFinite()) "$x" else if (x > 0.0) "Double.POSITIVE_INFINITY" else "Double.NEGATIVE_INFINITY"
+            val y = if (y.isFinite()) "$y" else if (y > 0.0) "Double.POSITIVE_INFINITY" else "Double.NEGATIVE_INFINITY"
+            val z = if (z.isFinite()) "$z" else if (z > 0.0) "Double.POSITIVE_INFINITY" else "Double.NEGATIVE_INFINITY"
+            val w = if (w.isFinite()) "$w" else if (w > 0.0) "Double.POSITIVE_INFINITY" else "Double.NEGATIVE_INFINITY"
+            "Vec4d($x, $y, $z, $w)"
+        } else {
+            null
+        }
+    }
+
     private val defaultImports = listOf(
         "kotlin.reflect.KClass",
         "kotlin.reflect.typeOf",
@@ -130,7 +142,8 @@ object JsAppBehaviorBindingsGenerator {
         "de.fabmax.kool.editor.BehaviorProperty",
         "de.fabmax.kool.editor.BehaviorPropertyType",
         "de.fabmax.kool.editor.api.KoolBehavior",
-        "de.fabmax.kool.editor.api.BehaviorLoader"
+        "de.fabmax.kool.editor.api.BehaviorLoader",
+        "de.fabmax.kool.math.Vec4d",
     )
 
     private val KType.qualifiedName: String
