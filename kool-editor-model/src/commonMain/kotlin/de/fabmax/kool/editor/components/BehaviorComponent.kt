@@ -38,7 +38,7 @@ class BehaviorComponent(
             val removeProps = mutableListOf<String>()
             data.propertyValues.forEach { (name, value) ->
                 val setValue = when {
-                    value.nodeRef != null -> value.nodeRef.gameEntity
+                    value.gameEntityRef != null -> value.gameEntityRef.gameEntity
                     value.componentRef != null -> value.componentRef.entityId.gameEntity?.getComponent(value.componentRef)
                     else -> value.get()
                 }

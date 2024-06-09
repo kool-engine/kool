@@ -42,9 +42,10 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         }
 
         val isDynamicActor = components.any { it.data.actorType == RigidActorType.DYNAMIC }
+        val isKinematicActor = components.any { it.data.actorType == RigidActorType.KINEMATIC }
         shapeEditor(if (isDynamicActor) shapeOptionsDynamic else shapeOptions)
 
-        if (isDynamicActor) {
+        if (isDynamicActor || isKinematicActor) {
             choicePropertyEditor(
                 choices = charHitOptions,
                 dataGetter = { it.data },
@@ -54,6 +55,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 label = "Controller hit behavior:",
                 labelWidth = sizes.editorLabelWidthMedium
             )
+        }
+        if (isDynamicActor) {
             actorDoubleEditor(
                 valueGetter = { it.mass },
                 valueSetter = { oldData, newValue -> oldData.copy(mass = newValue) },

@@ -58,7 +58,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
                 Boolean::class -> boolEditor(prop)
 
-                GameEntity::class -> { }
+                GameEntity::class -> gameEntityEditor(prop)
 
                 else -> {
                     if (prop.type == BehaviorPropertyType.COMPONENT) {
@@ -70,6 +70,20 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
                 }
             }
         }
+    }
+
+    private fun UiScope.gameEntityEditor(prop: BehaviorProperty) {
+        val choices = remember {
+            ComboBoxItems(scene.sceneEntities.values.map { GameEntityChoice(it) })
+        }
+        choicePropertyEditor(
+            choices = choices,
+            dataGetter = { PropertyValue(gameEntityRef = prop.getGameEntity(it)?.id ?: EntityId(0L)) },
+            valueGetter = { GameEntityChoice(it.gameEntityRef?.gameEntity) },
+            valueSetter = { _, newValue -> PropertyValue(gameEntityRef = newValue.gameEntity?.id ?: EntityId(0L)) },
+            actionMapper = SetBehaviorPropertyAction(prop),
+            label = prop.label
+        )
     }
 
     private fun UiScope.componentEditor(prop: BehaviorProperty) {
@@ -273,7 +287,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
             value.color != null -> set(behaviorComponent, value.color!!.toColorLinear())
             value.transform != null -> set(behaviorComponent, value.transform!!.toMat4d())
             value.str != null -> set(behaviorComponent, value.str)
-            value.nodeRef != null -> set(behaviorComponent, value.nodeRef!!.gameEntity)
+            value.gameEntityRef != null -> set(behaviorComponent, value.gameEntityRef!!.gameEntity)
             value.componentRef != null -> set(behaviorComponent, value.componentRef!!.entityId.gameEntity?.getComponent(value.componentRef!!))
             else -> error("PropertyValue has no non-null value")
         }
@@ -289,6 +303,10 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
                 surface.triggerUpdate()
             }
         }
+    }
+
+    private data class GameEntityChoice(val gameEntity: GameEntity?) {
+        override fun toString(): String = gameEntity?.name ?: "None"
     }
 
     private data class ComponentChoice(val component: GameEntityComponent?) {

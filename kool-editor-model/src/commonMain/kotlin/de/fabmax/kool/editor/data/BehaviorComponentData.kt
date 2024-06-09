@@ -31,7 +31,7 @@ data class PropertyValue(
     val color: ColorData? = null,
     val transform: TransformData? = null,
     val str: String? = null,
-    val nodeRef: EntityId? = null,
+    val gameEntityRef: EntityId? = null,
     val componentRef: ComponentRef? = null,
 ) {
     fun get(): Any {
@@ -55,7 +55,7 @@ data class PropertyValue(
             color != null -> color.toColorLinear()
             transform != null -> transform.toMat4d()
             str != null -> str
-            nodeRef != null -> nodeRef
+            gameEntityRef != null -> gameEntityRef
             componentRef != null -> componentRef
             else -> error("PropertyValue has no non-null value")
         }

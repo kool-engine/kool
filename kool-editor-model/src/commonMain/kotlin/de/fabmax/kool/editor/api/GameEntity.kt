@@ -209,10 +209,12 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             "addComponent called on GameEntity $name with component ${component.componentType} which lifecycle " +
                     "state is ${component.lifecycle} (expected CREATED)"
         }
-        if (component is GameEntityDataComponent<*> && component.componentInfo.displayOrder < 0) {
-            component.componentInfo.displayOrder = components
-                .filterIsInstance<GameEntityDataComponent<*>>()
-                .maxOf { it.componentInfo.displayOrder } + 1
+        if (component is GameEntityDataComponent<*>) {
+            if (component.componentInfo.displayOrder < 0) {
+                component.componentInfo.displayOrder = components
+                    .filterIsInstance<GameEntityDataComponent<*>>()
+                    .maxOf { it.componentInfo.displayOrder } + 1
+            }
             entityData.components += component.componentInfo
         }
         components += component

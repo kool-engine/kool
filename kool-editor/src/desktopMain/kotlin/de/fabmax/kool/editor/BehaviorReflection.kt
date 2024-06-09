@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.api.EditorInfo
 import de.fabmax.kool.editor.api.EditorRange
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.GameEntityComponent
+import de.fabmax.kool.editor.ui.BehaviorEditor
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
 import kotlin.reflect.KClass
@@ -27,7 +28,7 @@ object BehaviorReflection {
             .map { p ->
                 val propertyKType = p.setter.parameters[1].type
                 val info = p.annotations.filterIsInstance<EditorInfo>().firstOrNull()
-                val label = if (info != null && info.label.isNotBlank()) info.label else p.name
+                val label = if (info != null && info.label.isNotBlank()) info.label else BehaviorEditor.camelCaseToWords(p.name, allUppercase = false)
                 val rng = p.annotations.filterIsInstance<EditorRange>().firstOrNull()
                 val min = rng?.let { Vec4d(it.minX, it.minY, it.minZ, it.minW) } ?: Vec4d(Double.NEGATIVE_INFINITY)
                 val max = rng?.let { Vec4d(it.maxX, it.maxY, it.maxZ, it.maxW) } ?: Vec4d(Double.POSITIVE_INFINITY)
