@@ -133,7 +133,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         appLoader.reloadApp()
     }
 
-    fun startApp() {
+    suspend fun startApp() {
+        saveProject()
+
         val app = loadedApp.value?.app ?: return
         val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return
 

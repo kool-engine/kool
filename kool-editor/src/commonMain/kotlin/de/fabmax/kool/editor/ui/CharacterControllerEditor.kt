@@ -11,7 +11,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
 
     override fun UiScope.compose() = componentPanel(
         title = "Character Controller",
-        imageIcon = IconMap.small.physics,
+        imageIcon = IconMap.small.character,
         onRemove = ::removeComponent,
     ) {
         components.forEach { it.dataState.use() }
@@ -31,33 +31,33 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
         menuDivider()
 
         charDoublePropertyEditor(
-            valueGetter = { it.walkSpeed },
-            valueSetter = { oldData, newValue -> oldData.copy(walkSpeed = newValue) },
+            valueGetter = { it.walkSpeed.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(walkSpeed = newValue.toFloat()) },
             label = "Walk speed:"
         )
         charDoublePropertyEditor(
-            valueGetter = { it.runSpeed },
-            valueSetter = { oldData, newValue -> oldData.copy(runSpeed = newValue) },
+            valueGetter = { it.runSpeed.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(runSpeed = newValue.toFloat()) },
             label = "Run speed:"
         )
         charDoublePropertyEditor(
-            valueGetter = { it.crouchSpeed },
-            valueSetter = { oldData, newValue -> oldData.copy(crouchSpeed = newValue) },
+            valueGetter = { it.crouchSpeed.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(crouchSpeed = newValue.toFloat()) },
             label = "Crouch speed:"
         )
         charDoublePropertyEditor(
-            valueGetter = { it.jumpSpeed },
-            valueSetter = { oldData, newValue -> oldData.copy(jumpSpeed = newValue) },
+            valueGetter = { it.jumpSpeed.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(jumpSpeed = newValue.toFloat()) },
             label = "Jump speed:"
         )
         charDoublePropertyEditor(
-            valueGetter = { it.maxFallSpeed },
-            valueSetter = { oldData, newValue -> oldData.copy(maxFallSpeed = newValue) },
+            valueGetter = { it.maxFallSpeed.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(maxFallSpeed = newValue.toFloat()) },
             label = "Max fall speed:"
         )
         charDoublePropertyEditor(
-            valueGetter = { it.slopeLimit },
-            valueSetter = { oldData, newValue -> oldData.copy(slopeLimit = newValue) },
+            valueGetter = { it.slopeLimit.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(slopeLimit = newValue.toFloat()) },
             label = "Slope limit:",
             maxValue = 90.0
         )
@@ -70,13 +70,13 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
             label = "Slope behavior:"
         )
         charDoublePropertyEditor(
-            valueGetter = { it.pushForce },
-            valueSetter = { oldData, newValue -> oldData.copy(pushForce = newValue) },
+            valueGetter = { it.pushForce.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(pushForce = newValue.toFloat()) },
             label = "Push force:"
         )
         charDoublePropertyEditor(
-            valueGetter = { it.downForce },
-            valueSetter = { oldData, newValue -> oldData.copy(downForce = newValue) },
+            valueGetter = { it.downForce.toDouble() },
+            valueSetter = { oldData, newValue -> oldData.copy(downForce = newValue.toFloat()) },
             label = "Down force:"
         )
 

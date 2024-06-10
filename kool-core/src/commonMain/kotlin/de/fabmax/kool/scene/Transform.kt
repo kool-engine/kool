@@ -80,6 +80,21 @@ interface Transform {
     }
 }
 
+fun Transform.setTransform(that: Transform) {
+    when (that) {
+        is TrsTransformF -> setCompositionOf(that.translation, that.rotation, that.scale)
+        is TrsTransformD -> setCompositionOf(that.translation, that.rotation, that.scale)
+        is MatrixTransformF -> setMatrix(that.matrixF)
+        is MatrixTransformD -> setMatrix(that.matrixD)
+        else -> {
+            val t = MutableVec3d()
+            val r = MutableQuatD()
+            val s = MutableVec3d()
+            setCompositionOf(t, r, s)
+        }
+    }
+}
+
 abstract class TransformF : Transform {
     override val isDoublePrecision = false
 

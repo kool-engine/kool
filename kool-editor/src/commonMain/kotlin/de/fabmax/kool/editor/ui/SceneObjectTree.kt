@@ -316,10 +316,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.NON_MODEL_NODE -> IconMap.small.nodeCircle
                 SceneObjectType.CAMERA -> IconMap.small.camera
                 SceneObjectType.LIGHT -> IconMap.small.light
-                SceneObjectType.GROUP -> IconMap.small.rectCrosshair
+                SceneObjectType.GROUP -> IconMap.small.transform
                 SceneObjectType.MESH -> IconMap.small.cube
                 SceneObjectType.MODEL -> IconMap.small.tree
                 SceneObjectType.SCENE -> IconMap.small.world
+                SceneObjectType.PHYSICS -> IconMap.small.physics
+                SceneObjectType.PHYSICS_CHARACTER -> IconMap.small.character
             }
             modifier
                 .alignX(AlignmentX.End)
@@ -416,7 +418,11 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 is ModelComponent -> SceneObjectType.MODEL
                 is DiscreteLightComponent -> SceneObjectType.LIGHT
                 is CameraComponent -> SceneObjectType.CAMERA
-                else -> SceneObjectType.GROUP
+                else -> when {
+                    gameEntity.hasComponent<CharacterControllerComponent>() -> SceneObjectType.PHYSICS_CHARACTER
+                    gameEntity.hasComponent<PhysicsComponent<*>>() -> SceneObjectType.PHYSICS
+                    else -> SceneObjectType.GROUP
+                }
             }
         }
 
@@ -480,13 +486,15 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
     }
 
-    private enum class SceneObjectType(val startExpanded: Boolean = false, val isHideable: Boolean = true) {
+    private enum class SceneObjectType(val startExpanded: Boolean = true, val isHideable: Boolean = true) {
         NON_MODEL_NODE(isHideable = false),
         CAMERA,
         LIGHT,
-        GROUP(true),
+        GROUP,
         MESH,
-        MODEL,
+        MODEL(startExpanded = false),
+        PHYSICS,
+        PHYSICS_CHARACTER,
         SCENE(true, isHideable = false)
     }
 }

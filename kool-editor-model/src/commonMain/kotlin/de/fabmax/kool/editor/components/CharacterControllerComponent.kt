@@ -31,10 +31,16 @@ class CharacterControllerComponent(
     var referenceFrontDirection = 0f.deg
 
     private var axes: WalkAxes? = null
+    private var smoothDir = MutableVec2f()
 
     val isRun: Boolean get() = axes?.isRun == !data.runByDefault
     val isJump: Boolean get() = axes?.isJump == true
     val isCrouch: Boolean get() = axes?.isCrouch == true
+
+    var moveSpeed: Float = 0f
+        private set
+    var moveHeading: AngleF = 0f.deg
+        private set
 
     val crouchFactor: Float get() = axes?.crouchFactor ?: 0f
     val runFactor: Float get() {
@@ -99,7 +105,7 @@ class CharacterControllerComponent(
         val props = CharacterControllerProperties(
             height = data.shape.length.toFloat(),
             radius = data.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
-            slopeLimit = data.slopeLimit.toFloat().deg,
+            slopeLimit = data.slopeLimit.deg,
             contactOffset = CHARACTER_CONTACT_OFFSET
         )
         charController = charManager.createController(props).also {
@@ -122,9 +128,9 @@ class CharacterControllerComponent(
         }
         charCtrl.radius = props.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET
 
-        charCtrl.jumpSpeed = props.jumpSpeed.toFloat()
-        charCtrl.maxFallSpeed = props.maxFallSpeed.toFloat()
-        charCtrl.slopeLimit = props.slopeLimit.toFloat().deg
+        charCtrl.jumpSpeed = props.jumpSpeed
+        charCtrl.maxFallSpeed = props.maxFallSpeed
+        charCtrl.slopeLimit = props.slopeLimit.deg
         charCtrl.nonWalkableMode = props.nonWalkableMode
     }
 
@@ -133,20 +139,27 @@ class CharacterControllerComponent(
     }
 
     private fun updateMovement(controller: CharacterController, axes: WalkAxes) {
-        val crouchSpeed = data.crouchSpeed.toFloat()
-        val walkSpeed = data.walkSpeed.toFloat()
-        val runSpeed = data.runSpeed.toFloat()
+        val crouchSpeed = data.crouchSpeed
+        val walkSpeed = data.walkSpeed
+        val runSpeed = data.runSpeed
 
-        var moveHeading = referenceFrontDirection.deg
+        var head = referenceFrontDirection.rad
         val walkDir = Vec2f(-axes.leftRight, axes.forwardBackward)
         if (walkDir.length() > 0f) {
-            moveHeading += atan2(walkDir.x, walkDir.y).toDeg()
+            head += atan2(walkDir.x, walkDir.y)
         }
+        val current = moveHeading.rad
+        if (current - head > PI_F) {
+            moveHeading = ((moveHeading.deg + 360f) % 360f - 360f).deg
+        } else if (head - current > PI_F) {
+            moveHeading = ((moveHeading.deg + 360f) % 360f).deg
+        }
+        moveHeading = moveHeading.rad.expDecay(head, 24f).rad
 
         val runFactor = this.runFactor
         val crouchFactor = this.crouchFactor
         val speedFactor = max(abs(axes.forwardBackward), abs(axes.leftRight))
-        var moveSpeed = walkSpeed * speedFactor
+        moveSpeed = walkSpeed * speedFactor
         if (runFactor > 0f) {
             moveSpeed = moveSpeed * (1f - runFactor) + runSpeed * speedFactor * runFactor
         }
@@ -156,13 +169,13 @@ class CharacterControllerComponent(
 
         // set controller.movement according to user input
         controller.movement.set(0f, 0f, -moveSpeed)
-        controller.movement.rotate(moveHeading.deg, Vec3f.Y_AXIS)
+        controller.movement.rotate(moveHeading, Vec3f.Y_AXIS)
         controller.jump = isJump
     }
 
     override fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
-        val pushForceFac = data.pushForce.toFloat()
-        val downForceFac = data.downForce.toFloat()
+        val pushForceFac = data.pushForce
+        val downForceFac = data.downForce
         if ((pushForceFac + downForceFac) > 0f && actor is RigidDynamic && !actor.isKinematic) {
             val runMod = if (axes?.isRun == true) 2f else 1f
             val downBlend = abs(hitWorldNormal dot Vec3f.Y_AXIS)

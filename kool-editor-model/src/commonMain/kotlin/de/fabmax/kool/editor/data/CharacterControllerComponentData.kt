@@ -6,15 +6,15 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CharacterControllerComponentData(
     val shape: ShapeData.Capsule = ShapeData.Capsule(0.4, 1.0),
-    val crouchSpeed: Double = 1.0,
-    val walkSpeed: Double = 2.0,
-    val runSpeed: Double = 7.0,
-    val jumpSpeed: Double = 6.0,
-    val maxFallSpeed: Double = 30.0,
-    val slopeLimit: Double = 45.0,
+    val crouchSpeed: Float = 1f,
+    val walkSpeed: Float = 2f,
+    val runSpeed: Float = 7f,
+    val jumpSpeed: Float = 6f,
+    val maxFallSpeed: Float = 30f,
+    val slopeLimit: Float = 45f,
     val nonWalkableMode: NonWalkableMode = NonWalkableMode.PREVENT_CLIMBING,
-    val pushForce: Double = 10.0,
-    val downForce: Double = 1.0,
+    val pushForce: Float = 10f,
+    val downForce: Float = 1f,
 
     val enableDefaultControls: Boolean = true,
     val runByDefault: Boolean = true,

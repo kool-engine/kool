@@ -54,7 +54,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         ) {
             if (allTheSameMaterial) {
                 val checkedMaterial = components[0].material ?: return@componentPanel Unit
-                labeledTextField("Name:", checkedMaterial.name) {
+                labeledTextField("Name:", checkedMaterial.name, labelWidth = sizes.editorLabelWidthSmall) {
                     val oldData = checkedMaterial.data
                     val newData = oldData.copy(name = it)
                     SetComponentDataAction(checkedMaterial, oldData, newData).apply()

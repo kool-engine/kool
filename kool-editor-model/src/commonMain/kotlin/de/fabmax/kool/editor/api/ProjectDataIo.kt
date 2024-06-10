@@ -85,7 +85,7 @@ class ProjectWriter private constructor(
 
         val scenesDir = targetDir.createProjDir("scenes")
         projData.scenes.forEach { scene ->
-            val sceneName = "${scene.meta.name.fileNameSafe()}#${scene.meta.rootId.value}"
+            val sceneName = "${scene.meta.name.fileNameSafe()}_${scene.meta.rootId.value}"
             scenesDir.createProjFile("$sceneName-meta.json", codec.encodeToString(scene.meta))
             val sceneDir = scenesDir.createProjDir(sceneName)
             scene.entities.toHierarchy().forEach { it.saveEntities(sceneDir) }
@@ -128,13 +128,13 @@ class ProjectWriter private constructor(
         }
     }
 
-    private val GameEntityData.dirName: String get() = "${name.fileNameSafe()}#${id.value}"
+    private val GameEntityData.dirName: String get() = "${name.fileNameSafe()}_${id.value}"
     private val GameEntityData.fileName: String get() = "$dirName.json"
 
     companion object {
         private val nameRegex = Regex("[^\\w\\-_]+")
 
-        private fun String.fileNameSafe(): String = replace(nameRegex, "_")
+        private fun String.fileNameSafe(): String = replace(nameRegex, "-")
 
         suspend fun saveProjectData(data: ProjectData, targetDir: WritableFileSystemDirectory) {
             ProjectWriter(data, targetDir).saveTree()

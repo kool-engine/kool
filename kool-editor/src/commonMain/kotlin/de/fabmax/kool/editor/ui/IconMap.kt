@@ -62,7 +62,7 @@ object IconMap {
         val camera = IconProvider(this, iconMap.IconImageProvider(3, 0))
         val circleDot = IconProvider(this, iconMap.IconImageProvider(4, 0))
         val circleCrosshair = IconProvider(this, iconMap.IconImageProvider(5, 0))
-        val rectCrosshair = IconProvider(this, iconMap.IconImageProvider(6, 0))
+        val transform = IconProvider(this, iconMap.IconImageProvider(6, 0))
         val picture = IconProvider(this, iconMap.IconImageProvider(7, 0))
         val fullscreen = IconProvider(this, iconMap.IconImageProvider(8, 0))
         val rotate = IconProvider(this, iconMap.IconImageProvider(9, 0))
@@ -96,7 +96,7 @@ object IconMap {
         val folderOpen = IconProvider(this, iconMap.IconImageProvider(17, 1))
         val shadowInner = IconProvider(this, iconMap.IconImageProvider(18, 1))
         val shadow = IconProvider(this, iconMap.IconImageProvider(19, 1))
-        val transform = IconProvider(this, iconMap.IconImageProvider(0, 2))
+        val transformOld = IconProvider(this, iconMap.IconImageProvider(0, 2))
         val background = IconProvider(this, iconMap.IconImageProvider(1, 2))
         val listTree = IconProvider(this, iconMap.IconImageProvider(2, 2))
         val download = IconProvider(this, iconMap.IconImageProvider(3, 2))
@@ -120,6 +120,7 @@ object IconMap {
         val alert = IconProvider(this, iconMap.IconImageProvider(1, 3))
         val alertFilled = IconProvider(this, iconMap.IconImageProvider(2, 3))
         val resize = IconProvider(this, iconMap.IconImageProvider(3, 3))
+        val character = IconProvider(this, iconMap.IconImageProvider(4, 3))
     }
 }
 
