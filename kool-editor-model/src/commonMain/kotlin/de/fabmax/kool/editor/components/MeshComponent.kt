@@ -64,10 +64,10 @@ class MeshComponent(
     }
 
     override fun destroyComponent() {
-        super.destroyComponent()
+        gameEntity.replaceDrawNode(Node(gameEntity.name))
         drawNode?.release()
         drawNode = null
-        gameEntity.replaceDrawNode(Node(gameEntity.name))
+        super.destroyComponent()
     }
 
     private suspend fun updateGeometry(data: MeshComponentData) {

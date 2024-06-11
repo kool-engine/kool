@@ -55,6 +55,13 @@ class ModelComponent(
         recreateModel(data)
     }
 
+    override fun destroyComponent() {
+        gameEntity.replaceDrawNode(Node(gameEntity.name))
+        drawNode?.release()
+        drawNode = null
+        super.destroyComponent()
+    }
+
     override fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?) {
         val model = drawNode ?: return
         launchOnMainThread {

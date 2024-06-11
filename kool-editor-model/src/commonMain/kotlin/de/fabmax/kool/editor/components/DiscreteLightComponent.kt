@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.DiscreteLightComponentData
 import de.fabmax.kool.editor.data.LightTypeData
 import de.fabmax.kool.scene.Light
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 
@@ -27,6 +28,7 @@ class DiscreteLightComponent(
     }
 
     override fun destroyComponent() {
+        gameEntity.replaceDrawNode(Node(gameEntity.name))
         val scene = sceneEntity.drawNode as Scene
         scene.lighting.removeLight(drawNode)
         super.destroyComponent()
