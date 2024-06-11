@@ -42,6 +42,6 @@ suspend fun WritableFileSystem.getOrCreateFile(path: String): WritableFileSystem
     return root.getOrCreateFile(path)
 }
 
-fun WritableFileSystem.createDirectories(path: String): WritableFileSystemDirectory {
-    return root.createDirectories(path)
+fun WritableFileSystem.getOrCreateDirectories(path: String): WritableFileSystemDirectory {
+    return root.getOrCreateDirectories(path)
 }

@@ -19,7 +19,7 @@ actual suspend fun zipFileSystem(zipData: Uint8Buffer): FileSystem {
         while (entry != null) {
             if (!entry.isDirectory) {
                 val path = FileSystem.sanitizePath(entry.name)
-                memFs.createDirectories(FileSystem.parentPath(path))
+                memFs.getOrCreateDirectories(FileSystem.parentPath(path))
                 memFs.createFile(path, Uint8BufferImpl(zip.readAllBytes()))
             }
             zip.closeEntry()

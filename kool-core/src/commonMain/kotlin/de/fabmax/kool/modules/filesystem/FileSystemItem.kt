@@ -125,7 +125,7 @@ suspend fun WritableFileSystemDirectory.getOrCreateFile(path: String): WritableF
     return (getFileOrNull(path) as WritableFileSystemFile?) ?: createFile(path, Uint8Buffer(0))
 }
 
-fun WritableFileSystemDirectory.createDirectories(path: String): WritableFileSystemDirectory {
+fun WritableFileSystemDirectory.getOrCreateDirectories(path: String): WritableFileSystemDirectory {
     val dirNames = FileSystem.sanitizePath(path).split("/").filter { it.isNotBlank() }
     var it = this
     for (name in dirNames) {

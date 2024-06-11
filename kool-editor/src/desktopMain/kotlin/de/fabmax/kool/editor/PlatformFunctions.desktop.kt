@@ -12,6 +12,8 @@ import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.IOException
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
+import kotlin.io.path.notExists
 import kotlin.io.path.pathString
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
@@ -100,6 +102,10 @@ actual object PlatformFunctions {
 fun KoolEditor(projectRoot: String, ctx: KoolContext): KoolEditor {
     return runBlocking {
         val rootPath = Path(projectRoot)
+        if (rootPath.notExists()) {
+            logW { "Project root path does not exist, creating: $projectRoot" }
+            rootPath.createDirectories()
+        }
         val fs = PhysicalFileSystem(
             rootPath,
             excludePaths = setOf(
