@@ -1,16 +1,24 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
+import de.fabmax.kool.math.MutableVec2i
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.memStack
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWImage
+import org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.windows.POINT
+import org.lwjgl.system.windows.RECT
+import org.lwjgl.system.windows.User32
+import org.lwjgl.system.windows.WindowProc
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.LinkOption
@@ -72,6 +80,9 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             }
         }
 
+    var isTitleBarHidden = false
+        private set
+
     private val fsMonitor: Long
     private var windowedWidth = KoolSystem.configJvm.windowSize.x
     private var windowedHeight = KoolSystem.configJvm.windowSize.y
@@ -79,6 +90,11 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     private var windowedPosY = 0
 
     private var renderOnResizeFlag = false
+
+    private val titleBarHelper = when (OsInfo.os) {
+        OsInfo.OS.WINDOWS -> TitleBarHelperWindows()
+        else -> TitleBarHelperUnsupported()
+    }
 
     init {
         fsMonitor = if (KoolSystem.configJvm.monitor < 0) {
@@ -99,6 +115,10 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             0L
         )
         check(windowPtr != MemoryUtil.NULL) { "Failed to create the GLFW window" }
+
+        if (KoolSystem.configJvm.isNoTitleBar) {
+            titleBarHelper.hideTitleBar()
+        }
 
         if (KoolSystem.configJvm.windowIcon.isNotEmpty()) {
             setWindowIcon(KoolSystem.configJvm.windowIcon)
@@ -222,6 +242,10 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         }
     }
 
+    fun startWindowDrag() = titleBarHelper.startWindowDrag()
+
+    fun windowDrag() = titleBarHelper.windowDrag()
+
     private fun setFullscreenMode(enabled: Boolean) {
         if (enabled) {
             windowedWidth = windowWidth
@@ -236,5 +260,111 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         } else {
             glfwSetWindowMonitor(windowPtr, 0, windowedPosX, windowedPosY, windowedWidth, windowedHeight, GLFW_DONT_CARE)
         }
+    }
+
+    private interface TitleBarHelper {
+        fun hideTitleBar()
+
+        fun startWindowDrag()
+        fun windowDrag()
+    }
+
+    inner class TitleBarHelperWindows : TitleBarHelper {
+        private val windowDragStartCursor = MutableVec2i()
+        private val windowDragStartPos = MutableVec2i()
+
+        override fun hideTitleBar() {
+            val glfwHWnd = glfwGetWin32Window(windowPtr)
+
+            val originalWndProcPtr = User32.GetWindowLongPtr(glfwHWnd, User32.GWL_WNDPROC)
+            val wndProc = WindowProc.create { hWnd, uMsg, wParam, lParam ->
+                when (uMsg) {
+                    User32.WM_NCCALCSIZE -> {
+                        if (wParam == 1L && lParam != 0L) {
+                            val rect = RECT.create(lParam)
+                            rect.top(rect.top() + 1)
+                            rect.right(rect.right() - 8)
+                            rect.bottom(rect.bottom() - 8)
+                            rect.left(rect.left() + 8)
+                        }
+                        0L
+                    }
+
+                    User32.WM_NCPAINT -> 0L
+
+                    User32.WM_NCHITTEST -> {
+                        val y = lParam.toInt() shr 16
+                        val x = lParam.toInt() and 0xffff
+                        val clientX = x - windowPosX
+                        val clientY = y - windowPosY
+                        val resizeBorder = 4
+
+                        if (clientY < resizeBorder) {
+                            when {
+                                clientX <= resizeBorder -> User32.HTTOPLEFT.toLong()
+                                clientX >= framebufferWidth - resizeBorder -> User32.HTTOPRIGHT.toLong()
+                                else -> User32.HTTOP.toLong()
+                            }
+                        } else {
+                            User32.nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
+                        }
+                    }
+
+                    else -> User32.nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
+                }
+            }
+
+            var style = User32.GetWindowLongPtr(glfwHWnd, User32.GWL_STYLE)
+            style = style or User32.WS_THICKFRAME.toLong()
+            style = style and User32.WS_CAPTION.toLong().inv()
+            User32.SetWindowLongPtr(glfwHWnd, User32.GWL_STYLE, style)
+            User32.SetWindowLongPtr(glfwHWnd, User32.GWL_WNDPROC, wndProc.address())
+
+            memStack {
+                val windowRect = RECT.calloc(this)
+                User32.GetWindowRect(glfwHWnd, windowRect)
+                val width = windowRect.right() - windowRect.left()
+                val height = windowRect.bottom() - windowRect.top()
+                User32.SetWindowPos(glfwHWnd, 0L, 0, 0, width, height, User32.SWP_FRAMECHANGED or User32.SWP_NOMOVE)
+            }
+
+            isTitleBarHidden = true
+        }
+
+        override fun startWindowDrag() {
+            memStack {
+                val glfwHWnd = glfwGetWin32Window(windowPtr)
+                val point = POINT.calloc(this)
+                val rect = RECT.calloc(this)
+                User32.GetCursorPos(point)
+                User32.GetWindowRect(glfwHWnd, rect)
+                windowDragStartCursor.set(point.x(), point.y())
+                windowDragStartPos.set(rect.left(), rect.top())
+            }
+        }
+
+        override fun windowDrag() {
+            memStack {
+                val glfwHWnd = glfwGetWin32Window(windowPtr)
+                val point = POINT.calloc(this)
+                User32.GetCursorPos(point)
+
+                val dragPos = windowDragStartPos + Vec2i(point.x(), point.y()) - windowDragStartCursor
+                User32.SetWindowPos(glfwHWnd, 0L, dragPos.x, dragPos.y, 0, 0, User32.SWP_FRAMECHANGED or User32.SWP_NOSIZE)
+            }
+        }
+
+    }
+
+    class TitleBarHelperUnsupported : TitleBarHelper {
+        override fun hideTitleBar() {
+            logW { "Hide title bar is not supported on OS ${OsInfo.os}" }
+        }
+
+        override fun startWindowDrag() {
+            logW { "Window drag is not supported on OS ${OsInfo.os}" }
+        }
+
+        override fun windowDrag() { }
     }
 }

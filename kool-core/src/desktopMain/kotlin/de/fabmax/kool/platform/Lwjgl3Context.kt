@@ -37,7 +37,6 @@ class Lwjgl3Context : KoolContext() {
     private var prevFrameTime = System.nanoTime()
     private val sysInfo = SysInfo()
 
-
     init {
         if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
             logE { "Vulkan support is currently disabled, falling back to OpenGL" }
