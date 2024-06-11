@@ -17,12 +17,18 @@ import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.concurrent.thread
 
-class HttpCache private constructor(private val cacheDir: File) {
+object HttpCache {
 
-    private val cache = mutableMapOf<File, CacheEntry>()
+    private const val MAX_CACHE_SIZE = 1024L * 1024L * 1024L
+
+    private val credentialsMap = mutableMapOf<String, BasicAuthCredentials>()
+
+    private var isInitialized = false
+    private var cacheDir: File = File(".httpCache")
     private var cacheSize = 0L
 
-    init {
+    private val index by lazy {
+        val index = mutableMapOf<File, CacheEntry>()
         try {
             GZIPInputStream(FileInputStream(File(cacheDir, ".cacheIndex.json.gz"))).use { inStream ->
                 val txt = String(inStream.readBytes(), StandardCharsets.UTF_8)
@@ -38,17 +44,23 @@ class HttpCache private constructor(private val cacheDir: File) {
             logD { "Rebuilding http cache index, $e" }
             rebuildIndex()
         }
-
-        Runtime.getRuntime().addShutdownHook(thread(false) { close() })
+        Runtime.getRuntime().addShutdownHook(thread(false) { saveIndex() })
+        index
     }
 
-    private fun close() {
-        saveIndex()
+    fun addCredentials(credentials: BasicAuthCredentials) {
+        credentialsMap[credentials.forHost] = credentials
+    }
+
+    fun initCache(cacheDir: File) {
+        check(!isInitialized) { "HttpCache must not be initialized multiple times" }
+        isInitialized = true
+        this.cacheDir = cacheDir
     }
 
     private fun rebuildIndex() {
-        synchronized(cache) {
-            cache.clear()
+        synchronized(index) {
+            index.clear()
             check(cacheDir.exists() || cacheDir.mkdirs()) { "Failed to create cache directory" }
         }
 
@@ -70,11 +82,11 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     private fun addCacheEntry(entry: CacheEntry) {
-        synchronized(cache) {
+        synchronized(index) {
             if (entry.file.canRead()) {
-                cacheSize -= cache[entry.file]?.size ?: 0
+                cacheSize -= index[entry.file]?.size ?: 0
                 cacheSize += entry.size
-                cache[entry.file] = entry
+                index[entry.file] = entry
             } else {
                 logW { "Cache entry not readable: ${entry.file}" }
             }
@@ -83,9 +95,9 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     private fun saveIndex() {
-        val entries = synchronized(cache) {
+        val entries = synchronized(index) {
             val items = mutableListOf<SerCacheItem>()
-            cache.values.forEach { items += SerCacheItem(it.file.path, it.size, it.lastAccess) }
+            index.values.forEach { items += SerCacheItem(it.file.path, it.size, it.lastAccess) }
             SerCache(items)
         }
         try {
@@ -100,8 +112,8 @@ class HttpCache private constructor(private val cacheDir: File) {
     private fun checkCacheSize() {
         if (cacheSize > MAX_CACHE_SIZE) {
             val removeQueue = PriorityQueue<CacheEntry>()
-            synchronized(cache) {
-                removeQueue.addAll(cache.values)
+            synchronized(index) {
+                removeQueue.addAll(index.values)
             }
 
             var rmCnt = 0
@@ -109,8 +121,8 @@ class HttpCache private constructor(private val cacheDir: File) {
                 val rmEntry = removeQueue.poll()!!
                 rmEntry.file.delete()
                 logD { "Deleted from cache: ${rmEntry.file}" }
-                synchronized(cache) {
-                    cache.remove(rmEntry.file)
+                synchronized(index) {
+                    index.remove(rmEntry.file)
                     cacheSize -= rmEntry.size
                 }
                 rmCnt++
@@ -119,6 +131,8 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     fun loadHttpResource(url: String): File? {
+        check(isInitialized) { "HttpCache is not initialized" }
+
         val req = URI(url).toURL()
 
         // use host-name as cache directory name, subdomain components are dropped
@@ -154,8 +168,8 @@ class HttpCache private constructor(private val cacheDir: File) {
         }
 
         return if (file.canRead()) {
-            synchronized(cache) {
-                cache[file]?.lastAccess = System.currentTimeMillis()
+            synchronized(index) {
+                index[file]?.lastAccess = System.currentTimeMillis()
             }
             file
         } else {
@@ -170,28 +184,6 @@ class HttpCache private constructor(private val cacheDir: File) {
             FileOutputStream(file).use { outStream ->
                 inStream.copyTo(outStream, 4096)
             }
-        }
-    }
-
-    companion object {
-        private const val MAX_CACHE_SIZE = 1024L * 1024L * 1024L
-        private var instance: HttpCache? = null
-
-        private val credentialsMap = mutableMapOf<String, BasicAuthCredentials>()
-
-        fun addCredentials(credentials: BasicAuthCredentials) {
-            credentialsMap[credentials.forHost] = credentials
-        }
-
-        fun initCache(cacheDir: File) {
-            if (instance == null) {
-                instance = HttpCache(cacheDir)
-            }
-        }
-
-        fun loadHttpResource(url: String): File? {
-            val inst = checkNotNull(instance) { "Default cache used before initCache() was called" }
-            return inst.loadHttpResource(url)
         }
     }
 
