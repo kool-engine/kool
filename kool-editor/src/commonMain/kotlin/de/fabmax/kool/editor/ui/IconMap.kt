@@ -121,6 +121,13 @@ object IconMap {
         val alertFilled = IconProvider(this, iconMap.IconImageProvider(2, 3))
         val resize = IconProvider(this, iconMap.IconImageProvider(3, 3))
         val character = IconProvider(this, iconMap.IconImageProvider(4, 3))
+        val car = IconProvider(this, iconMap.IconImageProvider(5, 3))
+        val minimizeWin = IconProvider(this, iconMap.IconImageProvider(6, 3))
+        val maximizeWin = IconProvider(this, iconMap.IconImageProvider(7, 3))
+        val demaximizeWin = IconProvider(this, iconMap.IconImageProvider(8, 3))
+        val closeWin = IconProvider(this, iconMap.IconImageProvider(9, 3))
+
+        val editorIcon = IconProvider(this, iconMap.IconImageProvider(0, 4))
     }
 }
 

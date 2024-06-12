@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
@@ -12,11 +13,15 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class TitleBgRenderer(
+    val bgColor: Color,
+    val bgColorAccent: Color,
     val topRadius: Float = 0f,
-    val bottomRadius: Float = 0f
+    val bottomRadius: Float = 0f,
+    val fade: Vec4f = Vec4f(1.5f, 1f, 5.5f, 0.2f)
 ) : UiRenderer<UiNode> {
 
     override fun renderUi(node: UiNode) {
@@ -25,10 +30,11 @@ class TitleBgRenderer(
         val isFirstUsage = meshLayer.addCustomLayer("title-bg", 0) { bgMesh }
         if (isFirstUsage) {
             bgMesh.bgInstances.clear()
-            bgMesh.bgShader.bgColor = UiColors.titleBg
+            bgMesh.bgShader.bgColor = bgColor
+            bgMesh.bgShader.accentColor = bgColorAccent
 
-            val s = node.sizes.lineHeightTitle.px
-            bgMesh.bgShader.fadeProps = Vec4f(s * 1.5f, s, s * 5.5f, 0.2f)
+            val s = node.sizes.heightTitleBar.px
+            bgMesh.bgShader.fadeProps = fade * Vec4f(s, s, s, 1f)
         }
 
         bgMesh.bgInstances.addInstance {
@@ -154,5 +160,12 @@ class TitleBgRenderer(
 
             val pipelineConfig = PipelineConfig(blendMode = BlendMode.DISABLED, cullMethod = CullMethod.NO_CULLING)
         }
+    }
+
+    companion object {
+        val FADE_WEAK = fadeProps(Vec2f(1.5f, 1f), 5f, 0.15f)
+        val FADE_STRONG = fadeProps(Vec2f(3f, 1f), 7f, 0.2f)
+
+        fun fadeProps(center: Vec2f, fadeSize: Float, strength: Float) = Vec4f(center.x, center.y, fadeSize, strength)
     }
 }

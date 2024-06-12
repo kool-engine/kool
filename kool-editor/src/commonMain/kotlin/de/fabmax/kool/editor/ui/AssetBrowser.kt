@@ -11,7 +11,7 @@ import de.fabmax.kool.util.launchOnMainThread
 class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.picture, ui) {
 
     override fun UiScope.titleBar() {
-        Row {
+        Row(height = Grow.Std) {
             val popup = remember { ContextPopupMenu<BrowserItem>("import-assets-popup") }
             var popupPos by remember(Vec2f.ZERO)
 

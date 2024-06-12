@@ -28,13 +28,21 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val consoleFont = mutableStateOf(MsdfFont.DEFAULT_FONT)
 
     val dock = Dock()
-    val statusBar = PanelSurface(colors = EDITOR_THEME_COLORS) {
+    val titleBar = WindowTitleBar(editor)
+
+    private val titleBarSurface = PanelSurface {
+        surface.colors = uiColors.use()
+        surface.sizes = uiSizes.use()
+        titleBar()
+    }
+
+    val statusBar = PanelSurface {
         surface.colors = uiColors.use()
         surface.sizes = uiSizes.use()
 
         modifier
             .alignY(AlignmentY.Bottom)
-            .size(Grow.Std, sizes.statusBarHeight)
+            .size(Grow.Std, sizes.heightTitleBar - sizes.borderWidth)
             .backgroundColor(colors.backgroundMid)
 
         Column(width = Grow.Std, height = Grow.Std) {
@@ -83,15 +91,13 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
         setupUiScene()
 
-        addNode(statusBar)
-
         dock.apply {
             borderWidth.set(Dp.fromPx(1f))
             borderColor.set(UiColors.titleBg)
             dockingSurface.colors = EDITOR_THEME_COLORS
             dockingPaneComposable = Composable {
                 Column(Grow.Std, Grow.Std) {
-                    modifier.margin(bottom = sizes.statusBarHeight)
+                    modifier.margin(top = sizes.heightWindowTitleBar, bottom = sizes.heightTitleBar)
                     root()
                 }
             }
@@ -145,7 +151,10 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             }
         }
 
+        // add nodes in correct z-order (title bar overlaps dock)
+        addNode(statusBar)
         addNode(dock)
+        addNode(titleBarSurface)
     }
 
     private fun UiScope.statusBar() = Row(width = Grow.Std, height = Grow.Std) {
@@ -193,8 +202,6 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             onSecondary = Color.WHITE
         )
     }
-
-    private val Sizes.statusBarHeight: Dp get() = lineHeightLarger
 }
 
 
@@ -203,7 +210,9 @@ val Sizes.treeIndentation: Dp get() = gap * 1.5f
 val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
 val Sizes.editItemHeight: Dp get() = largeGap * 1.25f
 val Sizes.lineHeightLarger: Dp get() = baseSize * 0.9f
-val Sizes.lineHeightTitle: Dp get() = baseSize
+val Sizes.heightTitleBar: Dp get() = lineHeightLarger
+val Sizes.heightWindowTitleBar: Dp get() = heightTitleBar * 1.1f
+val Sizes.panelBarWidth: Dp get() = baseSize - borderWidth
 val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f
 val Sizes.scrollbarWidth: Dp get() = gap * 0.3f
 val Sizes.editorLabelWidthSmall: Dp get() = baseSize * 3
@@ -239,9 +248,14 @@ val Colors.backgroundMid: Color get() = background.mix(backgroundVariant, 0.5f)
 val Colors.weakDividerColor: Color get() = secondaryVariantAlpha(0.75f)
 val Colors.strongDividerColor: Color get() = secondaryAlpha(0.75f)
 
+val Colors.windowTitleBg: Color get() = backgroundMid
+
+
 object UiColors {
     val border = Color("0f1114ff")
     val titleBg = Color("343a49ff")
+    val windowTitleBgAccent = MdColor.DEEP_PURPLE
+    val titleBgAccent = MdColor.DEEP_PURPLE
     val titleText = Color("dbe6ffff")
     val secondaryBright = Color("a0b3d8ff")
     val selectionChild = Color("ff7b0080")
