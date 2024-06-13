@@ -46,7 +46,9 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
             hasTransformAuthority = true
             selectionTransform?.startTransform()
             cancelListener.push()
-            PointerInput.cursorMode = CursorMode.LOCKED
+            if (transformMode != GizmoMode.ROTATE) {
+                PointerInput.cursorMode = CursorMode.LOCKED
+            }
         }
 
         override fun onManipulationFinished(startTransform: TrsTransformD, endTransform: TrsTransformD) {

@@ -232,6 +232,8 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
         return this
     }
 
+    fun setIdentity(): MutableQuatF = set(IDENTITY)
+
     /**
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatF].
      */
@@ -554,6 +556,8 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         w = cos(rad2)
         return this
     }
+
+    fun setIdentity(): MutableQuatD = set(IDENTITY)
 
     /**
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatD].

@@ -3,8 +3,12 @@ package de.fabmax.kool.modules.gizmo
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
+import de.fabmax.kool.modules.ksl.blocks.cameraData
+import de.fabmax.kool.modules.ksl.lang.gt
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.vertexAttribFloat3
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
@@ -42,11 +46,11 @@ class AxisRotationHandle(
 
         mesh.isPickable = false
         coveredMesh.isPickable = false
-        hitMesh.rayTest = MeshRayTest.geometryTest(hitMesh)
+        hitMesh.rayTest = HandleHitTest(hitMesh)
 
-        mesh.setupGeometry(radius, 0.01f)
+        mesh.setupGeometry(radius, 0.015f)
         mesh.setupShader(DepthCompareOp.LESS)
-        coveredMesh.setupGeometry(radius, 0.01f)
+        coveredMesh.setupGeometry(radius, 0.015f)
         coveredMesh.setupShader(DepthCompareOp.ALWAYS)
         hitMesh.setupGeometry(radius, 0.05f)
 
@@ -109,12 +113,15 @@ class AxisRotationHandle(
             rotate(90f.deg, Vec3f.Z_AXIS)
             profile {
                 circleShape(geomRadius, 6)
+                val normal = MutableVec3f()
+                vertexModFun = { this.normal.set(normal) }
 
                 val n = 60
                 for (i in 0..n) {
                     withTransform {
                         rotate((360f * i / n).deg, Vec3f.NEG_Y_AXIS)
                         translate(orbitRadius, 0f, 0f)
+                        transform.transform(normal.set(Vec3f.ZERO))
                         sample()
                     }
                 }
@@ -131,6 +138,51 @@ class AxisRotationHandle(
                 }
             }
             color { uniformColor() }
+            modelCustomizer = {
+                val normal = interStageFloat3()
+                vertexStage {
+                    main {
+                        findBlock<VertexTransformBlock>()?.apply {
+                            inLocalNormal(vertexAttribFloat3(Attribute.NORMALS))
+                            normal.input set outWorldNormal
+                        }
+                    }
+                }
+                fragmentStage {
+                    main {
+                        `if`(dot(cameraData().direction, normal.output) gt 0.1f.const) {
+                            discard()
+                        }
+                    }
+                }
+            }
         }
+    }
+
+    private inner class HandleHitTest(hitMesh: Mesh) : MeshRayTest {
+        private val triTest = MeshRayTest.geometryTest(hitMesh)
+        private val proxyTest = RayTest()
+
+        override fun onMeshDataChanged(mesh: Mesh) = triTest.onMeshDataChanged(mesh)
+
+        override fun rayTest(test: RayTest, localRay: RayF): Boolean {
+            proxyTest.clear()
+            proxyTest.ray.set(test.ray)
+            if (triTest.rayTest(proxyTest, localRay)) {
+                val isFrontHit = test.camera?.let { sceneCam ->
+                    val normal = (proxyTest.hitPositionGlobal - globalCenter).normed()
+                    normal dot sceneCam.globalLookDir < 0.1f
+                } ?: true
+
+                if (isFrontHit) {
+                    proxyTest.hitNode?.let { test.setHit(it, proxyTest.hitPositionGlobal) }
+                }
+                return isFrontHit
+
+            } else {
+                return false
+            }
+        }
+
     }
 }

@@ -63,29 +63,26 @@ class CamPlaneRotation : GizmoOperationBase() {
 }
 
 class FreeRotation : GizmoOperationBase() {
-    private val rotation = MutableMat3d()
-    private val prevPointerPos = MutableVec2d()
+    private val rotation = MutableQuatD()
+    private val startPointerPos = MutableVec2d()
 
     override fun onDragStart(dragCtx: DragContext) {
-        rotation.setIdentity()
-        prevPointerPos.set(dragCtx.virtualPointerPos)
+        startPointerPos.set(dragCtx.virtualPointerPos)
         dragCtx.startManipulation()
     }
 
     override fun onDrag(dragCtx: DragContext) {
-        val dx = dragCtx.virtualPointerPos.x - prevPointerPos.x
-        val dy = dragCtx.virtualPointerPos.y - prevPointerPos.y
+        val dx = dragCtx.virtualPointerPos.x - startPointerPos.x
+        val dy = dragCtx.virtualPointerPos.y - startPointerPos.y
 
-        if (dx != 0.0) {
-            val ax = dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalUp, 0.0, MutableVec3d())
-            rotation.rotate(dx.deg * 0.3, ax)
-        }
-        if (dy != 0.0) {
-            val ax = dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalRight, 0.0, MutableVec3d())
-            rotation.rotate(dy.deg * 0.3, ax)
-        }
-        dragCtx.manipulateRotation(rotation.getRotation())
+        val axX = dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalUp, 0.0, MutableVec3d())
+        val axY = dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalRight, 0.0, MutableVec3d())
 
-        prevPointerPos.set(dragCtx.virtualPointerPos)
+        rotation
+            .setIdentity()
+            .rotate(dx.deg * 0.3, axX)
+            .rotate(dy.deg * 0.3, axY)
+        dragCtx.manipulateRotation(rotation)
+
     }
 }

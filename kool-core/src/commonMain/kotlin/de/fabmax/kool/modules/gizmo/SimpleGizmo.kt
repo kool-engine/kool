@@ -304,8 +304,12 @@ fun GizmoNode.addRotationHandles() {
 
     addHandle(
         CenterCircleHandle(
-            color = Color.WHITE,
-            radius = 0.2f,
+            color = Color.WHITE.withAlpha(0f),
+            colorIdle = Color.WHITE.withAlpha(0f),
+            coveredColor = Color.WHITE.withAlpha(0.2f),
+            coveredColorIdle = Color.WHITE.withAlpha(0f),
+            radius = 0.75f,
+            drawMode = CenterCircleHandle.CircleMode.SOLID,
             gizmoOperation = FreeRotation()
         )
     )
@@ -313,7 +317,7 @@ fun GizmoNode.addRotationHandles() {
         CenterCircleHandle(
             color = Color.WHITE,
             radius = 1f,
-            hitTestMode = CenterCircleHandle.HitTestMode.LINE,
+            hitTestMode = CenterCircleHandle.CircleMode.LINE,
             gizmoOperation = CamPlaneRotation()
         )
     )

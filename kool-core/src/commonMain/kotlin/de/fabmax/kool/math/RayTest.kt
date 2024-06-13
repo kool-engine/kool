@@ -1,9 +1,11 @@
 package de.fabmax.kool.math
 
+import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 
 class RayTest {
     val ray = RayF()
+    var camera: Camera? = null
 
     val hitPositionGlobal = MutableVec3f()
     val hitNormalGlobal = MutableVec3f()
@@ -19,8 +21,9 @@ class RayTest {
     val isHit: Boolean
         get() = hitDistanceSqr < Float.MAX_VALUE
 
-    fun clear(maxDistance: Float = Float.MAX_VALUE) {
+    fun clear(maxDistance: Float = Float.MAX_VALUE, camera: Camera? = null) {
         this.maxDistance = maxDistance
+        this.camera = camera
         hitPositionGlobal.set(Vec3f.ZERO)
         hitNormalGlobal.set(Vec3f.ZERO)
         hitNode = null

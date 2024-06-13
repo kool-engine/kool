@@ -107,7 +107,9 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         selectionTransform?.startTransform()
 
         inputHandler.push()
-        PointerInput.cursorMode = CursorMode.LOCKED
+        if (mode != EditorEditMode.Mode.ROTATE_IMMEDIATE) {
+            PointerInput.cursorMode = CursorMode.LOCKED
+        }
         return true
     }
 

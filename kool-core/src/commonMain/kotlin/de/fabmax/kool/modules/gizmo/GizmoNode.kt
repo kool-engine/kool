@@ -181,7 +181,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
             return
         }
 
-        rayTest.clear()
+        rayTest.clear(camera = scene.camera)
         pickRay.toRayF(rayTest.ray)
         rayTest(rayTest)
 
