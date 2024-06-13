@@ -2,11 +2,22 @@ package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_ACCURATE
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_NORMAL
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_NO_TICK
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_ROTATION_MAJOR
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_ROTATION_MINOR
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_SCALE_MAJOR
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_SCALE_MINOR
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_TRANSLATION_MAJOR
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_TRANSLATION_MINOR
 import de.fabmax.kool.editor.util.SelectionTransform
 import de.fabmax.kool.input.CursorMode
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.modules.gizmo.GizmoListener
 import de.fabmax.kool.modules.gizmo.GizmoMode
+import de.fabmax.kool.modules.gizmo.GizmoNode
 import de.fabmax.kool.modules.gizmo.SimpleGizmo
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Node
@@ -53,6 +64,7 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
         }
 
         override fun onGizmoUpdate(transform: TrsTransformD) {
+            gizmo.gizmoNode.applySpeedAndTickRate()
             selectionTransform?.updateTransform()
             selectionTransform?.applyTransform(false)
         }
@@ -87,5 +99,33 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
         } else {
             gizmo.isVisible = false
         }
+    }
+
+    companion object {
+        const val SPEED_MOD_NORMAL = 1.0
+        const val SPEED_MOD_ACCURATE = 0.1
+
+        const val TICK_NO_TICK = 0.0
+
+        const val TICK_TRANSLATION_MAJOR = 1.0
+        const val TICK_ROTATION_MAJOR = 5.0
+        const val TICK_SCALE_MAJOR = 0.1
+
+        const val TICK_TRANSLATION_MINOR = 0.1
+        const val TICK_ROTATION_MINOR = 1.0
+        const val TICK_SCALE_MINOR = 0.01
+    }
+}
+
+fun GizmoNode.applySpeedAndTickRate() {
+    dragSpeedModifier = if (KeyboardInput.isShiftDown) SPEED_MOD_ACCURATE else SPEED_MOD_NORMAL
+    if (KeyboardInput.isCtrlDown) {
+        translationTick = if (KeyboardInput.isShiftDown) TICK_TRANSLATION_MINOR else TICK_TRANSLATION_MAJOR
+        rotationTick = if (KeyboardInput.isShiftDown) TICK_ROTATION_MINOR else TICK_ROTATION_MAJOR
+        scaleTick = if (KeyboardInput.isShiftDown) TICK_SCALE_MINOR else TICK_SCALE_MAJOR
+    } else {
+        translationTick = TICK_NO_TICK
+        rotationTick = TICK_NO_TICK
+        scaleTick = TICK_NO_TICK
     }
 }

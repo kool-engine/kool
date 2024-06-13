@@ -5,6 +5,9 @@ import de.fabmax.kool.editor.EditorEditMode
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_ACCURATE
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_NORMAL
+import de.fabmax.kool.editor.overlays.applySpeedAndTickRate
 import de.fabmax.kool.input.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gizmo.*
@@ -19,6 +22,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
     private val gizmo = GizmoNode()
     private val globalRay = RayD()
     private val localRay = RayD()
+    private val virtualPointerPos = MutableVec2d()
 
     private val globalToDragLocal = MutableMat4d()
     private val clientGlobalToParent = MutableMat4d()
@@ -177,13 +181,24 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         }
 
         val ptr = pointerState.primaryPointer
+        if (!gizmo.isManipulating) {
+            virtualPointerPos.set(ptr.x, ptr.y)
+        } else {
+            val speedMod = if (KeyboardInput.isShiftDown) SPEED_MOD_ACCURATE else SPEED_MOD_NORMAL
+            virtualPointerPos.x += ptr.deltaX * speedMod
+            virtualPointerPos.y += ptr.deltaY * speedMod
+            gizmo.applySpeedAndTickRate()
+        }
+
         val scene = editor.editorContent.findParentOfType<Scene>()
-        if (scene == null || !scene.computePickRay(ptr, globalRay)) {
+        val ptrX = virtualPointerPos.x.toFloat()
+        val ptrY = virtualPointerPos.y.toFloat()
+        if (scene == null || !scene.camera.computePickRay(globalRay, ptrX, ptrY, scene.mainRenderPass.viewport)) {
             return
         }
 
         globalRay.transformBy(globalToDragLocal, localRay)
-        val dragCtx = DragContext(gizmo, ptr, globalRay, localRay, globalToDragLocal, scene.camera)
+        val dragCtx = DragContext(gizmo, virtualPointerPos, globalRay, localRay, globalToDragLocal, scene.camera)
 
         if (!gizmo.isManipulating) {
             dragCtxStart = dragCtx

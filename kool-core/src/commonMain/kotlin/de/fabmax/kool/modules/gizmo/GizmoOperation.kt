@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.gizmo
 
-import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Camera
 import kotlin.math.abs
@@ -40,6 +39,14 @@ abstract class GizmoOperationBase : GizmoOperation {
         return intersectionPoint(ray, result)
     }
 
+    protected fun applyTick(value: Double, tick: Double): Double {
+        if (tick <= 0) {
+            return value
+        }
+        val v = value + tick * 0.5
+        return v - v.mod(tick)
+    }
+
     companion object {
         protected val rayAxisDirectionThresh = cos(5.0.deg.rad)
         protected val rayPlaneDirectionThresh = cos(85.0.deg.rad)
@@ -48,14 +55,17 @@ abstract class GizmoOperationBase : GizmoOperation {
 
 data class DragContext(
     val gizmo: GizmoNode,
-    val pointer: Pointer,
+    val virtualPointerPos: Vec2d,
     val globalRay: RayD,
     val localRay: RayD,
     val globalToLocal: Mat4d,
     val camera: Camera
 ) {
-    val isManipulating: Boolean
-        get() = gizmo.isManipulating
+    val isManipulating: Boolean get() = gizmo.isManipulating
+
+    val translationTick: Double get() = gizmo.translationTick
+    val rotationTick: Double get() = gizmo.rotationTick
+    val scaleTick: Double get() = gizmo.scaleTick
 
     fun startManipulation() {
         if (!isManipulating) {

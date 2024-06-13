@@ -29,6 +29,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
     private val rayTest = RayTest()
     private val pickRay = RayD()
+    private val virtualPointerPos = MutableVec2d()
     private var dragMode = DragMode.NO_DRAG
     private var isDrag = false
     private var hoverHandle: GizmoHandle? = null
@@ -42,6 +43,11 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
             field = value
             handleTransform.scale(value)
         }
+
+    var dragSpeedModifier = 1.0
+    var translationTick = 0.0
+    var rotationTick = 0.0
+    var scaleTick = 0.0
 
     private var parentCam: Camera? = null
     private val camUpdateListener: (RenderPass.UpdateEvent) -> Unit = { ev ->
@@ -189,6 +195,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
                 hoverHandle?.onHoverExit(this)
             }
             hoverHandle = newHandle
+            virtualPointerPos.set(ptr.x, ptr.y)
         }
 
         if (dragMode == DragMode.NO_DRAG && ptr.isLeftButtonDown) {
@@ -198,12 +205,16 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         }
 
         hoverHandle?.let { hover ->
+            virtualPointerPos.x += ptr.deltaX * dragSpeedModifier
+            virtualPointerPos.y += ptr.deltaY * dragSpeedModifier
+            scene.camera.computePickRay(pickRay, virtualPointerPos.x.toFloat(), virtualPointerPos.y.toFloat(), scene.mainRenderPass.viewport)
+
             if (ptr.isLeftButtonDown && !isDrag) {
                 globalToDragLocal.set(invModelMatD)
             }
             val dragCtx = DragContext(
                 gizmo = this,
-                pointer = ptr,
+                virtualPointerPos = virtualPointerPos,
                 globalRay = pickRay,
                 localRay = pickRay.transformBy(globalToDragLocal, RayD()),
                 globalToLocal = globalToDragLocal,

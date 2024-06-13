@@ -13,6 +13,10 @@ import de.fabmax.kool.util.MdColor
 class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
 
     val gizmoNode = GizmoNode()
+    var dragSpeedModifier by gizmoNode::dragSpeedModifier
+    var translationTick by gizmoNode::translationTick
+    var rotationTick by gizmoNode::rotationTick
+    var scaleTick by gizmoNode::scaleTick
 
     private val inputHandler = InputStack.InputHandler("gizmo-input-handler")
 

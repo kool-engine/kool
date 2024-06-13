@@ -16,7 +16,8 @@ class AxisTranslation(val axis: GizmoHandle.Axis) : GizmoOperationBase() {
 
     override fun onDrag(dragCtx: DragContext) {
         val dist = dragAxis.signedDistance(dragCtx.localRay) ?: return
-        dragCtx.manipulateAxisTranslation(axis, dist - dragDistanceOffset)
+        val ticked = applyTick(dist - dragDistanceOffset, dragCtx.translationTick)
+        dragCtx.manipulateAxisTranslation(axis, ticked)
     }
 }
 
@@ -33,7 +34,11 @@ class PlaneTranslation(planeNormal: Vec3d) : GizmoOperationBase() {
     override fun onDrag(dragCtx: DragContext) {
         val point = MutableVec3d()
         if (dragPlane.intersection(dragCtx.localRay, point)) {
-            dragCtx.manipulateTranslation(point - dragPlane.p - dragPointerOffset)
+            point -= dragPlane.p + dragPointerOffset
+            point.x = applyTick(point.x, dragCtx.translationTick)
+            point.y = applyTick(point.y, dragCtx.translationTick)
+            point.z = applyTick(point.z, dragCtx.translationTick)
+            dragCtx.manipulateTranslation(point)
         }
     }
 }
@@ -52,7 +57,11 @@ class CamPlaneTranslation : GizmoOperationBase() {
     override fun onDrag(dragCtx: DragContext) {
         val point = MutableVec3d()
         if (dragPlane.intersection(dragCtx.localRay, point)) {
-            dragCtx.manipulateTranslation(point - dragPlane.p - dragPointerOffset)
+            point -= dragPlane.p + dragPointerOffset
+            point.x = applyTick(point.x, dragCtx.translationTick)
+            point.y = applyTick(point.y, dragCtx.translationTick)
+            point.z = applyTick(point.z, dragCtx.translationTick)
+            dragCtx.manipulateTranslation(point)
         }
     }
 }
