@@ -80,7 +80,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             }
         }
 
-    var isTitleBarHidden = false
+    var isHiddenTitleBar = false
         internal set
 
     private val fsMonitor: Long
@@ -159,11 +159,11 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     fun setWindowSize(width: Int, height: Int) {
-        glfwSetWindowSize(windowPtr, width, height)
+        platformWindowHelper.setWindowSize(windowPtr, width, height)
     }
 
     fun setWindowPos(x: Int, y: Int) {
-        glfwSetWindowPos(windowPtr, x, y)
+        platformWindowHelper.setWindowPos(windowPtr, x, y)
     }
 
     fun closeWindow() {
@@ -194,8 +194,9 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     protected open fun onWindowPositionChanged(x: Int, y: Int) {
-        windowPosX = x
-        windowPosY = y
+        val (wx, wy) = platformWindowHelper.getWindowPos(windowPtr, x, y)
+        windowPosX = wx
+        windowPosY = wy
     }
 
     protected open fun onWindowFocusChanged(isFocused: Boolean) {

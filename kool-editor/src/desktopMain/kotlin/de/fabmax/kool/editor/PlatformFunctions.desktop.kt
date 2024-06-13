@@ -23,7 +23,7 @@ actual object PlatformFunctions {
 
     actual val windowButtonStyle: WindowButtonStyle get() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        return if (ctx.backend.glfwWindow.isTitleBarHidden) WindowButtonStyle.WINDOWS else WindowButtonStyle.NONE
+        return if (ctx.backend.glfwWindow.isHiddenTitleBar) WindowButtonStyle.WINDOWS else WindowButtonStyle.NONE
     }
 
     actual val isWindowMaximized: Boolean get() {

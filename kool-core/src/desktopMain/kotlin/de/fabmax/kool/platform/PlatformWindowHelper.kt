@@ -5,6 +5,8 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
 import org.lwjgl.glfw.GLFW
+import org.lwjgl.glfw.GLFW.glfwSetWindowPos
+import org.lwjgl.glfw.GLFW.glfwSetWindowSize
 import org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window
 import org.lwjgl.system.windows.MONITORINFOEX
 import org.lwjgl.system.windows.POINT
@@ -17,6 +19,10 @@ interface PlatformWindowHelper {
 
     fun startWindowDrag(windowPtr: Long)
     fun windowDrag(windowPtr: Long)
+
+    fun getWindowPos(windowPtr: Long, reportedPosX: Int, reportedPosY: Int) = Vec2i(reportedPosX, reportedPosY)
+    fun setWindowPos(windowPtr: Long, x: Int, y: Int) = glfwSetWindowPos(windowPtr, x, y)
+    fun setWindowSize(windowPtr: Long, width: Int, height: Int) = glfwSetWindowSize(windowPtr, width, height)
 
     fun isMaximized(windowPtr: Long): Boolean = GLFW.glfwGetWindowAttrib(windowPtr, GLFW.GLFW_MAXIMIZED) != 0
     fun toggleMaximized(windowPtr: Long) {
@@ -32,9 +38,13 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     private val windowDragStartCursor = MutableVec2i()
     private val windowDragStartPos = MutableVec2i()
 
+    private var isHiddenTitleBar = false
     private var isMaximized = false
     private val nonMaxPos = MutableVec2i()
     private val nonMaxSize = MutableVec2i()
+
+    private val topBorder = 1
+    private val nonTopBorder = 8
 
     override fun hideTitleBar(windowPtr: Long) {
         val glfwHWnd = glfwGetWin32Window(windowPtr)
@@ -45,10 +55,10 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
                 WM_NCCALCSIZE -> {
                     if (wParam == 1L && lParam != 0L && !isMaximized) {
                         val rect = RECT.create(lParam)
-                        rect.top(rect.top() + 1)
-                        rect.right(rect.right() - 8)
-                        rect.bottom(rect.bottom() - 8)
-                        rect.left(rect.left() + 8)
+                        rect.top(rect.top() + topBorder)
+                        rect.right(rect.right() - nonTopBorder)
+                        rect.bottom(rect.bottom() - nonTopBorder)
+                        rect.left(rect.left() + nonTopBorder)
                     }
                     0L
                 }
@@ -91,7 +101,8 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
             SetWindowPos(glfwHWnd, 0L, 0, 0, width, height, SWP_FRAMECHANGED or SWP_NOMOVE)
         }
 
-        glfwWindow.isTitleBarHidden = true
+        isHiddenTitleBar = true
+        glfwWindow.isHiddenTitleBar = true
     }
 
     override fun startWindowDrag(windowPtr: Long) {
@@ -131,16 +142,53 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
         }
     }
 
+    override fun getWindowPos(windowPtr: Long, reportedPosX: Int, reportedPosY: Int): Vec2i {
+        return memStack {
+            val hWnd = glfwGetWin32Window(windowPtr)
+            val rect = RECT.calloc(this)
+            GetWindowRect(hWnd, rect)
+            Vec2i(rect.left(), rect.top())
+        }
+    }
+
+    override fun setWindowPos(windowPtr: Long, x: Int, y: Int) {
+        if (isHiddenTitleBar) {
+            val hWnd = glfwGetWin32Window(windowPtr)
+            SetWindowPos(hWnd, 0L, x, y, 0, 0, SWP_FRAMECHANGED or SWP_NOSIZE)
+        } else {
+            super.setWindowPos(windowPtr, x, y)
+        }
+    }
+
+    override fun setWindowSize(windowPtr: Long, width: Int, height: Int) {
+        if (isHiddenTitleBar) {
+            val hWnd = glfwGetWin32Window(windowPtr)
+            SetWindowPos(hWnd, 0L, 0, 0, width + nonTopBorder * 2, height + nonTopBorder + topBorder, SWP_FRAMECHANGED or SWP_NOMOVE)
+        } else {
+            super.setWindowSize(windowPtr, width, height)
+        }
+    }
+
     override fun isMaximized(windowPtr: Long): Boolean {
         return isMaximized
     }
 
     override fun toggleMaximized(windowPtr: Long) {
-        val hWnd = glfwGetWin32Window(windowPtr)
-        if (isMaximized) {
-            demaximizeWindow(hWnd)
+        if (isHiddenTitleBar) {
+            val hWnd = glfwGetWin32Window(windowPtr)
+            if (isMaximized) {
+                demaximizeWindow(hWnd)
+            } else {
+                maximizeWindow(hWnd)
+            }
         } else {
-            maximizeWindow(hWnd)
+            if (isMaximized) {
+                GLFW.glfwRestoreWindow(windowPtr)
+                isMaximized = false
+            } else {
+                GLFW.glfwMaximizeWindow(windowPtr)
+                isMaximized = true
+            }
         }
     }
 

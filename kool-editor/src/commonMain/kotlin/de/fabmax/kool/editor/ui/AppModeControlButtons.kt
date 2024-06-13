@@ -62,6 +62,7 @@ fun UiScope.appModeControlButtons() {
                     resetButtonBg.clickAnimator.start()
                     KoolEditor.instance.resetApp()
                 }
+                .onDrag { }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
 
@@ -92,6 +93,7 @@ fun UiScope.appModeControlButtons() {
                         }
                     }
                 }
+                .onDrag { }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
 
@@ -112,6 +114,7 @@ fun UiScope.appModeControlButtons() {
                         KoolEditor.instance.stopApp()
                     }
                 }
+                .onDrag { }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
     }

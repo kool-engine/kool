@@ -28,10 +28,15 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                 }
             }
 
-        Box(width = Grow.Std, height = sizes.heightWindowTitleBar) {
-            modifier
-                .alignY(AlignmentY.Top)
-                .background(TitleBgRenderer(colors.windowTitleBg, UiColors.windowTitleBgAccent, fade = TitleBgRenderer.FADE_STRONG))
+        Column(width = Grow.Std, height = sizes.heightWindowTitleBar) {
+            Box(width = Grow.Std, height = Grow.Std) {
+                modifier
+                    .alignY(AlignmentY.Top)
+                    .background(TitleBgRenderer(colors.windowTitleBg, UiColors.windowTitleBgAccent, fade = TitleBgRenderer.FADE_STRONG))
+            }
+            Box(width = Grow.Std, height = sizes.borderWidth) {
+                modifier.backgroundColor(UiColors.titleBg)
+            }
         }
 
         leftPanel()
