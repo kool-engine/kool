@@ -181,6 +181,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     private fun setEditorOverlayVisibility(isVisible: Boolean) {
+        editorCameraTransform.isVisible = isVisible
         editorOverlay.children.forEach {
             it.isVisible = isVisible
         }
@@ -318,7 +319,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
 
         updateOverlays()
-        EditorActions.clear()
     }
 
     private fun updateOverlays() {

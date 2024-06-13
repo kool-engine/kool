@@ -1,6 +1,7 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
 
 object PointerInput {
@@ -16,10 +17,14 @@ object PointerInput {
 
     var isEvaluatingCompatGestures = true
 
+    private var cursorLockTime: UInt = 0u
     var cursorMode: CursorMode = CursorMode.NORMAL
         set(value) {
-            field = value
-            platformInput.setCursorMode(value)
+            if (value != field) {
+                cursorLockTime = if (value == CursorMode.LOCKED) Time.frameCount.toUInt() else 0u
+                field = value
+                platformInput.setCursorMode(value)
+            }
         }
     var cursorShape: CursorShape = CursorShape.DEFAULT
 
@@ -89,7 +94,12 @@ object PointerInput {
             val startPtr = getFreeInputPointer() ?: return
             startPtr.startPointer(MOUSE_POINTER_ID, x, y)
         } else {
-            mousePtr.movePointer(x, y)
+            // *sometimes* locking / hiding the cursor messes up the cursor position
+            // if this happens during drag this can be bad -> suppress any drag movement
+            // within 3 frames after cursor lock was engaged
+            val cursorLockDelay = Time.frameCount.toUInt() - cursorLockTime
+            val accuDeltas = cursorLockDelay > 2u
+            mousePtr.movePointer(x, y, accuDeltas)
         }
     }
 

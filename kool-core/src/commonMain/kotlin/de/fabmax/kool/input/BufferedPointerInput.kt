@@ -75,16 +75,18 @@ internal class BufferedPointerInput : Pointer() {
         isValid = true
     }
 
-    fun movePointer(x: Double, y: Double) {
+    fun movePointer(x: Double, y: Double, accumulateDeltas: Boolean = true) {
         val wasDrag = dragMovement != 0.0
-        if (isAnyButtonDown) {
-            dragDeltaX += x - this.x
-            dragDeltaY += y - this.y
-            dragMovement += abs(x - this.x) + abs(y - this.y)
-        }
 
-        deltaX += x - this.x
-        deltaY += y - this.y
+        if (accumulateDeltas) {
+            if (isAnyButtonDown) {
+                dragDeltaX += x - this.x
+                dragDeltaY += y - this.y
+                dragMovement += abs(x - this.x) + abs(y - this.y)
+            }
+            deltaX += x - this.x
+            deltaY += y - this.y
+        }
 
         // Do not update the position if a drag has just started - this way drag start events are guaranteed
         // to have the same position as the previous hover event. Otherwise, the drag event might not be received

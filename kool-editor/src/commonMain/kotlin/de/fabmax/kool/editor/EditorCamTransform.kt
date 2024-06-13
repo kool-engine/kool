@@ -28,6 +28,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         InputStack.defaultInputHandler.pointerListeners += this
 
         middleDragMethod = DragMethod.ROTATE
+        isInfiniteDragCursor = true
 
         onUpdate {
             panTarget?.let { animatePan(it) }

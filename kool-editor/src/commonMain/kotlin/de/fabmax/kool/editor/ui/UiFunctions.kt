@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
@@ -154,6 +155,7 @@ fun UiScope.doubleTextField(
             .onDragStart {
                 dragStartValue = value
                 editHandler.onEditStart(dragStartValue)
+                PointerInput.cursorMode = CursorMode.LOCKED
             }
             .onDrag {
                 val dragVal = dragStartValue + dragChangeSpeed * Dp.fromPx(it.pointer.dragDeltaX.toFloat()).value
@@ -161,6 +163,7 @@ fun UiScope.doubleTextField(
             }
             .onDragEnd {
                 editHandler.onEditEnd(dragStartValue, value)
+                PointerInput.cursorMode = CursorMode.NORMAL
             }
     }
     textFieldModifier?.invoke(modifier)

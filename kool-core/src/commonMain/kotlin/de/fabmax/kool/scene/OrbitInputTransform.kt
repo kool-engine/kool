@@ -1,7 +1,9 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxD
@@ -61,6 +63,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
 
     var isKeepingStandardTransform = false
+    var isInfiniteDragCursor = false
 
     var invertRotX = false
     var invertRotY = false
@@ -77,6 +80,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
+    private var prevDragMethod = DragMethod.NONE
     private var dragStart = false
     private val deltaPos = MutableVec2d()
     private var deltaScroll = 0.0
@@ -244,6 +248,10 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
+        if (!isVisible) {
+            return
+        }
+
         val dragPtr = pointerState.primaryPointer
         if (dragPtr.isConsumed()) {
             deltaPos.set(Vec2d.ZERO)
@@ -251,6 +259,15 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
             return
         }
 
+        if (isInfiniteDragCursor) {
+            if (dragPtr.isDrag && dragMethod != DragMethod.NONE && PointerInput.cursorMode != CursorMode.LOCKED) {
+                PointerInput.cursorMode = CursorMode.LOCKED
+            } else if (prevDragMethod != DragMethod.NONE && dragMethod == DragMethod.NONE) {
+                PointerInput.cursorMode = CursorMode.NORMAL
+            }
+        }
+
+        prevDragMethod = dragMethod
         if (dragPtr.buttonEventMask != 0 || dragPtr.buttonMask != prevButtonMask) {
             dragMethod = when {
                 dragPtr.isLeftButtonDown -> leftDragMethod

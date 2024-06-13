@@ -84,8 +84,10 @@ open class UiSurface(
             }
 
             if (isVisible) {
-                inputHandler.checkInputHandler(it.ctx)
-                InputStack.updateHandlerStack()
+                if (PointerInput.cursorMode == CursorMode.NORMAL) {
+                    inputHandler.checkInputHandler(it.ctx)
+                    InputStack.updateHandlerStack()
+                }
 
                 if (requiresUpdate) {
                     requiresUpdate = false

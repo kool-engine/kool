@@ -5,9 +5,7 @@ import de.fabmax.kool.editor.EditorEditMode
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.KeyEvent
-import de.fabmax.kool.input.PointerState
+import de.fabmax.kool.input.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gizmo.*
 import de.fabmax.kool.modules.ui2.MutableStateValue
@@ -105,6 +103,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         selectionTransform?.startTransform()
 
         inputHandler.push()
+        PointerInput.cursorMode = CursorMode.LOCKED
         return true
     }
 
@@ -120,6 +119,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             }
         }
         selectionTransform = null
+        PointerInput.cursorMode = CursorMode.NORMAL
         inputHandler.pop()
     }
 

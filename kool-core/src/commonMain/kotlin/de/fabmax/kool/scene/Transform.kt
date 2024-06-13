@@ -80,7 +80,7 @@ interface Transform {
     }
 }
 
-fun Transform.setTransform(that: Transform) {
+fun Transform.set(that: Transform) {
     when (that) {
         is TrsTransformF -> setCompositionOf(that.translation, that.rotation, that.scale)
         is TrsTransformD -> setCompositionOf(that.translation, that.rotation, that.scale)

@@ -3,6 +3,8 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.util.SelectionTransform
+import de.fabmax.kool.input.CursorMode
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.modules.gizmo.GizmoListener
 import de.fabmax.kool.modules.gizmo.GizmoMode
 import de.fabmax.kool.modules.gizmo.SimpleGizmo
@@ -33,18 +35,21 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
             hasTransformAuthority = true
             selectionTransform?.startTransform()
             cancelListener.push()
+            PointerInput.cursorMode = CursorMode.LOCKED
         }
 
         override fun onManipulationFinished(startTransform: TrsTransformD, endTransform: TrsTransformD) {
             hasTransformAuthority = false
             selectionTransform?.applyTransform(true)
             cancelListener.pop()
+            PointerInput.cursorMode = CursorMode.NORMAL
         }
 
         override fun onManipulationCanceled(startTransform: TrsTransformD) {
             hasTransformAuthority = false
             selectionTransform?.restoreInitialTransform()
             cancelListener.pop()
+            PointerInput.cursorMode = CursorMode.NORMAL
         }
 
         override fun onGizmoUpdate(transform: TrsTransformD) {
