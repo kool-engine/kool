@@ -11,8 +11,8 @@ import kotlin.math.round
 import kotlin.math.sin
 
 fun UiScope.appModeControlButtons() {
-    val btnSzCenter = sizes.baseSize * 1.3f
-    val btnSzOuter = sizes.baseSize * 1.1f
+    val btnSzCenter = sizes.baseSize * 1.2f
+    val btnSzOuter = sizes.baseSize * 1.0f
     val btnExtent = btnSzOuter * 0.85f
 
     Box(width = btnExtent * 2 + btnSzOuter, height = btnSzCenter) {
@@ -44,7 +44,6 @@ fun UiScope.appModeControlButtons() {
         val pauseButtonBg = remember { PauseButtonBg(playStopAnimator, playPauseAnimator) }
 
         modifier
-            .margin(top = sizes.smallGap * -0.5f)
             .alignX(AlignmentX.Center)
 
         val p = 1f - Easing.quadRev(playStopAnimator.progressAndUse())
@@ -63,6 +62,7 @@ fun UiScope.appModeControlButtons() {
                     resetButtonBg.clickAnimator.start()
                     KoolEditor.instance.resetApp()
                 }
+                .onDrag { }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
 
@@ -93,6 +93,7 @@ fun UiScope.appModeControlButtons() {
                         }
                     }
                 }
+                .onDrag { }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
 
@@ -113,6 +114,7 @@ fun UiScope.appModeControlButtons() {
                         KoolEditor.instance.stopApp()
                     }
                 }
+                .onDrag { }
                 .border(CircularBorder(colors.background, sizes.borderWidth * 2))
         }
     }

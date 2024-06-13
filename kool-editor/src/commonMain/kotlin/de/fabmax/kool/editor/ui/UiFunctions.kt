@@ -25,15 +25,16 @@ fun UiScope.editorTitleBar(
     onClose: ((PointerEvent) -> Unit)? = null,
     titleBlock: (RowScope.() -> Unit)? = null
 ) {
-    Row(Grow.Std, sizes.lineHeightTitle) {
+    Row(Grow.Std, sizes.heightTitleBar) {
         modifier
             .padding(horizontal = sizes.gap - sizes.borderWidth)
             .zLayer(UiSurface.LAYER_FLOATING)
+            .backgroundColor(UiColors.titleBg)
 
         if (roundedTop) {
-            modifier.background(remember { TitleBgRenderer(sizes.gap.px) })
+            modifier.background(remember { TitleBgRenderer(UiColors.titleBg, UiColors.titleBgAccent, topRadius = sizes.gap.px, fade = TitleBgRenderer.FADE_WEAK) })
         } else {
-            modifier.background(remember { TitleBgRenderer() })
+            modifier.background(remember { TitleBgRenderer(UiColors.titleBg, UiColors.titleBgAccent, fade = TitleBgRenderer.FADE_WEAK) })
         }
 
         if (!windowDockable.isDocked.use()) {
@@ -41,7 +42,7 @@ fun UiScope.editorTitleBar(
             imageIcon?.let {
                 Image {
                     modifier
-                        .margin(end = sizes.gap, top = sizes.lineHeightTitle * 0.5f - IconMap.medium.iconSize * 0.55f)
+                        .margin(end = sizes.gap, top = sizes.heightTitleBar * 0.5f - IconMap.medium.iconSize * 0.55f)
                         .iconImage(it, UiColors.titleText)
                 }
             }
@@ -811,9 +812,12 @@ fun UiScope.iconButton(
     toggleState: Boolean = false,
     tint: Color = colors.onBackground,
     margin: Dp = sizes.smallGap,
+    width: Dimension = FitContent,
+    height: Dimension = FitContent,
+    padding: Dp = sizes.smallGap * 0.5f,
     boxBlock: (UiScope.() -> Unit)? = null,
     onClick: (PointerEvent) -> Unit
-) = Box {
+) = Box(width, height) {
     var isHovered by remember(false)
     var isClickFeedback by remember(false)
 
@@ -830,7 +834,7 @@ fun UiScope.iconButton(
     modifier
         .align(AlignmentX.Center, AlignmentY.Center)
         .margin(margin)
-        .padding(sizes.smallGap * 0.5f)
+        .padding(padding)
         .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
         .onEnter { isHovered = true }
         .onExit {

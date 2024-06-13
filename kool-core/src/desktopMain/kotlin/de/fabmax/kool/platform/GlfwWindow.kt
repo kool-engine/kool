@@ -44,10 +44,18 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         }
 
     var isMaximized: Boolean
-        get() = glfwGetWindowAttrib(windowPtr, GLFW_MAXIMIZED) != 0
+        get() = platformWindowHelper.isMaximized(windowPtr)
+        set(value) {
+            if (value != platformWindowHelper.isMaximized(windowPtr)) {
+                platformWindowHelper.toggleMaximized(windowPtr)
+            }
+        }
+
+    var isMinimized: Boolean
+        get() = glfwGetWindowAttrib(windowPtr, GLFW_ICONIFIED) != 0
         set(value) {
             if (value) {
-                glfwMaximizeWindow(windowPtr)
+                glfwIconifyWindow(windowPtr)
             } else {
                 glfwRestoreWindow(windowPtr)
             }
@@ -72,6 +80,9 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             }
         }
 
+    var isHiddenTitleBar = false
+        internal set
+
     private val fsMonitor: Long
     private var windowedWidth = KoolSystem.configJvm.windowSize.x
     private var windowedHeight = KoolSystem.configJvm.windowSize.y
@@ -79,6 +90,11 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     private var windowedPosY = 0
 
     private var renderOnResizeFlag = false
+
+    private val platformWindowHelper = when (OsInfo.os) {
+        OsInfo.OS.WINDOWS -> PlatformWindowHelperWindows(this)
+        else -> PlatformWindowHelperCommon()
+    }
 
     init {
         fsMonitor = if (KoolSystem.configJvm.monitor < 0) {
@@ -99,6 +115,10 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             0L
         )
         check(windowPtr != MemoryUtil.NULL) { "Failed to create the GLFW window" }
+
+        if (KoolSystem.configJvm.isNoTitleBar) {
+            platformWindowHelper.hideTitleBar(windowPtr)
+        }
 
         if (KoolSystem.configJvm.windowIcon.isNotEmpty()) {
             setWindowIcon(KoolSystem.configJvm.windowIcon)
@@ -139,11 +159,15 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     fun setWindowSize(width: Int, height: Int) {
-        glfwSetWindowSize(windowPtr, width, height)
+        platformWindowHelper.setWindowSize(windowPtr, width, height)
     }
 
     fun setWindowPos(x: Int, y: Int) {
-        glfwSetWindowPos(windowPtr, x, y)
+        platformWindowHelper.setWindowPos(windowPtr, x, y)
+    }
+
+    fun closeWindow() {
+        glfwSetWindowShouldClose(windowPtr, true)
     }
 
     protected open fun onWindowSizeChanged(width: Int, height: Int) {
@@ -170,8 +194,9 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     protected open fun onWindowPositionChanged(x: Int, y: Int) {
-        windowPosX = x
-        windowPosY = y
+        val (wx, wy) = platformWindowHelper.getWindowPos(windowPtr, x, y)
+        windowPosX = wx
+        windowPosY = wy
     }
 
     protected open fun onWindowFocusChanged(isFocused: Boolean) {
@@ -221,6 +246,10 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             glfwSetWindowIcon(windowPtr, images)
         }
     }
+
+    fun startWindowDrag() = platformWindowHelper.startWindowDrag(windowPtr)
+
+    fun windowDrag() = platformWindowHelper.windowDrag(windowPtr)
 
     private fun setFullscreenMode(enabled: Boolean) {
         if (enabled) {

@@ -2,6 +2,8 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
 import de.fabmax.kool.editor.ui.OkCancelBrowsePathDialog
+import de.fabmax.kool.input.Pointer
+import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.modules.filesystem.PhysicalFileSystem
 import de.fabmax.kool.modules.filesystem.getDirectoryOrNull
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -18,6 +20,16 @@ import kotlin.io.path.pathString
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object PlatformFunctions {
+
+    actual val windowButtonStyle: WindowButtonStyle get() {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        return if (ctx.backend.glfwWindow.isHiddenTitleBar) WindowButtonStyle.WINDOWS else WindowButtonStyle.NONE
+    }
+
+    actual val isWindowMaximized: Boolean get() {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        return ctx.backend.glfwWindow.isMaximized
+    }
 
     actual fun onEditorStarted(ctx: KoolContext) {
         ctx as Lwjgl3Context
@@ -40,7 +52,7 @@ actual object PlatformFunctions {
         wnd.isVisible = true
     }
 
-    actual fun onWindowCloseRequest(ctx: KoolContext): Boolean {
+    actual fun onExit(ctx: KoolContext) {
         ctx as Lwjgl3Context
         val wnd = ctx.backend.glfwWindow
 
@@ -53,7 +65,6 @@ actual object PlatformFunctions {
             KeyValueStore.setInt("editor.window.width", wnd.windowWidth)
             KeyValueStore.setInt("editor.window.height", wnd.windowHeight)
         }
-        return true
     }
 
     actual fun editBehavior(behaviorClassName: String) {
@@ -96,6 +107,34 @@ actual object PlatformFunctions {
         runBlocking {
             KoolEditor.instance.saveProject()
         }
+    }
+
+    private val startPointerScreen = MutableVec2i()
+    private val startWindow = MutableVec2i()
+
+    actual fun dragWindowStart(ptr: Pointer) {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        ctx.backend.glfwWindow.startWindowDrag()
+    }
+
+    actual fun dragWindow(ptr: Pointer) {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        ctx.backend.glfwWindow.windowDrag()
+    }
+
+    actual fun toggleMaximizeWindow() {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        ctx.backend.glfwWindow.isMaximized = !ctx.backend.glfwWindow.isMaximized
+    }
+
+    actual fun minimizeWindow() {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        ctx.backend.glfwWindow.isMinimized = true
+    }
+
+    actual fun closeWindow() {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        ctx.backend.glfwWindow.closeWindow()
     }
 }
 

@@ -83,10 +83,10 @@ abstract class EditorPanel(
         }
     }
 
-    private fun UiScope.panelBar(dockNode: DockNodeLeaf) = Column(width = sizes.baseSize - sizes.borderWidth, height = Grow.Std) {
+    private fun UiScope.panelBar(dockNode: DockNodeLeaf) = Column(width = sizes.panelBarWidth, height = Grow.Std) {
         modifier
             .backgroundColor(colors.backgroundMid)
-            .padding(top = sizes.gap * 0.75f)
+            .padding(top = sizes.smallGap * 0.5f)
         dockNode.dockedItems.mapNotNull { editorPanels[it.name] }.forEach { panel ->
             panelButton(panel, dockNode)
         }

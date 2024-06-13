@@ -37,6 +37,11 @@ data class KoolConfigJvm(
     val monitor: Int = -1,
     val windowIcon: List<BufferedImage> = DEFAULT_ICON?.let { listOf(it) } ?: emptyList(),
 
+    /**
+     * Windows only for now: Disable the window title bar to allow custom window themes.
+     */
+    val isNoTitleBar: Boolean = false,
+
     val isVsync: Boolean = true,
     val maxFrameRate: Int = 0,
     val windowNotFocusedFrameRate: Int = 0,

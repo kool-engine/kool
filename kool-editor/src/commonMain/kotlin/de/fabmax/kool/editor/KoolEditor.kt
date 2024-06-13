@@ -96,9 +96,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-            PlatformFunctions.saveProjectBlocking()
-            saveEditorConfig()
-            return PlatformFunctions.onWindowCloseRequest(ctx)
+            onExit()
+            return true
         }
 
         override fun onFileDrop(droppedFiles: List<LoadableFile>) {
@@ -173,6 +172,12 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     fun resetApp() {
         logI { "Reset app" }
         appLoader.reloadApp()
+    }
+
+    fun onExit() {
+        PlatformFunctions.saveProjectBlocking()
+        saveEditorConfig()
+        PlatformFunctions.onExit(ctx)
     }
 
     private fun setEditorOverlayVisibility(isVisible: Boolean) {

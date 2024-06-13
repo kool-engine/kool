@@ -25,7 +25,7 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
         modifier.border(RoundRectBorder(UiColors.border, sizes.gap, sizes.borderWidth))
 
         Column(Grow.Std, Grow.Std) {
-            Row(Grow.Std, height = sizes.lineHeightTitle) {
+            Row(Grow.Std, height = sizes.heightTitleBar) {
                 modifier
                     .padding(horizontal = sizes.gap * 1.5f)
                     .background(TitleBarBackground(UiColors.titleBg, sizes.gap.px, false))
