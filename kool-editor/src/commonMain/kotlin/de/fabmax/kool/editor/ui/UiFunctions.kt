@@ -114,7 +114,8 @@ fun UiScope.doubleTextField(
     minValue: Double = Double.NEGATIVE_INFINITY,
     maxValue: Double = Double.POSITIVE_INFINITY,
     editHandler: ValueEditHandler<Double>,
-    textFieldModifier: ((TextFieldModifier) -> Unit)? = null
+    textFieldModifier: ((TextFieldModifier) -> Unit)? = null,
+    selectTextOnFocusGain: Boolean = true
 ) = TextField {
     var text by remember(if (value.isFinite()) value.toString(precision) else "")
     var wasFocuesd by remember(false)
@@ -131,6 +132,9 @@ fun UiScope.doubleTextField(
         // gained focus
         dragStartValue = value
         editHandler.onEditStart(dragStartValue)
+        if (selectTextOnFocusGain) {
+            modifier.selectionRange(0, text.length)
+        }
     }
     wasFocuesd = isFocused.value
 
