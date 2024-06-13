@@ -42,7 +42,7 @@ class RigidActorComponent(
         }
     }
 
-    override val actorTransform: TrsTransformF? get() = rigidActor?.transform
+    override val globalActorTransform: TrsTransformF? get() = rigidActor?.transform
 
     init {
         dependsOn(MeshComponent::class, isOptional = true)
