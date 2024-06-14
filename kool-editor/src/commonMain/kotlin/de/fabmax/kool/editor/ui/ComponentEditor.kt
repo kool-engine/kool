@@ -267,6 +267,31 @@ abstract class ComponentEditor<T: GameEntityComponent> : Composable {
             }
         }
     }
+
+    protected fun <D> UiScope.stringPropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> String,
+        valueSetter: (oldData: D, newValue: String) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        labelWidth: Dimension = sizes.editorLabelWidthSmall,
+    ) {
+        val texts = components.map { valueGetter(dataGetter(it)) }
+        val text = if (texts.all { it == texts[0] }) texts[0] else ""
+        labeledTextField(label, text, labelWidth = labelWidth) { newText ->
+            val actions = components
+                .filter { valueGetter(dataGetter(it)) != newText }
+                .map {
+                    val oldData = dataGetter(it)
+                    val newData = valueSetter(oldData, newText)
+                    actionMapper(it, oldData, newData)
+                }
+            if (actions.isNotEmpty()) {
+                FusedAction(actions).apply()
+            }
+        }
+    }
 }
 
 fun UiScope.componentPanel(

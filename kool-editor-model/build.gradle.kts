@@ -1,3 +1,6 @@
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import java.io.FileInputStream
 import java.util.*
 
@@ -20,6 +23,10 @@ kotlin {
     jvmToolchain(11)
     js(IR) {
         browser { }
+    }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-receivers")
     }
 
     sourceSets {

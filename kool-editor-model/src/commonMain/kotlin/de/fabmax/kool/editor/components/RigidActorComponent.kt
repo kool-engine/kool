@@ -12,7 +12,18 @@ import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logE
+
+context(GameEntityComponent)
+val RigidActor.component: RigidActorComponent? get() {
+    val world = sceneEntity.getComponent<PhysicsWorldComponent>()
+    return world?.actors?.get(this)
+}
+
+context(GameEntityComponent)
+val RigidActor.gameEntity: GameEntity? get() {
+    val world = sceneEntity.getComponent<PhysicsWorldComponent>()
+    return world?.actors?.get(this)?.gameEntity
+}
 
 class RigidActorComponent(
     gameEntity: GameEntity,
@@ -115,13 +126,9 @@ class RigidActorComponent(
 
     private suspend fun createRigidBody(actorData: RigidActorComponentData) {
         val physicsWorldComponent = getOrCreatePhysicsWorldComponent()
-        val physicsWorld = physicsWorldComponent.physicsWorld
-        if (physicsWorld == null) {
-            logE { "Unable to create rigid body: parent physics world was not yet created" }
-        }
 
         rigidActor?.let {
-            physicsWorld?.removeActor(it)
+            physicsWorldComponent.removeActor(this)
             it.release()
         }
         geometry.forEach { it.release() }
@@ -135,7 +142,7 @@ class RigidActorComponent(
         scale.set(Vec3d.ONES)
 
         requiredAssets.clear()
-        rigidActor?.apply {
+        rigidActor?.let { actor ->
             bodyShapes = actorData.shapes
 
             val meshComp = gameEntity.getComponent<MeshComponent>()
@@ -148,9 +155,9 @@ class RigidActorComponent(
                 else -> emptyList()
             }
 
-            shapes.forEach { (shape, pose) -> attachShape(Shape(shape, localPose = pose)) }
+            shapes.forEach { (shape, pose) -> actor.attachShape(Shape(shape, localPose = pose)) }
             geometry = shapes.map { it.first }
-            physicsWorld?.addActor(this)
+            physicsWorldComponent.addActor(this@RigidActorComponent)
         }
 
         updateRigidActor(actorData)

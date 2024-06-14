@@ -2,11 +2,11 @@ package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.GameEntityComponent
 
-enum class EntityLifecycle {
+enum class EntityLifecycle(val step: Int) {
     /**
      * Initial state: Entity and components are instantiated but not yet fully set up.
      */
-    CREATED {
+    CREATED(0) {
         override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(PREPARED, DESTROYED) }
     },
 
@@ -19,14 +19,14 @@ enum class EntityLifecycle {
      * are not yet called.
      * This is the state, where the editor edit mode operates.
      */
-    PREPARED {
+    PREPARED(1) {
         override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(RUNNING, DESTROYED) }
     },
 
     /**
      * The main play state. All systems active.
      */
-    RUNNING {
+    RUNNING(2) {
         override val allowedNextStates: List<EntityLifecycle> by lazy { listOf(DESTROYED) }
     },
 
@@ -34,7 +34,7 @@ enum class EntityLifecycle {
      * All resources are disposed and the entity can be discarded. This is the final state and entities in
      * this state can not be used anymore.
      */
-    DESTROYED {
+    DESTROYED(3) {
         override val allowedNextStates: List<EntityLifecycle> = emptyList()
     };
 

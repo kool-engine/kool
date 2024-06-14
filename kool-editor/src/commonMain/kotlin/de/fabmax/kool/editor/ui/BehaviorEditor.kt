@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.components.BehaviorComponent
 import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.editor.data.*
@@ -12,6 +13,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.Box
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlin.math.roundToInt
@@ -57,15 +59,18 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
                 Vec4i::class -> vec4iEditor(prop)
 
                 Boolean::class -> boolEditor(prop)
-
+                Color::class -> { logE { "TODO: ${prop.name}: color editor" } }
+                String::class -> { stringEditor(prop) }
                 GameEntity::class -> gameEntityEditor(prop)
 
                 else -> {
-                    if (prop.type == BehaviorPropertyType.COMPONENT) {
-                        componentEditor(prop)
-                    } else {
-                        val behaviorName = components[0].behaviorInstance.value?.let { it::class.simpleName } ?: "null"
-                        logW { "Type is not editable: ${prop.kType} (in behavior: $behaviorName)" }
+                    when (prop.type) {
+                        BehaviorPropertyType.COMPONENT -> componentEditor(prop)
+                        BehaviorPropertyType.BEHAVIOR -> behaviorComponentEditor(prop)
+                        else -> {
+                            val behaviorName = components[0].behaviorInstance.value?.let { it::class.simpleName } ?: "null"
+                            logW { "Type is not editable: ${prop.kType} (in behavior: $behaviorName)" }
+                        }
                     }
                 }
             }
@@ -74,13 +79,13 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
     private fun UiScope.gameEntityEditor(prop: BehaviorProperty) {
         val choices = remember {
-            ComboBoxItems(scene.sceneEntities.values.map { GameEntityChoice(it) })
+            ComboBoxItems(listOf(null) + scene.sceneEntities.values.map { GameEntityChoice(it) })
         }
         choicePropertyEditor(
             choices = choices,
             dataGetter = { PropertyValue(gameEntityRef = prop.getGameEntity(it)?.id ?: EntityId(0L)) },
             valueGetter = { GameEntityChoice(it.gameEntityRef?.gameEntity) },
-            valueSetter = { _, newValue -> PropertyValue(gameEntityRef = newValue.gameEntity?.id ?: EntityId(0L)) },
+            valueSetter = { _, newValue -> PropertyValue(gameEntityRef = newValue?.gameEntity?.id ?: EntityId(0L)) },
             actionMapper = SetBehaviorPropertyAction(prop),
             label = prop.label
         )
@@ -104,10 +109,36 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         )
     }
 
+    private fun UiScope.behaviorComponentEditor(prop: BehaviorProperty) {
+        val choices = remember {
+            val className = (prop.kType.classifier as KClass<*>).simpleName
+            val behaviorComponents = listOf(null) + scene.getAllComponents<BehaviorComponent>().filter {
+                it.data.behaviorClassName.substringAfterLast('.') == className
+            }
+            ComboBoxItems(behaviorComponents.map { BehaviorChoice(it?.behaviorInstance?.value) })
+        }
+        choicePropertyEditor(
+            choices = choices,
+            dataGetter = { PropertyValue(behaviorRef = BehaviorRef(prop.getBehavior(it))) },
+            valueGetter = { BehaviorChoice(it.behaviorRef!!.entityId.gameEntity?.getBehavior(it.behaviorRef!!)) },
+            valueSetter = { _, newValue -> PropertyValue(behaviorRef = BehaviorRef(newValue.behavior)) },
+            actionMapper = SetBehaviorPropertyAction(prop),
+            label = prop.label
+        )
+    }
+
     private fun UiScope.boolEditor(prop: BehaviorProperty) = booleanPropertyEditor(
         dataGetter = { PropertyValue(bool = prop.getBoolean(it)) },
         valueGetter = { it.bool!! },
         valueSetter = { _, newValue -> PropertyValue(bool = newValue) },
+        actionMapper = SetBehaviorPropertyAction(prop),
+        label = prop.label
+    )
+
+    private fun UiScope.stringEditor(prop: BehaviorProperty) = stringPropertyEditor(
+        dataGetter = { PropertyValue(str = prop.getString(it)) },
+        valueGetter = { it.str!! },
+        valueSetter = { _, newValue -> PropertyValue(str = newValue) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label
     )
@@ -289,6 +320,8 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
             value.str != null -> set(behaviorComponent, value.str)
             value.gameEntityRef != null -> set(behaviorComponent, value.gameEntityRef!!.gameEntity)
             value.componentRef != null -> set(behaviorComponent, value.componentRef!!.entityId.gameEntity?.getComponent(value.componentRef!!))
+            value.behaviorRef != null -> set(behaviorComponent, value.behaviorRef!!.entityId.gameEntity?.getBehavior(value.behaviorRef!!))
+
             else -> error("PropertyValue has no non-null value")
         }
     }
@@ -311,6 +344,10 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
     private data class ComponentChoice(val component: GameEntityComponent?) {
         override fun toString(): String = component?.gameEntity?.name ?: "None"
+    }
+
+    private data class BehaviorChoice(val behavior: KoolBehavior?) {
+        override fun toString(): String = behavior?.gameEntity?.name ?: "None"
     }
 
     private val BehaviorProperty.isRanged: Boolean

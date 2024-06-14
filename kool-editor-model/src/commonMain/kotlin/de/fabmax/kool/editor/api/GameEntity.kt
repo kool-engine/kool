@@ -174,11 +174,16 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     suspend fun applyComponents() {
-        components.forEach {
+        var allOk = true
+        components.filter { it.isCreated }.forEach {
             it.applyComponent()
-            check(it.isPrepared) { "Component not applied (missed calling super?): $it" }
+            if (!it.isPrepared) {
+                allOk = false
+            }
         }
-        lifecycle = EntityLifecycle.PREPARED
+        if (allOk) {
+            lifecycle = EntityLifecycle.PREPARED
+        }
     }
 
     fun onStart() {

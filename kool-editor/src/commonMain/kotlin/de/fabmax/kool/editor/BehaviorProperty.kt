@@ -1,9 +1,11 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.components.BehaviorComponent
 import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.math.*
+import de.fabmax.kool.util.Color
 import kotlin.reflect.KType
 
 class BehaviorProperty(
@@ -25,8 +27,8 @@ class BehaviorProperty(
 
 enum class BehaviorPropertyType {
     STD,
-    NODE_MODEL,
-    COMPONENT
+    COMPONENT,
+    BEHAVIOR,
 }
 
 fun BehaviorProperty.getDouble(behaviorComponent: BehaviorComponent): Double = get(behaviorComponent) as Double? ?: 0.0
@@ -45,6 +47,9 @@ fun BehaviorProperty.getVec3i(behaviorComponent: BehaviorComponent): Vec3i = get
 fun BehaviorProperty.getVec4i(behaviorComponent: BehaviorComponent): Vec4i = get(behaviorComponent) as Vec4i? ?: Vec4i.ZERO
 
 fun BehaviorProperty.getBoolean(behaviorComponent: BehaviorComponent): Boolean = get(behaviorComponent) as Boolean? ?: false
+fun BehaviorProperty.getColor(behaviorComponent: BehaviorComponent): Color? = get(behaviorComponent) as Color?
+fun BehaviorProperty.getString(behaviorComponent: BehaviorComponent): String? = get(behaviorComponent) as String?
+fun BehaviorProperty.getGameEntity(behaviorComponent: BehaviorComponent): GameEntity? = get(behaviorComponent) as GameEntity?
 
 fun BehaviorProperty.getComponent(behaviorComponent: BehaviorComponent): GameEntityComponent? = get(behaviorComponent) as GameEntityComponent?
-fun BehaviorProperty.getGameEntity(behaviorComponent: BehaviorComponent): GameEntity? = get(behaviorComponent) as GameEntity?
+fun BehaviorProperty.getBehavior(behaviorComponent: BehaviorComponent): KoolBehavior? = get(behaviorComponent) as KoolBehavior?

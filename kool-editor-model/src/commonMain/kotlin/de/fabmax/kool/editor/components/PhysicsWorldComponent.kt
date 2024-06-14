@@ -9,8 +9,10 @@ import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.character.CharacterControllerManager
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
 class PhysicsWorldComponent(
@@ -25,6 +27,31 @@ class PhysicsWorldComponent(
         set(value) { dataState.set(data.copy(gravity = Vec3Data(value))) }
 
     var characterControllerManager: CharacterControllerManager? = null
+
+    private val _actors = mutableMapOf<RigidActor, RigidActorComponent>()
+    val actors: Map<RigidActor, RigidActorComponent> get() = _actors
+
+    fun addActor(rigidActorComponent: RigidActorComponent) {
+        val world = physicsWorld
+        val actor = rigidActorComponent.rigidActor
+        if (world == null) {
+            logE { "Unable to create rigid actor: parent physics world was not yet created" }
+            return
+        }
+        if (actor == null) {
+            logE { "Unable to add rigid actor: actor was not yet created" }
+            return
+        }
+        _actors[actor] = rigidActorComponent
+        world.addActor(actor)
+    }
+
+    fun removeActor(rigidActorComponent: RigidActorComponent) {
+        val world = physicsWorld ?: return
+        val actor = rigidActorComponent.rigidActor ?: return
+        _actors -= actor
+        world.removeActor(actor)
+    }
 
     override fun onDataChanged(oldData: PhysicsWorldComponentData, newData: PhysicsWorldComponentData) {
         physicsWorld?.let { world ->

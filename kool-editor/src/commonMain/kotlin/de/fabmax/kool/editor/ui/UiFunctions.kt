@@ -9,6 +9,7 @@ import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.CursorShape
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
@@ -162,7 +163,8 @@ fun UiScope.doubleTextField(
                 PointerInput.cursorMode = CursorMode.LOCKED
             }
             .onDrag {
-                val dragVal = dragStartValue + dragChangeSpeed * Dp.fromPx(it.pointer.dragDeltaX.toFloat()).value
+                val dragSpeed = if (KeyboardInput.isShiftDown) 0.1f else 1f
+                val dragVal = dragStartValue + dragChangeSpeed * dragSpeed * Dp.fromPx(it.pointer.dragDeltaX.toFloat()).value
                 editHandler.onEdit(dragVal.clamp(minValue, maxValue))
             }
             .onDragEnd {
