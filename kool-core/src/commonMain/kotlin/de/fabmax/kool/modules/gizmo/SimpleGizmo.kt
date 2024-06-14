@@ -13,10 +13,10 @@ import de.fabmax.kool.util.MdColor
 class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
 
     val gizmoNode = GizmoNode()
-    var dragSpeedModifier by gizmoNode::dragSpeedModifier
-    var translationTick by gizmoNode::translationTick
-    var rotationTick by gizmoNode::rotationTick
-    var scaleTick by gizmoNode::scaleTick
+    val dragSpeedModifier by gizmoNode::dragSpeedModifier
+    val translationTick by gizmoNode::translationTick
+    val rotationTick by gizmoNode::rotationTick
+    val scaleTick by gizmoNode::scaleTick
 
     private val inputHandler = InputStack.InputHandler("gizmo-input-handler")
 
@@ -356,7 +356,7 @@ fun GizmoNode.addScaleHandles() {
         PlaneHandle(
             color = MdColor.RED,
             axis = GizmoHandle.Axis.POS_X,
-            gizmoOperation = PlaneScale(Vec3d.X_AXIS),
+            gizmoOperation = PlaneScale(GizmoHandle.Axis.POS_X),
             name = "scale-plane-x"
         )
     )
@@ -364,7 +364,7 @@ fun GizmoNode.addScaleHandles() {
         PlaneHandle(
             color = MdColor.LIGHT_GREEN,
             axis = GizmoHandle.Axis.POS_Y,
-            gizmoOperation = PlaneScale(Vec3d.Y_AXIS),
+            gizmoOperation = PlaneScale(GizmoHandle.Axis.POS_Y),
             name = "scale-plane-y"
         )
     )
@@ -372,7 +372,7 @@ fun GizmoNode.addScaleHandles() {
         PlaneHandle(
             color = MdColor.BLUE,
             axis = GizmoHandle.Axis.POS_Z,
-            gizmoOperation = PlaneScale(Vec3d.Z_AXIS),
+            gizmoOperation = PlaneScale(GizmoHandle.Axis.POS_Z),
             name = "scale-plane-z"
         )
     )

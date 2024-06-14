@@ -63,9 +63,11 @@ data class DragContext(
 ) {
     val isManipulating: Boolean get() = gizmo.isManipulating
 
-    val translationTick: Double get() = gizmo.translationTick
-    val rotationTick: Double get() = gizmo.rotationTick
-    val scaleTick: Double get() = gizmo.scaleTick
+    val translationTick: Double get() = gizmo.translationTick.value
+    val rotationTick: Double get() = gizmo.rotationTick.value
+    val scaleTick: Double get() = gizmo.scaleTick.value
+
+    val overwriteValue: Double? get() = gizmo.overwriteManipulatorValue.value
 
     fun startManipulation() {
         if (!isManipulating) {
@@ -87,7 +89,8 @@ data class DragContext(
 
     fun manipulateAxisTranslation(axis: GizmoHandle.Axis, distance: Double) {
         if (isManipulating) {
-            gizmo.manipulateAxisTranslation(axis, distance)
+            val dist = overwriteValue ?: distance
+            gizmo.manipulateAxisTranslation(axis, dist)
         }
     }
 
@@ -99,7 +102,8 @@ data class DragContext(
 
     fun manipulateAxisRotation(axis: Vec3d, angleD: AngleD) {
         if (isManipulating) {
-            gizmo.manipulateAxisRotation(axis, angleD)
+            val angle = overwriteValue?.deg ?: angleD
+            gizmo.manipulateAxisRotation(axis, angle)
         }
     }
 
@@ -109,9 +113,46 @@ data class DragContext(
         }
     }
 
-    fun manipulateScale(scale: Vec3d) {
+    fun manipulateAxisScale(axis: GizmoHandle.Axis, scale: Double) {
         if (isManipulating) {
-            gizmo.manipulateScale(scale)
+            val s = overwriteValue ?: scale
+            val sVec = when (axis) {
+                GizmoHandle.Axis.POS_X -> Vec3d(s, 1.0, 1.0)
+                GizmoHandle.Axis.POS_Y -> Vec3d(1.0, s, 1.0)
+                GizmoHandle.Axis.POS_Z -> Vec3d(1.0, 1.0, s)
+                GizmoHandle.Axis.NEG_X -> Vec3d(s, 1.0, 1.0)
+                GizmoHandle.Axis.NEG_Y -> Vec3d(1.0, s, 1.0)
+                GizmoHandle.Axis.NEG_Z -> Vec3d(1.0, 1.0, s)
+            }
+            gizmo.manipulateScale(sVec)
         }
     }
+
+    fun manipulatePlaneScale(plane: GizmoHandle.Axis, scale: Double) {
+        if (isManipulating) {
+            val s = overwriteValue ?: scale
+            val sVec = when (plane) {
+                GizmoHandle.Axis.POS_X -> Vec3d(1.0, s, s)
+                GizmoHandle.Axis.POS_Y -> Vec3d(s, 1.0, s)
+                GizmoHandle.Axis.POS_Z -> Vec3d(s, s, 1.0)
+                GizmoHandle.Axis.NEG_X -> Vec3d(1.0, s, s)
+                GizmoHandle.Axis.NEG_Y -> Vec3d(s, 1.0, s)
+                GizmoHandle.Axis.NEG_Z -> Vec3d(s, s, 1.0)
+            }
+            gizmo.manipulateScale(sVec)
+        }
+    }
+
+    fun manipulateScale(scale: Vec3d) {
+        if (isManipulating) {
+            val s = overwriteValue?.let { Vec3d(it) } ?: scale
+            gizmo.manipulateScale(s)
+        }
+    }
+}
+
+sealed class ManipulatorValue {
+    data class ManipulatorValue1d(val value: Double) : ManipulatorValue()
+    data class ManipulatorValue3d(val value: Vec3d) : ManipulatorValue()
+    data class ManipulatorValue4d(val value: Vec4d) : ManipulatorValue()
 }

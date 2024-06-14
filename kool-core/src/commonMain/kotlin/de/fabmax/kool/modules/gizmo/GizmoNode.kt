@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
@@ -44,10 +45,13 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
             handleTransform.scale(value)
         }
 
-    var dragSpeedModifier = 1.0
-    var translationTick = 0.0
-    var rotationTick = 0.0
-    var scaleTick = 0.0
+    val latestManipulatorValue = mutableStateOf<ManipulatorValue?>(null)
+    val overwriteManipulatorValue = mutableStateOf<Double?>(null)
+
+    val dragSpeedModifier = mutableStateOf(1.0)
+    val translationTick = mutableStateOf(0.0)
+    val rotationTick = mutableStateOf(0.0)
+    val scaleTick = mutableStateOf(0.0)
 
     private var parentCam: Camera? = null
     private val camUpdateListener: (RenderPass.UpdateEvent) -> Unit = { ev ->
@@ -135,6 +139,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.translate(rotatedAxis * distance)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue1d(distance))
     }
 
     fun manipulateTranslation(translationOffset: Vec3d) {
@@ -147,6 +152,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.translate(rotatedTranslation)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue3d(translationOffset))
     }
 
     fun manipulateAxisRotation(axis: Vec3d, angle: AngleD) {
@@ -154,6 +160,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.rotate(angle, axis)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue1d(angle.deg))
     }
 
     fun manipulateRotation(rotation: QuatD) {
@@ -161,6 +168,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.rotate(rotation)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue4d(rotation.toVec4d()))
     }
 
     fun manipulateScale(scale: Vec3d) {
@@ -168,6 +176,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.scale(scale)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue3d(scale))
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
@@ -205,8 +214,8 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         }
 
         hoverHandle?.let { hover ->
-            virtualPointerPos.x += ptr.deltaX * dragSpeedModifier
-            virtualPointerPos.y += ptr.deltaY * dragSpeedModifier
+            virtualPointerPos.x += ptr.deltaX * dragSpeedModifier.value
+            virtualPointerPos.y += ptr.deltaY * dragSpeedModifier.value
             scene.camera.computePickRay(pickRay, virtualPointerPos.x.toFloat(), virtualPointerPos.y.toFloat(), scene.mainRenderPass.viewport)
 
             if (ptr.isLeftButtonDown && !isDrag) {

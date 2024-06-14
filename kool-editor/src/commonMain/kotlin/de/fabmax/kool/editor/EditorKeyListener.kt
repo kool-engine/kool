@@ -24,6 +24,9 @@ open class EditorKeyListener(name: String) : InputStack.InputHandler(name) {
         check(key !in _registeredKeys) { "$key already registered" }
         val binding = key.binding
         _registeredKeys[key] = addKeyListener(binding.keyCode, key.name, binding.keyMod.keyEventFilter, block)
+        key.binding.extraKeyCodes.forEach { (keyCode, mod) ->
+            addKeyListener(keyCode, key.name, mod.keyEventFilter, block)
+        }
     }
 
     fun removeKeyListener(key: Key) {
@@ -48,6 +51,7 @@ enum class Key(val group: KeyGroup) {
     Undo(KeyGroup.General),
     Redo(KeyGroup.General),
 
+    Enter(KeyGroup.General),
     Cancel(KeyGroup.General),
     DeleteSelected(KeyGroup.General),
     HideSelected(KeyGroup.General),
@@ -85,6 +89,7 @@ enum class Key(val group: KeyGroup) {
                 Undo -> KeyBinding(key, LocalKeyCode('Z'), KeyMod.ctrl)
                 Redo -> KeyBinding(key, LocalKeyCode('Y'), KeyMod.ctrl)
                 Cancel -> KeyBinding(key, KeyboardInput.KEY_ESC, KeyMod.none)
+                Enter -> KeyBinding(key, KeyboardInput.KEY_ENTER, KeyMod.none, setOf(KeyboardInput.KEY_NP_ENTER to KeyMod.none))
                 DeleteSelected -> KeyBinding(key, KeyboardInput.KEY_DEL, KeyMod.none)
                 HideSelected -> KeyBinding(key, LocalKeyCode('H'), KeyMod.none)
                 UnhideHidden -> KeyBinding(key, LocalKeyCode('H'), KeyMod.alt)
@@ -132,7 +137,7 @@ enum class Key(val group: KeyGroup) {
     }
 }
 
-data class KeyBinding(val key: Key, val keyCode: KeyCode, val keyMod: KeyMod) {
+data class KeyBinding(val key: Key, val keyCode: KeyCode, val keyMod: KeyMod, val extraKeyCodes: Set<Pair<KeyCode, KeyMod>> = emptySet()) {
     val name: String get() = key.toString()
 
     val keyInfo: String get() {

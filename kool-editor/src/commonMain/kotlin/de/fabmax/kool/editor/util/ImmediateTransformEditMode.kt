@@ -30,6 +30,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
 
     private var selectionTransform: SelectionTransform? = null
     private var dragCtxStart: DragContext? = null
+    private var overwriteStrValue: String? = null
 
     private var activeOp: GizmoOperation? = null
 
@@ -50,9 +51,9 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
     private val opXAxisScale = AxisScale(GizmoHandle.Axis.POS_X)
     private val opYAxisScale = AxisScale(GizmoHandle.Axis.POS_Y)
     private val opZAxisScale = AxisScale(GizmoHandle.Axis.POS_Z)
-    private val opXPlaneScale = PlaneScale(Vec3d.X_AXIS)
-    private val opYPlaneScale = PlaneScale(Vec3d.Y_AXIS)
-    private val opZPlaneScale = PlaneScale(Vec3d.Z_AXIS)
+    private val opXPlaneScale = PlaneScale(GizmoHandle.Axis.POS_X)
+    private val opYPlaneScale = PlaneScale(GizmoHandle.Axis.POS_Y)
+    private val opZPlaneScale = PlaneScale(GizmoHandle.Axis.POS_Z)
 
     val isActive: Boolean get() = gizmo.isManipulating
 
@@ -79,9 +80,30 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             setOp(opUniformScale)
             editor.editMode.toggleMode(EditorEditMode.Mode.SCALE_IMMEDIATE)
         }
+        addKeyListener(Key.Enter) {
+            finish(isCanceled = false)
+            mode.set(EditorEditMode.Mode.NONE)
+        }
         addKeyListener(Key.Cancel) {
             finish(isCanceled = true)
             mode.set(EditorEditMode.Mode.NONE)
+        }
+
+        keyboardListeners += InputStack.KeyboardListener { events, _ ->
+            events.forEach { evt ->
+                val prevStr = overwriteStrValue ?: ""
+                if (evt.isCharTyped) {
+                    when {
+                        evt.typedChar.isDigit() -> overwriteStrValue = "$prevStr${evt.typedChar}"
+                        evt.typedChar == '.' && '.' !in prevStr -> overwriteStrValue = "$prevStr."
+                        evt.typedChar == ',' && '.' !in prevStr -> overwriteStrValue = "$prevStr."
+                        evt.typedChar == '+' -> overwriteStrValue = prevStr.removePrefix("-")
+                        evt.typedChar == '-' -> overwriteStrValue = "-" + prevStr.removePrefix("-")
+                    }
+                } else if (evt.keyCode == KeyboardInput.KEY_BACKSPACE && evt.isPressed) {
+                    overwriteStrValue = if (prevStr.isNotEmpty()) prevStr.substring(0 until prevStr.lastIndex) else null
+                }
+            }
         }
     }
 
@@ -105,6 +127,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         val primNode = selectionTransform?.primaryTransformNode
         primNode?.let { updateGizmoFromClient(it.drawNode) }
         selectionTransform?.startTransform()
+        overwriteStrValue = null
 
         inputHandler.push()
         if (mode != EditorEditMode.Mode.ROTATE_IMMEDIATE) {
@@ -125,6 +148,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             }
         }
         selectionTransform = null
+        overwriteStrValue = null
         PointerInput.cursorMode = CursorMode.NORMAL
         inputHandler.pop()
     }
@@ -202,6 +226,8 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         globalRay.transformBy(globalToDragLocal, localRay)
         val dragCtx = DragContext(gizmo, virtualPointerPos, globalRay, localRay, globalToDragLocal, scene.camera)
 
+        gizmo.overwriteManipulatorValue.set(overwriteStrValue?.toDoubleOrNull())
+
         if (!gizmo.isManipulating) {
             dragCtxStart = dragCtx
             activeOp?.onDragStart(dragCtx)
@@ -255,7 +281,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         when (mode.value) {
             EditorEditMode.Mode.MOVE_IMMEDIATE -> setOp(opXPlaneTranslate)
             EditorEditMode.Mode.ROTATE_IMMEDIATE -> setOp(opXAxisRotate)
-            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opXAxisScale)
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opXPlaneScale)
             else -> { }
         }
     }
@@ -264,7 +290,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         when (mode.value) {
             EditorEditMode.Mode.MOVE_IMMEDIATE -> setOp(opYPlaneTranslate)
             EditorEditMode.Mode.ROTATE_IMMEDIATE -> setOp(opYAxisRotate)
-            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opYAxisScale)
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opYPlaneScale)
             else -> { }
         }
     }
@@ -273,7 +299,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         when (mode.value) {
             EditorEditMode.Mode.MOVE_IMMEDIATE -> setOp(opZPlaneTranslate)
             EditorEditMode.Mode.ROTATE_IMMEDIATE -> setOp(opZAxisRotate)
-            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opZAxisScale)
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opZPlaneScale)
             else -> { }
         }
     }
@@ -288,5 +314,10 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
     companion object {
         private val FILTER_NO_SHIFT: (KeyEvent) -> Boolean = { it.isPressed && !it.isShiftDown }
         private val FILTER_SHIFT: (KeyEvent) -> Boolean = { it.isPressed && it.isShiftDown }
+
+        private val numericChars = setOf(
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '+', '-', '.', ','
+        )
     }
 }

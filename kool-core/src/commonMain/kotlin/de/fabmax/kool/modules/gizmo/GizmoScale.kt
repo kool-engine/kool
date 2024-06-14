@@ -16,18 +16,13 @@ class AxisScale(val axis: GizmoHandle.Axis) : GizmoOperationBase() {
 
     override fun onDrag(dragCtx: DragContext) {
         val dist = dragAxis.signedDistance(dragCtx.localRay) ?: return
-        val scale = MutableVec3d(1.0)
-        when {
-            axis.axis.x != 0.0 -> scale.x = applyTick(dist / dragDistanceStart, dragCtx.scaleTick)
-            axis.axis.y != 0.0 -> scale.y = applyTick(dist / dragDistanceStart, dragCtx.scaleTick)
-            axis.axis.z != 0.0 -> scale.z = applyTick(dist / dragDistanceStart, dragCtx.scaleTick)
-        }
-        dragCtx.manipulateScale(scale)
+        val scale = applyTick(dist / dragDistanceStart, dragCtx.scaleTick)
+        dragCtx.manipulateAxisScale(axis, scale)
     }
 }
 
-class PlaneScale(planeNormal: Vec3d) : GizmoOperationBase() {
-    private val dragPlane = PlaneD(Vec3d.ZERO, planeNormal)
+class PlaneScale(val planeNormal: GizmoHandle.Axis) : GizmoOperationBase() {
+    private val dragPlane = PlaneD(Vec3d.ZERO, planeNormal.axis)
     private val dragStartPoint = MutableVec3d()
 
     override fun onDragStart(dragCtx: DragContext) {
@@ -40,16 +35,8 @@ class PlaneScale(planeNormal: Vec3d) : GizmoOperationBase() {
         val point = MutableVec3d()
         if (dragPlane.intersection(dragCtx.localRay, point)) {
             val s = point.length() / dragStartPoint.length()
-            val scale = MutableVec3d(s)
-            scale.x = applyTick(scale.x, dragCtx.scaleTick)
-            scale.y = applyTick(scale.y, dragCtx.scaleTick)
-            scale.z = applyTick(scale.z, dragCtx.scaleTick)
-            when {
-                dragPlane.n.x != 0.0 -> scale.x = 1.0
-                dragPlane.n.y != 0.0 -> scale.y = 1.0
-                dragPlane.n.z != 0.0 -> scale.z = 1.0
-            }
-            dragCtx.manipulateScale(scale)
+            val scale = applyTick(s, dragCtx.scaleTick)
+            dragCtx.manipulatePlaneScale(planeNormal, scale)
         }
     }
 }

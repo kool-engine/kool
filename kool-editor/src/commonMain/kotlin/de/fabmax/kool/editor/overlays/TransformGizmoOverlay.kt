@@ -120,14 +120,14 @@ class TransformGizmoOverlay : Node("Transform gizmo") {
 }
 
 fun GizmoNode.applySpeedAndTickRate() {
-    dragSpeedModifier = if (KeyboardInput.isShiftDown) SPEED_MOD_ACCURATE else SPEED_MOD_NORMAL
+    dragSpeedModifier.set(if (KeyboardInput.isShiftDown) SPEED_MOD_ACCURATE else SPEED_MOD_NORMAL)
     if (KeyboardInput.isCtrlDown) {
-        translationTick = if (KeyboardInput.isShiftDown) TICK_TRANSLATION_MINOR else TICK_TRANSLATION_MAJOR
-        rotationTick = if (KeyboardInput.isShiftDown) TICK_ROTATION_MINOR else TICK_ROTATION_MAJOR
-        scaleTick = if (KeyboardInput.isShiftDown) TICK_SCALE_MINOR else TICK_SCALE_MAJOR
+        translationTick.set(if (KeyboardInput.isShiftDown) TICK_TRANSLATION_MINOR else TICK_TRANSLATION_MAJOR)
+        rotationTick.set(if (KeyboardInput.isShiftDown) TICK_ROTATION_MINOR else TICK_ROTATION_MAJOR)
+        scaleTick.set(if (KeyboardInput.isShiftDown) TICK_SCALE_MINOR else TICK_SCALE_MAJOR)
     } else {
-        translationTick = TICK_NO_TICK
-        rotationTick = TICK_NO_TICK
-        scaleTick = TICK_NO_TICK
+        translationTick.set(TICK_NO_TICK)
+        rotationTick.set(TICK_NO_TICK)
+        scaleTick.set(TICK_NO_TICK)
     }
 }
