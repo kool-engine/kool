@@ -122,18 +122,14 @@ suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: Sc
     val ibl = sceneShaderData.environmentMaps
     val isIbl = ibl != null
     val isSsao = sceneShaderData.ssaoMap != null
+    val isMaterialAo = aoMap != null
 
-    if ((shader.ambientCfg is KslLitShader.AmbientColor.ImageBased) != isIbl) {
-        return false
-    }
-    if (shader.isSsao != isSsao) {
-        return false
-    }
-    if (shader.cfg.maxNumberOfLights != sceneShaderData.maxNumberOfLights) {
-        return false
-    }
-    if (shader.shadowMaps != sceneShaderData.shadowMaps) {
-        return false
+    when {
+        (shader.ambientCfg is KslLitShader.AmbientColor.ImageBased) != isIbl -> return false
+        shader.isSsao != isSsao -> return false
+        shader.cfg.maxNumberOfLights != sceneShaderData.maxNumberOfLights -> return false
+        shader.shadowMaps != sceneShaderData.shadowMaps -> return false
+        (shader.materialAoCfg.primaryTexture != null) != isMaterialAo -> return false
     }
 
     val colorMap = (baseColor as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
