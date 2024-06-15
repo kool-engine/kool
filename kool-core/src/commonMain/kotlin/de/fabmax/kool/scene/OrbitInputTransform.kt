@@ -8,7 +8,7 @@ import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxD
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.scene.animation.SpringDamperDouble
+import de.fabmax.kool.scene.animation.ExponentialDecayDouble
 import de.fabmax.kool.util.Time
 import kotlin.math.abs
 
@@ -74,9 +74,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
     var panMethod: PanBase = CameraOrthogonalPan()
 
-    val vertRotAnimator = SpringDamperDouble(0.0)
-    val horiRotAnimator = SpringDamperDouble(0.0)
-    val zoomAnimator = SpringDamperDouble(zoom)
+    val vertRotAnimator = ExponentialDecayDouble(0.0)
+    val horiRotAnimator = ExponentialDecayDouble(0.0)
+    val zoomAnimator = ExponentialDecayDouble(zoom)
 
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
@@ -98,18 +98,18 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val matrixTransform: MatrixTransformD
         get() = transform as MatrixTransformD
 
-    var smoothness: Double = 0.0
+    var panSmoothness: Double = 0.5
+    var zoomRotationDecay: Double = 0.0
         set(value) {
             field = value
-            val stiffness = if (!value.isFuzzyZero()) { 50.0 / value } else { 0.0 }
-            vertRotAnimator.stiffness = stiffness
-            horiRotAnimator.stiffness = stiffness
-            zoomAnimator.stiffness = stiffness
+            vertRotAnimator.decay = value
+            horiRotAnimator.decay = value
+            zoomAnimator.decay = value
         }
 
     init {
         transform = MatrixTransformD()
-        smoothness = 0.5
+        zoomRotationDecay = 16.0
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
@@ -176,7 +176,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
                 stopSmoothMotion()
 
             } else {
-                val s = (1 - smoothness).clamp(0.1, 1.0)
+                val s = (1 - panSmoothness).clamp(0.1, 1.0)
                 tmpVec1.set(pointerHitStart).subtract(pointerHit).mul(s)
                 parent?.toLocalCoords(tmpVec1, 0.0)
 

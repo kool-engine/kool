@@ -2,6 +2,8 @@ package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.expDecay
+import de.fabmax.kool.math.isFuzzyEqual
 import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.util.MutableColor
 import de.fabmax.kool.util.Time
@@ -216,6 +218,25 @@ class SpringDamperDouble(value: Double) {
             } else {
                 actual = desired
             }
+        }
+        return actual
+    }
+}
+
+class ExponentialDecayDouble(value: Double) {
+    var desired = value
+    var actual = value
+    var decay = 16.0
+
+    fun set(value: Double) {
+        desired = value
+        actual = value
+    }
+
+    fun animate(deltaT: Float): Double {
+        actual = actual.expDecay(desired, decay, deltaT)
+        if (isFuzzyEqual(actual, desired)) {
+            actual = desired
         }
         return actual
     }
