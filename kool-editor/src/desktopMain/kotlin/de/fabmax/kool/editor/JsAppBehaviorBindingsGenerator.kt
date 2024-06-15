@@ -16,19 +16,19 @@ object JsAppBehaviorBindingsGenerator {
             object BehaviorBindings : BehaviorLoader.AppBehaviorLoader {
                 override fun newInstance(behaviorClassName: String): KoolBehavior {
                     return when (behaviorClassName) {${makeConstructorMappings(appBehaviors)}
-                        else -> throw IllegalArgumentException("${"\$"}behaviorClassName not mapped.")
+                        else -> error("${"\$"}behaviorClassName not mapped.")
                     }
                 }
 
                 override fun getProperty(behavior: KoolBehavior, propertyName: String): Any? {
                     return when (behavior) {${makePropertyGetterMappings(appBehaviors)}
-                        else -> throw IllegalArgumentException("Unknown behavior class: ${"\$"}{behavior::class}")
+                        else -> error("Unknown behavior class: ${"\$"}{behavior::class}")
                     }
                 }
 
                 override fun setProperty(behavior: KoolBehavior, propertyName: String, value: Any?) {
                     when (behavior) {${makePropertySetterMappings(appBehaviors)}
-                        else -> throw IllegalArgumentException("Unknown behavior class: ${"\$"}{behavior::class}")
+                        else -> error("Unknown behavior class: ${"\$"}{behavior::class}")
                     }
                 }
         """.trimIndent())
@@ -80,7 +80,7 @@ object JsAppBehaviorBindingsGenerator {
             appendLine("""
                 |    private fun get${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String): Any$nullable {
                 |        return when (propertyName) {$properties
-                |            else -> throw IllegalArgumentException("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
+                |            else -> error("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
                 |        }
                 |    }
             """.trimMargin())
@@ -96,7 +96,7 @@ object JsAppBehaviorBindingsGenerator {
             appendLine("""
                 |    private fun set${behavior.simpleName}Property(behavior: ${behavior.simpleName}, propertyName: String, value: Any?) {
                 |        when (propertyName) {$properties
-                |            else -> throw IllegalArgumentException("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
+                |            else -> error("Unknown parameter ${"\$"}propertyName for behavior class ${"\$"}{behavior::class}")
                 |        }
                 |    }
             """.trimMargin())

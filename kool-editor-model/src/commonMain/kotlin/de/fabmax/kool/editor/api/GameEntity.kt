@@ -19,6 +19,10 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         get() = drawNode.name
         set(value) { drawNode.name = value }
 
+    var drawGroupId: Int
+        get() = drawNode.drawGroupId
+        set(value) { drawNode.drawGroupId = value }
+
     var isVisible: Boolean
         get() = drawNode.isVisible
         set(value) { drawNode.isVisible = value }
@@ -68,8 +72,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         transform = getOrPutComponent { TransformComponent(this).apply { componentInfo.displayOrder = 0 } }
 
         drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(entityData.name)
-        drawNode.isVisible = entityData.isVisible
-        drawNode.onUpdate += nodeUpdateCb
+        drawNode.applyEntityData()
         drawNode.transform = transform.transform
     }
 
@@ -112,6 +115,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
         newDrawNode.name = name
         newDrawNode.isVisible = isVisible
+        newDrawNode.drawGroupId = drawGroupId
         newDrawNode.transform = transform.transform
 
         val oldDrawNode = drawNode
@@ -262,6 +266,11 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     private fun incComponentModCount() {
         componentModCnt++
         scene.componentModCnt++
+    }
+
+    private fun Node.applyEntityData() {
+        isVisible = entityData.isVisible
+        drawGroupId = entityData.drawGroupId
     }
 
     sealed class InsertionPos {

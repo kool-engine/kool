@@ -29,6 +29,10 @@ abstract class EditorPanel(
         windowDockable.setFloatingBounds(width = defaultWidth, height = defaultHeight)
     }
 
+    fun triggerUpdate() {
+        windowSurface.triggerUpdate()
+    }
+
     protected fun editorPanel(
         isResizable: Boolean = true,
         block: UiScope.() -> Unit

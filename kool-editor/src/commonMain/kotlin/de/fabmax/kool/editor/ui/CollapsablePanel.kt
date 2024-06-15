@@ -7,12 +7,13 @@ fun UiScope.collapsapsablePanel(
     imageIcon: IconProvider? = null,
     headerContent: (RowScope.() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
+    startCollapsed: Boolean = false,
     block: ColumnScope.() -> Any?
 ) = Column(
     Grow.Std,
     scopeName = title
 ) {
-    var isCollapsed by remember(false)
+    var isCollapsed by remember(startCollapsed)
     var isHovered by remember(false)
 
     Row(width = Grow.Std, height = sizes.lineHeightLarger) {

@@ -34,7 +34,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 ComboBox {
                     defaultComboBoxStyle()
                     modifier
-                        .margin(horizontal = sizes.gap)
+                        .margin(end = sizes.gap)
                         .width(Grow.Std)
                         .alignY(AlignmentY.Center)
                         .items(items)

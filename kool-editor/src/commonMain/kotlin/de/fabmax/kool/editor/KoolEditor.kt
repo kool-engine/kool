@@ -294,7 +294,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
                 // replace original scene cam with editor cam
                 val editorCam = PerspectiveCamera()
-                editorCam.setClipRange(0.1f, 1000f)
+                val far = if (editorOverlay.isInfiniteDepth) 1e9f else 1000f
+                editorCam.setClipRange(0.1f, far)
                 scene.camera = editorCam
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)

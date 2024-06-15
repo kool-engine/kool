@@ -300,11 +300,13 @@ fun UiScope.componentPanel(
     onRemove: (() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
     headerContent: (RowScope.() -> Unit)? = null,
+    startCollapsed: Boolean = false,
     block: ColumnScope.() -> Any?
 ) = collapsapsablePanel(
     title,
     imageIcon,
     titleWidth = titleWidth,
+    startCollapsed = startCollapsed,
     headerContent = {
         headerContent?.invoke(this)
         onRemove?.let { remove ->
