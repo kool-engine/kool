@@ -14,6 +14,7 @@ import de.fabmax.kool.util.MdColor
 
 abstract class ComponentEditor<T: GameEntityComponent> : Composable {
     var components: List<T> = emptyList()
+    var entityEditor: GameEntityEditor? = null
     val component: T get() = components[0]
 
     val entityId: EntityId get() = component.gameEntity.id
@@ -23,6 +24,39 @@ abstract class ComponentEditor<T: GameEntityComponent> : Composable {
     protected fun removeComponent() {
         components.map { RemoveComponentAction(it.gameEntity.id, it) }.fused().apply()
     }
+
+    protected fun getPanelState(default: Boolean = true): Boolean {
+        return entityEditor?.let { editor ->
+            editor.panelCollapseStates
+                .getOrElse(entityId) { emptyMap() }
+                .getOrElse(component.componentType) { default }
+        } ?: default
+    }
+
+    protected fun setPanelState(state: Boolean) {
+        entityEditor?.let { editor ->
+            editor.panelCollapseStates.getOrPut(entityId) { mutableMapOf() }[component.componentType] = state
+        }
+    }
+
+    fun UiScope.componentPanel(
+        title: String,
+        imageIcon: IconProvider? = null,
+        onRemove: (() -> Unit)? = null,
+        titleWidth: Dimension = Grow.Std,
+        headerContent: (RowScope.() -> Unit)? = null,
+        startExpanded: Boolean = getPanelState(true),
+        block: ColumnScope.() -> Any?
+    ) = entityEditorPanel(
+        title = title,
+        imageIcon = imageIcon,
+        onRemove = onRemove,
+        titleWidth = titleWidth,
+        headerContent = headerContent,
+        startExpanded = startExpanded,
+        onCollapseChanged = { setPanelState(it) },
+        block = block,
+    )
 
     protected fun condenseDouble(doubles: List<Double>, eps: Double = FUZZY_EQ_D): Double {
         return if (doubles.all { isFuzzyEqual(it, doubles[0], eps) }) doubles[0] else Double.NaN
@@ -294,19 +328,21 @@ abstract class ComponentEditor<T: GameEntityComponent> : Composable {
     }
 }
 
-fun UiScope.componentPanel(
+fun UiScope.entityEditorPanel(
     title: String,
     imageIcon: IconProvider? = null,
     onRemove: (() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
     headerContent: (RowScope.() -> Unit)? = null,
-    startCollapsed: Boolean = false,
+    startExpanded: Boolean = true,
+    onCollapseChanged: ((Boolean) -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = collapsapsablePanel(
     title,
     imageIcon,
     titleWidth = titleWidth,
-    startCollapsed = startCollapsed,
+    startExpanded = startExpanded,
+    onCollapseChanged = onCollapseChanged,
     headerContent = {
         headerContent?.invoke(this)
         onRemove?.let { remove ->

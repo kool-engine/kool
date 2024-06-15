@@ -6,12 +6,15 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.roundToInt
 
 class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.properties, ui) {
+
+    val panelCollapseStates = mutableMapOf<EntityId, MutableMap<String, Boolean>>()
 
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
         val selObjs = KoolEditor.instance.selectionOverlay.selectionState.use().toMutableList()
@@ -91,11 +94,12 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
         }
     }
 
-    private fun ColumnScope.entitySettings(objects: List<GameEntity>) = componentPanel(
+    private fun ColumnScope.entitySettings(objects: List<GameEntity>) = entityEditorPanel(
         title = "Object",
         imageIcon = IconMap.small.emptyObject,
         titleWidth = sizes.baseSize * 2.3f,
-        startCollapsed = true,
+        startExpanded = objects[0].getPanelState("entitySettings", false),
+        onCollapseChanged = { objects[0].setPanelState("entitySettings", it) },
         headerContent = {
             if (objects.size == 1) {
                 var editName by remember(objects[0].name)
@@ -179,6 +183,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
         Box(width = Grow.Std, scopeName = gameEntities[0].requireComponent<T>().componentType) {
             val editor = remember(editorProvider)
             editor.components = gameEntities.map { it.requireComponent() }
+            editor.entityEditor = this@GameEntityEditor
             editor()
         }
     }
@@ -212,6 +217,14 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
             .forEach {
                 it.addMenuItems(objects, this)
             }
+    }
+
+    private fun GameEntity.getPanelState(panelKey: String, default: Boolean = true): Boolean {
+        return panelCollapseStates.getOrElse(id) { emptyMap() }.getOrElse(panelKey) { default }
+    }
+
+    private fun GameEntity.setPanelState(panelKey: String, state: Boolean) {
+        panelCollapseStates.getOrPut(id) { mutableMapOf() }[panelKey] = state
     }
 
     companion object {
