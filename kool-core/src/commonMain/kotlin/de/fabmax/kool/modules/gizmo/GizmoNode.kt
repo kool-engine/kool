@@ -19,11 +19,13 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     val gizmoListeners = BufferedList<GizmoListener>()
 
     private val nodeTransform = TrsTransformD()
-    private val handleTransform = TrsTransformD()
+    val handleTransform = TrsTransformD()
 
     private val startTransform = TrsTransformD()
     private val startScale = MutableVec3d()
 
+    private val _handles = mutableListOf<GizmoHandle>()
+    val handles: List<GizmoHandle> get() = _handles
     private val handleGroup = Node().apply {
         transform = handleTransform
     }
@@ -98,14 +100,17 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     }
 
     fun addHandle(handle: GizmoHandle) {
+        _handles += handle
         handleGroup.addNode(handle.drawNode)
     }
 
     fun removeHandle(handle: GizmoHandle) {
+        _handles -= handle
         handleGroup.removeNode(handle.drawNode)
     }
 
     fun clearHandles() {
+        _handles.clear()
         handleGroup.children.forEach { it.release() }
         handleGroup.clearChildren()
     }
@@ -219,8 +224,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         }
 
         hoverHandle?.let { hover ->
-            virtualPointerPos.x += ptr.deltaX * dragSpeedModifier.value
-            virtualPointerPos.y += ptr.deltaY * dragSpeedModifier.value
+            hover.moveVirtualPointer(virtualPointerPos, ptr, dragSpeedModifier.value)
             scene.camera.computePickRay(pickRay, virtualPointerPos.x.toFloat(), virtualPointerPos.y.toFloat(), scene.mainRenderPass.viewport)
 
             if (ptr.isLeftButtonDown && !isDrag) {

@@ -36,6 +36,7 @@ class ScaleOverlay(val gizmo: GizmoNode) : Node(), GizmoListener {
         addNode(lines)
         addNode(weakLines)
         addNode(points)
+        isVisible = false
 
         weakLines.shader = TriangulatedLineMesh.Shader().apply {
             pipelineConfig = pipelineConfig.copy(isWriteDepth = false, depthTest = DepthCompareOp.ALWAYS)
@@ -144,6 +145,7 @@ class ScaleOverlay(val gizmo: GizmoNode) : Node(), GizmoListener {
     override fun onManipulationFinished(startTransform: TrsTransformD, endTransform: TrsTransformD) {
         points.clear()
         lines.clear()
+        weakLines.clear()
         isVisible = false
         isLabelValid = false
     }
@@ -151,6 +153,7 @@ class ScaleOverlay(val gizmo: GizmoNode) : Node(), GizmoListener {
     override fun onManipulationCanceled(startTransform: TrsTransformD) {
         points.clear()
         lines.clear()
+        weakLines.clear()
         isVisible = false
         isLabelValid = false
     }

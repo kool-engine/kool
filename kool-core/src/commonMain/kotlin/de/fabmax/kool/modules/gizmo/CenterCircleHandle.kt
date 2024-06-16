@@ -27,6 +27,11 @@ class CenterCircleHandle(
 
     override val drawNode: Node
         get() = this
+    override var isHidden: Boolean = false
+        set(value) {
+            field = value
+            drawNode.isVisible = !value
+        }
 
     private val hitMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-hitMesh")
     private val mesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-mesh")

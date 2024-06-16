@@ -10,7 +10,11 @@ import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class SimpleGizmo(name: String = "simple-gizmo", addOverlays: Boolean = true) : Node(name), GizmoListener {
+class SimpleGizmo(
+    name: String = "simple-gizmo",
+    addOverlays: Boolean = true,
+    val hideHandlesOnDrag: Boolean = true
+) : Node(name), GizmoListener {
 
     val gizmoNode = GizmoNode()
     val dragSpeedModifier by gizmoNode::dragSpeedModifier
@@ -59,6 +63,7 @@ class SimpleGizmo(name: String = "simple-gizmo", addOverlays: Boolean = true) : 
         }
 
     val translationOverlay = TranslationOverlay(gizmoNode)
+    val rotationOverlay = RotationOverlay(gizmoNode)
     val scaleOverlay = ScaleOverlay(gizmoNode)
 
     init {
@@ -71,8 +76,10 @@ class SimpleGizmo(name: String = "simple-gizmo", addOverlays: Boolean = true) : 
 
         if (addOverlays) {
             addNode(translationOverlay)
+            addNode(rotationOverlay)
             addNode(scaleOverlay)
             gizmoNode.gizmoListeners += translationOverlay
+            gizmoNode.gizmoListeners += rotationOverlay
             gizmoNode.gizmoListeners += scaleOverlay
         }
     }
@@ -157,10 +164,18 @@ class SimpleGizmo(name: String = "simple-gizmo", addOverlays: Boolean = true) : 
             is TrsTransformD -> clientStartTransformTrs.setCompositionOf(clientTransform.translation, clientTransform.rotation, clientTransform.scale)
             else -> clientStartTransformMatrix.setMatrix(clientTransform.matrixD)
         }
+
+        if (hideHandlesOnDrag) {
+            gizmoNode.handles.forEach { it.isHidden = true }
+        }
     }
 
     override fun onManipulationFinished(startTransform: TrsTransformD, endTransform: TrsTransformD) {
         updateGizmoFromClient()
+
+        if (hideHandlesOnDrag) {
+            gizmoNode.handles.forEach { it.isHidden = false }
+        }
     }
 
     override fun onManipulationCanceled(startTransform: TrsTransformD) {
@@ -172,6 +187,10 @@ class SimpleGizmo(name: String = "simple-gizmo", addOverlays: Boolean = true) : 
         }
         client.updateModelMatRecursive()
         updateGizmoFromClient()
+
+        if (hideHandlesOnDrag) {
+            gizmoNode.handles.forEach { it.isHidden = false }
+        }
     }
 
     private fun updateUiStates(client: Node) {

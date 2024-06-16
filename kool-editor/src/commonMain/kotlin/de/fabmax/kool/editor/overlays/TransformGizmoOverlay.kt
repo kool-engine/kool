@@ -81,7 +81,7 @@ class TransformGizmoOverlay(val editor: KoolEditor) : Node("Transform gizmo") {
             selectionTransform?.updateTransform()
             selectionTransform?.applyTransform(false)
 
-            gizmoLabel.updateLabel(gizmo.translationOverlay, gizmo.scaleOverlay)
+            gizmoLabel.updateLabel(gizmo.translationOverlay, gizmo.rotationOverlay, gizmo.scaleOverlay)
         }
     }
 
@@ -145,20 +145,25 @@ fun GizmoNode.applySpeedAndTickRate() {
     }
 }
 
-fun SceneView.Label.updateLabel(translationOverlay: TranslationOverlay, scaleOverlay: ScaleOverlay) {
+fun SceneView.Label.updateLabel(translationOverlay: TranslationOverlay, rotationOverlay: RotationOverlay, scaleOverlay: ScaleOverlay) {
     val lblPos: Vec2f
     val isValid: Boolean
     val value: Double
     when {
         translationOverlay.isLabelValid -> {
             lblPos = translationOverlay.labelPosition
-            isValid = true
             value = translationOverlay.labelValue
+            isValid = true
+        }
+        rotationOverlay.isLabelValid -> {
+            lblPos = rotationOverlay.labelPosition
+            value = rotationOverlay.labelValue
+            isValid = true
         }
         scaleOverlay.isLabelValid -> {
             lblPos = scaleOverlay.labelPosition
-            isValid = true
             value = scaleOverlay.labelValue
+            isValid = true
         }
         else -> {
             lblPos = Vec2f.ZERO

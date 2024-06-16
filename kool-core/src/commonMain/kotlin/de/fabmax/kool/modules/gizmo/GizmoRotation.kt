@@ -3,25 +3,32 @@ package de.fabmax.kool.modules.gizmo
 import de.fabmax.kool.math.*
 import kotlin.math.atan2
 
-class AxisRotation(val axis: GizmoHandle.Axis) : GizmoOperationBase() {
-    private val dragPlane = PlaneD(Vec3d.ZERO, axis.axis)
-    private val dragStart = MutableVec3d()
+interface GizmoRotation {
+    val deltaRotation: AngleD
+    val rotationPlane: PlaneD?
+    val startProjectedPos: MutableVec3d
+}
+
+class AxisRotation(val axis: GizmoHandle.Axis) : GizmoOperationBase(), GizmoRotation {
+    override val rotationPlane = PlaneD(Vec3d.ZERO, axis.axis)
+    override val startProjectedPos = MutableVec3d()
+    override var deltaRotation = 0.0.deg
 
     override fun onDragStart(dragCtx: DragContext) {
         super.onDragStart(dragCtx)
-        if (dragPlane.intersection(dragCtx.localRay, dragStart)) {
+        if (rotationPlane.intersection(dragCtx.localRay, startProjectedPos)) {
             dragCtx.startManipulation(this)
         }
     }
 
     override fun onDrag(dragCtx: DragContext) {
         super.onDrag(dragCtx)
-        val point = MutableVec3d()
-        if (dragPlane.intersection(dragCtx.localRay, point)) {
-            val a0 = angle(dragStart)
+        val point = projectedPointerPos
+        if (rotationPlane.intersection(dragCtx.localRay, point)) {
+            val a0 = angle(startProjectedPos)
             val a1 = angle(point)
-            val aTicked = applyTick(a1 - a0, dragCtx.rotationTick)
-            dragCtx.manipulateAxisRotation(axis.axis, aTicked.deg)
+            deltaRotation = applyTick(a1 - a0, dragCtx.rotationTick).deg
+            dragCtx.manipulateAxisRotation(axis.axis, deltaRotation)
         }
     }
 
@@ -35,34 +42,36 @@ class AxisRotation(val axis: GizmoHandle.Axis) : GizmoOperationBase() {
     }
 }
 
-class CamPlaneRotation : GizmoOperationBase() {
-    private val dragPlane = PlaneD()
-    private val dragStart = MutableVec3d()
+class CamPlaneRotation : GizmoOperationBase(), GizmoRotation {
+    override val rotationPlane = PlaneD()
+    override val startProjectedPos = MutableVec3d()
+    override var deltaRotation = 0.0.deg
 
     override fun onDragStart(dragCtx: DragContext) {
         super.onDragStart(dragCtx)
-        dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalLookDir, 0.0, dragPlane.n)
-        dragPlane.n.norm()
-        dragPlane.intersection(dragCtx.localRay, dragStart)
+        dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalLookDir, 0.0, rotationPlane.n)
+        rotationPlane.n.norm()
+        rotationPlane.intersection(dragCtx.localRay, startProjectedPos)
         dragCtx.startManipulation(this)
     }
 
     override fun onDrag(dragCtx: DragContext) {
         super.onDrag(dragCtx)
         val point = MutableVec3d()
-        if (dragPlane.intersection(dragCtx.localRay, point)) {
-            val a0 = angle(dragStart, dragCtx)
+        if (rotationPlane.intersection(dragCtx.localRay, point)) {
+            val a0 = angle(startProjectedPos, dragCtx)
             val a1 = angle(point, dragCtx)
-            dragCtx.manipulateAxisRotation(dragPlane.n, a0 - a1)
+            deltaRotation = applyTick(a0 - a1, dragCtx.rotationTick).deg
+            dragCtx.manipulateAxisRotation(rotationPlane.n, deltaRotation)
         }
     }
 
-    private fun angle(point: Vec3d, dragCtx: DragContext): AngleD {
+    private fun angle(point: Vec3d, dragCtx: DragContext): Double {
         val cam = dragCtx.camera.dataD
         val vec = MutableVec3d()
         val x = point dot dragCtx.globalToLocal.transform(cam.globalRight, 0.0, vec)
         val y = point dot dragCtx.globalToLocal.transform(cam.globalUp, 0.0, vec)
-        return atan2(y, x).rad
+        return atan2(y, x).toDeg()
     }
 }
 

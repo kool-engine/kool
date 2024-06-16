@@ -32,6 +32,11 @@ class PlaneHandle(
 
     override val drawNode: Node
         get() = this
+    override var isHidden: Boolean = false
+        set(value) {
+            field = value
+            drawNode.isVisible = !value
+        }
 
     private val mesh: Mesh
     private val coveredMesh: Mesh
@@ -74,7 +79,7 @@ class PlaneHandle(
                 1f
             }
 
-            isVisible = alphaFactor > 0.01f
+            isVisible = !isHidden && alphaFactor > 0.01f
             updateColors()
         }
     }

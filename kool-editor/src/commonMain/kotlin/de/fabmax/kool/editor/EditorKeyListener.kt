@@ -73,6 +73,11 @@ enum class Key(val group: KeyGroup) {
     LimitToXPlane(KeyGroup.ImmediateTransform),
     LimitToYPlane(KeyGroup.ImmediateTransform),
     LimitToZPlane(KeyGroup.ImmediateTransform),
+
+    TickIncrement(KeyGroup.ImmediateTransform),
+    MinorTickIncrement(KeyGroup.ImmediateTransform),
+    TickDecrement(KeyGroup.ImmediateTransform),
+    MinorTickDecrement(KeyGroup.ImmediateTransform),
     ;
 
     val binding: KeyBinding get() = getBinding(this)
@@ -107,6 +112,10 @@ enum class Key(val group: KeyGroup) {
                 LimitToXPlane -> KeyBinding(key, LocalKeyCode('X'), KeyMod.shift)
                 LimitToYPlane -> KeyBinding(key, LocalKeyCode('Y'), KeyMod.shift)
                 LimitToZPlane -> KeyBinding(key, LocalKeyCode('Z'), KeyMod.shift)
+                TickIncrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_UP, KeyMod.none, setOf(KeyboardInput.KEY_CURSOR_RIGHT to KeyMod.none))
+                MinorTickIncrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_UP, KeyMod.shift, setOf(KeyboardInput.KEY_CURSOR_RIGHT to KeyMod.shift))
+                TickDecrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_DOWN, KeyMod.none, setOf(KeyboardInput.KEY_CURSOR_LEFT to KeyMod.none))
+                MinorTickDecrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_DOWN, KeyMod.shift, setOf(KeyboardInput.KEY_CURSOR_LEFT to KeyMod.shift))
             }
         }
 
@@ -130,6 +139,10 @@ enum class Key(val group: KeyGroup) {
                 LimitToXPlane -> "X-plane only"
                 LimitToYPlane -> "Y-plane only"
                 LimitToZPlane -> "Z-plane only"
+                TickIncrement -> "Increase 1 tick"
+                MinorTickIncrement -> "Increase 1 small tick"
+                TickDecrement -> "Decrease 1 tick"
+                MinorTickDecrement -> "Decrease 1 small tick"
 
                 else -> key.toString()
             }

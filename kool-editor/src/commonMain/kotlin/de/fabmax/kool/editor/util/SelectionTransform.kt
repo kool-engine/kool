@@ -119,6 +119,7 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
                 )
             )
             gameEntity.transform.setPersistent(restoreData)
+            gameEntity.drawNode.updateModelMat()
         }
     }
 }
