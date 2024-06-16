@@ -18,10 +18,19 @@ object PlatformInputJvm : PlatformInput {
 
     override fun setCursorMode(cursorMode: CursorMode) {
         val ctx = KoolSystem.getContextOrNull() as Lwjgl3Context? ?: return
-        val windowHandle = ctx.backend.glfwWindow.windowPtr
+        val window = ctx.backend.glfwWindow
+        val windowHandle = window.windowPtr
 
         if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
+            val x = doubleArrayOf(0.0)
+            val y = doubleArrayOf(0.0)
+            GLFW.glfwGetCursorPos(windowHandle, x, y)
             GLFW.glfwSetInputMode(windowHandle, GLFW.GLFW_CURSOR, cursorMode.glfwMode)
+            if (cursorMode == CursorMode.NORMAL) {
+                val setX = ((x[0] % window.framebufferWidth) + window.framebufferWidth) % window.framebufferWidth
+                val setY = ((y[0] % window.framebufferHeight) + window.framebufferHeight) % window.framebufferHeight
+                GLFW.glfwSetCursorPos(windowHandle, setX, setY)
+            }
         }
     }
 

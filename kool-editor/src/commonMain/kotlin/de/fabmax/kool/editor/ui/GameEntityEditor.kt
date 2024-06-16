@@ -1,18 +1,20 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.actions.AddComponentAction
-import de.fabmax.kool.editor.actions.RenameEntityAction
-import de.fabmax.kool.editor.actions.fused
+import de.fabmax.kool.editor.actions.*
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
+import kotlin.math.roundToInt
 
 class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.properties, ui) {
+
+    val panelCollapseStates = mutableMapOf<EntityId, MutableMap<String, Boolean>>()
 
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
         val selObjs = KoolEditor.instance.selectionOverlay.selectionState.use().toMutableList()
@@ -23,7 +25,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
             editor.activeScene.value?.let { selObjs += it.sceneEntity }
         }
 
-        val title = if (selObjs.size == 1 && selObjs[0].isSceneRoot) "Scene Properties" else "Object Properties"
+        val title = if (selObjs.size == 1 && selObjs[0].isSceneRoot) "Scene Settings" else "Entity Settings"
 
         Column(Grow.Std, Grow.Std) {
             editorTitleBar(windowDockable, icon, title)
@@ -40,58 +42,106 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
 
         val scopeName = objects.joinToString("") { "${it.id}" }
         Column(Grow.Std, Grow.Std, scopeName = scopeName) {
-            objectNameOrCount(objects)
-            if (objects.isEmpty()) return@Column
+
+            if (objects.size == 1 && objects[0].isSceneRoot) {
+                objectName(objects[0])
+            } else if (objects.isEmpty()) {
+                Text("Nothing selected") {
+                    modifier
+                        .size(Grow.Std, sizes.baseSize)
+                        .alignY(AlignmentY.Center)
+                        .textAlignX(AlignmentX.Center)
+                        .font(sizes.italicText)
+                }
+                return@Column
+            }
+
+            if (objects.none { it.isSceneRoot }) {
+                entitySettings(objects)
+            }
 
             componentEditors(objects)
             addComponentSelector(objects)
         }
     }
 
-    private fun ColumnScope.objectNameOrCount(objects: List<GameEntity>) = Row(Grow.Std, sizes.baseSize) {
+    private fun ColumnScope.objectName(obj: GameEntity) = Row(Grow.Std, sizes.lineHeightLarger) {
         modifier.padding(horizontal = sizes.gap)
 
-        if (objects.size == 1) {
-            Text("Name:") {
-                modifier
-                    .alignY(AlignmentY.Center)
-                    .margin(end = sizes.largeGap)
-            }
+        Text("Name:") {
+            modifier
+                .alignY(AlignmentY.Center)
+                .margin(end = sizes.largeGap)
+                .width(sizes.baseSize * 2.75f)
+        }
 
-            var editName by remember(objects[0].name)
-            TextField(editName) {
-                if (!isFocused.use()) {
-                    editName = objects[0].name
+        var editName by remember(obj.name)
+        TextField(editName) {
+            if (!isFocused.use()) {
+                editName = obj.name
+            }
+            defaultTextfieldStyle()
+            modifier
+                .hint("Name")
+                .width(Grow.Std)
+                .alignY(AlignmentY.Center)
+                .padding(vertical = sizes.smallGap)
+                .onChange { editName = it }
+                .onEnterPressed {
+                    RenameEntityAction(obj.id, it, obj.name).apply()
+                    surface.unfocus(this)
                 }
+        }
+    }
 
-                defaultTextfieldStyle()
-                modifier
-                    .hint("Object name")
-                    .width(Grow.Std)
-                    .alignY(AlignmentY.Center)
-                    .padding(vertical = sizes.smallGap)
-                    .onChange { editName = it }
-                    .onEnterPressed {
-                        RenameEntityAction(objects[0].id, it, objects[0].name).apply()
-                        surface.unfocus(this)
+    private fun ColumnScope.entitySettings(objects: List<GameEntity>) = entityEditorPanel(
+        title = "Object",
+        imageIcon = IconMap.small.emptyObject,
+        titleWidth = sizes.baseSize * 2.3f,
+        startExpanded = objects[0].getPanelState("entitySettings", false),
+        onCollapseChanged = { objects[0].setPanelState("entitySettings", it) },
+        headerContent = {
+            if (objects.size == 1) {
+                var editName by remember(objects[0].name)
+                TextField(editName) {
+                    if (!isFocused.use()) {
+                        editName = objects[0].name
                     }
+                    defaultTextfieldStyle()
+                    modifier
+                        .hint("Name")
+                        .width(Grow.Std)
+                        .margin(end = sizes.gap)
+                        .alignY(AlignmentY.Center)
+                        .padding(vertical = sizes.smallGap)
+                        .onChange { editName = it }
+                        .onEnterPressed {
+                            RenameEntityAction(objects[0].id, it, objects[0].name).apply()
+                            surface.unfocus(this)
+                        }
+                }
+            } else {
+                Text("${objects.size} selected") {
+                    modifier
+                        .width(Grow.Std)
+                        .margin(end = sizes.gap)
+                        .alignY(AlignmentY.Center)
+                        .textAlignX(AlignmentX.End)
+                        .font(sizes.italicText)
+                }
             }
-        } else if (objects.isNotEmpty()) {
-            Text("${objects.size} objects selected") {
-                modifier
-                    .width(Grow.Std)
-                    .alignY(AlignmentY.Center)
-                    .textAlignX(AlignmentX.Center)
-                    .font(sizes.italicText)
-            }
-        } else {
-            Text("Nothing selected") {
-                modifier
-                    .width(Grow.Std)
-                    .alignY(AlignmentY.Center)
-                    .textAlignX(AlignmentX.Center)
-                    .font(sizes.italicText)
-            }
+        }
+    ) {
+        val isVisible = objects.all { it.isVisible }
+        labeledCheckbox("Visible:", isVisible) {
+            SetVisibilityAction(objects, it).apply()
+        }
+
+        val drawGroupId = if (objects.any { it.drawGroupId != objects[0].drawGroupId }) Double.NaN else {
+            objects[0].drawGroupId.toDouble()
+        }
+        labeledDoubleTextField("Draw group:", drawGroupId, precision = 0) {
+            SetDrawGroupAction(objects, it.roundToInt()).apply()
         }
     }
 
@@ -133,6 +183,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
         Box(width = Grow.Std, scopeName = gameEntities[0].requireComponent<T>().componentType) {
             val editor = remember(editorProvider)
             editor.components = gameEntities.map { it.requireComponent() }
+            editor.entityEditor = this@GameEntityEditor
             editor()
         }
     }
@@ -166,6 +217,14 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
             .forEach {
                 it.addMenuItems(objects, this)
             }
+    }
+
+    private fun GameEntity.getPanelState(panelKey: String, default: Boolean = true): Boolean {
+        return panelCollapseStates.getOrElse(id) { emptyMap() }.getOrElse(panelKey) { default }
+    }
+
+    private fun GameEntity.setPanelState(panelKey: String, state: Boolean) {
+        panelCollapseStates.getOrPut(id) { mutableMapOf() }[panelKey] = state
     }
 
     companion object {

@@ -278,6 +278,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
                 blendMode = BlendMode.BLEND_MULTIPLY_ALPHA,
                 cullMethod = CullMethod.NO_CULLING,
                 depthTest = DepthCompareOp.ALWAYS,
+                isWriteDepth = false
             )
         )
     {

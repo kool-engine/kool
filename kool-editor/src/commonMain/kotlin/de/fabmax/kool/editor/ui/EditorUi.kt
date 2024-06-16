@@ -8,14 +8,20 @@ import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec4d
+import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.DockLayout
+import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.*
 import kotlinx.serialization.json.Json
 
@@ -29,6 +35,40 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val dock = Dock()
     val titleBar = WindowTitleBar(editor)
+
+    private val virtualCursorMesh = ColorMesh().apply {
+        generate {
+            val lon = Dp(24f).px
+            val short = Dp(2f).px
+            rect {
+                size.set(lon, short)
+            }
+            rect {
+                size.set(short, lon)
+            }
+        }
+        shader = KslUnlitShader {
+            color { constColor(Color.WHITE) }
+            pipeline {
+                isWriteDepth = false
+                depthTest = DepthCompareOp.ALWAYS
+            }
+        }
+        val trs = TrsTransformF()
+        transform = trs
+        onUpdate {
+            isVisible = PointerInput.cursorMode == CursorMode.LOCKED && AppState.isEditMode
+            if (isVisible) {
+                val w = it.viewport.width.toFloat()
+                val h = it.viewport.height.toFloat()
+                val ptr = PointerInput.primaryPointer
+                val x = ptr.x.toFloat()
+                val y = ptr.y.toFloat()
+                trs.translation.set(((x % w) + w) % w, -((y % h) + h) % h, 0f)
+                trs.markDirty()
+            }
+        }
+    }
 
     private val titleBarSurface = PanelSurface {
         surface.colors = uiColors.use()
@@ -155,6 +195,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         addNode(statusBar)
         addNode(dock)
         addNode(titleBarSurface)
+        addNode(virtualCursorMesh)
     }
 
     private fun UiScope.statusBar() = Row(width = Grow.Std, height = Grow.Std) {

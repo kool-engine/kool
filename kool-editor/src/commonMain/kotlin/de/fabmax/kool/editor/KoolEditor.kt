@@ -60,6 +60,11 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val loadedApp = mutableStateOf<LoadedApp?>(null)
     val activeScene = mutableStateOf<EditorScene?>(null)
 
+    val editorOverlay = scene("editor-overlay") {
+        clearColor = null
+        clearDepth = false
+        tryEnableInfiniteDepth()
+    }
     val editorInputContext = EditorKeyListener("Edit mode")
     val editMode = EditorEditMode(this)
 
@@ -70,14 +75,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         clearDepth = false
     }
 
-    val editorOverlay = scene("editor-overlay") {
-        clearColor = null
-        clearDepth = false
-        tryEnableInfiniteDepth()
-    }
     val gridOverlay = GridOverlay()
     val sceneObjectsOverlay = SceneObjectsOverlay()
-    val gizmoOverlay = TransformGizmoOverlay()
+    val gizmoOverlay = TransformGizmoOverlay(this)
     val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {
@@ -181,6 +181,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     private fun setEditorOverlayVisibility(isVisible: Boolean) {
+        editorCameraTransform.isVisible = isVisible
         editorOverlay.children.forEach {
             it.isVisible = isVisible
         }
@@ -293,7 +294,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
                 // replace original scene cam with editor cam
                 val editorCam = PerspectiveCamera()
-                editorCam.setClipRange(0.1f, 1000f)
+                val far = if (editorOverlay.isInfiniteDepth) 1e9f else 1000f
+                editorCam.setClipRange(0.1f, far)
                 scene.camera = editorCam
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
@@ -318,7 +320,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
 
         updateOverlays()
-        EditorActions.clear()
     }
 
     private fun updateOverlays() {

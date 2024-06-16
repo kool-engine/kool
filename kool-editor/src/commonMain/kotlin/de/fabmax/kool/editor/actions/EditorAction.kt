@@ -12,6 +12,7 @@ interface EditorAction {
 }
 
 fun refreshComponentViews() {
+    KoolEditor.instance.ui.objectProperties.triggerUpdate()
     KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     KoolEditor.instance.sceneObjectsOverlay.updateOverlayObjects()
 }

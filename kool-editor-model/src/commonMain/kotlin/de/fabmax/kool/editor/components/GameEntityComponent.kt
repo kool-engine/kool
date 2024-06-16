@@ -22,7 +22,7 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
     val requiredAssets = mutableSetOf<AssetReference>()
 
     var lifecycle = EntityLifecycle.CREATED
-        private set(value) {
+        protected set(value) {
             check(field.isAllowedAsNext(value)) {
                 "GameEntityComponent $componentType (entity: ${gameEntity.name}): Transitioning from lifecycle state $field to $value is not allowed"
             }
@@ -32,10 +32,14 @@ abstract class GameEntityComponent(val gameEntity: GameEntity) {
     var componentOrder = COMPONENT_ORDER_DEFAULT
         protected set
 
-    open suspend fun applyComponent() {
+    protected fun checkDependencies() {
         check(areDependenciesMetBy(gameEntity.components)) {
             "Unable to create component ${this::class.simpleName} in node ${gameEntity.name}: There are unmet component dependencies"
         }
+    }
+
+    open suspend fun applyComponent() {
+        checkDependencies()
         lifecycle = EntityLifecycle.PREPARED
     }
 

@@ -60,6 +60,48 @@ fun Double.expDecay(target: Double, decay: Double, deltaT: Float = Time.deltaT):
     return target + (this - target) * exp(-decay * deltaT)
 }
 
+fun MutableVec2f.expDecay(target: Vec2f, decay: Float, deltaT: Float = Time.deltaT): MutableVec2f {
+    x = x.expDecay(target.x, decay, deltaT)
+    y = y.expDecay(target.y, decay, deltaT)
+    return this
+}
+
+fun MutableVec3f.expDecay(target: Vec3f, decay: Float, deltaT: Float = Time.deltaT): MutableVec3f {
+    x = x.expDecay(target.x, decay, deltaT)
+    y = y.expDecay(target.y, decay, deltaT)
+    z = z.expDecay(target.z, decay, deltaT)
+    return this
+}
+
+fun MutableVec4f.expDecay(target: Vec4f, decay: Float, deltaT: Float = Time.deltaT): MutableVec4f {
+    x = x.expDecay(target.x, decay, deltaT)
+    y = y.expDecay(target.y, decay, deltaT)
+    z = z.expDecay(target.z, decay, deltaT)
+    w = w.expDecay(target.w, decay, deltaT)
+    return this
+}
+
+fun MutableVec2d.expDecay(target: Vec2d, decay: Double, deltaT: Float = Time.deltaT): MutableVec2d {
+    x = x.expDecay(target.x, decay, deltaT)
+    y = y.expDecay(target.y, decay, deltaT)
+    return this
+}
+
+fun MutableVec3d.expDecay(target: Vec3d, decay: Double, deltaT: Float = Time.deltaT): MutableVec3d {
+    x = x.expDecay(target.x, decay, deltaT)
+    y = y.expDecay(target.y, decay, deltaT)
+    z = z.expDecay(target.z, decay, deltaT)
+    return this
+}
+
+fun MutableVec4d.expDecay(target: Vec4d, decay: Double, deltaT: Float = Time.deltaT): MutableVec4d {
+    x = x.expDecay(target.x, decay, deltaT)
+    y = y.expDecay(target.y, decay, deltaT)
+    z = z.expDecay(target.z, decay, deltaT)
+    w = w.expDecay(target.w, decay, deltaT)
+    return this
+}
+
 fun stableAsin(x: Float): Float {
     val asin = asin(x)
     return if (!asin.isNaN()) {

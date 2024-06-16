@@ -10,9 +10,17 @@ import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
+class SimpleGizmo(
+    name: String = "simple-gizmo",
+    addOverlays: Boolean = true,
+    val hideHandlesOnDrag: Boolean = true
+) : Node(name), GizmoListener {
 
     val gizmoNode = GizmoNode()
+    val dragSpeedModifier by gizmoNode::dragSpeedModifier
+    val translationTick by gizmoNode::translationTick
+    val rotationTick by gizmoNode::rotationTick
+    val scaleTick by gizmoNode::scaleTick
 
     private val inputHandler = InputStack.InputHandler("gizmo-input-handler")
 
@@ -54,6 +62,10 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
             updateGizmoFromClient()
         }
 
+    val translationOverlay = TranslationOverlay(gizmoNode)
+    val rotationOverlay = RotationOverlay(gizmoNode)
+    val scaleOverlay = ScaleOverlay(gizmoNode)
+
     init {
         addNode(gizmoNode)
         gizmoNode.gizmoListeners += this
@@ -61,6 +73,15 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
 
         inputHandler.pointerListeners += gizmoNode
         InputStack.pushTop(inputHandler)
+
+        if (addOverlays) {
+            addNode(translationOverlay)
+            addNode(rotationOverlay)
+            addNode(scaleOverlay)
+            gizmoNode.gizmoListeners += translationOverlay
+            gizmoNode.gizmoListeners += rotationOverlay
+            gizmoNode.gizmoListeners += scaleOverlay
+        }
     }
 
     override fun release() {
@@ -143,10 +164,18 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
             is TrsTransformD -> clientStartTransformTrs.setCompositionOf(clientTransform.translation, clientTransform.rotation, clientTransform.scale)
             else -> clientStartTransformMatrix.setMatrix(clientTransform.matrixD)
         }
+
+        if (hideHandlesOnDrag) {
+            gizmoNode.handles.forEach { it.isHidden = true }
+        }
     }
 
     override fun onManipulationFinished(startTransform: TrsTransformD, endTransform: TrsTransformD) {
         updateGizmoFromClient()
+
+        if (hideHandlesOnDrag) {
+            gizmoNode.handles.forEach { it.isHidden = false }
+        }
     }
 
     override fun onManipulationCanceled(startTransform: TrsTransformD) {
@@ -158,6 +187,10 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
         }
         client.updateModelMatRecursive()
         updateGizmoFromClient()
+
+        if (hideHandlesOnDrag) {
+            gizmoNode.handles.forEach { it.isHidden = false }
+        }
     }
 
     private fun updateUiStates(client: Node) {
@@ -190,7 +223,7 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
         }
         val client = transformNode ?: return
 
-        gizmoNode.startManipulation()
+        gizmoNode.startManipulation(null)
 
         val transform = gizmoNode.gizmoTransform
         transform.translation.set(translation)
@@ -300,8 +333,12 @@ fun GizmoNode.addRotationHandles() {
 
     addHandle(
         CenterCircleHandle(
-            color = Color.WHITE,
-            radius = 0.2f,
+            color = Color.WHITE.withAlpha(0f),
+            colorIdle = Color.WHITE.withAlpha(0f),
+            coveredColor = Color.WHITE.withAlpha(0.2f),
+            coveredColorIdle = Color.WHITE.withAlpha(0f),
+            radius = 0.75f,
+            drawMode = CenterCircleHandle.CircleMode.SOLID,
             gizmoOperation = FreeRotation()
         )
     )
@@ -309,7 +346,7 @@ fun GizmoNode.addRotationHandles() {
         CenterCircleHandle(
             color = Color.WHITE,
             radius = 1f,
-            hitTestMode = CenterCircleHandle.HitTestMode.LINE,
+            hitTestMode = CenterCircleHandle.CircleMode.LINE,
             gizmoOperation = CamPlaneRotation()
         )
     )
@@ -348,7 +385,7 @@ fun GizmoNode.addScaleHandles() {
         PlaneHandle(
             color = MdColor.RED,
             axis = GizmoHandle.Axis.POS_X,
-            gizmoOperation = PlaneScale(Vec3d.X_AXIS),
+            gizmoOperation = PlaneScale(GizmoHandle.Axis.POS_X),
             name = "scale-plane-x"
         )
     )
@@ -356,7 +393,7 @@ fun GizmoNode.addScaleHandles() {
         PlaneHandle(
             color = MdColor.LIGHT_GREEN,
             axis = GizmoHandle.Axis.POS_Y,
-            gizmoOperation = PlaneScale(Vec3d.Y_AXIS),
+            gizmoOperation = PlaneScale(GizmoHandle.Axis.POS_Y),
             name = "scale-plane-y"
         )
     )
@@ -364,7 +401,7 @@ fun GizmoNode.addScaleHandles() {
         PlaneHandle(
             color = MdColor.BLUE,
             axis = GizmoHandle.Axis.POS_Z,
-            gizmoOperation = PlaneScale(Vec3d.Z_AXIS),
+            gizmoOperation = PlaneScale(GizmoHandle.Axis.POS_Z),
             name = "scale-plane-z"
         )
     )

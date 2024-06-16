@@ -9,7 +9,7 @@ class KeyInfo(val ui: EditorUi) : Composable {
 
     override fun UiScope.compose() = ReverseColumn {
         modifier
-            .size(350.dp, 400.dp)
+            .size(450.dp, 400.dp)
             .margin(sizes.largeGap)
             .align(AlignmentX.End, AlignmentY.Bottom)
 
@@ -45,7 +45,7 @@ class KeyInfo(val ui: EditorUi) : Composable {
                             modifier.margin(bottom = sizes.smallGap)
 
                             Box {
-                                modifier.width(100.dp)
+                                modifier.width(150.dp)
                                 keyLabel(key)
                             }
                             Text(key.description) { }

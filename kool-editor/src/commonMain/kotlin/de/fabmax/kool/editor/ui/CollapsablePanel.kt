@@ -7,22 +7,27 @@ fun UiScope.collapsapsablePanel(
     imageIcon: IconProvider? = null,
     headerContent: (RowScope.() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
+    startExpanded: Boolean = true,
+    onCollapseChanged: ((Boolean) -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = Column(
     Grow.Std,
     scopeName = title
 ) {
-    var isCollapsed by remember(false)
+    var isExpanded by remember(startExpanded)
     var isHovered by remember(false)
 
     Row(width = Grow.Std, height = sizes.lineHeightLarger) {
         modifier
             .backgroundColor(if (isHovered) colors.hoverBg else null)
-            .onClick { isCollapsed = !isCollapsed }
             .onEnter { isHovered = true }
             .onExit { isHovered = false }
+            .onClick {
+                isExpanded = !isExpanded
+                onCollapseChanged?.invoke(isExpanded)
+            }
 
-        Arrow (if (isCollapsed) 0f else 90f) {
+        Arrow (if (isExpanded) 90f else 0f) {
             modifier
                 .margin(start = sizes.gap, end = if (imageIcon == null) sizes.gap else sizes.smallGap)
                 .alignY(AlignmentY.Center)
@@ -42,7 +47,7 @@ fun UiScope.collapsapsablePanel(
         }
         headerContent?.invoke(this)
     }
-    if (!isCollapsed) {
+    if (isExpanded) {
         Column(width = Grow.Std) {
             modifier
                 .padding(start = sizes.largeGap, bottom = sizes.smallGap)

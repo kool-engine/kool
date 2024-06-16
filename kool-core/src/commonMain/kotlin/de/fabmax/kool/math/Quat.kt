@@ -8,11 +8,15 @@ import kotlin.math.sqrt
 
 fun QuatF.toQuatD() = QuatD(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
 fun QuatF.toMutableQuatD(result: MutableQuatD = MutableQuatD()) = result.set(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
+fun QuatF.toVec4f(): Vec4f = Vec4f(x, y, z, w)
+fun QuatF.toMutableVec4f(result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(x, y, z, w)
 fun MutableQuatF.set(that: QuatD) = set(that.x.toFloat(), that.y.toFloat(), that.z.toFloat(), that.w.toFloat())
 fun Vec4f.toQuatF() = QuatF(x, y, z, w)
 
 fun QuatD.toQuatF() = QuatF(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
 fun QuatD.toMutableQuatF(result: MutableQuatF = MutableQuatF()) = result.set(x.toFloat(), y.toFloat(), z.toFloat(), w.toFloat())
+fun QuatD.toVec4d(): Vec4d = Vec4d(x, y, z, w)
+fun QuatD.toMutableVec4d(result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(x, y, z, w)
 fun MutableQuatD.set(that: QuatF) = set(that.x.toDouble(), that.y.toDouble(), that.z.toDouble(), that.w.toDouble())
 fun Vec4d.toQuatD() = QuatD(x, y, z, w)
 
@@ -133,10 +137,6 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     fun isFuzzyEqual(that: QuatF, eps: Float = FUZZY_EQ_F): Boolean =
         isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
 
-    fun toVec4f(): Vec4f = Vec4f(x, y, z, w)
-
-    fun toMutableVec4f(result: MutableVec4f = MutableVec4f()): MutableVec4f = result.set(x, y, z, w)
-
     override fun toString(): String = "($x, $y, $z, $w)"
 
     /**
@@ -231,6 +231,8 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
         w = cos(rad2)
         return this
     }
+
+    fun setIdentity(): MutableQuatF = set(IDENTITY)
 
     /**
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatF].
@@ -456,10 +458,6 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     fun isFuzzyEqual(that: QuatD, eps: Double = FUZZY_EQ_D): Boolean =
         isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
 
-    fun toVec4f(): Vec4d = Vec4d(x, y, z, w)
-
-    fun toMutableVec4f(result: MutableVec4d = MutableVec4d()): MutableVec4d = result.set(x, y, z, w)
-
     override fun toString(): String = "($x, $y, $z, $w)"
 
     /**
@@ -554,6 +552,8 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         w = cos(rad2)
         return this
     }
+
+    fun setIdentity(): MutableQuatD = set(IDENTITY)
 
     /**
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatD].

@@ -1,12 +1,14 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxD
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.scene.animation.SpringDamperDouble
+import de.fabmax.kool.scene.animation.ExponentialDecayDouble
 import de.fabmax.kool.util.Time
 import kotlin.math.abs
 
@@ -61,6 +63,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
 
     var isKeepingStandardTransform = false
+    var isInfiniteDragCursor = false
 
     var invertRotX = false
     var invertRotY = false
@@ -71,12 +74,13 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
     var panMethod: PanBase = CameraOrthogonalPan()
 
-    val vertRotAnimator = SpringDamperDouble(0.0)
-    val horiRotAnimator = SpringDamperDouble(0.0)
-    val zoomAnimator = SpringDamperDouble(zoom)
+    val vertRotAnimator = ExponentialDecayDouble(0.0)
+    val horiRotAnimator = ExponentialDecayDouble(0.0)
+    val zoomAnimator = ExponentialDecayDouble(zoom)
 
     private var prevButtonMask = 0
     private var dragMethod = DragMethod.NONE
+    private var prevDragMethod = DragMethod.NONE
     private var dragStart = false
     private val deltaPos = MutableVec2d()
     private var deltaScroll = 0.0
@@ -94,18 +98,18 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val matrixTransform: MatrixTransformD
         get() = transform as MatrixTransformD
 
-    var smoothness: Double = 0.0
+    var panSmoothness: Double = 0.5
+    var zoomRotationDecay: Double = 0.0
         set(value) {
             field = value
-            val stiffness = if (!value.isFuzzyZero()) { 50.0 / value } else { 0.0 }
-            vertRotAnimator.stiffness = stiffness
-            horiRotAnimator.stiffness = stiffness
-            zoomAnimator.stiffness = stiffness
+            vertRotAnimator.decay = value
+            horiRotAnimator.decay = value
+            zoomAnimator.decay = value
         }
 
     init {
         transform = MatrixTransformD()
-        smoothness = 0.5
+        zoomRotationDecay = 16.0
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
@@ -172,7 +176,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
                 stopSmoothMotion()
 
             } else {
-                val s = (1 - smoothness).clamp(0.1, 1.0)
+                val s = (1 - panSmoothness).clamp(0.1, 1.0)
                 tmpVec1.set(pointerHitStart).subtract(pointerHit).mul(s)
                 parent?.toLocalCoords(tmpVec1, 0.0)
 
@@ -244,6 +248,10 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
+        if (!isVisible) {
+            return
+        }
+
         val dragPtr = pointerState.primaryPointer
         if (dragPtr.isConsumed()) {
             deltaPos.set(Vec2d.ZERO)
@@ -251,6 +259,15 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
             return
         }
 
+        if (isInfiniteDragCursor) {
+            if (dragPtr.isDrag && dragMethod != DragMethod.NONE && PointerInput.cursorMode != CursorMode.LOCKED) {
+                PointerInput.cursorMode = CursorMode.LOCKED
+            } else if (prevDragMethod != DragMethod.NONE && dragMethod == DragMethod.NONE) {
+                PointerInput.cursorMode = CursorMode.NORMAL
+            }
+        }
+
+        prevDragMethod = dragMethod
         if (dragPtr.buttonEventMask != 0 || dragPtr.buttonMask != prevButtonMask) {
             dragMethod = when {
                 dragPtr.isLeftButtonDown -> leftDragMethod

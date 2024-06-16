@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
@@ -18,17 +19,20 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     val gizmoListeners = BufferedList<GizmoListener>()
 
     private val nodeTransform = TrsTransformD()
-    private val handleTransform = TrsTransformD()
+    val handleTransform = TrsTransformD()
 
     private val startTransform = TrsTransformD()
     private val startScale = MutableVec3d()
 
+    private val _handles = mutableListOf<GizmoHandle>()
+    val handles: List<GizmoHandle> get() = _handles
     private val handleGroup = Node().apply {
         transform = handleTransform
     }
 
     private val rayTest = RayTest()
     private val pickRay = RayD()
+    private val virtualPointerPos = MutableVec2d()
     private var dragMode = DragMode.NO_DRAG
     private var isDrag = false
     private var hoverHandle: GizmoHandle? = null
@@ -42,6 +46,14 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
             field = value
             handleTransform.scale(value)
         }
+
+    val latestManipulatorValue = mutableStateOf<ManipulatorValue?>(null)
+    val overwriteManipulatorValue = mutableStateOf<Double?>(null)
+
+    val dragSpeedModifier = mutableStateOf(1.0)
+    val translationTick = mutableStateOf(0.0)
+    val rotationTick = mutableStateOf(0.0)
+    val scaleTick = mutableStateOf(0.0)
 
     private var parentCam: Camera? = null
     private val camUpdateListener: (RenderPass.UpdateEvent) -> Unit = { ev ->
@@ -63,6 +75,8 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     }
 
     var isManipulating = false
+        private set
+    var activeOp: GizmoOperation? = null
         private set
 
     init {
@@ -86,29 +100,34 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     }
 
     fun addHandle(handle: GizmoHandle) {
+        _handles += handle
         handleGroup.addNode(handle.drawNode)
     }
 
     fun removeHandle(handle: GizmoHandle) {
+        _handles -= handle
         handleGroup.removeNode(handle.drawNode)
     }
 
     fun clearHandles() {
+        _handles.clear()
         handleGroup.children.forEach { it.release() }
         handleGroup.clearChildren()
     }
 
-    fun startManipulation() {
+    fun startManipulation(operation: GizmoOperation?) {
         startTransform.set(gizmoTransform)
         isManipulating = true
-        gizmoListeners.forEach { it.onManipulationStart(startTransform) }
+        activeOp = operation
+        gizmoListeners.updated().forEach { it.onManipulationStart(startTransform) }
     }
 
     fun finishManipulation() {
         check(isManipulating) { "finishManipulation is only allowed after calling startManipulation()" }
 
         isManipulating = false
-        gizmoListeners.forEach { it.onManipulationFinished(startTransform, gizmoTransform) }
+        activeOp = null
+        gizmoListeners.updated().forEach { it.onManipulationFinished(startTransform, gizmoTransform) }
     }
 
     fun cancelManipulation() {
@@ -116,7 +135,8 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         isManipulating = false
-        gizmoListeners.forEach { it.onManipulationCanceled(startTransform) }
+        activeOp = null
+        gizmoListeners.updated().forEach { it.onManipulationCanceled(startTransform) }
     }
 
     fun manipulateAxisTranslation(axis: GizmoHandle.Axis, distance: Double) {
@@ -129,6 +149,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.translate(rotatedAxis * distance)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue1d(distance))
     }
 
     fun manipulateTranslation(translationOffset: Vec3d) {
@@ -141,6 +162,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.translate(rotatedTranslation)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue3d(translationOffset))
     }
 
     fun manipulateAxisRotation(axis: Vec3d, angle: AngleD) {
@@ -148,6 +170,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.rotate(angle, axis)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue1d(angle.deg))
     }
 
     fun manipulateRotation(rotation: QuatD) {
@@ -155,6 +178,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.rotate(rotation)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue4d(rotation.toVec4d()))
     }
 
     fun manipulateScale(scale: Vec3d) {
@@ -162,6 +186,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         gizmoTransform.scale(scale)
+        latestManipulatorValue.set(ManipulatorValue.ManipulatorValue3d(scale))
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
@@ -175,7 +200,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
             return
         }
 
-        rayTest.clear()
+        rayTest.clear(camera = scene.camera)
         pickRay.toRayF(rayTest.ray)
         rayTest(rayTest)
 
@@ -189,6 +214,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
                 hoverHandle?.onHoverExit(this)
             }
             hoverHandle = newHandle
+            virtualPointerPos.set(ptr.x, ptr.y)
         }
 
         if (dragMode == DragMode.NO_DRAG && ptr.isLeftButtonDown) {
@@ -198,15 +224,19 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         }
 
         hoverHandle?.let { hover ->
+            hover.moveVirtualPointer(virtualPointerPos, ptr, dragSpeedModifier.value)
+            scene.camera.computePickRay(pickRay, virtualPointerPos.x.toFloat(), virtualPointerPos.y.toFloat(), scene.mainRenderPass.viewport)
+
             if (ptr.isLeftButtonDown && !isDrag) {
                 globalToDragLocal.set(invModelMatD)
             }
             val dragCtx = DragContext(
                 gizmo = this,
-                pointer = ptr,
+                virtualPointerPos = virtualPointerPos,
                 globalRay = pickRay,
                 localRay = pickRay.transformBy(globalToDragLocal, RayD()),
                 globalToLocal = globalToDragLocal,
+                localToGlobal = modelMatD,
                 camera = scene.camera
             )
 

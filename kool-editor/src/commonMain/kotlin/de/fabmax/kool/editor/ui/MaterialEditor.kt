@@ -34,7 +34,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 ComboBox {
                     defaultComboBoxStyle()
                     modifier
-                        .margin(horizontal = sizes.gap)
+                        .margin(end = sizes.gap)
                         .width(Grow.Std)
                         .alignY(AlignmentY.Center)
                         .items(items)
@@ -106,20 +106,23 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         colorSetting("Base color:", pbrData.baseColor, MdColor.GREY.toLinear()) {
             pbrData.copy(baseColor = it)
         }
+        textureSetting("Normal map:", pbrData.normalMap) {
+            pbrData.copy(normalMap = it)
+        }
         floatSetting("Roughness:", pbrData.roughness, 0f, 1f, 0.5f) {
             pbrData.copy(roughness = it)
         }
         floatSetting("Metallic:", pbrData.metallic, 0f, 1f, 0f) {
             pbrData.copy(metallic = it)
         }
-        colorSetting("Emission color:", pbrData.emission, Color.BLACK) {
-            pbrData.copy(emission = it)
-        }
-        textureSetting("Normal map:", pbrData.normalMap) {
-            pbrData.copy(normalMap = it)
+        textureSetting("AO:", pbrData.aoMap) {
+            pbrData.copy(aoMap = it)
         }
         textureSetting("Displacement:", pbrData.parallaxMap) {
             pbrData.copy(parallaxMap = it)
+        }
+        colorSetting("Emission color:", pbrData.emission, Color.BLACK) {
+            pbrData.copy(emission = it)
         }
 
         if (pbrData.parallaxMap != null) {

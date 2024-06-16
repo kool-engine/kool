@@ -5,29 +5,43 @@ import de.fabmax.kool.editor.EditorEditMode
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.KeyEvent
-import de.fabmax.kool.input.PointerState
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_ACCURATE
+import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_NORMAL
+import de.fabmax.kool.editor.overlays.applySpeedAndTickRate
+import de.fabmax.kool.editor.overlays.updateLabel
+import de.fabmax.kool.editor.ui.SceneView
+import de.fabmax.kool.input.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gizmo.*
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformD
+import de.fabmax.kool.toString
 
 class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerListener {
     private val mode: MutableStateValue<EditorEditMode.Mode> get() = editor.editMode.mode
 
+    private val gizmoGroup = Node("immediate-transform-gizmo")
     private val gizmo = GizmoNode()
+    private val translationOverlay = TranslationOverlay(gizmo)
+    private val rotationOverlay = RotationOverlay(gizmo)
+    private val scaleOverlay = ScaleOverlay(gizmo)
+    private val gizmoLabel = SceneView.Label()
+
     private val globalRay = RayD()
     private val localRay = RayD()
+    private val virtualPointerPos = MutableVec2d()
 
     private val globalToDragLocal = MutableMat4d()
+    private val dragLocalToGlobal = MutableMat4d()
     private val clientGlobalToParent = MutableMat4d()
     private val clientTransformOffset = MutableMat4d()
 
     private var selectionTransform: SelectionTransform? = null
     private var dragCtxStart: DragContext? = null
+    private var overwriteStrValue: String? = null
 
     private var activeOp: GizmoOperation? = null
 
@@ -48,9 +62,9 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
     private val opXAxisScale = AxisScale(GizmoHandle.Axis.POS_X)
     private val opYAxisScale = AxisScale(GizmoHandle.Axis.POS_Y)
     private val opZAxisScale = AxisScale(GizmoHandle.Axis.POS_Z)
-    private val opXPlaneScale = PlaneScale(Vec3d.X_AXIS)
-    private val opYPlaneScale = PlaneScale(Vec3d.Y_AXIS)
-    private val opZPlaneScale = PlaneScale(Vec3d.Z_AXIS)
+    private val opXPlaneScale = PlaneScale(GizmoHandle.Axis.POS_X)
+    private val opYPlaneScale = PlaneScale(GizmoHandle.Axis.POS_Y)
+    private val opZPlaneScale = PlaneScale(GizmoHandle.Axis.POS_Z)
 
     val isActive: Boolean get() = gizmo.isManipulating
 
@@ -65,6 +79,23 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         addKeyListener(Key.LimitToYPlane) { setYPlaneOp() }
         addKeyListener(Key.LimitToZPlane) { setZPlaneOp() }
 
+        addKeyListener(Key.TickIncrement) {
+            val ov = (overwriteStrValue?.toDoubleOrNull() ?: 0.0) + getTick()
+            overwriteStrValue = ov.toString(1)
+        }
+        addKeyListener(Key.MinorTickIncrement) {
+            val ov = (overwriteStrValue?.toDoubleOrNull() ?: 0.0) + getMinorTick()
+            overwriteStrValue = ov.toString(1)
+        }
+        addKeyListener(Key.TickDecrement) {
+            val ov = (overwriteStrValue?.toDoubleOrNull() ?: 0.0) - getTick()
+            overwriteStrValue = ov.toString(1)
+        }
+        addKeyListener(Key.MinorTickDecrement) {
+            val ov = (overwriteStrValue?.toDoubleOrNull() ?: 0.0) - getMinorTick()
+            overwriteStrValue = ov.toString(1)
+        }
+
         addKeyListener(Key.ToggleImmediateMoveMode) {
             setOp(opCamPlaneTranslate)
             editor.editMode.toggleMode(EditorEditMode.Mode.MOVE_IMMEDIATE)
@@ -77,14 +108,63 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             setOp(opUniformScale)
             editor.editMode.toggleMode(EditorEditMode.Mode.SCALE_IMMEDIATE)
         }
+        addKeyListener(Key.Enter) {
+            finish(isCanceled = false)
+            mode.set(EditorEditMode.Mode.NONE)
+        }
         addKeyListener(Key.Cancel) {
             finish(isCanceled = true)
             mode.set(EditorEditMode.Mode.NONE)
         }
+
+        keyboardListeners += InputStack.KeyboardListener { events, _ ->
+            events.forEach { evt ->
+                val prevStr = overwriteStrValue ?: ""
+                if (evt.isCharTyped) {
+                    when {
+                        evt.typedChar.isDigit() -> overwriteStrValue = "$prevStr${evt.typedChar}"
+                        evt.typedChar == '.' && '.' !in prevStr -> overwriteStrValue = "$prevStr."
+                        evt.typedChar == ',' && '.' !in prevStr -> overwriteStrValue = "$prevStr."
+                        evt.typedChar == '+' -> overwriteStrValue = prevStr.removePrefix("-")
+                        evt.typedChar == '-' -> overwriteStrValue = "-" + prevStr.removePrefix("-")
+                    }
+                } else if (evt.keyCode == KeyboardInput.KEY_BACKSPACE && evt.isPressed) {
+                    overwriteStrValue = if (prevStr.isNotEmpty()) prevStr.substring(0 until prevStr.lastIndex) else null
+                    println(overwriteStrValue)
+                }
+            }
+        }
     }
 
     init {
-        gizmo.addTranslationHandles()
+        gizmoGroup.apply {
+            addNode(gizmo)
+            addNode(translationOverlay)
+            addNode(rotationOverlay)
+            addNode(scaleOverlay)
+        }
+        editor.editorOverlay += gizmoGroup
+        gizmo.gizmoListeners += translationOverlay
+        gizmo.gizmoListeners += rotationOverlay
+        gizmo.gizmoListeners += scaleOverlay
+    }
+
+    private fun getTick(): Double {
+        return when (mode.value) {
+            EditorEditMode.Mode.MOVE_IMMEDIATE -> TransformGizmoOverlay.TICK_TRANSLATION_MAJOR
+            EditorEditMode.Mode.ROTATE_IMMEDIATE -> TransformGizmoOverlay.TICK_ROTATION_MAJOR
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> TransformGizmoOverlay.TICK_SCALE_MAJOR
+            else -> 0.0
+        }
+    }
+
+    private fun getMinorTick(): Double {
+        return when (mode.value) {
+            EditorEditMode.Mode.MOVE_IMMEDIATE -> TransformGizmoOverlay.TICK_TRANSLATION_MINOR
+            EditorEditMode.Mode.ROTATE_IMMEDIATE -> TransformGizmoOverlay.TICK_ROTATION_MINOR
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> TransformGizmoOverlay.TICK_SCALE_MINOR
+            else -> 0.0
+        }
     }
 
     fun start(mode: EditorEditMode.Mode): Boolean {
@@ -103,12 +183,19 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         val primNode = selectionTransform?.primaryTransformNode
         primNode?.let { updateGizmoFromClient(it.drawNode) }
         selectionTransform?.startTransform()
+        overwriteStrValue = null
 
         inputHandler.push()
+        if (mode != EditorEditMode.Mode.ROTATE_IMMEDIATE) {
+            PointerInput.cursorMode = CursorMode.LOCKED
+        }
+        editor.ui.sceneView.addLabel(gizmoLabel)
         return true
     }
 
     fun finish(isCanceled: Boolean) {
+        editor.ui.sceneView.removeLabel(gizmoLabel)
+
         if (gizmo.isManipulating) {
             if (isCanceled) {
                 gizmo.cancelManipulation()
@@ -120,6 +207,8 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             }
         }
         selectionTransform = null
+        overwriteStrValue = null
+        PointerInput.cursorMode = CursorMode.NORMAL
         inputHandler.pop()
     }
 
@@ -155,6 +244,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
                 clientTransformOffset.rotate(localRotation).scale(localScale)
             }
         }
+        dragLocalToGlobal.set(gizmo.gizmoTransform.matrixD)
         globalToDragLocal.set(gizmo.gizmoTransform.invMatrixD)
     }
 
@@ -166,6 +256,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             .mul(transform.matrixD)
             .mul(clientTransformOffset)
         client.transform.setMatrix(localTransform)
+        gizmoLabel.updateLabel(translationOverlay, rotationOverlay, scaleOverlay)
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
@@ -177,13 +268,26 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         }
 
         val ptr = pointerState.primaryPointer
+        if (!gizmo.isManipulating || mode.value == EditorEditMode.Mode.ROTATE_IMMEDIATE) {
+            virtualPointerPos.set(ptr.x, ptr.y)
+        } else {
+            val speedMod = if (KeyboardInput.isShiftDown) SPEED_MOD_ACCURATE else SPEED_MOD_NORMAL
+            virtualPointerPos.x += ptr.deltaX * speedMod
+            virtualPointerPos.y += ptr.deltaY * speedMod
+        }
+        gizmo.applySpeedAndTickRate()
+
         val scene = editor.editorContent.findParentOfType<Scene>()
-        if (scene == null || !scene.computePickRay(ptr, globalRay)) {
+        val ptrX = virtualPointerPos.x.toFloat()
+        val ptrY = virtualPointerPos.y.toFloat()
+        if (scene == null || !scene.camera.computePickRay(globalRay, ptrX, ptrY, scene.mainRenderPass.viewport)) {
             return
         }
 
         globalRay.transformBy(globalToDragLocal, localRay)
-        val dragCtx = DragContext(gizmo, ptr, globalRay, localRay, globalToDragLocal, scene.camera)
+        val dragCtx = DragContext(gizmo, virtualPointerPos, globalRay, localRay, globalToDragLocal, dragLocalToGlobal, scene.camera)
+
+        gizmo.overwriteManipulatorValue.set(overwriteStrValue?.toDoubleOrNull())
 
         if (!gizmo.isManipulating) {
             dragCtxStart = dragCtx
@@ -238,7 +342,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         when (mode.value) {
             EditorEditMode.Mode.MOVE_IMMEDIATE -> setOp(opXPlaneTranslate)
             EditorEditMode.Mode.ROTATE_IMMEDIATE -> setOp(opXAxisRotate)
-            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opXAxisScale)
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opXPlaneScale)
             else -> { }
         }
     }
@@ -247,7 +351,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         when (mode.value) {
             EditorEditMode.Mode.MOVE_IMMEDIATE -> setOp(opYPlaneTranslate)
             EditorEditMode.Mode.ROTATE_IMMEDIATE -> setOp(opYAxisRotate)
-            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opYAxisScale)
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opYPlaneScale)
             else -> { }
         }
     }
@@ -256,20 +360,28 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         when (mode.value) {
             EditorEditMode.Mode.MOVE_IMMEDIATE -> setOp(opZPlaneTranslate)
             EditorEditMode.Mode.ROTATE_IMMEDIATE -> setOp(opZAxisRotate)
-            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opZAxisScale)
+            EditorEditMode.Mode.SCALE_IMMEDIATE -> setOp(opZPlaneScale)
             else -> { }
         }
     }
 
     private fun setOp(op: GizmoOperation) {
         activeOp = op
-        if (isActive) {
-            dragCtxStart?.let { activeOp?.onDragStart(it) }
+        dragCtxStart?.cancelManipulation()
+        selectionTransform?.let { st ->
+            st.restoreInitialTransform()
+            val primNode = st.primaryTransformNode
+            primNode?.let { updateGizmoFromClient(it.drawNode) }
         }
     }
 
     companion object {
         private val FILTER_NO_SHIFT: (KeyEvent) -> Boolean = { it.isPressed && !it.isShiftDown }
         private val FILTER_SHIFT: (KeyEvent) -> Boolean = { it.isPressed && it.isShiftDown }
+
+        private val numericChars = setOf(
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+            '+', '-', '.', ','
+        )
     }
 }

@@ -24,6 +24,9 @@ open class EditorKeyListener(name: String) : InputStack.InputHandler(name) {
         check(key !in _registeredKeys) { "$key already registered" }
         val binding = key.binding
         _registeredKeys[key] = addKeyListener(binding.keyCode, key.name, binding.keyMod.keyEventFilter, block)
+        key.binding.extraKeyCodes.forEach { (keyCode, mod) ->
+            addKeyListener(keyCode, key.name, mod.keyEventFilter, block)
+        }
     }
 
     fun removeKeyListener(key: Key) {
@@ -48,6 +51,7 @@ enum class Key(val group: KeyGroup) {
     Undo(KeyGroup.General),
     Redo(KeyGroup.General),
 
+    Enter(KeyGroup.General),
     Cancel(KeyGroup.General),
     DeleteSelected(KeyGroup.General),
     HideSelected(KeyGroup.General),
@@ -69,6 +73,11 @@ enum class Key(val group: KeyGroup) {
     LimitToXPlane(KeyGroup.ImmediateTransform),
     LimitToYPlane(KeyGroup.ImmediateTransform),
     LimitToZPlane(KeyGroup.ImmediateTransform),
+
+    TickIncrement(KeyGroup.ImmediateTransform),
+    MinorTickIncrement(KeyGroup.ImmediateTransform),
+    TickDecrement(KeyGroup.ImmediateTransform),
+    MinorTickDecrement(KeyGroup.ImmediateTransform),
     ;
 
     val binding: KeyBinding get() = getBinding(this)
@@ -85,6 +94,7 @@ enum class Key(val group: KeyGroup) {
                 Undo -> KeyBinding(key, LocalKeyCode('Z'), KeyMod.ctrl)
                 Redo -> KeyBinding(key, LocalKeyCode('Y'), KeyMod.ctrl)
                 Cancel -> KeyBinding(key, KeyboardInput.KEY_ESC, KeyMod.none)
+                Enter -> KeyBinding(key, KeyboardInput.KEY_ENTER, KeyMod.none, setOf(KeyboardInput.KEY_NP_ENTER to KeyMod.none))
                 DeleteSelected -> KeyBinding(key, KeyboardInput.KEY_DEL, KeyMod.none)
                 HideSelected -> KeyBinding(key, LocalKeyCode('H'), KeyMod.none)
                 UnhideHidden -> KeyBinding(key, LocalKeyCode('H'), KeyMod.alt)
@@ -102,6 +112,10 @@ enum class Key(val group: KeyGroup) {
                 LimitToXPlane -> KeyBinding(key, LocalKeyCode('X'), KeyMod.shift)
                 LimitToYPlane -> KeyBinding(key, LocalKeyCode('Y'), KeyMod.shift)
                 LimitToZPlane -> KeyBinding(key, LocalKeyCode('Z'), KeyMod.shift)
+                TickIncrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_UP, KeyMod.none, setOf(KeyboardInput.KEY_CURSOR_RIGHT to KeyMod.none))
+                MinorTickIncrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_UP, KeyMod.shift, setOf(KeyboardInput.KEY_CURSOR_RIGHT to KeyMod.shift))
+                TickDecrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_DOWN, KeyMod.none, setOf(KeyboardInput.KEY_CURSOR_LEFT to KeyMod.none))
+                MinorTickDecrement -> KeyBinding(key, KeyboardInput.KEY_CURSOR_DOWN, KeyMod.shift, setOf(KeyboardInput.KEY_CURSOR_LEFT to KeyMod.shift))
             }
         }
 
@@ -125,6 +139,10 @@ enum class Key(val group: KeyGroup) {
                 LimitToXPlane -> "X-plane only"
                 LimitToYPlane -> "Y-plane only"
                 LimitToZPlane -> "Z-plane only"
+                TickIncrement -> "Increase 1 tick"
+                MinorTickIncrement -> "Increase 1 small tick"
+                TickDecrement -> "Decrease 1 tick"
+                MinorTickDecrement -> "Decrease 1 small tick"
 
                 else -> key.toString()
             }
@@ -132,7 +150,7 @@ enum class Key(val group: KeyGroup) {
     }
 }
 
-data class KeyBinding(val key: Key, val keyCode: KeyCode, val keyMod: KeyMod) {
+data class KeyBinding(val key: Key, val keyCode: KeyCode, val keyMod: KeyMod, val extraKeyCodes: Set<Pair<KeyCode, KeyMod>> = emptySet()) {
     val name: String get() = key.toString()
 
     val keyInfo: String get() {

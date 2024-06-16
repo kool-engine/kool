@@ -1,8 +1,6 @@
 package de.fabmax.kool.editor
 
-import de.fabmax.kool.editor.api.EditorInfo
-import de.fabmax.kool.editor.api.EditorRange
-import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.editor.ui.BehaviorEditor
 import de.fabmax.kool.math.*
@@ -21,10 +19,10 @@ object BehaviorReflection {
             .filterIsInstance<KMutableProperty<*>>()
             .filter {
                 it.visibility == KVisibility.PUBLIC
-                    && it.annotations.none { anno -> anno is EditorInfo && anno.hideInEditor }
+                    && it.annotations.none { anno -> anno is EditorHidden }
                     && editableTypes.any { type -> type.isSupertypeOf(it.setter.parameters[1].type) }
             }
-            .sortedBy { (it.annotations.find { anno -> anno is EditorInfo } as EditorInfo?)?.order }
+            .sortedBy { (it.annotations.find { anno -> anno is EditorInfo } as EditorInfo?)?.order ?: Int.MAX_VALUE }
             .map { p ->
                 val propertyKType = p.setter.parameters[1].type
                 val info = p.annotations.filterIsInstance<EditorInfo>().firstOrNull()
@@ -33,8 +31,8 @@ object BehaviorReflection {
                 val min = rng?.let { Vec4d(it.minX, it.minY, it.minZ, it.minW) } ?: Vec4d(Double.NEGATIVE_INFINITY)
                 val max = rng?.let { Vec4d(it.maxX, it.maxY, it.maxZ, it.maxW) } ?: Vec4d(Double.POSITIVE_INFINITY)
                 val type = when {
-                    gameEntityType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.NODE_MODEL
-                    modelComponentType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.COMPONENT
+                    entityComponentType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.COMPONENT
+                    behaviorType.isSupertypeOf(propertyKType) -> BehaviorPropertyType.BEHAVIOR
                     else -> BehaviorPropertyType.STD
                 }
 
@@ -42,8 +40,8 @@ object BehaviorReflection {
             }
     }
 
-    private val gameEntityType = typeOf<GameEntity?>()
-    private val modelComponentType = typeOf<GameEntityComponent?>()
+    private val entityComponentType = typeOf<GameEntityComponent?>()
+    private val behaviorType = typeOf<KoolBehavior?>()
 
     private val editableTypes = listOf(
         typeOf<Int?>(),
@@ -64,8 +62,9 @@ object BehaviorReflection {
         typeOf<Boolean?>(),
         typeOf<Color?>(),
         typeOf<String?>(),
+        typeOf<GameEntity?>(),
 
-        gameEntityType,
-        modelComponentType,
+        entityComponentType,
+        behaviorType
     )
 }

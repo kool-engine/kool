@@ -1,10 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.*
-import de.fabmax.kool.editor.data.BehaviorComponentData
-import de.fabmax.kool.editor.data.ComponentInfo
-import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.getComponent
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.logE
@@ -27,7 +24,8 @@ class BehaviorComponent(
     }
 
     override suspend fun applyComponent() {
-        super.applyComponent()
+        checkDependencies()
+        var allOk = true
 
         try {
             val behavior = BehaviorLoader.newInstance(data.behaviorClassName)
@@ -38,10 +36,33 @@ class BehaviorComponent(
             val removeProps = mutableListOf<String>()
             data.propertyValues.forEach { (name, value) ->
                 val setValue = when {
-                    value.gameEntityRef != null -> value.gameEntityRef.gameEntity
-                    value.componentRef != null -> value.componentRef.entityId.gameEntity?.getComponent(value.componentRef)
+                    value.gameEntityRef != null -> {
+                        val entity = value.gameEntityRef.gameEntity
+                        if (!entity.isNullOrPrepared) {
+                            allOk = false
+                        }
+                        entity
+                    }
+
+                    value.componentRef != null -> {
+                        val entity = value.componentRef.entityId.gameEntity
+                        if (!entity.isNullOrPrepared) {
+                            allOk = false
+                        }
+                        entity?.getComponent(value.componentRef)
+                    }
+
+                    value.behaviorRef != null -> {
+                        val entity = value.behaviorRef.entityId.gameEntity
+                        if (!entity.isNullOrPrepared) {
+                            allOk = false
+                        }
+                        entity?.getBehavior(value.behaviorRef)
+                    }
+
                     else -> value.get()
                 }
+
                 if (!setProperty(name, setValue)) {
                     removeProps += name
                 }
@@ -50,14 +71,18 @@ class BehaviorComponent(
                 setPersistent(data.copy(propertyValues = data.propertyValues - removeProps))
             }
 
-            // invoke script init callback
-            behavior.init( this)
-
         } catch (e: Exception) {
             logE { "Failed to initialize BehaviorComponent for node ${gameEntity.name}: $e" }
             e.printStackTrace()
         }
+
+        if (allOk) {
+            lifecycle = EntityLifecycle.PREPARED
+            behaviorInstance.value?.init(this)
+        }
     }
+
+    private val GameEntity?.isNullOrPrepared: Boolean get() = this == null || isPreparedOrRunning
 
     override fun onStart() {
         super.onStart()

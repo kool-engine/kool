@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.data
 
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.KoolBehavior
+import de.fabmax.kool.editor.components.BehaviorComponent
 import de.fabmax.kool.editor.components.GameEntityComponent
 import kotlinx.serialization.Serializable
 
@@ -33,6 +35,7 @@ data class PropertyValue(
     val str: String? = null,
     val gameEntityRef: EntityId? = null,
     val componentRef: ComponentRef? = null,
+    val behaviorRef: BehaviorRef? = null,
 ) {
     fun get(): Any {
         return when {
@@ -57,6 +60,7 @@ data class PropertyValue(
             str != null -> str
             gameEntityRef != null -> gameEntityRef
             componentRef != null -> componentRef
+            behaviorRef != null -> behaviorRef
             else -> error("PropertyValue has no non-null value")
         }
     }
@@ -68,6 +72,12 @@ data class ComponentRef(
     val componentClassName: String
 )
 
+@Serializable
+data class BehaviorRef(
+    val entityId: EntityId,
+    val behaviorClassName: String
+)
+
 fun ComponentRef(component: GameEntityComponent?): ComponentRef {
     // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
     return if (component != null) {
@@ -77,11 +87,29 @@ fun ComponentRef(component: GameEntityComponent?): ComponentRef {
     }
 }
 
+fun BehaviorRef(behavior: KoolBehavior?): BehaviorRef {
+    // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
+    return if (behavior != null) {
+        BehaviorRef(behavior.gameEntity.id, behavior::class.simpleName!!)
+    } else {
+        BehaviorRef(EntityId(-1L), "<null>")
+    }
+}
+
 fun ComponentRef.matchesComponent(component: GameEntityComponent): Boolean {
     // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
     return entityId == component.gameEntity.id && component::class.simpleName == componentClassName
 }
 
+fun BehaviorRef.matchesComponent(component: BehaviorComponent): Boolean {
+    // qualified class name would be much more robust but is not supported on JS -> use simple class name instead
+    return entityId == component.gameEntity.id && component.data.behaviorClassName.substringAfterLast('.') == behaviorClassName
+}
+
 fun GameEntity.getComponent(ref: ComponentRef): GameEntityComponent? {
     return components.find { ref.matchesComponent(it) }
+}
+
+fun GameEntity.getBehavior(ref: BehaviorRef): KoolBehavior? {
+    return components.filterIsInstance<BehaviorComponent>().find { ref.matchesComponent(it) }?.behaviorInstance?.value
 }

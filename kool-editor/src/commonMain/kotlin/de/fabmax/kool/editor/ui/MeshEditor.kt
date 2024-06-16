@@ -33,7 +33,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 ComboBox {
                     defaultComboBoxStyle()
                     modifier
-                        .margin(horizontal = sizes.gap)
+                        .margin(end = sizes.gap)
                         .width(Grow.Std)
                         .alignY(AlignmentY.Center)
                         .items(shapeItems)

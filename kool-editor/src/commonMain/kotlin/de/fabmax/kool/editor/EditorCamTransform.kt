@@ -6,11 +6,10 @@ import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.math.clamp
+import de.fabmax.kool.math.expDecay
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.toVec3d
 import de.fabmax.kool.scene.OrbitInputTransform
-import de.fabmax.kool.util.Time
 import kotlin.math.max
 
 class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor cam transform") {
@@ -21,20 +20,19 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         minZoom = 1.0
         maxZoom = 10000.0
         zoom = 50.0
-        zoomAnimator.stiffness = 500.0
-        horiRotAnimator.stiffness = 500.0
-        vertRotAnimator.stiffness = 500.0
+        zoomRotationDecay = 20.0
         setMouseRotation(20f, -30f)
         InputStack.defaultInputHandler.pointerListeners += this
 
         middleDragMethod = DragMethod.ROTATE
+        isInfiniteDragCursor = true
 
         onUpdate {
             panTarget?.let { animatePan(it) }
         }
     }
 
-    private fun animatePan(target: Vec3d, speed: Double = 10.0) {
+    private fun animatePan(target: Vec3d) {
         val pos = transform.getTranslationD(MutableVec3d())
         val diff = MutableVec3d(target).subtract(pos)
         if (diff.length() < 0.001) {
@@ -43,11 +41,8 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
             panTarget = null
 
         } else {
-            val fac = (Time.deltaT * speed).clamp()
-            val dx = diff.x * fac
-            val dy = diff.y * fac
-            val dz = diff.z * fac
-            setMouseTranslation(pos.x + dx, pos.y + dy, pos.z + dz)
+            pos.expDecay(target, zoomRotationDecay)
+            setMouseTranslation(pos.x, pos.y, pos.z)
         }
     }
 

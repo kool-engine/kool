@@ -5,68 +5,83 @@ import de.fabmax.kool.math.PlaneD
 import de.fabmax.kool.math.RayD
 import de.fabmax.kool.math.Vec3d
 
-class AxisScale(val axis: GizmoHandle.Axis) : GizmoOperationBase() {
+interface GizmoScale {
+    val scaleValue: Double
+}
+
+class AxisScale(val axis: GizmoHandle.Axis) : GizmoOperationBase(), GizmoScale {
     private val dragAxis = RayD(Vec3d.ZERO, axis.axis)
     private var dragDistanceStart = 0.0
 
+    override var scaleValue: Double = 1.0
+        private set
+
     override fun onDragStart(dragCtx: DragContext) {
+        super.onDragStart(dragCtx)
+        scaleValue = 1.0
         dragDistanceStart = dragAxis.signedDistance(dragCtx.localRay) ?: return
-        dragCtx.startManipulation()
+        dragCtx.startManipulation(this)
     }
 
     override fun onDrag(dragCtx: DragContext) {
+        super.onDrag(dragCtx)
         val dist = dragAxis.signedDistance(dragCtx.localRay) ?: return
-        val scale = MutableVec3d(1.0)
-        when {
-            axis.axis.x != 0.0 -> scale.x = dist / dragDistanceStart
-            axis.axis.y != 0.0 -> scale.y = dist / dragDistanceStart
-            axis.axis.z != 0.0 -> scale.z = dist / dragDistanceStart
-        }
-        dragCtx.manipulateScale(scale)
+        projectedPointerPos.set(axis.axis).mul(dist).add(dragAxis.origin)
+        scaleValue = applyTick(dist / dragDistanceStart, dragCtx.scaleTick)
+        dragCtx.manipulateAxisScale(axis, scaleValue)
+        dragCtx.localToGlobal.transform(projectedPointerPos)
     }
 }
 
-class PlaneScale(planeNormal: Vec3d) : GizmoOperationBase() {
-    private val dragPlane = PlaneD(Vec3d.ZERO, planeNormal)
+class PlaneScale(val planeNormal: GizmoHandle.Axis) : GizmoOperationBase(), GizmoScale {
+    private val dragPlane = PlaneD(Vec3d.ZERO, planeNormal.axis)
     private val dragStartPoint = MutableVec3d()
 
+    override var scaleValue: Double = 1.0
+        private set
+
     override fun onDragStart(dragCtx: DragContext) {
+        super.onDragStart(dragCtx)
+        scaleValue = 1.0
         if (dragPlane.intersection(dragCtx.localRay, dragStartPoint)) {
-            dragCtx.startManipulation()
+            dragCtx.startManipulation(this)
         }
     }
 
     override fun onDrag(dragCtx: DragContext) {
-        val point = MutableVec3d()
-        if (dragPlane.intersection(dragCtx.localRay, point)) {
-            val s = point.length() / dragStartPoint.length()
-            val scale = MutableVec3d(s)
-            when {
-                dragPlane.n.x != 0.0 -> scale.x = 1.0
-                dragPlane.n.y != 0.0 -> scale.y = 1.0
-                dragPlane.n.z != 0.0 -> scale.z = 1.0
-            }
-            dragCtx.manipulateScale(scale)
+        super.onDrag(dragCtx)
+        if (dragPlane.intersection(dragCtx.localRay, projectedPointerPos)) {
+            val s = projectedPointerPos.length() / dragStartPoint.length()
+            scaleValue = applyTick(s, dragCtx.scaleTick)
+            dragCtx.manipulatePlaneScale(planeNormal, scaleValue)
+            dragCtx.localToGlobal.transform(projectedPointerPos)
         }
     }
 }
 
-class UniformScale : GizmoOperationBase() {
+class UniformScale : GizmoOperationBase(), GizmoScale {
     private val dragPlane = PlaneD()
     private val dragStartPoint = MutableVec3d()
 
+    override var scaleValue: Double = 1.0
+        private set
+
     override fun onDragStart(dragCtx: DragContext) {
+        super.onDragStart(dragCtx)
+        scaleValue = 1.0
         dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalLookDir, 0.0, dragPlane.n)
         dragPlane.n.norm()
         dragPlane.intersection(dragCtx.localRay, dragStartPoint)
-        dragCtx.startManipulation()
+        dragCtx.startManipulation(this)
     }
 
     override fun onDrag(dragCtx: DragContext) {
-        val point = MutableVec3d()
-        if (dragPlane.intersection(dragCtx.localRay, point)) {
-            val s = point.length() / dragStartPoint.length()
-            dragCtx.manipulateScale(Vec3d(s))
+        super.onDrag(dragCtx)
+        if (dragPlane.intersection(dragCtx.localRay, projectedPointerPos)) {
+            val s = projectedPointerPos.length() / dragStartPoint.length()
+            scaleValue = applyTick(s, dragCtx.scaleTick)
+            dragCtx.manipulateScale(Vec3d(scaleValue))
+            dragCtx.localToGlobal.transform(projectedPointerPos)
         }
     }
 }

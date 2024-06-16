@@ -3,6 +3,9 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.EditorEditMode
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MsdfFont
 import kotlin.math.roundToInt
 
 class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera, ui) {
@@ -14,6 +17,8 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
 
     private var viewBox: UiNode? = null
     private val boxSelector = BoxSelector()
+
+    private val labels = mutableStateListOf<Label>()
 
     override val windowSurface: UiSurface = editorPanel(false) {
         modifier.background(null)
@@ -42,6 +47,8 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
         }
 
         if (isShowOverlays.use()) {
+            drawLabels(labels.use())
+
             toolbar()
             if (isShowKeyInfo.use()) {
                 keyInfo()
@@ -52,6 +59,44 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
     init {
         windowSurface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
         windowDockable.setFloatingBounds(width = Grow.Std, height = Grow.Std)
+    }
+
+    fun addLabel(label: Label) {
+        if (label !in labels) {
+            labels += label
+        }
+    }
+
+    fun removeLabel(label: Label) {
+        labels -= label
+    }
+
+    private fun UiScope.drawLabels(labels: List<Label>) {
+        if (labels.isEmpty()) {
+            return
+        }
+
+        val msdf = sizes.normalText as MsdfFont
+        val font = msdf.copy(weight = MsdfFont.WEIGHT_BOLD, sizePts = msdf.sizePts * 0.8f)
+        val bgColor = Color.WHITE.withAlpha(0.7f)
+        val fgColor = MdColor.GREY tone 800
+        val r = sizes.gap * 1.2f
+
+        for (lbl in labels) {
+            if (lbl.isVisible.use()) {
+                Text(lbl.text.use()) {
+                    modifier
+                        .height(r * 2f)
+                        .onMeasured { lbl.offsetX.set(Dp.fromPx(it.rightPx - it.leftPx) * 0.5f) }
+                        .margin(start = lbl.x.use() - lbl.offsetX.use(), top = lbl.y.use() - r)
+                        .background(RoundRectBackground(bgColor, r))
+                        .border(RoundRectBorder(fgColor, r, 2.dp))
+                        .padding(horizontal = sizes.gap)
+                        .textColor(fgColor)
+                        .font(font)
+                }
+            }
+        }
     }
 
     fun applyViewportTo(targetScene: Scene) {
@@ -65,5 +110,14 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
                 targetScene.mainRenderPass.viewport.set(x, y, w, h)
             }
         }
+    }
+
+    class Label(text: String = "", x: Dp = Dp.ZERO, y: Dp = Dp.ZERO, isVisible: Boolean = true) {
+        val text = mutableStateOf(text)
+        val x = mutableStateOf(x)
+        val y = mutableStateOf(y)
+        val isVisible = mutableStateOf(isVisible)
+
+        val offsetX = mutableStateOf(Dp.ZERO)
     }
 }

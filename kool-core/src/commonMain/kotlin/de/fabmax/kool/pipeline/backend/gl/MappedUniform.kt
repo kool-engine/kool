@@ -132,7 +132,10 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
     protected val gl = backend.gl
 
     private fun checkLoadingState(texture: Texture, texUnit: Int): Boolean {
-        texture.checkIsNotReleased()
+        if (texture.isReleased) {
+            logE { "Texture is already released: ${texture.name}" }
+            return false
+        }
 
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
             when (texture.loader) {

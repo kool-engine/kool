@@ -3,9 +3,11 @@ package de.fabmax.kool.editor.api
 @Target(AnnotationTarget.PROPERTY)
 annotation class EditorInfo(
     val label: String = "",
-    val order: Int = 0,
-    val hideInEditor: Boolean = false,
+    val order: Int = 0
 )
+
+@Target(AnnotationTarget.PROPERTY)
+annotation class EditorHidden
 
 @Target(AnnotationTarget.PROPERTY)
 annotation class EditorRange(

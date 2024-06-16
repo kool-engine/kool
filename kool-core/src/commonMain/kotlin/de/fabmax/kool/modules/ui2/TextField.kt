@@ -34,6 +34,8 @@ open class TextFieldModifier(surface: UiSurface) : UiModifier(surface) {
     var cursorColor: Color by property { it.colors.onBackground }
     var lineColor: Color? by property { it.colors.primaryVariant }
     var lineFocusedColor: Color? by property { it.colors.primary }
+    var selectionStart: Int by property { -1 }
+    var selectionEnd: Int by property { -1 }
 
     var onChange: ((String) -> Unit)? by property(null)
     var onEnterPressed: ((String) -> Unit)? by property(null)
@@ -48,6 +50,12 @@ fun <T: TextFieldModifier> T.maxLength(len: Int): T { maxLength = len; return th
 fun <T: TextFieldModifier> T.textAlignX(alignment: AlignmentX): T { textAlignX = alignment; return this }
 fun <T: TextFieldModifier> T.onChange(block: ((String) -> Unit)?): T { this.onChange = block; return this }
 fun <T: TextFieldModifier> T.onEnterPressed(block: ((String) -> Unit)?): T { this.onEnterPressed = block; return this }
+
+fun <T: TextFieldModifier> T.selectionRange(start: Int, end: Int): T {
+    this.selectionStart = start
+    this.selectionEnd = end
+    return this
+}
 
 fun <T: TextFieldModifier> T.colors(
     textColor: Color = this.textColor,
@@ -124,6 +132,10 @@ open class TextFieldNode(parent: UiNode?, surface: UiSurface)
 
         editText.text = modifier.text
         editText.maxLength = modifier.maxLength
+        if (modifier.selectionStart >= 0 && modifier.selectionEnd >= 0) {
+            editText.selectionStart = modifier.selectionStart
+            editText.caretPosition = modifier.selectionEnd
+        }
 
         val isFocused = isFocused.use()
         val isHint = modifier.text.isEmpty()

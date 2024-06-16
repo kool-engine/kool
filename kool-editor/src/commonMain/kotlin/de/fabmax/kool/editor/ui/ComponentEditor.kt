@@ -14,6 +14,7 @@ import de.fabmax.kool.util.MdColor
 
 abstract class ComponentEditor<T: GameEntityComponent> : Composable {
     var components: List<T> = emptyList()
+    var entityEditor: GameEntityEditor? = null
     val component: T get() = components[0]
 
     val entityId: EntityId get() = component.gameEntity.id
@@ -23,6 +24,39 @@ abstract class ComponentEditor<T: GameEntityComponent> : Composable {
     protected fun removeComponent() {
         components.map { RemoveComponentAction(it.gameEntity.id, it) }.fused().apply()
     }
+
+    protected fun getPanelState(default: Boolean = true): Boolean {
+        return entityEditor?.let { editor ->
+            editor.panelCollapseStates
+                .getOrElse(entityId) { emptyMap() }
+                .getOrElse(component.componentType) { default }
+        } ?: default
+    }
+
+    protected fun setPanelState(state: Boolean) {
+        entityEditor?.let { editor ->
+            editor.panelCollapseStates.getOrPut(entityId) { mutableMapOf() }[component.componentType] = state
+        }
+    }
+
+    fun UiScope.componentPanel(
+        title: String,
+        imageIcon: IconProvider? = null,
+        onRemove: (() -> Unit)? = null,
+        titleWidth: Dimension = Grow.Std,
+        headerContent: (RowScope.() -> Unit)? = null,
+        startExpanded: Boolean = getPanelState(true),
+        block: ColumnScope.() -> Any?
+    ) = entityEditorPanel(
+        title = title,
+        imageIcon = imageIcon,
+        onRemove = onRemove,
+        titleWidth = titleWidth,
+        headerContent = headerContent,
+        startExpanded = startExpanded,
+        onCollapseChanged = { setPanelState(it) },
+        block = block,
+    )
 
     protected fun condenseDouble(doubles: List<Double>, eps: Double = FUZZY_EQ_D): Double {
         return if (doubles.all { isFuzzyEqual(it, doubles[0], eps) }) doubles[0] else Double.NaN
@@ -267,19 +301,48 @@ abstract class ComponentEditor<T: GameEntityComponent> : Composable {
             }
         }
     }
+
+    protected fun <D> UiScope.stringPropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> String,
+        valueSetter: (oldData: D, newValue: String) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        labelWidth: Dimension = sizes.editorLabelWidthSmall,
+    ) {
+        val texts = components.map { valueGetter(dataGetter(it)) }
+        val text = if (texts.all { it == texts[0] }) texts[0] else ""
+        labeledTextField(label, text, labelWidth = labelWidth) { newText ->
+            val actions = components
+                .filter { valueGetter(dataGetter(it)) != newText }
+                .map {
+                    val oldData = dataGetter(it)
+                    val newData = valueSetter(oldData, newText)
+                    actionMapper(it, oldData, newData)
+                }
+            if (actions.isNotEmpty()) {
+                FusedAction(actions).apply()
+            }
+        }
+    }
 }
 
-fun UiScope.componentPanel(
+fun UiScope.entityEditorPanel(
     title: String,
     imageIcon: IconProvider? = null,
     onRemove: (() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
     headerContent: (RowScope.() -> Unit)? = null,
+    startExpanded: Boolean = true,
+    onCollapseChanged: ((Boolean) -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = collapsapsablePanel(
     title,
     imageIcon,
     titleWidth = titleWidth,
+    startExpanded = startExpanded,
+    onCollapseChanged = onCollapseChanged,
     headerContent = {
         headerContent?.invoke(this)
         onRemove?.let { remove ->

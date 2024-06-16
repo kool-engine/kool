@@ -109,11 +109,31 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     }
 
     suspend fun applyComponents() {
+        val failedEntities = mutableListOf<GameEntity>()
+        var succeededEntities = 0
+
         suspend fun GameEntity.applyComponentsRecursive() {
-            applyComponents()
+            if (isCreated) {
+                applyComponents()
+                if (isPrepared) {
+                    succeededEntities++
+                } else {
+                    failedEntities += this
+                }
+            }
             children.forEach { it.applyComponentsRecursive() }
         }
-        sceneEntity.applyComponentsRecursive()
+
+        do {
+            failedEntities.clear()
+            succeededEntities = 0
+            sceneEntity.applyComponentsRecursive()
+            if (failedEntities.size > 0 && succeededEntities == 0) {
+                logE { "Failed to initialize entities: ${failedEntities.joinToString { it.name }}" }
+                break
+            }
+        } while (failedEntities.size > 0)
+
         lifecycle = EntityLifecycle.PREPARED
     }
 
@@ -177,7 +197,10 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
         if (isPreparedOrRunning) {
             gameEntity.applyComponents()
-            if (isRunning) {
+            if (!gameEntity.isPrepared) {
+                logE { "Failed to apply components of newly added GameEntity ${gameEntity.name}" }
+            }
+            if (isRunning && gameEntity.isPrepared) {
                 gameEntity.onStart()
             }
         }

@@ -2,11 +2,10 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.api.GameEntity
 
+fun SetVisibilityAction(gameEntity: GameEntity, visible: Boolean) = SetVisibilityAction(listOf(gameEntity), visible)
+
 class SetVisibilityAction(entities: List<GameEntity>, val visible: Boolean) : GameEntityAction(entities) {
-
     private val undoVisibilities = entities.associate { it.id to it.isVisible }
-
-    constructor(gameEntity: GameEntity, visible: Boolean): this(listOf(gameEntity), visible)
 
     override fun doAction() {
         gameEntities.forEach { it.isVisible = visible }

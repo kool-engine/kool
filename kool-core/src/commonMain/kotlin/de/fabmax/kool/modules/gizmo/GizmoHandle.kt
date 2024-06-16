@@ -7,6 +7,7 @@ import de.fabmax.kool.scene.Node
 interface GizmoHandle {
 
     val drawNode: Node
+    var isHidden: Boolean
 
     val gizmoOperation: GizmoOperation
 
@@ -16,6 +17,11 @@ interface GizmoHandle {
     fun onDragStart(dragCtx: DragContext) = gizmoOperation.onDragStart(dragCtx)
     fun onDrag(dragCtx: DragContext) = gizmoOperation.onDrag(dragCtx)
     fun onDragEnd(dragCtx: DragContext) = gizmoOperation.onDragEnd(dragCtx)
+
+    fun moveVirtualPointer(pos: MutableVec2d, ptr: Pointer, speedMod: Double) {
+        pos.x += ptr.deltaX * speedMod
+        pos.y += ptr.deltaY * speedMod
+    }
 
     enum class Axis(val axis: Vec3d, val orientation: QuatD) {
         POS_X(Vec3d.X_AXIS, QuatD.rotation(90.0.deg, Vec3d.X_AXIS)),

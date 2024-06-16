@@ -15,7 +15,8 @@ import kotlin.math.sin
 class CenterCircleHandle(
     val color: Color,
     override val gizmoOperation: GizmoOperation = CamPlaneTranslation(),
-    val hitTestMode: HitTestMode = HitTestMode.SOLID,
+    val drawMode: CircleMode = CircleMode.LINE,
+    val hitTestMode: CircleMode = CircleMode.SOLID,
     val coveredColor: Color = color.withAlpha(0.7f),
     val colorIdle: Color = color.mulRgb(0.8f),
     val coveredColorIdle: Color = colorIdle.withAlpha(0.7f),
@@ -26,6 +27,11 @@ class CenterCircleHandle(
 
     override val drawNode: Node
         get() = this
+    override var isHidden: Boolean = false
+        set(value) {
+            field = value
+            drawNode.isVisible = !value
+        }
 
     private val hitMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-hitMesh")
     private val mesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-mesh")
@@ -52,11 +58,11 @@ class CenterCircleHandle(
     init {
         transform = handleTransform
 
-        mesh.setupGeometry(radius, innerRadius)
+        mesh.setupGeometry(radius, innerRadius, drawMode)
         mesh.setupShader(DepthCompareOp.LESS)
-        coveredMesh.setupGeometry(radius, innerRadius)
+        coveredMesh.setupGeometry(radius, innerRadius, drawMode)
         coveredMesh.setupShader(DepthCompareOp.ALWAYS)
-        hitMesh.setupHitGeometry(radius, innerRadius)
+        hitMesh.setupGeometry(radius, innerRadius, hitTestMode)
         setColors(colorIdle, coveredColorIdle)
 
         mesh.isPickable = false
@@ -90,25 +96,15 @@ class CenterCircleHandle(
         (coveredMesh.shader as KslUnlitShader).color = coveredColor
     }
 
-    private fun Mesh.setupGeometry(radius: Float, innerRadius: Float) {
+    private fun Mesh.setupGeometry(radius: Float, innerRadius: Float, mode: CircleMode) {
         isCastingShadow = false
         generate {
-            ring(radius - lineWidth, radius + lineWidth)
-            if (innerRadius > 0f) {
-                ring(innerRadius - lineWidth, innerRadius + lineWidth)
-            }
-        }
-    }
-
-    private fun Mesh.setupHitGeometry(radius: Float, innerRadius: Float) {
-        isCastingShadow = false
-        generate {
-            when (hitTestMode) {
-                HitTestMode.SOLID -> ring(innerRadius, radius)
-                HitTestMode.LINE -> {
-                    ring(radius - 0.07f, radius + 0.07f)
+            when (mode) {
+                CircleMode.SOLID -> ring(innerRadius, radius)
+                CircleMode.LINE -> {
+                    ring(radius - lineWidth, radius + lineWidth)
                     if (innerRadius > 0f) {
-                        ring(innerRadius - 0.07f, innerRadius + 0.07f)
+                        ring(innerRadius - lineWidth, innerRadius + lineWidth)
                     }
                 }
             }
@@ -161,7 +157,7 @@ class CenterCircleHandle(
         }
     }
 
-    enum class HitTestMode {
+    enum class CircleMode {
         SOLID,
         LINE,
     }

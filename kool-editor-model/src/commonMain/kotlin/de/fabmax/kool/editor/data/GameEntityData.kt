@@ -9,7 +9,8 @@ data class GameEntityData(
     var name: String,
     var parentId: EntityId?,
     var order: Int = 0,
-    var isVisible: Boolean = true
+    var isVisible: Boolean = true,
+    var drawGroupId: Int = 0
 ) {
     val components: MutableList<ComponentInfo<*>> = mutableListOf()
 }

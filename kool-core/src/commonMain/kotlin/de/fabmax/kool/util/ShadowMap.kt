@@ -3,12 +3,8 @@ package de.fabmax.kool.util
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
-import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.DepthMapPass
-import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
-import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.scene.*
 import kotlin.math.abs
 import kotlin.math.min
@@ -22,7 +18,7 @@ sealed interface ShadowMap {
 }
 
 class SimpleShadowMap(
-    val sceneCam: Camera,
+    var sceneCam: Camera,
     drawNode: Node,
     override var light: Light?,
     mapSize: Int = 2048,

@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.set
 import de.fabmax.kool.util.logW
 
 abstract class PhysicsComponent<T: ComponentData>(
@@ -22,30 +23,29 @@ abstract class PhysicsComponent<T: ComponentData>(
     val physicsWorld: PhysicsWorld?
         get() = physicsWorldComponent?.physicsWorld
 
-    abstract val actorTransform: TrsTransformF?
+    abstract val globalActorTransform: TrsTransformF?
+    val localActorTransform = TrsTransformF()
 
-    private var needsTransformUpdate = true
     private val tmpMat4 = MutableMat4d()
     protected val scale = MutableVec3d(Vec3d.ONES)
+
+    override suspend fun applyComponent() {
+        super.applyComponent()
+        localActorTransform.set(gameEntity.transform.transform)
+        gameEntity.transform.transform = localActorTransform
+    }
 
     override fun onStart() {
         super.onStart()
         setPhysicsTransformFromDrawNode()
-
-        if (gameEntity.parent == sceneEntity) {
-            needsTransformUpdate = false
-            actorTransform?.let { gameEntity.transform.transform = it }
-        }
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
-        if (needsTransformUpdate) {
-            actorTransform?.let {
-                gameEntity.parent!!.drawNode.invModelMatD.mul(it.matrixD, tmpMat4)
-                tmpMat4.scale(scale)
-                gameEntity.drawNode.transform.setMatrix(tmpMat4)
-            }
-        }
+        val globalTrs = globalActorTransform ?: return
+
+        gameEntity.parent!!.drawNode.invModelMatD.mul(globalTrs.matrixD, tmpMat4)
+        tmpMat4.scale(scale)
+        localActorTransform.setMatrix(tmpMat4)
     }
 
     suspend fun getOrCreatePhysicsWorldComponent(): PhysicsWorldComponent {
