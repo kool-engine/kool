@@ -36,6 +36,16 @@ class ShadowMapComponent(
         updateShadowMap(data)
     }
 
+    override fun onStart() {
+        super.onStart()
+        val sceneCam = sceneComponent.drawNode.camera
+        when (val shadow = shadowMap) {
+            is CascadedShadowMap -> shadow.subMaps.forEach { it.sceneCam = sceneCam }
+            is SimpleShadowMap -> shadow.sceneCam = sceneCam
+            else -> { }
+        }
+    }
+
     override fun destroyComponent() {
         disposeShadowMap(null)
         super.destroyComponent()

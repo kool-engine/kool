@@ -57,7 +57,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         val trs = TrsTransformF()
         transform = trs
         onUpdate {
-            isVisible = PointerInput.cursorMode == CursorMode.LOCKED
+            isVisible = PointerInput.cursorMode == CursorMode.LOCKED && AppState.isEditMode
             if (isVisible) {
                 val w = it.viewport.width.toFloat()
                 val h = it.viewport.height.toFloat()
