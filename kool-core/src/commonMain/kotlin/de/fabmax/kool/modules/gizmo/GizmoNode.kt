@@ -74,6 +74,8 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
     var isManipulating = false
         private set
+    var activeOp: GizmoOperation? = null
+        private set
 
     init {
         transform = nodeTransform
@@ -108,17 +110,19 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         handleGroup.clearChildren()
     }
 
-    fun startManipulation() {
+    fun startManipulation(operation: GizmoOperation?) {
         startTransform.set(gizmoTransform)
         isManipulating = true
-        gizmoListeners.forEach { it.onManipulationStart(startTransform) }
+        activeOp = operation
+        gizmoListeners.updated().forEach { it.onManipulationStart(startTransform) }
     }
 
     fun finishManipulation() {
         check(isManipulating) { "finishManipulation is only allowed after calling startManipulation()" }
 
         isManipulating = false
-        gizmoListeners.forEach { it.onManipulationFinished(startTransform, gizmoTransform) }
+        activeOp = null
+        gizmoListeners.updated().forEach { it.onManipulationFinished(startTransform, gizmoTransform) }
     }
 
     fun cancelManipulation() {
@@ -126,7 +130,8 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         gizmoTransform.set(startTransform)
         isManipulating = false
-        gizmoListeners.forEach { it.onManipulationCanceled(startTransform) }
+        activeOp = null
+        gizmoListeners.updated().forEach { it.onManipulationCanceled(startTransform) }
     }
 
     fun manipulateAxisTranslation(axis: GizmoHandle.Axis, distance: Double) {
@@ -227,6 +232,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
                 globalRay = pickRay,
                 localRay = pickRay.transformBy(globalToDragLocal, RayD()),
                 globalToLocal = globalToDragLocal,
+                localToGlobal = modelMatD,
                 camera = scene.camera
             )
 

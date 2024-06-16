@@ -8,12 +8,14 @@ class AxisRotation(val axis: GizmoHandle.Axis) : GizmoOperationBase() {
     private val dragStart = MutableVec3d()
 
     override fun onDragStart(dragCtx: DragContext) {
+        super.onDragStart(dragCtx)
         if (dragPlane.intersection(dragCtx.localRay, dragStart)) {
-            dragCtx.startManipulation()
+            dragCtx.startManipulation(this)
         }
     }
 
     override fun onDrag(dragCtx: DragContext) {
+        super.onDrag(dragCtx)
         val point = MutableVec3d()
         if (dragPlane.intersection(dragCtx.localRay, point)) {
             val a0 = angle(dragStart)
@@ -38,13 +40,15 @@ class CamPlaneRotation : GizmoOperationBase() {
     private val dragStart = MutableVec3d()
 
     override fun onDragStart(dragCtx: DragContext) {
+        super.onDragStart(dragCtx)
         dragCtx.globalToLocal.transform(dragCtx.camera.dataD.globalLookDir, 0.0, dragPlane.n)
         dragPlane.n.norm()
         dragPlane.intersection(dragCtx.localRay, dragStart)
-        dragCtx.startManipulation()
+        dragCtx.startManipulation(this)
     }
 
     override fun onDrag(dragCtx: DragContext) {
+        super.onDrag(dragCtx)
         val point = MutableVec3d()
         if (dragPlane.intersection(dragCtx.localRay, point)) {
             val a0 = angle(dragStart, dragCtx)
@@ -64,14 +68,14 @@ class CamPlaneRotation : GizmoOperationBase() {
 
 class FreeRotation : GizmoOperationBase() {
     private val rotation = MutableQuatD()
-    private val startPointerPos = MutableVec2d()
 
     override fun onDragStart(dragCtx: DragContext) {
-        startPointerPos.set(dragCtx.virtualPointerPos)
-        dragCtx.startManipulation()
+        super.onDragStart(dragCtx)
+        dragCtx.startManipulation(this)
     }
 
     override fun onDrag(dragCtx: DragContext) {
+        super.onDrag(dragCtx)
         val dx = dragCtx.virtualPointerPos.x - startPointerPos.x
         val dy = dragCtx.virtualPointerPos.y - startPointerPos.y
 

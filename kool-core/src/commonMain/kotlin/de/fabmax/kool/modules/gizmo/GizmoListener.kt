@@ -4,7 +4,7 @@ import de.fabmax.kool.scene.TrsTransformD
 
 interface GizmoListener {
 
-    fun onGizmoUpdate(transform: TrsTransformD)
+    fun onGizmoUpdate(transform: TrsTransformD) { }
 
     fun onManipulationStart(startTransform: TrsTransformD) { }
 

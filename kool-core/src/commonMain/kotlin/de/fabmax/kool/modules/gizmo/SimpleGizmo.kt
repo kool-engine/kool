@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
-class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
+class SimpleGizmo(name: String = "simple-gizmo", addOverlays: Boolean = true) : Node(name), GizmoListener {
 
     val gizmoNode = GizmoNode()
     val dragSpeedModifier by gizmoNode::dragSpeedModifier
@@ -58,6 +58,9 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
             updateGizmoFromClient()
         }
 
+    val translationOverlay = TranslationOverlay(gizmoNode)
+    val scaleOverlay = ScaleOverlay(gizmoNode)
+
     init {
         addNode(gizmoNode)
         gizmoNode.gizmoListeners += this
@@ -65,6 +68,13 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
 
         inputHandler.pointerListeners += gizmoNode
         InputStack.pushTop(inputHandler)
+
+        if (addOverlays) {
+            addNode(translationOverlay)
+            addNode(scaleOverlay)
+            gizmoNode.gizmoListeners += translationOverlay
+            gizmoNode.gizmoListeners += scaleOverlay
+        }
     }
 
     override fun release() {
@@ -194,7 +204,7 @@ class SimpleGizmo(name: String = "simple-gizmo") : Node(name), GizmoListener {
         }
         val client = transformNode ?: return
 
-        gizmoNode.startManipulation()
+        gizmoNode.startManipulation(null)
 
         val transform = gizmoNode.gizmoTransform
         transform.translation.set(translation)

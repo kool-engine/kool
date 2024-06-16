@@ -60,6 +60,11 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val loadedApp = mutableStateOf<LoadedApp?>(null)
     val activeScene = mutableStateOf<EditorScene?>(null)
 
+    val editorOverlay = scene("editor-overlay") {
+        clearColor = null
+        clearDepth = false
+        tryEnableInfiniteDepth()
+    }
     val editorInputContext = EditorKeyListener("Edit mode")
     val editMode = EditorEditMode(this)
 
@@ -70,14 +75,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         clearDepth = false
     }
 
-    val editorOverlay = scene("editor-overlay") {
-        clearColor = null
-        clearDepth = false
-        tryEnableInfiniteDepth()
-    }
     val gridOverlay = GridOverlay()
     val sceneObjectsOverlay = SceneObjectsOverlay()
-    val gizmoOverlay = TransformGizmoOverlay()
+    val gizmoOverlay = TransformGizmoOverlay(this)
     val selectionOverlay = SelectionOverlay(this)
 
     val editorContent = Node("Editor Content").apply {

@@ -13,9 +13,26 @@ interface GizmoOperation {
 }
 
 abstract class GizmoOperationBase : GizmoOperation {
+    var isDrag = false
+        protected set
+
+    val startPointerPos = MutableVec2d()
+    val dragPointerPos = MutableVec2d()
+    val projectedPointerPos = MutableVec3d()
+
+    override fun onDragStart(dragCtx: DragContext) {
+        isDrag = true
+        startPointerPos.set(dragCtx.virtualPointerPos)
+        dragPointerPos.set(dragCtx.virtualPointerPos)
+    }
+
+    override fun onDrag(dragCtx: DragContext) {
+        dragPointerPos.set(dragCtx.virtualPointerPos)
+    }
 
     override fun onDragEnd(dragCtx: DragContext) {
         dragCtx.finishManipulation()
+        isDrag = false
     }
 
     protected fun RayD.signedDistance(pointerRay: RayD): Double? {
@@ -59,6 +76,7 @@ data class DragContext(
     val globalRay: RayD,
     val localRay: RayD,
     val globalToLocal: Mat4d,
+    val localToGlobal: Mat4d,
     val camera: Camera
 ) {
     val isManipulating: Boolean get() = gizmo.isManipulating
@@ -69,10 +87,11 @@ data class DragContext(
 
     val overwriteValue: Double? get() = gizmo.overwriteManipulatorValue.value
 
-    fun startManipulation() {
-        if (!isManipulating) {
-            gizmo.startManipulation()
+    fun startManipulation(operation: GizmoOperation?) {
+        if (isManipulating) {
+            cancelManipulation()
         }
+        gizmo.startManipulation(operation)
     }
 
     fun finishManipulation() {
