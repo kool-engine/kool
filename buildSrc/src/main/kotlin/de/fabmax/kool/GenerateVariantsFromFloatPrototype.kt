@@ -1,4 +1,6 @@
-import GenerateVariantsFromFloatPrototype.PatternTransformer
+package de.fabmax.kool
+
+import de.fabmax.kool.GenerateVariantsFromFloatPrototype.PatternTransformer
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -6,7 +8,6 @@ import java.io.File
 import kotlin.math.roundToInt
 
 open class GenerateVariantsFromFloatPrototype : DefaultTask() {
-
     @Input
     var filesToUpdate = listOf<String>()
 

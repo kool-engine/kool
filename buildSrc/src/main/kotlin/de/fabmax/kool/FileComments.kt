@@ -1,3 +1,5 @@
+package de.fabmax.kool
+
 import java.io.File
 
 fun File.comment(block: FileCommentScope.() -> Unit) {
@@ -12,7 +14,6 @@ fun File.comment(block: FileCommentScope.() -> Unit) {
 
 
 class FileCommentScope(val text: String) {
-
     private val lines: MutableList<String> = text.lines().toMutableList()
     private val lineSep = if ("\r\n" in text) "\r\n" else "\n"
 

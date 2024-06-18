@@ -1,10 +1,9 @@
+import de.fabmax.kool.comment
+
 plugins {
-    alias(libs.plugins.androidApplication) apply false
-    alias(libs.plugins.androidLibrary) apply false
-    alias(libs.plugins.kotlinMultiplatform) apply false
-    alias(libs.plugins.kotlinSerialization) apply false
-    alias(libs.plugins.kotlinAtomicFu) apply false
-    alias(libs.plugins.kotlinDokka) apply false
+    id("kool.androidlib-conventions") apply false
+    id("kool.lib-conventions") apply false
+    id("kool.publish-conventions") apply false
 }
 
 allprojects {
@@ -21,10 +20,14 @@ task("disableAndroidPlatform") {
     group = "build config"
     doFirst {
         listOf("kool-core", "kool-editor-model").forEach { subProj ->
-            File(projectDir, "${subProj}/build.gradle.kts").comment {
+            project.file("${subProj}/build.gradle.kts").comment {
                 commentLines("alias(libs.plugins.androidLibrary)")
                 commentBlocks("android")
             }
+        }
+        rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts").comment {
+            commentLines("id(\"com.android.library\")")
+            commentBlocks("android")
         }
     }
 }
@@ -33,10 +36,14 @@ task("enableAndroidPlatform") {
     group = "build config"
     doFirst {
         listOf("kool-core", "kool-editor-model").forEach { subProj ->
-            File(projectDir, "$subProj/build.gradle.kts").comment {
+            project.file("$subProj/build.gradle.kts").comment {
                 uncommentLines("alias(libs.plugins.androidLibrary)")
                 uncommentBlocks("android")
             }
+        }
+        rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts").comment {
+            uncommentLines("id(\"com.android.library\")")
+            uncommentBlocks("android")
         }
     }
 }

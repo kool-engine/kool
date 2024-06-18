@@ -1,3 +1,6 @@
+package de.fabmax.kool
+
+import LocalProperties
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -19,7 +22,7 @@ open class VersionNameUpdate : DefaultTask() {
             val text = file.readText()
             val lineSep = if ("\r\n" in text) "\r\n" else "\n"
 
-            if (KoolBuildSettings.isRelease) {
+            if (LocalProperties.get(project).isRelease) {
                 var updated = false
                 val lines = text.lines().toMutableList()
                 for (i in lines.indices) {

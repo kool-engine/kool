@@ -1,7 +1,5 @@
 [versions]
 agp = "8.2.0"
-android-compileSdk = "34"
-android-minSdk = "28"
 kotlin = "2.0.0"
 kotlin-coroutines = "1.8.0"
 kotlin-serialization = "1.6.3"
@@ -37,10 +35,12 @@ lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
 physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
 
-[plugins]
-androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
-kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinAtomicFu = { id = "org.jetbrains.kotlin.plugin.atomicfu", version.ref = "kotlin" }
-kotlinDokka = { id = "org.jetbrains.dokka", version.ref = "kotlin-dokka" }
+# used gradle plugins: usually these would be under [plugins], but instead they are regular dependencies of buidlSrc
+plugindep-kotlin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+plugindep-kotlin-serialization = { group = "org.jetbrains.kotlin", name = "kotlin-serialization", version.ref = "kotlin" }
+plugindep-kotlin-atomicfu = { group = "org.jetbrains.kotlin", name = "atomicfu", version.ref = "kotlin" }
+plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "kotlin-dokka" }
+plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
+
+[bundles]
+lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb"]
