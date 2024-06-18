@@ -47,7 +47,7 @@ class MaterialComponent(
 
     override fun setPersistent(componentData: MaterialComponentData) {
         super.setPersistent(componentData)
-        gameEntity.entityData.name = componentData.name
+        gameEntity.setPersistent(gameEntity.entityData.settings.copy(name = componentData.name))
     }
 
     override fun onDataChanged(oldData: MaterialComponentData, newData: MaterialComponentData) {

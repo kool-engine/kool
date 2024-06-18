@@ -74,13 +74,14 @@ object EditorClipboard {
         val sanitizedIds = entityData.associate { it.id to editor.projectModel.nextId() }
 
         return entityData.map { data ->
+            val uniqueName = uniquifyName(data.settings.name, existingNames)
             data.copy(
-                name = uniquifyName(data.name, existingNames),
                 id = sanitizedIds[data.id]!!,
-                parentId = sanitizedIds[data.parentId]
+                parentId = sanitizedIds[data.parentId],
+                settings = data.settings.copy(name = uniqueName)
             ).also {
                 it.components.addAll(data.components)
-                existingNames.add(it.name)
+                existingNames.add(uniqueName)
             }
         }
     }

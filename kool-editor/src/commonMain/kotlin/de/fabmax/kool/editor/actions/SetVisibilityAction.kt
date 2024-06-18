@@ -8,13 +8,17 @@ class SetVisibilityAction(entities: List<GameEntity>, val visible: Boolean) : Ga
     private val undoVisibilities = entities.associate { it.id to it.isVisible }
 
     override fun doAction() {
-        gameEntities.forEach { it.isVisible = visible }
+        gameEntities.forEach {
+            it.setPersistent(it.settings.copy(isVisible = visible))
+        }
         refreshComponentViews()
     }
 
     override fun undoAction() {
         gameEntities.forEach {
-            undoVisibilities[it.id]?.let { undoState -> it.isVisible = undoState }
+            undoVisibilities[it.id]?.let { undoState ->
+                it.setPersistent(it.settings.copy(isVisible = undoState))
+            }
         }
         refreshComponentViews()
     }

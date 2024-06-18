@@ -15,16 +15,14 @@ class RenameEntityAction(
 
     override fun doAction() {
         gameEntity?.let {
-            it.name = applyName
-            it.entityData.name = applyName
+            it.setPersistent(it.settings.copy(name = applyName))
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }
 
     override fun undoAction() {
         gameEntity?.let {
-            it.name = undoName
-            it.entityData.name = undoName
+            it.setPersistent(it.settings.copy(name = undoName))
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
     }

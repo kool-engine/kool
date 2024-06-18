@@ -7,7 +7,7 @@ class SetDrawGroupAction(
     val applyGroup: Int
 ) : GameEntityAction(entities) {
 
-    private val undoGroups = entities.associate { it.id to it.entityData.drawGroupId }
+    private val undoGroups = entities.associate { it.id to it.entityData.settings.drawGroupId }
 
     override fun doAction() {
         gameEntities.forEach { it.setDrawGroup(applyGroup) }
@@ -18,7 +18,6 @@ class SetDrawGroupAction(
     }
 
     private fun GameEntity.setDrawGroup(group: Int) {
-        entityData.drawGroupId = group
-        drawNode.drawGroupId = group
+        setPersistent(settings.copy(drawGroupId = group))
     }
 }

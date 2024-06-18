@@ -16,6 +16,7 @@ class ProjectReader(private val srcDir: FileSystemDirectory) {
 
     @OptIn(ExperimentalSerializationApi::class)
     private val codec: Json = Json {
+        ignoreUnknownKeys = true
         prettyPrint = true
         prettyPrintIndent = "  "
     }
@@ -128,7 +129,7 @@ class ProjectWriter private constructor(
         }
     }
 
-    private val GameEntityData.dirName: String get() = "${name.fileNameSafe()}_${id.value}"
+    private val GameEntityData.dirName: String get() = "${settings.name.fileNameSafe()}_${id.value}"
     private val GameEntityData.fileName: String get() = "$dirName.json"
 
     companion object {

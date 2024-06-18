@@ -63,7 +63,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewMesh(parent: SceneObjectItem, meshShape: ShapeData) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(meshShape.name)
-        val entityData = GameEntityData(id, name, parent.gameEntity.id)
+        val entityData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
         entityData.components += ComponentInfo(MeshComponentData(meshShape), displayOrder = 1)
         entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)), displayOrder = 2)
         AddSceneNodeAction(listOf(entityData)).apply()
@@ -72,7 +72,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(modelAsset.name)
-        val entityData = GameEntityData(id, name, parent.gameEntity.id)
+        val entityData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
         entityData.components += ComponentInfo(ModelComponentData(modelAsset.path), displayOrder = 1)
         AddSceneNodeAction(listOf(entityData)).apply()
     }
@@ -80,7 +80,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName(lightType.name)
-        val entityData = GameEntityData(id, name, parent.gameEntity.id)
+        val entityData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
         entityData.components += ComponentInfo(DiscreteLightComponentData(lightType), displayOrder = 1)
 
         val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
@@ -95,7 +95,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     private fun addEmptyNode(parent: SceneObjectItem) {
         val id = editor.projectModel.nextId()
         val name = editor.projectModel.uniquifyName("Empty")
-        val nodeData = GameEntityData(id, name, parent.gameEntity.id)
+        val nodeData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
         AddSceneNodeAction(listOf(nodeData)).apply()
     }
 

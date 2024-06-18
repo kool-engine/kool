@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ui2.mutableStateListOf
+import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
 import kotlin.math.max
@@ -15,17 +16,17 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
     val id: EntityId get() = entityData.id
 
+    val settingsState = mutableStateOf(entityData.settings)
+    val settings: GameEntitySettings get() = settingsState.value
     var name: String
-        get() = drawNode.name
-        set(value) { drawNode.name = value }
-
+        get() = settings.name
+        set(value) = settingsState.set(settings.copy(name = value))
     var drawGroupId: Int
-        get() = drawNode.drawGroupId
-        set(value) { drawNode.drawGroupId = value }
-
+        get() = settings.drawGroupId
+        set(value) = settingsState.set(settings.copy(drawGroupId = value))
     var isVisible: Boolean
-        get() = drawNode.isVisible
-        set(value) { drawNode.isVisible = value }
+        get() = settings.isVisible
+        set(value) = settingsState.set(settings.copy(isVisible = value))
 
     val isVisibleInScene: Boolean
         get() = if (!isVisible) false else parent?.isVisibleInScene != false
@@ -71,9 +72,20 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         createComponentsFromData(entityData.components)
         transform = getOrPutComponent { TransformComponent(this).apply { componentInfo.displayOrder = 0 } }
 
-        drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(entityData.name)
+        drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(name)
         drawNode.applyEntityData()
         drawNode.transform = transform.transform
+
+        settingsState.onChange {
+            drawNode.name = it.name
+            drawNode.drawGroupId = it.drawGroupId
+            drawNode.isVisible = it.isVisible
+        }
+    }
+
+    fun setPersistent(settings: GameEntitySettings) {
+        entityData.settings = settings
+        settingsState.set(settings)
     }
 
     private val requireSceneChild: GameEntity
@@ -269,8 +281,9 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     private fun Node.applyEntityData() {
-        isVisible = entityData.isVisible
-        drawGroupId = entityData.drawGroupId
+        name = this@GameEntity.name
+        isVisible = this@GameEntity.isVisible
+        drawGroupId = this@GameEntity.drawGroupId
     }
 
     sealed class InsertionPos {

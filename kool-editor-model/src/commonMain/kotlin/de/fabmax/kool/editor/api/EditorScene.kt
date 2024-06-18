@@ -63,7 +63,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     private fun SceneData.getOrAddSceneEntityData(): GameEntityData {
         var entityData = entities.find { it.id == meta.rootId } ?: entities.find { it.parentId == null }
         if (entityData == null) {
-            entityData = GameEntityData(meta.rootId, sceneData.meta.name, null).also {
+            entityData = GameEntityData(meta.rootId, null, GameEntitySettings(sceneData.meta.name)).also {
                 entities += it
             }
         }
@@ -79,7 +79,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
     private fun addEntityData(data: GameEntityData) {
         if (data.id in project.entityData) {
-            logE { "addEntityData: Duplicate ID ${data.id} of entity ${data.name}" }
+            logE { "addEntityData: Duplicate ID ${data.id} of entity ${data.settings.name}" }
         }
         sceneData.entities += data
         project.entityData[data.id] = data

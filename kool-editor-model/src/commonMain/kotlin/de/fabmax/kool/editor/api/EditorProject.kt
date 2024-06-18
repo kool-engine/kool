@@ -40,14 +40,11 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     }
 
     suspend fun createScenes() {
-        // todo: if (materials.notcreated) materials.create()
-
         if (defaultMaterial == null) {
             defaultMaterial = materialScene.getAllComponents<MaterialComponent>().find {
                 it.name == "<\\Default/>"
             } ?: createNewMaterial().apply {
-                gameEntity.isVisible = false
-                gameEntity.entityData.isVisible = false
+                gameEntity.setPersistent(gameEntity.settings.copy(isVisible = false))
                 materials.remove(this)
                 _materialsById -= id
                 setPersistent(MaterialComponentData("<\\Default/>", PbrShaderData()))
@@ -88,7 +85,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
      * name already ends with a number, the number is replaced.
      */
     fun uniquifyName(name: String): String {
-        val existingNames = entityData.values.map { it.name }.toSet()
+        val existingNames = entityData.values.map { it.settings.name }.toSet()
         if (name !in existingNames) {
             return name
         }
@@ -109,15 +106,15 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
     suspend fun createNewMaterial(): MaterialComponent {
         val id = nextId()
-        val materialData = GameEntityData(id, "Material-${id.value}", materialScene.sceneEntity.id)
-        materialData.components += ComponentInfo(MaterialComponentData(materialData.name, PbrShaderData()))
+        val materialData = GameEntityData(id, materialScene.sceneEntity.id, GameEntitySettings("Material-${id.value}"))
+        materialData.components += ComponentInfo(MaterialComponentData(materialData.settings.name, PbrShaderData()))
         return addMaterial(materialData)
     }
 
     suspend fun addMaterial(materialData: GameEntityData): MaterialComponent {
         if (materialData.components.none { it.data is MaterialComponentData }) {
             logW { "Adding material without material data, creating default" }
-            materialData.components += ComponentInfo(MaterialComponentData(materialData.name, PbrShaderData()))
+            materialData.components += ComponentInfo(MaterialComponentData(materialData.settings.name, PbrShaderData()))
         }
         val material = materialScene.addGameEntity(materialData)
         val materialComponent: MaterialComponent = material.requireComponent()
@@ -151,13 +148,13 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
             val lightId = EntityId(4L)
 
             scenes += SceneData(SceneMeta(sceneId, "New Scene")).apply {
-                entities += GameEntityData(sceneId, meta.name, null).apply {
+                entities += GameEntityData(sceneId, null, GameEntitySettings(meta.name)).apply {
                     components += ComponentInfo(SceneComponentData(cameraEntityId = camId))
                     components += ComponentInfo(SceneBackgroundComponentData(
                         SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
                     ))
                 }
-                entities += GameEntityData(camId, "Camera", sceneId).apply {
+                entities += GameEntityData(camId, sceneId, GameEntitySettings("Camera")).apply {
                     components += ComponentInfo(CameraComponentData(CameraTypeData.Perspective()))
                     components += ComponentInfo(TransformComponentData(
                         TransformData(
@@ -166,11 +163,11 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                                 .rotate((-30.0).deg, Vec3d.X_AXIS)
                         )))
                 }
-                entities += GameEntityData(boxId, "Default Cube", sceneId).apply {
+                entities += GameEntityData(boxId, sceneId, GameEntitySettings("Default cube")).apply {
                     components += ComponentInfo(MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
                     components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)))
                 }
-                entities += GameEntityData(lightId, "Directional Light", sceneId).apply {
+                entities += GameEntityData(lightId, sceneId, GameEntitySettings("Directional light")).apply {
                     components += ComponentInfo(DiscreteLightComponentData(LightTypeData.Directional()))
                     components += ComponentInfo(TransformComponentData(
                         TransformData(
@@ -203,7 +200,7 @@ fun ProjectData.checkConsistency() {
 
         scene.entities.forEach {
             if (it.parentId != null && it.parentId !in entityMap) {
-                logE { "Entity ${it.name} references non-existing parent" }
+                logE { "Entity ${it.settings.name} references non-existing parent" }
             } else {
                 parentsToChildren.getOrPut(it.parentId) { mutableListOf() } += it.id
             }
@@ -223,7 +220,7 @@ fun ProjectData.checkConsistency() {
 
         roots.forEach { root ->
             if (root.components.none { c -> c.data is SceneComponentData }) {
-                logW { "Root entity ${root.name} has no scene component" }
+                logW { "Root entity ${root.settings.name} has no scene component" }
             }
             referencedEntityIds += root.id
             collectChildNodeIds(root)
@@ -231,7 +228,7 @@ fun ProjectData.checkConsistency() {
 
         val unreferencedIds = entityMap.keys - referencedEntityIds
         if (unreferencedIds.isNotEmpty()) {
-            logE { "Project contains unreferenced entities: ${unreferencedIds.joinToString { "\n  $it: ${entityMap[it]?.name}" }}" }
+            logE { "Project contains unreferenced entities: ${unreferencedIds.joinToString { "\n  $it: ${entityMap[it]?.settings?.name}" }}" }
         }
     }
 }
