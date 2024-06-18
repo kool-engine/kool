@@ -36,7 +36,7 @@ object HttpCache {
                 serCache.items.forEach {
                     val f = File(it.file)
                     if (f.canRead()) {
-                        addCacheEntry(CacheEntry(f, it.size, it.access))
+                        index.addEntry(CacheEntry(f, it.size, it.access))
                     }
                 }
             }
@@ -75,23 +75,40 @@ object HttpCache {
         }
         cacheDir.walk {
             if (it.name != ".cacheIndex") {
-                addCacheEntry(CacheEntry(it))
+                synchronized(index) {
+                    index.addEntry(CacheEntry(it))
+                }
             }
         }
         saveIndex()
     }
 
-    private fun addCacheEntry(entry: CacheEntry) {
-        synchronized(index) {
-            if (entry.file.canRead()) {
-                cacheSize -= index[entry.file]?.size ?: 0
-                cacheSize += entry.size
-                index[entry.file] = entry
-            } else {
-                logW { "Cache entry not readable: ${entry.file}" }
-            }
+    private fun MutableMap<File, CacheEntry>.addEntry(entry: CacheEntry) {
+        if (entry.file.canRead()) {
+            cacheSize -= this[entry.file]?.size ?: 0
+            cacheSize += entry.size
+            this[entry.file] = entry
+        } else {
+            logW { "Cache entry not readable: ${entry.file}" }
         }
         checkCacheSize()
+    }
+
+    private fun MutableMap<File, CacheEntry>.checkCacheSize() {
+        if (cacheSize > MAX_CACHE_SIZE) {
+            val removeQueue = PriorityQueue<CacheEntry>()
+            removeQueue.addAll(values)
+
+            var rmCnt = 0
+            while (!removeQueue.isEmpty() && cacheSize > MAX_CACHE_SIZE * 0.8) {
+                val rmEntry = removeQueue.poll()!!
+                rmEntry.file.delete()
+                logD { "Deleted from cache: ${rmEntry.file}" }
+                remove(rmEntry.file)
+                cacheSize -= rmEntry.size
+                rmCnt++
+            }
+        }
     }
 
     private fun saveIndex() {
@@ -106,27 +123,6 @@ object HttpCache {
             }
         } catch (e: Exception) {
             e.printStackTrace()
-        }
-    }
-
-    private fun checkCacheSize() {
-        if (cacheSize > MAX_CACHE_SIZE) {
-            val removeQueue = PriorityQueue<CacheEntry>()
-            synchronized(index) {
-                removeQueue.addAll(index.values)
-            }
-
-            var rmCnt = 0
-            while (!removeQueue.isEmpty() && cacheSize > MAX_CACHE_SIZE * 0.8) {
-                val rmEntry = removeQueue.poll()!!
-                rmEntry.file.delete()
-                logD { "Deleted from cache: ${rmEntry.file}" }
-                synchronized(index) {
-                    index.remove(rmEntry.file)
-                    cacheSize -= rmEntry.size
-                }
-                rmCnt++
-            }
         }
     }
 
@@ -157,7 +153,9 @@ object HttpCache {
                 }
                 if (con.responseCode == 200) {
                     con.inputStream.copyTo(file)
-                    addCacheEntry(CacheEntry(file))
+                    synchronized(index) {
+                        index.addEntry(CacheEntry(file))
+                    }
                     return file
                 } else {
                     logW { "Unexpected response on downloading $url: ${con.responseCode} - ${con.responseMessage}" }
