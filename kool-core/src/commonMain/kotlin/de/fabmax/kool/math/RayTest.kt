@@ -3,7 +3,7 @@ package de.fabmax.kool.math
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 
-class RayTest {
+class RayTest(isCollectHits: Boolean = false) {
     val ray = RayF()
     var camera: Camera? = null
 
@@ -21,6 +21,8 @@ class RayTest {
     val isHit: Boolean
         get() = hitDistanceSqr < Float.MAX_VALUE
 
+    val hits: MutableList<HitNode>? = if (isCollectHits) mutableListOf() else null
+
     fun clear(maxDistance: Float = Float.MAX_VALUE, camera: Camera? = null) {
         this.maxDistance = maxDistance
         this.camera = camera
@@ -28,6 +30,7 @@ class RayTest {
         hitNormalGlobal.set(Vec3f.ZERO)
         hitNode = null
         hitDistanceSqr = Float.MAX_VALUE
+        hits?.clear()
     }
 
     fun setHit(node: Node, hitDistanceGlobal: Float, hitNormalGlobal: Vec3f? = null) {
@@ -67,5 +70,35 @@ class RayTest {
 
     fun getRayTransformed(matrix: Mat4d): RayF {
         return ray.transformBy(matrix, tmpRay)
+    }
+
+    fun collectHitBoundingSphere(node: Node) {
+        hits?.add(HitNode(node, HitType.BOUNDING_SPHERE))
+    }
+
+    fun collectHitBoundingBox(node: Node) {
+        hits?.add(HitNode(node, HitType.BOUNDING_BOX))
+    }
+
+    fun collectHitGeometry(node: Node) {
+        hits?.add(HitNode(node, HitType.GEOMETRY))
+    }
+
+    fun collectNoHit(node: Node) {
+        hits?.add(HitNode(node, HitType.NO_HIT))
+    }
+
+    data class HitNode(
+        val node: Node,
+        val hitType: HitType
+    ) {
+        override fun toString(): String = "${node.name}: $hitType"
+    }
+
+    enum class HitType {
+        NO_HIT,
+        BOUNDING_SPHERE,
+        BOUNDING_BOX,
+        GEOMETRY
     }
 }

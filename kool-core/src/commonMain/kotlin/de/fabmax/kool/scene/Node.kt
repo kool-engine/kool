@@ -250,6 +250,7 @@ open class Node(name: String? = null) : BaseReleasable() {
      */
     open fun rayTest(test: RayTest) {
         if (test.isIntersectingBoundingSphere(this)) {
+            test.collectHitBoundingSphere(this)
             // bounding sphere hit -> transform ray to local coordinates and do further testing
             val localRay = if (transform.isDoublePrecision) {
                 test.getRayTransformed(invModelMatD)
@@ -259,6 +260,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 
             val dLocal = bounds.hitDistanceSqr(localRay)
             if (dLocal < Float.MAX_VALUE) {
+                test.collectHitBoundingBox(this)
                 val dGlobal = toGlobalCoords(tmpVec.set(localRay.direction).mul(sqrt(dLocal)), 0f).sqrLength()
                 if (dGlobal <= test.hitDistanceSqr) {
                     // local bounding box hit, test node content
@@ -273,6 +275,8 @@ open class Node(name: String? = null) : BaseReleasable() {
                     }
                 }
             }
+        } else {
+            test.collectNoHit(this)
         }
     }
 

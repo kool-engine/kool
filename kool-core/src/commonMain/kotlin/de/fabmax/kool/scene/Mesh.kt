@@ -184,7 +184,9 @@ open class Mesh(
     }
 
     override fun rayTestLocal(test: RayTest, localRay: RayF) {
-        rayTest.rayTest(test, localRay)
+        if (rayTest.rayTest(test, localRay)) {
+            test.collectHitGeometry(this)
+        }
     }
 
     /**
