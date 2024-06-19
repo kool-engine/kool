@@ -18,7 +18,7 @@ class SceneComponent(
 
     val cameraComponent: CameraComponent? get() = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
 
-    private val listeners by cachedSceneComponents<ListenerComponent>()
+    private val camListeners by cachedSceneComponents<CameraAwareComponent>()
 
     init {
         componentOrder = COMPONENT_ORDER_EARLY
@@ -29,8 +29,11 @@ class SceneComponent(
         scene.shaderData.maxNumberOfLights = newData.maxNumLights
 
         if (oldData.cameraEntityId != newData.cameraEntityId) {
-            val newCam: CameraComponent? = gameEntity.scene.sceneEntities[newData.cameraEntityId]?.getComponent()
-            listeners.forEach { it.onSceneCameraChanged(this, newCam) }
+            val newCam = gameEntity.scene.sceneEntities[newData.cameraEntityId]?.getComponent<CameraComponent>()?.drawNode
+            newCam?.let {
+                drawNode.camera = newCam
+                camListeners.forEach { it.updateSceneCamera(newCam) }
+            }
         }
     }
 
@@ -43,9 +46,5 @@ class SceneComponent(
         } else {
             logW { "Scene ${gameEntity.name} has no camera attached" }
         }
-    }
-
-    fun interface ListenerComponent {
-        fun onSceneCameraChanged(component: SceneComponent, newCamComponent: CameraComponent?)
     }
 }

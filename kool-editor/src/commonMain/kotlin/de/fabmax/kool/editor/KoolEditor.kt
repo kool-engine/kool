@@ -5,7 +5,7 @@ import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.*
-import de.fabmax.kool.editor.components.SsaoComponent
+import de.fabmax.kool.editor.components.CameraAwareComponent
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
@@ -13,14 +13,12 @@ import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
 import de.fabmax.kool.modules.filesystem.copyRecursively
 import de.fabmax.kool.modules.filesystem.toZip
 import de.fabmax.kool.modules.filesystem.writeText
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
@@ -144,14 +142,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             InputStack.handlerStack.stageRemove(it)
         }
 
-        // fixme: a bit hacky currently: restore app scene camera
-        //  it was replaced by custom editor cam during editor app load
+        // restore app scene camera: it was replaced by custom editor cam during editor app load
         sceneModel.sceneComponent.cameraComponent?.drawNode?.let { cam ->
             sceneModel.scene.camera = cam
-            (cam as? PerspectiveCamera)?.let {
-                val aoPipeline = sceneModel.sceneEntity.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
-                aoPipeline?.proxyCamera?.trackedCam = it
-            }
+            sceneModel.getAllComponents<CameraAwareComponent>().forEach { it.updateSceneCamera(cam) }
         }
 
         AppState.appModeState.set(AppMode.PLAY)
@@ -244,12 +238,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     private fun registerSceneObjectPicking() {
-        editorInputContext.pointerListeners += object : InputStack.PointerListener {
-            override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {
-                val ptr = pointerState.primaryPointer
-                if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
-                    selectionOverlay.clickSelect(ptr)
-                }
+        editorInputContext.pointerListeners += InputStack.PointerListener { pointerState, _ ->
+            val ptr = pointerState.primaryPointer
+            if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
+                selectionOverlay.clickSelect(ptr)
             }
         }
     }
@@ -300,8 +292,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
 
-                val aoPipeline = editorScene.sceneEntity.getComponent<SsaoComponent>()?.aoPipeline as? AoPipeline.ForwardAoPipeline
-                aoPipeline?.proxyCamera?.trackedCam = editorCam
+                editorScene.getAllComponents<CameraAwareComponent>().forEach { it.updateSceneCamera(editorCam) }
             }
         }
 

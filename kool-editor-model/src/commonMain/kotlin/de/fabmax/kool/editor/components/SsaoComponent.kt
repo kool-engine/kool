@@ -2,16 +2,17 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.cachedSceneComponents
-import de.fabmax.kool.editor.components.SceneBackgroundComponent.ListenerComponent
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SsaoComponentData
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ao.AoPipeline
+import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.PerspectiveCamera
 
 class SsaoComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<SsaoComponentData> = ComponentInfo(SsaoComponentData())
-) : GameEntityDataComponent<SsaoComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<SsaoComponentData>(gameEntity, componentInfo), CameraAwareComponent {
 
     var aoPipeline: AoPipeline? = null
         private set
@@ -45,6 +46,12 @@ class SsaoComponent(
         listeners.forEach { it.onSsaoChanged(this) }
 
         super.destroyComponent()
+    }
+
+    override fun updateSceneCamera(camera: Camera) {
+        val fwdPipeline = aoPipeline as? AoPipeline.ForwardAoPipeline ?: return
+        val perspectiveCam = camera as? PerspectiveCamera ?: return
+        fwdPipeline.proxyCamera.trackedCam = perspectiveCam
     }
 
     private fun applySettings(ssaoSettings: SsaoComponentData) {
