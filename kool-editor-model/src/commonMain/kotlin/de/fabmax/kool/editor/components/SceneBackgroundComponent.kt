@@ -81,6 +81,7 @@ class SceneBackgroundComponent(
 
         skybox.name = "Skybox"
         skybox.isVisible = true
+        skybox.isPickable = false
         skybox.skyboxShader.setSingleSky(ibl.reflectionMap)
         skybox.skyboxShader.lod = hdriBg.skyLod
         if (this.skybox == null) {

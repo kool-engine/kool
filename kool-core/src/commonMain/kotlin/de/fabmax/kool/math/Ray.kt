@@ -50,8 +50,8 @@ class RayF() {
     fun sphereIntersection(center: Vec3f, radius: Float, result: MutableVec3f): Boolean {
         result.set(origin).subtract(center)
         val a = direction dot direction
-        val b = result dot direction * 2f
-        val c = result dot result - radius * radius
+        val b = (result dot direction) * 2f
+        val c = (result dot result) - radius * radius
         val discr = b * b - 4 * a * c
         if (discr < 0f) {
             return false
@@ -148,8 +148,8 @@ class RayD() {
     fun sphereIntersection(center: Vec3d, radius: Double, result: MutableVec3d): Boolean {
         result.set(origin).subtract(center)
         val a = direction dot direction
-        val b = result dot direction * 2.0
-        val c = result dot result - radius * radius
+        val b = (result dot direction) * 2.0
+        val c = (result dot result) - radius * radius
         val discr = b * b - 4 * a * c
         if (discr < 0.0) {
             return false
