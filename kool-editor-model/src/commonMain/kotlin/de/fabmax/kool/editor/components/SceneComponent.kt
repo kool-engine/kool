@@ -14,7 +14,10 @@ class SceneComponent(
     GameEntityDataComponent<SceneComponentData>(gameEntity, componentInfo),
     DrawNodeComponent
 {
-    override val drawNode: Scene = Scene(gameEntity.name).apply { tryEnableInfiniteDepth() }
+    override val drawNode: Scene = Scene(gameEntity.name).apply {
+        tryEnableInfiniteDepth()
+        lighting.clear()
+    }
 
     val cameraComponent: CameraComponent? get() = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
 
