@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 
 class SsaoEditor : ComponentEditor<SsaoComponent>() {
 
-    override fun UiScope.compose() = componentPanel("Screen-Space Ambient Occlusion", IconMap.small.shadowInner, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel("Screen-Space Ambient Occlusion", IconMap.small.shadowedSphere, ::removeComponent) {
         val ssao = component.dataState.use()
 
         labeledDoubleTextField(

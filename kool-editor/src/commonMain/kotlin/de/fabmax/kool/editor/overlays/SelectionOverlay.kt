@@ -6,9 +6,7 @@ import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.ui.UiColors
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.Pointer
-import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -27,6 +25,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
     var selection: Set<GameEntity> = emptySet()
         private set
+    var lastPickPosition: Vec3f? = null
     val selectionState = mutableStateOf(selection)
     val onSelectionChanged = mutableListOf<(Set<GameEntity>) -> Unit>()
 
@@ -86,16 +85,23 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     fun clickSelect(ptr: Pointer) {
         val sceneModel = editor.activeScene.value ?: return
         val appScene = sceneModel.scene
-
         val rayTest = RayTest()
+
+        lastPickPosition = null
+
         if (appScene.computePickRay(ptr, rayTest.ray)) {
             rayTest.clear()
             var selectedNodeModel: GameEntity? = editor.sceneObjectsOverlay.pick(rayTest)
-            val distOv = if (rayTest.isHit) rayTest.hitDistanceSqr else Float.POSITIVE_INFINITY
+            var hitDist = Float.POSITIVE_INFINITY
+            if (rayTest.isHit) {
+                hitDist = rayTest.hitDistanceSqr
+                lastPickPosition = Vec3f(rayTest.hitPositionGlobal)
+            }
 
             rayTest.clear()
             appScene.rayTest(rayTest)
-            if (rayTest.isHit && rayTest.hitDistanceSqr < distOv) {
+            if (rayTest.isHit && rayTest.hitDistanceSqr < hitDist) {
+                lastPickPosition = Vec3f(rayTest.hitPositionGlobal)
                 var hitModel: GameEntity? = null
                 var it = rayTest.hitNode
                 while (it != null) {
@@ -106,6 +112,13 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
                     it = it.parent
                 }
                 selectedNodeModel = hitModel ?: selectedNodeModel
+            }
+
+            if (lastPickPosition == null) {
+                val camPlane = PlaneF(appScene.camera.globalLookAt, appScene.camera.globalLookDir)
+                val pickPos = MutableVec3f()
+                camPlane.intersectionPoint(rayTest.ray, pickPos)
+                lastPickPosition = pickPos
             }
 
             selectSingle(selectedNodeModel)

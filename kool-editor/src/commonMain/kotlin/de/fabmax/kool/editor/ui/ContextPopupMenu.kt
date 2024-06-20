@@ -3,13 +3,13 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 
-class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = true) :
+class ContextPopupMenu<T: Any?>(scopeName: String, hideOnOutsideClick: Boolean = true) :
     AutoPopup(hideOnOutsideClick = hideOnOutsideClick, scopeName = scopeName)
 {
 
     private val menu = mutableStateOf<SubMenuItem<T>?>(null)
 
-    private var contextItem = mutableStateOf<T?>(null)
+    private var contextItem = mutableStateOf<ContextItemHolder<T>?>(null)
 
     init {
         popupContent = Composable {
@@ -20,7 +20,7 @@ class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = 
                     .layout(CellLayout)
                     .backgroundColor(null)
 
-                menuList(rootMenu.menuItems.use(), item, Dp.ZERO, Dp.ZERO, modifier.zLayer)
+                menuList(rootMenu.menuItems.use(), item.item, Dp.ZERO, Dp.ZERO, modifier.zLayer)
             }
         }
     }
@@ -28,7 +28,7 @@ class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = 
     fun show(screenPosPx: Vec2f, menu: SubMenuItem<T>, contextItem: T) {
         super.show(screenPosPx)
         this.menu.set(menu)
-        this.contextItem.set(contextItem)
+        this.contextItem.set(ContextItemHolder(contextItem))
     }
 
     override fun hide() {
@@ -39,6 +39,7 @@ class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = 
     private fun UiScope.menuList(items: List<ContextMenuItem<T>>, contextItem: T, x: Dp, y: Dp, z: Int) {
         var subMenu by remember<SubMenuItem<T>?>(null)
         var subMenuNode by remember<UiNode?>(null)
+        val withIcons = items.any { (it is MenuItem && it.icon != null) || (it is SubMenuItem && it.icon != null) }
 
         menuColumn(x, y, z) {
             items.forEach { item ->
@@ -63,11 +64,12 @@ class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = 
                                 modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
                             }
 
+                            iconBox(withIcons, item.icon)
                             Text(item.label) {
                                 modifier
                                     .width(Grow.MinFit)
                                     .alignY(AlignmentY.Center)
-                                    .margin(start = sizes.gap, end = sizes.largeGap)
+                                    .margin(start = if(withIcons) sizes.smallGap else sizes.gap, end = sizes.gap)
                             }
                         }
                     }
@@ -87,21 +89,27 @@ class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = 
                                 modifier.background(RoundRectBackground(colors.hoverBg, sizes.smallGap))
                             }
 
+                            iconBox(withIcons, item.icon)
                             Text(item.label ?: "Sub menu") {
                                 modifier
                                     .width(Grow.MinFit)
                                     .alignY(AlignmentY.Center)
-                                    .margin(horizontal = sizes.gap)
+                                    .margin(start = if(withIcons) sizes.smallGap else sizes.gap, end = sizes.gap)
                             }
                             Arrow {
                                 modifier
                                     .alignY(AlignmentY.Center)
-                                    .margin(horizontal = sizes.gap)
+                                    .margin(end = sizes.smallGap)
                             }
                         }
                     }
                     is Divider -> {
-                        menuDivider(marginTop = sizes.smallGap * 0.5f, marginBottom = sizes.smallGap * 0.5f)
+                        menuDivider(
+                            marginStart = sizes.gap,
+                            marginEnd = sizes.gap,
+                            marginTop = sizes.smallGap * 0.5f,
+                            marginBottom = sizes.smallGap * 0.5f
+                        )
                     }
                 }
             }
@@ -121,6 +129,22 @@ class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = 
         }
     }
 
+    private fun UiScope.iconBox(withIcons: Boolean, icon: IconProvider?) {
+        if (withIcons) {
+            if (icon != null) {
+                Image {
+                    modifier
+                        .margin(start = sizes.smallGap)
+                        .alignY(AlignmentY.Center)
+                        .iconImage(icon, UiColors.titleText)
+                }
+            } else {
+                val sz = IconMap.small.iconSize
+                Box(sz, sz) { modifier.margin(start = sizes.smallGap) }
+            }
+        }
+    }
+
     private inline fun UiScope.menuColumn(x: Dp, y: Dp, z: Int, block: ColumnScope.() -> Unit) = Column {
         modifier
             .margin(start = x, top = y)
@@ -130,26 +154,29 @@ class ContextPopupMenu<T: Any>(scopeName: String, hideOnOutsideClick: Boolean = 
             .zLayer(z)
         block()
     }
+
+    private class ContextItemHolder<T>(val item: T)
 }
 
-sealed class ContextMenuItem<T: Any>
+sealed class ContextMenuItem<T: Any?>
 
-class Divider<T: Any> : ContextMenuItem<T>()
+class Divider<T: Any?> : ContextMenuItem<T>()
 
-class MenuItem<T: Any>(
+class MenuItem<T: Any?>(
     val label: String,
+    val icon: IconProvider?,
     val action: ((T) -> Unit),
 ) : ContextMenuItem<T>()
 
-class SubMenuItem<T: Any>(val label: String?) : ContextMenuItem<T>() {
+class SubMenuItem<T: Any?>(val label: String?, val icon: IconProvider?) : ContextMenuItem<T>() {
     val menuItems: MutableStateList<ContextMenuItem<T>> = mutableStateListOf()
 
-    fun item(label: String, action: (T) -> Unit) {
-        menuItems += MenuItem(label, action)
+    fun item(label: String, icon: IconProvider? = null, action: (T) -> Unit) {
+        menuItems += MenuItem(label, icon, action)
     }
 
-    fun subMenu(label: String, block: SubMenuItem<T>.() -> Unit) {
-        val subMenu = SubMenuItem<T>(label)
+    fun subMenu(label: String, icon: IconProvider? = null, block: SubMenuItem<T>.() -> Unit) {
+        val subMenu = SubMenuItem<T>(label, icon)
         subMenu.block()
         menuItems += subMenu
     }
@@ -159,8 +186,8 @@ class SubMenuItem<T: Any>(val label: String?) : ContextMenuItem<T>() {
     }
 }
 
-fun <T: Any> SubMenuItem(label: String? = null, block: SubMenuItem<T>.() -> Unit): SubMenuItem<T> {
-    val menu = SubMenuItem<T>(label)
+fun <T: Any?> SubMenuItem(label: String? = null, icon: IconProvider? = null, block: SubMenuItem<T>.() -> Unit): SubMenuItem<T> {
+    val menu = SubMenuItem<T>(label, icon)
     menu.block()
     return menu
 }

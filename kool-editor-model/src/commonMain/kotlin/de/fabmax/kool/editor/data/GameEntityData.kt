@@ -11,6 +11,10 @@ data class GameEntityData(
     var order: Int = 0,
 ) {
     val components: MutableList<ComponentInfo<*>> = mutableListOf()
+
+    init {
+        check(id != parentId) { "Entity can not be its own parent" }
+    }
 }
 
 @Serializable

@@ -1,6 +1,10 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.EditorEditMode
+import de.fabmax.kool.editor.actions.deleteNode
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.input.Pointer
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
@@ -19,9 +23,12 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
     private val boxSelector = BoxSelector()
 
     private val labels = mutableStateListOf<Label>()
+    private val contextMenuPos = mutableStateOf<Vec2f?>(null)
 
     override val windowSurface: UiSurface = editorPanel(false) {
-        modifier.background(null)
+        modifier
+            .background(null)
+            .isBlocking(false)
 
         Column(Grow.Std, Grow.Std) {
             modifier.background(null)
@@ -53,6 +60,15 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
             if (isShowKeyInfo.use()) {
                 keyInfo()
             }
+
+            val itemPopupMenu = remember { ContextPopupMenu<GameEntity?>("scene-popup") }
+            contextMenuPos.use()?.let {
+                surface.isFocused.set(true)
+                val selectedObject = editor.selectionOverlay.selection.firstOrNull()
+                itemPopupMenu.show(it, makeContextMenu(), selectedObject)
+                contextMenuPos.set(null)
+            }
+            itemPopupMenu()
         }
     }
 
@@ -69,6 +85,20 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
 
     fun removeLabel(label: Label) {
         labels -= label
+    }
+
+    fun showSceneContextMenu(pointer: Pointer) {
+        contextMenuPos.set(Vec2f(pointer.x.toFloat(), pointer.y.toFloat()))
+    }
+
+    private fun makeContextMenu() = SubMenuItem {
+        val selection = editor.selectionOverlay.selection
+        menuItems += addSceneObjectMenu("Add object", selection.firstOrNull()?.parent)
+        if (selection.size == 1 && !selection.first().isSceneRoot) {
+            divider()
+            item("Focus object", IconMap.small.circleCrosshair) { editor.focusObject(it) }
+            item("Delete object", IconMap.small.trash) { deleteNode(it) }
+        }
     }
 
     private fun UiScope.drawLabels(labels: List<Label>) {

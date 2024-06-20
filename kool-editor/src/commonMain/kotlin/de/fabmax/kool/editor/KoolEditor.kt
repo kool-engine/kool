@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
-import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
+import de.fabmax.kool.editor.actions.DeleteEntitiesAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.*
@@ -120,7 +120,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         ctx.scenes += ui
 
         registerKeyBindings()
-        registerSceneObjectPicking()
+        registerScenePicking()
         registerAutoSaveOnFocusLoss()
         appLoader.appReloadListeners += AppReloadListener {
             handleAppReload(it)
@@ -182,6 +182,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         ui.sceneView.isShowOverlays.set(isVisible)
     }
 
+    fun focusObject(node: GameEntity?) {
+        node?.let { editorCameraTransform.focusObject(it) }
+    }
+
     fun editBehaviorSource(behavior: AppBehavior) = editBehaviorSource(behavior.qualifiedName)
 
     fun editBehaviorSource(behaviorClassName: String) {
@@ -211,7 +215,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         editorInputContext.addKeyListener(Key.FocusSelected) { editorCameraTransform.focusSelectedObject() }
 
         editorInputContext.addKeyListener(Key.DeleteSelected) {
-            DeleteSceneNodesAction(selectionOverlay.getSelectedSceneNodes()).apply()
+            DeleteEntitiesAction(selectionOverlay.getSelectedSceneNodes()).apply()
         }
         editorInputContext.addKeyListener(Key.HideSelected) {
             val selection = selectionOverlay.getSelectedSceneNodes()
@@ -237,11 +241,18 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         editorInputContext.push()
     }
 
-    private fun registerSceneObjectPicking() {
+    private fun registerScenePicking() {
         editorInputContext.pointerListeners += InputStack.PointerListener { pointerState, _ ->
             val ptr = pointerState.primaryPointer
-            if (ptr.isLeftButtonClicked && !ptr.isConsumed()) {
-                selectionOverlay.clickSelect(ptr)
+            if (!ptr.isConsumed()) {
+                when {
+                    ptr.isLeftButtonClicked -> selectionOverlay.clickSelect(ptr)
+                    ptr.isRightButtonClicked -> {
+                        selectionOverlay.clearSelection()
+                        selectionOverlay.clickSelect(ptr)
+                        ui.sceneView.showSceneContextMenu(ptr)
+                    }
+                }
             }
         }
     }

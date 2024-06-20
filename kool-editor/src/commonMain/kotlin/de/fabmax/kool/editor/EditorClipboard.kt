@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.Clipboard
-import de.fabmax.kool.editor.actions.AddSceneNodeAction
+import de.fabmax.kool.editor.actions.AddEntitiesAction
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.toHierarchy
 import de.fabmax.kool.editor.data.GameEntityData
@@ -56,7 +56,7 @@ object EditorClipboard {
                     val parent = selection.firstOrNull()?.parent ?: scene.sceneEntity
                     sanitized.toHierarchy().forEach { root -> root.entityData.parentId = parent.id }
 
-                    AddSceneNodeAction(sanitized).apply()
+                    AddEntitiesAction(sanitized).apply()
                     launchDelayed(1) {
                         val nodes = sanitized.mapNotNull { scene.sceneEntities[it.id] }
                         editor.selectionOverlay.setSelection(nodes)
