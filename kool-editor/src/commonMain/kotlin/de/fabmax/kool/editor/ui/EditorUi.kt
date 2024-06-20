@@ -136,6 +136,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             borderColor.set(UiColors.titleBg)
             dockingSurface.colors = EDITOR_THEME_COLORS
             dockingPaneComposable = Composable {
+                resizeMargin.set(sizes.scrollbarWidth)
                 Column(Grow.Std, Grow.Std) {
                     modifier.margin(top = sizes.heightWindowTitleBar, bottom = sizes.heightTitleBar)
                     root()
@@ -255,7 +256,7 @@ val Sizes.heightTitleBar: Dp get() = lineHeightLarger
 val Sizes.heightWindowTitleBar: Dp get() = heightTitleBar * 1.1f
 val Sizes.panelBarWidth: Dp get() = baseSize - borderWidth
 val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f
-val Sizes.scrollbarWidth: Dp get() = gap * 0.3f
+val Sizes.scrollbarWidth: Dp get() = gap * 0.33f
 val Sizes.editorLabelWidthSmall: Dp get() = baseSize * 3
 val Sizes.editorLabelWidthMedium: Dp get() = baseSize * 4
 val Sizes.editorLabelWidthLarge: Dp get() = baseSize * 5

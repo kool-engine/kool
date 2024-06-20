@@ -14,6 +14,7 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
     val dockingSurface = UiSurface(name = "${name}.dockingSurface")
     val dockingSurfaceOverlay = UiSurface(name = "${name}.dockingSurfaceOverlay")
 
+    val resizeMargin = mutableStateOf(Dp(4f))
     val borderWidth = mutableStateOf(Dp.ZERO)
     val borderColor = mutableStateOf(Color.BLACK)
 

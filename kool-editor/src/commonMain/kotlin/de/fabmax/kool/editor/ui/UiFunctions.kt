@@ -1025,3 +1025,15 @@ fun interface ActionValueEditHandler<T> : ValueEditHandler<T> {
 
     fun makeEditAction(undoValue: T, applyValue: T) : EditorAction
 }
+
+fun UiScope.defaultScrollbarModifierV(): ((ScrollbarModifier) -> Unit) = {
+    it
+        .width(sizes.scrollbarWidth)
+        .margin(sizes.scrollbarWidth)
+}
+
+fun UiScope.defaultScrollbarModifierH(): ((ScrollbarModifier) -> Unit) = {
+    it
+        .height(sizes.scrollbarWidth)
+        .margin(sizes.scrollbarWidth)
+}

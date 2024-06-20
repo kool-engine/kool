@@ -130,10 +130,11 @@ class UiDockable(
     }
 
     private fun UiScope.registerBoxResizeCallbacks(resizeNode: UiNode) {
-        ResizeBox(resizeNode, RESIZE_EDGE_TOP, Grow.Std, RESIZE_MARGIN, alignY = AlignmentY.Top)
-        ResizeBox(resizeNode, RESIZE_EDGE_BOTTOM, Grow.Std, RESIZE_MARGIN, alignY = AlignmentY.Bottom)
-        ResizeBox(resizeNode, RESIZE_EDGE_RIGHT, RESIZE_MARGIN, Grow.Std, alignX = AlignmentX.End)
-        ResizeBox(resizeNode, RESIZE_EDGE_LEFT, RESIZE_MARGIN, Grow.Std, alignX = AlignmentX.Start)
+        val resizeMargin = dock?.resizeMargin?.use() ?: Dp(4f)
+        ResizeBox(resizeNode, RESIZE_EDGE_TOP, Grow.Std, resizeMargin, alignY = AlignmentY.Top)
+        ResizeBox(resizeNode, RESIZE_EDGE_BOTTOM, Grow.Std, resizeMargin, alignY = AlignmentY.Bottom)
+        ResizeBox(resizeNode, RESIZE_EDGE_RIGHT, resizeMargin, Grow.Std, alignX = AlignmentX.End)
+        ResizeBox(resizeNode, RESIZE_EDGE_LEFT, resizeMargin, Grow.Std, alignX = AlignmentX.Start)
     }
 
     private fun UiScope.ResizeBox(
@@ -233,10 +234,11 @@ class UiDockable(
 
     fun getResizeEdgeMask(ptrEv: PointerEvent): Int {
         var mask = 0
-        if (ptrEv.position.x < RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_LEFT
-        if (ptrEv.position.x > currentWidthPx - RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_RIGHT
-        if (ptrEv.position.y < RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_TOP
-        if (ptrEv.position.y > currentHeightPx - RESIZE_MARGIN.px) mask = mask or RESIZE_EDGE_BOTTOM
+        val resizeMargin = dock?.resizeMargin?.value ?: Dp(4f)
+        if (ptrEv.position.x < resizeMargin.px) mask = mask or RESIZE_EDGE_LEFT
+        if (ptrEv.position.x > currentWidthPx - resizeMargin.px) mask = mask or RESIZE_EDGE_RIGHT
+        if (ptrEv.position.y < resizeMargin.px) mask = mask or RESIZE_EDGE_TOP
+        if (ptrEv.position.y > currentHeightPx - resizeMargin.px) mask = mask or RESIZE_EDGE_BOTTOM
         return filterResizeEdgeMaskByDockNode(mask)
     }
 
@@ -313,8 +315,6 @@ class UiDockable(
     }
 
     companion object {
-        val RESIZE_MARGIN = Dp(6f)
-
         const val RESIZE_EDGE_NONE = 0
         const val RESIZE_EDGE_LEFT = 1
         const val RESIZE_EDGE_RIGHT = 2

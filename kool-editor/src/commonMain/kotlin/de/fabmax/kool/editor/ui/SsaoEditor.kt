@@ -94,6 +94,7 @@ class SsaoEditor : ComponentEditor<SsaoComponent>() {
             defaultButtonStyle()
             modifier
                 .width(sizes.baseSize * 5)
+                .height(sizes.editItemHeight)
                 .margin(vertical = sizes.smallGap)
                 .alignX(AlignmentX.Center)
                 .onClick {

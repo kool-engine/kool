@@ -35,7 +35,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
 
     private fun UiScope.objectProperties(objects: List<GameEntity>) = ScrollArea(
         containerModifier = { it.backgroundColor(null) },
-        vScrollbarModifier = { it.width(sizes.scrollbarWidth) },
+        vScrollbarModifier = defaultScrollbarModifierV(),
         isScrollableHorizontal = false
     ) {
         modifier.width(Grow.Std)

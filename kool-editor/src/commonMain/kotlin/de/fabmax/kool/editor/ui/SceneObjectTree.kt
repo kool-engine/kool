@@ -68,7 +68,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         LazyList(
             containerModifier = { it.backgroundColor(null) },
-            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
+            vScrollbarModifier = defaultScrollbarModifierV()
         ) {
             var hoveredIndex by remember(-1)
             val itemPopupMenu = remember { ContextPopupMenu<GameEntity?>("scene-item-popup") }
