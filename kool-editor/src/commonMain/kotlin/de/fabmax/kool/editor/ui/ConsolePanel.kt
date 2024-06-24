@@ -149,8 +149,8 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
             lineProvider = lineProvider,
             state = listState,
             scrollPaneModifier = { it.margin(horizontal = sizes.gap) },
-            hScrollbarModifier = { it.height(sizes.scrollbarWidth) },
-            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
+            hScrollbarModifier = defaultScrollbarModifierH(),
+            vScrollbarModifier = defaultScrollbarModifierV()
         ) {
             modifier
                 .lastLineBottomPadding(sizes.largeGap)

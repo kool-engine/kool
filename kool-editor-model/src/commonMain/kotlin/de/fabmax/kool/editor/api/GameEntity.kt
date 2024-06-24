@@ -28,8 +28,8 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         get() = settings.isVisible
         set(value) = settingsState.set(settings.copy(isVisible = value))
 
-    val isVisibleInScene: Boolean
-        get() = if (!isVisible) false else parent?.isVisibleInScene != false
+    val isVisibleWithParents: Boolean
+        get() = if (!isVisible) false else parent?.isVisibleWithParents != false
 
     val components = mutableStateListOf<GameEntityComponent>()
     var componentModCnt = 0
@@ -93,28 +93,9 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     private val requireScene: GameEntity
         get() = this.also { check(isSceneRoot) { "$name is not a scene" } }
 
-    @Suppress("UNCHECKED_CAST")
     private fun createComponentsFromData(componentInfo: List<ComponentInfo<*>>) {
         componentInfo.forEach { info ->
-            when (info.data) {
-                is BehaviorComponentData -> components += BehaviorComponent(this, info as ComponentInfo<BehaviorComponentData>)
-                is TransformComponentData -> components += TransformComponent(this, info as ComponentInfo<TransformComponentData>)
-                is MaterialComponentData -> components += MaterialComponent(this, info as ComponentInfo<MaterialComponentData>)
-
-                is CameraComponentData -> components += CameraComponent(requireSceneChild, info as ComponentInfo<CameraComponentData>)
-                is CharacterControllerComponentData -> components += CharacterControllerComponent(requireSceneChild, info as ComponentInfo<CharacterControllerComponentData>)
-                is DiscreteLightComponentData -> components += DiscreteLightComponent(requireSceneChild, info as ComponentInfo<DiscreteLightComponentData>)
-                is MaterialReferenceComponentData -> components += MaterialReferenceComponent(requireSceneChild, info as ComponentInfo<MaterialReferenceComponentData>)
-                is MeshComponentData -> components += MeshComponent(requireSceneChild, info as ComponentInfo<MeshComponentData>)
-                is ModelComponentData -> components += ModelComponent(requireSceneChild, info as ComponentInfo<ModelComponentData>)
-                is RigidActorComponentData -> components += RigidActorComponent(requireSceneChild, info as ComponentInfo<RigidActorComponentData>)
-                is ShadowMapComponentData -> components += ShadowMapComponent(requireSceneChild, info as ComponentInfo<ShadowMapComponentData>)
-
-                is PhysicsWorldComponentData -> components += PhysicsWorldComponent(requireScene, info as ComponentInfo<PhysicsWorldComponentData>)
-                is SceneBackgroundComponentData -> components += SceneBackgroundComponent(requireScene, info as ComponentInfo<SceneBackgroundComponentData>)
-                is SceneComponentData -> components += SceneComponent(requireScene, info as ComponentInfo<SceneComponentData>)
-                is SsaoComponentData -> components += SsaoComponent(requireScene, info as ComponentInfo<SsaoComponentData>)
-            }
+            components += createDataComponent(info)
         }
         components.sortByDependencies()
         incComponentModCount()
@@ -223,6 +204,29 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         }
         drawNode.release()
         lifecycle = EntityLifecycle.DESTROYED
+    }
+
+    fun createDataComponent(info: ComponentInfo<*>): GameEntityDataComponent<*> {
+        @Suppress("UNCHECKED_CAST")
+        return when (info.data) {
+            is BehaviorComponentData -> BehaviorComponent(this, info as ComponentInfo<BehaviorComponentData>)
+            is TransformComponentData -> TransformComponent(this, info as ComponentInfo<TransformComponentData>)
+            is MaterialComponentData -> MaterialComponent(this, info as ComponentInfo<MaterialComponentData>)
+
+            is CameraComponentData -> CameraComponent(requireSceneChild, info as ComponentInfo<CameraComponentData>)
+            is CharacterControllerComponentData -> CharacterControllerComponent(requireSceneChild, info as ComponentInfo<CharacterControllerComponentData>)
+            is DiscreteLightComponentData -> DiscreteLightComponent(requireSceneChild, info as ComponentInfo<DiscreteLightComponentData>)
+            is MaterialReferenceComponentData -> MaterialReferenceComponent(requireSceneChild, info as ComponentInfo<MaterialReferenceComponentData>)
+            is MeshComponentData -> MeshComponent(requireSceneChild, info as ComponentInfo<MeshComponentData>)
+            is ModelComponentData -> ModelComponent(requireSceneChild, info as ComponentInfo<ModelComponentData>)
+            is RigidActorComponentData -> RigidActorComponent(requireSceneChild, info as ComponentInfo<RigidActorComponentData>)
+            is ShadowMapComponentData -> ShadowMapComponent(requireSceneChild, info as ComponentInfo<ShadowMapComponentData>)
+
+            is PhysicsWorldComponentData -> PhysicsWorldComponent(requireScene, info as ComponentInfo<PhysicsWorldComponentData>)
+            is SceneBackgroundComponentData -> SceneBackgroundComponent(requireScene, info as ComponentInfo<SceneBackgroundComponentData>)
+            is SceneComponentData -> SceneComponent(requireScene, info as ComponentInfo<SceneComponentData>)
+            is SsaoComponentData -> SsaoComponent(requireScene, info as ComponentInfo<SsaoComponentData>)
+        }
     }
 
     fun addComponent(component: GameEntityComponent) {

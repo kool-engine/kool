@@ -72,11 +72,11 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
     private fun UiScope.rightPanel() = Row(height = sizes.heightWindowTitleBar) {
         modifier.alignX(AlignmentX.End)
 
-
         Text("Transform Mode:") {
             modifier
                 .alignY(AlignmentY.Center)
                 .margin(end = sizes.gap)
+                .onDrag { }
         }
         ComboBox {
             defaultComboBoxStyle()
@@ -84,6 +84,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             modifier
                 .width(sizes.baseSize * 2.5f)
                 .alignY(AlignmentY.Center)
+                .onDrag { }
                 .items(transformFrames)
                 .selectedIndex(transformFrames.indexOfFirst { it.frame == selectedFrame })
                 .onItemSelected { i ->
@@ -107,6 +108,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                     modifier
                         .onEnter { isHovered = true }
                         .onExit { isHovered = false }
+                        .onDrag { }
                 }
             ) {
                 editor.exportProject()
@@ -143,6 +145,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                 .onEnter { isHovered = true }
                 .onExit { isHovered = false }
                 .onClick { onClick() }
+                .onDrag { }
             if (isHovered) {
                 modifier.backgroundColor(hoverColor)
             }

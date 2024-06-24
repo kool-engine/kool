@@ -9,7 +9,7 @@ class ProjectFiles(
     val fileSystem: WritableFileSystem,
     val appMainClass: String = "de.fabmax.kool.app.App"
 ) {
-    val projectModelDir = fileSystem.getOrCreateDirectories("src/commonMain/json")
+    val projectModelDir = fileSystem.getOrCreateDirectories("src/commonMain/koolProject")
     val assets = fileSystem.getOrCreateDirectories("src/commonMain/resources/assets")
 
     suspend fun getProjectFileMonolithic(): WritableFileSystemFile =

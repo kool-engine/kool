@@ -1,26 +1,21 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AppReloadListener
-import de.fabmax.kool.editor.AssetItem
-import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.editor.actions.AddSceneNodeAction
 import de.fabmax.kool.editor.actions.ChangeEntityHierarchyAction
-import de.fabmax.kool.editor.actions.DeleteSceneNodesAction
 import de.fabmax.kool.editor.actions.SetVisibilityAction
+import de.fabmax.kool.editor.actions.deleteNode
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.components.*
-import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.math.MutableMat4d
+import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logE
 import kotlin.math.max
 import kotlin.math.min
 
@@ -60,54 +55,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         isTreeValid.set(false)
     }
 
-    private fun addNewMesh(parent: SceneObjectItem, meshShape: ShapeData) {
-        val id = editor.projectModel.nextId()
-        val name = editor.projectModel.uniquifyName(meshShape.name)
-        val entityData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
-        entityData.components += ComponentInfo(MeshComponentData(meshShape), displayOrder = 1)
-        entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)), displayOrder = 2)
-        AddSceneNodeAction(listOf(entityData)).apply()
-    }
-
-    private fun addNewModel(parent: SceneObjectItem, modelAsset: AssetItem) {
-        val id = editor.projectModel.nextId()
-        val name = editor.projectModel.uniquifyName(modelAsset.name)
-        val entityData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
-        entityData.components += ComponentInfo(ModelComponentData(modelAsset.path), displayOrder = 1)
-        AddSceneNodeAction(listOf(entityData)).apply()
-    }
-
-    private fun addNewLight(parent: SceneObjectItem, lightType: LightTypeData) {
-        val id = editor.projectModel.nextId()
-        val name = editor.projectModel.uniquifyName(lightType.name)
-        val entityData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
-        entityData.components += ComponentInfo(DiscreteLightComponentData(lightType), displayOrder = 1)
-
-        val transform = MutableMat4d().translate(EditorDefaults.DEFAULT_LIGHT_POSITION)
-        if (lightType !is LightTypeData.Point) {
-            transform.mul(MutableMat4d().rotate(EditorDefaults.DEFAULT_LIGHT_ROTATION))
-        }
-        entityData.components += ComponentInfo(TransformComponentData(TransformData(transform)), displayOrder = 0)
-
-        AddSceneNodeAction(listOf(entityData)).apply()
-    }
-
-    private fun addEmptyNode(parent: SceneObjectItem) {
-        val id = editor.projectModel.nextId()
-        val name = editor.projectModel.uniquifyName("Empty")
-        val nodeData = GameEntityData(id, parent.gameEntity.id, GameEntitySettings(name))
-        AddSceneNodeAction(listOf(nodeData)).apply()
-    }
-
-    private fun deleteNode(node: SceneObjectItem) {
-        val removeNode = node.gameEntity
-        DeleteSceneNodesAction(listOf(removeNode)).apply()
-    }
-
-    private fun focusNode(node: SceneObjectItem) {
-        sceneBrowser.editor.editorCameraTransform.focusObject(node.gameEntity)
-    }
-
     override fun UiScope.compose() {
         editor.activeScene.use()
 
@@ -121,10 +68,10 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         LazyList(
             containerModifier = { it.backgroundColor(null) },
-            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
+            vScrollbarModifier = defaultScrollbarModifierV()
         ) {
             var hoveredIndex by remember(-1)
-            val itemPopupMenu = remember { ContextPopupMenu<SceneObjectItem>("scene-item-popup") }
+            val itemPopupMenu = remember { ContextPopupMenu<GameEntity?>("scene-item-popup") }
 
             itemsIndexed(treeItems) { i, item ->
                 if (item.type != SceneObjectType.NON_MODEL_NODE && item.node != item.gameEntity.drawNode) {
@@ -136,7 +83,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                         .onExit { hoveredIndex = -1 }
                         .onClick {
                             if (it.pointer.isRightButtonClicked) {
-                                itemPopupMenu.show(it.screenPosition, makeMenu(item), item)
+                                itemPopupMenu.show(it.screenPosition, makeMenu(item), item.gameEntity)
                             }
                         }
 
@@ -151,40 +98,12 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun makeMenu(item: SceneObjectItem) = SubMenuItem {
-        if (item.type != SceneObjectType.SCENE) {
-            item("Delete object") { deleteNode(it) }
-        }
-        subMenu("Add child object") {
-            subMenu("Mesh") {
-                item("Box") { addNewMesh(it, ShapeData.defaultBox) }
-                item("Rect") { addNewMesh(it, ShapeData.defaultRect) }
-                item("Sphere") { addNewMesh(it, ShapeData.defaultSphere) }
-                item("Cylinder") { addNewMesh(it, ShapeData.defaultCylinder) }
-                item("Capsule") { addNewMesh(it, ShapeData.defaultCapsule) }
-                item("Heightmap") { addNewMesh(it, ShapeData.defaultHeightmap) }
-                item("Custom") { addNewMesh(it, ShapeData.defaultCustom) }
-            }
-            subMenu("glTF model") {
-                item("Import model") { logE { "Not yet implemented" } }
-                divider()
-                sceneBrowser.editor.availableAssets.modelAssets.forEach { modelAsset ->
-                    item(modelAsset.name) { addNewModel(it, modelAsset) }
-                }
-            }
-            editor.activeScene.value?.let { sceneModel ->
-                if (sceneModel.scene.lighting.lights.size < sceneModel.shaderData.maxNumberOfLights) {
-                    subMenu("Light") {
-                        item("Directional") { addNewLight(it, LightTypeData.Directional()) }
-                        item("Spot") { addNewLight(it, LightTypeData.Spot()) }
-                        item("Point") { addNewLight(it, LightTypeData.Point()) }
-                    }
-                }
-            }
-            item("Empty node") { addEmptyNode(it) }
-        }
+        val pos = editor.activeScene.value?.scene?.camera?.globalLookAt ?: Vec3f.ZERO
+        menuItems += addSceneObjectMenu("Add child object", item.gameEntity, pos)
         if (item.type != SceneObjectType.SCENE) {
             divider()
-            item("Focus object") { focusNode(it) }
+            item("Focus object", IconMap.small.circleCrosshair) { editor.focusObject(it) }
+            item("Delete object", IconMap.small.trash) { deleteNode(it) }
         }
     }
 

@@ -164,9 +164,11 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                         // compute kernel rotation
                         val noiseCoord = float2Var(uv.output * uNoiseScale)
                         val rotVec = float3Var(sampleTexture(noiseTex, noiseCoord, 0f.const).xyz * 2f.const - 1f.const)
-                        val tangent = float3Var(normalize(rotVec - normal * dot(rotVec, normal)))
-                        val bitangent = float3Var(cross(normal, tangent))
-                        val tbn = mat3Var(mat3Value(tangent, bitangent, normal))
+                        val tan1 = float3Var(normalize(cross(Vec3f(1f, 1.1337e-6f, 1.1337e-6f).const, normal)))
+                        val tan2 = float3Var(cross(tan1, normal))
+                        val tan1Rot = float3Var(tan1 * rotVec.x + tan2 * rotVec.y)
+                        val tan2Rot = float3Var(cross(normal, tan1Rot))
+                        val tbn = mat3Var(mat3Value(tan1Rot, tan2Rot, normal))
 
                         val occlusion = float1Var(0f.const)
                         val occlusionDiv = float1Var(0f.const)

@@ -96,7 +96,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
         LazyList(
             containerModifier = { it.backgroundColor(colors.background) },
-            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
+            vScrollbarModifier = defaultScrollbarModifierV()
         ) {
             var hoveredIndex by remember(-1)
             itemsIndexed(expandedDirTree) { i, dir ->
@@ -185,7 +185,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             containerModifier = {
                 it.onPositioned { nd -> areaWidth = nd.widthPx - sizes.largeGap.px }
             },
-            vScrollbarModifier = { it.width(sizes.scrollbarWidth) }
+            vScrollbarModifier = defaultScrollbarModifierV()
         ) {
             modifier.margin(sizes.gap)
             if (areaWidth > 0f) {

@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.ShadowMapComponentData
 import de.fabmax.kool.editor.data.ShadowMapInfo
 import de.fabmax.kool.editor.data.ShadowMapTypeData
+import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.util.*
 
@@ -14,7 +15,7 @@ class ShadowMapComponent(
     componentInfo: ComponentInfo<ShadowMapComponentData> = ComponentInfo(
         ShadowMapComponentData(ShadowMapTypeData.Single(ShadowMapInfo()))
     )
-) : GameEntityDataComponent<ShadowMapComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<ShadowMapComponentData>(gameEntity, componentInfo), CameraAwareComponent {
 
     val shadowMapType: ShadowMapTypeData get() = data.shadowMap
     val clipNear: Float get() = data.clipNear
@@ -36,16 +37,6 @@ class ShadowMapComponent(
         updateShadowMap(data)
     }
 
-    override fun onStart() {
-        super.onStart()
-        val sceneCam = sceneComponent.drawNode.camera
-        when (val shadow = shadowMap) {
-            is CascadedShadowMap -> shadow.subMaps.forEach { it.sceneCam = sceneCam }
-            is SimpleShadowMap -> shadow.sceneCam = sceneCam
-            else -> { }
-        }
-    }
-
     override fun destroyComponent() {
         disposeShadowMap(null)
         super.destroyComponent()
@@ -59,6 +50,14 @@ class ShadowMapComponent(
             } else {
                 updateShadowMap(data)
             }
+        }
+    }
+
+    override fun updateSceneCamera(camera: Camera) {
+        when (val shadow = shadowMap) {
+            is CascadedShadowMap -> shadow.subMaps.forEach { it.sceneCam = camera }
+            is SimpleShadowMap -> shadow.sceneCam = camera
+            else -> { }
         }
     }
 

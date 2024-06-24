@@ -49,29 +49,30 @@ class RayF() {
 
     fun sphereIntersection(center: Vec3f, radius: Float, result: MutableVec3f): Boolean {
         result.set(origin).subtract(center)
-        val a = direction.dot(direction)
-        val b = result.dot(direction) * 2f
-        val c = result.dot(result) - radius * radius
+        val a = direction dot direction
+        val b = (result dot direction) * 2f
+        val c = (result dot result) - radius * radius
         val discr = b * b - 4 * a * c
-
         if (discr < 0f) {
             return false
         }
 
-        val numerator = -b - sqrt(discr)
+        val dist = sqrt(discr)
+        val numerator = -b - dist
         if (numerator > 0f) {
             val d = numerator / (2f * a)
             result.set(direction).mul(d).add(origin)
             return true
         }
-
-        val numerator2 = -b + sqrt(discr)
+        val numerator2 = -b + dist
         if (numerator2 > 0f) {
-            val d = numerator2 / (2f * a)
-            result.set(direction).mul(d).add(origin)
+            // ray origin is inside sphere, set result to ray origin so that hit distance is 0.0
+            // otherwise large bounding spheres are discarded during scene picking
+            result.set(origin)
+            //val d = numerator2 / (2f * a)
+            //result.set(direction).mul(d).add(origin)
             return true
         }
-
         return false
     }
 
@@ -146,29 +147,30 @@ class RayD() {
 
     fun sphereIntersection(center: Vec3d, radius: Double, result: MutableVec3d): Boolean {
         result.set(origin).subtract(center)
-        val a = direction.dot(direction)
-        val b = result.dot(direction) * 2.0
-        val c = result.dot(result) - radius * radius
+        val a = direction dot direction
+        val b = (result dot direction) * 2.0
+        val c = (result dot result) - radius * radius
         val discr = b * b - 4 * a * c
-
         if (discr < 0.0) {
             return false
         }
 
-        val numerator = -b - sqrt(discr)
+        val dist = sqrt(discr)
+        val numerator = -b - dist
         if (numerator > 0.0) {
             val d = numerator / (2.0 * a)
             result.set(direction).mul(d).add(origin)
             return true
         }
-
-        val numerator2 = -b + sqrt(discr)
+        val numerator2 = -b + dist
         if (numerator2 > 0.0) {
-            val d = numerator2 / (2.0 * a)
-            result.set(direction).mul(d).add(origin)
+            // ray origin is inside sphere, set result to ray origin so that hit distance is 0.0
+            // otherwise large bounding spheres are discarded during scene picking
+            result.set(origin)
+            //val d = numerator2 / (2.0 * a)
+            //result.set(direction).mul(d).add(origin)
             return true
         }
-
         return false
     }
 

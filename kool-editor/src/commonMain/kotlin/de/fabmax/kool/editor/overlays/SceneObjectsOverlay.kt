@@ -11,10 +11,7 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.scene.Light
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Float32Buffer
@@ -22,7 +19,6 @@ import de.fabmax.kool.util.MdColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
-import kotlin.math.sqrt
 
 class SceneObjectsOverlay : Node("Scene objects overlay") {
 
@@ -44,6 +40,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         name = "Directional lights"
     ).apply {
         isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         generate {
             uvSphere {
                 radius = 0.15f
@@ -89,6 +86,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         name = "Spot lights"
     ).apply {
         isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         generate {
             uvSphere {
                 radius = 0.15f
@@ -129,6 +127,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         name = "Point lights"
     ).apply {
         isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         generate {
             uvSphere {
                 radius = 0.15f
@@ -164,6 +163,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         name = "Cameras"
     ).apply {
         isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         generate {
             rotate(90f.deg, Vec3f.Y_AXIS)
             generateArrow()
@@ -203,6 +203,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         name = "Groups"
     ).apply {
         isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         generate {
             color = MdColor.RED toneLin 200
             line3d(Vec3f.NEG_X_AXIS * 0.5f, Vec3f.X_AXIS * 0.5f, Vec3f.Y_AXIS, lineW)
@@ -307,11 +308,12 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     }
 
     private abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
-
         abstract val modelMat: Mat4f
         abstract val color: Color
 
-        val radius = mesh.geometry.bounds.size.length() * 0.5f
+        val radius = mesh.geometry.bounds.size.length()
+
+        private val invModelMat = MutableMat4f()
 
         fun addInstance(target: Float32Buffer) {
             val selectionOv = KoolEditor.instance.selectionOverlay
@@ -326,11 +328,25 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             if (n.distance(pos) < radius) {
                 val d = n.sqrDistance(rayTest.ray.origin)
                 if (d < rayTest.hitDistanceSqr) {
-                    rayTest.setHit(mesh, sqrt(d))
-                    return true
+                    modelMat.invert(invModelMat)
+                    return meshRayTest(rayTest)
                 }
             }
             return false
+        }
+
+        private fun meshRayTest(rayTest: RayTest): Boolean {
+            modelMat.invert(invModelMat)
+            val localRay = rayTest.getRayTransformed(invModelMat)
+            val isHit = mesh.rayTest.rayTest(rayTest, localRay)
+            if (isHit) {
+                // fixme: rather ugly workaround: mesh ray test transforms hit position to global coordinates using
+                //  the mesh's transform, not the instance's leading to a wrong hit-position / distance
+                mesh.toLocalCoords(rayTest.hitPositionGlobal)
+                modelMat.transform(rayTest.hitPositionGlobal)
+                rayTest.setHit(mesh, rayTest.hitPositionGlobal)
+            }
+            return isHit
         }
     }
 

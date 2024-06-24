@@ -107,7 +107,7 @@ class BoxSelector : Composable {
         }
 
         val boxSelection = scene.sceneEntities.values.filter {
-            it.isVisibleInScene && camHelper.testSceneNode(it)
+            it.isVisibleWithParents && camHelper.testSceneNode(it)
         }.toSet()
         val newSelection = if (KeyboardInput.isAltDown) {
             startSelection - boxSelection

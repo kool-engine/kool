@@ -929,11 +929,11 @@ fun UiScope.iconTextButton(
     boxBlock?.invoke(this)
 }
 
-fun ColumnScope.menuDivider(marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO, color: Color = colors.weakDividerColor) {
+fun ColumnScope.menuDivider(marginStart: Dp = sizes.largeGap, marginEnd: Dp = 0.dp, marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO, color: Color = colors.weakDividerColor) {
     Box(Grow.Std, sizes.borderWidth) {
         modifier
             .backgroundColor(color)
-            .margin(start = sizes.largeGap, end = 0.dp, top = marginTop, bottom = marginBottom)
+            .margin(start = marginStart, end = marginEnd, top = marginTop, bottom = marginBottom)
     }
 }
 
@@ -1024,4 +1024,16 @@ fun interface ActionValueEditHandler<T> : ValueEditHandler<T> {
     override fun onEditEnd(startValue: T, endValue: T) = makeEditAction(startValue, endValue).apply()
 
     fun makeEditAction(undoValue: T, applyValue: T) : EditorAction
+}
+
+fun UiScope.defaultScrollbarModifierV(): ((ScrollbarModifier) -> Unit) = {
+    it
+        .width(sizes.scrollbarWidth)
+        .margin(sizes.scrollbarWidth)
+}
+
+fun UiScope.defaultScrollbarModifierH(): ((ScrollbarModifier) -> Unit) = {
+    it
+        .height(sizes.scrollbarWidth)
+        .margin(sizes.scrollbarWidth)
 }

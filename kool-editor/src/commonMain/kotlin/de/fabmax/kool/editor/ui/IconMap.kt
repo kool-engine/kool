@@ -94,7 +94,7 @@ object IconMap {
         val nodeCircle = IconProvider(this, iconMap.IconImageProvider(15, 1))
         val folder = IconProvider(this, iconMap.IconImageProvider(16, 1))
         val folderOpen = IconProvider(this, iconMap.IconImageProvider(17, 1))
-        val shadowInner = IconProvider(this, iconMap.IconImageProvider(18, 1))
+        val shadowedSphere = IconProvider(this, iconMap.IconImageProvider(18, 1))
         val shadow = IconProvider(this, iconMap.IconImageProvider(19, 1))
         val transform = IconProvider(this, iconMap.IconImageProvider(0, 2))
         val background = IconProvider(this, iconMap.IconImageProvider(1, 2))
@@ -126,6 +126,13 @@ object IconMap {
         val maximizeWin = IconProvider(this, iconMap.IconImageProvider(7, 3))
         val demaximizeWin = IconProvider(this, iconMap.IconImageProvider(8, 3))
         val closeWin = IconProvider(this, iconMap.IconImageProvider(9, 3))
+        val cylinder = IconProvider(this, iconMap.IconImageProvider(10, 3))
+        val rect = IconProvider(this, iconMap.IconImageProvider(11, 3))
+        val capsule = IconProvider(this, iconMap.IconImageProvider(12, 3))
+        val mountain = IconProvider(this, iconMap.IconImageProvider(13, 3))
+        val file3d = IconProvider(this, iconMap.IconImageProvider(14, 3))
+        val sun = IconProvider(this, iconMap.IconImageProvider(15, 3))
+        val spotLight = IconProvider(this, iconMap.IconImageProvider(16, 3))
 
         val editorIcon = IconProvider(this, iconMap.IconImageProvider(0, 4))
     }

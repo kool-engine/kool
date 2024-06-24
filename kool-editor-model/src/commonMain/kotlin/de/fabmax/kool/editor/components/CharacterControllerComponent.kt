@@ -32,6 +32,7 @@ class CharacterControllerComponent(
 
     private var axes: WalkAxes? = null
     private var smoothDir = MutableVec2f()
+    private var pushForce = MutableVec3f()
 
     val isRun: Boolean get() = axes?.isRun == !data.runByDefault
     val isJump: Boolean get() = axes?.isJump == true
@@ -41,6 +42,8 @@ class CharacterControllerComponent(
         private set
     var moveHeading: AngleF = 0f.deg
         private set
+    private val _moveDir = MutableVec3f()
+    val moveDir: Vec3f get() = _moveDir
 
     val crouchFactor: Float get() = axes?.crouchFactor ?: 0f
     val runFactor: Float get() {
@@ -168,8 +171,8 @@ class CharacterControllerComponent(
         }
 
         // set controller.movement according to user input
-        controller.movement.set(0f, 0f, -moveSpeed)
-        controller.movement.rotate(moveHeading, Vec3f.Y_AXIS)
+        _moveDir.set(0f, 0f, -moveSpeed).rotate(moveHeading, Vec3f.Y_AXIS)
+        controller.movement.set(moveDir)
         controller.jump = isJump
     }
 
@@ -181,7 +184,7 @@ class CharacterControllerComponent(
             val downBlend = abs(hitWorldNormal dot Vec3f.Y_AXIS)
             val forceFac = downForceFac * downBlend + pushForceFac * (1f - downBlend)
             val force = actor.mass * runMod * forceFac
-            val forceVec = hitWorldNormal * -force
+            val forceVec = pushForce.set(moveDir).mul(-1f).add(hitWorldNormal).norm().mul(-force)
             actor.addForceAtPos(forceVec, hitWorldPos, isLocalForce = false, isLocalPos = false)
         }
     }

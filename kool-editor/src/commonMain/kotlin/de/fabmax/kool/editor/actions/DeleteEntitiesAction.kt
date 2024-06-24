@@ -7,7 +7,7 @@ import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.util.launchOnMainThread
 
-class DeleteSceneNodesAction(
+class DeleteEntitiesAction(
     gameEntities: List<GameEntity>
 ) : EditorAction {
 
@@ -46,4 +46,8 @@ class DeleteSceneNodesAction(
             refreshComponentViews()
         }
     }
+}
+
+fun deleteNode(node: GameEntity?) {
+    node?.let { DeleteEntitiesAction(listOf(it)).apply() }
 }

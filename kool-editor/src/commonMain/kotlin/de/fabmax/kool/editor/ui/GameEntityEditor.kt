@@ -35,7 +35,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
 
     private fun UiScope.objectProperties(objects: List<GameEntity>) = ScrollArea(
         containerModifier = { it.backgroundColor(null) },
-        vScrollbarModifier = { it.width(sizes.scrollbarWidth) },
+        vScrollbarModifier = defaultScrollbarModifierV(),
         isScrollableHorizontal = false
     ) {
         modifier.width(Grow.Std)
@@ -179,7 +179,7 @@ class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.
             }
     }
 
-    private inline fun <reified T: GameEntityComponent> UiScope.componentEditor(gameEntities: List<GameEntity>, editorProvider: () -> ComponentEditor<T>) {
+    private inline fun <reified T: GameEntityDataComponent<*>> UiScope.componentEditor(gameEntities: List<GameEntity>, editorProvider: () -> ComponentEditor<T>) {
         Box(width = Grow.Std, scopeName = gameEntities[0].requireComponent<T>().componentType) {
             val editor = remember(editorProvider)
             editor.components = gameEntities.map { it.requireComponent() }
