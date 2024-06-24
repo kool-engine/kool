@@ -30,5 +30,5 @@ data class GltfMaterialConfig(
     val environmentMaps: EnvironmentMaps? = null,
     val isDeferredShading: Boolean = false,
     val maxNumberOfLights: Int = 4,
-    val maxNumberOfJoints: Int = 64
+    val fixedNumberOfJoints: Int = 0
 )
