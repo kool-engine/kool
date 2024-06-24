@@ -7,11 +7,13 @@ package physx
 import kotlinx.coroutines.asDeferred             
 import kotlin.js.Promise
 
+@JsModule("physx-js-webidl")
+internal external val PhysX: () -> Promise<dynamic>
+
 object PhysXJsLoader {
     @JsName("physXJs")
     internal var physXJs: dynamic = null
-    @Suppress("UnsafeCastFromDynamic")
-    private val physXJsPromise: Promise<dynamic> = js("require('physx-js-webidl')")()
+    private val physXJsPromise = PhysX()
     internal var physxDeferred = physXJsPromise.asDeferred()
 
     val isLoaded: Boolean get() = physxDeferred.isCompleted
@@ -27,7 +29,7 @@ object PhysXJsLoader {
             }
         }
     }
-    
+
     fun addOnLoadListener(listener: () -> Unit) {
         if (isLoaded) {
             listener()
@@ -35,13 +37,13 @@ object PhysXJsLoader {
             onLoadListeners += listener
         }
     }
-    
+
     fun checkIsLoaded() {
         if (!isLoaded) {
             throw IllegalStateException("Module 'physx-js-webidl' is not loaded. Call loadModule() first and wait for loading to be finished.")
         }
     }
-    
+
     fun destroy(nativeObject: Any) {
         physXJs.destroy(nativeObject)
     }

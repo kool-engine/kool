@@ -6,7 +6,6 @@ import org.w3c.files.File
 import org.w3c.files.FilePropertyBag
 
 @JsModule("file-saver")
-@JsNonModule
 external object FileSaver {
     fun saveAs(file: File)
 }

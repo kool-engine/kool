@@ -12,9 +12,12 @@ plugins {
 kotlin {
     jvm("desktop") { }
     jvmToolchain(11)
-    js(IR) {
+    js {
         binaries.library()
         browser()
+        compilerOptions {
+            target.set("es2015")
+        }
     }
 
     compilerOptions {

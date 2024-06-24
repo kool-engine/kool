@@ -75,13 +75,13 @@ Give it a try (it's free)!
 
 ## Platform Support
 
-| Platform    | Backend     | Implementation Status                                                |
-|-------------|-------------|----------------------------------------------------------------------|
-| Desktop JVM | OpenGL      | :white_check_mark: Fully working                                     |
-| Desktop JVM | Vulkan      | :x: Not working (under construction)                                 |
-| Browser     | WebGL 2     | :white_check_mark: Fully working                                     |
-| Browser     | WebGPU      | :white_check_mark: Fully working                                     |
-| Android     | OpenGL ES 3 | :eight_spoked_asterisk: kool-core fully working (but no physics yet) |
+| Platform    | Backend     | Implementation Status                                   |
+|-------------|-------------|---------------------------------------------------------|
+| Desktop JVM | OpenGL      | :white_check_mark: Fully working                        |
+| Desktop JVM | Vulkan      | :x: Not working (under construction)                    |
+| Browser     | WebGL 2     | :white_check_mark: Fully working                        |
+| Browser     | WebGPU      | :white_check_mark: Fully working                        |
+| Android     | OpenGL ES 3 | :sparkles: kool-core fully working (but no physics yet) |
 
 ### Android Support
 
@@ -369,6 +369,6 @@ conclusion that all of them had some kind of flaw. So I decided to write my own 
 [Nvidia PhysX](https://github.com/NVIDIA-Omniverse/PhysX): [physx-jni](https://github.com/fabmax/physx-jni) for JVM, and
 [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) for javascript.
 
-This was quite a bit of work (and is an ongoing project), but I think it was worth it: By writing my own bindings
+This was quite a bit of work, but I think it was worth it: By writing my own bindings
 I get the features I need, and, even better, I get the same features for javascript and JVM, which makes the
 multiplatform approach much easier.

@@ -44,13 +44,6 @@ kotlin {
             //  Notice that runtimeLibs are only available and added to classpath after first build (or after
             //  cacheRuntimeLibs task is executed manually) AND the gradle project is re-synced.
             implementation(fileTree("${projectDir}/runtimeLibs") { include("*.jar") })
-
-//            listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-//                libs.bundles.lwjgl.get()
-//                    .filter { it.name != "lwjgl-vulkan" }
-//                    .forEach { lib -> implementation("$lib:$platform") }
-//            }
-//            implementation(libs.jsvg)
         }
     }
 }

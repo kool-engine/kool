@@ -8,7 +8,6 @@ import org.w3c.files.Blob
 import kotlin.js.Promise
 
 @JsModule("jszip")
-@JsNonModule
 external class JsZip {
     fun file(name: String, data: Uint8Array): JsZip
     fun folder(name: String): JsZip
@@ -26,7 +25,6 @@ suspend fun JsZip.generate(): Uint8Buffer {
 }
 
 @JsModule("jszip")
-@JsNonModule
 external interface ZipObject {
     val name: String
     val dir: Boolean
