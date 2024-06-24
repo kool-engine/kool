@@ -1,4 +1,5 @@
 import org.gradle.internal.os.OperatingSystem
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
@@ -11,7 +12,7 @@ kotlin {
     jvm("desktop") { }
     jvmToolchain(11)
 
-    js(IR) {
+    js {
         binaries.executable()
         browser {
             @OptIn(ExperimentalDistributionDsl::class)
@@ -25,6 +26,10 @@ kotlin {
                     KotlinWebpackConfig.Mode.DEVELOPMENT
                 }
             }
+        }
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            target.set("es2015")
         }
     }
 
@@ -74,7 +79,7 @@ task("cacheRuntimeLibs") {
                 }
             }
         File("${projectDir}/runtimeLibs/").listFiles()
-            ?.filter { exiting -> runtimeLibs.none { exiting.name == it.name } }
+            ?.filter { existing -> runtimeLibs.none { existing.name == it.name } }
             ?.forEach { it.delete() }
     }
 }
