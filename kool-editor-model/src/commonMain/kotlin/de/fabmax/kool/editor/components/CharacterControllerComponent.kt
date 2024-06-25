@@ -151,11 +151,15 @@ class CharacterControllerComponent(
         if (walkDir.length() > 0f) {
             head += atan2(walkDir.x, walkDir.y)
         }
+        head = (head + PI_F * 2f) % (PI_F * 2f)
+
         val current = moveHeading.rad
-        if (current - head > PI_F) {
-            moveHeading = ((moveHeading.deg + 360f) % 360f - 360f).deg
-        } else if (head - current > PI_F) {
-            moveHeading = ((moveHeading.deg + 360f) % 360f).deg
+        if (abs(current - head) > PI_F) {
+            if (current > head) {
+                moveHeading -= 360f.deg
+            } else {
+                moveHeading += 360f.deg
+            }
         }
         moveHeading = moveHeading.rad.expDecay(head, 24f).rad
 
