@@ -5,10 +5,14 @@ import de.fabmax.kool.Platform
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.PlatformFunctions
 import de.fabmax.kool.editor.WindowButtonStyle
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.smoothStep
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.*
+import kotlin.math.cos
+import kotlin.math.sin
 
 class WindowTitleBar(val editor: KoolEditor) : Composable {
 
@@ -95,33 +99,82 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
         if (isShowExportButton.use()) {
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
-            var isHovered by remember(false)
-            val button = iconTextButton(
-                icon = IconMap.small.download,
-                text = "Save Project",
-                bgColor = colors.componentBg,
-                bgColorHovered = colors.componentBgHovered,
-                bgColorClicked = colors.elevatedComponentBgHovered,
-                width = sizes.baseSize * 3.5f,
-                margin = sizes.gap,
-                boxBlock = {
-                    modifier
-                        .onEnter { isHovered = true }
-                        .onExit { isHovered = false }
-                        .onDrag { }
-                }
-            ) {
-                editor.exportProject()
-            }
+            exportButton()
 
-            if (isHovered) {
-                saveProjectTooltip(button)
+            iconButton(
+                icon = IconMap.small.github,
+                width = sizes.editItemHeight,
+                height = sizes.editItemHeight
+            ) {
+                KoolSystem.requireContext().openUrl("https://github.com/fabmax/kool")
             }
         }
 
         when (PlatformFunctions.windowButtonStyle) {
             WindowButtonStyle.WINDOWS -> windowButtonsWindows()
             WindowButtonStyle.NONE -> { }
+        }
+    }
+
+    private fun UiScope.exportButton() = Box {
+        var isHovered by remember(false)
+        var isClickFeedback by remember(false)
+        var isExporting by remember(false)
+
+        val color = when {
+            isExporting -> null
+            isClickFeedback -> colors.elevatedComponentBgHovered
+            isHovered -> colors.componentBgHovered
+            else -> colors.componentBg
+        }
+        color?.let {
+            modifier.background(RoundRectBackground(it, sizes.smallGap))
+        }
+
+        modifier
+            .align(AlignmentX.Center, AlignmentY.Center)
+            .margin(end = sizes.largeGap)
+            .width(sizes.baseSize * 3.5f)
+            .height(sizes.editItemHeight)
+            .padding(horizontal = sizes.gap)
+            .onDrag { }
+            .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
+            .onEnter { isHovered = true }
+            .onExit {
+                isHovered = false
+                isClickFeedback = false
+            }
+            .onClick {
+                if (!isExporting) {
+                    isExporting = true
+                    launchOnMainThread {
+                        editor.exportProject()
+                        isExporting = false
+                    }
+                }
+            }
+
+        Row {
+            modifier.align(AlignmentX.Center, AlignmentY.Center)
+
+            if (!isExporting) {
+                Image {
+                    modifier
+                        .alignY(AlignmentY.Center)
+                        .iconImage(IconMap.small.download, Color.WHITE)
+                        .margin(end = sizes.gap)
+                }
+            } else {
+                Box(IconMap.small.iconSize, IconMap.small.iconSize) {
+                    modifier.background(ExportButtonBackground())
+                }
+            }
+            Text("Save Project") {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .textColor(Color.WHITE)
+                    .margin(horizontal = sizes.gap)
+            }
         }
     }
 
@@ -211,6 +264,36 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
     private class TransformFrameOption(val frame: GizmoFrame, val label: String) {
         override fun toString(): String = label
+    }
+
+    private class ExportButtonBackground : UiRenderer<UiNode> {
+        override fun renderUi(node: UiNode) {
+            node.apply {
+                val ctX = leftPx + (rightPx - leftPx) * 0.5f
+                val ctY = topPx + (bottomPx - topPx) * 0.5f
+
+                val rMaj = (rightPx - leftPx) / 2.75f
+                val rMin = (rightPx - leftPx) / 8f
+
+                val prims = node.getUiPrimitives(UiSurface.LAYER_BACKGROUND)
+                val ang2 = ((Time.gameTime % 6.0) * -60.0).toRad().toFloat()
+                val maxSz1 = Vec2f(cos(ang2), sin(ang2))
+                for (i in 1..5) {
+                    val ang = ((Time.gameTime % 3.0) * 120.0 + i * 40.0).toRad().toFloat()
+                    val pos = Vec2f(cos(ang), sin(ang))
+                    val maxDot = maxSz1 dot pos
+                    val dot = smoothStep(0.3f, 1f, maxDot)
+                    val sz = dot * 0.4f + 0.6f
+                    val color = gradient.getColor(dot)
+                    prims.circle(ctX + pos.x * rMaj, ctY + pos.y * rMaj, sz * rMin, clipBoundsPx, color)
+                }
+            }
+            node.surface.triggerUpdate()
+        }
+
+        companion object {
+            val gradient = ColorGradient(Color("ffb703ff"), Color.WHITE)
+        }
     }
 
     companion object {

@@ -888,9 +888,8 @@ fun UiScope.iconTextButton(
         else -> bgColor
     }
 
-    modifier.background(RoundRectBackground(color, sizes.smallGap))
-
     modifier
+        .background(RoundRectBackground(color, sizes.smallGap))
         .align(AlignmentX.Center, AlignmentY.Center)
         .margin(margin)
         .width(width)
@@ -911,7 +910,7 @@ fun UiScope.iconTextButton(
             modifier
                 .alignY(AlignmentY.Center)
                 .iconImage(icon, tint)
-                .margin(horizontal = sizes.gap)
+                .margin(end = sizes.gap)
         }
         Text(text) {
             modifier
@@ -919,7 +918,6 @@ fun UiScope.iconTextButton(
                 .textColor(tint)
                 .margin(horizontal = sizes.gap)
         }
-        Box(width = sizes.gap) { }
     }
 
     tooltip?.let {

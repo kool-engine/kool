@@ -95,7 +95,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
             onExit()
-            return true
+            return when (KoolSystem.platform) {
+                Platform.JAVASCRIPT -> false
+                else -> true
+            }
         }
 
         override fun onFileDrop(droppedFiles: List<LoadableFile>) {
@@ -351,11 +354,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         logD { "Saved project model" }
     }
 
-    fun exportProject() {
-        Assets.launch {
-            val zippedProj = InMemoryFileSystem(projectFiles.fileSystem).toZip()
-            Assets.saveFileByUser(zippedProj, "kool-editor-proj.zip")
-        }
+    suspend fun exportProject() {
+        val zippedProj = InMemoryFileSystem(projectFiles.fileSystem).toZip()
+        Assets.saveFileByUser(zippedProj, "kool-editor-proj.zip")
     }
 
     companion object {
