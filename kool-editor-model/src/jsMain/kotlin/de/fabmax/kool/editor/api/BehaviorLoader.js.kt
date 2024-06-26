@@ -6,7 +6,7 @@ actual object BehaviorLoader {
     var appBehaviorLoader: AppBehaviorLoader? = null
 
     private val loader: AppBehaviorLoader
-        get() = appBehaviorLoader ?: throw IllegalStateException("ScriptLoader.appScriptLoader not initialized")
+        get() = appBehaviorLoader ?: throw IllegalStateException("BehaviorLoader.appBehaviorLoader not initialized")
 
     actual fun newInstance(behaviorClassName: String): KoolBehavior {
         return loader.newInstance(behaviorClassName)

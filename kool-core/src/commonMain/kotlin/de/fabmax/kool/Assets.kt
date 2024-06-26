@@ -97,8 +97,8 @@ object Assets : CoroutineScope {
     /**
      * Opens a file chooser dialog for the user to select a destination file for the given data.
      *
-     * @return On JVM the selected path is returned or null if the user canceled the operation. On js null is always
-     *         returned.
+     * @return On JVM the selected path is returned or null if the user canceled the operation. On js only the file
+     *         name is returned.
      */
     suspend fun saveFileByUser(
         data: Uint8Buffer,
@@ -333,7 +333,7 @@ expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetL
 
 expect suspend fun decodeDataUri(dataUri: String): Uint8Buffer
 
-data class FileFilterItem(val name: String, val fileExtensions: String)
+data class FileFilterItem(val name: String, val mimeType: String, val fileExtensions: List<String>)
 
 internal expect fun PlatformAssets(): PlatformAssets
 
@@ -355,6 +355,7 @@ internal interface PlatformAssets {
 
 object MimeType {
     const val BINARY_DATA = "application/octet-stream"
+    const val ZIP = "application/x-zip"
     const val IMAGE_PNG = "image/png"
     const val IMAGE_JPG = "image/jpeg"
     const val IMAGE_SVG = "image/svg+xml"

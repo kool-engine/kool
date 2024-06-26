@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.FileFilterItem
+import de.fabmax.kool.MimeType
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.math.Vec2f
@@ -182,11 +183,11 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
 
     companion object {
         private val filterListTextures = listOf(
-            FileFilterItem("Images", ".jpg, .png, .hdr")
+            FileFilterItem("Images", "image/*", listOf(".jpg", ".png", ".hdr"))
         )
 
         private val filterListModels = listOf(
-            FileFilterItem("glTF Models", ".glb, .glb.gz, .gltf, .gltf.gz")
+            FileFilterItem("glTF Models", MimeType.BINARY_DATA, listOf(".glb", ".glb.gz", ".gltf", ".gltf.gz"))
         )
     }
 }

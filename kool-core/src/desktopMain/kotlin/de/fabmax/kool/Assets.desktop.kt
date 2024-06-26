@@ -83,9 +83,7 @@ object PlatformAssetsImpl : PlatformAssets {
                     fileFilters = NFDFilterItem.calloc(filterList.size)
                     filterList.forEachIndexed { i, filterItem ->
                         // make sure file extensions do not contain leading '.' and are separated by ',' with no space
-                        val extensions = filterItem.fileExtensions
-                            .split(',')
-                            .joinToString(",") { it.trim().removePrefix(".") }
+                        val extensions = filterItem.fileExtensions.joinToString(",") { it.trim().removePrefix(".") }
                         fileFilters[i].set(filterItem.name.toByteBuffer(), extensions.toByteBuffer())
                     }
                 }
@@ -132,7 +130,9 @@ object PlatformAssetsImpl : PlatformAssets {
                 if (filterList.isNotEmpty()) {
                     fileFilters = NFDFilterItem.calloc(filterList.size)
                     filterList.forEachIndexed { i, filterItem ->
-                        fileFilters[i].set(filterItem.name.toByteBuffer(), filterItem.fileExtensions.toByteBuffer())
+                        // make sure file extensions do not contain leading '.' and are separated by ',' with no space
+                        val extensions = filterItem.fileExtensions.joinToString(",") { it.trim().removePrefix(".") }
+                        fileFilters[i].set(filterItem.name.toByteBuffer(), extensions.toByteBuffer())
                     }
                 }
 

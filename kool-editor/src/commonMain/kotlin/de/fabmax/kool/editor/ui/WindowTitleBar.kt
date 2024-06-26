@@ -99,15 +99,19 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
         if (isShowExportButton.use()) {
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
-            exportButton()
+            Row(height = Grow.Std) {
+                modifier.margin(end = sizes.largeGap)
 
-            iconButton(
-                icon = IconMap.small.github,
-                width = sizes.editItemHeight,
-                height = sizes.editItemHeight
-            ) {
-                KoolSystem.requireContext().openUrl("https://github.com/fabmax/kool")
+                exportButton()
+                iconButton(
+                    icon = IconMap.small.github,
+                    width = sizes.editItemHeight,
+                    height = sizes.editItemHeight
+                ) {
+                    KoolSystem.requireContext().openUrl("https://github.com/fabmax/kool")
+                }
             }
+
         }
 
         when (PlatformFunctions.windowButtonStyle) {
@@ -178,10 +182,9 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
         }
     }
 
-    private fun UiScope.windowButtonsWindows() {
+    private fun UiScope.windowButtonsWindows() = Row(height = Grow.Std) {
+        modifier.margin(start = sizes.largeGap)
         val maxIcon = if (PlatformFunctions.isWindowMaximized) IconMap.medium.demaximizeWin else IconMap.medium.maximizeWin
-
-        Box(width = sizes.largeGap) { }
 
         windowButton(IconMap.medium.minimizeWin, colors.componentBgHovered) { PlatformFunctions.minimizeWindow() }
         windowButton(maxIcon, colors.componentBgHovered) { PlatformFunctions.toggleMaximizeWindow() }

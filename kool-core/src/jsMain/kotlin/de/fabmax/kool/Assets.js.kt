@@ -1,16 +1,12 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
-import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderJs
-import de.fabmax.kool.modules.filesystem.FileSystemDirectory
+import de.fabmax.kool.modules.filesystem.*
 import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.platform.FileSaver
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
-import de.fabmax.kool.platform.saveAs
 import de.fabmax.kool.util.AtlasFont
 import de.fabmax.kool.util.CharMetrics
 import de.fabmax.kool.util.Uint8Buffer
@@ -53,9 +49,7 @@ object PlatformAssetsImpl : PlatformAssets {
     override suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile> {
         document.body?.let { body ->
             val accept = filterList.joinToString { item ->
-                item.fileExtensions
-                    .split(',')
-                    .joinToString(", ") { ".${it.trim().removePrefix(".")}" }
+                item.fileExtensions.joinToString(", ") { ".${it.trim().removePrefix(".")}" }
             }
 
             val deferred = CompletableDeferred<FileList>()
@@ -88,14 +82,18 @@ object PlatformAssetsImpl : PlatformAssets {
         filterList: List<FileFilterItem>,
         mimeType: String
     ): String? {
-        val fName = if (defaultFileName != null && filterList.isNotEmpty()) {
-            val extension = filterList.first().fileExtensions.split(',')[0]
-            "${defaultFileName}.${extension}"
-        } else {
-            defaultFileName
+        val fileHandle = CompletableDeferred<FileSystemFileHandle?>()
+        showSaveFilePicker(FilePickerOptions(defaultFileName, filterList))
+            .then { fileHandle.complete(it) }
+            .catch { fileHandle.complete(null) }
+
+        val buffer = (data as Uint8BufferImpl).buffer
+        val file = fileHandle.await() ?: return null
+        file.createWritable().await().apply {
+            write(buffer)
+            close()
         }
-        FileSaver.saveAs(data, fName ?: "", mimeType)
-        return null
+        return file.getFile().await().name
     }
 
     override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {

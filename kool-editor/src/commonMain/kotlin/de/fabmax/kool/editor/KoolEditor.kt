@@ -356,7 +356,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
     suspend fun exportProject() {
         val zippedProj = InMemoryFileSystem(projectFiles.fileSystem).toZip()
-        Assets.saveFileByUser(zippedProj, "kool-editor-proj.zip")
+        val filter = listOf(
+            FileFilterItem("Zip Files", MimeType.ZIP, listOf(".zip"))
+        )
+        Assets.saveFileByUser(zippedProj, "kool-editor-proj.zip", filter)
     }
 
     companion object {
