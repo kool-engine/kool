@@ -6,7 +6,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logT
 import kotlin.math.roundToInt
 
 object IconMap {
@@ -38,7 +38,7 @@ object IconMap {
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
             val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
-            logD { "Render icon map: $width x $height (${iconSize.value} dp)" }
+            logT { "Render icon map: $width x $height (${iconSize.value} dp)" }
             Assets.loadTextureData("assets/icons/icons-24px.svg", loadProps)
         }
 

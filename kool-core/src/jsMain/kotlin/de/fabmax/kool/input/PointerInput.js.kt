@@ -8,7 +8,7 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.TouchEvent
 import de.fabmax.kool.platform.elementX
 import de.fabmax.kool.platform.elementY
-import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.logT
 import kotlinx.browser.document
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.KeyboardEvent
@@ -254,30 +254,6 @@ internal object PlatformInputJs : PlatformInput {
         "F11" to KeyboardInput.KEY_F11,
         "F12" to KeyboardInput.KEY_F12,
         "Space" to UniversalKeyCode(' ')
-
-
-        /*
-
-        printableKeys += GLFW.GLFW_KEY_APOSTROPHE
-        printableKeys += GLFW.GLFW_KEY_COMMA
-        printableKeys += GLFW.GLFW_KEY_MINUS
-        printableKeys += GLFW.GLFW_KEY_PERIOD
-        printableKeys += GLFW.GLFW_KEY_SLASH
-        printableKeys += GLFW.GLFW_KEY_SEMICOLON
-        printableKeys += GLFW.GLFW_KEY_EQUAL
-        printableKeys += GLFW.GLFW_KEY_LEFT_BRACKET
-        printableKeys += GLFW.GLFW_KEY_RIGHT_BRACKET
-        printableKeys += GLFW.GLFW_KEY_BACKSLASH
-        //printableKeys += GLFW.GLFW_KEY_WORLD_1
-        printableKeys += GLFW.GLFW_KEY_WORLD_2
-        printableKeys += GLFW.GLFW_KEY_KP_DECIMAL
-        printableKeys += GLFW.GLFW_KEY_KP_DIVIDE
-        printableKeys += GLFW.GLFW_KEY_KP_MULTIPLY
-        printableKeys += GLFW.GLFW_KEY_KP_SUBTRACT
-        printableKeys += GLFW.GLFW_KEY_KP_ADD
-        printableKeys += GLFW.GLFW_KEY_KP_EQUAL
-         */
-
     )
 
     private object PointerLockState {
@@ -314,7 +290,7 @@ internal object PlatformInputJs : PlatformInput {
             if (!hasPointerLock && !isApiExitRequest) {
                 // we lost pointer lock without requesting it via api -> user requested it by hitting the esc key
                 // report an esc key-event, so the application can react on it
-                logI { "pointer lock exited by user" }
+                logT { "pointer lock exited by user" }
                 KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_DOWN, 0))
                 KeyboardInput.handleKeyEvent(KeyEvent(KeyboardInput.KEY_ESC, KeyboardInput.KEY_ESC, KeyboardInput.KEY_EV_UP, 0))
             }

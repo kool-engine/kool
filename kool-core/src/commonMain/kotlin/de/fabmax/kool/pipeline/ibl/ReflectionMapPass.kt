@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.releaseWith
 
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
@@ -58,9 +58,9 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += {
             if (hdriMap != null) {
-                logD { "Generated reflection map from HDRI: ${hdriMap.name}, size: $size x $size" }
+                logT { "Generated reflection map from HDRI: ${hdriMap.name}, size: $size x $size" }
             } else {
-                logD { "Generated reflection map from cube map: ${cubeMap?.name}, size: $size x $size" }
+                logT { "Generated reflection map from cube map: ${cubeMap?.name}, size: $size x $size" }
             }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)

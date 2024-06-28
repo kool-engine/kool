@@ -8,7 +8,7 @@ import de.fabmax.kool.editor.data.MaterialShaderData
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
 
 class MaterialComponent(
@@ -32,7 +32,7 @@ class MaterialComponent(
 
         val meshKey = MeshShaderKey(gameEntity, mesh)
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
-            logD { "Creating new material shader $name (for mesh: ${mesh.name})" }
+            logT { "Creating new material shader $name (for mesh: ${mesh.name})" }
             data.createShader(sceneShaderData)
         }
 

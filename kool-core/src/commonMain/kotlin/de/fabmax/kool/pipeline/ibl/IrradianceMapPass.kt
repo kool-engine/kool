@@ -11,7 +11,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logT
 import kotlin.math.PI
 
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
@@ -38,9 +38,9 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
         // this pass only needs to be rendered once, remove it immediately after first render
         onAfterDraw += {
             if (hdriMap != null) {
-                logD { "Generated irradiance map from HDRI: ${hdriMap.name}" }
+                logT { "Generated irradiance map from HDRI: ${hdriMap.name}" }
             } else {
-                logD { "Generated irradiance map from cube map: ${cubeMap?.name}" }
+                logT { "Generated irradiance map from cube map: ${cubeMap?.name}" }
             }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)
