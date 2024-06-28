@@ -29,6 +29,8 @@ abstract class PhysicsComponent<T: ComponentData>(
     private val tmpMat4 = MutableMat4d()
     protected val scale = MutableVec3d(Vec3d.ONES)
 
+    protected var warnOnNonUniformScale = true
+
     override suspend fun applyComponent() {
         super.applyComponent()
         localActorTransform.set(gameEntity.transform.transform)
@@ -66,7 +68,7 @@ abstract class PhysicsComponent<T: ComponentData>(
         val s = MutableVec3d()
         gameEntity.drawNode.modelMatD.decompose(t, r, s)
 
-        if (!s.isFuzzyEqual(Vec3d.ONES, eps = 1e-3)) {
+        if (warnOnNonUniformScale && !s.isFuzzyEqual(Vec3d.ONES, eps = 1e-3)) {
             logW { "${gameEntity.name} / ${this::class.simpleName}: transform contains a scaling component $s, which may lead to unexpected behavior." }
         }
         applyPose(t, r)

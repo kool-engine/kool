@@ -30,7 +30,8 @@ class RigidActorComponent(
     componentInfo: ComponentInfo<RigidActorComponentData> = ComponentInfo(RigidActorComponentData())
 ) :
     PhysicsComponent<RigidActorComponentData>(gameEntity, componentInfo),
-    MeshComponent.ListenerComponent
+    MeshComponent.ListenerComponent,
+    ModelComponent.ListenerComponent
 {
     var rigidActor: RigidActor? = null
         private set
@@ -148,6 +149,7 @@ class RigidActorComponent(
             val meshComp = gameEntity.getComponent<MeshComponent>()
             val modelComp = gameEntity.getComponent<ModelComponent>()
 
+            warnOnNonUniformScale = true
             val shapes = when {
                 bodyShapes.isNotEmpty() -> bodyShapes.mapNotNull { shape -> shape.makeCollisionGeometry() }
                 meshComp != null -> meshComp.makeCollisionShapes()
@@ -172,6 +174,7 @@ class RigidActorComponent(
         val model = drawNode ?: return emptyList()
 
         model.transform.decompose(scale = scale)
+        warnOnNonUniformScale = false
 
         val collisionGeom = IndexedVertexList(Attribute.POSITIONS)
         val globalToModel = model.invModelMatD
@@ -220,6 +223,12 @@ class RigidActorComponent(
     }
 
     override suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData) {
+        if (data.shapes.isEmpty()) {
+            createRigidBody(data)
+        }
+    }
+
+    override suspend fun onModelChanged(component: ModelComponent, newData: ModelComponentData) {
         if (data.shapes.isEmpty()) {
             createRigidBody(data)
         }

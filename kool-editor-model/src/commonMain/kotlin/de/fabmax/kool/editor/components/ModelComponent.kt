@@ -32,6 +32,8 @@ class ModelComponent(
     override var drawNode: Model? = null
         private set
 
+    private val listeners by cachedEntityComponents<ListenerComponent>()
+
     private val isRecreatingModel = atomic(false)
     private var isIblShaded = false
     private var isSsaoEnabled = false
@@ -172,9 +174,7 @@ class ModelComponent(
 
         if (data.animationIndex >= 0) {
             model.animations.getOrNull(data.animationIndex)?.weight = 1f
-        }
-        model.onUpdate {
-            if (data.animationIndex >= 0) {
+            model.onUpdate {
                 model.applyAnimation(Time.deltaT)
             }
         }
@@ -199,5 +199,11 @@ class ModelComponent(
         // set newly created model as new content node (or an empty Node in case model loading failed)
         // this also disposes any previous model
         gameEntity.replaceDrawNode(drawNode ?: Node(gameEntity.name))
+
+        listeners.forEach { it.onModelChanged(this, data) }
+    }
+
+    interface ListenerComponent {
+        suspend fun onModelChanged(component: ModelComponent, newData: ModelComponentData)
     }
 }

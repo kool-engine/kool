@@ -82,7 +82,7 @@ class SceneShaderCache :
     }
 
     fun getShaderCache(material: MaterialComponent): MutableMap<MeshShaderKey, DrawShader>? {
-        return materialShaders.get(material.id)
+        return materialShaders[material.id]
     }
 
     fun getOrPutShaderCache(material: MaterialComponent): MutableMap<MeshShaderKey, DrawShader> {
