@@ -5,22 +5,25 @@
 
 A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop Java, Android and browsers.
 
-This is very much a code-only game engine. I recommend taking a look at the demos listed below in case
-you are curious (all demo source code is available in the `kool-demo` subproject). The library is also published on
-maven central, see [below](#usage).
-
-I also started working on a graphical scene editor.
-The editor is still in an early state and not very useful yet, but you can try the [Web Demo](https://fabmax.github.io/kool/kool-editor/)
-in case you are curious. You can also take a look at the `kool-editor-template` in the [kool-templates](https://github.com/fabmax/kool-templates)
-in case you want to play around with it a bit more.
-
-## Get In Touch
-
+### Get In Touch
 Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
-## Demos
-- [Editor](https://fabmax.github.io/kool/kool-editor/): Work in progress graphical editor for this engine. Fully
-  implemented within the engine itself. 
+## Scene Editor
+Check out the web version [here](https://fabmax.github.io/kool/kool-editor/)! (Chrome recommended).
+
+The engine used to be a code-only engine, but I recently made some progress in implementing a graphical scene editor.
+The editor still is in an early state and lacks several rather essential features, but the basics already work quite
+well. It is fully implemented within the engine itself (including the UI).
+
+To unleash the full potential of the editor, you should run it locally. You can either download the editor
+directly in the web-version by clicking the `Save Project` button in the upper right corner (this also preserves any
+changes made in the editor) or you can clone the editor template project (see [usage](#usage) below).
+
+## Web-Demos
+The following demos run directly in the browser. Chrome is recommended but other browsers might work as well.
+All demos are implemented in code-only fashion (i.e. without using the editor). The code for all demos is available in
+the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject.
+
 - [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
@@ -62,8 +65,6 @@ Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
   demo of the Stanford Bunny. Uses six levels of detail to render up to 8000 instances.
 - [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplification): Interactive mesh
   simplification demo (based on traditional [error-quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
-
-Code for all demos is available in kool-demo sub-project.
 
 By default, the web demos use the WebGPU backend and fall back to WebGL if WebGPU is not supported by your browser. The
 used backend is printed in the extended info-panel in the lower right corner (click on the little `+`), apart from
@@ -142,8 +143,8 @@ the libs are resolved and added to the IntelliJ module classpath.
 
 Getting a basic scene on the screen is quite simple:
 ```kotlin
-fun main() = KoolApplication { ctx ->
-    ctx.scenes += scene {
+fun main() = KoolApplication {
+    addScene {
         defaultOrbitCamera()
 
         addColorMesh {
@@ -185,8 +186,8 @@ in its full glory. The resulting scene looks like [this](https://fabmax.github.i
 Model loading, animation and more advanced lighting with shadow mapping and ambient occlusion requires only a few more
 lines of code:
 ```kotlin
-fun main() = KoolApplication { ctx ->
-    ctx.scenes += scene {
+fun main() = KoolApplication {
+    addScene {
         defaultOrbitCamera()
 
         // Light setup
@@ -270,7 +271,7 @@ repository is loaded.
 Kool comes with an embedded UI framework, which is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb)
 but was implemented from scratch. Here is a small example:
 ```kotlin
-fun main() = KoolApplication { ctx ->
+fun main() = KoolApplication {
     ctx.scenes += UiScene(clearScreen = true) {
         Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier
@@ -319,8 +320,8 @@ different backends in the future (e.g. metal).
 Writing shaders in ksl is quite similar to GLSL, here's how a hello-world style shader looks like:
 
 ```kotlin
-fun main() = KoolApplication { ctx ->
-    ctx.scenes += scene {
+fun main() = KoolApplication {
+    addScene {
         defaultOrbitCamera()
 
         addColorMesh {
