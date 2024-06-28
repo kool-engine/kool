@@ -106,9 +106,15 @@ class BoxSelector : Composable {
             TODO()
         }
 
-        val boxSelection = scene.sceneEntities.values.filter {
-            it.isVisibleWithParents && camHelper.testSceneNode(it)
-        }.toSet()
+        val boxSelection = scene.sceneEntities.values
+            .filter { it.isSceneChild && it.isVisibleWithParents && camHelper.testSceneNode(it) }
+            .toMutableSet()
+
+        // remove nodes which are not empty and not all children are selected
+        boxSelection -= boxSelection.filter { !it.children.all { child -> child in boxSelection } }.toSet()
+        // remove nodes from selection whose parent is in selection as well
+        boxSelection -= boxSelection.filter { it.parent in boxSelection }.toSet()
+
         val newSelection = if (KeyboardInput.isAltDown) {
             startSelection - boxSelection
         } else {
@@ -136,11 +142,7 @@ class BoxSelector : Composable {
             return when (drawNode) {
                 is Mesh -> testMesh(drawNode)
                 is Model -> drawNode.meshes.values.any { testMesh(it) }
-                is Light -> true
-                is Camera -> true
-
-                // do not box-select groups
-                else -> false
+                else -> true
             }
         }
 

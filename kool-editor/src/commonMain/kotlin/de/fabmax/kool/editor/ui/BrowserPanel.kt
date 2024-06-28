@@ -24,10 +24,10 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     protected val expandedDirTree = mutableListOf<BrowserDir>()
     val selectedDirectory = mutableStateOf<BrowserDir?>(null)
 
-    private val treePanelSize = mutableStateOf(Dp(275f))
+    private val treePanelSize = mutableStateOf(Dp(280f))
 
     init {
-        val treeW = KeyValueStore.getFloat("editor.ui.[$name].treeSize", 275f)
+        val treeW = KeyValueStore.getFloat("editor.ui.[$name].treeSize", treePanelSize.value.value)
         treePanelSize.set(Dp(treeW))
     }
 

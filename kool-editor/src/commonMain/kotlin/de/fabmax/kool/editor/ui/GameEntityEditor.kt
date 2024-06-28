@@ -12,7 +12,14 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.roundToInt
 
-class GameEntityEditor(ui: EditorUi) : EditorPanel("Object Properties", IconMap.medium.properties, ui) {
+class GameEntityEditor(ui: EditorUi) :
+    EditorPanel(
+        name = "Object Properties",
+        icon = IconMap.medium.properties,
+        ui = ui,
+        defaultWidth = ui.dock.dockingSurface.sizes.baseSize * 9
+    )
+{
 
     val panelCollapseStates = mutableMapOf<EntityId, MutableMap<String, Boolean>>()
 

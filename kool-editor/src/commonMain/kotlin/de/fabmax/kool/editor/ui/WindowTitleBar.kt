@@ -100,7 +100,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
             Row(height = Grow.Std) {
-                modifier.margin(end = sizes.largeGap)
+                modifier.margin(end = sizes.smallGap)
 
                 exportButton()
                 iconButton(
@@ -157,6 +157,10 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                     }
                 }
             }
+
+        if (isHovered) {
+            saveProjectTooltip(this)
+        }
 
         Row {
             modifier.align(AlignmentX.Center, AlignmentY.Center)
@@ -232,7 +236,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                 modifier.font(sizes.boldText)
             }
 
-            Text("Save project and unzip it. Then open the unzipped folder in a terminal:") {
+            Text("Save project and unzip it. Then open the unzipped folder in IntelliJ or a terminal:") {
                 modifier
                     .width(Grow.Std)
                     .isWrapText(true)

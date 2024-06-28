@@ -18,7 +18,7 @@ class ModelEditor : ComponentEditor<ModelComponent>() {
         }
         componentPanel(
             title = "Model",
-            imageIcon = IconMap.small.tree,
+            imageIcon = IconMap.small.file3d,
             onRemove = ::removeComponent,
             titleWidth = sizes.baseSize * 2.3f,
             headerContent = {

@@ -237,7 +237,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.LIGHT -> IconMap.small.light
                 SceneObjectType.GROUP -> IconMap.small.emptyObject
                 SceneObjectType.MESH -> IconMap.small.cube
-                SceneObjectType.MODEL -> IconMap.small.tree
+                SceneObjectType.MODEL -> IconMap.small.file3d
                 SceneObjectType.SCENE -> IconMap.small.world
                 SceneObjectType.PHYSICS -> IconMap.small.physics
                 SceneObjectType.PHYSICS_CHARACTER -> IconMap.small.character

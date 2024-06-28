@@ -32,21 +32,17 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
 
         Column(Grow.Std, Grow.Std) {
             modifier.background(null)
+            viewBox = uiNode
 
             if (isShowOverlays.use()) {
                 Box(width = Grow.Std, height = Grow.Std) {
                     modifier
                         .padding(Dp.ZERO)
                         .background(null)
-                    viewBox = uiNode
 
                     if (editor.editMode.mode.use() == EditorEditMode.Mode.BOX_SELECT) {
-                        // enabled box selection mode
-                        surface.inputMode = UiSurface.InputCaptureMode.CapturePassthrough
                         boxSelector()
                     } else {
-                        // disabled box selection mode
-                        surface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
                         boxSelector.isBoxSelect.set(false)
                     }
                 }
