@@ -76,6 +76,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             is ShapeData.Sphere -> sphereProperties()
             is ShapeData.Cylinder -> cylinderProperties()
             is ShapeData.Capsule -> capsuleProperties()
+            is ShapeData.Model -> { }
             is ShapeData.Heightmap -> heightmapProperties()
             is ShapeData.Custom -> { }
             is ShapeData.Plane -> error("Plane shape is not supported as mesh shape")

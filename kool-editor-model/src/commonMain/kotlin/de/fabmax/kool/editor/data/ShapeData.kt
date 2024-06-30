@@ -18,6 +18,7 @@ sealed class ShapeData {
             is Custom -> copy(common = common)
             is Sphere -> copy(common = common)
             is Rect -> copy(common = common)
+            is Model -> copy(common = common)
             is Heightmap -> copy(common = common)
             is Plane -> copy(common = common)
         }
@@ -87,8 +88,13 @@ sealed class ShapeData {
     }
 
     @Serializable
-    data class Custom(override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
-        override val name: String get() = "Custom"
+    data class Model(
+        val modelPath: String = "",
+        val sceneIndex: Int = 0,
+        val animationIndex: Int = -1,
+        override val common: CommonShapeData = CommonShapeData()
+    ) : ShapeData() {
+        override val name: String get() = "Model"
         override val hasUvs: Boolean = false
     }
 
@@ -106,6 +112,12 @@ sealed class ShapeData {
     }
 
     @Serializable
+    data class Custom(override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
+        override val name: String get() = "Custom"
+        override val hasUvs: Boolean = false
+    }
+
+    @Serializable
     data class Plane(override val common: CommonShapeData = CommonShapeData()) : ShapeData() {
         override val name: String get() = "Plane"
         override val hasUvs: Boolean = false
@@ -118,6 +130,7 @@ sealed class ShapeData {
         val defaultRect = Rect()
         val defaultCylinder = Cylinder()
         val defaultCapsule = Capsule()
+        val defaultModel = Model()
         val defaultHeightmap = Heightmap()
         val defaultPlane = Plane()
     }

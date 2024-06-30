@@ -8,6 +8,7 @@ import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BufferedList
@@ -145,15 +146,12 @@ class RigidActorComponent(
         requiredAssets.clear()
         rigidActor?.let { actor ->
             bodyShapes = actorData.shapes
-
             val meshComp = gameEntity.getComponent<MeshComponent>()
-            val modelComp = gameEntity.getComponent<ModelComponent>()
 
             warnOnNonUniformScale = true
             val shapes = when {
                 bodyShapes.isNotEmpty() -> bodyShapes.mapNotNull { shape -> shape.makeCollisionGeometry() }
                 meshComp != null -> meshComp.makeCollisionShapes()
-                modelComp != null -> modelComp.makeCollisionShapes()
                 else -> emptyList()
             }
 
@@ -167,18 +165,20 @@ class RigidActorComponent(
     }
 
     private suspend fun MeshComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        return data.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(drawNode) }
+        return when (val node = drawNode) {
+            is Mesh -> data.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(node) }
+            is Model -> node.makeCollisionShapes()
+            else -> emptyList()
+        }
     }
 
-    private fun ModelComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        val model = drawNode ?: return emptyList()
-
-        model.transform.decompose(scale = scale)
+    private fun Model.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
+        transform.decompose(scale = scale)
         warnOnNonUniformScale = false
 
         val collisionGeom = IndexedVertexList(Attribute.POSITIONS)
-        val globalToModel = model.invModelMatD
-        model.meshes.values.forEach { mesh ->
+        val globalToModel = invModelMatD
+        meshes.values.forEach { mesh ->
             val meshToModel = mesh.modelMatD * globalToModel
             collisionGeom.addGeometry(mesh.geometry) {
                 meshToModel.transform(position, 1f)
@@ -196,7 +196,7 @@ class RigidActorComponent(
             is ShapeData.Heightmap -> loadHeightmapGeometry(this)?.let { it to Mat4f.IDENTITY }
             is ShapeData.Plane -> PlaneGeometry() to Mat4f.rotation(90f.deg, Vec3f.Z_AXIS)
             is ShapeData.Rect -> mesh?.let { it.geometry.makeTriMeshGeometry(Vec3f.ONES) to Mat4f.IDENTITY }
-            is ShapeData.Custom -> null
+            else -> null
         }
     }
 

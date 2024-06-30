@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.util.logW
 import kotlin.math.max
 
 val GameEntity.project: EditorProject get() = scene.project
@@ -218,7 +219,6 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             is DiscreteLightComponentData -> DiscreteLightComponent(requireSceneChild, info as ComponentInfo<DiscreteLightComponentData>)
             is MaterialReferenceComponentData -> MaterialReferenceComponent(requireSceneChild, info as ComponentInfo<MaterialReferenceComponentData>)
             is MeshComponentData -> MeshComponent(requireSceneChild, info as ComponentInfo<MeshComponentData>)
-            is ModelComponentData -> ModelComponent(requireSceneChild, info as ComponentInfo<ModelComponentData>)
             is RigidActorComponentData -> RigidActorComponent(requireSceneChild, info as ComponentInfo<RigidActorComponentData>)
             is ShadowMapComponentData -> ShadowMapComponent(requireSceneChild, info as ComponentInfo<ShadowMapComponentData>)
 
@@ -226,6 +226,13 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             is SceneBackgroundComponentData -> SceneBackgroundComponent(requireScene, info as ComponentInfo<SceneBackgroundComponentData>)
             is SceneComponentData -> SceneComponent(requireScene, info as ComponentInfo<SceneComponentData>)
             is SsaoComponentData -> SsaoComponent(requireScene, info as ComponentInfo<SsaoComponentData>)
+
+            is ModelComponentData -> {
+                logW { "converting ModelComponentData to MeshComponentData" }
+                val modelData = info.data as ModelComponentData
+                val meshData = MeshComponentData(ShapeData.Model(modelData.modelPath, modelData.sceneIndex, modelData.animationIndex))
+                MeshComponent(requireSceneChild, ComponentInfo(meshData))
+            }
         }
     }
 

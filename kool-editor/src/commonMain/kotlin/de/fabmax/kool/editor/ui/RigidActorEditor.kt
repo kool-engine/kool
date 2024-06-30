@@ -92,10 +92,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
                 is ShapeData.Cylinder -> cylinderEditor()
                 is ShapeData.Sphere -> sphereEditor()
                 is ShapeData.Heightmap -> heightmapEditor()
-                is ShapeData.Plane -> { }
                 is ShapeData.Rect -> { }    // todo: triangle mesh geometry
-                is ShapeData.Custom -> { }
-                null -> { }                 // "Use mesh"
+                else -> { }
             }
         }
     }
