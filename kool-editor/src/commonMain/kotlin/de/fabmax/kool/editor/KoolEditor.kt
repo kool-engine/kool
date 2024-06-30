@@ -49,6 +49,7 @@ suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor
         val backupDir = projectFiles.fileSystem.createDirectory("src/commonMain/resources/$backupName")
         projDataDir.copyRecursively(backupDir)
     }
+    data.updateData()
     return KoolEditor(projectFiles, EditorProject(data), ctx)
 }
 

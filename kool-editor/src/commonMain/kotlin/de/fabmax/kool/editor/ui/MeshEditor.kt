@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.CachedAppAssets
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetMeshShapeAction
@@ -57,6 +58,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
             ShapeOption.Capsule -> listOf(ShapeData.defaultCapsule)
+            ShapeOption.Model -> listOf(ShapeData.defaultModel)
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
             ShapeOption.Empty -> listOf(ShapeData.defaultCustom)
         }
@@ -76,7 +78,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             is ShapeData.Sphere -> sphereProperties()
             is ShapeData.Cylinder -> cylinderProperties()
             is ShapeData.Capsule -> capsuleProperties()
-            is ShapeData.Model -> { }
+            is ShapeData.Model -> modelProperties()
             is ShapeData.Heightmap -> heightmapProperties()
             is ShapeData.Custom -> { }
             is ShapeData.Plane -> error("Plane shape is not supported as mesh shape")
@@ -225,6 +227,52 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
     }
 
+    private fun UiScope.modelProperties() = Column(
+        width = Grow.Std,
+        scopeName = "modelProperties"
+    ) {
+        val modelsByPath = KoolEditor.instance.availableAssets.modelAssets.use().associateBy { it.path }
+        val models = ComboBoxItems(listOf(null) + modelsByPath.values.toList()) { it?.name ?: "None" }
+        choicePropertyEditor(
+            choices = models,
+            dataGetter = { it.data.shapes[0] as ShapeData.Model },
+            valueGetter = { modelsByPath[it.modelPath] },
+            valueSetter = { _, newValue -> ShapeData.Model(newValue?.path ?: "") },
+            actionMapper = meshShapeActionMapper,
+            label = "Model:"
+        )
+
+        val modelShapes = components.map { it.data.shapes[0] as ShapeData.Model }
+        val allTheSameModel = modelShapes.all { it == modelShapes[0]}
+        val gltf = components[0].gltfFile
+
+        if (allTheSameModel && gltf != null) {
+            val sceneOptions = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
+            val sceneChoices = ComboBoxItems(sceneOptions) { it.name }
+            choicePropertyEditor(
+                choices = sceneChoices,
+                dataGetter = { it.data.shapes[0] as ShapeData.Model },
+                valueGetter = { sceneOptions[it.sceneIndex] },
+                valueSetter = { oldData, newValue -> oldData.copy(sceneIndex = newValue.index) },
+                actionMapper = meshShapeActionMapper,
+                label = "Model scene:"
+            )
+
+            val animationOptions = listOf(noAnimation) + gltf.animations.mapIndexed { i, animation ->
+                AnimationOption(animation.name ?: "Animation $i", i)
+            }
+            val animationChoices = ComboBoxItems(animationOptions) { it.name }
+            choicePropertyEditor(
+                choices = animationChoices,
+                dataGetter = { it.data.shapes[0] as ShapeData.Model },
+                valueGetter = { animationOptions[it.animationIndex + 1] },
+                valueSetter = { oldData, newValue -> oldData.copy(animationIndex = newValue.index) },
+                actionMapper = meshShapeActionMapper,
+                label = "Animation:"
+            )
+        }
+    }
+
     private fun UiScope.heightmapProperties() = Column(
         width = Grow.Std,
         scopeName = "heightmapProperties"
@@ -341,11 +389,21 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         Sphere("Sphere", { it is ShapeData.Sphere }),
         Cylinder("Cylinder", { it is ShapeData.Cylinder }),
         Capsule("Capsule", { it is ShapeData.Capsule }),
+        Model("Model", { it is ShapeData.Model }),
         Heightmap("Heightmap", { it is ShapeData.Heightmap }),
         Empty("Custom", { it is ShapeData.Custom })
     }
 
+    private data class AnimationOption(val name: String, val index: Int) {
+        override fun toString(): String = name
+    }
+
+    private data class SceneOption(val name: String, val index: Int) {
+        override fun toString(): String = name
+    }
+
     companion object {
+        private val noAnimation = AnimationOption("None", -1)
         private val shapeOptions = ComboBoxItems(ShapeOption.entries) { it.label }
         private val meshShapeActionMapper: (MeshComponent, ShapeData, ShapeData) -> EditorAction = { component, undoData, applyData ->
             SetMeshShapeAction(component, undoData, applyData)

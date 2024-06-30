@@ -237,7 +237,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.LIGHT -> IconMap.small.light
                 SceneObjectType.GROUP -> IconMap.small.emptyObject
                 SceneObjectType.MESH -> IconMap.small.cube
-                SceneObjectType.MODEL -> IconMap.small.file3d
                 SceneObjectType.SCENE -> IconMap.small.world
                 SceneObjectType.PHYSICS -> IconMap.small.physics
                 SceneObjectType.PHYSICS_CHARACTER -> IconMap.small.character
@@ -275,19 +274,13 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun MutableList<SceneObjectItem>.appendNode(scene: EditorScene, node: Node, selectEntity: GameEntity, depth: Int) {
+        // todo: clean this up: non-entity nodes are no longer added to the tree...
         // get entity for node, this should be equal to [selectEntity] for regular objects but can be null if node
         // does not correspond to a GameEntity item (e.g. child meshes of a gltf model)
-        val entity = scene.nodesToEntities[node]
+        val entity = scene.nodesToEntities[node] ?: return
 
-        val item = if (entity != null) {
-            modelTreeItemMap.getOrPut(entity) {
-                SceneObjectItem(node, entity)
-            }
-        } else {
-            nodeTreeItemMap.getOrPut(node) {
-                SceneObjectItem(node, selectEntity, SceneObjectType.NON_MODEL_NODE)
-            }
-        }
+        val item = modelTreeItemMap.getOrPut(entity) { SceneObjectItem(node, entity) }
+        modelTreeItemMap[entity.parent]?.isExpandable = true
 
         // update item node, it can change when model / app is reloaded
         item.node = node
@@ -320,7 +313,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
         var type: SceneObjectType = getNodeType()
 
-        val isExpandable: Boolean get() = node.children.isNotEmpty()
+        var isExpandable = false
         val isExpanded = mutableStateOf(type.startExpanded)
 
         private fun getNodeType(): SceneObjectType {
@@ -334,7 +327,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
 
             return when (gameEntity.getComponent<DrawNodeComponent>()) {
                 is MeshComponent -> SceneObjectType.MESH
-                is ModelComponent -> SceneObjectType.MODEL
                 is DiscreteLightComponent -> SceneObjectType.LIGHT
                 is CameraComponent -> SceneObjectType.CAMERA
                 else -> when {
@@ -411,9 +403,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         LIGHT,
         GROUP,
         MESH,
-        MODEL(startExpanded = false),
         PHYSICS,
         PHYSICS_CHARACTER,
-        SCENE(true, isHideable = false)
+        SCENE(isHideable = false)
     }
 }

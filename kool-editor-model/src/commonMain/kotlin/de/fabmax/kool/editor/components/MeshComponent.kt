@@ -39,6 +39,11 @@ class MeshComponent(
     override var drawNode: Node? = null
         private set
 
+    val drawNodeMesh: Mesh? get() = meshHolder.mesh
+    val drawNodeModel: Model? get() = modelHolder.model
+
+    val gltfFile: GltfFile? get() = modelHolder.gltfFile
+
     private val listeners by cachedEntityComponents<ListenerComponent>()
 
     init {
@@ -86,6 +91,12 @@ class MeshComponent(
             heightMapShape != null -> meshHolder.updateHeightMap(heightMapShape)
             customShape != null -> meshHolder.updateCustom()
             else -> meshHolder.updatePrimitive(data)
+        }
+
+        if (node == modelHolder.model) {
+            meshHolder.release()
+        } else if (node == meshHolder.mesh) {
+            modelHolder.release()
         }
 
         if (node != drawNode) {

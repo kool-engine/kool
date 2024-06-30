@@ -31,8 +31,7 @@ class RigidActorComponent(
     componentInfo: ComponentInfo<RigidActorComponentData> = ComponentInfo(RigidActorComponentData())
 ) :
     PhysicsComponent<RigidActorComponentData>(gameEntity, componentInfo),
-    MeshComponent.ListenerComponent,
-    ModelComponent.ListenerComponent
+    MeshComponent.ListenerComponent
 {
     var rigidActor: RigidActor? = null
         private set
@@ -59,7 +58,6 @@ class RigidActorComponent(
 
     init {
         dependsOn(MeshComponent::class, isOptional = true)
-        dependsOn(ModelComponent::class, isOptional = true)
 
         data.shapes
             .filterIsInstance<ShapeData.Heightmap>()
@@ -223,12 +221,6 @@ class RigidActorComponent(
     }
 
     override suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData) {
-        if (data.shapes.isEmpty()) {
-            createRigidBody(data)
-        }
-    }
-
-    override suspend fun onModelChanged(component: ModelComponent, newData: ModelComponentData) {
         if (data.shapes.isEmpty()) {
             createRigidBody(data)
         }

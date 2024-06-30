@@ -7,7 +7,6 @@ import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.ModelComponentData
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.roundToInt
@@ -172,7 +171,6 @@ class GameEntityEditor(ui: EditorUi) :
                     is DiscreteLightComponent -> componentEditor(objects) { LightEditor() }
                     is MaterialReferenceComponent -> componentEditor(objects) { MaterialEditor() }
                     is MeshComponent -> componentEditor(objects) { MeshEditor() }
-                    is ModelComponent -> componentEditor(objects) { ModelEditor() }
                     is SceneComponent -> componentEditor(objects) { ScenePropertiesEditor() }
                     is SceneBackgroundComponent -> componentEditor(objects) { SceneBackgroundEditor() }
                     is BehaviorComponent -> componentEditor(objects) { BehaviorEditor() }
@@ -237,7 +235,6 @@ class GameEntityEditor(ui: EditorUi) :
     companion object {
         private val addComponentOptions = listOf(
             ComponentAdder.AddMeshComponent,
-            ComponentAdder.AddModelComponent,
             ComponentAdder.AddMaterialComponent,
             ComponentAdder.AddLightComponent,
             ComponentAdder.AddShadowMapComponent,
@@ -302,35 +299,9 @@ class GameEntityEditor(ui: EditorUi) :
             override fun createComponent(target: GameEntity): MeshComponent = MeshComponent(target)
         }
 
-        data object AddModelComponent : ComponentAdder<ModelComponent>("Model") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
-            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild
-
-            override fun addMenuItems(targetObjs: List<GameEntity>, parentMenu: SubMenuItem<List<GameEntity>>) {
-                val models = KoolEditor.instance.availableAssets.modelAssets
-                if (models.isNotEmpty()) {
-                    parentMenu.subMenu(name) {
-                        models.forEach { model ->
-                            item(model.name) { objs ->
-                                objs
-                                    .filter { target ->
-                                        !hasComponent(target)
-                                    }
-                                    .map { target ->
-                                        val modelComp = ModelComponent(target, ComponentInfo(ModelComponentData(model.path)))
-                                        AddComponentAction(target.id, modelComp)
-                                    }
-                                    .fused().apply()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         data object AddMaterialComponent : ComponentAdder<MaterialReferenceComponent>("Material") {
             override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<MaterialReferenceComponent>()
-            override fun accept(gameEntity: GameEntity) = gameEntity.hasComponent<MeshComponent>() || gameEntity.hasComponent<ModelComponent>()
+            override fun accept(gameEntity: GameEntity) = gameEntity.hasComponent<MeshComponent>()
             override fun createComponent(target: GameEntity): MaterialReferenceComponent = MaterialReferenceComponent(target)
         }
 
