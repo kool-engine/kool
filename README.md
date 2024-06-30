@@ -19,7 +19,7 @@ To unleash the full potential of the editor, you should run it locally. You can 
 directly in the web-version by clicking the `Save Project` button in the upper right corner (this also preserves any
 changes made in the editor) or you can clone the editor template project (see [usage](#usage) below).
 
-More editor related documentation is available in [the editor docs](https://fabmax.github.io/docs/editor.html).
+More editor related documentation is available in [the editor docs](https://fabmax.github.io/docs/editor).
 
 ## Web-Demos
 The following demos run directly in the browser. Chrome is recommended but other browsers might work as well.
