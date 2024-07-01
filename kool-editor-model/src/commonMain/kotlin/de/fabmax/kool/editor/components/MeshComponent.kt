@@ -51,9 +51,9 @@ class MeshComponent(
 
         val modelShape = data.shapes.find { it is ShapeData.Model } as ShapeData.Model?
         val heightMapShape = data.shapes.find { it is ShapeData.Heightmap } as ShapeData.Heightmap?
-        if (modelShape != null) {
+        if (modelShape != null && modelShape.modelPath.isNotBlank()) {
             requiredAssets += modelShape.toAssetReference()
-        } else if (heightMapShape != null) {
+        } else if (heightMapShape != null && heightMapShape.mapPath.isNotBlank()) {
             requiredAssets += heightMapShape.toAssetReference()
         }
     }
@@ -312,6 +312,8 @@ class MeshComponent(
         fun release() {
             model?.release()
             model = null
+            gltfPath = null
+            gltfFile = null
         }
 
         suspend fun updateModel(data: ShapeData.Model): Model? {

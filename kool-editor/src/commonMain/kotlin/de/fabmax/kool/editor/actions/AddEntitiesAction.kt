@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.EditorScene
@@ -58,16 +57,6 @@ fun EditorScene.addNewMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3f
     entityData.components += makeTransformComponent(pos)
     entityData.components += ComponentInfo(MeshComponentData(meshShape), displayOrder = 1)
     entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)), displayOrder = 2)
-    AddEntitiesAction(listOf(entityData)).apply()
-}
-
-fun EditorScene.addNewModel(parent: GameEntity?, modelAsset: AssetItem, pos: Vec3f? = null) {
-    val id = project.nextId()
-    val parentId = parent?.id ?: sceneEntity.id
-    val name = project.uniquifyName(modelAsset.name)
-    val entityData = GameEntityData(id, parentId, GameEntitySettings(name))
-    entityData.components += makeTransformComponent(pos)
-    entityData.components += ComponentInfo(ModelComponentData(modelAsset.path), displayOrder = 1)
     AddEntitiesAction(listOf(entityData)).apply()
 }
 

@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
@@ -231,21 +232,32 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         width = Grow.Std,
         scopeName = "modelProperties"
     ) {
-        val modelsByPath = KoolEditor.instance.availableAssets.modelAssets.use().associateBy { it.path }
-        val models = ComboBoxItems(listOf(null) + modelsByPath.values.toList()) { it?.name ?: "None" }
+        val modelOptions = buildList {
+            add(ModelOption("None", 0, null))
+            KoolEditor.instance.availableAssets.modelAssets.use().forEachIndexed { i, model ->
+                add(ModelOption(model.name, i+1, model))
+            }
+        }
+        val modelChoices = ComboBoxItems(modelOptions) { it.name }
         choicePropertyEditor(
-            choices = models,
+            choices = modelChoices,
             dataGetter = { it.data.shapes[0] as ShapeData.Model },
-            valueGetter = { modelsByPath[it.modelPath] },
-            valueSetter = { _, newValue -> ShapeData.Model(newValue?.path ?: "") },
+            valueGetter = { data -> modelOptions.find { data.modelPath == it.item?.path } ?: modelOptions[0] },
+            valueSetter = { _, newValue -> ShapeData.Model(newValue.item?.path ?: "") },
             actionMapper = meshShapeActionMapper,
             label = "Model:"
         )
 
         val modelShapes = components.map { it.data.shapes[0] as ShapeData.Model }
         val allTheSameModel = modelShapes.all { it == modelShapes[0]}
-        val gltf = components[0].gltfFile
+        val gltfState = remember(components[0].gltfFile)
+        surface.onEachFrame {
+            if (gltfState.value !== components[0].gltfFile) {
+                gltfState.set(components[0].gltfFile)
+            }
+        }
 
+        val gltf = gltfState.use()
         if (allTheSameModel && gltf != null) {
             val sceneOptions = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
             val sceneChoices = ComboBoxItems(sceneOptions) { it.name }
@@ -394,13 +406,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         Empty("Custom", { it is ShapeData.Custom })
     }
 
-    private data class AnimationOption(val name: String, val index: Int) {
-        override fun toString(): String = name
-    }
+    private data class ModelOption(val name: String, val index: Int, val item: AssetItem?)
 
-    private data class SceneOption(val name: String, val index: Int) {
-        override fun toString(): String = name
-    }
+    private data class AnimationOption(val name: String, val index: Int)
+
+    private data class SceneOption(val name: String, val index: Int)
 
     companion object {
         private val noAnimation = AnimationOption("None", -1)
