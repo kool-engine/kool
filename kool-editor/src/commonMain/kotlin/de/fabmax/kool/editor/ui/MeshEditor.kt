@@ -61,7 +61,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             ShapeOption.Capsule -> listOf(ShapeData.defaultCapsule)
             ShapeOption.Model -> listOf(ShapeData.defaultModel)
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
-            ShapeOption.Empty -> listOf(ShapeData.defaultCustom)
+            ShapeOption.Empty -> listOf(ShapeData.Custom)
         }
         val actions = components
             .filter { it.data.shapes != newShapes }
@@ -84,14 +84,6 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             is ShapeData.Custom -> { }
             is ShapeData.Plane -> error("Plane shape is not supported as mesh shape")
         }
-
-        if (shape.hasUvs) {
-            shapeVec2Editor<ShapeData>(
-                valueGetter = { it.common.uvScale.toVec2d() },
-                valueSetter = { oldData, newValue -> oldData.copyShape(oldData.common.copy(uvScale = Vec2Data(newValue))) },
-                label = "Texture scale:"
-            )
-        }
     }
 
     private fun UiScope.boxProperties() = Column(width = Grow.Std, scopeName = "boxProperties") {
@@ -101,6 +93,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             label = "Size:",
             minValues = Vec3d.ZERO
         )
+        shapeVec2Editor<ShapeData.Box>(
+            valueGetter = { it.uvScale.toVec2d() },
+            valueSetter = { oldData, newValue -> oldData.copy(uvScale = Vec2Data(newValue)) },
+            label = "Texture scale:"
+        )
     }
 
     private fun UiScope.rectProperties() = Column(width = Grow.Std, scopeName = "rectProperties") {
@@ -109,6 +106,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             valueSetter = { oldData, newValue -> oldData.copy(size = Vec2Data(newValue)) },
             label = "Size:",
             minValues = Vec2d.ZERO
+        )
+        shapeVec2Editor<ShapeData.Rect>(
+            valueGetter = { it.uvScale.toVec2d() },
+            valueSetter = { oldData, newValue -> oldData.copy(uvScale = Vec2Data(newValue)) },
+            label = "Texture scale:"
         )
     }
 
@@ -149,6 +151,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 maxValue = 100.0
             )
         }
+        shapeVec2Editor<ShapeData.Sphere>(
+            valueGetter = { it.uvScale.toVec2d() },
+            valueSetter = { oldData, newValue -> oldData.copy(uvScale = Vec2Data(newValue)) },
+            label = "Texture scale:"
+        )
     }
 
     private fun UiScope.cylinderProperties() = Column(
@@ -199,6 +206,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
             precision = { 0 },
             minValue = 3.0,
             maxValue = 100.0
+        )
+        shapeVec2Editor<ShapeData.Cylinder>(
+            valueGetter = { it.uvScale.toVec2d() },
+            valueSetter = { oldData, newValue -> oldData.copy(uvScale = Vec2Data(newValue)) },
+            label = "Texture scale:"
         )
     }
 
@@ -340,6 +352,11 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                     }.fused().apply()
                 }
             }
+        )
+        shapeVec2Editor<ShapeData.Heightmap>(
+            valueGetter = { it.uvScale.toVec2d() },
+            valueSetter = { oldData, newValue -> oldData.copy(uvScale = Vec2Data(newValue)) },
+            label = "Texture scale:"
         )
     }
 

@@ -20,7 +20,7 @@ fun addSceneObjectMenu(label: String, parent: GameEntity?, position: Vec3f? = nu
         item("Sphere", IconMap.small.shadowedSphere) { scene.addNewMesh(parent, ShapeData.defaultSphere, position) }
         item("Cylinder", IconMap.small.cylinder) { scene.addNewMesh(parent, ShapeData.defaultCylinder, position) }
         item("Capsule", IconMap.small.capsule) { scene.addNewMesh(parent, ShapeData.defaultCapsule, position) }
-        item("Custom", IconMap.small.code) { scene.addNewMesh(parent, ShapeData.defaultCustom, position) }
+        item("Custom", IconMap.small.code) { scene.addNewMesh(parent, ShapeData.Custom, position) }
     }
     if (editor.availableAssets.modelAssets.isNotEmpty()) {
         subMenu("glTF model", IconMap.small.file3d) {

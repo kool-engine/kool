@@ -105,8 +105,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
             ShapeOption.Sphere -> listOf(ShapeData.defaultSphere)
             ShapeOption.Cylinder -> listOf(ShapeData.defaultCylinder)
             ShapeOption.Capsule -> listOf(ShapeData.defaultCapsule)
-            ShapeOption.Plane -> listOf(ShapeData.defaultPlane)
             ShapeOption.Heightmap -> listOf(ShapeData.defaultHeightmap)
+            ShapeOption.Plane -> listOf(ShapeData.Plane)
         }
         val actions = components
             .filter { it.data.shapes != newShapes }

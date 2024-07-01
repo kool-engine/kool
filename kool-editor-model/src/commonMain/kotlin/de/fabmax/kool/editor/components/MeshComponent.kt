@@ -1,10 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.*
-import de.fabmax.kool.editor.data.ComponentInfo
-import de.fabmax.kool.editor.data.MaterialComponentData
-import de.fabmax.kool.editor.data.MeshComponentData
-import de.fabmax.kool.editor.data.ShapeData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
@@ -180,10 +177,8 @@ class MeshComponent(
         }
 
         fun MeshBuilder.generateShape(shape: ShapeData) = withTransform {
-            applyCommon(shape.common)
-
             when (shape) {
-                is ShapeData.Box -> cube { size.set(shape.size.toVec3f()) }
+                is ShapeData.Box -> generateBox(shape)
                 is ShapeData.Sphere -> generateSphere(shape)
                 is ShapeData.Cylinder -> generateCylinder(shape)
                 is ShapeData.Capsule -> generateCapsule(shape)
@@ -194,7 +189,13 @@ class MeshComponent(
             }
         }
 
+        fun MeshBuilder.generateBox(shape: ShapeData.Box) {
+            applyCommon(shape.pose, shape.color, shape.uvScale)
+            cube { size.set(shape.size.toVec3f()) }
+        }
+
         fun MeshBuilder.generateSphere(shape: ShapeData.Sphere) {
+            applyCommon(shape.pose, shape.color, shape.uvScale)
             if (shape.sphereType == "ico") {
                 icoSphere {
                     radius = shape.radius.toFloat()
@@ -209,6 +210,7 @@ class MeshComponent(
         }
 
         fun MeshBuilder.generateCylinder(shape: ShapeData.Cylinder) {
+            applyCommon(shape.pose, shape.color, shape.uvScale)
             // cylinder is generated in x-axis major orientation to make it align with physics geometry
             rotate(90f.deg, Vec3f.Z_AXIS)
             cylinder {
@@ -220,6 +222,7 @@ class MeshComponent(
         }
 
         fun MeshBuilder.generateCapsule(shape: ShapeData.Capsule) {
+            applyCommon(shape.pose, shape.color, shape.uvScale)
             profile {
                 val r = shape.radius.toFloat()
                 val h = shape.length.toFloat()
@@ -236,6 +239,7 @@ class MeshComponent(
         }
 
         fun MeshBuilder.generateRect(shape: ShapeData.Rect) {
+            applyCommon(shape.pose, shape.color, shape.uvScale)
             grid {
                 sizeX = shape.size.x.toFloat()
                 sizeY = shape.size.y.toFloat()
@@ -255,7 +259,7 @@ class MeshComponent(
             val szY = (rows - 1) * shape.rowScale.toFloat()
 
             generate {
-                applyCommon(shape.common)
+                applyCommon(uvScale = shape.uvScale)
 
                 translate(szX * 0.5f, 0f, szY * 0.5f)
                 grid {
@@ -271,12 +275,14 @@ class MeshComponent(
             }
         }
 
-        fun MeshBuilder.applyCommon(common: ShapeData.CommonShapeData) {
-            common.pose.toMat4f(transform)
-            color = common.vertexColor.toColorLinear()
-            vertexModFun = {
-                texCoord.x *= common.uvScale.x.toFloat()
-                texCoord.y *= common.uvScale.y.toFloat()
+        fun MeshBuilder.applyCommon(pose: TransformData? = null, shapeColor: ColorData? = null, uvScale: Vec2Data? = null) {
+            pose?.toMat4f(transform)
+            shapeColor?.let { color = it.toColorLinear() }
+            uvScale?.let { scale ->
+                vertexModFun = {
+                    texCoord.x *= scale.x.toFloat()
+                    texCoord.y *= scale.y.toFloat()
+                }
             }
         }
 
