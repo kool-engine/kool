@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.data.*
@@ -5,6 +7,7 @@ import de.fabmax.kool.util.logW
 
 fun ProjectData.updateData() {
     replaceModelComponentsByMeshComponents()
+    meta = meta.copy(modelVersion = ProjectData.MODEL_VERSION)
 }
 
 private fun ProjectData.replaceModelComponentsByMeshComponents() {

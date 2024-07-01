@@ -79,7 +79,7 @@ class ProjectWriter private constructor(
     private val projFiles = mutableSetOf<WritableFileSystemItem>()
 
     private suspend fun saveTree() {
-        targetDir.createProjFile("project.json", codec.encodeToString(projData.meta.copy(modelVersion = ProjectData.MODEL_VERSION)))
+        targetDir.createProjFile("project.json", codec.encodeToString(projData.meta))
 
         val materialDir = targetDir.createProjDir("materials")
         projData.materials.toHierarchy().forEach { it.saveEntities(materialDir) }

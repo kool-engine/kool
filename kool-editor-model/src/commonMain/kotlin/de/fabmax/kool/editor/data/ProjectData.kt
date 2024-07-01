@@ -9,7 +9,7 @@ class ProjectData(
     val materials: MutableList<GameEntityData> = mutableListOf()
 ) {
     companion object {
-        const val MODEL_VERSION = "1.0.0"
+        const val MODEL_VERSION = "1.1.0"
     }
 }
 

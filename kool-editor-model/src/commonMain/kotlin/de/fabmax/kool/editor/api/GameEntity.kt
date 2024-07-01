@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.logE
 import kotlin.math.max
 
 val GameEntity.project: EditorProject get() = scene.project
@@ -208,7 +208,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     fun createDataComponent(info: ComponentInfo<*>): GameEntityDataComponent<*> {
-        @Suppress("UNCHECKED_CAST")
+        @Suppress("UNCHECKED_CAST", "DEPRECATION")
         return when (info.data) {
             is BehaviorComponentData -> BehaviorComponent(this, info as ComponentInfo<BehaviorComponentData>)
             is TransformComponentData -> TransformComponent(this, info as ComponentInfo<TransformComponentData>)
@@ -228,7 +228,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             is SsaoComponentData -> SsaoComponent(requireScene, info as ComponentInfo<SsaoComponentData>)
 
             is ModelComponentData -> {
-                logW { "converting ModelComponentData to MeshComponentData" }
+                logE { "ModelComponentData is deprecated" }
                 val modelData = info.data as ModelComponentData
                 val meshData = MeshComponentData(ShapeData.Model(modelData.modelPath, modelData.sceneIndex, modelData.animationIndex))
                 MeshComponent(requireSceneChild, ComponentInfo(meshData))

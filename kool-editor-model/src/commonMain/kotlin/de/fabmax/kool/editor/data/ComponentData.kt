@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface ComponentData
 
+@Deprecated("Replaced by MeshComponentData with ShapeData.Model")
 @Serializable
 data class ModelComponentData(
     val modelPath: String,

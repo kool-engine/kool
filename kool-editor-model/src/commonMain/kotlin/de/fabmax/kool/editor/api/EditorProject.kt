@@ -190,7 +190,7 @@ fun ProjectData.allEntities(): List<GameEntityData> {
 
 fun ProjectData.checkConsistency() {
     if (meta.modelVersion != ProjectData.MODEL_VERSION) {
-        logW { "Project data model version mismatch: ${meta.modelVersion} (supported version is ${ProjectData.MODEL_VERSION})" }
+        logW { "Project data model version mismatch: ${meta.modelVersion} (current version is ${ProjectData.MODEL_VERSION})" }
     }
 
     scenes.forEach { scene ->

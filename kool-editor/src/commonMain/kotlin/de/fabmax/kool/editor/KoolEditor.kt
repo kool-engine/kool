@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.components.CameraAwareComponent
+import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
 import de.fabmax.kool.editor.overlays.SelectionOverlay
@@ -35,21 +36,29 @@ suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor
     val projDataDir = projectFiles.projectModelDir
     val reader = ProjectReader(projDataDir)
     val data = reader.loadTree() ?: EditorProject.emptyProjectData()
-    if (reader.parserErrors > 0) {
+    if (reader.parserErrors > 0 || data.meta.modelVersion != ProjectData.MODEL_VERSION) {
         fun Int.toString(len: Int): String {
             var str = "$this"
             while (str.length < len) str = "0$str"
             return str
         }
         val dateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val backupName = "project_backup_" +
+        val backupPath = "kool_project_backup_" +
                 "${dateTime.year}${dateTime.monthNumber.toString(2)}${dateTime.dayOfMonth.toString(2)}_" +
                 "${dateTime.hour.toString(2)}${dateTime.minute.toString(2)}${dateTime.second.toString(2)}"
-        logE("KoolEditor") { "ProjectReader reported errors, backing up original project data as $backupName" }
-        val backupDir = projectFiles.fileSystem.createDirectory("src/commonMain/resources/$backupName")
+
+        if (reader.parserErrors > 0) {
+            logE("KoolEditor") { "ProjectReader reported errors, backing up original project data as $backupPath" }
+        } else {
+            logW("KoolEditor") { "Project model version mismatch, backing up original project data as $backupPath" }
+        }
+        val backupDir = projectFiles.fileSystem.createDirectory(backupPath)
         projDataDir.copyRecursively(backupDir)
     }
-    data.updateData()
+    if (data.meta.modelVersion != ProjectData.MODEL_VERSION) {
+        logW("KoolEditor") { "Updating project data: ${data.meta.modelVersion} -> ${ProjectData.MODEL_VERSION}" }
+        data.updateData()
+    }
     return KoolEditor(projectFiles, EditorProject(data), ctx)
 }
 
