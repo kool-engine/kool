@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.net.URL
 import java.net.URLClassLoader
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
@@ -138,7 +139,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         }
 
         logD { "Loading app from directory: $buildClasses" }
-        val loader = URLClassLoader(arrayOf(buildClasses.toUri().toURL()), this.javaClass.classLoader)
+        val loader = ReloadingClassLoader(arrayOf(buildClasses.toUri().toURL()), this::class.java.classLoader)
         BehaviorLoader.appBehaviorLoader = BehaviorLoader.ReflectionAppBehaviorLoader(loader)
         val behaviorClasses = examineClasses(loader, buildClasses)
 
@@ -152,7 +153,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
     }
 
     @OptIn(ExperimentalPathApi::class)
-    private fun examineClasses(loader: URLClassLoader, classpath: Path): Map<KClass<*>, AppBehavior> {
+    private fun examineClasses(loader: ReloadingClassLoader, classpath: Path): Map<KClass<*>, AppBehavior> {
         val behaviorClasses = mutableMapOf<KClass<*>, AppBehavior>()
         classpath.walk(PathWalkOption.INCLUDE_DIRECTORIES).forEach {
             if (!it.isDirectory() && it.name.endsWith(".class")) {
@@ -164,7 +165,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
                     .replace('/', '.')
 
                 try {
-                    val behaviorClass = loader.loadClass(className)
+                    val behaviorClass = loader.reloadClass(className)
                     val kclass = behaviorClass.kotlin
                     if (KoolBehavior::class.java.isAssignableFrom(behaviorClass.superclass)) {
                         val simple = kclass.simpleName ?: "<unknown>"
@@ -177,6 +178,12 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
             }
         }
         return behaviorClasses
+    }
+
+    private class ReloadingClassLoader(urls: Array<URL>, parent: ClassLoader) : URLClassLoader(urls, parent) {
+        fun reloadClass(name: String): Class<*> {
+            return findLoadedClass(name) ?: findClass(name)
+        }
     }
 
     companion object {
