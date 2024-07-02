@@ -1,5 +1,4 @@
 plugins {
-    id("kool.androidlib-conventions")
     id("kool.lib-conventions")
     id("kool.publish-conventions")
 }

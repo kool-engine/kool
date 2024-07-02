@@ -173,13 +173,13 @@ class GameEntityEditor(ui: EditorUi) :
                     is MeshComponent -> componentEditor(objects) { MeshEditor() }
                     is SceneComponent -> componentEditor(objects) { ScenePropertiesEditor() }
                     is SceneBackgroundComponent -> componentEditor(objects) { SceneBackgroundEditor() }
-                    is BehaviorComponent -> componentEditor(objects) { BehaviorEditor() }
                     is ShadowMapComponent -> componentEditor(objects) { ShadowMapEditor() }
                     is SsaoComponent -> componentEditor(objects) { SsaoEditor() }
                     is TransformComponent -> componentEditor(objects) { TransformEditor() }
                     is PhysicsWorldComponent -> componentEditor(objects) { PhysicsWorldEditor() }
                     is RigidActorComponent -> componentEditor(objects) { RigidActorEditor() }
                     is CharacterControllerComponent -> componentEditor(objects) { CharacterControllerEditor() }
+                    is BehaviorComponent -> behaviorComponentEditor(objects, component.data.behaviorClassName)
                 }
             }
     }
@@ -188,6 +188,18 @@ class GameEntityEditor(ui: EditorUi) :
         Box(width = Grow.Std, scopeName = gameEntities[0].requireComponent<T>().componentType) {
             val editor = remember(editorProvider)
             editor.components = gameEntities.map { it.requireComponent() }
+            editor.entityEditor = this@GameEntityEditor
+            editor()
+        }
+    }
+
+    private fun UiScope.behaviorComponentEditor(gameEntities: List<GameEntity>, behaviorClassName: String) {
+        val components = gameEntities.map {
+            it.getComponents<BehaviorComponent>().first { c -> c.data.behaviorClassName == behaviorClassName }
+        }
+        Box(width = Grow.Std, scopeName = components[0].componentType) {
+            val editor = remember { BehaviorEditor() }
+            editor.components = components
             editor.entityEditor = this@GameEntityEditor
             editor()
         }
