@@ -35,6 +35,7 @@ abstract class PhysicsComponent<T: ComponentData>(
         super.applyComponent()
         localActorTransform.set(gameEntity.transform.transform)
         gameEntity.transform.transform = localActorTransform
+        gameEntity.drawNode.updateModelMat()
     }
 
     override fun onStart() {
