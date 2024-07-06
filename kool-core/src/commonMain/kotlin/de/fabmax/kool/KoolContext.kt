@@ -72,6 +72,7 @@ abstract class KoolContext {
     abstract val windowWidth: Int
     abstract val windowHeight: Int
     abstract var isFullscreen: Boolean
+    var windowTitleHoverHandler = WindowTitleHoverHandler()
 
     abstract fun openUrl(url: String, sameWindow: Boolean = true)
 

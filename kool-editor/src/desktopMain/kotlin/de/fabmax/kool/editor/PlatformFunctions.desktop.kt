@@ -2,7 +2,6 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.*
 import de.fabmax.kool.editor.ui.OkCancelBrowsePathDialog
-import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.modules.filesystem.PhysicalFileSystem
 import de.fabmax.kool.modules.filesystem.getDirectoryOrNull
@@ -111,16 +110,6 @@ actual object PlatformFunctions {
 
     private val startPointerScreen = MutableVec2i()
     private val startWindow = MutableVec2i()
-
-    actual fun dragWindowStart(ptr: Pointer) {
-        val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        ctx.backend.glfwWindow.startWindowDrag()
-    }
-
-    actual fun dragWindow(ptr: Pointer) {
-        val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        ctx.backend.glfwWindow.windowDrag()
-    }
 
     actual fun toggleMaximizeWindow() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context

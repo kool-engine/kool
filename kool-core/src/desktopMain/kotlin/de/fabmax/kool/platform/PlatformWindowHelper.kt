@@ -2,14 +2,12 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.util.WindowTitleHoverHandler
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
-import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwSetWindowPos
 import org.lwjgl.glfw.GLFW.glfwSetWindowSize
 import org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window
-import org.lwjgl.system.windows.MONITORINFOEX
-import org.lwjgl.system.windows.POINT
 import org.lwjgl.system.windows.RECT
 import org.lwjgl.system.windows.User32.*
 import org.lwjgl.system.windows.WindowProc
@@ -17,28 +15,17 @@ import org.lwjgl.system.windows.WindowProc
 interface PlatformWindowHelper {
     fun hideTitleBar(windowPtr: Long)
 
-    fun startWindowDrag(windowPtr: Long)
-    fun windowDrag(windowPtr: Long)
-
     fun getWindowPos(windowPtr: Long, reportedPosX: Int, reportedPosY: Int) = Vec2i(reportedPosX, reportedPosY)
     fun setWindowPos(windowPtr: Long, x: Int, y: Int) = glfwSetWindowPos(windowPtr, x, y)
     fun setWindowSize(windowPtr: Long, width: Int, height: Int) = glfwSetWindowSize(windowPtr, width, height)
-
-    fun isMaximized(windowPtr: Long): Boolean = GLFW.glfwGetWindowAttrib(windowPtr, GLFW.GLFW_MAXIMIZED) != 0
-    fun toggleMaximized(windowPtr: Long) {
-        if (isMaximized(windowPtr)) {
-            GLFW.glfwRestoreWindow(windowPtr)
-        } else {
-            GLFW.glfwMaximizeWindow(windowPtr)
-        }
-    }
 }
 
 class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHelper {
     private val windowDragStartCursor = MutableVec2i()
     private val windowDragStartPos = MutableVec2i()
 
-    private var isHiddenTitleBar = false
+    private val hoverHandler: WindowTitleHoverHandler get() = glfwWindow.ctx.windowTitleHoverHandler
+    private var isHiddenTitleBar by glfwWindow::isHiddenTitleBar
     private var isMaximized = false
     private val nonMaxPos = MutableVec2i()
     private val nonMaxSize = MutableVec2i()
@@ -46,14 +33,38 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     private val topBorder = 1
     private val nonTopBorder = 8
 
+    private var nonClientLeftButtonDown = false
+
     override fun hideTitleBar(windowPtr: Long) {
         val glfwHWnd = glfwGetWin32Window(windowPtr)
-
         val originalWndProcPtr = GetWindowLongPtr(glfwHWnd, GWL_WNDPROC)
+
         val wndProc = WindowProc.create { hWnd, uMsg, wParam, lParam ->
             when (uMsg) {
+                WM_NCLBUTTONDOWN -> {
+                    if (isHoverWindowButton()) {
+                        nonClientLeftButtonDown = true
+                        0L
+                    } else {
+                        nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
+                    }
+                }
+                WM_NCLBUTTONUP -> {
+                    if (nonClientLeftButtonDown) {
+                        nonClientLeftButtonDown = false
+                        hoverHandler.handleClick()
+                        0L
+                    } else {
+                        nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
+                    }
+                }
+                WM_NCMOUSELEAVE -> {
+                    hoverHandler.leaveHover()
+                    nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
+                }
+
                 WM_NCCALCSIZE -> {
-                    if (wParam == 1L && lParam != 0L && !isMaximized) {
+                    if (wParam == 1L && lParam != 0L) {
                         val rect = RECT.create(lParam)
                         rect.top(rect.top() + topBorder)
                         rect.right(rect.right() - nonTopBorder)
@@ -63,23 +74,27 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
                     0L
                 }
 
-                WM_NCPAINT -> 0L
-
                 WM_NCHITTEST -> {
-                    val y = lParam.toInt() shr 16
-                    val x = lParam.toInt() and 0xffff
-                    val clientX = x - glfwWindow.windowPosX
-                    val clientY = y - glfwWindow.windowPosY
+                    val cursorPos = lParam.clientCursorPos()
                     val resizeBorder = 4
 
-                    if (clientY < resizeBorder) {
+                    if (cursorPos.y < resizeBorder && !isMaximized) {
                         when {
-                            clientX <= resizeBorder -> HTTOPLEFT.toLong()
-                            clientX >= glfwWindow.framebufferWidth - resizeBorder -> HTTOPRIGHT.toLong()
+                            cursorPos.x <= resizeBorder -> HTTOPLEFT.toLong()
+                            cursorPos.x >= glfwWindow.framebufferWidth - resizeBorder -> HTTOPRIGHT.toLong()
                             else -> HTTOP.toLong()
                         }
                     } else {
-                        nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
+                        val r = nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
+                        if (r != HTCLIENT.toLong()) r else {
+                            when (hoverHandler.checkHover(cursorPos.x, cursorPos.y)) {
+                                WindowTitleHoverHandler.HoverState.NONE -> r
+                                WindowTitleHoverHandler.HoverState.TITLE_BAR -> HTCAPTION.toLong()
+                                WindowTitleHoverHandler.HoverState.MIN_BUTTON -> HTMINBUTTON.toLong()
+                                WindowTitleHoverHandler.HoverState.MAX_BUTTON -> HTMAXBUTTON.toLong()
+                                WindowTitleHoverHandler.HoverState.CLOSE_BUTTON -> HTCLOSE.toLong()
+                            }
+                        }
                     }
                 }
 
@@ -87,59 +102,22 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
             }
         }
 
-        var style = GetWindowLongPtr(glfwHWnd, GWL_STYLE)
-        style = style or WS_THICKFRAME.toLong()
-        style = style and WS_CAPTION.toLong().inv()
-        SetWindowLongPtr(glfwHWnd, GWL_STYLE, style)
         SetWindowLongPtr(glfwHWnd, GWL_WNDPROC, wndProc.address())
-
-        memStack {
-            val windowRect = RECT.calloc(this)
-            GetWindowRect(glfwHWnd, windowRect)
-            val width = windowRect.right() - windowRect.left()
-            val height = windowRect.bottom() - windowRect.top()
-            SetWindowPos(glfwHWnd, 0L, 0, 0, width, height, SWP_FRAMECHANGED or SWP_NOMOVE)
-        }
-
         isHiddenTitleBar = true
-        glfwWindow.isHiddenTitleBar = true
     }
 
-    override fun startWindowDrag(windowPtr: Long) {
-        val hWnd = glfwGetWin32Window(windowPtr)
-
-        memStack {
-            val point = POINT.calloc(this)
-            val rect = RECT.calloc(this)
-            GetCursorPos(point)
-            GetWindowRect(hWnd, rect)
-            windowDragStartCursor.set(point.x(), point.y())
-
-            if (isMaximized) {
-                demaximizeWindow(hWnd)
-
-                val w = rect.right() - rect.left()
-                windowDragStartPos.x = when {
-                    windowDragStartCursor.x < w / 3 -> 0
-                    windowDragStartCursor.x > w * 2 / 3 -> rect.right() - nonMaxSize.x
-                    else -> windowDragStartCursor.x - nonMaxSize.x / 2
-                }
-                windowDragStartPos.y = rect.top()
-            } else {
-                windowDragStartPos.set(rect.left(), rect.top())
-            }
-        }
+    private fun Long.clientCursorPos(): Vec2i {
+        val y = toInt() shr 16
+        val x = toInt() and 0xffff
+        val clientX = x - glfwWindow.windowPosX - nonTopBorder
+        val clientY = y - glfwWindow.windowPosY - topBorder
+        return Vec2i(clientX, clientY)
     }
 
-    override fun windowDrag(windowPtr: Long) {
-        memStack {
-            val hWnd = glfwGetWin32Window(windowPtr)
-            val point = POINT.calloc(this)
-            GetCursorPos(point)
-
-            val dragPos = windowDragStartPos + Vec2i(point.x(), point.y()) - windowDragStartCursor
-            SetWindowPos(hWnd, 0L, dragPos.x, dragPos.y, 0, 0, SWP_FRAMECHANGED or SWP_NOSIZE)
-        }
+    private fun isHoverWindowButton(): Boolean {
+        return hoverHandler.hoverState == WindowTitleHoverHandler.HoverState.MIN_BUTTON ||
+                hoverHandler.hoverState == WindowTitleHoverHandler.HoverState.MAX_BUTTON ||
+                hoverHandler.hoverState == WindowTitleHoverHandler.HoverState.CLOSE_BUTTON
     }
 
     override fun getWindowPos(windowPtr: Long, reportedPosX: Int, reportedPosY: Int): Vec2i {
@@ -168,89 +146,10 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
             super.setWindowSize(windowPtr, width, height)
         }
     }
-
-    override fun isMaximized(windowPtr: Long): Boolean {
-        return isMaximized
-    }
-
-    override fun toggleMaximized(windowPtr: Long) {
-        if (isHiddenTitleBar) {
-            val hWnd = glfwGetWin32Window(windowPtr)
-            if (isMaximized) {
-                demaximizeWindow(hWnd)
-            } else {
-                maximizeWindow(hWnd)
-            }
-        } else {
-            if (isMaximized) {
-                GLFW.glfwRestoreWindow(windowPtr)
-                isMaximized = false
-            } else {
-                GLFW.glfwMaximizeWindow(windowPtr)
-                isMaximized = true
-            }
-        }
-    }
-
-    private fun demaximizeWindow(hWnd: Long) {
-        isMaximized = false
-
-        var style = GetWindowLongPtr(hWnd, GWL_STYLE)
-        style = style or WS_THICKFRAME.toLong()
-        SetWindowLongPtr(hWnd, GWL_STYLE, style)
-
-        SetWindowPos(
-            hWnd, HWND_TOP,
-            nonMaxPos.x,
-            nonMaxPos.y,
-            nonMaxSize.x,
-            nonMaxSize.y,
-            SWP_NOACTIVATE or SWP_NOZORDER
-        )
-    }
-
-    private fun maximizeWindow(hWnd: Long) {
-        isMaximized = true
-        memStack {
-            val windowRect = RECT.calloc(this)
-            GetWindowRect(hWnd, windowRect)
-            nonMaxPos.set(windowRect.left(), windowRect.top())
-            nonMaxSize.set(windowRect.right() - windowRect.left(), windowRect.bottom() - windowRect.top())
-
-            var style = GetWindowLongPtr(hWnd, GWL_STYLE)
-            style = style and (
-                WS_CAPTION or
-                WS_THICKFRAME or
-                WS_BORDER
-            ).toLong().inv()
-            SetWindowLongPtr(hWnd, GWL_STYLE, style)
-
-            val hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST)
-            val mi = MONITORINFOEX.calloc(this)
-            mi.cbSize(MONITORINFOEX.SIZEOF)
-
-            if (GetMonitorInfo(hMonitor, mi)) {
-                SetWindowPos(
-                    hWnd, HWND_TOP,
-                    mi.rcWork().left(),
-                    mi.rcWork().top(),
-                    mi.rcWork().right() - mi.rcWork().left(),
-                    mi.rcWork().bottom() - mi.rcWork().top(),
-                    SWP_NOACTIVATE or SWP_NOZORDER
-                )
-            }
-        }
-    }
 }
 
 class PlatformWindowHelperCommon : PlatformWindowHelper {
     override fun hideTitleBar(windowPtr: Long) {
         logW { "Hide title bar is not supported on OS ${OsInfo.os}" }
     }
-
-    override fun startWindowDrag(windowPtr: Long) {
-        logW { "Window drag is not supported on OS ${OsInfo.os}" }
-    }
-
-    override fun windowDrag(windowPtr: Long) { }
 }

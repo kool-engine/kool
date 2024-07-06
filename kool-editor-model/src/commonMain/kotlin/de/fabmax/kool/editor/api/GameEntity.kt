@@ -76,6 +76,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         drawNode = getComponent<DrawNodeComponent>()?.drawNode ?: Node(name)
         drawNode.applyEntityData()
         drawNode.transform = transform.transform
+        drawNode.onUpdate += nodeUpdateCb
 
         settingsState.onChange {
             drawNode.name = it.name

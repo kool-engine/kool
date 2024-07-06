@@ -18,13 +18,28 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
     val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.JAVASCRIPT)
 
+    private val hoverHandler = Hoverhandler()
+
+    private val excludeTitleBarHoverNodes = mutableListOf<UiNode>()
+
+    init {
+        editor.ctx.windowTitleHoverHandler = hoverHandler
+        hoverHandler.onClickClose = {
+            editor.onExit()
+            PlatformFunctions.closeWindow()
+        }
+
+        hoverHandler.onClickMinimize = { PlatformFunctions.minimizeWindow() }
+        hoverHandler.onClickMaximize = { PlatformFunctions.toggleMaximizeWindow() }
+    }
+
     override fun UiScope.compose() {
+        val marginTop = if (PlatformFunctions.isWindowMaximized) sizes.smallGap else Dp.ZERO
+        excludeTitleBarHoverNodes.clear()
         modifier
             .layout(CellLayout)
             .alignY(AlignmentY.Top)
             .size(Grow.Std, FitContent)
-            .onDragStart { PlatformFunctions.dragWindowStart(it.pointer) }
-            .onDrag { PlatformFunctions.dragWindow(it.pointer) }
             .background(null)
             .onClick {
                 if (it.pointer.leftButtonRepeatedClickCount == 2) {
@@ -32,7 +47,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                 }
             }
 
-        Column(width = Grow.Std, height = sizes.heightWindowTitleBar) {
+        Column(width = Grow.Std, height = sizes.heightWindowTitleBar + marginTop) {
             Box(width = Grow.Std, height = Grow.Std) {
                 modifier
                     .alignY(AlignmentY.Top)
@@ -41,11 +56,15 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             Box(width = Grow.Std, height = sizes.borderWidth) {
                 modifier.backgroundColor(UiColors.titleBg)
             }
+            hoverHandler.setTitleBarBounds(this)
         }
 
-        leftPanel()
-        centerPanel()
-        rightPanel()
+        Box(width = Grow.Std) {
+            modifier.margin(top = marginTop)
+            leftPanel()
+            centerPanel()
+            rightPanel()
+        }
     }
 
     private fun UiScope.leftPanel() = Row(height = sizes.heightWindowTitleBar) {
@@ -68,32 +87,34 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
         }
     }
 
-    private fun UiScope.centerPanel() = Row(height = Grow.Std) {
+    private fun UiScope.centerPanel() = Row {
         modifier.alignX(AlignmentX.Center)
         appModeControlButtons()
+        excludeTitleBarHoverNodes += uiNode
     }
 
     private fun UiScope.rightPanel() = Row(height = sizes.heightWindowTitleBar) {
         modifier.alignX(AlignmentX.End)
 
-        Text("Transform Mode:") {
-            modifier
-                .alignY(AlignmentY.Center)
-                .margin(end = sizes.gap)
-                .onDrag { }
-        }
-        ComboBox {
-            defaultComboBoxStyle()
-            val selectedFrame = editor.gizmoOverlay.transformFrame.use()
-            modifier
-                .width(sizes.baseSize * 2.5f)
-                .alignY(AlignmentY.Center)
-                .onDrag { }
-                .items(transformFrames)
-                .selectedIndex(transformFrames.indexOfFirst { it.frame == selectedFrame })
-                .onItemSelected { i ->
-                    editor.gizmoOverlay.transformFrame.set(transformFrames[i].frame)
-                }
+        Row(height = Grow.Std) {
+            Text("Transform Mode:") {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .margin(end = sizes.gap)
+            }
+            ComboBox {
+                defaultComboBoxStyle()
+                val selectedFrame = editor.gizmoOverlay.transformFrame.use()
+                modifier
+                    .width(sizes.baseSize * 2.5f)
+                    .alignY(AlignmentY.Center)
+                    .items(transformFrames)
+                    .selectedIndex(transformFrames.indexOfFirst { it.frame == selectedFrame })
+                    .onItemSelected { i ->
+                        editor.gizmoOverlay.transformFrame.set(transformFrames[i].frame)
+                    }
+            }
+            excludeTitleBarHoverNodes += uiNode
         }
 
         if (isShowExportButton.use()) {
@@ -110,6 +131,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                 ) {
                     KoolSystem.requireContext().openUrl("https://github.com/fabmax/kool")
                 }
+                excludeTitleBarHoverNodes += uiNode
             }
 
         }
@@ -141,7 +163,6 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             .width(sizes.baseSize * 3.5f)
             .height(sizes.editItemHeight)
             .padding(horizontal = sizes.gap)
-            .onDrag { }
             .onPointer { isClickFeedback = it.pointer.isLeftButtonDown }
             .onEnter { isHovered = true }
             .onExit {
@@ -190,33 +211,45 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
         modifier.margin(start = sizes.largeGap)
         val maxIcon = if (PlatformFunctions.isWindowMaximized) IconMap.medium.demaximizeWin else IconMap.medium.maximizeWin
 
-        windowButton(IconMap.medium.minimizeWin, colors.componentBgHovered) { PlatformFunctions.minimizeWindow() }
-        windowButton(maxIcon, colors.componentBgHovered) { PlatformFunctions.toggleMaximizeWindow() }
-        windowButton(IconMap.medium.closeWin, MdColor.RED tone 700) {
-            editor.onExit()
-            PlatformFunctions.closeWindow()
-        }
+        windowButton(
+            icon = IconMap.medium.minimizeWin,
+            hoverColor = colors.componentBgHovered,
+            isHovered = hoverHandler.isMinButtonHovered.use(),
+            onPositioned = { hoverHandler.setMinButtonBounds(it) }
+        )
+
+        windowButton(
+            icon = maxIcon,
+            hoverColor = colors.componentBgHovered,
+            isHovered = hoverHandler.isMaxButtonHovered.use(),
+            onPositioned = { hoverHandler.setMaxButtonBounds(it) }
+        )
+
+        windowButton(
+            icon = IconMap.medium.closeWin,
+            hoverColor = MdColor.RED tone 700,
+            isHovered = hoverHandler.isCloseButtonHovered.use(),
+            onPositioned = { hoverHandler.setCloseButtonBounds(it) }
+        )
     }
 
-    private fun UiScope.windowButton(icon: IconProvider, hoverColor: Color, onClick: () -> Unit) =
-        Box(width = sizes.heightWindowTitleBar * 1.15f, height = Grow.Std) {
-            var isHovered by remember(false)
-            modifier
-                .onEnter { isHovered = true }
-                .onExit { isHovered = false }
-                .onClick { onClick() }
-                .onDrag { }
-            if (isHovered) {
-                modifier.backgroundColor(hoverColor)
-            }
-
-            val tint = if (isHovered) Color.WHITE else UiColors.secondaryBright
-            Image {
-                modifier
-                    .align(AlignmentX.Center, AlignmentY.Center)
-                    .iconImage(icon, tint)
-            }
+    private fun UiScope.windowButton(
+        icon: IconProvider,
+        hoverColor: Color,
+        isHovered: Boolean,
+        onPositioned: (UiNode) -> Unit
+    ) = Box(width = sizes.heightWindowTitleBar * 1.15f, height = Grow.Std) {
+        modifier.onPositioned(onPositioned)
+        if (isHovered) {
+            modifier.backgroundColor(hoverColor)
         }
+        val tint = if (isHovered) Color.WHITE else UiColors.secondaryBright
+        Image {
+            modifier
+                .align(AlignmentX.Center, AlignmentY.Center)
+                .iconImage(icon, tint)
+        }
+    }
 
     private fun UiScope.saveProjectTooltip(button: UiScope) = Popup(
         screenPxX = button.uiNode.rightPx - 250.dp.px,
@@ -300,6 +333,19 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
         companion object {
             val gradient = ColorGradient(Color("ffb703ff"), Color.WHITE)
+        }
+    }
+
+    private inner class Hoverhandler: WindowTitleHoverHandler() {
+        override fun checkHover(x: Int, y: Int): HoverState {
+            var result = super.checkHover(x, y)
+            if (result == HoverState.TITLE_BAR) {
+                val pt = Vec2f(x.toFloat(), y.toFloat())
+                if (excludeTitleBarHoverNodes.any { it.isInBounds(pt) }) {
+                    result = HoverState.NONE
+                }
+            }
+            return result
         }
     }
 

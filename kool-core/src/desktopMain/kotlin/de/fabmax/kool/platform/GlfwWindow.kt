@@ -44,10 +44,15 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         }
 
     var isMaximized: Boolean
-        get() = platformWindowHelper.isMaximized(windowPtr)
+        get() = glfwGetWindowAttrib(windowPtr, GLFW_MAXIMIZED) != 0
         set(value) {
-            if (value != platformWindowHelper.isMaximized(windowPtr)) {
-                platformWindowHelper.toggleMaximized(windowPtr)
+            val isMaximized = glfwGetWindowAttrib(windowPtr, GLFW_MAXIMIZED) != 0
+            if (value != isMaximized) {
+                if (isMaximized) {
+                    glfwRestoreWindow(windowPtr)
+                } else {
+                    glfwMaximizeWindow(windowPtr)
+                }
             }
         }
 
@@ -246,10 +251,6 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
             glfwSetWindowIcon(windowPtr, images)
         }
     }
-
-    fun startWindowDrag() = platformWindowHelper.startWindowDrag(windowPtr)
-
-    fun windowDrag() = platformWindowHelper.windowDrag(windowPtr)
 
     private fun setFullscreenMode(enabled: Boolean) {
         if (enabled) {

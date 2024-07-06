@@ -3,7 +3,6 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.NativeAssetLoader
-import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.launch
 
@@ -39,8 +38,6 @@ actual object PlatformFunctions {
         }
     }
 
-    actual fun dragWindowStart(ptr: Pointer) { }
-    actual fun dragWindow(ptr: Pointer) { }
     actual fun toggleMaximizeWindow() { }
     actual fun minimizeWindow() { }
     actual fun closeWindow() { }
