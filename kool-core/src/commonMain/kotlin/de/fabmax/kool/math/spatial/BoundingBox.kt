@@ -50,13 +50,8 @@ open class BoundingBoxF() {
     val size: Vec3f = mutSize
     val center: Vec3f = mutCenter
 
-    var isBatchUpdate = false
-        set(value) {
-            field = value
-            if (!value) {
-                updateSizeAndCenter()
-            }
-        }
+    @PublishedApi
+    internal var isBatchUpdate = false
 
     constructor(min: Vec3f, max: Vec3f): this() {
         set(min, max)
@@ -65,7 +60,8 @@ open class BoundingBoxF() {
     operator fun component1(): Vec3f = min
     operator fun component2(): Vec3f = max
 
-    private fun updateSizeAndCenter() {
+    @PublishedApi
+    internal fun updateSizeAndCenter() {
         if (!isBatchUpdate) {
             // size = max - min
             mutMax.subtract(mutMin, mutSize)
@@ -92,10 +88,10 @@ open class BoundingBoxF() {
     }
 
     inline fun batchUpdate(block: BoundingBoxF.() -> Unit) {
-        val wasBatchUpdate = isBatchUpdate
         isBatchUpdate = true
         block()
-        isBatchUpdate = wasBatchUpdate
+        isBatchUpdate = false
+        updateSizeAndCenter()
     }
 
     fun isFuzzyEqual(other: BoundingBoxF): Boolean {
@@ -462,13 +458,8 @@ open class BoundingBoxD() {
     val size: Vec3d = mutSize
     val center: Vec3d = mutCenter
 
-    var isBatchUpdate = false
-        set(value) {
-            field = value
-            if (!value) {
-                updateSizeAndCenter()
-            }
-        }
+    @PublishedApi
+    internal var isBatchUpdate = false
 
     constructor(min: Vec3d, max: Vec3d): this() {
         set(min, max)
@@ -477,7 +468,8 @@ open class BoundingBoxD() {
     operator fun component1(): Vec3d = min
     operator fun component2(): Vec3d = max
 
-    private fun updateSizeAndCenter() {
+    @PublishedApi
+    internal fun updateSizeAndCenter() {
         if (!isBatchUpdate) {
             // size = max - min
             mutMax.subtract(mutMin, mutSize)
@@ -504,10 +496,10 @@ open class BoundingBoxD() {
     }
 
     inline fun batchUpdate(block: BoundingBoxD.() -> Unit) {
-        val wasBatchUpdate = isBatchUpdate
         isBatchUpdate = true
         block()
-        isBatchUpdate = wasBatchUpdate
+        isBatchUpdate = false
+        updateSizeAndCenter()
     }
 
     fun isFuzzyEqual(other: BoundingBoxD): Boolean {

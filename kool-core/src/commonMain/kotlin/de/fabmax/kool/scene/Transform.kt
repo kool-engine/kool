@@ -13,8 +13,9 @@ interface Transform {
     val invMatrixD: Mat4d
 
     val isDoublePrecision: Boolean
+    val modCount: Int
 
-    fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats)
+    fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats): Boolean
 
     fun markDirty()
 
@@ -106,24 +107,43 @@ abstract class TransformF : Transform {
     override val invMatrixF: Mat4f get() = lazyInvTransformMatF.get()
     override val invMatrixD: Mat4d get() = lazyInvTransformMatD.get()
 
+    override var modCount: Int = 0
+        protected set
+
     private val tmpMat4f = MutableMat4f()
     private val tmpVec3fa = MutableVec3f()
     private val tmpVec3fb = MutableVec3f()
     private val tmpQuatF = MutableQuatF()
 
-    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats) {
-        if (parentModelMats != null) {
+    private var applyModCount = -1
+    private var applyMatsModCount = -1
+    private var applyParentMatsModCount = -1
+
+    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats): Boolean {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMats.updateId
+        if (parentModelMats != null && (egoChanged || applyParentMatsModCount != parentModelMats.updateId)) {
             parentModelMats.modelMatF.mul(matrixF, modelMats.mutModelMatF)
-        } else {
+            modelMats.markUpdatedF()
+            applyModCount = modCount
+            applyMatsModCount = modelMats.updateId
+            applyParentMatsModCount = parentModelMats.updateId
+            return true
+
+        } else if (egoChanged) {
             modelMats.mutModelMatF.set(matrixF)
+            modelMats.markUpdatedF()
+            applyModCount = modCount
+            applyMatsModCount = modelMats.updateId
+            return true
         }
-        modelMats.markUpdatedF()
+        return false
     }
 
     override fun markDirty() {
         lazyTransformMatD.isDirty = true
         lazyInvTransformMatF.isDirty = true
         lazyInvTransformMatD.isDirty = true
+        modCount++
     }
 
     override fun setIdentity(): TransformF {
@@ -169,24 +189,43 @@ abstract class TransformD : Transform {
     override val invMatrixF: Mat4f get() = lazyInvTransformMatF.get()
     override val invMatrixD: Mat4d get() = lazyInvTransformMatD.get()
 
+    override var modCount: Int = 0
+        protected set
+
     private val tmpMat4d = MutableMat4d()
     private val tmpVec3da = MutableVec3d()
     private val tmpVec3db = MutableVec3d()
     private val tmpQuatD = MutableQuatD()
 
-    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats) {
-        if (parentModelMats != null) {
+    private var applyModCount = -1
+    private var applyMatsModCount = -1
+    private var applyParentMatsModCount = -1
+
+    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats): Boolean {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMats.updateId
+        if (parentModelMats != null && (egoChanged || applyParentMatsModCount != parentModelMats.updateId)) {
             parentModelMats.modelMatD.mul(matrixD, modelMats.mutModelMatD)
-        } else {
+            modelMats.markUpdatedD()
+            applyModCount = modCount
+            applyMatsModCount = modelMats.updateId
+            applyParentMatsModCount = parentModelMats.updateId
+            return true
+
+        } else if (egoChanged) {
             modelMats.mutModelMatD.set(matrixD)
+            modelMats.markUpdatedD()
+            applyModCount = modCount
+            applyMatsModCount = modelMats.updateId
+            return true
         }
-        modelMats.markUpdatedD()
+        return false
     }
 
     override fun markDirty() {
         lazyTransformMatF.isDirty = true
         lazyInvTransformMatF.isDirty = true
         lazyInvTransformMatD.isDirty = true
+        modCount++
     }
 
     override fun setIdentity(): TransformD {

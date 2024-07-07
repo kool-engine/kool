@@ -31,6 +31,8 @@ open class Node(name: String? = null) : BaseReleasable() {
      */
     val bounds = BoundingBoxF()
     private val tmpTransformVec = MutableVec3f()
+    private val parentBoundsCache = BoundingBoxF()
+    private var parentBoundsModCount = -1
 
     /**
      * Center point of this node's bounds in global coordinates.
@@ -55,6 +57,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     private val globalCenterMut = MutableVec3f()
     private val globalExtentMut = MutableVec3f()
+    private var globalPosMutCount = -1
 
     /**
      * This node's transform. Can be used to manipulate this node's position, size, etc. Notice that, by default, the
@@ -135,45 +138,55 @@ open class Node(name: String? = null) : BaseReleasable() {
 
         updateModelMat()
 
-        bounds.clear()
-        for (i in mutChildren.indices) {
-            val child = mutChildren[i]
-            child.update(updateEvent)
-            child.addBoundsToParentBounds(bounds)
+        bounds.batchUpdate {
+            clear()
+            for (i in mutChildren.indices) {
+                val child = mutChildren[i]
+                child.update(updateEvent)
+                child.addBoundsToParentBounds(bounds)
+            }
+            addContentToBoundingBox(bounds)
         }
-        addContentToBoundingBox(bounds)
 
         // update global center and radius
-        toGlobalCoords(globalCenterMut.set(bounds.center))
-        toGlobalCoords(globalExtentMut.set(bounds.max))
-        globalRadius = globalCenter.distance(globalExtentMut)
+        if (globalPosMutCount != modelMats.updateId) {
+            globalPosMutCount = modelMats.updateId
+            toGlobalCoords(globalCenterMut.set(bounds.center))
+            toGlobalCoords(globalExtentMut.set(bounds.max))
+            globalRadius = globalCenter.distance(globalExtentMut)
+        }
     }
 
     private fun addBoundsToParentBounds(parentBounds: BoundingBoxF) {
         if (!bounds.isEmpty) {
-            val minX = bounds.min.x
-            val minY = bounds.min.y
-            val minZ = bounds.min.z
-            val maxX = bounds.max.x
-            val maxY = bounds.max.y
-            val maxZ = bounds.max.z
+            if (transform.modCount != parentBoundsModCount) {
+                parentBoundsModCount = transform.modCount
 
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, minY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, minY, maxZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, maxY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, minY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ), 1f))
+                parentBoundsCache.batchUpdate {
+                    val minX = bounds.min.x
+                    val minY = bounds.min.y
+                    val minZ = bounds.min.z
+                    val maxX = bounds.max.x
+                    val maxY = bounds.max.y
+                    val maxZ = bounds.max.z
+                    clear()
+                    add(transform.transform(tmpTransformVec.set(minX, minY, minZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(minX, minY, maxZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(minX, maxY, minZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(maxX, minY, minZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ), 1f))
+                }
+            }
+            parentBounds.add(parentBoundsCache)
         }
     }
 
     protected open fun addContentToBoundingBox(localBounds: BoundingBoxF) { }
 
-    fun updateModelMat() {
-        transform.applyToModelMat(parent?.modelMats, modelMats)
-    }
+    fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMats, modelMats)
 
     fun updateModelMatRecursive() {
         updateModelMat()
@@ -415,9 +428,10 @@ open class Node(name: String? = null) : BaseReleasable() {
         val mutModelMatF = MutableMat4f()
         val mutModelMatD = MutableMat4d()
 
-        private var updateId = 0
         private var updateIdF = 0
         private var updateIdD = 0
+        var updateId = 0
+            private set
 
         fun markUpdatedF() {
             updateId++
