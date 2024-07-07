@@ -5,6 +5,8 @@ import de.fabmax.kool.editor.api.cachedEntityComponents
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformF
@@ -16,10 +18,12 @@ class TransformComponent(
 
     private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
+    val globalTransform = MutableMat4f()
     var transform: Transform = TrsTransformF()
         set(value) {
             field = value
-            gameEntity.drawNode.transform = transform
+            updateTransform()
+            fireTransformChanged(data)
         }
 
     init {
@@ -29,8 +33,7 @@ class TransformComponent(
 
     override suspend fun applyComponent() {
         super.applyComponent()
-        gameEntity.drawNode.transform = transform
-        gameEntity.drawNode.updateModelMat()
+        updateTransform()
     }
 
     fun updateDataFromTransform() {
@@ -40,15 +43,25 @@ class TransformComponent(
     override fun onDataChanged(oldData: TransformComponentData, newData: TransformComponentData) {
         super.onDataChanged(oldData, newData)
         newData.transform.toTransform(transform)
-        changeListeners.let { listeners ->
-            for (i in listeners.indices) {
-                listeners[i].onTransformChanged(this, newData)
-            }
-        }
+        updateTransform()
+        fireTransformChanged(newData)
     }
 
     override fun onUpdate(ev: RenderPass.UpdateEvent) {
-        gameEntity.drawNode.transform = transform
+        updateTransform()
+    }
+
+    private fun updateTransform() {
+        val parentModelMat = gameEntity.parent?.transform?.globalTransform ?: Mat4f.IDENTITY
+        globalTransform.set(parentModelMat).mul(transform.matrixF)
+    }
+
+    private fun fireTransformChanged(data: TransformComponentData) {
+        changeListeners.let { listeners ->
+            for (i in listeners.indices) {
+                listeners[i].onTransformChanged(this, data)
+            }
+        }
     }
 
     fun interface ListenerComponent {

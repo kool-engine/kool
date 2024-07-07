@@ -6,69 +6,60 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.logW
 
-class SceneMeshes(val scene: EditorScene) : Node("SceneMeshes") {
+class SceneMeshes(val scene: EditorScene) {
 
+    private val sceneNode: Scene get() = scene.sceneComponent.drawNode
     private val meshes = mutableMapOf<MeshKey, DrawNodeAndUsers>()
 
-    suspend fun usePrimitiveMesh(key: MeshKey, user: GameEntity): Mesh {
+    suspend fun usePrimitiveMesh(key: MeshKey, user: MeshComponent): Mesh {
         val meshUsers = meshes.getOrPut(key) {
             createMesh(key, user)
         }
+        meshUsers.users += user
         return meshUsers.drawNode as Mesh
     }
 
-    fun clearMesh(key: MeshKey, user: GameEntity) {
+    fun removeUser(key: MeshKey, user: MeshComponent) {
         val meshUsers = meshes[key]
         meshUsers?.let {
             it.users -= user
             if (it.users.isEmpty()) {
-                removeNode(it.drawNode)
+                sceneNode.removeNode(it.drawNode)
                 it.drawNode.release()
                 meshes -= key
             }
         }
     }
 
-    private suspend fun createMesh(meshKey: MeshKey, user: GameEntity): DrawNodeAndUsers {
+    fun updateInstances() {
+        meshes.values.forEach { it.updateInstances() }
+    }
+
+    private suspend fun createMesh(meshKey: MeshKey, user: MeshComponent): DrawNodeAndUsers {
         val isInstanced = meshKey.exclusiveEntity == EntityId.NULL
         val instances = if (isInstanced) MeshInstanceList(100, Attribute.INSTANCE_MODEL_MAT) else null
         val attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
 
-        val users = mutableSetOf(user)
         val mesh = Mesh(attributes, instances).apply {
-            this@SceneMeshes.addNode(this)
-
+            sceneNode.addNode(this)
+            isFrustumChecked = false
             generate {
                 meshKey.shapes.forEach { generateShape(it) }
             }
             geometry.generateTangents()
 
-            if (isInstanced) {
-                onUpdate {
-                    instances?.let { insts ->
-                        insts.clear()
-                        users.forEach {
-                            it.getComponent<MeshComponent>()?.addInstance(insts)
-                        }
-                    }
-                }
-            }
-
             val material = scene.project.materialsById[meshKey.material] ?: scene.project.defaultMaterial
-            material?.applyMaterialTo(user, this)
+            material?.applyMaterialTo(user.gameEntity, this)
             if (AppState.isInEditor) {
                 rayTest = MeshRayTest.geometryTest(this)
             }
         }
-        return DrawNodeAndUsers(mesh, users)
+        return DrawNodeAndUsers(mesh)
     }
 
     fun MeshBuilder.generateShape(shape: ShapeData) = withTransform {
@@ -154,5 +145,18 @@ class SceneMeshes(val scene: EditorScene) : Node("SceneMeshes") {
 
     data class MeshKey(val shapes: List<ShapeData>, val material: EntityId, val drawGroupId: Int, val exclusiveEntity: EntityId = EntityId.NULL)
 
-    private class DrawNodeAndUsers(val drawNode: Node, val users: MutableSet<GameEntity>)
+    private class DrawNodeAndUsers(val drawNode: Node) {
+        val users: MutableList<MeshComponent> = mutableListOf()
+
+        fun updateInstances() {
+            // todo: temporary: drawNode won't always be a mesh...
+            val instances = (drawNode as Mesh).instances!!
+            instances.clear()
+            instances.addInstances(users.size) { buf ->
+                for (i in users.indices) {
+                    users[i].addInstanceData(buf)
+                }
+            }
+        }
+    }
 }

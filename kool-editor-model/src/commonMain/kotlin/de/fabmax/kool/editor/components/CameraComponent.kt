@@ -6,7 +6,6 @@ import de.fabmax.kool.editor.data.CameraComponentData
 import de.fabmax.kool.editor.data.CameraTypeData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.scene.Camera
-import de.fabmax.kool.scene.Node
 
 class CameraComponent(
     gameEntity: GameEntity,
@@ -23,11 +22,6 @@ class CameraComponent(
         updateCamera(data.camera, true)
     }
 
-    override fun destroyComponent() {
-        gameEntity.replaceDrawNode(Node(gameEntity.name))
-        super.destroyComponent()
-    }
-
     override fun onDataChanged(oldData: CameraComponentData, newData: CameraComponentData) {
         updateCamera(newData.camera, false)
     }
@@ -41,7 +35,7 @@ class CameraComponent(
                 scene.camera = updateCamera
             }
             drawNode = updateCamera
-            gameEntity.replaceDrawNode(drawNode)
+            drawNode.transform = gameEntity.transform.transform
         }
     }
 }

@@ -308,9 +308,9 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     }
 
     private abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
-        abstract val modelMat: Mat4f
         abstract val color: Color
 
+        val modelMat: Mat4f get() = gameEntity.transform.globalTransform
         val radius = mesh.geometry.bounds.size.length()
 
         private val invModelMat = MutableMat4f()
@@ -353,21 +353,18 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, pointLightMesh)
     {
-        override val modelMat: Mat4f get() = component.drawNode.modelMatF
         override val color: Color get() = component.drawNode.color
     }
 
     private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, spotLightMesh)
     {
-        override val modelMat: Mat4f get() = component.drawNode.modelMatF
         override val color: Color get() = component.drawNode.color
     }
 
     private inner class DirLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, dirLightMesh)
     {
-        override val modelMat: Mat4f get() = component.drawNode.modelMatF
         override val color: Color get() = component.drawNode.color
     }
 
@@ -377,17 +374,15 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         private val activeColor = MdColor.GREY toneLin 300
         private val inactiveColor = MdColor.GREY toneLin 700
 
-        override val modelMat: Mat4f get() = gameEntity.drawNode.modelMatF
         override val color: Color get() {
             val isActive = component.sceneComponent.cameraComponent == component
             return if (isActive) activeColor else inactiveColor
         }
     }
 
-    private inner class GroupNodeInstance(nodeModel: GameEntity) :
-        OverlayObject(nodeModel, groupMesh)
+    private inner class GroupNodeInstance(gameEntity: GameEntity) :
+        OverlayObject(gameEntity, groupMesh)
     {
-        override val modelMat: Mat4f get() = gameEntity.drawNode.modelMatF
         override val color: Color = Color.WHITE
     }
 }
