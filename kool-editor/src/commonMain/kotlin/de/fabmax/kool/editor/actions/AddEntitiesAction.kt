@@ -22,7 +22,7 @@ class AddEntitiesAction(
     override fun doAction() {
         launchOnMainThread {
             hierarchy.forEach {
-                val scene = it.entityData.parentId?.gameEntity?.scene
+                val scene = it.entityData.parentId.gameEntity?.scene
                 scene?.addGameEntities(it)
             }
             KoolEditor.instance.selectionOverlay.setSelection(hierarchy.mapNotNull { it.entityData.id.gameEntity })
@@ -56,7 +56,7 @@ fun EditorScene.addNewMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3f
 
     entityData.components += makeTransformComponent(pos)
     entityData.components += ComponentInfo(MeshComponentData(meshShape), displayOrder = 1)
-    entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)), displayOrder = 2)
+    entityData.components += ComponentInfo(MaterialReferenceComponentData(EntityId.NULL), displayOrder = 2)
     AddEntitiesAction(listOf(entityData)).apply()
 }
 

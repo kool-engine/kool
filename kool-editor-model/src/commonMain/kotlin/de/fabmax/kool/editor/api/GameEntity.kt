@@ -44,7 +44,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     var parent: GameEntity? = null
         private set(value) {
             field = value
-            entityData.parentId = value?.id
+            entityData.parentId = value?.id ?: EntityId.NULL
         }
 
     private val _children = mutableListOf<GameEntity>()

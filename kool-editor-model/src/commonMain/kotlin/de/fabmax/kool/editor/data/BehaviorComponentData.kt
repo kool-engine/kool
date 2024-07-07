@@ -83,7 +83,7 @@ fun ComponentRef(component: GameEntityComponent?): ComponentRef {
     return if (component != null) {
         ComponentRef(component.gameEntity.id, component::class.simpleName!!)
     } else {
-        ComponentRef(EntityId(-1L), "<null>")
+        ComponentRef(EntityId.NULL, "<null>")
     }
 }
 
@@ -92,7 +92,7 @@ fun BehaviorRef(behavior: KoolBehavior?): BehaviorRef {
     return if (behavior != null) {
         BehaviorRef(behavior.gameEntity.id, behavior::class.simpleName!!)
     } else {
-        BehaviorRef(EntityId(-1L), "<null>")
+        BehaviorRef(EntityId.NULL, "<null>")
     }
 }
 

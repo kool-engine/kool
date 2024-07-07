@@ -106,7 +106,11 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
     suspend fun createNewMaterial(): MaterialComponent {
         val id = nextId()
-        val materialData = GameEntityData(id, materialScene.sceneEntity.id, GameEntitySettings("Material-${id.value}"))
+        val materialData = GameEntityData(
+            id = id,
+            settings = GameEntitySettings("Material-${id.value}"),
+            parentId = materialScene.sceneEntity.id
+        )
         materialData.components += ComponentInfo(MaterialComponentData(materialData.settings.name, PbrShaderData()))
         return addMaterial(materialData)
     }
@@ -148,7 +152,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
             val lightId = EntityId(4L)
 
             scenes += SceneData(SceneMeta(sceneId, "New Scene")).apply {
-                entities += GameEntityData(sceneId, null, GameEntitySettings(meta.name)).apply {
+                entities += GameEntityData(sceneId, EntityId.NULL, GameEntitySettings(meta.name)).apply {
                     components += ComponentInfo(SceneComponentData(cameraEntityId = camId))
                     components += ComponentInfo(SceneBackgroundComponentData(
                         SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
@@ -165,7 +169,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
                 }
                 entities += GameEntityData(boxId, sceneId, GameEntitySettings("Default cube")).apply {
                     components += ComponentInfo(MeshComponentData(ShapeData.Box(Vec3Data(1.0, 1.0, 1.0))))
-                    components += ComponentInfo(MaterialReferenceComponentData(EntityId(0L)))
+                    components += ComponentInfo(MaterialReferenceComponentData(EntityId.NULL))
                 }
                 entities += GameEntityData(lightId, sceneId, GameEntitySettings("Directional light")).apply {
                     components += ComponentInfo(DiscreteLightComponentData(LightTypeData.Directional()))
@@ -199,7 +203,7 @@ fun ProjectData.checkConsistency() {
         val referencedEntityIds = mutableSetOf<EntityId>()
 
         scene.entities.forEach {
-            if (it.parentId != null && it.parentId !in entityMap) {
+            if (it.parentId != EntityId.NULL && it.parentId !in entityMap) {
                 logE { "Entity ${it.settings.name} references non-existing parent" }
             } else {
                 parentsToChildren.getOrPut(it.parentId) { mutableListOf() } += it.id
@@ -213,7 +217,7 @@ fun ProjectData.checkConsistency() {
                 collectChildNodeIds(child)
             }
         }
-        val roots = parentsToChildren[null]?.mapNotNull { entityMap[it] } ?: emptyList()
+        val roots = parentsToChildren[EntityId.NULL]?.mapNotNull { entityMap[it] } ?: emptyList()
         if (roots.size != 1) {
             logE { "Scene ${scene.meta.name} has ${roots.size} root entities" }
         }

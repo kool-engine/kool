@@ -83,9 +83,9 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         }
         choicePropertyEditor(
             choices = choices,
-            dataGetter = { PropertyValue(gameEntityRef = prop.getGameEntity(it)?.id ?: EntityId(0L)) },
+            dataGetter = { PropertyValue(gameEntityRef = prop.getGameEntity(it)?.id ?: EntityId.NULL) },
             valueGetter = { GameEntityChoice(it.gameEntityRef?.gameEntity) },
-            valueSetter = { _, newValue -> PropertyValue(gameEntityRef = newValue?.gameEntity?.id ?: EntityId(0L)) },
+            valueSetter = { _, newValue -> PropertyValue(gameEntityRef = newValue?.gameEntity?.id ?: EntityId.NULL) },
             actionMapper = SetBehaviorPropertyAction(prop),
             label = prop.label
         )

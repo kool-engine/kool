@@ -10,7 +10,7 @@ import de.fabmax.kool.editor.data.MaterialReferenceComponentData
 
 class MaterialReferenceComponent(
     gameEntity: GameEntity,
-    componentInfo: ComponentInfo<MaterialReferenceComponentData> = ComponentInfo(MaterialReferenceComponentData(EntityId(-1L)))
+    componentInfo: ComponentInfo<MaterialReferenceComponentData> = ComponentInfo(MaterialReferenceComponentData(EntityId.NULL))
 ) : GameEntityDataComponent<MaterialReferenceComponentData>(gameEntity, componentInfo) {
 
     val material: MaterialComponent? get() = project.materialsById[data.materialId]

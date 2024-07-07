@@ -54,16 +54,16 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         parentsToChildren[sceneEntity.id]?.sortedBy { it.order }?.forEach { createEntity(it) }
 
         // fix entities with missing parents by adding them to the scene root entity
-        sceneData.entities.filter { it.parentId != null && it.parentId !in sceneEntities }.forEach {
+        sceneData.entities.filter { it.parentId != EntityId.NULL && it.parentId !in sceneEntities }.forEach {
             it.parentId = sceneEntity.id
             createEntity(it)
         }
     }
 
     private fun SceneData.getOrAddSceneEntityData(): GameEntityData {
-        var entityData = entities.find { it.id == meta.rootId } ?: entities.find { it.parentId == null }
+        var entityData = entities.find { it.id == meta.rootId } ?: entities.find { it.parentId == EntityId.NULL }
         if (entityData == null) {
-            entityData = GameEntityData(meta.rootId, null, GameEntitySettings(sceneData.meta.name)).also {
+            entityData = GameEntityData(meta.rootId, EntityId.NULL, GameEntitySettings(sceneData.meta.name)).also {
                 entities += it
             }
         }

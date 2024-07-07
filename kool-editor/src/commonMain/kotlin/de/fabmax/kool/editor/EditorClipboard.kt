@@ -4,6 +4,7 @@ import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddEntitiesAction
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.toHierarchy
+import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.GameEntityData
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
@@ -77,7 +78,7 @@ object EditorClipboard {
             val uniqueName = uniquifyName(data.settings.name, existingNames)
             data.copy(
                 id = sanitizedIds[data.id]!!,
-                parentId = sanitizedIds[data.parentId],
+                parentId = sanitizedIds[data.parentId] ?: EntityId.NULL,
                 settings = data.settings.copy(name = uniqueName)
             ).also {
                 it.components.addAll(data.components)
