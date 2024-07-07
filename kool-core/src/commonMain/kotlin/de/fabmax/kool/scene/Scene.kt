@@ -67,7 +67,7 @@ open class Scene(name: String? = null) : Node(name) {
         offscreenPasses -= pass
     }
 
-    fun renderScene(ctx: KoolContext) {
+    open fun renderScene(ctx: KoolContext) {
         onRenderScene.update()
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)

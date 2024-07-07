@@ -117,7 +117,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
 
             val isCmdValid = cmd.isActive && cmd.geometry.numIndices > 0
             if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
-                val insts = cmd.mesh.instances
+                val insts = cmd.instances
                 if (insts == null) {
                     passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices)
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)

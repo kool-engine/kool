@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
 class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) {
@@ -13,6 +14,7 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
         private set
 
     var geometry: IndexedVertexList = mesh.geometry
+    var instances: MeshInstanceList? = mesh.instances
 
     var isActive = true
 
@@ -31,6 +33,7 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
         this.pipeline = pipeline
         this.drawGroupId = drawGroupId
         geometry = mesh.geometry
+        instances = mesh.instances
         isActive = true
     }
 }

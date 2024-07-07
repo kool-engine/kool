@@ -39,9 +39,11 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
      */
     fun findRequiredVertexAttributes(): Set<Attribute> {
         val vertexStage = program.vertexStage ?: return emptySet()
-        return vertexStage.attributes.values.map {
-            Attribute(it.name, it.expressionType.gpuType)
-        }.toSet()
+        return vertexStage.attributes.values
+            .filter { it.inputRate == KslInputRate.Vertex }
+            .map {
+                Attribute(it.name, it.expressionType.gpuType)
+            }.toSet()
     }
 
     override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawPipeline {
