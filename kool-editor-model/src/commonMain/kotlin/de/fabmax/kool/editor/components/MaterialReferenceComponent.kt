@@ -13,7 +13,8 @@ class MaterialReferenceComponent(
     componentInfo: ComponentInfo<MaterialReferenceComponentData> = ComponentInfo(MaterialReferenceComponentData(EntityId.NULL))
 ) : GameEntityDataComponent<MaterialReferenceComponentData>(gameEntity, componentInfo) {
 
-    val material: MaterialComponent? get() = project.materialsById[data.materialId]
+    val materialId: EntityId get() = data.materialId
+    val material: MaterialComponent? get() = project.materialsById[materialId]
 
     private val listeners by cachedEntityComponents<ListenerComponent>()
 

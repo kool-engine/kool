@@ -21,6 +21,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     var componentModCnt = 0
         internal set
 
+    val sceneMeshes = SceneMeshes(this)
     val shaderData = SceneShaderData(this)
     val sceneEntity: GameEntity = GameEntity(sceneData.getOrAddSceneEntityData(), this)
     val name: String get() = sceneEntity.name
@@ -58,6 +59,8 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             it.parentId = sceneEntity.id
             createEntity(it)
         }
+
+        sceneEntity.sceneComponent.drawNode.addNode(sceneMeshes)
     }
 
     private fun SceneData.getOrAddSceneEntityData(): GameEntityData {

@@ -11,10 +11,7 @@ import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.scene.Model
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.*
@@ -55,6 +52,12 @@ class MeshComponent(
         }
     }
 
+    fun addInstance(instanceList: MeshInstanceList) {
+        instanceList.addInstance {
+            gameEntity.transform.transform.matrixF.putTo(this)
+        }
+    }
+
     override fun onDataChanged(oldData: MeshComponentData, newData: MeshComponentData) {
         launchOnMainThread {
             if (oldData.shapes != newData.shapes) {
@@ -79,29 +82,33 @@ class MeshComponent(
     private suspend fun updateDrawNode(data: MeshComponentData) {
         requiredAssets.clear()
 
-        val modelShape = data.shapes.find { it is ShapeData.Model } as ShapeData.Model?
-        val heightMapShape = data.shapes.find { it is ShapeData.Heightmap } as ShapeData.Heightmap?
-        val customShape = data.shapes.find { it is ShapeData.Custom } as ShapeData.Custom?
+        val material = gameEntity.getComponent<MaterialReferenceComponent>()?.materialId ?: EntityId.NULL
+        val key = SceneMeshes.MeshKey(data.shapes, material, gameEntity.drawGroupId)
+        scene.sceneMeshes.usePrimitiveMesh(key, gameEntity)
 
-        val node = when {
-            modelShape != null -> modelHolder.updateModel(modelShape)
-            heightMapShape != null -> meshHolder.updateHeightMap(heightMapShape)
-            customShape != null -> meshHolder.updateCustom()
-            else -> meshHolder.updatePrimitive(data)
-        }
-
-        if (node == modelHolder.model) {
-            meshHolder.release()
-        } else if (node == meshHolder.mesh) {
-            modelHolder.release()
-        }
-
-        if (node != drawNode) {
-            drawNode?.release()
-            drawNode = node
-            gameEntity.replaceDrawNode(node ?: Node())
-        }
-        listeners.forEach { it.onMeshGeometryChanged(this, data) }
+//        val modelShape = data.shapes.find { it is ShapeData.Model } as ShapeData.Model?
+//        val heightMapShape = data.shapes.find { it is ShapeData.Heightmap } as ShapeData.Heightmap?
+//        val customShape = data.shapes.find { it is ShapeData.Custom } as ShapeData.Custom?
+//
+//        val node = when {
+//            modelShape != null -> modelHolder.updateModel(modelShape)
+//            heightMapShape != null -> meshHolder.updateHeightMap(heightMapShape)
+//            customShape != null -> meshHolder.updateCustom()
+//            else -> meshHolder.updatePrimitive(data)
+//        }
+//
+//        if (node == modelHolder.model) {
+//            meshHolder.release()
+//        } else if (node == meshHolder.mesh) {
+//            modelHolder.release()
+//        }
+//
+//        if (node != drawNode) {
+//            drawNode?.release()
+//            drawNode = node
+//            gameEntity.replaceDrawNode(node ?: Node())
+//        }
+//        listeners.forEach { it.onMeshGeometryChanged(this, data) }
     }
 
     override fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?) {

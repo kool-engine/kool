@@ -45,6 +45,7 @@ suspend fun PbrShaderData.createShader(sceneShaderData: SceneShaderData): KslPbr
                 cullMethod = CullMethod.NO_CULLING
             }
         }
+        vertices { isInstanced = true }
         color {
             when (val color = baseColor) {
                 is ConstColorAttribute -> uniformColor()
