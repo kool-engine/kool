@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.LongHash
-import de.fabmax.kool.util.Releasable
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 
 /**
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
@@ -11,14 +8,13 @@ import de.fabmax.kool.util.Time
  */
 abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLayouts) : BaseReleasable() {
 
+    protected val pipelineHashBuilder = LongHashBuilder()
+
     /**
      * pipelineHash is used to determine pipeline equality. In contrast to standard java hashCode() a 64-bit hash is
-     * used to make collisions less likely. For fast equality checks the equals() method only uses this value to
-     * determine equality.
+     * used to make collisions less likely.
      */
-    protected val hash = LongHash()
-    val pipelineHash: Long
-        get() = hash.hash
+    abstract val pipelineHash: LongHash
 
     abstract val shaderCode: ShaderCode
 
@@ -34,9 +30,9 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     internal var pipelineBackend: PipelineBackend? = null
 
     init {
-        hash += bindGroupLayouts.viewScope.hash
-        hash += bindGroupLayouts.pipelineScope.hash
-        hash += bindGroupLayouts.meshScope.hash
+        pipelineHashBuilder += bindGroupLayouts.viewScope.hash
+        pipelineHashBuilder += bindGroupLayouts.pipelineScope.hash
+        pipelineHashBuilder += bindGroupLayouts.meshScope.hash
     }
 
     override fun release() {
@@ -66,7 +62,7 @@ interface PipelineBackend : Releasable {
 }
 
 class PipelineData(val scope: BindGroupScope) : BaseReleasable() {
-    private val bindGroupData = mutableMapOf<Long, UpdateAwareBindGroupData>()
+    private val bindGroupData = mutableMapOf<LongHash, UpdateAwareBindGroupData>()
 
     fun getPipelineData(pipeline: PipelineBase): BindGroupData {
         val layout = pipeline.bindGroupLayouts[scope]

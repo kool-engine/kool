@@ -86,7 +86,7 @@ open class Mesh(
     constructor(vararg attributes: Attribute, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
             this(IndexedVertexList(*attributes), instances = instances, name = name)
 
-    val id = instanceId++
+    val id = MeshId(nextMeshId++)
 
     var isOpaque = true
 
@@ -237,9 +237,11 @@ open class Mesh(
     }
 
     companion object {
-        private var instanceId = 1
+        private var nextMeshId = 1
     }
 }
+
+data class MeshId(val value: Int)
 
 /**
  * Mesh with default attributes for vertex color based rendering:

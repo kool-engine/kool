@@ -12,16 +12,15 @@ class ShaderCodeImplVk(val vkCode: VkCode): ShaderCode, ComputeShaderCode {
 
     constructor(vararg stages: ShaderStage): this(VkCode(stages.asList()))
 
-    override val hash: LongHash = LongHash().apply { this += vkCode.hash }
+    override val hash: LongHash = LongHash { this += vkCode.hash }
 
     val vkStages: List<ShaderStage>
         get() = vkCode.stages
 
     class VkCode(val stages: List<ShaderStage>) {
-        val hash = LongHash()
-        init {
+        val hash = LongHash {
             stages.forEach {
-                hash += it.hash
+                this += it.hash
             }
         }
     }

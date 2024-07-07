@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshId
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.UniqueId
@@ -16,7 +17,7 @@ open class DepthMapPass(
 ) :
     OffscreenRenderPass2d(drawNode, attachmentConfig, initialSize, name)
 {
-    protected val shadowPipelines = mutableMapOf<Int, DrawPipeline?>()
+    protected val shadowPipelines = mutableMapOf<MeshId, DrawPipeline?>()
     protected val depthShaders = mutableMapOf<DepthShaderKey, DepthShader>()
 
     /**

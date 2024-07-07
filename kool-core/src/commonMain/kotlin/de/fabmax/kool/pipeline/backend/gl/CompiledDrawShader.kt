@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshId
 import de.fabmax.kool.scene.geometry.PrimitiveType
 
 class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend: RenderBackendGl) :
@@ -29,7 +30,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     private val intAttrBinder: AttributeBinder?
     private val instanceAttrBinder: AttributeBinder?
 
-    private val users = mutableSetOf<Int>()
+    private val users = mutableSetOf<MeshId>()
 
     private var drawInfo = DrawInfo(pipeline.vertexLayout.primitiveType.glElemType, gl.UNSIGNED_INT, 0, false)
 

@@ -4,13 +4,12 @@ import de.fabmax.kool.util.LongHash
 
 class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: List<BindingLayout>) {
 
-    val hash: Long = LongHash().let {
-        it += scope
+    val hash: LongHash = LongHash {
+        this += scope
         bindings.forEachIndexed { i, binding ->
             binding.bindingIndex = i
-            it += binding.hash
+            this += binding.hash
         }
-        it.hash
     }
 
     fun createData(): BindGroupData = BindGroupData(this)
@@ -66,7 +65,7 @@ sealed class BindingLayout(
     val stages: Set<ShaderStage>,
     val type: BindingType
 ) {
-    abstract val hash: Long
+    abstract val hash: LongHash
 
     /**
      * Index of this binding within it's parent [BindGroupLayout]. Only valid after the [BindGroupLayout] is created.
@@ -93,16 +92,15 @@ class UniformBufferLayout(
 {
     val layout: Std140BufferLayout = Std140BufferLayout(uniforms)
 
-    override val hash: Long = LongHash().let {
-        it += name
-        it += type
-        stages.forEach { s -> it += s }
+    override val hash: LongHash = LongHash {
+        this += name
+        this += type
+        stages.forEach { s -> this += s }
         uniforms.forEach { u ->
-            it += u.name
-            it += u.type
-            it += u.arraySize
+            this += u.name
+            this += u.type
+            this += u.arraySize
         }
-        it.hash
     }
 
     fun hasUniform(name: String) = uniforms.any { it.name == name }
@@ -115,11 +113,11 @@ sealed class TextureLayout(
     val sampleType: TextureSampleType
 ) : BindingLayout(name, stages, type) {
 
-    override val hash: Long = LongHash().let {
-        it += name
-        it += type
-        stages.forEach { s -> it += s }
-        it.hash
+    override val hash: LongHash = LongHash {
+        this += name
+        this += type
+        stages.forEach { s -> this += s }
+        this.hash
     }
 }
 
@@ -155,13 +153,13 @@ sealed class StorageBufferLayout(
     type: BindingType,
 ) : BindingLayout(name, stages, type) {
 
-    override val hash: Long = LongHash().let {
-        it += name
-        it += accessType
-        it += format
-        it += type
-        stages.forEach { s -> it += s }
-        it.hash
+    override val hash: LongHash = LongHash {
+        this += name
+        this += accessType
+        this += format
+        this += type
+        stages.forEach { s -> this += s }
+        this.hash
     }
 }
 

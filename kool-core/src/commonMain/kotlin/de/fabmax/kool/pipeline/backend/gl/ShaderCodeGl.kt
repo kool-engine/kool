@@ -9,13 +9,13 @@ data class ShaderCodeGl(
     val fragmentSrc: String
 ) : ShaderCode {
 
-    override val hash = LongHash().apply {
+    override val hash = LongHash {
         this += vertexSrc.hashCode().toLong() shl 32 or fragmentSrc.hashCode().toLong()
     }
 }
 
 data class ComputeShaderCodeGl(val computeSrc: String): ComputeShaderCode {
-    override val hash = LongHash().apply {
+    override val hash = LongHash {
         this += computeSrc
     }
 }

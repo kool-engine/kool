@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.BufferedList
+import de.fabmax.kool.util.LongHash
 
 /**
  * Graphics pipeline class. Also includes rasterizing options like [cullMethod], [blendMode], etc. In contrast
@@ -17,6 +18,7 @@ class DrawPipeline(
 ) :
     PipelineBase(name, bindGroupLayouts)
 {
+    override val pipelineHash: LongHash
 
     val cullMethod: CullMethod get() = pipelineConfig.cullMethod
     val blendMode: BlendMode get() = pipelineConfig.blendMode
@@ -27,16 +29,18 @@ class DrawPipeline(
 
     override val shaderCode: ShaderCode = shaderCodeGenerator(this)
 
-    val onUpdate: BufferedList<(DrawCommand) -> Unit> = BufferedList()
+    private val onUpdate: BufferedList<(DrawCommand) -> Unit> = BufferedList()
 
     init {
-        hash += cullMethod
-        hash += depthCompareOp
-        hash += isWriteDepth
-        hash += lineWidth
+        pipelineHashBuilder += cullMethod
+        pipelineHashBuilder += depthCompareOp
+        pipelineHashBuilder += isWriteDepth
+        pipelineHashBuilder += lineWidth
 
-        hash += vertexLayout.hash
-        hash += shaderCode.hash
+        pipelineHashBuilder += vertexLayout.hash
+        pipelineHashBuilder += shaderCode.hash
+
+        pipelineHash = pipelineHashBuilder.build()
     }
 
     fun update(cmd: DrawCommand) {
