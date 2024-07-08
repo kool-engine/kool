@@ -9,7 +9,6 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
@@ -18,7 +17,7 @@ import de.fabmax.kool.util.Time
 
 class InstancingTest : DemoScene("Instancing") {
 
-    private val numObjects = mutableStateOf(1000)
+    private val numObjects = mutableStateOf(5000)
     private val drawInstanced = mutableStateOf(false)
     private val updateInstances = mutableStateOf(false)
     private val numInstancesPerMesh = mutableStateOf(10)
@@ -88,8 +87,8 @@ class InstancingTest : DemoScene("Instancing") {
             Text("${profilingScene.updateTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
         MenuRow {
-            Text("Render scene:") { labelStyle(Grow.Std) }
-            Text("${profilingScene.renderTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
+            Text("Draw scene:") { labelStyle(Grow.Std) }
+            Text("${profilingScene.drawTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
     }
 
@@ -162,29 +161,22 @@ class InstancingTest : DemoScene("Instancing") {
     }
 
     private class ProfilingScene : Scene() {
-        val renderTstate = mutableStateOf(0.0)
         val updateTstate = mutableStateOf(0.0)
+        val drawTstate = mutableStateOf(0.0)
 
-        var renderT = 0.0
         var updateT = 0.0
+        var drawT = 0.0
 
         override fun renderScene(ctx: KoolContext) {
             val t = Time.precisionTime
             super.renderScene(ctx)
             val p = (Time.precisionTime - t)
-            renderT = renderT * 0.9 + p * 1000.0 * 0.1
-            if (Time.frameCount % 10 == 0) {
-                renderTstate.set(renderT)
-            }
-        }
-
-        override fun update(updateEvent: RenderPass.UpdateEvent) {
-            val t = Time.precisionTime
-            super.update(updateEvent)
-            val p = (Time.precisionTime - t)
             updateT = updateT * 0.9 + p * 1000.0 * 0.1
-            if (Time.frameCount % 10 == 0) {
+            drawT = drawT * 0.9 + sceneDrawTime * 1000.0 * 0.1
+
+            if (Time.frameCount % 5 == 0) {
                 updateTstate.set(updateT)
+                drawTstate.set(drawT)
             }
         }
     }

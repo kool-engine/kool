@@ -47,6 +47,8 @@ open class Scene(name: String? = null) : Node(name) {
     val isEmpty: Boolean
         get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedMutations)
 
+    var sceneDrawTime = 0.0
+
     fun tryEnableInfiniteDepth(): Boolean {
         val ctx = KoolSystem.getContextOrNull() ?: return false
         if (ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
