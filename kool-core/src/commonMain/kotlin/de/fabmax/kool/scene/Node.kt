@@ -57,7 +57,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     private val globalCenterMut = MutableVec3f()
     private val globalExtentMut = MutableVec3f()
-    private var globalPosMutCount = -1
+    private var globalPosModCount = -1
 
     /**
      * This node's transform. Can be used to manipulate this node's position, size, etc. Notice that, by default, the
@@ -67,31 +67,31 @@ open class Node(name: String? = null) : BaseReleasable() {
      */
     var transform: Transform = TrsTransformF()
 
-    private val modelMats = ModelMats()
+    private val modelMatrix = SyncedMatrixFd()
     private val tmpVec = MutableVec3f()
 
     /**
      * This node's single-precision model matrix. Updated on each frame based on this node's transform and the model
      * matrix of the parent node.
      */
-    val modelMatF: Mat4f by modelMats::modelMatF
+    val modelMatF: Mat4f by modelMatrix::matF
 
     /**
      * This node's double-precision model matrix. Actual double-precision is only achieved, if this node also uses a
      * double precision [transform]. Updated on each frame based on this node's transform and the model
      * matrix of the parent node.
      */
-    val modelMatD: Mat4d by modelMats::modelMatD
+    val modelMatD: Mat4d by modelMatrix::matD
 
     /**
      * Inverse of this node's model matrix (single-precision).
      */
-    val invModelMatF: Mat4f get() = modelMats.lazyInvModelMatF.get()
+    val invModelMatF: Mat4f get() = modelMatrix.invF
 
     /**
      * Inverse of this node's model matrix (double-precision).
      */
-    val invModelMatD: Mat4d get() = modelMats.lazyInvModelMatD.get()
+    val invModelMatD: Mat4d get() = modelMatrix.invD
 
     /**
      * Parent node is set when this node is added to another [Node] as a child.
@@ -149,8 +149,8 @@ open class Node(name: String? = null) : BaseReleasable() {
         }
 
         // update global center and radius
-        if (globalPosMutCount != modelMats.updateId) {
-            globalPosMutCount = modelMats.updateId
+        if (globalPosModCount != modelMatrix.modCount) {
+            globalPosModCount = modelMatrix.modCount
             toGlobalCoords(globalCenterMut.set(bounds.center))
             toGlobalCoords(globalExtentMut.set(bounds.max))
             globalRadius = globalCenter.distance(globalExtentMut)
@@ -186,7 +186,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     protected open fun addContentToBoundingBox(localBounds: BoundingBoxF) { }
 
-    fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMats, modelMats)
+    fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMatrix, modelMatrix)
 
     fun updateModelMatRecursive() {
         updateModelMat()
@@ -403,49 +403,6 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     companion object {
         fun makeNodeName(type: String = "Node") = UniqueId.nextId(type)
-    }
-
-    class ModelMats {
-        val modelMatF: Mat4f get() {
-            if (updateIdF != updateId) {
-                mutModelMatF.set(mutModelMatD)
-                updateIdF = updateId
-            }
-            return mutModelMatF
-        }
-
-        val modelMatD: Mat4d get() {
-            if (updateIdD != updateId) {
-                mutModelMatD.set(mutModelMatF)
-                updateIdD = updateId
-            }
-            return mutModelMatD
-        }
-
-        val lazyInvModelMatF = LazyMat4f { modelMatF.invert(it) }
-        val lazyInvModelMatD = LazyMat4d { modelMatD.invert(it) }
-
-        val mutModelMatF = MutableMat4f()
-        val mutModelMatD = MutableMat4d()
-
-        private var updateIdF = 0
-        private var updateIdD = 0
-        var updateId = 0
-            private set
-
-        fun markUpdatedF() {
-            updateId++
-            updateIdF = updateId
-            lazyInvModelMatF.isDirty = true
-            lazyInvModelMatD.isDirty = true
-        }
-
-        fun markUpdatedD() {
-            updateId++
-            updateIdD = updateId
-            lazyInvModelMatF.isDirty = true
-            lazyInvModelMatD.isDirty = true
-        }
     }
 }
 

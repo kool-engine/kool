@@ -25,7 +25,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
     private val meshA: Mesh = ColorMesh(name = "Parent")
     private val meshB: Mesh = ColorMesh(name = "Child")
 
-    private val transformNode = mutableStateOf(meshA).onChange { gizmo.transformNode = it }
+    private val transformNode = mutableStateOf(meshA).onChange { gizmo.setTransformNode(it) }
     private val transformMode = mutableStateOf(gizmo.mode).onChange { gizmo.mode = it }
     private val transformFrame = mutableStateOf(gizmo.transformFrame).onChange { gizmo.transformFrame = it }
 
@@ -83,7 +83,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         // because otherwise the node's model matrix might not be valid, and then it's transform is not correctly
         // captured.
         launchDelayed(1) {
-            gizmo.transformNode = meshA
+            gizmo.setTransformNode(meshA)
         }
 
         addLineMesh {

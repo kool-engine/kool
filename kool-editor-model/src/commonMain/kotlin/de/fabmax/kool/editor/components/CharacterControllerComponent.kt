@@ -116,7 +116,7 @@ class CharacterControllerComponent(
         }
 
         if (oldPos != null) {
-            applyPose(oldPos!!.toVec3f(), QuatF.IDENTITY)
+            applyPose(oldPos!!, QuatD.IDENTITY)
         } else {
             setPhysicsTransformFromDrawNode()
         }
@@ -137,8 +137,8 @@ class CharacterControllerComponent(
         charCtrl.nonWalkableMode = props.nonWalkableMode
     }
 
-    override fun applyPose(position: Vec3f, rotation: QuatF) {
-        charController?.position = position.toVec3d()
+    override fun applyPose(position: Vec3d, rotation: QuatD) {
+        charController?.position = position
     }
 
     private fun updateMovement(controller: CharacterController, axes: WalkAxes) {

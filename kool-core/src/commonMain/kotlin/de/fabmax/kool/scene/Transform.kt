@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.LazyMat4f
+import de.fabmax.kool.util.SyncedMatrixFd
 
 interface Transform {
 
@@ -15,7 +16,7 @@ interface Transform {
     val isDoublePrecision: Boolean
     val modCount: Int
 
-    fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats): Boolean
+    fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean
 
     fun markDirty()
 
@@ -119,21 +120,19 @@ abstract class TransformF : Transform {
     private var applyMatsModCount = -1
     private var applyParentMatsModCount = -1
 
-    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats): Boolean {
-        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMats.updateId
-        if (parentModelMats != null && (egoChanged || applyParentMatsModCount != parentModelMats.updateId)) {
-            parentModelMats.modelMatF.mul(matrixF, modelMats.mutModelMatF)
-            modelMats.markUpdatedF()
+    override fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount
+        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount)) {
+            modelMat.setMatF { parentModelMat.matF.mul(matrixF, it) }
             applyModCount = modCount
-            applyMatsModCount = modelMats.updateId
-            applyParentMatsModCount = parentModelMats.updateId
+            applyMatsModCount = modelMat.modCount
+            applyParentMatsModCount = parentModelMat.modCount
             return true
 
         } else if (egoChanged) {
-            modelMats.mutModelMatF.set(matrixF)
-            modelMats.markUpdatedF()
+            modelMat.setMatF { it.set(matrixF) }
             applyModCount = modCount
-            applyMatsModCount = modelMats.updateId
+            applyMatsModCount = modelMat.modCount
             return true
         }
         return false
@@ -201,21 +200,19 @@ abstract class TransformD : Transform {
     private var applyMatsModCount = -1
     private var applyParentMatsModCount = -1
 
-    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats): Boolean {
-        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMats.updateId
-        if (parentModelMats != null && (egoChanged || applyParentMatsModCount != parentModelMats.updateId)) {
-            parentModelMats.modelMatD.mul(matrixD, modelMats.mutModelMatD)
-            modelMats.markUpdatedD()
+    override fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount
+        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount)) {
+            modelMat.setMatD { parentModelMat.matD.mul(matrixD, it) }
             applyModCount = modCount
-            applyMatsModCount = modelMats.updateId
-            applyParentMatsModCount = parentModelMats.updateId
+            applyMatsModCount = modelMat.modCount
+            applyParentMatsModCount = parentModelMat.modCount
             return true
 
         } else if (egoChanged) {
-            modelMats.mutModelMatD.set(matrixD)
-            modelMats.markUpdatedD()
+            modelMat.setMatD { it.set(matrixD) }
             applyModCount = modCount
-            applyMatsModCount = modelMats.updateId
+            applyMatsModCount = modelMat.modCount
             return true
         }
         return false

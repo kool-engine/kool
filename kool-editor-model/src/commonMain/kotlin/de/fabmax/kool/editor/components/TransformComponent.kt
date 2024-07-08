@@ -5,11 +5,12 @@ import de.fabmax.kool.editor.api.cachedEntityComponents
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.SyncedMatrixFd
 
 class TransformComponent(
     gameEntity: GameEntity,
@@ -18,7 +19,7 @@ class TransformComponent(
 
     private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
-    val globalTransform = MutableMat4f()
+    val globalTransform = SyncedMatrixFd()
     var transform: Transform = TrsTransformF()
         set(value) {
             field = value
@@ -51,9 +52,16 @@ class TransformComponent(
         updateTransform()
     }
 
-    private fun updateTransform() {
-        val parentModelMat = gameEntity.parent?.transform?.globalTransform ?: Mat4f.IDENTITY
-        globalTransform.set(parentModelMat).mul(transform.matrixF)
+    fun updateTransform() {
+        val parentModelMat = gameEntity.parent?.localToGlobalD ?: Mat4d.IDENTITY
+        globalTransform.setMatD { parentModelMat.mul(transform.matrixD, it) }
+    }
+
+    fun updateTransformRecursive() {
+        updateTransform()
+        for (i in gameEntity.children.indices) {
+            gameEntity.children[i].transform.updateTransformRecursive()
+        }
     }
 
     private fun fireTransformChanged(data: TransformComponentData) {
@@ -68,3 +76,8 @@ class TransformComponent(
         fun onTransformChanged(component: TransformComponent, transformData: TransformComponentData)
     }
 }
+
+val GameEntity.localToGlobalF: Mat4f get() = transform.globalTransform.matF
+val GameEntity.localToGlobalD: Mat4d get() = transform.globalTransform.matD
+val GameEntity.globalToLocalF: Mat4f get() = transform.globalTransform.invF
+val GameEntity.globalToLocalD: Mat4d get() = transform.globalTransform.invD

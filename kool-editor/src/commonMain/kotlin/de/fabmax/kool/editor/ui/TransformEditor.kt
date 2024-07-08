@@ -5,6 +5,8 @@ import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.TransformComponent
+import de.fabmax.kool.editor.components.globalToLocalD
+import de.fabmax.kool.editor.components.localToGlobalD
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
@@ -57,7 +59,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
         transformProperties.setTransformData(transformData, KoolEditor.instance.gizmoOverlay.transformFrame.use())
 
         surface.onEachFrame {
-            components[0].gameEntity.transform.globalTransform.toMat4d().decompose(currentTranslation, currentRotation, currentScale)
+            components[0].gameEntity.localToGlobalD.decompose(currentTranslation, currentRotation, currentScale)
             if (!currentTranslation.isFuzzyEqual(lastTranslation, 1e-3) || !currentRotation.isFuzzyEqual(lastRotation, 1e-4) || !currentScale.isFuzzyEqual(lastScale, 1e-3)) {
                 components.forEach { it.updateDataFromTransform() }
                 lastTranslation.set(currentTranslation)
@@ -276,7 +278,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                     GizmoFrame.GLOBAL -> {
                         val parent = components[i].gameEntity.parent
                         if (parent?.isSceneChild == true) {
-                            TransformData(components[i].gameEntity.transform.globalTransform.toMat4d())
+                            TransformData(components[i].gameEntity.localToGlobalD)
                         } else {
                             // parent node is the scene -> parent reference frame == global reference frame
                             td
@@ -298,10 +300,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                 GizmoFrame.GLOBAL -> {
                     val parent = components[componentI].gameEntity.parent
                     if (parent?.isSceneChild == true) {
-                        val globalToParent = MutableMat4d()
-                        parent.transform.globalTransform.toMat4d().invert(globalToParent)
-                        val m = globalToParent.mul(transformData.toMat4d(MutableMat4d()), MutableMat4d())
-                        TransformData(m)
+                        TransformData(parent.globalToLocalD.mul(transformData.toMat4d(MutableMat4d()), MutableMat4d()))
                     } else {
                         // parent node is the scene -> parent reference frame == global reference frame
                         transformData

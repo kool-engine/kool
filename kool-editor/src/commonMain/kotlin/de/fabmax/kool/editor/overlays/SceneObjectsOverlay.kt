@@ -2,10 +2,7 @@ package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.components.CameraComponent
-import de.fabmax.kool.editor.components.DiscreteLightComponent
-import de.fabmax.kool.editor.components.DrawNodeComponent
-import de.fabmax.kool.editor.components.sceneComponent
+import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -310,7 +307,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     private abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
         abstract val color: Color
 
-        val modelMat: Mat4f get() = gameEntity.transform.globalTransform
+        val modelMat: Mat4f get() = gameEntity.localToGlobalF
         val radius = mesh.geometry.bounds.size.length()
 
         private val invModelMat = MutableMat4f()
