@@ -33,6 +33,8 @@ open class Node(name: String? = null) : BaseReleasable() {
     private val tmpTransformVec = MutableVec3f()
     private val parentBoundsCache = BoundingBoxF()
     private var parentBoundsModCount = -1
+    private val cachedBoundsMin = MutableVec3f()
+    private val cachedBoundsMax = MutableVec3f()
 
     /**
      * Center point of this node's bounds in global coordinates.
@@ -57,7 +59,6 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     private val globalCenterMut = MutableVec3f()
     private val globalExtentMut = MutableVec3f()
-    private var globalPosModCount = -1
 
     /**
      * This node's transform. Can be used to manipulate this node's position, size, etc. Notice that, by default, the
@@ -148,18 +149,18 @@ open class Node(name: String? = null) : BaseReleasable() {
             addContentToBoundingBox(bounds)
         }
 
-        // update global center and radius
-        if (globalPosModCount != modelMatrix.modCount) {
-            globalPosModCount = modelMatrix.modCount
-            toGlobalCoords(globalCenterMut.set(bounds.center))
-            toGlobalCoords(globalExtentMut.set(bounds.max))
-            globalRadius = globalCenter.distance(globalExtentMut)
-        }
+        // update global center and radius, don't do modCount-based caching here since bounds can change too
+        val toGlobal = modelMatrix.matF
+        toGlobal.transform(globalCenterMut.set(bounds.center))
+        toGlobal.transform(globalCenterMut.set(bounds.max))
+        globalRadius = globalCenter.distance(globalExtentMut)
     }
 
     private fun addBoundsToParentBounds(parentBounds: BoundingBoxF) {
         if (!bounds.isEmpty) {
-            if (transform.modCount != parentBoundsModCount) {
+            if (transform.modCount != parentBoundsModCount || cachedBoundsMin != bounds.min || cachedBoundsMax != bounds.max) {
+                cachedBoundsMin.set(bounds.min)
+                cachedBoundsMax.set(bounds.max)
                 parentBoundsModCount = transform.modCount
 
                 parentBoundsCache.batchUpdate {
@@ -170,14 +171,14 @@ open class Node(name: String? = null) : BaseReleasable() {
                     val maxY = bounds.max.y
                     val maxZ = bounds.max.z
                     clear()
-                    add(transform.transform(tmpTransformVec.set(minX, minY, minZ), 1f))
-                    add(transform.transform(tmpTransformVec.set(minX, minY, maxZ), 1f))
-                    add(transform.transform(tmpTransformVec.set(minX, maxY, minZ), 1f))
-                    add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ), 1f))
-                    add(transform.transform(tmpTransformVec.set(maxX, minY, minZ), 1f))
-                    add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ), 1f))
-                    add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ), 1f))
-                    add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ), 1f))
+                    add(transform.transform(tmpTransformVec.set(minX, minY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(minX, minY, maxZ)))
+                    add(transform.transform(tmpTransformVec.set(minX, maxY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, minY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ)))
                 }
             }
             parentBounds.add(parentBoundsCache)
@@ -234,28 +235,16 @@ open class Node(name: String? = null) : BaseReleasable() {
     /**
      * Transforms [vec] in-place from local to global coordinates.
      */
-    fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        modelMatF.transform(vec, w)
-        return vec
-    }
+    fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = modelMatF.transform(vec, w)
 
-    fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        modelMatD.transform(vec, w)
-        return vec
-    }
+    fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = modelMatD.transform(vec, w)
 
     /**
      * Transforms [vec] in-place from global to local coordinates.
      */
-    fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        invModelMatF.transform(vec, w)
-        return vec
-    }
+    fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = invModelMatF.transform(vec, w)
 
-    fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        invModelMatD.transform(vec, w)
-        return vec
-    }
+    fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = invModelMatD.transform(vec, w)
 
     /**
      * Performs a hit test with the given [RayTest]. Subclasses should override this method and test
