@@ -18,24 +18,24 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
     val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.JAVASCRIPT)
 
-    private val hoverHandler = Hoverhandler()
-
-    private val excludeTitleBarHoverNodes = mutableListOf<UiNode>()
+    private val hoverHandler: WindowTitleHoverHandler get() = editor.ctx.windowTitleHoverHandler
+    private val excludeBounds = List(3) { WindowTitleHoverHandler.HitBounds() }
 
     init {
-        editor.ctx.windowTitleHoverHandler = hoverHandler
-        hoverHandler.onClickClose = {
-            editor.onExit()
-            PlatformFunctions.closeWindow()
-        }
+        hoverHandler.apply {
+            titleBarExcludeBounds += excludeBounds
 
-        hoverHandler.onClickMinimize = { PlatformFunctions.minimizeWindow() }
-        hoverHandler.onClickMaximize = { PlatformFunctions.toggleMaximizeWindow() }
+            onClickClose = {
+                editor.onExit()
+                PlatformFunctions.closeWindow()
+            }
+            onClickMinimize = { PlatformFunctions.minimizeWindow() }
+            onClickMaximize = { PlatformFunctions.toggleMaximizeWindow() }
+        }
     }
 
     override fun UiScope.compose() {
         val marginTop = if (PlatformFunctions.isWindowMaximized) sizes.smallGap else Dp.ZERO
-        excludeTitleBarHoverNodes.clear()
         modifier
             .layout(CellLayout)
             .alignY(AlignmentY.Top)
@@ -48,6 +48,8 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             }
 
         Column(width = Grow.Std, height = sizes.heightWindowTitleBar + marginTop) {
+            modifier.onPositioned { hoverHandler.setTitleBarBounds(it) }
+
             Box(width = Grow.Std, height = Grow.Std) {
                 modifier
                     .alignY(AlignmentY.Top)
@@ -56,7 +58,6 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             Box(width = Grow.Std, height = sizes.borderWidth) {
                 modifier.backgroundColor(UiColors.titleBg)
             }
-            hoverHandler.setTitleBarBounds(this)
         }
 
         Box(width = Grow.Std) {
@@ -88,15 +89,18 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
     }
 
     private fun UiScope.centerPanel() = Row {
-        modifier.alignX(AlignmentX.Center)
+        modifier
+            .alignX(AlignmentX.Center)
+            .onPositioned { excludeBounds[0].set(it) }
         appModeControlButtons()
-        excludeTitleBarHoverNodes += uiNode
     }
 
     private fun UiScope.rightPanel() = Row(height = sizes.heightWindowTitleBar) {
         modifier.alignX(AlignmentX.End)
 
         Row(height = Grow.Std) {
+            modifier.onPositioned { excludeBounds[1].set(it) }
+
             Text("Transform Mode:") {
                 modifier
                     .alignY(AlignmentY.Center)
@@ -114,14 +118,15 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                         editor.gizmoOverlay.transformFrame.set(transformFrames[i].frame)
                     }
             }
-            excludeTitleBarHoverNodes += uiNode
         }
 
         if (isShowExportButton.use()) {
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
             Row(height = Grow.Std) {
-                modifier.margin(end = sizes.smallGap)
+                modifier
+                    .margin(end = sizes.smallGap)
+                    .onPositioned { excludeBounds[2].set(it) }
 
                 exportButton()
                 iconButton(
@@ -131,7 +136,6 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                 ) {
                     KoolSystem.requireContext().openUrl("https://github.com/fabmax/kool")
                 }
-                excludeTitleBarHoverNodes += uiNode
             }
 
         }
@@ -333,19 +337,6 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
         companion object {
             val gradient = ColorGradient(Color("ffb703ff"), Color.WHITE)
-        }
-    }
-
-    private inner class Hoverhandler: WindowTitleHoverHandler() {
-        override fun checkHover(x: Int, y: Int): HoverState {
-            var result = super.checkHover(x, y)
-            if (result == HoverState.TITLE_BAR) {
-                val pt = Vec2f(x.toFloat(), y.toFloat())
-                if (excludeTitleBarHoverNodes.any { it.isInBounds(pt) }) {
-                    result = HoverState.NONE
-                }
-            }
-            return result
         }
     }
 

@@ -75,19 +75,22 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
                 }
 
                 WM_NCHITTEST -> {
-                    val cursorPos = lParam.clientCursorPos()
+                    val y = lParam.toInt() shr 16
+                    val x = lParam.toInt() and 0xffff
+                    val clientX = x - glfwWindow.windowPosX - nonTopBorder
+                    val clientY = y - glfwWindow.windowPosY - topBorder
                     val resizeBorder = 4
 
-                    if (cursorPos.y < resizeBorder && !isMaximized) {
+                    if (clientY < resizeBorder && !isMaximized) {
                         when {
-                            cursorPos.x <= resizeBorder -> HTTOPLEFT.toLong()
-                            cursorPos.x >= glfwWindow.framebufferWidth - resizeBorder -> HTTOPRIGHT.toLong()
+                            clientX <= resizeBorder -> HTTOPLEFT.toLong()
+                            clientX >= glfwWindow.framebufferWidth - resizeBorder -> HTTOPRIGHT.toLong()
                             else -> HTTOP.toLong()
                         }
                     } else {
                         val r = nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
                         if (r != HTCLIENT.toLong()) r else {
-                            when (hoverHandler.checkHover(cursorPos.x, cursorPos.y)) {
+                            when (hoverHandler.checkHover(clientX, clientY)) {
                                 WindowTitleHoverHandler.HoverState.NONE -> r
                                 WindowTitleHoverHandler.HoverState.TITLE_BAR -> HTCAPTION.toLong()
                                 WindowTitleHoverHandler.HoverState.MIN_BUTTON -> HTMINBUTTON.toLong()
@@ -104,14 +107,6 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
 
         SetWindowLongPtr(glfwHWnd, GWL_WNDPROC, wndProc.address())
         isHiddenTitleBar = true
-    }
-
-    private fun Long.clientCursorPos(): Vec2i {
-        val y = toInt() shr 16
-        val x = toInt() and 0xffff
-        val clientX = x - glfwWindow.windowPosX - nonTopBorder
-        val clientY = y - glfwWindow.windowPosY - topBorder
-        return Vec2i(clientX, clientY)
     }
 
     private fun isHoverWindowButton(): Boolean {
