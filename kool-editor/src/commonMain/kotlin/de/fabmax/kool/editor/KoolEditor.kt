@@ -228,10 +228,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         editorInputContext.addKeyListener(Key.FocusSelected) { editorCameraTransform.focusSelectedObject() }
 
         editorInputContext.addKeyListener(Key.DeleteSelected) {
-            DeleteEntitiesAction(selectionOverlay.getSelectedSceneNodes()).apply()
+            DeleteEntitiesAction(selectionOverlay.getSelectedSceneEntities()).apply()
         }
         editorInputContext.addKeyListener(Key.HideSelected) {
-            val selection = selectionOverlay.getSelectedSceneNodes()
+            val selection = selectionOverlay.getSelectedSceneEntities()
             SetVisibilityAction(selection, selection.any { !it.isVisible }).apply()
         }
         editorInputContext.addKeyListener(Key.UnhideHidden) {

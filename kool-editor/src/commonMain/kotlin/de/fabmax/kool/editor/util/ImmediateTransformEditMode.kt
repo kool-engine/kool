@@ -180,7 +180,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             else -> opCamPlaneTranslate
         }
 
-        selectionTransform = SelectionTransform(editor.selectionOverlay.getSelectedSceneNodes())
+        selectionTransform = SelectionTransform(editor.selectionOverlay.getSelectedSceneEntities())
         selectionTransform?.primaryTransformNode?.let { updateGizmoFromClient(GizmoClientEntity(it)) }
         selectionTransform?.startTransform()
         overwriteStrValue = null

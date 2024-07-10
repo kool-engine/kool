@@ -1,6 +1,6 @@
 package de.fabmax.kool.editor.util
 
-import de.fabmax.kool.editor.actions.SetComponentDataAction
+import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.globalToLocalD
@@ -13,7 +13,7 @@ import de.fabmax.kool.math.MutableQuatD
 import de.fabmax.kool.math.MutableVec3d
 
 class SelectionTransform(nodeModels: List<GameEntity>) {
-    val selection: List<NodeTransformData>
+    val selection: List<EntityTransformData>
     val primaryTransformNode: GameEntity?
         get() = selection.getOrNull(0)?.gameEntity
 
@@ -22,7 +22,7 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
         selection = mutableListOf()
         nodeModelsSet
             .filter { it.hasNoParentIn(nodeModelsSet) }
-            .forEach { selection += NodeTransformData(it) }
+            .forEach { selection += EntityTransformData(it) }
     }
 
     fun startTransform() {
@@ -53,7 +53,7 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
         }
         val action = transformEntities.mapIndexed { i, gameEntity ->
             val data = gameEntity.transform.data
-            SetComponentDataAction(gameEntity.transform, data.copy(transform = undoTransforms[i]), data.copy(applyTransforms[i]))
+            SetTransformAction(gameEntity.transform, data.copy(transform = undoTransforms[i]), data.copy(applyTransforms[i]))
         }.fused()
 
         if (isUndoable) {
@@ -78,7 +78,7 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
         return true
     }
 
-    inner class NodeTransformData(val gameEntity: GameEntity) {
+    inner class EntityTransformData(val gameEntity: GameEntity) {
         private val poseInPrimaryFrame = MutableMat4d()
 
         val startPosition = MutableVec3d()

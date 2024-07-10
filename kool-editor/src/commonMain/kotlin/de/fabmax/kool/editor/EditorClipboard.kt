@@ -37,7 +37,7 @@ object EditorClipboard {
     }
 
     private fun serializeSelectedNodes(): String {
-        val selection = editor.selectionOverlay.getSelectedSceneNodes()
+        val selection = editor.selectionOverlay.getSelectedSceneEntities()
         return if (selection.isEmpty()) "" else {
             val copyData = selection.toHierarchy().flatMap { it.flatten() }
             logD { "Copy ${copyData.size} selected entities" }
@@ -53,7 +53,7 @@ object EditorClipboard {
                 if (copyData.isNotEmpty()) {
                     val sanitized = sanitizeCopiedEntityIds(copyData, scene)
 
-                    val selection = editor.selectionOverlay.getSelectedNodes()
+                    val selection = editor.selectionOverlay.getSelectedEntities()
                     val parent = selection.firstOrNull()?.parent ?: scene.sceneEntity
                     sanitized.toHierarchy().forEach { root -> root.entityData.parentId = parent.id }
 

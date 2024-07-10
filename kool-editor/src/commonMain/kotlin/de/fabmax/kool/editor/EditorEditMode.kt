@@ -40,7 +40,7 @@ class EditorEditMode(val editor: KoolEditor) {
 
     private fun updateGizmo(mode: Mode) = launchOnMainThread {
         if (mode in transformTools) {
-            editor.gizmoOverlay.setTransformObjects(editor.selectionOverlay.getSelectedSceneNodes())
+            editor.gizmoOverlay.setTransformObjects(editor.selectionOverlay.getSelectedSceneEntities())
             editor.gizmoOverlay.transformMode = when (mode) {
                 Mode.MOVE -> GizmoMode.TRANSLATE
                 Mode.ROTATE -> GizmoMode.ROTATE
