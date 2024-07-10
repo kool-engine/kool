@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.backend.GpuGeometry
-import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.BaseReleasable
@@ -9,7 +8,6 @@ import de.fabmax.kool.util.checkIsNotReleased
 
 class GpuGeometryGl(
     val geometry: IndexedVertexList,
-    val instances: MeshInstanceList?,
     val backend: RenderBackendGl,
     creationInfo: BufferCreationInfo
 ) : BaseReleasable(), GpuGeometry {
@@ -17,7 +15,6 @@ class GpuGeometryGl(
     internal val indexBuffer: BufferResource
     internal val dataBufferF: BufferResource?
     internal val dataBufferI: BufferResource?
-    internal val instanceBuffer: BufferResource?
 
     private val gl = backend.gl
 
@@ -43,22 +40,10 @@ class GpuGeometryGl(
         } else {
             null
         }
-
-        instanceBuffer = if (instances != null && instances.instanceSizeF > 0) {
-            BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.instances"))
-        } else {
-            null
-        }
     }
 
     fun checkBuffers() {
         checkIsNotReleased()
-
-        if (instances != null && instanceBuffer != null && (instances.hasChanged || isNewlyCreated)) {
-            instanceBuffer.setData(instances.dataF, instances.usage.glUsage)
-            instances.hasChanged = false
-        }
-
         if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
             numIndices = geometry.numIndices
 
@@ -80,7 +65,6 @@ class GpuGeometryGl(
         indexBuffer.release()
         dataBufferF?.release()
         dataBufferI?.release()
-        instanceBuffer?.release()
         super.release()
     }
 

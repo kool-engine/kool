@@ -17,6 +17,8 @@ import kotlin.math.sqrt
  */
 open class Node(name: String? = null) : BaseReleasable() {
 
+    val id = NodeId()
+
     var name: String = name ?: makeNodeName(this::class.simpleName ?: "Node")
 
     val onUpdate: BufferedList<(RenderPass.UpdateEvent) -> Unit> = BufferedList()
@@ -394,6 +396,8 @@ open class Node(name: String? = null) : BaseReleasable() {
         fun makeNodeName(type: String = "Node") = UniqueId.nextId(type)
     }
 }
+
+data class NodeId(val value: Long = UniqueId.nextId())
 
 fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
     val tg = Node(name)

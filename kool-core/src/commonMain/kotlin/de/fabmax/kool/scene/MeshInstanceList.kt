@@ -1,11 +1,13 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.backend.GpuInstances
 import de.fabmax.kool.scene.geometry.Usage
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
 import kotlin.math.max
 
-class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) {
+class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) : BaseReleasable() {
 
     /**
      * Vertex attribute offsets in bytes.
@@ -42,6 +44,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         private set
 
     var hasChanged = true
+
+    internal var gpuInstances: GpuInstances? = null
 
     constructor(initialSize: Int, vararg instanceAttributes: Attribute) : this(listOf(*instanceAttributes), initialSize)
 
@@ -97,5 +101,10 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         numInstances = 0
         dataF.clear()
         hasChanged = true
+    }
+
+    override fun release() {
+        gpuInstances?.release()
+        super.release()
     }
 }
