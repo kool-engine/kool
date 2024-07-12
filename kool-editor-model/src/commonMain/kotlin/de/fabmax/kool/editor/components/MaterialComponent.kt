@@ -26,11 +26,11 @@ class MaterialComponent(
 
     private val listeners by cachedProjectComponents<ListenerComponent>()
 
-    suspend fun applyMaterialTo(gameEntity: GameEntity, mesh: Mesh): Boolean {
+    suspend fun applyMaterialTo(scene: EditorScene, mesh: Mesh): Boolean {
         mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
-        val sceneShaderData = gameEntity.scene.shaderData
+        val sceneShaderData = scene.shaderData
 
-        val meshKey = MeshShaderKey(gameEntity, mesh)
+        val meshKey = MeshLayoutKey(mesh)
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
             logT { "Creating new material shader $name (for mesh: ${mesh.name})" }
             data.createShader(sceneShaderData)

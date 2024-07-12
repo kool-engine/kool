@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MapAttribute
 import de.fabmax.kool.editor.data.MaterialReferenceComponentData
+import de.fabmax.kool.util.launchOnMainThread
 
 class MaterialReferenceComponent(
     gameEntity: GameEntity,
@@ -26,7 +27,9 @@ class MaterialReferenceComponent(
         val material = project.materialsById[newData.materialId]
         collectRequiredAssets(material)
 
-        listeners.forEach { it.onMaterialReferenceChanged(this, material) }
+        launchOnMainThread {
+            listeners.forEach { it.onMaterialReferenceChanged(this, material) }
+        }
     }
 
     fun isHoldingMaterial(material: MaterialComponent?): Boolean {
@@ -44,6 +47,6 @@ class MaterialReferenceComponent(
     }
 
     fun interface ListenerComponent {
-        fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?)
+        suspend fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?)
     }
 }

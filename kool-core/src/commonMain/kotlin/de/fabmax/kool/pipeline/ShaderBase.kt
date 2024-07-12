@@ -19,6 +19,7 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     protected open fun pipelineCreated(pipeline: T) {
         createdPipeline = pipeline
         pipelineBindings.values.forEach { it.setup(pipeline) }
+        pipeline.onRelease { createdPipeline = null }
     }
 
     private fun getOrCreateBinding(name: String, block: () -> PipelineBinding): PipelineBinding {

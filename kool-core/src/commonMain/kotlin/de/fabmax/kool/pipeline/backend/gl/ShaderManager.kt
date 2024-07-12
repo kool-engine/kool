@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.checkIsNotReleased
 import de.fabmax.kool.util.logE
 
 class ShaderManager(val backend: RenderBackendGl) {
@@ -53,6 +54,7 @@ class ShaderManager(val backend: RenderBackendGl) {
     }
 
     private fun DrawPipeline.getCompiledShader(): CompiledDrawShader {
+        checkIsNotReleased()
         (pipelineBackend as CompiledDrawShader?)?.let { return it }
 
         val usedProgram = getCompiledGlProgram(shaderCode)

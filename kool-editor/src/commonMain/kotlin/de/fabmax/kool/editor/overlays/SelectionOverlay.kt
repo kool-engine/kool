@@ -17,10 +17,7 @@ import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.NodeId
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
@@ -74,7 +71,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
             if (updateOverlay) {
                 updateOverlay = false
                 selectedMeshes.clear()
-                selection.forEach { collectMeshes(it) }
+                getSelectedSceneEntities().forEach { collectMeshes(it) }
 
                 launchDelayed(1) {
                     // delay disable by 1 frame, so that selectionPass clears its output
@@ -174,10 +171,16 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
     private fun collectMeshes(entity: GameEntity) {
         entity.getComponent<MeshComponent>()?.let { meshComponent ->
-            meshComponent.mesh?.let { mesh ->
-                val meshSelection = selectedMeshes.getOrPut(mesh.id) { SelectedMeshes() }
+            meshComponent.sceneNode?.let { sceneNode ->
+                val meshSelection = when (sceneNode) {
+                    is Mesh -> listOf(selectedMeshes.getOrPut(sceneNode.id) { SelectedMeshes() })
+                    is Model -> sceneNode.meshes.values.map { selectedMeshes.getOrPut(it.id) { SelectedMeshes() } }
+                    else -> emptyList()
+                }
                 val selectionType = if (entity in selection) MeshSelectionType.PRIMARY else MeshSelectionType.CHILD
-                meshSelection.selectedInstances += SelectedInstance(meshComponent, selectionType, entity.id.value.toInt())
+                meshSelection.forEach {
+                    it.selectedInstances += SelectedInstance(meshComponent, selectionType, entity.id.value.toInt())
+                }
             }
         }
 

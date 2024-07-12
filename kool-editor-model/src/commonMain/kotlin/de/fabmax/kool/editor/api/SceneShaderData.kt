@@ -73,7 +73,7 @@ class SceneShaderData(val scene: EditorScene) {
 class SceneShaderCache :
     EditorScene.SceneShaderDataListener
 {
-    private val materialShaders = mutableMapOf<EntityId, MutableMap<MeshShaderKey, DrawShader>>()
+    private val materialShaders = mutableMapOf<EntityId, MutableMap<MeshLayoutKey, DrawShader>>()
 
     override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
         materialShaders.keys.forEach { matId ->
@@ -81,26 +81,22 @@ class SceneShaderCache :
         }
     }
 
-    fun getShaderCache(material: MaterialComponent): MutableMap<MeshShaderKey, DrawShader>? {
+    fun getShaderCache(material: MaterialComponent): MutableMap<MeshLayoutKey, DrawShader>? {
         return materialShaders[material.id]
     }
 
-    fun getOrPutShaderCache(material: MaterialComponent): MutableMap<MeshShaderKey, DrawShader> {
+    fun getOrPutShaderCache(material: MaterialComponent): MutableMap<MeshLayoutKey, DrawShader> {
         return materialShaders.getOrPut(material.id) { mutableMapOf() }
     }
 }
 
-fun MeshShaderKey(gameEntity: GameEntity, mesh: Mesh): MeshShaderKey {
-    return MeshShaderKey(
-        sceneId = gameEntity.scene.sceneEntity.id,
-        vertexLayout = mesh.geometry.vertexAttributes,
-        instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
-        primitiveType = mesh.geometry.primitiveType
-    )
-}
+fun MeshLayoutKey(mesh: Mesh): MeshLayoutKey = MeshLayoutKey(
+    vertexLayout = mesh.geometry.vertexAttributes,
+    instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
+    primitiveType = mesh.geometry.primitiveType
+)
 
-data class MeshShaderKey(
-    val sceneId: EntityId,
+data class MeshLayoutKey(
     val vertexLayout: List<Attribute>,
     val instanceLayout: List<Attribute>,
     val primitiveType: PrimitiveType
