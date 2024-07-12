@@ -41,17 +41,17 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     )
     private val teapotMesh: Mesh get() = teapot.meshes.values.first()
 
-    private val isAoEnabled = mutableStateOf(true).onChange { aoPipeline.isEnabled = it }
+    private val isAoEnabled = mutableStateOf(true).onChange { _, new -> aoPipeline.isEnabled = new }
     private val isAutoRotate = mutableStateOf(true)
-    private val isSpotLight = mutableStateOf(true).onChange { updateLighting(it) }
+    private val isSpotLight = mutableStateOf(true).onChange { _, new -> updateLighting(new) }
     private val showAoMapValues = listOf("None", "Filtered", "Noisy")
     private val showAoMapIndex = mutableStateOf(0)
 
-    private val aoRadius = mutableStateOf(1f).onChange { aoPipeline.radius = it }
-    private val aoPower = mutableStateOf(1f).onChange { aoPipeline.power = it }
-    private val aoStrength = mutableStateOf(1f).onChange { aoPipeline.strength = it }
-    private val aoSamples = mutableStateOf(16).onChange { aoPipeline.kernelSz = it }
-    private val aoMapSize = mutableStateOf(1f).onChange { aoPipeline.mapSize = it }
+    private val aoRadius = mutableStateOf(1f).onChange { _, new -> aoPipeline.radius = new }
+    private val aoPower = mutableStateOf(1f).onChange { _, new -> aoPipeline.power = new }
+    private val aoStrength = mutableStateOf(1f).onChange { _, new -> aoPipeline.strength = new }
+    private val aoSamples = mutableStateOf(16).onChange { _, new -> aoPipeline.kernelSz = new }
+    private val aoMapSize = mutableStateOf(1f).onChange { _, new -> aoPipeline.mapSize = new }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         updateLighting(isSpotLight.value)

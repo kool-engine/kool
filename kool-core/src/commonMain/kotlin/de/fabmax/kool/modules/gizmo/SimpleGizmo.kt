@@ -30,9 +30,9 @@ class SimpleGizmo(
     private val tmpMat4 = MutableMat4d()
 
     private var isInternalUpdate = false
-    val translationState = mutableStateOf(Vec3d.ZERO).onChange { updateTransformFromUi(translation = it) }
-    val rotationState = mutableStateOf(QuatD.IDENTITY).onChange { updateTransformFromUi(rotation = it) }
-    val scaleState = mutableStateOf(Vec3d.ONES).onChange { updateTransformFromUi(scale = it) }
+    val translationState = mutableStateOf(Vec3d.ZERO).onChange { _, new -> updateTransformFromUi(translation = new) }
+    val rotationState = mutableStateOf(QuatD.IDENTITY).onChange { _, new -> updateTransformFromUi(rotation = new) }
+    val scaleState = mutableStateOf(Vec3d.ONES).onChange { _, new -> updateTransformFromUi(scale = new) }
 
     var transformClient: GizmoClient? by Delegates.observable(null) { _, _, _ -> updateGizmoFromClient() }
 

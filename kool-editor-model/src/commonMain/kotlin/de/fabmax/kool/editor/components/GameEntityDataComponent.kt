@@ -14,7 +14,7 @@ abstract class GameEntityDataComponent<D: ComponentData>(
     val data: D get() = dataState.value
 
     init {
-        dataState.onChange { newData -> onDataChanged(data, newData) }
+        dataState.onChange { old, new -> onDataChanged(old, new) }
     }
 
     open fun setPersistent(componentData: D) {

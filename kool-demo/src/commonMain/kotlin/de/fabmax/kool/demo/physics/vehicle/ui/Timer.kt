@@ -12,8 +12,8 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
     val sec1Time = mutableStateOf(0f)
     val sec2Time = mutableStateOf(0f)
 
-    private val isHeadlights = mutableStateOf(vehicleUi.vehicle.isHeadlightsOn).onChange { vehicleUi.vehicle.isHeadlightsOn = it }
-    private val isSound = mutableStateOf(false).onChange { vehicleUi.onToggleSound(it) }
+    private val isHeadlights = mutableStateOf(vehicleUi.vehicle.isHeadlightsOn).onChange { _, new -> vehicleUi.vehicle.isHeadlightsOn = new }
+    private val isSound = mutableStateOf(false).onChange { _, new -> vehicleUi.onToggleSound(new) }
 
     private class TimerBackground(val bgColor: Color) : UiRenderer<UiNode> {
         override fun renderUi(node: UiNode) {

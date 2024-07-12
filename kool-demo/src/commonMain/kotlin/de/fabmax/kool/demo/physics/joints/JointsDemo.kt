@@ -43,9 +43,9 @@ class JointsDemo : DemoScene("Physics - Joints") {
     private val motorDirection = mutableStateOf(1f)
     private val numLinks = mutableStateOf(40)
 
-    private val drawNiceMeshes = mutableStateOf(true).onChange { niceMeshes.isVisible = it }
-    private val drawPhysMeshes = mutableStateOf(false).onChange { physMeshes.isVisible = it }
-    private val drawJointInfos = mutableStateOf(false).onChange { constraintInfo.isVisible = it }
+    private val drawNiceMeshes = mutableStateOf(true).onChange { _, new -> niceMeshes.isVisible = new }
+    private val drawPhysMeshes = mutableStateOf(false).onChange { _, new -> physMeshes.isVisible = new }
+    private val drawJointInfos = mutableStateOf(false).onChange { _, new -> constraintInfo.isVisible = new }
 
     private val physicsTimeTxt = mutableStateOf("0.00 ms")
     private val numBodiesTxt = mutableStateOf("0")

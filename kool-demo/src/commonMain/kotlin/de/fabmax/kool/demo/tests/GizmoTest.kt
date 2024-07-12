@@ -25,9 +25,9 @@ class GizmoTest : DemoScene("Gizmo Test") {
     private val meshA: Mesh = ColorMesh(name = "Parent")
     private val meshB: Mesh = ColorMesh(name = "Child")
 
-    private val transformNode = mutableStateOf(meshA).onChange { gizmo.setTransformNode(it) }
-    private val transformMode = mutableStateOf(gizmo.mode).onChange { gizmo.mode = it }
-    private val transformFrame = mutableStateOf(gizmo.transformFrame).onChange { gizmo.transformFrame = it }
+    private val transformNode = mutableStateOf(meshA).onChange { _, new -> gizmo.setTransformNode(new) }
+    private val transformMode = mutableStateOf(gizmo.mode).onChange { _, new -> gizmo.mode = new }
+    private val transformFrame = mutableStateOf(gizmo.transformFrame).onChange { _, new -> gizmo.transformFrame = new }
 
     private val clickListener = InputStack.PointerListener { pointerState, _ ->
         val ptr = pointerState.primaryPointer

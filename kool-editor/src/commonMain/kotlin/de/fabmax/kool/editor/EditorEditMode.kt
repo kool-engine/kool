@@ -8,7 +8,7 @@ import de.fabmax.kool.util.logD
 
 class EditorEditMode(val editor: KoolEditor) {
 
-    val mode = mutableStateOf(Mode.NONE).onChange { applyMode(it) }
+    val mode = mutableStateOf(Mode.NONE).onChange { _, new -> applyMode(new) }
 
     private val immediateTransform = ImmediateTransformEditMode(editor)
 

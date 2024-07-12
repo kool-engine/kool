@@ -35,8 +35,8 @@ class ReflectionDemo : DemoScene("Reflections") {
     private val lightChoices = listOf("1", "2", "3", "4")
     private val lightGroup = Node("light-group")
 
-    private val isSsrEnabled = mutableStateOf(true).onChange { deferredPipeline.isSsrEnabled = it }
-    private val ssrMapSize = mutableStateOf(0.5f).onChange { deferredPipeline.reflectionMapSize = it }
+    private val isSsrEnabled = mutableStateOf(true).onChange { _, new -> deferredPipeline.isSsrEnabled = new }
+    private val ssrMapSize = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.reflectionMapSize = new }
     private val isShowSsrMap = mutableStateOf(true)
     private val lightCount = mutableStateOf(4)
     private val lightPower = mutableStateOf(500f)

@@ -37,12 +37,8 @@ class TransformGizmoOverlay(val editor: KoolEditor) : Node("Transform gizmo") {
     private var selectionTransform: SelectionTransform? = null
 
     private var hasTransformAuthority = false
-    val isTransformDrag: Boolean get() = hasTransformAuthority
 
-    val transformFrame = mutableStateOf(gizmo.transformFrame).onChange {
-        gizmo.transformFrame = it
-    }
-
+    val transformFrame = mutableStateOf(gizmo.transformFrame).onChange { _, new -> gizmo.transformFrame = new }
     var transformMode: GizmoMode by gizmo::mode
 
     private val cancelListener = EditorKeyListener.cancelListener("Object transform") {

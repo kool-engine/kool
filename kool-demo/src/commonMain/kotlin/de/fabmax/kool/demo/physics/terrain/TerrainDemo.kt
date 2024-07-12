@@ -68,34 +68,28 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private lateinit var escKeyListener: InputStack.SimpleKeyListener
 
-    private val isSsao = mutableStateOf(true).onChange { ssao.isEnabled = it }
-    private val isPlayerPbr = mutableStateOf(true).onChange { updatePlayerShader(it) }
-    private val isGroundPbr = mutableStateOf(true).onChange {
-        updateTerrainShader(it)
-        updateOceanShader(it)
-        updateBridgeShader(it)
+    private val isSsao = mutableStateOf(true).onChange { _, new -> ssao.isEnabled = new }
+    private val isPlayerPbr = mutableStateOf(true).onChange { _, new -> updatePlayerShader(new) }
+    private val isGroundPbr = mutableStateOf(true).onChange { _, new ->
+        updateTerrainShader(new)
+        updateOceanShader(new)
+        updateBridgeShader(new)
     }
-    private val isBoxesPbr = mutableStateOf(true).onChange { updateBoxShader(it) }
-    private val isVegetationPbr = mutableStateOf(false).onChange {
-        updateGrassShader(it)
-        updateTreeShader(it)
+    private val isBoxesPbr = mutableStateOf(true).onChange { _, new -> updateBoxShader(new) }
+    private val isVegetationPbr = mutableStateOf(false).onChange { _, new ->
+        updateGrassShader(new)
+        updateTreeShader(new)
     }
 
-    private val isCursorLocked = mutableStateOf(false).onChange { camRig.isCursorLocked = it }
-    private val windSpeed = mutableStateOf(2.5f).onChange {
-        wind.speed.set(4f * it, 0.2f * it, 2.7f * it)
-    }
-    private val windStrength = mutableStateOf(1f).onChange {
-        wind.offsetStrength.w = it
-    }
-    private val windScale = mutableStateOf(100f).onChange {
-        wind.scale = it
-    }
-    private val isGrassEnabled = mutableStateOf(true).onChange { grass.grassQuads.isVisible = it }
-    private val isCamLocalGrassEnabled = mutableStateOf(true).onChange { camLocalGrass.grassQuads.isVisible = it }
-    private val isGrassShadows = mutableStateOf(true).onChange {
-        grass.setIsCastingShadow(it)
-        camLocalGrass.setIsCastingShadow(it)
+    private val isCursorLocked = mutableStateOf(false).onChange { _, new -> camRig.isCursorLocked = new }
+    private val windSpeed = mutableStateOf(2.5f).onChange { _, new -> wind.speed.set(4f * new, 0.2f * new, 2.7f * new) }
+    private val windStrength = mutableStateOf(1f).onChange { _, new -> wind.offsetStrength.w = new }
+    private val windScale = mutableStateOf(100f).onChange { _, new -> wind.scale = new }
+    private val isGrassEnabled = mutableStateOf(true).onChange { _, new -> grass.grassQuads.isVisible = new }
+    private val isCamLocalGrassEnabled = mutableStateOf(true).onChange { _, new -> camLocalGrass.grassQuads.isVisible = new }
+    private val isGrassShadows = mutableStateOf(true).onChange { _, new ->
+        grass.setIsCastingShadow(new)
+        camLocalGrass.setIsCastingShadow(new)
     }
 
     private val doubleClickListener = object : InputStack.PointerListener {

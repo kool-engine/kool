@@ -40,15 +40,15 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private val lightCount = mutableStateOf(2000)
     private val lightPower = mutableStateOf(1f)
     private val lightRadius = mutableStateOf(1f)
-    private val isObjects = mutableStateOf(true).onChange { objects.isVisible = it }
-    private val isLightBodies = mutableStateOf(true).onChange { lightPositionMesh.isVisible = it }
-    private val isLightVolumes = mutableStateOf(false).onChange { lightVolumeMesh.isVisible = it }
-    private val roughness = mutableStateOf(0.15f).onChange { objectShader.roughness = it }
-    private val bloomStrength = mutableStateOf(0.75f).onChange { deferredPipeline.bloomStrength = it }
-    private val bloomRadius = mutableStateOf(0.5f).onChange { deferredPipeline.bloomScale = it }
-    private val bloomThreshold = mutableStateOf(0.5f).onChange {
-        deferredPipeline.bloom?.lowerThreshold = it
-        deferredPipeline.bloom?.upperThreshold = it + 0.5f
+    private val isObjects = mutableStateOf(true).onChange { _, new -> objects.isVisible = new }
+    private val isLightBodies = mutableStateOf(true).onChange { _, new -> lightPositionMesh.isVisible = new }
+    private val isLightVolumes = mutableStateOf(false).onChange { _, new -> lightVolumeMesh.isVisible = new }
+    private val roughness = mutableStateOf(0.15f).onChange { _, new -> objectShader.roughness = new }
+    private val bloomStrength = mutableStateOf(0.75f).onChange { _, new -> deferredPipeline.bloomStrength = new }
+    private val bloomRadius = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.bloomScale = new }
+    private val bloomThreshold = mutableStateOf(0.5f).onChange { _, new ->
+        deferredPipeline.bloom?.lowerThreshold = new
+        deferredPipeline.bloom?.upperThreshold = new + 0.5f
     }
 
     private val ibl by hdriSingleColor(Color(0.15f, 0.15f, 0.15f))

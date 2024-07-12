@@ -51,21 +51,22 @@ abstract class MutableState {
 }
 
 open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
-    private val stateListeners = mutableListOf<(T) -> Unit>()
+    private val stateListeners = mutableListOf<(T, T) -> Unit>()
 
     var value: T = initValue
         set(value) {
             if (value != field) {
+                val old = field
+                field = value
                 stateChanged()
-                notifyListeners(value)
+                notifyListeners(old, value)
             }
-            field = value
         }
 
-    private fun notifyListeners(newState: T) {
+    private fun notifyListeners(oldState: T, newState: T) {
         if (stateListeners.isNotEmpty()) {
             for (i in stateListeners.indices) {
-                stateListeners[i](newState)
+                stateListeners[i](oldState, newState)
             }
         }
     }
@@ -79,7 +80,7 @@ open class MutableStateValue<T: Any?>(initValue: T) : MutableState() {
         return value
     }
 
-    fun onChange(block: (T) -> Unit): MutableStateValue<T> {
+    fun onChange(block: (T, T) -> Unit): MutableStateValue<T> {
         stateListeners += block
         return this
     }
@@ -101,8 +102,8 @@ class TransformedStateValue<T: Any?, S: Any?>(sourceState: MutableStateValue<T>,
     : MutableStateValue<S>(transformer(sourceState.value)) {
 
     init {
-        sourceState.onChange {
-            set(transformer(it))
+        sourceState.onChange { _, new ->
+            set(transformer(new))
         }
     }
 }
