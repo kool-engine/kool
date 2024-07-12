@@ -63,7 +63,8 @@ object AppAssets : AppAssetsLoader {
         override suspend fun loadHdri(ref: AssetReference.Hdri): EnvironmentMaps? {
             cache[ref]?.let { return it as EnvironmentMaps }
 
-            val prefixed = "${pathPrefix}/${ref.path}"
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            val prefixed = "${pathPrefix}/${path}"
             return try {
                 EnvironmentHelper.hdriEnvironment(Assets.loadTexture2d(prefixed)).also { cache[ref] = it }
             } catch (e: Exception) {
@@ -75,7 +76,8 @@ object AppAssets : AppAssetsLoader {
         override suspend fun loadModel(ref: AssetReference.Model): GltfFile? {
             cache[ref]?.let { return it as GltfFile }
 
-            val prefixed = "${pathPrefix}/${ref.path}"
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            val prefixed = "${pathPrefix}/${path}"
             return try {
                 Assets.loadGltfFile(prefixed).also { cache[ref] = it }
             } catch (e: Exception) {
@@ -85,7 +87,10 @@ object AppAssets : AppAssetsLoader {
         }
 
         override suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d? {
-            val prefixed = "${pathPrefix}/${ref.path}"
+            cache[ref]?.let { return it as Texture2d }
+
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            val prefixed = "${pathPrefix}/${path}"
             return try {
                 val props = TextureProps(ref.texFormat)
                 Assets.loadTexture2d(prefixed, props).also { cache[ref] = it }
@@ -96,7 +101,10 @@ object AppAssets : AppAssetsLoader {
         }
 
         override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Heightmap? {
-            val prefixed = "${pathPrefix}/${ref.path}"
+            cache[ref]?.let { return it as Heightmap }
+
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            val prefixed = "${pathPrefix}/${path}"
             return try {
                 val blob = Assets.loadBlobAsset(prefixed)
                 Heightmap.fromRawData(blob, ref.heightScale, ref.rows, ref.columns, ref.heightOffset).also { cache[ref] = it }
@@ -107,7 +115,10 @@ object AppAssets : AppAssetsLoader {
         }
 
         override suspend fun loadBlob(ref: AssetReference.Blob): Uint8Buffer? {
-            val prefixed = "${pathPrefix}/${ref.path}"
+            cache[ref]?.let { return it as Uint8Buffer }
+
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            val prefixed = "${pathPrefix}/${path}"
             return try {
                 Assets.loadBlobAsset(prefixed).also { cache[ref] = it }
             } catch (e: Exception) {

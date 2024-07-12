@@ -61,8 +61,8 @@ class RigidActorComponent(
 
         data.shapes
             .filterIsInstance<ShapeData.Heightmap>()
-            .filter { it.mapPath.isNotBlank() }
-            .forEach { requiredAssets += it.toAssetReference() }
+            .filter { it.mapPath != null }
+            .forEach { requiredAssets += it.toAssetRef() }
     }
 
     override fun onDataChanged(oldData: RigidActorComponentData, newData: RigidActorComponentData) {
@@ -163,7 +163,7 @@ class RigidActorComponent(
     }
 
     private suspend fun MeshComponent.makeCollisionShapes(): List<Pair<CollisionGeometry, Mat4f>> {
-        return when (val node = drawNode) {
+        return when (val node = sceneNode) {
             is Mesh -> data.shapes.mapNotNull { shape -> shape.makeCollisionGeometry(node) }
             is Model -> node.makeCollisionShapes()
             else -> emptyList()
@@ -203,10 +203,10 @@ class RigidActorComponent(
     }
 
     private suspend fun loadHeightmapGeometry(shapeData: ShapeData.Heightmap): CollisionGeometry? {
-        if (shapeData.mapPath.isBlank()) {
+        if (shapeData.mapPath == null) {
             return null
         }
-        val heightmapRef = shapeData.toAssetReference()
+        val heightmapRef = shapeData.toAssetRef()
         requiredAssets += heightmapRef
         val heightmap = AppAssets.loadHeightmap(heightmapRef) ?: return null
         val heightField = HeightField(heightmap, shapeData.rowScale.toFloat(), shapeData.colScale.toFloat())

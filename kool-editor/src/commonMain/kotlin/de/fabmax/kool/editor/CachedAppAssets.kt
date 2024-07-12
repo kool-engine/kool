@@ -25,7 +25,8 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadHdri(ref: AssetReference.Hdri): EnvironmentMaps? {
         val hdriState = loadedHdris.getOrPut(ref) { mutableStateOf(null) }
         return try {
-            val hdriTex = assetLoader.loadTexture2d(ref.path)
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            val hdriTex = assetLoader.loadTexture2d(path)
             hdriState.value ?: EnvironmentHelper.hdriEnvironment(hdriTex).also { hdriState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading HDRI: ${ref.path}" }
@@ -36,7 +37,8 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadModel(ref: AssetReference.Model): GltfFile? {
         val modelState = loadedModels.getOrPut(ref) { mutableStateOf(null) }
         return try {
-            modelState.value ?: assetLoader.loadGltfFile(ref.path).also { modelState.set(it) }
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            modelState.value ?: assetLoader.loadGltfFile(path).also { modelState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading model: ${ref.path}" }
             null
@@ -46,7 +48,8 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d? {
         val texState = loadedTextures2d.getOrPut(ref) { mutableStateOf(null) }
         return try {
-            texState.value ?: assetLoader.loadTexture2d(ref.path, TextureProps(ref.texFormat)).also { texState.set(it) }
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            texState.value ?: assetLoader.loadTexture2d(path, TextureProps(ref.texFormat)).also { texState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading texture: ${ref.path}" }
             null
@@ -60,7 +63,8 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
         heightmapState.value?.let { return it }
 
         return try {
-            val blob = assetLoader.loadBlobAsset(ref.path)
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            val blob = assetLoader.loadBlobAsset(path)
             val heightmap = Heightmap.fromRawData(blob, ref.heightScale, ref.rows, ref.columns, ref.heightOffset)
             heightmap.also { heightmapState.set(it) }
 
@@ -73,7 +77,8 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     override suspend fun loadBlob(ref: AssetReference.Blob): Uint8Buffer? {
         val blobState = loadedBlobs.getOrPut(ref) { mutableStateOf(null) }
         return try {
-            blobState.value ?: assetLoader.loadBlobAsset(ref.path).also { blobState.set(it) }
+            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+            blobState.value ?: assetLoader.loadBlobAsset(path).also { blobState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading blob: ${ref.path}" }
             null
