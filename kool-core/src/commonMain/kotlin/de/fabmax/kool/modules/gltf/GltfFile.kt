@@ -630,6 +630,7 @@ data class GltfFile(
                 }
 
                 vertices {
+                    modelMatrixComposition = cfg.materialConfig.modelMatrixComposition
                     if (mesh.instances != null) {
                         isInstanced = true
                     }

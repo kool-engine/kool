@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MaterialShaderData
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logT
@@ -26,14 +27,14 @@ class MaterialComponent(
 
     private val listeners by cachedProjectComponents<ListenerComponent>()
 
-    suspend fun applyMaterialTo(mesh: Mesh, scene: EditorScene): Boolean {
+    suspend fun applyMaterialTo(mesh: Mesh, scene: EditorScene, modelMats: List<ModelMatrixComposition>): Boolean {
         mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
         val sceneShaderData = scene.shaderData
 
         val meshKey = MeshLayoutKey(mesh)
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
             logT { "Creating new material shader $name (for mesh: ${mesh.name})" }
-            data.createShader(sceneShaderData)
+            data.createShader(sceneShaderData, modelMats)
         }
         if (mesh.shader == shader) {
             return true

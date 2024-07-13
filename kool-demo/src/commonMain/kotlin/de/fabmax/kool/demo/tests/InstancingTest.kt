@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Mat4f
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
@@ -29,7 +30,10 @@ class InstancingTest : DemoScene("Instancing") {
         colorSpaceConversion = ColorSpaceConversion.AS_IS
     }
     private val instancedShader = KslUnlitShader {
-        vertices { isInstanced = true }
+        vertices {
+            isInstanced = true
+            modelMatrixComposition = listOf(ModelMatrixComposition.INSTANCE_MODEL_MAT)
+        }
         color { vertexColor() }
         colorSpaceConversion = ColorSpaceConversion.AS_IS
     }

@@ -7,11 +7,12 @@ import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 
-suspend fun MaterialComponentData.createShader(sceneShaderData: SceneShaderData): DrawShader {
-    return shaderData.createShader(sceneShaderData)
+suspend fun MaterialComponentData.createShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): DrawShader {
+    return shaderData.createShader(sceneShaderData, modelMats)
 }
 
 suspend fun MaterialComponentData.updateShader(shader: DrawShader?, sceneShaderData: SceneShaderData): Boolean {
@@ -20,8 +21,8 @@ suspend fun MaterialComponentData.updateShader(shader: DrawShader?, sceneShaderD
 
 fun MaterialComponentData.matchesShader(shader: DrawShader?): Boolean = shaderData.matchesShader(shader)
 
-suspend fun MaterialShaderData.createShader(sceneShaderData: SceneShaderData): DrawShader = when (this) {
-    is PbrShaderData -> createShader(sceneShaderData)
+suspend fun MaterialShaderData.createShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): DrawShader = when (this) {
+    is PbrShaderData -> createPbrShader(sceneShaderData, modelMats)
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
 }
@@ -38,14 +39,17 @@ fun MaterialShaderData.matchesShader(shader: DrawShader?): Boolean = when (this)
     is UnlitShaderData -> TODO()
 }
 
-suspend fun PbrShaderData.createShader(sceneShaderData: SceneShaderData): KslPbrShader {
+suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): KslPbrShader {
     val shader = KslPbrShader {
         pipeline {
             if (genericSettings.isTwoSided) {
                 cullMethod = CullMethod.NO_CULLING
             }
         }
-        vertices { isInstanced = true }
+        vertices {
+            isInstanced = true
+            modelMatrixComposition = modelMats
+        }
         color {
             when (val color = baseColor) {
                 is ConstColorAttribute -> uniformColor()
@@ -78,14 +82,14 @@ suspend fun PbrShaderData.createShader(sceneShaderData: SceneShaderData): KslPbr
                 is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.FLOAT1))
             }
         }
-        this@createShader.aoMap?.let {
+        this@createPbrShader.aoMap?.let {
             ao {
                 materialAo {
                     textureProperty(null, it.singleChannelIndex)
                 }
             }
         }
-        this@createShader.parallaxMap?.let {
+        this@createPbrShader.parallaxMap?.let {
             vertices {
                 displacement {
                     uniformProperty(parallaxOffset)
@@ -95,7 +99,7 @@ suspend fun PbrShaderData.createShader(sceneShaderData: SceneShaderData): KslPbr
                 useParallaxMap(null, parallaxStrength, maxSteps = parallaxSteps, textureChannel = it.singleChannelIndex)
             }
         }
-        this@createShader.normalMap?.let {
+        this@createPbrShader.normalMap?.let {
             normalMapping {
                 setNormalMap()
             }

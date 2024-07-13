@@ -63,7 +63,6 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
             vertexStage {
                 main {
                     val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                        inModelMat(modelMatrix().matrix)
                         inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
                         inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
 

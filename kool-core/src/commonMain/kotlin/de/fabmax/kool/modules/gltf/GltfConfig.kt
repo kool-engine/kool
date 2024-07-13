@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
@@ -30,5 +31,6 @@ data class GltfMaterialConfig(
     val environmentMaps: EnvironmentMaps? = null,
     val isDeferredShading: Boolean = false,
     val maxNumberOfLights: Int = 4,
-    val fixedNumberOfJoints: Int = 0
+    val fixedNumberOfJoints: Int = 0,
+    val modelMatrixComposition: List<ModelMatrixComposition> = emptyList()
 )
