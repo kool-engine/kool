@@ -36,7 +36,7 @@ class SceneNodes(val scene: EditorScene) :
                 else -> null
             }
             meshUsers?.let {
-                logD { "Created new scene mesh ${it.node?.name}" }
+                logT { "Created new scene mesh ${it.node?.name}" }
                 sceneNodes[key] = it
             }
         }
@@ -114,10 +114,16 @@ class SceneNodes(val scene: EditorScene) :
         override fun updateInstances() {
             node?.instances?.apply {
                 clear()
-                addInstances(users.size) { buf ->
+                addInstancesUpTo(users.size) { buf ->
+                    var added = 0
                     for (i in users.indices) {
-                        users[i].addInstanceData(buf)
+                        val meshComponent = users[i]
+                        if (meshComponent.gameEntity.isVisible) {
+                            meshComponent.addInstanceData(buf)
+                            added++
+                        }
                     }
+                    added
                 }
             }
         }
@@ -280,10 +286,16 @@ class SceneNodes(val scene: EditorScene) :
             for (i in modelInstances.indices) {
                 modelInstances[i].apply {
                     clear()
-                    addInstances(users.size) { buf ->
+                    addInstancesUpTo(users.size) { buf ->
+                        var added = 0
                         for (j in users.indices) {
-                            users[j].addInstanceData(buf)
+                            val meshComponent = users[j]
+                            if (meshComponent.gameEntity.isVisible) {
+                                meshComponent.addInstanceData(buf)
+                                added++
+                            }
                         }
+                        added
                     }
                 }
             }

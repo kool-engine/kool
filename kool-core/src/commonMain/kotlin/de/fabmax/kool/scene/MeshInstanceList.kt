@@ -94,6 +94,23 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         hasChanged = true
     }
 
+    inline fun addInstancesUpTo(upperBoundN: Int, block: (Float32Buffer) -> Int) {
+        if (upperBoundN == 0) {
+            return
+        }
+        checkBufferSize(upperBoundN)
+        val szBefore = dataF.position
+        val actuallyAdded = block(dataF)
+        val growSz = dataF.position - szBefore
+        if (growSz != instanceSizeF * actuallyAdded) {
+            throw IllegalStateException("Expected data to grow by ${instanceSizeF * upperBoundN} elements, instead it grew by $growSz")
+        }
+        numInstances += actuallyAdded
+        if (actuallyAdded > 0) {
+            hasChanged = true
+        }
+    }
+
     fun clear() {
         if (numInstances == 0) {
             return
