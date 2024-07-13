@@ -67,12 +67,11 @@ class SceneShaderData(val scene: EditorScene) {
     private fun notifyChange() {
         shaderCache.onSceneShaderDataChanged(scene, this)
         listeners.forEach { it.onSceneShaderDataChanged(scene, this) }
+        scene.sceneNodes.onSceneShaderDataChanged(scene, this)
     }
 }
 
-class SceneShaderCache :
-    EditorScene.SceneShaderDataListener
-{
+class SceneShaderCache : EditorScene.SceneShaderDataListener {
     private val materialShaders = mutableMapOf<EntityId, MutableMap<MeshLayoutKey, DrawShader>>()
 
     override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {

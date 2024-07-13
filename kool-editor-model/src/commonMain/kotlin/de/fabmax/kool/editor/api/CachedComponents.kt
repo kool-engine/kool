@@ -35,9 +35,10 @@ class CachedSceneComponents<T: Any>(val scene: EditorScene, val componentClass: 
         return if (scene.componentModCnt == modCnt) cache else {
             modCnt = scene.componentModCnt
             cache.clear()
-            scene.sceneEntities.values
+            scene.sceneEntities.values.asSequence()
                 .flatMap { it.components.filter { c -> componentClass.isInstance(c) } }
                 .map { componentClass.cast(it) }
+                .toList()
                 .also { cache.addAll(it) }
         }
     }
@@ -66,7 +67,7 @@ class CachedProjectComponents<T: Any>(val project: EditorProject, val componentC
         if (isDirty) {
             cache.clear()
             scenes.forEach { scene ->
-                scene.sceneEntities.values
+                scene.sceneEntities.values.asSequence()
                     .flatMap { it.components.filter { c -> componentClass.isInstance(c) } }
                     .map { componentClass.cast(it) }
                     .also { cache.addAll(it) }

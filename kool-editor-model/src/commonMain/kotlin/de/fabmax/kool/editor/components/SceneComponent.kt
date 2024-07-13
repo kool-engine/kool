@@ -1,8 +1,11 @@
 package de.fabmax.kool.editor.components
 
+import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.SceneShaderData
 import de.fabmax.kool.editor.api.cachedSceneComponents
 import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.SceneComponentData
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logW
@@ -12,7 +15,9 @@ class SceneComponent(
     componentInfo: ComponentInfo<SceneComponentData>
 ) :
     GameEntityDataComponent<SceneComponentData>(gameEntity, componentInfo),
-    DrawNodeComponent
+    DrawNodeComponent,
+    EditorScene.SceneShaderDataListener,
+    MaterialComponent.ListenerComponent
 {
     override val drawNode: Scene = Scene(gameEntity.name).apply {
         tryEnableInfiniteDepth()
@@ -49,5 +54,13 @@ class SceneComponent(
         } else {
             logW { "Scene ${gameEntity.name} has no camera attached" }
         }
+    }
+
+    override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
+        scene.sceneNodes.onSceneShaderDataChanged(scene, sceneShaderData)
+    }
+
+    override suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
+        scene.sceneNodes.onMaterialChanged(component, materialData)
     }
 }

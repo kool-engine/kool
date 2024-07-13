@@ -30,9 +30,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
         val materialSceneId = projectData.materials.find { it.components.any { c -> c.data is SceneComponentData } }?.id ?: nextId()
         materialScene = EditorScene(SceneData(SceneMeta(materialSceneId, "materials"), projectData.materials), this)
-        materialScene.getAllComponents<MaterialComponent>()
-            .filter { it.gameEntity.isVisible }
-            .forEach { _materialsById[it.gameEntity.id] = it }
+        materialScene.getAllComponents<MaterialComponent>().forEach { _materialsById[it.gameEntity.id] = it }
         materials.apply {
             addAll(materialsById.values)
             sortBy { it.name }
@@ -42,12 +40,10 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     suspend fun createScenes() {
         if (defaultMaterial == null) {
             defaultMaterial = materialScene.getAllComponents<MaterialComponent>().find {
-                it.name == "<\\Default/>"
+                it.name == MaterialComponent.DEFAULT_MATERIAL_NAME
             } ?: createNewMaterial().apply {
                 gameEntity.setPersistent(gameEntity.settings.copy(isVisible = false))
-                materials.remove(this)
-                _materialsById -= id
-                setPersistent(MaterialComponentData("<\\Default/>", PbrShaderData()))
+                setPersistent(MaterialComponentData(MaterialComponent.DEFAULT_MATERIAL_NAME, PbrShaderData()))
             }
         }
 

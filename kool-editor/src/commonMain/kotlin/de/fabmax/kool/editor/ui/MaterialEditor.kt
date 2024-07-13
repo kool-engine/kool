@@ -417,12 +417,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
 
         var index = 0
-        KoolEditor.instance.projectModel.materials.use().forEachIndexed { i, material ->
-            if (allTheSameMaterial && components[0].isHoldingMaterial(material)) {
-                index = i + 2
+        KoolEditor.instance.projectModel.materials.use()
+            .filter { it.gameEntity.isVisible }
+            .forEachIndexed { i, material ->
+                if (allTheSameMaterial && components[0].isHoldingMaterial(material)) {
+                    index = i + 2
+                }
+                items += MaterialItem(material.name, material)
             }
-            items += MaterialItem(material.name, material)
-        }
         return items to index
     }
 

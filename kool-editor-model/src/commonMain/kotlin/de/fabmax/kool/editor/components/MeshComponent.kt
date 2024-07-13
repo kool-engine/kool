@@ -1,7 +1,12 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.*
-import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.SceneNodes
+import de.fabmax.kool.editor.api.cachedEntityComponents
+import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.data.MeshComponentData
+import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.launchOnMainThread
@@ -11,9 +16,7 @@ class MeshComponent(
     componentInfo: ComponentInfo<MeshComponentData> = ComponentInfo(MeshComponentData(ShapeData.Box()))
 ) :
     GameEntityDataComponent<MeshComponentData>(gameEntity, componentInfo),
-    MaterialComponent.ListenerComponent,
-    MaterialReferenceComponent.ListenerComponent,
-    EditorScene.SceneShaderDataListener
+    MaterialReferenceComponent.ListenerComponent
 {
     private var meshKey: SceneNodes.MeshKey? = null
     var sceneNode: Node? = null
@@ -71,18 +74,6 @@ class MeshComponent(
 
     override suspend fun onMaterialReferenceChanged(component: MaterialReferenceComponent, material: MaterialComponent?) {
         updateDrawNode(data)
-    }
-
-    override suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
-//        val holder = gameEntity.getComponent<MaterialReferenceComponent>() ?: return
-//        if (holder.isHoldingMaterial(component)) {
-//            meshHolder.onMaterialChanged(component, materialData)
-//            modelHolder.onMaterialChanged(component, materialData)
-//        }
-    }
-
-    override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
-//        modelHolder.onSceneShaderDataChanged(scene, sceneShaderData)
     }
 
     companion object {

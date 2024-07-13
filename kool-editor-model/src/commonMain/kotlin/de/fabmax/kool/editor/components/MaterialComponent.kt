@@ -26,7 +26,7 @@ class MaterialComponent(
 
     private val listeners by cachedProjectComponents<ListenerComponent>()
 
-    suspend fun applyMaterialTo(scene: EditorScene, mesh: Mesh): Boolean {
+    suspend fun applyMaterialTo(mesh: Mesh, scene: EditorScene): Boolean {
         mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
         val sceneShaderData = scene.shaderData
 
@@ -34,6 +34,9 @@ class MaterialComponent(
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
             logT { "Creating new material shader $name (for mesh: ${mesh.name})" }
             data.createShader(sceneShaderData)
+        }
+        if (mesh.shader == shader) {
+            return true
         }
 
         if (shader is KslShader && shader.findRequiredVertexAttributes().any { it !in mesh.geometry.vertexAttributes }) {
@@ -73,7 +76,15 @@ class MaterialComponent(
         }
     }
 
+    companion object {
+        const val DEFAULT_MATERIAL_NAME = "<\\Default/>"
+    }
+
     fun interface ListenerComponent {
         suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData)
     }
+}
+
+fun MaterialComponent.isDefaultMaterial(): Boolean {
+    return name == MaterialComponent.DEFAULT_MATERIAL_NAME
 }

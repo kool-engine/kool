@@ -104,7 +104,6 @@ class ShadowMapComponent(
         val updateShadowMaps = gameEntity.scene.shaderData.shadowMaps.toMutableList()
         shadowMap?.let { updateShadowMaps -= it }
         replaceMap?.let { updateShadowMaps += it }
-
         gameEntity.scene.shaderData.shadowMaps = updateShadowMaps
 
         shadowMap?.let {

@@ -276,7 +276,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         sceneModel.getAllComponents<CameraComponent>()
             .filter { it.gameEntity.isVisible }
             .forEach { cameras += CameraComponentInstance(it) }
-        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is DrawNodeComponent } }
+        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is DrawNodeComponent || c is MeshComponent } }
             .filter { it.isVisible }
             .forEach { groups += GroupNodeInstance(it) }
         sceneModel.getAllComponents<DiscreteLightComponent>()
