@@ -274,7 +274,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
 
         val sceneModel = KoolEditor.instance.activeScene.value ?: return
         sceneModel.sceneEntities.values.filter { it.components.none { c -> c is SceneNodeComponent } }
-            .filter { it.isVisible }
+            .filter { it.isVisible && it.isSceneChild }
             .forEach { groups += GroupNodeInstance(it) }
         sceneModel.getAllComponents<CameraComponent>()
             .filter { it.gameEntity.isVisible }

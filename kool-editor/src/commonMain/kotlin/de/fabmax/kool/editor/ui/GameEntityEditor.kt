@@ -249,13 +249,13 @@ class GameEntityEditor(ui: EditorUi) :
             ComponentAdder.AddMaterialComponent,
             ComponentAdder.AddLightComponent,
             ComponentAdder.AddShadowMapComponent,
-            ComponentAdder.AddScriptComponent,
+            ComponentAdder.AddBehaviorComponent,
             ComponentAdder.AddSsaoComponent,
             ComponentAdder.AddCameraComponent,
             ComponentAdder.AddPhysicsWorldComponent,
             ComponentAdder.AddRigidActorComponent,
             ComponentAdder.AddCharacterControllerComponent,
-        )
+        ).sortedBy { it.name }
     }
 
     private sealed class ComponentAdder<T: GameEntityComponent>(val name: String) {
@@ -287,7 +287,7 @@ class GameEntityEditor(ui: EditorUi) :
 
         data object AddCameraComponent : ComponentAdder<CameraComponent>("Camera") {
             override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<CameraComponent>()
-            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneRoot
+            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild
             override fun createComponent(target: GameEntity): CameraComponent = CameraComponent(target)
         }
 
@@ -334,7 +334,7 @@ class GameEntityEditor(ui: EditorUi) :
             override fun createComponent(target: GameEntity): CharacterControllerComponent = CharacterControllerComponent(target)
         }
 
-        data object AddScriptComponent : ComponentAdder<BehaviorComponent>("Behavior") {
+        data object AddBehaviorComponent : ComponentAdder<BehaviorComponent>("Behavior") {
             override fun hasComponent(gameEntity: GameEntity) = false
             override fun accept(gameEntity: GameEntity) = true
 
