@@ -24,7 +24,7 @@ class SceneNodes(val scene: EditorScene) :
     EditorScene.SceneShaderDataListener,
     MaterialComponent.ListenerComponent
 {
-    private val sceneNode: Scene get() = scene.sceneComponent.drawNode
+    private val sceneNode: Scene get() = scene.sceneComponent.sceneNode
     private val sceneNodes = mutableMapOf<MeshKey, DrawNodeAndUsers>()
 
     suspend fun useNode(key: MeshKey, user: MeshComponent): Node? {
@@ -60,7 +60,7 @@ class SceneNodes(val scene: EditorScene) :
                     node.release()
                 }
                 sceneNodes -= key
-                logD { "Released scene mesh ${it.node?.name}: No more active users" }
+                logT { "Released scene mesh ${it.node?.name}: No more active users" }
             }
         }
     }
@@ -141,6 +141,7 @@ class SceneNodes(val scene: EditorScene) :
             node = Mesh(attributes, instances).apply {
                 sceneNode.addNode(this)
                 isFrustumChecked = false
+                drawGroupId = meshKey.drawGroupId
 
                 if (isHeightmap) {
                     createHeightmap()
@@ -340,6 +341,7 @@ class SceneNodes(val scene: EditorScene) :
             val loadScene = if (modelShape.sceneIndex in gltf.scenes.indices) modelShape.sceneIndex else 0
             val model = gltf.makeModel(modelCfg, loadScene)
             model.name = "Model:${modelShape.modelPath}[${abs(meshKey.hashCode()).toHexString()}]"
+            model.drawGroupId = meshKey.drawGroupId
 
             if (material != null) {
                 model.meshes.values.forEach { material.applyMaterialTo(it, scene, modelMatsInstancedModel) }

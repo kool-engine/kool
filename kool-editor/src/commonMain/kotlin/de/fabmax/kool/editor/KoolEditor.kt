@@ -156,7 +156,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
 
         // restore app scene camera: it was replaced by custom editor cam during editor app load
-        sceneModel.sceneComponent.cameraComponent?.drawNode?.let { cam ->
+        sceneModel.sceneComponent.cameraComponent?.camera?.let { cam ->
             sceneModel.scene.camera = cam
             sceneModel.getAllComponents<CameraAwareComponent>().forEach { it.updateSceneCamera(cam) }
         }

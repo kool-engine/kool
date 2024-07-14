@@ -11,7 +11,7 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
-val EditorScene.scene: Scene get() = sceneComponent.drawNode
+val EditorScene.scene: Scene get() = sceneComponent.sceneNode
 
 class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseReleasable() {
 
@@ -61,7 +61,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             createEntity(it)
         }
 
-        sceneEntity.sceneComponent.drawNode.onUpdate { updateEntities(it) }
+        sceneEntity.sceneComponent.sceneNode.onUpdate { updateEntities(it) }
     }
 
     private fun SceneData.getOrAddSceneEntityData(): GameEntityData {
@@ -154,10 +154,10 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     }
 
     private fun updateEntities(ev: RenderPass.UpdateEvent) {
-        sceneNodes.updateInstances()
         for (i in _orderedEntities.indices) {
             _orderedEntities[i].onUpdate(ev)
         }
+        sceneNodes.updateInstances()
     }
 
     override fun release() {
@@ -169,6 +169,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             }
         }
         sceneEntity.destroyComponents()
+        sceneComponent.sceneNode.release()
         lifecycle = EntityLifecycle.DESTROYED
     }
 

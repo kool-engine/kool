@@ -31,7 +31,7 @@ class SsaoComponent(
     override suspend fun applyComponent() {
         super.applyComponent()
 
-        aoPipeline = AoPipeline.createForward(sceneComponent.drawNode)
+        aoPipeline = AoPipeline.createForward(sceneComponent.sceneNode)
         scene.shaderData.ssaoMap = aoPipeline?.aoMap
         applySettings(data)
 

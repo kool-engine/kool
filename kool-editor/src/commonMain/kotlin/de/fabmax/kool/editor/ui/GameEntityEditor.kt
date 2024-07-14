@@ -286,14 +286,14 @@ class GameEntityEditor(ui: EditorUi) :
         }
 
         data object AddCameraComponent : ComponentAdder<CameraComponent>("Camera") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<CameraComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneRoot
             override fun createComponent(target: GameEntity): CameraComponent = CameraComponent(target)
         }
 
 
         data object AddLightComponent : ComponentAdder<DiscreteLightComponent>("Light") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DiscreteLightComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild
             override fun createComponent(target: GameEntity): DiscreteLightComponent = DiscreteLightComponent(target)
         }
@@ -305,7 +305,7 @@ class GameEntityEditor(ui: EditorUi) :
         }
 
         data object AddMeshComponent : ComponentAdder<MeshComponent>("Mesh") {
-            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<DrawNodeComponent>()
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<MeshComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild
             override fun createComponent(target: GameEntity): MeshComponent = MeshComponent(target)
         }

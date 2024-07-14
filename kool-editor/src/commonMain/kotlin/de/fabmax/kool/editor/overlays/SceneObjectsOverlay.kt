@@ -273,16 +273,16 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         pointLights.clear()
 
         val sceneModel = KoolEditor.instance.activeScene.value ?: return
+        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is SceneNodeComponent } }
+            .filter { it.isVisible }
+            .forEach { groups += GroupNodeInstance(it) }
         sceneModel.getAllComponents<CameraComponent>()
             .filter { it.gameEntity.isVisible }
             .forEach { cameras += CameraComponentInstance(it) }
-        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is DrawNodeComponent || c is MeshComponent } }
-            .filter { it.isVisible }
-            .forEach { groups += GroupNodeInstance(it) }
         sceneModel.getAllComponents<DiscreteLightComponent>()
             .filter { it.gameEntity.isVisible }
             .forEach {
-                when (it.drawNode) {
+                when (it.light) {
                     is Light.Directional -> dirLights += DirLightComponentInstance(it)
                     is Light.Point -> pointLights += PointLightComponentInstance(it)
                     is Light.Spot -> spotLights += SpotLightComponentInstance(it)
@@ -350,19 +350,19 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, pointLightMesh)
     {
-        override val color: Color get() = component.drawNode.color
+        override val color: Color get() = component.light.color
     }
 
     private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, spotLightMesh)
     {
-        override val color: Color get() = component.drawNode.color
+        override val color: Color get() = component.light.color
     }
 
     private inner class DirLightComponentInstance(val component: DiscreteLightComponent) :
         OverlayObject(component.gameEntity, dirLightMesh)
     {
-        override val color: Color get() = component.drawNode.color
+        override val color: Color get() = component.light.color
     }
 
     private inner class CameraComponentInstance(val component: CameraComponent) :

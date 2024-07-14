@@ -198,6 +198,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
 
         var isTextValid = false
 
+        val fullMessage = message
         val message: String = if (message.length < maxMessageLen) message else message.substring(0, maxMessageLen) + "…"
         var text: TextLine = makeTextLine()
             private set
@@ -318,7 +319,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
         }
 
         override fun toString(): String {
-            return "$fmtTime f:${fmtFrameCnt(frameIdx, 4)} ${level.indicator}: ${message}${if (tag != null) " [${tag}]" else ""}"
+            return "$fmtTime f:${fmtFrameCnt(frameIdx, 4)} ${level.indicator}: ${fullMessage}${if (tag != null) " [${tag}]" else ""}"
         }
     }
 

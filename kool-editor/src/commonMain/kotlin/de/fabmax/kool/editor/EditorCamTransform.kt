@@ -2,7 +2,6 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.components.DrawNodeComponent
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.localToGlobalF
 import de.fabmax.kool.input.InputStack
@@ -55,7 +54,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         gameEntities.forEach { gameEntity ->
             val c: Vec3f
             val r: Float
-            val sceneNode = gameEntity.getComponent<MeshComponent>()?.sceneNode ?: gameEntity.getComponent<DrawNodeComponent>()?.drawNode
+            val sceneNode = gameEntity.getComponent<MeshComponent>()?.sceneNode
             if (sceneNode == null) {
                 c = gameEntity.localToGlobalF.getTranslation()
                 r = 1f

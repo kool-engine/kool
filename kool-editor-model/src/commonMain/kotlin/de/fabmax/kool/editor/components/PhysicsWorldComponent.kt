@@ -91,6 +91,6 @@ class PhysicsWorldComponent(
 
     override fun onStart() {
         super.onStart()
-        physicsWorld?.registerHandlers(sceneComponent.drawNode)
+        physicsWorld?.registerHandlers(sceneComponent.sceneNode)
     }
 }

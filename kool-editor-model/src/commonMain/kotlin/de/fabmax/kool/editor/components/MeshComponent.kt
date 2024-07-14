@@ -16,6 +16,7 @@ class MeshComponent(
     componentInfo: ComponentInfo<MeshComponentData> = ComponentInfo(MeshComponentData(ShapeData.Box()))
 ) :
     GameEntityDataComponent<MeshComponentData>(gameEntity, componentInfo),
+    SceneNodeComponent,
     MaterialReferenceComponent.ListenerComponent
 {
     private var meshKey: SceneNodes.MeshKey? = null
