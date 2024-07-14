@@ -233,17 +233,18 @@ class CheckboxNode(parent: UiNode?, surface: UiSurface) : ToggleNode(parent, sur
         if (p > 0f) {
             getPlainBuilder().configured(modifier.checkMarkColor) {
                 val sz = buttonWidth.px * 0.8f * p
+                //scale(0.9f)
                 translate(c.x, c.y - sz * 0.2f, 0f)
                 rotate(45f.deg, Vec3f.Z_AXIS)
                 rect {
                     isCenteredOrigin = false
-                    size.set(sz * 0.6f, sz * 0.2f)
-                    origin.set(size.x * -0.333f, size.y * 2f, 0f)
+                    size.set(sz * 0.5f, sz * 0.2f)
+                    origin.set(sz * -0.15f, sz * 0.35f, 0f)
                 }
                 rect {
                     isCenteredOrigin = false
-                    size.set(sz * 0.2f, sz)
-                    origin.set(size.x, size.y * -0.5f, 0f)
+                    size.set(sz * 0.2f, sz * 0.7f)
+                    origin.set(sz * 0.15f, sz * -0.35f, 0f)
                 }
             }
         }
