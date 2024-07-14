@@ -249,10 +249,10 @@ open class Node(name: String? = null) : BaseReleasable() {
     fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = invModelMatD.transform(vec, w)
 
     /**
-     * Performs a hit test with the given [RayTest]. Subclasses should override this method and test
+     * Performs a hit test with the given [RayTest]. Subclasses should override [rayTestLocal] and test
      * if their contents are hit by the ray.
      */
-    open fun rayTest(test: RayTest) {
+    fun rayTest(test: RayTest) {
         if (test.isIntersectingBoundingSphere(this)) {
             test.collectHitBoundingSphere(this)
             // bounding sphere hit -> transform ray to local coordinates and do further testing
@@ -284,7 +284,7 @@ open class Node(name: String? = null) : BaseReleasable() {
         }
     }
 
-    protected open fun rayTestLocal(test: RayTest, localRay: RayF) { }
+    open fun rayTestLocal(test: RayTest, localRay: RayF) { }
 
     /**
      * Called during [collectDrawCommands]: Checks if this node is currently visible. If not rendering is skipped. Default

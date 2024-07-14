@@ -35,7 +35,7 @@ class CachedSceneComponents<T: Any>(val scene: EditorScene, val componentClass: 
         return if (scene.componentModCnt == modCnt) cache else {
             modCnt = scene.componentModCnt
             cache.clear()
-            scene.sceneEntities.values.asSequence()
+            scene.orderedEntities.asSequence()
                 .flatMap { it.components.filter { c -> componentClass.isInstance(c) } }
                 .map { componentClass.cast(it) }
                 .toList()

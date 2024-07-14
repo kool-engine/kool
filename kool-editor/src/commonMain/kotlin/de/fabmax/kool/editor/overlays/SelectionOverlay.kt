@@ -12,6 +12,7 @@ import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
@@ -83,15 +84,14 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     }
 
     fun clickSelect(ptr: Pointer) {
-        val sceneModel = editor.activeScene.value ?: return
-        val appScene = sceneModel.scene
+        val editorScene = editor.activeScene.value ?: return
         val rayTest = RayTest()
 
         lastPickPosition = null
 
-        if (appScene.computePickRay(ptr, rayTest.ray)) {
+        if (editorScene.hitTest.computePickRay(ptr, rayTest.ray)) {
             rayTest.clear()
-            var selectedNodeModel: GameEntity? = editor.sceneObjectsOverlay.pick(rayTest)
+            var selectedEntity: GameEntity? = editor.sceneObjectsOverlay.pick(rayTest)
             var hitDist = Float.POSITIVE_INFINITY
             if (rayTest.isHit) {
                 hitDist = rayTest.hitDistanceSqr
@@ -99,30 +99,21 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
             }
 
             rayTest.clear()
-            appScene.rayTest(rayTest)
-            if (rayTest.isHit && rayTest.hitDistanceSqr < hitDist) {
+            val hitEntity = editorScene.hitTest.hitTest(rayTest)
+            if (hitEntity != null && rayTest.hitDistanceSqr < hitDist) {
                 lastPickPosition = Vec3f(rayTest.hitPositionGlobal)
-                var hitModel: GameEntity? = null
-                var it = rayTest.hitNode
-//                while (it != null) {
-                    // todo
-//                    hitModel = sceneModel.nodesToEntities[it]
-//                    if (hitModel != null) {
-//                        break
-//                    }
-//                    it = it.parent
-//                }
-                selectedNodeModel = hitModel ?: selectedNodeModel
+                selectedEntity = hitEntity
             }
 
             if (lastPickPosition == null) {
-                val camPlane = PlaneF(appScene.camera.globalLookAt, appScene.camera.globalLookDir)
+                val cam = editorScene.scene.camera
+                val camPlane = PlaneF(cam.globalLookAt, cam.globalLookDir)
                 val pickPos = MutableVec3f()
                 camPlane.intersectionPoint(rayTest.ray, pickPos)
                 lastPickPosition = pickPos
             }
 
-            selectSingle(selectedNodeModel)
+            selectSingle(selectedEntity)
         }
     }
 
@@ -247,6 +238,10 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
                             enableArmature(max(DEFAULT_NUM_JOINTS, it.nodes.size))
                         }
                         morphAttributes += mesh.geometry.getMorphAttributes()
+
+                        (mesh.shader as? KslShader)?.let { ksl ->
+                            ksl.program.vertexStage?.findBlock<VertexTransformBlock>()?.cfg?.modelMatrixComposition
+                        }?.let { modelMatrixComposition = it }
                     }
 
                     modelCustomizer = {

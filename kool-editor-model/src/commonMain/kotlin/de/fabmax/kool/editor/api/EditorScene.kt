@@ -19,7 +19,8 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     val sceneEntities: Map<EntityId, GameEntity> get() = _sceneEntities
 
     // list of all entities in this scene, ordered such that any child GameEntity comes after its parent
-    private val orderedEntities = mutableListOf<GameEntity>()
+    private val _orderedEntities = mutableListOf<GameEntity>()
+    val orderedEntities: List<GameEntity> get() = _orderedEntities
 
     var componentModCnt = 0
         internal set
@@ -37,8 +38,10 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             field = value
         }
 
+    val hitTest = SceneHitTest(this)
+
     init {
-        orderedEntities += sceneEntity
+        _orderedEntities += sceneEntity
         _sceneEntities[sceneEntity.id] = sceneEntity
 
         val parentsToChildren = mutableMapOf<EntityId?, MutableList<GameEntityData>>()
@@ -152,8 +155,8 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
     private fun updateEntities(ev: RenderPass.UpdateEvent) {
         sceneNodes.updateInstances()
-        for (i in orderedEntities.indices) {
-            orderedEntities[i].onUpdate(ev)
+        for (i in _orderedEntities.indices) {
+            _orderedEntities[i].onUpdate(ev)
         }
     }
 
@@ -202,7 +205,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         parent.addChild(gameEntity, insertionPos)
 
         _sceneEntities[gameEntity.id] = gameEntity
-        orderedEntities += gameEntity
+        _orderedEntities += gameEntity
     }
 
     private suspend fun GameEntity.applyLifecycleState() {
@@ -223,7 +226,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
         removeEntityData(gameEntity.entityData)
         _sceneEntities -= gameEntity.id
-        orderedEntities -= gameEntity
+        _orderedEntities -= gameEntity
 
         gameEntity.parent?.removeChild(gameEntity)
 
