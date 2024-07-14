@@ -156,22 +156,22 @@ class WgpuDrawPipeline(
         viewData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
         pipelineData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
         meshData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
-        bindVertexBuffers(passEncoderState.passEncoder, cmd.mesh)
+        bindVertexBuffers(passEncoderState.passEncoder, cmd)
         return true
     }
 
-    private fun bindVertexBuffers(passEncoder: GPURenderPassEncoder, mesh: Mesh) {
-        if (mesh.geometry.gpuGeometry == null) {
-            mesh.geometry.gpuGeometry = WgpuGeometry(mesh, backend)
+    private fun bindVertexBuffers(passEncoder: GPURenderPassEncoder, cmd: DrawCommand) {
+        if (cmd.mesh.geometry.gpuGeometry == null) {
+            cmd.mesh.geometry.gpuGeometry = WgpuGeometry(cmd.mesh, backend)
         }
-        val gpuGeom = mesh.geometry.gpuGeometry as WgpuGeometry
+        val gpuGeom = cmd.mesh.geometry.gpuGeometry as WgpuGeometry
         gpuGeom.checkBuffers()
 
         var slot = 0
 
-        mesh.instances?.let { insts ->
+        cmd.instances?.let { insts ->
             if (insts.gpuInstances == null) {
-                insts.gpuInstances = WgpuInstances(mesh, backend)
+                insts.gpuInstances = WgpuInstances(insts, backend, cmd.mesh)
             }
             val gpuInsts = insts.gpuInstances as WgpuInstances
             gpuInsts.checkBuffers()
