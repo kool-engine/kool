@@ -2,10 +2,10 @@ package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.logE
+import kotlin.jvm.JvmName
 import kotlin.math.max
 
 val GameEntity.project: EditorProject get() = scene.project
@@ -31,7 +31,8 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     val isVisibleWithParents: Boolean
         get() = if (!isVisible) false else parent?.isVisibleWithParents != false
 
-    val components = mutableStateListOf<GameEntityComponent>()
+    private val _components = mutableListOf<GameEntityComponent>()
+    val components: List<GameEntityComponent> get() = _components
     var componentModCnt = 0
         private set
     val transform: TransformComponent
@@ -62,12 +63,6 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
         createComponentsFromData(entityData.components)
         transform = getOrPutComponent { TransformComponent(this).apply { componentInfo.displayOrder = 0 } }
-
-        // todo
-//        settingsState.onChange {
-//            drawNode.drawGroupId = it.drawGroupId
-//            drawNode.isVisible = it.isVisible
-//        }
     }
 
     fun setPersistent(settings: GameEntitySettings) {
@@ -82,9 +77,9 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
     private fun createComponentsFromData(componentInfo: List<ComponentInfo<*>>) {
         componentInfo.forEach { info ->
-            components += createDataComponent(info)
+            _components += createDataComponent(info)
         }
-        components.sortByDependencies()
+        _components.sortByDependencies()
         incComponentModCount()
     }
 
@@ -116,7 +111,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
 
     suspend fun applyComponents() {
         var allOk = true
-        components.filter { it.isCreated }.forEach {
+        _components.filter { it.isCreated }.forEach {
             it.applyComponent()
             if (!it.isPrepared) {
                 allOk = false
@@ -128,7 +123,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     fun onStart() {
-        components.forEach {
+        _components.forEach {
             it.onStart()
             check(it.isRunning) { "Component not started (missed calling super?): $it" }
         }
@@ -136,19 +131,19 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     fun onUpdate(ev: RenderPass.UpdateEvent) {
-        for (i in components.indices) {
-            components[i].onUpdate(ev)
+        for (i in _components.indices) {
+            _components[i].onUpdate(ev)
         }
     }
 
     fun onPhysicsUpdate(timeStep: Float) {
-        for (i in components.indices) {
-            components[i].onPhysicsUpdate(timeStep)
+        for (i in _components.indices) {
+            _components[i].onPhysicsUpdate(timeStep)
         }
     }
 
     fun destroyComponents() {
-        components.forEach {
+        _components.forEach {
             it.destroyComponent()
             check(it.isDestroyed) { "Component not destroyed (missed calling super?): $it" }
         }
@@ -191,13 +186,13 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         }
         if (component is GameEntityDataComponent<*>) {
             if (component.componentInfo.displayOrder < 0) {
-                component.componentInfo.displayOrder = components
+                component.componentInfo.displayOrder = _components
                     .filterIsInstance<GameEntityDataComponent<*>>()
                     .maxOf { it.componentInfo.displayOrder } + 1
             }
             entityData.components += component.componentInfo
         }
-        components += component
+        _components += component
         incComponentModCount()
     }
 
@@ -212,7 +207,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     }
 
     fun removeComponent(component: GameEntityComponent) {
-        components -= component
+        _components -= component
         if (component is GameEntityDataComponent<*>) {
             entityData.components -= component.componentInfo
         }
@@ -220,9 +215,10 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         incComponentModCount()
     }
 
+    @JvmName("getComponentsOfType")
     inline fun <reified T: Any> getComponents(): List<T> = components.filterIsInstance<T>()
 
-    inline fun <reified T: Any> getComponent(): T? = getComponents<T>().firstOrNull()
+    inline fun <reified T: Any> getComponent(): T? = components.find { it is T } as T?
 
     inline fun <reified T: Any> requireComponent(): T = checkNotNull(getComponent())
 

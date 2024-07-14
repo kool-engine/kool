@@ -2,14 +2,14 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.MeshComponent
+import de.fabmax.kool.editor.components.localToGlobalF
+import de.fabmax.kool.editor.components.toGlobalCoords
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.SpatialTree
 import de.fabmax.kool.math.spatial.SpatialTreeTraverser
 import de.fabmax.kool.math.spatial.Triangle
-import de.fabmax.kool.math.toMutableVec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Viewport
@@ -21,6 +21,7 @@ class BoxSelector : Composable {
     val isBoxSelect = mutableStateOf(false)
 
     private val startSelection = mutableSetOf<GameEntity>()
+    private val selectionCache = mutableMapOf<GameEntity, MinIncludeRect>()
 
     override fun UiScope.compose() {
         var boxSelectStart by remember(Vec2f.ZERO)
@@ -60,6 +61,7 @@ class BoxSelector : Composable {
             .onDragEnd {
                 if (isBoxSelect.value) {
                     isBoxSelect.set(false)
+                    selectionCache.clear()
                     // explicitly consume pointer, to avoid camera movement during box select
                     it.pointer.consume()
                 } else {
@@ -106,12 +108,33 @@ class BoxSelector : Composable {
             TODO()
         }
 
-        val boxSelection = scene.sceneEntities.values
-            .filter { it.isSceneChild && it.isVisibleWithParents && camHelper.testSceneNode(it) }
+        val rectSize = max - min
+        val boxSelection = selectionCache.values
+            .asSequence()
+            .filter { it.isIncluded(rectSize) }
+            .map { it.entity }
             .toMutableSet()
 
-        // remove nodes which are not empty and not all children are selected
-        boxSelection -= boxSelection.filter { !it.children.all { child -> child in boxSelection } }.toSet()
+        var testCount = 0
+        scene.orderedEntities
+            .asSequence()
+            .filter { it !in boxSelection && it.isSceneChild && it.isVisibleWithParents }
+            .forEach {
+                if (camHelper.testSceneNode(it)) {
+                    testCount++
+                    boxSelection += it
+                }
+            }
+
+        boxSelection.forEach { entity ->
+            val minRect = selectionCache.getOrPut(entity) { MinIncludeRect(rectSize, entity) }
+            if (!minRect.isIncluded(rectSize)) {
+                selectionCache[entity] = MinIncludeRect(rectSize, entity)
+            }
+        }
+
+        // remove group nodes where not all children are selected
+        boxSelection -= boxSelection.filter { !it.hasComponent<MeshComponent>() && it.children.any { child -> child !in boxSelection } }.toSet()
         // remove nodes from selection whose parent is in selection as well
         boxSelection -= boxSelection.filter { it.parent in boxSelection }.toSet()
 
@@ -123,8 +146,11 @@ class BoxSelector : Composable {
         editor.selectionOverlay.setSelection(newSelection)
     }
 
-    private abstract class BoxIntersectHelper(val cam: Camera, boxMin: Vec2f, boxMax: Vec2f, viewport: Viewport) {
+    private data class MinIncludeRect(val minRectSize: Vec2f, val entity: GameEntity) {
+        fun isIncluded(rectSize: Vec2f) = rectSize.x >= minRectSize.x && rectSize.y >= minRectSize.y
+    }
 
+    private abstract class BoxIntersectHelper(val cam: Camera, boxMin: Vec2f, boxMax: Vec2f, viewport: Viewport) {
         val boxMinX = (boxMin.x / viewport.width) * 2f - 1f
         val boxMaxX = (boxMax.x / viewport.width) * 2f - 1f
         val boxMaxY = (1f - boxMin.y / viewport.height) * 2f - 1f
@@ -134,63 +160,72 @@ class BoxSelector : Composable {
 
         abstract fun testBoundingSphere(globalCenter: Vec3f, globalRadius: Float): Boolean
 
-        fun testSceneNode(sceneNodeModel: GameEntity): Boolean {
-            val drawNode = sceneNodeModel.drawNode
-            if (!testBoundingSphere(drawNode.globalCenter, drawNode.globalRadius)) {
+        fun testSceneNode(gameEntity: GameEntity): Boolean {
+            if (!gameEntity.testBounds()) {
                 return false
             }
+            val drawNode = gameEntity.getComponent<MeshComponent>()?.sceneNode
             return when (drawNode) {
-                is Mesh -> testMesh(drawNode)
-                is Model -> drawNode.meshes.values.any { testMesh(it) }
+                is Mesh -> gameEntity.testMesh(drawNode)
+                is Model -> drawNode.meshes.values.any { gameEntity.testMesh(it) }
                 else -> true
             }
         }
 
-        private fun testMesh(mesh: Mesh): Boolean {
+        private fun GameEntity.testBounds(): Boolean {
+            val mesh = getComponent<MeshComponent>()?.sceneNode
+                ?: return testBoundingSphere(localToGlobalF.getTranslation(), 1f)
+
+            val globalCenter = toGlobalCoords(MutableVec3f(mesh.bounds.center))
+            val globalRadius = toGlobalCoords(MutableVec3f(mesh.bounds.size), 0f).length() * 0.5f
+            return testBoundingSphere(globalCenter, globalRadius)
+        }
+
+        private fun GameEntity.testMesh(mesh: Mesh): Boolean {
             return when (val meshTest = mesh.rayTest) {
                 is MeshRayTest.TriangleGeometry -> testTriMesh(mesh, meshTest)
-                is MeshRayTest.LineGeometry -> testLineMesh(/*mesh, meshTest*/)
+                is MeshRayTest.LineGeometry -> testLineMesh()
                 else -> false
             }
         }
 
-        private fun testTriMesh(mesh: Mesh, meshTest: MeshRayTest.TriangleGeometry): Boolean {
+        private fun GameEntity.testTriMesh(mesh: Mesh, meshTest: MeshRayTest.TriangleGeometry): Boolean {
             meshTest.triangleTree?.let { triTree ->
-                triTrav.setup(mesh)
+                triTrav.setup(this, mesh)
                 triTrav.traverse(triTree)
                 return triTrav.isIntersect
             }
             return false
         }
 
-        private fun testLineMesh(/*mesh: Mesh, meshTest: MeshRayTest.LineGeometry*/): Boolean {
+        private fun testLineMesh(): Boolean {
             logE { "line mesh selection is not yet implemented" }
             return false
         }
 
-        private fun testProjPoint(pt: Vec3f): Boolean {
-            return pt.x in boxMinX..boxMaxX && pt.y in boxMinY..boxMaxY
-        }
-
         private inner class TriTraverser : SpatialTreeTraverser<Triangle>() {
-            val tmpP = MutableVec3f()
-            val tmpA = MutableVec3f()
-            val tmpB = MutableVec3f()
-            val tmpC = MutableVec3f()
+            private val tmpP = MutableVec3f()
+            private val tmpA = MutableVec3f()
+            private val tmpB = MutableVec3f()
+            private val tmpC = MutableVec3f()
+            private val toGlobal = MutableMat4f()
 
-            lateinit var mesh: Mesh
+            private lateinit var gameEntity: GameEntity
+            private lateinit var mesh: Mesh
 
             var isIntersect = false
 
-            fun setup(mesh: Mesh) {
+            fun setup(gameEntity: GameEntity, mesh: Mesh) {
+                this.gameEntity = gameEntity
                 this.mesh = mesh
+                toGlobal.set(gameEntity.localToGlobalF).mul(mesh.modelMatF)
                 isIntersect = false
             }
 
             override fun traverseChildren(tree: SpatialTree<Triangle>, node: SpatialTree<Triangle>.Node) {
                 for (child in node.children) {
-                    mesh.toGlobalCoords(child.bounds.center.toMutableVec3f(tmpA))
-                    mesh.toGlobalCoords(child.bounds.max.toMutableVec3f(tmpB))
+                    toGlobal.transform(child.bounds.center.toMutableVec3f(tmpA))
+                    toGlobal.transform(child.bounds.max.toMutableVec3f(tmpB))
                     val r = tmpA.distance(tmpB)
                     if (testBoundingSphere(tmpA, r)) {
                         traverseNode(tree, child)
@@ -204,17 +239,16 @@ class BoxSelector : Composable {
             override fun traverseLeaf(tree: SpatialTree<Triangle>, leaf: SpatialTree<Triangle>.Node) {
                 for (i in leaf.nodeRange) {
                     val tri = leaf.itemsUnbounded[i]
-                    val projOk = cam.project(mesh.toGlobalCoords(tmpP.set(tri.pt0)), tmpA)
-                            && cam.project(mesh.toGlobalCoords(tmpP.set(tri.pt1)), tmpB)
-                            && cam.project(mesh.toGlobalCoords(tmpP.set(tri.pt2)), tmpC)
+                    val projOk = cam.project(toGlobal.transform(tmpP.set(tri.pt0)), tmpA)
+                            && cam.project(toGlobal.transform(tmpP.set(tri.pt1)), tmpB)
+                            && cam.project(toGlobal.transform(tmpP.set(tri.pt2)), tmpC)
 
                     if (projOk) {
-                        isIntersect = testProjPoint(tmpA) || testProjPoint(tmpB) || testProjPoint(tmpC)
+                        isIntersect = testTriEdgesVsBoxEdges()
                         isIntersect = isIntersect || testBoxPointInsideAbc(boxMinX, boxMinY)
                         isIntersect = isIntersect || testBoxPointInsideAbc(boxMinX, boxMaxY)
                         isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMinY)
                         isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMaxY)
-                        isIntersect = isIntersect || testTriEdgesVsBoxEdges()
                         if (isIntersect) break
                     }
                 }
@@ -236,15 +270,15 @@ class BoxSelector : Composable {
             }
 
             private fun testTriEdgesVsBoxEdges(): Boolean {
-                return testEdgeVsBox(tmpA, tmpB) || testEdgeVsBox(tmpB, tmpC) || testEdgeVsBox(tmpC, tmpA)
+                val cA = computeOutCode(tmpA)
+                val cB = computeOutCode(tmpB)
+                val cC = computeOutCode(tmpC)
+                return testEdgeVsBox(cA, cB) || testEdgeVsBox(cB, cC) || testEdgeVsBox(cC, cA)
             }
 
-            private fun testEdgeVsBox(p1: Vec3f, p2: Vec3f): Boolean {
-                val c1 = computeOutCode(p1)
-                val c2 = computeOutCode(p2)
+            private fun testEdgeVsBox(c1: Int, c2: Int): Boolean {
                 val ored = c1 or c2
-
-                return if (c1 == INSIDE || c2 == INSIDE || ored == 3 || ored == 12) {
+                return if (c1 == INSIDE || c2 == INSIDE || ored == LEFT_OR_RIGHT || ored == TOP_OR_BOTTOM) {
                     // guaranteed intersection
                     true
                 } else if (c1 and c2 != 0) {
@@ -278,6 +312,9 @@ class BoxSelector : Composable {
             const val RIGHT = 2
             const val BOTTOM = 4
             const val TOP = 8
+
+            const val LEFT_OR_RIGHT = LEFT or RIGHT
+            const val TOP_OR_BOTTOM = TOP or BOTTOM
         }
     }
 

@@ -48,7 +48,6 @@ class GameEntityEditor(ui: EditorUi) :
 
         val scopeName = objects.joinToString("") { "${it.id}" }
         Column(Grow.Std, Grow.Std, scopeName = scopeName) {
-
             if (objects.size == 1 && objects[0].isSceneRoot) {
                 objectName(objects[0])
             } else if (objects.isEmpty()) {
@@ -154,7 +153,7 @@ class GameEntityEditor(ui: EditorUi) :
     private fun ColumnScope.componentEditors(objects: List<GameEntity>) {
         val primary = objects[0]
         val componentTypes = buildSet {
-            primary.components.use()
+            primary.components
                 .filter { primary.isSceneChild || it !is TransformComponent }
                 .forEach { add(it.componentType) }
             for (i in 1 until objects.size) {

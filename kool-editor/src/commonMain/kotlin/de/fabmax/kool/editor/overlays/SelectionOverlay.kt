@@ -73,7 +73,6 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
                 updateOverlay = false
                 selectedMeshes.clear()
                 getSelectedSceneEntities().forEach { collectMeshes(it) }
-
                 launchDelayed(1) {
                     // delay disable by 1 frame, so that selectionPass clears its output
                     selectionPass.isEnabled = selectedMeshes.isNotEmpty()
