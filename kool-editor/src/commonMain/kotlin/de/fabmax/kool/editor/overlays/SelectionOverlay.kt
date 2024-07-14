@@ -307,8 +307,8 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     private data class SelectedInstance(val component: MeshComponent, val type: MeshSelectionType, val id: Int)
 
     private enum class MeshSelectionType(val mask: Int) {
-        PRIMARY(0),
-        CHILD(1)
+        PRIMARY(1),
+        CHILD(2)
     }
 
     private class SelectionOutlineShader(selectionMask: Texture2d?) :

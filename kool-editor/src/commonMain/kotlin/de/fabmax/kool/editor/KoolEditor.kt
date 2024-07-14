@@ -31,6 +31,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.time.measureTime
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
     val projDataDir = projectFiles.projectModelDir
@@ -143,8 +144,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         appLoader.reloadApp()
     }
 
-    suspend fun startApp() {
-        saveProject()
+    fun startApp() {
+        Assets.launch { saveProject() }
 
         val app = loadedApp.value?.app ?: return
         val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return
@@ -358,10 +359,14 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     suspend fun saveProject() {
-        ProjectWriter.saveProjectData(projectModel.projectData, projectFiles.projectModelDir)
-        // also save single file version
-        projectFiles.getProjectFileMonolithic().writeText(jsonCodec.encodeToString(projectModel.projectData))
-        logD { "Saved project model" }
+        val t1 = measureTime {
+            ProjectWriter.saveProjectData(projectModel.projectData, projectFiles.projectModelDir)
+        }
+        val t2 = measureTime {
+            // also save single file version
+            projectFiles.getProjectFileMonolithic().writeText(jsonCodec.encodeToString(projectModel.projectData))
+        }
+        logD { "Saved project model in $t1 / $t2" }
     }
 
     suspend fun exportProject() {

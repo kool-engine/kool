@@ -131,7 +131,6 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
                     }
                 } else if (evt.keyCode == KeyboardInput.KEY_BACKSPACE && evt.isPressed) {
                     overwriteStrValue = if (prevStr.isNotEmpty()) prevStr.substring(0 until prevStr.lastIndex) else null
-                    println(overwriteStrValue)
                 }
             }
         }

@@ -109,7 +109,7 @@ fun UiScope.appModeControlButtons() {
                 .onClick {
                     playButtonBg.clickAnimator.start()
                     if (AppState.isEditMode) {
-                        launchOnMainThread { KoolEditor.instance.startApp() }
+                        KoolEditor.instance.startApp()
                     } else {
                         KoolEditor.instance.stopApp()
                     }
