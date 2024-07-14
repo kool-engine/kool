@@ -75,7 +75,7 @@ class SceneBackgroundComponent(
     }
 
     private fun updateSkybox(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
-        val scene = sceneComponent.drawNode
+        val scene = sceneComponent.sceneNode
         scene.clearColor = null
         val skybox = this.skybox ?: Skybox.Cube()
 

@@ -20,7 +20,7 @@ class DeleteMaterialAction(
         users = proj.createdScenes.values.flatMap { user ->
             user.getAllComponents<MaterialReferenceComponent>().filter { it.isHoldingMaterial(material) }
         }
-        users.forEach { it.setPersistent(it.data.copy(materialId = EntityId(0L))) }
+        users.forEach { it.setPersistent(it.data.copy(materialId = EntityId.NULL)) }
         KoolEditor.instance.projectModel.removeMaterial(material)
     }
 

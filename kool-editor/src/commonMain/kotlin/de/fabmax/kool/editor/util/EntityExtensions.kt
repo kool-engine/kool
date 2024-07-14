@@ -16,7 +16,7 @@ val EntityId.gameEntity: GameEntity? get() {
             .find { this in it.sceneEntities }?.sceneEntities?.get(this)
             ?: proj.materialsById[this]?.gameEntity
     }
-    if (gameEntity == null && value > 0L) {
+    if (gameEntity == null && this != EntityId.NULL) {
         logE { "GameEntity with id $this not found" }
     }
     return gameEntity

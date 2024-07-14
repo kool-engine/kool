@@ -29,7 +29,6 @@ open class KslUnlitShader(cfg: UnlitShaderConfig) : KslShader("Unlit Shader") {
             main {
                 val viewProj = mat4Var(cameraData().viewProjMat)
                 val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                    inModelMat(modelMatrix().matrix)
                     inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
                 }
 

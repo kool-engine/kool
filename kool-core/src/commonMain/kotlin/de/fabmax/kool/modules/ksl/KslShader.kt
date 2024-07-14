@@ -1,8 +1,10 @@
 package de.fabmax.kool.modules.ksl
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
@@ -39,12 +41,18 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
      */
     fun findRequiredVertexAttributes(): Set<Attribute> {
         val vertexStage = program.vertexStage ?: return emptySet()
-        return vertexStage.attributes.values.map {
-            Attribute(it.name, it.expressionType.gpuType)
-        }.toSet()
+        return vertexStage.attributes.values
+            .filter { it.inputRate == KslInputRate.Vertex }
+            .map {
+                Attribute(it.name, it.expressionType.gpuType)
+            }.toSet()
     }
 
-    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawPipeline {
+    override fun createPipeline(
+        mesh: Mesh,
+        instances: MeshInstanceList?,
+        ctx: KoolContext
+    ): DrawPipeline {
         checkNotNull(program.vertexStage) {
             "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
         }
@@ -63,9 +71,9 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         return DrawPipeline(
             name = program.name,
             pipelineConfig = pipelineConfig,
-            vertexLayout = makeVertexLayout(mesh),
+            vertexLayout = makeVertexLayout(mesh, instances),
             bindGroupLayouts = program.makeBindGroupLayout(isComputePipeline = false),
-            shaderCodeGenerator = { updateEvent.ctx.backend.generateKslShader(this, it) }
+            shaderCodeGenerator = { ctx.backend.generateKslShader(this, it) }
         )
     }
 
@@ -79,11 +87,10 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         program.shaderListeners.forEach { it.onShaderCreated(this) }
     }
 
-    private fun makeVertexLayout(mesh: Mesh): VertexLayout {
+    private fun makeVertexLayout(mesh: Mesh, instances: MeshInstanceList?): VertexLayout {
         val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
 
         val verts = mesh.geometry
-        val insts = mesh.instances
         val vertLayoutAttribsF = mutableListOf<VertexLayout.VertexAttribute>()
         val vertLayoutAttribsI = mutableListOf<VertexLayout.VertexAttribute>()
         val instLayoutAttribs = mutableListOf<VertexLayout.VertexAttribute>()
@@ -103,12 +110,12 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         }
 
         val instanceAttribs = vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }
-        if (insts != null) {
+        if (instances != null) {
             instanceAttribs.forEach { instanceAttrib ->
-                val attrib = checkNotNull(insts.attributeOffsets.keys.find { it.name == instanceAttrib.name }) {
+                val attrib = checkNotNull(instances.attributeOffsets.keys.find { it.name == instanceAttrib.name }) {
                     "Mesh does not include required instance attribute: ${instanceAttrib.name}"
                 }
-                val off = insts.attributeOffsets[attrib]!!
+                val off = instances.attributeOffsets[attrib]!!
                 instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, off, attrib)
             }
         } else if (instanceAttribs.isNotEmpty()) {
@@ -131,12 +138,12 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
                     verts.byteStrideI
                 )
             }
-            if (insts != null) {
+            if (instances != null) {
                 this += VertexLayout.Binding(
                     iBinding,
                     InputRate.INSTANCE,
                     instLayoutAttribs,
-                    insts.strideBytesF
+                    instances.strideBytesF
                 )
             }
         }

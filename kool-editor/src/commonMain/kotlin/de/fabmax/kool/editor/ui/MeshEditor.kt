@@ -9,7 +9,6 @@ import de.fabmax.kool.editor.actions.SetMeshShapeAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
-import de.fabmax.kool.editor.components.toAssetReference
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
@@ -261,39 +260,39 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
 
         val modelShapes = components.map { it.data.shapes[0] as ShapeData.Model }
-        val allTheSameModel = modelShapes.all { it == modelShapes[0]}
-        val gltfState = remember(components[0].gltfFile)
-        surface.onEachFrame {
-            if (gltfState.value !== components[0].gltfFile) {
-                gltfState.set(components[0].gltfFile)
-            }
+        val allTheSameModel = modelShapes.all { it == modelShapes[0] }
+        val assetRef = modelShapes[0].toAssetRef()
+        val gltf = if (assetRef.path == null) null else {
+            (AppAssets.impl as CachedAppAssets).getModelMutableState(assetRef).use()
         }
-
-        val gltf = gltfState.use()
         if (allTheSameModel && gltf != null) {
-            val sceneOptions = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
-            val sceneChoices = ComboBoxItems(sceneOptions) { it.name }
-            choicePropertyEditor(
-                choices = sceneChoices,
-                dataGetter = { it.data.shapes[0] as ShapeData.Model },
-                valueGetter = { sceneOptions[it.sceneIndex] },
-                valueSetter = { oldData, newValue -> oldData.copy(sceneIndex = newValue.index) },
-                actionMapper = meshShapeActionMapper,
-                label = "Model scene:"
-            )
-
-            val animationOptions = listOf(noAnimation) + gltf.animations.mapIndexed { i, animation ->
-                AnimationOption(animation.name ?: "Animation $i", i)
+            if (gltf.scenes.size > 1) {
+                val sceneOptions = gltf.scenes.mapIndexed { i, scene -> SceneOption(scene.name ?: "Scene $i", i) }
+                val sceneChoices = ComboBoxItems(sceneOptions) { it.name }
+                choicePropertyEditor(
+                    choices = sceneChoices,
+                    dataGetter = { it.data.shapes[0] as ShapeData.Model },
+                    valueGetter = { sceneOptions[it.sceneIndex] },
+                    valueSetter = { oldData, newValue -> oldData.copy(sceneIndex = newValue.index) },
+                    actionMapper = meshShapeActionMapper,
+                    label = "Model scene:"
+                )
             }
-            val animationChoices = ComboBoxItems(animationOptions) { it.name }
-            choicePropertyEditor(
-                choices = animationChoices,
-                dataGetter = { it.data.shapes[0] as ShapeData.Model },
-                valueGetter = { animationOptions[it.animationIndex + 1] },
-                valueSetter = { oldData, newValue -> oldData.copy(animationIndex = newValue.index) },
-                actionMapper = meshShapeActionMapper,
-                label = "Animation:"
-            )
+
+            if (gltf.animations.isNotEmpty()) {
+                val animationOptions = listOf(noAnimation) + gltf.animations.mapIndexed { i, animation ->
+                    AnimationOption(animation.name ?: "Animation $i", i)
+                }
+                val animationChoices = ComboBoxItems(animationOptions) { it.name }
+                choicePropertyEditor(
+                    choices = animationChoices,
+                    dataGetter = { it.data.shapes[0] as ShapeData.Model },
+                    valueGetter = { animationOptions[it.animationIndex + 1] },
+                    valueSetter = { oldData, newValue -> oldData.copy(animationIndex = newValue.index) },
+                    actionMapper = meshShapeActionMapper,
+                    label = "Animation:"
+                )
+            }
         }
     }
 
@@ -302,16 +301,16 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         scopeName = "heightmapProperties"
     ) {
         val heightmaps = components.map { it.data.shapes[0] as ShapeData.Heightmap }
-        val mapPath = if (heightmaps.all { it.mapPath == heightmaps[0].mapPath }) heightmaps[0].mapPath else ""
+        val mapPath = if (heightmaps.all { it.mapPath == heightmaps[0].mapPath }) heightmaps[0].mapPath else null
         heightmapSelector(mapPath, true) {
             components.map { component ->
                 val hgt = component.data.shapes[0] as ShapeData.Heightmap
-                SetMeshShapeAction(component, hgt, hgt.copy(mapPath = it?.path ?: ""))
+                SetMeshShapeAction(component, hgt, hgt.copy(mapPath = it?.path))
             }.fused().apply()
         }
 
         val loaded = heightmaps.map {
-            (AppAssets.impl as CachedAppAssets).getHeightmapMutableState(it.toAssetReference()).use()
+            (AppAssets.impl as CachedAppAssets).getHeightmapMutableState(it.toAssetRef()).use()
         }
         val sizeX = condenseDouble(heightmaps.mapIndexed { i, heightmap ->
             val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS

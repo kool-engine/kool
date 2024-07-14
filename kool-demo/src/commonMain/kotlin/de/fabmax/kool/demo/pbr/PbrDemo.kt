@@ -41,8 +41,8 @@ class PbrDemo : DemoScene("PBR Materials") {
     private val selectedContent: PbrContent get() = pbrContent[selectedContentIdx.value]
     private val selectedLightSetup: LightSetup get() = lightSetups[selectedLightIdx.value]
 
-    private val isAutoRotate = mutableStateOf(true).onChange {
-        pbrContent.forEach { c -> c.autoRotate = it }
+    private val isAutoRotate = mutableStateOf(true).onChange { _, new ->
+        pbrContent.forEach { c -> c.autoRotate = new }
     }
 
     override fun lateInit(ctx: KoolContext) {

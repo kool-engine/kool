@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.vk.SwapChain
 import de.fabmax.kool.pipeline.backend.vk.VkRenderPass
 import de.fabmax.kool.pipeline.backend.vk.VkSystem
+import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.logD
 
 class PipelineManager(val sys: VkSystem) {
@@ -12,7 +13,7 @@ class PipelineManager(val sys: VkSystem) {
     private val onScreenPipelineConfigs = mutableSetOf<PipelineAndRenderPass>()
 
     private var swapChain: SwapChain? = null
-    private val createdPipelines = mutableMapOf<Long, CreatedPipeline>()
+    private val createdPipelines = mutableMapOf<LongHash, CreatedPipeline>()
 
     fun onSwapchainDestroyed() {
         swapChain = null

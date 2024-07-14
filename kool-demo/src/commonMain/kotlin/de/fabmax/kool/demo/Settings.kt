@@ -3,7 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KeyValueStore
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.Sizes
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logT
 
 /**
  * Object containing all demo related global settings.
@@ -39,9 +39,9 @@ object Settings {
     {
         init {
             settings += this
-            onChange {
-                KeyValueStore.storeString(key, "$it")
-                logD { "Stored $key: $it" }
+            onChange { _, new ->
+                KeyValueStore.storeString(key, "$new")
+                logT { "Stored $key: $new" }
             }
         }
 

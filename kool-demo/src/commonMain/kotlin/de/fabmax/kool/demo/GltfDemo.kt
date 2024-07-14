@@ -87,13 +87,17 @@ class GltfDemo : DemoScene("glTF Models") {
     private val animationSpeed = mutableStateOf(0.5f)
     private val isAutoRotate = mutableStateOf(true)
 
-    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(it, isAo.value) }
-    private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).onChange { setupPipelines(isDeferredShading.value, it) }
-    private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange {
-        deferredPipeline.isSsrEnabled = it
+    private val isDeferredShading: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
+        setupPipelines(new, isAo.value)
+    }
+    private val isAo: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
+        setupPipelines(isDeferredShading.value, new)
+    }
+    private val isSsr: MutableStateValue<Boolean> = mutableStateOf(true).onChange { _, new ->
+        deferredPipeline.isSsrEnabled = new
         setupPipelines(isDeferredShading.value, isAo.value)
     }
-    private val ssrMapSize = mutableStateOf(0.5f).onChange { deferredPipeline.reflectionMapSize = it }
+    private val ssrMapSize = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.reflectionMapSize = new }
 
     override fun lateInit(ctx: KoolContext) {
         currentModel.isVisible = true

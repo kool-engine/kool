@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MaterialComponentData
 import de.fabmax.kool.editor.data.MaterialShaderData
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logT
@@ -26,14 +27,17 @@ class MaterialComponent(
 
     private val listeners by cachedProjectComponents<ListenerComponent>()
 
-    suspend fun applyMaterialTo(gameEntity: GameEntity, mesh: Mesh): Boolean {
+    suspend fun applyMaterialTo(mesh: Mesh, scene: EditorScene, modelMats: List<ModelMatrixComposition>): Boolean {
         mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
-        val sceneShaderData = gameEntity.scene.shaderData
+        val sceneShaderData = scene.shaderData
 
-        val meshKey = MeshShaderKey(gameEntity, mesh)
+        val meshKey = MeshLayoutKey(mesh)
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
             logT { "Creating new material shader $name (for mesh: ${mesh.name})" }
-            data.createShader(sceneShaderData)
+            data.createShader(sceneShaderData, modelMats)
+        }
+        if (mesh.shader == shader) {
+            return true
         }
 
         if (shader is KslShader && shader.findRequiredVertexAttributes().any { it !in mesh.geometry.vertexAttributes }) {
@@ -73,7 +77,15 @@ class MaterialComponent(
         }
     }
 
+    companion object {
+        const val DEFAULT_MATERIAL_NAME = "<\\Default/>"
+    }
+
     fun interface ListenerComponent {
         suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData)
     }
+}
+
+fun MaterialComponent.isDefaultMaterial(): Boolean {
+    return name == MaterialComponent.DEFAULT_MATERIAL_NAME
 }

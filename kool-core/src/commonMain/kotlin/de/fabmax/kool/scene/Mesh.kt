@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.spatial.BoundingBoxF
@@ -86,8 +87,6 @@ open class Mesh(
     constructor(vararg attributes: Attribute, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
             this(IndexedVertexList(*attributes), instances = instances, name = name)
 
-    val id = instanceId++
-
     var isOpaque = true
 
     val meshPipelineData = PipelineData(BindGroupScope.MESH)
@@ -161,9 +160,12 @@ open class Mesh(
         }
     }
 
-    fun getOrCreatePipeline(updateEvent: RenderPass.UpdateEvent): DrawPipeline? {
+    fun getOrCreatePipeline(
+        ctx: KoolContext,
+        instances: MeshInstanceList? = this.instances
+    ): DrawPipeline? {
         return pipeline ?: shader?.let { s ->
-            s.getOrCreatePipeline(this, updateEvent).also { pipeline = it }
+            s.getOrCreatePipeline(this, ctx, instances).also { pipeline = it }
         }
     }
 
@@ -197,6 +199,7 @@ open class Mesh(
         if (!isReleased) {
             super.release()
             geometry.release()
+            instances?.release()
             meshPipelineData.release()
             shadowGeometry.forEach { it.release() }
             pipeline?.removeUser(this)
@@ -231,13 +234,9 @@ open class Mesh(
             rayTest.onMeshDataChanged(this)
         }
 
-        getOrCreatePipeline(updateEvent)?.let { pipeline ->
+        getOrCreatePipeline(updateEvent.ctx)?.let { pipeline ->
             updateEvent.view.drawQueue.addMesh(this, pipeline)
         }
-    }
-
-    companion object {
-        private var instanceId = 1
     }
 }
 

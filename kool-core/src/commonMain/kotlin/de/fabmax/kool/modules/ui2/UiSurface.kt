@@ -51,7 +51,7 @@ open class UiSurface(
     val onCompose = mutableListOf<() -> Unit>()
 
     var lastInputTime = 0.0
-    val isFocused = mutableStateOf(false).onChange { if (it) setFocusedSurface(this) }
+    val isFocused = mutableStateOf(false).onChange { _, new -> if (new) setFocusedSurface(this) }
 
     var colors: Colors by colorsState::value
     var sizes: Sizes by sizesState::value

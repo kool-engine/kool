@@ -194,7 +194,6 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
             vertexStage {
                 main {
                     val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                        inModelMat(modelMatrix().matrix)
                         inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
                         inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
 

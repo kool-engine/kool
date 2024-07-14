@@ -64,7 +64,7 @@ class ShadowMapComponent(
     private fun updateShadowMap(data: ShadowMapComponentData) {
         logD { "Update shadow map: ${data.shadowMap::class.simpleName}, near: $clipNear, far: $clipFar" }
 
-        val light = gameEntity.getComponent<DiscreteLightComponent>()?.drawNode
+        val light = gameEntity.getComponent<DiscreteLightComponent>()?.light
         if (light == null) {
             logE { "Unable to get DiscreteLightComponent of sceneNode ${gameEntity.name}" }
             return
@@ -77,14 +77,14 @@ class ShadowMapComponent(
         // create new shadow map
         val newShadowMap = when (data.shadowMap) {
             is ShadowMapTypeData.Single -> {
-                SimpleShadowMap(sceneComponent.drawNode, light, mapSize = data.shadowMap.mapInfo.mapSize).apply {
+                SimpleShadowMap(sceneComponent.sceneNode, light, mapSize = data.shadowMap.mapInfo.mapSize).apply {
                     this.clipNear = data.clipNear
                     this.clipFar = data.clipFar
                 }
             }
             is ShadowMapTypeData.Cascaded -> {
                 CascadedShadowMap(
-                    sceneComponent.drawNode,
+                    sceneComponent.sceneNode,
                     light,
                     data.clipFar,
                     data.shadowMap.mapInfos.size,
@@ -104,11 +104,10 @@ class ShadowMapComponent(
         val updateShadowMaps = gameEntity.scene.shaderData.shadowMaps.toMutableList()
         shadowMap?.let { updateShadowMaps -= it }
         replaceMap?.let { updateShadowMaps += it }
-
         gameEntity.scene.shaderData.shadowMaps = updateShadowMaps
 
         shadowMap?.let {
-            val scene = sceneComponent.drawNode
+            val scene = sceneComponent.sceneNode
             when (it) {
                 is SimpleShadowMap -> {
                     scene.removeOffscreenPass(it)

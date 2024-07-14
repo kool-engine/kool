@@ -1,8 +1,10 @@
 package de.fabmax.kool.editor.util
 
-import de.fabmax.kool.editor.actions.SetComponentDataAction
+import de.fabmax.kool.editor.actions.SetTransformAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.globalToLocalD
+import de.fabmax.kool.editor.components.localToGlobalD
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.data.Vec3Data
 import de.fabmax.kool.editor.data.Vec4Data
@@ -11,7 +13,7 @@ import de.fabmax.kool.math.MutableQuatD
 import de.fabmax.kool.math.MutableVec3d
 
 class SelectionTransform(nodeModels: List<GameEntity>) {
-    val selection: List<NodeTransformData>
+    val selection: List<EntityTransformData>
     val primaryTransformNode: GameEntity?
         get() = selection.getOrNull(0)?.gameEntity
 
@@ -20,7 +22,7 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
         selection = mutableListOf()
         nodeModelsSet
             .filter { it.hasNoParentIn(nodeModelsSet) }
-            .forEach { selection += NodeTransformData(it) }
+            .forEach { selection += EntityTransformData(it) }
     }
 
     fun startTransform() {
@@ -51,7 +53,7 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
         }
         val action = transformEntities.mapIndexed { i, gameEntity ->
             val data = gameEntity.transform.data
-            SetComponentDataAction(gameEntity.transform, data.copy(transform = undoTransforms[i]), data.copy(applyTransforms[i]))
+            SetTransformAction(gameEntity.transform, data.copy(transform = undoTransforms[i]), data.copy(applyTransforms[i]))
         }.fused()
 
         if (isUndoable) {
@@ -76,7 +78,7 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
         return true
     }
 
-    inner class NodeTransformData(val gameEntity: GameEntity) {
+    inner class EntityTransformData(val gameEntity: GameEntity) {
         private val poseInPrimaryFrame = MutableMat4d()
 
         val startPosition = MutableVec3d()
@@ -88,21 +90,21 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
         val currentScale = MutableVec3d()
 
         fun captureStart() {
-            gameEntity.drawNode.transform.decompose(startPosition, startRotation, startScale)
+            gameEntity.transform.transform.decompose(startPosition, startRotation, startScale)
 
             poseInPrimaryFrame.setIdentity()
             primaryTransformNode?.let { prim ->
-                poseInPrimaryFrame.set(prim.drawNode.invModelMatD).mul(gameEntity.drawNode.modelMatD)
+                poseInPrimaryFrame.set(prim.globalToLocalD).mul(gameEntity.localToGlobalD)
             }
         }
 
         fun captureCurrent() {
             if (gameEntity === primaryTransformNode) {
-                gameEntity.drawNode.transform.decompose(currentPosition, currentRotation, currentScale)
+                gameEntity.transform.transform.decompose(currentPosition, currentRotation, currentScale)
             } else {
                 primaryTransformNode?.let { prim ->
-                    val poseInGlobalFrame = MutableMat4d(prim.drawNode.modelMatD).mul(poseInPrimaryFrame)
-                    val poseInParentFrame = gameEntity.drawNode.parent?.invModelMatD?.let { globalToParent ->
+                    val poseInGlobalFrame = MutableMat4d(prim.localToGlobalD).mul(poseInPrimaryFrame)
+                    val poseInParentFrame = gameEntity.parent?.globalToLocalD?.let { globalToParent ->
                         MutableMat4d(globalToParent).mul(poseInGlobalFrame)
                     } ?: poseInGlobalFrame
                     poseInParentFrame.decompose(currentPosition, currentRotation, currentScale)
@@ -119,7 +121,6 @@ class SelectionTransform(nodeModels: List<GameEntity>) {
                 )
             )
             gameEntity.transform.setPersistent(restoreData)
-            gameEntity.drawNode.updateModelMat()
         }
     }
 }

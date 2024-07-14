@@ -8,13 +8,11 @@ import java.io.InputStream
 
 class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val entryPoint: String = "main") {
 
-    val hash = LongHash()
-
-    init {
-        hash += stage
-        hash += entryPoint
+    val hash = LongHash {
+        this += stage
+        this += entryPoint
         for (b in code) {
-            hash += b.toInt()
+            this += b.toInt()
         }
     }
 

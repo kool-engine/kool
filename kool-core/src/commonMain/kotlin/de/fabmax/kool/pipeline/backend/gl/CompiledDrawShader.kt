@@ -2,6 +2,8 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.NodeId
 import de.fabmax.kool.scene.geometry.PrimitiveType
 
 class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend: RenderBackendGl) :
@@ -29,7 +31,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     private val intAttrBinder: AttributeBinder?
     private val instanceAttrBinder: AttributeBinder?
 
-    private val users = mutableSetOf<Int>()
+    private val users = mutableSetOf<NodeId>()
 
     private var drawInfo = DrawInfo(pipeline.vertexLayout.primitiveType.glElemType, gl.UNSIGNED_INT, 0, false)
 
@@ -116,7 +118,13 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
             geom.indexBuffer.bind()
             geom.dataBufferF?.let { floatAttrBinder?.bindAttributes(it) }
             geom.dataBufferI?.let { intAttrBinder?.bindAttributes(it) }
-            geom.instanceBuffer?.let { instanceAttrBinder?.bindAttributes(it) }
+
+            cmd.instances?.let { insts ->
+                val gpuInsts = insts.getOrCreateGpuInstances(cmd)
+                gpuInsts.checkBuffers()
+                gpuInsts.instanceBuffer.let { instanceAttrBinder?.bindAttributes(it) }
+            }
+
         }
 
         return drawInfo
@@ -138,9 +146,16 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
 
     private fun getOrCreateGpuGeometry(cmd: DrawCommand): GpuGeometryGl {
         if (cmd.geometry.gpuGeometry == null) {
-            cmd.geometry.gpuGeometry = GpuGeometryGl(cmd.geometry, cmd.mesh.instances, backend, BufferCreationInfo(cmd))
+            cmd.geometry.gpuGeometry = GpuGeometryGl(cmd.geometry, backend, BufferCreationInfo(cmd))
         }
         return cmd.geometry.gpuGeometry as GpuGeometryGl
+    }
+
+    private fun MeshInstanceList.getOrCreateGpuInstances(cmd: DrawCommand): GpuInstancesGl {
+        if (gpuInstances == null) {
+            gpuInstances = GpuInstancesGl(this, backend, BufferCreationInfo(cmd))
+        }
+        return gpuInstances as GpuInstancesGl
     }
 
     private val PrimitiveType.glElemType: Int get() = when (this) {

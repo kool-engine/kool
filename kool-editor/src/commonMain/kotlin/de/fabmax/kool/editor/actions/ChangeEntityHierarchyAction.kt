@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.actions
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.util.gameEntity
+import de.fabmax.kool.util.launchOnMainThread
 
 class ChangeEntityHierarchyAction(
     moveNodeModels: List<GameEntity>,
@@ -29,35 +29,33 @@ class ChangeEntityHierarchyAction(
     }
 
     override fun doAction() {
-        val newParent = newParentId.gameEntity ?: return
-        var insertionPos = this.insertionPos
+        launchOnMainThread {
+            var insertionPos = this.insertionPos
+            gameEntities.forEach { gameEntity ->
+                gameEntity.scene.removeGameEntity(gameEntity)
 
-        gameEntities.forEach { nodeModel ->
-            undoInfos[nodeModel.id]?.let { undoInfo ->
-                val oldParent = undoInfo.parent.gameEntity
-                if (oldParent != null) {
-                    oldParent.removeChild(nodeModel)
-                    newParent.addChild(nodeModel, insertionPos)
-                    insertionPos = GameEntity.InsertionPos.After(nodeModel.id)
-                }
+                val entityData = gameEntity.entityData
+                entityData.parentId = newParentId
+                gameEntity.scene.addGameEntity(entityData, insertionPos)
+                insertionPos = GameEntity.InsertionPos.After(gameEntity.id)
             }
+            KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
-        KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
     override fun undoAction() {
-        val oldParent = newParentId.gameEntity ?: return
+        launchOnMainThread {
+            gameEntities.forEach { gameEntity ->
+                undoInfos[gameEntity.id]?.let { undoInfo ->
+                    gameEntity.scene.removeGameEntity(gameEntity)
 
-        gameEntities.forEach { nodeModel ->
-            undoInfos[nodeModel.id]?.let { undoInfo ->
-                val newParent = undoInfo.parent.gameEntity
-                if (newParent != null) {
-                    oldParent.removeChild(nodeModel)
-                    newParent.addChild(nodeModel, undoInfo.insertionPos)
+                    val entityData = gameEntity.entityData
+                    entityData.parentId = undoInfo.parent
+                    gameEntity.scene.addGameEntity(entityData, undoInfo.insertionPos)
                 }
             }
+            KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
-        KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
     }
 
     private class UndoInfo(val parent: EntityId, val insertionPos: GameEntity.InsertionPos)

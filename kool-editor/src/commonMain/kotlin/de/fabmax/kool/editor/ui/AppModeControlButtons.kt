@@ -18,10 +18,10 @@ fun UiScope.appModeControlButtons() {
     Box(width = btnExtent * 2 + btnSzOuter, height = btnSzCenter) {
         val playStopAnimator = remember {
             AnimatedFloatBidir(0.2f).apply {
-                AppState.appModeState.onChange {
-                    if (it == AppMode.EDIT) {
+                AppState.appModeState.onChange { _, new ->
+                    if (new == AppMode.EDIT) {
                         start(0f)
-                    } else if (it == AppMode.PLAY) {
+                    } else if (new == AppMode.PLAY) {
                         start(1f)
                     }
                 }
@@ -29,10 +29,10 @@ fun UiScope.appModeControlButtons() {
         }
         val playPauseAnimator = remember {
             AnimatedFloatBidir(0.2f).apply {
-                AppState.appModeState.onChange {
-                    if (it == AppMode.PLAY) {
+                AppState.appModeState.onChange { _, new ->
+                    if (new == AppMode.PLAY) {
                         start(0f)
-                    } else if (it == AppMode.PAUSE) {
+                    } else if (new == AppMode.PAUSE) {
                         start(1f)
                     }
                 }
@@ -109,7 +109,7 @@ fun UiScope.appModeControlButtons() {
                 .onClick {
                     playButtonBg.clickAnimator.start()
                     if (AppState.isEditMode) {
-                        launchOnMainThread { KoolEditor.instance.startApp() }
+                        KoolEditor.instance.startApp()
                     } else {
                         KoolEditor.instance.stopApp()
                     }

@@ -17,7 +17,7 @@ import de.fabmax.kool.util.launchDelayed
 
 class UiDemo : DemoScene("UI Demo") {
 
-    val selectedColors = mutableStateOf(Colors.darkColors()).onChange { dock.dockingSurface.colors = it }
+    val selectedColors = mutableStateOf(Colors.darkColors()).onChange { _, new -> dock.dockingSurface.colors = new }
     val selectedUiSize = mutableStateOf(Sizes.medium)
 
     val dock = Dock()

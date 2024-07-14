@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.EditorEditMode
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.overlays.GizmoClientEntity
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_ACCURATE
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_NORMAL
@@ -130,7 +131,6 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
                     }
                 } else if (evt.keyCode == KeyboardInput.KEY_BACKSPACE && evt.isPressed) {
                     overwriteStrValue = if (prevStr.isNotEmpty()) prevStr.substring(0 until prevStr.lastIndex) else null
-                    println(overwriteStrValue)
                 }
             }
         }
@@ -179,9 +179,8 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             else -> opCamPlaneTranslate
         }
 
-        selectionTransform = SelectionTransform(editor.selectionOverlay.getSelectedSceneNodes())
-        val primNode = selectionTransform?.primaryTransformNode
-        primNode?.let { updateGizmoFromClient(it.drawNode) }
+        selectionTransform = SelectionTransform(editor.selectionOverlay.getSelectedSceneEntities())
+        selectionTransform?.primaryTransformNode?.let { updateGizmoFromClient(GizmoClientEntity(it)) }
         selectionTransform?.startTransform()
         overwriteStrValue = null
 
@@ -212,35 +211,34 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         inputHandler.pop()
     }
 
-    private fun updateGizmoFromClient(client: Node) {
-        clientGlobalToParent.set(client.parent?.invModelMatD ?: Mat4d.IDENTITY)
-        clientTransformOffset.setIdentity()
-
-        val translation = client.modelMatD.transform(MutableVec3d(), 1.0)
+    private fun updateGizmoFromClient(client: GizmoClient) {
+        val translation = client.localToGlobal.transform(MutableVec3d(), 1.0)
         val rotation = MutableQuatD(QuatD.IDENTITY)
+
+        clientGlobalToParent.set(client.globalToParent)
+        clientTransformOffset.setIdentity()
 
         when (editor.gizmoOverlay.transformFrame.value) {
             GizmoFrame.LOCAL -> {
-                client.modelMatD.decompose(rotation = rotation)
-                gizmo.gizmoTransform.setCompositionOf(translation, rotation)
                 val localScale = MutableVec3d()
-                client.modelMatD.decompose(scale = localScale)
+                client.localToGlobal.decompose(rotation = rotation, scale = localScale)
+                gizmo.gizmoTransform.setCompositionOf(translation, rotation)
                 clientTransformOffset.scale(localScale)
             }
             GizmoFrame.PARENT -> {
-                client.parent?.modelMatD?.decompose(rotation = rotation)
+                client.parentToGlobal.decompose(rotation = rotation)
                 gizmo.gizmoTransform.setCompositionOf(translation, rotation)
                 val localRotation = MutableQuatD()
                 val localScale = MutableVec3d()
-                client.transform.decompose(rotation = localRotation)
-                client.modelMatD.decompose(scale = localScale)
+                client.clientTransform.decompose(rotation = localRotation)
+                client.localToGlobal.decompose(scale = localScale)
                 clientTransformOffset.rotate(localRotation).scale(localScale)
             }
             GizmoFrame.GLOBAL -> {
                 gizmo.gizmoTransform.setCompositionOf(translation)
                 val localRotation = MutableQuatD()
                 val localScale = MutableVec3d()
-                client.modelMatD.decompose(rotation = localRotation, scale = localScale)
+                client.localToGlobal.decompose(rotation = localRotation, scale = localScale)
                 clientTransformOffset.rotate(localRotation).scale(localScale)
             }
         }
@@ -249,13 +247,13 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
     }
 
     private fun updateFromGizmo(transform: TrsTransformD) {
-        val client = selectionTransform?.primaryTransformNode?.drawNode ?: return
+        val client = selectionTransform?.primaryTransformNode ?: return
 
         val localTransform = MutableMat4d().set(Mat4d.IDENTITY)
             .mul(clientGlobalToParent)
             .mul(transform.matrixD)
             .mul(clientTransformOffset)
-        client.transform.setMatrix(localTransform)
+        client.transform.transform.setMatrix(localTransform)
         gizmoLabel.updateLabel(translationOverlay, rotationOverlay, scaleOverlay)
     }
 
@@ -370,8 +368,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         dragCtxStart?.cancelManipulation()
         selectionTransform?.let { st ->
             st.restoreInitialTransform()
-            val primNode = st.primaryTransformNode
-            primNode?.let { updateGizmoFromClient(it.drawNode) }
+            st.primaryTransformNode?.let { updateGizmoFromClient(GizmoClientEntity(it)) }
         }
     }
 

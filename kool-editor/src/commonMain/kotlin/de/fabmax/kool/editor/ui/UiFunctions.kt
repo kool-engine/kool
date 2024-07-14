@@ -795,18 +795,18 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
 }
 
 fun UiScope.heightmapSelector(
-    selectedHeightmapPath: String,
+    selectedHeightmapPath: String?,
     withNoneOption: Boolean,
     onSelect: (AssetItem?) -> Unit
 ) {
-    val textures = mutableListOf<AssetOption>()
+    val heightmaps = mutableListOf<AssetOption>()
     if (withNoneOption) {
-        textures += AssetOption("None", null)
+        heightmaps += AssetOption("None", null)
     }
-    textures += KoolEditor.instance.availableAssets.heightmapAssets.map { AssetOption(it.name, it) }
-    val selectedIndex = textures.indexOfFirst { selectedHeightmapPath == it.assetItem?.path }
+    heightmaps += KoolEditor.instance.availableAssets.heightmapAssets.map { AssetOption(it.name, it) }
+    val selectedIndex = heightmaps.indexOfFirst { selectedHeightmapPath == it.assetItem?.path }
 
-    labeledCombobox("Heightmap:", textures, selectedIndex) {
+    labeledCombobox("Heightmap:", heightmaps, selectedIndex) {
         onSelect(it.assetItem)
     }
 }

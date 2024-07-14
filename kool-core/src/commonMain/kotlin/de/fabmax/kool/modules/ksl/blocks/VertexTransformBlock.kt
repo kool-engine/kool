@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ksl.blocks
 
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
+import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 
@@ -11,8 +13,7 @@ fun KslScopeBuilder.vertexTransformBlock(cfg: BasicVertexConfig, block: VertexTr
     return vertexBlock
 }
 
-class VertexTransformBlock(cfg: BasicVertexConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
-    val inModelMat = inMat4()
+class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
     val inLocalPos = inFloat3()
     val inLocalNormal = inFloat3(defaultValue = KslValueFloat3(0f, 0f, 0f))
     val inLocalTangent = inFloat4(defaultValue = KslValueFloat4(0f, 0f, 0f, 0f))
@@ -26,14 +27,24 @@ class VertexTransformBlock(cfg: BasicVertexConfig, name: String, parentScope: Ks
         body.apply {
             val stage = parentStage as? KslVertexStage ?: throw IllegalStateException("VertexTransformBlock is only allowed in vertex stage")
 
-            outModelMat set inModelMat
             val localPos = float3Var(inLocalPos)
             val localNormal = float3Var(inLocalNormal)
             val localTangent = float4Var(inLocalTangent)
 
-            if (cfg.isInstanced) {
-                val instanceModelMat = stage.instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
-                outModelMat *= instanceModelMat
+            if (cfg.modelMatrixComposition.isEmpty()) {
+                outModelMat set mat4Value(Vec4f.X_AXIS.const, Vec4f.Y_AXIS.const, Vec4f.Z_AXIS.const, Vec4f.W_AXIS.const)
+            } else {
+                cfg.modelMatrixComposition.forEachIndexed { i, mat ->
+                    val srcMat = when (mat) {
+                        ModelMatrixComposition.UNIFORM_MODEL_MAT -> parentStage.program.modelMatrix().matrix
+                        ModelMatrixComposition.INSTANCE_MODEL_MAT -> stage.instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
+                    }
+                    if (i == 0) {
+                        outModelMat set srcMat
+                    } else {
+                        outModelMat *= srcMat
+                    }
+                }
             }
 
             if (cfg.isArmature) {

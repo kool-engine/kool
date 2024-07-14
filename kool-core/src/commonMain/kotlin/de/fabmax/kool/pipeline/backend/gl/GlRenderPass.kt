@@ -93,7 +93,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                 if (isValid) {
                     GlState.setupPipelineAttribs(cmd.pipeline, view.renderPass.isReverseDepth, gl)
 
-                    val insts = cmd.mesh.instances
+                    val insts = cmd.instances
                     if (insts == null) {
                         gl.drawElements(drawInfo.primitiveType, drawInfo.numIndices, drawInfo.indexType)
                         BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)

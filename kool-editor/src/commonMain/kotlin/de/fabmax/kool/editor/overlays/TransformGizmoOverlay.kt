@@ -3,6 +3,8 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.globalToLocalD
+import de.fabmax.kool.editor.components.localToGlobalD
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_ACCURATE
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_NORMAL
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_NO_TICK
@@ -18,11 +20,13 @@ import de.fabmax.kool.editor.util.SelectionTransform
 import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.input.PointerInput
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.gizmo.*
 import de.fabmax.kool.modules.ui2.Dp
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.toString
 
@@ -33,12 +37,8 @@ class TransformGizmoOverlay(val editor: KoolEditor) : Node("Transform gizmo") {
     private var selectionTransform: SelectionTransform? = null
 
     private var hasTransformAuthority = false
-    val isTransformDrag: Boolean get() = hasTransformAuthority
 
-    val transformFrame = mutableStateOf(gizmo.transformFrame).onChange {
-        gizmo.transformFrame = it
-    }
-
+    val transformFrame = mutableStateOf(gizmo.transformFrame).onChange { _, new -> gizmo.transformFrame = new }
     var transformMode: GizmoMode by gizmo::mode
 
     private val cancelListener = EditorKeyListener.cancelListener("Object transform") {
@@ -109,7 +109,7 @@ class TransformGizmoOverlay(val editor: KoolEditor) : Node("Transform gizmo") {
 
         val prim = selectionTransform?.primaryTransformNode
         if (prim != null) {
-            gizmo.transformNode = prim.drawNode
+            gizmo.setTransformEntity(prim)
             gizmo.isVisible = true
         } else {
             gizmo.isVisible = false
@@ -130,6 +130,21 @@ class TransformGizmoOverlay(val editor: KoolEditor) : Node("Transform gizmo") {
         const val TICK_ROTATION_MINOR = 1.0
         const val TICK_SCALE_MINOR = 0.01
     }
+}
+
+class GizmoClientEntity(val gameEntity: GameEntity) : GizmoClient {
+    override val clientTransform: Transform get() = gameEntity.transform.transform
+    override val localToGlobal: Mat4d get() = gameEntity.localToGlobalD
+    override val parentToGlobal: Mat4d get() = gameEntity.parent?.localToGlobalD ?: Mat4d.IDENTITY
+    override val globalToParent: Mat4d get() = gameEntity.parent?.globalToLocalD ?: Mat4d.IDENTITY
+
+    override fun updateMatrices() {
+        gameEntity.transform.updateTransformRecursive()
+    }
+}
+
+fun SimpleGizmo.setTransformEntity(gameEntity: GameEntity) {
+    transformClient = GizmoClientEntity(gameEntity)
 }
 
 fun GizmoNode.applySpeedAndTickRate() {

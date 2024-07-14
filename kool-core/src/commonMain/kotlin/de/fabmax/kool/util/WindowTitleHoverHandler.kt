@@ -1,22 +1,15 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.math.MutableVec2i
-import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.modules.ui2.UiNode
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.mutableStateOf
 
 open class WindowTitleHoverHandler {
-    val titleBarPos = MutableVec2i()
-    val titleBarSize = MutableVec2i()
-
-    val minButtonPos = MutableVec2i()
-    val minButtonSize = MutableVec2i()
-
-    val maxButtonPos = MutableVec2i()
-    val maxButtonSize = MutableVec2i()
-
-    val closeButtonPos = MutableVec2i()
-    val closeButtonSize = MutableVec2i()
+    val minButtonBounds = HitBounds()
+    val maxButtonBounds = HitBounds()
+    val closeButtonBounds = HitBounds()
+    val titleBarBounds = HitBounds()
+    val titleBarExcludeBounds = mutableListOf<HitBounds>()
 
     val isTitleBarHovered = mutableStateOf(false)
     val isMinButtonHovered = mutableStateOf(false)
@@ -30,31 +23,24 @@ open class WindowTitleHoverHandler {
     var onClickMaximize: (() -> Unit)? = null
     var onClickClose: (() -> Unit)? = null
 
-    fun setMaxButtonBounds(button: UiScope) {
-        maxButtonPos.set(button.uiNode.leftPx.toInt(), button.uiNode.topPx.toInt())
-        maxButtonSize.set(button.uiNode.widthPx.toInt(), button.uiNode.heightPx.toInt())
-    }
-
-    fun setMinButtonBounds(button: UiScope) {
-        minButtonPos.set(button.uiNode.leftPx.toInt(), button.uiNode.topPx.toInt())
-        minButtonSize.set(button.uiNode.widthPx.toInt(), button.uiNode.heightPx.toInt())
-    }
-
-    fun setCloseButtonBounds(button: UiScope) {
-        closeButtonPos.set(button.uiNode.leftPx.toInt(), button.uiNode.topPx.toInt())
-        closeButtonSize.set(button.uiNode.widthPx.toInt(), button.uiNode.heightPx.toInt())
-    }
-
-    fun setTitleBarBounds(button: UiScope) {
-        titleBarPos.set(button.uiNode.leftPx.toInt(), button.uiNode.topPx.toInt())
-        titleBarSize.set(button.uiNode.widthPx.toInt(), button.uiNode.heightPx.toInt())
-    }
+    fun setTitleBarBounds(uiScope: UiScope) = titleBarBounds.set(uiScope.uiNode)
+    fun setMinButtonBounds(uiScope: UiScope) = minButtonBounds.set(uiScope.uiNode)
+    fun setMaxButtonBounds(uiScope: UiScope) = maxButtonBounds.set(uiScope.uiNode)
+    fun setCloseButtonBounds(uiScope: UiScope) = closeButtonBounds.set(uiScope.uiNode)
 
     open fun checkHover(x: Int, y: Int): HoverState {
-        isMinButtonHovered.set(isInBounds(x, y, minButtonPos, minButtonSize))
-        isMaxButtonHovered.set(isInBounds(x, y, maxButtonPos, maxButtonSize))
-        isCloseButtonHovered.set(isInBounds(x, y, closeButtonPos, closeButtonSize))
-        isTitleBarHovered.set(isInBounds(x, y, titleBarPos, titleBarSize))
+        isMinButtonHovered.set(minButtonBounds.contains(x, y))
+        isMaxButtonHovered.set(maxButtonBounds.contains(x, y))
+        isCloseButtonHovered.set(closeButtonBounds.contains(x, y))
+
+        var isTitleHovered = titleBarBounds.contains(x, y)
+        if (isTitleHovered) {
+            for (i in titleBarExcludeBounds.indices) {
+                isTitleHovered = isTitleHovered && !titleBarExcludeBounds[i].contains(x, y)
+            }
+        }
+        isTitleBarHovered.set(isTitleHovered)
+
         hoverState = when {
             isMinButtonHovered.value -> HoverState.MIN_BUTTON
             isMaxButtonHovered.value -> HoverState.MAX_BUTTON
@@ -82,8 +68,22 @@ open class WindowTitleHoverHandler {
         }
     }
 
-    private fun isInBounds(x: Int, y: Int, pos: Vec2i, size: Vec2i): Boolean {
-        return x >= pos.x && x < pos.x + size.x && y >= pos.y && y < pos.y + size.y
+    class HitBounds {
+        var left: Int = 0
+        var right: Int = 0
+        var top: Int = 0
+        var bottom: Int = 0
+
+        fun set(uiNode: UiNode) {
+            left = uiNode.leftPx.toInt()
+            right = uiNode.rightPx.toInt()
+            top = uiNode.topPx.toInt()
+            bottom = uiNode.bottomPx.toInt()
+        }
+
+        fun contains(x: Int, y: Int): Boolean {
+            return x >= left && x < right && y >= top && y < bottom
+        }
     }
 
     enum class HoverState {

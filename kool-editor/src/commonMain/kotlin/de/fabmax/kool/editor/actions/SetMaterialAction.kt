@@ -9,8 +9,8 @@ class SetMaterialAction(
     applyMaterial: MaterialComponent?,
 ) : ComponentAction<MaterialReferenceComponent>(component.gameEntity.id, MaterialReferenceComponent::class) {
 
-    private val applyMaterialId = applyMaterial?.id ?: EntityId(0L)
-    private val undoMaterialId = component.material?.id ?: EntityId(0L)
+    private val applyMaterialId = applyMaterial?.id ?: EntityId.NULL
+    private val undoMaterialId = component.material?.id ?: EntityId.NULL
 
     override fun doAction() {
         component?.let { it.setPersistent(it.data.copy(materialId = applyMaterialId)) }

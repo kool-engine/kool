@@ -24,17 +24,17 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
     private var vertexDisplacedContent: Mesh? = null
     private var parallaxContent: Mesh? = null
 
-    private val useParallaxMapping = mutableStateOf(true).onChange {
-        parallaxContent?.isVisible = it
-        vertexDisplacedContent?.isVisible = !it
+    private val useParallaxMapping = mutableStateOf(true).onChange { _, new ->
+        parallaxContent?.isVisible = new
+        vertexDisplacedContent?.isVisible = !new
     }
     private val selectedMatIdx = mutableStateOf(3)
     private val loadedMaterials = Array<MaterialMaps?>(materialLoaders.size) { null }
 
-    private val displacement = mutableStateOf(0.35f).onChange { disp ->
+    private val displacement = mutableStateOf(0.35f).onChange { _, new ->
         shaders.forEach {
-            it.parallaxStrength = disp
-            it.vertexDisplacementStrength = disp
+            it.parallaxStrength = new
+            it.vertexDisplacementStrength = new
         }
     }
 

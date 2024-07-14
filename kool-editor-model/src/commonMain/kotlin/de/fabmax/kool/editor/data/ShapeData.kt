@@ -1,12 +1,21 @@
 package de.fabmax.kool.editor.data
 
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.util.MdColor
 import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface ShapeData {
-
     val name: String
+    val isPrimitiveShape: Boolean
+        get() = when (this) {
+            is Box -> true
+            is Capsule -> true
+            is Cylinder -> true
+            is Rect -> true
+            is Sphere -> true
+            else -> false
+        }
 
     @Serializable
     data class Box(
@@ -27,7 +36,6 @@ sealed interface ShapeData {
         val uvScale: Vec2Data = Vec2Data(1.0, 1.0),
         val color: ColorData = ColorData(MdColor.GREY),
     ) : ShapeData {
-
         override val name: String get() = "Sphere"
     }
 
@@ -68,23 +76,27 @@ sealed interface ShapeData {
 
     @Serializable
     data class Model(
-        val modelPath: String = "",
+        val modelPath: String? = null,
         val sceneIndex: Int = 0,
         val animationIndex: Int = -1,
-    ) : ShapeData {
+    ) : ShapeData, AssetBased {
         override val name: String get() = "Model"
+
+        override fun toAssetRef() = AssetReference.Model(modelPath)
     }
 
     @Serializable
     data class Heightmap(
-        val mapPath: String = "",
+        val mapPath: String? = null,
         val heightOffset: Double = 0.0,
         val heightScale: Double = 100.0,
         val rowScale: Double = 1.0,
         val colScale: Double = 1.0,
         val uvScale: Vec2Data = Vec2Data(1.0, 1.0),
-    ) : ShapeData {
+    ) : ShapeData, AssetBased {
         override val name: String get() = "Heightmap"
+
+        override fun toAssetRef() = AssetReference.Heightmap(mapPath, heightScale.toFloat(), heightOffset.toFloat())
     }
 
     @Serializable
@@ -105,5 +117,9 @@ sealed interface ShapeData {
         val defaultCapsule = Capsule()
         val defaultModel = Model()
         val defaultHeightmap = Heightmap()
+    }
+
+    interface AssetBased {
+        fun toAssetRef(): AssetReference
     }
 }

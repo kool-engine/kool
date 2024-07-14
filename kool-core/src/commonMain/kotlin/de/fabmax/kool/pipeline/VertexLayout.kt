@@ -5,12 +5,11 @@ import de.fabmax.kool.util.LongHash
 
 class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType) {
 
-    val hash: Long = LongHash().let {
-        it += primitiveType
+    val hash: LongHash = LongHash {
+        this += primitiveType
         bindings.forEach { b ->
-            it += b.hash
+            this += b.hash
         }
-        it.hash
     }
 
     data class Binding(
@@ -19,14 +18,13 @@ class VertexLayout(val bindings: List<Binding>, val primitiveType: PrimitiveType
         val vertexAttributes: List<VertexAttribute>,
         val strideBytes: Int = vertexAttributes.sumOf { it.attribute.type.byteSize }
     ) {
-        val hash: Long = LongHash().let {
-            it += binding
-            it += inputRate
-            it += strideBytes
+        val hash: LongHash = LongHash {
+            this += binding
+            this += inputRate
+            this += strideBytes
             vertexAttributes.forEach { attr ->
-                it += attr.hashCode()
+                this += attr.hashCode()
             }
-            it.hash
         }
     }
 

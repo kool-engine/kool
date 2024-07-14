@@ -61,7 +61,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         if (!isTreeValid.use()) {
             treeItems.clear()
             editor.projectModel.createdScenes.values.forEach { sceneModel ->
-                treeItems.appendNode(sceneModel, sceneModel.scene, sceneModel.sceneEntity, 0)
+                treeItems.appendNode(sceneModel, sceneModel.sceneEntity, 0)
             }
             isTreeValid.set(true)
         }
@@ -74,9 +74,6 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             val itemPopupMenu = remember { ContextPopupMenu<GameEntity?>("scene-item-popup") }
 
             itemsIndexed(treeItems) { i, item ->
-                if (item.type != SceneObjectType.NON_MODEL_NODE && item.node != item.gameEntity.drawNode) {
-                    refreshSceneTree()
-                }
                 sceneObjectItem(item, hoveredIndex == i).apply {
                     modifier
                         .onEnter { hoveredIndex = i }
@@ -273,46 +270,25 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         }
     }
 
-    private fun MutableList<SceneObjectItem>.appendNode(scene: EditorScene, node: Node, selectEntity: GameEntity, depth: Int) {
-        // todo: clean this up: non-entity nodes are no longer added to the tree...
-        // get entity for node, this should be equal to [selectEntity] for regular objects but can be null if node
-        // does not correspond to a GameEntity item (e.g. child meshes of a gltf model)
-        val entity = scene.nodesToEntities[node] ?: return
-
-        val item = modelTreeItemMap.getOrPut(entity) { SceneObjectItem(node, entity) }
-        modelTreeItemMap[entity.parent]?.isExpandable = true
-
-        // update item node, it can change when model / app is reloaded
-        item.node = node
-        item.depth = depth
+    private fun MutableList<SceneObjectItem>.appendNode(scene: EditorScene, selectEntity: GameEntity, depth: Int) {
+        val item = modelTreeItemMap.getOrPut(selectEntity) { SceneObjectItem(selectEntity, depth) }
+        modelTreeItemMap[selectEntity.parent]?.isExpandable = true
 
         add(item)
         if (item.isExpanded.value) {
-            node.children.forEach {
-                if (!it.tags.hasTag(KoolEditor.TAG_EDITOR_SUPPORT_CONTENT)) {
-                    val childNodeModel = scene.nodesToEntities[it]
-                    appendNode(scene, it, childNodeModel ?: selectEntity, depth + 1)
-                }
+            selectEntity.children.forEach { child ->
+                appendNode(scene, child, depth + 1)
             }
         }
     }
 
     private inner class SceneObjectItem(
-        node: Node,
         val gameEntity: GameEntity,
+        val depth: Int,
         val forcedType: SceneObjectType? = null
     ) {
-        var depth = 0
-        var node: Node = node
-            set(value) {
-                field = value
-                type = getNodeType()
-            }
-
-        val name: String get() = node.name
-
+        val name: String get() = gameEntity.name
         var type: SceneObjectType = getNodeType()
-
         var isExpandable = false
         val isExpanded = mutableStateOf(type.startExpanded)
 
@@ -325,15 +301,13 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 return SceneObjectType.SCENE
             }
 
-            return when (gameEntity.getComponent<DrawNodeComponent>()) {
-                is MeshComponent -> SceneObjectType.MESH
-                is DiscreteLightComponent -> SceneObjectType.LIGHT
-                is CameraComponent -> SceneObjectType.CAMERA
-                else -> when {
-                    gameEntity.hasComponent<CharacterControllerComponent>() -> SceneObjectType.PHYSICS_CHARACTER
-                    gameEntity.hasComponent<PhysicsComponent<*>>() -> SceneObjectType.PHYSICS
-                    else -> SceneObjectType.GROUP
-                }
+            return when {
+                gameEntity.hasComponent<MeshComponent>() -> SceneObjectType.MESH
+                gameEntity.hasComponent<DiscreteLightComponent>() -> SceneObjectType.LIGHT
+                gameEntity.hasComponent<CameraComponent>() -> SceneObjectType.CAMERA
+                gameEntity.hasComponent<CharacterControllerComponent>() -> SceneObjectType.PHYSICS_CHARACTER
+                gameEntity.hasComponent<PhysicsComponent<*>>() -> SceneObjectType.PHYSICS
+                else -> SceneObjectType.GROUP
             }
         }
 

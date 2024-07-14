@@ -324,19 +324,19 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         val furShader = FurShader(uvBased)
 
         val shells = MeshInstanceList(128, Attribute.INSTANCE_MODEL_MAT, ATTRIB_SHELL)
-        val numShells = mutableStateOf(initShells).onChange { makeShells() }
+        val numShells = mutableStateOf(initShells).onChange { _, _ -> makeShells() }
 
-        val theme = mutableStateOf<ColorTheme?>(null).onChange { furShader.furGradient = it?.texture }
-        val density = mutableStateOf(density).onChange { furShader.density = it }
-        val hairLength = mutableStateOf(hairLength).onChange { furShader.hairLength = it }
-        val hairThickness = mutableStateOf(hairThickness).onChange { furShader.hairThickness = it }
-        val hairRandomness = mutableStateOf(furShader.hairRandomness).onChange { furShader.hairRandomness = it }
-        val curliness = mutableStateOf(0f).onChange { makeShells() }
+        val theme = mutableStateOf<ColorTheme?>(null).onChange { _, new -> furShader.furGradient = new?.texture }
+        val density = mutableStateOf(density).onChange { _, new -> furShader.density = new }
+        val hairLength = mutableStateOf(hairLength).onChange { _, new -> furShader.hairLength = new }
+        val hairThickness = mutableStateOf(hairThickness).onChange { _, new -> furShader.hairThickness = new }
+        val hairRandomness = mutableStateOf(furShader.hairRandomness).onChange { _, new -> furShader.hairRandomness = new }
+        val curliness = mutableStateOf(0f).onChange { _, _ -> makeShells() }
 
-        val dispScale = mutableStateOf(dispScale).onChange { furShader.noiseDispScale = it }
-        val dispStrength = mutableStateOf(dispStrength).onChange { furShader.noiseDispStrength = it }
-        val lenScale = mutableStateOf(lengthScale).onChange { furShader.noiseLenScale = it }
-        val lenStrength = mutableStateOf(lengthStrength).onChange { furShader.noiseLenStrength = it }
+        val dispScale = mutableStateOf(dispScale).onChange { _, new -> furShader.noiseDispScale = new }
+        val dispStrength = mutableStateOf(dispStrength).onChange { _, new -> furShader.noiseDispStrength = new }
+        val lenScale = mutableStateOf(lengthScale).onChange { _, new -> furShader.noiseLenScale = new }
+        val lenStrength = mutableStateOf(lengthStrength).onChange { _, new -> furShader.noiseLenStrength = new }
 
         val windSpeed = mutableStateOf(0.4f)
 

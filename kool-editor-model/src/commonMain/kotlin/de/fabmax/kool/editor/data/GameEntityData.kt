@@ -6,7 +6,7 @@ import kotlin.jvm.JvmInline
 @Serializable
 data class GameEntityData(
     val id: EntityId,
-    var parentId: EntityId?,
+    var parentId: EntityId,
     var settings: GameEntitySettings,
     var order: Int = 0,
 ) {
@@ -25,4 +25,8 @@ data class ComponentInfo<T: ComponentData>(var data: T, var displayOrder: Int = 
 
 @Serializable
 @JvmInline
-value class EntityId(val value: Long)
+value class EntityId(val value: Long) {
+    companion object {
+        val NULL = EntityId(0L)
+    }
+}

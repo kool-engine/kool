@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.LazyMat4f
+import de.fabmax.kool.util.SyncedMatrixFd
 
 interface Transform {
 
@@ -13,8 +14,9 @@ interface Transform {
     val invMatrixD: Mat4d
 
     val isDoublePrecision: Boolean
+    val modCount: Int
 
-    fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats)
+    fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean
 
     fun markDirty()
 
@@ -106,24 +108,41 @@ abstract class TransformF : Transform {
     override val invMatrixF: Mat4f get() = lazyInvTransformMatF.get()
     override val invMatrixD: Mat4d get() = lazyInvTransformMatD.get()
 
+    override var modCount: Int = 0
+        protected set
+
     private val tmpMat4f = MutableMat4f()
     private val tmpVec3fa = MutableVec3f()
     private val tmpVec3fb = MutableVec3f()
     private val tmpQuatF = MutableQuatF()
 
-    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats) {
-        if (parentModelMats != null) {
-            parentModelMats.modelMatF.mul(matrixF, modelMats.mutModelMatF)
-        } else {
-            modelMats.mutModelMatF.set(matrixF)
+    private var applyModCount = -1
+    private var applyMatsModCount = -1
+    private var applyParentMatsModCount = -1
+
+    override fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount
+        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount)) {
+            modelMat.setMatF { parentModelMat.matF.mul(matrixF, it) }
+            applyModCount = modCount
+            applyMatsModCount = modelMat.modCount
+            applyParentMatsModCount = parentModelMat.modCount
+            return true
+
+        } else if (egoChanged) {
+            modelMat.setMatF { it.set(matrixF) }
+            applyModCount = modCount
+            applyMatsModCount = modelMat.modCount
+            return true
         }
-        modelMats.markUpdatedF()
+        return false
     }
 
     override fun markDirty() {
         lazyTransformMatD.isDirty = true
         lazyInvTransformMatF.isDirty = true
         lazyInvTransformMatD.isDirty = true
+        modCount++
     }
 
     override fun setIdentity(): TransformF {
@@ -169,24 +188,41 @@ abstract class TransformD : Transform {
     override val invMatrixF: Mat4f get() = lazyInvTransformMatF.get()
     override val invMatrixD: Mat4d get() = lazyInvTransformMatD.get()
 
+    override var modCount: Int = 0
+        protected set
+
     private val tmpMat4d = MutableMat4d()
     private val tmpVec3da = MutableVec3d()
     private val tmpVec3db = MutableVec3d()
     private val tmpQuatD = MutableQuatD()
 
-    override fun applyToModelMat(parentModelMats: Node.ModelMats?, modelMats: Node.ModelMats) {
-        if (parentModelMats != null) {
-            parentModelMats.modelMatD.mul(matrixD, modelMats.mutModelMatD)
-        } else {
-            modelMats.mutModelMatD.set(matrixD)
+    private var applyModCount = -1
+    private var applyMatsModCount = -1
+    private var applyParentMatsModCount = -1
+
+    override fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount
+        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount)) {
+            modelMat.setMatD { parentModelMat.matD.mul(matrixD, it) }
+            applyModCount = modCount
+            applyMatsModCount = modelMat.modCount
+            applyParentMatsModCount = parentModelMat.modCount
+            return true
+
+        } else if (egoChanged) {
+            modelMat.setMatD { it.set(matrixD) }
+            applyModCount = modCount
+            applyMatsModCount = modelMat.modCount
+            return true
         }
-        modelMats.markUpdatedD()
+        return false
     }
 
     override fun markDirty() {
         lazyTransformMatF.isDirty = true
         lazyInvTransformMatF.isDirty = true
         lazyInvTransformMatD.isDirty = true
+        modCount++
     }
 
     override fun setIdentity(): TransformD {

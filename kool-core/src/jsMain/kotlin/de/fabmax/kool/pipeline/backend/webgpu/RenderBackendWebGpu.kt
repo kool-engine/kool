@@ -109,8 +109,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
+                val t = Time.precisionTime
                 scene.renderOffscreenPasses(encoder)
                 sceneRenderer.renderScene(scene.mainRenderPass, encoder)
+                scene.sceneDrawTime = Time.precisionTime - t
             }
         }
 
@@ -334,13 +336,13 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         val fragmentSrc: String,
         val fragmentEntryPoint: String
     ): ShaderCode {
-        override val hash = LongHash().apply {
+        override val hash = LongHash {
             this += vertexSrc.hashCode().toLong() shl 32 or fragmentSrc.hashCode().toLong()
         }
     }
 
     data class WebGpuComputeShaderCode(val computeSrc: String, val computeEntryPoint: String): ComputeShaderCode {
-        override val hash = LongHash().apply {
+        override val hash = LongHash {
             this += computeSrc
         }
     }

@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
@@ -53,8 +54,10 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
+                val t = Time.precisionTime
                 doOffscreenPasses(scene)
                 sceneRenderer.draw(scene)
+                scene.sceneDrawTime = Time.precisionTime - t
             }
         }
 

@@ -3,12 +3,10 @@ package de.fabmax.kool.modules.gizmo
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.scene.MatrixTransformD
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TrsTransformD
-import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import kotlin.properties.Delegates
 
 class SimpleGizmo(
     name: String = "simple-gizmo",
@@ -32,17 +30,11 @@ class SimpleGizmo(
     private val tmpMat4 = MutableMat4d()
 
     private var isInternalUpdate = false
-    val translationState = mutableStateOf(Vec3d.ZERO).onChange { updateTransformFromUi(translation = it) }
-    val rotationState = mutableStateOf(QuatD.IDENTITY).onChange { updateTransformFromUi(rotation = it) }
-    val scaleState = mutableStateOf(Vec3d.ONES).onChange { updateTransformFromUi(scale = it) }
+    val translationState = mutableStateOf(Vec3d.ZERO).onChange { _, new -> updateTransformFromUi(translation = new) }
+    val rotationState = mutableStateOf(QuatD.IDENTITY).onChange { _, new -> updateTransformFromUi(rotation = new) }
+    val scaleState = mutableStateOf(Vec3d.ONES).onChange { _, new -> updateTransformFromUi(scale = new) }
 
-    var transformNode: Node? = null
-        set(value) {
-            if (value != field) {
-                field = value
-                updateGizmoFromClient()
-            }
-        }
+    var transformClient: GizmoClient? by Delegates.observable(null) { _, _, _ -> updateGizmoFromClient() }
 
     var mode = GizmoMode.TRANSLATE
         set(value) {
@@ -84,6 +76,10 @@ class SimpleGizmo(
         }
     }
 
+    fun setTransformNode(node: Node) {
+        transformClient = GizmoClientNode(node)
+    }
+
     override fun release() {
         super.release()
         InputStack.remove(inputHandler)
@@ -105,36 +101,34 @@ class SimpleGizmo(
     }
 
     fun updateGizmoFromClient() {
-        val client = transformNode ?: return
-
-        clientGlobalToParent.set(client.parent?.invModelMatD ?: Mat4d.IDENTITY)
-        clientTransformOffset.setIdentity()
-
-        val translation = client.modelMatD.transform(MutableVec3d(), 1.0)
+        val client = transformClient ?: return
+        val translation = client.localToGlobal.transform(MutableVec3d(), 1.0)
         val rotation = MutableQuatD(QuatD.IDENTITY)
+
+        clientGlobalToParent.set(client.globalToParent)
+        clientTransformOffset.setIdentity()
 
         when (transformFrame) {
             GizmoFrame.LOCAL -> {
-                client.modelMatD.decompose(rotation = rotation)
-                gizmoNode.gizmoTransform.setCompositionOf(translation, rotation)
                 val localScale = MutableVec3d()
-                client.modelMatD.decompose(scale = localScale)
+                client.localToGlobal.decompose(rotation = rotation, scale = localScale)
+                gizmoNode.gizmoTransform.setCompositionOf(translation, rotation)
                 clientTransformOffset.scale(localScale)
             }
             GizmoFrame.PARENT -> {
-                client.parent?.modelMatD?.decompose(rotation = rotation)
+                client.parentToGlobal.decompose(rotation = rotation)
                 gizmoNode.gizmoTransform.setCompositionOf(translation, rotation)
                 val localRotation = MutableQuatD()
                 val localScale = MutableVec3d()
-                client.transform.decompose(rotation = localRotation)
-                client.modelMatD.decompose(scale = localScale)
+                client.clientTransform.decompose(rotation = localRotation)
+                client.localToGlobal.decompose(scale = localScale)
                 clientTransformOffset.rotate(localRotation).scale(localScale)
             }
             GizmoFrame.GLOBAL -> {
                 gizmoNode.gizmoTransform.setCompositionOf(translation)
                 val localRotation = MutableQuatD()
                 val localScale = MutableVec3d()
-                client.modelMatD.decompose(rotation = localRotation, scale = localScale)
+                client.localToGlobal.decompose(rotation = localRotation, scale = localScale)
                 clientTransformOffset.rotate(localRotation).scale(localScale)
             }
         }
@@ -142,23 +136,19 @@ class SimpleGizmo(
     }
 
     override fun onGizmoUpdate(transform: TrsTransformD) {
-        val client = transformNode ?: return
+        val client = transformClient ?: return
 
         val localTransform = tmpMat4.set(Mat4d.IDENTITY)
             .mul(clientGlobalToParent)
             .mul(transform.matrixD)
             .mul(clientTransformOffset)
-        client.transform.setMatrix(localTransform)
-
-        // force update of client's model matrix to make sure the updated transform is applied in this frame
-        // otherwise there can be one frame lag between gizmo manipulation and node movement.
-        client.updateModelMatRecursive()
+        client.setTransformMatrix(localTransform)
         updateUiStates(client)
     }
 
     override fun onManipulationStart(startTransform: TrsTransformD) {
         InputStack.pushTop(inputHandler)
-        val clientTransform = transformNode?.transform ?: return
+        val clientTransform = transformClient?.clientTransform ?: return
         when (clientTransform) {
             is TrsTransformF -> clientStartTransformTrs.setCompositionOf(clientTransform.translation, clientTransform.rotation, clientTransform.scale)
             is TrsTransformD -> clientStartTransformTrs.setCompositionOf(clientTransform.translation, clientTransform.rotation, clientTransform.scale)
@@ -179,13 +169,13 @@ class SimpleGizmo(
     }
 
     override fun onManipulationCanceled(startTransform: TrsTransformD) {
-        val client = transformNode ?: return
-        when (val clientTransform = client.transform) {
+        val client = transformClient ?: return
+        when (val clientTransform = client.clientTransform) {
             is TrsTransformF -> clientTransform.setCompositionOf(clientStartTransformTrs.translation, clientStartTransformTrs.rotation, clientStartTransformTrs.scale)
             is TrsTransformD -> clientTransform.setCompositionOf(clientStartTransformTrs.translation, clientStartTransformTrs.rotation, clientStartTransformTrs.scale)
             else -> clientTransform.setMatrix(clientStartTransformMatrix.matrixD)
         }
-        client.updateModelMatRecursive()
+        client.updateMatrices()
         updateGizmoFromClient()
 
         if (hideHandlesOnDrag) {
@@ -193,13 +183,13 @@ class SimpleGizmo(
         }
     }
 
-    private fun updateUiStates(client: Node) {
+    private fun updateUiStates(client: GizmoClient) {
         isInternalUpdate = true
 
         val matrix = if (transformFrame == GizmoFrame.GLOBAL) {
-            tmpMat4.set(client.modelMatD)
+            tmpMat4.set(client.localToGlobal)
         } else {
-            tmpMat4.set(client.transform.matrixD)
+            tmpMat4.set(client.clientTransform.matrixD)
         }
 
         val translation = MutableVec3d()
@@ -221,7 +211,7 @@ class SimpleGizmo(
         if (isInternalUpdate) {
             return
         }
-        val client = transformNode ?: return
+        val client = transformClient ?: return
 
         gizmoNode.startManipulation(null)
 
@@ -235,11 +225,34 @@ class SimpleGizmo(
             localTransform.mul(clientGlobalToParent)
         }
         localTransform.mul(transform.matrixD)
-
-        client.transform.setMatrix(localTransform)
-        client.updateModelMatRecursive()
+        client.setTransformMatrix(localTransform)
 
         gizmoNode.finishManipulation()
+    }
+}
+
+interface GizmoClient {
+    val clientTransform: Transform
+    val localToGlobal: Mat4d
+    val parentToGlobal: Mat4d
+    val globalToParent: Mat4d
+
+    fun updateMatrices()
+
+    fun setTransformMatrix(matrix: Mat4d) {
+        clientTransform.setMatrix(matrix)
+        updateMatrices()
+    }
+}
+
+class GizmoClientNode(val node: Node) : GizmoClient {
+    override val clientTransform: Transform get() = node.transform
+    override val localToGlobal: Mat4d get() = node.modelMatD
+    override val parentToGlobal: Mat4d get() = node.parent?.modelMatD ?: Mat4d.IDENTITY
+    override val globalToParent: Mat4d get() = node.parent?.invModelMatD ?: Mat4d.IDENTITY
+
+    override fun updateMatrices() {
+        node.updateModelMatRecursive()
     }
 }
 

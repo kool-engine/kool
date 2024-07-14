@@ -1,8 +1,7 @@
 package de.fabmax.kool.util
 
-class LongHash {
+class LongHashBuilder {
     var hash: Long = 0L
-        private set
 
     operator fun plusAssign(hash: LongHash) {
         this += hash.hash
@@ -32,14 +31,9 @@ class LongHash {
         hash = hash * 31L + string.hashCode()
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-        other as LongHash
-        return hash == other.hash
-    }
-
-    override fun hashCode(): Int = hash.hashCode()
-
-    override fun toString(): String = "$hash"
+    fun build() = LongHash(hash)
 }
+
+inline fun LongHash(block: LongHashBuilder.() -> Unit): LongHash = LongHashBuilder().apply(block).build()
+
+data class LongHash(val hash: Long)

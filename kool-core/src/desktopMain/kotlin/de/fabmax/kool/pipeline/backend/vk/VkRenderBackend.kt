@@ -347,7 +347,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
 
         private fun PipelineBase.instanceId(mesh: Mesh): Long {
-            return pipelineHash * mesh.id
+            return pipelineHash.hash * mesh.id.value
         }
 
         private fun MemoryStack.renderDrawQueue(commandBuffer: VkCommandBuffer, drawQueue: List<DrawCommand>, imageIndex: Int,
@@ -362,9 +362,9 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                         sys.pipelineManager.addPipelineConfig(pipelineCfg, nImages, cmd.queue.renderPass, renderPass, dynVp)
                     }
                     val pipeline = sys.pipelineManager.getPipeline(pipelineCfg, renderPass.vkRenderPass)
-                    if (pipelineCfg.pipelineHash != prevPipeline) {
+                    if (pipelineCfg.pipelineHash.hash != prevPipeline) {
                         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.vkGraphicsPipeline)
-                        prevPipeline = pipelineCfg.pipelineHash
+                        prevPipeline = pipelineCfg.pipelineHash.hash
                     }
                     val descriptorSet = pipeline.getDescriptorSetInstance(pipelineCfg)
 

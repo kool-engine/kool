@@ -9,7 +9,7 @@ A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop 
 Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
 ## Scene Editor
-Check out the web version [here](https://fabmax.github.io/kool/kool-editor/)! (Chrome recommended).
+Check out the [web editor](https://fabmax.github.io/kool/kool-editor/)! (Chrome recommended).
 
 The engine used to be a code-only engine, but I recently made some progress in implementing a graphical scene editor.
 The editor still is in an early state and lacks several rather essential features, but the basics already work quite

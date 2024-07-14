@@ -630,6 +630,10 @@ data class GltfFile(
                 }
 
                 vertices {
+                    modelMatrixComposition = cfg.materialConfig.modelMatrixComposition
+                    if (mesh.instances != null) {
+                        isInstanced = true
+                    }
                     if (mesh.skin != null) {
                         enableArmature(max(cfg.materialConfig.fixedNumberOfJoints, mesh.skin.nodes.size))
                         if (cfg.materialConfig.fixedNumberOfJoints > 0 && cfg.materialConfig.fixedNumberOfJoints < mesh.skin.nodes.size) {

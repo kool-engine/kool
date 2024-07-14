@@ -349,8 +349,8 @@ class GameOfLifeWindow(uiDemo: UiDemo) : DemoWindow("Conway`s Game of Life", uiD
 
     private class GameWorld {
         val connectWorldEdges = mutableStateOf(false)
-        val worldSizeX: MutableStateValue<Int> = mutableStateOf(45).onChange { resize(it, worldSizeY.value) }
-        val worldSizeY: MutableStateValue<Int> = mutableStateOf(30).onChange { resize(worldSizeX.value, it) }
+        val worldSizeX: MutableStateValue<Int> = mutableStateOf(45).onChange { _, new -> resize(new, worldSizeY.value) }
+        val worldSizeY: MutableStateValue<Int> = mutableStateOf(30).onChange { _, new -> resize(worldSizeX.value, new) }
 
         val gameState = mutableStateOf(BooleanArray(worldSizeX.value * worldSizeY.value))
 

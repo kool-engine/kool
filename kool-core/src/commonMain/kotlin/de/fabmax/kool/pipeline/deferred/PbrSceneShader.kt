@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.deferred
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
@@ -12,6 +13,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.Color
 
 /**
@@ -74,10 +76,10 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
         }
     }
 
-    override fun createPipeline(mesh: Mesh, updateEvent: RenderPass.UpdateEvent): DrawPipeline {
-        return super.createPipeline(mesh, updateEvent).also {
+    override fun createPipeline(mesh: Mesh, instances: MeshInstanceList?, ctx: KoolContext): DrawPipeline {
+        return super.createPipeline(mesh, instances, ctx).also {
             if (brdfLut == null) {
-                brdfLut = updateEvent.ctx.defaultPbrBrdfLut
+                brdfLut = ctx.defaultPbrBrdfLut
             }
         }
     }

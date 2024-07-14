@@ -5,11 +5,12 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 
 data class BasicVertexConfig(
-    var isInstanced: Boolean,
-    var isFlipBacksideNormals: Boolean,
-    var maxNumberOfBones: Int,
+    val isInstanced: Boolean,
+    val isFlipBacksideNormals: Boolean,
+    val maxNumberOfBones: Int,
     val morphAttributes: List<Attribute>,
-    val displacementCfg: PropertyBlockConfig
+    val displacementCfg: PropertyBlockConfig,
+    val modelMatrixComposition: List<ModelMatrixComposition>
 ) {
     val isArmature: Boolean
         get() = maxNumberOfBones > 0
@@ -22,6 +23,7 @@ data class BasicVertexConfig(
         var maxNumberOfBones: Int = 0
         val morphAttributes: MutableList<Attribute> = mutableListOf()
         val displacementCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("displacement").apply { constProperty(0f) }
+        var modelMatrixComposition = listOf<ModelMatrixComposition>()
 
         fun enableArmature(maxNumberOfBones: Int = 32): Builder {
             this.maxNumberOfBones = maxNumberOfBones
@@ -33,8 +35,27 @@ data class BasicVertexConfig(
             return this
         }
 
-        fun build() = BasicVertexConfig(isInstanced, isFlipBacksideNormals, maxNumberOfBones, morphAttributes.toList(), displacementCfg.build())
+        fun build() = BasicVertexConfig(
+            isInstanced = isInstanced,
+            isFlipBacksideNormals = isFlipBacksideNormals,
+            maxNumberOfBones = maxNumberOfBones,
+            morphAttributes = morphAttributes.toList(),
+            displacementCfg = displacementCfg.build(),
+            modelMatrixComposition = modelMatrixComposition.ifEmpty {
+                buildList {
+                    add(ModelMatrixComposition.UNIFORM_MODEL_MAT)
+                    if (isInstanced) {
+                        add(ModelMatrixComposition.INSTANCE_MODEL_MAT)
+                    }
+                }
+            }
+        )
     }
+}
+
+enum class ModelMatrixComposition {
+    UNIFORM_MODEL_MAT,
+    INSTANCE_MODEL_MAT
 }
 
 data class AmbientOcclusionConfig(

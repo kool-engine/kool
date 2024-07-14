@@ -16,11 +16,7 @@ sealed class LightTypeData {
 
     abstract fun createLight(): Light
 
-    open fun updateOrCreateLight(existingLight: Light): Light {
-        existingLight.name = name
-        existingLight.setColor(color.toColorLinear(), intensity)
-        return existingLight
-    }
+    abstract fun updateLight(existingLight: Light): Boolean
 
     @Serializable
     data class Directional(
@@ -29,12 +25,13 @@ sealed class LightTypeData {
     ) : LightTypeData() {
         override val name: String get() = "Directional-Light"
 
-        override fun createLight(): Light.Directional = updateOrCreateLight(Light.Directional())
+        override fun createLight(): Light.Directional = Light.Directional().also { updateLight(it) }
 
-        override fun updateOrCreateLight(existingLight: Light): Light.Directional {
-            val dirLight = if (existingLight is Light.Directional) existingLight else createLight()
-            super.updateOrCreateLight(dirLight)
-            return dirLight
+        override fun updateLight(existingLight: Light): Boolean {
+            val light = existingLight as? Light.Directional ?: return false
+            light.name = name
+            light.setColor(color.toColorLinear(), intensity)
+            return true
         }
     }
 
@@ -45,12 +42,13 @@ sealed class LightTypeData {
     ) : LightTypeData() {
         override val name: String get() = "Point-Light"
 
-        override fun createLight(): Light.Point = updateOrCreateLight(Light.Point())
+        override fun createLight(): Light.Point = Light.Point().also { updateLight(it) }
 
-        override fun updateOrCreateLight(existingLight: Light): Light.Point {
-            val pointLight = if (existingLight is Light.Point) existingLight else createLight()
-            super.updateOrCreateLight(pointLight)
-            return pointLight
+        override fun updateLight(existingLight: Light): Boolean {
+            val light = existingLight as? Light.Point ?: return false
+            light.name = name
+            light.setColor(color.toColorLinear(), intensity)
+            return true
         }
     }
 
@@ -63,14 +61,15 @@ sealed class LightTypeData {
     ) : LightTypeData() {
         override val name: String get() = "Spot-Light"
 
-        override fun createLight(): Light.Spot = updateOrCreateLight(Light.Spot())
+        override fun createLight(): Light.Spot = Light.Spot().also { updateLight(it) }
 
-        override fun updateOrCreateLight(existingLight: Light): Light.Spot {
-            val spotLight = if (existingLight is Light.Spot) existingLight else createLight()
-            spotLight.spotAngle = spotAngle.deg
-            spotLight.coreRatio = coreRatio
-            super.updateOrCreateLight(spotLight)
-            return spotLight
+        override fun updateLight(existingLight: Light): Boolean {
+            val light = existingLight as? Light.Spot ?: return false
+            light.name = name
+            light.spotAngle = spotAngle.deg
+            light.coreRatio = coreRatio
+            light.setColor(color.toColorLinear(), intensity)
+            return true
         }
     }
 }

@@ -5,9 +5,14 @@ import de.fabmax.kool.editor.api.cachedEntityComponents
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
+import de.fabmax.kool.math.Mat4d
+import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableVec3d
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.SyncedMatrixFd
 
 class TransformComponent(
     gameEntity: GameEntity,
@@ -16,10 +21,12 @@ class TransformComponent(
 
     private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
+    val globalTransform = SyncedMatrixFd()
     var transform: Transform = TrsTransformF()
         set(value) {
             field = value
-            gameEntity.drawNode.transform = transform
+            updateTransform()
+            fireTransformChanged(data)
         }
 
     init {
@@ -29,8 +36,7 @@ class TransformComponent(
 
     override suspend fun applyComponent() {
         super.applyComponent()
-        gameEntity.drawNode.transform = transform
-        gameEntity.drawNode.updateModelMat()
+        updateTransform()
     }
 
     fun updateDataFromTransform() {
@@ -40,18 +46,45 @@ class TransformComponent(
     override fun onDataChanged(oldData: TransformComponentData, newData: TransformComponentData) {
         super.onDataChanged(oldData, newData)
         newData.transform.toTransform(transform)
-        changeListeners.let { listeners ->
-            for (i in listeners.indices) {
-                listeners[i].onTransformChanged(this, newData)
-            }
-        }
+        updateTransform()
+        fireTransformChanged(newData)
     }
 
     override fun onUpdate(ev: RenderPass.UpdateEvent) {
-        gameEntity.drawNode.transform = transform
+        updateTransform()
+    }
+
+    fun updateTransform() {
+        val parentModelMat = gameEntity.parent?.localToGlobalD ?: Mat4d.IDENTITY
+        globalTransform.setMatD { parentModelMat.mul(transform.matrixD, it) }
+    }
+
+    fun updateTransformRecursive() {
+        updateTransform()
+        for (i in gameEntity.children.indices) {
+            gameEntity.children[i].transform.updateTransformRecursive()
+        }
+    }
+
+    private fun fireTransformChanged(data: TransformComponentData) {
+        changeListeners.let { listeners ->
+            for (i in listeners.indices) {
+                listeners[i].onTransformChanged(this, data)
+            }
+        }
     }
 
     fun interface ListenerComponent {
         fun onTransformChanged(component: TransformComponent, transformData: TransformComponentData)
     }
 }
+
+val GameEntity.localToGlobalF: Mat4f get() = transform.globalTransform.matF
+val GameEntity.localToGlobalD: Mat4d get() = transform.globalTransform.matD
+val GameEntity.globalToLocalF: Mat4f get() = transform.globalTransform.invF
+val GameEntity.globalToLocalD: Mat4d get() = transform.globalTransform.invD
+
+fun GameEntity.toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = localToGlobalF.transform(vec, w)
+fun GameEntity.toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = localToGlobalD.transform(vec, w)
+fun GameEntity.toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = globalToLocalF.transform(vec, w)
+fun GameEntity.toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = globalToLocalD.transform(vec, w)

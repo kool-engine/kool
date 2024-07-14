@@ -31,6 +31,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.time.measureTime
 
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
     val projDataDir = projectFiles.projectModelDir
@@ -143,8 +144,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         appLoader.reloadApp()
     }
 
-    suspend fun startApp() {
-        saveProject()
+    fun startApp() {
+        Assets.launch { saveProject() }
 
         val app = loadedApp.value?.app ?: return
         val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return
@@ -156,7 +157,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
 
         // restore app scene camera: it was replaced by custom editor cam during editor app load
-        sceneModel.sceneComponent.cameraComponent?.drawNode?.let { cam ->
+        sceneModel.sceneComponent.cameraComponent?.camera?.let { cam ->
             sceneModel.scene.camera = cam
             sceneModel.getAllComponents<CameraAwareComponent>().forEach { it.updateSceneCamera(cam) }
         }
@@ -228,10 +229,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         editorInputContext.addKeyListener(Key.FocusSelected) { editorCameraTransform.focusSelectedObject() }
 
         editorInputContext.addKeyListener(Key.DeleteSelected) {
-            DeleteEntitiesAction(selectionOverlay.getSelectedSceneNodes()).apply()
+            DeleteEntitiesAction(selectionOverlay.getSelectedSceneEntities()).apply()
         }
         editorInputContext.addKeyListener(Key.HideSelected) {
-            val selection = selectionOverlay.getSelectedSceneNodes()
+            val selection = selectionOverlay.getSelectedSceneEntities()
             SetVisibilityAction(selection, selection.any { !it.isVisible }).apply()
         }
         editorInputContext.addKeyListener(Key.UnhideHidden) {
@@ -358,10 +359,14 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     suspend fun saveProject() {
-        ProjectWriter.saveProjectData(projectModel.projectData, projectFiles.projectModelDir)
-        // also save single file version
-        projectFiles.getProjectFileMonolithic().writeText(jsonCodec.encodeToString(projectModel.projectData))
-        logD { "Saved project model" }
+        val t1 = measureTime {
+            ProjectWriter.saveProjectData(projectModel.projectData, projectFiles.projectModelDir)
+        }
+        val t2 = measureTime {
+            // also save single file version
+            projectFiles.getProjectFileMonolithic().writeText(jsonCodec.encodeToString(projectModel.projectData))
+        }
+        logD { "Saved project model in $t1 / $t2" }
     }
 
     suspend fun exportProject() {

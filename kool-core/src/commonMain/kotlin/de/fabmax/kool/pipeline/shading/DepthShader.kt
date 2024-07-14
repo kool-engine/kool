@@ -2,8 +2,8 @@ package de.fabmax.kool.pipeline.shading
 
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
 import de.fabmax.kool.modules.ksl.blocks.cameraData
-import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -31,9 +31,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                 main {
                     val camData = cameraData()
                     val vertexBlock = vertexTransformBlock(cfg.vertexCfg) {
-                        inModelMat(modelMatrix().matrix)
                         inLocalPos(vertexAttribFloat3(Attribute.POSITIONS.name))
-
                         if (cfg.outputNormals) {
                             inLocalNormal(vertexAttribFloat3(Attribute.NORMALS.name))
                         }
@@ -115,6 +113,10 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                         enableArmature(max(DepthMapPass.defaultMaxNumberOfJoints, it.nodes.size))
                     }
                     morphAttributes += mesh.geometry.getMorphAttributes()
+
+                    (mesh.shader as? KslShader)?.let { ksl ->
+                        ksl.program.vertexStage?.findBlock<VertexTransformBlock>()?.cfg?.modelMatrixComposition
+                    }?.let { modelMatrixComposition = it }
                 }
                 if (alphaMode is AlphaMode.Mask) {
                     this.alphaMode = alphaMode

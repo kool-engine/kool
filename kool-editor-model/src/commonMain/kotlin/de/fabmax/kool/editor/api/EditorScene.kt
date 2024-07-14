@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed
@@ -11,16 +11,21 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
-val EditorScene.scene: Scene get() = sceneComponent.drawNode
+val EditorScene.scene: Scene get() = sceneComponent.sceneNode
 
 class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseReleasable() {
 
-    val nodesToEntities: MutableMap<Node, GameEntity> = mutableMapOf()
-    val sceneEntities: MutableMap<EntityId, GameEntity> = mutableMapOf()
+    private val _sceneEntities: MutableMap<EntityId, GameEntity> = mutableMapOf()
+    val sceneEntities: Map<EntityId, GameEntity> get() = _sceneEntities
+
+    // list of all entities in this scene, ordered such that any child GameEntity comes after its parent
+    private val _orderedEntities = mutableListOf<GameEntity>()
+    val orderedEntities: List<GameEntity> get() = _orderedEntities
 
     var componentModCnt = 0
         internal set
 
+    val sceneNodes = SceneNodes(this)
     val shaderData = SceneShaderData(this)
     val sceneEntity: GameEntity = GameEntity(sceneData.getOrAddSceneEntityData(), this)
     val name: String get() = sceneEntity.name
@@ -33,9 +38,11 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             field = value
         }
 
+    val hitTest = SceneHitTest(this)
+
     init {
-        nodesToEntities[sceneEntity.drawNode] = sceneEntity
-        sceneEntities[sceneEntity.id] = sceneEntity
+        _orderedEntities += sceneEntity
+        _sceneEntities[sceneEntity.id] = sceneEntity
 
         val parentsToChildren = mutableMapOf<EntityId?, MutableList<GameEntityData>>()
         project.entityData.values.forEach { entityData ->
@@ -43,27 +50,24 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         }
 
         fun createEntity(entityData: GameEntityData) {
-            sceneEntities[entityData.parentId]?.let { parent ->
-                val entity = GameEntity(entityData, this)
-                sceneEntities[entity.id] = entity
-                nodesToEntities[entity.drawNode] = entity
-                parent.addChild(entity)
-            }
+            addGameEntity(GameEntity(entityData, this))
             parentsToChildren[entityData.id]?.sortedBy { it.order }?.forEach { createEntity(it) }
         }
         parentsToChildren[sceneEntity.id]?.sortedBy { it.order }?.forEach { createEntity(it) }
 
-        // fix entities with missing parents by adding them to the scene root entity
-        sceneData.entities.filter { it.parentId != null && it.parentId !in sceneEntities }.forEach {
+        sceneData.entities.filter { it.parentId != EntityId.NULL && it.parentId !in sceneEntities }.forEach {
+            logW { "Parent for entity ${it.settings.name} not found: Inserting in scene root" }
             it.parentId = sceneEntity.id
             createEntity(it)
         }
+
+        sceneEntity.sceneComponent.sceneNode.onUpdate { updateEntities(it) }
     }
 
     private fun SceneData.getOrAddSceneEntityData(): GameEntityData {
-        var entityData = entities.find { it.id == meta.rootId } ?: entities.find { it.parentId == null }
+        var entityData = entities.find { it.id == meta.rootId } ?: entities.find { it.parentId == EntityId.NULL }
         if (entityData == null) {
-            entityData = GameEntityData(meta.rootId, null, GameEntitySettings(sceneData.meta.name)).also {
+            entityData = GameEntityData(meta.rootId, EntityId.NULL, GameEntitySettings(sceneData.meta.name)).also {
                 entities += it
             }
         }
@@ -149,6 +153,13 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         lifecycle = EntityLifecycle.RUNNING
     }
 
+    private fun updateEntities(ev: RenderPass.UpdateEvent) {
+        for (i in _orderedEntities.indices) {
+            _orderedEntities[i].onUpdate(ev)
+        }
+        sceneNodes.updateInstances()
+    }
+
     override fun release() {
         super.release()
 
@@ -158,6 +169,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             }
         }
         sceneEntity.destroyComponents()
+        sceneComponent.sceneNode.release()
         lifecycle = EntityLifecycle.DESTROYED
     }
 
@@ -165,8 +177,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         hierarchy: GameEntityDataHierarchy,
         insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
     ) {
-        val gameEntity = GameEntity(hierarchy.entityData, this)
-        addGameEntity(gameEntity, insertionPos)
+        addGameEntity(hierarchy.entityData, insertionPos)
         hierarchy.children.forEach { addGameEntities(it) }
     }
 
@@ -176,10 +187,12 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     ): GameEntity {
         val entity = GameEntity(data, this)
         addGameEntity(entity, insertionPos)
+        addEntityData(data)
+        entity.applyLifecycleState()
         return entity
     }
 
-    private suspend fun addGameEntity(
+    private fun addGameEntity(
         gameEntity: GameEntity,
         insertionPos: GameEntity.InsertionPos = GameEntity.InsertionPos.End
     ) {
@@ -187,27 +200,25 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
             "addGameEntity called with entity ${gameEntity.name} which lifecycle state is ${gameEntity.lifecycle} (expected CREATED)"
         }
 
-        val parent = gameEntity.parent ?: sceneEntities[gameEntity.entityData.parentId]?.also {
-            it.addChild(gameEntity, insertionPos)
+        val parent = checkNotNull(sceneEntities[gameEntity.entityData.parentId]) {
+            "Parent of ${gameEntity.name} is not present in scene $name (parent-id: ${gameEntity.entityData.parentId})"
         }
-        if (parent == null) {
-            logE { "Parent of ${gameEntity.name} is not part of this scene (parent-id: ${gameEntity.entityData.parentId})" }
-            return
-        }
+        parent.addChild(gameEntity, insertionPos)
 
-        if (isPreparedOrRunning) {
-            gameEntity.applyComponents()
-            if (!gameEntity.isPrepared) {
-                logE { "Failed to apply components of newly added GameEntity ${gameEntity.name}" }
+        _sceneEntities[gameEntity.id] = gameEntity
+        _orderedEntities += gameEntity
+    }
+
+    private suspend fun GameEntity.applyLifecycleState() {
+        if (this@EditorScene.isPreparedOrRunning) {
+            applyComponents()
+            if (!isPrepared) {
+                logE { "Failed to apply components of newly added GameEntity $name" }
             }
-            if (isRunning && gameEntity.isPrepared) {
-                gameEntity.onStart()
+            if (this@EditorScene.isRunning && isPrepared) {
+                onStart()
             }
         }
-
-        addEntityData(gameEntity.entityData)
-        sceneEntities[gameEntity.id] = gameEntity
-        nodesToEntities[gameEntity.drawNode] = gameEntity
     }
 
     fun removeGameEntity(gameEntity: GameEntity) {
@@ -215,8 +226,8 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         removeChildren.forEach { removeGameEntity(it) }
 
         removeEntityData(gameEntity.entityData)
-        sceneEntities -= gameEntity.id
-        nodesToEntities -= gameEntity.drawNode
+        _sceneEntities -= gameEntity.id
+        _orderedEntities -= gameEntity
 
         gameEntity.parent?.removeChild(gameEntity)
 

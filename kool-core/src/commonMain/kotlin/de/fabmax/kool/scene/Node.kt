@@ -17,6 +17,8 @@ import kotlin.math.sqrt
  */
 open class Node(name: String? = null) : BaseReleasable() {
 
+    val id = NodeId()
+
     var name: String = name ?: makeNodeName(this::class.simpleName ?: "Node")
 
     val onUpdate: BufferedList<(RenderPass.UpdateEvent) -> Unit> = BufferedList()
@@ -31,6 +33,10 @@ open class Node(name: String? = null) : BaseReleasable() {
      */
     val bounds = BoundingBoxF()
     private val tmpTransformVec = MutableVec3f()
+    private val parentBoundsCache = BoundingBoxF()
+    private var parentBoundsModCount = -1
+    private val cachedBoundsMin = MutableVec3f()
+    private val cachedBoundsMax = MutableVec3f()
 
     /**
      * Center point of this node's bounds in global coordinates.
@@ -64,31 +70,31 @@ open class Node(name: String? = null) : BaseReleasable() {
      */
     var transform: Transform = TrsTransformF()
 
-    private val modelMats = ModelMats()
+    private val modelMatrix = SyncedMatrixFd()
     private val tmpVec = MutableVec3f()
 
     /**
      * This node's single-precision model matrix. Updated on each frame based on this node's transform and the model
      * matrix of the parent node.
      */
-    val modelMatF: Mat4f by modelMats::modelMatF
+    val modelMatF: Mat4f by modelMatrix::matF
 
     /**
      * This node's double-precision model matrix. Actual double-precision is only achieved, if this node also uses a
      * double precision [transform]. Updated on each frame based on this node's transform and the model
      * matrix of the parent node.
      */
-    val modelMatD: Mat4d by modelMats::modelMatD
+    val modelMatD: Mat4d by modelMatrix::matD
 
     /**
      * Inverse of this node's model matrix (single-precision).
      */
-    val invModelMatF: Mat4f get() = modelMats.lazyInvModelMatF.get()
+    val invModelMatF: Mat4f get() = modelMatrix.invF
 
     /**
      * Inverse of this node's model matrix (double-precision).
      */
-    val invModelMatD: Mat4d get() = modelMats.lazyInvModelMatD.get()
+    val invModelMatD: Mat4d get() = modelMatrix.invD
 
     /**
      * Parent node is set when this node is added to another [Node] as a child.
@@ -135,45 +141,55 @@ open class Node(name: String? = null) : BaseReleasable() {
 
         updateModelMat()
 
-        bounds.clear()
-        for (i in mutChildren.indices) {
-            val child = mutChildren[i]
-            child.update(updateEvent)
-            child.addBoundsToParentBounds(bounds)
+        bounds.batchUpdate {
+            clear()
+            for (i in mutChildren.indices) {
+                val child = mutChildren[i]
+                child.update(updateEvent)
+                child.addBoundsToParentBounds(bounds)
+            }
+            addContentToBoundingBox(bounds)
         }
-        addContentToBoundingBox(bounds)
 
-        // update global center and radius
-        toGlobalCoords(globalCenterMut.set(bounds.center))
-        toGlobalCoords(globalExtentMut.set(bounds.max))
+        // update global center and radius, don't do modCount-based caching here since bounds can change too
+        val toGlobal = modelMatrix.matF
+        toGlobal.transform(globalCenterMut.set(bounds.center))
+        toGlobal.transform(globalCenterMut.set(bounds.max))
         globalRadius = globalCenter.distance(globalExtentMut)
     }
 
     private fun addBoundsToParentBounds(parentBounds: BoundingBoxF) {
         if (!bounds.isEmpty) {
-            val minX = bounds.min.x
-            val minY = bounds.min.y
-            val minZ = bounds.min.z
-            val maxX = bounds.max.x
-            val maxY = bounds.max.y
-            val maxZ = bounds.max.z
+            if (transform.modCount != parentBoundsModCount || cachedBoundsMin != bounds.min || cachedBoundsMax != bounds.max) {
+                cachedBoundsMin.set(bounds.min)
+                cachedBoundsMax.set(bounds.max)
+                parentBoundsModCount = transform.modCount
 
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, minY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, minY, maxZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, maxY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, minY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ), 1f))
-            parentBounds.add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ), 1f))
+                parentBoundsCache.batchUpdate {
+                    val minX = bounds.min.x
+                    val minY = bounds.min.y
+                    val minZ = bounds.min.z
+                    val maxX = bounds.max.x
+                    val maxY = bounds.max.y
+                    val maxZ = bounds.max.z
+                    clear()
+                    add(transform.transform(tmpTransformVec.set(minX, minY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(minX, minY, maxZ)))
+                    add(transform.transform(tmpTransformVec.set(minX, maxY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(minX, maxY, maxZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, minY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, minY, maxZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, maxY, minZ)))
+                    add(transform.transform(tmpTransformVec.set(maxX, maxY, maxZ)))
+                }
+            }
+            parentBounds.add(parentBoundsCache)
         }
     }
 
     protected open fun addContentToBoundingBox(localBounds: BoundingBoxF) { }
 
-    fun updateModelMat() {
-        transform.applyToModelMat(parent?.modelMats, modelMats)
-    }
+    fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMatrix, modelMatrix)
 
     fun updateModelMatRecursive() {
         updateModelMat()
@@ -221,34 +237,22 @@ open class Node(name: String? = null) : BaseReleasable() {
     /**
      * Transforms [vec] in-place from local to global coordinates.
      */
-    fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        modelMatF.transform(vec, w)
-        return vec
-    }
+    fun toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = modelMatF.transform(vec, w)
 
-    fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        modelMatD.transform(vec, w)
-        return vec
-    }
+    fun toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = modelMatD.transform(vec, w)
 
     /**
      * Transforms [vec] in-place from global to local coordinates.
      */
-    fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f {
-        invModelMatF.transform(vec, w)
-        return vec
-    }
+    fun toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = invModelMatF.transform(vec, w)
 
-    fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d {
-        invModelMatD.transform(vec, w)
-        return vec
-    }
+    fun toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = invModelMatD.transform(vec, w)
 
     /**
-     * Performs a hit test with the given [RayTest]. Subclasses should override this method and test
+     * Performs a hit test with the given [RayTest]. Subclasses should override [rayTestLocal] and test
      * if their contents are hit by the ray.
      */
-    open fun rayTest(test: RayTest) {
+    fun rayTest(test: RayTest) {
         if (test.isIntersectingBoundingSphere(this)) {
             test.collectHitBoundingSphere(this)
             // bounding sphere hit -> transform ray to local coordinates and do further testing
@@ -280,7 +284,7 @@ open class Node(name: String? = null) : BaseReleasable() {
         }
     }
 
-    protected open fun rayTestLocal(test: RayTest, localRay: RayF) { }
+    open fun rayTestLocal(test: RayTest, localRay: RayF) { }
 
     /**
      * Called during [collectDrawCommands]: Checks if this node is currently visible. If not rendering is skipped. Default
@@ -391,49 +395,9 @@ open class Node(name: String? = null) : BaseReleasable() {
     companion object {
         fun makeNodeName(type: String = "Node") = UniqueId.nextId(type)
     }
-
-    class ModelMats {
-        val modelMatF: Mat4f get() {
-            if (updateIdF != updateId) {
-                mutModelMatF.set(mutModelMatD)
-                updateIdF = updateId
-            }
-            return mutModelMatF
-        }
-
-        val modelMatD: Mat4d get() {
-            if (updateIdD != updateId) {
-                mutModelMatD.set(mutModelMatF)
-                updateIdD = updateId
-            }
-            return mutModelMatD
-        }
-
-        val lazyInvModelMatF = LazyMat4f { modelMatF.invert(it) }
-        val lazyInvModelMatD = LazyMat4d { modelMatD.invert(it) }
-
-        val mutModelMatF = MutableMat4f()
-        val mutModelMatD = MutableMat4d()
-
-        private var updateId = 0
-        private var updateIdF = 0
-        private var updateIdD = 0
-
-        fun markUpdatedF() {
-            updateId++
-            updateIdF = updateId
-            lazyInvModelMatF.isDirty = true
-            lazyInvModelMatD.isDirty = true
-        }
-
-        fun markUpdatedD() {
-            updateId++
-            updateIdD = updateId
-            lazyInvModelMatF.isDirty = true
-            lazyInvModelMatD.isDirty = true
-        }
-    }
 }
+
+data class NodeId(val value: Long = UniqueId.nextId())
 
 fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {
     val tg = Node(name)

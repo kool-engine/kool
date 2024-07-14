@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.NodeId
 
 class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
@@ -13,7 +14,7 @@ class WgpuDrawPipeline(
     private val vertexBufferLayout: List<GPUVertexBufferLayout> = createVertexBufferLayout(drawPipeline)
     private val renderPipelines = mutableMapOf<WgpuRenderPass<*>, GPURenderPipeline>()
 
-    private val users = mutableSetOf<Int>()
+    private val users = mutableSetOf<NodeId>()
 
     private fun createVertexBufferLayout(pipeline: DrawPipeline): List<GPUVertexBufferLayout> {
         return pipeline.vertexLayout.bindings
@@ -167,7 +168,15 @@ class WgpuDrawPipeline(
         gpuGeom.checkBuffers()
 
         var slot = 0
-        gpuGeom.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
+
+        mesh.instances?.let { insts ->
+            if (insts.gpuInstances == null) {
+                insts.gpuInstances = WgpuInstances(mesh, backend)
+            }
+            val gpuInsts = insts.gpuInstances as WgpuInstances
+            gpuInsts.checkBuffers()
+            passEncoder.setVertexBuffer(slot++, gpuInsts.instanceBuffer)
+        }
         passEncoder.setVertexBuffer(slot++, gpuGeom.floatBuffer)
         gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
         passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)

@@ -26,8 +26,8 @@ class BeeDemo : DemoScene("Fighting Bees") {
 
     val gpuBees = GpuBees(mainScene)
 
-    private val isGpuSimulation = mutableStateOf(KoolSystem.requireContext().backend.hasComputeShaders).onChange {
-        applyMode(it)
+    private val isGpuSimulation = mutableStateOf(KoolSystem.requireContext().backend.hasComputeShaders).onChange { _, new ->
+        applyMode(new)
     }
 
     private val beeTex: Texture2d by texture2d(

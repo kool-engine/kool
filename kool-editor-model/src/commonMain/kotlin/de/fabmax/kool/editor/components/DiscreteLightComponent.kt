@@ -1,13 +1,14 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.sceneComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.DiscreteLightComponentData
 import de.fabmax.kool.editor.data.LightTypeData
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 
 class DiscreteLightComponent(
@@ -17,40 +18,68 @@ class DiscreteLightComponent(
     )
 ) :
     GameEntityDataComponent<DiscreteLightComponentData>(gameEntity, componentInfo),
-    DrawNodeComponent
+    SceneNodeComponent
 {
-    override var drawNode: Light = data.light.createLight()
+    var light: Light = data.light.createLight()
         private set
+
+    private val entityTransformUpdateCb: (RenderPass.UpdateEvent) -> Unit = {
+        light.transform.setMatrix(gameEntity.transform.globalTransform.matF)
+    }
 
     override suspend fun applyComponent() {
         super.applyComponent()
-        updateLight(data.light, true)
+        updateLight(data.light)
+        attachLight(light.parent)
     }
 
     override fun destroyComponent() {
-        gameEntity.replaceDrawNode(Node(gameEntity.name))
-        val scene = sceneEntity.drawNode as Scene
-        scene.lighting.removeLight(drawNode)
+        val scene = sceneComponent.sceneNode
+        scene.lighting.removeLight(light)
+        light.parent?.removeNode(light)
         super.destroyComponent()
     }
 
     override fun onDataChanged(oldData: DiscreteLightComponentData, newData: DiscreteLightComponentData) {
-        updateLight(newData.light, forceReplaceNode = false)
+        updateLight(newData.light)
     }
 
-    private fun updateLight(lightData: LightTypeData, forceReplaceNode: Boolean) {
-        val updateLight = lightData.updateOrCreateLight(drawNode)
+    fun attachLightToNode(parent: Node) {
+        light.onUpdate -= entityTransformUpdateCb
+        light.parent?.removeNode(light)
+        parent.addNode(light)
+    }
 
-        if (forceReplaceNode || updateLight != drawNode) {
-            val scene = sceneEntity.drawNode as Scene
-            val lighting = scene.lighting
-            lighting.removeLight(drawNode)
+    fun attachLightToGameEntity() {
+        light.parent?.removeNode(light)
+        light.onUpdate += entityTransformUpdateCb
+        gameEntity.sceneComponent.sceneNode.addNode(light)
+    }
 
-            drawNode = updateLight
-            gameEntity.replaceDrawNode(drawNode)
-            lighting.addLight(drawNode)
+    private fun updateLight(lightData: LightTypeData) {
+        val lighting = sceneComponent.sceneNode.lighting
+
+        if (!lightData.updateLight(light)) {
+            lighting.removeLight(light)
+            val parent = light.parent
+            parent?.removeNode(light)
+
+            light = lightData.createLight()
+            attachLight(parent)
+        }
+        if (light != lighting.lights) {
+            lighting.addLight(light)
         }
 
-        gameEntity.getComponent<ShadowMapComponent>()?.updateLight(drawNode)
+        light.name = gameEntity.name
+        gameEntity.getComponent<ShadowMapComponent>()?.updateLight(light)
+    }
+
+    private fun attachLight(parent: Node?) {
+        if (parent != null) {
+            attachLightToNode(parent)
+        } else {
+            attachLightToGameEntity()
+        }
     }
 }

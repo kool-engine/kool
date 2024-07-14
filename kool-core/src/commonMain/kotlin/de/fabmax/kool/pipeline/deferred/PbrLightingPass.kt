@@ -27,7 +27,7 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
             if (isEnabled) {
                 for (i in materialPass.alphaMeshes.indices) {
                     val mesh = materialPass.alphaMeshes[i]
-                    mesh.getOrCreatePipeline(ev)?.let { pipeline ->
+                    mesh.getOrCreatePipeline(ev.ctx)?.let { pipeline ->
                         scene.mainRenderPass.screenView.drawQueue.addMesh(mesh, pipeline)
                     }
                 }

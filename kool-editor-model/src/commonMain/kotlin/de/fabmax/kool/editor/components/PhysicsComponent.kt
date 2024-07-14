@@ -35,7 +35,6 @@ abstract class PhysicsComponent<T: ComponentData>(
         super.applyComponent()
         localActorTransform.set(gameEntity.transform.transform)
         gameEntity.transform.transform = localActorTransform
-        gameEntity.drawNode.updateModelMat()
     }
 
     override fun onStart() {
@@ -45,8 +44,9 @@ abstract class PhysicsComponent<T: ComponentData>(
 
     override fun onPhysicsUpdate(timeStep: Float) {
         val globalTrs = globalActorTransform ?: return
+        val globalToParent = gameEntity.parent?.globalToLocalD ?: return
 
-        gameEntity.parent!!.drawNode.invModelMatD.mul(globalTrs.matrixD, tmpMat4)
+        globalToParent.mul(globalTrs.matrixD, tmpMat4)
         tmpMat4.scale(scale)
         localActorTransform.setMatrix(tmpMat4)
     }
@@ -67,7 +67,7 @@ abstract class PhysicsComponent<T: ComponentData>(
         val t = MutableVec3d()
         val r = MutableQuatD()
         val s = MutableVec3d()
-        gameEntity.drawNode.modelMatD.decompose(t, r, s)
+        gameEntity.localToGlobalD.decompose(t, r, s)
 
         if (warnOnNonUniformScale && !s.isFuzzyEqual(Vec3d.ONES, eps = 1e-3)) {
             logW { "${gameEntity.name} / ${this::class.simpleName}: transform contains a scaling component $s, which may lead to unexpected behavior." }

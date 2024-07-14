@@ -1,11 +1,13 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.backend.GpuInstances
 import de.fabmax.kool.scene.geometry.Usage
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
 import kotlin.math.max
 
-class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) {
+class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) : BaseReleasable() {
 
     /**
      * Vertex attribute offsets in bytes.
@@ -42,6 +44,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         private set
 
     var hasChanged = true
+
+    internal var gpuInstances: GpuInstances? = null
 
     constructor(initialSize: Int, vararg instanceAttributes: Attribute) : this(listOf(*instanceAttributes), initialSize)
 
@@ -90,6 +94,23 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         hasChanged = true
     }
 
+    inline fun addInstancesUpTo(upperBoundN: Int, block: (Float32Buffer) -> Int) {
+        if (upperBoundN == 0) {
+            return
+        }
+        checkBufferSize(upperBoundN)
+        val szBefore = dataF.position
+        val actuallyAdded = block(dataF)
+        val growSz = dataF.position - szBefore
+        if (growSz != instanceSizeF * actuallyAdded) {
+            throw IllegalStateException("Expected data to grow by ${instanceSizeF * upperBoundN} elements, instead it grew by $growSz")
+        }
+        numInstances += actuallyAdded
+        if (actuallyAdded > 0) {
+            hasChanged = true
+        }
+    }
+
     fun clear() {
         if (numInstances == 0) {
             return
@@ -97,5 +118,10 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         numInstances = 0
         dataF.clear()
         hasChanged = true
+    }
+
+    override fun release() {
+        gpuInstances?.release()
+        super.release()
     }
 }

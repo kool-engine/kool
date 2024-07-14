@@ -13,14 +13,16 @@ class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.m
         traversedPaths += "/materials"
 
         materialDir.children.clear()
-        editor.projectModel.materials.use().forEach {
-            it.dataState.use()
-            val materialItem = browserItems.getOrPut("/materials/${it.name}") {
-                BrowserMaterialItem(1, it)
+        editor.projectModel.materials.use()
+            .filter { it.gameEntity.isVisible }
+            .forEach {
+                it.dataState.use()
+                val materialItem = browserItems.getOrPut("/materials/${it.name}") {
+                    BrowserMaterialItem(1, it)
+                }
+                materialDir.children += materialItem
+                traversedPaths += materialItem.path
             }
-            materialDir.children += materialItem
-            traversedPaths += materialItem.path
-        }
     }
 
     override fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>? {
