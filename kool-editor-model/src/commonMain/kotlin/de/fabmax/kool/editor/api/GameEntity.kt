@@ -28,9 +28,6 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
         get() = settings.isVisible
         set(value) = settingsState.set(settings.copy(isVisible = value))
 
-    val isVisibleWithParents: Boolean
-        get() = if (!isVisible) false else parent?.isVisibleWithParents != false
-
     private val _components = mutableListOf<GameEntityComponent>()
     val components: List<GameEntityComponent> get() = _components
     var componentModCnt = 0

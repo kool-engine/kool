@@ -135,7 +135,11 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         registerKeyBindings()
         registerScenePicking()
-        registerAutoSaveOnFocusLoss()
+        ctx.onWindowFocusChanged += {
+            if (!it.isWindowFocused) {
+                Assets.launch { saveProject() }
+            }
+        }
         appLoader.appReloadListeners += AppReloadListener {
             handleAppReload(it)
         }
@@ -204,17 +208,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
     fun editBehaviorSource(behaviorClassName: String) {
         PlatformFunctions.editBehavior(behaviorClassName)
-    }
-
-    private fun registerAutoSaveOnFocusLoss() {
-        // auto save on window focus loss
-        var wasFocused = false
-        editorContent.onUpdate {
-            if (wasFocused && !ctx.isWindowFocused) {
-                Assets.launch { saveProject() }
-            }
-            wasFocused = ctx.isWindowFocused
-        }
     }
 
     private fun registerKeyBindings() {

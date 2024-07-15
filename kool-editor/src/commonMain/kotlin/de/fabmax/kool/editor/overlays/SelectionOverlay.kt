@@ -25,8 +25,6 @@ import de.fabmax.kool.util.logT
 import kotlin.math.max
 
 class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
-    val selectionPass = SelectionPass(editor)
-
     var selection: Set<GameEntity> = emptySet()
         private set(value) {
             field = value
@@ -39,8 +37,10 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     val onSelectionChanged = mutableListOf<(Set<GameEntity>) -> Unit>()
 
     private val selectedMeshes = mutableMapOf<NodeId, SelectedMeshes>()
+    private val expectedNodeIds = mutableSetOf<NodeId>()
     private var updateOverlay = false
 
+    val selectionPass = SelectionPass(editor)
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
     private val outlineShader = SelectionOutlineShader(selectionPass.colorTexture)
 
@@ -153,6 +153,10 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         return gameEntity in selection
     }
 
+    fun refreshSelection() {
+        updateOverlay = true
+    }
+
     fun invalidateSelection() {
         selectedMeshes.clear()
         selectionPass.disposePipelines()
@@ -163,8 +167,8 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         entity.getComponent<MeshComponent>()?.let { meshComponent ->
             meshComponent.sceneNode?.let { sceneNode ->
                 val meshSelection = when (sceneNode) {
-                    is Mesh -> listOf(selectedMeshes.getOrPut(sceneNode.id) { SelectedMeshes() })
-                    is Model -> sceneNode.meshes.values.map { selectedMeshes.getOrPut(it.id) { SelectedMeshes() } }
+                    is Mesh -> listOf(selectedMeshes.getOrPut(sceneNode.id) { SelectedMeshes(sceneNode.id) })
+                    is Model -> sceneNode.meshes.values.map { selectedMeshes.getOrPut(it.id) { SelectedMeshes(it.id) } }
                     else -> emptyList()
                 }
                 val selectionType = if (entity in selection) MeshSelectionType.PRIMARY else MeshSelectionType.CHILD
@@ -201,9 +205,19 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
             mainView.drawFilter = { it !is Mesh || it.id in selectedMeshes }
 
             onAfterCollectDrawCommands += { ev ->
+                expectedNodeIds.clear()
+                expectedNodeIds += selectedMeshes.keys
+
                 // replace regular object shaders by selection shader
                 val q = ev.view.drawQueue
-                q.forEach { setupDrawCommand(it, ev.ctx) }
+                q.forEach {
+                    expectedNodeIds -= it.mesh.id
+                    setupDrawCommand(it, ev.ctx)
+                }
+
+                if (expectedNodeIds.isNotEmpty()) {
+                    refreshSelection()
+                }
             }
         }
 
@@ -247,8 +261,8 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
                         val typeAndId = interStageInt2()
                         vertexStage {
                             main {
-                                val type = int1Var(instanceAttribFloat4(SelectedMeshes.attribId).x.toInt1())
-                                val id = int1Var(instanceAttribFloat4(SelectedMeshes.attribId).y.toInt1())
+                                val type = int1Var(instanceAttribFloat4(meshId).x.toInt1())
+                                val id = int1Var(instanceAttribFloat4(meshId).y.toInt1())
                                 typeAndId.input set int2Value(type, id)
                             }
                         }
@@ -278,29 +292,33 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
 
     companion object {
         private const val DEFAULT_NUM_JOINTS = 64
+        private val meshId = Attribute("attrib_meshid", GpuType.FLOAT4)
     }
 
-    private class SelectedMeshes {
-        val instanceList = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, attribId))
+    private inner class SelectedMeshes(val nodeId: NodeId) {
+        val instanceList = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, meshId))
         val selectedInstances = mutableListOf<SelectedInstance>()
 
         fun updateInstances(): MeshInstanceList {
             instanceList.clear()
-            instanceList.addInstances(selectedInstances.size) { buf ->
+            instanceList.addInstancesUpTo(selectedInstances.size) { buf ->
+                var addCount = 0
                 for (i in selectedInstances.indices) {
                     val inst = selectedInstances[i]
-                    inst.component.gameEntity.localToGlobalF.putTo(buf)
-                    buf.put(inst.type.mask.toFloat())
-                    buf.put((inst.id and 0x7fffff).toFloat())
-                    buf.put(0f)
-                    buf.put(0f)
+                    if (inst.component.sceneNode?.id == nodeId) {
+                        inst.component.gameEntity.localToGlobalF.putTo(buf)
+                        buf.put(inst.type.mask.toFloat())
+                        buf.put((inst.id and 0x7fffff).toFloat())
+                        buf.put(0f)
+                        buf.put(0f)
+                        addCount++
+                    } else {
+                        refreshSelection()
+                    }
                 }
+                addCount
             }
             return instanceList
-        }
-
-        companion object {
-            val attribId = Attribute("attrib_meshid", GpuType.FLOAT4)
         }
     }
 
