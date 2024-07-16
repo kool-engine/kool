@@ -4,7 +4,6 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import org.lwjgl.stb.STBImage.*
-import org.lwjgl.system.MemoryUtil
 import java.awt.RenderingHints
 import java.awt.Transparency
 import java.awt.geom.AffineTransform
@@ -54,16 +53,17 @@ object ImageDecoder {
                 is ByteBuffer -> {
                     val managed = Uint8Buffer(rawBuffer.capacity())
                     managed.useRaw { it.put(rawBuffer) }
+                    stbi_image_free(rawBuffer)
                     managed
                 }
                 is FloatBuffer -> {
                     val managed = Float32Buffer(rawBuffer.capacity())
                     managed.useRaw { it.put(rawBuffer) }
+                    stbi_image_free(rawBuffer)
                     managed
                 }
                 else -> error("unreachable")
             }
-            MemoryUtil.memFree(rawBuffer)
             TextureData2d(managedBuffer, w[0], h[0], props?.format ?: TexFormat.RGBA)
         }
     }

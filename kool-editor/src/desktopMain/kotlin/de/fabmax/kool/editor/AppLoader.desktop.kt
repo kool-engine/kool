@@ -36,11 +36,11 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
 
     private val physFs: PhysicalFileSystem? = projectFiles.fileSystem as? PhysicalFileSystem
     private val buildInProgress = AtomicBoolean(false)
-
-    override var hasAppChanged = true
-        private set
+    private val appSourcesChanged = AtomicBoolean(false)
 
     private val ignoredPaths = mutableSetOf<Path>()
+
+    private val changeListeners = mutableListOf<AppSourcesChangeListener>()
 
     private val fsWatcher = object : FileSystemWatcher {
         override fun onFileCreated(file: FileSystemFile) = checkIfSourceFileChanged(file)
@@ -50,14 +50,15 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         private fun checkIfSourceFileChanged(file: FileSystemFile) {
             // only trigger app reload if an actual source file has changed
             // valid source file need to be kotlin files be somewhere under /src/ - this excludes assets under /src/*/resources/
-            if (!hasAppChanged &&
-                file is PhysicalFileSystem.File &&
-                file.path.startsWith("/src/") &&
-                file.path.endsWith(".kt") &&
-                file.path.removePrefix("/") != JS_BEHAVIOR_GEN_OUTPUT
-            ) {
-                hasAppChanged = true
-                logD { "App sources changed" }
+            if (file is PhysicalFileSystem.File) {
+                if (file.path.startsWith("/src/") &&
+                    file.path.endsWith(".kt") &&
+                    file.path.removePrefix("/") != JS_BEHAVIOR_GEN_OUTPUT &&
+                    !appSourcesChanged.getAndSet(true)
+                ) {
+                    logD { "App sources changed" }
+                    changeListeners.forEach { it.onAppSourcesChanged() }
+                }
             }
         }
     }
@@ -69,9 +70,11 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         projectFiles.fileSystem.addFileSystemWatcher(fsWatcher)
     }
 
-    override suspend fun buildApp() {
-        hasAppChanged = false
+    override fun addChangeListener(listener: AppSourcesChangeListener) {
+        changeListeners += listener
+    }
 
+    override suspend fun buildApp() {
         val buildGradle = physFs?.getFileOrNull(BUILD_GRADLE) as PhysicalFileSystem.File?
         if (buildGradle == null) {
             logI { "build.gradle.kts not found, unable to build app" }
@@ -84,7 +87,6 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         }
 
         logI("AppLoader.loader") { "Executing gradle build" }
-
         suspendCoroutine { continuation ->
             thread {
                 try {
@@ -118,6 +120,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
                         continuation.resumeWith(Result.failure(IllegalStateException("Build failed")))
                     }
                 } finally {
+                    appSourcesChanged.set(false)
                     buildInProgress.set(false)
                 }
             }

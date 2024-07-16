@@ -19,6 +19,7 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
     private val fsWatcher = object : FileSystemWatcher {
         override fun onFileCreated(file: FileSystemFile) = addAssetItem(file)
         override fun onFileDeleted(file: FileSystemFile) = removeAssetItem(file)
+        override fun onFileChanged(file: FileSystemFile) = updateAssetItem(file)
 
         override fun onDirectoryCreated(directory: FileSystemDirectory) = addAssetItem(directory)
         override fun onDirectoryDeleted(directory: FileSystemDirectory) = removeAssetItem(directory)
@@ -65,6 +66,11 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
                 }
             }
         }
+
+        private fun updateAssetItem(fileItem: FileSystemItem) {
+            val changedAsset = assetsByPath[fileItem.path] ?: return
+            KoolEditor.instance.cachedAppAssets.reloadAsset(changedAsset)
+        }
     }
 
     init {
@@ -109,7 +115,12 @@ class AvailableAssets(private val projectFiles: ProjectFiles) {
 
         assetFiles.forEach { assetFile ->
             val data = assetFile.read()
-            targetDir.createFile(assetFile.name, data)
+            val existing = targetDir.getFileOrNull(assetFile.name) as WritableFileSystemFile?
+            if (existing == null) {
+                targetDir.createFile(assetFile.name, data)
+            } else {
+                existing.write(data)
+            }
         }
     }
 

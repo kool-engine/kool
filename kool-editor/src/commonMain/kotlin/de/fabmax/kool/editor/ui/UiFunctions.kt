@@ -1,11 +1,9 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
-import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
-import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.CursorShape
@@ -784,7 +782,7 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
 
     if (selectedTexPath.isNotEmpty()) {
         val texRef = AssetReference.Texture(selectedTexPath)
-        val tex = (AppAssets.impl as CachedAppAssets).getTextureMutableState(texRef).use()
+        val tex = KoolEditor.instance.cachedAppAssets.getTextureMutableState(texRef).use()
         Image(tex) {
             modifier
                 .margin(top = sizes.gap)

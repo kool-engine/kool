@@ -102,6 +102,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val appLoader = AppLoader(this)
     val availableAssets = AvailableAssets(projectFiles)
     val ui = EditorUi(this)
+    val cachedAppAssets: CachedAppAssets get() = AppAssets.impl as CachedAppAssets
 
     private val editorAppCallbacks = object : ApplicationCallbacks {
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
