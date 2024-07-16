@@ -37,6 +37,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     val onSelectionChanged = mutableListOf<(Set<GameEntity>) -> Unit>()
 
     private val selectedMeshes = mutableMapOf<NodeId, SelectedMeshes>()
+    private val selectionInstances = mutableMapOf<NodeId, MeshInstanceList>()
     private val expectedNodeIds = mutableSetOf<NodeId>()
     private var updateOverlay = false
 
@@ -160,6 +161,8 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     fun invalidateSelection() {
         selectedMeshes.clear()
         selectionPass.disposePipelines()
+        selectionInstances.values.forEach { it.release() }
+        selectionInstances.clear()
         updateOverlay = true
     }
 
@@ -296,8 +299,10 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     }
 
     private inner class SelectedMeshes(val nodeId: NodeId) {
-        val instanceList = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, meshId))
         val selectedInstances = mutableListOf<SelectedInstance>()
+        val instanceList = selectionInstances.getOrPut(nodeId) {
+            MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, meshId))
+        }
 
         fun updateInstances(): MeshInstanceList {
             instanceList.clear()

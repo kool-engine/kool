@@ -122,6 +122,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
 
     override fun release() {
         gpuInstances?.release()
+        gpuInstances = null
         super.release()
     }
 }

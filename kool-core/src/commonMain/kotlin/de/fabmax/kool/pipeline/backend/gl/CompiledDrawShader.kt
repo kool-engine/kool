@@ -96,16 +96,11 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     }
 
     fun bindMesh(cmd: DrawCommand): DrawInfo {
-        val geom = getOrCreateGpuGeometry(cmd)
-
         users.add(cmd.mesh.id)
+        drawInfo.numIndices = 0
 
         // update uniform values (camera + transform matrices, etc.)
         pipeline.update(cmd)
-
-        // update geometry buffers (vertex + instance data)
-        geom.checkBuffers()
-        drawInfo.numIndices = geom.numIndices
 
         // bind uniform data
         val rp = cmd.queue.view.renderPass
@@ -115,16 +110,18 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
 
         // bind vertex data
         if (drawInfo.isValid) {
+            val geom = getOrCreateGpuGeometry(cmd)
             geom.indexBuffer.bind()
             geom.dataBufferF?.let { floatAttrBinder?.bindAttributes(it) }
             geom.dataBufferI?.let { intAttrBinder?.bindAttributes(it) }
+            geom.checkBuffers()
+            drawInfo.numIndices = geom.numIndices
 
             cmd.instances?.let { insts ->
                 val gpuInsts = insts.getOrCreateGpuInstances(cmd)
                 gpuInsts.checkBuffers()
                 gpuInsts.instanceBuffer.let { instanceAttrBinder?.bindAttributes(it) }
             }
-
         }
 
         return drawInfo
