@@ -175,7 +175,7 @@ class WgpuDrawPipeline(
             }
             val gpuInsts = insts.gpuInstances as WgpuInstances
             gpuInsts.checkBuffers()
-            passEncoder.setVertexBuffer(slot++, gpuInsts.instanceBuffer)
+            gpuInsts.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
         }
         passEncoder.setVertexBuffer(slot++, gpuGeom.floatBuffer)
         gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }

@@ -141,6 +141,6 @@ abstract class KoolContext {
 
     companion object {
         // automatically updated by gradle script on build
-        const val KOOL_VERSION = "0.15.1"
+        const val KOOL_VERSION = "0.16.0-SNAPSHOT"
     }
 }
