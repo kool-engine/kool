@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.modules.ksl.blocks.ToneMapping
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DrawShader
 import de.fabmax.kool.pipeline.Texture2d
@@ -17,6 +18,14 @@ class SceneShaderData(val scene: EditorScene) {
     val shaderCache = SceneShaderCache()
 
     var maxNumberOfLights: Int = 4
+        set(value) {
+            if (value != field) {
+                field = value
+                notifyChange()
+            }
+        }
+
+    var toneMapping: ToneMapping = ToneMapping.Aces
         set(value) {
             if (value != field) {
                 field = value

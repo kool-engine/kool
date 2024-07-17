@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.util.Color
@@ -20,7 +21,10 @@ fun SceneBackgroundComponent(gameEntity: GameEntity, color: Color, isLinear: Boo
 class SceneBackgroundComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<SceneBackgroundComponentData>
-) : GameEntityDataComponent<SceneBackgroundComponentData>(gameEntity, componentInfo) {
+) :
+    GameEntityDataComponent<SceneBackgroundComponentData>(gameEntity, componentInfo),
+    EditorScene.SceneShaderDataListener
+{
 
     private val listeners by cachedSceneComponents<ListenerComponent>()
 
@@ -52,6 +56,16 @@ class SceneBackgroundComponent(
         applyBackground(data, null)
     }
 
+    override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
+        val skybox = this.skybox ?: return
+        val hdriBackground = data.sceneBackground as? SceneBackgroundData.Hdri ?: return
+
+        val colorConv = skybox.skyboxShader.colorSpaceConversion
+        if (colorConv is ColorSpaceConversion.LinearToSrgbHdr && colorConv.toneMapping != sceneShaderData.toneMapping) {
+            applyBackground(data, hdriBackground.hdriPath)
+        }
+    }
+
     private fun applyBackground(data: SceneBackgroundComponentData, prevHdriPath: String?) {
         launchOnMainThread {
             requiredAssets.clear()
@@ -61,7 +75,7 @@ class SceneBackgroundComponent(
                         requiredAssets += AssetReference.Hdri(bgData.hdriPath)
                         scene.shaderData.environmentMaps = AppAssets.loadHdri(bgData.hdriPath)
                     }
-                    updateSkybox(bgData, scene.shaderData.environmentMaps!!)
+                    updateSkybox(bgData, scene.shaderData)
                 }
                 is SceneBackgroundData.SingleColor -> {
                     scene.shaderData.environmentMaps = null
@@ -74,11 +88,21 @@ class SceneBackgroundComponent(
         }
     }
 
-    private fun updateSkybox(hdriBg: SceneBackgroundData.Hdri, ibl: EnvironmentMaps) {
+    private fun updateSkybox(hdriBg: SceneBackgroundData.Hdri, sceneShaderData: SceneShaderData) {
         val scene = sceneComponent.sceneNode
         scene.clearColor = null
-        val skybox = this.skybox ?: Skybox.Cube()
+        val ibl = sceneShaderData.environmentMaps!!
 
+        skybox?.let { skybox ->
+            val colorConv = skybox.skyboxShader.colorSpaceConversion
+            if (colorConv is ColorSpaceConversion.LinearToSrgbHdr && colorConv.toneMapping != sceneShaderData.toneMapping) {
+                scene.removeNode(skybox)
+                skybox.release()
+                this.skybox = null
+            }
+        }
+
+        val skybox = this.skybox ?: Skybox.Cube(colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping))
         skybox.name = "Skybox"
         skybox.isVisible = true
         skybox.isPickable = false

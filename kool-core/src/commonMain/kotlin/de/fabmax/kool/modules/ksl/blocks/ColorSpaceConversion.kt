@@ -10,14 +10,14 @@ sealed class ColorSpaceConversion {
     data class LinearToSrgb(val gamma: Float = Color.GAMMA_LINEAR_TO_sRGB) : ColorSpaceConversion()
     data class LinearToSrgbHdr(
         val toneMapping: ToneMapping = ToneMapping.AcesApproximated,
-        val exposure: Float = 1f,
-        val gamma: Float = Color.GAMMA_LINEAR_TO_sRGB
+        val exposure: Float = toneMapping.defaultExposure,
+        val gamma: Float = toneMapping.defaultGamma
     ) : ColorSpaceConversion()
 }
 
-enum class ToneMapping {
-    Aces,
-    AcesApproximated,
+enum class ToneMapping(val defaultExposure: Float = 1f, val defaultGamma: Float = Color.GAMMA_LINEAR_TO_sRGB) {
+    Aces(defaultGamma = 1f/2.4f),
+    AcesApproximated(defaultGamma = 1f/2.4f),
     KhronosPbrNeutral,
     ReinhardJodie,
     Uncharted2
