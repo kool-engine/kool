@@ -38,9 +38,9 @@ abstract class KoolContext {
         set(value) {
             field = value
             if (value) {
-                Profiling.enableAutoPrint(10.0, this)
+                Profiling.enableAutoPrint(10.0)
             } else {
-                Profiling.disableAutoPrint(this)
+                Profiling.disableAutoPrint()
             }
         }
 

@@ -60,7 +60,6 @@ open class Node(name: String? = null) : BaseReleasable() {
     var drawGroupId = 0
 
     private val globalCenterMut = MutableVec3f()
-    private val globalExtentMut = MutableVec3f()
 
     /**
      * This node's transform. Can be used to manipulate this node's position, size, etc. Notice that, by default, the
@@ -154,8 +153,7 @@ open class Node(name: String? = null) : BaseReleasable() {
         // update global center and radius, don't do modCount-based caching here since bounds can change too
         val toGlobal = modelMatrix.matF
         toGlobal.transform(globalCenterMut.set(bounds.center))
-        toGlobal.transform(globalCenterMut.set(bounds.max))
-        globalRadius = globalCenter.distance(globalExtentMut)
+        globalRadius = toGlobal.transform(tmpVec.set(bounds.size), 0f).length() * 0.5f
     }
 
     private fun addBoundsToParentBounds(parentBounds: BoundingBoxF) {

@@ -514,6 +514,7 @@ class IndexedVertexList(
 
     override fun release() {
         gpuGeometry?.release()
+        gpuGeometry = null
         super.release()
     }
 

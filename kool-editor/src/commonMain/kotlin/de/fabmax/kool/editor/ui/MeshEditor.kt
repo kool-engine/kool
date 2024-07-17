@@ -1,13 +1,11 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.AssetItem
-import de.fabmax.kool.editor.CachedAppAssets
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetMeshShapeAction
 import de.fabmax.kool.editor.actions.fused
-import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec2Data
@@ -263,7 +261,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         val allTheSameModel = modelShapes.all { it == modelShapes[0] }
         val assetRef = modelShapes[0].toAssetRef()
         val gltf = if (assetRef.path == null) null else {
-            (AppAssets.impl as CachedAppAssets).getModelMutableState(assetRef).use()
+            KoolEditor.instance.cachedAppAssets.getModelMutableState(assetRef).use()
         }
         if (allTheSameModel && gltf != null) {
             if (gltf.scenes.size > 1) {
@@ -310,7 +308,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         }
 
         val loaded = heightmaps.map {
-            (AppAssets.impl as CachedAppAssets).getHeightmapMutableState(it.toAssetRef()).use()
+            KoolEditor.instance.cachedAppAssets.getHeightmapMutableState(it.toAssetRef()).use()
         }
         val sizeX = condenseDouble(heightmaps.mapIndexed { i, heightmap ->
             val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS

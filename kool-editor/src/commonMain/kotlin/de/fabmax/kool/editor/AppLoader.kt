@@ -7,17 +7,20 @@ import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass
 
 interface AppLoadService {
-    val hasAppChanged: Boolean
-
     suspend fun buildApp()
-
     suspend fun loadApp(): LoadedApp
+
+    fun addChangeListener(listener: AppSourcesChangeListener)
 }
 
 expect fun AppLoadService(projectFiles: ProjectFiles): AppLoadService
 
 interface AppReloadListener {
     suspend fun onAppReloaded(loadedApp: LoadedApp)
+}
+
+interface AppSourcesChangeListener {
+    fun onAppSourcesChanged()
 }
 
 inline fun AppReloadListener(crossinline onAppReloaded: suspend (LoadedApp) -> Unit): AppReloadListener {
@@ -41,15 +44,17 @@ class AppBehavior(val simpleName: String, val qualifiedName: String, val propert
     }
 }
 
-class AppLoader(val editor: KoolEditor) {
+class AppLoader(val editor: KoolEditor) : AppSourcesChangeListener {
     val appReloadListeners = mutableListOf<AppReloadListener>()
 
     private val loadService = AppLoadService(editor.projectFiles)
+    private var appSourcesChanged = false
     private var isBuildInProgress = false
 
     init {
+        loadService.addChangeListener(this)
         editor.editorContent.onUpdate {
-            if (loadService.hasAppChanged) {
+            if (appSourcesChanged) {
                 editor.ui.appStateInfo.set("App sources changed on disc")
                 if (!isBuildInProgress && editor.ctx.isWindowFocused) {
                     reloadApp()
@@ -63,7 +68,8 @@ class AppLoader(val editor: KoolEditor) {
             isBuildInProgress = true
             launchOnMainThread {
                 try {
-                    if (loadService.hasAppChanged) {
+                    if (appSourcesChanged) {
+                        appSourcesChanged = false
                         editor.ui.appStateInfo.set("Building app...")
                         loadService.buildApp()
                     }
@@ -78,5 +84,9 @@ class AppLoader(val editor: KoolEditor) {
                 isBuildInProgress = false
             }
         }
+    }
+
+    override fun onAppSourcesChanged() {
+        appSourcesChanged = true
     }
 }

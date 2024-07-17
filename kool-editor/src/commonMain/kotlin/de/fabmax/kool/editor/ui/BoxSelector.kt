@@ -108,17 +108,16 @@ class BoxSelector : Composable {
             TODO()
         }
 
-        val rectSize = max - min
         val boxSelection = selectionCache.values
             .asSequence()
-            .filter { it.isIncluded(rectSize) }
+            .filter { it.isIncludedIn(min, max) }
             .map { it.entity }
             .toMutableSet()
 
         var testCount = 0
         scene.orderedEntities
             .asSequence()
-            .filter { it !in boxSelection && it.isSceneChild && it.isVisibleWithParents }
+            .filter { it !in boxSelection && it.isSceneChild && it.isVisible }
             .forEach {
                 if (camHelper.testSceneNode(it)) {
                     testCount++
@@ -127,9 +126,9 @@ class BoxSelector : Composable {
             }
 
         boxSelection.forEach { entity ->
-            val minRect = selectionCache.getOrPut(entity) { MinIncludeRect(rectSize, entity) }
-            if (!minRect.isIncluded(rectSize)) {
-                selectionCache[entity] = MinIncludeRect(rectSize, entity)
+            val minRect = selectionCache.getOrPut(entity) { MinIncludeRect(min, max, entity) }
+            if (!minRect.isIncludedIn(min, max)) {
+                selectionCache[entity] = MinIncludeRect(min, max, entity)
             }
         }
 
@@ -146,8 +145,10 @@ class BoxSelector : Composable {
         editor.selectionOverlay.setSelection(newSelection)
     }
 
-    private data class MinIncludeRect(val minRectSize: Vec2f, val entity: GameEntity) {
-        fun isIncluded(rectSize: Vec2f) = rectSize.x >= minRectSize.x && rectSize.y >= minRectSize.y
+    private data class MinIncludeRect(val min: Vec2f, val max: Vec2f, val entity: GameEntity) {
+        fun isIncludedIn(selMin: Vec2f, selMax: Vec2f): Boolean {
+            return min.x >= selMin.x && min.y >= selMin.y && max.x <= selMax.x && max.y <= selMax.y
+        }
     }
 
     private abstract class BoxIntersectHelper(val cam: Camera, boxMin: Vec2f, boxMax: Vec2f, viewport: Viewport) {
@@ -239,18 +240,19 @@ class BoxSelector : Composable {
             override fun traverseLeaf(tree: SpatialTree<Triangle>, leaf: SpatialTree<Triangle>.Node) {
                 for (i in leaf.nodeRange) {
                     val tri = leaf.itemsUnbounded[i]
-                    val projOk = cam.project(toGlobal.transform(tmpP.set(tri.pt0)), tmpA)
-                            && cam.project(toGlobal.transform(tmpP.set(tri.pt1)), tmpB)
-                            && cam.project(toGlobal.transform(tmpP.set(tri.pt2)), tmpC)
-
-                    if (projOk) {
-                        isIntersect = testTriEdgesVsBoxEdges()
-                        isIntersect = isIntersect || testBoxPointInsideAbc(boxMinX, boxMinY)
-                        isIntersect = isIntersect || testBoxPointInsideAbc(boxMinX, boxMaxY)
-                        isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMinY)
-                        isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMaxY)
-                        if (isIntersect) break
+                    cam.project(toGlobal.transform(tmpP.set(tri.pt0)), tmpA)
+                    cam.project(toGlobal.transform(tmpP.set(tri.pt1)), tmpB)
+                    cam.project(toGlobal.transform(tmpP.set(tri.pt2)), tmpC)
+                    if (tmpA.z < 0f || tmpB.z < 0f || tmpC.z < 0f) {
+                        continue
                     }
+
+                    isIntersect = testTriEdgesVsBoxEdges()
+                    isIntersect = isIntersect || testBoxPointInsideAbc(boxMinX, boxMinY)
+                    isIntersect = isIntersect || testBoxPointInsideAbc(boxMinX, boxMaxY)
+                    isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMinY)
+                    isIntersect = isIntersect || testBoxPointInsideAbc(boxMaxX, boxMaxY)
+                    if (isIntersect) break
                 }
             }
 

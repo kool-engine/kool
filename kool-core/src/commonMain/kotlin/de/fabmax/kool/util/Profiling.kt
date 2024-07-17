@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.toString
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
@@ -22,14 +23,20 @@ object Profiling : SynchronizedObject() {
     private var autoPrinter: ((KoolContext) -> Unit)? = null
 
     fun enter(tag: String) {
-        synchronized(this) { timers.getOrPut(tag) { SectionTimer(tag) } }.enter()
+        synchronized(this) { timers.getOrPut(tag) { SectionTimer() } }.enter()
     }
 
     fun exit(tag: String) {
         synchronized(this) { timers[tag] }?.exit()
     }
 
-    private class SectionTimer(val tag: String) {
+    inline fun profiled(tag: String, block: () -> Unit) {
+        enter(tag)
+        block()
+        exit(tag)
+    }
+
+    private class SectionTimer {
         var enterTime = 0.0
         var spentTime = 0.0
 
@@ -38,11 +45,7 @@ object Profiling : SynchronizedObject() {
         }
 
         fun exit() {
-            spentTime += Time.precisionTime - enterTime
-        }
-
-        fun reset() {
-            spentTime = 0.0
+            spentTime += (Time.precisionTime - enterTime) * 1000.0
         }
     }
 
@@ -58,7 +61,7 @@ object Profiling : SynchronizedObject() {
             println("-----------------------------------------------------------------")
             timers.keys.sorted().forEach { tag ->
                 val t = timers[tag]!!
-                val r = t.spentTime / deltaT * 100
+                val r = t.spentTime / deltaT * 0.1
                 val msPerFrame = fmtStr((t.spentTime / numFrames).toString(3), -9)
                 val rel = fmtStr(r.toString(2), -6)
                 val tot = fmtStr(t.spentTime.toString(3), -9)
@@ -70,7 +73,8 @@ object Profiling : SynchronizedObject() {
         }
     }
 
-    fun enableAutoPrint(intervalSecs: Double, ctx: KoolContext) {
+    fun enableAutoPrint(intervalSecs: Double) {
+        val ctx = KoolSystem.requireContext()
         autoPrinter?.let { ctx.onRender -= it }
         autoPrinter = {
             if (Time.precisionTime - lastPrint >= intervalSecs) {
@@ -80,13 +84,14 @@ object Profiling : SynchronizedObject() {
         ctx.onRender += autoPrinter!!
     }
 
-    fun disableAutoPrint(ctx: KoolContext) {
+    fun disableAutoPrint() {
+        val ctx = KoolSystem.requireContext()
         autoPrinter?.let { ctx.onRender -= it }
     }
 
     private fun fmtStr(str: String, len: Int): String {
         return if (str.length > abs(len)) {
-            str.substring(0 until len)
+            str.substring(0 until abs(len))
         } else {
             var s = str
             while (s.length < abs(len)) {

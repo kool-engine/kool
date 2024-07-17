@@ -1,11 +1,10 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.editor.CachedAppAssets
+import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
-import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.RigidActorComponent
 import de.fabmax.kool.editor.data.RigidActorComponentData
@@ -196,7 +195,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         }
 
         val loaded = heightmaps.map {
-            (AppAssets.impl as CachedAppAssets).getHeightmapMutableState(it.toAssetRef()).use()
+            KoolEditor.instance.cachedAppAssets.getHeightmapMutableState(it.toAssetRef()).use()
         }
         val sizeX = condenseDouble(heightmaps.mapIndexed { i, heightmap ->
             val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS
