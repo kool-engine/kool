@@ -19,6 +19,8 @@ value class GlRenderbuffer(val handle: Int)
 value class GlShader(val handle: Int)
 @JvmInline
 value class GlTexture(val handle: Int)
+@JvmInline
+value class GlVertexArrayObject(val handle: Int)
 
 interface GlApi {
     val ARRAY_BUFFER: Int
@@ -165,6 +167,7 @@ interface GlApi {
     val DEFAULT_FRAMEBUFFER: GlFramebuffer
     val NULL_BUFFER: GlBuffer
     val NULL_TEXTURE: GlTexture
+    val NULL_VAO: GlVertexArrayObject
 
     val TEXTURE_MAX_ANISOTROPY_EXT: Int
 
@@ -180,6 +183,7 @@ interface GlApi {
     fun bindImageTexture(unit: Int, texture: GlTexture, level: Int, layered: Boolean, layer: Int, access: Int, format: Int)
     fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer)
     fun bindTexture(target: Int, texture: GlTexture)
+    fun bindVertexArray(vao: GlVertexArrayObject)
     fun blendFunc(sFactor: Int, dFactor: Int)
     fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int)
     fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int)
@@ -200,6 +204,7 @@ interface GlApi {
     fun createRenderbuffer(): GlRenderbuffer
     fun createShader(type: Int): GlShader
     fun createTexture(): GlTexture
+    fun createVertexArray(): GlVertexArrayObject
     fun compileShader(shader: GlShader)
     fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int)
     fun cullFace(mode: Int)
@@ -210,6 +215,7 @@ interface GlApi {
     fun deleteRenderbuffer(renderbuffer: GlRenderbuffer)
     fun deleteShader(shader: GlShader)
     fun deleteTexture(texture: GlTexture)
+    fun deleteVertexArray(vao: GlVertexArrayObject)
     fun depthFunc(func: Int)
     fun depthMask(flag: Boolean)
     fun disable(cap: Int)

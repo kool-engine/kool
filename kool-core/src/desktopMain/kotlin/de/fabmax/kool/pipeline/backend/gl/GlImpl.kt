@@ -157,6 +157,7 @@ object GlImpl : GlApi {
     override val DEFAULT_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(GL_NONE)
     override val NULL_BUFFER: GlBuffer = GlBuffer(GL_NONE)
     override val NULL_TEXTURE: GlTexture = GlTexture(0)
+    override val NULL_VAO: GlVertexArrayObject= GlVertexArrayObject(0)
 
     override var TEXTURE_MAX_ANISOTROPY_EXT = 0
         private set
@@ -177,6 +178,7 @@ object GlImpl : GlApi {
     override fun bindImageTexture(unit: Int, texture: GlTexture, level: Int, layered: Boolean, layer: Int, access: Int, format: Int) = glBindImageTexture(unit, texture.handle, level, layered, layer, access, format)
     override fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer) = glBindRenderbuffer(target, renderbuffer.handle)
     override fun bindTexture(target: Int, texture: GlTexture) = glBindTexture(target, texture.handle)
+    override fun bindVertexArray(vao: GlVertexArrayObject) = glBindVertexArray(vao.handle)
     override fun blendFunc(sFactor: Int, dFactor: Int) = glBlendFunc(sFactor, dFactor)
     override fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int) = glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
     override fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
@@ -197,6 +199,7 @@ object GlImpl : GlApi {
     override fun createRenderbuffer(): GlRenderbuffer = GlRenderbuffer(glGenRenderbuffers())
     override fun createShader(type: Int): GlShader = GlShader(glCreateShader(type))
     override fun createTexture(): GlTexture = GlTexture(glGenTextures())
+    override fun createVertexArray(): GlVertexArrayObject = GlVertexArrayObject(glCreateVertexArrays())
     override fun compileShader(shader: GlShader) = glCompileShader(shader.handle)
     override fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int) = glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height)
     override fun cullFace(mode: Int) = glCullFace(mode)
@@ -207,6 +210,7 @@ object GlImpl : GlApi {
     override fun deleteRenderbuffer(renderbuffer: GlRenderbuffer) = glDeleteRenderbuffers(renderbuffer.handle)
     override fun deleteShader(shader: GlShader) = glDeleteShader(shader.handle)
     override fun deleteTexture(texture: GlTexture) = glDeleteTextures(texture.handle)
+    override fun deleteVertexArray(vao: GlVertexArrayObject) = glDeleteVertexArrays(vao.handle)
     override fun depthFunc(func: Int) = glDepthFunc(func)
     override fun depthMask(flag: Boolean) = glDepthMask(flag)
     override fun disable(cap: Int) = glDisable(cap)

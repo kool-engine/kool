@@ -7,11 +7,14 @@ import org.w3c.dom.ImageData
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun beginQuery(target: Int, query: WebGLQuery?)
     fun bindBufferBase(target: Int, index: Int, buffer: WebGLBuffer?)
+    fun bindVertexArray(vertexArray: WebGLVertexArrayObject?)
     fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int)
     fun bufferData(target: Int, srcData: ArrayBufferView, usage: Int, srcOffset: Int, length: Int)
     fun clearBufferfv(buffer: Int, drawBuffer: Int, values: Float32Array)
+    fun createVertexArray(): WebGLVertexArrayObject
     fun createQuery(): WebGLQuery
     fun deleteQuery(query: WebGLQuery?)
+    fun deleteVertexArray(vertexArray: WebGLVertexArrayObject?)
     fun drawBuffers(buffers: IntArray)
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, offset: Int, instanceCount: Int)
     fun endQuery(target: Int)
@@ -91,6 +94,8 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
 }
 
 external interface WebGLQuery
+
+external interface WebGLVertexArrayObject
 
 external interface EXT_clip_control {
     fun clipControlEXT(origin: Int, depth: Int)

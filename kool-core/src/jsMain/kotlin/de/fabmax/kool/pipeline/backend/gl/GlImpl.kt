@@ -155,6 +155,7 @@ object GlImpl : GlApi {
     override val DEFAULT_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(-1)
     override val NULL_BUFFER: GlBuffer = GlBuffer(-1)
     override val NULL_TEXTURE: GlTexture = GlTexture(-1)
+    override val NULL_VAO: GlVertexArrayObject = GlVertexArrayObject(-1)
 
     override var TEXTURE_MAX_ANISOTROPY_EXT = 0
         private set
@@ -201,6 +202,10 @@ object GlImpl : GlApi {
         factory = { gl.createTexture() },
         deleter = { gl.deleteTexture(it) }
     )
+    private val vaos = WebGlObjList<WebGLVertexArrayObject, Unit>(
+        factory = { gl.createVertexArray() },
+        deleter = { gl.deleteVertexArray(it) }
+    )
 
     private var activeProgram: ProgramInfo? = null
 
@@ -211,6 +216,7 @@ object GlImpl : GlApi {
     private val GlRenderbuffer.webGl: WebGLRenderbuffer? get() = renderbuffers[handle]
     private val GlShader.webGl: WebGLShader? get() = shaders[handle]
     private val GlTexture.webGl: WebGLTexture? get() = textures[handle]
+    private val GlVertexArrayObject.webGl: WebGLVertexArrayObject? get() = vaos[handle]
     private val Int.webGlUniformLoc: WebGLUniformLocation? get() = activeProgram?.uniformLocations?.getOrNull(this)
 
     override fun activeTexture(texture: Int) = gl.activeTexture(texture)
@@ -222,6 +228,7 @@ object GlImpl : GlApi {
     override fun bindImageTexture(unit: Int, texture: GlTexture, level: Int, layered: Boolean, layer: Int, access: Int, format: Int) = notSupported("bindImageTexture")
     override fun bindRenderbuffer(target: Int, renderbuffer: GlRenderbuffer) = gl.bindRenderbuffer(target, renderbuffer.webGl)
     override fun bindTexture(target: Int, texture: GlTexture) = gl.bindTexture(target, texture.webGl)
+    override fun bindVertexArray(vao: GlVertexArrayObject) = gl.bindVertexArray(vao.webGl)
     override fun blendFunc(sFactor: Int, dFactor: Int) = gl.blendFunc(sFactor, dFactor)
     override fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int) = gl.blitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
     override fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int) = gl.bufferData(target, (buffer as Uint8BufferImpl).buffer, usage, 0, buffer.limit)
@@ -243,6 +250,7 @@ object GlImpl : GlApi {
     override fun createRenderbuffer(): GlRenderbuffer = GlRenderbuffer(renderbuffers.create(Unit))
     override fun createShader(type: Int): GlShader = GlShader(shaders.create(type))
     override fun createTexture(): GlTexture = GlTexture(textures.create(Unit))
+    override fun createVertexArray(): GlVertexArrayObject = GlVertexArrayObject(vaos.create(Unit))
     override fun cullFace(mode: Int) = gl.cullFace(mode)
     override fun deleteBuffer(buffer: GlBuffer) = buffers.delete(buffer.handle)
     override fun deleteFramebuffer(framebuffer: GlFramebuffer) = framebuffers.delete(framebuffer.handle)
@@ -251,6 +259,7 @@ object GlImpl : GlApi {
     override fun deleteRenderbuffer(renderbuffer: GlRenderbuffer) = renderbuffers.delete(renderbuffer.handle)
     override fun deleteShader(shader: GlShader) = shaders.delete(shader.handle)
     override fun deleteTexture(texture: GlTexture) = textures.delete(texture.handle)
+    override fun deleteVertexArray(vao: GlVertexArrayObject) = vaos.delete(vao.handle)
     override fun depthFunc(func: Int) = gl.depthFunc(func)
     override fun depthMask(flag: Boolean) = gl.depthMask(flag)
     override fun disable(cap: Int) = gl.disable(cap)
@@ -394,11 +403,12 @@ object GlImpl : GlApi {
         val deleter: (T?) -> Unit
     ) {
         val objs = mutableListOf<T?>()
+        private val freeSlots = mutableListOf<Int>()
 
         operator fun get(index: Int) = objs.getOrNull(index)
 
         fun create(p: P): Int {
-            val insertIdx = objs.indexOfFirst { it == null }
+            val insertIdx = if (freeSlots.isEmpty()) -1 else freeSlots.removeLast()
             return if (insertIdx >= 0) {
                 objs[insertIdx] = factory(p)
                 insertIdx
@@ -409,8 +419,10 @@ object GlImpl : GlApi {
         }
 
         fun delete(index: Int) {
+            checkNotNull(objs[index])
             deleter(objs[index])
             objs[index] = null
+            freeSlots += index
         }
     }
 
