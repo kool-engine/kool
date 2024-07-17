@@ -71,7 +71,7 @@ class BlurShader(cfg: BlurShaderConfig, model: Model = Model(cfg)) :
 
 class BlurShaderConfig {
     var kernel = BlurShader.blurKernel(8)
-    var colorSpaceConversion = ColorSpaceConversion.AS_IS
+    var colorSpaceConversion = ColorSpaceConversion.AsIs
 
     var kernelRadius: Int
         get() = kernel.size - 1

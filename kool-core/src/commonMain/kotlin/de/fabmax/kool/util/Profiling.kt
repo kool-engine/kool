@@ -56,25 +56,25 @@ object Profiling : SynchronizedObject() {
         lastPrintFrameIdx = Time.frameCount
 
         synchronized(this) {
-            println(" Profiling statistics for last ${deltaT.toString(0)} ms / $numFrames frames")
-            println(" Tag                            | ms/frame | Relative | Total ms ")
-            println("-----------------------------------------------------------------")
+            println("------------------------------------------------------------------")
+            println(" Profiling statistics for last ${deltaT.toString(3)} secs / $numFrames frames")
+            println(" Tag                             | ms/frame | Relative | Total ms ")
+            println("------------------------------------------------------------------")
             timers.keys.sorted().forEach { tag ->
                 val t = timers[tag]!!
                 val r = t.spentTime / deltaT * 0.1
                 val msPerFrame = fmtStr((t.spentTime / numFrames).toString(3), -9)
-                val rel = fmtStr(r.toString(2), -6)
+                val rel = fmtStr(r.toString(2), -7)
                 val tot = fmtStr(t.spentTime.toString(3), -9)
-                println("${fmtStr(tag, 32)}|${msPerFrame} |${rel} % |${tot}")
+                println(" ${fmtStr(tag, 32)}|${msPerFrame} |${rel} % |${tot}")
             }
             timers.clear()
-            println("-----------------------------------------------------------------------")
+            println("------------------------------------------------------------------")
 
         }
     }
 
-    fun enableAutoPrint(intervalSecs: Double) {
-        val ctx = KoolSystem.requireContext()
+    fun enableAutoPrint(intervalSecs: Double, ctx: KoolContext = KoolSystem.requireContext()) {
         autoPrinter?.let { ctx.onRender -= it }
         autoPrinter = {
             if (Time.precisionTime - lastPrint >= intervalSecs) {
@@ -84,8 +84,7 @@ object Profiling : SynchronizedObject() {
         ctx.onRender += autoPrinter!!
     }
 
-    fun disableAutoPrint() {
-        val ctx = KoolSystem.requireContext()
+    fun disableAutoPrint(ctx: KoolContext = KoolSystem.requireContext()) {
         autoPrinter?.let { ctx.onRender -= it }
     }
 

@@ -13,6 +13,7 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.UiSurface
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
@@ -85,7 +86,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
             bloomScale = 1f
             setBloomBrightnessThresholds(1f, 2f)
 
-            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
+            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
         }
         mainScene += deferredPipeline.createDefaultOutputQuad()
 

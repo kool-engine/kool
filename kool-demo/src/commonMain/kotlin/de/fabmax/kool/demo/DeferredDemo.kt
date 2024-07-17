@@ -51,7 +51,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         deferredPipeline.bloom?.upperThreshold = new + 0.5f
     }
 
-    private val ibl by hdriSingleColor(Color(0.15f, 0.15f, 0.15f))
+    private val ibl by hdriSingleColor(Color(0.22f, 0.22f, 0.22f))
     private val groundColor by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
     private val groundNormals by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-normal.jpg")
     private val groundRoughness by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-roughness.jpg")
@@ -113,7 +113,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             bloomStrength = this@DeferredDemo.bloomStrength.value
             setBloomBrightnessThresholds(bloomThreshold.value, bloomThreshold.value + 0.5f)
 
-            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
+            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
         }
         deferredPipeline.sceneContent.makeContent()
         addNode(deferredPipeline.createDefaultOutputQuad())
@@ -133,7 +133,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 shader = KslUnlitShader {
                     vertices { isInstanced = true }
                     color { instanceColor(Attribute.COLORS) }
-                    colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+                    colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
                 }
             }
 
@@ -498,7 +498,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         private val bloomMapShader = KslUnlitShader {
             pipeline { depthTest = DepthCompareOp.ALWAYS }
             color { textureData() }
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
             modelCustomizer = {
                 fragmentStage {
                     main {
@@ -534,7 +534,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         companion object {
             val cfg = UnlitShaderConfig {
                 pipeline { depthTest = DepthCompareOp.ALWAYS }
-                colorSpaceConversion = ColorSpaceConversion.AS_IS
+                colorSpaceConversion = ColorSpaceConversion.AsIs
                 modelCustomizer = {
                     val uv = interStageFloat2()
                     vertexStage {

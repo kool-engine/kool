@@ -28,11 +28,17 @@ class SceneComponent(
 
     init {
         componentOrder = COMPONENT_ORDER_EARLY
-        gameEntity.scene.shaderData.maxNumberOfLights = data.maxNumLights
+        gameEntity.scene.shaderData.apply {
+            maxNumberOfLights = data.maxNumLights
+            toneMapping = data.toneMapping
+        }
     }
 
     override fun onDataChanged(oldData: SceneComponentData, newData: SceneComponentData) {
-        scene.shaderData.maxNumberOfLights = newData.maxNumLights
+        gameEntity.scene.shaderData.apply {
+            maxNumberOfLights = newData.maxNumLights
+            toneMapping = newData.toneMapping
+        }
 
         if (oldData.cameraEntityId != newData.cameraEntityId) {
             val newCam = gameEntity.scene.sceneEntities[newData.cameraEntityId]?.getComponent<CameraComponent>()?.camera

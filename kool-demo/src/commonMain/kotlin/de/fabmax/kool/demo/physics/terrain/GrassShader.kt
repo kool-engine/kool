@@ -3,7 +3,10 @@ package de.fabmax.kool.demo.physics.terrain
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
-import de.fabmax.kool.modules.ksl.blocks.*
+import de.fabmax.kool.modules.ksl.blocks.CameraData
+import de.fabmax.kool.modules.ksl.blocks.SceneLightData
+import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
+import de.fabmax.kool.modules.ksl.blocks.texCoordAttributeBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.AlphaMode
@@ -135,8 +138,6 @@ object GrassShader {
             this.isInstanced = isInstanced
             isFlipBacksideNormals = false
         }
-
-        colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         alphaMode = AlphaMode.Opaque
 
         modelCustomizer = {

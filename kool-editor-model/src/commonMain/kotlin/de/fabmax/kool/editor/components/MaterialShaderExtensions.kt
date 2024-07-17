@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 
@@ -28,13 +29,13 @@ suspend fun MaterialShaderData.createShader(sceneShaderData: SceneShaderData, mo
 }
 
 suspend fun MaterialShaderData.updateShader(shader: DrawShader?, sceneShaderData: SceneShaderData): Boolean = when (this) {
-    is PbrShaderData -> (shader as? KslPbrShader)?.let { updateShader(it, sceneShaderData) } ?: false
+    is PbrShaderData -> (shader as? KslPbrShader)?.let { updatePbrShader(it, sceneShaderData) } ?: false
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
 }
 
 fun MaterialShaderData.matchesShader(shader: DrawShader?): Boolean = when (this) {
-    is PbrShaderData -> matchesShader(shader)
+    is PbrShaderData -> matchesPbrShader(shader)
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
 }
@@ -106,6 +107,7 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
         }
 
         shadow { addShadowMaps(sceneShaderData.shadowMaps) }
+        colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping)
         maxNumberOfLights = sceneShaderData.maxNumberOfLights
         sceneShaderData.environmentMaps?.let {
             enableImageBasedLighting(it)
@@ -114,15 +116,20 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
             ao { enableSsao(it) }
         }
     }
-    updateShader(shader, sceneShaderData)
+    updatePbrShader(shader, sceneShaderData)
     return shader
 }
 
-suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: SceneShaderData): Boolean {
-    if (!matchesShader(shader)) {
+suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData: SceneShaderData): Boolean {
+    if (!matchesPbrShader(shader)) {
         return false
     }
     val pbrShader = shader as? KslPbrShader ?: return false
+
+    val colorConv = shader.cfg.colorSpaceConversion
+    if (colorConv is ColorSpaceConversion.LinearToSrgbHdr && colorConv.toneMapping != sceneShaderData.toneMapping) {
+        return false
+    }
 
     val ibl = sceneShaderData.environmentMaps
     val isIbl = ibl != null
@@ -186,7 +193,7 @@ suspend fun PbrShaderData.updateShader(shader: KslPbrShader, sceneShaderData: Sc
     return true
 }
 
-fun PbrShaderData.matchesShader(shader: DrawShader?): Boolean {
+fun PbrShaderData.matchesPbrShader(shader: DrawShader?): Boolean {
     if (shader !is KslPbrShader) {
         return false
     }

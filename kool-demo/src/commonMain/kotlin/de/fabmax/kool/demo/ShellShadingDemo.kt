@@ -528,7 +528,7 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 }.`else` {
                     val lightColor = float3Var(sampleTexture(textureCube("tIrradiance"), worldNormal.output, 0f.const).rgb)
                     val linColor = float3Var(furColor * lightColor)
-                    colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LINEAR_TO_sRGB_HDR), 1f.const)
+                    colorOutput(convertColorSpace(linColor, ColorSpaceConversion.LinearToSrgbHdr()), 1f.const)
                 }
             }
         }

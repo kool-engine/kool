@@ -32,7 +32,7 @@ class SimplificationDemo : DemoScene("Simplification") {
     private val modelWireframe = TriangulatedLineMesh().apply {
         shader = TriangulatedLineMesh.Shader {
             color { vertexColor() }
-            colorSpaceConversion = ColorSpaceConversion.AS_IS
+            colorSpaceConversion = ColorSpaceConversion.AsIs
             depthFactor = 0.9999f
         }
     }

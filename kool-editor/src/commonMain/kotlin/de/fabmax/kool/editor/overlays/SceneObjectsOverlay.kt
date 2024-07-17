@@ -73,7 +73,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }
     }
 
@@ -114,7 +114,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }
     }
 
@@ -150,7 +150,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }
     }
 
@@ -190,7 +190,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }
     }
 
@@ -216,11 +216,8 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         shader = KslUnlitShader {
             vertices { isInstanced = true }
             pipeline { cullMethod = CullMethod.NO_CULLING }
-            color {
-                instanceColor()
-                //vertexColor(blendMode = ColorBlockConfig.BlendMode.Multiply)
-            }
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+            color { instanceColor() }
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }
     }
 

@@ -27,6 +27,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         .flatMap { attr -> mappedAttribLocations[attr]!!.let { loc -> loc until loc + attr.locationSize } }
         .toIntArray()
 
+    private var vao: GlVertexArrayObject? = null
     private val floatAttrBinder: AttributeBinder?
     private val intAttrBinder: AttributeBinder?
     private val instanceAttrBinder: AttributeBinder?
@@ -74,6 +75,17 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     }
 
     fun enableVertexLayout() {
+        val vao = this.vao ?: createVao()
+        gl.bindVertexArray(vao)
+    }
+
+    fun disableVertexLayout() {
+        gl.bindVertexArray(gl.NULL_VAO)
+    }
+
+    private fun createVao(): GlVertexArrayObject {
+        val vao = gl.createVertexArray().also { this.vao = it }
+        gl.bindVertexArray(vao)
         for (i in attributeLocations.indices) {
             val location = attributeLocations[i]
             gl.enableVertexAttribArray(location)
@@ -84,15 +96,8 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
             gl.enableVertexAttribArray(location)
             gl.vertexAttribDivisor(location, 1)
         }
-    }
-
-    fun disableVertexLayout() {
-        for (i in attributeLocations.indices) {
-            gl.disableVertexAttribArray(attributeLocations[i])
-        }
-        for (i in instanceAttributeLocations.indices) {
-            gl.disableVertexAttribArray(instanceAttributeLocations[i])
-        }
+        gl.bindVertexArray(gl.NULL_VAO)
+        return vao
     }
 
     fun bindMesh(cmd: DrawCommand): DrawInfo {
@@ -137,6 +142,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     override fun release() {
         if (!isReleased) {
             backend.shaderMgr.removeDrawShader(this)
+            vao?.let { gl.deleteVertexArray(it) }
             super.release()
         }
     }

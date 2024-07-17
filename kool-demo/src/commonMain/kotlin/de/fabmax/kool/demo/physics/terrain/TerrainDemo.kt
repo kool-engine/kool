@@ -372,7 +372,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             shadow { addShadowMap(shadowMap) }
             enableSsao(ssao.aoMap)
             dualImageBasedAmbientColor()
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         }
 
         val shader = if (isPlayerPbr) {
@@ -407,7 +406,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             shadow { addShadowMap(shadowMap) }
             enableSsao(ssao.aoMap)
             dualImageBasedAmbientColor()
-            colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr()
         }
         return if (isPbr) {
             KslPbrShader {

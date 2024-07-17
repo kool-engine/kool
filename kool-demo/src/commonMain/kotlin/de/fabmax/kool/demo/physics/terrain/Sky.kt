@@ -184,7 +184,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             // nighttime -> light is the moon
             val moonProgress = moonProgress(timeOfDay)
             val moonIntensity = smoothStep(0.0f, 0.06f, moonProgress) * (1f - smoothStep(0.94f, 1.0f, moonProgress))
-            sceneLight.setColor(moonColor, moonIntensity * 0.07f)
+            sceneLight.setColor(moonColor, moonIntensity * 0.12f)
             sceneLight.setup(moonDirection)
         }
 
@@ -229,7 +229,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
                     cullMethod = CullMethod.NO_CULLING
                     isWriteDepth = false
                 }
-                colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB
+                colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
                 modelCustomizer = {
                     vertexStage {
                         main {
