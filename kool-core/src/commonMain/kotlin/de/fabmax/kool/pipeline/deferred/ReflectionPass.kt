@@ -177,7 +177,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
 
                 val reflectionColor = float3Var(sampleTexture(lightingPass, samplePos.xy, 0f.const).rgb)
                 val reflectionAlpha = sampleWeight * roughnessWeight
-                val outColor = float3Var(convertColorSpace(reflectionColor, ColorSpaceConversion.LINEAR_TO_sRGB))
+                val outColor = float3Var(convertColorSpace(reflectionColor, ColorSpaceConversion.LinearToSrgb()))
                 colorOutput(outColor, reflectionAlpha)
             }
         }

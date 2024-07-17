@@ -131,9 +131,11 @@ the libs are resolved and added to the IntelliJ module classpath.
 - (Almost) complete support for [glTF 2.0](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
 - Skin / armature mesh animation (vertex shader based)
 - Deferred shading
-  - HDR lighting with [Uncharted2 tone-mapping](http://filmicworlds.com/blog/filmic-tonemapping-operators/)
-  - Optional Screen-space reflections
-  - Optional Bloom
+- Various tone-mapping options:
+  - ACES (default)
+  - Khronos PBR Neutral
+  - Uncharted 2
+  - Modified Reinhard
 - Screen-space ambient occlusion
 - Normal, roughness, metallic, ambient occlusion
 - Vertex and parallax occlusion displacement mapping

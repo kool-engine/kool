@@ -104,7 +104,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
                         }
                     }
 
-                    val srgb = float3Var(convertColorSpace(linearColor.rgb, ColorSpaceConversion.LINEAR_TO_sRGB_HDR))
+                    val srgb = float3Var(convertColorSpace(linearColor.rgb, ColorSpaceConversion.LinearToSrgbHdr()))
                     if (cfg.isWithVignette) {
                         srgb set funApplyVignette(srgb, uniformFloat3("uVignetteCfg"), texCoord.output)
                     }

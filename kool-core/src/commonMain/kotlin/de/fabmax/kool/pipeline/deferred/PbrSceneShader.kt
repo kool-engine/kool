@@ -187,7 +187,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                     if (cfg.isScrSpcReflections) {
                         val ssrMap = texture2d("tSsrMap")
                         val ssr = float4Var(sampleTexture(ssrMap, uv))
-                        reflectionColor set convertColorSpace(ssr.rgb, ColorSpaceConversion.sRGB_TO_LINEAR)
+                        reflectionColor set convertColorSpace(ssr.rgb, ColorSpaceConversion.SrgbToLinear())
                         reflectionWeight set ssr.a
                     }
 

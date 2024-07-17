@@ -82,7 +82,6 @@ object OceanShader {
         color { constColor(MdColor.CYAN.toLinear()) }
         shadow { addShadowMap(shadowMap) }
         dualImageBasedAmbientColor()
-        colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
         modelCustomizer = { oceanMod(isInvertedDepth) }
     }
 
@@ -207,7 +206,7 @@ object OceanShader {
                 val oceanAlpha = clamp((oceanDepth2 - 0.5f.const) / 12f.const, 0.5f.const, 1f.const)
                 `if`(oceanAlpha lt 1f.const) {
                     oceanFloorColor set sampleTexture(oceanFloorColorTex, refractUv, 0f.const)
-                    oceanFloorColor.rgb set convertColorSpace(oceanFloorColor.rgb, ColorSpaceConversion.sRGB_TO_LINEAR)
+                    oceanFloorColor.rgb set convertColorSpace(oceanFloorColor.rgb, ColorSpaceConversion.SrgbToLinear())
                 }
 
                 val waterColor = mix(oceanFloorColor, baseColor, oceanAlpha)

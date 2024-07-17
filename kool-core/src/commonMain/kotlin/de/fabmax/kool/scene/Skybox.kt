@@ -24,22 +24,16 @@ object Skybox {
     fun cube(
         environmentMap: TextureCube,
         texLod: Float = 0f,
-        hdriInput: Boolean = true,
-        hdrOutput: Boolean = false,
+        colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(),
         isInfiniteDepth: Boolean = false
     ): Cube {
-        val colorSpaceConversion = when {
-            hdriInput == hdrOutput -> ColorSpaceConversion.AS_IS
-            hdriInput -> ColorSpaceConversion.LINEAR_TO_sRGB_HDR
-            else -> ColorSpaceConversion.sRGB_TO_LINEAR
-        }
         return Cube(environmentMap, texLod, colorSpaceConversion, isInfiniteDepth)
     }
 
     class Cube(
         skyTex: TextureCube? = null,
         texLod: Float = 0f,
-        colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR,
+        colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(),
         isInfiniteDepth: Boolean = false
     ) : Mesh(IndexedVertexList(Attribute.POSITIONS), name = UniqueId.nextId("Skybox.Cube")) {
 
@@ -60,7 +54,7 @@ object Skybox {
         }
     }
 
-    class KslSkyCubeShader(colorSpaceConversion: ColorSpaceConversion, isInfiniteDepth: Boolean) :
+    class KslSkyCubeShader(val colorSpaceConversion: ColorSpaceConversion, val isInfiniteDepth: Boolean) :
         KslShader(
             Model(colorSpaceConversion, isInfiniteDepth),
             PipelineConfig(cullMethod = CullMethod.CULL_FRONT_FACES, isWriteDepth = false)

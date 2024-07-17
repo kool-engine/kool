@@ -6,6 +6,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.randomI
 import de.fabmax.kool.math.spatial.BoundingBoxF
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.deferred.DeferredPipeline
@@ -75,7 +76,7 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
                 addNode(roses)
             }
 
-            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, hdrOutput = true)
+            lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
         }
         shadowMap.drawNode = deferredPipeline.sceneContent
 

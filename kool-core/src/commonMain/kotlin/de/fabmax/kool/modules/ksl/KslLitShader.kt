@@ -114,7 +114,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
             val emissionCfg = ColorBlockConfig.Builder("emissionColor").constColor(Color(0f, 0f, 0f, 0f))
 
             var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
-            var colorSpaceConversion = ColorSpaceConversion.LINEAR_TO_sRGB_HDR
+            var colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr()
             var maxNumberOfLights = 4
             var lightStrength = 1f
             var alphaMode: AlphaMode = AlphaMode.Blend

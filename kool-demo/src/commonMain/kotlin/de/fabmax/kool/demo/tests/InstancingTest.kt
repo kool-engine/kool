@@ -27,7 +27,7 @@ class InstancingTest : DemoScene("Instancing") {
     private val meshInstances = mutableListOf<MeshInstance>()
     private val directShader = KslUnlitShader {
         color { vertexColor() }
-        colorSpaceConversion = ColorSpaceConversion.AS_IS
+        colorSpaceConversion = ColorSpaceConversion.AsIs
     }
     private val instancedShader = KslUnlitShader {
         vertices {
@@ -35,7 +35,7 @@ class InstancingTest : DemoScene("Instancing") {
             modelMatrixComposition = listOf(ModelMatrixComposition.INSTANCE_MODEL_MAT)
         }
         color { vertexColor() }
-        colorSpaceConversion = ColorSpaceConversion.AS_IS
+        colorSpaceConversion = ColorSpaceConversion.AsIs
     }
 
     private val profilingScene = ProfilingScene()
