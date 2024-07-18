@@ -127,7 +127,8 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
             )
             pfnUserCallback { messageSeverity, messageTypes, pCallbackData, _ ->
                 val arg = VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData)
-                val msg = "[VkValidation/${getMessageTypeName(messageTypes)}] ${MemoryUtil.memUTF8(arg.pMessage())}"
+                val logStr = arg.pMessage()?.let { MemoryUtil.memUTF8(it) }
+                val msg = "[VkValidation/${getMessageTypeName(messageTypes)}] $logStr"
                 when {
                     messageSeverity and EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT != 0 -> {
                         logD { msg }
