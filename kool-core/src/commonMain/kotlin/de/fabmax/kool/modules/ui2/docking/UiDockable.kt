@@ -29,10 +29,10 @@ class UiDockable(
     override val preferredHeight: Dp?
         get() = floatingHeight.value as? Dp
 
-    val floatingX = mutableStateOf(floatingX)
-    val floatingY = mutableStateOf(floatingY)
-    val floatingWidth = mutableStateOf(floatingWidth)
-    val floatingHeight = mutableStateOf(floatingHeight)
+    override val floatingX = mutableStateOf(floatingX)
+    override val floatingY = mutableStateOf(floatingY)
+    override val floatingWidth = mutableStateOf(floatingWidth)
+    override val floatingHeight = mutableStateOf(floatingHeight)
     val floatingAlignmentX = mutableStateOf(floatingAlignmentX)
     val floatingAlignmentY = mutableStateOf(floatingAlignmentY)
 
@@ -149,9 +149,9 @@ class UiDockable(
             .align(alignX, alignY)
             .size(width, height)
             .zLayer(UiSurface.LAYER_FLOATING)
-            .onEnter { setResizeCursorShape(filterResizeEdgeMaskByDockNode(edgeMask)) }
-            .onHover { setResizeCursorShape(filterResizeEdgeMaskByDockNode(edgeMask)) }
-            .onDragStart { resizeDragStart(resizeNode, filterResizeEdgeMaskByDockNode(edgeMask), it) }
+            .onEnter { setResizeCursorShape(getBoxResizeEdgeMask(it, edgeMask)) }
+            .onHover { setResizeCursorShape(getBoxResizeEdgeMask(it, edgeMask)) }
+            .onDragStart { resizeDragStart(resizeNode, getBoxResizeEdgeMask(it, edgeMask), it) }
             .onDrag { resizeDrag(it) }
     }
 
@@ -242,6 +242,26 @@ class UiDockable(
         return filterResizeEdgeMaskByDockNode(mask)
     }
 
+    fun getBoxResizeEdgeMask(ptrEv: PointerEvent, boxEdge: Int): Int {
+        val resizeMargin = dock?.resizeMargin?.value ?: Dp(4f)
+        val ptrLeft = ptrEv.position.x < resizeMargin.px
+        val ptrRight = ptrEv.position.x > currentWidthPx - resizeMargin.px
+        val ptrTop = ptrEv.position.y < resizeMargin.px
+        val ptrBottom = ptrEv.position.y > currentHeightPx - resizeMargin.px
+
+        val maskLeftRight = if (ptrLeft) RESIZE_EDGE_LEFT else if (ptrRight) RESIZE_EDGE_RIGHT else 0
+        val maskTopBot = if (ptrTop) RESIZE_EDGE_TOP else if (ptrBottom) RESIZE_EDGE_BOTTOM else 0
+
+        val mask = when (boxEdge) {
+            RESIZE_EDGE_LEFT -> RESIZE_EDGE_LEFT or maskTopBot
+            RESIZE_EDGE_RIGHT -> RESIZE_EDGE_RIGHT or maskTopBot
+            RESIZE_EDGE_TOP -> RESIZE_EDGE_TOP or maskLeftRight
+            RESIZE_EDGE_BOTTOM -> RESIZE_EDGE_BOTTOM or maskLeftRight
+            else -> 0
+        }
+        return filterResizeEdgeMaskByDockNode(mask)
+    }
+
     private fun filterResizeEdgeMaskByDockNode(inputEdgeMask: Int): Int {
         val dockNode = dockedTo.value ?: return inputEdgeMask
         var nodeEdgeMask = 0
@@ -257,10 +277,16 @@ class UiDockable(
         get() = MutableVec4f(leftPx, topPx, leftPx + floatingWidthPx, topPx + floatingHeightPx)
 
     private fun setResizeCursorShape(edgeMask: Int) {
-        if ((edgeMask and 3) != 0) {
-            PointerInput.cursorShape = CursorShape.H_RESIZE
-        } else if ((edgeMask and 12) != 0) {
-            PointerInput.cursorShape = CursorShape.V_RESIZE
+        when (edgeMask) {
+            RESIZE_EDGE_LEFT -> PointerInput.cursorShape = CursorShape.RESIZE_EW
+            RESIZE_EDGE_RIGHT -> PointerInput.cursorShape = CursorShape.RESIZE_EW
+            RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NS
+            RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_NS
+
+            RESIZE_EDGE_LEFT or RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NWSE
+            RESIZE_EDGE_RIGHT or RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_NWSE
+            RESIZE_EDGE_RIGHT or RESIZE_EDGE_TOP -> PointerInput.cursorShape = CursorShape.RESIZE_NESW
+            RESIZE_EDGE_LEFT or RESIZE_EDGE_BOTTOM -> PointerInput.cursorShape = CursorShape.RESIZE_NESW
         }
     }
 

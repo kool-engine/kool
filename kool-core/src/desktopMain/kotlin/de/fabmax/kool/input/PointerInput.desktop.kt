@@ -100,8 +100,12 @@ object PlatformInputJvm : PlatformInput {
         cursorShapes[CursorShape.TEXT] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_IBEAM_CURSOR)
         cursorShapes[CursorShape.CROSSHAIR] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_CROSSHAIR_CURSOR)
         cursorShapes[CursorShape.HAND] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_HAND_CURSOR)
-        cursorShapes[CursorShape.H_RESIZE] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_HRESIZE_CURSOR)
-        cursorShapes[CursorShape.V_RESIZE] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_VRESIZE_CURSOR)
+        cursorShapes[CursorShape.NOT_ALLOWED] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_NOT_ALLOWED_CURSOR)
+        cursorShapes[CursorShape.RESIZE_EW] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_RESIZE_EW_CURSOR)
+        cursorShapes[CursorShape.RESIZE_NS] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_RESIZE_NS_CURSOR)
+        cursorShapes[CursorShape.RESIZE_NESW] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_RESIZE_NESW_CURSOR)
+        cursorShapes[CursorShape.RESIZE_NWSE] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_RESIZE_NWSE_CURSOR)
+        cursorShapes[CursorShape.RESIZE_ALL] = GLFW.glfwCreateStandardCursor(GLFW.GLFW_RESIZE_ALL_CURSOR)
     }
 
     private fun installInputHandlers(windowHandle: Long) {

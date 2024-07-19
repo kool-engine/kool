@@ -7,18 +7,20 @@ import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.toBuffer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
-class DockLayout(val nodes: List<Node>) {
+class DockLayout(val layoutNodes: List<LayoutNode>) {
 
     fun restoreLayout(target: Dock, itemProvider: (String) -> Dockable? = { null }): Boolean {
         var success = true
         val restoredNodes = mutableMapOf<String, DockNode>()
 
-        nodes.forEach {
+        layoutNodes.filter { it.nodeType == NodeType.Floating }.forEach {
+            it.applyFloating(itemProvider)
+        }
+        layoutNodes.filter { it.nodeType != NodeType.Floating }.forEach {
             restoredNodes[it.path] = it.toNode(target, itemProvider)
         }
 
@@ -75,21 +77,36 @@ class DockLayout(val nodes: List<Node>) {
         }
 
         fun serializeLayout(dock: Dock): DockLayout {
-            val nodes = mutableListOf<Node>()
+            val layoutNodes = mutableListOf<LayoutNode>()
             fun traverseNodes(nd: DockNode) {
-                nodes += Node.fromNode(nd)
+                val layoutNode = LayoutNode.fromNode(nd)
+                layoutNodes += layoutNode
                 if (nd is DockNodeInter) {
                     nd.childNodes.forEach { traverseNodes(it) }
                 }
             }
             traverseNodes(dock.root)
 
-            return DockLayout(nodes)
+            dock.dockables.values.filter { !it.isDocked.value }.forEach {
+                layoutNodes += LayoutNode.fromFloatingDockable(it)
+            }
+            layoutNodes.forEach { println("${it.path}: items: ${it.items} [${it.nodeType}]") }
+
+            return DockLayout(layoutNodes)
         }
     }
 
     @Serializable
-    class Node(val path: String, val nodeType: NodeType, val width: NodeDim, val height: NodeDim, val items: List<String>, val topItem: String? = null) {
+    class LayoutNode(
+        val path: String,
+        val nodeType: NodeType,
+        val width: NodeDim,
+        val height: NodeDim,
+        val items: List<String>,
+        val topItem: String? = null,
+        val floatingX: NodeDim? = null,
+        val floatingY: NodeDim? = null,
+    ) {
         fun toNode(dock: Dock, itemProvider: (String) -> Dockable?): DockNode {
             val w = width.toDimension()
             val h = height.toDimension()
@@ -106,11 +123,22 @@ class DockLayout(val nodes: List<Node>) {
                     }
                     node
                 }
+                NodeType.Floating -> error("Use applyFloating()")
+            }
+        }
+
+        fun applyFloating(itemProvider: (String) -> Dockable?) {
+            val name = items.getOrNull(0) ?: return
+            itemProvider(name)?.let { dockable ->
+                dockable.floatingX.set(floatingX?.toDimension() as? Dp ?: Dp(100f))
+                dockable.floatingY.set(floatingY?.toDimension() as? Dp ?: Dp(100f))
+                dockable.floatingWidth.set(width.toDimension())
+                dockable.floatingHeight.set(height.toDimension())
             }
         }
 
         companion object {
-            fun fromNode(node: DockNode): Node {
+            fun fromNode(node: DockNode): LayoutNode {
                 val path = node.getPath()
                 val width = NodeDim.fromDimension(node.width.value)
                 val height = NodeDim.fromDimension(node.height.value)
@@ -128,7 +156,15 @@ class DockLayout(val nodes: List<Node>) {
                     items = emptyList()
                     topItem = null
                 }
-                return Node(path, nodeType, width, height, items, topItem)
+                return LayoutNode(path, nodeType, width, height, items, topItem)
+            }
+
+            fun fromFloatingDockable(floating: Dockable): LayoutNode {
+                val x = NodeDim.fromDimension(floating.floatingX.value)
+                val y = NodeDim.fromDimension(floating.floatingY.value)
+                val width = NodeDim.fromDimension(floating.floatingWidth.value)
+                val height = NodeDim.fromDimension(floating.floatingHeight.value)
+                return LayoutNode("", NodeType.Floating, width, height, listOf(floating.name), floatingX = x, floatingY = y)
             }
         }
     }
@@ -153,6 +189,7 @@ class DockLayout(val nodes: List<Node>) {
     enum class NodeType {
         Leaf,
         Row,
-        Column
+        Column,
+        Floating
     }
 }

@@ -49,7 +49,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     private fun UiScope.treeWidthHandle() = Row(height = Grow.Std) {
         var startDragWidth by remember(treePanelSize.value)
         modifier
-            .onHover {  PointerInput.cursorShape = CursorShape.H_RESIZE }
+            .onHover {  PointerInput.cursorShape = CursorShape.RESIZE_EW }
             .onDragStart { startDragWidth = treePanelSize.value }
             .onDrag { treePanelSize.set(startDragWidth + Dp.fromPx(it.pointer.dragDeltaX.toFloat())) }
             .onDragEnd { KeyValueStore.setFloat("editor.ui.[$name].treeSize", treePanelSize.value.value) }

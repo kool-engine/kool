@@ -10,9 +10,10 @@ import de.fabmax.kool.util.logE
 class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) {
 
     private val dockableNodes = Node(name = "${name}.dockableNodes")
-    private val dockables = mutableMapOf<UiSurface, Dockable>()
+    private val _dockables = mutableMapOf<UiSurface, Dockable>()
     val dockingSurface = UiSurface(name = "${name}.dockingSurface")
     val dockingSurfaceOverlay = UiSurface(name = "${name}.dockingSurfaceOverlay")
+    val dockables: Map<UiSurface, Dockable> get() = _dockables
 
     val resizeMargin = mutableStateOf(Dp(4f))
     val borderWidth = mutableStateOf(Dp.ZERO)
@@ -54,7 +55,7 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
 
     private val UiSurface.order: Double
         get() {
-            val dockable = dockables[this]
+            val dockable = _dockables[this]
             return when {
                 dockable == null -> 0.0
                 dockable.isDocked.value -> {
@@ -67,12 +68,12 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
 
     fun addDockableSurface(dockable: Dockable, drawNode: UiSurface) {
         dockableNodes += drawNode
-        dockables[drawNode] = dockable
+        _dockables[drawNode] = dockable
     }
 
     fun removeDockableSurface(drawNode: UiSurface) {
         if (dockableNodes.removeNode(drawNode)) {
-            val dockable = dockables.remove(drawNode)
+            val dockable = _dockables.remove(drawNode)
             if (dockable == null) {
                 logE { "dockable for UiSurface ${drawNode.name} not found" }
             } else {
@@ -111,7 +112,7 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
 
     fun createNodeLayout(nodePaths: List<String>) {
         // undock any existing dockable
-        dockables.values.forEach { it.dockedTo.value?.undock(it) }
+        _dockables.values.forEach { it.dockedTo.value?.undock(it) }
 
         // create new node hierarchy
         nodePaths.forEach { path ->
@@ -145,7 +146,7 @@ class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) 
         } else {
             dockableNodes.children
                 .map { it as UiSurface }
-                .filter { dockables[it]?.isInBounds(screenPosPx) == true }
+                .filter { _dockables[it]?.isInBounds(screenPosPx) == true }
                 .maxByOrNull { it.order } == surface
         }
     }
