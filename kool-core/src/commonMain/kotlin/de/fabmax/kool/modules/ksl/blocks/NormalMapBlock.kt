@@ -9,23 +9,23 @@ fun KslScopeBuilder.normalMapBlock(
     ddy: KslExprFloat2? = null,
     block: NormalMapBlock.() -> Unit
 ): NormalMapBlock {
-    val normalMapBlock = NormalMapBlock(cfg, parentStage.program.nextName("normalMapBlock"), this)
-    ddx?.let { normalMapBlock.inDdx(it) }
-    ddy?.let { normalMapBlock.inDdy(it) }
+    val normalMapBlock = NormalMapBlock(cfg, parentStage.program.nextName("normalMapBlock"), ddx, ddy, this)
     ops += normalMapBlock.apply(block)
     return normalMapBlock
 }
 
-class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBuilder) :
-    KslBlock(name, parentScope)
-{
+class NormalMapBlock(
+    cfg: NormalMapConfig,
+    name: String,
+    inDdx: KslExprFloat2?,
+    inDdy: KslExprFloat2?,
+    parentScope: KslScopeBuilder
+) : KslBlock(name, parentScope) {
 
     val inNormalWorldSpace = inFloat3("inNormalWorldSpace")
     val inTangentWorldSpace = inFloat4("inTangentWorldSpace")
     val inTexCoords = inFloat2("inTexCoords")
     val inStrength = inFloat1("inStrength", KslValueFloat1(1f))
-    val inDdx = inFloat2(isOptional = true)
-    val inDdy = inFloat2(isOptional = true)
 
     val outBumpNormal = outFloat3()
 
@@ -33,7 +33,7 @@ class NormalMapBlock(cfg: NormalMapConfig, name: String, parentScope: KslScopeBu
         body.apply {
             if (cfg.isNormalMapped) {
                 val normalMap = parentStage.program.texture2d(cfg.normalMapName)
-                val sample = if (inDdx.isSet) {
+                val sample = if (inDdx != null && inDdy != null) {
                     sampleTextureGrad(normalMap, inTexCoords, inDdx, inDdy)
                 } else {
                     sampleTexture(normalMap, inTexCoords)
@@ -54,11 +54,10 @@ data class NormalMapConfig(
     val defaultNormalMap: Texture2d?,
     val strengthCfg: PropertyBlockConfig
 ) {
-    class Builder {
+    class Builder(var normalMapName: String = "tNormalMap") {
         var isNormalMapped: Boolean = false
-        var normalMapName: String = "tNormalMap"
         var defaultNormalMap: Texture2d? = null
-        val strengthCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("normalMapStrength").constProperty(1f)
+        val strengthCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("${normalMapName}_strength").constProperty(1f)
 
         fun clearNormalMap(): Builder {
             isNormalMapped = false
@@ -66,9 +65,8 @@ data class NormalMapConfig(
             return this
         }
 
-        fun setNormalMap(texture: Texture2d? = null, normalMapName: String = "tNormalMap"): Builder {
+        fun setNormalMap(texture: Texture2d? = null): Builder {
             this.isNormalMapped = true
-            this.normalMapName = normalMapName
             this.defaultNormalMap = texture
             return this
         }
