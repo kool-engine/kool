@@ -121,7 +121,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
             normalMapping { setNormalMap() }
             roughness { textureProperty() }
             metallic { textureProperty() }
-            ao { materialAo { textureProperty() } }
+            ao { textureProperty() }
             vertices {
                 displacement {
                     textureProperty()
@@ -129,7 +129,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
                     uniformProperty(displacement.value, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             }
-            imageBasedAmbientColor(envMaps.irradianceMap)
+            lighting { imageBasedAmbientLight(envMaps.irradianceMap) }
             reflectionMap = envMaps.reflectionMap
         }
         this.shader = shader
@@ -146,18 +146,15 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
             normalMapping { setNormalMap() }
             roughness { textureProperty() }
             metallic { textureProperty() }
-            ao { materialAo { textureProperty() } }
+            ao { textureProperty() }
             vertices {
                 displacement {
                     constProperty(0.5f)
                     uniformProperty(displacement.value, blendMode = PropertyBlockConfig.BlendMode.Multiply)
                 }
             }
-            parallaxMapping {
-                useParallaxMap(strength = displacement.value, maxSteps = 16)
-            }
-
-            imageBasedAmbientColor(envMaps.irradianceMap)
+            parallaxMapping { useParallaxMap(strength = displacement.value, maxSteps = 16) }
+            lighting { imageBasedAmbientLight(envMaps.irradianceMap) }
             reflectionMap = envMaps.reflectionMap
         }
         this.shader = shader

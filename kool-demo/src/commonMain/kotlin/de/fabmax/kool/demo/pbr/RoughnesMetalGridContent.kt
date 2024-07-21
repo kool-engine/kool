@@ -90,7 +90,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         metallic { instanceProperty(ATTRIB_METAL) }
         roughness { instanceProperty(ATTRIB_ROUGHNESS) }
         if (withIbl) {
-            imageBasedAmbientColor(envMaps.irradianceMap)
+            lightingCfg.imageBasedAmbientLight(envMaps.irradianceMap)
             reflectionMap = envMaps.reflectionMap
         }
     }

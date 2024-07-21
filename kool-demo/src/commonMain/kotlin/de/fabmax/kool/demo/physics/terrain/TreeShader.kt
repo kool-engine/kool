@@ -67,9 +67,11 @@ object TreeShader {
     private fun KslLitShader.LitShaderConfig.Builder.baseConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) {
         vertices { isInstanced = true }
         color { vertexColor() }
-        shadow { addShadowMap(shadowMap) }
+        lighting {
+            addShadowMap(shadowMap)
+            dualImageBasedAmbientLight()
+        }
         enableSsao(ssaoMap)
-        dualImageBasedAmbientColor()
         modelCustomizer = { windMod() }
     }
 

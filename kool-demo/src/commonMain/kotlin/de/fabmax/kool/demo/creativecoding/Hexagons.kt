@@ -22,9 +22,10 @@ class Hexagons(val resources: CreativeCodingDemo.Resources) : CreativeContent("H
             color { vertexColor() }
             metallic { vertexProperty(Attribute.METAL_ROUGH, 0) }
             roughness { vertexProperty(Attribute.METAL_ROUGH, 1) }
-            shadow { addShadowMaps(resources.shadowMaps) }
-
-            imageBasedAmbientColor(resources.imageEnv.irradianceMap)
+            lighting {
+                addShadowMaps(resources.shadowMaps)
+                imageBasedAmbientLight(resources.imageEnv.irradianceMap)
+            }
             reflectionMap = resources.imageEnv.reflectionMap
 
             modelCustomizer = ::darkenBacksides

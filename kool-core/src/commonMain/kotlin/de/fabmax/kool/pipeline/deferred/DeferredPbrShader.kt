@@ -35,8 +35,8 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
     var emission: Color by colorUniform(cfg.emissionCfg)
     var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
 
-    var materialAo: Float by propertyUniform(cfg.aoCfg.materialAo)
-    var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg.materialAo)
+    var materialAo: Float by propertyUniform(cfg.aoCfg)
+    var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg)
 
     var metallic: Float by propertyUniform(cfg.metallicCfg)
     var metallicMap: Texture2d? by propertyTexture(cfg.metallicCfg)
@@ -131,7 +131,7 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
                     val normal = float3Port("normal", bumpedNormal)
                     val roughness = float1Port("roughness", fragmentPropertyBlock(cfg.roughnessCfg).outProperty)
                     val metallic = float1Port("metallic", fragmentPropertyBlock(cfg.metallicCfg).outProperty)
-                    val aoFactor = float1Port("aoFactor", fragmentPropertyBlock(cfg.aoCfg.materialAo).outProperty)
+                    val aoFactor = float1Port("aoFactor", fragmentPropertyBlock(cfg.aoCfg).outProperty)
 
                     colorOutput(positionViewSpace.output, cfg.materialFlags.toFloat().const, location = 0)
                     colorOutput(normal.output, roughness, location = 1)

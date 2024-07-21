@@ -133,7 +133,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             shader = KslPbrShader {
                 color { textureColor(groundAlbedo) }
                 normalMapping { setNormalMap(groundNormal) }
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lightingCfg.imageBasedAmbientLight(ibl.irradianceMap)
                 reflectionMap = ibl.reflectionMap
             }
         }
@@ -161,7 +161,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         vertices { isInstanced = true }
         color { instanceColor(Attribute.COLORS) }
         roughness(1f)
-        imageBasedAmbientColor(ibl.irradianceMap)
+        lightingCfg.imageBasedAmbientLight(ibl.irradianceMap)
         reflectionMap = ibl.reflectionMap
     }
 
@@ -169,7 +169,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         vertices { isInstanced = true }
         color { vertexColor() }
         roughness(0.8f)
-        imageBasedAmbientColor(ibl.irradianceMap)
+        lighting { imageBasedAmbientLight(ibl.irradianceMap) }
         reflectionMap = ibl.reflectionMap
     }
 

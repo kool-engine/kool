@@ -138,7 +138,7 @@ data class GltfMaterial(
             }
         }
 
-        cfg.aoCfg.materialAo {
+        cfg.ao {
             if (occlusionTexture != null) {
                 if (occlusionTexture !== roughnessTexture && occlusionTexture !== metallicTexture) {
                     textureProperty(occlusionTexture)

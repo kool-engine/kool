@@ -73,9 +73,11 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
         // available
         groundShader = KslBlinnPhongShader {
             color { constColor(MdColor.BROWN tone 800) }
-            uniformAmbientColor(nightSkyColor)
+            lighting {
+                uniformAmbientLight(nightSkyColor)
+                lightStrength = 0.15f
+            }
             colorSpaceConversion = ColorSpaceConversion.AsIs
-            lightStrength = 0.15f
             shininess(1f)
             specularStrength(0.05f)
         }

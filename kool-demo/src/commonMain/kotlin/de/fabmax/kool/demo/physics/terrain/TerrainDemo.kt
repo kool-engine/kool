@@ -369,9 +369,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         fun KslLitShader.LitShaderConfig.Builder.baseConfig() {
             vertices { enableArmature(40) }
             color { constColor(MdColor.PINK.toLinear()) }
-            shadow { addShadowMap(shadowMap) }
+            lighting {
+                addShadowMap(shadowMap)
+                dualImageBasedAmbientLight()
+            }
             enableSsao(ssao.aoMap)
-            dualImageBasedAmbientColor()
         }
 
         val shader = if (isPlayerPbr) {
@@ -403,9 +405,11 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         fun KslLitShader.LitShaderConfig.Builder.baseConfig() {
             vertices { isInstanced = true }
             color { vertexColor() }
-            shadow { addShadowMap(shadowMap) }
+            lighting {
+                addShadowMap(shadowMap)
+                dualImageBasedAmbientLight()
+            }
             enableSsao(ssao.aoMap)
-            dualImageBasedAmbientColor()
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr()
         }
         return if (isPbr) {
@@ -464,7 +468,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
         fun KslPbrShader.Config.Builder.iblConfig() {
             isTextureReflection = true
-            lightStrength = 3f
+            lighting { lightStrength = 3f }
         }
 
         fun KslLitShader.updateSky(envMaps: Sky.WeightedEnvMaps) {

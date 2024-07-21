@@ -2,18 +2,19 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShaderListener
+import de.fabmax.kool.modules.ksl.LightingConfig
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBindingMat4fv
-import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
-fun KslProgram.shadowData(shadowCfg: ShadowConfig): ShadowData {
+fun KslProgram.shadowData(shadowCfg: LightingConfig): ShadowData {
     return (dataBlocks.find { it is ShadowData } as? ShadowData) ?: ShadowData(shadowCfg, this)
 }
 
-class ShadowData(val shadowCfg: ShadowConfig, program: KslProgram) : KslDataBlock, KslShaderListener {
+class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBlock, KslShaderListener {
     override val name = NAME
 
     val shadowMapInfos: List<ShadowMapInfo>

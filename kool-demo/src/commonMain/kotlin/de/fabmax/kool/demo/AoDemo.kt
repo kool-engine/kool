@@ -99,10 +99,12 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
             val shader = KslPbrShader {
                 color { vertexColor() }
-                shadow { addShadowMaps(shadows) }
                 roughness(0.1f)
                 enableSsao(aoPipeline.aoMap)
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lighting {
+                    addShadowMaps(shadows)
+                    imageBasedAmbientLight(ibl.irradianceMap)
+                }
                 reflectionMap = ibl.reflectionMap
             }
             this.shader = shader
@@ -176,15 +178,17 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
 
             val shader = KslPbrShader {
-                shadow { addShadowMaps(shadows) }
                 color { textureColor(albedoMap) }
                 normalMapping { setNormalMap(normalMap) }
                 roughness { textureProperty(roughnessMap) }
                 ao {
-                    materialAo.textureProperty(ambientOcclusionMap)
-                    enableSsao(aoPipeline.aoMap)
+                    textureProperty(ambientOcclusionMap)
                 }
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lighting {
+                    enableSsao(aoPipeline.aoMap)
+                    imageBasedAmbientLight(ibl.irradianceMap)
+                    addShadowMaps(shadows)
+                }
                 reflectionMap = ibl.reflectionMap
             }
             this.shader = shader

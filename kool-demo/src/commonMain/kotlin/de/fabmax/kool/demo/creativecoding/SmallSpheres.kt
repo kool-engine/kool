@@ -31,8 +31,10 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
             color { instanceColor() }
             metallic { instanceProperty(Attribute.METAL_ROUGH, 0) }
             roughness { instanceProperty(Attribute.METAL_ROUGH, 1) }
-            shadow { addShadowMaps(resources.shadowMaps) }
-            imageBasedAmbientColor(resources.imageEnv.irradianceMap)
+            lighting {
+                addShadowMaps(resources.shadowMaps)
+                imageBasedAmbientLight(resources.imageEnv.irradianceMap)
+            }
             reflectionMap = resources.imageEnv.reflectionMap
         }
 

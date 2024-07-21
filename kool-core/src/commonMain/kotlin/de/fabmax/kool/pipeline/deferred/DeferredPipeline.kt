@@ -102,8 +102,10 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         lightingPassShader = cfg.pbrSceneShader ?: PbrSceneShader(PbrSceneShader.DeferredPbrConfig().apply {
             isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
             isScrSpcReflections = cfg.isWithScreenSpaceReflections
-            maxLights = cfg.maxGlobalLights
-            shadowCfg.addShadowMaps(this@DeferredPipeline.shadowMaps)
+            lightingConfig.apply {
+                maxNumberOfLights = cfg.maxGlobalLights
+                addShadowMaps(this@DeferredPipeline.shadowMaps)
+            }
             useImageBasedLighting(cfg.environmentMaps)
         })
 
