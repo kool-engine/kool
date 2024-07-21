@@ -90,7 +90,6 @@ class DockLayout(val layoutNodes: List<LayoutNode>) {
             dock.dockables.values.filter { !it.isDocked.value }.forEach {
                 layoutNodes += LayoutNode.fromFloatingDockable(it)
             }
-            layoutNodes.forEach { println("${it.path}: items: ${it.items} [${it.nodeType}]") }
 
             return DockLayout(layoutNodes)
         }
