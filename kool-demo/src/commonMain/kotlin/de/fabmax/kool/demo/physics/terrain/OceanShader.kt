@@ -80,8 +80,10 @@ object OceanShader {
     private fun KslLitShader.LitShaderConfig.Builder.baseConfig(shadowMap: ShadowMap, isInvertedDepth: Boolean) {
         vertices { isInstanced = true }
         color { constColor(MdColor.CYAN.toLinear()) }
-        shadow { addShadowMap(shadowMap) }
-        dualImageBasedAmbientColor()
+        lighting {
+            addShadowMap(shadowMap)
+            dualImageBasedAmbientLight()
+        }
         modelCustomizer = { oceanMod(isInvertedDepth) }
     }
 

@@ -1,13 +1,12 @@
 package de.fabmax.kool.modules.ksl.blocks
 
-import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.LightingConfig
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.util.CascadedShadowMap
-import de.fabmax.kool.util.ShadowMap
 import de.fabmax.kool.util.SimpleShadowMap
 
-fun KslScopeBuilder.vertexShadowBlock(cfg: ShadowConfig, block: ShadowBlockVertexStage.() -> Unit): ShadowBlockVertexStage {
+fun KslScopeBuilder.vertexShadowBlock(cfg: LightingConfig, block: ShadowBlockVertexStage.() -> Unit): ShadowBlockVertexStage {
     val shadowBlock = ShadowBlockVertexStage(cfg, parentStage.program.nextName("shadowBlock"), this)
     shadowBlock.block()
     ops += shadowBlock
@@ -28,7 +27,7 @@ fun KslScopeBuilder.fragmentShadowBlock(vertexStage: ShadowBlockVertexStage, sha
 }
 
 fun KslScopeBuilder.fragmentOnlyShadowBlock(
-    cfg: ShadowConfig,
+    cfg: LightingConfig,
     positionWorldSPace: KslExprFloat3,
     normalWorldSPace: KslExprFloat3,
     shadowFactors: KslArrayScalar<KslFloat1>
@@ -78,7 +77,7 @@ fun KslScopeBuilder.fragmentShadowBlock(
     return shadowBlock
 }
 
-class ShadowBlockVertexStage(cfg: ShadowConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
+class ShadowBlockVertexStage(cfg: LightingConfig, name: String, parentScope: KslScopeBuilder) : KslBlock(name, parentScope) {
     var inPositionWorldSpace = inFloat3("inPositionWorldSpace")
     var inNormalWorldSpace = inFloat3("inNormalWorldSpace")
 
@@ -204,44 +203,44 @@ class ShadowBlockFragmentStage(
     }
 }
 
-data class ShadowConfig(
-    val shadowMaps: List<ShadowMapConfig>,
-    val flipBacksideNormals: Boolean
-) {
-    class Builder {
-        val shadowMaps = mutableListOf<ShadowMapConfig>()
-        var flipBacksideNormals = false
-
-        fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4): Builder {
-            shadowMaps += ShadowMapConfig(shadowMap, samplePattern)
-            return this
-        }
-
-        fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4): Builder {
-            this.shadowMaps += shadowMaps.map { ShadowMapConfig(it, samplePattern) }
-            return this
-        }
-
-        fun build() = ShadowConfig(shadowMaps.toList(), flipBacksideNormals)
-    }
-
-    data class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4)
-
-    companion object {
-        val SAMPLE_PATTERN_1x1: List<Vec2f> = listOf(Vec2f.ZERO)
-        val SAMPLE_PATTERN_3x3: List<Vec2f> = buildList {
-            for (y in -1..1) {
-                for (x in -1..1) {
-                    add(Vec2f(x.toFloat(), y.toFloat()))
-                }
-            }
-        }
-        val SAMPLE_PATTERN_4x4: List<Vec2f> = buildList {
-            for (y in 0..3) {
-                for (x in 0..3) {
-                    add(Vec2f(x - 1.5f, y - 1.5f))
-                }
-            }
-        }
-    }
-}
+//data class ShadowConfig(
+//    val shadowMaps: List<ShadowMapConfig>,
+//    val flipBacksideNormals: Boolean
+//) {
+//    class Builder {
+//        val shadowMaps = mutableListOf<ShadowMapConfig>()
+//        var flipBacksideNormals = false
+//
+//        fun addShadowMap(shadowMap: ShadowMap, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4): Builder {
+//            shadowMaps += ShadowMapConfig(shadowMap, samplePattern)
+//            return this
+//        }
+//
+//        fun addShadowMaps(shadowMaps: Collection<ShadowMap>, samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4): Builder {
+//            this.shadowMaps += shadowMaps.map { ShadowMapConfig(it, samplePattern) }
+//            return this
+//        }
+//
+//        fun build() = ShadowConfig(shadowMaps.toList(), flipBacksideNormals)
+//    }
+//
+//    data class ShadowMapConfig(val shadowMap: ShadowMap, val samplePattern: List<Vec2f> = SAMPLE_PATTERN_4x4)
+//
+//    companion object {
+//        val SAMPLE_PATTERN_1x1: List<Vec2f> = listOf(Vec2f.ZERO)
+//        val SAMPLE_PATTERN_3x3: List<Vec2f> = buildList {
+//            for (y in -1..1) {
+//                for (x in -1..1) {
+//                    add(Vec2f(x.toFloat(), y.toFloat()))
+//                }
+//            }
+//        }
+//        val SAMPLE_PATTERN_4x4: List<Vec2f> = buildList {
+//            for (y in 0..3) {
+//                for (x in 0..3) {
+//                    add(Vec2f(x - 1.5f, y - 1.5f))
+//                }
+//            }
+//        }
+//    }
+//}

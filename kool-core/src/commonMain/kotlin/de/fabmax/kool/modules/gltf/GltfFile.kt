@@ -646,16 +646,17 @@ data class GltfFile(
                 }
 
                 cfg.materialConfig.let { matCfg ->
-                    maxNumberOfLights = matCfg.maxNumberOfLights
-                    shadow {
+                    lighting {
+                        maxNumberOfLights = matCfg.maxNumberOfLights
                         addShadowMaps(matCfg.shadowMaps)
-                    }
-                    matCfg.scrSpcAmbientOcclusionMap?.let {
-                        enableSsao(it)
-                    }
-                    matCfg.environmentMaps?.let { ibl ->
-                        imageBasedAmbientColor(ibl.irradianceMap)
-                        reflectionMap = ibl.reflectionMap
+
+                        matCfg.environmentMaps?.let { ibl ->
+                            imageBasedAmbientLight(ibl.irradianceMap)
+                            reflectionMap = ibl.reflectionMap
+                        }
+                        matCfg.scrSpcAmbientOcclusionMap?.let {
+                            enableSsao(it)
+                        }
                     }
                 }
                 cfg.pbrBlock?.invoke(this, prim)
@@ -671,7 +672,7 @@ data class GltfFile(
                 normalMapCfg.defaultNormalMap?.let { model.textures[it.name] = it }
                 roughnessCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
                 metallicCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
-                aoCfg.materialAo.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
+                aoCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
                 vertexCfg.displacementCfg.primaryTexture?.defaultTexture?.let { model.textures[it.name] = it }
             }
 

@@ -250,7 +250,7 @@ class GltfDemo : DemoScene("glTF Models") {
             fun KslPbrShader.Config.Builder.materialConfig() {
                 color { textureColor(colorMap) }
                 normalMapping { setNormalMap(normalMap) }
-                ao { materialAo { textureProperty(aoMap) } }
+                ao { textureProperty(aoMap) }
                 roughness { textureProperty(roughnessMap) }
             }
 
@@ -261,9 +261,11 @@ class GltfDemo : DemoScene("glTF Models") {
             } else {
                 KslPbrShader {
                     materialConfig()
-                    shadow { addShadowMaps(shadowsForward) }
-                    ao { enableSsao(aoPipelineForward?.aoMap) }
-                    imageBasedAmbientColor(envMaps.irradianceMap)
+                    lighting {
+                        enableSsao(aoPipelineForward?.aoMap)
+                        addShadowMaps(shadowsForward)
+                        imageBasedAmbientLight(envMaps.irradianceMap)
+                    }
                     reflectionMap = envMaps.reflectionMap
                 }
             }

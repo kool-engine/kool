@@ -1,16 +1,11 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.SceneShaderData
-import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
+import de.fabmax.kool.modules.ksl.KslSplatShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
-import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Color
+import de.fabmax.kool.pipeline.DrawShader
 
 suspend fun MaterialComponentData.createShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): DrawShader {
     return shaderData.createShader(sceneShaderData, modelMats)
@@ -35,7 +30,7 @@ suspend fun MaterialShaderData.updateShader(shader: DrawShader?, sceneShaderData
 }
 
 fun MaterialShaderData.matchesShader(shader: DrawShader?): Boolean = when (this) {
-    is PbrShaderData -> matchesPbrShader(shader)
+    is PbrShaderData -> matchesPbrShaderConfig(shader)
     is BlinnPhongShaderData -> TODO()
     is UnlitShaderData -> TODO()
 }

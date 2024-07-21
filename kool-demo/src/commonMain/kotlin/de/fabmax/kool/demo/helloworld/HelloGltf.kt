@@ -38,7 +38,7 @@ class HelloGltf : DemoScene("Hello glTF") {
             }
             shader = KslPbrShader {
                 color { constColor(Color.WHITE) }
-                shadow { addShadowMap(shadowMap) }
+                lighting { addShadowMap(shadowMap) }
                 enableSsao(aoPipeline.aoMap)
             }
         }

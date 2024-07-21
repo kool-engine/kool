@@ -245,7 +245,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 normalMapping { setNormalMap(groundNormals) }
                 roughness { textureProperty(groundRoughness) }
                 metallic { textureProperty(groundMetallic) }
-                ao { materialAo.textureProperty(groundAo) }
+                ao { textureProperty(groundAo) }
             }
         }
     }

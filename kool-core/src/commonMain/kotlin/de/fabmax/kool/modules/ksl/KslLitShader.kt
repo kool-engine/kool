@@ -22,9 +22,9 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     var emission: Color by colorUniform(cfg.emissionCfg)
     var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
 
-    var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.aoCfg.defaultSsaoMap)
-    var materialAo: Float by propertyUniform(cfg.aoCfg.materialAo)
-    var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg.materialAo)
+    var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.lightingConfig.defaultSsaoMap)
+    var materialAo: Float by propertyUniform(cfg.aoCfg)
+    var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg)
 
     var parallaxMap: Texture2d? by texture2d(cfg.parallaxCfg.parallaxMapName, cfg.parallaxCfg.defaultParallaxMap)
     var parallaxStrength: Float by uniform1f("uParallaxStrength", cfg.parallaxCfg.strength)
@@ -41,54 +41,51 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     val ambientMaps = List(2) { textureCube("tAmbientTexture_$it") }
     var ambientMapWeights by uniform2f("tAmbientWeights", Vec2f.X_AXIS)
 
-    val ambientCfg: AmbientColor get() = cfg.ambientColor
+    val ambientCfg: AmbientLight get() = cfg.lightingConfig.ambientLight
     val colorCfg: ColorBlockConfig get() = cfg.colorCfg
     val emissionCfg: ColorBlockConfig get() = cfg.emissionCfg
-    val materialAoCfg: PropertyBlockConfig get() = cfg.aoCfg.materialAo
+    val materialAoCfg: PropertyBlockConfig get() = cfg.aoCfg
     val displacementCfg: PropertyBlockConfig get() = cfg.vertexCfg.displacementCfg
     val parallaxCfg: ParallaxMapConfig get() = cfg.parallaxCfg
     val isNormalMapped: Boolean get() = cfg.normalMapCfg.isNormalMapped
     val isParallaxMapped: Boolean get() = cfg.parallaxCfg.isParallaxMapped
-    val isSsao: Boolean get() = cfg.aoCfg.isSsao
+    val isSsao: Boolean get() = cfg.lightingConfig.isSsao
 
     /**
      * Read-only list of shadow maps used by this shader. To modify the shadow maps, the shader has to be re-created.
      */
-    val shadowMaps = cfg.shadowCfg.shadowMaps.map { it.shadowMap }
+    val shadowMaps = cfg.lightingConfig.shadowMaps.map { it.shadowMap }
 
     init {
         when (val ac = ambientCfg) {
-            is AmbientColor.Uniform -> ambientFactor = ac.color
-            is AmbientColor.ImageBased -> {
+            is AmbientLight.Uniform -> ambientFactor = ac.ambientFactor
+            is AmbientLight.ImageBased -> {
                 ambientMap = ac.ambientMap
                 ambientFactor = ac.ambientFactor
             }
-            is AmbientColor.DualImageBased -> {
-                ambientFactor = ac.colorFactor
+            is AmbientLight.DualImageBased -> {
+                ambientFactor = ac.ambientFactor
             }
         }
     }
 
-    sealed class AmbientColor {
-        class Uniform(val color: Color) : AmbientColor()
-        class ImageBased(val ambientMap: TextureCube?, val ambientFactor: Color) : AmbientColor()
-        class DualImageBased(val colorFactor: Color) : AmbientColor()
+    sealed class AmbientLight {
+        class Uniform(val ambientFactor: Color) : AmbientLight()
+        class ImageBased(val ambientMap: TextureCube?, val ambientFactor: Color) : AmbientLight()
+        class DualImageBased(val ambientFactor: Color) : AmbientLight()
     }
 
     open class LitShaderConfig(builder: Builder) {
+        val pipelineCfg: PipelineConfig = builder.pipelineCfg.build()
         val vertexCfg: BasicVertexConfig = builder.vertexCfg.build()
         val colorCfg: ColorBlockConfig = builder.colorCfg.build()
         val normalMapCfg: NormalMapConfig = builder.normalMapCfg.build()
-        val aoCfg: AmbientOcclusionConfig = builder.aoCfg.build()
+        val aoCfg: PropertyBlockConfig = builder.aoCfg.build()
         val parallaxCfg: ParallaxMapConfig = builder.parallaxCfg.build()
-        val pipelineCfg: PipelineConfig = builder.pipelineCfg.build()
-        val shadowCfg: ShadowConfig = builder.shadowCfg.build()
         val emissionCfg: ColorBlockConfig = builder.emissionCfg.build()
+        val lightingConfig: LightingConfig = builder.lightingCfg.build()
 
-        val ambientColor: AmbientColor = builder.ambientColor
         val colorSpaceConversion = builder.colorSpaceConversion
-        val maxNumberOfLights = builder.maxNumberOfLights
-        val lightStrength = builder.lightStrength
         val alphaMode: AlphaMode = builder.alphaMode
 
         val modelCustomizer: (KslProgram.() -> Unit)? = builder.modelCustomizer
@@ -97,36 +94,33 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
             if (vertexCfg.displacementCfg.primaryTexture != null) return true
             if (colorCfg.primaryTexture != null) return true
             if (normalMapCfg.isNormalMapped) return true
-            if (aoCfg.materialAo.primaryTexture != null) return true
+            if (aoCfg.primaryTexture != null) return true
             if (parallaxCfg.isParallaxMapped) return true
             if (emissionCfg.primaryTexture != null) return true
             return false
         }
 
         open class Builder {
+            val pipelineCfg = PipelineConfig.Builder()
             val vertexCfg = BasicVertexConfig.Builder()
             val colorCfg = ColorBlockConfig.Builder("baseColor").constColor(Color.GRAY)
             val normalMapCfg = NormalMapConfig.Builder()
-            val aoCfg = AmbientOcclusionConfig.Builder()
+            val aoCfg = PropertyBlockConfig.Builder("ao").apply { constProperty(1f) }
             val parallaxCfg = ParallaxMapConfig.Builder()
-            val pipelineCfg = PipelineConfig.Builder()
-            val shadowCfg = ShadowConfig.Builder()
             val emissionCfg = ColorBlockConfig.Builder("emissionColor").constColor(Color(0f, 0f, 0f, 0f))
+            val lightingCfg = LightingConfig.Builder()
 
-            var ambientColor: AmbientColor = AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
             var colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr()
-            var maxNumberOfLights = 4
-            var lightStrength = 1f
             var alphaMode: AlphaMode = AlphaMode.Blend
 
             var modelCustomizer: (KslProgram.() -> Unit)? = null
 
             fun enableSsao(ssaoMap: Texture2d? = null): Builder {
-                aoCfg.enableSsao(ssaoMap)
+                lightingCfg.enableSsao(ssaoMap)
                 return this
             }
 
-            inline fun ao(block: AmbientOcclusionConfig.Builder.() -> Unit) {
+            inline fun ao(block: PropertyBlockConfig.Builder.() -> Unit) {
                 aoCfg.block()
             }
 
@@ -140,19 +134,8 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                 emissionCfg.block()
             }
 
-            fun uniformAmbientColor(color: Color = Color(0.2f, 0.2f, 0.2f).toLinear()): Builder {
-                ambientColor = AmbientColor.Uniform(color)
-                return this
-            }
-
-            fun imageBasedAmbientColor(ambientTexture: TextureCube? = null, colorFactor: Color = Color.WHITE): Builder {
-                ambientColor = AmbientColor.ImageBased(ambientTexture, colorFactor)
-                return this
-            }
-
-            fun dualImageBasedAmbientColor(colorFactor: Color = Color.WHITE): Builder {
-                ambientColor = AmbientColor.DualImageBased(colorFactor)
-                return this
+            inline fun lighting(block: LightingConfig.Builder.() -> Unit) {
+                lightingCfg.block()
             }
 
             inline fun normalMapping(block: NormalMapConfig.Builder.() -> Unit) {
@@ -165,10 +148,6 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
 
             inline fun pipeline(block: PipelineConfig.Builder.() -> Unit) {
                 pipelineCfg.block()
-            }
-
-            inline fun shadow(block: ShadowConfig.Builder.() -> Unit) {
-                shadowCfg.block()
             }
 
             inline fun vertices(block: BasicVertexConfig.Builder.() -> Unit) {
@@ -222,8 +201,8 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
 
                     // project coordinates into shadow map / light space
                     val perFragmentShadow = cfg.parallaxCfg.isParallaxMapped && cfg.parallaxCfg.isPreciseShadows
-                    shadowMapVertexStage = if (perFragmentShadow || cfg.shadowCfg.shadowMaps.isEmpty()) null else {
-                        vertexShadowBlock(cfg.shadowCfg) {
+                    shadowMapVertexStage = if (perFragmentShadow || cfg.lightingConfig.shadowMaps.isEmpty()) null else {
+                        vertexShadowBlock(cfg.lightingConfig) {
                             inPositionWorldSpace(worldPos)
                             inNormalWorldSpace(worldNormal)
                         }
@@ -232,7 +211,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
             }
 
             fragmentStage {
-                val lightData = sceneLightData(cfg.maxNumberOfLights)
+                val lightData = sceneLightData(cfg.lightingConfig.maxNumberOfLights)
 
                 main {
                     val vertexWorldPos = float3Var(positionWorldSpace.output)
@@ -310,25 +289,25 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     // adjust light strength values by shadow maps
                     if (shadowMapVertexStage != null) {
                         fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
-                    } else if (cfg.shadowCfg.shadowMaps.isNotEmpty()) {
-                        fragmentOnlyShadowBlock(cfg.shadowCfg, worldPos, normal, shadowFactors)
+                    } else if (cfg.lightingConfig.shadowMaps.isNotEmpty()) {
+                        fragmentOnlyShadowBlock(cfg.lightingConfig, worldPos, normal, shadowFactors)
                     }
 
-                    val aoFactor = float1Var(fragmentPropertyBlock(cfg.aoCfg.materialAo, ddx, ddy).outProperty)
-                    if (cfg.aoCfg.isSsao) {
+                    val aoFactor = float1Var(fragmentPropertyBlock(cfg.aoCfg, ddx, ddy).outProperty)
+                    if (cfg.lightingConfig.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
                         val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
                         aoFactor *= sampleTexture(aoMap, aoUv).x
                     }
 
-                    val irradiance = when (cfg.ambientColor) {
-                        is AmbientColor.Uniform -> uniformFloat4("uAmbientColor").rgb
-                        is AmbientColor.ImageBased -> {
+                    val irradiance = when (cfg.lightingConfig.ambientLight) {
+                        is AmbientLight.Uniform -> uniformFloat4("uAmbientColor").rgb
+                        is AmbientLight.ImageBased -> {
                             val ambientOri = uniformMat3("uAmbientTextureOri")
                             val ambientTex = textureCube("tAmbientTexture")
                             (sampleTexture(ambientTex, ambientOri * normal, 0f.const) * uniformFloat4("uAmbientColor")).rgb
                         }
-                        is AmbientColor.DualImageBased -> {
+                        is AmbientLight.DualImageBased -> {
                             val ambientOri = uniformMat3("uAmbientTextureOri")
                             val ambientTexs = List(2) { textureCube("tAmbientTexture_$it") }
                             val ambientWeights = uniformFloat2("tAmbientWeights")

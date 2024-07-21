@@ -46,7 +46,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
             shader = KslPbrShader {
                 vertices { isInstanced = true }
                 color { instanceColor(Attribute.COLORS) }
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lightingCfg.imageBasedAmbientLight(ibl.irradianceMap)
                 reflectionMap = ibl.reflectionMap
             }
 
@@ -96,7 +96,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
             }
             shader = KslPbrShader {
                 color { constColor(Color.WHITE) }
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lightingCfg.imageBasedAmbientLight(ibl.irradianceMap)
                 reflectionMap = ibl.reflectionMap
             }
         }

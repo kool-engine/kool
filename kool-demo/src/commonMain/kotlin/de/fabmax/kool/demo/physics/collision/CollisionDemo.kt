@@ -288,8 +288,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 normalMapping { setNormalMap(groundNormal) }
                 roughness(0.75f)
                 enableSsao(aoPipeline.aoMap)
-                shadow { addShadowMaps(shadows) }
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lighting {
+                    addShadowMaps(shadows)
+                    imageBasedAmbientLight(ibl.irradianceMap)
+                }
                 reflectionMap = ibl.reflectionMap
             }
         }
@@ -309,8 +311,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 color { constColor(MdColor.BLUE_GREY toneLin 700) }
                 roughness(0.75f)
                 enableSsao(aoPipeline.aoMap)
-                shadow { addShadowMaps(shadows) }
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lighting {
+                    addShadowMaps(shadows)
+                    imageBasedAmbientLight(ibl.irradianceMap)
+                }
                 reflectionMap = ibl.reflectionMap
             }
         }
@@ -321,8 +325,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         color { instanceColor(Attribute.COLORS) }
         roughness(1f)
         enableSsao(aoPipeline.aoMap)
-        shadow { addShadowMaps(shadows) }
-        imageBasedAmbientColor(ibl.irradianceMap)
+        lighting {
+            addShadowMaps(shadows)
+            imageBasedAmbientLight(ibl.irradianceMap)
+        }
         reflectionMap = ibl.reflectionMap
     }
 

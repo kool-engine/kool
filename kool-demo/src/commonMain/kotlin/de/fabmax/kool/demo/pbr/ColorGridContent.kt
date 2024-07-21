@@ -97,7 +97,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         roughness { uniformProperty(0.1f) }
         metallic { uniformProperty(0f) }
         if (withIbl) {
-            imageBasedAmbientColor(envMaps.irradianceMap)
+            lightingCfg.imageBasedAmbientLight(envMaps.irradianceMap)
             reflectionMap = envMaps.reflectionMap
         }
     }

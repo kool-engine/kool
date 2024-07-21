@@ -89,9 +89,9 @@ abstract class AssetLoader {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
         if (loaded.data != null) {
-            logD { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
+            logD("AssetLoader.loadTextureDataAsync") { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
         } else {
-            logE { "Failed loading ${trimAssetPath(assetPath)}" }
+            logE("AssetLoader.loadTextureDataAsync") { "Failed loading ${trimAssetPath(assetPath)}" }
         }
         loaded.data ?: textureDataLoadFailed
     }
@@ -114,9 +114,9 @@ abstract class AssetLoader {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
         if (loaded.data != null) {
-            logD { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
+            logD("AssetLoader.loadTextureData2dAsync") { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
         } else {
-            logE { "Failed loading ${trimAssetPath(assetPath)}" }
+            logE("AssetLoader.loadTextureData2dAsync") { "Failed loading ${trimAssetPath(assetPath)}" }
         }
         loaded.data as TextureData2d? ?: textureDataLoadFailed
     }
@@ -145,12 +145,12 @@ abstract class AssetLoader {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
         loaded.data?.let {
-            logD { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
+            logD("AssetLoader.loadTextureDataAtlasAsync") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
         }
         if (loaded.data != null) {
-            logD { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height}x${loaded.data.depth})" }
+            logD("AssetLoader.loadTextureDataAtlasAsync") { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height}x${loaded.data.depth})" }
         } else {
-            logE { "Failed loading ${trimAssetPath(assetPath)}" }
+            logE("AssetLoader.loadTextureDataAtlasAsync") { "Failed loading ${trimAssetPath(assetPath)}" }
         }
         loaded.data ?: textureDataLoadFailed
     }
@@ -261,7 +261,7 @@ abstract class AssetLoader {
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedBlobAsset
         if (loaded.data != null) {
-            logD { "Loaded ${trimAssetPath(assetPath)} (${(loaded.data.capacity / 1_048_576.0).toString(1)} mb)" }
+            logD("AssetLoader.loadBlobAssetAsync") { "Loaded ${trimAssetPath(assetPath)} (${(loaded.data.capacity / 1_048_576.0).toString(1)} mb)" }
         }
         loaded.data ?: error("Failed loading blob asset ${trimAssetPath(assetPath)}")
     }

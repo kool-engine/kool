@@ -28,8 +28,7 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
         return try {
             val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
             assetRefsByPath.getOrPut(path) { mutableSetOf() } += ref
-            val hdriTex = assetLoader.loadTexture2d(path)
-            hdriState.value ?: EnvironmentHelper.hdriEnvironment(hdriTex).also { hdriState.set(it) }
+            hdriState.value ?: EnvironmentHelper.hdriEnvironment(assetLoader.loadTexture2d(path)).also { hdriState.set(it) }
         } catch (e: Exception) {
             logE { "Failed loading HDRI: ${ref.path}" }
             null

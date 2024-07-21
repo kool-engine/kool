@@ -15,7 +15,7 @@ class CpuBeeShader(
         color { textureColor() }
         shininess(5f)
         specularStrength(0.25f)
-        ambientColor = AmbientColor.Uniform(BeeDemo.bgColor.toLinear())
+        lightingCfg.ambientLight = AmbientLight.Uniform(BeeDemo.bgColor.toLinear())
 
         modelCustomizer = {
             val aliveness = interStageFloat1()

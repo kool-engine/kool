@@ -103,9 +103,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
             shader = KslPbrShader {
                 color { textureColor(groundAlbedo) }
                 normalMapping { setNormalMap(groundNormal) }
-                shadow { addShadowMaps(shadows) }
                 enableSsao(aoPipeline.aoMap)
-                imageBasedAmbientColor(ibl.irradianceMap)
+                lighting {
+                    addShadowMaps(shadows)
+                    imageBasedAmbientLight(ibl.irradianceMap)
+                }
                 reflectionMap = ibl.reflectionMap
             }
         }
@@ -520,9 +522,11 @@ class JointsDemo : DemoScene("Physics - Joints") {
                     vertices { isInstanced = true }
                     color { vertexColor() }
                     roughness(1f)
-                    shadow { addShadowMaps(shadows) }
                     enableSsao(aoPipeline.aoMap)
-                    imageBasedAmbientColor(ibl.irradianceMap)
+                    lighting {
+                        addShadowMaps(shadows)
+                        imageBasedAmbientLight(ibl.irradianceMap)
+                    }
                     reflectionMap = ibl.reflectionMap
                 }
             }

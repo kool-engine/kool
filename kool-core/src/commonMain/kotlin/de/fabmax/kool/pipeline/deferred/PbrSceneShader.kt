@@ -7,6 +7,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.LightingConfig
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -64,14 +65,14 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
     init {
         reflectionMap = cfg.reflectionMap
-        when (val ambient = cfg.ambientColor) {
-            is KslLitShader.AmbientColor.Uniform -> ambientFactor = ambient.color
-            is KslLitShader.AmbientColor.ImageBased -> {
+        when (val ambient = cfg.ambientLight) {
+            is KslLitShader.AmbientLight.Uniform -> ambientFactor = ambient.ambientFactor
+            is KslLitShader.AmbientLight.ImageBased -> {
                 ambientMap = ambient.ambientMap
                 ambientFactor = ambient.ambientFactor
             }
-            is KslLitShader.AmbientColor.DualImageBased -> {
-                ambientFactor = ambient.colorFactor
+            is KslLitShader.AmbientLight.DualImageBased -> {
+                ambientFactor = ambient.ambientFactor
             }
         }
     }
@@ -120,8 +121,8 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                     }
 
                     val camData = deferredCameraData()
-                    val lightData = sceneLightData(cfg.maxLights)
-                    val shadowData = shadowData(cfg.shadowCfg.build())
+                    val lightData = sceneLightData(cfg.lightingConfig.maxNumberOfLights)
+                    val shadowData = shadowData(cfg.lightingConfig.build())
 
                     // transform input positions from view space back to world space
                     val worldPos = float3Var((camData.invViewMat * float4Value(viewPos, 1f.const)).xyz)
@@ -129,13 +130,13 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
 
                     // compute ambient lighting properties
                     val ambientOri = uniformMat3("uAmbientTextureOri")
-                    val irradiance = when (cfg.ambientColor) {
-                        is KslLitShader.AmbientColor.Uniform -> float3Var(uniformFloat4("uAmbientColor").rgb)
-                        is KslLitShader.AmbientColor.ImageBased -> {
+                    val irradiance = when (cfg.ambientLight) {
+                        is KslLitShader.AmbientLight.Uniform -> float3Var(uniformFloat4("uAmbientColor").rgb)
+                        is KslLitShader.AmbientLight.ImageBased -> {
                             val ambientTex = textureCube("tAmbientTexture")
                             float3Var((sampleTexture(ambientTex, ambientOri * worldNrm) * uniformFloat4("uAmbientColor")).rgb)
                         }
-                        is KslLitShader.AmbientColor.DualImageBased -> {
+                        is KslLitShader.AmbientLight.DualImageBased -> {
                             val ambientTexs = List(2) { textureCube("tAmbientTexture_$it") }
                             val ambientWeights = uniformFloat2("tAmbientWeights")
                             val ambientColor = float4Var(sampleTexture(ambientTexs[0], ambientOri * worldNrm) * ambientWeights.x)
@@ -200,7 +201,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                         null
                     }
 
-                    val material = pbrMaterialBlock(cfg.maxLights, reflectionMaps, brdfLut) {
+                    val material = pbrMaterialBlock(cfg.lightingConfig.maxNumberOfLights, reflectionMaps, brdfLut) {
                         inCamPos(camData.position)
                         inNormal(worldNrm)
                         inFragmentPos(worldPos)
@@ -218,7 +219,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                         inReflectionColor(reflectionColor)
                         inReflectionWeight(reflectionWeight)
 
-                        setLightData(lightData, shadowFactors, cfg.lightStrength.const)
+                        setLightData(lightData, shadowFactors, cfg.lightingConfig.lightStrength.const)
                     }
                     colorOutput(material.outColor + emissive)
                     outDepth set sampleTexture(texture2d("depth", TextureSampleType.UNFILTERABLE_FLOAT), uv).r
@@ -235,11 +236,9 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
         var environmentMaps: EnvironmentMaps? = null
         var ambientShadowFactor = 0f
 
-        var maxLights = 4
-        var lightStrength = 1f
-        val shadowCfg = ShadowConfig.Builder()
+        val lightingConfig = LightingConfig.Builder()
 
-        var ambientColor: KslLitShader.AmbientColor = KslLitShader.AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
+        var ambientLight: KslLitShader.AmbientLight = KslLitShader.AmbientLight.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
         var isTextureReflection = false
         var reflectionStrength = Vec3f.ONES
         var reflectionMap: TextureCube? = null
@@ -253,11 +252,11 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
             isImageBasedLighting = environmentMaps != null
 
             if (environmentMaps != null) {
-                ambientColor = KslLitShader.AmbientColor.ImageBased(environmentMaps.irradianceMap, Color.WHITE)
+                ambientLight = KslLitShader.AmbientLight.ImageBased(environmentMaps.irradianceMap, Color.WHITE)
                 isTextureReflection = true
                 reflectionMap = environmentMaps.reflectionMap
             } else {
-                ambientColor = KslLitShader.AmbientColor.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
+                ambientLight = KslLitShader.AmbientLight.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
                 isTextureReflection = false
             }
         }
