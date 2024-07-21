@@ -12,12 +12,14 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchOnMainThread
+import kotlin.reflect.KClass
 
 class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
 
     private val material: MaterialComponent get() = components[0].material!!
 
     private val pbrData: PbrShaderData get() = material.shaderData as PbrShaderData
+    private val pbrSplatData: PbrSplatShaderData get() = material.shaderData as PbrSplatShaderData
 
     override fun UiScope.compose() {
         val allTheSameMaterial = components.all {
@@ -60,6 +62,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                     SetComponentDataAction(checkedMaterial, oldData, newData).apply()
                 }
 
+                labeledCombobox("Type:", materialTypes, materialTypes.indexOfFirst { it.matches(checkedMaterial.shaderData) }) {
+                    if (!it.matches(checkedMaterial.shaderData)) {
+                        val oldData = checkedMaterial.data
+                        val newData = oldData.copy(shaderData = it.factory())
+                        SetComponentDataAction(checkedMaterial, oldData, newData).apply()
+                    }
+                }
+
                 menuDivider()
                 materialEditor()
                 menuDivider()
@@ -96,6 +106,13 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             is BlinnPhongShaderData -> TODO()
             is PbrShaderData -> pbrMaterialEditor()
             is UnlitShaderData -> TODO()
+            is PbrSplatShaderData -> pbrSplatMaterialEditor()
+        }
+    }
+
+    private fun UiScope.pbrSplatMaterialEditor() {
+        textureSetting("Splat map:", pbrSplatData.splatMap) {
+            pbrSplatData.copy(splatMap = it)
         }
     }
 
@@ -118,14 +135,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         textureSetting("AO:", pbrData.aoMap) {
             pbrData.copy(aoMap = it)
         }
-        textureSetting("Displacement:", pbrData.parallaxMap) {
-            pbrData.copy(parallaxMap = it)
+        textureSetting("Displacement:", pbrData.displacementMap) {
+            pbrData.copy(displacementMap = it)
         }
         colorSetting("Emission color:", pbrData.emission, Color.BLACK) {
             pbrData.copy(emission = it)
         }
 
-        if (pbrData.parallaxMap != null) {
+        if (pbrData.displacementMap != null) {
             labeledDoubleTextField(
                 label = "Strength:",
                 value = pbrData.parallaxStrength.toDouble(),
@@ -464,5 +481,17 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         suspend fun getMaterial(): MaterialComponent? {
             return material ?: if (itemText == "New material") KoolEditor.instance.projectModel.createNewMaterial() else null
         }
+    }
+
+    private class MaterialTypeOption<T: MaterialShaderData>(val label: String, val dataType: KClass<T>, val factory: () -> T) {
+        fun matches(data: MaterialShaderData): Boolean = dataType.isInstance(data)
+        override fun toString() = label
+    }
+
+    companion object {
+        private val materialTypes = listOf(
+            MaterialTypeOption("PBR", PbrShaderData::class) { PbrShaderData() },
+            MaterialTypeOption("Splatted PBR", PbrSplatShaderData::class) { PbrSplatShaderData() },
+        )
     }
 }

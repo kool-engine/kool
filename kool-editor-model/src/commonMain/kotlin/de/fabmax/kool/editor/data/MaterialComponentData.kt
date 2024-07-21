@@ -24,6 +24,7 @@ sealed interface MaterialShaderData {
             is BlinnPhongShaderData -> copy(baseColor = baseColor, genericSettings = genericSettings)
             is PbrShaderData -> copy(baseColor = baseColor, genericSettings = genericSettings)
             is UnlitShaderData -> copy(baseColor = baseColor, genericSettings = genericSettings)
+            is PbrSplatShaderData -> copy(splatMap = splatMap, genericSettings = genericSettings)
         }
     }
 
@@ -38,21 +39,60 @@ data class PbrShaderData(
     val emission: MaterialAttribute = ConstColorAttribute(ColorData(Color.BLACK.toLinear())),
     val normalMap: MapAttribute? = null,
     val aoMap: MapAttribute? = null,
-    val parallaxMap: MapAttribute? = null,
+    val displacementMap: MapAttribute? = null,
     val parallaxStrength: Float = 1f,
     val parallaxOffset: Float = 0f,
     val parallaxSteps: Int = 16,
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
-    override fun collectAttributes(): List<MaterialAttribute> = listOf(
+    override fun collectAttributes(): List<MaterialAttribute> = listOfNotNull(
         baseColor,
         roughness,
         metallic,
         emission,
         normalMap,
         aoMap,
-        parallaxMap
-    ).filterNotNull()
+        displacementMap
+    )
+}
+
+@Serializable
+data class PbrSplatShaderData(
+    val splatMap: MapAttribute? = null,
+    val numMaterials: Int = 5,
+    val isStochasticTiling: Boolean = true,
+    val parallaxSteps: Int = 0,
+    val materialMaps: List<SplatMapData> = emptyList(),
+    override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
+) : MaterialShaderData {
+    override fun collectAttributes(): List<MaterialAttribute> {
+        val attribs = listOf(splatMap) + materialMaps.flatMap { it.collectAttributes() }
+        return attribs.filterNotNull().distinct()
+    }
+}
+
+@Serializable
+data class SplatMapData(
+    val baseColor: MaterialAttribute = ConstColorAttribute(ColorData(MdColor.GREY toneLin 500)),
+    val roughness: MaterialAttribute = ConstValueAttribute(0.5f),
+    val metallic: MaterialAttribute = ConstValueAttribute(0f),
+    val emission: MaterialAttribute = ConstColorAttribute(ColorData(Color.BLACK.toLinear())),
+    val normalMap: MapAttribute? = null,
+    val aoMap: MapAttribute? = null,
+    val displacementMap: MapAttribute? = null,
+    val stochasticTileSize: Float = 0.5f,
+    val stochasticRotation: Float = 360f,
+    val parallaxStrength: Float = 1f,
+) {
+    fun collectAttributes(): List<MaterialAttribute> = listOfNotNull(
+        baseColor,
+        roughness,
+        metallic,
+        emission,
+        normalMap,
+        aoMap,
+        displacementMap
+    )
 }
 
 @Serializable

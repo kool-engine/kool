@@ -77,15 +77,14 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
         lighting {
             maxNumberOfLights = sceneShaderData.maxNumberOfLights
             addShadowMaps(sceneShaderData.shadowMaps)
+            sceneShaderData.ssaoMap?.let {
+                enableSsao(it)
+            }
         }
-        colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping)
-
         sceneShaderData.environmentMaps?.let {
             enableImageBasedLighting(it)
         }
-        sceneShaderData.ssaoMap?.let {
-            ao { enableSsao(it) }
-        }
+        colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping)
     }
     updatePbrShader(shader, sceneShaderData)
     return shader
@@ -95,7 +94,6 @@ suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData:
     if (!matchesPbrShaderConfig(shader)) {
         return false
     }
-    val pbrShader = shader as? KslPbrShader ?: return false
 
     val colorConv = shader.cfg.colorSpaceConversion
     if (colorConv is ColorSpaceConversion.LinearToSrgbHdr && colorConv.toneMapping != sceneShaderData.toneMapping) {
@@ -124,42 +122,42 @@ suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData:
     val displacementMap = displacementMap?.let { AppAssets.loadTexture2d(AssetReference.Texture(it.mapPath, TexFormat.R)) }
 
     when (val color = baseColor) {
-        is ConstColorAttribute -> pbrShader.color = color.color.toColorLinear()
-        is ConstValueAttribute -> pbrShader.color = Color(color.value, color.value, color.value)
-        is MapAttribute -> pbrShader.colorMap = colorMap
+        is ConstColorAttribute -> shader.color = color.color.toColorLinear()
+        is ConstValueAttribute -> shader.color = Color(color.value, color.value, color.value)
+        is MapAttribute -> shader.colorMap = colorMap
         is VertexAttribute -> { }
     }
     when (val color = emission) {
-        is ConstColorAttribute -> pbrShader.emission = color.color.toColorLinear()
-        is ConstValueAttribute -> pbrShader.emission = Color(color.value, color.value, color.value)
-        is MapAttribute -> pbrShader.emissionMap = emissionMap
+        is ConstColorAttribute -> shader.emission = color.color.toColorLinear()
+        is ConstValueAttribute -> shader.emission = Color(color.value, color.value, color.value)
+        is MapAttribute -> shader.emissionMap = emissionMap
         is VertexAttribute -> { }
     }
     when (val rough = roughness) {
-        is ConstColorAttribute -> pbrShader.roughness = rough.color.r
-        is ConstValueAttribute -> pbrShader.roughness = rough.value
-        is MapAttribute -> pbrShader.roughnessMap = roughnessMap
+        is ConstColorAttribute -> shader.roughness = rough.color.r
+        is ConstValueAttribute -> shader.roughness = rough.value
+        is MapAttribute -> shader.roughnessMap = roughnessMap
         is VertexAttribute -> { }
     }
     when (val metal = metallic) {
-        is ConstColorAttribute -> pbrShader.metallic = metal.color.r
-        is ConstValueAttribute -> pbrShader.metallic = metal.value
-        is MapAttribute -> pbrShader.metallicMap = metallicMap
+        is ConstColorAttribute -> shader.metallic = metal.color.r
+        is ConstValueAttribute -> shader.metallic = metal.value
+        is MapAttribute -> shader.metallicMap = metallicMap
         is VertexAttribute -> { }
     }
-    pbrShader.normalMap = normalMap
-    pbrShader.materialAoMap = aoMap
-    pbrShader.parallaxMap = displacementMap
-    pbrShader.parallaxMapSteps = parallaxSteps
-    pbrShader.parallaxStrength = parallaxStrength
-    pbrShader.vertexDisplacementStrength = parallaxOffset
+    shader.normalMap = normalMap
+    shader.materialAoMap = aoMap
+    shader.parallaxMap = displacementMap
+    shader.parallaxMapSteps = parallaxSteps
+    shader.parallaxStrength = parallaxStrength
+    shader.vertexDisplacementStrength = parallaxOffset
 
     if (ibl != null) {
-        pbrShader.ambientFactor = Color.WHITE
-        pbrShader.ambientMap = ibl.irradianceMap
-        pbrShader.reflectionMap = ibl.reflectionMap
+        shader.ambientFactor = Color.WHITE
+        shader.ambientMap = ibl.irradianceMap
+        shader.reflectionMap = ibl.reflectionMap
     } else {
-        pbrShader.ambientFactor = sceneShaderData.ambientColorLinear
+        shader.ambientFactor = sceneShaderData.ambientColorLinear
     }
     return true
 }

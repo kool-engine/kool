@@ -109,7 +109,7 @@ data class ParallaxMapConfig(
         var parallaxMapName: String = "tParallaxMap"
         var defaultParallaxMap: Texture2d? = null
         var strength: Float = 0.5f
-        var maxSteps = 8
+        var maxSteps = 16
         var textureChannel = 0
         var isAdjustFragmentDepth: Boolean = true
         var isPreciseShadows: Boolean = true

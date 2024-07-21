@@ -17,11 +17,10 @@ fun KslScopeBuilder.fragmentColorBlock(
     cfg: ColorBlockConfig,
     ddx: KslExprFloat2? = null,
     ddy: KslExprFloat2? = null,
+    uv: KslExprFloat2? = null,
     vertexStage: ColorBlockVertexStage? = null
 ): ColorBlockFragmentStage {
-    val colorBlock = ColorBlockFragmentStage(cfg, vertexStage, this)
-    ddx?.let { colorBlock.inDdx(it) }
-    ddy?.let { colorBlock.inDdy(it) }
+    val colorBlock = ColorBlockFragmentStage(cfg, vertexStage, uv, ddx, ddy, this)
     ops += colorBlock
     return colorBlock
 }
@@ -51,15 +50,13 @@ class ColorBlockVertexStage(cfg: ColorBlockConfig, parentScope: KslScopeBuilder)
 class ColorBlockFragmentStage(
     private val cfg: ColorBlockConfig,
     private val vertexColorBlock: ColorBlockVertexStage?,
+    private val inUv: KslExprFloat2?,
+    private val inDdx: KslExprFloat2?,
+    private val inDdy: KslExprFloat2?,
     parentScope: KslScopeBuilder
 ) : KslBlock(cfg.colorName, parentScope) {
 
-    val inDdx = inFloat2(isOptional = true)
-    val inDdy = inFloat2(isOptional = true)
-
     val outColor = outFloat4(parentScope.nextName("${opName}_outColor"))
-
-    val textures = mutableMapOf<ColorBlockConfig.TextureColor, KslUniform<KslColorSampler2d>>()
 
     init {
         body.apply {
@@ -76,9 +73,9 @@ class ColorBlockFragmentStage(
                     is ColorBlockConfig.VertexColor -> vertexBlock(parentStage).vertexColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.InstanceColor -> vertexBlock(parentStage).instanceColors[source]?.output ?: Vec4f.ZERO.const
                     is ColorBlockConfig.TextureColor ->  {
-                        val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
-                        val texCoords = texCoordBlock(parentStage).getTextureCoords()
-                        val texColor = if (inDdx.isSet) {
+                        val tex = parentStage.program.texture2d(source.textureName)
+                        val texCoords = inUv ?: texCoordBlock(parentStage).getTextureCoords()
+                        val texColor = if (inDdx != null && inDdy != null) {
                             float4Var(sampleTextureGrad(tex, texCoords, inDdx, inDdy))
                         } else {
                             float4Var(sampleTexture(tex, texCoords))

@@ -14,11 +14,10 @@ fun KslScopeBuilder.fragmentPropertyBlock(
     cfg: PropertyBlockConfig,
     ddx: KslExprFloat2? = null,
     ddy: KslExprFloat2? = null,
+    uv: KslExprFloat2? = null,
     vertexStage: PropertyBlockVertexStage? = null
 ): PropertyBlockFragmentStage {
-    val propertyBlock = PropertyBlockFragmentStage(cfg, vertexStage, this)
-    ddx?.let { propertyBlock.inDdx(it) }
-    ddy?.let { propertyBlock.inDdy(it) }
+    val propertyBlock = PropertyBlockFragmentStage(cfg, vertexStage, uv, ddx, ddy, this)
     ops += propertyBlock
     return propertyBlock
 }
@@ -78,16 +77,14 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
 class PropertyBlockFragmentStage(
     private val cfg: PropertyBlockConfig,
     private val vertexPropertyBlock: PropertyBlockVertexStage?,
+    private val inUv: KslExprFloat2?,
+    private val inDdx: KslExprFloat2?,
+    private val inDdy: KslExprFloat2?,
     parentScope: KslScopeBuilder
 ) : KslBlock(cfg.propertyName, parentScope) {
 
-    val inDdx = inFloat2(isOptional = true)
-    val inDdy = inFloat2(isOptional = true)
-
     val outProperty = outFloat1(parentScope.nextName("${opName}_outProperty"))
     val outSamplerValues = mutableMapOf<String, KslVectorExpression<KslFloat4, KslFloat1>>()
-
-    val textures = mutableMapOf<PropertyBlockConfig.TextureProperty, KslUniform<KslColorSampler2d>>()
 
     init {
         body.apply {
@@ -106,10 +103,10 @@ class PropertyBlockFragmentStage(
                     is PropertyBlockConfig.TextureProperty ->  {
                         var sampleValue = findExistingSampleValue(source.textureName, parentStage)
                         if (sampleValue == null) {
-                            val tex = parentStage.program.texture2d(source.textureName).also { textures[source] = it }
+                            val tex = parentStage.program.texture2d(source.textureName)
                             sampleValue = parentScope.run {
-                                val texCoords = texCoordBlock(parentStage).getTextureCoords()
-                                val sample = if (inDdx.isSet) {
+                                val texCoords = inUv ?: texCoordBlock(parentStage).getTextureCoords()
+                                val sample = if (inDdx != null && inDdy != null) {
                                     float4Var(sampleTextureGrad(tex, texCoords, inDdx, inDdy))
                                 } else {
                                     float4Var(sampleTexture(tex, texCoords))
