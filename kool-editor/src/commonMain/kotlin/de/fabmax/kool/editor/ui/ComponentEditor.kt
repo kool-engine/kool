@@ -111,7 +111,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         )
     }
 
-    protected fun <D> UiScope.doublePropertyEditor(
+    protected fun <D> ColumnScope.doublePropertyEditor(
         dataGetter: (T) -> D,
         valueGetter: (D) -> Double,
         valueSetter: (oldData: D, newValue: Double) -> D,
@@ -148,7 +148,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         )
     }
 
-    protected fun <D> UiScope.vec2dPropertyEditor(
+    protected fun <D> ColumnScope.vec2dPropertyEditor(
         dataGetter: (T) -> D,
         valueGetter: (D) -> Vec2d,
         valueSetter: (oldData: D, newValue: Vec2d) -> D,
@@ -181,7 +181,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         )
     }
 
-    protected fun <D> UiScope.vec3dPropertyEditor(
+    protected fun <D> ColumnScope.vec3dPropertyEditor(
         dataGetter: (T) -> D,
         valueGetter: (D) -> Vec3d,
         valueSetter: (oldData: D, newValue: Vec3d) -> D,
@@ -214,7 +214,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         )
     }
 
-    protected fun <D> UiScope.vec4dPropertyEditor(
+    protected fun <D> ColumnScope.vec4dPropertyEditor(
         dataGetter: (T) -> D,
         valueGetter: (D) -> Vec4d,
         valueSetter: (oldData: D, newValue: Vec4d) -> D,
@@ -247,7 +247,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         )
     }
 
-    protected fun <C, D> UiScope.choicePropertyEditor(
+    protected fun <C, D> ColumnScope.choicePropertyEditor(
         choices: ComboBoxItems<C>,
         dataGetter: (T) -> D,
         valueGetter: (D) -> C,
@@ -279,7 +279,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         }
     }
 
-    protected fun <D> UiScope.booleanPropertyEditor(
+    protected fun <D> ColumnScope.booleanPropertyEditor(
         dataGetter: (T) -> D,
         valueGetter: (D) -> Boolean,
         valueSetter: (oldData: D, newValue: Boolean) -> D,
@@ -302,7 +302,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         }
     }
 
-    protected fun <D> UiScope.stringPropertyEditor(
+    protected fun <D> ColumnScope.stringPropertyEditor(
         dataGetter: (T) -> D,
         valueGetter: (D) -> String,
         valueSetter: (oldData: D, newValue: String) -> D,
@@ -337,7 +337,7 @@ fun UiScope.entityEditorPanel(
     startExpanded: Boolean = true,
     onCollapseChanged: ((Boolean) -> Unit)? = null,
     block: ColumnScope.() -> Any?
-) = collapsapsablePanel(
+) = collapsablePanel(
     title,
     imageIcon,
     titleWidth = titleWidth,

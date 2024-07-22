@@ -29,7 +29,9 @@ class MaterialAttributeSourcePopup(
 
     init {
         popupContent = Composable {
-            content()
+            Column {
+                content()
+            }
         }
 
         onShow = {
@@ -51,7 +53,7 @@ class MaterialAttributeSourcePopup(
         surface.triggerUpdate()
     }
 
-    private fun UiScope.content() {
+    private fun ColumnScope.content() {
         defaultPopupStyle()
 
         val colorMode = when (editMatAttr) {
@@ -163,7 +165,7 @@ class MaterialAttributeSourcePopup(
         }
     }
 
-    private fun UiScope.vertexAttrSelector() {
+    private fun ColumnScope.vertexAttrSelector() {
         val vertAttr = editMatAttr as VertexAttribute
 
         menuRow {

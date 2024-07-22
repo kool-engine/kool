@@ -12,6 +12,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchOnMainThread
+import kotlin.math.min
 import kotlin.reflect.KClass
 
 class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
@@ -78,7 +79,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
-    private fun UiScope.genericSettings() {
+    private fun ColumnScope.genericSettings() {
         var isTwoSided by remember(material.shaderData.genericSettings.isTwoSided)
         labeledCheckbox("Is two-sided:", isTwoSided) {
             isTwoSided = it
@@ -101,7 +102,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
-    private fun UiScope.materialEditor() {
+    private fun ColumnScope.materialEditor() {
         when (material.shaderData) {
             is BlinnPhongShaderData -> TODO()
             is PbrShaderData -> pbrMaterialEditor()
@@ -110,13 +111,23 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
-    private fun UiScope.pbrSplatMaterialEditor() {
+    private fun ColumnScope.pbrSplatMaterialEditor() {
         textureSetting("Splat map:", pbrSplatData.splatMap) {
             pbrSplatData.copy(splatMap = it)
         }
+
+        val numMats = min(5, pbrSplatData.numMaterials + 1)
+        for (i in 0 until numMats) {
+            val mat = pbrSplatData.materialMaps.getOrNull(i)
+            collapsablePanelLvl2("Material ${i + 1}") {
+                textureSetting("Displacement:", mat?.displacementMap) {
+                    pbrSplatData
+                }
+            }
+        }
     }
 
-    private fun UiScope.pbrMaterialEditor() {
+    private fun ColumnScope.pbrMaterialEditor() {
         // shader setting callback functions need to use cast material.shaderData instead of pbrData because otherwise
         // pbrData is captured on first invocation and will never be updated
 
@@ -238,7 +249,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
-    private fun UiScope.colorSetting(
+    private fun ColumnScope.colorSetting(
         label: String,
         colorAttr: MaterialAttribute,
         default: Color,
@@ -287,7 +298,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
-    private fun UiScope.floatSetting(
+    private fun ColumnScope.floatSetting(
         label: String,
         floatAttr: MaterialAttribute,
         min: Float,
@@ -381,7 +392,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
-    private fun UiScope.textureSetting(
+    private fun ColumnScope.textureSetting(
         label: String,
         texAttr: MapAttribute?,
         shaderDataSetter: (MapAttribute?) -> MaterialShaderData

@@ -83,7 +83,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         }
     }
 
-    private fun UiScope.boxProperties() = Column(width = Grow.Std, scopeName = "boxProperties") {
+    private fun ColumnScope.boxProperties() {
         shapeVec3Editor<ShapeData.Box>(
             valueGetter = { it.size.toVec3d() },
             valueSetter = { oldData, newValue -> oldData.copy(size = Vec3Data(newValue)) },
@@ -97,7 +97,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
     }
 
-    private fun UiScope.rectProperties() = Column(width = Grow.Std, scopeName = "rectProperties") {
+    private fun ColumnScope.rectProperties() {
         shapeVec2Editor<ShapeData.Rect>(
             valueGetter = { it.size.toVec2d() },
             valueSetter = { oldData, newValue -> oldData.copy(size = Vec2Data(newValue)) },
@@ -111,7 +111,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
     }
 
-    private fun UiScope.sphereProperties() = Column(width = Grow.Std, scopeName = "sphereProperties") {
+    private fun ColumnScope.sphereProperties() {
         shapeDoubleEditor<ShapeData.Sphere>(
             valueGetter = { it.radius },
             valueSetter = { oldData, newValue -> oldData.copy(radius = newValue) },
@@ -155,10 +155,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
     }
 
-    private fun UiScope.cylinderProperties() = Column(
-        width = Grow.Std,
-        scopeName = "cylinderProperties"
-    ) {
+    private fun ColumnScope.cylinderProperties() {
         var isUniRadius by remember(components.map { (it.data.shapes[0] as ShapeData.Cylinder) }.all { it.topRadius == it.bottomRadius })
         labeledCheckbox("Uniform radius:", isUniRadius) {
             isUniRadius = it
@@ -211,10 +208,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
     }
 
-    private fun UiScope.capsuleProperties() = Column(
-        width = Grow.Std,
-        scopeName = "capsuleProperties"
-    ) {
+    private fun ColumnScope.capsuleProperties()  {
         shapeDoubleEditor<ShapeData.Capsule>(
             valueGetter = { it.radius },
             valueSetter = { oldData, newValue -> oldData.copy(radius = newValue) },
@@ -237,10 +231,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
     }
 
-    private fun UiScope.modelProperties() = Column(
-        width = Grow.Std,
-        scopeName = "modelProperties"
-    ) {
+    private fun ColumnScope.modelProperties() {
         val modelOptions = buildList {
             add(ModelOption("None", 0, null))
             KoolEditor.instance.availableAssets.modelAssets.use().forEachIndexed { i, model ->
@@ -294,10 +285,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         }
     }
 
-    private fun UiScope.heightmapProperties() = Column(
-        width = Grow.Std,
-        scopeName = "heightmapProperties"
-    ) {
+    private fun ColumnScope.heightmapProperties() {
         val heightmaps = components.map { it.data.shapes[0] as ShapeData.Heightmap }
         val mapPath = if (heightmaps.all { it.mapPath == heightmaps[0].mapPath }) heightmaps[0].mapPath else null
         heightmapSelector(mapPath, true) {
@@ -357,7 +345,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         )
     }
 
-    private inline fun <reified T: ShapeData> UiScope.shapeDoubleEditor(
+    private inline fun <reified T: ShapeData> ColumnScope.shapeDoubleEditor(
         noinline valueGetter: (T) -> Double,
         noinline valueSetter: (oldData: T, newValue: Double) -> T,
         label: String,
@@ -375,7 +363,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         maxValue = maxValue
     )
 
-    private inline fun <reified T: ShapeData> UiScope.shapeVec2Editor(
+    private inline fun <reified T: ShapeData> ColumnScope.shapeVec2Editor(
         noinline valueGetter: (T) -> Vec2d,
         noinline valueSetter: (oldData: T, newValue: Vec2d) -> T,
         label: String,
@@ -391,7 +379,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         maxValues = maxValues
     )
 
-    private inline fun <reified T: ShapeData> UiScope.shapeVec3Editor(
+    private inline fun <reified T: ShapeData> ColumnScope.shapeVec3Editor(
         noinline valueGetter: (T) -> Vec3d,
         noinline valueSetter: (oldData: T, newValue: Vec3d) -> T,
         label: String,
