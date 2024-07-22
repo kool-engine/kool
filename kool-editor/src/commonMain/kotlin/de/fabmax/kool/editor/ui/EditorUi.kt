@@ -249,17 +249,21 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
 val Sizes.baseSize: Dp get() = largeGap * 2f
 val Sizes.treeIndentation: Dp get() = gap * 1.5f
-val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
 val Sizes.editItemHeight: Dp get() = largeGap * 1.25f
-val Sizes.lineHeightLarger: Dp get() = baseSize * 0.9f
-val Sizes.heightTitleBar: Dp get() = lineHeightLarger
+val Sizes.lineHeight: Dp get() = baseSize * (2f/3f)
+val Sizes.lineHeightMedium: Dp get() = baseSize * 0.8f
+val Sizes.lineHeightLarge: Dp get() = baseSize * 0.9f
+val Sizes.heightTitleBar: Dp get() = lineHeightLarge
 val Sizes.heightWindowTitleBar: Dp get() = heightTitleBar * 1.1f
 val Sizes.panelBarWidth: Dp get() = baseSize - borderWidth
 val Sizes.smallTextFieldPadding: Dp get() = smallGap * 0.75f
 val Sizes.scrollbarWidth: Dp get() = gap * 0.33f
-val Sizes.editorLabelWidthSmall: Dp get() = baseSize * 3
+val Sizes.editorLabelWidthSmall: Dp get() = baseSize * 3.125f
 val Sizes.editorLabelWidthMedium: Dp get() = baseSize * 4
 val Sizes.editorLabelWidthLarge: Dp get() = baseSize * 5
+
+val Sizes.editorPanelMarginStart: Dp get() = gap * 1.5f
+val Sizes.editorPanelMarginEnd: Dp get() = gap
 
 val Sizes.smallText: MsdfFont get() = (normalText as MsdfFont).copy(sizePts = normalText.sizePts * 0.8f)
 val Sizes.boldText: MsdfFont get() = (normalText as MsdfFont).copy(weight = 0.075f)

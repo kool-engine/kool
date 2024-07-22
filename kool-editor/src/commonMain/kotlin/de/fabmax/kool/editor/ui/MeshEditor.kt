@@ -338,10 +338,18 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 }
             }
         )
-        shapeVec2Editor<ShapeData.Heightmap>(
-            valueGetter = { it.uvScale.toVec2d() },
-            valueSetter = { oldData, newValue -> oldData.copy(uvScale = Vec2Data(newValue)) },
-            label = "Texture scale:"
+        labeledXyRow(
+            label = "Texture scale:",
+            xy = Vec2d(condenseDouble(heightmaps.map { it.uvScale.x }), condenseDouble(heightmaps.map { it.uvScale.y })),
+            editHandler = object: ValueEditHandler<Vec2d> {
+                override fun onEdit(value: Vec2d) { }
+                override fun onEditEnd(startValue: Vec2d, endValue: Vec2d) {
+                    components.map { component ->
+                        val hgt = component.data.shapes[0] as ShapeData.Heightmap
+                        SetMeshShapeAction(component, hgt, hgt.copy(uvScale = Vec2Data(endValue)))
+                    }.fused().apply()
+                }
+            }
         )
     }
 

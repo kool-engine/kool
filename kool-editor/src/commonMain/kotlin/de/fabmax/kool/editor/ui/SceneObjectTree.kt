@@ -200,7 +200,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 .size(sizes.lineHeight * 0.8f, FitContent)
                 .alignY(AlignmentY.Center)
             if (item.isExpandable) {
-                Arrow {
+                Arrow(isHoverable = false) {
                     modifier
                         .rotation(if (item.isExpanded.use()) ROTATION_DOWN else ROTATION_RIGHT)
                         .align(AlignmentX.Center, AlignmentY.Center)

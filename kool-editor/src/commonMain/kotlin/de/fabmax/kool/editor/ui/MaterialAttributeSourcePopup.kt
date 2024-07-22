@@ -30,6 +30,7 @@ class MaterialAttributeSourcePopup(
     init {
         popupContent = Composable {
             Column {
+                defaultPopupStyle()
                 content()
             }
         }
@@ -54,8 +55,6 @@ class MaterialAttributeSourcePopup(
     }
 
     private fun ColumnScope.content() {
-        defaultPopupStyle()
-
         val colorMode = when (editMatAttr) {
             is ConstColorAttribute -> ColorMode.COLOR
             is ConstValueAttribute -> ColorMode.VALUE
