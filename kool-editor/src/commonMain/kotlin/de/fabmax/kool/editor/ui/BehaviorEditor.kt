@@ -11,6 +11,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.Box
+import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.util.Color
@@ -77,7 +78,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         }
     }
 
-    private fun UiScope.gameEntityEditor(prop: BehaviorProperty) {
+    private fun ColumnScope.gameEntityEditor(prop: BehaviorProperty) {
         val choices = remember {
             ComboBoxItems(listOf(null) + scene.sceneEntities.values.map { GameEntityChoice(it) })
         }
@@ -91,7 +92,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         )
     }
 
-    private fun UiScope.componentEditor(prop: BehaviorProperty) {
+    private fun ColumnScope.componentEditor(prop: BehaviorProperty) {
         val choices = remember {
             val klass = prop.kType.classifier as KClass<*>
             val selComponents = listOf(null) + scene.sceneEntities.values
@@ -109,7 +110,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         )
     }
 
-    private fun UiScope.behaviorComponentEditor(prop: BehaviorProperty) {
+    private fun ColumnScope.behaviorComponentEditor(prop: BehaviorProperty) {
         val choices = remember {
             val className = (prop.kType.classifier as KClass<*>).simpleName
             val behaviorComponents = listOf(null) + scene.getAllComponents<BehaviorComponent>().filter {
@@ -127,7 +128,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         )
     }
 
-    private fun UiScope.boolEditor(prop: BehaviorProperty) = booleanPropertyEditor(
+    private fun ColumnScope.boolEditor(prop: BehaviorProperty) = booleanPropertyEditor(
         dataGetter = { PropertyValue(bool = prop.getBoolean(it)) },
         valueGetter = { it.bool!! },
         valueSetter = { _, newValue -> PropertyValue(bool = newValue) },
@@ -135,7 +136,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         label = prop.label
     )
 
-    private fun UiScope.stringEditor(prop: BehaviorProperty) = stringPropertyEditor(
+    private fun ColumnScope.stringEditor(prop: BehaviorProperty) = stringPropertyEditor(
         dataGetter = { PropertyValue(str = prop.getString(it)) },
         valueGetter = { it.str!! },
         valueSetter = { _, newValue -> PropertyValue(str = newValue) },
@@ -143,7 +144,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         label = prop.label
     )
 
-    private fun UiScope.doubleEditor(prop: BehaviorProperty) = doublePropertyEditor(
+    private fun ColumnScope.doubleEditor(prop: BehaviorProperty) = doublePropertyEditor(
         dataGetter = { PropertyValue(d1 = prop.getDouble(it)) },
         valueGetter = { it.d1!! },
         valueSetter = { _, newValue -> PropertyValue(d1 = newValue) },
@@ -154,7 +155,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValue = prop.max.x,
     )
 
-    private fun UiScope.vec2dEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
+    private fun ColumnScope.vec2dEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
         dataGetter = { PropertyValue(d2 = Vec2Data(prop.getVec2d(it))) },
         valueGetter = { it.d2!!.toVec2d() },
         valueSetter = { _, newValue -> PropertyValue(d2 = Vec2Data(newValue)) },
@@ -165,7 +166,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max.xy,
     )
 
-    private fun UiScope.vec3dEditor(prop: BehaviorProperty) = vec3dPropertyEditor(
+    private fun ColumnScope.vec3dEditor(prop: BehaviorProperty) = vec3dPropertyEditor(
         dataGetter = { PropertyValue(d3 = Vec3Data(prop.getVec3d(it))) },
         valueGetter = { it.d3!!.toVec3d() },
         valueSetter = { _, newValue -> PropertyValue(d3 = Vec3Data(newValue)) },
@@ -176,7 +177,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max.xyz,
     )
 
-    private fun UiScope.vec4dEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
+    private fun ColumnScope.vec4dEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
         dataGetter = { PropertyValue(d4 = Vec4Data(prop.getVec4d(it))) },
         valueGetter = { it.d4!!.toVec4d() },
         valueSetter = { _, newValue -> PropertyValue(d4 = Vec4Data(newValue)) },
@@ -187,7 +188,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max,
     )
 
-    private fun UiScope.floatEditor(prop: BehaviorProperty) = doublePropertyEditor(
+    private fun ColumnScope.floatEditor(prop: BehaviorProperty) = doublePropertyEditor(
         dataGetter = { PropertyValue(f1 = prop.getFloat(it)) },
         valueGetter = { it.f1!!.toDouble() },
         valueSetter = { _, newValue -> PropertyValue(f1 = newValue.toFloat()) },
@@ -198,7 +199,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValue = prop.max.x,
     )
 
-    private fun UiScope.vec2fEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
+    private fun ColumnScope.vec2fEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
         dataGetter = { PropertyValue(f2 = Vec2Data(prop.getVec2f(it))) },
         valueGetter = { it.f2!!.toVec2d() },
         valueSetter = { _, newValue -> PropertyValue(f2 = Vec2Data(newValue)) },
@@ -209,7 +210,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max.xy,
     )
 
-    private fun UiScope.vec3fEditor(prop: BehaviorProperty)  = vec3dPropertyEditor(
+    private fun ColumnScope.vec3fEditor(prop: BehaviorProperty)  = vec3dPropertyEditor(
         dataGetter = { PropertyValue(f3 = Vec3Data(prop.getVec3f(it))) },
         valueGetter = { it.f3!!.toVec3d() },
         valueSetter = { _, newValue -> PropertyValue(f3 = Vec3Data(newValue)) },
@@ -220,7 +221,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max.xyz,
     )
 
-    private fun UiScope.vec4fEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
+    private fun ColumnScope.vec4fEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
         dataGetter = { PropertyValue(f4 = Vec4Data(prop.getVec4f(it))) },
         valueGetter = { it.f4!!.toVec4d() },
         valueSetter = { _, newValue -> PropertyValue(f4 = Vec4Data(newValue)) },
@@ -231,7 +232,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max,
     )
 
-    private fun UiScope.intEditor(prop: BehaviorProperty) = doublePropertyEditor(
+    private fun ColumnScope.intEditor(prop: BehaviorProperty) = doublePropertyEditor(
         dataGetter = { PropertyValue(i1 = prop.getInt(it)) },
         valueGetter = { it.i1!!.toDouble() },
         valueSetter = { _, newValue -> PropertyValue(i1 = newValue.roundToInt()) },
@@ -243,7 +244,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValue = prop.max.x,
     )
 
-    private fun UiScope.vec2iEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
+    private fun ColumnScope.vec2iEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
         dataGetter = { PropertyValue(i2 = Vec2Data(prop.getVec2i(it))) },
         valueGetter = { it.i2!!.toVec2d() },
         valueSetter = { _, newValue -> PropertyValue(i2 = Vec2Data(newValue)) },
@@ -255,7 +256,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max.xy,
     )
 
-    private fun UiScope.vec3iEditor(prop: BehaviorProperty) = vec3dPropertyEditor(
+    private fun ColumnScope.vec3iEditor(prop: BehaviorProperty) = vec3dPropertyEditor(
         dataGetter = { PropertyValue(i3 = Vec3Data(prop.getVec3i(it))) },
         valueGetter = { it.i3!!.toVec3d() },
         valueSetter = { _, newValue -> PropertyValue(i3 = Vec3Data(newValue)) },
@@ -267,7 +268,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         maxValues = prop.max.xyz,
     )
 
-    private fun UiScope.vec4iEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
+    private fun ColumnScope.vec4iEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
         dataGetter = { PropertyValue(i4 = Vec4Data(prop.getVec4i(it))) },
         valueGetter = { it.i4!!.toVec4d() },
         valueSetter = { _, newValue -> PropertyValue(i4 = Vec4Data(newValue)) },

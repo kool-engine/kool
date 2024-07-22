@@ -69,21 +69,21 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
         }
     }
 
-    private fun UiScope.position() = labeledXyzRow(
+    private fun ColumnScope.position() = labeledXyzRow(
         label = "Position:",
         xyz = Vec3d(transformProperties.px.use(), transformProperties.py.use(), transformProperties.pz.use()),
         dragChangeSpeed = DragChangeRates.POSITION_VEC3,
         editHandler = transformProperties.posEditHandler
     )
 
-    private fun UiScope.rotation() = labeledXyzRow(
+    private fun ColumnScope.rotation() = labeledXyzRow(
         label = "Rotation:",
         xyz = Vec3d(transformProperties.rEulerX.use(), transformProperties.rEulerY.use(), transformProperties.rEulerZ.use()),
         dragChangeSpeed = DragChangeRates.ROTATION_VEC3,
         editHandler = transformProperties.rotEulerEditHandler
     )
 
-    private fun UiScope.scale() {
+    private fun ColumnScope.scale() {
         menuRow {
             Text("Scale:") {
                 modifier

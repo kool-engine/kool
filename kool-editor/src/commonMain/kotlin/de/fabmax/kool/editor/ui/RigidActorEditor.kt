@@ -243,7 +243,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         )
     }
 
-    private fun UiScope.actorDoubleEditor(
+    private fun ColumnScope.actorDoubleEditor(
         valueGetter: (RigidActorComponentData) -> Double,
         valueSetter: (oldData: RigidActorComponentData, newValue: Double) -> RigidActorComponentData,
         label: String,
@@ -261,7 +261,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         maxValue = maxValue
     )
 
-    private fun UiScope.actorVec3Editor(
+    private fun ColumnScope.actorVec3Editor(
         valueGetter: (RigidActorComponentData) -> Vec3d,
         valueSetter: (oldData: RigidActorComponentData, newValue: Vec3d) -> RigidActorComponentData,
         label: String,

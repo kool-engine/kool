@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.LightTypeData
 import de.fabmax.kool.math.toVec4d
+import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.util.Color
 
@@ -47,7 +48,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
         }
     }
 
-    private fun UiScope.colorSettings() {
+    private fun ColumnScope.colorSettings() {
         val colors = condenseVec4(components.map { it.data.light.color.toColorSrgb().toVec4f().toVec4d() })
         val color = if (colors.x.isFinite() && colors.y.isFinite() && colors.z.isFinite() && colors.w.isFinite()) {
             Color(colors.x.toFloat(), colors.y.toFloat(), colors.z.toFloat(), colors.w.toFloat())
@@ -118,7 +119,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
         )
     }
 
-    private fun UiScope.spotSettings() {
+    private fun ColumnScope.spotSettings() {
         val spots = components.map { it.data.light as LightTypeData.Spot }
         labeledDoubleTextField(
             label = "Angle:",

@@ -8,8 +8,7 @@ import de.fabmax.kool.editor.components.SceneBackgroundComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
-import de.fabmax.kool.modules.ui2.Column
-import de.fabmax.kool.modules.ui2.Grow
+import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.ibl.ReflectionMapPass
@@ -57,10 +56,7 @@ class SceneBackgroundEditor : ComponentEditor<SceneBackgroundComponent>() {
         }
     }
 
-    private fun UiScope.singleColorBgProperties(singleColorBg: SceneBackgroundData.SingleColor) = Column(
-        width = Grow.Std,
-        scopeName = "singleColorBg"
-    ) {
+    private fun ColumnScope.singleColorBgProperties(singleColorBg: SceneBackgroundData.SingleColor) {
         editorSingleBgColor.set(singleColorBg.color.toColorSrgb())
         labeledColorPicker(
             "Background color:",
@@ -73,10 +69,7 @@ class SceneBackgroundEditor : ComponentEditor<SceneBackgroundComponent>() {
         )
     }
 
-    private fun UiScope.hdriBgProperties(hdriBg: SceneBackgroundData.Hdri) = Column(
-        width = Grow.Std,
-        scopeName = "hdriBg"
-    ) {
+    private fun ColumnScope.hdriBgProperties(hdriBg: SceneBackgroundData.Hdri) {
         val hdriTextures = availableHdriTextures()
         selectedHdri.set(hdriTextures.indexOfFirst { it.path == hdriBg.hdriPath })
         skyLod.set(hdriBg.skyLod)

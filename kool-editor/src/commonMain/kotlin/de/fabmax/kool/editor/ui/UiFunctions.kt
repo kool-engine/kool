@@ -249,7 +249,7 @@ fun String.parseInt(min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): Int? {
     return i
 }
 
-fun UiScope.labeledXyRow(
+fun ColumnScope.labeledXyRow(
     label: String,
     xy: Vec2d,
     precision: Vec2i = Vec2i(precisionForValue(xy.x), precisionForValue(xy.y)),
@@ -257,7 +257,7 @@ fun UiScope.labeledXyRow(
     maxValues: Vec2d? = null,
     dragChangeSpeed: Vec2d = Vec2d.ZERO,
     editHandler: ValueEditHandler<Vec2d>
-) = Column(width = Grow.Std) {
+) {
     menuRow {
         Text(label) {
             modifier.alignY(AlignmentY.Center)
@@ -266,7 +266,7 @@ fun UiScope.labeledXyRow(
     xyRow(xy, precision, minValues, maxValues, dragChangeSpeed, editHandler)
 }
 
-fun UiScope.xyRow(
+fun ColumnScope.xyRow(
     xy: Vec2d,
     precision: Vec2i = Vec2i(precisionForValue(xy.x), precisionForValue(xy.y)),
     minValues: Vec2d? = null,
@@ -310,7 +310,7 @@ fun UiScope.xyRow(
     doubleTextField(xy.y, precision.y, Grow.Std, dragChangeSpeed.y, minY, maxY, editHandler = yEditHandler)
 }
 
-fun UiScope.labeledXyzRow(
+fun ColumnScope.labeledXyzRow(
     label: String,
     xyz: Vec3d,
     precision: Vec3i = Vec3i(precisionForValue(xyz.x), precisionForValue(xyz.y), precisionForValue(xyz.z)),
@@ -318,7 +318,7 @@ fun UiScope.labeledXyzRow(
     maxValues: Vec3d? = null,
     dragChangeSpeed: Vec3d = Vec3d.ZERO,
     editHandler: ValueEditHandler<Vec3d>
-) = Column(width = Grow.Std) {
+) {
     menuRow {
         Text(label) {
             modifier.alignY(AlignmentY.Center)
@@ -328,7 +328,7 @@ fun UiScope.labeledXyzRow(
 }
 
 
-fun UiScope.xyzRow(
+fun ColumnScope.xyzRow(
     xyz: Vec3d,
     precision: Vec3i = Vec3i(precisionForValue(xyz.x), precisionForValue(xyz.y), precisionForValue(xyz.z)),
     minValues: Vec3d? = null,
@@ -389,7 +389,7 @@ fun UiScope.xyzRow(
     doubleTextField(xyz.z, precision.z, Grow.Std, dragChangeSpeed.z, minZ, maxZ, editHandler = zEditHandler)
 }
 
-fun UiScope.labeledXyzwRow(
+fun ColumnScope.labeledXyzwRow(
     label: String,
     xyzw: Vec4d,
     precision: Vec4i = Vec4i(precisionForValue(xyzw.x), precisionForValue(xyzw.y), precisionForValue(xyzw.z), precisionForValue(xyzw.w)),
@@ -397,7 +397,7 @@ fun UiScope.labeledXyzwRow(
     maxValues: Vec4d? = null,
     dragChangeSpeed: Vec4d = Vec4d.ZERO,
     editHandler: ValueEditHandler<Vec4d>
-) = Column(width = Grow.Std) {
+) {
     menuRow {
         Text(label) {
             modifier.alignY(AlignmentY.Center)
@@ -406,7 +406,7 @@ fun UiScope.labeledXyzwRow(
     xyzwRow(xyzw, precision, minValues, maxValues, dragChangeSpeed, editHandler)
 }
 
-fun UiScope.xyzwRow(
+fun ColumnScope.xyzwRow(
     xyzw: Vec4d,
     precision: Vec4i = Vec4i(precisionForValue(xyzw.x), precisionForValue(xyzw.y), precisionForValue(xyzw.z), precisionForValue(xyzw.w)),
     minValues: Vec4d? = null,
@@ -484,7 +484,7 @@ fun UiScope.xyzwRow(
     doubleTextField(xyzw.w, precision.w, Grow.Std, dragChangeSpeed.w, minW, maxW, editHandler = wEditHandler)
 }
 
-fun <T: Any> UiScope.labeledCombobox(
+fun <T: Any> ColumnScope.labeledCombobox(
     label: String,
     items: List<T>,
     selectedIndex: Int,
@@ -521,7 +521,7 @@ fun precisionForValue(value: Double): Int {
     return min(3, max(1, digits))
 }
 
-fun UiScope.labeledColorPicker(
+fun ColumnScope.labeledColorPicker(
     label: String,
     pickerColor: Color,
     isWithAlpha: Boolean = false,
@@ -591,7 +591,7 @@ fun UiScope.colorPicker(
     }
 }
 
-fun UiScope.labeledDoubleTextField(
+fun ColumnScope.labeledDoubleTextField(
     label: String,
     value: Double,
     precision: Int = precisionForValue(value),
@@ -611,7 +611,7 @@ fun UiScope.labeledDoubleTextField(
     doubleTextField(value, precision, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler, textFieldModifier)
 }
 
-fun UiScope.labeledIntTextField(
+fun ColumnScope.labeledIntTextField(
     label: String,
     value: Int,
     labelWidth: Dimension = sizes.editorLabelWidthLarge,
@@ -630,7 +630,7 @@ fun UiScope.labeledIntTextField(
     intTextField(value, valueWidth, dragChangeSpeed, minValue, maxValue, editHandler, textFieldModifier)
 }
 
-fun UiScope.labeledTextField(
+fun ColumnScope.labeledTextField(
     label: String,
     text: String,
     labelWidth: Dimension = sizes.editorLabelWidthLarge,
@@ -696,7 +696,7 @@ fun UiScope.labeledSlider(
     }
 }
 
-fun UiScope.labeledCheckbox(
+fun ColumnScope.labeledCheckbox(
     label: String,
     state: Boolean,
     onToggle: (Boolean) -> Unit
@@ -719,7 +719,7 @@ fun UiScope.labeledCheckbox(
     }
 }
 
-fun UiScope.labeledSwitch(
+fun ColumnScope.labeledSwitch(
     label: String,
     state: Boolean,
     onToggle: (Boolean) -> Unit
@@ -742,7 +742,7 @@ fun UiScope.labeledSwitch(
     }
 }
 
-fun UiScope.okButton(xAlign: AlignmentX = AlignmentX.End, onClick: (PointerEvent) -> Unit) = menuRow {
+fun ColumnScope.okButton(xAlign: AlignmentX = AlignmentX.End, onClick: (PointerEvent) -> Unit) = menuRow {
     if (xAlign != AlignmentX.Start) {
         Box(width = Grow.Std) { }
     }
@@ -757,8 +757,8 @@ fun UiScope.okButton(xAlign: AlignmentX = AlignmentX.End, onClick: (PointerEvent
     }
 }
 
-inline fun UiScope.menuRow(marginTop: Dp = sizes.smallGap, block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
-    modifier.margin(top = marginTop)
+inline fun ColumnScope.menuRow(marginTop: Dp = sizes.smallGap, marginStart: Dp = sizes.largeGap, block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
+    modifier.margin(start = marginStart, top = marginTop)
     block()
 }
 
@@ -792,7 +792,7 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
     }
 }
 
-fun UiScope.heightmapSelector(
+fun ColumnScope.heightmapSelector(
     selectedHeightmapPath: String?,
     withNoneOption: Boolean,
     onSelect: (AssetItem?) -> Unit
