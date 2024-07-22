@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
 import de.fabmax.kool.editor.actions.fused
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.components.MaterialReferenceComponent
 import de.fabmax.kool.editor.data.*
@@ -12,7 +13,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.launchOnMainThread
-import kotlin.math.min
+import kotlin.math.max
 import kotlin.reflect.KClass
 
 class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
@@ -112,16 +113,157 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
     }
 
     private fun ColumnScope.pbrSplatMaterialEditor() {
-        textureSetting("Splat map:", pbrSplatData.splatMap) {
+        textureSetting("Weight map:", pbrSplatData.splatMap) {
             pbrSplatData.copy(splatMap = it)
         }
 
-        val numMats = min(5, pbrSplatData.numMaterials + 1)
+        val numMats = max(2, pbrSplatData.materialMaps.size)
         for (i in 0 until numMats) {
-            val mat = pbrSplatData.materialMaps.getOrNull(i)
-            collapsablePanelLvl2("Material ${i + 1}") {
-                textureSetting("Displacement:", mat?.displacementMap) {
-                    pbrSplatData
+            val panelKey = "splat-mat-$i"
+
+            collapsablePanelLvl2(
+                title = "Material ${i + 1}",
+                titleWidth = sizes.editorLabelWidthSmall - sizes.gap * 4f,
+                startExpanded = getPanelState(false, panelKey = panelKey),
+                indicatorColor = splatIndiColors[i % splatIndiColors.size],
+                isAlwaysShowIndicator = false,
+                headerContent = { splatMaterialPreview(getSplatMaterial(i).baseColor, i) },
+                onCollapseChanged = { setPanelState(it, panelKey = panelKey) }
+            ) {
+                val mat = getSplatMaterial(i)
+                textureSetting("Displacement:", mat.displacementMap) {
+                    setSplatMaterial(i, getSplatMaterial(i).copy(displacementMap = it))
+                }
+                colorSetting("Base color:", mat.baseColor, MdColor.GREY.toLinear()) {
+                    setSplatMaterial(i, getSplatMaterial(i).copy(baseColor = it))
+                }
+                textureSetting("Normal map:", mat.normalMap) {
+                    setSplatMaterial(i, getSplatMaterial(i).copy(normalMap = it))
+                }
+                textureSetting("AO:", mat.aoMap) {
+                    setSplatMaterial(i, getSplatMaterial(i).copy(aoMap = it))
+                }
+                floatSetting("Roughness:", mat.roughness, 0f, 1f, 0.5f) {
+                    setSplatMaterial(i, getSplatMaterial(i).copy(roughness = it))
+                }
+                floatSetting("Metallic:", mat.metallic, 0f, 1f, 0f) {
+                    setSplatMaterial(i, getSplatMaterial(i).copy(metallic = it))
+                }
+                colorSetting("Emission color:", mat.emission, Color.BLACK) {
+                    setSplatMaterial(i, getSplatMaterial(i).copy(emission = it))
+                }
+                menuDivider()
+                labeledDoubleTextField(
+                    label = "Texture scale:",
+                    value = mat.textureScale.toDouble(),
+                    dragChangeSpeed = DragChangeRates.SIZE,
+                    minValue = 0.0,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoMats = setSplatMaterial(i, getSplatMaterial(i).copy(textureScale = undoValue.toFloat()))
+                        val applyMats = setSplatMaterial(i, getSplatMaterial(i).copy(textureScale = applyValue.toFloat()))
+                        SetComponentDataAction(material, material.data.copy(shaderData = undoMats), material.data.copy(shaderData = applyMats))
+                    }
+                )
+                labeledDoubleTextField(
+                    label = "Tiling scale:",
+                    value = mat.stochasticTileSize.toDouble(),
+                    dragChangeSpeed = DragChangeRates.SIZE,
+                    minValue = 0.0,
+                    maxValue = 1.0,
+                    precision = 3,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoMats = setSplatMaterial(i, getSplatMaterial(i).copy(stochasticTileSize = undoValue.toFloat()))
+                        val applyMats = setSplatMaterial(i, getSplatMaterial(i).copy(stochasticTileSize = applyValue.toFloat()))
+                        SetComponentDataAction(material, material.data.copy(shaderData = undoMats), material.data.copy(shaderData = applyMats))
+                    }
+                )
+                labeledDoubleTextField(
+                    label = "Tiling rotation:",
+                    value = mat.stochasticRotation.toDouble(),
+                    dragChangeSpeed = DragChangeRates.SIZE,
+                    minValue = 0.0,
+                    maxValue = 360.0,
+                    precision = 0,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoMats = setSplatMaterial(i, getSplatMaterial(i).copy(stochasticRotation = undoValue.toFloat()))
+                        val applyMats = setSplatMaterial(i, getSplatMaterial(i).copy(stochasticRotation = applyValue.toFloat()))
+                        SetComponentDataAction(material, material.data.copy(shaderData = undoMats), material.data.copy(shaderData = applyMats))
+                    }
+                )
+            }
+        }
+
+        if (pbrSplatData.materialMaps.size < 5) {
+            Button("Add Splat Material") {
+                defaultButtonStyle()
+                modifier
+                    .width(sizes.baseSize * 5)
+                    .height(sizes.editItemHeight)
+                    .margin(vertical = sizes.smallGap)
+                    .alignX(AlignmentX.Center)
+                    .onClick {
+                        val newMats = pbrSplatData.copy(materialMaps = pbrSplatData.materialMaps + SplatMapData())
+                        SetComponentDataAction(material, material.data, material.data.copy(shaderData = newMats)).apply()
+                    }
+            }
+        }
+    }
+
+    private fun getSplatMaterial(index: Int): SplatMapData {
+        return pbrSplatData.materialMaps.getOrNull(index) ?: SplatMapData()
+    }
+
+    private fun setSplatMaterial(index: Int, mat: SplatMapData): PbrSplatShaderData {
+        val mats = pbrSplatData.materialMaps
+        val newMats = if (index >= mats.size) {
+            mats + mat
+        } else {
+            mats.toMutableList().also { it[index] = mat }
+        }
+        return pbrSplatData.copy(materialMaps = newMats)
+    }
+
+    private fun RowScope.splatMaterialPreview(baseColor: MaterialAttribute, matIndex: Int) {
+        val mapPath = (baseColor as? MapAttribute)?.mapPath
+        if (mapPath != null) {
+            val tex = KoolEditor.instance.cachedAppAssets.getTextureMutableState(AssetReference.Texture(mapPath)).use()
+            Image(tex) {
+                modifier
+                    .size(sizes.lineHeight, sizes.lineHeight)
+                    .margin(start = sizes.largeGap)
+                    .alignY(AlignmentY.Center)
+            }
+        } else {
+            val color = (baseColor as? ConstColorAttribute)?.color?.toColorSrgb() ?: MdColor.GREY
+            Box(width = sizes.lineHeight, height = sizes.lineHeight) {
+                modifier
+                    .margin(start = sizes.largeGap)
+                    .alignY(AlignmentY.Center)
+                    .backgroundColor(color)
+            }
+        }
+
+        if (matIndex >= 2 && matIndex == pbrSplatData.materialMaps.lastIndex) {
+            Box(width = Grow.Std) {}
+            Box {
+                var isHovered by remember(false)
+                val fgColor = colors.onBackground
+                val bgColor = if (isHovered) MdColor.RED else colors.componentBg
+
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .margin(start = sizes.largeGap, end = sizes.gap * 0.75f)
+                    .padding(sizes.smallGap * 0.5f)
+                    .onEnter { isHovered = true }
+                    .onExit { isHovered = false }
+                    .onClick {
+                        val withoutLast = pbrSplatData.copy(materialMaps = pbrSplatData.materialMaps.take(matIndex))
+                        SetComponentDataAction(material, material.data, material.data.copy(shaderData = withoutLast)).apply()
+                    }
+                    .background(CircularBackground(bgColor))
+
+                Image {
+                    modifier.iconImage(IconMap.small.trash, fgColor)
                 }
             }
         }
@@ -137,14 +279,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         textureSetting("Normal map:", pbrData.normalMap) {
             pbrData.copy(normalMap = it)
         }
+        textureSetting("AO:", pbrData.aoMap) {
+            pbrData.copy(aoMap = it)
+        }
         floatSetting("Roughness:", pbrData.roughness, 0f, 1f, 0.5f) {
             pbrData.copy(roughness = it)
         }
         floatSetting("Metallic:", pbrData.metallic, 0f, 1f, 0f) {
             pbrData.copy(metallic = it)
-        }
-        textureSetting("AO:", pbrData.aoMap) {
-            pbrData.copy(aoMap = it)
         }
         textureSetting("Displacement:", pbrData.displacementMap) {
             pbrData.copy(displacementMap = it)
@@ -327,7 +469,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 text = floatAttr.mapName
                 doubleVal = 0.0
                 isTextField = false
-                labelWidth = sizes.baseSize * 3
+                labelWidth = sizes.editorLabelWidthSmall
             }
             is VertexAttribute -> {
                 text = "Vertex"
@@ -408,12 +550,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         val texPopup = remember {
             AutoPopup().apply {
                 popupContent = Composable {
-                    defaultPopupStyle()
-                    textureSelector(editTex?.mapPath ?: "", true) { asset ->
-                        editTex = asset?.let { MapAttribute(it.path) }
-                        editHandler.onEdit(editTex)
+                    Column {
+                        defaultPopupStyle()
+                        textureSelector(editTex?.mapPath ?: "", true) { asset ->
+                            editTex = asset?.let { MapAttribute(it.path) }
+                            editHandler.onEdit(editTex)
+                        }
+                        okButton { hide() }
                     }
-                    okButton { hide() }
                 }
                 onShow = {
                     editStartTex = editTex
@@ -425,7 +569,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             }
         }
 
-        materialSetting(label, sizes.baseSize * 3, null, material, shaderDataSetter, texPopup, true) {
+        materialSetting(label, sizes.editorLabelWidthSmall, null, material, shaderDataSetter, texPopup, true) {
             Text(texAttr?.mapName ?: "None selected") {
                 modifier
                     .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
@@ -504,5 +648,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             MaterialTypeOption("PBR", PbrShaderData::class) { PbrShaderData() },
             MaterialTypeOption("Splatted PBR", PbrSplatShaderData::class) { PbrSplatShaderData() },
         )
+
+        private val splatIndiColors = listOf(
+            MdColor.GREEN,
+            MdColor.BLUE.mix(MdColor.INDIGO, 0.5f),
+            MdColor.PURPLE,
+            MdColor.RED,
+            MdColor.AMBER,
+        )
+
     }
 }

@@ -59,10 +59,8 @@ data class PbrShaderData(
 @Serializable
 data class PbrSplatShaderData(
     val splatMap: MapAttribute? = null,
-    val numMaterials: Int = 5,
-    val isStochasticTiling: Boolean = true,
     val parallaxSteps: Int = 0,
-    val materialMaps: List<SplatMapData> = emptyList(),
+    val materialMaps: List<SplatMapData> = listOf(SplatMapData(), SplatMapData()),
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
     override fun collectAttributes(): List<MaterialAttribute> {
@@ -80,6 +78,7 @@ data class SplatMapData(
     val normalMap: MapAttribute? = null,
     val aoMap: MapAttribute? = null,
     val displacementMap: MapAttribute? = null,
+    val textureScale: Float = 10f,
     val stochasticTileSize: Float = 0.5f,
     val stochasticRotation: Float = 360f,
     val parallaxStrength: Float = 1f,

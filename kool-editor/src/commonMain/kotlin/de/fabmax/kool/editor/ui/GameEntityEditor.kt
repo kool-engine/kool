@@ -70,7 +70,7 @@ class GameEntityEditor(ui: EditorUi) :
         }
     }
 
-    private fun ColumnScope.objectName(obj: GameEntity) = Row(Grow.Std, sizes.lineHeightLarger) {
+    private fun ColumnScope.objectName(obj: GameEntity) = Row(Grow.Std, sizes.lineHeightLarge) {
         modifier.padding(horizontal = sizes.gap)
 
         Text("Name:") {

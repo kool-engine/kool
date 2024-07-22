@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.Color
 
 fun UiScope.collapsablePanel(
     title: String,
@@ -17,7 +18,7 @@ fun UiScope.collapsablePanel(
     var isExpanded by remember(startExpanded)
     var isHovered by remember(false)
 
-    Row(width = Grow.Std, height = sizes.lineHeightLarger) {
+    Row(width = Grow.Std, height = sizes.lineHeightLarge) {
         modifier
             .backgroundColor(if (isHovered) colors.hoverBg else null)
             .onEnter { isHovered = true }
@@ -27,7 +28,7 @@ fun UiScope.collapsablePanel(
                 onCollapseChanged?.invoke(isExpanded)
             }
 
-        Arrow (if (isExpanded) 90f else 0f) {
+        Arrow (if (isExpanded) 90f else 0f, isHoverable = false) {
             modifier
                 .margin(start = sizes.gap, end = if (imageIcon == null) sizes.gap else sizes.smallGap)
                 .alignY(AlignmentY.Center)
@@ -50,19 +51,21 @@ fun UiScope.collapsablePanel(
     if (isExpanded) {
         Column(width = Grow.Std) {
             modifier
-                .padding(/*start = sizes.largeGap,*/ bottom = sizes.smallGap)
+                .padding(bottom = sizes.smallGap)
                 .backgroundColor(colors.backgroundVariant)
             block()
         }
     }
 }
 
-fun UiScope.collapsablePanelLvl2(
+inline fun UiScope.collapsablePanelLvl2(
     title: String,
-    headerContent: (RowScope.() -> Unit)? = null,
+    noinline headerContent: (RowScope.() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
     startExpanded: Boolean = true,
-    onCollapseChanged: ((Boolean) -> Unit)? = null,
+    indicatorColor: Color = colors.secondaryVariant,
+    isAlwaysShowIndicator: Boolean = false,
+    noinline onCollapseChanged: ((Boolean) -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = Column(
     Grow.Std,
@@ -71,9 +74,12 @@ fun UiScope.collapsablePanelLvl2(
     var isExpanded by remember(startExpanded)
     var isHovered by remember(false)
 
-    Row(width = Grow.Std, height = sizes.lineHeightLarger) {
+    val bgColor = colors.hoverBg.withAlpha(0.15f)
+    val bgColorHovered = colors.hoverBg
+
+    Row(width = Grow.Std, height = sizes.lineHeightMedium) {
         modifier
-            .backgroundColor(if (isHovered) colors.hoverBg else null)
+            .backgroundColor(if (isHovered) bgColorHovered else bgColor)
             .onEnter { isHovered = true }
             .onExit { isHovered = false }
             .onClick {
@@ -81,12 +87,20 @@ fun UiScope.collapsablePanelLvl2(
                 onCollapseChanged?.invoke(isExpanded)
             }
 
-        Arrow (if (isExpanded) 90f else 0f) {
-            modifier
-                .colors(colors.secondaryVariant, colors.secondary)
-                .margin(start = sizes.gap, end = sizes.smallGap)
-                .alignY(AlignmentY.Center)
+        Box(height = Grow.Std) {
+            if (isExpanded || isAlwaysShowIndicator) {
+                Box(width = sizes.smallGap, height = Grow.Std) {
+                    modifier.backgroundColor(indicatorColor)
+                }
+            }
+            Arrow (if (isExpanded) 90f else 0f, isHoverable = false) {
+                modifier
+                    .colors(colors.secondary)
+                    .margin(start = sizes.editorPanelMarginStart, end = sizes.gap)
+                    .alignY(AlignmentY.Center)
+            }
         }
+
         Text(title) {
             modifier
                 .width(titleWidth)
@@ -95,11 +109,13 @@ fun UiScope.collapsablePanelLvl2(
         headerContent?.invoke(this)
     }
     if (isExpanded) {
-        Column(width = Grow.Std) {
-            modifier
-                .padding(start = sizes.largeGap, bottom = sizes.smallGap)
-                .backgroundColor(colors.backgroundVariant)
-            block()
+        Box(width = Grow.Std) {
+            Box(width = sizes.smallGap * 0.5f, height = Grow.Std) {
+                modifier.backgroundColor(indicatorColor)
+            }
+            Column(width = Grow.Std) {
+                block()
+            }
         }
     }
 }

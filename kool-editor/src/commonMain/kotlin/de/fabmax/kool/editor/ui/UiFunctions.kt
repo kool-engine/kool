@@ -757,8 +757,14 @@ fun ColumnScope.okButton(xAlign: AlignmentX = AlignmentX.End, onClick: (PointerE
     }
 }
 
-inline fun ColumnScope.menuRow(marginTop: Dp = sizes.smallGap, marginStart: Dp = sizes.largeGap, block: RowScope.() -> Unit) = Row(width = Grow.Std, height = sizes.lineHeight) {
-    modifier.margin(start = marginStart, top = marginTop)
+inline fun ColumnScope.menuRow(
+    marginTop: Dp = sizes.smallGap,
+    marginBottom: Dp = sizes.smallGap,
+    marginStart: Dp = sizes.editorPanelMarginStart,
+    marginEnd: Dp = sizes.editorPanelMarginEnd,
+    block: RowScope.() -> Unit
+) = Row(width = Grow.Std, height = sizes.lineHeight) {
+    modifier.margin(start = marginStart, end = marginEnd, top = marginTop, bottom = marginBottom)
     block()
 }
 
@@ -872,8 +878,8 @@ fun UiScope.iconTextButton(
     width: Dimension = FitContent,
     margin: Dp = sizes.smallGap,
     bgColor: Color = colors.elevatedComponentBg,
-    bgColorHovered: Color = colors.elevatedComponentBg,
-    bgColorClicked: Color = colors.elevatedComponentBg,
+    bgColorHovered: Color = colors.elevatedComponentBgHovered,
+    bgColorClicked: Color = colors.elevatedComponentClickFeedback,
     boxBlock: (UiScope.() -> Unit)? = null,
     onClick: (PointerEvent) -> Unit
 ) = Box {
@@ -925,7 +931,13 @@ fun UiScope.iconTextButton(
     boxBlock?.invoke(this)
 }
 
-fun ColumnScope.menuDivider(marginStart: Dp = sizes.largeGap, marginEnd: Dp = 0.dp, marginTop: Dp = sizes.smallGap, marginBottom: Dp = Dp.ZERO, color: Color = colors.weakDividerColor) {
+fun ColumnScope.menuDivider(
+    marginStart: Dp = sizes.editorPanelMarginStart,
+    marginEnd: Dp = sizes.editorPanelMarginEnd,
+    marginTop: Dp = sizes.smallGap,
+    marginBottom: Dp = Dp.ZERO,
+    color: Color = colors.weakDividerColor
+) {
     Box(Grow.Std, sizes.borderWidth) {
         modifier
             .backgroundColor(color)
