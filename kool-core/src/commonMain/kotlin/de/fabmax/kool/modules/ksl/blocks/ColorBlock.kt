@@ -188,7 +188,7 @@ data class ColorBlockConfig(
          */
         fun textureData(
             defaultTexture: Texture2d? = null,
-            textureName: String = "tColor",
+            textureName: String = "t${colorName}",
             blendMode: BlendMode = BlendMode.Set
         ) = textureColor(defaultTexture, textureName, 1f, blendMode)
 

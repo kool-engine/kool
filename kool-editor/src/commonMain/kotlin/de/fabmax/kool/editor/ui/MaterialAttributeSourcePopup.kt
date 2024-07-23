@@ -14,6 +14,7 @@ class MaterialAttributeSourcePopup(
     val minValue: Float = 0f,
     val maxValue: Float = 1f,
     val defaultValue: Float = 0.5f,
+    val channelOptions: List<String> = emptyList(),
     var editHandler: ActionValueEditHandler<MaterialAttribute>
 ) : AutoPopup() {
 
@@ -158,8 +159,13 @@ class MaterialAttributeSourcePopup(
 
     private fun UiScope.textureSelector() {
         val texAttr = editMatAttr as MapAttribute
-        textureSelector(texAttr.mapPath, false) {
-            lastTextureAttr = MapAttribute(it?.path ?: "")
+        textureSelector(
+            selectedTexPath = texAttr.mapPath,
+            withNoneOption = false,
+            channelOptions = channelOptions,
+            selectedChannelOption = texAttr.channels
+        ) { asset, channels ->
+            lastTextureAttr = MapAttribute(asset?.path ?: "", channels)
             setEditAttrib(lastTextureAttr)
         }
     }

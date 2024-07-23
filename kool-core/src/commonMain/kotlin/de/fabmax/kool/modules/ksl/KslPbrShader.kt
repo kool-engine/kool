@@ -136,7 +136,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 null
             }
 
-            val material = pbrMaterialBlock(cfg.lightingConfig.maxNumberOfLights, reflectionMaps, brdfLut) {
+            val material = pbrMaterialBlock(cfg.lightingCfg.maxNumberOfLights, reflectionMaps, brdfLut) {
                 inCamPos(camData.position)
                 inNormal(normal)
                 inFragmentPos(fragmentWorldPos)
@@ -152,7 +152,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 inReflectionMapWeights(uniformFloat2("uReflectionWeights"))
                 inReflectionStrength(reflectionStrength)
 
-                setLightData(lightData, shadowFactors, cfg.lightingConfig.lightStrength.const)
+                setLightData(lightData, shadowFactors, cfg.lightingCfg.lightStrength.const)
             }
             return float4Value(material.outColor + emissionColor.rgb, baseColor.a)
         }

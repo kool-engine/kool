@@ -11,6 +11,7 @@ import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.logW
 
 suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): KslPbrShader {
     val shader = KslPbrShader {
@@ -39,11 +40,13 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
                 is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
             }
         }
+
+        val armTexNames = PbrArmTexNames.getForConfigs(aoMap, roughness, metallic)
         roughness {
             when (val rough = roughness) {
                 is ConstColorAttribute -> uniformProperty()
                 is ConstValueAttribute -> uniformProperty()
-                is MapAttribute -> textureProperty()
+                is MapAttribute -> textureProperty(channel = rough.singleChannelIndex, textureName = armTexNames.roughness)
                 is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.FLOAT1))
             }
         }
@@ -51,14 +54,15 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
             when (val metal = metallic) {
                 is ConstColorAttribute -> uniformProperty()
                 is ConstValueAttribute -> uniformProperty()
-                is MapAttribute -> textureProperty()
+                is MapAttribute -> textureProperty(channel = metal.singleChannelIndex, textureName = armTexNames.metallic)
                 is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.FLOAT1))
             }
         }
-        this@createPbrShader.aoMap?.let {
-            ao { textureProperty(null, it.singleChannelIndex) }
+        aoMap?.let {
+            ao { textureProperty(channel = it.singleChannelIndex, textureName = armTexNames.ao) }
         }
-        this@createPbrShader.displacementMap?.let {
+
+        displacementMap?.let {
             vertices {
                 displacement {
                     uniformProperty(parallaxOffset)
@@ -68,7 +72,7 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
                 useParallaxMap(null, parallaxStrength, maxSteps = parallaxSteps, textureChannel = it.singleChannelIndex)
             }
         }
-        this@createPbrShader.normalMap?.let {
+        normalMap?.let {
             normalMapping {
                 setNormalMap()
             }
@@ -108,7 +112,7 @@ suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData:
     when {
         (shader.ambientCfg is KslLitShader.AmbientLight.ImageBased) != isIbl -> return false
         shader.isSsao != isSsao -> return false
-        shader.cfg.lightingConfig.maxNumberOfLights != sceneShaderData.maxNumberOfLights -> return false
+        shader.cfg.lightingCfg.maxNumberOfLights != sceneShaderData.maxNumberOfLights -> return false
         shader.shadowMaps != sceneShaderData.shadowMaps -> return false
         (shader.materialAoCfg.primaryTexture != null) != isMaterialAo -> return false
     }
@@ -174,4 +178,36 @@ fun PbrShaderData.matchesPbrShaderConfig(shader: DrawShader?): Boolean {
             && shader.isParallaxMapped == (displacementMap != null)
             && shader.isNormalMapped == (normalMap != null)
             && genericSettings.matchesPipelineConfig(shader.pipelineConfig)
+}
+
+data class PbrArmTexNames(val ao: String, val roughness: String, val metallic: String) {
+    companion object {
+        fun getForConfigs(aoCfg: MapAttribute?, roughCfg: MaterialAttribute, metalCfg: MaterialAttribute, postfix: String = ""): PbrArmTexNames {
+            val texNames = mutableMapOf<String, String>()
+
+            val ao = aoCfg?.let { texNames.getOrPut(it.mapPath) { "tAo_$postfix" } }
+            val roughness = if (roughCfg !is MapAttribute) null else {
+                texNames.getOrPut(roughCfg.mapPath) { "tRoughness_$postfix" }
+            }
+            val metallic = if (metalCfg !is MapAttribute) null else {
+                texNames.getOrPut(metalCfg.mapPath) { "tMetal_$postfix" }
+            }
+
+            if (ao != null && ao == roughness && aoCfg.channels == (roughCfg as MapAttribute).channels) {
+                logW { "AO and roughness attribute use the same texture channel, which is most-likely a mistake, texture: ${aoCfg.mapPath}" }
+            }
+            if (ao != null && ao == metallic && aoCfg.channels == (metalCfg as MapAttribute).channels) {
+                logW { "AO and roughness attribute use the same texture channel, which is most-likely a mistake, texture: ${aoCfg.mapPath}" }
+            }
+            if (roughness != null && roughness == metallic && (roughCfg as MapAttribute).channels == (metalCfg as MapAttribute).channels) {
+                logW { "Roughness and metallic attribute use the same texture channel, which is most-likely a mistake, texture: ${roughCfg.mapPath}" }
+            }
+
+            return PbrArmTexNames(
+                ao = ao ?: "tAo_$postfix",
+                roughness = roughness ?: "tRoughness_$postfix",
+                metallic = metallic ?: "tMetallic_$postfix"
+            )
+        }
+    }
 }

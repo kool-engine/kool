@@ -1,14 +1,15 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
+import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.SceneShaderData
 import de.fabmax.kool.editor.api.loadTexture2d
-import de.fabmax.kool.editor.data.PbrSplatShaderData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ksl.KslPbrSplatShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.DrawShader
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.Color
 
 suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): KslPbrSplatShader {
     val shader = KslPbrSplatShader {
@@ -29,35 +30,53 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
             }
         }
 
-        val color1 = AppAssets.loadTexture2d("/textures/materials/brown_mud_leaves_01/brown_mud_leaves_01_diff_2k.jpg")
-        val disp1 = AppAssets.loadTexture2d("/textures/materials/brown_mud_leaves_01/brown_mud_leaves_01_disp_2k.jpg")
-        val normal1 = AppAssets.loadTexture2d("/textures/materials/brown_mud_leaves_01/brown_mud_leaves_01_nor_gl_2k.jpg")
-        val arm1 = AppAssets.loadTexture2d("/textures/materials/brown_mud_leaves_01/brown_mud_leaves_01_arm_2k.jpg")
+        val defaultDispTex = SingleColorTexture(Color.GRAY)
 
-        val color2 = AppAssets.loadTexture2d("/textures/materials/lichen_rock_2k/lichen_rock_diff_2k.jpg")
-        val disp2 = AppAssets.loadTexture2d("/textures/materials/lichen_rock_2k/lichen_rock_disp_2k.jpg")
-        val normal2 = AppAssets.loadTexture2d("/textures/materials/lichen_rock_2k/lichen_rock_nor_gl_2k.jpg")
-        val arm2 = AppAssets.loadTexture2d("/textures/materials/lichen_rock_2k/lichen_rock_arm_2k.jpg")
+        materialMaps.forEachIndexed { i, mat ->
+            addSplatMaterial {
+                displacement(defaultDispTex)
 
-        addSplatMaterial {
-            displacement(disp1)
-            color { textureColor(color1) }
-            normalMap(normal1)
-            ao { textureProperty(arm1, 0, "arm1") }
-            roughness { textureProperty(arm1, 1, "arm1") }
-            metallic { textureProperty(arm1, 2, "arm1") }
-            uvScale = 150f
-        }
-        addSplatMaterial {
-            displacement(disp2)
-            color { textureColor(color2) }
-            normalMap(normal2)
-            ao { textureProperty(arm2, 0, "arm2") }
-            roughness { textureProperty(arm2, 1, "arm2") }
-            metallic { textureProperty(arm2, 2, "arm2") }
-            uvScale = 75f
-            //stochasticTileSize = 1f
-            //stochasticTileRotation = 0f.deg
+                color {
+                    when (val color = mat.baseColor) {
+                        is ConstColorAttribute -> uniformColor()
+                        is ConstValueAttribute -> uniformColor()
+                        is MapAttribute -> textureColor()
+                        is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
+                    }
+                }
+                emission {
+                    when (val color = mat.emission) {
+                        is ConstColorAttribute -> uniformColor()
+                        is ConstValueAttribute -> uniformColor()
+                        is MapAttribute -> textureColor()
+                        is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
+                    }
+                }
+                mat.normalMap?.let {
+                    normalMapping { setNormalMap() }
+                }
+
+                val armTexNames = PbrArmTexNames.getForConfigs(mat.aoMap, mat.roughness, mat.metallic, "$i")
+                mat.aoMap?.let {
+                    ao { textureProperty(channel = it.singleChannelIndex, textureName = armTexNames.ao) }
+                }
+                roughness {
+                    when (val rough = mat.roughness) {
+                        is ConstColorAttribute -> uniformProperty()
+                        is ConstValueAttribute -> uniformProperty()
+                        is MapAttribute -> textureProperty(channel = rough.singleChannelIndex, textureName = armTexNames.roughness)
+                        is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.FLOAT1))
+                    }
+                }
+                metallic {
+                    when (val metal = mat.metallic) {
+                        is ConstColorAttribute -> uniformProperty()
+                        is ConstValueAttribute -> uniformProperty()
+                        is MapAttribute -> textureProperty(channel = metal.singleChannelIndex, textureName = armTexNames.metallic)
+                        is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.FLOAT1))
+                    }
+                }
+            }
         }
 
         colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping)
@@ -74,9 +93,61 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         return false
     }
     shader.splatMap = splatMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+
+    materialMaps.forEachIndexed { i, mat ->
+        val matBinding = shader.materials[i]
+
+        val colorMap = (mat.baseColor as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val roughnessMap = (mat.roughness as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val metallicMap = (mat.metallic as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val emissionMap = (mat.emission as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val normalMap = mat.normalMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val aoMap = mat.aoMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+        val displacementMap = mat.displacementMap?.let { AppAssets.loadTexture2d(AssetReference.Texture(it.mapPath, TexFormat.R)) }
+
+        when (val color = mat.baseColor) {
+            is ConstColorAttribute -> matBinding.color = color.color.toColorLinear()
+            is ConstValueAttribute -> matBinding.color = Color(color.value, color.value, color.value)
+            is MapAttribute -> matBinding.colorMap = colorMap
+            is VertexAttribute -> { }
+        }
+        when (val color = mat.emission) {
+            is ConstColorAttribute -> matBinding.emission = color.color.toColorLinear()
+            is ConstValueAttribute -> matBinding.emission = Color(color.value, color.value, color.value)
+            is MapAttribute -> matBinding.emissionMap = emissionMap
+            is VertexAttribute -> { }
+        }
+        when (val rough = mat.roughness) {
+            is ConstColorAttribute -> matBinding.roughness = rough.color.r
+            is ConstValueAttribute -> matBinding.roughness = rough.value
+            is MapAttribute -> matBinding.roughnessMap = roughnessMap
+            is VertexAttribute -> { }
+        }
+        when (val metal = mat.metallic) {
+            is ConstColorAttribute -> matBinding.metallic = metal.color.r
+            is ConstValueAttribute -> matBinding.metallic = metal.value
+            is MapAttribute -> matBinding.metallicMap = metallicMap
+            is VertexAttribute -> { }
+        }
+        displacementMap?.let { matBinding.displacementMap = it }
+        normalMap?.let { matBinding.normalMap = it }
+        aoMap?.let { matBinding.aoMap = it }
+        roughnessMap?.let { matBinding.roughnessMap = it }
+        metallicMap?.let { matBinding.metallicMap = it }
+    }
+
+    sceneShaderData.environmentMaps?.let {
+        shader.reflectionMap = it.reflectionMap
+        shader.ambientMap = it.irradianceMap
+    }
+
     return true
 }
 
 fun PbrSplatShaderData.matchesPbrSplatShaderConfig(shader: DrawShader?): Boolean {
-    return shader is KslPbrSplatShader
+    if (shader !is KslPbrSplatShader) return false
+
+    if (shader.materials.size != materialMaps.size) return false
+
+    return true
 }

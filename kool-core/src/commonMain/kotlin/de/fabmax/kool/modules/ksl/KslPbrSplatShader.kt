@@ -22,18 +22,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     var splatMap by colorTexture(cfg.splatMapCfg)
 
-    var displacement1 by texture2d(cfg.splatMaterials[0].displacementTex.textureName, cfg.splatMaterials[0].displacementTex.defaultTexture)
-    var displacement2 by texture2d(cfg.splatMaterials[1].displacementTex.textureName, cfg.splatMaterials[1].displacementTex.defaultTexture)
+    val materials = cfg.splatMaterials.map { MaterialBinding(it) }
 
-    var color1 by colorTexture(cfg.splatMaterials[0].colorCfg)
-    var color2 by colorTexture(cfg.splatMaterials[1].colorCfg)
-
-    var normal1 by texture2d(cfg.splatMaterials[0].normalMapCfg.normalMapName, cfg.splatMaterials[0].normalMapCfg.defaultNormalMap)
-    var normal2 by texture2d(cfg.splatMaterials[1].normalMapCfg.normalMapName, cfg.splatMaterials[1].normalMapCfg.defaultNormalMap)
-
-    var arm1: Texture2d? by propertyTexture(cfg.splatMaterials[0].aoCfg)
-    var arm2: Texture2d? by propertyTexture(cfg.splatMaterials[1].aoCfg)
-
+    var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.lightingCfg.defaultSsaoMap)
     var ambientFactor: Color by uniformColor("uAmbientColor")
     var ambientMapOrientation: Mat3f by uniformMat3f("uAmbientTextureOri")
     // if ambient color is image based
@@ -54,6 +45,21 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         }
 
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
+
+    inner class MaterialBinding(matCfg: SplatMaterialConfig) {
+        var colorMap by colorTexture(matCfg.colorCfg)
+        var normalMap by texture2d(matCfg.normalMapCfg.normalMapName, matCfg.normalMapCfg.defaultNormalMap)
+        var displacementMap by texture2d(matCfg.displacementTex.textureName, matCfg.displacementTex.defaultTexture)
+        var aoMap by propertyTexture(matCfg.aoCfg)
+        var roughnessMap by propertyTexture(matCfg.roughnessCfg)
+        var metallicMap by propertyTexture(matCfg.metallicCfg)
+        var emissionMap: Texture2d? by colorTexture(matCfg.emissionCfg)
+
+        var color: Color by colorUniform(matCfg.colorCfg)
+        var roughness: Float by propertyUniform(matCfg.roughnessCfg)
+        var metallic: Float by propertyUniform(matCfg.metallicCfg)
+        var emission: Color by colorUniform(matCfg.emissionCfg)
+    }
 
     init {
         check(cfg.numSplatMaterials in 2..5)
@@ -142,8 +148,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                     val matUv = float2Var(uv * matCfg.uvScale.const)
                     val matDdx = float2Var(ddx * matCfg.uvScale.const)
                     val matDdy = float2Var(ddy * matCfg.uvScale.const)
+                    val rotMat = mat3Var()
                     val blendInfo = float4Var(Vec4f.ZERO.const)
-                    SplatMatState(matCfg, matUv, matDdx, matDdy, blendInfo, fnGetStochasticUv, parentStage)
+                    SplatMatState(matCfg, matUv, matDdx, matDdy, rotMat, blendInfo, fnGetStochasticUv, parentStage)
                 }
 
                 val maxHeight = float1Var(0f.const)
@@ -348,9 +355,10 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
     private inner class SplatMatState(
         val splatMatCfg: SplatMaterialConfig,
         val inputUv: KslExprFloat2,
-        val ddx: KslExprFloat2,
-        val ddy: KslExprFloat2,
-        val blendInfo: KslVarVector<KslFloat4, KslFloat1>,
+        val ddx: KslVarFloat2,
+        val ddy: KslVarFloat2,
+        val rotMat: KslVarMat3,
+        val blendInfo: KslVarFloat4,
         val fnGetStochasticUv: KslFunctionFloat4,
         shaderStage: KslShaderStage
     ) {
@@ -360,33 +368,41 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val uv: KslExprFloat2 get() = blendInfo.xy
         val height: KslExprFloat1 get() = blendInfo.z
         var weightedHeight: KslExprFloat1 = KslValueFloat1(0f)
+        var blendRotMat: KslExprMat3 = KslValueMat3(Vec3f(1f, 0f, 0f), Vec3f(0f, 1f, 0f), Vec3f(0f, 0f, 1f))
 
         context(KslScopeBuilder)
         fun sampleHeight(weight: KslExprFloat1) {
             blendInfo set fnGetStochasticUv(inputUv, ddx, ddy, float2Value(splatMatCfg.stochasticTileSize, splatMatCfg.stochasticTileRotation.rad), displacementTex)
             weightedHeight = float1Var(height * weight)
+
+            val cos = float1Var(cos(-blendInfo.w))
+            val sin = float1Var(sin(-blendInfo.w))
+            rotMat set mat3Value(
+                float3Value(cos, -sin, 0f.const),
+                float3Value(sin, cos, 0f.const),
+                float3Value(0f, 0f, 1f),
+            )
+            ddx set (blendRotMat * float3Value(ddx, 0f.const)).xy
+            ddy set (blendRotMat * float3Value(ddy, 0f.const)).xy
         }
 
         context(KslScopeBuilder)
         fun sampleMaterialIfSelected(
             selectedMat: KslExprInt1,
             inTangent: KslExprFloat4,
-            outBaseColor: KslVarVector<KslFloat4, KslFloat1>,
-            outNormal: KslVarVector<KslFloat3, KslFloat1>,
-            outArm: KslVarVector<KslFloat3, KslFloat1>
+            outBaseColor: KslVarFloat4,
+            inOutNormal: KslVarFloat3,
+            outArm: KslVarFloat3
         ) {
             `if`(index.const eq selectedMat) {
                 fragmentColorBlock(splatMatCfg.colorCfg, ddx, ddy, uv).apply {
                     outBaseColor set outColor
                 }
                 if (splatMatCfg.normalMapCfg.isNormalMapped) {
-                    normalMapBlock(splatMatCfg.normalMapCfg, ddx, ddy) {
-                        inTexCoords(uv)
-                        inNormalWorldSpace(outNormal)
-                        inTangentWorldSpace(inTangent)
-                    }.apply {
-                        outNormal set outBumpNormal
-                    }
+                    val tNormal = program.texture2d(splatMatCfg.normalMapCfg.normalMapName)
+                    val mapNormal = float3Var(sampleTextureGrad(tNormal, uv, ddx, ddy).xyz * 2f.const - 1f.const)
+                    mapNormal set blendRotMat * normalize(mapNormal)
+                    inOutNormal set calcBumpedNormal(inOutNormal, inTangent, mapNormal, 1f.const)
                 }
                 fragmentPropertyBlock(splatMatCfg.aoCfg, ddx, ddy, uv).apply { outArm.x set outProperty }
                 fragmentPropertyBlock(splatMatCfg.roughnessCfg, ddx, ddy, uv).apply { outArm.y set outProperty }

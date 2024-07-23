@@ -131,7 +131,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 onCollapseChanged = { setPanelState(it, panelKey = panelKey) }
             ) {
                 val mat = getSplatMaterial(i)
-                textureSetting("Displacement:", mat.displacementMap) {
+                textureSetting("Displacement:", mat.displacementMap, texSingleChannels) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(displacementMap = it))
                 }
                 colorSetting("Base color:", mat.baseColor, MdColor.GREY.toLinear()) {
@@ -140,7 +140,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 textureSetting("Normal map:", mat.normalMap) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(normalMap = it))
                 }
-                textureSetting("AO:", mat.aoMap) {
+                textureSetting("AO:", mat.aoMap, texSingleChannels) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(aoMap = it))
                 }
                 floatSetting("Roughness:", mat.roughness, 0f, 1f, 0.5f) {
@@ -279,7 +279,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         textureSetting("Normal map:", pbrData.normalMap) {
             pbrData.copy(normalMap = it)
         }
-        textureSetting("AO:", pbrData.aoMap) {
+        textureSetting("AO:", pbrData.aoMap, texSingleChannels) {
             pbrData.copy(aoMap = it)
         }
         floatSetting("Roughness:", pbrData.roughness, 0f, 1f, 0.5f) {
@@ -288,7 +288,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         floatSetting("Metallic:", pbrData.metallic, 0f, 1f, 0f) {
             pbrData.copy(metallic = it)
         }
-        textureSetting("Displacement:", pbrData.displacementMap) {
+        textureSetting("Displacement:", pbrData.displacementMap, texSingleChannels) {
             pbrData.copy(displacementMap = it)
         }
         colorSetting("Emission color:", pbrData.emission, Color.BLACK) {
@@ -448,7 +448,6 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         default: Float,
         shaderDataSetter: (MaterialAttribute) -> MaterialShaderData
     ) = menuRow {
-
         val doubleVal: Double
         val text: String
         val isTextField: Boolean
@@ -480,7 +479,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
 
         val sourcePopup = remember {
-            MaterialAttributeSourcePopup(floatAttr, false, minValue = min, maxValue = max, defaultValue = default) { undoValue, applyValue ->
+            MaterialAttributeSourcePopup(
+                editMatAttr = floatAttr,
+                isColor = false,
+                minValue = min,
+                maxValue = max,
+                defaultValue = default,
+                channelOptions = texSingleChannels
+            ) { undoValue, applyValue ->
                 val undoMaterial = material.data.copy(shaderData = shaderDataSetter(undoValue))
                 val applyMaterial = material.data.copy(shaderData = shaderDataSetter(applyValue))
                 SetComponentDataAction(material, undoMaterial, applyMaterial)
@@ -503,6 +509,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                         .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
                         .align(textAlign, AlignmentY.Center)
                 }
+                texChannels(floatAttr as? MapAttribute)
             } else {
                 val txtField = doubleTextField(
                     value = doubleVal,
@@ -537,6 +544,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
     private fun ColumnScope.textureSetting(
         label: String,
         texAttr: MapAttribute?,
+        channelOptions: List<String> = emptyList(),
         shaderDataSetter: (MapAttribute?) -> MaterialShaderData
     ) = menuRow {
         var editStartTex by remember(texAttr)
@@ -552,8 +560,13 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 popupContent = Composable {
                     Column {
                         defaultPopupStyle()
-                        textureSelector(editTex?.mapPath ?: "", true) { asset ->
-                            editTex = asset?.let { MapAttribute(it.path) }
+                        textureSelector(
+                            selectedTexPath = editTex?.mapPath ?: "",
+                            withNoneOption = true,
+                            channelOptions = channelOptions,
+                            selectedChannelOption = editTex?.channels
+                        ) { asset, channels ->
+                            editTex = asset?.let { MapAttribute(it.path, channels) }
                             editHandler.onEdit(editTex)
                         }
                         okButton { hide() }
@@ -574,6 +587,35 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 modifier
                     .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
                     .alignY(AlignmentY.Center)
+            }
+            texChannels(texAttr)
+        }
+    }
+
+    private fun UiScope.texChannels(texAttr: MapAttribute?) {
+        texAttr?.channels?.let { ch ->
+            Row {
+                modifier
+                    .zLayer(UiSurface.LAYER_FLOATING * 2)
+                    .alignX(AlignmentX.End)
+                    .alignY(AlignmentY.Center)
+                    .background(RoundRectBackground(colors.backgroundVariant, sizes.smallGap))
+                    .padding(top = 2.dp, bottom = 2.dp, start = sizes.smallGap, end = sizes.smallGap * 1.5f)
+                    .margin(sizes.smallGap)
+
+                ch.uppercase().forEach { c ->
+                    val color = when (c) {
+                        'R' -> MdColor.RED
+                        'G' -> MdColor.GREEN
+                        'B' -> MdColor.BLUE
+                        else -> colors.onBackground
+                    }
+                    Text("$c") {
+                        modifier
+                            .font(sizes.boldText)
+                            .textColor(color)
+                    }
+                }
             }
         }
     }
@@ -657,5 +699,6 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             MdColor.AMBER,
         )
 
+        private val texSingleChannels = listOf("R", "G", "B", "A")
     }
 }
