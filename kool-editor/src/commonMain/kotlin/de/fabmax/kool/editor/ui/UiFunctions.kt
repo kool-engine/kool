@@ -768,21 +768,28 @@ inline fun ColumnScope.menuRow(
     block()
 }
 
-fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, onSelect: (AssetItem?) -> Unit) = Column {
+fun UiScope.textureSelector(
+    selectedTexPath: String,
+    withNoneOption: Boolean,
+    selectedChannelOption: String? = null,
+    channelOptions: List<String> = emptyList(),
+    onSelect: (AssetItem?, String?) -> Unit
+) = Column {
     val textures = mutableListOf<AssetOption>()
     if (withNoneOption) {
         textures += AssetOption("None", null)
     }
     textures += KoolEditor.instance.availableAssets.textureAssets.map { AssetOption(it.name, it) }
+    val selectedTexIndex = textures.indexOfFirst { selectedTexPath == it.assetItem?.path }
 
     ComboBox {
         defaultComboBoxStyle()
         modifier
             .width(sizes.baseSize * 6)
             .items(textures)
-            .selectedIndex(textures.indexOfFirst { selectedTexPath == it.assetItem?.path })
+            .selectedIndex(selectedTexIndex)
             .onItemSelected {
-                onSelect(textures[it].assetItem)
+                onSelect(textures[it].assetItem, selectedChannelOption ?: channelOptions.getOrNull(0))
             }
     }
 
@@ -794,6 +801,26 @@ fun UiScope.textureSelector(selectedTexPath: String, withNoneOption: Boolean, on
                 .margin(top = sizes.gap)
                 .size(sizes.baseSize * 6, sizes.baseSize * 6)
                 .imageZ(UiSurface.LAYER_BACKGROUND)
+        }
+    }
+    if (channelOptions.isNotEmpty()) {
+        Row(width = Grow.Std) {
+            modifier.margin(vertical = sizes.gap)
+            Text("Channel:") {
+                modifier.alignY(AlignmentY.Center)
+            }
+            ComboBox {
+                defaultComboBoxStyle()
+                modifier
+                    .margin(start = sizes.gap)
+                    .alignY(AlignmentY.Center)
+                    .width(Grow.Std)
+                    .items(channelOptions)
+                    .selectedIndex(channelOptions.indexOf(selectedChannelOption))
+                    .onItemSelected {
+                        onSelect(textures.getOrNull(selectedTexIndex)?.assetItem, channelOptions[it])
+                    }
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.logE
 import kotlinx.serialization.Serializable
 
 
@@ -153,12 +154,15 @@ class VertexAttribute(val attribName: String) : MaterialAttribute {
 class MapAttribute(val mapPath: String, val channels: String? = null) : MaterialAttribute {
     val singleChannelIndex: Int
         get() {
-            return when (channels) {
+            return when (channels?.lowercase()) {
                 "r" -> 0
                 "g" -> 1
                 "b" -> 2
                 "a" -> 3
-                else -> 0
+                else -> {
+                    logE { "Invalid MapAttribute single channel value: $channels (must be either of 'r', 'g', 'b' or 'a')" }
+                    0
+                }
             }
         }
 
