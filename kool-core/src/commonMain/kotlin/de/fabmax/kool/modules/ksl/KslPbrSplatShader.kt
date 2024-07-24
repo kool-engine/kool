@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
@@ -46,6 +47,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
 
     var debugMode by uniform1i("uDbgMode", 0)
+    var parallaxStrength by uniform1f("uParallaxStrength", 0.5f)
 
     inner class MaterialBinding(matCfg: SplatMaterialConfig) {
         var colorMap by colorTexture(matCfg.colorCfg)
@@ -149,17 +151,30 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             val lightData = sceneLightData(cfg.lightingCfg.maxNumberOfLights)
             val fnGetStochasticUv = getStochasticUv()
 
+            val fnSampleParallax = if (!cfg.isParallax) null else fnSampleParallax(
+                camData = cameraData(),
+                strength = uniformFloat1("uParallaxStrength"),
+                fragWorldPos = positionWorldSpace.output,
+                fragNormal = normalWorldSpace.output,
+                projPos = projPosition.output,
+                fnGetStochasticUv = fnGetStochasticUv
+            )
+
             main {
                 val fragWorldPos = positionWorldSpace.output
-                val uv = float2Var(texCoordBlock.getTextureCoords())
+                val uv = texCoordBlock.getTextureCoords()
                 val ddx = float2Var(dpdx(uv))
                 val ddy = float2Var(dpdy(uv))
 
                 val splatMapBlock = fragmentColorBlock(cfg.splatMapCfg, ddx, ddy, uv)
                 val weights = decodeWeights(splatMapBlock.outColor)
 
-                val matStates = cfg.materials.mapIndexed { i, matCfg ->
-                    SplatMatState(matCfg, fnGetStochasticUv, uv, ddx, ddy, this)
+                val matStates = cfg.materials.map { matCfg ->
+                    if (cfg.isParallax) {
+                        SplatMatState(matCfg, fnSampleParallax!!, uv, ddx, ddy, this)
+                    } else {
+                        SplatMatState(matCfg, fnGetStochasticUv, uv, ddx, ddy, this)
+                    }
                 }
 
                 val maxHeight = float1Var(0f.const)
@@ -186,8 +201,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 // adjust light strength values by shadow maps
                 if (shadowMapVertexStage != null) {
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
-                } else if (cfg.lightingCfg.shadowMaps.isNotEmpty()) {
-                    fragmentOnlyShadowBlock(cfg.lightingCfg, fragWorldPos, normal, shadowFactors)
                 }
 
                 val irradiance = when (cfg.lightingCfg.ambientLight) {
@@ -238,7 +251,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 }
                 val materialColor = float4Var(float4Value(material.outColor, baseColor.a))
 
-                // set fragment stage output color
                 val outRgb = float3Var(materialColor.rgb)
                 if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
                     outRgb set outRgb * materialColor.a
@@ -337,27 +349,114 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             shiftedUvs[2] set r3 * (inputUv + noise[2].xy)
 
             // select shifted uv with the highest displacement value
-            val selected = int1Var(0.const)
-            val h = float1Var(sampleTextureGrad(dispTex, shiftedUvs[0], ddx, ddy).x)
-            val hw = float1Var(h * w.x)
-            `if`(hw lt w.y) {
-                val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[1], ddx, ddy).x)
-                `if`(ht * w.y gt hw) {
-                    h set ht
-                    hw set ht * w.y
+            if (cfg.isContinuousHeight) {
+                // sample all vertices, select highest one but use blended height
+                val selected = int1Var(0.const)
+                val h1 = float1Var(sampleTextureGrad(dispTex, shiftedUvs[0], ddx, ddy).x * w.x)
+                val h2 = float1Var(sampleTextureGrad(dispTex, shiftedUvs[1], ddx, ddy).x * w.y)
+                val h3 = float1Var(sampleTextureGrad(dispTex, shiftedUvs[2], ddx, ddy).x * w.z)
+                val h = float1Var(h1 + h2 + h3)
+                `if`(h1 gt max(h2, h3)) {
+                    selected set 0.const
+                }.elseIf(h2 gt max(h1, h3)) {
                     selected set 1.const
-                }
-            }
-            `if`(hw lt w.z) {
-                val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[2], ddx, ddy).x)
-                `if`(ht * w.z gt hw) {
-                    h set ht
-                    hw set ht * w.z
+                }.`else` {
                     selected set 2.const
+                }
+                float4Value(shiftedUvs[selected], h, noise[selected].z)
+
+            } else {
+                // try to reduce sample count by skipping vertices with weight less than current max height
+                val selected = int1Var(0.const)
+                val h = float1Var(sampleTextureGrad(dispTex, shiftedUvs[0], ddx, ddy).x)
+                val hw = float1Var(h * w.x)
+                `if`(hw lt w.y) {
+                    val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[1], ddx, ddy).x)
+                    `if`(ht * w.y gt hw) {
+                        h set ht
+                        hw set ht * w.y
+                        selected set 1.const
+                    }
+                }
+                `if`(hw lt w.z) {
+                    val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[2], ddx, ddy).x)
+                    `if`(ht * w.z gt hw) {
+                        h set ht
+                        selected set 2.const
+                    }
+                }
+                float4Value(shiftedUvs[selected], h, noise[selected].z)
+            }
+        }
+    }
+
+    private fun KslShaderStage.fnSampleParallax(
+        camData: CameraData,
+        strength: KslExprFloat1,
+        fragWorldPos: KslExprFloat3,
+        fragNormal: KslExprFloat3,
+        projPos: KslExprFloat4,
+        fnGetStochasticUv: KslFunctionFloat4,
+    ) = functionFloat4("sampleParallax") {
+        val uv = paramFloat2()
+        val ddx = paramFloat2()
+        val ddy = paramFloat2()
+        val scaleRot = paramFloat2()
+        val dispTex = paramColorTex2d()
+
+        body {
+            val maxSteps = 16.const
+            val step = (1f / 16f).const
+
+            val viewDir = float3Var(normalize(fragWorldPos - camData.position))
+
+            val proj = float2Var((projPos.xy / projPos.w + 1f.const) * 0.5f.const)
+            if (KoolSystem.requireContext().backend.isInvertedNdcY) {
+                proj.y set 1f.const - proj.y
+            }
+            val pixelPos = float2Var(proj * camData.viewport.zw)
+
+            val sampleScale = float1Var(strength / abs(dot(fragNormal, viewDir)))
+            val sampleDir = float3Var(viewDir - fragNormal * dot(viewDir, fragNormal))
+
+            val sampleExt = float3Var(fragWorldPos + sampleDir * sampleScale)
+            val sampleExtProj = float4Var(camData.viewProjMat * float4Value(sampleExt, 1f.const))
+            proj set (sampleExtProj.xy / sampleExtProj.w + 1f.const) * 0.5f.const
+            if (KoolSystem.requireContext().backend.isInvertedNdcY) {
+                proj.y set 1f.const - proj.y
+            }
+            val sampleExtPixel = float2Var(proj * camData.viewport.zw - pixelPos)
+
+            val sampleUv = float2Var(uv)
+            val prevSampleUv = float2Var(uv)
+            val prevH = float1Var(0f.const)
+            val hStart = float1Var(noise12(pixelPos) * step)
+
+            val outBlendInfo = float4Var()
+
+            repeat(maxSteps) { i ->
+                val hLimit = float1Var(hStart + i.toFloat1() * step)
+
+                outBlendInfo set fnGetStochasticUv(sampleUv, ddx, ddy, scaleRot, dispTex)
+                val h = float1Var(1f.const - outBlendInfo.z)
+
+                `if` (h lt hLimit) {
+                    val afterDepth = float1Var(h - hLimit)
+                    val beforeDepth = float1Var(prevH - hLimit + step)
+                    val weight = float1Var(afterDepth / (afterDepth - beforeDepth))
+                    sampleUv set prevSampleUv * weight + sampleUv * (1f.const - weight)
+                    prevH set prevH * weight + h * (1f.const - weight)
+                    `break`()
+
+                }.`else` {
+                    prevH set h
+                    prevSampleUv set sampleUv
+                    val sampleOffset = float2Var(sampleExtPixel * min(h, hLimit))
+                    sampleUv set uv + ddx * sampleOffset.x + ddy * sampleOffset.y
                 }
             }
 
-            float4Value(shiftedUvs[selected], h, noise[selected].z)
+            outBlendInfo
         }
     }
 
@@ -369,7 +468,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     private inner class SplatMatState(
         val splatMatCfg: SplatMaterialConfig,
-        val fnGetStochasticUv: KslFunctionFloat4,
+        val fnGetUv: KslFunctionFloat4,
         inputUv: KslExprFloat2,
         inputDdx: KslVarFloat2,
         inputDdy: KslVarFloat2,
@@ -395,7 +494,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
         context(KslScopeBuilder)
         fun sampleHeight(weight: KslExprFloat1) {
-            blendInfo set fnGetStochasticUv(scaledUv, ddx, ddy, float2Value(tileSize, tileRot), displacementTex)
+            blendInfo set fnGetUv(scaledUv, ddx, ddy, float2Value(tileSize, tileRot), displacementTex)
             weightedHeight = float1Var(height * weight)
 
             val cos = float1Var(cos(blendInfo.w))
@@ -453,6 +552,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val modelCustomizer = builder.modelCustomizer
         val isWithDebugOptions = builder.isWithDebugOptions
 
+        val isContinuousHeight = builder.isContinuousHeight
+        val isParallax = builder.isParallax
+
         open class Builder {
             val pipelineCfg = PipelineConfig.Builder()
             val vertexCfg = BasicVertexConfig.Builder()
@@ -475,6 +577,14 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
             var modelCustomizer: (KslProgram.() -> Unit)? = null
             var isWithDebugOptions = false
+
+            // slightly slower than without continuous height but slightly better quality (should be enabled for
+            // parallax, else leave it disabled)
+            var isContinuousHeight = false
+
+            // somewhat works but is slow, is problematic for materials with different height scales and
+            // introduces a lot of artifacts, so keep it off for now
+            var isParallax = false
 
             init {
                 useSplatMap(null)

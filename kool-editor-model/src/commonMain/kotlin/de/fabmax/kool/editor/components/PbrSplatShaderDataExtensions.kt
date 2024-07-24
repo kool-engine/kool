@@ -80,6 +80,9 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
         }
 
         isWithDebugOptions = true
+        //isContinuousHeight = true
+        //isParallax = true
+
         colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping)
         sceneShaderData.environmentMaps?.let {
             enableImageBasedLighting(it)
