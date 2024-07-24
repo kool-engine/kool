@@ -19,9 +19,10 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     var emission: Color by colorUniform(cfg.emissionCfg)
     var emissionMap: Texture2d? by colorTexture(cfg.emissionCfg)
 
+    var ao: Float by propertyUniform(cfg.aoCfg)
+    var aoMap: Texture2d? by propertyTexture(cfg.aoCfg)
+
     var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.lightingCfg.defaultSsaoMap)
-    var materialAo: Float by propertyUniform(cfg.aoCfg)
-    var materialAoMap: Texture2d? by propertyTexture(cfg.aoCfg)
 
     var parallaxMap: Texture2d? by texture2d(cfg.parallaxCfg.parallaxMapName, cfg.parallaxCfg.defaultParallaxMap)
     var parallaxStrength: Float by uniform1f("uParallaxStrength", cfg.parallaxCfg.strength)
@@ -41,7 +42,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     val ambientCfg: AmbientLight get() = cfg.lightingCfg.ambientLight
     val colorCfg: ColorBlockConfig get() = cfg.colorCfg
     val emissionCfg: ColorBlockConfig get() = cfg.emissionCfg
-    val materialAoCfg: PropertyBlockConfig get() = cfg.aoCfg
+    val aoCfg: PropertyBlockConfig get() = cfg.aoCfg
     val displacementCfg: PropertyBlockConfig get() = cfg.vertexCfg.displacementCfg
     val parallaxCfg: ParallaxMapConfig get() = cfg.parallaxCfg
     val isNormalMapped: Boolean get() = cfg.normalMapCfg.isNormalMapped
