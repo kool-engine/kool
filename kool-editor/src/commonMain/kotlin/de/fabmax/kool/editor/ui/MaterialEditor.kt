@@ -114,7 +114,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
     }
 
     private fun ColumnScope.pbrSplatMaterialEditor() {
-        textureSetting("Weight map:", pbrSplatData.splatMap) {
+        textureSetting("Weight map:", pbrSplatData.splatMap, "r") {
             pbrSplatData.copy(splatMap = it)
         }
 
@@ -138,16 +138,16 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 onCollapseChanged = { setPanelState(it, panelKey = panelKey) }
             ) {
                 val mat = getSplatMaterial(i)
-                textureSetting("Displacement:", mat.displacementMap, texSingleChannels) {
+                textureSetting("Displacement:", mat.displacementMap, "r", texSingleChannels) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(displacementMap = it))
                 }
                 colorSetting("Base color:", mat.baseColor, MdColor.GREY.toLinear()) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(baseColor = it))
                 }
-                textureSetting("Normal map:", mat.normalMap) {
+                textureSetting("Normal map:", mat.normalMap, null) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(normalMap = it))
                 }
-                textureSetting("AO:", mat.aoMap, texSingleChannels) {
+                textureSetting("AO:", mat.aoMap, "r", texSingleChannels) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(aoMap = it))
                 }
                 floatSetting("Roughness:", mat.roughness, 0f, 1f, 0.5f) {
@@ -190,7 +190,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                     dragChangeSpeed = DragChangeRates.SIZE,
                     minValue = 0.0,
                     maxValue = 360.0,
-                    precision = 0,
+                    precision = 1,
                     editHandler = ActionValueEditHandler { undoValue, applyValue ->
                         val undoMats = setSplatMaterial(i, getSplatMaterial(i).copy(stochasticRotation = undoValue.toFloat()))
                         val applyMats = setSplatMaterial(i, getSplatMaterial(i).copy(stochasticRotation = applyValue.toFloat()))
@@ -283,10 +283,10 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         colorSetting("Base color:", pbrData.baseColor, MdColor.GREY.toLinear()) {
             pbrData.copy(baseColor = it)
         }
-        textureSetting("Normal map:", pbrData.normalMap) {
+        textureSetting("Normal map:", pbrData.normalMap, null) {
             pbrData.copy(normalMap = it)
         }
-        textureSetting("AO:", pbrData.aoMap, texSingleChannels) {
+        textureSetting("AO:", pbrData.aoMap, "r", texSingleChannels) {
             pbrData.copy(aoMap = it)
         }
         floatSetting("Roughness:", pbrData.roughness, 0f, 1f, 0.5f) {
@@ -295,7 +295,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         floatSetting("Metallic:", pbrData.metallic, 0f, 1f, 0f) {
             pbrData.copy(metallic = it)
         }
-        textureSetting("Displacement:", pbrData.displacementMap, texSingleChannels) {
+        textureSetting("Displacement:", pbrData.displacementMap, "r", texSingleChannels) {
             pbrData.copy(displacementMap = it)
         }
         colorSetting("Emission color:", pbrData.emission, Color.BLACK) {
@@ -344,6 +344,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         labelWidth: Dimension,
         valueColor: Color?,
         material: MaterialComponent,
+        defaultChannels: String?,
         shaderDataSetter: (MapAttribute) -> MaterialShaderData,
         sourcePopup: AutoPopup,
         isOpaqueBox: Boolean,
@@ -356,7 +357,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
 
         Box(height = sizes.lineHeight) {
-            val dndHandler = rememberTextureDndHandler(material, shaderDataSetter, uiNode)
+            val dndHandler = rememberTextureDndHandler(material, defaultChannels, shaderDataSetter, uiNode)
             var isHovered by remember(false)
             val hover = isHovered || dndHandler.isHovered.use()
             val drag = dndHandler.isDrag.use()
@@ -436,7 +437,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
         sourcePopup.editMatAttr = colorAttr
 
-        materialSetting(label, labelWidth, valueColor, material, shaderDataSetter, sourcePopup, true) {
+        materialSetting(label, labelWidth, valueColor, material, null, shaderDataSetter, sourcePopup, true) {
             text?.let {
                 Text(text) {
                     modifier
@@ -506,6 +507,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             labelWidth = labelWidth,
             valueColor = null,
             material = material,
+            defaultChannels = "r",
             shaderDataSetter = shaderDataSetter,
             sourcePopup = sourcePopup,
             isOpaqueBox = !isTextField
@@ -551,6 +553,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
     private fun ColumnScope.textureSetting(
         label: String,
         texAttr: MapAttribute?,
+        defaultChannels: String?,
         channelOptions: List<String> = emptyList(),
         shaderDataSetter: (MapAttribute?) -> MaterialShaderData
     ) = menuRow {
@@ -589,7 +592,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             }
         }
 
-        materialSetting(label, sizes.editorLabelWidthSmall, null, material, shaderDataSetter, texPopup, true) {
+        materialSetting(label, sizes.editorLabelWidthSmall, null, material, defaultChannels, shaderDataSetter, texPopup, true) {
             Text(texAttr?.mapName ?: "None selected") {
                 modifier
                     .padding(horizontal = sizes.gap, vertical = sizes.smallGap)
@@ -651,16 +654,18 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
 
     private fun UiScope.rememberTextureDndHandler(
         material: MaterialComponent,
+        defaultChannels: String?,
         shaderDataSetter: (MapAttribute) -> MaterialShaderData,
         dropTarget: UiNode
     ): TextureDndHandler {
-        val handler = remember { TextureDndHandler(material, shaderDataSetter, dropTarget) }
+        val handler = remember { TextureDndHandler(material, defaultChannels, shaderDataSetter, dropTarget) }
         KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
         return handler
     }
 
     private inner class TextureDndHandler(
         val material: MaterialComponent,
+        val defaultChannels: String?,
         val shaderDataSetter: (MapAttribute) -> MaterialShaderData,
         dropTarget: UiNode
     ) :
@@ -672,7 +677,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             source: DragAndDropHandler<EditorDndItem<*>>?
         ) {
             val dragTextureItem = dragItem.get(DndItemFlavor.DndItemTexture)
-            val applyMaterial = material.data.copy(shaderData = shaderDataSetter(MapAttribute(dragTextureItem.path)))
+            val applyMaterial = material.data.copy(shaderData = shaderDataSetter(MapAttribute(dragTextureItem.path, channels = defaultChannels)))
             if (applyMaterial.shaderData != material.shaderData) {
                 SetComponentDataAction(material, material.data, applyMaterial).apply()
             }
