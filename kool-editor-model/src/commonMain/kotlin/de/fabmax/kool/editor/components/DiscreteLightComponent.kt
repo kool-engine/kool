@@ -64,10 +64,11 @@ class DiscreteLightComponent(
             val parent = light.parent
             parent?.removeNode(light)
 
+            lighting.removeLight(light)
             light = lightData.createLight()
             attachLight(parent)
         }
-        if (light != lighting.lights) {
+        if (light !in lighting.lights) {
             lighting.addLight(light)
         }
 

@@ -12,6 +12,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MsdfFont
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 import kotlin.reflect.KClass
@@ -115,6 +116,12 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
     private fun ColumnScope.pbrSplatMaterialEditor() {
         textureSetting("Weight map:", pbrSplatData.splatMap) {
             pbrSplatData.copy(splatMap = it)
+        }
+
+        labeledCheckbox("Debug mode:", pbrSplatData.debugMode != 0) {
+            val undoMaterial = material.data.copy(shaderData = pbrSplatData)
+            val applyMaterial = material.data.copy(shaderData = pbrSplatData.copy(debugMode = if (it) 1 else 0))
+            SetComponentDataAction(material, undoMaterial, applyMaterial).apply()
         }
 
         val numMats = max(2, pbrSplatData.materialMaps.size)
@@ -612,7 +619,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                     }
                     Text("$c") {
                         modifier
-                            .font(sizes.boldText)
+                            .font(KoolEditor.instance.ui.consoleFont.use().copy(weight = MsdfFont.WEIGHT_BOLD))
                             .textColor(color)
                     }
                 }

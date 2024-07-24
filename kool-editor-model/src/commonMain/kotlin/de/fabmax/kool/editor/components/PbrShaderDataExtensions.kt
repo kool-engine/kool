@@ -114,7 +114,7 @@ suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData:
         shader.isSsao != isSsao -> return false
         shader.cfg.lightingCfg.maxNumberOfLights != sceneShaderData.maxNumberOfLights -> return false
         shader.shadowMaps != sceneShaderData.shadowMaps -> return false
-        (shader.materialAoCfg.primaryTexture != null) != isMaterialAo -> return false
+        (shader.aoCfg.primaryTexture != null) != isMaterialAo -> return false
     }
 
     val colorMap = (baseColor as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
@@ -150,7 +150,7 @@ suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData:
         is VertexAttribute -> { }
     }
     shader.normalMap = normalMap
-    shader.materialAoMap = aoMap
+    shader.aoMap = aoMap
     shader.parallaxMap = displacementMap
     shader.parallaxMapSteps = parallaxSteps
     shader.parallaxStrength = parallaxStrength
@@ -174,7 +174,7 @@ fun PbrShaderData.matchesPbrShaderConfig(shader: DrawShader?): Boolean {
             && roughness.matchesCfg(shader.roughnessCfg)
             && metallic.matchesCfg(shader.metallicCfg)
             && emission.matchesCfg(shader.emissionCfg)
-            && aoMap?.matchesCfg(shader.materialAoCfg) != false
+            && aoMap?.matchesCfg(shader.aoCfg) != false
             && shader.isParallaxMapped == (displacementMap != null)
             && shader.isNormalMapped == (normalMap != null)
             && genericSettings.matchesPipelineConfig(shader.pipelineConfig)

@@ -60,7 +60,7 @@ data class PbrShaderData(
 @Serializable
 data class PbrSplatShaderData(
     val splatMap: MapAttribute? = null,
-    val parallaxSteps: Int = 0,
+    val debugMode: Int = 0,
     val materialMaps: List<SplatMapData> = listOf(SplatMapData(), SplatMapData()),
     override val genericSettings: GenericMaterialSettings = GenericMaterialSettings()
 ) : MaterialShaderData {
@@ -82,7 +82,6 @@ data class SplatMapData(
     val textureScale: Float = 10f,
     val stochasticTileSize: Float = 0.5f,
     val stochasticRotation: Float = 360f,
-    val parallaxStrength: Float = 1f,
 ) {
     fun collectAttributes(): List<MaterialAttribute> = listOfNotNull(
         baseColor,
@@ -174,7 +173,9 @@ class MapAttribute(val mapPath: String, val channels: String? = null) : Material
     }
 
     override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
-        return cfg.propertySources.any { it is PropertyBlockConfig.TextureProperty }
+        return cfg.propertySources.any {
+            it is PropertyBlockConfig.TextureProperty && it.channel == singleChannelIndex
+        }
     }
 }
 

@@ -51,7 +51,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
                 it.normalMap = maps.normal
                 it.roughnessMap = maps.roughness
                 it.metallicMap = maps.metallic ?: defaultMetallicTex
-                it.materialAoMap = maps.ao ?: defaultAoTex
+                it.aoMap = maps.ao ?: defaultAoTex
                 it.vertexDisplacementMap = maps.displacement ?: defaultDispTex
                 it.parallaxMap = maps.displacement ?: defaultParallaxTex
             }

@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.SceneShaderData
 import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrSplatShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -31,9 +32,8 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
         }
 
         val defaultDispTex = SingleColorTexture(Color.GRAY)
-
         materialMaps.forEachIndexed { i, mat ->
-            addSplatMaterial {
+            addMaterial {
                 displacement(defaultDispTex)
 
                 color {
@@ -79,6 +79,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
             }
         }
 
+        isWithDebugOptions = true
         colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping)
         sceneShaderData.environmentMaps?.let {
             enableImageBasedLighting(it)
@@ -134,6 +135,12 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         aoMap?.let { matBinding.aoMap = it }
         roughnessMap?.let { matBinding.roughnessMap = it }
         metallicMap?.let { matBinding.metallicMap = it }
+
+        matBinding.textureScale = mat.textureScale
+        matBinding.tileSize = mat.stochasticTileSize
+        matBinding.tileRotation = mat.stochasticRotation.deg
+
+        shader.debugMode = debugMode
     }
 
     sceneShaderData.environmentMaps?.let {
@@ -147,7 +154,20 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
 fun PbrSplatShaderData.matchesPbrSplatShaderConfig(shader: DrawShader?): Boolean {
     if (shader !is KslPbrSplatShader) return false
 
+    if (!genericSettings.matchesPipelineConfig(shader.pipelineConfig)) return false
     if (shader.materials.size != materialMaps.size) return false
 
+    materialMaps.forEachIndexed { i, mat ->
+        val shaderMat = shader.cfg.materials[i]
+        val matOk = mat.baseColor.matchesCfg(shaderMat.colorCfg)
+                && mat.roughness.matchesCfg(shaderMat.roughnessCfg)
+                && mat.metallic.matchesCfg(shaderMat.metallicCfg)
+                && mat.emission.matchesCfg(shaderMat.emissionCfg)
+                && mat.aoMap?.matchesCfg(shaderMat.aoCfg) != false
+                && shaderMat.normalMapCfg.isNormalMapped == (mat.normalMap != null)
+        if (!matOk) {
+            return false
+        }
+    }
     return true
 }

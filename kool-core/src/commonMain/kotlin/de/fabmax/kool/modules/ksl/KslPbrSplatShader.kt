@@ -21,8 +21,7 @@ inline fun KslPbrSplatShader(block: KslPbrSplatShader.Config.Builder.() -> Unit)
 class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     var splatMap by colorTexture(cfg.splatMapCfg)
-
-    val materials = cfg.splatMaterials.map { MaterialBinding(it) }
+    val materials = cfg.materials.map { MaterialBinding(it) }
 
     var ssaoMap: Texture2d? by texture2d("tSsaoMap", cfg.lightingCfg.defaultSsaoMap)
     var ambientFactor: Color by uniformColor("uAmbientColor")
@@ -46,6 +45,8 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
 
+    var debugMode by uniform1i("uDbgMode", 0)
+
     inner class MaterialBinding(matCfg: SplatMaterialConfig) {
         var colorMap by colorTexture(matCfg.colorCfg)
         var normalMap by texture2d(matCfg.normalMapCfg.normalMapName, matCfg.normalMapCfg.defaultNormalMap)
@@ -59,6 +60,20 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         var roughness: Float by propertyUniform(matCfg.roughnessCfg)
         var metallic: Float by propertyUniform(matCfg.metallicCfg)
         var emission: Color by colorUniform(matCfg.emissionCfg)
+
+        private var matSettings: Vec4f by uniform4f(
+            uniformName = "uMatSetting_${matCfg.materialIndex}",
+            defaultVal = Vec4f(matCfg.uvScale, matCfg.stochasticTileSize, matCfg.stochasticTileRotation.rad, 0f)
+        )
+        var textureScale: Float
+            get() = matSettings.x
+            set(value) { matSettings = Vec4f(value, matSettings.y, matSettings.z, matSettings.w) }
+        var tileSize: Float
+            get() = matSettings.y
+            set(value) { matSettings = Vec4f(matSettings.x, value, matSettings.z, matSettings.w) }
+        var tileRotation: AngleF
+            get() = matSettings.z.rad
+            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, value.rad, matSettings.w) }
     }
 
     init {
@@ -121,8 +136,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 texCoordBlock = texCoordAttributeBlock()
 
                 // project coordinates into shadow map / light space
-                val perFragmentShadow = cfg.isParallax
-                shadowMapVertexStage = if (perFragmentShadow || cfg.lightingCfg.shadowMaps.isEmpty()) null else {
+                shadowMapVertexStage = if (cfg.lightingCfg.shadowMaps.isEmpty()) null else {
                     vertexShadowBlock(cfg.lightingCfg) {
                         inPositionWorldSpace(worldPos)
                         inNormalWorldSpace(worldNormal)
@@ -144,13 +158,8 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 val splatMapBlock = fragmentColorBlock(cfg.splatMapCfg, ddx, ddy, uv)
                 val weights = decodeWeights(splatMapBlock.outColor)
 
-                val matStates = cfg.splatMaterials.map { matCfg ->
-                    val matUv = float2Var(uv * matCfg.uvScale.const)
-                    val matDdx = float2Var(ddx * matCfg.uvScale.const)
-                    val matDdy = float2Var(ddy * matCfg.uvScale.const)
-                    val rotMat = mat3Var()
-                    val blendInfo = float4Var(Vec4f.ZERO.const)
-                    SplatMatState(matCfg, matUv, matDdx, matDdy, rotMat, blendInfo, fnGetStochasticUv, parentStage)
+                val matStates = cfg.materials.mapIndexed { i, matCfg ->
+                    SplatMatState(matCfg, fnGetStochasticUv, uv, ddx, ddy, this)
                 }
 
                 val maxHeight = float1Var(0f.const)
@@ -171,9 +180,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 matStates.forEach { matState ->
                     matState.sampleMaterialIfSelected(selectedMat, tangentWorldSpace.output, baseColor, normal, arm)
                 }
-
-
-
 
                 // create an array with light strength values per light source (1.0 = full strength)
                 val shadowFactors = float1Array(lightData.maxLightCount, 1f.const)
@@ -238,6 +244,12 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                     outRgb set outRgb * materialColor.a
                 }
                 outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
+
+                if (cfg.isWithDebugOptions) {
+                    `if`(uniformInt1("uDbgMode") ne 0.const) {
+                        outRgb set float3Value(maxHeight, maxHeight, maxHeight)
+                    }
+                }
 
                 when (cfg.alphaMode) {
                     is AlphaMode.Blend -> colorOutput(outRgb, materialColor.a)
@@ -326,18 +338,21 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
             // select shifted uv with the highest displacement value
             val selected = int1Var(0.const)
-            val h = float1Var(sampleTextureGrad(dispTex, shiftedUvs[0], ddx, ddy).x * w.x)
-            `if`(h lt w.y) {
-                val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[1], ddx, ddy).x * w.y)
-                `if`(ht gt h) {
+            val h = float1Var(sampleTextureGrad(dispTex, shiftedUvs[0], ddx, ddy).x)
+            val hw = float1Var(h * w.x)
+            `if`(hw lt w.y) {
+                val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[1], ddx, ddy).x)
+                `if`(ht * w.y gt hw) {
                     h set ht
+                    hw set ht * w.y
                     selected set 1.const
                 }
             }
-            `if`(h lt w.z) {
-                val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[2], ddx, ddy).x * w.z)
-                `if`(ht gt h) {
+            `if`(hw lt w.z) {
+                val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[2], ddx, ddy).x)
+                `if`(ht * w.z gt hw) {
                     h set ht
+                    hw set ht * w.z
                     selected set 2.const
                 }
             }
@@ -354,36 +369,44 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     private inner class SplatMatState(
         val splatMatCfg: SplatMaterialConfig,
-        val inputUv: KslExprFloat2,
-        val ddx: KslVarFloat2,
-        val ddy: KslVarFloat2,
-        val rotMat: KslVarMat3,
-        val blendInfo: KslVarFloat4,
         val fnGetStochasticUv: KslFunctionFloat4,
-        shaderStage: KslShaderStage
+        inputUv: KslExprFloat2,
+        inputDdx: KslVarFloat2,
+        inputDdy: KslVarFloat2,
+        scope: KslScopeBuilder
     ) {
         val index: Int get() = splatMatCfg.materialIndex
-        val displacementTex = shaderStage.program.texture2d(splatMatCfg.displacementTex.textureName)
+        val matSettings = scope.parentStage.program.uniformFloat4("uMatSetting_$index")
+        val displacementTex = scope.parentStage.program.texture2d(splatMatCfg.displacementTex.textureName)
 
-        val uv: KslExprFloat2 get() = blendInfo.xy
+        val uvScale: KslExprFloat1 get() = matSettings.x
+        val tileSize: KslExprFloat1 get() = matSettings.y
+        val tileRot: KslExprFloat1 get() = matSettings.z
+
+        val scaledUv = scope.float2Var(inputUv * uvScale)
+        val ddx = scope.float2Var(inputDdx * uvScale)
+        val ddy = scope.float2Var(inputDdy * uvScale)
+        val rotMat = scope.mat3Var()
+        val blendInfo = scope.float4Var(KslValueFloat4(0f, 0f, 0f, 0f))
+
+        val tiledUv: KslExprFloat2 get() = blendInfo.xy
         val height: KslExprFloat1 get() = blendInfo.z
         var weightedHeight: KslExprFloat1 = KslValueFloat1(0f)
-        var blendRotMat: KslExprMat3 = KslValueMat3(Vec3f(1f, 0f, 0f), Vec3f(0f, 1f, 0f), Vec3f(0f, 0f, 1f))
 
         context(KslScopeBuilder)
         fun sampleHeight(weight: KslExprFloat1) {
-            blendInfo set fnGetStochasticUv(inputUv, ddx, ddy, float2Value(splatMatCfg.stochasticTileSize, splatMatCfg.stochasticTileRotation.rad), displacementTex)
+            blendInfo set fnGetStochasticUv(scaledUv, ddx, ddy, float2Value(tileSize, tileRot), displacementTex)
             weightedHeight = float1Var(height * weight)
 
-            val cos = float1Var(cos(-blendInfo.w))
-            val sin = float1Var(sin(-blendInfo.w))
+            val cos = float1Var(cos(blendInfo.w))
+            val sin = float1Var(sin(blendInfo.w))
             rotMat set mat3Value(
                 float3Value(cos, -sin, 0f.const),
                 float3Value(sin, cos, 0f.const),
                 float3Value(0f, 0f, 1f),
             )
-            ddx set (blendRotMat * float3Value(ddx, 0f.const)).xy
-            ddy set (blendRotMat * float3Value(ddy, 0f.const)).xy
+            ddx set (rotMat * float3Value(ddx, 0f.const)).xy
+            ddy set (rotMat * float3Value(ddy, 0f.const)).xy
         }
 
         context(KslScopeBuilder)
@@ -395,18 +418,18 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             outArm: KslVarFloat3
         ) {
             `if`(index.const eq selectedMat) {
-                fragmentColorBlock(splatMatCfg.colorCfg, ddx, ddy, uv).apply {
+                fragmentColorBlock(splatMatCfg.colorCfg, ddx, ddy, tiledUv).apply {
                     outBaseColor set outColor
                 }
                 if (splatMatCfg.normalMapCfg.isNormalMapped) {
                     val tNormal = program.texture2d(splatMatCfg.normalMapCfg.normalMapName)
-                    val mapNormal = float3Var(sampleTextureGrad(tNormal, uv, ddx, ddy).xyz * 2f.const - 1f.const)
-                    mapNormal set blendRotMat * normalize(mapNormal)
+                    val mapNormal = float3Var(sampleTextureGrad(tNormal, tiledUv, ddx, ddy).xyz * 2f.const - 1f.const)
+                    mapNormal set rotMat * normalize(mapNormal)
                     inOutNormal set calcBumpedNormal(inOutNormal, inTangent, mapNormal, 1f.const)
                 }
-                fragmentPropertyBlock(splatMatCfg.aoCfg, ddx, ddy, uv).apply { outArm.x set outProperty }
-                fragmentPropertyBlock(splatMatCfg.roughnessCfg, ddx, ddy, uv).apply { outArm.y set outProperty }
-                fragmentPropertyBlock(splatMatCfg.metallicCfg, ddx, ddy, uv).apply { outArm.z set outProperty }
+                fragmentPropertyBlock(splatMatCfg.aoCfg, ddx, ddy, tiledUv).apply { outArm.x set outProperty }
+                fragmentPropertyBlock(splatMatCfg.roughnessCfg, ddx, ddy, tiledUv).apply { outArm.y set outProperty }
+                fragmentPropertyBlock(splatMatCfg.metallicCfg, ddx, ddy, tiledUv).apply { outArm.z set outProperty }
             }
         }
     }
@@ -417,20 +440,18 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val lightingCfg = builder.lightingCfg.build()
 
         val splatMapCfg = builder.splatMapCfg.build()
-        val splatMaterials = builder.splatMaterials.toList()
-        val numParallaxSteps = builder.numParallaxSteps
-        val numSplatMaterials: Int get() = splatMaterials.size
+        val materials = builder.materials.toList()
+        val numSplatMaterials: Int get() = materials.size
 
         val isTextureReflection = builder.isTextureReflection
         val reflectionStrength = builder.reflectionStrength
         val reflectionMap = builder.reflectionMap
 
-        var colorSpaceConversion = builder.colorSpaceConversion
-        var alphaMode = builder.alphaMode
+        val colorSpaceConversion = builder.colorSpaceConversion
+        val alphaMode = builder.alphaMode
 
-        var modelCustomizer = builder.modelCustomizer
-
-        val isParallax: Boolean get() = numParallaxSteps > 0
+        val modelCustomizer = builder.modelCustomizer
+        val isWithDebugOptions = builder.isWithDebugOptions
 
         open class Builder {
             val pipelineCfg = PipelineConfig.Builder()
@@ -438,9 +459,8 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             val lightingCfg = LightingConfig.Builder()
 
             val splatMapCfg = ColorBlockConfig.Builder("splatMap")
-            private val _splatMaterials = mutableListOf<SplatMaterialConfig>()
-            val splatMaterials: List<SplatMaterialConfig> get() = _splatMaterials
-            var numParallaxSteps = 0
+            private val _materials = mutableListOf<SplatMaterialConfig>()
+            val materials: List<SplatMaterialConfig> get() = _materials
 
             var isTextureReflection = false
             var reflectionStrength = Vec3f.ONES
@@ -454,6 +474,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             var alphaMode: AlphaMode = AlphaMode.Blend
 
             var modelCustomizer: (KslProgram.() -> Unit)? = null
+            var isWithDebugOptions = false
 
             init {
                 useSplatMap(null)
@@ -484,24 +505,20 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 return this
             }
 
-            fun enableParallax(numSteps: Int = 16) {
-                numParallaxSteps = numSteps
-            }
-
-            fun addSplatMaterial(block: SplatMaterialConfig.Builder.() -> Unit) {
-                if (splatMaterials.size >= 5) {
+            fun addMaterial(block: SplatMaterialConfig.Builder.() -> Unit) {
+                if (materials.size >= 5) {
                     logE { "Maximum number of splat materials reached (max: 5 materials)" }
                     return
                 }
-                val builder = SplatMaterialConfig.Builder(splatMaterials.size).apply(block)
-                _splatMaterials += builder.build()
+                val builder = SplatMaterialConfig.Builder(materials.size).apply(block)
+                _materials += builder.build()
             }
 
             fun build(): Config {
-                if (splatMaterials.size < 2) {
+                if (materials.size < 2) {
                     logW { "KslPbrSplatShader requires at least 2 splat materials" }
-                    while (splatMaterials.size < 2) {
-                        addSplatMaterial {  }
+                    while (materials.size < 2) {
+                        addMaterial {  }
                     }
                 }
                 return Config(this)
@@ -527,7 +544,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             var displacementTex = PropertyBlockConfig.TextureProperty(null, 0, "displacement_$materialIndex", PropertyBlockConfig.BlendMode.Set)
             val colorCfg = ColorBlockConfig.Builder("color_$materialIndex")
             val normalMapCfg = NormalMapConfig.Builder("normalMap_$materialIndex")
-            val aoCfg = PropertyBlockConfig.Builder("ao_$materialIndex")
+            val aoCfg = PropertyBlockConfig.Builder("ao_$materialIndex").apply { constProperty(1f) }
             val roughnessCfg = PropertyBlockConfig.Builder("rough_$materialIndex")
             val metallicCfg = PropertyBlockConfig.Builder("metal_$materialIndex")
             val emissionCfg = ColorBlockConfig.Builder("emission_$materialIndex")
@@ -547,6 +564,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             }
 
             inline fun ao(block: PropertyBlockConfig.Builder.() -> Unit) {
+                aoCfg.propertySources.clear()
                 aoCfg.block()
             }
 
@@ -564,7 +582,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 normalMapCfg.block()
             }
 
-            fun metallic(block: PropertyBlockConfig.Builder.() -> Unit) {
+            inline fun metallic(block: PropertyBlockConfig.Builder.() -> Unit) {
                 metallicCfg.propertySources.clear()
                 metallicCfg.block()
             }
@@ -574,7 +592,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 return this
             }
 
-            fun roughness(block: PropertyBlockConfig.Builder.() -> Unit) {
+            inline fun roughness(block: PropertyBlockConfig.Builder.() -> Unit) {
                 roughnessCfg.propertySources.clear()
                 roughnessCfg.block()
             }
