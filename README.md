@@ -92,7 +92,7 @@ The Android target is disabled by default (to avoid having the Android SDK as a 
 enable the Android target by running the gradle task `enableAndroidPlatform`.
 
 Moreover, Android support is only available for `kool-core` for now. Therefore, the demos don't work on Android yet
-(because they also require `kool-physics`). However, there's a basic [kool-android-template](https://github.com/fabmax/kool-templates)
+(because they also require `kool-physics`). However, there's a basic [kool-android-template](https://github.com/kool-engine/kool-templates)
 project with a minimal kool Android app.
 
 ## Usage
@@ -100,7 +100,7 @@ project with a minimal kool Android app.
 If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. The library is published
 on maven central, and there is a separate repo containing a minimal template project to get you started:
 
-[https://github.com/fabmax/kool-templates](https://github.com/fabmax/kool-templates)
+[https://github.com/kool-engine/kool-templates](https://github.com/kool-engine/kool-templates)
 
 The demos mentioned above and examples shown below should give you a rough idea on how to do stuff (documentation is
 still a bit of a weak spot).
