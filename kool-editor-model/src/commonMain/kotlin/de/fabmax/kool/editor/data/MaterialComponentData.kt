@@ -80,6 +80,7 @@ data class SplatMapData(
     val aoMap: MapAttribute? = null,
     val displacementMap: MapAttribute? = null,
     val textureScale: Float = 10f,
+    val textureRotation: Float = 0f,
     val stochasticTileSize: Float = 0.5f,
     val stochasticRotation: Float = 360f,
 ) {

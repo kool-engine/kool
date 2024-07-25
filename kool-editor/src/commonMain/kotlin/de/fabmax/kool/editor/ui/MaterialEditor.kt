@@ -172,6 +172,19 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                     }
                 )
                 labeledDoubleTextField(
+                    label = "Texture rotation:",
+                    value = mat.textureRotation.toDouble(),
+                    dragChangeSpeed = DragChangeRates.SIZE,
+                    minValue = 0.0,
+                    maxValue = 360.0,
+                    precision = 1,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoMats = setSplatMaterial(i, getSplatMaterial(i).copy(textureRotation = undoValue.toFloat()))
+                        val applyMats = setSplatMaterial(i, getSplatMaterial(i).copy(textureRotation = applyValue.toFloat()))
+                        SetComponentDataAction(material, material.data.copy(shaderData = undoMats), material.data.copy(shaderData = applyMats))
+                    }
+                )
+                labeledDoubleTextField(
                     label = "Tiling scale:",
                     value = mat.stochasticTileSize.toDouble(),
                     dragChangeSpeed = DragChangeRates.SIZE,
