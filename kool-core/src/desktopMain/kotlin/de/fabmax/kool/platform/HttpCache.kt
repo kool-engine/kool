@@ -27,7 +27,7 @@ object HttpCache {
     private var cacheDir: File = File(".httpCache")
     private var cacheSize = 0L
 
-    private val index by lazy {
+    private val index: MutableMap<File, CacheEntry> by lazy {
         val index = mutableMapOf<File, CacheEntry>()
         try {
             GZIPInputStream(FileInputStream(File(cacheDir, ".cacheIndex.json.gz"))).use { inStream ->
@@ -41,8 +41,9 @@ object HttpCache {
                 }
             }
         } catch (e: Exception) {
-            logD { "Rebuilding http cache index, $e" }
-            rebuildIndex()
+            logD { "Failed loading cache index: $e. Rebuilding index..." }
+            index.clear()
+            index += rebuildIndex()
         }
         Runtime.getRuntime().addShutdownHook(thread(false) { saveIndex() })
         index
@@ -58,12 +59,8 @@ object HttpCache {
         this.cacheDir = cacheDir
     }
 
-    private fun rebuildIndex() {
-        synchronized(index) {
-            index.clear()
-            check(cacheDir.exists() || cacheDir.mkdirs()) { "Failed to create cache directory" }
-        }
-
+    private fun rebuildIndex(): Map<File, CacheEntry> {
+        val newIndex = mutableMapOf<File, CacheEntry>()
         fun File.walk(recv: (File) -> Unit) {
             listFiles()?.forEach {
                 if (it.isDirectory) {
@@ -75,12 +72,10 @@ object HttpCache {
         }
         cacheDir.walk {
             if (it.name != ".cacheIndex") {
-                synchronized(index) {
-                    index.addEntry(CacheEntry(it))
-                }
+                newIndex.addEntry(CacheEntry(it))
             }
         }
-        saveIndex()
+        return newIndex
     }
 
     private fun MutableMap<File, CacheEntry>.addEntry(entry: CacheEntry) {
@@ -112,6 +107,8 @@ object HttpCache {
     }
 
     private fun saveIndex() {
+        check(cacheDir.exists() || cacheDir.mkdirs()) { "Failed to create cache directory" }
+
         val entries = synchronized(index) {
             val items = mutableListOf<SerCacheItem>()
             index.values.forEach { items += SerCacheItem(it.file.path, it.size, it.lastAccess) }
