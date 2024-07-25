@@ -70,12 +70,15 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         var textureScale: Float
             get() = matSettings.x
             set(value) { matSettings = Vec4f(value, matSettings.y, matSettings.z, matSettings.w) }
+        var textureRotation: AngleF
+            get() = matSettings.y.rad
+            set(value) { matSettings = Vec4f(matSettings.x, value.rad, matSettings.z, matSettings.w) }
         var tileSize: Float
-            get() = matSettings.y
-            set(value) { matSettings = Vec4f(matSettings.x, value, matSettings.z, matSettings.w) }
+            get() = matSettings.z
+            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, value, matSettings.w) }
         var tileRotation: AngleF
-            get() = matSettings.z.rad
-            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, value.rad, matSettings.w) }
+            get() = matSettings.w.rad
+            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, matSettings.z, value.rad) }
     }
 
     init {
@@ -298,11 +301,13 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val inputUv = paramFloat2()
         val ddx = paramFloat2()
         val ddy = paramFloat2()
-        val scaleRot = paramFloat2()
+        val scaleRot = paramFloat3()
         val dispTex = paramColorTex2d()
 
         body {
-            val uv = float2Var(inputUv * 3.464f.const * scaleRot.x)
+            val inputRot = rotationMat(scaleRot.x)
+            val rotInputUv = float2Var(inputRot * inputUv)
+            val uv = float2Var(rotInputUv * 3.464f.const * scaleRot.y)
 
             // skew input space into simplex triangle grid
             val gridToSkewedGrid = mat2Value(float2Value(1f, -0.57735026f), float2Value(0f, 1.1547005f))
@@ -335,18 +340,18 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             noise[1] set noise32(vertex2.toFloat2())
             noise[2] set noise32(vertex3.toFloat2())
 
-            noise[0].z set (noise[0].z - 0.5f.const) * scaleRot.y
-            noise[1].z set (noise[1].z - 0.5f.const) * scaleRot.y
-            noise[2].z set (noise[2].z - 0.5f.const) * scaleRot.y
+            noise[0].z set (noise[0].z - 0.5f.const) * scaleRot.z
+            noise[1].z set (noise[1].z - 0.5f.const) * scaleRot.z
+            noise[2].z set (noise[2].z - 0.5f.const) * scaleRot.z
 
             val r1 = rotationMat(noise[0].z)
             val r2 = rotationMat(noise[1].z)
             val r3 = rotationMat(noise[2].z)
 
             val shiftedUvs = float2Array(3, Vec2f.ZERO.const)
-            shiftedUvs[0] set r1 * (inputUv + noise[0].xy)
-            shiftedUvs[1] set r2 * (inputUv + noise[1].xy)
-            shiftedUvs[2] set r3 * (inputUv + noise[2].xy)
+            shiftedUvs[0] set r1 * (rotInputUv + noise[0].xy)
+            shiftedUvs[1] set r2 * (rotInputUv + noise[1].xy)
+            shiftedUvs[2] set r3 * (rotInputUv + noise[2].xy)
 
             // select shifted uv with the highest displacement value
             if (cfg.isContinuousHeight) {
@@ -401,7 +406,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val uv = paramFloat2()
         val ddx = paramFloat2()
         val ddy = paramFloat2()
-        val scaleRot = paramFloat2()
+        val scaleRot = paramFloat3()
         val dispTex = paramColorTex2d()
 
         body {
@@ -479,8 +484,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val displacementTex = scope.parentStage.program.texture2d(splatMatCfg.displacementTex.textureName)
 
         val uvScale: KslExprFloat1 get() = matSettings.x
-        val tileSize: KslExprFloat1 get() = matSettings.y
-        val tileRot: KslExprFloat1 get() = matSettings.z
+        val uvRot: KslExprFloat1 get() = matSettings.y
+        val tileSize: KslExprFloat1 get() = matSettings.z
+        val tileRot: KslExprFloat1 get() = matSettings.w
 
         val scaledUv = scope.float2Var(inputUv * uvScale)
         val ddx = scope.float2Var(inputDdx * uvScale)
@@ -494,7 +500,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
         context(KslScopeBuilder)
         fun sampleHeight(weight: KslExprFloat1) {
-            blendInfo set fnGetUv(scaledUv, ddx, ddy, float2Value(tileSize, tileRot), displacementTex)
+            blendInfo set fnGetUv(scaledUv, ddx, ddy, float3Value(uvRot, tileSize, tileRot), displacementTex)
             weightedHeight = float1Var(height * weight)
 
             val cos = float1Var(cos(blendInfo.w))

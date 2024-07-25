@@ -140,6 +140,7 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         metallicMap?.let { matBinding.metallicMap = it }
 
         matBinding.textureScale = mat.textureScale
+        matBinding.textureRotation = mat.textureRotation.deg
         matBinding.tileSize = mat.stochasticTileSize
         matBinding.tileRotation = mat.stochasticRotation.deg
 
