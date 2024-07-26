@@ -1,13 +1,11 @@
 package de.fabmax.kool.physics.character
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.physics.FilterData
-import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.RigidDynamic
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
 import kotlin.math.acos
+import kotlin.math.cos
 import kotlin.math.min
 
 abstract class CharacterController(private val manager: CharacterControllerManager, val world: PhysicsWorld) : BaseReleasable() {
@@ -48,6 +46,9 @@ abstract class CharacterController(private val manager: CharacterControllerManag
         protected set
 
     private var lastGroundTouch = 0f
+    private var isStandingOnGround = false
+    private var isStaticGroundHit = false
+
     private val slopeObserver = GroundSlopeObserver()
     private val slopeSlideFac: Float
         get() = if (nonWalkableMode == NonWalkableMode.PREVENT_CLIMBING) 0f else {
@@ -61,18 +62,30 @@ abstract class CharacterController(private val manager: CharacterControllerManag
     }
 
     open fun onAdvancePhysics(timeStep: Float) {
-        if (!isDownCollision) {
+        val isNoMove = movement.length().isFuzzyZero()
+        if (!isNoMove || jump) {
+            // not sure about ground, but we are certainly moving (i.e. not standing)
+            isStandingOnGround = false
+            isStaticGroundHit = false
+        }
+
+        if (!isDownCollision && !isStandingOnGround) {
             // character falls
             if (lastGroundTouch == 0f) {
                 gravityVelocity.set(Vec3f(0f, velocity.y, 0f))
             }
             gravityVelocity.add(tmpVec.set(gravity).mul(timeStep))
             lastGroundTouch += timeStep
+
         } else {
             // character touches ground, keep a downwards velocity component to stay in touch with ground and
             // slide downwards at a plausible speed if sliding is enabled
             gravityVelocity.set(gravity * (0.25f * slopeSlideFac).coerceAtLeast(0.001f))
             lastGroundTouch = 0f
+
+            if (isNoMove && isDownCollision && isStaticGroundHit) {
+                isStandingOnGround = true
+            }
         }
 
         val fallSpeed = tmpVec.set(gravity).norm().dot(gravityVelocity)
@@ -104,6 +117,14 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     internal fun onHitActor(actor: RigidActor, hitWorldPos: Vec3f, hitWorldNormal: Vec3f) {
         slopeObserver.onTouch(hitWorldNormal)
+
+        if (actor is RigidStatic) {
+            val upDir = gravity.normed(tmpVec) * -1f
+            if (hitWorldNormal dot upDir > cos(slopeLimit.rad)) {
+                isStaticGroundHit = true
+            }
+        }
+
         for (i in onHitActorListeners.indices) {
             onHitActorListeners[i].onHitActor(actor, hitWorldPos, hitWorldNormal)
         }
