@@ -4,6 +4,9 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import org.lwjgl.stb.STBImage.*
+import org.lwjgl.stb.STBImageResize
+import org.lwjgl.stb.STBImageResize.stbir_resize_float_linear
+import org.lwjgl.stb.STBImageResize.stbir_resize_uint8_srgb
 import java.awt.RenderingHints
 import java.awt.Transparency
 import java.awt.geom.AffineTransform
@@ -13,20 +16,11 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
-import javax.imageio.ImageIO
 import kotlin.math.roundToInt
 
 object ImageDecoder {
-    private val imageIoLock = Any()
-
     fun loadImage(inputStream: InputStream, props: TextureProps?): TextureData2d {
-        return if (props?.resolveSize != null) {
-            // load and rescale image -> use ImageIO and BufferedImage to re-render image at desired size
-            loadImageImageIO(inputStream, props)
-        } else {
-            // load image at native resolution -> use stb_image (>10x faster than ImageIO...)
-            loadImageStb(inputStream, props)
-        }
+        return loadImageStb(inputStream, props)
     }
 
     private fun loadImageStb(inputStream: InputStream, props: TextureProps?): TextureData2d {
@@ -49,38 +43,81 @@ object ImageDecoder {
             }
             checkNotNull(rawBuffer) { "Failed to load image: ${stbi_failure_reason()}" }
 
+            val outW = props?.resolveSize?.x ?: w[0]
+            val outH = props?.resolveSize?.y ?: h[0]
+
             val managedBuffer = when (rawBuffer) {
                 is ByteBuffer -> {
-                    val managed = Uint8Buffer(rawBuffer.capacity())
-                    managed.useRaw { it.put(rawBuffer) }
+                    val managed = Uint8Buffer(outW * outH * desiredChannels)
+                    managed.useRaw {
+                        if (w[0] == outW && h[0] == outH) {
+                            it.put(rawBuffer)
+                        } else {
+                            stbResize(rawBuffer, w[0], h[0], desiredChannels, it, outW, outH)
+                        }
+                    }
+                    rawBuffer.rewind()
                     stbi_image_free(rawBuffer)
                     managed
                 }
                 is FloatBuffer -> {
                     val managed = Float32Buffer(rawBuffer.capacity())
-                    managed.useRaw { it.put(rawBuffer) }
+                    managed.useRaw {
+                        if (w[0] == outW && h[0] == outH) {
+                            it.put(rawBuffer)
+                        } else {
+                            stbResizeFloat(rawBuffer, w[0], h[0], desiredChannels, it, outW, outH)
+                        }
+                    }
+                    rawBuffer.rewind()
                     stbi_image_free(rawBuffer)
                     managed
                 }
                 else -> error("unreachable")
             }
-            TextureData2d(managedBuffer, w[0], h[0], props?.format ?: TexFormat.RGBA)
+            TextureData2d(managedBuffer, outW, outH, props?.format ?: TexFormat.RGBA)
         }
     }
 
-    private fun loadImageImageIO(inputStream: InputStream, props: TextureProps?): TextureData2d {
-        var img = synchronized(imageIoLock) {
-            // ImageIO is not thread-safe, making loading multiple images even slower
-            ImageIO.read(inputStream)
+    private fun stbResize(inputBuffer: ByteBuffer, inW: Int, inH: Int, channels: Int, outputBuffer: ByteBuffer, outW: Int, outH: Int) {
+        val pixelLayout = when (channels) {
+            1 -> STBImageResize.STBIR_1CHANNEL
+            2 -> STBImageResize.STBIR_2CHANNEL
+            3 -> STBImageResize.STBIR_RGB
+            4 -> STBImageResize.STBIR_RGBA
+            else -> error("Invalid channels: $channels")
         }
-        if (props?.resolveSize != null && props.resolveSize != Vec2i(img.width, img.height)) {
-            img = resizeImage(img, props.resolveSize)
+
+        stbir_resize_uint8_srgb(
+            inputBuffer, inW, inH, inW * channels,
+            outputBuffer, outW, outH, outW * channels,
+            pixelLayout
+        )
+    }
+
+    private fun stbResizeFloat(inputBuffer: FloatBuffer, inW: Int, inH: Int, channels: Int, outputBuffer: FloatBuffer, outW: Int, outH: Int) {
+        val pixelLayout = when (channels) {
+            1 -> STBImageResize.STBIR_1CHANNEL
+            2 -> STBImageResize.STBIR_2CHANNEL
+            3 -> STBImageResize.STBIR_RGB
+            4 -> STBImageResize.STBIR_RGBA
+            else -> error("Invalid channels: $channels")
         }
-        return loadBufferedImage(img, props)
+
+        stbir_resize_float_linear(
+            inputBuffer, inW, inH, inW * channels,
+            outputBuffer, outW, outH, outW * channels,
+            pixelLayout
+        )
     }
 
     fun loadBufferedImage(image: BufferedImage, props: TextureProps?): TextureData2d {
-        return TextureData2d(image.toBuffer(props?.format), image.width, image.height, props?.format ?: image.preferredFormat)
+        val img = if (props?.resolveSize != null && props.resolveSize != Vec2i(image.width, image.height)) {
+            resizeImage(image, props.resolveSize)
+        } else {
+            image
+        }
+        return TextureData2d(img.toBuffer(props?.format), img.width, img.height, props?.format ?: img.preferredFormat)
     }
 
     private fun resizeImage(img: BufferedImage, size: Vec2i): BufferedImage {
