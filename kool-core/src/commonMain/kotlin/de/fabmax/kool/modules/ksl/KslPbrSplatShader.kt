@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ksl.KslLitShader.AmbientLight
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -49,49 +50,27 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
     var debugMode by uniform1i("uDbgMode", 0)
     var parallaxStrength by uniform1f("uParallaxStrength", 0.5f)
 
-    inner class MaterialBinding(matCfg: SplatMaterialConfig) {
-        var colorMap by colorTexture(matCfg.colorCfg)
-        var normalMap by texture2d(matCfg.normalMapCfg.normalMapName, matCfg.normalMapCfg.defaultNormalMap)
-        var displacementMap by texture2d(matCfg.displacementTex.textureName, matCfg.displacementTex.defaultTexture)
-        var aoMap by propertyTexture(matCfg.aoCfg)
-        var roughnessMap by propertyTexture(matCfg.roughnessCfg)
-        var metallicMap by propertyTexture(matCfg.metallicCfg)
-        var emissionMap: Texture2d? by colorTexture(matCfg.emissionCfg)
+    val ambientCfg: AmbientLight get() = cfg.lightingCfg.ambientLight
+    val isSsao: Boolean get() = cfg.lightingCfg.isSsao
+    val displacementCfg: PropertyBlockConfig get() = cfg.vertexCfg.displacementCfg
+    val isParallaxMapped: Boolean get() = cfg.isParallax
 
-        var color: Color by colorUniform(matCfg.colorCfg)
-        var roughness: Float by propertyUniform(matCfg.roughnessCfg)
-        var metallic: Float by propertyUniform(matCfg.metallicCfg)
-        var emission: Color by colorUniform(matCfg.emissionCfg)
-
-        private var matSettings: Vec4f by uniform4f(
-            uniformName = "uMatSetting_${matCfg.materialIndex}",
-            defaultVal = Vec4f(matCfg.uvScale, matCfg.stochasticTileSize, matCfg.stochasticTileRotation.rad, 0f)
-        )
-        var textureScale: Float
-            get() = matSettings.x
-            set(value) { matSettings = Vec4f(value, matSettings.y, matSettings.z, matSettings.w) }
-        var textureRotation: AngleF
-            get() = matSettings.y.rad
-            set(value) { matSettings = Vec4f(matSettings.x, value.rad, matSettings.z, matSettings.w) }
-        var tileSize: Float
-            get() = matSettings.z
-            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, value, matSettings.w) }
-        var tileRotation: AngleF
-            get() = matSettings.w.rad
-            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, matSettings.z, value.rad) }
-    }
+    /**
+     * Read-only list of shadow maps used by this shader. To modify the shadow maps, the shader has to be re-created.
+     */
+    val shadowMaps = cfg.lightingCfg.shadowMaps.map { it.shadowMap }
 
     init {
         check(cfg.numSplatMaterials in 2..5)
         pipelineConfig = cfg.pipelineCfg
 
         when (val ac = cfg.lightingCfg.ambientLight) {
-            is KslLitShader.AmbientLight.Uniform -> ambientFactor = ac.ambientFactor
-            is KslLitShader.AmbientLight.ImageBased -> {
+            is AmbientLight.Uniform -> ambientFactor = ac.ambientFactor
+            is AmbientLight.ImageBased -> {
                 ambientMap = ac.ambientMap
                 ambientFactor = ac.ambientFactor
             }
-            is KslLitShader.AmbientLight.DualImageBased -> {
+            is AmbientLight.DualImageBased -> {
                 ambientFactor = ac.ambientFactor
             }
         }
@@ -207,13 +186,13 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 }
 
                 val irradiance = when (cfg.lightingCfg.ambientLight) {
-                    is KslLitShader.AmbientLight.Uniform -> uniformFloat4("uAmbientColor").rgb
-                    is KslLitShader.AmbientLight.ImageBased -> {
+                    is AmbientLight.Uniform -> uniformFloat4("uAmbientColor").rgb
+                    is AmbientLight.ImageBased -> {
                         val ambientOri = uniformMat3("uAmbientTextureOri")
                         val ambientTex = textureCube("tAmbientTexture")
                         (sampleTexture(ambientTex, ambientOri * normal, 0f.const) * uniformFloat4("uAmbientColor")).rgb
                     }
-                    is KslLitShader.AmbientLight.DualImageBased -> {
+                    is AmbientLight.DualImageBased -> {
                         val ambientOri = uniformMat3("uAmbientTextureOri")
                         val ambientTexs = List(2) { textureCube("tAmbientTexture_$it") }
                         val ambientWeights = uniformFloat2("tAmbientWeights")
@@ -537,6 +516,38 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 fragmentPropertyBlock(splatMatCfg.metallicCfg, ddx, ddy, tiledUv).apply { outArm.z set outProperty }
             }
         }
+    }
+
+    inner class MaterialBinding(matCfg: SplatMaterialConfig) {
+        var colorMap by colorTexture(matCfg.colorCfg)
+        var normalMap by texture2d(matCfg.normalMapCfg.normalMapName, matCfg.normalMapCfg.defaultNormalMap)
+        var displacementMap by texture2d(matCfg.displacementTex.textureName, matCfg.displacementTex.defaultTexture)
+        var aoMap by propertyTexture(matCfg.aoCfg)
+        var roughnessMap by propertyTexture(matCfg.roughnessCfg)
+        var metallicMap by propertyTexture(matCfg.metallicCfg)
+        var emissionMap: Texture2d? by colorTexture(matCfg.emissionCfg)
+
+        var color: Color by colorUniform(matCfg.colorCfg)
+        var roughness: Float by propertyUniform(matCfg.roughnessCfg)
+        var metallic: Float by propertyUniform(matCfg.metallicCfg)
+        var emission: Color by colorUniform(matCfg.emissionCfg)
+
+        private var matSettings: Vec4f by uniform4f(
+            uniformName = "uMatSetting_${matCfg.materialIndex}",
+            defaultVal = Vec4f(matCfg.uvScale, matCfg.stochasticTileSize, matCfg.stochasticTileRotation.rad, 0f)
+        )
+        var textureScale: Float
+            get() = matSettings.x
+            set(value) { matSettings = Vec4f(value, matSettings.y, matSettings.z, matSettings.w) }
+        var textureRotation: AngleF
+            get() = matSettings.y.rad
+            set(value) { matSettings = Vec4f(matSettings.x, value.rad, matSettings.z, matSettings.w) }
+        var tileSize: Float
+            get() = matSettings.z
+            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, value, matSettings.w) }
+        var tileRotation: AngleF
+            get() = matSettings.w.rad
+            set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, matSettings.z, value.rad) }
     }
 
     class Config(builder: Builder) {

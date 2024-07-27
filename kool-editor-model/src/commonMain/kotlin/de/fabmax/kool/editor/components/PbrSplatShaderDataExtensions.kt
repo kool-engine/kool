@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.api.SceneShaderData
 import de.fabmax.kool.editor.api.loadTexture2d
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.deg
+import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrSplatShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -96,7 +97,22 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
     if (!matchesPbrSplatShaderConfig(shader)) {
         return false
     }
-    shader.splatMap = splatMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+
+    val colorConv = shader.cfg.colorSpaceConversion
+    if (colorConv is ColorSpaceConversion.LinearToSrgbHdr && colorConv.toneMapping != sceneShaderData.toneMapping) {
+        return false
+    }
+
+    val ibl = sceneShaderData.environmentMaps
+    val isIbl = ibl != null
+    val isSsao = sceneShaderData.ssaoMap != null
+
+    when {
+        (shader.ambientCfg is KslLitShader.AmbientLight.ImageBased) != isIbl -> return false
+        shader.isSsao != isSsao -> return false
+        shader.cfg.lightingCfg.maxNumberOfLights != sceneShaderData.maxNumberOfLights -> return false
+        shader.shadowMaps != sceneShaderData.shadowMaps -> return false
+    }
 
     materialMaps.forEachIndexed { i, mat ->
         val matBinding = shader.materials[i]
@@ -147,9 +163,14 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         shader.debugMode = debugMode
     }
 
-    sceneShaderData.environmentMaps?.let {
-        shader.reflectionMap = it.reflectionMap
-        shader.ambientMap = it.irradianceMap
+    shader.splatMap = splatMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+
+    if (ibl != null) {
+        shader.ambientFactor = Color.WHITE
+        shader.ambientMap = ibl.irradianceMap
+        shader.reflectionMap = ibl.reflectionMap
+    } else {
+        shader.ambientFactor = sceneShaderData.ambientColorLinear
     }
 
     return true
