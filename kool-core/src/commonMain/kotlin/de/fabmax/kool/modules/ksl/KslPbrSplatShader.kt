@@ -47,8 +47,14 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     var brdfLut: Texture2d? by texture2d("tBrdfLut")
 
-    var debugMode by uniform1i("uDbgMode", 0)
     var parallaxStrength by uniform1f("uParallaxStrength", 0.5f)
+
+    var debugMode by uniform1i("uDbgMode", 0)
+    var dbgWeightColor0 by uniformColor("uColorW0", Color.GREEN.mulRgb(0.75f))
+    var dbgWeightColor1 by uniformColor("uColorW1", Color.BLUE.mulRgb(0.75f))
+    var dbgWeightColor2 by uniformColor("uColorW2", Color.MAGENTA.mulRgb(0.75f))
+    var dbgWeightColor3 by uniformColor("uColorW3", Color.RED.mulRgb(0.75f))
+    var dbgWeightColor4 by uniformColor("uColorW4", Color.YELLOW.mulRgb(0.75f))
 
     val ambientCfg: AmbientLight get() = cfg.lightingCfg.ambientLight
     val isSsao: Boolean get() = cfg.lightingCfg.isSsao
@@ -172,7 +178,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 }
 
                 val baseColor = float4Var()
-                val normal = float3Var(normalWorldSpace.output)
+                val normal = float3Var(normalize(normalWorldSpace.output))
                 val arm = float3Var(float3Value(1f, 0.5f, 0f))
                 matStates.forEach { matState ->
                     matState.sampleMaterialIfSelected(selectedMat, tangentWorldSpace.output, baseColor, normal, arm)
@@ -183,6 +189,12 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 // adjust light strength values by shadow maps
                 if (shadowMapVertexStage != null) {
                     fragmentShadowBlock(shadowMapVertexStage, shadowFactors)
+                }
+
+                if (cfg.lightingCfg.isSsao) {
+                    val aoMap = texture2d("tSsaoMap")
+                    val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
+                    arm.x *= sampleTexture(aoMap, aoUv).x
                 }
 
                 val irradiance = when (cfg.lightingCfg.ambientLight) {
@@ -240,7 +252,20 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 outRgb set convertColorSpace(outRgb, cfg.colorSpaceConversion)
 
                 if (cfg.isWithDebugOptions) {
-                    `if`(uniformInt1("uDbgMode") ne 0.const) {
+                    val dbg = uniformInt1("uDbgMode")
+                    `if`(dbg eq DEBUG_MODE_WEIGHTS.const) {
+                        materialColor.a set 1f.const
+                        outRgb set Vec3f.ZERO.const
+                        for (i in 0 until cfg.numSplatMaterials) {
+                            outRgb += uniformFloat4("uColorW$i").rgb * weights[i]
+                        }
+
+                    }.elseIf(dbg eq DEBUG_MODE_NORMALS.const) {
+                        materialColor.a set 1f.const
+                        outRgb set normal * 0.5f.const + 0.5f.const
+
+                    }.elseIf(dbg eq DEBUG_MODE_DISPLACEMENT.const) {
+                        materialColor.a set 1f.const
                         outRgb set float3Value(maxHeight, maxHeight, maxHeight)
                     }
                 }
@@ -448,6 +473,13 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val cos = float1Var(cos(angle))
         val sin = float1Var(sin(angle))
         return mat2Var(mat2Value(float2Value(cos, sin), float2Value(-sin, cos)))
+    }
+
+    companion object {
+        const val DEBUG_MODE_OFF = 0
+        const val DEBUG_MODE_WEIGHTS = 1
+        const val DEBUG_MODE_NORMALS = 2
+        const val DEBUG_MODE_DISPLACEMENT = 3
     }
 
     private inner class SplatMatState(

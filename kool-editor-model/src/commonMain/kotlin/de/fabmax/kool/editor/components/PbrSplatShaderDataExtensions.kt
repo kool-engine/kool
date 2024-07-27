@@ -80,7 +80,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
             }
         }
 
-        isWithDebugOptions = true
+        isWithDebugOptions = debugMode != KslPbrSplatShader.DEBUG_MODE_OFF
         //isContinuousHeight = true
         //isParallax = true
 
@@ -106,12 +106,14 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
     val ibl = sceneShaderData.environmentMaps
     val isIbl = ibl != null
     val isSsao = sceneShaderData.ssaoMap != null
+    val isDebugMode = debugMode != KslPbrSplatShader.DEBUG_MODE_OFF
 
     when {
         (shader.ambientCfg is KslLitShader.AmbientLight.ImageBased) != isIbl -> return false
         shader.isSsao != isSsao -> return false
         shader.cfg.lightingCfg.maxNumberOfLights != sceneShaderData.maxNumberOfLights -> return false
         shader.shadowMaps != sceneShaderData.shadowMaps -> return false
+        shader.cfg.isWithDebugOptions != isDebugMode -> return false
     }
 
     materialMaps.forEachIndexed { i, mat ->
