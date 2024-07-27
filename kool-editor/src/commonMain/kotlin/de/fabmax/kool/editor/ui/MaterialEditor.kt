@@ -75,7 +75,6 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
 
                 menuDivider()
                 materialEditor()
-                menuDivider()
                 genericSettings()
             }
         }
@@ -133,7 +132,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 titleWidth = sizes.editorLabelWidthSmall - sizes.gap * 4f,
                 startExpanded = getPanelState(false, panelKey = panelKey),
                 indicatorColor = splatIndiColors[i % splatIndiColors.size],
-                isAlwaysShowIndicator = false,
+                isAlwaysShowIndicator = true,
                 headerContent = { splatMaterialPreview(getSplatMaterial(i).baseColor, i) },
                 onCollapseChanged = { setPanelState(it, panelKey = panelKey) }
             ) {
@@ -350,6 +349,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
                 }
             )
         }
+        menuDivider()
     }
 
     private fun RowScope.materialSetting(
@@ -717,11 +717,11 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         )
 
         private val splatIndiColors = listOf(
-            MdColor.GREEN,
-            MdColor.BLUE.mix(MdColor.INDIGO, 0.5f),
-            MdColor.PURPLE,
-            MdColor.RED,
-            MdColor.AMBER,
+            MdColor.GREEN.withAlpha(0.8f),
+            MdColor.BLUE.mix(MdColor.INDIGO, 0.5f).withAlpha(0.8f),
+            MdColor.PURPLE.withAlpha(0.8f),
+            MdColor.RED.withAlpha(0.8f),
+            MdColor.AMBER.withAlpha(0.8f),
         )
 
         private val texSingleChannels = listOf("R", "G", "B", "A")
