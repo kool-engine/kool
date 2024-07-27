@@ -19,6 +19,9 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     private val _createdScenes: MutableMap<EntityId, EditorScene> = mutableMapOf()
     val createdScenes: Map<EntityId, EditorScene> get() = _createdScenes
 
+    var sceneModCnt = 0
+        internal set
+
     private val _materialsById: MutableMap<EntityId, MaterialComponent> = mutableMapOf()
     val materialScene: EditorScene
     val materialsById: Map<EntityId, MaterialComponent> get() = _materialsById
@@ -54,6 +57,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
             scene.prepareScene()
             scene.applyComponents()
             _createdScenes[scene.sceneEntity.id] = scene
+            sceneModCnt++
         }
     }
 
@@ -64,6 +68,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     fun releaseScenes() {
         createdScenes.values.forEach { it.release() }
         _createdScenes.clear()
+        sceneModCnt++
     }
 
     override fun release() {

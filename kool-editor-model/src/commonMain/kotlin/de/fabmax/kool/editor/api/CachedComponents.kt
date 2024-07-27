@@ -46,15 +46,17 @@ class CachedSceneComponents<T: Any>(val scene: EditorScene, val componentClass: 
 
 class CachedProjectComponents<T: Any>(val project: EditorProject, val componentClass: KClass<T>) {
     private var modCnts = intArrayOf()
+    private var sceneModCnt = -1
     private val cache = mutableListOf<T>()
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = getComponents()
 
     fun getComponents(): List<T> {
         val scenes = project.createdScenes.values.toList() + project.materialScene
-        if (modCnts.size != scenes.size) {
-            modCnts = IntArray(scenes.size)
+        if (modCnts.size != scenes.size || project.sceneModCnt != sceneModCnt) {
+            modCnts = IntArray(scenes.size) { -1 }
         }
+        sceneModCnt = project.sceneModCnt
 
         var isDirty = false
         for (i in modCnts.indices) {
