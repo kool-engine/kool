@@ -291,35 +291,83 @@ abstract class UiNode(val parent: UiNode?, override val surface: UiSurface) : Ui
         ovalBorder(leftPx + x, topPx + y, xRadius, yRadius, borderWidth, clipBoundsPx, color)
     }
 
-    fun UiPrimitiveMesh.localRectGradient(x: Float, y: Float, width: Float, height: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        rect(leftPx + x, topPx + y, width, height, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localRectGradient(
+        x: Float, y: Float, width: Float, height: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        rect(
+            leftPx + x, topPx + y, width, height, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 
-    fun UiPrimitiveMesh.localRoundRectGradient(x: Float, y: Float, width: Float, height: Float, radius: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        roundRect(leftPx + x, topPx + y, width, height, radius, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localRoundRectGradient(
+        x: Float, y: Float, width: Float, height: Float, radius: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        roundRect(
+            leftPx + x, topPx + y, width, height, radius, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 
-    fun UiPrimitiveMesh.localCircleGradient(x: Float, y: Float, radius: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        circle(leftPx + x, topPx + y, radius, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localCircleGradient(
+        x: Float, y: Float, radius: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        circle(
+            leftPx + x, topPx + y, radius, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 
-    fun UiPrimitiveMesh.localOvalGradient(x: Float, y: Float, xRadius: Float, yRadius: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        oval(leftPx + x, topPx + y, xRadius, yRadius, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localOvalGradient(
+        x: Float, y: Float, xRadius: Float, yRadius: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        oval(
+            leftPx + x, topPx + y, xRadius, yRadius, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 
-    fun UiPrimitiveMesh.localRectBorderGradient(x: Float, y: Float, width: Float, height: Float, borderWidth: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        rectBorder(leftPx + x, topPx + y, width, height, borderWidth, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localRectBorderGradient(
+        x: Float, y: Float, width: Float, height: Float, borderWidth: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        rectBorder(
+            leftPx + x, topPx + y, width, height, borderWidth, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 
-    fun UiPrimitiveMesh.localRoundRectBorderGradient(x: Float, y: Float, width: Float, height: Float, radius: Float, borderWidth: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        roundRectBorder(leftPx + x, topPx + y, width, height, radius, borderWidth, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localRoundRectBorderGradient(
+        x: Float, y: Float, width: Float, height: Float, radius: Float, borderWidth: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        roundRectBorder(
+            leftPx + x, topPx + y, width, height, radius, borderWidth, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 
-    fun UiPrimitiveMesh.localCircleBorderGradient(x: Float, y: Float, radius: Float, borderWidth: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        circleBorder(leftPx + x, topPx + y, radius, borderWidth, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localCircleBorderGradient(
+        x: Float, y: Float, radius: Float, borderWidth: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        circleBorder(
+            leftPx + x, topPx + y, radius, borderWidth, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 
-    fun UiPrimitiveMesh.localOvalBorderGradient(x: Float, y: Float, xRadius: Float, yRadius: Float, borderWidth: Float, colorA: Color, colorB: Color, gradientX: Float, gradientY: Float) {
-        ovalBorder(leftPx + x, topPx + y, xRadius, yRadius, borderWidth, clipBoundsPx, colorA, colorB, gradientX, gradientY)
+    fun UiPrimitiveMesh.localOvalBorderGradient(
+        x: Float, y: Float, xRadius: Float, yRadius: Float, borderWidth: Float,
+        colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
+    ) {
+        ovalBorder(
+            leftPx + x, topPx + y, xRadius, yRadius, borderWidth, clipBoundsPx,
+            colorA, colorB, leftPx + gradientCx, topPx + gradientCy, gradientRx, gradientRy
+        )
     }
 }

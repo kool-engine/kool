@@ -63,7 +63,7 @@ inline fun UiScope.collapsablePanelLvl2(
     noinline headerContent: (RowScope.() -> Unit)? = null,
     titleWidth: Dimension = Grow.Std,
     startExpanded: Boolean = true,
-    indicatorColor: Color = colors.secondaryVariant,
+    indicatorColor: Color? = null,
     isAlwaysShowIndicator: Boolean = false,
     noinline onCollapseChanged: ((Boolean) -> Unit)? = null,
     block: ColumnScope.() -> Any?
@@ -88,7 +88,7 @@ inline fun UiScope.collapsablePanelLvl2(
             }
 
         Box(height = Grow.Std) {
-            if (isExpanded || isAlwaysShowIndicator) {
+            if (indicatorColor != null && (isExpanded || isAlwaysShowIndicator)) {
                 Box(width = sizes.smallGap, height = Grow.Std) {
                     modifier.backgroundColor(indicatorColor)
                 }
@@ -110,11 +110,22 @@ inline fun UiScope.collapsablePanelLvl2(
     }
     if (isExpanded) {
         Box(width = Grow.Std) {
-            Box(width = sizes.smallGap * 0.5f, height = Grow.Std) {
-                modifier.backgroundColor(indicatorColor)
+            if (indicatorColor != null) {
+                Box(width = sizes.smallGap * 0.5f, height = Grow.Std) {
+                    modifier.backgroundColor(indicatorColor)
+                }
             }
             Column(width = Grow.Std) {
+                if (indicatorColor != null) {
+                    modifier.background(
+                        RectGradientBackground(
+                            indicatorColor.withAlpha(0.15f), indicatorColor.withAlpha(0f),
+                            0.dp, 0.dp, 400.dp, 600.dp
+                        )
+                    )
+                }
                 block()
+                divider(colors.weakDividerColor, horizontalMargin = 0.dp)
             }
         }
     }
