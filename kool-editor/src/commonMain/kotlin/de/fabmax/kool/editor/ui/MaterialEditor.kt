@@ -9,6 +9,7 @@ import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.components.MaterialReferenceComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.modules.ksl.KslPbrSplatShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -75,7 +76,6 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
 
                 menuDivider()
                 materialEditor()
-                genericSettings()
             }
         }
     }
@@ -116,10 +116,11 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         textureSetting("Weight map:", pbrSplatData.splatMap, "r") {
             pbrSplatData.copy(splatMap = it)
         }
+        genericSettings()
 
-        labeledCheckbox("Debug mode:", pbrSplatData.debugMode != 0) {
+        labeledCombobox("Debug mode:", debugOptions, pbrSplatData.debugMode) {
             val undoMaterial = material.data.copy(shaderData = pbrSplatData)
-            val applyMaterial = material.data.copy(shaderData = pbrSplatData.copy(debugMode = if (it) 1 else 0))
+            val applyMaterial = material.data.copy(shaderData = pbrSplatData.copy(debugMode = it.debugValue))
             SetComponentDataAction(material, undoMaterial, applyMaterial).apply()
         }
 
@@ -213,17 +214,14 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
 
         if (pbrSplatData.materialMaps.size < 5) {
-            Button("Add Splat Material") {
-                defaultButtonStyle()
-                modifier
-                    .width(sizes.baseSize * 5)
-                    .height(sizes.editItemHeight)
-                    .margin(vertical = sizes.smallGap)
-                    .alignX(AlignmentX.Center)
-                    .onClick {
-                        val newMats = pbrSplatData.copy(materialMaps = pbrSplatData.materialMaps + SplatMapData())
-                        SetComponentDataAction(material, material.data, material.data.copy(shaderData = newMats)).apply()
-                    }
+            iconTextButton(
+                icon = IconMap.small.plus,
+                text = "Add Material",
+                width = sizes.baseSize * 5,
+                margin = sizes.gap
+            ) {
+                val newMats = pbrSplatData.copy(materialMaps = pbrSplatData.materialMaps + SplatMapData())
+                SetComponentDataAction(material, material.data, material.data.copy(shaderData = newMats)).apply()
             }
         }
     }
@@ -350,6 +348,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             )
         }
         menuDivider()
+        genericSettings()
     }
 
     private fun RowScope.materialSetting(
@@ -710,6 +709,10 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         override fun toString() = label
     }
 
+    private data class DebugOption(val label: String, val debugValue: Int) {
+        override fun toString(): String = label
+    }
+
     companion object {
         private val materialTypes = listOf(
             MaterialTypeOption("PBR", PbrShaderData::class) { PbrShaderData() },
@@ -722,6 +725,13 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             MdColor.PURPLE.withAlpha(0.8f),
             MdColor.RED.withAlpha(0.8f),
             MdColor.AMBER.withAlpha(0.8f),
+        )
+
+        private val debugOptions = listOf(
+            DebugOption("Off", KslPbrSplatShader.DEBUG_MODE_OFF),
+            DebugOption("Weights", KslPbrSplatShader.DEBUG_MODE_WEIGHTS),
+            DebugOption("Normals", KslPbrSplatShader.DEBUG_MODE_NORMALS),
+            DebugOption("Displacement", KslPbrSplatShader.DEBUG_MODE_DISPLACEMENT),
         )
 
         private val texSingleChannels = listOf("R", "G", "B", "A")
