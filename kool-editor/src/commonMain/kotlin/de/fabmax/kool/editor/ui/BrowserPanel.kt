@@ -9,6 +9,7 @@ import de.fabmax.kool.editor.data.ConstColorAttribute
 import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -211,13 +212,6 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     ) = Column(width = gridSize) {
         modifier.installDragAndDropHandler(dndCtx, null) { item.makeDndItem() }
 
-        val color = when (item) {
-            is BrowserDir -> MdColor.AMBER
-            is BrowserAssetItem -> item.itemColor
-            is BrowserMaterialItem -> item.color
-            is BrowserBehaviorItem -> MdColor.PURPLE
-        }
-
         var isHovered by remember(false)
         if (isHovered) {
             modifier.background(RoundRectBackground(colors.onBackgroundAlpha(0.15f), sizes.smallGap))
@@ -241,18 +235,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                 }
             }
 
-        val itemDrawable = item.drawable?.invoke()
-        if (itemDrawable != null) {
-            itemDrawable()
-        } else {
-            Box {
-                modifier
-                    .size(sizes.browserItemSize, sizes.browserItemSize)
-                    .alignX(AlignmentX.Center)
-                    .margin(sizes.smallGap)
-                    .background(RoundRectBackground(color, sizes.gap))
-            }
-        }
+        item.composable()
 
         Text(item.name) {
             modifier
@@ -264,17 +247,21 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     }
 
     sealed class BrowserItem(val level: Int, val name: String, val path: String) {
+        abstract val color: Color
+        var composable: BrowserItemComposable = SimpleBrowserItemComposable()
+
+        context(UiScope)
         fun makeDndItem(): EditorDndItem<*>? {
             return when (this) {
-                is BrowserDir -> DndItemFlavor.DndBrowserItem.itemOf(this)
+                is BrowserDir -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
                 is BrowserAssetItem -> {
                     when (this.asset.type) {
-                        AppAssetType.Unknown -> DndItemFlavor.DndBrowserItem.itemOf(this)
-                        AppAssetType.Directory -> DndItemFlavor.DndBrowserItem.itemOf(this)
-                        AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this)
-                        AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this)
-                        AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this)
-                        AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this)
+                        AppAssetType.Unknown -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Directory -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this, composable.getDndComposable())
                     }
                 }
                 is BrowserMaterialItem -> null
@@ -282,17 +269,31 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             }
         }
 
-        var drawable: (() -> Composable?)? = null
+        private inner class SimpleBrowserItemComposable: BrowserItemComposable {
+            override fun getComposable(sizeDp: Vec2f?, alpha: Float) = Composable {
+                val width = sizeDp?.x?.dp ?: sizes.browserItemSize
+                val height = sizeDp?.y?.dp ?: sizes.browserItemSize
+                Box {
+                    modifier
+                        .size(width, height)
+                        .alignX(AlignmentX.Center)
+                        .margin(sizes.smallGap)
+                        .background(RoundRectBackground(color.withAlpha(alpha), sizes.gap))
+                }
+            }
+        }
     }
 
     class BrowserDir(level: Int, name: String, path: String) : BrowserItem(level, name, path) {
+        override val color: Color = MdColor.AMBER
+
         val isExpanded = mutableStateOf(level == 0)
         val isExpandable = mutableStateOf(false)
         val children = mutableListOf<BrowserItem>()
     }
 
     class BrowserAssetItem(level: Int, val asset: AssetItem) : BrowserItem(level, asset.name, asset.path) {
-        val itemColor: Color = when (asset.type) {
+        override val color: Color = when (asset.type) {
             AppAssetType.Unknown -> MdColor.PINK
             AppAssetType.Directory -> MdColor.AMBER
             AppAssetType.Texture -> MdColor.GREY
@@ -303,11 +304,25 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     }
 
     class BrowserMaterialItem(level: Int, val material: MaterialComponent) : BrowserItem(level, material.name, "/materials/${material.name}") {
-        val color: Color get() {
+        override val color: Color get() {
             val constColor = (material.data.shaderData as? PbrShaderData)?.baseColor as? ConstColorAttribute
             return constColor?.color?.toColorSrgb() ?: MdColor.GREY
         }
     }
 
-    class BrowserBehaviorItem(level: Int, val behavior: AppBehavior) : BrowserItem(level, behavior.prettyName, "/paths/${behavior.qualifiedName}")
+    class BrowserBehaviorItem(level: Int, val behavior: AppBehavior) : BrowserItem(level, behavior.prettyName, "/paths/${behavior.qualifiedName}") {
+        override val color: Color = MdColor.PURPLE
+    }
+
+}
+
+interface BrowserItemComposable : Composable {
+    fun getComposable(sizeDp: Vec2f? = null, alpha: Float = 1f): Composable
+
+    context(UiScope)
+    fun getDndComposable() = getComposable(Vec2f(sizes.baseSize.px * 1.5f), alpha = 0.7f)
+
+    override fun UiScope.compose() {
+        getComposable().invoke()
+    }
 }

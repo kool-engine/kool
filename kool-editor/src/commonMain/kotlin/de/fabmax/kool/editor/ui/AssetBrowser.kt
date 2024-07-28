@@ -7,7 +7,6 @@ import de.fabmax.kool.MimeType
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.util.ThumbnailRenderer
-import de.fabmax.kool.editor.util.UiThumbnails
 import de.fabmax.kool.editor.util.hdriThumbnail
 import de.fabmax.kool.editor.util.textureThumbnail
 import de.fabmax.kool.math.Vec2f
@@ -18,8 +17,8 @@ import kotlin.math.roundToInt
 class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.picture, ui) {
 
     private val thumbnailRenderer = ThumbnailRenderer("asset-thumbnails")
-    private val textureThumbnails = UiThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.textureThumbnail(it) }
-    private val hdriThumbnails = UiThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.hdriThumbnail(it) }
+    private val textureThumbnails = BrowserThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.textureThumbnail(it) }
+    private val hdriThumbnails = BrowserThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.hdriThumbnail(it) }
 
     init {
         KoolSystem.requireContext().backgroundPasses += thumbnailRenderer
@@ -87,7 +86,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
                 BrowserDir(level, name, assetItem.path)
             } else {
                 BrowserAssetItem(level, assetItem).apply {
-                    drawable = { assetItem.getThumbnailComposable() }
+                    assetItem.getThumbnailComposable()?.let { composable = it }
                 }
             }
             browserItems[assetItem.path] = item
@@ -110,8 +109,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
         return item
     }
 
-    context(UiScope)
-    private fun AssetItem.getThumbnailComposable(): Composable? {
+    private fun AssetItem.getThumbnailComposable(): BrowserItemComposable? {
         return when (type) {
             AppAssetType.Texture -> textureThumbnails.getThumbnailComposable(path)
             AppAssetType.Hdri -> hdriThumbnails.getThumbnailComposable(path)

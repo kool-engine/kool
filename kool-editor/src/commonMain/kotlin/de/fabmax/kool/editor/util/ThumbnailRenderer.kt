@@ -28,7 +28,7 @@ import kotlin.math.min
 
 class ThumbnailRenderer(
     name: String,
-    val numTiles: Vec2i = Vec2i(4, 4),
+    val numTiles: Vec2i = Vec2i(24, 24),
     tileSize: Vec2i = Vec2i(80 ,80)
 ) : OffscreenRenderPass2d(
     drawNode = Node(),
