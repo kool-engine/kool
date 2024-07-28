@@ -5,11 +5,17 @@ import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.modules.ksl.blocks.ToneMapping
 import de.fabmax.kool.modules.ksl.blocks.cameraData
+import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.ImageProvider
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
+import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.TextureMesh
@@ -18,10 +24,11 @@ import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.releaseWith
 import kotlin.collections.set
+import kotlin.math.min
 
 class ThumbnailRenderer(
     name: String,
-    val numTiles: Vec2i = Vec2i(24, 24),
+    val numTiles: Vec2i = Vec2i(4, 4),
     tileSize: Vec2i = Vec2i(80 ,80)
 ) : OffscreenRenderPass2d(
     drawNode = Node(),
@@ -135,24 +142,24 @@ class ThumbnailRenderer(
 
 fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumbnail {
     return renderThumbnail {
-        TextureMesh().apply {
+        val texMesh = TextureMesh().apply {
             val assets = KoolEditor.instance.cachedAppAssets
             val ref = AssetReference.Texture(texPath)
             var tex = assets.getTextureIfLoaded(ref)
             if (tex == null) {
-                val props = TextureProps(generateMipMaps = false, resolveSize = tileSize)
-                tex = assets.assetLoader.loadTexture2d(texPath, props)
+                tex = assets.assetLoader.loadTexture2d(texPath)
                 tex.releaseWith(this)
             }
 
             generate {
                 rect {
-                    cornerRadius = 0.2f
-                    size.set(2f, 2f)
+                    val ar = tex.width.toFloat() / tex.height
+                    if (ar > 1f) size.set(2f, 2f / ar) else size.set(2f * ar, 2f)
+                    cornerRadius = min(size.x, size.y) * 0.1f
                 }
             }
 
-            shader = KslShader("thumbnail-shader") {
+            shader = KslShader("tex2d-thumbnail-shader") {
                 val uv = interStageFloat2()
                 vertexStage {
                     main {
@@ -178,6 +185,70 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
                 }
             }.also {
                 it.texture2d("thumb", tex)
+            }
+        }
+
+        Node().apply {
+            addNode(ClearMesh())
+            addNode(texMesh)
+        }
+    }
+}
+
+fun ThumbnailRenderer.hdriThumbnail(texPath: String): ThumbnailRenderer.Thumbnail {
+    return renderThumbnail {
+        val texMesh = TextureMesh().apply {
+            val assets = KoolEditor.instance.cachedAppAssets
+            val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(generateMipMaps = false))
+            tex.releaseWith(this)
+
+            generate {
+                rect {
+                    val ar = tex.width.toFloat() / tex.height
+                    if (ar > 1f) size.set(2f, 2f / ar) else size.set(2f * ar, 2f)
+                    cornerRadius = min(size.x, size.y) * 0.1f
+                }
+            }
+
+            shader = KslShader("hdri-thumbnail-shader") {
+                val uv = interStageFloat2()
+                vertexStage {
+                    main {
+                        val pos = vertexAttribFloat3(Attribute.POSITIONS)
+                        uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS)
+                        outPosition set float4Value(pos, 1f.const) * cameraData().viewProjMat
+                    }
+                }
+                fragmentStage {
+                    main {
+                        val rgbe = float4Var(sampleTexture(texture2d("thumb"), uv.output))
+                        val exp = float1Var(rgbe.w * 255f.const - 128f.const)
+                        val rgb = float3Var(rgbe.rgb * pow(2f.const, exp))
+                        colorOutput(convertColorSpace(rgb, ColorSpaceConversion.LinearToSrgbHdr(ToneMapping.Aces)))
+                    }
+                }
+            }.also {
+                it.texture2d("thumb", tex)
+            }
+        }
+
+        Node().apply {
+            addNode(ClearMesh())
+            addNode(texMesh)
+        }
+    }
+}
+
+class ClearMesh : Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+    init {
+        generateFullscreenQuad()
+        shader = KslShader("clear-shader", PipelineConfig(blendMode = BlendMode.DISABLED, depthTest = DepthCompareOp.ALWAYS)) {
+            val uv = interStageFloat2()
+            vertexStage { fullscreenQuadVertexStage(uv) }
+            fragmentStage {
+                main {
+                    colorOutput(float4Value(0f, 0f, 0f, 0f))
+                }
             }
         }
     }

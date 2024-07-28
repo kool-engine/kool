@@ -260,7 +260,6 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                 .isWrapText(true)
                 .textAlignX(AlignmentX.Center)
                 .padding(sizes.smallGap)
-                //.margin(sizes.smallGap)
         }
     }
 
@@ -297,7 +296,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             AppAssetType.Unknown -> MdColor.PINK
             AppAssetType.Directory -> MdColor.AMBER
             AppAssetType.Texture -> MdColor.GREY
-            AppAssetType.Hdri -> MdColor.LIME
+            AppAssetType.Hdri -> MdColor.GREY
             AppAssetType.Model -> MdColor.LIGHT_BLUE
             AppAssetType.Heightmap -> MdColor.CYAN
         }
