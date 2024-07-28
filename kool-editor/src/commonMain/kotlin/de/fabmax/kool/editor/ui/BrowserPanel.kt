@@ -259,7 +259,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                 .width(Grow.Std)
                 .isWrapText(true)
                 .textAlignX(AlignmentX.Center)
-                .margin(sizes.smallGap)
+                .padding(sizes.smallGap)
+                //.margin(sizes.smallGap)
         }
     }
 
@@ -295,7 +296,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         val itemColor: Color = when (asset.type) {
             AppAssetType.Unknown -> MdColor.PINK
             AppAssetType.Directory -> MdColor.AMBER
-            AppAssetType.Texture -> MdColor.LIGHT_GREEN
+            AppAssetType.Texture -> MdColor.GREY
             AppAssetType.Hdri -> MdColor.LIME
             AppAssetType.Model -> MdColor.LIGHT_BLUE
             AppAssetType.Heightmap -> MdColor.CYAN

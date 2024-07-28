@@ -4,26 +4,19 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.modules.ksl.KslUnlitShader
+import de.fabmax.kool.modules.ksl.KslShader
+import de.fabmax.kool.modules.ksl.blocks.cameraData
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.ImageProvider
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.OrthographicCamera
 import de.fabmax.kool.scene.TextureMesh
+import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.releaseWith
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
-import kotlin.collections.minBy
-import kotlin.collections.mutableListOf
-import kotlin.collections.mutableMapOf
-import kotlin.collections.plusAssign
-import kotlin.collections.removeLast
 import kotlin.collections.set
 
 class ThumbnailRenderer(
@@ -137,21 +130,12 @@ class ThumbnailRenderer(
         }
 
         override fun getTexture(imgWidthPx: Float, imgHeightPx: Float): Texture2d? = colorTexture
-
     }
 }
 
 fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumbnail {
     return renderThumbnail {
-        val texMesh = TextureMesh().apply {
-            generate {
-                rect {
-                    cornerRadius = 0.2f
-                    size.set(2f, 2f)
-                }
-            }
-
-
+        TextureMesh().apply {
             val assets = KoolEditor.instance.cachedAppAssets
             val ref = AssetReference.Texture(texPath)
             var tex = assets.getTextureIfLoaded(ref)
@@ -160,13 +144,41 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
                 tex = assets.assetLoader.loadTexture2d(texPath, props)
                 tex.releaseWith(this)
             }
-            shader = KslUnlitShader {
-                color { textureColor(tex, gamma = 1f) }
-            }
-        }
 
-        Node().apply {
-            addNode(texMesh)
+            generate {
+                rect {
+                    cornerRadius = 0.2f
+                    size.set(2f, 2f)
+                }
+            }
+
+            shader = KslShader("thumbnail-shader") {
+                val uv = interStageFloat2()
+                vertexStage {
+                    main {
+                        val pos = vertexAttribFloat3(Attribute.POSITIONS)
+                        uv.input set vertexAttribFloat2(Attribute.TEXTURE_COORDS)
+                        outPosition set float4Value(pos, 1f.const) * cameraData().viewProjMat
+                    }
+                }
+                fragmentStage {
+                    main {
+                        val p = float2Var(fract(uv.output * cameraData().viewport.zw / 20f.const))
+                        val a = bool1Var((p.x lt 0.5f.const) eq (p.y lt 0.5f.const))
+                        val bg = float4Var()
+                        `if`(a) {
+                            bg set (MdColor.GREY tone 200).const
+                        }.`else` {
+                            bg set (MdColor.GREY tone 350).const
+                        }
+                        val color = sampleTexture(texture2d("thumb"), uv.output)
+                        bg.rgb set mix(bg.rgb, color.rgb, color.a)
+                        colorOutput(bg)
+                    }
+                }
+            }.also {
+                it.texture2d("thumb", tex)
+            }
         }
     }
 }
