@@ -220,10 +220,12 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
         var isHovered by remember(false)
         if (isHovered) {
-            modifier.background(RoundRectBackground(color.withAlpha(0.25f), sizes.smallGap))
+            modifier.background(RoundRectBackground(colors.onBackgroundAlpha(0.15f), sizes.smallGap))
         }
 
         modifier
+            .onEnter { isHovered = true }
+            .onExit { isHovered = false }
             .onClick { evt ->
                 if (evt.pointer.isLeftButtonClicked) {
                     if (evt.pointer.leftButtonRepeatedClickCount == 2) {
@@ -239,14 +241,17 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                 }
             }
 
-        Box {
-            modifier
-                .size(sizes.baseSize * 2, sizes.baseSize * 2)
-                .alignX(AlignmentX.Center)
-                .margin(sizes.smallGap)
-                .background(RoundRectBackground(color, sizes.gap))
-                .onEnter { isHovered = true }
-                .onExit { isHovered = false }
+        val itemDrawable = item.drawable?.invoke()
+        if (itemDrawable != null) {
+            itemDrawable()
+        } else {
+            Box {
+                modifier
+                    .size(sizes.browserItemSize, sizes.browserItemSize)
+                    .alignX(AlignmentX.Center)
+                    .margin(sizes.smallGap)
+                    .background(RoundRectBackground(color, sizes.gap))
+            }
         }
 
         Text(item.name) {
@@ -276,6 +281,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                 is BrowserBehaviorItem -> null
             }
         }
+
+        var drawable: (() -> Composable?)? = null
     }
 
     class BrowserDir(level: Int, name: String, path: String) : BrowserItem(level, name, path) {

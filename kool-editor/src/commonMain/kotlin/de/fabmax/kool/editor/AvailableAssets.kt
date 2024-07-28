@@ -173,12 +173,27 @@ class AssetItem(
 
     val children = mutableStateListOf<AssetItem>()
 
+    fun sortChildrenByName() {
+        children.sortWith(assetsNameComparator)
+    }
+
     override fun toString(): String {
         return name
     }
 
-    fun sortChildrenByName() {
-        children.sortWith(assetsNameComparator)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        other as AssetItem
+        if (path != other.path) return false
+        if (type != other.type) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = path.hashCode()
+        result = 31 * result + type.hashCode()
+        return result
     }
 
     companion object {

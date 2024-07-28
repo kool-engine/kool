@@ -2,16 +2,30 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.FileFilterItem
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.MimeType
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
+import de.fabmax.kool.editor.util.ThumbnailRenderer
+import de.fabmax.kool.editor.util.UiThumbnails
+import de.fabmax.kool.editor.util.textureThumbnail
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.launchOnMainThread
+import kotlin.math.roundToInt
 
 class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.picture, ui) {
 
+    private val thumbnailRenderer = ThumbnailRenderer("asset-thumbnails")
+    private val textureThumbnails = UiThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.textureThumbnail(it) }
+
+    init {
+        KoolSystem.requireContext().backgroundPasses += thumbnailRenderer
+    }
+
     override fun UiScope.titleBar() {
+        thumbnailRenderer.updateTileSize(sizes.browserItemSize.px.roundToInt())
+
         Row(height = Grow.Std) {
             val popup = remember { ContextPopupMenu<BrowserItem>("import-assets-popup") }
             var popupPos by remember(Vec2f.ZERO)
@@ -70,7 +84,9 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
                 val name = if (level == 0) "Assets" else assetItem.name
                 BrowserDir(level, name, assetItem.path)
             } else {
-                BrowserAssetItem(level, assetItem)
+                BrowserAssetItem(level, assetItem).apply {
+                    drawable = { assetItem.getThumbnailComposable() }
+                }
             }
             browserItems[assetItem.path] = item
         }
@@ -90,6 +106,14 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
             }
         }
         return item
+    }
+
+    context(UiScope)
+    private fun AssetItem.getThumbnailComposable(): Composable? {
+        if (type != AppAssetType.Texture) {
+            return null
+        }
+        return textureThumbnails.getThumbnailComposable(path)
     }
 
     private fun AppAssetType.matchesBrowserItemType(browserItem: BrowserItem?): Boolean {

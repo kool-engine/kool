@@ -110,6 +110,10 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
         return loadedBlobs.getOrPut(ref) { mutableStateOf(null) }
     }
 
+    fun getTextureIfLoaded(ref: AssetReference.Texture): Texture2d? {
+        return loadedTextures2d[ref]?.value
+    }
+
     internal fun reloadAsset(assetItem: AssetItem) {
         val assetRefs = assetRefsByPath[assetItem.path] ?: return
         assetRefs.forEach { ref ->
