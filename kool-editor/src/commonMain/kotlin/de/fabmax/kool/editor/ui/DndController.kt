@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.MdColor
 
 class DndController(uiScene: Scene) {
 
@@ -55,7 +56,7 @@ class DndController(uiScene: Scene) {
     }
 }
 
-class EditorDndItem<T: Any>(val item: T, val flavors: Map<DndItemFlavor<*>, (T) -> Any>) {
+class EditorDndItem<T: Any>(val item: T, val flavors: Map<DndItemFlavor<*>, (T) -> Any>, val preview: Composable?) {
     fun <T: Any> get(flavor: DndItemFlavor<T>): T {
         val getter = flavors[flavor] ?: throw NoSuchElementException("EditorDndItem does not have requested flavor $flavor")
         return flavor.getTyped(getter(item))
@@ -146,8 +147,8 @@ abstract class DndItemFlavor<T: Any> {
 
     abstract fun getTyped(item: Any): T
 
-    fun itemOf(value: T): EditorDndItem<T> {
-        return EditorDndItem(value, flavorMappings)
+    fun itemOf(value: T, preview: Composable? = null): EditorDndItem<T> {
+        return EditorDndItem(value, flavorMappings, preview)
     }
 
     data object DndAssetItem : DndItemFlavor<AssetItem>() {
@@ -206,6 +207,23 @@ abstract class DndItemFlavor<T: Any> {
         )
 
         override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
+
+        fun itemOf(value: BrowserPanel.BrowserAssetItem): EditorDndItem<BrowserPanel.BrowserAssetItem> {
+            return itemOf(value, makeDragPreview(value.asset))
+        }
+
+        private fun makeDragPreview(textureItem: AssetItem) = Composable {
+            Box(width = sizes.baseSize * 2, height = sizes.baseSize * 2) {
+                modifier.background(RoundRectBackground(MdColor.LIGHT_GREEN.withAlpha(0.5f), sizes.gap))
+
+                Text(textureItem.fileItem.name) {
+                    modifier
+                        .align(AlignmentX.Center, AlignmentY.Center)
+                        .width(sizes.baseSize * 2 - sizes.gap)
+                        .isWrapText(true)
+                }
+            }
+        }
     }
 
     data object DndBrowserItemHdri : DndItemFlavor<BrowserPanel.BrowserAssetItem>() {

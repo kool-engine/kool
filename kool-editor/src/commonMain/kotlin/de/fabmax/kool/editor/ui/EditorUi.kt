@@ -35,6 +35,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
     val dock = Dock()
     val titleBar = WindowTitleBar(editor)
+    val overlay = UiOverlay(this)
 
     private val virtualCursorMesh = ColorMesh().apply {
         generate {
@@ -196,6 +197,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         addNode(statusBar)
         addNode(dock)
         addNode(titleBarSurface)
+        addNode(overlay)
         addNode(virtualCursorMesh)
     }
 

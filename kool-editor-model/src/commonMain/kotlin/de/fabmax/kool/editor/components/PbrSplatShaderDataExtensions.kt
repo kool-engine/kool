@@ -165,7 +165,7 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         shader.debugMode = debugMode
     }
 
-    shader.splatMap = splatMap?.let { AppAssets.loadTexture2d(it.mapPath) }
+    shader.splatMap = splatMap?.let { AppAssets.loadTexture2d(it.mapPath) } ?: SingleColorTexture(Color.BLACK)
 
     if (ibl != null) {
         shader.ambientFactor = Color.WHITE

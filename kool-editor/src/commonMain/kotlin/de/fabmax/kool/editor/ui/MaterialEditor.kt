@@ -103,7 +103,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
-    private fun ColumnScope.materialEditor() {
+    private fun ColumnScope.materialEditor() = Column(width = Grow.Std, scopeName = material.shaderData::class.simpleName) {
         when (material.shaderData) {
             is BlinnPhongShaderData -> TODO()
             is PbrShaderData -> pbrMaterialEditor()
@@ -287,9 +287,6 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
     }
 
     private fun ColumnScope.pbrMaterialEditor() {
-        // shader setting callback functions need to use cast material.shaderData instead of pbrData because otherwise
-        // pbrData is captured on first invocation and will never be updated
-
         colorSetting("Base color:", pbrData.baseColor, MdColor.GREY.toLinear()) {
             pbrData.copy(baseColor = it)
         }
