@@ -264,12 +264,23 @@ class UiPrimitiveMesh(name: String) :
                 }
                 fragmentStage {
                     main {
-                        `if` (any(screenPos.output lt clipBounds.output.xy) or
+                        `if`(any(screenPos.output lt clipBounds.output.xy) or
                                 any(screenPos.output gt clipBounds.output.zw)) {
                             discard()
                         }.`else` {
                             `if`(any(gradientCfg.output.zw ne Vec2f.ZERO.const)) {
-                                val gradPos = float2Var((screenPos.output - gradientCfg.output.xy) / gradientCfg.output.zw)
+                                val gradPos = float2Var(screenPos.output - gradientCfg.output.xy)
+                                `if`(gradientCfg.output.z ne 0f.const) {
+                                    gradPos.x /= gradientCfg.output.z
+                                }.`else` {
+                                    gradPos.x set 0f.const
+                                }
+                                `if`(gradientCfg.output.w ne 0f.const) {
+                                    gradPos.y /= gradientCfg.output.w
+                                }.`else` {
+                                    gradPos.y set 0f.const
+                                }
+
                                 val gradW = float1Var(smoothStep(0f.const, 1f.const, length(gradPos)))
                                 val gradColor = float4Var(mix(colorA.output, colorB.output, gradW))
                                 colorOutput(gradColor.rgb * gradColor.a, gradColor.a)

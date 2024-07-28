@@ -35,9 +35,11 @@ class Dashboard : Composable {
                 val c2 = bgColor.withAlpha(bgColor.a * 0.85f)
                 val c3 = bgColor.withAlpha(0f)
 
+                val w1 = x2 - x1
+                val w2 = x3 - x2
                 draw.localRect(0f, 0f, x1, heightPx, bgColor)
-                draw.localRectGradient(x1, 0f, x2 - x1, heightPx, bgColor, c2, 1f, 0f)
-                draw.localRectGradient(x2, 0f, x3 - x2, heightPx, c2, c3, 1f, 0f)
+                draw.localRectGradient(x1, 0f, w1, heightPx, bgColor, c2, x1, 0f, gradientRx = w1, gradientRy = 0f)
+                draw.localRectGradient(x2, 0f, w2, heightPx, c2, c3, x2, 0f, gradientRx = w2, gradientRy = 0f)
             }
         }
     }

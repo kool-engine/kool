@@ -29,11 +29,17 @@ class Timer(val vehicleUi: VehicleUi) : Composable {
                 val cOut = bgColor.withAlpha(0f)
                 val cMid = bgColor.withAlpha(bgColor.a * 0.85f)
 
-                draw.localRectGradient(x0, 0f, x1 - x0, heightPx, cOut, cMid, 1f, 0f)
-                draw.localRectGradient(x1, 0f, x2 - x1, heightPx, cMid, bgColor, 1f, 0f)
-                draw.localRect(x2, 0f, x3 - x2, heightPx, bgColor)
-                draw.localRectGradient(x3, 0f, x4 - x3, heightPx, bgColor, cMid, 1f, 0f)
-                draw.localRectGradient(x4, 0f, x5 - x4, heightPx, cMid, cOut, 1f, 0f)
+                val w0 = x1 - x0
+                val w1 = x2 - x1
+                val w2 = x3 - x2
+                val w3 = x4 - x3
+                val w4 = x5 - x4
+
+                draw.localRectGradient(x0, 0f, w0, heightPx, cOut, cMid, x0, 0f, gradientRx = w0, gradientRy = 0f)
+                draw.localRectGradient(x1, 0f, w1, heightPx, cMid, bgColor, x1, 0f, gradientRx = w1, gradientRy = 0f)
+                draw.localRect(x2, 0f, w2, heightPx, bgColor)
+                draw.localRectGradient(x3, 0f, w3, heightPx, bgColor, cMid, x3, 0f, gradientRx = w3, gradientRy = 0f)
+                draw.localRectGradient(x4, 0f, w4, heightPx, cMid, cOut, x4, 0f, gradientRx = w4, gradientRy = 0f)
             }
         }
     }
