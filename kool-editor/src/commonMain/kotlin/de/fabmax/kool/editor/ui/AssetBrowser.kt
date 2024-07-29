@@ -24,7 +24,8 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
         KoolSystem.requireContext().backgroundPasses += thumbnailRenderer
     }
 
-    override fun UiScope.titleBar() {
+    context(UiScope)
+    override fun titleBar() {
         thumbnailRenderer.updateTileSize(sizes.browserItemSize.px.roundToInt())
 
         Row(height = Grow.Std) {

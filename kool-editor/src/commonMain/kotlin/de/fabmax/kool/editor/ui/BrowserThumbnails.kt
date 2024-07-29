@@ -10,19 +10,25 @@ class BrowserThumbnails<T: Any>(
     val renderer: ThumbnailRenderer,
     val thumbnailProvider: ThumbnailRenderer.(T) -> ThumbnailRenderer.Thumbnail
 ) {
-    private val loadedThumbnails = mutableMapOf<T, ComposableThumbnail>()
+    val loadedThumbnails = mutableMapOf<T, ComposableThumbnail>()
+
+    fun getThumbnail(key: T): ThumbnailRenderer.Thumbnail? {
+        return loadedThumbnails[key]?.thumbnail
+    }
 
     fun getThumbnailComposable(key: T): BrowserItemComposable {
         return loadedThumbnails.getOrPut(key) { ComposableThumbnail(key) }
     }
 
-    private inner class ComposableThumbnail(val key: T) : BrowserItemComposable {
-        private var thumbnail: ThumbnailRenderer.Thumbnail? = null
+    inner class ComposableThumbnail(val key: T) : BrowserItemComposable {
+        var thumbnail: ThumbnailRenderer.Thumbnail? = null
 
         override fun getComposable(sizeDp: Vec2f?, alpha: Float) = Composable {
             var thumb = thumbnail
             if (thumb == null || thumb.isReleased.use()) {
                 thumb = renderer.thumbnailProvider(key).also { thumbnail = it }
+            } else if(thumb.isInvalid.use()) {
+                thumb.update()
             }
 
             val width = sizeDp?.x?.dp ?: Dp.fromPx(renderer.tileSize.x.toFloat())

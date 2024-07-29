@@ -150,7 +150,7 @@ class SceneNodes(val scene: EditorScene) :
                 }
 
                 val material = scene.project.materialsById[meshKey.material] ?: scene.project.defaultMaterial
-                material?.applyMaterialTo(this, scene, modelMatsInstancedMesh)
+                material?.applyMaterialTo(this, scene.shaderData, modelMatsInstancedMesh)
                 if (AppState.isInEditor) {
                     rayTest = MeshRayTest.geometryTest(this)
                 }
@@ -192,7 +192,7 @@ class SceneNodes(val scene: EditorScene) :
         override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) { }
 
         override suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
-            node?.let { component.applyMaterialTo(it, scene, modelMatsInstancedMesh) }
+            node?.let { component.applyMaterialTo(it, scene.shaderData, modelMatsInstancedMesh) }
         }
 
         private fun MeshBuilder.generatePrimitiveShape(shape: ShapeData) = withTransform {
@@ -344,7 +344,7 @@ class SceneNodes(val scene: EditorScene) :
             model.drawGroupId = meshKey.drawGroupId
 
             if (material != null) {
-                model.meshes.values.forEach { material.applyMaterialTo(it, scene, modelMatsInstancedModel) }
+                model.meshes.values.forEach { material.applyMaterialTo(it, scene.shaderData, modelMatsInstancedModel) }
             }
             if (!isIblShaded) {
                 val bgColor = shaderData.ambientColorLinear
@@ -415,7 +415,7 @@ class SceneNodes(val scene: EditorScene) :
 
         override suspend fun onMaterialChanged(component: MaterialComponent, materialData: MaterialComponentData) {
             val meshes = node?.meshes ?: return
-            val updateFail = meshes.values.any { !component.applyMaterialTo(it, scene, modelMatsInstancedModel) }
+            val updateFail = meshes.values.any { !component.applyMaterialTo(it, scene.shaderData, modelMatsInstancedModel) }
             if (updateFail) {
                 createNode()
             }

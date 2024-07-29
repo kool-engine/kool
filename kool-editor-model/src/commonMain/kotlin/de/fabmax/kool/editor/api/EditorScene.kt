@@ -40,6 +40,8 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
     val hitTest = SceneHitTest(this)
 
+    val listenerComponents = mutableListOf<Any>(sceneNodes)
+
     init {
         _orderedEntities += sceneEntity
         _sceneEntities[sceneEntity.id] = sceneEntity

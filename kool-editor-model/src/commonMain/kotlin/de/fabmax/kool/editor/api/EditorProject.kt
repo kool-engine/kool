@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.MutableMat4d
@@ -28,6 +29,8 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     val materials = mutableStateListOf<MaterialComponent>()
     var defaultMaterial: MaterialComponent? = null
 
+    val listenerComponents = mutableListOf<Any>()
+
     init {
         projectData.checkConsistency()
 
@@ -41,6 +44,9 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     }
 
     suspend fun createScenes() {
+        // brdf lut is lazy loaded -> force loading it now
+        KoolSystem.requireContext().defaultPbrBrdfLut
+
         if (defaultMaterial == null) {
             defaultMaterial = materialScene.getAllComponents<MaterialComponent>().find {
                 it.name == MaterialComponent.DEFAULT_MATERIAL_NAME

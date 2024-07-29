@@ -45,7 +45,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         }
     }
 
-    protected open fun UiScope.titleBar() { }
+    context(UiScope)
+    protected open fun titleBar() { }
 
     private fun UiScope.treeWidthHandle() = Row(height = Grow.Std) {
         var startDragWidth by remember(treePanelSize.value)
