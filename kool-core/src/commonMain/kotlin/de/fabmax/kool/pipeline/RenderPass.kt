@@ -65,7 +65,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterDraw = BufferedList<(() -> Unit)>()
-    val onSetupView = BufferedList<((Int) -> Unit)>()
     val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
     var isProfileTimes = false
@@ -123,27 +122,8 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         }
     }
 
-    open fun setupView(viewIndex: Int) {
-        onSetupView.update()
-        for (i in onSetupView.indices) {
-            onSetupView[i](viewIndex)
-        }
-    }
-
     fun onAfterDraw(block: () -> Unit) {
         onAfterDraw += block
-    }
-
-    /**
-     * Executes the given block each time before a specific view of this render pass is rendered. This can
-     * be used to change view specific shader configurations.
-     * However, be aware that, at the time this function is called, previous view passes are enqueued but not yet
-     * executed. This means, you should avoid changing single uniform values of a shader because that would affect
-     * the previous passes as well. Instead, you can and should change the entire pipeline bind-group of a shader
-     * in these cases.
-     */
-    fun onSetupView(block: (Int) -> Unit) {
-        onSetupView += block
     }
 
     /**
@@ -210,6 +190,8 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         val drawQueue = DrawQueue(this@RenderPass, this)
         var drawFilter: (Node) -> Boolean = { true }
 
+        val onSetupView = BufferedList<(() -> Unit)>()
+
         /**
          * Frame copies to perform during this view is rendered. This is particularly useful to
          * capture intermediate render outputs, which can then be used by following draw
@@ -235,6 +217,25 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             val copy = FrameCopy(this@RenderPass, isCopyColor, isCopyDepth, drawGroupId, isSingleShot)
             frameCopies += copy
             return copy
+        }
+
+        internal fun setupView() {
+            onSetupView.update()
+            for (i in onSetupView.indices) {
+                onSetupView[i]()
+            }
+        }
+
+        /**
+         * Executes the given block each time before a specific view of this render pass is rendered. This can
+         * be used to change view specific shader configurations.
+         * However, be aware that, at the time this function is called, previous view passes are enqueued but not yet
+         * executed. This means, you should avoid changing single uniform values of a shader because that would affect
+         * the previous passes as well. Instead, you can and should change the entire pipeline bind-group of a shader
+         * in these cases.
+         */
+        fun onSetupView(block: () -> Unit) {
+            onSetupView += block
         }
 
         internal fun makeUpdateEvent(ctx: KoolContext): UpdateEvent {

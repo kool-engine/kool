@@ -51,12 +51,6 @@ open class OffscreenRenderPass2dPingPong(attachmentConfig: AttachmentConfig, ini
         pong.afterDraw()
     }
 
-    override fun setupView(viewIndex: Int) {
-        super.setupView(viewIndex)
-        ping.setupView(viewIndex)
-        pong.setupView(viewIndex)
-    }
-
     override fun setupMipLevel(mipLevel: Int) {
         super.setupMipLevel(mipLevel)
         ping.setupMipLevel(mipLevel)

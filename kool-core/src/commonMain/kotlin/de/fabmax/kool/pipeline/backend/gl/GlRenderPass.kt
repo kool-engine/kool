@@ -30,8 +30,9 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                     setupFramebuffer(0, mipLevel)
                     clear(renderPass)
                     for (viewIndex in renderPass.views.indices) {
-                        renderPass.setupView(viewIndex)
-                        renderView(renderPass.views[viewIndex], viewIndex, mipLevel)
+                        val view = renderPass.views[viewIndex]
+                        view.setupView()
+                        renderView(view, viewIndex, mipLevel)
                     }
                 }
 
@@ -39,8 +40,9 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                     for (viewIndex in renderPass.views.indices) {
                         setupFramebuffer(viewIndex, mipLevel)
                         clear(renderPass)
-                        renderPass.setupView(viewIndex)
-                        renderView(renderPass.views[viewIndex], viewIndex, mipLevel)
+                        val view = renderPass.views[viewIndex]
+                        view.setupView()
+                        renderView(view, viewIndex, mipLevel)
                     }
                 }
             }
