@@ -7,6 +7,7 @@ import de.fabmax.kool.MimeType
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.util.ThumbnailRenderer
+import de.fabmax.kool.editor.util.ThumbnailState
 import de.fabmax.kool.editor.util.hdriThumbnail
 import de.fabmax.kool.editor.util.textureThumbnail
 import de.fabmax.kool.math.Vec2f
@@ -204,6 +205,14 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
         launchOnMainThread {
             val importFiles = Assets.loadFileByUser(filterList, true)
             editor.availableAssets.importAssets(item.path, importFiles)
+        }
+    }
+
+    fun onAssetItemChanged(item: AssetItem) {
+        when (item.type) {
+            AppAssetType.Texture -> textureThumbnails.getThumbnail(item.path)?.state?.set(ThumbnailState.USABLE_OUTDATED)
+            AppAssetType.Hdri -> hdriThumbnails.getThumbnail(item.path)?.state?.set(ThumbnailState.USABLE_OUTDATED)
+            else -> { }
         }
     }
 

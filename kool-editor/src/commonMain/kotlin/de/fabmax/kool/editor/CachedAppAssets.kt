@@ -115,27 +115,53 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     }
 
     internal fun reloadAsset(assetItem: AssetItem) {
-        val assetRefs = assetRefsByPath[assetItem.path] ?: return
-        assetRefs.forEach { ref ->
-            when (ref) {
-                is AssetReference.Texture -> {
-                    logD { "Texture ${assetItem.path} changed on disc, reloading..." }
-                    loadedTextures2d[ref]?.value?.reloadTexture(assetItem.path)
-                }
-                else -> {
-                    logW { "Loaded asset ${assetItem.path} changed on disc, but hot-reload is not yet implemented" }
+        val assetRefs = assetRefsByPath[assetItem.path]
+
+        launchOnMainThread {
+            assetRefs?.forEach { ref ->
+                when (ref) {
+                    is AssetReference.Texture -> {
+                        val asset = loadedTextures2d[ref]?.value
+                        if (asset != null) {
+                            logD { "Texture ${assetItem.path} changed on disc, reloading..." }
+                            asset.reloadTexture(assetItem.path)
+                        }
+                    }
+                    is AssetReference.Blob -> {
+                        val asset = loadedBlobs.remove(ref)?.value
+                        if (asset != null) {
+                            logW { "Blob ${assetItem.path} changed on disc, but hot-reload is not yet implemented" }
+                        }
+                    }
+                    is AssetReference.Hdri -> {
+                        val asset = loadedHdris.remove(ref)?.value
+                        if (asset != null) {
+                            logW { "HDRI ${assetItem.path} changed on disc, but hot-reload is not yet implemented" }
+                        }
+                    }
+                    is AssetReference.Heightmap -> {
+                        val asset = loadedHeightmaps.remove(ref)?.value
+                        if (asset != null) {
+                            logW { "Heightmap ${assetItem.path} changed on disc, but hot-reload is not yet implemented" }
+                        }
+                    }
+                    is AssetReference.Model -> {
+                        val asset = loadedModels.remove(ref)?.value
+                        if (asset != null) {
+                            logW { "Model ${assetItem.path} changed on disc, but hot-reload is not yet implemented" }
+                        }
+                    }
                 }
             }
+            KoolEditor.instance.ui.assetBrowser.onAssetItemChanged(assetItem)
         }
     }
 
-    private fun Texture2d.reloadTexture(texPath: String) {
+    private suspend fun Texture2d.reloadTexture(texPath: String) {
         val bufferedLoader = loader as? BufferedTextureLoader
         if (bufferedLoader != null) {
-            launchOnMainThread {
-                bufferedLoader.data = assetLoader.loadTextureData(texPath, props)
-                dispose()
-            }
+            bufferedLoader.data = assetLoader.loadTextureData(texPath, props)
+            dispose()
         } else {
             logW { "Failed reloading texture: $texPath, loader is not a BufferedTextureLoader $loader" }
         }

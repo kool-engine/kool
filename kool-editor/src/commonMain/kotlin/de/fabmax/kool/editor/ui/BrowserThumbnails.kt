@@ -1,10 +1,12 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.util.ThumbnailRenderer
+import de.fabmax.kool.editor.util.ThumbnailState
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.Time
 
 class BrowserThumbnails<T: Any>(
     val renderer: ThumbnailRenderer,
@@ -25,16 +27,20 @@ class BrowserThumbnails<T: Any>(
 
         override fun getComposable(sizeDp: Vec2f?, alpha: Float) = Composable {
             var thumb = thumbnail
-            if (thumb == null || thumb.isReleased.use()) {
+            var thumbNailState = thumb?.state?.use()
+            if (thumb == null || thumbNailState == null || thumbNailState == ThumbnailState.DESTROYED) {
                 thumb = renderer.thumbnailProvider(key).also { thumbnail = it }
-            } else if(thumb.isInvalid.use()) {
+                thumbNailState = thumb.state.use()
+
+            } else if (thumbNailState == ThumbnailState.USABLE_OUTDATED) {
                 thumb.update()
             }
 
             val width = sizeDp?.x?.dp ?: Dp.fromPx(renderer.tileSize.x.toFloat())
             val height = sizeDp?.y?.dp ?: Dp.fromPx(renderer.tileSize.y.toFloat())
 
-            if (thumb.isLoaded.use()) {
+            if (thumbNailState.isUsable) {
+                thumb.lastUsed = Time.frameCount
                 Image {
                     modifier
                         .size(width, height)

@@ -19,6 +19,8 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.launchOnMainThread
@@ -57,7 +59,7 @@ class ThumbnailRenderer(
         onAfterDraw {
             renderQueue.forEach { (view, thumbnail) ->
                 view.drawNode.release()
-                thumbnail.isLoaded.set(true)
+                thumbnail.state.set(ThumbnailState.USABLE)
                 thumbnails[thumbnail.tileIndex] = thumbnail
             }
             renderQueue.clear()
@@ -71,7 +73,7 @@ class ThumbnailRenderer(
             tileSize = Vec2i(sz, sz)
             setSize(numTiles.x * sz, numTiles.y * sz)
             thumbnails.values.forEach {
-                it.isReleased.set(true)
+                it.state.set(ThumbnailState.DESTROYED)
             }
             thumbnails.clear()
         }
@@ -105,7 +107,7 @@ class ThumbnailRenderer(
 
             val node = thumbNail.contentGenerator(view)
             if (node == null) {
-                thumbNail.isFailed.set(true)
+                thumbNail.state.set(ThumbnailState.FAILED)
             } else {
                 view.drawNode = node
                 enqueueView(view, thumbNail)
@@ -119,7 +121,7 @@ class ThumbnailRenderer(
         } else {
             val lru = thumbnails.values.minBy { it.lastUsed }.tileIndex
             val old = thumbnails.remove(lru)
-            old?.isReleased?.set(true)
+            old?.state?.set(ThumbnailState.DESTROYED)
             lru
         }
     }
@@ -131,10 +133,7 @@ class ThumbnailRenderer(
         override val uvBottomRight: Vec2f
         override val isDynamicSize = false
 
-        val isLoaded = mutableStateOf(false)
-        val isInvalid = mutableStateOf(false)
-        val isReleased = mutableStateOf(false)
-        val isFailed = mutableStateOf(false)
+        val state = mutableStateOf(ThumbnailState.CREATED)
         var lastUsed = Time.frameCount
 
         init {
@@ -150,11 +149,18 @@ class ThumbnailRenderer(
 
         fun update() {
             renderThumbnail(this)
-            isInvalid.set(false)
         }
 
         override fun getTexture(imgWidthPx: Float, imgHeightPx: Float): Texture2d? = colorTexture
     }
+}
+
+enum class ThumbnailState(val isUsable: Boolean) {
+    CREATED(false),
+    USABLE(true),
+    USABLE_OUTDATED(true),
+    DESTROYED(false),
+    FAILED(false)
 }
 
 fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumbnail = renderThumbnail {
@@ -248,12 +254,7 @@ fun ThumbnailRenderer.materialThumbnail(material: MaterialComponent): ThumbnailR
     }
 
     val scene = KoolEditor.instance.activeScene.value ?: return@renderThumbnail null
-    val mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
-    mesh.generate {
-        uvSphere { steps = 35 }
-        geometry.generateTangents()
-    }
-
+    val mesh = MaterialPreviewMesh()
     val previewShaderData = SceneShaderData(scene, false).apply {
         set(scene.shaderData)
         ssaoMap = null
@@ -264,8 +265,28 @@ fun ThumbnailRenderer.materialThumbnail(material: MaterialComponent): ThumbnailR
     }
 
     Node().apply {
+        addNode(ClearMesh())
         addNode(SceneBgMesh(scene.shaderData))
         addNode(mesh)
+    }
+}
+
+private class MaterialPreviewMesh :
+    Mesh(vertexAttribs, name = "material-preview-mesh")
+{
+    init {
+        geometry.addGeometry(sphereMeshData)
+    }
+
+    companion object {
+        val vertexAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
+        val sphereMeshData = IndexedVertexList(vertexAttribs).apply {
+            MeshBuilder(this).apply {
+                vertexModFun = { texCoord.x *= 2f }
+                uvSphere { steps = 35 }
+            }
+            generateTangents()
+        }
     }
 }
 
@@ -290,7 +311,7 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(Attribute.POSI
                         val skyUv = float2Var(uv.output - 0.5f.const)
                         val dir = float3Var(normalize(float3Value(skyUv.x, -skyUv.y, (-1f).const)))
                         val colorConv = ColorSpaceConversion.LinearToSrgbHdr(shaderData.toneMapping)
-                        colorOutput(convertColorSpace(sampleTexture(sky, dir, 1f.const).rgb, colorConv))
+                        colorOutput(convertColorSpace(sampleTexture(sky, dir, 2f.const).rgb, colorConv))
                     } else {
                         colorOutput(shaderData.ambientColorLinear.toSrgb().const)
                     }

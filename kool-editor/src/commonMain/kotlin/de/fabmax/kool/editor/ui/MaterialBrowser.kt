@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.actions.DeleteMaterialAction
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.util.ThumbnailRenderer
+import de.fabmax.kool.editor.util.ThumbnailState
 import de.fabmax.kool.editor.util.materialThumbnail
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.UiScope
@@ -25,7 +26,7 @@ class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.m
         }
 
         ui.editor.projectModel.listenerComponents += MaterialComponent.ListenerComponent { component, _ ->
-            materialThumbnails.getThumbnail(component)?.isInvalid?.set(true)
+            materialThumbnails.getThumbnail(component)?.state?.set(ThumbnailState.USABLE_OUTDATED)
         }
     }
 
@@ -36,7 +37,7 @@ class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.m
         thumbnailRenderer.updateTileSize(sizes.browserItemSize.px.roundToInt())
         if (ui.editor.activeScene.use() != prevActiveScene) {
             prevActiveScene = ui.editor.activeScene.value
-            materialThumbnails.loadedThumbnails.values.forEach { it.thumbnail?.isInvalid?.set(true) }
+            materialThumbnails.loadedThumbnails.values.forEach { it.thumbnail?.state?.set(ThumbnailState.USABLE_OUTDATED) }
         }
     }
 
