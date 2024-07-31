@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
@@ -175,6 +176,12 @@ abstract class DndItemFlavor<T: Any> {
         override fun getTyped(item: Any): AssetItem = item as AssetItem
     }
 
+    data object DndItemMaterial : DndItemFlavor<MaterialComponent>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (MaterialComponent) -> Any> = mapOf(this to { it })
+
+        override fun getTyped(item: Any): MaterialComponent = item as MaterialComponent
+    }
+
     data object DndItemHeightmap : DndItemFlavor<AssetItem>() {
         override val flavorMappings: Map<DndItemFlavor<*>, (AssetItem) -> Any> = mapOf(
             this to { it },
@@ -254,6 +261,15 @@ abstract class DndItemFlavor<T: Any> {
         )
 
         override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
+    }
+
+    data object DndBrowserItemMaterial : DndItemFlavor<BrowserPanel.BrowserMaterialItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserMaterialItem) -> Any> = mapOf(
+            this to { it },
+            DndItemMaterial to { it.material }
+        )
+
+        override fun getTyped(item: Any): BrowserPanel.BrowserMaterialItem = item as BrowserPanel.BrowserMaterialItem
     }
 
     data object DndGameEntity : DndItemFlavor<GameEntity>() {

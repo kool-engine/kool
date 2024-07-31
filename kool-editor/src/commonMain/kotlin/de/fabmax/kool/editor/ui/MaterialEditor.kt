@@ -37,8 +37,20 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             titleWidth = sizes.baseSize * 2.3f,
             headerContent = {
                 val (items, idx) = makeMaterialItemsAndIndex(allTheSameMaterial)
+                val dndHandler = rememberMaterialDndHandler(components, uiNode)
                 ComboBox {
                     defaultComboBoxStyle()
+
+                    val dndState = getDndHoverState(dndHandler, colors.componentBg)
+                    if (dndState.isDndInProgress) {
+                        modifier.border(RoundRectBorder(dndState.borderColor, sizes.smallGap, sizes.borderWidth))
+                        if (dndState.isHover) {
+                            modifier.colors(textBackgroundColor = dndState.bgColor, expanderColor = colors.dndAcceptableBgHovered)
+                        } else {
+                            modifier.colors(textBackgroundColor = dndState.bgColor, expanderColor = colors.dndAcceptableBg)
+                        }
+                    }
+
                     modifier
                         .margin(end = sizes.gap)
                         .width(Grow.Std)
@@ -357,7 +369,7 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         shaderDataSetter: (MapAttribute) -> MaterialShaderData,
         sourcePopup: AutoPopup,
         isOpaqueBox: Boolean,
-        block: UiScope.(Pair<Boolean, Boolean>) -> Unit
+        block: UiScope.(DndHoverState) -> Unit
     ) {
         Text(label) {
             modifier
@@ -367,45 +379,48 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
 
         Box(height = sizes.lineHeight) {
             val dndHandler = rememberTextureDndHandler(material, defaultChannels, shaderDataSetter, uiNode)
-            var isHovered by remember(false)
-            val hover = isHovered || dndHandler.isHovered.use()
-            val drag = dndHandler.isDrag.use()
-
-            val bgColor = when {
-                valueColor != null -> when {
-                    drag && hover -> valueColor.mix(MdColor.GREEN, 0.5f)
-                    drag -> valueColor.mix(MdColor.GREEN, 0.3f)
-                    else -> valueColor
-                }
-                drag && hover -> colors.dndAcceptableBgHovered
-                drag -> colors.dndAcceptableBg
-                hover -> colors.componentBgHovered
-                else -> colors.componentBg
-            }
-            val borderColor = when {
-                drag -> MdColor.GREEN
-                hover -> colors.elevatedComponentBgHovered
-                else -> colors.elevatedComponentBg
-            }
-
+            val dndState = getDndHoverState(dndHandler, valueColor)
             modifier
                 .width(Grow.Std)
-                .onEnter { isHovered = true }
-                .onExit { isHovered = false }
                 .onClick {
                     sourcePopup.toggleVisibility(Vec2f(uiNode.leftPx, uiNode.bottomPx))
                 }
-
             if (isOpaqueBox) {
                 modifier
-                    .background(RoundRectBackground(bgColor, sizes.smallGap))
-                    .border(RoundRectBorder(borderColor, sizes.smallGap, sizes.borderWidth))
+                    .background(RoundRectBackground(dndState.bgColor, sizes.smallGap))
+                    .border(RoundRectBorder(dndState.borderColor, sizes.smallGap, sizes.borderWidth))
             }
-
-            block(hover to drag)
-
+            block(dndState)
             sourcePopup()
         }
+    }
+
+    private fun UiScope.getDndHoverState(dndHandler: DndHandler, bgValue: Color? = null): DndHoverState {
+        var isHovered by remember(false)
+        val hover = isHovered || dndHandler.isHovered.use()
+        val drag = dndHandler.isDrag.use()
+
+        modifier
+            .onEnter { isHovered = true }
+            .onExit { isHovered = false }
+
+        val bgColor = when {
+            bgValue != null -> when {
+                drag && hover -> bgValue.mix(MdColor.GREEN, 0.5f)
+                drag -> bgValue.mix(MdColor.GREEN, 0.3f)
+                else -> bgValue
+            }
+            drag && hover -> colors.dndAcceptableBgHovered
+            drag -> colors.dndAcceptableBg
+            hover -> colors.componentBgHovered
+            else -> colors.componentBg
+        }
+        val borderColor = when {
+            drag -> MdColor.GREEN
+            hover -> colors.elevatedComponentBgHovered
+            else -> colors.elevatedComponentBg
+        }
+        return DndHoverState(hover, drag, bgColor, borderColor)
     }
 
     private fun ColumnScope.colorSetting(
@@ -672,14 +687,21 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         return handler
     }
 
-    private inner class TextureDndHandler(
+    private fun UiScope.rememberMaterialDndHandler(
+        materialRefs: List<MaterialReferenceComponent>,
+        dropTarget: UiNode
+    ): MaterialDndHandler {
+        val handler = remember { MaterialDndHandler(materialRefs, dropTarget) }
+        KoolEditor.instance.ui.dndController.registerHandler(handler, surface)
+        return handler
+    }
+
+    private class TextureDndHandler(
         val material: MaterialComponent,
         val defaultChannels: String?,
         val shaderDataSetter: (MapAttribute) -> MaterialShaderData,
         dropTarget: UiNode
-    ) :
-        DndHandler(dropTarget, setOf(DndItemFlavor.DndItemTexture))
-    {
+    ) : DndHandler(dropTarget, setOf(DndItemFlavor.DndItemTexture)) {
         override fun onMatchingReceive(
             dragItem: EditorDndItem<*>,
             dragPointer: PointerEvent,
@@ -693,6 +715,22 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
     }
 
+    private class MaterialDndHandler(val materialRefs: List<MaterialReferenceComponent>, dropTarget: UiNode) :
+        DndHandler(dropTarget, setOf(DndItemFlavor.DndItemMaterial))
+    {
+        override fun onMatchingReceive(
+            dragItem: EditorDndItem<*>,
+            dragPointer: PointerEvent,
+            source: DragAndDropHandler<EditorDndItem<*>>?
+        ) {
+            val dragMaterial = dragItem.get(DndItemFlavor.DndItemMaterial)
+            val changeMats = materialRefs.filter { it.materialId != dragMaterial.id }
+            if (changeMats.isNotEmpty()) {
+                changeMats.map { SetMaterialAction(it, dragMaterial) }.fused().apply()
+            }
+        }
+    }
+
     private class MaterialItem(val itemText: String, val material: MaterialComponent?) {
         override fun toString(): String = itemText
 
@@ -700,6 +738,8 @@ class MaterialEditor : ComponentEditor<MaterialReferenceComponent>() {
             return material ?: if (itemText == "New material") KoolEditor.instance.projectModel.createNewMaterial() else null
         }
     }
+
+    private data class DndHoverState(val isHover: Boolean, val isDndInProgress: Boolean, val bgColor: Color, val borderColor: Color)
 
     private class MaterialTypeOption<T: MaterialShaderData>(val label: String, val dataType: KClass<T>, val factory: () -> T) {
         fun matches(data: MaterialShaderData): Boolean = dataType.isInstance(data)

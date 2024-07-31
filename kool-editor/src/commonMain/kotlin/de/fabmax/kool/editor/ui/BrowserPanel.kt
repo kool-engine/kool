@@ -194,6 +194,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                 val cols = max(1, floor(areaWidth / gridSize.px).toInt())
 
                 Column {
+                    modifier.margin(bottom = sizes.largeGap)
                     for (i in dirItems.indices step cols) {
                         Row {
                             for (j in i until min(i + cols, dirItems.size)) {
@@ -265,7 +266,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                         AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this, composable.getDndComposable())
                     }
                 }
-                is BrowserMaterialItem -> null
+                is BrowserMaterialItem -> DndItemFlavor.DndBrowserItemMaterial.itemOf(this, composable.getDndComposable())
                 is BrowserBehaviorItem -> null
             }
         }
