@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class DndController(uiScene: Scene) {
@@ -287,4 +288,34 @@ abstract class DndItemFlavor<T: Any> {
         @Suppress("UNCHECKED_CAST")
         override fun getTyped(item: Any): List<GameEntity> = item as List<GameEntity>
     }
+}
+
+data class DndHoverState(val isHover: Boolean, val isDndInProgress: Boolean, val bgColor: Color, val borderColor: Color)
+
+fun UiScope.getDndHoverState(dndHandler: DndHandler, bgValue: Color? = null): DndHoverState {
+    var isHovered by remember(false)
+    val hover = isHovered || dndHandler.isHovered.use()
+    val drag = dndHandler.isDrag.use()
+
+    modifier
+        .onEnter { isHovered = true }
+        .onExit { isHovered = false }
+
+    val bgColor = when {
+        bgValue != null -> when {
+            drag && hover -> bgValue.mix(MdColor.GREEN, 0.5f)
+            drag -> bgValue.mix(MdColor.GREEN, 0.3f)
+            else -> bgValue
+        }
+        drag && hover -> colors.dndAcceptableBgHovered
+        drag -> colors.dndAcceptableBg
+        hover -> colors.componentBgHovered
+        else -> colors.componentBg
+    }
+    val borderColor = when {
+        drag -> MdColor.GREEN
+        hover -> colors.elevatedComponentBgHovered
+        else -> colors.elevatedComponentBg
+    }
+    return DndHoverState(hover, drag, bgColor, borderColor)
 }

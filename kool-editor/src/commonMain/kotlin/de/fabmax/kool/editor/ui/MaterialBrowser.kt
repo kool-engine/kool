@@ -8,7 +8,10 @@ import de.fabmax.kool.editor.util.ThumbnailRenderer
 import de.fabmax.kool.editor.util.ThumbnailState
 import de.fabmax.kool.editor.util.materialThumbnail
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ui2.PointerEvent
 import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.modules.ui2.isLeftClick
+import de.fabmax.kool.modules.ui2.isRightClick
 import de.fabmax.kool.scene.Lighting
 import kotlin.math.roundToInt
 
@@ -63,17 +66,23 @@ class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.m
             }
     }
 
-    override fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>? {
-        return if (item is BrowserMaterialItem) {
-            SubMenuItem {
-                item("Delete material") {
-                    OkCancelTextDialog("Delete Material", "Delete material \"${item.name}\"?") {
-                        DeleteMaterialAction(item.material).apply()
+    override fun onItemClick(item: BrowserItem, ev: PointerEvent): SubMenuItem<BrowserItem>? {
+        val material = item as? BrowserMaterialItem
+        return when {
+            material != null && ev.isLeftClick -> {
+                ui.editor.selectionOverlay.setSelection(listOf(material.material.gameEntity))
+                null
+            }
+            material != null && ev.isRightClick -> {
+                SubMenuItem {
+                    item("Delete material") {
+                        OkCancelTextDialog("Delete Material", "Delete material \"${item.name}\"?") {
+                            DeleteMaterialAction(item.material).apply()
+                        }
                     }
                 }
             }
-        } else {
-            null
+            else -> super.onItemClick(item, ev)
         }
     }
 }

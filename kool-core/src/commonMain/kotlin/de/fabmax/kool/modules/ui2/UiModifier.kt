@@ -278,6 +278,10 @@ class PointerEvent(val pointer: Pointer, val ctx: KoolContext) {
     }
 }
 
+val PointerEvent.isLeftClick: Boolean get() = pointer.isLeftButtonClicked && pointer.leftButtonRepeatedClickCount == 1
+val PointerEvent.isLeftDoubleClick: Boolean get() = pointer.isLeftButtonClicked && pointer.leftButtonRepeatedClickCount == 2
+val PointerEvent.isRightClick: Boolean get() = pointer.isRightButtonClicked && pointer.rightButtonRepeatedClickCount == 1
+
 fun <T: UiModifier> T.onClick(block: (PointerEvent) -> Unit): T { onClick += block; return this }
 fun <T: UiModifier> T.onWheelX(block: (PointerEvent) -> Unit): T { onWheelX += block; return this }
 fun <T: UiModifier> T.onWheelY(block: (PointerEvent) -> Unit): T { onWheelY += block; return this }

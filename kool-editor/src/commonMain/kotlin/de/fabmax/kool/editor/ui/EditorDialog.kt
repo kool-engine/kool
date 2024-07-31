@@ -123,7 +123,11 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
 }
 
 class TextDialog(title: String, val text: String) : EditorDialog(title) {
-    override fun UiScope.dialogContent() = Text(text) { }
+    override fun UiScope.dialogContent() = Text(text) {
+        modifier
+            .width(Grow.Std)
+            .isWrapText(true)
+    }
 }
 
 class EnterTextDialog(title: String, text: String, val hint: String, val onEnterPressed: (String) -> Unit) : EditorDialog(title) {

@@ -124,9 +124,9 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
                 (browserItem is BrowserDir || browserItem is BrowserAssetItem)
     }
 
-    override fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem> {
+    override fun makeDirPopupMenu(item: BrowserDir, isInTree: Boolean): SubMenuItem<BrowserItem> {
         return SubMenuItem {
-            if (isTreeItem) {
+            if (isInTree) {
                 // tree view directory popup menu
                 createDirectoryItem()
                 if (item.level > 0) {
@@ -137,21 +137,27 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
                 divider()
                 importAssetsMenu()
 
-            } else if (item is BrowserDir && item == selectedDirectory.value) {
+            } else if (item == selectedDirectory.value) {
                 // item view empty space popup menu
                 createDirectoryItem()
                 importAssetsMenu()
 
-            } else if (item is BrowserDir) {
-                // item view directory popup menu
+            } else {
+                // item view child directory popup menu
                 renameDirectoryItem()
                 deleteDirectoryItem()
+            }
+        }
+    }
 
-            } else {
-                // item view non-directory popup menu
+    override fun onItemClick(item: BrowserItem, ev: PointerEvent): SubMenuItem<BrowserItem>? {
+        val assetItem = item as? BrowserAssetItem
+        return when {
+            assetItem != null && ev.isRightClick -> SubMenuItem {
                 renameAssetItem()
                 deleteAssetItem()
             }
+            else -> super.onItemClick(item, ev)
         }
     }
 

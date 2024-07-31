@@ -84,9 +84,23 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
     protected abstract fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>)
 
-    protected abstract fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>?
+    protected open fun makeDirPopupMenu(item: BrowserDir, isInTree: Boolean): SubMenuItem<BrowserItem>? {
+        return null
+    }
 
-    protected open fun onItemDoubleClick(item: BrowserItem) { }
+    protected open fun onItemClick(item: BrowserItem, ev: PointerEvent): SubMenuItem<BrowserItem>? {
+        val dir = item as? BrowserDir
+        return when {
+            dir == null -> null
+            ev.isRightClick -> makeDirPopupMenu(item, false)
+            ev.isLeftDoubleClick -> {
+                selectedDirectory.value?.isExpanded?.set(true)
+                selectedDirectory.set(item)
+                null
+            }
+            else -> null
+        }
+    }
 
     fun UiScope.treeView() = Box(width = treePanelSize.use(), height = Grow.Std) {
         if (selectedDirectory.value == null) {
@@ -106,16 +120,14 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                     modifier
                         .onEnter { hoveredIndex = i }
                         .onExit { hoveredIndex = -1 }
-                        .onClick { evt ->
-                            if (evt.pointer.isLeftButtonClicked) {
+                        .onClick { ev ->
+                            if (ev.pointer.isLeftButtonClicked) {
                                 selectedDirectory.set(dir)
-                                if (evt.pointer.leftButtonRepeatedClickCount == 2 && dir.level > 0) {
+                                if (ev.pointer.leftButtonRepeatedClickCount == 2 && dir.level > 0) {
                                     dir.isExpanded.set(!dir.isExpanded.value)
                                 }
-                            } else if (evt.pointer.isRightButtonClicked) {
-                                makeItemPopupMenu(dir, true)?.let {
-                                    dirPopupMenu.show(evt.screenPosition, it, dir)
-                                }
+                            } else if (ev.pointer.isRightButtonClicked) {
+                                makeDirPopupMenu(dir, true)?.let { dirPopupMenu.show(ev.screenPosition, it, dir) }
                             }
                         }
                         .margin(horizontal = sizes.smallGap)
@@ -178,7 +190,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         if (dir != null) {
             modifier.onClick { evt ->
                 if (evt.pointer.isRightButtonClicked) {
-                    makeItemPopupMenu(dir, false)?.let { popupMenu.show(evt.screenPosition, it, dir) }
+                    makeDirPopupMenu(dir, false)?.let { popupMenu.show(evt.screenPosition, it, dir) }
                 }
             }
         }
@@ -222,19 +234,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         modifier
             .onEnter { isHovered = true }
             .onExit { isHovered = false }
-            .onClick { evt ->
-                if (evt.pointer.isLeftButtonClicked) {
-                    if (evt.pointer.leftButtonRepeatedClickCount == 2) {
-                        if (item is BrowserDir) {
-                            selectedDirectory.value?.isExpanded?.set(true)
-                            selectedDirectory.set(item)
-                        } else {
-                            onItemDoubleClick(item)
-                        }
-                    }
-                } else if (evt.pointer.isRightButtonClicked) {
-                    makeItemPopupMenu(item, false)?.let { itemPopupMenu.show(evt.screenPosition, it, item) }
-                }
+            .onClick { ev ->
+                onItemClick(item, ev)?.let { itemPopupMenu.show(ev.screenPosition, it, item) }
             }
 
         item.composable()
