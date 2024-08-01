@@ -75,7 +75,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             Image {
                 modifier
                     .align(AlignmentX.Center, AlignmentY.Center)
-                    .iconImage(Icons.medium.editorIcon)
+                    .iconImage(Icons.medium.koolIcon)
             }
         }
 

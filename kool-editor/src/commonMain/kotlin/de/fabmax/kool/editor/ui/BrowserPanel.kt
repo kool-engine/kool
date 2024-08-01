@@ -276,12 +276,30 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             override fun getComposable(sizeDp: Vec2f?, alpha: Float) = Composable {
                 val width = sizeDp?.x?.dp ?: sizes.browserItemSize
                 val height = sizeDp?.y?.dp ?: sizes.browserItemSize
-                Box {
+
+                val icon = when (val item = this@BrowserItem) {
+                    is BrowserDir -> Icons.files.folderSolid
+                    is BrowserAssetItem -> {
+                        when (item.asset.type) {
+                            AppAssetType.Model -> Icons.files.file3d
+                            AppAssetType.Heightmap -> Icons.files.file3d
+                            AppAssetType.Directory -> Icons.files.folderSolid
+                            else -> Icons.files.file
+                        }
+                    }
+                    is BrowserBehaviorItem -> Icons.files.fileCode
+                    else -> Icons.files.file
+                }
+
+                Box(width, height) {
                     modifier
-                        .size(width, height)
                         .alignX(AlignmentX.Center)
                         .margin(sizes.smallGap)
-                        .background(RoundRectBackground(color.withAlpha(alpha), sizes.gap))
+                    Image {
+                        modifier
+                            .align(AlignmentX.Center, AlignmentY.Center)
+                            .iconImage(icon, color.withAlpha(alpha))
+                    }
                 }
             }
         }
@@ -302,7 +320,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
             AppAssetType.Texture -> MdColor.GREY
             AppAssetType.Hdri -> MdColor.GREY
             AppAssetType.Model -> MdColor.LIGHT_BLUE
-            AppAssetType.Heightmap -> MdColor.CYAN
+            AppAssetType.Heightmap -> MdColor.LIGHT_GREEN
         }
     }
 
