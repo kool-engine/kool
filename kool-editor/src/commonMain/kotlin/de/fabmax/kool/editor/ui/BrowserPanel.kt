@@ -158,7 +158,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
                     // directory icon
                     Image {
-                        val ico = if (dir.isExpanded.use()) IconMap.small.folderOpen else IconMap.small.folder
+                        val ico = if (dir.isExpanded.use()) Icons.small.folderOpen else Icons.small.folder
                         modifier
                             .alignY(AlignmentY.Center)
                             .margin(end = sizes.smallGap)

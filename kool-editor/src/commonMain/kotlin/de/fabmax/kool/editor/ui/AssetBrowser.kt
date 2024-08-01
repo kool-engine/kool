@@ -15,7 +15,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.roundToInt
 
-class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.picture, ui) {
+class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.picture, ui) {
 
     private val thumbnailRenderer = ThumbnailRenderer("asset-thumbnails")
     private val textureThumbnails = BrowserThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.textureThumbnail(it) }
@@ -41,7 +41,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
             val button = iconTextButton(
-                icon = IconMap.small.plus,
+                icon = Icons.small.plus,
                 text = "Import Assets",
                 bgColor = colors.componentBg,
                 bgColorHovered = colors.componentBgHovered,

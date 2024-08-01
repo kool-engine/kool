@@ -22,7 +22,7 @@ class MaterialReferenceEditor : ComponentEditor<MaterialReferenceComponent>() {
         }
         componentPanel(
             title = "Material",
-            imageIcon = IconMap.small.palette,
+            imageIcon = Icons.small.palette,
             onRemove = ::removeComponent,
             titleWidth = sizes.baseSize * 2.3f,
             headerContent = {

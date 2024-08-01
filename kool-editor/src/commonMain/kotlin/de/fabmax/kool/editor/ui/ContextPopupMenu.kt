@@ -139,7 +139,7 @@ class ContextPopupMenu<T: Any?>(scopeName: String, hideOnOutsideClick: Boolean =
                         .iconImage(icon, UiColors.titleText)
                 }
             } else {
-                val sz = IconMap.small.iconSize
+                val sz = Icons.small.iconSize
                 Box(sz, sz) { modifier.margin(start = sizes.smallGap) }
             }
         }

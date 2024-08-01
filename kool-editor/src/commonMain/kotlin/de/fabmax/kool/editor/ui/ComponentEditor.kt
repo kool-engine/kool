@@ -361,7 +361,7 @@ fun UiScope.entityEditorPanel(
                     .background(CircularBackground(bgColor))
 
                 Image {
-                    modifier.iconImage(IconMap.small.trash, fgColor)
+                    modifier.iconImage(Icons.small.trash, fgColor)
                 }
             }
         }

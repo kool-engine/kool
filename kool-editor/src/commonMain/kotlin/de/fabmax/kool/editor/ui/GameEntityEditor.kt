@@ -15,7 +15,7 @@ import kotlin.math.roundToInt
 class GameEntityEditor(ui: EditorUi) :
     EditorPanel(
         name = "Object Properties",
-        icon = IconMap.medium.properties,
+        icon = Icons.medium.properties,
         ui = ui,
         defaultWidth = ui.dock.dockingSurface.sizes.baseSize * 9
     )
@@ -129,7 +129,7 @@ class GameEntityEditor(ui: EditorUi) :
 
     private fun ColumnScope.entitySettings(objects: List<GameEntity>) = entityEditorPanel(
         title = "Object",
-        imageIcon = IconMap.small.emptyObject,
+        imageIcon = Icons.small.emptyObject,
         titleWidth = sizes.baseSize * 2.3f,
         startExpanded = objects[0].getPanelState("entitySettings", false),
         onCollapseChanged = { objects[0].setPanelState("entitySettings", it) },
@@ -238,7 +238,7 @@ class GameEntityEditor(ui: EditorUi) :
         var popupPos by remember(Vec2f.ZERO)
 
         val button = iconTextButton(
-            icon = IconMap.small.plus,
+            icon = Icons.small.plus,
             text = "Add Component",
             width = sizes.baseSize * 5,
             margin = sizes.gap

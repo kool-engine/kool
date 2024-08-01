@@ -21,7 +21,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
 
     override fun UiScope.compose() = componentPanel(
         title = "Rigid Actor",
-        imageIcon = IconMap.small.physics,
+        imageIcon = Icons.small.physics,
         onRemove = ::removeComponent,
     ) {
         val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.dataState.use().typeOption })

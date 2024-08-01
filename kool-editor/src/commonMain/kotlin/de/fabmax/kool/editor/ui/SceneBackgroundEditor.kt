@@ -22,7 +22,7 @@ class SceneBackgroundEditor : ComponentEditor<SceneBackgroundComponent>() {
     private val selectedHdri = mutableStateOf(0)
     private val skyLod = mutableStateOf(2f)
 
-    override fun UiScope.compose() = componentPanel("Scene Background", IconMap.small.background) {
+    override fun UiScope.compose() = componentPanel("Scene Background", Icons.small.background) {
         components.forEach { it.dataState.use() }
 
         choicePropertyEditor(

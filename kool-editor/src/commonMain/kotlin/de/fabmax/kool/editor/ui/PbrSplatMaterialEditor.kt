@@ -121,7 +121,7 @@ class PbrSplatMaterialEditor(
 
         if (materialData.materialMaps.size < 5) {
             iconTextButton(
-                icon = IconMap.small.plus,
+                icon = Icons.small.plus,
                 text = "Add Material",
                 width = sizes.baseSize * 5,
                 margin = sizes.gap
@@ -186,7 +186,7 @@ class PbrSplatMaterialEditor(
                     .background(CircularBackground(bgColor))
 
                 Image {
-                    modifier.iconImage(IconMap.small.trash, fgColor)
+                    modifier.iconImage(Icons.small.trash, fgColor)
                 }
             }
         }

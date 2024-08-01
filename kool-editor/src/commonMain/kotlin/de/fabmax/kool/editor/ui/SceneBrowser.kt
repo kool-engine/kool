@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ui2.Column
 import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.modules.ui2.UiSurface
 
-class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", IconMap.medium.listTree, ui) {
+class SceneBrowser(ui: EditorUi) : EditorPanel("Scene Browser", Icons.medium.listTree, ui) {
 
     private val sceneObjectTree = SceneObjectTree(this)
 

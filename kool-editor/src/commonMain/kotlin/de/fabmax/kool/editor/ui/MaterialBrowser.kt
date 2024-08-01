@@ -15,7 +15,7 @@ import de.fabmax.kool.modules.ui2.isRightClick
 import de.fabmax.kool.scene.Lighting
 import kotlin.math.roundToInt
 
-class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", IconMap.medium.palette, ui) {
+class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", Icons.medium.palette, ui) {
 
     private val thumbnailRenderer = ThumbnailRenderer("material-thumbnails")
     private val materialThumbnails = BrowserThumbnails<MaterialComponent>(thumbnailRenderer) { thumbnailRenderer.materialThumbnail(it) }

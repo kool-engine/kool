@@ -9,7 +9,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logT
 import kotlin.math.roundToInt
 
-object IconMap {
+object Icons {
 
     private var windowScale = 1f
     private val iconMapSize = Vec2i(480, 480)
@@ -138,7 +138,7 @@ object IconMap {
     }
 }
 
-class IconProvider(val iconMap: IconMap.EditorIconMap, val provider: ImageIconMap.IconImageProvider)
+class IconProvider(val iconMap: Icons.EditorIconMap, val provider: ImageIconMap.IconImageProvider)
 
 fun ImageModifier.iconImage(iconProvider: IconProvider, tintColor: Color? = null): ImageModifier {
     size(iconProvider.iconMap.iconSize, iconProvider.iconMap.iconSize)

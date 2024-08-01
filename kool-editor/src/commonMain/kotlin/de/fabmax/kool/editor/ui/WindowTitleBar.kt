@@ -75,7 +75,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             Image {
                 modifier
                     .align(AlignmentX.Center, AlignmentY.Center)
-                    .iconImage(IconMap.medium.editorIcon)
+                    .iconImage(Icons.medium.editorIcon)
             }
         }
 
@@ -130,7 +130,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
                 exportButton()
                 iconButton(
-                    icon = IconMap.small.github,
+                    icon = Icons.small.github,
                     width = sizes.editItemHeight,
                     height = sizes.editItemHeight
                 ) {
@@ -194,11 +194,11 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
                 Image {
                     modifier
                         .alignY(AlignmentY.Center)
-                        .iconImage(IconMap.small.download, Color.WHITE)
+                        .iconImage(Icons.small.download, Color.WHITE)
                         .margin(end = sizes.gap)
                 }
             } else {
-                Box(IconMap.small.iconSize, IconMap.small.iconSize) {
+                Box(Icons.small.iconSize, Icons.small.iconSize) {
                     modifier.background(ExportButtonBackground())
                 }
             }
@@ -213,10 +213,10 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
     private fun UiScope.windowButtonsWindows() = Row(height = Grow.Std) {
         modifier.margin(start = sizes.largeGap)
-        val maxIcon = if (PlatformFunctions.isWindowMaximized) IconMap.medium.demaximizeWin else IconMap.medium.maximizeWin
+        val maxIcon = if (PlatformFunctions.isWindowMaximized) Icons.medium.demaximizeWin else Icons.medium.maximizeWin
 
         windowButton(
-            icon = IconMap.medium.minimizeWin,
+            icon = Icons.medium.minimizeWin,
             hoverColor = colors.componentBgHovered,
             isHovered = hoverHandler.isMinButtonHovered.use(),
             onPositioned = { hoverHandler.setMinButtonBounds(it) }
@@ -230,7 +230,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
         )
 
         windowButton(
-            icon = IconMap.medium.closeWin,
+            icon = Icons.medium.closeWin,
             hoverColor = MdColor.RED tone 700,
             isHovered = hoverHandler.isCloseButtonHovered.use(),
             onPositioned = { hoverHandler.setCloseButtonBounds(it) }

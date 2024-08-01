@@ -13,7 +13,7 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
     private val camTypeIndex: Int
         get() = camTypes.indexOfFirst { it.camType.isInstance(currentCam) }
 
-    override fun UiScope.compose() = componentPanel("Camera", IconMap.small.camera, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel("Camera", Icons.small.camera, ::removeComponent) {
         labeledCombobox("Type:", camTypes, camTypeIndex) {
             val newCam = when (it.camType) {
                 CameraTypeData.Perspective::class -> CameraTypeData.Perspective()

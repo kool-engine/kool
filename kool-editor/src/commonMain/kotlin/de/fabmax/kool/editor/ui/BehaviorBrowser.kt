@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.isLeftDoubleClick
 import de.fabmax.kool.modules.ui2.isRightClick
 
-class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.medium.code, ui) {
+class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", Icons.medium.code, ui) {
 
     override fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>) {
         val scriptDir = browserItems.getOrPut("/behaviors") {

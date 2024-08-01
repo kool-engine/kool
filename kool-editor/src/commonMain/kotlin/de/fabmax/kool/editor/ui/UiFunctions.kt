@@ -42,7 +42,7 @@ fun UiScope.editorTitleBar(
             imageIcon?.let {
                 Image {
                     modifier
-                        .margin(end = sizes.gap, top = sizes.heightTitleBar * 0.5f - IconMap.medium.iconSize * 0.55f)
+                        .margin(end = sizes.gap, top = sizes.heightTitleBar * 0.5f - Icons.medium.iconSize * 0.55f)
                         .iconImage(it, UiColors.titleText)
                 }
             }
