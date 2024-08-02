@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.cachedSceneComponents
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneComponentData
+import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Scene
 
 class SceneComponent(
@@ -37,10 +38,12 @@ class SceneComponent(
 
         if (oldData.cameraEntityId != newData.cameraEntityId) {
             val newCam = gameEntity.scene.sceneEntities[newData.cameraEntityId]?.getComponent<CameraComponent>()?.camera
-            newCam?.let {
-                sceneNode.camera = newCam
-                camListeners.forEach { it.updateSceneCamera(newCam) }
-            }
+            newCam?.let { setCamera(it) }
         }
+    }
+
+    fun setCamera(cam: Camera) {
+        sceneNode.camera = cam
+        camListeners.forEach { it.updateSceneCamera(cam) }
     }
 }

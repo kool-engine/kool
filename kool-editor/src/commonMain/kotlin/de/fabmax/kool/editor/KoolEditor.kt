@@ -5,7 +5,6 @@ import de.fabmax.kool.editor.actions.DeleteEntitiesAction
 import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.*
-import de.fabmax.kool.editor.components.CameraAwareComponent
 import de.fabmax.kool.editor.data.ProjectData
 import de.fabmax.kool.editor.overlays.GridOverlay
 import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
@@ -163,8 +162,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         // restore app scene camera: it was replaced by custom editor cam during editor app load
         sceneModel.sceneComponent.cameraComponent?.camera?.let { cam ->
-            sceneModel.scene.camera = cam
-            sceneModel.getAllComponents<CameraAwareComponent>().forEach { it.updateSceneCamera(cam) }
+            sceneModel.sceneComponent.setCamera(cam)
         }
 
         AppState.appModeState.set(AppMode.PLAY)
@@ -307,11 +305,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 val editorCam = PerspectiveCamera()
                 val far = if (editorOverlay.isInfiniteDepth) 1e9f else 1000f
                 editorCam.setClipRange(0.1f, far)
-                scene.camera = editorCam
+                editorScene.sceneComponent.setCamera(editorCam)
+
                 editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
-
-                editorScene.getAllComponents<CameraAwareComponent>().forEach { it.updateSceneCamera(editorCam) }
             }
         }
 
