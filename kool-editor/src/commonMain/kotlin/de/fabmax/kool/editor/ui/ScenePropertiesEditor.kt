@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.ui2.UiScope
 
 class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
 
-    override fun UiScope.compose() = componentPanel("Scene Settings", IconMap.small.world) {
+    override fun UiScope.compose() = componentPanel("Scene Settings", Icons.small.world) {
         components.forEach { it.dataState.use() }
 
         val cameraNodes = listOf(CameraItem(EntityId.NULL, "None")) +

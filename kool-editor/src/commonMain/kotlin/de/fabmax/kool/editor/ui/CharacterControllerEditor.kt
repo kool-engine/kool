@@ -12,7 +12,7 @@ class CharacterControllerEditor : ComponentEditor<CharacterControllerComponent>(
 
     override fun UiScope.compose() = componentPanel(
         title = "Character Controller",
-        imageIcon = IconMap.small.character,
+        imageIcon = Icons.small.character,
         onRemove = ::removeComponent,
     ) {
         components.forEach { it.dataState.use() }

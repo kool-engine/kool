@@ -24,7 +24,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
 
         componentPanel(
             title = "Mesh",
-            imageIcon = IconMap.small.cube,
+            imageIcon = Icons.small.cube,
             onRemove = ::removeComponent,
             titleWidth = sizes.baseSize * 2.3f,
 

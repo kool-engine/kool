@@ -99,8 +99,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         menuItems += addSceneObjectMenu("Add child object", item.gameEntity, pos)
         if (item.type != SceneObjectType.SCENE) {
             divider()
-            item("Focus object", IconMap.small.circleCrosshair) { editor.focusObject(it) }
-            item("Delete object", IconMap.small.trash) { deleteNode(it) }
+            item("Focus object", Icons.small.circleCrosshair) { editor.focusObject(it) }
+            item("Delete object", Icons.small.trash) { deleteNode(it) }
         }
     }
 
@@ -229,14 +229,14 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         // type icon
         Image {
             val icon = when (item.type) {
-                SceneObjectType.NON_MODEL_NODE -> IconMap.small.nodeCircle
-                SceneObjectType.CAMERA -> IconMap.small.camera
-                SceneObjectType.LIGHT -> IconMap.small.light
-                SceneObjectType.GROUP -> IconMap.small.emptyObject
-                SceneObjectType.MESH -> IconMap.small.cube
-                SceneObjectType.SCENE -> IconMap.small.world
-                SceneObjectType.PHYSICS -> IconMap.small.physics
-                SceneObjectType.PHYSICS_CHARACTER -> IconMap.small.character
+                SceneObjectType.NON_MODEL_NODE -> Icons.small.nodeCircle
+                SceneObjectType.CAMERA -> Icons.small.camera
+                SceneObjectType.LIGHT -> Icons.small.light
+                SceneObjectType.GROUP -> Icons.small.emptyObject
+                SceneObjectType.MESH -> Icons.small.cube
+                SceneObjectType.SCENE -> Icons.small.world
+                SceneObjectType.PHYSICS -> Icons.small.physics
+                SceneObjectType.PHYSICS_CHARACTER -> Icons.small.character
             }
             modifier
                 .alignX(AlignmentX.End)
@@ -263,7 +263,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                         .alignX(AlignmentX.End)
                         .alignY(AlignmentY.Center)
                         .margin(end = sizes.smallGap)
-                        .iconImage(if (isVisible) IconMap.small.eye else IconMap.small.eyeOff, eyeColor)
+                        .iconImage(if (isVisible) Icons.small.eye else Icons.small.eyeOff, eyeColor)
                         .onClick { SetVisibilityAction(item.gameEntity, !isVisible).apply() }
                 }
             }

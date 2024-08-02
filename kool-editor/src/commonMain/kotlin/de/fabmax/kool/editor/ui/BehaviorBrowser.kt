@@ -1,9 +1,12 @@
 package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.modules.ui2.PointerEvent
 import de.fabmax.kool.modules.ui2.UiScope
+import de.fabmax.kool.modules.ui2.isLeftDoubleClick
+import de.fabmax.kool.modules.ui2.isRightClick
 
-class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.medium.code, ui) {
+class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", Icons.medium.code, ui) {
 
     override fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>) {
         val scriptDir = browserItems.getOrPut("/behaviors") {
@@ -22,19 +25,17 @@ class BehaviorBrowser(ui: EditorUi) : BrowserPanel("Behavior Browser", IconMap.m
         }
     }
 
-    override fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>? {
-        return if (item is BrowserBehaviorItem) {
-            SubMenuItem {
+    override fun onItemClick(item: BrowserItem, ev: PointerEvent): SubMenuItem<BrowserItem>? {
+        val behaviorItem = item as? BrowserBehaviorItem
+        return when {
+            behaviorItem != null && ev.isLeftDoubleClick -> {
+                KoolEditor.instance.editBehaviorSource(item.behavior)
+                null
+            }
+            behaviorItem != null && ev.isRightClick -> SubMenuItem {
                 item("Edit") { KoolEditor.instance.editBehaviorSource(item.behavior) }
             }
-        } else {
-            null
-        }
-    }
-
-    override fun onItemDoubleClick(item: BrowserItem) {
-        if (item is BrowserBehaviorItem) {
-            KoolEditor.instance.editBehaviorSource(item.behavior)
+            else -> super.onItemClick(item, ev)
         }
     }
 }

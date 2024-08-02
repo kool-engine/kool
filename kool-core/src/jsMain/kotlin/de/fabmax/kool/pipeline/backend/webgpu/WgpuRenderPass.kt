@@ -88,8 +88,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
 
     private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: RenderPassEncoderState<*>) {
         val view = passEncoderState.renderPass.views[viewIndex]
-
-        passEncoderState.renderPass.setupView(viewIndex)
+        view.setupView()
 
         val viewport = view.viewport
         val x = (viewport.x shr mipLevel).toFloat()

@@ -9,10 +9,9 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logT
 import kotlin.math.roundToInt
 
-object IconMap {
+object Icons {
 
     private var windowScale = 1f
-    private val iconMapSize = Vec2i(480, 480)
     private val iconTexProps = TextureProps(
         format = TexFormat.RGBA,
         generateMipMaps = false,
@@ -21,6 +20,8 @@ object IconMap {
 
     val small = EditorIconMap(Dp(18f))
     val medium = EditorIconMap(Dp(24f))
+
+    val files = BrowserIconMap(Dp(96f))
 
     init {
         val ctx = KoolSystem.requireContext()
@@ -32,14 +33,19 @@ object IconMap {
         }
     }
 
-    class EditorIconMap(val iconSize: Dp) {
+    interface IconMap {
+        val iconSize: Dp
+    }
+
+    class EditorIconMap(override val iconSize: Dp) : IconMap {
+        private val iconMapSize = Vec2i(480, 480)
         private val iconLoader = AsyncTextureLoader {
             val s = iconSize.value / 24f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
             val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
-            logT { "Render icon map: $width x $height (${iconSize.value} dp)" }
-            Assets.loadTextureData("assets/icons/icons-24px.svg", loadProps)
+            logT { "Render small-icons map: $width x $height (${iconSize.value} dp)" }
+            Assets.loadTextureData("assets/icons/small-icons.svg", loadProps)
         }
 
         private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)
@@ -77,8 +83,8 @@ object IconMap {
         val rectInside = IconProvider(this, iconMap.IconImageProvider(18, 0))
         val rectOutside = IconProvider(this, iconMap.IconImageProvider(19, 0))
         val duplicate = IconProvider(this, iconMap.IconImageProvider(0, 1))
-        val undo = IconProvider(this, iconMap.IconImageProvider(1, 1))
-        val redo = IconProvider(this, iconMap.IconImageProvider(2, 1))
+        val arrowLeft = IconProvider(this, iconMap.IconImageProvider(1, 1))
+        val arrowRight = IconProvider(this, iconMap.IconImageProvider(2, 1))
         val code = IconProvider(this, iconMap.IconImageProvider(3, 1))
         val codeFolder = IconProvider(this, iconMap.IconImageProvider(4, 1))
         val codeFile = IconProvider(this, iconMap.IconImageProvider(5, 1))
@@ -133,12 +139,51 @@ object IconMap {
         val file3d = IconProvider(this, iconMap.IconImageProvider(14, 3))
         val sun = IconProvider(this, iconMap.IconImageProvider(15, 3))
         val spotLight = IconProvider(this, iconMap.IconImageProvider(16, 3))
+        val arrowUp = IconProvider(this, iconMap.IconImageProvider(17, 3))
+        val gauge = IconProvider(this, iconMap.IconImageProvider(18, 3))
+        val filePlus = IconProvider(this, iconMap.IconImageProvider(19, 3))
+        val koolIcon = IconProvider(this, iconMap.IconImageProvider(0, 4))
+        val folderPlus = IconProvider(this, iconMap.IconImageProvider(1, 4))
 
-        val editorIcon = IconProvider(this, iconMap.IconImageProvider(0, 4))
+    }
+
+    class BrowserIconMap(override val iconSize: Dp) : IconMap {
+        private val iconMapSize = Vec2i(640, 640)
+        private val iconLoader = AsyncTextureLoader {
+            val s = iconSize.value / 80f * windowScale
+            val width = (iconMapSize.x * s).roundToInt()
+            val height = (iconMapSize.y * s).roundToInt()
+            val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
+            logT { "Render file-icons map: $width x $height (${iconSize.value} dp)" }
+            Assets.loadTextureData("assets/icons/file-icons.svg", loadProps)
+        }
+
+        private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)
+        private val iconMap = ImageIconMap(8)
+
+        init {
+            iconMap[24] = iconTex
+        }
+
+        fun invalidate() {
+            if (iconTex.loadingState == Texture.LoadingState.LOADED) {
+                iconLoader.invalidate()
+                iconTex.dispose()
+            }
+        }
+
+        val folder = IconProvider(this, iconMap.IconImageProvider(0, 0))
+        val folderSolid = IconProvider(this, iconMap.IconImageProvider(1, 0))
+        val folderOpen = IconProvider(this, iconMap.IconImageProvider(2, 0))
+
+        val file = IconProvider(this, iconMap.IconImageProvider(0, 1))
+        val file3d = IconProvider(this, iconMap.IconImageProvider(1, 1))
+        val fileCode = IconProvider(this, iconMap.IconImageProvider(2, 1))
+        val fileSound = IconProvider(this, iconMap.IconImageProvider(3, 1))
     }
 }
 
-class IconProvider(val iconMap: IconMap.EditorIconMap, val provider: ImageIconMap.IconImageProvider)
+class IconProvider(val iconMap: Icons.IconMap, val provider: ImageIconMap.IconImageProvider)
 
 fun ImageModifier.iconImage(iconProvider: IconProvider, tintColor: Color? = null): ImageModifier {
     size(iconProvider.iconMap.iconSize, iconProvider.iconMap.iconSize)

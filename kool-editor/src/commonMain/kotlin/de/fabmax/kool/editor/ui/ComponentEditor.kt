@@ -25,7 +25,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         components.map { RemoveComponentAction(it.gameEntity.id, it) }.fused().apply()
     }
 
-    protected fun getPanelState(default: Boolean = true, panelKey: String = component.componentType): Boolean {
+    fun getPanelState(default: Boolean = true, panelKey: String = component.componentType): Boolean {
         return entityEditor?.let { editor ->
             editor.panelCollapseStates
                 .getOrElse(entityId) { emptyMap() }
@@ -33,7 +33,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         } ?: default
     }
 
-    protected fun setPanelState(state: Boolean, panelKey: String = component.componentType) {
+    fun setPanelState(state: Boolean, panelKey: String = component.componentType) {
         entityEditor?.let { editor ->
             editor.panelCollapseStates.getOrPut(entityId) { mutableMapOf() }[panelKey] = state
         }
@@ -361,7 +361,7 @@ fun UiScope.entityEditorPanel(
                     .background(CircularBackground(bgColor))
 
                 Image {
-                    modifier.iconImage(IconMap.small.trash, fgColor)
+                    modifier.iconImage(Icons.small.trash, fgColor)
                 }
             }
         }

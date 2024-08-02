@@ -26,11 +26,11 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
     override fun UiScope.compose() = componentPanel(
         title = behaviorName,
-        imageIcon = IconMap.small.code,
+        imageIcon = Icons.small.code,
         onRemove = ::removeComponent,
 
         headerContent = {
-            iconButton(IconMap.small.edit, "Edit source code") {
+            iconButton(Icons.small.edit, "Edit source code") {
                 KoolEditor.instance.editBehaviorSource(components[0].data.behaviorClassName)
             }
             Box(width = sizes.smallGap) {  }

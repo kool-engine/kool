@@ -16,7 +16,7 @@ class LightEditor : ComponentEditor<DiscreteLightComponent>() {
 
     private var editLightsStart = listOf<LightTypeData>()
 
-    override fun UiScope.compose() = componentPanel("Light", IconMap.small.light, ::removeComponent) {
+    override fun UiScope.compose() = componentPanel("Light", Icons.small.light, ::removeComponent) {
         val lightData = components.map { it.dataState.use().light }
         val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(lightData.map { it.typeOption })
         labeledCombobox(

@@ -93,6 +93,10 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         get() = float3Value(x, y, z)
     val Vec4f.const: KslValueFloat4
         get() = float4Value(x, y, z, w)
+    val Mat3f.const: KslValueMat3
+        get() = mat3Value(get(0).const, get(1).const, get(2).const)
+    val Mat4f.const: KslValueMat4
+        get() = mat4Value(get(0).const, get(1).const, get(2).const, get(3).const)
     val Color.const: KslValueFloat4
         get() = float4Value(r, g, b, a)
     val QuatF.const: KslValueFloat4

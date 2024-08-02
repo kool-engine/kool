@@ -27,9 +27,8 @@ class MaterialComponent(
 
     private val listeners by cachedProjectComponents<ListenerComponent>()
 
-    suspend fun applyMaterialTo(mesh: Mesh, scene: EditorScene, modelMats: List<ModelMatrixComposition>): Boolean {
+    suspend fun applyMaterialTo(mesh: Mesh, sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): Boolean {
         mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
-        val sceneShaderData = scene.shaderData
 
         val meshKey = MeshLayoutKey(mesh)
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
@@ -56,7 +55,6 @@ class MaterialComponent(
 
     override fun onDataChanged(oldData: MaterialComponentData, newData: MaterialComponentData) {
         gameEntity.name = newData.name
-
         launchOnMainThread {
             project.createdScenes.values.forEach { scene ->
                 scene.shaderData.shaderCache.getShaderCache(this)?.let { shaders ->

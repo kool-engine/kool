@@ -63,7 +63,7 @@ class CameraComponent(
 
     private fun attachCamera(parent: Node?) {
         if (sceneComponent.data.cameraEntityId == gameEntity.id && !AppState.isEditMode) {
-            sceneComponent.sceneNode.camera = camera
+            sceneComponent.setCamera(camera)
         }
         if (parent != null) {
             attachCameraToNode(parent)

@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.*
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.project
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
@@ -14,7 +15,7 @@ import kotlin.math.roundToInt
 class GameEntityEditor(ui: EditorUi) :
     EditorPanel(
         name = "Object Properties",
-        icon = IconMap.medium.properties,
+        icon = Icons.medium.properties,
         ui = ui,
         defaultWidth = ui.dock.dockingSurface.sizes.baseSize * 9
     )
@@ -25,17 +26,44 @@ class GameEntityEditor(ui: EditorUi) :
     override val windowSurface: UiSurface = editorPanelWithPanelBar {
         val selObjs = KoolEditor.instance.selectionOverlay.selectionState.use().toMutableList()
 
+        val allMaterials = selObjs.isNotEmpty() && selObjs.all { it.scene == it.project.materialScene}
+        if (!allMaterials) {
+            selObjs.removeAll { it.scene == it.project.materialScene }
+        }
+
         if (selObjs.size > 1) {
             selObjs.removeAll { it.isSceneRoot }
         } else if (selObjs.isEmpty()) {
             editor.activeScene.value?.let { selObjs += it.sceneEntity }
         }
 
-        val title = if (selObjs.size == 1 && selObjs[0].isSceneRoot) "Scene Settings" else "Entity Settings"
+        val title = when {
+            selObjs.size == 1 && selObjs[0].isSceneRoot -> "Scene Settings"
+            allMaterials -> "Material Settings"
+            else -> "Entity Settings"
+        }
 
         Column(Grow.Std, Grow.Std) {
             editorTitleBar(windowDockable, icon, title)
-            objectProperties(selObjs)
+            if (allMaterials) {
+                materialProperties(selObjs)
+            } else {
+                objectProperties(selObjs)
+            }
+        }
+    }
+
+    private fun UiScope.materialProperties(objects: List<GameEntity>) = ScrollArea(
+        containerModifier = { it.backgroundColor(null) },
+        vScrollbarModifier = defaultScrollbarModifierV(),
+        isScrollableHorizontal = false
+    ) {
+        modifier.width(Grow.Std)
+
+        val scopeName = objects.joinToString("") { "${it.id}" }
+        Column(Grow.Std, Grow.Std, scopeName = scopeName) {
+            val materialEntities = objects.filter { it.hasComponent<MaterialComponent>() }
+            componentEditor(materialEntities) { MaterialComponentEditor() }
         }
     }
 
@@ -101,7 +129,7 @@ class GameEntityEditor(ui: EditorUi) :
 
     private fun ColumnScope.entitySettings(objects: List<GameEntity>) = entityEditorPanel(
         title = "Object",
-        imageIcon = IconMap.small.emptyObject,
+        imageIcon = Icons.small.emptyObject,
         titleWidth = sizes.baseSize * 2.3f,
         startExpanded = objects[0].getPanelState("entitySettings", false),
         onCollapseChanged = { objects[0].setPanelState("entitySettings", it) },
@@ -168,7 +196,8 @@ class GameEntityEditor(ui: EditorUi) :
                 when (component) {
                     is CameraComponent -> componentEditor(objects) { CameraEditor() }
                     is DiscreteLightComponent -> componentEditor(objects) { LightEditor() }
-                    is MaterialReferenceComponent -> componentEditor(objects) { MaterialEditor() }
+                    is MaterialReferenceComponent -> componentEditor(objects) { MaterialReferenceEditor() }
+                    is MaterialComponent -> componentEditor(objects) { MaterialComponentEditor() }
                     is MeshComponent -> componentEditor(objects) { MeshEditor() }
                     is SceneComponent -> componentEditor(objects) { ScenePropertiesEditor() }
                     is SceneBackgroundComponent -> componentEditor(objects) { SceneBackgroundEditor() }
@@ -209,7 +238,7 @@ class GameEntityEditor(ui: EditorUi) :
         var popupPos by remember(Vec2f.ZERO)
 
         val button = iconTextButton(
-            icon = IconMap.small.plus,
+            icon = Icons.small.plus,
             text = "Add Component",
             width = sizes.baseSize * 5,
             margin = sizes.gap

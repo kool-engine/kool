@@ -18,22 +18,22 @@ class FloatingToolbar(val editor: KoolEditor) : Composable {
 
         Box(height = sizes.smallGap * 0.5f) { }
 
-        iconButton(IconMap.medium.select, "Box-select [${Key.ToggleBoxSelectMode.binding.keyInfo}]", mode == EditorEditMode.Mode.BOX_SELECT) {
+        iconButton(Icons.medium.select, "Box-select [${Key.ToggleBoxSelectMode.binding.keyInfo}]", mode == EditorEditMode.Mode.BOX_SELECT) {
             editor.editMode.toggleMode(EditorEditMode.Mode.BOX_SELECT)
         }
-        iconButton(IconMap.medium.circleCrosshair, "Locate selected object [${Key.FocusSelected.binding.keyInfo}]") {
+        iconButton(Icons.medium.circleCrosshair, "Locate selected object [${Key.FocusSelected.binding.keyInfo}]") {
             editor.editorCameraTransform.focusSelectedObject()
         }
 
         toolbarDivider(color = colors.strongDividerColor)
 
-        iconButton(IconMap.medium.move, "Move selected object [${Key.ToggleMoveMode.binding.keyInfo}]", mode == EditorEditMode.Mode.MOVE) {
+        iconButton(Icons.medium.move, "Move selected object [${Key.ToggleMoveMode.binding.keyInfo}]", mode == EditorEditMode.Mode.MOVE) {
             editor.editMode.toggleMode(EditorEditMode.Mode.MOVE)
         }
-        iconButton(IconMap.medium.rotate, "Rotate selected object [${Key.ToggleRotateMode.binding.keyInfo}]", mode == EditorEditMode.Mode.ROTATE) {
+        iconButton(Icons.medium.rotate, "Rotate selected object [${Key.ToggleRotateMode.binding.keyInfo}]", mode == EditorEditMode.Mode.ROTATE) {
             editor.editMode.toggleMode(EditorEditMode.Mode.ROTATE)
         }
-        iconButton(IconMap.medium.resize, "Scale selected object [${Key.ToggleScaleMode.binding.keyInfo}]", mode == EditorEditMode.Mode.SCALE) {
+        iconButton(Icons.medium.resize, "Scale selected object [${Key.ToggleScaleMode.binding.keyInfo}]", mode == EditorEditMode.Mode.SCALE) {
             editor.editMode.toggleMode(EditorEditMode.Mode.SCALE)
         }
 

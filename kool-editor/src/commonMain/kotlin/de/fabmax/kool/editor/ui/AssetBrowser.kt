@@ -2,16 +2,33 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.FileFilterItem
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.MimeType
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
+import de.fabmax.kool.editor.util.ThumbnailRenderer
+import de.fabmax.kool.editor.util.ThumbnailState
+import de.fabmax.kool.editor.util.hdriThumbnail
+import de.fabmax.kool.editor.util.textureThumbnail
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.launchOnMainThread
+import kotlin.math.roundToInt
 
-class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.picture, ui) {
+class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.picture, ui) {
 
-    override fun UiScope.titleBar() {
+    private val thumbnailRenderer = ThumbnailRenderer("asset-thumbnails")
+    private val textureThumbnails = BrowserThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.textureThumbnail(it) }
+    private val hdriThumbnails = BrowserThumbnails<String>(thumbnailRenderer) { thumbnailRenderer.hdriThumbnail(it) }
+
+    init {
+        KoolSystem.requireContext().backgroundPasses += thumbnailRenderer
+    }
+
+    context(UiScope)
+    override fun titleBar() {
+        thumbnailRenderer.updateTileSize(sizes.browserItemSize.px.roundToInt())
+
         Row(height = Grow.Std) {
             val popup = remember { ContextPopupMenu<BrowserItem>("import-assets-popup") }
             var popupPos by remember(Vec2f.ZERO)
@@ -24,7 +41,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
             divider(colors.strongDividerColor, marginStart = sizes.largeGap, marginEnd = sizes.largeGap, verticalMargin = sizes.gap)
 
             val button = iconTextButton(
-                icon = IconMap.small.plus,
+                icon = Icons.small.plus,
                 text = "Import Assets",
                 bgColor = colors.componentBg,
                 bgColorHovered = colors.componentBgHovered,
@@ -70,7 +87,9 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
                 val name = if (level == 0) "Assets" else assetItem.name
                 BrowserDir(level, name, assetItem.path)
             } else {
-                BrowserAssetItem(level, assetItem)
+                BrowserAssetItem(level, assetItem).apply {
+                    assetItem.getThumbnailComposable()?.let { composable = it }
+                }
             }
             browserItems[assetItem.path] = item
         }
@@ -92,14 +111,22 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
         return item
     }
 
+    private fun AssetItem.getThumbnailComposable(): BrowserItemComposable? {
+        return when (type) {
+            AppAssetType.Texture -> textureThumbnails.getThumbnailComposable(path)
+            AppAssetType.Hdri -> hdriThumbnails.getThumbnailComposable(path)
+            else -> null
+        }
+    }
+
     private fun AppAssetType.matchesBrowserItemType(browserItem: BrowserItem?): Boolean {
         return this == AppAssetType.Directory &&
                 (browserItem is BrowserDir || browserItem is BrowserAssetItem)
     }
 
-    override fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem> {
+    override fun makeDirPopupMenu(item: BrowserDir, isInTree: Boolean): SubMenuItem<BrowserItem> {
         return SubMenuItem {
-            if (isTreeItem) {
+            if (isInTree) {
                 // tree view directory popup menu
                 createDirectoryItem()
                 if (item.level > 0) {
@@ -110,21 +137,27 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
                 divider()
                 importAssetsMenu()
 
-            } else if (item is BrowserDir && item == selectedDirectory.value) {
+            } else if (item == selectedDirectory.value) {
                 // item view empty space popup menu
                 createDirectoryItem()
                 importAssetsMenu()
 
-            } else if (item is BrowserDir) {
-                // item view directory popup menu
+            } else {
+                // item view child directory popup menu
                 renameDirectoryItem()
                 deleteDirectoryItem()
+            }
+        }
+    }
 
-            } else {
-                // item view non-directory popup menu
+    override fun onItemClick(item: BrowserItem, ev: PointerEvent): SubMenuItem<BrowserItem>? {
+        val assetItem = item as? BrowserAssetItem
+        return when {
+            assetItem != null && ev.isRightClick -> SubMenuItem {
                 renameAssetItem()
                 deleteAssetItem()
             }
+            else -> super.onItemClick(item, ev)
         }
     }
 
@@ -178,6 +211,14 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", IconMap.medium.
         launchOnMainThread {
             val importFiles = Assets.loadFileByUser(filterList, true)
             editor.availableAssets.importAssets(item.path, importFiles)
+        }
+    }
+
+    fun onAssetItemChanged(item: AssetItem) {
+        when (item.type) {
+            AppAssetType.Texture -> textureThumbnails.getThumbnail(item.path)?.state?.set(ThumbnailState.USABLE_OUTDATED)
+            AppAssetType.Hdri -> hdriThumbnails.getThumbnail(item.path)?.state?.set(ThumbnailState.USABLE_OUTDATED)
+            else -> { }
         }
     }
 

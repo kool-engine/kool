@@ -263,6 +263,7 @@ val Sizes.scrollbarWidth: Dp get() = gap * 0.33f
 val Sizes.editorLabelWidthSmall: Dp get() = baseSize * 3.125f
 val Sizes.editorLabelWidthMedium: Dp get() = baseSize * 4
 val Sizes.editorLabelWidthLarge: Dp get() = baseSize * 5
+val Sizes.browserItemSize: Dp get() = baseSize * 2.5f
 
 val Sizes.editorPanelMarginStart: Dp get() = gap * 1.5f
 val Sizes.editorPanelMarginEnd: Dp get() = gap

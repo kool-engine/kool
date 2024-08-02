@@ -9,6 +9,7 @@ import de.fabmax.kool.editor.data.ConstColorAttribute
 import de.fabmax.kool.editor.data.PbrShaderData
 import de.fabmax.kool.input.CursorShape
 import de.fabmax.kool.input.PointerInput
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -44,7 +45,8 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         }
     }
 
-    protected open fun UiScope.titleBar() { }
+    context(UiScope)
+    protected open fun titleBar() { }
 
     private fun UiScope.treeWidthHandle() = Row(height = Grow.Std) {
         var startDragWidth by remember(treePanelSize.value)
@@ -82,9 +84,23 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
     protected abstract fun UiScope.collectBrowserDirs(traversedPaths: MutableSet<String>)
 
-    protected abstract fun makeItemPopupMenu(item: BrowserItem, isTreeItem: Boolean): SubMenuItem<BrowserItem>?
+    protected open fun makeDirPopupMenu(item: BrowserDir, isInTree: Boolean): SubMenuItem<BrowserItem>? {
+        return null
+    }
 
-    protected open fun onItemDoubleClick(item: BrowserItem) { }
+    protected open fun onItemClick(item: BrowserItem, ev: PointerEvent): SubMenuItem<BrowserItem>? {
+        val dir = item as? BrowserDir
+        return when {
+            dir == null -> null
+            ev.isRightClick -> makeDirPopupMenu(item, false)
+            ev.isLeftDoubleClick -> {
+                selectedDirectory.value?.isExpanded?.set(true)
+                selectedDirectory.set(item)
+                null
+            }
+            else -> null
+        }
+    }
 
     fun UiScope.treeView() = Box(width = treePanelSize.use(), height = Grow.Std) {
         if (selectedDirectory.value == null) {
@@ -104,16 +120,14 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                     modifier
                         .onEnter { hoveredIndex = i }
                         .onExit { hoveredIndex = -1 }
-                        .onClick { evt ->
-                            if (evt.pointer.isLeftButtonClicked) {
+                        .onClick { ev ->
+                            if (ev.pointer.isLeftButtonClicked) {
                                 selectedDirectory.set(dir)
-                                if (evt.pointer.leftButtonRepeatedClickCount == 2 && dir.level > 0) {
+                                if (ev.pointer.leftButtonRepeatedClickCount == 2 && dir.level > 0) {
                                     dir.isExpanded.set(!dir.isExpanded.value)
                                 }
-                            } else if (evt.pointer.isRightButtonClicked) {
-                                makeItemPopupMenu(dir, true)?.let {
-                                    dirPopupMenu.show(evt.screenPosition, it, dir)
-                                }
+                            } else if (ev.pointer.isRightButtonClicked) {
+                                makeDirPopupMenu(dir, true)?.let { dirPopupMenu.show(ev.screenPosition, it, dir) }
                             }
                         }
                         .margin(horizontal = sizes.smallGap)
@@ -144,7 +158,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 
                     // directory icon
                     Image {
-                        val ico = if (dir.isExpanded.use()) IconMap.small.folderOpen else IconMap.small.folder
+                        val ico = if (dir.isExpanded.use()) Icons.small.folderOpen else Icons.small.folder
                         modifier
                             .alignY(AlignmentY.Center)
                             .margin(end = sizes.smallGap)
@@ -176,7 +190,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         if (dir != null) {
             modifier.onClick { evt ->
                 if (evt.pointer.isRightButtonClicked) {
-                    makeItemPopupMenu(dir, false)?.let { popupMenu.show(evt.screenPosition, it, dir) }
+                    makeDirPopupMenu(dir, false)?.let { popupMenu.show(evt.screenPosition, it, dir) }
                 }
             }
         }
@@ -192,6 +206,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
                 val cols = max(1, floor(areaWidth / gridSize.px).toInt())
 
                 Column {
+                    modifier.margin(bottom = sizes.largeGap)
                     for (i in dirItems.indices step cols) {
                         Row {
                             for (j in i until min(i + cols, dirItems.size)) {
@@ -211,96 +226,124 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
     ) = Column(width = gridSize) {
         modifier.installDragAndDropHandler(dndCtx, null) { item.makeDndItem() }
 
-        val color = when (item) {
-            is BrowserDir -> MdColor.AMBER
-            is BrowserAssetItem -> item.itemColor
-            is BrowserMaterialItem -> item.color
-            is BrowserBehaviorItem -> MdColor.PURPLE
-        }
-
         var isHovered by remember(false)
         if (isHovered) {
-            modifier.background(RoundRectBackground(color.withAlpha(0.25f), sizes.smallGap))
+            modifier.background(RoundRectBackground(colors.onBackgroundAlpha(0.15f), sizes.smallGap))
         }
 
         modifier
-            .onClick { evt ->
-                if (evt.pointer.isLeftButtonClicked) {
-                    if (evt.pointer.leftButtonRepeatedClickCount == 2) {
-                        if (item is BrowserDir) {
-                            selectedDirectory.value?.isExpanded?.set(true)
-                            selectedDirectory.set(item)
-                        } else {
-                            onItemDoubleClick(item)
-                        }
-                    }
-                } else if (evt.pointer.isRightButtonClicked) {
-                    makeItemPopupMenu(item, false)?.let { itemPopupMenu.show(evt.screenPosition, it, item) }
-                }
+            .onEnter { isHovered = true }
+            .onExit { isHovered = false }
+            .onClick { ev ->
+                onItemClick(item, ev)?.let { itemPopupMenu.show(ev.screenPosition, it, item) }
             }
 
-        Box {
-            modifier
-                .size(sizes.baseSize * 2, sizes.baseSize * 2)
-                .alignX(AlignmentX.Center)
-                .margin(sizes.smallGap)
-                .background(RoundRectBackground(color, sizes.gap))
-                .onEnter { isHovered = true }
-                .onExit { isHovered = false }
-        }
+        item.composable()
 
         Text(item.name) {
             modifier
                 .width(Grow.Std)
                 .isWrapText(true)
                 .textAlignX(AlignmentX.Center)
-                .margin(sizes.smallGap)
+                .padding(sizes.smallGap)
         }
     }
 
     sealed class BrowserItem(val level: Int, val name: String, val path: String) {
+        abstract val color: Color
+        var composable: BrowserItemComposable = SimpleBrowserItemComposable()
+
+        context(UiScope)
         fun makeDndItem(): EditorDndItem<*>? {
             return when (this) {
-                is BrowserDir -> DndItemFlavor.DndBrowserItem.itemOf(this)
+                is BrowserDir -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
                 is BrowserAssetItem -> {
                     when (this.asset.type) {
-                        AppAssetType.Unknown -> DndItemFlavor.DndBrowserItem.itemOf(this)
-                        AppAssetType.Directory -> DndItemFlavor.DndBrowserItem.itemOf(this)
-                        AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this)
-                        AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this)
-                        AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this)
-                        AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this)
+                        AppAssetType.Unknown -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Directory -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this, composable.getDndComposable())
                     }
                 }
-                is BrowserMaterialItem -> null
+                is BrowserMaterialItem -> DndItemFlavor.DndBrowserItemMaterial.itemOf(this, composable.getDndComposable())
                 is BrowserBehaviorItem -> null
+            }
+        }
+
+        private inner class SimpleBrowserItemComposable: BrowserItemComposable {
+            override fun getComposable(sizeDp: Vec2f?, alpha: Float) = Composable {
+                val width = sizeDp?.x?.dp ?: sizes.browserItemSize
+                val height = sizeDp?.y?.dp ?: sizes.browserItemSize
+
+                val icon = when (val item = this@BrowserItem) {
+                    is BrowserDir -> Icons.files.folderSolid
+                    is BrowserAssetItem -> {
+                        when (item.asset.type) {
+                            AppAssetType.Model -> Icons.files.file3d
+                            AppAssetType.Heightmap -> Icons.files.file3d
+                            AppAssetType.Directory -> Icons.files.folderSolid
+                            else -> Icons.files.file
+                        }
+                    }
+                    is BrowserBehaviorItem -> Icons.files.fileCode
+                    else -> Icons.files.file
+                }
+
+                Box(width, height) {
+                    modifier
+                        .alignX(AlignmentX.Center)
+                        .margin(sizes.smallGap)
+                    Image {
+                        modifier
+                            .align(AlignmentX.Center, AlignmentY.Center)
+                            .iconImage(icon, color.withAlpha(alpha))
+                    }
+                }
             }
         }
     }
 
     class BrowserDir(level: Int, name: String, path: String) : BrowserItem(level, name, path) {
+        override val color: Color = MdColor.AMBER
+
         val isExpanded = mutableStateOf(level == 0)
         val isExpandable = mutableStateOf(false)
         val children = mutableListOf<BrowserItem>()
     }
 
     class BrowserAssetItem(level: Int, val asset: AssetItem) : BrowserItem(level, asset.name, asset.path) {
-        val itemColor: Color = when (asset.type) {
+        override val color: Color = when (asset.type) {
             AppAssetType.Unknown -> MdColor.PINK
             AppAssetType.Directory -> MdColor.AMBER
-            AppAssetType.Texture -> MdColor.LIGHT_GREEN
-            AppAssetType.Hdri -> MdColor.LIME
+            AppAssetType.Texture -> MdColor.GREY
+            AppAssetType.Hdri -> MdColor.GREY
             AppAssetType.Model -> MdColor.LIGHT_BLUE
-            AppAssetType.Heightmap -> MdColor.CYAN
+            AppAssetType.Heightmap -> MdColor.LIGHT_GREEN
         }
     }
 
     class BrowserMaterialItem(level: Int, val material: MaterialComponent) : BrowserItem(level, material.name, "/materials/${material.name}") {
-        val color: Color get() {
+        override val color: Color get() {
             val constColor = (material.data.shaderData as? PbrShaderData)?.baseColor as? ConstColorAttribute
             return constColor?.color?.toColorSrgb() ?: MdColor.GREY
         }
     }
 
-    class BrowserBehaviorItem(level: Int, val behavior: AppBehavior) : BrowserItem(level, behavior.prettyName, "/paths/${behavior.qualifiedName}")
+    class BrowserBehaviorItem(level: Int, val behavior: AppBehavior) : BrowserItem(level, behavior.prettyName, "/paths/${behavior.qualifiedName}") {
+        override val color: Color = MdColor.PURPLE
+    }
+
+}
+
+interface BrowserItemComposable : Composable {
+    fun getComposable(sizeDp: Vec2f? = null, alpha: Float = 1f): Composable
+
+    context(UiScope)
+    fun getDndComposable() = getComposable(Vec2f(sizes.baseSize.px * 1.5f), alpha = 0.7f)
+
+    override fun UiScope.compose() {
+        getComposable().invoke()
+    }
 }

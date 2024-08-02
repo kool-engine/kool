@@ -9,7 +9,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console, ui) {
+class ConsolePanel(ui: EditorUi) : EditorPanel("Console", Icons.medium.console, ui) {
 
     private val logMessages = RingBuffer<LogMessage>(maxMessages)
     private val filteredLogMessages = RingBuffer<LogMessage>(maxMessages)
@@ -95,7 +95,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", IconMap.medium.console
 
                 Box(height = Grow.Std) {
                     modifier.onDragStart {  }
-                    iconButton(IconMap.small.scrollLock, "Scroll to end", isScrollLock.use()) {
+                    iconButton(Icons.small.scrollLock, "Scroll to end", isScrollLock.use()) {
                         isScrollLock.set(!isScrollLock.value)
                     }
                 }

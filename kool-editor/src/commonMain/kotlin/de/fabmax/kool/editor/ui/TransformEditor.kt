@@ -50,7 +50,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
     private fun setTransformAction(component: TransformComponent, undoData: TransformData, applyData: TransformData) =
         SetComponentDataAction(component, component.data.copy(transform = undoData), component.data.copy(transform = applyData))
 
-    override fun UiScope.compose() = componentPanel("Transform", IconMap.small.transform) {
+    override fun UiScope.compose() = componentPanel("Transform", Icons.small.transform) {
         position()
         rotation()
         scale()
@@ -91,7 +91,7 @@ class TransformEditor : ComponentEditor<TransformComponent>() {
                     .width(Grow.Std)
             }
             iconButton(
-                icon = if (components.all { it.data.isFixedScaleRatio }) IconMap.small.lock else IconMap.small.lockOpen,
+                icon = if (components.all { it.data.isFixedScaleRatio }) Icons.small.lock else Icons.small.lockOpen,
                 tooltip = "Lock scale ratio",
                 margin = Dp.ZERO
             ) {

@@ -32,7 +32,7 @@ class CachedSceneComponents<T: Any>(val scene: EditorScene, val componentClass: 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = getComponents()
 
     fun getComponents(): List<T> {
-        return if (scene.componentModCnt == modCnt) cache else {
+        if (scene.componentModCnt != modCnt) {
             modCnt = scene.componentModCnt
             cache.clear()
             scene.orderedEntities.asSequence()
@@ -40,7 +40,11 @@ class CachedSceneComponents<T: Any>(val scene: EditorScene, val componentClass: 
                 .map { componentClass.cast(it) }
                 .toList()
                 .also { cache.addAll(it) }
+            scene.listenerComponents
+                .filter { c -> componentClass.isInstance(c) }
+                .forEach { cache.add(componentClass.cast(it)) }
         }
+        return cache
     }
 }
 
@@ -69,11 +73,17 @@ class CachedProjectComponents<T: Any>(val project: EditorProject, val componentC
         if (isDirty) {
             cache.clear()
             scenes.forEach { scene ->
-                scene.sceneEntities.values.asSequence()
+                scene.orderedEntities.asSequence()
                     .flatMap { it.components.filter { c -> componentClass.isInstance(c) } }
                     .map { componentClass.cast(it) }
                     .also { cache.addAll(it) }
+                scene.listenerComponents
+                    .filter { c -> componentClass.isInstance(c) }
+                    .forEach { cache.add(componentClass.cast(it)) }
             }
+            project.listenerComponents
+                .filter { c -> componentClass.isInstance(c) }
+                .forEach { cache.add(componentClass.cast(it)) }
         }
         return cache
     }

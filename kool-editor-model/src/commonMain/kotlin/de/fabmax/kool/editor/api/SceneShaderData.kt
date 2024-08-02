@@ -12,7 +12,7 @@ import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
 
-class SceneShaderData(val scene: EditorScene) {
+class SceneShaderData(val scene: EditorScene, private val isNotifying: Boolean = true) {
     private val listeners by CachedSceneComponents(scene, EditorScene.SceneShaderDataListener::class)
 
     val shaderCache = SceneShaderCache()
@@ -73,10 +73,20 @@ class SceneShaderData(val scene: EditorScene) {
         shadowMaps = shadowMaps - shadowMap
     }
 
+    fun set(other: SceneShaderData) {
+        maxNumberOfLights = other.maxNumberOfLights
+        toneMapping = other.toneMapping
+        environmentMaps = other.environmentMaps
+        ambientColorLinear = other.ambientColorLinear
+        shadowMaps = other.shadowMaps
+        ssaoMap = other.ssaoMap
+    }
+
     private fun notifyChange() {
-        shaderCache.onSceneShaderDataChanged(scene, this)
-        listeners.forEach { it.onSceneShaderDataChanged(scene, this) }
-        scene.sceneNodes.onSceneShaderDataChanged(scene, this)
+        if (isNotifying) {
+            shaderCache.onSceneShaderDataChanged(scene, this)
+            listeners.forEach { it.onSceneShaderDataChanged(scene, this) }
+        }
     }
 }
 

@@ -12,7 +12,7 @@ import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 import kotlin.math.roundToInt
 
-class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera, ui) {
+class SceneView(ui: EditorUi) : EditorPanel("Scene View", Icons.medium.camera, ui) {
 
     val isShowOverlays = mutableStateOf(true)
     val isShowKeyInfo = mutableStateOf(false)
@@ -92,8 +92,8 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", IconMap.medium.camera,
         menuItems += addSceneObjectMenu("Add object", selection.firstOrNull()?.parent)
         if (selection.size == 1 && !selection.first().isSceneRoot) {
             divider()
-            item("Focus object", IconMap.small.circleCrosshair) { editor.focusObject(it) }
-            item("Delete object", IconMap.small.trash) { deleteNode(it) }
+            item("Focus object", Icons.small.circleCrosshair) { editor.focusObject(it) }
+            item("Delete object", Icons.small.trash) { deleteNode(it) }
         }
     }
 

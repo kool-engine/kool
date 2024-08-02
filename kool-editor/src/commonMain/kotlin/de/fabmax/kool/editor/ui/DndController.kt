@@ -3,8 +3,10 @@ package de.fabmax.kool.editor.ui
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 
 class DndController(uiScene: Scene) {
@@ -175,6 +177,12 @@ abstract class DndItemFlavor<T: Any> {
         override fun getTyped(item: Any): AssetItem = item as AssetItem
     }
 
+    data object DndItemMaterial : DndItemFlavor<MaterialComponent>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (MaterialComponent) -> Any> = mapOf(this to { it })
+
+        override fun getTyped(item: Any): MaterialComponent = item as MaterialComponent
+    }
+
     data object DndItemHeightmap : DndItemFlavor<AssetItem>() {
         override val flavorMappings: Map<DndItemFlavor<*>, (AssetItem) -> Any> = mapOf(
             this to { it },
@@ -256,6 +264,15 @@ abstract class DndItemFlavor<T: Any> {
         override fun getTyped(item: Any): BrowserPanel.BrowserAssetItem = item as BrowserPanel.BrowserAssetItem
     }
 
+    data object DndBrowserItemMaterial : DndItemFlavor<BrowserPanel.BrowserMaterialItem>() {
+        override val flavorMappings: Map<DndItemFlavor<*>, (BrowserPanel.BrowserMaterialItem) -> Any> = mapOf(
+            this to { it },
+            DndItemMaterial to { it.material }
+        )
+
+        override fun getTyped(item: Any): BrowserPanel.BrowserMaterialItem = item as BrowserPanel.BrowserMaterialItem
+    }
+
     data object DndGameEntity : DndItemFlavor<GameEntity>() {
         override val flavorMappings: Map<DndItemFlavor<*>, (GameEntity) -> Any> = mapOf(
             this to { it },
@@ -271,4 +288,34 @@ abstract class DndItemFlavor<T: Any> {
         @Suppress("UNCHECKED_CAST")
         override fun getTyped(item: Any): List<GameEntity> = item as List<GameEntity>
     }
+}
+
+data class DndHoverState(val isHover: Boolean, val isDndInProgress: Boolean, val bgColor: Color, val borderColor: Color)
+
+fun UiScope.getDndHoverState(dndHandler: DndHandler, bgValue: Color? = null): DndHoverState {
+    var isHovered by remember(false)
+    val hover = isHovered || dndHandler.isHovered.use()
+    val drag = dndHandler.isDrag.use()
+
+    modifier
+        .onEnter { isHovered = true }
+        .onExit { isHovered = false }
+
+    val bgColor = when {
+        bgValue != null -> when {
+            drag && hover -> bgValue.mix(MdColor.GREEN, 0.5f)
+            drag -> bgValue.mix(MdColor.GREEN, 0.3f)
+            else -> bgValue
+        }
+        drag && hover -> colors.dndAcceptableBgHovered
+        drag -> colors.dndAcceptableBg
+        hover -> colors.componentBgHovered
+        else -> colors.componentBg
+    }
+    val borderColor = when {
+        drag -> MdColor.GREEN
+        hover -> colors.elevatedComponentBgHovered
+        else -> colors.elevatedComponentBg
+    }
+    return DndHoverState(hover, drag, bgColor, borderColor)
 }

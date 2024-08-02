@@ -12,7 +12,7 @@ class PhysicsWorldEditor : ComponentEditor<PhysicsWorldComponent>() {
 
     override fun UiScope.compose() = componentPanel(
         title = "Physics World",
-        imageIcon = IconMap.small.physics,
+        imageIcon = Icons.small.physics,
         onRemove = ::removeComponent,
     ) {
         components.forEach { it.dataState.use() }
