@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.util
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.SceneShaderData
@@ -21,10 +22,7 @@ import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.*
 import kotlin.collections.set
 import kotlin.math.min
 
@@ -57,8 +55,11 @@ class ThumbnailRenderer(
         }
 
         onAfterDraw {
-            renderQueue.forEach { (view, thumbnail) ->
-                view.drawNode.release()
+            val releasables = renderQueue.map { it.first.drawNode }
+            launchDelayed(1) {
+                releasables.forEach { it.release() }
+            }
+            renderQueue.forEach { (_, thumbnail) ->
                 thumbnail.state.set(ThumbnailState.USABLE)
                 thumbnails[thumbnail.tileIndex] = thumbnail
             }
@@ -139,8 +140,13 @@ class ThumbnailRenderer(
         init {
             val lt = tileIndex.x.toFloat() / numTiles.x
             val rt = (tileIndex.x + 1).toFloat() / numTiles.x
-            val top = 1f - tileIndex.y.toFloat() / numTiles.y
-            val bot = 1f - (tileIndex.y + 1).toFloat() / numTiles.y
+            var top = tileIndex.y.toFloat() / numTiles.y
+            var bot = (tileIndex.y + 1).toFloat() / numTiles.y
+            if (!KoolSystem.requireContext().backend.isInvertedNdcY) {
+                top = 1f - top
+                bot = 1f - bot
+            }
+
             uvTopLeft = Vec2f(lt, top)
             uvTopRight = Vec2f(rt, top)
             uvBottomLeft = Vec2f(lt, bot)
@@ -304,7 +310,6 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(Attribute.POSI
             }
             fragmentStage {
                 main {
-                    outDepth set 0f.const
                     val ibl = shaderData.environmentMaps
                     if (ibl != null) {
                         val sky = textureCube("sky")
@@ -335,7 +340,6 @@ private class ClearMesh : Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
             vertexStage { fullscreenQuadVertexStage(uv) }
             fragmentStage {
                 main {
-                    outDepth set 0f.const
                     colorOutput(float4Value(0f, 0f, 0f, 0f))
                 }
             }
