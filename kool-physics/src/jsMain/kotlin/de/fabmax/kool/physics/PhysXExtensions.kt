@@ -55,6 +55,12 @@ fun PxTransform.set(mat: Mat4f): PxTransform {
     return this
 }
 
+fun PxTransform.set(pose: PoseF): PxTransform {
+    pose.position.toPxVec3(p)
+    pose.rotation.toPxQuat(q)
+    return this
+}
+
 fun PxTransform.setIdentity(): PxTransform {
     q.setIdentity()
     p.set(Vec3f.ZERO)
@@ -62,6 +68,7 @@ fun PxTransform.setIdentity(): PxTransform {
 }
 
 fun Mat4f.toPxTransform(t: PxTransform) = t.set(this)
+fun PoseF.toPxTransform(t: PxTransform) = t.set(this)
 
 fun PxQuat.setIdentity(): PxQuat { x = 0f; y = 0f; z = 0f; w = 1f; return this }
 fun PxQuat.toQuatF(result: MutableQuatF = MutableQuatF()) = result.set(x, y, z, w)

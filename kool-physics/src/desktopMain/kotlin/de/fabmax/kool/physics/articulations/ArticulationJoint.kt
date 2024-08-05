@@ -1,6 +1,6 @@
 package de.fabmax.kool.physics.articulations
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.createPxArticulationDrive
 import de.fabmax.kool.physics.createPxArticulationLimit
@@ -19,13 +19,13 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
         pxJoint.jointType = PxArticulationJointTypeEnum.eFIX
     }
 
-    override fun setParentPose(pose: Mat4f) {
+    override fun setParentPose(pose: PoseF) {
         MemoryStack.stackPush().use { mem ->
             pxJoint.parentPose = pose.toPxTransform(mem.createPxTransform())
         }
     }
 
-    override fun setChildPose(pose: Mat4f) {
+    override fun setChildPose(pose: PoseF) {
         MemoryStack.stackPush().use { mem ->
             pxJoint.childPose = pose.toPxTransform(mem.createPxTransform())
         }
@@ -137,17 +137,17 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
             ArticulationJointAxis.LINEAR_Y -> PxArticulationAxisEnum.eY
             ArticulationJointAxis.LINEAR_Z -> PxArticulationAxisEnum.eZ
         }
+
         private val ArticulationMotionMode.pxVal: PxArticulationMotionEnum get() = when (this) {
             ArticulationMotionMode.FREE -> PxArticulationMotionEnum.eFREE
             ArticulationMotionMode.LIMITED -> PxArticulationMotionEnum.eLIMITED
             ArticulationMotionMode.LOCKED -> PxArticulationMotionEnum.eLOCKED
         }
+
         private val ArticulationDriveType.pxVal: PxArticulationDriveTypeEnum get() = when (this) {
             ArticulationDriveType.ACCELERATION -> PxArticulationDriveTypeEnum.eACCELERATION
             ArticulationDriveType.FORCE -> PxArticulationDriveTypeEnum.eFORCE
             ArticulationDriveType.NONE -> PxArticulationDriveTypeEnum.eNONE
-            ArticulationDriveType.TARGET -> PxArticulationDriveTypeEnum.eTARGET
-            ArticulationDriveType.VELOCITY -> PxArticulationDriveTypeEnum.eVELOCITY
         }
     }
 }

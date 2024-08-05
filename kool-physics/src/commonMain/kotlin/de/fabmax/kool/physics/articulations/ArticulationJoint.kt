@@ -1,6 +1,6 @@
 package de.fabmax.kool.physics.articulations
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 
 enum class ArticulationJointType {
     /**
@@ -52,17 +52,15 @@ enum class ArticulationMotionMode {
 enum class ArticulationDriveType {
     ACCELERATION,
     FORCE,
-    NONE,
-    TARGET,
-    VELOCITY
+    NONE
 }
 
 interface ArticulationJoint {
 
     var jointType: ArticulationJointType
 
-    fun setParentPose(pose: Mat4f)
-    fun setChildPose(pose: Mat4f)
+    fun setParentPose(pose: PoseF)
+    fun setChildPose(pose: PoseF)
 
     fun setAxisMotion(axis: ArticulationJointAxis, motionType: ArticulationMotionMode)
     fun setAxisLimits(axis: ArticulationJointAxis, low: Float, high: Float)
