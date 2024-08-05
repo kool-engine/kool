@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
+import de.fabmax.kool.math.toMat4f
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.KslLitShader
@@ -263,8 +264,8 @@ class SceneNodes(val scene: EditorScene) :
             }
         }
 
-        private fun MeshBuilder.applyCommon(pose: TransformData? = null, shapeColor: ColorData? = null, uvScale: Vec2Data? = null) {
-            pose?.toMat4f(transform)
+        private fun MeshBuilder.applyCommon(pose: PoseData? = null, shapeColor: ColorData? = null, uvScale: Vec2Data? = null) {
+            pose?.toPoseF()?.toMat4f(transform)
             shapeColor?.let { color = it.toColorLinear() }
             uvScale?.let { scale ->
                 vertexModFun = {
