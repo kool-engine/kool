@@ -1,21 +1,21 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
 import physx.PxJointLinearLimitPair
 import physx.PxPrismaticJoint
 import physx.PxPrismaticJointFlagEnum
 import physx.PxSpring
 
-actual fun PrismaticJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): PrismaticJoint {
+actual fun PrismaticJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): PrismaticJoint {
     return PrismaticJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class PrismaticJointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,
-    frameA: Mat4f,
-    frameB: Mat4f
+    frameA: PoseF,
+    frameB: PoseF
 ) : JointImpl(frameA, frameB), PrismaticJoint {
 
     override val pxJoint: PxPrismaticJoint

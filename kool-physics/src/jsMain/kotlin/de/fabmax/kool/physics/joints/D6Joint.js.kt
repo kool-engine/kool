@@ -1,18 +1,18 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
 import physx.*
 
-actual fun D6Joint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): D6Joint {
+actual fun D6Joint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): D6Joint {
     return D6JointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class D6JointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,
-    frameA: Mat4f,
-    frameB: Mat4f
+    frameA: PoseF,
+    frameB: PoseF
 ) : JointImpl(frameA, frameB), D6Joint {
 
     override val pxJoint: PxD6Joint

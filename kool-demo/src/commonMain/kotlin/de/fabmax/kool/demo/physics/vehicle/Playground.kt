@@ -76,7 +76,7 @@ object Playground {
         world.deferredPipeline.sceneContent += world.toPrettyMesh(anchor, VehicleDemo.color(400))
         world.deferredPipeline.sceneContent += world.toPrettyMesh(rocker, VehicleDemo.color(200))
 
-        RevoluteJoint(anchor, rocker, MutableMat4f().translate(0f, 0.85f, 0f), MutableMat4f().translate(0f, 0f, 0.2f))
+        RevoluteJoint(anchor, rocker, PoseF(Vec3f(0f, 0.85f, 0f)), PoseF(Vec3f(0f, 0f, 0.2f)))
     }
 
     private fun MeshBuilder.makeRamp(frame: Mat4f) {

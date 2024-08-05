@@ -1,6 +1,6 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.util.Releasable
 
@@ -14,8 +14,8 @@ interface Joint : Releasable {
     val bodyA: RigidActor
     val bodyB: RigidActor
 
-    val frameA: Mat4f
-    val frameB: Mat4f
+    val frameA: PoseF
+    val frameB: PoseF
 
     val isBroken: Boolean
     var debugVisualize: Boolean

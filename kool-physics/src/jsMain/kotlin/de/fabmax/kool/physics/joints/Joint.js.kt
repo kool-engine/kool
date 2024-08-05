@@ -1,6 +1,6 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.util.BaseReleasable
 import physx.PxConstraintFlagEnum
 import physx.PxJoint
@@ -9,9 +9,9 @@ import physx.constraintFlags
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual class JointHolder(val px: PxJoint)
 
-abstract class JointImpl(frameA: Mat4f, frameB: Mat4f) : BaseReleasable(), Joint {
-    override val frameA = Mat4f(frameA)
-    override val frameB = Mat4f(frameB)
+abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint {
+    override val frameA = PoseF(frameA)
+    override val frameB = PoseF(frameB)
 
     abstract val pxJoint: PxJoint
 

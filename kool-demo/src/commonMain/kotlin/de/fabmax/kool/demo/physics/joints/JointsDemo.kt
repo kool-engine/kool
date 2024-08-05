@@ -624,15 +624,17 @@ class JointsDemo : DemoScene("Physics - Joints") {
         private fun renderRevoluteConstraint(rc: RevoluteJoint) {
             val tA = rc.bodyA.transform
             val tB = rc.bodyB.transform
+            val matA = rc.frameA.toMat4f()
+            val matB = rc.frameB.toMat4f()
 
-            rc.frameA.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
-            rc.frameA.transform(tmpP1.set(Vec3f.ZERO), 1f)
+            matA.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
+            matA.transform(tmpP1.set(Vec3f.ZERO), 1f)
             tA.transform(tmpA1.set(tmpAx), 0f)
             tA.transform(tmpP1)
             val lenA = rc.bodyA.worldBounds.size.dot(tmpAx) * 0.5f + 1f
 
-            rc.frameB.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
-            rc.frameB.transform(tmpP2.set(Vec3f.ZERO), 1f)
+            matB.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
+            matB.transform(tmpP2.set(Vec3f.ZERO), 1f)
             tB.transform(tmpA2.set(tmpAx), 0f)
             tB.transform(tmpP2)
             val lenB = rc.bodyB.worldBounds.size.dot(tmpAx) * 0.5f + 1f

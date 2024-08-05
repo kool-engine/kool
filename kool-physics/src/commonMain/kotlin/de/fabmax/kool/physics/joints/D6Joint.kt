@@ -1,9 +1,9 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.RigidActor
 
-expect fun D6Joint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): D6Joint
+expect fun D6Joint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): D6Joint
 
 interface D6Joint : Joint {
     var motionX: D6JointMotion

@@ -1,21 +1,21 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
 import physx.PxJointLimitCone
 import physx.PxSphericalJoint
 import physx.PxSphericalJointFlagEnum
 import physx.PxSpring
 
-actual fun SphericalJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): SphericalJoint {
+actual fun SphericalJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): SphericalJoint {
     return SphericalJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class SphericalJointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,
-    frameA: Mat4f,
-    frameB: Mat4f
+    frameA: PoseF,
+    frameB: PoseF
 ) : JointImpl(frameA, frameB), SphericalJoint {
 
     override val pxJoint: PxSphericalJoint

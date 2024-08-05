@@ -1,6 +1,6 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
@@ -12,15 +12,15 @@ import physx.extensions.PxPrismaticJoint
 import physx.extensions.PxPrismaticJointFlagEnum
 import physx.extensions.PxSpring
 
-actual fun PrismaticJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): PrismaticJoint {
+actual fun PrismaticJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): PrismaticJoint {
     return PrismaticJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class PrismaticJointImpl(
     override val bodyA: RigidActor,
     override val bodyB: RigidActor,
-    frameA: Mat4f,
-    frameB: Mat4f
+    frameA: PoseF,
+    frameB: PoseF
 ) : JointImpl(frameA, frameB), PrismaticJoint {
 
     override val joint: PxPrismaticJoint
