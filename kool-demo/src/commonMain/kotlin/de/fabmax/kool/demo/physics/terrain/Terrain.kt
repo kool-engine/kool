@@ -15,6 +15,7 @@ import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
+import de.fabmax.kool.physics.setPosition
 import de.fabmax.kool.pipeline.BufferedTextureLoader
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
@@ -37,7 +38,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
         val hfBounds = hfGeom.getBounds(BoundingBoxF())
         terrainBody = RigidStatic()
         terrainBody.attachShape(Shape(hfGeom, Physics.defaultMaterial))
-        terrainBody.position = Vec3f(hfBounds.size.x * -0.5f, 0f, hfBounds.size.z * -0.5f)
+        terrainBody.setPosition(Vec3f(hfBounds.size.x * -0.5f, 0f, hfBounds.size.z * -0.5f))
 
         terrainTransform.set(terrainBody.transform.matrixF).mul(terrainBody.shapes[0].localPose)
         terrainTransformInv.set(terrainTransform).invert()

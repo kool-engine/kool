@@ -5,8 +5,8 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
-import de.fabmax.kool.math.Mat3f
 import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -103,7 +103,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
 
         val ground = RigidStatic().apply {
             attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-            setRotation(Mat3f.rotation(90f.deg, Vec3f.Z_AXIS))
+            setRotation(QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         }
         physicsWorld.addActor(ground)
     }

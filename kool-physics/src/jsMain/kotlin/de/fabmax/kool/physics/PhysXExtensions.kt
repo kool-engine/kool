@@ -13,6 +13,7 @@ fun PxBounds3.toBoundingBox(result: BoundingBoxF): BoundingBoxF {
     val max = maximum
     return result.set(min.x, min.y, min.z, max.x, max.y, max.z)
 }
+
 fun BoundingBoxF.toPxBounds3(result: PxBounds3): PxBounds3 {
     val v = PxVec3()
     result.minimum = min.toPxVec3(v)
@@ -29,6 +30,13 @@ fun PxTransform.toMat4f(result: MutableMat4f): Mat4f {
     result[2, 3] = p.z
     return result
 }
+
+fun PxTransform.toPoseF(result: MutablePoseF): MutablePoseF {
+    p.toVec3f(result.position)
+    q.toQuatF(result.rotation)
+    return result
+}
+
 fun PxTransform.toTrsTransform(result: TrsTransformF): TrsTransformF {
     result.translation.set(p.x, p.y, p.z)
     result.rotation.set(q.toQuatF())
@@ -36,6 +44,7 @@ fun PxTransform.toTrsTransform(result: TrsTransformF): TrsTransformF {
     result.markDirty()
     return result
 }
+
 fun PxTransform.set(mat: Mat4f): PxTransform {
     val qq = MutableQuatF()
     mat.decompose(rotation = qq)
@@ -45,11 +54,13 @@ fun PxTransform.set(mat: Mat4f): PxTransform {
     p.z = mat[2, 3]
     return this
 }
+
 fun PxTransform.setIdentity(): PxTransform {
     q.setIdentity()
     p.set(Vec3f.ZERO)
     return this
 }
+
 fun Mat4f.toPxTransform(t: PxTransform) = t.set(this)
 
 fun PxQuat.setIdentity(): PxQuat { x = 0f; y = 0f; z = 0f; w = 1f; return this }
@@ -82,6 +93,7 @@ fun List<Vec3f>.toPxArray_PxVec3(): PxArray_PxVec3 {
 fun PxFilterData(w0: Int = 0, w1: Int = 0, w2: Int = 0): PxFilterData = PxFilterData(w0, w1, w2, 0)
 fun PxFilterData(filterData: FilterData): PxFilterData =
     PxFilterData(filterData.word0, filterData.word1, filterData.word2, filterData.word3)
+
 fun FilterData.toPxFilterData(target: PxFilterData): PxFilterData {
     target.word0 = word0
     target.word1 = word1

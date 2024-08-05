@@ -214,10 +214,7 @@ class RigidActorComponent(
     }
 
     override fun applyPose(position: Vec3d, rotation: QuatD) {
-        rigidActor?.apply {
-            this.position = position.toVec3f()
-            this.rotation = rotation.toQuatF()
-        }
+        rigidActor?.pose = PoseF(position.toVec3f(), rotation.toQuatF())
     }
 
     override suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData) {

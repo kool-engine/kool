@@ -8,6 +8,8 @@ import de.fabmax.kool.input.LocalKeyCode
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
+import de.fabmax.kool.physics.setPosition
+import de.fabmax.kool.physics.setRotation
 import de.fabmax.kool.physics.vehicle.Vehicle
 import de.fabmax.kool.physics.vehicle.VehicleProperties
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
@@ -187,8 +189,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     }
 
     fun resetVehiclePos() {
-        vehicle.position = START_POS
-        vehicle.setRotation(MutableMat3f().rotate(START_HEAD.deg, Vec3f.Y_AXIS))
+        vehicle.pose = PoseF(START_POS, QuatF.rotation(START_HEAD.deg, Vec3f.Y_AXIS))
     }
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
@@ -273,12 +274,11 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
                 resetVehiclePos()
             } else {
                 // move vehicle up and reset rotation to recover from a flipped orientation
-                val pos = vehicle.position
-                vehicle.position = Vec3f(pos.x, pos.y + 2f, pos.z)
+                vehicle.setPosition(vehicle.pose.position + Vec3f(0f, 2f, 0f))
 
                 val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
                 val headDeg = atan2(head.x, head.z).toDeg()
-                val ori = MutableMat3f().rotate(headDeg.deg, Vec3f.Y_AXIS)
+                val ori = QuatF.rotation(headDeg.deg, Vec3f.Y_AXIS)
                 vehicle.setRotation(ori)
             }
             vehicle.linearVelocity = Vec3f.ZERO

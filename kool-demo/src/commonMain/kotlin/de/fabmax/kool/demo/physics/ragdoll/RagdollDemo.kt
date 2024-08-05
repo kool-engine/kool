@@ -93,7 +93,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         val ground = RigidStatic()
         ground.attachShape(Shape(PlaneGeometry()))
-        ground.setRotation(0f.deg, 0f.deg, 90f.deg)
+        ground.setRotation(QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         physicsWorld.addActor(ground)
 
         mainScene.apply {

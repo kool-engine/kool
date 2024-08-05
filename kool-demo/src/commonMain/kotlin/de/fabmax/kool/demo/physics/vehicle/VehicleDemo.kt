@@ -6,7 +6,7 @@ import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.physics.vehicle.ui.VehicleUi
-import de.fabmax.kool.math.MutableMat3f
+import de.fabmax.kool.math.QuatF
 import de.fabmax.kool.math.SimpleSpline3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
@@ -15,10 +15,7 @@ import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.UiSurface
-import de.fabmax.kool.physics.Physics
-import de.fabmax.kool.physics.PhysicsWorld
-import de.fabmax.kool.physics.RigidStatic
-import de.fabmax.kool.physics.Shape
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.physics.util.ActorTrackingCamRig
 import de.fabmax.kool.pipeline.DepthCompareOp
@@ -164,7 +161,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                 timerUi.trackTime.set(t.trackTime)
                 if (t.timerState != TrackTimer.TimerState.STOPPED) {
                     vehicle.vehicle.let { veh ->
-                        val distToTrack = track?.distanceToTrack(veh.position) ?: 0f
+                        val distToTrack = track?.distanceToTrack(veh.pose.position) ?: 0f
                         if (distToTrack > 15f) {
                             t.reset(t.isReverse)
                         }
@@ -252,7 +249,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         val ground = RigidStatic().apply {
             attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-            setRotation(MutableMat3f().rotate(90f.deg, Vec3f.Z_AXIS))
+            setRotation(QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         }
         vehicleWorld.physics.addActor(ground)
     }

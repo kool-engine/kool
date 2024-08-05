@@ -1,8 +1,7 @@
 package de.fabmax.kool.physics
 
-import de.fabmax.kool.math.MutableQuatF
-import de.fabmax.kool.math.MutableVec3f
-import de.fabmax.kool.math.QuatF
+import de.fabmax.kool.math.MutablePoseF
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.physics.character.HitActorBehavior
@@ -33,25 +32,17 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
     override var characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE
 
     private val bufBounds = BoundingBoxF()
-    private val bufPosition = MutableVec3f()
-    private val bufRotation = MutableQuatF()
+    private val poseBuffer = MutablePoseF()
 
-    override var position: Vec3f
-        get() = holder.px.globalPose.p.toVec3f(bufPosition)
+    override var pose: PoseF
+        get() = poseBuffer
         set(value) {
+            poseBuffer.set(value)
             val pose = holder.px.globalPose
-            value.toPxVec3(pose.p)
+            value.position.toPxVec3(pose.p)
+            value.rotation.toPxQuat(pose.q)
             holder.px.globalPose = pose
-            updateTransform()
-        }
-
-    override var rotation: QuatF
-        get() = holder.px.globalPose.q.toQuatF(bufRotation)
-        set(value) {
-            val pose = holder.px.globalPose
-            value.toPxQuat(pose.q)
-            holder.px.globalPose = pose
-            updateTransform()
+            transform.setCompositionOf(value.position, value.rotation, Vec3f.ONES)
         }
 
     override val worldBounds: BoundingBoxF
