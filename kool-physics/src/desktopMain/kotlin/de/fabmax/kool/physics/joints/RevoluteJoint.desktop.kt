@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.joints
 
+import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.PhysicsImpl
@@ -54,10 +55,10 @@ class RevoluteJointImpl(
         joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
     }
 
-    override fun setLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+    override fun setLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
         memStack {
             val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit.rad, upperLimit.rad, spring)
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             joint.setLimit(limit)

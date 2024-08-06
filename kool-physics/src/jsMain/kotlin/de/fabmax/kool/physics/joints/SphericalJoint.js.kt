@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.joints
 
+import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
 import physx.PxJointLimitCone
@@ -29,10 +30,10 @@ class SphericalJointImpl(
         }
     }
 
-    override fun setLimitCone(yLimitAngle: Float, zLimitAngle: Float, limitBehavior: LimitBehavior) {
+    override fun setLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
-            val limit = mem.autoDelete(PxJointLimitCone(yLimitAngle, zLimitAngle, spring))
+            val limit = mem.autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad, spring))
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setLimitCone(limit)

@@ -1,5 +1,6 @@
 package de.fabmax.kool.physics.joints
 
+import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
@@ -33,9 +34,9 @@ class SphericalJointImpl(
         }
     }
 
-    override fun setLimitCone(yLimitAngle: Float, zLimitAngle: Float, limitBehavior: LimitBehavior) {
+    override fun setLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF, limitBehavior: LimitBehavior) {
         memStack {
-            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle, zLimitAngle)
+            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle.rad, zLimitAngle.rad)
             limit.stiffness = limitBehavior.stiffness
             limit.damping = limitBehavior.damping
             limit.restitution = limitBehavior.restitution

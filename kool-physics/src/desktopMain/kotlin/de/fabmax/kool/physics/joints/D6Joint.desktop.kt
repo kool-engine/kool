@@ -1,10 +1,12 @@
 package de.fabmax.kool.physics.joints
 
+import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.*
@@ -42,26 +44,82 @@ class D6JointImpl(
         get() = joint.getMotion(PxD6AxisEnum.eZ).toD6JointMotion()
         set(value) = joint.setMotion(PxD6AxisEnum.eZ, value.toPxD6MotionEnum())
 
-    override fun setDistanceLimit(extend: Float, stiffness: Float, damping: Float) {
-        joint.setDistanceLimit(PxJointLinearLimit(extend, PxSpring(stiffness, damping)))
+    override var motionTwist: D6JointMotion
+        get() = joint.getMotion(PxD6AxisEnum.eTWIST).toD6JointMotion()
+        set(value) = joint.setMotion(PxD6AxisEnum.eTWIST, value.toPxD6MotionEnum())
+
+    override var motionSwing1: D6JointMotion
+        get() = joint.getMotion(PxD6AxisEnum.eSWING1).toD6JointMotion()
+        set(value) = joint.setMotion(PxD6AxisEnum.eSWING1, value.toPxD6MotionEnum())
+
+    override var motionSwing2: D6JointMotion
+        get() = joint.getMotion(PxD6AxisEnum.eSWING2).toD6JointMotion()
+        set(value) = joint.setMotion(PxD6AxisEnum.eSWING2, value.toPxD6MotionEnum())
+
+    override fun setDistanceLimit(extend: Float, limitBehavior: LimitBehavior) {
+        memStack {
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
+            val limit = PxJointLinearLimit.createAt(this, MemoryStack::nmalloc, extend, spring)
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            joint.setDistanceLimit(limit)
+        }
     }
 
-    override fun setXLinearLimit(lowerLimit: Float, upperLimit: Float, stiffness: Float, damping: Float) {
-        joint.setLinearLimit(PxD6AxisEnum.eX,
-            PxJointLinearLimitPair(lowerLimit, upperLimit, PxSpring(stiffness, damping)))
-        motionX = D6JointMotion.Limited
+    override fun setXLinearLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+        memStack {
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
+            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            joint.setLinearLimit(PxD6AxisEnum.eX, limit)
+            motionX = D6JointMotion.Limited
+        }
     }
 
-    override fun setYLinearLimit(lowerLimit: Float, upperLimit: Float, stiffness: Float, damping: Float) {
-        joint.setLinearLimit(PxD6AxisEnum.eY,
-            PxJointLinearLimitPair(lowerLimit, upperLimit, PxSpring(stiffness, damping)))
-        motionY = D6JointMotion.Limited
+    override fun setYLinearLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+        memStack {
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
+            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            joint.setLinearLimit(PxD6AxisEnum.eY, limit)
+            motionY = D6JointMotion.Limited
+        }
     }
 
-    override fun setZLinearLimit(lowerLimit: Float, upperLimit: Float, stiffness: Float, damping: Float) {
-        joint.setLinearLimit(PxD6AxisEnum.eZ,
-            PxJointLinearLimitPair(lowerLimit, upperLimit, PxSpring(stiffness, damping)))
-        motionZ = D6JointMotion.Limited
+    override fun setZLinearLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+        memStack {
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
+            val limit = PxJointLinearLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            joint.setLinearLimit(PxD6AxisEnum.eZ, limit)
+            motionZ = D6JointMotion.Limited
+        }
+    }
+
+    override fun setTwistLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
+        memStack {
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
+            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit.rad, upperLimit.rad, spring)
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            joint.setTwistLimit(limit)
+            motionTwist = D6JointMotion.Limited
+        }
+    }
+
+    override fun setSwingLimit(yLimit: AngleF, zLimit: AngleF, limitBehavior: LimitBehavior) {
+        memStack {
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
+            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimit.rad, zLimit.rad, spring)
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            joint.setSwingLimit(limit)
+            motionSwing1 = D6JointMotion.Limited
+            motionSwing2 = D6JointMotion.Limited
+        }
     }
 
     companion object {

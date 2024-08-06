@@ -11,7 +11,7 @@ interface RevoluteJoint : Joint {
     fun disableAngularMotor()
     fun enableAngularMotor(angularVelocity: Float, forceLimit: Float)
 
-    fun setLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
+    fun setLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
     fun removeLimit()
 
     companion object {

@@ -3,8 +3,8 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.PoseF
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.getPose
-import de.fabmax.kool.math.toRad
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.joints.*
@@ -111,7 +111,7 @@ class JointComponent(
             j.enableAngularMotor(motorSpeed, motorTorque)
         }
         if (isLimited) {
-            j.setLimit(lowerLimit.toRad(), upperLimit.toRad(), limitBehavior.toLimitBehavior())
+            j.setLimit(lowerLimit.deg, upperLimit.deg, limitBehavior.toLimitBehavior())
         }
         if (isBreakable) {
             j.setBreakForce(breakForce, breakTorque)
@@ -122,7 +122,7 @@ class JointComponent(
     private fun JointData.Spherical.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): SphericalJoint {
         val j = SphericalJoint(bodyA, bodyB, poseA, poseB)
         if (isLimited) {
-            j.setLimitCone(limitAngleY.toRad(), limitAngleZ.toRad(), limitBehavior.toLimitBehavior())
+            j.setLimitCone(limitAngleY.deg, limitAngleZ.deg, limitBehavior.toLimitBehavior())
         }
         if (isBreakable) {
             j.setBreakForce(breakForce, breakTorque)
