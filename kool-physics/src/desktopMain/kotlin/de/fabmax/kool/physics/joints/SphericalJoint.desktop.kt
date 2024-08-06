@@ -5,19 +5,19 @@ import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.PxJointLimitCone
 import physx.extensions.PxSphericalJoint
 import physx.extensions.PxSphericalJointFlagEnum
-import physx.extensions.PxSpring
 
-actual fun SphericalJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): SphericalJoint {
+actual fun SphericalJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): SphericalJoint {
     return SphericalJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class SphericalJointImpl(
-    override val bodyA: RigidActor,
+    override val bodyA: RigidActor?,
     override val bodyB: RigidActor,
     frameA: PoseF,
     frameB: PoseF
@@ -29,13 +29,26 @@ class SphericalJointImpl(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            joint = PxTopLevelFunctions.SphericalJointCreate(PhysicsImpl.physics, bodyA.holder, frmA, bodyB.holder, frmB)
+            joint = PxTopLevelFunctions.SphericalJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
+        }
+    }
+
+    override fun setHardLimitCone(yLimitAngle: Float, zLimitAngle: Float) {
+        memStack {
+            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle, zLimitAngle)
+            joint.setLimitCone(limit)
+            joint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
         }
     }
 
     override fun setSoftLimitCone(yLimitAngle: Float, zLimitAngle: Float, stiffness: Float, damping: Float) {
-        joint.setLimitCone(PxJointLimitCone(yLimitAngle, zLimitAngle, PxSpring(stiffness, damping)))
-        joint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
+        memStack {
+            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle, zLimitAngle)
+            limit.stiffness = stiffness
+            limit.damping = damping
+            joint.setLimitCone(limit)
+            joint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
+        }
     }
 
     override fun removeLimitCone() {

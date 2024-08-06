@@ -9,7 +9,7 @@ kotlin-dokka = "1.9.20"
 lwjgl = "3.3.4"
 jsvg = "1.4.0"
 androidsvg = "1.4"
-physxjni = "2.4.0"
+physxjni = "2.4.1-SNAPSHOT"
 physxjswebidl = "2.4.0"
 
 [libraries]

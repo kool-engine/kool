@@ -3,9 +3,9 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.RigidActor
 
-expect fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint
+expect fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint
 
-expect fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f): RevoluteJoint
+expect fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f): RevoluteJoint
 
 interface RevoluteJoint : Joint {
     fun disableAngularMotor()

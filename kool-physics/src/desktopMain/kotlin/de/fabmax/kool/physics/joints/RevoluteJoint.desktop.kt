@@ -12,26 +12,22 @@ import physx.PxTopLevelFunctions
 import physx.extensions.PxRevoluteJoint
 import physx.extensions.PxRevoluteJointFlagEnum
 
-actual fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint {
+actual fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint {
     return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
-actual fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f): RevoluteJoint {
-    return RevoluteJointImpl(bodyA, bodyB, pivotA, pivotB, axisA, axisB)
+actual fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f): RevoluteJoint {
+    val frameA = computeFrame(pivotA, axisA)
+    val frameB = computeFrame(pivotB, axisB)
+    return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class RevoluteJointImpl(
-    override val bodyA: RigidActor,
+    override val bodyA: RigidActor?,
     override val bodyB: RigidActor,
     frameA: PoseF,
     frameB: PoseF
 ) : JointImpl(frameA, frameB), RevoluteJoint {
-
-    constructor(
-        bodyA: RigidActor, bodyB: RigidActor,
-        pivotA: Vec3f, pivotB: Vec3f,
-        axisA: Vec3f, axisB: Vec3f
-    ) : this(bodyA, bodyB, computeFrame(pivotA, axisA), computeFrame(pivotB, axisB))
 
     override val joint: PxRevoluteJoint
 
@@ -39,7 +35,7 @@ class RevoluteJointImpl(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            joint = PxTopLevelFunctions.RevoluteJointCreate(PhysicsImpl.physics, bodyA.holder, frmA, bodyB.holder, frmB)
+            joint = PxTopLevelFunctions.RevoluteJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
         }
     }
 

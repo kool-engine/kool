@@ -7,12 +7,12 @@ import physx.PxDistanceJointFlagEnum
 import physx.maxDistance
 import physx.minDistance
 
-actual fun DistanceJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): DistanceJoint {
+actual fun DistanceJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): DistanceJoint {
     return DistanceJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class DistanceJointImpl(
-    override val bodyA: RigidActor,
+    override val bodyA: RigidActor?,
     override val bodyB: RigidActor,
     frameA: PoseF,
     frameB: PoseF
@@ -25,7 +25,7 @@ class DistanceJointImpl(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            pxJoint = PxTopLevelFunctions.DistanceJointCreate(PhysicsImpl.physics, bodyA.holder.px, frmA, bodyB.holder.px, frmB)
+            pxJoint = PxTopLevelFunctions.DistanceJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 

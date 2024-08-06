@@ -207,6 +207,7 @@ class GameEntityEditor(ui: EditorUi) :
                     is PhysicsWorldComponent -> componentEditor(objects) { PhysicsWorldEditor() }
                     is RigidActorComponent -> componentEditor(objects) { RigidActorEditor() }
                     is CharacterControllerComponent -> componentEditor(objects) { CharacterControllerEditor() }
+                    is JointComponent -> componentEditor(objects) { JointEditor() }
                     is BehaviorComponent -> behaviorComponentEditor(objects, component.data.behaviorClassName)
                 }
             }
@@ -284,6 +285,7 @@ class GameEntityEditor(ui: EditorUi) :
             ComponentAdder.AddPhysicsWorldComponent,
             ComponentAdder.AddRigidActorComponent,
             ComponentAdder.AddCharacterControllerComponent,
+            ComponentAdder.AddJointComponent
         ).sortedBy { it.name }
     }
 
@@ -361,6 +363,13 @@ class GameEntityEditor(ui: EditorUi) :
             override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<CharacterControllerComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild && !gameEntity.hasComponent<RigidActorComponent>()
             override fun createComponent(target: GameEntity): CharacterControllerComponent = CharacterControllerComponent(target)
+        }
+
+        data object AddJointComponent : ComponentAdder<JointComponent>("Joint") {
+            override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<JointComponent>()
+            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild &&
+                    !gameEntity.hasComponent<JointComponent>() && !gameEntity.hasComponent<RigidActorComponent>()
+            override fun createComponent(target: GameEntity): JointComponent = JointComponent(target)
         }
 
         data object AddBehaviorComponent : ComponentAdder<BehaviorComponent>("Behavior") {

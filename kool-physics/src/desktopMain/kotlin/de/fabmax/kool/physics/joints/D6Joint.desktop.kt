@@ -9,12 +9,12 @@ import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.*
 
-actual fun D6Joint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): D6Joint {
+actual fun D6Joint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): D6Joint {
     return D6JointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class D6JointImpl(
-    override val bodyA: RigidActor,
+    override val bodyA: RigidActor?,
     override val bodyB: RigidActor,
     frameA: PoseF,
     frameB: PoseF
@@ -26,7 +26,7 @@ class D6JointImpl(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            joint = PxTopLevelFunctions.D6JointCreate(PhysicsImpl.physics, bodyA.holder, frmA, bodyB.holder, frmB)
+            joint = PxTopLevelFunctions.D6JointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
         }
     }
 

@@ -12,12 +12,12 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
     override fun UiScope.compose() = componentPanel("Scene Settings", Icons.small.world) {
         components.forEach { it.dataState.use() }
 
-        val cameraNodes = listOf(CameraItem(EntityId.NULL, "None")) +
+        val cameras = listOf(CameraItem(EntityId.NULL, "None")) +
                 scene.getAllComponents<CameraComponent>().map { CameraItem(it) }.sortedBy { it.label }
 
         val selectedCamId = component.data.cameraEntityId
-        val selectedIndex = cameraNodes.indexOfFirst { it.camEntityId == selectedCamId }
-        labeledCombobox("Camera:", cameraNodes, selectedIndex) {
+        val selectedIndex = cameras.indexOfFirst { it.camEntityId == selectedCamId }
+        labeledCombobox("Camera:", cameras, selectedIndex) {
             SetComponentDataAction(component, component.data, component.data.copy(cameraEntityId = it.camEntityId)).apply()
         }
 

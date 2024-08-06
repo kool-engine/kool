@@ -9,12 +9,12 @@ import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.PxFixedJoint
 
-actual fun FixedJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): FixedJoint {
+actual fun FixedJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): FixedJoint {
     return FixedJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class FixedJointImpl(
-    override val bodyA: RigidActor,
+    override val bodyA: RigidActor?,
     override val bodyB: RigidActor,
     frameA: PoseF,
     frameB: PoseF
@@ -26,7 +26,7 @@ class FixedJointImpl(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            joint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA.holder, frmA, bodyB.holder, frmB)
+            joint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA?.holder, frmA, bodyB.holder, frmB)
         }
     }
 }

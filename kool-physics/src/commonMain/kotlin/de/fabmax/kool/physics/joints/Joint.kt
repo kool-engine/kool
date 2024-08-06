@@ -11,7 +11,7 @@ interface Joint : Releasable {
 
     val joint: JointHolder
 
-    val bodyA: RigidActor
+    val bodyA: RigidActor?
     val bodyB: RigidActor
 
     val frameA: PoseF
