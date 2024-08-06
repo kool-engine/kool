@@ -40,7 +40,6 @@ class JointEditor : ComponentEditor<JointComponent>() {
             val actorOptionsA = listOf(RigidActorItem(EntityId.NULL, "None (fixed)")) + actorComponents
             val actorOptionsB = listOf(RigidActorItem(EntityId.NULL, "None")) + actorComponents
 
-
             val actorIdA = component.data.bodyA
             val actorIdB = component.data.bodyB
             val selectedIndexA = actorOptionsA.indexOfFirst { it.entityId == actorIdA }
@@ -130,6 +129,43 @@ class JointEditor : ComponentEditor<JointComponent>() {
                 minValue = 0.0
             )
         }
+        booleanPropertyEditor(
+            dataGetter = { it.getData<JointData.Revolute>() },
+            valueGetter = { it.isLimited },
+            valueSetter = { oldData, newValue -> oldData.copy(isLimited = newValue) },
+            actionMapper = jointDataActionMapper,
+            label = "Is limited:",
+        )
+        if (component.getData<JointData.Revolute>().isLimited) {
+            doublePropertyEditor(
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.lowerLimit.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(lowerLimit = newValue.toFloat()) },
+                actionMapper = jointDataActionMapper,
+                label = "Lower limit:"
+            )
+            doublePropertyEditor(
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.upperLimit.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(upperLimit = newValue.toFloat()) },
+                actionMapper = jointDataActionMapper,
+                label = "Upper limit:"
+            )
+            doublePropertyEditor(
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.limitBehavior.stiffness.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(stiffness = newValue.toFloat())) },
+                actionMapper = jointDataActionMapper,
+                label = "Stiffness:"
+            )
+            doublePropertyEditor(
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.limitBehavior.damping.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(damping = newValue.toFloat())) },
+                actionMapper = jointDataActionMapper,
+                label = "Damping:"
+            )
+        }
         breakSettings(
             isBreakableGetter = { (it as JointData.Revolute).isBreakable },
             isBreakableSetter = { oldData, newValue -> (oldData as JointData.Revolute).copy(isBreakable = newValue) },
@@ -165,15 +201,15 @@ class JointEditor : ComponentEditor<JointComponent>() {
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.stiffness.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(stiffness = newValue.toFloat()) },
+                valueGetter = { it.limitBehavior.stiffness.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(stiffness = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Stiffness:"
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.damping.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(damping = newValue.toFloat()) },
+                valueGetter = { it.limitBehavior.damping.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(damping = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Damping:"
             )
@@ -213,15 +249,15 @@ class JointEditor : ComponentEditor<JointComponent>() {
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Prismatic>() },
-                valueGetter = { it.stiffness.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(stiffness = newValue.toFloat()) },
+                valueGetter = { it.limitBehavior.stiffness.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(stiffness = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Stiffness:"
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Prismatic>() },
-                valueGetter = { it.damping.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(damping = newValue.toFloat()) },
+                valueGetter = { it.limitBehavior.damping.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(damping = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Damping:"
             )

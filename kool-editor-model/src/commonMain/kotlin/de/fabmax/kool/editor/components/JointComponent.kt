@@ -1,10 +1,7 @@
 package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.data.ComponentInfo
-import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.JointComponentData
-import de.fabmax.kool.editor.data.JointData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.getPose
 import de.fabmax.kool.math.toRad
@@ -100,11 +97,7 @@ class JointComponent(
     private fun JointData.Prismatic.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): PrismaticJoint {
         val j = PrismaticJoint(bodyA, bodyB, poseA, poseB)
         if (isLimited) {
-            if (stiffness > 0f && damping > 0f) {
-                j.setSoftLimit(lowerLimit, upperLimit, stiffness, damping)
-            } else {
-                j.setHardLimit(lowerLimit, upperLimit)
-            }
+            j.setLimit(lowerLimit, upperLimit, limitBehavior.toLimitBehavior())
         }
         if (isBreakable) {
             j.setBreakForce(breakForce, breakTorque)
@@ -117,6 +110,9 @@ class JointComponent(
         if (isMotor) {
             j.enableAngularMotor(motorSpeed, motorTorque)
         }
+        if (isLimited) {
+            j.setLimit(lowerLimit.toRad(), upperLimit.toRad(), limitBehavior.toLimitBehavior())
+        }
         if (isBreakable) {
             j.setBreakForce(breakForce, breakTorque)
         }
@@ -126,11 +122,7 @@ class JointComponent(
     private fun JointData.Spherical.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): SphericalJoint {
         val j = SphericalJoint(bodyA, bodyB, poseA, poseB)
         if (isLimited) {
-            if (stiffness > 0f && damping > 0f) {
-                j.setSoftLimitCone(limitAngleY.toRad(), limitAngleZ.toRad(), stiffness, damping)
-            } else {
-                j.setHardLimitCone(limitAngleY.toRad(), limitAngleZ.toRad())
-            }
+            j.setLimitCone(limitAngleY.toRad(), limitAngleZ.toRad(), limitBehavior.toLimitBehavior())
         }
         if (isBreakable) {
             j.setBreakForce(breakForce, breakTorque)
@@ -158,4 +150,6 @@ class JointComponent(
         }
         return bodyA to bodyB
     }
+
+    private fun LimitBehaviorData.toLimitBehavior() = LimitBehavior(stiffness, damping, restitution, bounceThreshold)
 }

@@ -11,7 +11,6 @@ import de.fabmax.kool.physics.RigidActor
 expect fun SphericalJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): SphericalJoint
 
 interface SphericalJoint : Joint {
-    fun setHardLimitCone(yLimitAngle: Float, zLimitAngle: Float)
-    fun setSoftLimitCone(yLimitAngle: Float, zLimitAngle: Float, stiffness: Float, damping: Float)
+    fun setLimitCone(yLimitAngle: Float, zLimitAngle: Float, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
     fun removeLimitCone()
 }

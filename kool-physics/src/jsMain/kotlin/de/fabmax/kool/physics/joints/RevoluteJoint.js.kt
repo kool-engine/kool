@@ -4,10 +4,7 @@ import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.joints.RevoluteJoint.Companion.computeFrame
-import physx.PxRevoluteJoint
-import physx.PxRevoluteJointFlagEnum
-import physx.driveForceLimit
-import physx.driveVelocity
+import physx.*
 
 actual fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint {
     return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
@@ -47,5 +44,20 @@ class RevoluteJointImpl(
         pxJoint.driveVelocity = angularVelocity
         pxJoint.driveForceLimit = forceLimit
         pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
+    }
+
+    override fun setLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+        MemoryStack.stackPush().use { mem ->
+            val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
+            val limit = mem.autoDelete(PxJointAngularLimitPair(lowerLimit, upperLimit, spring))
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            pxJoint.setLimit(limit)
+            pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, true)
+        }
+    }
+
+    override fun removeLimit() {
+        pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

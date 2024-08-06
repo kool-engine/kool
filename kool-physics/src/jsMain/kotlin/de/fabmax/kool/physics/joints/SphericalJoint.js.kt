@@ -29,19 +29,12 @@ class SphericalJointImpl(
         }
     }
 
-    override fun setHardLimitCone(yLimitAngle: Float, zLimitAngle: Float) {
+    override fun setLimitCone(yLimitAngle: Float, zLimitAngle: Float, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
-            val spring = mem.autoDelete(PxSpring(0f, 0f))
+            val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLimitCone(yLimitAngle, zLimitAngle, spring))
-            pxJoint.setLimitCone(limit)
-            pxJoint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
-        }
-    }
-
-    override fun setSoftLimitCone(yLimitAngle: Float, zLimitAngle: Float, stiffness: Float, damping: Float) {
-        MemoryStack.stackPush().use { mem ->
-            val spring = mem.autoDelete(PxSpring(stiffness, damping))
-            val limit = mem.autoDelete(PxJointLimitCone(yLimitAngle, zLimitAngle, spring))
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setLimitCone(limit)
             pxJoint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
         }

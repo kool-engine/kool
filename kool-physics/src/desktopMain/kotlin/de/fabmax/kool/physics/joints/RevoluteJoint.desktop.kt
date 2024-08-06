@@ -7,10 +7,13 @@ import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.createPxTransform
 import de.fabmax.kool.physics.joints.RevoluteJoint.Companion.computeFrame
 import de.fabmax.kool.physics.toPxTransform
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
+import physx.extensions.PxJointAngularLimitPair
 import physx.extensions.PxRevoluteJoint
 import physx.extensions.PxRevoluteJointFlagEnum
+import physx.extensions.PxSpring
 
 actual fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint {
     return RevoluteJointImpl(bodyA, bodyB, frameA, frameB)
@@ -49,5 +52,20 @@ class RevoluteJointImpl(
         joint.driveVelocity = angularVelocity
         joint.driveForceLimit = forceLimit
         joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
+    }
+
+    override fun setLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+        memStack {
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
+            val limit = PxJointAngularLimitPair.createAt(this, MemoryStack::nmalloc, lowerLimit, upperLimit, spring)
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
+            joint.setLimit(limit)
+            joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, true)
+        }
+    }
+
+    override fun removeLimit() {
+        joint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

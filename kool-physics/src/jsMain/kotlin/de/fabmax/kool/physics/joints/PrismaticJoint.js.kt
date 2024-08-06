@@ -29,19 +29,12 @@ class PrismaticJointImpl(
         }
     }
 
-    override fun setHardLimit(lowerLimit: Float, upperLimit: Float) {
+    override fun setLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
-            val spring = mem.autoDelete(PxSpring(0f, 0f))
-            val limit = PxJointLinearLimitPair(lowerLimit, upperLimit, spring)
-            pxJoint.setLimit(limit)
-            pxJoint.setPrismaticJointFlag(PxPrismaticJointFlagEnum.eLIMIT_ENABLED, true)
-        }
-    }
-
-    override fun setSoftLimit(lowerLimit: Float, upperLimit: Float, stiffness: Float, damping: Float ) {
-        MemoryStack.stackPush().use { mem ->
-            val spring = mem.autoDelete(PxSpring(stiffness, damping))
-            val limit = PxJointLinearLimitPair(lowerLimit, upperLimit, spring)
+            val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
+            val limit = mem.autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring))
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
             pxJoint.setLimit(limit)
             pxJoint.setPrismaticJointFlag(PxPrismaticJointFlagEnum.eLIMIT_ENABLED, true)
         }

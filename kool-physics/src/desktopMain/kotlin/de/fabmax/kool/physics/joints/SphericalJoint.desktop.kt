@@ -33,19 +33,13 @@ class SphericalJointImpl(
         }
     }
 
-    override fun setHardLimitCone(yLimitAngle: Float, zLimitAngle: Float) {
+    override fun setLimitCone(yLimitAngle: Float, zLimitAngle: Float, limitBehavior: LimitBehavior) {
         memStack {
             val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle, zLimitAngle)
-            joint.setLimitCone(limit)
-            joint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
-        }
-    }
-
-    override fun setSoftLimitCone(yLimitAngle: Float, zLimitAngle: Float, stiffness: Float, damping: Float) {
-        memStack {
-            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimitAngle, zLimitAngle)
-            limit.stiffness = stiffness
-            limit.damping = damping
+            limit.stiffness = limitBehavior.stiffness
+            limit.damping = limitBehavior.damping
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
             joint.setLimitCone(limit)
             joint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, true)
         }
