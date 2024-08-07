@@ -22,7 +22,7 @@ class CharacterControllerComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<CharacterControllerComponentData> = ComponentInfo(CharacterControllerComponentData())
 ) :
-    PhysicsComponent<CharacterControllerComponentData>(gameEntity, componentInfo),
+    PhysicsActorComponent<CharacterControllerComponentData>(gameEntity, componentInfo),
     OnHitActorListener
 {
     var charController: CharacterController? = null

@@ -13,7 +13,7 @@ import de.fabmax.kool.util.logE
 class JointComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<JointComponentData> = ComponentInfo(JointComponentData())
-) : GameEntityDataComponent<JointComponentData>(gameEntity, componentInfo) {
+) : GameEntityDataComponent<JointComponentData>(gameEntity, componentInfo), PhysicsComponent {
 
     var joint: Joint? = null
         private set
@@ -42,9 +42,11 @@ class JointComponent(
             return
         }
 
-        val poseA = actorComponentA?.let { (it.gameEntity.globalToLocalF * gameEntity.localToGlobalF).getPose() }
+        val poseA = actorComponentA
+            ?.let { (it.gameEntity.globalToLocalF * gameEntity.localToGlobalF).getPose() }
             ?: gameEntity.localToGlobalF.getPose()
         val poseB = (actorComponentB.gameEntity.globalToLocalF * gameEntity.localToGlobalF).getPose()
+
         val bodyA = actorComponentA?.rigidActor
         val bodyB = actorComponentB.rigidActor ?: return
         joint = createJoint(bodyA, bodyB, poseA, poseB)

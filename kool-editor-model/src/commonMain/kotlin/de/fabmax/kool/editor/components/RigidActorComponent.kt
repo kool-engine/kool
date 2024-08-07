@@ -30,7 +30,7 @@ class RigidActorComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<RigidActorComponentData> = ComponentInfo(RigidActorComponentData())
 ) :
-    PhysicsComponent<RigidActorComponentData>(gameEntity, componentInfo),
+    PhysicsActorComponent<RigidActorComponentData>(gameEntity, componentInfo),
     MeshComponent.ListenerComponent
 {
     var rigidActor: RigidActor? = null

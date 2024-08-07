@@ -356,20 +356,20 @@ class GameEntityEditor(ui: EditorUi) :
 
         data object AddRigidActorComponent : ComponentAdder<RigidActorComponent>("Rigid Actor") {
             override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<RigidActorComponent>()
-            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild && !gameEntity.hasComponent<CharacterControllerComponent>()
+            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild && !gameEntity.hasComponent<PhysicsComponent>()
             override fun createComponent(target: GameEntity): RigidActorComponent = RigidActorComponent(target)
         }
 
         data object AddCharacterControllerComponent : ComponentAdder<CharacterControllerComponent>("Character Controller") {
             override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<CharacterControllerComponent>()
-            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild && !gameEntity.hasComponent<RigidActorComponent>()
+            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild && !gameEntity.hasComponent<PhysicsComponent>()
             override fun createComponent(target: GameEntity): CharacterControllerComponent = CharacterControllerComponent(target)
         }
 
         data object AddJointComponent : ComponentAdder<JointComponent>("Joint") {
             override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<JointComponent>()
             override fun accept(gameEntity: GameEntity) = gameEntity.isSceneChild &&
-                    !gameEntity.hasComponent<JointComponent>() && !gameEntity.hasComponent<RigidActorComponent>()
+                    !gameEntity.hasComponent<JointComponent>() && !gameEntity.hasComponent<PhysicsComponent>()
             override fun createComponent(target: GameEntity): JointComponent = JointComponent(target)
         }
 

@@ -306,7 +306,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 gameEntity.hasComponent<DiscreteLightComponent>() -> SceneObjectType.LIGHT
                 gameEntity.hasComponent<CameraComponent>() -> SceneObjectType.CAMERA
                 gameEntity.hasComponent<CharacterControllerComponent>() -> SceneObjectType.PHYSICS_CHARACTER
-                gameEntity.hasComponent<PhysicsComponent<*>>() -> SceneObjectType.PHYSICS
+                gameEntity.hasComponent<PhysicsActorComponent<*>>() -> SceneObjectType.PHYSICS
                 else -> SceneObjectType.GROUP
             }
         }
