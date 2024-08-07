@@ -1,8 +1,9 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.editor.data.Vec3Data
+import de.fabmax.kool.editor.ui.Icons
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toVec3f

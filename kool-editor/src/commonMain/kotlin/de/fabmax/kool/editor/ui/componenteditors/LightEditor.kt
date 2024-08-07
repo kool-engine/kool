@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.DiscreteLightComponent
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.LightTypeData
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.toVec4d
 import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope

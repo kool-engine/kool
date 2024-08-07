@@ -1,8 +1,9 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.data.CameraTypeData
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
 import kotlin.reflect.KClass
@@ -22,10 +23,6 @@ class CameraEditor : ComponentEditor<CameraComponent>() {
             }
             setCamDataAction(component, currentCam, newCam).apply()
         }
-
-        // todo: camToView
-        //var camToView by remember(false)
-        //labeledSwitch("Camera to view", camToView) { camToView = it }
 
         menuDivider()
 

@@ -1,10 +1,13 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.ShadowMapComponent
 import de.fabmax.kool.editor.data.ShadowMapInfo
 import de.fabmax.kool.editor.data.ShadowMapTypeData
+import de.fabmax.kool.editor.ui.ComboBoxItems
+import de.fabmax.kool.editor.ui.Icons
+import de.fabmax.kool.editor.ui.labeledCombobox
 import de.fabmax.kool.modules.ui2.UiScope
 
 class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
@@ -33,8 +36,8 @@ class ShadowMapEditor : ComponentEditor<ShadowMapComponent>() {
     private fun setShadowMapAction(component: ShadowMapComponent, oldShadow: ShadowMapTypeData, newShadow: ShadowMapTypeData) =
         SetComponentDataAction(component, component.data.copy(shadowMap = oldShadow), component.data.copy(shadowMap = newShadow))
 
-    private val ShadowMapTypeData.typeOption: TypeOption get() =
-        TypeOption.entries.first { it.matches(this) }
+    private val ShadowMapTypeData.typeOption: TypeOption
+        get() = TypeOption.entries.first { it.matches(this) }
 
     private enum class TypeOption(val label: String, val matches: (ShadowMapTypeData?) -> Boolean) {
         Single("Single", { it is ShadowMapTypeData.Single }),

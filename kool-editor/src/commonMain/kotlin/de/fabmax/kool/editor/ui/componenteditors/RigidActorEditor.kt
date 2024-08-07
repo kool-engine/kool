@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.EditorAction
@@ -11,6 +11,7 @@ import de.fabmax.kool.editor.data.RigidActorComponentData
 import de.fabmax.kool.editor.data.RigidActorType
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec3Data
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.ColumnScope
@@ -277,11 +278,11 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         maxValues = maxValues
     )
 
-    private val RigidActorComponentData.shapeOption: ShapeOption get() =
-        ShapeOption.entries.first { it.matches(shapes.firstOrNull()) }
+    private val RigidActorComponentData.shapeOption: ShapeOption
+        get() = ShapeOption.entries.first { it.matches(shapes.firstOrNull()) }
 
-    private val RigidActorComponentData.typeOption: TypeOption get() =
-        TypeOption.entries.first { it.type == actorType }
+    private val RigidActorComponentData.typeOption: TypeOption
+        get() = TypeOption.entries.first { it.type == actorType }
 
     private enum class TypeOption(val label: String, val type: RigidActorType) {
         Dynamic("Dynamic", RigidActorType.DYNAMIC),

@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.GameEntityDataComponent
 import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor

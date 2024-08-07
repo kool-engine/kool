@@ -1,9 +1,12 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.CharacterControllerComponent
 import de.fabmax.kool.editor.data.CharacterControllerComponentData
+import de.fabmax.kool.editor.ui.ComboBoxItems
+import de.fabmax.kool.editor.ui.Icons
+import de.fabmax.kool.editor.ui.menuDivider
 import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.physics.character.NonWalkableMode

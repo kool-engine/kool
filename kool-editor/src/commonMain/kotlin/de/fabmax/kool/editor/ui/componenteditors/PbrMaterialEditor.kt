@@ -1,8 +1,12 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.PbrShaderData
+import de.fabmax.kool.editor.ui.ActionValueEditHandler
+import de.fabmax.kool.editor.ui.DragChangeRates
+import de.fabmax.kool.editor.ui.labeledDoubleTextField
+import de.fabmax.kool.editor.ui.menuDivider
 import de.fabmax.kool.modules.ui2.ColumnScope
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor

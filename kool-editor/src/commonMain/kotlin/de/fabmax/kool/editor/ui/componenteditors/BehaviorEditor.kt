@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.*
 import de.fabmax.kool.editor.actions.EditorAction
@@ -8,6 +8,10 @@ import de.fabmax.kool.editor.api.KoolBehavior
 import de.fabmax.kool.editor.components.BehaviorComponent
 import de.fabmax.kool.editor.components.GameEntityComponent
 import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.editor.ui.ComboBoxItems
+import de.fabmax.kool.editor.ui.Icons
+import de.fabmax.kool.editor.ui.iconButton
+import de.fabmax.kool.editor.ui.precisionForValue
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.Box

@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.KoolEditor
@@ -10,6 +10,7 @@ import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.editor.data.Vec2Data
 import de.fabmax.kool.editor.data.Vec3Data
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.modules.ui2.*

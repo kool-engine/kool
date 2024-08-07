@@ -2,7 +2,7 @@ package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.components.GameEntityComponent
-import de.fabmax.kool.editor.ui.BehaviorEditor
+import de.fabmax.kool.editor.ui.componenteditors.BehaviorEditor
 import de.fabmax.kool.math.*
 import de.fabmax.kool.util.Color
 import kotlin.reflect.KClass

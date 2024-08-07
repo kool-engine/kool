@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetComponentDataAction
@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.components.MaterialReferenceComponent
 import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.launchOnMainThread
 import kotlin.reflect.KClass

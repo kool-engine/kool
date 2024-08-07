@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.editor.api.EditorAwareApp
-import de.fabmax.kool.editor.ui.BehaviorEditor
+import de.fabmax.kool.editor.ui.componenteditors.BehaviorEditor
 import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logE
 import kotlin.reflect.KClass

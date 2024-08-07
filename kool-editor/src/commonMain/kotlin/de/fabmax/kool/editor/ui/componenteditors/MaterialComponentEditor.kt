@@ -1,8 +1,12 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.editor.ui.Icons
+import de.fabmax.kool.editor.ui.baseSize
+import de.fabmax.kool.editor.ui.defaultComboBoxStyle
+import de.fabmax.kool.editor.ui.italicText
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 

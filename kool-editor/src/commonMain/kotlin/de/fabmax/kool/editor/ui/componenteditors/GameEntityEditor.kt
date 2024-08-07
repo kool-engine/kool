@@ -1,4 +1,4 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.*
@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.BehaviorComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import kotlin.math.roundToInt

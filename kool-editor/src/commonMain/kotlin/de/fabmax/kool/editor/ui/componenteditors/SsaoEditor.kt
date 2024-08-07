@@ -1,8 +1,9 @@
-package de.fabmax.kool.editor.ui
+package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.SsaoComponent
 import de.fabmax.kool.editor.data.SsaoComponentData
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.modules.ui2.*
 
