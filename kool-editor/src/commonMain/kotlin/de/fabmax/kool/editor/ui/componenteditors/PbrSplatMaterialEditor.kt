@@ -37,7 +37,7 @@ class PbrSplatMaterialEditor(
 
             collapsablePanelLvl2(
                 title = "Material ${i + 1}",
-                titleWidth = sizes.editorLabelWidthSmall - sizes.gap * 4f,
+                titleWidth = sizes.editorLabelWidthSmall - sizes.gap * 2f,
                 startExpanded = editor.getPanelState(false, panelKey = panelKey),
                 indicatorColor = splatIndiColors[i % splatIndiColors.size],
                 isAlwaysShowIndicator = true,
@@ -154,14 +154,12 @@ class PbrSplatMaterialEditor(
             Image(tex) {
                 modifier
                     .size(sizes.lineHeight, sizes.lineHeight)
-                    .margin(start = sizes.largeGap)
                     .alignY(AlignmentY.Center)
             }
         } else {
             val color = (baseColor as? ConstColorAttribute)?.color?.toColorSrgb() ?: MdColor.GREY
             Box(width = sizes.lineHeight, height = sizes.lineHeight) {
                 modifier
-                    .margin(start = sizes.largeGap)
                     .alignY(AlignmentY.Center)
                     .backgroundColor(color)
             }

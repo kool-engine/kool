@@ -237,6 +237,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 SceneObjectType.SCENE -> Icons.small.world
                 SceneObjectType.PHYSICS -> Icons.small.physics
                 SceneObjectType.PHYSICS_CHARACTER -> Icons.small.character
+                SceneObjectType.PHYSICS_JOINT -> Icons.small.joint
             }
             modifier
                 .alignX(AlignmentX.End)
@@ -306,7 +307,8 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
                 gameEntity.hasComponent<DiscreteLightComponent>() -> SceneObjectType.LIGHT
                 gameEntity.hasComponent<CameraComponent>() -> SceneObjectType.CAMERA
                 gameEntity.hasComponent<CharacterControllerComponent>() -> SceneObjectType.PHYSICS_CHARACTER
-                gameEntity.hasComponent<PhysicsActorComponent<*>>() -> SceneObjectType.PHYSICS
+                gameEntity.hasComponent<JointComponent>() -> SceneObjectType.PHYSICS_JOINT
+                gameEntity.hasComponent<PhysicsComponent>() -> SceneObjectType.PHYSICS
                 else -> SceneObjectType.GROUP
             }
         }
@@ -379,6 +381,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
         MESH,
         PHYSICS,
         PHYSICS_CHARACTER,
+        PHYSICS_JOINT,
         SCENE(isHideable = false)
     }
 }

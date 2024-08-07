@@ -19,7 +19,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
 
         componentPanel(
             title = "Joint",
-            imageIcon = Icons.small.physics,
+            imageIcon = Icons.small.joint,
             onRemove = ::removeComponent,
 
             headerContent = {

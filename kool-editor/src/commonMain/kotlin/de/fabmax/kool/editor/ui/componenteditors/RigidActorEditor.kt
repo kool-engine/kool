@@ -78,7 +78,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         collapsablePanelLvl2(
             title = "Material",
             startExpanded = false,
-            titleWidth = sizes.editorLabelWidthSmall - sizes.gap * 4f,
+            titleWidth = sizes.editorLabelWidthSmall - sizes.gap * 2f,
             headerContent = {
                 val (items, idx) = makeMaterialItemsAndIndex(allTheSameMaterial)
                 ComboBox {

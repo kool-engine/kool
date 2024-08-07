@@ -88,8 +88,8 @@ inline fun UiScope.collapsablePanelLvl2(
             }
 
         Box(height = Grow.Std) {
-            if (indicatorColor != null && (isExpanded || isAlwaysShowIndicator)) {
-                Box(width = sizes.smallGap, height = Grow.Std) {
+            Box(width = sizes.smallGap, height = Grow.Std) {
+                if (indicatorColor != null && (isExpanded || isAlwaysShowIndicator)) {
                     modifier.backgroundColor(indicatorColor)
                 }
             }

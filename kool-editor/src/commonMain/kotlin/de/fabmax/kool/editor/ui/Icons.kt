@@ -144,6 +144,7 @@ object Icons {
         val filePlus = IconProvider(this, iconMap.IconImageProvider(19, 3))
         val koolIcon = IconProvider(this, iconMap.IconImageProvider(0, 4))
         val folderPlus = IconProvider(this, iconMap.IconImageProvider(1, 4))
+        val joint = IconProvider(this, iconMap.IconImageProvider(2, 4))
 
     }
 
