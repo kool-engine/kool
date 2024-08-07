@@ -53,7 +53,7 @@ class AppLoader(val editor: KoolEditor) : AppSourcesChangeListener {
 
     init {
         loadService.addChangeListener(this)
-        editor.editorContent.onUpdate {
+        editor.overlayScene.onUpdate {
             if (appSourcesChanged) {
                 editor.ui.appStateInfo.set("App sources changed on disc")
                 if (!isBuildInProgress && editor.ctx.isWindowFocused) {

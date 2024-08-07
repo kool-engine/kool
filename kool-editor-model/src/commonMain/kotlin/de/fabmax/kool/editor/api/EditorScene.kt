@@ -230,6 +230,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         removeEntityData(gameEntity.entityData)
         _sceneEntities -= gameEntity.id
         _orderedEntities -= gameEntity
+        componentModCnt++
 
         gameEntity.parent?.removeChild(gameEntity)
 

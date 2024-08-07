@@ -99,8 +99,8 @@ class BoxSelector : Composable {
     private fun updateSelection(min: Vec2f, max: Vec2f) {
         val editor = KoolEditor.instance
         val scene = editor.activeScene.value ?: return
-        val editorCam = editor.editorOverlay.camera
-        val viewport = editor.editorOverlay.mainRenderPass.viewport
+        val editorCam = editor.overlayScene.camera
+        val viewport = editor.overlayScene.mainRenderPass.viewport
 
         val camHelper = if (editorCam is PerspectiveCamera) {
             PerspectiveBoxIntersectHelper(editorCam, min, max, viewport)

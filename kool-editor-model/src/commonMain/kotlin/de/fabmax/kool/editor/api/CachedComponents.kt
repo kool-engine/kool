@@ -11,6 +11,8 @@ class CachedEntityComponents<T: Any>(val gameEntity: GameEntity, val componentCl
     private var modCnt = 0
     private val cache = mutableListOf<T>()
 
+    val isOutdated: Boolean get() = gameEntity.componentModCnt != modCnt
+
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = getComponents()
 
     fun getComponents(): List<T> {
@@ -29,10 +31,12 @@ class CachedSceneComponents<T: Any>(val scene: EditorScene, val componentClass: 
     private var modCnt = 0
     private val cache = mutableListOf<T>()
 
+    val isOutdated: Boolean get() = scene.componentModCnt != modCnt
+
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = getComponents()
 
     fun getComponents(): List<T> {
-        if (scene.componentModCnt != modCnt) {
+        if (isOutdated) {
             modCnt = scene.componentModCnt
             cache.clear()
             scene.orderedEntities.asSequence()
@@ -49,30 +53,43 @@ class CachedSceneComponents<T: Any>(val scene: EditorScene, val componentClass: 
 }
 
 class CachedProjectComponents<T: Any>(val project: EditorProject, val componentClass: KClass<T>) {
-    private var modCnts = intArrayOf()
     private var sceneModCnt = -1
+    private var materialModCnt = -1
+    private var sceneModCnts = intArrayOf()
     private val cache = mutableListOf<T>()
+
+    val isOutdated: Boolean get() {
+        var isDirty = false
+        val numScenes = project.createdScenes.size
+        if (sceneModCnts.size != numScenes) {
+            sceneModCnts = IntArray(numScenes) { -1 }
+            isDirty = true
+        }
+        if (project.sceneModCnt != sceneModCnt) {
+            isDirty = true
+        }
+
+        if (materialModCnt != project.materialScene.componentModCnt) {
+            isDirty = false
+            materialModCnt = project.materialScene.componentModCnt
+        }
+        val scenes = project.createdScenes.values.toList()
+        project.createdScenes.values.forEachIndexed { i, scene ->
+            if (sceneModCnts[i] != scenes[i].componentModCnt) {
+                isDirty = true
+            }
+            sceneModCnts[i] = scenes[i].componentModCnt
+        }
+        return isDirty
+    }
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): List<T> = getComponents()
 
     fun getComponents(): List<T> {
-        val scenes = project.createdScenes.values.toList() + project.materialScene
-        if (modCnts.size != scenes.size || project.sceneModCnt != sceneModCnt) {
-            modCnts = IntArray(scenes.size) { -1 }
-        }
-        sceneModCnt = project.sceneModCnt
-
-        var isDirty = false
-        for (i in modCnts.indices) {
-            if (modCnts[i] != scenes[i].componentModCnt) {
-                isDirty = true
-            }
-            modCnts[i] = scenes[i].componentModCnt
-        }
-
-        if (isDirty) {
+        if (isOutdated) {
             cache.clear()
-            scenes.forEach { scene ->
+            val allScenes = project.createdScenes.values + project.materialScene
+            allScenes.forEach { scene ->
                 scene.orderedEntities.asSequence()
                     .flatMap { it.components.filter { c -> componentClass.isInstance(c) } }
                     .map { componentClass.cast(it) }

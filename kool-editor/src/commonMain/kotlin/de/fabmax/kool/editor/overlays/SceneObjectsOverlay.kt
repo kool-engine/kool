@@ -1,6 +1,8 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.api.CachedSceneComponents
+import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.math.*
@@ -17,7 +19,14 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class SceneObjectsOverlay : Node("Scene objects overlay") {
+class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
+
+    private var lightComponentCache: CachedSceneComponents<DiscreteLightComponent>? = null
+    private val lightComponents: List<DiscreteLightComponent> get() = lightComponentCache?.getComponents() ?: emptyList()
+    private var cameraComponentCache: CachedSceneComponents<CameraComponent>? = null
+    private val cameraComponents: List<CameraComponent> get() = cameraComponentCache?.getComponents() ?: emptyList()
+    private var groupComponentCache: CachedSceneComponents<TransformComponent>? = null
+    private val groupComponents: List<TransformComponent> get() = groupComponentCache?.getComponents() ?: emptyList()
 
     private val dirLights = mutableListOf<DirLightComponentInstance>()
     private val spotLights = mutableListOf<SpotLightComponentInstance>()
@@ -234,17 +243,51 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     }
 
     private fun updateOverlayInstances() {
-        groupInstances.clear()
-        cameraInstances.clear()
-        dirLightsInstances.clear()
-        spotLightsInstances.clear()
-        pointLightsInstances.clear()
+        if (lightComponentCache?.isOutdated == true) {
+            dirLights.clear()
+            spotLights.clear()
+            pointLights.clear()
 
-        groupInstances.addInstances(groups.size) { buf -> groups.forEach { it.addInstance(buf) } }
-        cameraInstances.addInstances(cameras.size) { buf -> cameras.forEach { it.addInstance(buf) } }
-        dirLightsInstances.addInstances(dirLights.size) { buf -> dirLights.forEach { it.addInstance(buf) } }
-        spotLightsInstances.addInstances(spotLights.size) { buf -> spotLights.forEach { it.addInstance(buf) } }
-        pointLightsInstances.addInstances(pointLights.size) { buf -> pointLights.forEach { it.addInstance(buf) } }
+            lightComponents
+                .filter { it.gameEntity.isVisible }
+                .forEach {
+                    when (it.light) {
+                        is Light.Directional -> dirLights += DirLightComponentInstance(it)
+                        is Light.Point -> pointLights += PointLightComponentInstance(it)
+                        is Light.Spot -> spotLights += SpotLightComponentInstance(it)
+                    }
+                }
+        }
+        if (cameraComponentCache?.isOutdated == true) {
+            cameras.clear()
+            cameras += cameraComponents.map { CameraComponentInstance(it) }
+        }
+        if (groupComponentCache?.isOutdated == true) {
+            groups.clear()
+            groups += groupComponents
+                .filter { it.gameEntity.components.none { c -> c is SceneNodeComponent } }
+                .map { GroupNodeInstance(it.gameEntity) }
+        }
+
+        dirLightsInstances.addInstances(dirLights)
+        spotLightsInstances.addInstances(spotLights)
+        pointLightsInstances.addInstances(spotLights)
+        cameraInstances.addInstances(cameras)
+        groupInstances.addInstances(groups)
+    }
+
+    private fun MeshInstanceList.addInstances(objs: List<OverlayObject>) {
+        clear()
+        addInstancesUpTo(objs.size) { buf ->
+            var addCount = 0
+            for (i in objs.indices) {
+                if (objs[i].gameEntity.isVisible) {
+                    objs[i].addInstance(buf)
+                    addCount++
+                }
+            }
+            addCount
+        }
     }
 
     private fun MeshBuilder.generateArrow() {
@@ -262,29 +305,10 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    fun updateOverlayObjects() {
-        cameras.clear()
-        groups.clear()
-        dirLights.clear()
-        spotLights.clear()
-        pointLights.clear()
-
-        val sceneModel = KoolEditor.instance.activeScene.value ?: return
-        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is SceneNodeComponent } }
-            .filter { it.isVisible && it.isSceneChild }
-            .forEach { groups += GroupNodeInstance(it) }
-        sceneModel.getAllComponents<CameraComponent>()
-            .filter { it.gameEntity.isVisible }
-            .forEach { cameras += CameraComponentInstance(it) }
-        sceneModel.getAllComponents<DiscreteLightComponent>()
-            .filter { it.gameEntity.isVisible }
-            .forEach {
-                when (it.light) {
-                    is Light.Directional -> dirLights += DirLightComponentInstance(it)
-                    is Light.Point -> pointLights += PointLightComponentInstance(it)
-                    is Light.Spot -> spotLights += SpotLightComponentInstance(it)
-                }
-            }
+    override fun onEditorSceneChanged(scene: EditorScene) {
+        lightComponentCache = CachedSceneComponents(scene, DiscreteLightComponent::class)
+        cameraComponentCache = CachedSceneComponents(scene, CameraComponent::class)
+        groupComponentCache = CachedSceneComponents(scene, TransformComponent::class)
     }
 
     fun pick(rayTest: RayTest): GameEntity? {
