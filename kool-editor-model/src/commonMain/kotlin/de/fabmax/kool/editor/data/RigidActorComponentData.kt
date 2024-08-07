@@ -10,6 +10,7 @@ data class RigidActorComponentData(
     val mass: Double = 1.0,
     val isTrigger: Boolean = false,
     val characterControllerHitBehavior: HitActorBehavior = HitActorBehavior.SLIDE,
+    val materialId: EntityId = EntityId.NULL
 ) : ComponentData
 
 enum class RigidActorType {
