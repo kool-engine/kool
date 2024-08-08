@@ -10,12 +10,14 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
     val selection = SelectionOverlay(this)
     val gizmo = TransformGizmoOverlay(this)
     val sceneObjects = SceneObjectsOverlay()
+    val physicsObjects = PhysicsObjectsOverlay()
 
     private val overlays: List<EditorOverlay> = listOf(
         grid,
         selection,
         gizmo,
-        sceneObjects
+        sceneObjects,
+        physicsObjects
     )
 
     init {
@@ -23,10 +25,11 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
         clearDepth = false
         tryEnableInfiniteDepth()
 
-        addNode(grid)
         addNode(sceneObjects)
+        addNode(physicsObjects)
         addNode(selection)
         addNode(gizmo)
+        addNode(grid)
     }
 
     override fun onEditorSceneChanged(scene: EditorScene) {

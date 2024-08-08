@@ -1,11 +1,13 @@
 package de.fabmax.kool.editor.overlays
 
-import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.CachedSceneComponents
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.*
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Attribute
@@ -13,7 +15,6 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MdColor
 import kotlin.math.PI
 import kotlin.math.cos
@@ -265,7 +266,11 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         if (groupComponentCache?.isOutdated == true) {
             groups.clear()
             groups += groupComponents
-                .filter { it.gameEntity.components.none { c -> c is SceneNodeComponent } }
+                .filter {
+                    it.gameEntity.isSceneChild && it.gameEntity.components.none { c ->
+                        c is SceneNodeComponent || c is PhysicsComponent
+                    }
+                }
                 .map { GroupNodeInstance(it.gameEntity) }
         }
 
@@ -323,49 +328,6 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
 
     companion object {
         const val lineW = 0.06f
-    }
-
-    private abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
-        abstract val color: Color
-
-        val modelMat: Mat4f get() = gameEntity.localToGlobalF
-        val radius = mesh.geometry.bounds.size.length()
-
-        private val invModelMat = MutableMat4f()
-
-        fun addInstance(target: Float32Buffer) {
-            val selectionOv = KoolEditor.instance.selectionOverlay
-            val color = if (selectionOv.isSelected(gameEntity)) selectionOv.selectionColor.toLinear() else color
-            modelMat.putTo(target)
-            color.putTo(target)
-        }
-
-        fun rayTest(rayTest: RayTest): Boolean {
-            val pos = modelMat.getTranslation()
-            val n = pos.nearestPointOnRay(rayTest.ray.origin, rayTest.ray.direction, MutableVec3f())
-            if (n.distance(pos) < radius) {
-                val d = n.sqrDistance(rayTest.ray.origin)
-                if (d < rayTest.hitDistanceSqr) {
-                    modelMat.invert(invModelMat)
-                    return meshRayTest(rayTest)
-                }
-            }
-            return false
-        }
-
-        private fun meshRayTest(rayTest: RayTest): Boolean {
-            modelMat.invert(invModelMat)
-            val localRay = rayTest.getRayTransformed(invModelMat)
-            val isHit = mesh.rayTest.rayTest(rayTest, localRay)
-            if (isHit) {
-                // fixme: rather ugly workaround: mesh ray test transforms hit position to global coordinates using
-                //  the mesh's transform, not the instance's leading to a wrong hit-position / distance
-                mesh.toLocalCoords(rayTest.hitPositionGlobal)
-                modelMat.transform(rayTest.hitPositionGlobal)
-                rayTest.setHit(mesh, rayTest.hitPositionGlobal)
-            }
-            return isHit
-        }
     }
 
     private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
