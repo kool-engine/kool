@@ -2,10 +2,12 @@ package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.api.CachedSceneComponents
 import de.fabmax.kool.editor.api.EditorScene
+import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.JointComponent
 import de.fabmax.kool.editor.components.PhysicsComponent
 import de.fabmax.kool.editor.data.JointData
 import de.fabmax.kool.math.AngleF
+import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -120,20 +122,20 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
 
         centerInstances.addInstances(joints, Color.WHITE) { true }
-        xPrismaticInstances.addInstances(joints, MdColor.RED.toLinear()) { it.data.jointData::class in xPrismaticClasses }
-        yPrismaticInstances.addInstances(joints, MdColor.LIGHT_GREEN.toLinear()) { it.data.jointData::class in yPrismaticClasses }
-        zPrismaticInstances.addInstances(joints, MdColor.BLUE.toLinear()) { it.data.jointData::class in zPrismaticClasses }
-        twistInstances.addInstances(joints, MdColor.PURPLE.toLinear()) { it.data.jointData::class in twistClasses }
-        swingInstances.addInstances(joints, MdColor.CYAN.toLinear()) { it.data.jointData::class in swingClasses }
+        xPrismaticInstances.addInstances(joints, MdColor.RED.toLinear()) { it.isPrismaticX }
+        yPrismaticInstances.addInstances(joints, MdColor.LIGHT_GREEN.toLinear()) { it.isPrismaticY }
+        zPrismaticInstances.addInstances(joints, MdColor.BLUE.toLinear()) { it.isPrismaticZ }
+        twistInstances.addInstances(joints, MdColor.PURPLE.toLinear()) { it.isTwist }
+        swingInstances.addInstances(joints, MdColor.CYAN.toLinear()) { it.isSwing }
     }
 
-    private fun MeshInstanceList.addInstances(objs: List<JointInstance>, color: Color, filter: (JointComponent) -> Boolean) {
+    private fun MeshInstanceList.addInstances(objs: List<JointInstance>, color: Color, filter: (JointInstance) -> Boolean) {
         clear()
         addInstancesUpTo(objs.size) { buf ->
             var addCount = 0
             for (i in objs.indices) {
                 val j = objs[i]
-                if (j.gameEntity.isVisible && filter(j.jointComponent)) {
+                if (j.gameEntity.isVisible && filter(j)) {
                     j.addInstance(buf, color)
                     addCount++
                 }
@@ -214,6 +216,16 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         physicsComponentCache = CachedSceneComponents(scene, PhysicsComponent::class)
     }
 
+    override fun pick(rayTest: RayTest): GameEntity? {
+        var closest: GameEntity? = null
+        joints.forEach {
+            if (it.rayTest(rayTest)) {
+                closest = it.gameEntity
+            }
+        }
+        return closest
+    }
+
     companion object {
         private val meshAttrs = listOf(Attribute.POSITIONS)
         private val objectShader = KslUnlitShader {
@@ -233,9 +245,23 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         private val swingClasses = listOf(JointData.Spherical::class)
     }
 
-    private inner class JointInstance(val jointComponent: JointComponent) :
-        OverlayObject(jointComponent.gameEntity, jointCenterMesh)
-    {
+    private inner class JointInstance(val jointComponent: JointComponent) : OverlayObject(jointComponent.gameEntity) {
         override val color: Color = Color.WHITE
+
+        val isPrismaticX: Boolean get() = jointComponent.data.jointData::class in xPrismaticClasses
+        val isPrismaticY: Boolean get() = jointComponent.data.jointData::class in yPrismaticClasses
+        val isPrismaticZ: Boolean get() = jointComponent.data.jointData::class in zPrismaticClasses
+        val isTwist: Boolean get() = jointComponent.data.jointData::class in twistClasses
+        val isSwing: Boolean get() = jointComponent.data.jointData::class in swingClasses
+
+        fun rayTest(rayTest: RayTest): Boolean {
+            var isHit = false
+            if (isPrismaticX) isHit = isHit || rayTest(rayTest, xPrismaticJointMesh)
+            if (isPrismaticY) isHit = isHit || rayTest(rayTest, yPrismaticJointMesh)
+            if (isPrismaticZ) isHit = isHit || rayTest(rayTest, zPrismaticJointMesh)
+            if (isTwist) isHit = isHit || rayTest(rayTest, twistJointMesh)
+            if (isSwing) isHit = isHit || rayTest(rayTest, swingJointMesh)
+            return isHit
+        }
     }
 }

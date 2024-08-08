@@ -69,7 +69,7 @@ class BoxSelector : Composable {
                 }
             }
             .onClick { ev ->
-                KoolEditor.instance.selectionOverlay.clickSelect(ev.pointer)
+                KoolEditor.instance.overlayScene.doPicking(ev.pointer)
             }
 
 

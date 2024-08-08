@@ -42,7 +42,7 @@ class AddEntitiesAction(
 
 private fun makeTransformComponent(parent: GameEntity?, position: Vec3f?, rotation: QuatD = QuatD.IDENTITY): ComponentInfo<TransformComponentData> {
     val editor = KoolEditor.instance
-    val globalPos = position ?: editor.selectionOverlay.lastPickPosition ?: editor.activeScene.value?.scene?.camera?.globalLookAt ?: Vec3f.ZERO
+    val globalPos = position ?: editor.overlayScene.lastPickPosition ?: editor.activeScene.value?.scene?.camera?.globalLookAt ?: Vec3f.ZERO
     val localPos = parent?.globalToLocalD?.transform(MutableVec3d(globalPos.toVec3d())) ?: globalPos.toVec3d()
     val transform = TransformData(Vec3Data(localPos), Vec4Data(rotation), Vec3Data(Vec3d.ONES))
     return ComponentInfo(TransformComponentData(transform), displayOrder = 0)

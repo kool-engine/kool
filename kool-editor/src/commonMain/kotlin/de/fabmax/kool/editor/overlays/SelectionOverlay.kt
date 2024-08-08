@@ -3,13 +3,13 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.localToGlobalF
 import de.fabmax.kool.editor.ui.UiColors
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.input.Pointer
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
@@ -50,9 +50,6 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
     var selectionColor by outlineShader::outlineColorPrimary
     var selectionColorChildren by outlineShader::outlineColorChild
 
-    var lastPickPosition: Vec3f? = null
-        private set
-
     init {
         overlayMesh.generateFullscreenQuad()
         overlayMesh.shader = outlineShader
@@ -85,38 +82,8 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
         }
     }
 
-    fun clickSelect(ptr: Pointer) {
-        val editorScene = editor.activeScene.value ?: return
-        val rayTest = RayTest()
-
-        lastPickPosition = null
-
-        if (editorScene.hitTest.computePickRay(ptr, rayTest.ray)) {
-            rayTest.clear()
-            var selectedEntity: GameEntity? = editor.overlayScene.sceneObjects.pick(rayTest)
-            var hitDist = Float.POSITIVE_INFINITY
-            if (rayTest.isHit) {
-                hitDist = rayTest.hitDistanceSqr
-                lastPickPosition = Vec3f(rayTest.hitPositionGlobal)
-            }
-
-            rayTest.clear()
-            val hitEntity = editorScene.hitTest.hitTest(rayTest)
-            if (hitEntity != null && rayTest.hitDistanceSqr < hitDist) {
-                lastPickPosition = Vec3f(rayTest.hitPositionGlobal)
-                selectedEntity = hitEntity
-            }
-
-            if (lastPickPosition == null) {
-                val cam = editorScene.scene.camera
-                val camPlane = PlaneF(cam.globalLookAt, cam.globalLookDir)
-                val pickPos = MutableVec3f()
-                camPlane.intersectionPoint(rayTest.ray, pickPos)
-                lastPickPosition = pickPos
-            }
-
-            selectSingle(selectedEntity)
-        }
+    override fun pick(rayTest: RayTest): GameEntity? {
+        return overlay.currentScene?.hitTest?.hitTest(rayTest)
     }
 
     fun selectSingle(selectModel: GameEntity?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {

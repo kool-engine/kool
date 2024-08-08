@@ -8,11 +8,10 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Float32Buffer
 
-abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
+abstract class OverlayObject(val gameEntity: GameEntity) {
     abstract val color: Color
 
     val modelMat: Mat4f get() = gameEntity.localToGlobalF
-    val radius = mesh.geometry.bounds.size.length()
 
     private val invModelMat = MutableMat4f()
 
@@ -23,20 +22,21 @@ abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
         instColor.putTo(target)
     }
 
-    fun rayTest(rayTest: RayTest): Boolean {
+    fun rayTest(rayTest: RayTest, mesh: Mesh): Boolean {
         val pos = modelMat.getTranslation()
+        val radius = mesh.geometry.bounds.size.length()
         val n = pos.nearestPointOnRay(rayTest.ray.origin, rayTest.ray.direction, MutableVec3f())
         if (n.distance(pos) < radius) {
             val d = n.sqrDistance(rayTest.ray.origin)
             if (d < rayTest.hitDistanceSqr) {
                 modelMat.invert(invModelMat)
-                return meshRayTest(rayTest)
+                return meshRayTest(rayTest, mesh)
             }
         }
         return false
     }
 
-    private fun meshRayTest(rayTest: RayTest): Boolean {
+    private fun meshRayTest(rayTest: RayTest, mesh: Mesh): Boolean {
         modelMat.invert(invModelMat)
         val localRay = rayTest.getRayTransformed(invModelMat)
         val isHit = mesh.rayTest.rayTest(rayTest, localRay)

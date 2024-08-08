@@ -316,7 +316,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         groupComponentCache = CachedSceneComponents(scene, TransformComponent::class)
     }
 
-    fun pick(rayTest: RayTest): GameEntity? {
+    override fun pick(rayTest: RayTest): GameEntity? {
         var closest: GameEntity? = null
         cameras.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
         groups.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
@@ -330,27 +330,22 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         const val lineW = 0.06f
     }
 
-    private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.gameEntity, pointLightMesh)
-    {
+    private inner class PointLightComponentInstance(val component: DiscreteLightComponent) : OverlayObject(component.gameEntity) {
         override val color: Color get() = component.light.color
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, pointLightMesh)
     }
 
-    private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.gameEntity, spotLightMesh)
-    {
+    private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) : OverlayObject(component.gameEntity) {
         override val color: Color get() = component.light.color
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, spotLightMesh)
     }
 
-    private inner class DirLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.gameEntity, dirLightMesh)
-    {
+    private inner class DirLightComponentInstance(val component: DiscreteLightComponent) : OverlayObject(component.gameEntity) {
         override val color: Color get() = component.light.color
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, dirLightMesh)
     }
 
-    private inner class CameraComponentInstance(val component: CameraComponent) :
-        OverlayObject(component.gameEntity, cameraMesh)
-    {
+    private inner class CameraComponentInstance(val component: CameraComponent) : OverlayObject(component.gameEntity) {
         private val activeColor = MdColor.GREY toneLin 300
         private val inactiveColor = MdColor.GREY toneLin 700
 
@@ -358,11 +353,11 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
             val isActive = component.sceneComponent.cameraComponent == component
             return if (isActive) activeColor else inactiveColor
         }
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, cameraMesh)
     }
 
-    private inner class GroupNodeInstance(gameEntity: GameEntity) :
-        OverlayObject(gameEntity, groupMesh)
-    {
+    private inner class GroupNodeInstance(gameEntity: GameEntity) : OverlayObject(gameEntity) {
         override val color: Color = Color.WHITE
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, groupMesh)
     }
 }

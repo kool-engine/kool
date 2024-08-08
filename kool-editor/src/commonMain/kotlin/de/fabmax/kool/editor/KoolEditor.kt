@@ -234,10 +234,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             val ptr = pointerState.primaryPointer
             if (!ptr.isConsumed()) {
                 when {
-                    ptr.isLeftButtonClicked -> selectionOverlay.clickSelect(ptr)
+                    ptr.isLeftButtonClicked -> overlayScene.doPicking(ptr)
                     ptr.isRightButtonClicked -> {
                         selectionOverlay.clearSelection()
-                        selectionOverlay.clickSelect(ptr)
+                        overlayScene.doPicking(ptr)
                         ui.sceneView.showSceneContextMenu(ptr)
                     }
                 }
