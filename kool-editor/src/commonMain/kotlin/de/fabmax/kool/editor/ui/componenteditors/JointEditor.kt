@@ -8,6 +8,8 @@ import de.fabmax.kool.editor.components.RigidActorComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.JointData
 import de.fabmax.kool.editor.ui.*
+import de.fabmax.kool.math.toDeg
+import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.ui2.*
 
 class JointEditor : ComponentEditor<JointComponent>() {
@@ -140,16 +142,20 @@ class JointEditor : ComponentEditor<JointComponent>() {
         if (component.getData<JointData.Revolute>().isLimited) {
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.lowerLimit.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(lowerLimit = newValue.toFloat()) },
+                valueGetter = { it.lowerLimit.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(lowerLimit = newValue.toFloat().toRad()) },
                 actionMapper = jointDataActionMapper,
+                minValue = -360.0,
+                maxValue = 360.0,
                 label = "Lower limit:"
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.upperLimit.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(upperLimit = newValue.toFloat()) },
+                valueGetter = { it.upperLimit.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(upperLimit = newValue.toFloat().toRad()) },
                 actionMapper = jointDataActionMapper,
+                minValue = -360.0,
+                maxValue = 360.0,
                 label = "Upper limit:"
             )
             doublePropertyEditor(
@@ -188,16 +194,20 @@ class JointEditor : ComponentEditor<JointComponent>() {
         if (component.getData<JointData.Spherical>().isLimited) {
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.limitAngleY.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitAngleY = newValue.toFloat()) },
+                valueGetter = { it.limitAngleY.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitAngleY = newValue.toFloat().toRad()) },
                 actionMapper = jointDataActionMapper,
+                minValue = -360.0,
+                maxValue = 360.0,
                 label = "Limit angle Y:"
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.limitAngleZ.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitAngleZ = newValue.toFloat()) },
+                valueGetter = { it.limitAngleZ.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(limitAngleZ = newValue.toFloat().toRad()) },
                 actionMapper = jointDataActionMapper,
+                minValue = -360.0,
+                maxValue = 360.0,
                 label = "Limit angle Z:"
             )
             doublePropertyEditor(

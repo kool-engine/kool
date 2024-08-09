@@ -1,6 +1,7 @@
 package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.AngleF
+import de.fabmax.kool.math.PI_F
 import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
 import physx.*
@@ -51,7 +52,7 @@ class D6JointImpl(
         get() = pxJoint.getMotion(PxD6AxisEnum.eSWING2).toD6JointMotion()
         set(value) = pxJoint.setMotion(PxD6AxisEnum.eSWING2, value.toPxD6MotionEnum())
 
-    override fun setDistanceLimit(extend: Float, limitBehavior: LimitBehavior) {
+    override fun enableDistanceLimit(extend: Float, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLinearLimit(extend, spring))
@@ -61,7 +62,7 @@ class D6JointImpl(
         }
     }
 
-    override fun setXLinearLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+    override fun enableLinearLimitX(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring))
@@ -72,7 +73,7 @@ class D6JointImpl(
         }
     }
 
-    override fun setYLinearLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+    override fun enableLinearLimitY(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring))
@@ -83,7 +84,7 @@ class D6JointImpl(
         }
     }
 
-    override fun setZLinearLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+    override fun enableLinearLimitZ(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring))
@@ -94,7 +95,7 @@ class D6JointImpl(
         }
     }
 
-    override fun setTwistLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
+    override fun enableTwistLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring))
@@ -105,7 +106,7 @@ class D6JointImpl(
         }
     }
 
-    override fun setSwingLimit(yLimit: AngleF, zLimit: AngleF, limitBehavior: LimitBehavior) {
+    override fun enableSwingLimit(yLimit: AngleF, zLimit: AngleF, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLimitCone(yLimit.rad, zLimit.rad, spring))
@@ -114,6 +115,61 @@ class D6JointImpl(
             pxJoint.setSwingLimit(limit)
             motionSwing1 = D6JointMotion.Limited
             motionSwing2 = D6JointMotion.Limited
+        }
+    }
+
+    override fun disableDistanceLimit() {
+        MemoryStack.stackPush().use { mem ->
+            val spring = mem.autoDelete(PxSpring(0f, 0f))
+            val limit = mem.autoDelete(PxJointLinearLimit(Float.MAX_VALUE, spring))
+            pxJoint.setDistanceLimit(limit)
+        }
+    }
+
+    override fun disableLinearLimitX() {
+        MemoryStack.stackPush().use { mem ->
+            val spring = mem.autoDelete(PxSpring(0f, 0f))
+            val limit = mem.autoDelete(PxJointLinearLimitPair(0f, Float.MAX_VALUE, spring))
+            pxJoint.setLinearLimit(PxD6AxisEnum.eX, limit)
+            motionX = D6JointMotion.Free
+        }
+    }
+
+    override fun disableLinearLimitY() {
+        MemoryStack.stackPush().use { mem ->
+            val spring = mem.autoDelete(PxSpring(0f, 0f))
+            val limit = mem.autoDelete(PxJointLinearLimitPair(0f, Float.MAX_VALUE, spring))
+            pxJoint.setLinearLimit(PxD6AxisEnum.eY, limit)
+            motionY = D6JointMotion.Free
+        }
+
+    }
+
+    override fun disableLinearLimitZ() {
+        MemoryStack.stackPush().use { mem ->
+            val spring = mem.autoDelete(PxSpring(0f, 0f))
+            val limit = mem.autoDelete(PxJointLinearLimitPair(0f, Float.MAX_VALUE, spring))
+            pxJoint.setLinearLimit(PxD6AxisEnum.eZ, limit)
+            motionZ = D6JointMotion.Free
+        }
+    }
+
+    override fun disableTwistLimit() {
+        MemoryStack.stackPush().use { mem ->
+            val spring = mem.autoDelete(PxSpring(0f, 0f))
+            val limit = mem.autoDelete(PxJointAngularLimitPair(PI_F * -2f, PI_F * 2f, spring))
+            pxJoint.setTwistLimit(limit)
+            motionTwist = D6JointMotion.Free
+        }
+    }
+
+    override fun disableSwingLimit() {
+        MemoryStack.stackPush().use { mem ->
+            val spring = mem.autoDelete(PxSpring(0f, 0f))
+            val limit = mem.autoDelete(PxJointLimitCone(PI_F * 2f, PI_F * 2f, spring))
+            pxJoint.setSwingLimit(limit)
+            motionSwing1 = D6JointMotion.Free
+            motionSwing2 = D6JointMotion.Free
         }
     }
 

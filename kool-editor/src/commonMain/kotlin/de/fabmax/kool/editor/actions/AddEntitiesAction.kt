@@ -74,6 +74,17 @@ fun EditorScene.addNewLight(parent: GameEntity?, lightType: LightTypeData, pos: 
     AddEntitiesAction(listOf(entityData)).apply()
 }
 
+fun EditorScene.addNewCamera(parent: GameEntity?, pos: Vec3f? = null) {
+    val id = project.nextId()
+    val parentId = parent?.id ?: sceneEntity.id
+    val name = project.uniquifyName("Camera")
+    val entityData = GameEntityData(id, parentId, GameEntitySettings(name))
+
+    entityData.components += makeTransformComponent(parent, pos)
+    entityData.components += ComponentInfo(CameraComponentData(CameraTypeData.Perspective()), displayOrder = 1)
+    AddEntitiesAction(listOf(entityData)).apply()
+}
+
 fun EditorScene.addEmptyNode(parent: GameEntity?, pos: Vec3f? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id

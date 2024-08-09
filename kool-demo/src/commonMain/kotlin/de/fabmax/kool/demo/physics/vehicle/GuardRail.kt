@@ -200,7 +200,7 @@ class GuardRail {
             world.physics.addActor(actor)
 
             joint = FixedJoint(track.trackActor, actor, initPose.getPose(), PoseF())
-            joint.setBreakForce(2e5f, 2e5f)
+            joint.enableBreakage(2e5f, 2e5f)
 
             pointLight = world.deferredPipeline.dynamicPointLights.addPointLight {
                 color.set(MdColor.ORANGE toneLin 300)

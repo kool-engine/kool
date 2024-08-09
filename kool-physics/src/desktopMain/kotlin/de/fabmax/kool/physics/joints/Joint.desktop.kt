@@ -22,7 +22,7 @@ abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint
             joint.constraintFlags.clear(PxConstraintFlagEnum.eVISUALIZATION)
         }
 
-    override fun setBreakForce(force: Float, torque: Float) = joint.setBreakForce(force, torque)
+    override fun enableBreakage(breakForce: Float, breakTorque: Float) = joint.setBreakForce(breakForce, breakTorque)
 
     override fun release() {
         super.release()

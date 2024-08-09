@@ -20,5 +20,6 @@ interface Joint : Releasable {
     val isBroken: Boolean
     var debugVisualize: Boolean
 
-    fun setBreakForce(force: Float, torque: Float)
+    fun enableBreakage(breakForce: Float, breakTorque: Float)
+    fun disableBreakage() = enableBreakage(Float.MAX_VALUE, Float.MAX_VALUE)
 }

@@ -3,8 +3,8 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.PoseF
-import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.getPose
+import de.fabmax.kool.math.rad
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.joints.*
@@ -18,6 +18,14 @@ class JointComponent(
     var joint: Joint? = null
         private set
 
+    var actorComponentA: RigidActorComponent? = null
+        private set
+    var actorComponentB: RigidActorComponent? = null
+        private set
+
+    val actorA: RigidActor? get() = actorComponentA?.rigidActor
+    val actorB: RigidActor? get() = actorComponentB?.rigidActor
+
     override suspend fun applyComponent() {
         super.applyComponent()
         makeJoint()
@@ -25,7 +33,11 @@ class JointComponent(
 
     override fun onDataChanged(oldData: JointComponentData, newData: JointComponentData) {
         super.onDataChanged(oldData, newData)
-        makeJoint()
+        if (!updateJoint(oldData, newData)) {
+            makeJoint()
+        }
+        (actorA as? RigidDynamic)?.wakeUp()
+        (actorB as? RigidDynamic)?.wakeUp()
     }
 
     override fun onStart() {
@@ -33,11 +45,26 @@ class JointComponent(
         makeJoint()
     }
 
+    private fun updateJoint(oldData: JointComponentData, newData: JointComponentData): Boolean {
+        if (oldData.bodyA != newData.bodyA || oldData.bodyB != newData.bodyB) return false
+        val j = joint ?: return false
+
+        return when (val jData = newData.jointData) {
+            is JointData.Distance -> jData.updateJoint(j)
+            is JointData.Fixed -> jData.updateJoint(j)
+            is JointData.Prismatic -> jData.updateJoint(j)
+            is JointData.Revolute -> jData.updateJoint(j)
+            is JointData.Spherical -> jData.updateJoint(j)
+        }
+    }
+
     private fun makeJoint() {
         joint?.release()
         joint = null
 
         val (actorComponentA, actorComponentB) = getBodies()
+        this.actorComponentA = actorComponentA
+        this.actorComponentB = actorComponentB
         if (actorComponentB == null) {
             return
         }
@@ -75,61 +102,59 @@ class JointComponent(
     }
 
     private fun JointData.Fixed.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): FixedJoint {
-        val j = FixedJoint(bodyA, bodyB, poseA, poseB)
-        if (isBreakable) {
-            j.setBreakForce(breakForce, breakTorque)
-        }
-        return j
+        return FixedJoint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
     }
 
     private fun JointData.Distance.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): DistanceJoint {
-        val j = DistanceJoint(bodyA, bodyB, poseA, poseB)
-        if (minDistance > 0f) {
-            j.setMinDistance(minDistance)
-        }
-        if (maxDistance > 0f) {
-            j.setMaxDistance(minDistance)
-        }
-        if (isBreakable) {
-            j.setBreakForce(breakForce, breakTorque)
-        }
-        return j
+        return DistanceJoint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
     }
 
     private fun JointData.Prismatic.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): PrismaticJoint {
-        val j = PrismaticJoint(bodyA, bodyB, poseA, poseB)
-        if (isLimited) {
-            j.setLimit(lowerLimit, upperLimit, limitBehavior.toLimitBehavior())
-        }
-        if (isBreakable) {
-            j.setBreakForce(breakForce, breakTorque)
-        }
-        return j
+        return PrismaticJoint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
     }
 
     private fun JointData.Revolute.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): RevoluteJoint {
-        val j = RevoluteJoint(bodyA, bodyB, poseA, poseB)
-        if (isMotor) {
-            j.enableAngularMotor(motorSpeed, motorTorque)
-        }
-        if (isLimited) {
-            j.setLimit(lowerLimit.deg, upperLimit.deg, limitBehavior.toLimitBehavior())
-        }
-        if (isBreakable) {
-            j.setBreakForce(breakForce, breakTorque)
-        }
-        return j
+        return RevoluteJoint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
     }
 
     private fun JointData.Spherical.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): SphericalJoint {
-        val j = SphericalJoint(bodyA, bodyB, poseA, poseB)
-        if (isLimited) {
-            j.setLimitCone(limitAngleY.deg, limitAngleZ.deg, limitBehavior.toLimitBehavior())
-        }
-        if (isBreakable) {
-            j.setBreakForce(breakForce, breakTorque)
-        }
-        return j
+        return SphericalJoint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
+    }
+
+    private fun JointData.Fixed.updateJoint(joint: Joint): Boolean {
+        val j = joint as? FixedJoint ?: return false
+        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        return true
+    }
+
+    private fun JointData.Distance.updateJoint(joint: Joint): Boolean {
+        val j = joint as? DistanceJoint ?: return false
+        if (minDistance > 0f) j.setMinDistance(minDistance) else j.clearMinDistance()
+        if (maxDistance > 0f) j.setMaxDistance(maxDistance) else j.clearMaxDistance()
+        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        return true
+    }
+
+    private fun JointData.Prismatic.updateJoint(joint: Joint): Boolean {
+        val j = joint as? PrismaticJoint ?: return false
+        if (isLimited) j.enableLimit(lowerLimit, upperLimit, limitBehavior.toLimitBehavior()) else j.disableLimit()
+        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        return true
+    }
+
+    private fun JointData.Revolute.updateJoint(joint: Joint): Boolean {
+        val j = joint as? RevoluteJoint ?: return false
+        if (isMotor) j.enableAngularMotor(motorSpeed, motorTorque) else j.disableAngularMotor()
+        if (isLimited) j.enableLimit(lowerLimit.rad, upperLimit.rad, limitBehavior.toLimitBehavior()) else j.disableLimit()
+        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        return true
+    }
+
+    private fun JointData.Spherical.updateJoint(joint: Joint): Boolean {
+        val j = joint as? SphericalJoint ?: return false
+        if (isLimited) j.enableLimit(limitAngleY.rad, limitAngleZ.rad, limitBehavior.toLimitBehavior()) else j.disableLimit()
+        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        return true
     }
 
     private fun getBodies(): Pair<RigidActorComponent?, RigidActorComponent?> {

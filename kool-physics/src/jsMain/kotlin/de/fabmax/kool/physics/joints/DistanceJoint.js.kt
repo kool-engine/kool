@@ -38,11 +38,11 @@ class DistanceJointImpl(
         pxJoint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMIN_DISTANCE_ENABLED, minDistance >= 0f)
     }
 
-    override fun removeMaxDistance() {
+    override fun clearMaxDistance() {
         pxJoint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMAX_DISTANCE_ENABLED, false)
     }
 
-    override fun removeMinDistance() {
+    override fun clearMinDistance() {
         pxJoint.setDistanceJointFlag(PxDistanceJointFlagEnum.eMIN_DISTANCE_ENABLED, false)
     }
 }

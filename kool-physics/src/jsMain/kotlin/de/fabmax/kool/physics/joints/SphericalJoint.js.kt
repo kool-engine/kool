@@ -30,7 +30,7 @@ class SphericalJointImpl(
         }
     }
 
-    override fun setLimitCone(yLimitAngle: AngleF, zLimitAngle: AngleF, limitBehavior: LimitBehavior) {
+    override fun enableLimit(yLimitAngle: AngleF, zLimitAngle: AngleF, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLimitCone(yLimitAngle.rad, zLimitAngle.rad, spring))
@@ -41,7 +41,7 @@ class SphericalJointImpl(
         }
     }
 
-    override fun removeLimitCone() {
+    override fun disableLimit() {
         pxJoint.setSphericalJointFlag(PxSphericalJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

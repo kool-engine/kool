@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.addEmptyNode
+import de.fabmax.kool.editor.actions.addNewCamera
 import de.fabmax.kool.editor.actions.addNewLight
 import de.fabmax.kool.editor.actions.addNewMesh
 import de.fabmax.kool.editor.api.GameEntity
@@ -45,5 +46,6 @@ fun addSceneObjectMenu(label: String, parent: GameEntity?, position: Vec3f? = nu
             }
         }
     }
+    item("Camera", Icons.small.camera) { scene.addNewCamera(parent, position) }
     item("Empty node", Icons.small.emptyObject) { scene.addEmptyNode(parent, position) }
 }

@@ -47,7 +47,7 @@ class RevoluteJointImpl(
         pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eDRIVE_ENABLED, true)
     }
 
-    override fun setLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
+    override fun enableLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointAngularLimitPair(lowerLimit.rad, upperLimit.rad, spring))
@@ -58,7 +58,7 @@ class RevoluteJointImpl(
         }
     }
 
-    override fun removeLimit() {
+    override fun disableLimit() {
         pxJoint.setRevoluteJointFlag(PxRevoluteJointFlagEnum.eLIMIT_ENABLED, false)
     }
 }

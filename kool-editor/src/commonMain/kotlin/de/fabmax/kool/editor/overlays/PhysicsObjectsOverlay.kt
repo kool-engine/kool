@@ -16,6 +16,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.MeshRayTest
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
@@ -37,6 +38,8 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     private val swingInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
 
     private val jointCenterMesh = Mesh(meshAttrs, centerInstances, "centers").apply {
+        isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
         generate {
             icoSphere {
@@ -47,6 +50,8 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     }
 
     private val xPrismaticJointMesh = Mesh(meshAttrs, xPrismaticInstances, "x-prismatics").apply {
+        isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
         generate {
             rotate(90f.deg, Vec3f.Z_AXIS)
@@ -55,6 +60,8 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     }
 
     private val yPrismaticJointMesh = Mesh(meshAttrs, yPrismaticInstances, "y-prismatics").apply {
+        isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
         generate {
             prismaticArrow()
@@ -62,6 +69,8 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     }
 
     private val zPrismaticJointMesh = Mesh(meshAttrs, zPrismaticInstances, "z-prismatics").apply {
+        isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
         generate {
             rotate(90f.deg, Vec3f.X_AXIS)
@@ -70,6 +79,8 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     }
 
     private val twistJointMesh = Mesh(meshAttrs, twistInstances, "twists").apply {
+        isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
         generate {
             withTransform {
@@ -91,6 +102,8 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     }
 
     private val swingJointMesh = Mesh(meshAttrs, swingInstances, "swings").apply {
+        isCastingShadow = false
+        rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
         generate {
             rotate(90f.deg, Vec3f.NEG_Z_AXIS)

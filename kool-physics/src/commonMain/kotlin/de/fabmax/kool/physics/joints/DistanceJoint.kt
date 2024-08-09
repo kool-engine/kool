@@ -8,6 +8,6 @@ expect fun DistanceJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, f
 interface DistanceJoint : Joint {
     fun setMaxDistance(maxDistance: Float)
     fun setMinDistance(minDistance: Float)
-    fun removeMaxDistance()
-    fun removeMinDistance()
+    fun clearMaxDistance()
+    fun clearMinDistance()
 }

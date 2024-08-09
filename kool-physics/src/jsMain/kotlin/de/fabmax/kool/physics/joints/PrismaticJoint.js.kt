@@ -29,7 +29,7 @@ class PrismaticJointImpl(
         }
     }
 
-    override fun setLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
+    override fun enableLimit(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
             val limit = mem.autoDelete(PxJointLinearLimitPair(lowerLimit, upperLimit, spring))
@@ -40,7 +40,7 @@ class PrismaticJointImpl(
         }
     }
 
-    override fun removeLimit() {
+    override fun disableLimit() {
         pxJoint.setPrismaticJointFlag(PxPrismaticJointFlagEnum.eLIMIT_ENABLED, false)
     }
 
