@@ -48,7 +48,7 @@ private fun makeTransformComponent(parent: GameEntity?, position: Vec3f?, rotati
     return ComponentInfo(TransformComponentData(transform), displayOrder = 0)
 }
 
-fun EditorScene.addNewMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3f? = null) {
+fun EditorScene.addMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3f? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val shapeName = (meshShape as? ShapeData.Model)?.modelPath
@@ -62,7 +62,17 @@ fun EditorScene.addNewMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3f
     AddEntitiesAction(listOf(entityData)).apply()
 }
 
-fun EditorScene.addNewLight(parent: GameEntity?, lightType: LightTypeData, pos: Vec3f? = null) {
+fun EditorScene.addJoint(parent: GameEntity?, joint: JointData, pos: Vec3f? = null) {
+    val id = project.nextId()
+    val parentId = parent?.id ?: sceneEntity.id
+    val entityData = GameEntityData(id, parentId, GameEntitySettings(project.uniquifyName(joint::class.simpleName ?: "joint")))
+
+    entityData.components += makeTransformComponent(parent, pos)
+    entityData.components += ComponentInfo(JointComponentData(jointData = joint), displayOrder = 1)
+    AddEntitiesAction(listOf(entityData)).apply()
+}
+
+fun EditorScene.addLight(parent: GameEntity?, lightType: LightTypeData, pos: Vec3f? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val name = project.uniquifyName(lightType.name)
@@ -74,7 +84,7 @@ fun EditorScene.addNewLight(parent: GameEntity?, lightType: LightTypeData, pos: 
     AddEntitiesAction(listOf(entityData)).apply()
 }
 
-fun EditorScene.addNewCamera(parent: GameEntity?, pos: Vec3f? = null) {
+fun EditorScene.addCamera(parent: GameEntity?, pos: Vec3f? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val name = project.uniquifyName("Camera")

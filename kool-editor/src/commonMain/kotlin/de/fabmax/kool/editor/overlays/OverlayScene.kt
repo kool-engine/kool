@@ -37,11 +37,11 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
         clearDepth = false
         tryEnableInfiniteDepth()
 
+        addNode(grid)
         addNode(sceneObjects)
         addNode(physicsObjects)
         addNode(selection)
         addNode(gizmo)
-        addNode(grid)
     }
 
     fun doPicking(ptr: Pointer) {

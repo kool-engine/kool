@@ -268,7 +268,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         val isSwing: Boolean get() = jointComponent.data.jointData::class in swingClasses
 
         fun rayTest(rayTest: RayTest): Boolean {
-            var isHit = false
+            var isHit = rayTest(rayTest, jointCenterMesh)
             if (isPrismaticX) isHit = isHit || rayTest(rayTest, xPrismaticJointMesh)
             if (isPrismaticY) isHit = isHit || rayTest(rayTest, yPrismaticJointMesh)
             if (isPrismaticZ) isHit = isHit || rayTest(rayTest, zPrismaticJointMesh)

@@ -343,11 +343,11 @@ class JointEditor : ComponentEditor<JointComponent>() {
     private val JointData.jointOption: JointOption get() = JointOption.entries.first { it.matches(this) }
 
     private enum class JointOption(val label: String, val matches: (JointData?) -> Boolean) {
-        Fixed("Fixed", { it is JointData.Fixed }),
-        Distance("Distance", { it is JointData.Distance }),
         Revolute("Revolute", { it is JointData.Revolute }),
         Spherical("Spherical", { it is JointData.Spherical }),
-        Prismatic("Prismatic", { it is JointData.Prismatic })
+        Prismatic("Prismatic", { it is JointData.Prismatic }),
+        Distance("Distance", { it is JointData.Distance }),
+        Fixed("Fixed", { it is JointData.Fixed }),
     }
 
     companion object {
