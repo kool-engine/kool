@@ -2,21 +2,25 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.toHierarchy
 import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.util.launchOnMainThread
 
 class ChangeEntityHierarchyAction(
-    moveNodeModels: List<GameEntity>,
+    moveEntities: List<GameEntity>,
     val newParentId: EntityId,
     val insertionPos: GameEntity.InsertionPos
-) : GameEntityAction(moveNodeModels) {
+) : EditorAction {
 
     private val undoInfos = mutableMapOf<EntityId, UndoInfo>()
+    private val moveHierarchy = moveEntities.toHierarchy().associateBy { it.entityData.id }
 
     init {
-        moveNodeModels.forEach { moveNodeModel ->
-            val parent = checkNotNull(moveNodeModel.parent)
-            val undoIdx = parent.children.indexOf(moveNodeModel)
+        moveHierarchy.keys.forEach { moveEntityId ->
+            val gameEntity = checkNotNull(moveEntityId.gameEntity)
+            val parent = checkNotNull(gameEntity.parent)
+            val undoIdx = parent.children.indexOf(gameEntity)
             val undoPos = if (undoIdx > 0) {
                 val after = parent.children[undoIdx - 1]
                 GameEntity.InsertionPos.After(after.id)
@@ -24,19 +28,20 @@ class ChangeEntityHierarchyAction(
                 val before = parent.children.getOrNull(undoIdx + 1)
                 before?.let { GameEntity.InsertionPos.Before(it.id) } ?: GameEntity.InsertionPos.End
             }
-            undoInfos[moveNodeModel.id] = UndoInfo(parent.id, undoPos)
+            undoInfos[moveEntityId] = UndoInfo(parent.id, undoPos)
         }
     }
 
     override fun doAction() {
         launchOnMainThread {
             var insertionPos = this.insertionPos
-            gameEntities.forEach { gameEntity ->
+            moveHierarchy.keys.forEach { moveEntityId ->
+                val gameEntity = checkNotNull(moveEntityId.gameEntity)
+                val hierarchy = checkNotNull(moveHierarchy[gameEntity.id])
                 gameEntity.scene.removeGameEntity(gameEntity)
 
-                val entityData = gameEntity.entityData
-                entityData.parentId = newParentId
-                gameEntity.scene.addGameEntity(entityData, insertionPos)
+                hierarchy.entityData.parentId = newParentId
+                gameEntity.scene.addGameEntities(hierarchy, insertionPos)
                 insertionPos = GameEntity.InsertionPos.After(gameEntity.id)
             }
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
@@ -45,14 +50,14 @@ class ChangeEntityHierarchyAction(
 
     override fun undoAction() {
         launchOnMainThread {
-            gameEntities.forEach { gameEntity ->
-                undoInfos[gameEntity.id]?.let { undoInfo ->
-                    gameEntity.scene.removeGameEntity(gameEntity)
+            moveHierarchy.keys.forEach { moveEntityId ->
+                val gameEntity = checkNotNull(moveEntityId.gameEntity)
+                val hierarchy = checkNotNull(moveHierarchy[gameEntity.id])
+                val undoInfo = checkNotNull(undoInfos[gameEntity.id])
+                gameEntity.scene.removeGameEntity(gameEntity)
 
-                    val entityData = gameEntity.entityData
-                    entityData.parentId = undoInfo.parent
-                    gameEntity.scene.addGameEntity(entityData, undoInfo.insertionPos)
-                }
+                hierarchy.entityData.parentId = undoInfo.parent
+                gameEntity.scene.addGameEntities(hierarchy, undoInfo.insertionPos)
             }
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
