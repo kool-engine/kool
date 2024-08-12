@@ -2,9 +2,16 @@ package de.fabmax.kool.editor.actions
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.GameEntityDataHierarchy
 import de.fabmax.kool.editor.api.toHierarchy
+import de.fabmax.kool.editor.components.globalToLocalD
+import de.fabmax.kool.editor.components.localToGlobalD
+import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.data.TransformComponentData
+import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.util.gameEntity
+import de.fabmax.kool.math.Mat4d
 import de.fabmax.kool.util.launchOnMainThread
 
 class ChangeEntityHierarchyAction(
@@ -38,8 +45,9 @@ class ChangeEntityHierarchyAction(
             moveHierarchy.keys.forEach { moveEntityId ->
                 val gameEntity = checkNotNull(moveEntityId.gameEntity)
                 val hierarchy = checkNotNull(moveHierarchy[gameEntity.id])
-                gameEntity.scene.removeGameEntity(gameEntity)
+                hierarchy.modifyTransform(newParentId.gameEntity)
 
+                gameEntity.scene.removeGameEntity(gameEntity)
                 hierarchy.entityData.parentId = newParentId
                 gameEntity.scene.addGameEntities(hierarchy, insertionPos)
                 insertionPos = GameEntity.InsertionPos.After(gameEntity.id)
@@ -54,13 +62,26 @@ class ChangeEntityHierarchyAction(
                 val gameEntity = checkNotNull(moveEntityId.gameEntity)
                 val hierarchy = checkNotNull(moveHierarchy[gameEntity.id])
                 val undoInfo = checkNotNull(undoInfos[gameEntity.id])
-                gameEntity.scene.removeGameEntity(gameEntity)
+                hierarchy.modifyTransform(undoInfo.parent.gameEntity)
 
+                gameEntity.scene.removeGameEntity(gameEntity)
                 hierarchy.entityData.parentId = undoInfo.parent
                 gameEntity.scene.addGameEntities(hierarchy, undoInfo.insertionPos)
             }
             KoolEditor.instance.ui.sceneBrowser.refreshSceneTree()
         }
+    }
+
+    private fun GameEntityDataHierarchy.modifyTransform(newParent: GameEntity?) {
+        val transformComp = entityData.components.first { it.data is TransformComponentData }
+        val transformData = transformComp.data as TransformComponentData
+        val globalToNew = newParent?.globalToLocalD ?: Mat4d.IDENTITY
+
+        val newTransform = globalToNew * entityData.id.gameEntity!!.localToGlobalD
+        val newTransformData = transformData.copy(transform = TransformData(newTransform))
+
+        val replaceIndex = entityData.components.indexOf(transformComp)
+        entityData.components[replaceIndex] = ComponentInfo(newTransformData)
     }
 
     private class UndoInfo(val parent: EntityId, val insertionPos: GameEntity.InsertionPos)
