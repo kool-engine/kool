@@ -26,6 +26,7 @@ class MaterialReferenceEditor : ComponentEditor<MaterialReferenceComponent>() {
             imageIcon = Icons.small.palette,
             onRemove = ::removeComponent,
             titleWidth = sizes.baseSize * 2.3f,
+            scopeName = material.name,
             headerContent = {
                 val (items, idx) = makeMaterialItemsAndIndex(allTheSameMaterial)
                 val dndHandler = rememberMaterialDndHandler(components, uiNode)

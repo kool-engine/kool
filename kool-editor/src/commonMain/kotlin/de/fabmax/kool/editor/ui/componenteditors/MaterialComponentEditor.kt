@@ -3,16 +3,13 @@ package de.fabmax.kool.editor.ui.componenteditors
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
-import de.fabmax.kool.editor.ui.Icons
-import de.fabmax.kool.editor.ui.baseSize
-import de.fabmax.kool.editor.ui.defaultComboBoxStyle
-import de.fabmax.kool.editor.ui.italicText
+import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.modules.ui2.*
 import kotlin.reflect.KClass
 
 class MaterialComponentEditor : ComponentEditor<MaterialComponent>() {
 
-    override fun UiScope.compose() {
+    override fun UiScope.compose() = Column(Grow.Std, Grow.Std) {
         if (components.size > 1) {
             Text("Multiple materials selected") {
                 modifier
@@ -21,7 +18,33 @@ class MaterialComponentEditor : ComponentEditor<MaterialComponent>() {
                     .textAlignX(AlignmentX.Center)
                     .font(sizes.italicText)
             }
-            return
+            return@Column
+        }
+
+        menuRow {
+            Text("Name:") {
+                modifier
+                    .alignY(AlignmentY.Center)
+                    .width(sizes.editorLabelWidthSmall)
+            }
+
+            var editName by remember(component.name)
+            TextField(editName) {
+                if (!isFocused.use()) {
+                    editName = component.name
+                }
+                defaultTextfieldStyle()
+                modifier
+                    .hint("Name")
+                    .width(Grow.Std)
+                    .alignY(AlignmentY.Center)
+                    .padding(vertical = sizes.smallGap)
+                    .onChange { editName = it }
+                    .onEnterPressed {
+                        SetComponentDataAction(component, component.data, component.data.copy(name = it)).apply()
+                        surface.unfocus(this)
+                    }
+            }
         }
 
         componentPanel(
@@ -29,6 +52,7 @@ class MaterialComponentEditor : ComponentEditor<MaterialComponent>() {
             imageIcon = Icons.small.palette,
             onRemove = ::removeComponent,
             titleWidth = sizes.baseSize * 2.3f,
+            scopeName = component.name,
             headerContent = {
                 ComboBox {
                     defaultComboBoxStyle()

@@ -47,6 +47,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         titleWidth: Dimension = Grow.Std,
         headerContent: (RowScope.() -> Unit)? = null,
         startExpanded: Boolean = getPanelState(true),
+        scopeName: String = title,
         block: ColumnScope.() -> Any?
     ) = entityEditorPanel(
         title = title,
@@ -55,6 +56,7 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
         titleWidth = titleWidth,
         headerContent = headerContent,
         startExpanded = startExpanded,
+        scopeName = scopeName,
         onCollapseChanged = { setPanelState(it) },
         block = block,
     )
@@ -337,6 +339,7 @@ fun UiScope.entityEditorPanel(
     headerContent: (RowScope.() -> Unit)? = null,
     startExpanded: Boolean = true,
     onCollapseChanged: ((Boolean) -> Unit)? = null,
+    scopeName: String = title,
     block: ColumnScope.() -> Any?
 ) = collapsablePanel(
     title,
@@ -344,6 +347,7 @@ fun UiScope.entityEditorPanel(
     titleWidth = titleWidth,
     startExpanded = startExpanded,
     onCollapseChanged = onCollapseChanged,
+    scopeName = scopeName,
     headerContent = {
         headerContent?.invoke(this)
         onRemove?.let { remove ->
