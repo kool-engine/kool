@@ -11,15 +11,19 @@ interface D6Joint : Joint {
     var motionY: D6JointMotion
     var motionZ: D6JointMotion
     var motionTwist: D6JointMotion
-    var motionSwing1: D6JointMotion
-    var motionSwing2: D6JointMotion
+    var motionSwingY: D6JointMotion
+    var motionSwingZ: D6JointMotion
 
     fun enableDistanceLimit(extend: Float, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
     fun enableLinearLimitX(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
     fun enableLinearLimitY(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
     fun enableLinearLimitZ(lowerLimit: Float, upperLimit: Float, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
     fun enableTwistLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
-    fun enableSwingLimit(yLimit: AngleF, zLimit: AngleF, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
+    fun enableSwingLimit(
+        lowerLimitY: AngleF, upperLimitY: AngleF,
+        lowerLimitZ: AngleF, upperLimitZ: AngleF,
+        limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT
+    )
 
     fun disableDistanceLimit()
     fun disableLinearLimitX()

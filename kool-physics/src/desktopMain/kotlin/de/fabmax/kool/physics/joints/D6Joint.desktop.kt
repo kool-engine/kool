@@ -49,11 +49,11 @@ class D6JointImpl(
         get() = joint.getMotion(PxD6AxisEnum.eTWIST).toD6JointMotion()
         set(value) = joint.setMotion(PxD6AxisEnum.eTWIST, value.toPxD6MotionEnum())
 
-    override var motionSwing1: D6JointMotion
+    override var motionSwingY: D6JointMotion
         get() = joint.getMotion(PxD6AxisEnum.eSWING1).toD6JointMotion()
         set(value) = joint.setMotion(PxD6AxisEnum.eSWING1, value.toPxD6MotionEnum())
 
-    override var motionSwing2: D6JointMotion
+    override var motionSwingZ: D6JointMotion
         get() = joint.getMotion(PxD6AxisEnum.eSWING2).toD6JointMotion()
         set(value) = joint.setMotion(PxD6AxisEnum.eSWING2, value.toPxD6MotionEnum())
 
@@ -111,15 +111,21 @@ class D6JointImpl(
         }
     }
 
-    override fun enableSwingLimit(yLimit: AngleF, zLimit: AngleF, limitBehavior: LimitBehavior) {
+    override fun enableSwingLimit(
+        lowerLimitY: AngleF, upperLimitY: AngleF,
+        lowerLimitZ: AngleF, upperLimitZ: AngleF,
+        limitBehavior: LimitBehavior
+    ) {
         memStack {
             val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, yLimit.rad, zLimit.rad, spring)
+            val limit = PxJointLimitPyramid.createAt(this, MemoryStack::nmalloc,
+                lowerLimitY.rad, upperLimitY.rad, lowerLimitZ.rad, upperLimitZ.rad, spring
+            )
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
-            joint.setSwingLimit(limit)
-            motionSwing1 = D6JointMotion.Limited
-            motionSwing2 = D6JointMotion.Limited
+            joint.setPyramidSwingLimit(limit)
+            motionSwingY = D6JointMotion.Limited
+            motionSwingZ = D6JointMotion.Limited
         }
     }
 
@@ -173,8 +179,8 @@ class D6JointImpl(
             val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
             val limit = PxJointLimitCone.createAt(this, MemoryStack::nmalloc, PI_F * 2f, PI_F * 2f, spring)
             joint.setSwingLimit(limit)
-            motionSwing1 = D6JointMotion.Free
-            motionSwing2 = D6JointMotion.Free
+            motionSwingY = D6JointMotion.Free
+            motionSwingZ = D6JointMotion.Free
         }
     }
 

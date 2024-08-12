@@ -6,11 +6,17 @@ import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.JointComponent
 import de.fabmax.kool.editor.components.RigidActorComponent
 import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.data.JointComponentData
 import de.fabmax.kool.editor.data.JointData
+import de.fabmax.kool.editor.data.LimitData
 import de.fabmax.kool.editor.ui.*
+import de.fabmax.kool.math.PI_F
 import de.fabmax.kool.math.toDeg
 import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.physics.joints.D6JointMotion
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MdColor
 
 class JointEditor : ComponentEditor<JointComponent>() {
 
@@ -39,20 +45,32 @@ class JointEditor : ComponentEditor<JointComponent>() {
                 }
             }
         ) {
-            val actorComponents = scene.getAllComponents<RigidActorComponent>().map { RigidActorItem(it) }.sortedBy { it.label }
-            val actorOptionsA = listOf(RigidActorItem(EntityId.NULL, "None (fixed)")) + actorComponents
-            val actorOptionsB = listOf(RigidActorItem(EntityId.NULL, "None")) + actorComponents
+            modifier.padding(bottom = 0.dp)
 
-            val actorIdA = component.data.bodyA
-            val actorIdB = component.data.bodyB
-            val selectedIndexA = actorOptionsA.indexOfFirst { it.entityId == actorIdA }
-            val selectedIndexB = actorOptionsB.indexOfFirst { it.entityId == actorIdB }
-            labeledCombobox("Body A:", actorOptionsA, selectedIndexA) {
-                SetComponentDataAction(component, component.data, component.data.copy(bodyA = it.entityId)).apply()
+            val (itemsA, itemsB) = remember {
+                val actorComponents = scene.getAllComponents<RigidActorComponent>()
+                    .map { RigidActorItem(it) }
+                    .sortedBy { it.label }
+                val actorOptionsA = listOf(RigidActorItem(EntityId.NULL, "None (fixed)")) + actorComponents
+                val actorOptionsB = listOf(RigidActorItem(EntityId.NULL, "None")) + actorComponents
+                ComboBoxItems(actorOptionsA) to ComboBoxItems(actorOptionsB)
             }
-            labeledCombobox("Body B:", actorOptionsB, selectedIndexB) {
-                SetComponentDataAction(component, component.data, component.data.copy(bodyB = it.entityId)).apply()
-            }
+            choicePropertyEditor(
+                choices = itemsA,
+                dataGetter = { it.data },
+                valueGetter = { data -> itemsA.options.find { it.item?.entityId == data.bodyA }?.item ?: itemsA.options[0].item!! },
+                valueSetter = { oldData, newValue -> oldData.copy(bodyA = newValue.entityId) },
+                actionMapper = jointComponentDataActionMapper,
+                label = "Body A:"
+            )
+            choicePropertyEditor(
+                choices = itemsB,
+                dataGetter = { it.data },
+                valueGetter = { data -> itemsB.options.find { it.item?.entityId == data.bodyB }?.item ?: itemsB.options[0].item!! },
+                valueSetter = { oldData, newValue -> oldData.copy(bodyB = newValue.entityId) },
+                actionMapper = jointComponentDataActionMapper,
+                label = "Body B:"
+            )
 
             if (isAllTheSameJoint) {
                 menuDivider()
@@ -62,6 +80,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
                     is JointData.Prismatic -> prismaticEditor()
                     is JointData.Revolute -> revoluteEditor()
                     is JointData.Spherical -> sphericalEditor()
+                    is JointData.D6 -> d6Editor()
                 }
             }
         }
@@ -134,16 +153,16 @@ class JointEditor : ComponentEditor<JointComponent>() {
         }
         booleanPropertyEditor(
             dataGetter = { it.getData<JointData.Revolute>() },
-            valueGetter = { it.isLimited },
-            valueSetter = { oldData, newValue -> oldData.copy(isLimited = newValue) },
+            valueGetter = { it.limit != null },
+            valueSetter = { oldData, newValue -> oldData.copy(limit = if (newValue) LimitData(-PI_F, PI_F) else null) },
             actionMapper = jointDataActionMapper,
             label = "Is limited:",
         )
-        if (component.getData<JointData.Revolute>().isLimited) {
+        if (component.getData<JointData.Revolute>().limit != null) {
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.lowerLimit.toDouble().toDeg() },
-                valueSetter = { oldData, newValue -> oldData.copy(lowerLimit = newValue.toFloat().toRad()) },
+                valueGetter = { it.limit!!.limit1.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(limit1 = newValue.toFloat().toRad())) },
                 actionMapper = jointDataActionMapper,
                 minValue = -360.0,
                 maxValue = 360.0,
@@ -151,8 +170,8 @@ class JointEditor : ComponentEditor<JointComponent>() {
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.upperLimit.toDouble().toDeg() },
-                valueSetter = { oldData, newValue -> oldData.copy(upperLimit = newValue.toFloat().toRad()) },
+                valueGetter = { it.limit!!.limit2.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(limit2 = newValue.toFloat().toRad())) },
                 actionMapper = jointDataActionMapper,
                 minValue = -360.0,
                 maxValue = 360.0,
@@ -160,15 +179,15 @@ class JointEditor : ComponentEditor<JointComponent>() {
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.limitBehavior.stiffness.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(stiffness = newValue.toFloat())) },
+                valueGetter = { it.limit!!.stiffness.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(stiffness = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Stiffness:"
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.limitBehavior.damping.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(damping = newValue.toFloat())) },
+                valueGetter = { it.limit!!.damping.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(damping = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Damping:"
             )
@@ -186,16 +205,16 @@ class JointEditor : ComponentEditor<JointComponent>() {
     private fun ColumnScope.sphericalEditor() {
         booleanPropertyEditor(
             dataGetter = { it.getData<JointData.Spherical>() },
-            valueGetter = { it.isLimited },
-            valueSetter = { oldData, newValue -> oldData.copy(isLimited = newValue) },
+            valueGetter = { it.limit != null },
+            valueSetter = { oldData, newValue -> oldData.copy(limit = if (newValue) LimitData(PI_F, PI_F) else null) },
             actionMapper = jointDataActionMapper,
             label = "Is limited:",
         )
-        if (component.getData<JointData.Spherical>().isLimited) {
+        if (component.getData<JointData.Spherical>().limit != null) {
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.limitAngleY.toDouble().toDeg() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitAngleY = newValue.toFloat().toRad()) },
+                valueGetter = { it.limit!!.limit1.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(limit1 = newValue.toFloat().toRad())) },
                 actionMapper = jointDataActionMapper,
                 minValue = -360.0,
                 maxValue = 360.0,
@@ -203,24 +222,24 @@ class JointEditor : ComponentEditor<JointComponent>() {
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.limitAngleZ.toDouble().toDeg() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitAngleZ = newValue.toFloat().toRad()) },
+                valueGetter = { it.limit!!.limit2.toDouble().toDeg() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(limit2 = newValue.toFloat().toRad())) },
                 actionMapper = jointDataActionMapper,
                 minValue = -360.0,
                 maxValue = 360.0,
                 label = "Limit angle Z:"
             )
             doublePropertyEditor(
-                dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.limitBehavior.stiffness.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(stiffness = newValue.toFloat())) },
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.limit!!.stiffness.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(stiffness = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Stiffness:"
             )
             doublePropertyEditor(
-                dataGetter = { it.getData<JointData.Spherical>() },
-                valueGetter = { it.limitBehavior.damping.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(damping = newValue.toFloat())) },
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.limit!!.damping.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(damping = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Damping:"
             )
@@ -235,40 +254,113 @@ class JointEditor : ComponentEditor<JointComponent>() {
         )
     }
 
+    private fun ColumnScope.d6Editor() {
+        breakSettings(
+            isBreakableGetter = { (it as JointData.D6).isBreakable },
+            isBreakableSetter = { oldData, newValue -> (oldData as JointData.D6).copy(isBreakable = newValue) },
+            forceGetter = { (it as JointData.D6).breakForce.toDouble() },
+            forceSetter = { oldData, newValue -> (oldData as JointData.D6).copy(breakForce = newValue.toFloat()) },
+            torqueGetter = { (it as JointData.D6).breakTorque.toDouble() },
+            torqueSetter = { oldData, newValue -> (oldData as JointData.D6).copy(breakTorque = newValue.toFloat()) },
+        )
+
+        val d6Datas = components.map { it.dataState.use().jointData as JointData.D6 }
+        d6LinearEditor(
+            label = "Linear X:",
+            indicatorColor = MdColor.RED,
+            d6Datas = d6Datas,
+            motionGetter = { it.motionXOption },
+            motionSetter = { option -> applyD6Data { it.copy(motionX = option.option) } }
+        )
+        d6LinearEditor(
+            label = "Linear Y:",
+            indicatorColor = MdColor.LIGHT_GREEN,
+            d6Datas = d6Datas,
+            motionGetter = { it.motionYOption },
+            motionSetter = { option -> applyD6Data { it.copy(motionY = option.option) } }
+        )
+        d6LinearEditor(
+            label = "Linear Z:",
+            indicatorColor = MdColor.BLUE,
+            d6Datas = d6Datas,
+            motionGetter = { it.motionZOption },
+            motionSetter = { option -> applyD6Data { it.copy(motionZ = option.option) } }
+        )
+    }
+
+    private fun applyD6Data(dataMod: (JointData.D6) -> JointData.D6) {
+        components.map {
+            SetComponentDataAction(it, it.data, it.data.copy(jointData = dataMod(it.data.jointData as JointData.D6)))
+        }.fused().apply()
+    }
+
+    private fun ColumnScope.d6LinearEditor(
+        label: String,
+        indicatorColor: Color,
+        d6Datas: List<JointData.D6>,
+        motionGetter: (JointData.D6) -> D6MotionOption,
+        motionSetter: (D6MotionOption) -> Unit,
+    ) = collapsablePanelLvl2(
+        title = label,
+        indicatorColor = indicatorColor,
+        isAlwaysShowIndicator = true,
+        headerContent = {
+            val (motionItems, shapeIdx) = d6MotionOptions.getOptionsAndIndex(d6Datas.map(motionGetter))
+            ComboBox {
+                defaultComboBoxStyle()
+                modifier
+                    .margin(end = sizes.gap)
+                    .width(Grow.Std)
+                    .alignY(AlignmentY.Center)
+                    .items(motionItems)
+                    .selectedIndex(shapeIdx)
+                    .onItemSelected { index -> motionItems[index].item?.let(motionSetter) }
+            }
+        }
+    ) {
+        val motions = d6Datas.map(motionGetter)
+        val allTheSameMotion = motions.all { it == motions[0] }
+        if (allTheSameMotion) {
+            TODO()
+        }
+
+        Unit
+    }
+
     private fun ColumnScope.prismaticEditor() {
         booleanPropertyEditor(
             dataGetter = { it.getData<JointData.Prismatic>() },
-            valueGetter = { it.isLimited },
-            valueSetter = { oldData, newValue -> oldData.copy(isLimited = newValue) },
+            valueGetter = { it.limit != null },
+            valueSetter = { oldData, newValue -> oldData.copy(limit = if (newValue) LimitData(-1f, 1f) else null) },
             actionMapper = jointDataActionMapper,
             label = "Is limited:",
         )
-        if (component.getData<JointData.Prismatic>().isLimited) {
+        if (component.getData<JointData.Revolute>().limit != null) {
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Prismatic>() },
-                valueGetter = { it.lowerLimit.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(lowerLimit = newValue.toFloat()) },
+                valueGetter = { it.limit!!.limit1.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(limit1 = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Lower limit:"
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Prismatic>() },
-                valueGetter = { it.upperLimit.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(upperLimit = newValue.toFloat()) },
+                valueGetter = { it.limit!!.limit2.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(limit2 = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Upper limit:"
             )
             doublePropertyEditor(
-                dataGetter = { it.getData<JointData.Prismatic>() },
-                valueGetter = { it.limitBehavior.stiffness.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(stiffness = newValue.toFloat())) },
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.limit!!.stiffness.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(stiffness = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Stiffness:"
             )
             doublePropertyEditor(
-                dataGetter = { it.getData<JointData.Prismatic>() },
-                valueGetter = { it.limitBehavior.damping.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(limitBehavior = oldData.limitBehavior.copy(damping = newValue.toFloat())) },
+                dataGetter = { it.getData<JointData.Revolute>() },
+                valueGetter = { it.limit!!.damping.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(limit = oldData.limit!!.copy(damping = newValue.toFloat())) },
                 actionMapper = jointDataActionMapper,
                 label = "Damping:"
             )
@@ -320,6 +412,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
 
     private fun applyJointType(option: JointOption) {
         val newData = when (option) {
+            JointOption.D6 -> JointData.D6()
             JointOption.Fixed -> JointData.Fixed()
             JointOption.Distance -> JointData.Distance()
             JointOption.Revolute -> JointData.Revolute()
@@ -343,6 +436,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
     private val JointData.jointOption: JointOption get() = JointOption.entries.first { it.matches(this) }
 
     private enum class JointOption(val label: String, val matches: (JointData?) -> Boolean) {
+        D6("D6", { it is JointData.D6 }),
         Revolute("Revolute", { it is JointData.Revolute }),
         Spherical("Spherical", { it is JointData.Spherical }),
         Prismatic("Prismatic", { it is JointData.Prismatic }),
@@ -350,10 +444,28 @@ class JointEditor : ComponentEditor<JointComponent>() {
         Fixed("Fixed", { it is JointData.Fixed }),
     }
 
+    private val JointData.D6.motionXOption: D6MotionOption get() = D6MotionOption.entries.first { it.option == motionX }
+    private val JointData.D6.motionYOption: D6MotionOption get() = D6MotionOption.entries.first { it.option == motionY }
+    private val JointData.D6.motionZOption: D6MotionOption get() = D6MotionOption.entries.first { it.option == motionZ }
+    private val JointData.D6.motionTwistOption: D6MotionOption get() = D6MotionOption.entries.first { it.option == motionTwist }
+    private val JointData.D6.motionSwingYOption: D6MotionOption get() = D6MotionOption.entries.first { it.option == motionSwingY }
+    private val JointData.D6.motionSwingZOption: D6MotionOption get() = D6MotionOption.entries.first { it.option == motionSwingZ }
+
+    private enum class D6MotionOption(val label: String, val option: D6JointMotion) {
+        Locked("Locked", D6JointMotion.Locked),
+        Limited("Limited", D6JointMotion.Limited),
+        Free("Free", D6JointMotion.Free),
+    }
+
     companion object {
         private val jointOptions = ComboBoxItems(JointOption.entries) { it.label }
+        private val jointComponentDataActionMapper: (JointComponent, JointComponentData, JointComponentData) -> EditorAction = { component, undoData, applyData ->
+            SetComponentDataAction(component, undoData, applyData)
+        }
         private val jointDataActionMapper: (JointComponent, JointData, JointData) -> EditorAction = { component, undoData, applyData ->
             SetComponentDataAction(component, component.data.copy(jointData = undoData), component.data.copy(jointData = applyData))
         }
+
+        private val d6MotionOptions = ComboBoxItems(D6MotionOption.entries) { it.label }
     }
 }

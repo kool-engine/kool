@@ -182,7 +182,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
                 minValue = 0.0
             )
             shapeDoubleEditor<ShapeData.Cylinder>(
-                valueGetter = { it.topRadius },
+                valueGetter = { it.bottomRadius },
                 valueSetter = { oldData, newValue -> oldData.copy(bottomRadius = newValue) },
                 label = "Bottom-radius:",
                 minValue = 0.0

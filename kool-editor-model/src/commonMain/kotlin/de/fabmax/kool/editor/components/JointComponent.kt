@@ -55,6 +55,7 @@ class JointComponent(
             is JointData.Prismatic -> jData.updateJoint(j)
             is JointData.Revolute -> jData.updateJoint(j)
             is JointData.Spherical -> jData.updateJoint(j)
+            is JointData.D6 -> jData.updateJoint(j)
         }
     }
 
@@ -98,6 +99,7 @@ class JointComponent(
             is JointData.Prismatic -> d.createJoint(bodyA, bodyB, poseA, poseB)
             is JointData.Revolute -> d.createJoint(bodyA, bodyB, poseA, poseB)
             is JointData.Spherical -> d.createJoint(bodyA, bodyB, poseA, poseB)
+            is JointData.D6 -> d.createJoint(bodyA, bodyB, poseA, poseB)
         }
     }
 
@@ -121,6 +123,10 @@ class JointComponent(
         return SphericalJoint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
     }
 
+    private fun JointData.D6.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): D6Joint {
+        return D6Joint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
+    }
+
     private fun JointData.Fixed.updateJoint(joint: Joint): Boolean {
         val j = joint as? FixedJoint ?: return false
         if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
@@ -137,23 +143,65 @@ class JointComponent(
 
     private fun JointData.Prismatic.updateJoint(joint: Joint): Boolean {
         val j = joint as? PrismaticJoint ?: return false
-        if (isLimited) j.enableLimit(lowerLimit, upperLimit, limitBehavior.toLimitBehavior()) else j.disableLimit()
         if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        if (limit != null) {
+            j.enableLimit(limit.limit1, limit.limit2, limit.limitBehavior)
+        } else {
+            j.disableLimit()
+        }
         return true
     }
 
     private fun JointData.Revolute.updateJoint(joint: Joint): Boolean {
         val j = joint as? RevoluteJoint ?: return false
         if (isMotor) j.enableAngularMotor(motorSpeed, motorTorque) else j.disableAngularMotor()
-        if (isLimited) j.enableLimit(lowerLimit.rad, upperLimit.rad, limitBehavior.toLimitBehavior()) else j.disableLimit()
         if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        if (limit != null) {
+            j.enableLimit(limit.limit1.rad, limit.limit2.rad, limit.limitBehavior)
+        } else {
+            j.disableLimit()
+        }
         return true
     }
 
     private fun JointData.Spherical.updateJoint(joint: Joint): Boolean {
         val j = joint as? SphericalJoint ?: return false
-        if (isLimited) j.enableLimit(limitAngleY.rad, limitAngleZ.rad, limitBehavior.toLimitBehavior()) else j.disableLimit()
         if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+        if (limit != null) {
+            j.enableLimit(limit.limit1.rad, limit.limit2.rad, limit.limitBehavior)
+        } else {
+            j.disableLimit()
+        }
+        return true
+    }
+
+    private fun JointData.D6.updateJoint(joint: Joint): Boolean {
+        val j = joint as? D6Joint ?: return false
+        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
+
+        if (limitX != null) {
+            j.enableLinearLimitX(limitX.limit1, limitX.limit2, limitX.limitBehavior)
+        } else {
+            j.disableLinearLimitX()
+        }
+        if (limitY != null) {
+            j.enableLinearLimitX(limitY.limit1, limitY.limit2, limitY.limitBehavior)
+        } else {
+            j.disableLinearLimitY()
+        }
+        if (limitZ != null) {
+            j.enableLinearLimitX(limitZ.limit1, limitZ.limit2, limitZ.limitBehavior)
+        } else {
+            j.disableLinearLimitZ()
+        }
+
+        j.motionX = motionX
+        j.motionY = motionY
+        j.motionZ = motionZ
+        j.motionTwist = motionTwist
+        j.motionSwingY = motionSwingY
+        j.motionSwingZ = motionSwingZ
+
         return true
     }
 
@@ -178,5 +226,5 @@ class JointComponent(
         return bodyA to bodyB
     }
 
-    private fun LimitBehaviorData.toLimitBehavior() = LimitBehavior(stiffness, damping, restitution, bounceThreshold)
+    private val LimitData.limitBehavior: LimitBehavior get() = LimitBehavior(stiffness, damping, restitution, bounceThreshold)
 }

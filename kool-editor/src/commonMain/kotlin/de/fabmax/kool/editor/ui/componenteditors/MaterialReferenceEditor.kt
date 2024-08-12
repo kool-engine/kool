@@ -26,7 +26,7 @@ class MaterialReferenceEditor : ComponentEditor<MaterialReferenceComponent>() {
             imageIcon = Icons.small.palette,
             onRemove = ::removeComponent,
             titleWidth = sizes.baseSize * 2.3f,
-            scopeName = material.name,
+            scopeName = components[0].material?.name ?: "default-material",
             headerContent = {
                 val (items, idx) = makeMaterialItemsAndIndex(allTheSameMaterial)
                 val dndHandler = rememberMaterialDndHandler(components, uiNode)
@@ -62,6 +62,8 @@ class MaterialReferenceEditor : ComponentEditor<MaterialReferenceComponent>() {
                 }
             }
         ) {
+            modifier.padding(0.dp)
+
             if (allTheSameMaterial) {
                 val checkedMaterial = components[0].material ?: return@componentPanel Unit
                 labeledTextField("Name:", checkedMaterial.name, labelWidth = sizes.editorLabelWidthSmall) {

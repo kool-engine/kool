@@ -127,7 +127,6 @@ inline fun UiScope.collapsablePanelLvl2(
                     )
                 }
                 block()
-                divider(colors.weakDividerColor, horizontalMargin = 0.dp)
             }
         }
     }

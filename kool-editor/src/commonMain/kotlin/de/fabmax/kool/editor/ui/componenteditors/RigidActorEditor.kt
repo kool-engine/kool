@@ -23,6 +23,8 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         imageIcon = Icons.small.physics,
         onRemove = ::removeComponent,
     ) {
+        modifier.padding(0.dp)
+
         val (typeItems, typeIdx) = typeOptions.getOptionsAndIndex(components.map { it.dataState.use().typeOption })
         labeledCombobox(
             label = "Type:",

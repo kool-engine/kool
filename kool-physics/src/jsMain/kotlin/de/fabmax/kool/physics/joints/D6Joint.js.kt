@@ -44,11 +44,11 @@ class D6JointImpl(
         get() = pxJoint.getMotion(PxD6AxisEnum.eTWIST).toD6JointMotion()
         set(value) = pxJoint.setMotion(PxD6AxisEnum.eTWIST, value.toPxD6MotionEnum())
 
-    override var motionSwing1: D6JointMotion
+    override var motionSwingY: D6JointMotion
         get() = pxJoint.getMotion(PxD6AxisEnum.eSWING1).toD6JointMotion()
         set(value) = pxJoint.setMotion(PxD6AxisEnum.eSWING1, value.toPxD6MotionEnum())
 
-    override var motionSwing2: D6JointMotion
+    override var motionSwingZ: D6JointMotion
         get() = pxJoint.getMotion(PxD6AxisEnum.eSWING2).toD6JointMotion()
         set(value) = pxJoint.setMotion(PxD6AxisEnum.eSWING2, value.toPxD6MotionEnum())
 
@@ -106,15 +106,21 @@ class D6JointImpl(
         }
     }
 
-    override fun enableSwingLimit(yLimit: AngleF, zLimit: AngleF, limitBehavior: LimitBehavior) {
+    override fun enableSwingLimit(
+        lowerLimitY: AngleF, upperLimitY: AngleF,
+        lowerLimitZ: AngleF, upperLimitZ: AngleF,
+        limitBehavior: LimitBehavior
+    ) {
         MemoryStack.stackPush().use { mem ->
             val spring = mem.autoDelete(PxSpring(limitBehavior.stiffness, limitBehavior.damping))
-            val limit = mem.autoDelete(PxJointLimitCone(yLimit.rad, zLimit.rad, spring))
+            val limit = mem.autoDelete(PxJointLimitPyramid(
+                lowerLimitY.rad, upperLimitY.rad, lowerLimitZ.rad, upperLimitZ.rad, spring
+            ))
             limit.restitution = limitBehavior.restitution
             limit.bounceThreshold = limitBehavior.bounceThreshold
-            pxJoint.setSwingLimit(limit)
-            motionSwing1 = D6JointMotion.Limited
-            motionSwing2 = D6JointMotion.Limited
+            pxJoint.setPyramidSwingLimit(limit)
+            motionSwingY = D6JointMotion.Limited
+            motionSwingZ = D6JointMotion.Limited
         }
     }
 
@@ -168,8 +174,8 @@ class D6JointImpl(
             val spring = mem.autoDelete(PxSpring(0f, 0f))
             val limit = mem.autoDelete(PxJointLimitCone(PI_F * 2f, PI_F * 2f, spring))
             pxJoint.setSwingLimit(limit)
-            motionSwing1 = D6JointMotion.Free
-            motionSwing2 = D6JointMotion.Free
+            motionSwingY = D6JointMotion.Free
+            motionSwingZ = D6JointMotion.Free
         }
     }
 

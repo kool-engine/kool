@@ -45,6 +45,7 @@ fun addSceneObjectMenu(label: String, parent: GameEntity?, position: Vec3f? = nu
         }
     }
     subMenu("Joint", Icons.small.joint) {
+        item("D6") { scene.addJoint(parent, JointData.D6(), position) }
         item("Revolute") { scene.addJoint(parent, JointData.Revolute(), position) }
         item("Spherical") { scene.addJoint(parent, JointData.Spherical(), position) }
         item("Prismatic") { scene.addJoint(parent, JointData.Prismatic(), position) }
