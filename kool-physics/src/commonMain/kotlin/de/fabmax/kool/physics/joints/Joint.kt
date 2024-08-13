@@ -13,6 +13,7 @@ interface Joint : Releasable {
 
     val bodyA: RigidActor?
     val bodyB: RigidActor
+    var isChildCollisionEnabled: Boolean
 
     val frameA: PoseF
     val frameB: PoseF

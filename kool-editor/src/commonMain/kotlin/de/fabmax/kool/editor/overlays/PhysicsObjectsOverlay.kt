@@ -32,12 +32,12 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     private val joints = mutableListOf<JointInstance>()
 
     private val centerInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val xPrismaticInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val yPrismaticInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val zPrismaticInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val twistInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val ySwingInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val zSwingInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val linearXInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val linearYInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val linearZInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val angularXInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val angularYInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val angularZInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
 
     private val jointCenterMesh = Mesh(meshAttrs, centerInstances, "centers").apply {
         isCastingShadow = false
@@ -51,7 +51,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private val xPrismaticJointMesh = Mesh(meshAttrs, xPrismaticInstances, "x-prismatics").apply {
+    private val linearXJointMesh = Mesh(meshAttrs, linearXInstances, "linear-x").apply {
         isCastingShadow = false
         rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
@@ -61,7 +61,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private val yPrismaticJointMesh = Mesh(meshAttrs, yPrismaticInstances, "y-prismatics").apply {
+    private val linearYJointMesh = Mesh(meshAttrs, linearYInstances, "linear-y").apply {
         isCastingShadow = false
         rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
@@ -70,7 +70,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private val zPrismaticJointMesh = Mesh(meshAttrs, zPrismaticInstances, "z-prismatics").apply {
+    private val linearZJointMesh = Mesh(meshAttrs, linearZInstances, "linear-z").apply {
         isCastingShadow = false
         rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
@@ -80,7 +80,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private val twistJointMesh = Mesh(meshAttrs, twistInstances, "twists").apply {
+    private val angularXJointMesh = Mesh(meshAttrs, angularXInstances, "angular-x").apply {
         isCastingShadow = false
         rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
@@ -103,7 +103,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private val ySwingJointMesh = Mesh(meshAttrs, ySwingInstances, "y-swing").apply {
+    private val angularYJointMesh = Mesh(meshAttrs, angularYInstances, "angular-y").apply {
         isCastingShadow = false
         rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
@@ -113,7 +113,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private val zSwingJointMesh = Mesh(meshAttrs, zSwingInstances, "z-swing").apply {
+    private val angularZJointMesh = Mesh(meshAttrs, angularZInstances, "angular-z").apply {
         isCastingShadow = false
         rayTest = MeshRayTest.geometryTest(this)
         shader = objectShader
@@ -126,12 +126,12 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
 
     init {
         addNode(jointCenterMesh)
-        addNode(twistJointMesh)
-        addNode(ySwingJointMesh)
-        addNode(zSwingJointMesh)
-        addNode(xPrismaticJointMesh)
-        addNode(yPrismaticJointMesh)
-        addNode(zPrismaticJointMesh)
+        addNode(angularXJointMesh)
+        addNode(angularYJointMesh)
+        addNode(angularZJointMesh)
+        addNode(linearXJointMesh)
+        addNode(linearYJointMesh)
+        addNode(linearZJointMesh)
 
         onUpdate {
             updateOverlayInstances()
@@ -147,12 +147,12 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
 
         centerInstances.addInstances(joints, Color.WHITE) { true }
-        xPrismaticInstances.addInstances(joints, MdColor.RED.toLinear()) { it.isPrismaticX }
-        yPrismaticInstances.addInstances(joints, MdColor.LIGHT_GREEN.toLinear()) { it.isPrismaticY }
-        zPrismaticInstances.addInstances(joints, MdColor.BLUE.toLinear()) { it.isPrismaticZ }
-        twistInstances.addInstances(joints, MdColor.PURPLE.toLinear()) { it.isTwist }
-        ySwingInstances.addInstances(joints, MdColor.CYAN.toLinear()) { it.isSwingY }
-        zSwingInstances.addInstances(joints, MdColor.CYAN.toLinear()) { it.isSwingZ }
+        linearXInstances.addInstances(joints, MdColor.RED.toLinear()) { it.isLinearX }
+        linearYInstances.addInstances(joints, MdColor.LIGHT_GREEN.toLinear()) { it.isLinearY }
+        linearZInstances.addInstances(joints, MdColor.BLUE.toLinear()) { it.isLinearZ }
+        angularXInstances.addInstances(joints, MdColor.PURPLE.toLinear()) { it.isAngularX }
+        angularYInstances.addInstances(joints, MdColor.LIME.toLinear()) { it.isAngularY }
+        angularZInstances.addInstances(joints, MdColor.CYAN.toLinear()) { it.isAngularZ }
     }
 
     private fun MeshInstanceList.addInstances(objs: List<JointInstance>, color: Color, filter: (JointInstance) -> Boolean) {
@@ -265,37 +265,37 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private val JointData.isPrismaticX: Boolean get() =
-        this is JointData.Prismatic || this is JointData.Distance || (this is JointData.D6 && motionX != D6JointMotion.Locked)
-    private val JointData.isPrismaticY: Boolean get() =
-        this is JointData.Distance || (this is JointData.D6 && motionY != D6JointMotion.Locked)
-    private val JointData.isPrismaticZ: Boolean get() =
-        this is JointData.Distance || (this is JointData.D6 && motionZ != D6JointMotion.Locked)
-    private val JointData.isTwist: Boolean get() =
-        this is JointData.Revolute || this is JointData.Spherical || (this is JointData.D6 && motionTwist != D6JointMotion.Locked)
-    private val JointData.isSwingY: Boolean get() =
-        this is JointData.Spherical || (this is JointData.D6 && motionSwingY != D6JointMotion.Locked)
-    private val JointData.isSwingZ: Boolean get() =
-        this is JointData.Spherical || (this is JointData.D6 && motionSwingZ != D6JointMotion.Locked)
+    private val JointData.isLinearX: Boolean get() =
+        this is JointData.Prismatic || this is JointData.Distance || (this is JointData.D6 && linearMotionX != D6JointMotion.Locked)
+    private val JointData.isLinearY: Boolean get() =
+        this is JointData.Distance || (this is JointData.D6 && linearMotionY != D6JointMotion.Locked)
+    private val JointData.isLinearZ: Boolean get() =
+        this is JointData.Distance || (this is JointData.D6 && linearMotionZ != D6JointMotion.Locked)
+    private val JointData.isAngularX: Boolean get() =
+        this is JointData.Revolute || this is JointData.Spherical || (this is JointData.D6 && angularMotionX != D6JointMotion.Locked)
+    private val JointData.isAngularY: Boolean get() =
+        this is JointData.Spherical || (this is JointData.D6 && angularMotionY != D6JointMotion.Locked)
+    private val JointData.isAngularZ: Boolean get() =
+        this is JointData.Spherical || (this is JointData.D6 && angularMotionZ != D6JointMotion.Locked)
 
     private inner class JointInstance(val jointComponent: JointComponent) : OverlayObject(jointComponent.gameEntity) {
         override val color: Color = Color.WHITE
 
-        val isPrismaticX: Boolean get() = jointComponent.data.jointData.isPrismaticX
-        val isPrismaticY: Boolean get() = jointComponent.data.jointData.isPrismaticY
-        val isPrismaticZ: Boolean get() = jointComponent.data.jointData.isPrismaticZ
-        val isTwist: Boolean get() = jointComponent.data.jointData.isTwist
-        val isSwingY: Boolean get() = jointComponent.data.jointData.isSwingY
-        val isSwingZ: Boolean get() = jointComponent.data.jointData.isSwingZ
+        val isLinearX: Boolean get() = jointComponent.data.jointData.isLinearX
+        val isLinearY: Boolean get() = jointComponent.data.jointData.isLinearY
+        val isLinearZ: Boolean get() = jointComponent.data.jointData.isLinearZ
+        val isAngularX: Boolean get() = jointComponent.data.jointData.isAngularX
+        val isAngularY: Boolean get() = jointComponent.data.jointData.isAngularY
+        val isAngularZ: Boolean get() = jointComponent.data.jointData.isAngularZ
 
         fun rayTest(rayTest: RayTest): Boolean {
             var isHit = rayTest(rayTest, jointCenterMesh)
-            if (isPrismaticX) isHit = isHit || rayTest(rayTest, xPrismaticJointMesh)
-            if (isPrismaticY) isHit = isHit || rayTest(rayTest, yPrismaticJointMesh)
-            if (isPrismaticZ) isHit = isHit || rayTest(rayTest, zPrismaticJointMesh)
-            if (isTwist) isHit = isHit || rayTest(rayTest, twistJointMesh)
-            if (isSwingY) isHit = isHit || rayTest(rayTest, ySwingJointMesh)
-            if (isSwingZ) isHit = isHit || rayTest(rayTest, zSwingJointMesh)
+            if (isLinearX) isHit = isHit || rayTest(rayTest, linearXJointMesh)
+            if (isLinearY) isHit = isHit || rayTest(rayTest, linearYJointMesh)
+            if (isLinearZ) isHit = isHit || rayTest(rayTest, linearZJointMesh)
+            if (isAngularX) isHit = isHit || rayTest(rayTest, angularXJointMesh)
+            if (isAngularY) isHit = isHit || rayTest(rayTest, angularYJointMesh)
+            if (isAngularZ) isHit = isHit || rayTest(rayTest, angularZJointMesh)
             return isHit
         }
     }

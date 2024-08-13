@@ -20,11 +20,24 @@ abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint
     override val isBroken: Boolean
         get() = pxJoint.constraintFlags.isSet(PxConstraintFlagEnum.eBROKEN)
 
+    override var isChildCollisionEnabled: Boolean = false
+        set(value) {
+            field = value
+            if (value) {
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eCOLLISION_ENABLED, true)
+            } else {
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eCOLLISION_ENABLED, false)
+            }
+        }
+
     override var debugVisualize: Boolean = false
-        set(value) = if (value) {
-            pxJoint.constraintFlags.raise(PxConstraintFlagEnum.eVISUALIZATION)
-        } else {
-            pxJoint.constraintFlags.clear(PxConstraintFlagEnum.eVISUALIZATION)
+        set(value) {
+            field = value
+            if (value) {
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eVISUALIZATION, true)
+            } else {
+                pxJoint.setConstraintFlag(PxConstraintFlagEnum.eVISUALIZATION, false)
+            }
         }
 
     override fun enableBreakage(breakForce: Float, breakTorque: Float) = pxJoint.setBreakForce(breakForce, breakTorque)

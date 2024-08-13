@@ -50,7 +50,7 @@ fun addSceneObjectMenu(label: String, parent: GameEntity?, position: Vec3f? = nu
         item("Spherical") { scene.addJoint(parent, JointData.Spherical(), position) }
         item("Prismatic") { scene.addJoint(parent, JointData.Prismatic(), position) }
         item("Distance") { scene.addJoint(parent, JointData.Distance(), position) }
-        item("Fixed") { scene.addJoint(parent, JointData.Fixed(), position) }
+        item("Fixed") { scene.addJoint(parent, JointData.Fixed, position) }
     }
     item("Camera", Icons.small.camera) { scene.addCamera(parent, position) }
     item("Empty node", Icons.small.emptyObject) { scene.addEmptyNode(parent, position) }

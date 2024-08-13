@@ -49,9 +49,12 @@ class JointComponent(
         if (oldData.bodyA != newData.bodyA || oldData.bodyB != newData.bodyB) return false
         val j = joint ?: return false
 
+        if (newData.isBreakable) j.enableBreakage(newData.breakForce, newData.breakTorque) else j.disableBreakage()
+        j.isChildCollisionEnabled = newData.isCollisionEnabled
+
         return when (val jData = newData.jointData) {
+            is JointData.Fixed -> true
             is JointData.Distance -> jData.updateJoint(j)
-            is JointData.Fixed -> jData.updateJoint(j)
             is JointData.Prismatic -> jData.updateJoint(j)
             is JointData.Revolute -> jData.updateJoint(j)
             is JointData.Spherical -> jData.updateJoint(j)
@@ -77,7 +80,10 @@ class JointComponent(
 
         val bodyA = actorComponentA?.rigidActor
         val bodyB = actorComponentB.rigidActor ?: return
-        joint = createJoint(bodyA, bodyB, poseA, poseB)
+        joint = createJoint(bodyA, bodyB, poseA, poseB).apply {
+            isChildCollisionEnabled = data.isCollisionEnabled
+            if (data.isBreakable) enableBreakage(data.breakForce, data.breakTorque) else disableBreakage()
+        }
     }
 
     override fun destroyComponent() {
@@ -94,17 +100,13 @@ class JointComponent(
             bodyB.wakeUp()
         }
         return when (val d = data.jointData) {
-            is JointData.Fixed -> d.createJoint(bodyA, bodyB, poseA, poseB)
+            is JointData.Fixed -> FixedJoint(bodyA, bodyB, poseA, poseB)
             is JointData.Distance -> d.createJoint(bodyA, bodyB, poseA, poseB)
             is JointData.Prismatic -> d.createJoint(bodyA, bodyB, poseA, poseB)
             is JointData.Revolute -> d.createJoint(bodyA, bodyB, poseA, poseB)
             is JointData.Spherical -> d.createJoint(bodyA, bodyB, poseA, poseB)
             is JointData.D6 -> d.createJoint(bodyA, bodyB, poseA, poseB)
         }
-    }
-
-    private fun JointData.Fixed.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): FixedJoint {
-        return FixedJoint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
     }
 
     private fun JointData.Distance.createJoint(bodyA: RigidActor?, bodyB: RigidActor, poseA: PoseF, poseB: PoseF): DistanceJoint {
@@ -127,23 +129,15 @@ class JointComponent(
         return D6Joint(bodyA, bodyB, poseA, poseB).also { updateJoint(it) }
     }
 
-    private fun JointData.Fixed.updateJoint(joint: Joint): Boolean {
-        val j = joint as? FixedJoint ?: return false
-        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
-        return true
-    }
-
     private fun JointData.Distance.updateJoint(joint: Joint): Boolean {
         val j = joint as? DistanceJoint ?: return false
         if (minDistance > 0f) j.setMinDistance(minDistance) else j.clearMinDistance()
         if (maxDistance > 0f) j.setMaxDistance(maxDistance) else j.clearMaxDistance()
-        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
         return true
     }
 
     private fun JointData.Prismatic.updateJoint(joint: Joint): Boolean {
         val j = joint as? PrismaticJoint ?: return false
-        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
         if (limit != null) {
             j.enableLimit(limit.limit1, limit.limit2, limit.limitBehavior)
         } else {
@@ -155,7 +149,6 @@ class JointComponent(
     private fun JointData.Revolute.updateJoint(joint: Joint): Boolean {
         val j = joint as? RevoluteJoint ?: return false
         if (isMotor) j.enableAngularMotor(motorSpeed, motorTorque) else j.disableAngularMotor()
-        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
         if (limit != null) {
             j.enableLimit(limit.limit1.rad, limit.limit2.rad, limit.limitBehavior)
         } else {
@@ -166,7 +159,6 @@ class JointComponent(
 
     private fun JointData.Spherical.updateJoint(joint: Joint): Boolean {
         val j = joint as? SphericalJoint ?: return false
-        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
         if (limit != null) {
             j.enableLimit(limit.limit1.rad, limit.limit2.rad, limit.limitBehavior)
         } else {
@@ -177,30 +169,44 @@ class JointComponent(
 
     private fun JointData.D6.updateJoint(joint: Joint): Boolean {
         val j = joint as? D6Joint ?: return false
-        if (isBreakable) j.enableBreakage(breakForce, breakTorque) else j.disableBreakage()
 
-        if (limitX != null) {
-            j.enableLinearLimitX(limitX.limit1, limitX.limit2, limitX.limitBehavior)
+        if (linearLimitX != null) {
+            j.enableLinearLimitX(linearLimitX.limit1, linearLimitX.limit2, linearLimitX.limitBehavior)
         } else {
             j.disableLinearLimitX()
         }
-        if (limitY != null) {
-            j.enableLinearLimitX(limitY.limit1, limitY.limit2, limitY.limitBehavior)
+        if (linearLimitY != null) {
+            j.enableLinearLimitY(linearLimitY.limit1, linearLimitY.limit2, linearLimitY.limitBehavior)
         } else {
             j.disableLinearLimitY()
         }
-        if (limitZ != null) {
-            j.enableLinearLimitX(limitZ.limit1, limitZ.limit2, limitZ.limitBehavior)
+        if (linearLimitZ != null) {
+            j.enableLinearLimitZ(linearLimitZ.limit1, linearLimitZ.limit2, linearLimitZ.limitBehavior)
         } else {
             j.disableLinearLimitZ()
         }
+        if (angularLimitX != null) {
+            j.enableAngularLimitX(angularLimitX.limit1.rad, angularLimitX.limit2.rad, angularLimitX.limitBehavior)
+        } else {
+            j.disableAngularLimitX()
+        }
+        if (angularLimitY != null) {
+            j.enableAngularLimitY(angularLimitY.limit1.rad, angularLimitY.limit2.rad, angularLimitY.limitBehavior)
+        } else {
+            j.disableAngularLimitY()
+        }
+        if (angularLimitZ != null) {
+            j.enableAngularLimitZ(angularLimitZ.limit1.rad, angularLimitZ.limit2.rad, angularLimitZ.limitBehavior)
+        } else {
+            j.disableAngularLimitZ()
+        }
 
-        j.motionX = motionX
-        j.motionY = motionY
-        j.motionZ = motionZ
-        j.motionTwist = motionTwist
-        j.motionSwingY = motionSwingY
-        j.motionSwingZ = motionSwingZ
+        j.linearMotionX = linearMotionX
+        j.linearMotionY = linearMotionY
+        j.linearMotionZ = linearMotionZ
+        j.angularMotionX = angularMotionX
+        j.angularMotionY = angularMotionY
+        j.angularMotionZ = angularMotionZ
 
         return true
     }
