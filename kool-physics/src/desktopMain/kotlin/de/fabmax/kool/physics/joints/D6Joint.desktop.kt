@@ -2,10 +2,12 @@ package de.fabmax.kool.physics.joints
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
+import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.extensions.*
+import kotlin.math.max
 
 actual fun D6Joint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): D6Joint {
     return D6JointImpl(bodyA, bodyB, frameA, frameB)
@@ -20,10 +22,12 @@ class D6JointImpl(
 
     override val joint: PxD6Joint
 
-    private var ySwingLimitMin = 0f.rad
-    private var ySwingLimitMax = 0f.rad
-    private var zSwingLimitMin = 0f.rad
-    private var zSwingLimitMax = 0f.rad
+    private var yAngularLimitMin = 0f.rad
+    private var yAngularLimitMax = 0f.rad
+    private var zAngularLimitMin = 0f.rad
+    private var zAngularLimitMax = 0f.rad
+    private var limitBehaviorAngularY: LimitBehavior? = null
+    private var limitBehaviorAngularZ: LimitBehavior? = null
     private val targetDriveVelLinear = MutableVec3f()
     private val targetDriveVelAngular = MutableVec3f()
 
@@ -114,32 +118,24 @@ class D6JointImpl(
     }
 
     override fun enableAngularLimitY(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
-        memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            ySwingLimitMin = lowerLimit
-            ySwingLimitMax = upperLimit
-            val limit = PxJointLimitPyramid.createAt(this, MemoryStack::nmalloc,
-                ySwingLimitMin.rad, ySwingLimitMax.rad, zSwingLimitMin.rad, zSwingLimitMax.rad, spring
-            )
-            limit.restitution = limitBehavior.restitution
-            limit.bounceThreshold = limitBehavior.bounceThreshold
-            joint.setPyramidSwingLimit(limit)
-            angularMotionY = D6JointMotion.Limited
+        limitBehaviorAngularY = limitBehavior
+        yAngularLimitMin = lowerLimit
+        yAngularLimitMax = upperLimit
+        val mergedLimit = getLimitBehaviorAngularYZ()
+        updateAngularLimitYZ(mergedLimit)
+        if (mergedLimit != limitBehavior) {
+            logW { "Conflicting limit behaviors for angular y and angular z limit, merged limit behavior: $mergedLimit" }
         }
     }
 
     override fun enableAngularLimitZ(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior) {
-        memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
-            zSwingLimitMin = lowerLimit
-            zSwingLimitMax = upperLimit
-            val limit = PxJointLimitPyramid.createAt(this, MemoryStack::nmalloc,
-                ySwingLimitMin.rad, ySwingLimitMax.rad, zSwingLimitMin.rad, zSwingLimitMax.rad, spring
-            )
-            limit.restitution = limitBehavior.restitution
-            limit.bounceThreshold = limitBehavior.bounceThreshold
-            joint.setPyramidSwingLimit(limit)
-            angularMotionZ = D6JointMotion.Limited
+        limitBehaviorAngularZ = limitBehavior
+        zAngularLimitMin = lowerLimit
+        zAngularLimitMax = upperLimit
+        val mergedLimit = getLimitBehaviorAngularYZ()
+        updateAngularLimitYZ(mergedLimit)
+        if (mergedLimit != limitBehavior) {
+            logW { "Conflicting limit behaviors for angular y and angular z limit, merged limit behavior: $mergedLimit" }
         }
     }
 
@@ -189,28 +185,29 @@ class D6JointImpl(
     }
 
     override fun disableAngularLimitY() {
-        memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
-            ySwingLimitMin = -PI_F.rad
-            ySwingLimitMax = PI_F.rad
-            val limit = PxJointLimitPyramid.createAt(this, MemoryStack::nmalloc,
-                ySwingLimitMin.rad, ySwingLimitMax.rad, zSwingLimitMin.rad, zSwingLimitMax.rad, spring
-            )
-            joint.setPyramidSwingLimit(limit)
-            angularMotionY = D6JointMotion.Free
-        }
+        limitBehaviorAngularY = null
+        yAngularLimitMin = -PI_F.rad
+        yAngularLimitMax = PI_F.rad
+        updateAngularLimitYZ(getLimitBehaviorAngularYZ())
     }
 
     override fun disableAngularLimitZ() {
+        limitBehaviorAngularZ = null
+        zAngularLimitMin = -PI_F.rad
+        zAngularLimitMax = PI_F.rad
+        updateAngularLimitYZ(getLimitBehaviorAngularYZ())
+    }
+
+    private fun updateAngularLimitYZ(limitBehavior: LimitBehavior) {
         memStack {
-            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, 0f, 0f)
-            zSwingLimitMin = -PI_F.rad
-            zSwingLimitMax = PI_F.rad
+            val spring = PxSpring.createAt(this, MemoryStack::nmalloc, limitBehavior.stiffness, limitBehavior.damping)
             val limit = PxJointLimitPyramid.createAt(this, MemoryStack::nmalloc,
-                ySwingLimitMin.rad, ySwingLimitMax.rad, zSwingLimitMin.rad, zSwingLimitMax.rad, spring
+                yAngularLimitMin.rad, yAngularLimitMax.rad, zAngularLimitMin.rad, zAngularLimitMax.rad, spring
             )
+            limit.restitution = limitBehavior.restitution
+            limit.bounceThreshold = limitBehavior.bounceThreshold
             joint.setPyramidSwingLimit(limit)
-            angularMotionZ = D6JointMotion.Free
+            angularMotionZ = D6JointMotion.Limited
         }
     }
 
@@ -290,6 +287,17 @@ class D6JointImpl(
             val angularVel = targetDriveVelAngular.toPxVec3(createPxVec3())
             joint.setDriveVelocity(linearVel, angularVel)
         }
+    }
+
+    private fun getLimitBehaviorAngularYZ(): LimitBehavior {
+        val limitY = limitBehaviorAngularY
+        val limitZ = limitBehaviorAngularZ
+
+        val stiffness = max(limitY?.stiffness ?: 0f, limitZ?.stiffness ?: 0f)
+        val damping = max(limitY?.damping ?: 0f, limitZ?.damping ?: 0f)
+        val restitution = max(limitY?.restitution ?: 0f, limitZ?.restitution ?: 0f)
+        val bounceThreshold = max(limitY?.bounceThreshold ?: 0f, limitZ?.bounceThreshold ?: 0f)
+        return LimitBehavior(stiffness, damping, restitution, bounceThreshold)
     }
 
     companion object {
