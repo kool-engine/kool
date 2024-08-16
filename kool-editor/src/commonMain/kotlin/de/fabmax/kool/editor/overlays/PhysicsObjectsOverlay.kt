@@ -14,7 +14,9 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.joints.D6JointMotion
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.DrawShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.MeshRayTest
@@ -39,92 +41,84 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     private val angularYInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
     private val angularZInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
 
-    private val jointCenterMesh = Mesh(meshAttrs, centerInstances, "centers").apply {
-        isCastingShadow = false
-        rayTest = MeshRayTest.geometryTest(this)
-        shader = objectShader
-        generate {
+    private val jointCenterBgMesh = makeCenterJointMesh(objectBgShader, false)
+    private val linearXJointBgMesh = makeLinearXJointMesh(objectBgShader, false)
+    private val linearYJointBgMesh = makeLinearYJointMesh(objectBgShader, false)
+    private val linearZJointBgMesh = makeLinearZJointMesh(objectBgShader, false)
+    private val angularXJointBgMesh = makeAngularXJointMesh(objectBgShader, false)
+    private val angularYJointBgMesh = makeAngularYJointMesh(objectBgShader, false)
+    private val angularZJointBgMesh = makeAngularZJointMesh(objectBgShader, false)
+
+    private val jointCenterMesh = makeCenterJointMesh(objectShader, true)
+    private val linearXJointMesh = makeLinearXJointMesh(objectShader, true)
+    private val linearYJointMesh = makeLinearYJointMesh(objectShader, true)
+    private val linearZJointMesh = makeLinearZJointMesh(objectShader, true)
+    private val angularXJointMesh = makeAngularXJointMesh(objectShader, true)
+    private val angularYJointMesh = makeAngularYJointMesh(objectShader, true)
+    private val angularZJointMesh = makeAngularZJointMesh(objectShader, true)
+
+    private fun makeJointMesh(instances: MeshInstanceList, shader: DrawShader, isPickable: Boolean, name: String, block: MeshBuilder.() -> Unit): Mesh =
+        Mesh(meshAttrs, instances, name).apply {
+            isCastingShadow = false
+            rayTest = if (isPickable) MeshRayTest.geometryTest(this) else MeshRayTest.nopTest()
+            this.shader = shader
+            generate {
+                block()
+            }
+        }
+
+    private fun makeCenterJointMesh(shader: DrawShader, isPickable: Boolean): Mesh =
+        makeJointMesh(centerInstances, shader, isPickable, "centers") {
             icoSphere {
                 steps = 2
                 radius = 0.05f
             }
         }
-    }
 
-    private val linearXJointMesh = Mesh(meshAttrs, linearXInstances, "linear-x").apply {
-        isCastingShadow = false
-        rayTest = MeshRayTest.geometryTest(this)
-        shader = objectShader
-        generate {
+    private fun makeLinearXJointMesh(shader: DrawShader, isPickable: Boolean) =
+        makeJointMesh(linearXInstances, shader, isPickable, "linear-x") {
             rotate(90f.deg, Vec3f.Z_AXIS)
-            prismaticArrow()
+            linearDofArrow()
         }
-    }
 
-    private val linearYJointMesh = Mesh(meshAttrs, linearYInstances, "linear-y").apply {
-        isCastingShadow = false
-        rayTest = MeshRayTest.geometryTest(this)
-        shader = objectShader
-        generate {
-            prismaticArrow()
+    private fun makeLinearYJointMesh(shader: DrawShader, isPickable: Boolean) =
+        makeJointMesh(linearYInstances, shader, isPickable, "linear-y") {
+            linearDofArrow()
         }
-    }
 
-    private val linearZJointMesh = Mesh(meshAttrs, linearZInstances, "linear-z").apply {
-        isCastingShadow = false
-        rayTest = MeshRayTest.geometryTest(this)
-        shader = objectShader
-        generate {
+    private fun makeLinearZJointMesh(shader: DrawShader, isPickable: Boolean) =
+        makeJointMesh(linearZInstances, shader, isPickable, "linear-z") {
             rotate(90f.deg, Vec3f.X_AXIS)
-            prismaticArrow()
+            linearDofArrow()
         }
-    }
 
-    private val angularXJointMesh = Mesh(meshAttrs, angularXInstances, "angular-x").apply {
-        isCastingShadow = false
-        rayTest = MeshRayTest.geometryTest(this)
-        shader = objectShader
-        generate {
-            withTransform {
-                rotate(90f.deg, Vec3f.Z_AXIS)
-                translate(0f, 0.3f, 0f)
-                cylinder {
-                    radius = 0.015f
-                    height = 0.4f
-                }
-                translate(0f, -0.6f, 0f)
-                cylinder {
-                    radius = 0.015f
-                    height = 0.4f
-                }
-            }
-
-            rotationArrow(270f.deg)
+    private fun makeAngularXJointMesh(shader: DrawShader, isPickable: Boolean) =
+        makeJointMesh(angularXInstances, shader, isPickable, "angular-x") {
+            angularDofArrow(270f.deg)
         }
-    }
 
-    private val angularYJointMesh = Mesh(meshAttrs, angularYInstances, "angular-y").apply {
-        isCastingShadow = false
-        rayTest = MeshRayTest.geometryTest(this)
-        shader = objectShader
-        generate {
+    private fun makeAngularYJointMesh(shader: DrawShader, isPickable: Boolean) =
+        makeJointMesh(angularYInstances, shader, isPickable, "angular-y") {
             rotate(90f.deg, Vec3f.NEG_Z_AXIS)
-            rotationArrow(120f.deg)
+            angularDofArrow(120f.deg)
         }
-    }
 
-    private val angularZJointMesh = Mesh(meshAttrs, angularZInstances, "angular-z").apply {
-        isCastingShadow = false
-        rayTest = MeshRayTest.geometryTest(this)
-        shader = objectShader
-        generate {
+    private fun makeAngularZJointMesh(shader: DrawShader, isPickable: Boolean) =
+        makeJointMesh(angularZInstances, shader, isPickable, "angular-z") {
             rotate(90f.deg, Vec3f.NEG_Z_AXIS)
             rotate(90f.deg, Vec3f.Y_AXIS)
-            rotationArrow(120f.deg)
+            angularDofArrow(120f.deg)
         }
-    }
 
     init {
+        addNode(jointCenterBgMesh)
+        addNode(angularXJointBgMesh)
+        addNode(angularYJointBgMesh)
+        addNode(angularZJointBgMesh)
+        addNode(linearXJointBgMesh)
+        addNode(linearYJointBgMesh)
+        addNode(linearZJointBgMesh)
+
         addNode(jointCenterMesh)
         addNode(angularXJointMesh)
         addNode(angularYJointMesh)
@@ -170,7 +164,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private fun MeshBuilder.prismaticArrow() {
+    private fun MeshBuilder.linearDofArrow() {
         withTransform {
             translate(0f, 0.3f, 0f)
             cylinder {
@@ -185,14 +179,14 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
 
         withTransform {
-            translate(0f, 0.5f, 0f)
+            translate(0f, 0.55f, 0f)
             cylinder {
                 topRadius = 0f
                 topFill = false
                 bottomRadius = 0.05f
                 height = 0.1f
             }
-            translate(0f, -1f, 0f)
+            translate(0f, -1.1f, 0f)
             cylinder {
                 topRadius = 0.05f
                 bottomFill = false
@@ -202,7 +196,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         }
     }
 
-    private fun MeshBuilder.rotationArrow(sweep: AngleF) {
+    private fun MeshBuilder.angularDofArrow(sweep: AngleF) {
         val p = profile {
             circleShape(0.015f, 8)
         }
@@ -218,6 +212,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
             rotate(sweep * -0.5f, Vec3f.X_AXIS)
             translate(0f, 0.3f, 0f)
             rotate(90f.deg, Vec3f.NEG_X_AXIS)
+            translate(0f, 0.05f, 0f)
             cylinder {
                 topRadius = 0f
                 topFill = false
@@ -229,6 +224,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
             rotate(sweep * 0.5f, Vec3f.X_AXIS)
             translate(0f, 0.3f, 0f)
             rotate(90f.deg, Vec3f.X_AXIS)
+            translate(0f, 0.05f, 0f)
             cylinder {
                 topRadius = 0f
                 topFill = false
@@ -258,9 +254,19 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
             pipeline {
                 depthTest = DepthCompareOp.ALWAYS
                 isWriteDepth = false
+                blendMode = BlendMode.BLEND_ADDITIVE
             }
             vertices { isInstanced = true }
             color { instanceColor() }
+            colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
+        }
+        private val objectBgShader = KslUnlitShader {
+            pipeline {
+                depthTest = DepthCompareOp.ALWAYS
+                isWriteDepth = false
+            }
+            vertices { isInstanced = true }
+            color { constColor(Color.BLACK) }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }
     }

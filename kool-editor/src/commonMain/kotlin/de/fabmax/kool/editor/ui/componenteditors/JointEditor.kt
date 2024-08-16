@@ -280,7 +280,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
         title = label,
         indicatorColor = indicatorColor,
         isAlwaysShowIndicator = true,
-        startExpanded = false,
+        startExpanded = true,
         headerContent = {
             val (motionItems, shapeIdx) = d6MotionOptions.getOptionsAndIndex(d6Datas.map(axis.motionGetter))
             ComboBox {
@@ -388,7 +388,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
         title = label,
         indicatorColor = indicatorColor,
         isAlwaysShowIndicator = true,
-        startExpanded = false,
+        startExpanded = true,
         headerContent = {
             val (motionItems, shapeIdx) = d6MotionOptions.getOptionsAndIndex(d6Datas.map(axis.motionGetter))
             ComboBox {
