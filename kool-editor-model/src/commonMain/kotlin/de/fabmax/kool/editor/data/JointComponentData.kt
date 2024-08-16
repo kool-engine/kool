@@ -28,8 +28,8 @@ sealed interface JointData {
     @Serializable
     data class Revolute(
         val isMotor: Boolean = false,
-        val motorSpeed: Float = 0f,
-        val motorTorque: Float = 0f,
+        val driveSpeed: Float = 0f,
+        val driveTorque: Float = 0f,
         val limit: LimitData? = null,
     ) : JointData
 
@@ -59,12 +59,12 @@ sealed interface JointData {
         val angularLimitY: LimitData? = null,
         val angularLimitZ: LimitData? = null,
 
-        val linearMotorX: MotorData? = null,
-        val linearMotorY: MotorData? = null,
-        val linearMotorZ: MotorData? = null,
-        val angularMotorX: MotorData? = null,
-        val angularMotorY: MotorData? = null,
-        val angularMotorZ: MotorData? = null,
+        val linearDriveX: D6DriveData? = null,
+        val linearDriveY: D6DriveData? = null,
+        val linearDriveZ: D6DriveData? = null,
+        val angularDriveX: D6DriveData? = null,
+        val angularDriveY: D6DriveData? = null,
+        val angularDriveZ: D6DriveData? = null,
     ) : JointData
 }
 
@@ -79,10 +79,10 @@ data class LimitData(
 )
 
 @Serializable
-data class MotorData(
-    val targetVelocity: Float,
-    val forceLimit: Float,
+data class D6DriveData(
+    val targetVelocity: Float = 1f,
+    val forceLimit: Float = 1000f,
     val stiffness: Float = 0f,
-    val damping: Float = 0f,
+    val damping: Float = 10f,
     val isAcceleration: Boolean = true
 )

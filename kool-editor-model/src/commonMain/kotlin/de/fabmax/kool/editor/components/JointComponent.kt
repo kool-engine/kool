@@ -148,7 +148,7 @@ class JointComponent(
 
     private fun JointData.Revolute.updateJoint(joint: Joint): Boolean {
         val j = joint as? RevoluteJoint ?: return false
-        if (isMotor) j.enableAngularMotor(motorSpeed, motorTorque) else j.disableAngularMotor()
+        if (isMotor) j.enableAngularMotor(driveSpeed, driveTorque) else j.disableAngularMotor()
         if (limit != null) {
             j.enableLimit(limit.limit1.rad, limit.limit2.rad, limit.limitBehavior)
         } else {
@@ -201,6 +201,13 @@ class JointComponent(
             j.disableAngularLimitZ()
         }
 
+        if (linearDriveX != null) j.enableLinearDriveX(linearDriveX.jointDrive) else j.disableLinearDriveX()
+        if (linearDriveY != null) j.enableLinearDriveY(linearDriveY.jointDrive) else j.disableLinearDriveY()
+        if (linearDriveZ != null) j.enableLinearDriveZ(linearDriveZ.jointDrive) else j.disableLinearDriveZ()
+        if (angularDriveX != null) j.enableAngularDriveX(angularDriveX.jointDrive) else j.disableAngularDriveX()
+        if (angularDriveY != null) j.enableAngularDriveY(angularDriveY.jointDrive) else j.disableAngularDriveY()
+        if (angularDriveZ != null) j.enableAngularDriveZ(angularDriveZ.jointDrive) else j.disableAngularDriveZ()
+
         j.linearMotionX = linearMotionX
         j.linearMotionY = linearMotionY
         j.linearMotionZ = linearMotionZ
@@ -233,4 +240,5 @@ class JointComponent(
     }
 
     private val LimitData.limitBehavior: LimitBehavior get() = LimitBehavior(stiffness, damping, restitution, bounceThreshold)
+    private val D6DriveData.jointDrive: D6JointDrive get() = D6JointDrive(targetVelocity, damping, stiffness, forceLimit, isAcceleration)
 }

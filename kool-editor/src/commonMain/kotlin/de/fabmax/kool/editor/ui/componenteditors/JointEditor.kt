@@ -5,10 +5,7 @@ import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
 import de.fabmax.kool.editor.components.JointComponent
 import de.fabmax.kool.editor.components.RigidActorComponent
-import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.editor.data.JointComponentData
-import de.fabmax.kool.editor.data.JointData
-import de.fabmax.kool.editor.data.LimitData
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.PI_F
 import de.fabmax.kool.math.toDeg
@@ -122,22 +119,22 @@ class JointEditor : ComponentEditor<JointComponent>() {
             valueGetter = { it.isMotor },
             valueSetter = { oldData, newValue -> oldData.copy(isMotor = newValue) },
             actionMapper = jointDataActionMapper,
-            label = "Is motor:",
+            label = "Is driven:",
         )
         if (component.getData<JointData.Revolute>().isMotor) {
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.motorSpeed.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(motorSpeed = newValue.toFloat()) },
+                valueGetter = { it.driveSpeed.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(driveSpeed = newValue.toFloat()) },
                 actionMapper = jointDataActionMapper,
-                label = "Motor speed:"
+                label = "Drive speed:"
             )
             doublePropertyEditor(
                 dataGetter = { it.getData<JointData.Revolute>() },
-                valueGetter = { it.motorTorque.toDouble() },
-                valueSetter = { oldData, newValue -> oldData.copy(motorTorque = newValue.toFloat()) },
+                valueGetter = { it.driveTorque.toDouble() },
+                valueSetter = { oldData, newValue -> oldData.copy(driveTorque = newValue.toFloat()) },
                 actionMapper = jointDataActionMapper,
-                label = "Motor torque:",
+                label = "Drive torque:",
                 minValue = 0.0
             )
         }
@@ -274,115 +271,6 @@ class JointEditor : ComponentEditor<JointComponent>() {
         }.fused().apply()
     }
 
-    private interface D6AxisData {
-        val motionGetter: (JointData.D6) -> D6MotionOption
-        val motionSetter: (D6MotionOption) -> Unit
-        val limitGetter: (JointData.D6) -> LimitData
-        val limitSetter: (JointData.D6, LimitData) -> JointData.D6
-    }
-
-    private val d6LinearDataX = object : D6AxisData {
-        override val limitGetter: (JointData.D6) -> LimitData = { it.linearLimitX ?: LimitData(-1f, 1f) }
-        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(linearLimitX = l) }
-        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.lineaMotionXOption }
-        override val motionSetter: (D6MotionOption) -> Unit = { option ->
-            applyD6Data {
-                if (it.linearMotionX == option.option) it else {
-                    when (option.option) {
-                        D6JointMotion.Free -> it.copy(linearMotionX = option.option, linearLimitX = null)
-                        D6JointMotion.Limited -> it.copy(linearMotionX = option.option, linearLimitX = LimitData(-1f, 1f))
-                        D6JointMotion.Locked -> it.copy(linearMotionX = option.option, linearLimitX = null)
-                    }
-                }
-            }
-        }
-    }
-
-    private val d6LinearDataY = object : D6AxisData {
-        override val limitGetter: (JointData.D6) -> LimitData = { it.linearLimitY ?: LimitData(-1f, 1f) }
-        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(linearLimitY = l) }
-        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.lineaMotionYOption }
-        override val motionSetter: (D6MotionOption) -> Unit = { option ->
-            applyD6Data {
-                if (it.linearMotionY == option.option) it else {
-                    when (option.option) {
-                        D6JointMotion.Free -> it.copy(linearMotionY = option.option, linearLimitY = null)
-                        D6JointMotion.Limited -> it.copy(linearMotionY = option.option, linearLimitY = LimitData(-1f, 1f))
-                        D6JointMotion.Locked -> it.copy(linearMotionY = option.option, linearLimitY = null)
-                    }
-                }
-            }
-        }
-    }
-
-    private val d6LinearDataZ = object : D6AxisData {
-        override val limitGetter: (JointData.D6) -> LimitData = { it.linearLimitZ ?: LimitData(-1f, 1f) }
-        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(linearLimitZ = l) }
-        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.lineaMotionZOption }
-        override val motionSetter: (D6MotionOption) -> Unit = { option ->
-            applyD6Data {
-                if (it.linearMotionZ == option.option) it else {
-                    when (option.option) {
-                        D6JointMotion.Free -> it.copy(linearMotionZ = option.option, linearLimitZ = null)
-                        D6JointMotion.Limited -> it.copy(linearMotionZ = option.option, linearLimitZ = LimitData(-1f, 1f))
-                        D6JointMotion.Locked -> it.copy(linearMotionZ = option.option, linearLimitZ = null)
-                    }
-                }
-            }
-        }
-    }
-
-    private val d6AngularDataX = object : D6AxisData {
-        override val limitGetter: (JointData.D6) -> LimitData = { it.angularLimitX ?: LimitData(-PI_F, PI_F) }
-        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(angularLimitX = l) }
-        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.angularMotionXOption }
-        override val motionSetter: (D6MotionOption) -> Unit = { option ->
-            applyD6Data {
-                if (it.angularMotionX == option.option) it else {
-                    when (option.option) {
-                        D6JointMotion.Free -> it.copy(angularMotionX = option.option, angularLimitX = null)
-                        D6JointMotion.Limited -> it.copy(angularMotionX = option.option, angularLimitX = LimitData(-PI_F, PI_F))
-                        D6JointMotion.Locked -> it.copy(angularMotionX = option.option, angularLimitX = null)
-                    }
-                }
-            }
-        }
-    }
-
-    private val d6AngularDataY = object : D6AxisData {
-        override val limitGetter: (JointData.D6) -> LimitData = { it.angularLimitY ?: LimitData(-PI_F, PI_F) }
-        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(angularLimitY = l) }
-        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.angularMotionYOption }
-        override val motionSetter: (D6MotionOption) -> Unit = { option ->
-            applyD6Data {
-                if (it.angularMotionY == option.option) it else {
-                    when (option.option) {
-                        D6JointMotion.Free -> it.copy(angularMotionY = option.option, angularLimitY = null)
-                        D6JointMotion.Limited -> it.copy(angularMotionY = option.option, angularLimitY = LimitData(-PI_F, PI_F))
-                        D6JointMotion.Locked -> it.copy(angularMotionY = option.option, angularLimitY = null)
-                    }
-                }
-            }
-        }
-    }
-
-    private val d6AngularDataZ = object : D6AxisData {
-        override val limitGetter: (JointData.D6) -> LimitData = { it.angularLimitZ ?: LimitData(-PI_F, PI_F) }
-        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(angularLimitZ = l) }
-        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.angularMotionZOption }
-        override val motionSetter: (D6MotionOption) -> Unit = { option ->
-            applyD6Data {
-                if (it.angularMotionZ == option.option) it else {
-                    when (option.option) {
-                        D6JointMotion.Free -> it.copy(angularMotionZ = option.option, angularLimitZ = null)
-                        D6JointMotion.Limited -> it.copy(angularMotionZ = option.option, angularLimitZ = LimitData(-PI_F, PI_F))
-                        D6JointMotion.Locked -> it.copy(angularMotionZ = option.option, angularLimitZ = null)
-                    }
-                }
-            }
-        }
-    }
-
     private fun ColumnScope.d6LinearEditor(
         label: String,
         indicatorColor: Color,
@@ -392,6 +280,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
         title = label,
         indicatorColor = indicatorColor,
         isAlwaysShowIndicator = true,
+        startExpanded = false,
         headerContent = {
             val (motionItems, shapeIdx) = d6MotionOptions.getOptionsAndIndex(d6Datas.map(axis.motionGetter))
             ComboBox {
@@ -409,7 +298,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
         val motions = d6Datas.map(axis.motionGetter)
         val allTheSameMotion = motions.all { it == motions[0] }
         if (allTheSameMotion) {
-            if (axis.motionGetter(component.getData<JointData.D6>()) == D6MotionOption.Limited) {
+            if (motions[0] == D6MotionOption.Limited) {
                 doublePropertyEditor(
                     dataGetter = { it.getData<JointData.D6>() },
                     valueGetter = { axis.limitGetter(it).limit1.toDouble() },
@@ -438,6 +327,54 @@ class JointEditor : ComponentEditor<JointComponent>() {
                     actionMapper = jointDataActionMapper,
                     label = "Damping:"
                 )
+                menuDivider()
+            }
+        }
+        if (motions[0] != D6MotionOption.Locked) {
+            booleanPropertyEditor(
+                dataGetter = { it.getData<JointData.D6>() },
+                valueGetter = { axis.driveGetter(it) != null },
+                valueSetter = { oldData, newValue -> axis.driveSetter(oldData, if (newValue) D6DriveData() else null) },
+                actionMapper = jointDataActionMapper,
+                label = "Is driven:",
+            )
+            if (axis.driveGetter(component.getData()) != null) {
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.targetVelocity?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(targetVelocity = newValue.toFloat()))
+                    },
+                    actionMapper = jointDataActionMapper,
+                    label = "Target velocity:"
+                )
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.forceLimit?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(forceLimit = newValue.toFloat()))
+                    },
+                    actionMapper = jointDataActionMapper,
+                    label = "Force limit:"
+                )
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.stiffness?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(stiffness = newValue.toFloat()))
+                    },
+                    actionMapper = jointDataActionMapper,
+                    label = "Stiffness:"
+                )
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.damping?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(damping = newValue.toFloat()))
+                    },
+                    actionMapper = jointDataActionMapper,
+                    label = "Damping:"
+                )
             }
         }
     }
@@ -451,6 +388,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
         title = label,
         indicatorColor = indicatorColor,
         isAlwaysShowIndicator = true,
+        startExpanded = false,
         headerContent = {
             val (motionItems, shapeIdx) = d6MotionOptions.getOptionsAndIndex(d6Datas.map(axis.motionGetter))
             ComboBox {
@@ -468,7 +406,7 @@ class JointEditor : ComponentEditor<JointComponent>() {
         val motions = d6Datas.map(axis.motionGetter)
         val allTheSameMotion = motions.all { it == motions[0] }
         if (allTheSameMotion) {
-            if (axis.motionGetter(component.getData<JointData.D6>()) == D6MotionOption.Limited) {
+            if (motions[0] == D6MotionOption.Limited) {
                 doublePropertyEditor(
                     dataGetter = { it.getData<JointData.D6>() },
                     valueGetter = { axis.limitGetter(it).limit1.toDouble().toDeg() },
@@ -494,6 +432,54 @@ class JointEditor : ComponentEditor<JointComponent>() {
                     dataGetter = { it.getData<JointData.D6>() },
                     valueGetter = { axis.limitGetter(it).damping.toDouble() },
                     valueSetter = { oldData, newValue -> axis.limitSetter(oldData, axis.limitGetter(oldData).copy(damping = newValue.toFloat())) },
+                    actionMapper = jointDataActionMapper,
+                    label = "Damping:"
+                )
+                menuDivider()
+            }
+        }
+        if (motions[0] != D6MotionOption.Locked) {
+            booleanPropertyEditor(
+                dataGetter = { it.getData<JointData.D6>() },
+                valueGetter = { axis.driveGetter(it) != null },
+                valueSetter = { oldData, newValue -> axis.driveSetter(oldData, if (newValue) D6DriveData() else null) },
+                actionMapper = jointDataActionMapper,
+                label = "Is driven:",
+            )
+            if (axis.driveGetter(component.getData()) != null) {
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.targetVelocity?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(targetVelocity = newValue.toFloat()))
+                    },
+                    actionMapper = jointDataActionMapper,
+                    label = "Target velocity:"
+                )
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.forceLimit?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(forceLimit = newValue.toFloat()))
+                    },
+                    actionMapper = jointDataActionMapper,
+                    label = "Force limit:"
+                )
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.stiffness?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(stiffness = newValue.toFloat()))
+                    },
+                    actionMapper = jointDataActionMapper,
+                    label = "Stiffness:"
+                )
+                doublePropertyEditor(
+                    dataGetter = { it.getData<JointData.D6>() },
+                    valueGetter = { axis.driveGetter(it)?.damping?.toDouble() ?: 0.0 },
+                    valueSetter = { oldData, newValue ->
+                        axis.driveSetter(oldData, (axis.driveGetter(oldData) ?: D6DriveData()).copy(damping = newValue.toFloat()))
+                    },
                     actionMapper = jointDataActionMapper,
                     label = "Damping:"
                 )
@@ -593,6 +579,129 @@ class JointEditor : ComponentEditor<JointComponent>() {
     }
 
     private val JointData.jointOption: JointOption get() = JointOption.entries.first { it.matches(this) }
+
+    private val d6LinearDataX = object : D6AxisData {
+        override val limitGetter: (JointData.D6) -> LimitData = { it.linearLimitX ?: LimitData(-1f, 1f) }
+        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(linearLimitX = l) }
+        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.lineaMotionXOption }
+        override val motionSetter: (D6MotionOption) -> Unit = { option ->
+            applyD6Data {
+                if (it.linearMotionX == option.option) it else {
+                    when (option.option) {
+                        D6JointMotion.Free -> it.copy(linearMotionX = option.option, linearLimitX = null)
+                        D6JointMotion.Limited -> it.copy(linearMotionX = option.option, linearLimitX = LimitData(-1f, 1f))
+                        D6JointMotion.Locked -> it.copy(linearMotionX = option.option, linearLimitX = null, linearDriveX = null)
+                    }
+                }
+            }
+        }
+        override val driveGetter: (JointData.D6) -> D6DriveData? = { it.linearDriveX }
+        override val driveSetter: (JointData.D6, D6DriveData?) -> JointData.D6 get() = { data, drv -> data.copy(linearDriveX = drv) }
+    }
+
+    private val d6LinearDataY = object : D6AxisData {
+        override val limitGetter: (JointData.D6) -> LimitData = { it.linearLimitY ?: LimitData(-1f, 1f) }
+        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(linearLimitY = l) }
+        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.lineaMotionYOption }
+        override val motionSetter: (D6MotionOption) -> Unit = { option ->
+            applyD6Data {
+                if (it.linearMotionY == option.option) it else {
+                    when (option.option) {
+                        D6JointMotion.Free -> it.copy(linearMotionY = option.option, linearLimitY = null)
+                        D6JointMotion.Limited -> it.copy(linearMotionY = option.option, linearLimitY = LimitData(-1f, 1f))
+                        D6JointMotion.Locked -> it.copy(linearMotionY = option.option, linearLimitY = null, linearDriveY = null)
+                    }
+                }
+            }
+        }
+        override val driveGetter: (JointData.D6) -> D6DriveData? = { it.linearDriveY }
+        override val driveSetter: (JointData.D6, D6DriveData?) -> JointData.D6 get() = { data, drv -> data.copy(linearDriveY = drv) }
+    }
+
+    private val d6LinearDataZ = object : D6AxisData {
+        override val limitGetter: (JointData.D6) -> LimitData = { it.linearLimitZ ?: LimitData(-1f, 1f) }
+        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(linearLimitZ = l) }
+        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.lineaMotionZOption }
+        override val motionSetter: (D6MotionOption) -> Unit = { option ->
+            applyD6Data {
+                if (it.linearMotionZ == option.option) it else {
+                    when (option.option) {
+                        D6JointMotion.Free -> it.copy(linearMotionZ = option.option, linearLimitZ = null)
+                        D6JointMotion.Limited -> it.copy(linearMotionZ = option.option, linearLimitZ = LimitData(-1f, 1f))
+                        D6JointMotion.Locked -> it.copy(linearMotionZ = option.option, linearLimitZ = null, linearDriveZ = null)
+                    }
+                }
+            }
+        }
+        override val driveGetter: (JointData.D6) -> D6DriveData? = { it.linearDriveZ }
+        override val driveSetter: (JointData.D6, D6DriveData?) -> JointData.D6 get() = { data, drv -> data.copy(linearDriveZ = drv) }
+    }
+
+    private val d6AngularDataX = object : D6AxisData {
+        override val limitGetter: (JointData.D6) -> LimitData = { it.angularLimitX ?: LimitData(-PI_F, PI_F) }
+        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(angularLimitX = l) }
+        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.angularMotionXOption }
+        override val motionSetter: (D6MotionOption) -> Unit = { option ->
+            applyD6Data {
+                if (it.angularMotionX == option.option) it else {
+                    when (option.option) {
+                        D6JointMotion.Free -> it.copy(angularMotionX = option.option, angularLimitX = null)
+                        D6JointMotion.Limited -> it.copy(angularMotionX = option.option, angularLimitX = LimitData(-PI_F, PI_F))
+                        D6JointMotion.Locked -> it.copy(angularMotionX = option.option, angularLimitX = null, angularDriveX = null)
+                    }
+                }
+            }
+        }
+        override val driveGetter: (JointData.D6) -> D6DriveData? = { it.angularDriveX }
+        override val driveSetter: (JointData.D6, D6DriveData?) -> JointData.D6 get() = { data, drv -> data.copy(angularDriveX = drv) }
+    }
+
+    private val d6AngularDataY = object : D6AxisData {
+        override val limitGetter: (JointData.D6) -> LimitData = { it.angularLimitY ?: LimitData(-PI_F, PI_F) }
+        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(angularLimitY = l) }
+        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.angularMotionYOption }
+        override val motionSetter: (D6MotionOption) -> Unit = { option ->
+            applyD6Data {
+                if (it.angularMotionY == option.option) it else {
+                    when (option.option) {
+                        D6JointMotion.Free -> it.copy(angularMotionY = option.option, angularLimitY = null)
+                        D6JointMotion.Limited -> it.copy(angularMotionY = option.option, angularLimitY = LimitData(-PI_F, PI_F))
+                        D6JointMotion.Locked -> it.copy(angularMotionY = option.option, angularLimitY = null, angularDriveY = null)
+                    }
+                }
+            }
+        }
+        override val driveGetter: (JointData.D6) -> D6DriveData? = { it.angularDriveY }
+        override val driveSetter: (JointData.D6, D6DriveData?) -> JointData.D6 get() = { data, drv -> data.copy(angularDriveY = drv) }
+    }
+
+    private val d6AngularDataZ = object : D6AxisData {
+        override val limitGetter: (JointData.D6) -> LimitData = { it.angularLimitZ ?: LimitData(-PI_F, PI_F) }
+        override val limitSetter: (JointData.D6, LimitData) -> JointData.D6 = { d, l -> d.copy(angularLimitZ = l) }
+        override val motionGetter: (JointData.D6) -> D6MotionOption = { it.angularMotionZOption }
+        override val motionSetter: (D6MotionOption) -> Unit = { option ->
+            applyD6Data {
+                if (it.angularMotionZ == option.option) it else {
+                    when (option.option) {
+                        D6JointMotion.Free -> it.copy(angularMotionZ = option.option, angularLimitZ = null)
+                        D6JointMotion.Limited -> it.copy(angularMotionZ = option.option, angularLimitZ = LimitData(-PI_F, PI_F))
+                        D6JointMotion.Locked -> it.copy(angularMotionZ = option.option, angularLimitZ = null, angularDriveZ = null)
+                    }
+                }
+            }
+        }
+        override val driveGetter: (JointData.D6) -> D6DriveData? = { it.angularDriveZ }
+        override val driveSetter: (JointData.D6, D6DriveData?) -> JointData.D6 get() = { data, drv -> data.copy(angularDriveZ = drv) }
+    }
+
+    private interface D6AxisData {
+        val motionGetter: (JointData.D6) -> D6MotionOption
+        val motionSetter: (D6MotionOption) -> Unit
+        val limitGetter: (JointData.D6) -> LimitData
+        val limitSetter: (JointData.D6, LimitData) -> JointData.D6
+        val driveGetter: (JointData.D6) -> D6DriveData?
+        val driveSetter: (JointData.D6, D6DriveData?) -> JointData.D6
+    }
 
     private enum class JointOption(val label: String, val matches: (JointData?) -> Boolean) {
         D6("D6", { it is JointData.D6 }),
