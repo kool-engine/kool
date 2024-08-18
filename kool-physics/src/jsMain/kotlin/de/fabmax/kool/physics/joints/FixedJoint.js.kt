@@ -1,22 +1,19 @@
 package de.fabmax.kool.physics.joints
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.*
 import physx.PxFixedJoint
 
-actual fun FixedJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): FixedJoint {
+actual fun FixedJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): FixedJoint {
     return FixedJointImpl(bodyA, bodyB, frameA, frameB)
 }
 
 class FixedJointImpl(
-    override val bodyA: RigidActor,
+    override val bodyA: RigidActor?,
     override val bodyB: RigidActor,
-    frameA: Mat4f,
-    frameB: Mat4f
+    frameA: PoseF,
+    frameB: PoseF
 ) : JointImpl(frameA, frameB), FixedJoint {
-
-    override val frameA = Mat4f(frameA)
-    override val frameB = Mat4f(frameB)
 
     override val pxJoint: PxFixedJoint
 
@@ -25,7 +22,7 @@ class FixedJointImpl(
         MemoryStack.stackPush().use { mem ->
             val frmA = frameA.toPxTransform(mem.createPxTransform())
             val frmB = frameB.toPxTransform(mem.createPxTransform())
-            pxJoint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA.holder.px, frmA, bodyB.holder.px, frmB)
+            pxJoint = PxTopLevelFunctions.FixedJointCreate(PhysicsImpl.physics, bodyA?.holder?.px, frmA, bodyB.holder.px, frmB)
         }
     }
 }

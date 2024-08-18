@@ -93,7 +93,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         val ground = RigidStatic()
         ground.attachShape(Shape(PlaneGeometry()))
-        ground.setRotation(0f.deg, 0f.deg, 90f.deg)
+        ground.setRotation(QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         physicsWorld.addActor(ground)
 
         mainScene.apply {
@@ -245,93 +245,93 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         val footSz = Vec3f(0.13f, 0.075f, 0.25f)
 
         // center body
-        val torso = ragdoll.createLink(null, pose)
+        val torso = ragdoll.createLink(null, pose.getPose())
         torso.attachShape(Shape(BoxGeometry(torsoSz)))
         torso.mass = 20f
         torso.updateInertiaFromShapesAndMass()
 
-        val headPose = MutableMat4f().translate(0f, 0.4f, 0f)
+        val headPose = MutableMat4f().translate(0f, 0.4f, 0f).getPose()
         val head = ragdoll.createLink(torso, headPose)
         head.attachShape(Shape(BoxGeometry(headSz)))
         head.mass = 5f
         head.updateInertiaFromShapesAndMass()
 
         val hipPose = MutableMat4f().translate(0f, -0.3f, 0f)
-        val hip = ragdoll.createLink(torso, hipPose)
+        val hip = ragdoll.createLink(torso, hipPose.getPose())
         hip.attachShape(Shape(BoxGeometry(hipSz)))
         hip.mass = 10f
         hip.updateInertiaFromShapesAndMass()
 
         // arms
         val upperArmLtPose = MutableMat4f().translate(0.25f, 0.05f, 0f)
-        val upperArmLt = ragdoll.createLink(torso, upperArmLtPose)
+        val upperArmLt = ragdoll.createLink(torso, upperArmLtPose.getPose())
         upperArmLt.attachShape(Shape(BoxGeometry(upperArmSz)))
         upperArmLt.mass = 5f
         upperArmLt.updateInertiaFromShapesAndMass()
 
         val lowerArmLtPose = MutableMat4f().translate(0f, -0.3f, 0f)
-        val lowerArmLt = ragdoll.createLink(upperArmLt, lowerArmLtPose)
+        val lowerArmLt = ragdoll.createLink(upperArmLt, lowerArmLtPose.getPose())
         lowerArmLt.attachShape(Shape(BoxGeometry(lowerArmSz)))
         lowerArmLt.mass = 5f
         lowerArmLt.updateInertiaFromShapesAndMass()
 
         val handLtPose = MutableMat4f().translate(0f, -0.235f, 0f)
-        val handLt = ragdoll.createLink(lowerArmLt, handLtPose)
+        val handLt = ragdoll.createLink(lowerArmLt, handLtPose.getPose())
         handLt.attachShape(Shape(BoxGeometry(handSz)))
         handLt.mass = 1f
         handLt.updateInertiaFromShapesAndMass()
 
         val upperArmRtPose = MutableMat4f().translate(-0.25f, 0.05f, 0f)
-        val upperArmRt = ragdoll.createLink(torso, upperArmRtPose)
+        val upperArmRt = ragdoll.createLink(torso, upperArmRtPose.getPose())
         upperArmRt.attachShape(Shape(BoxGeometry(upperArmSz)))
         upperArmRt.mass = 5f
         upperArmRt.updateInertiaFromShapesAndMass()
 
         val lowerArmRtPose = MutableMat4f().translate(0f, -0.3f, 0f)
-        val lowerArmRt = ragdoll.createLink(upperArmRt, lowerArmRtPose)
+        val lowerArmRt = ragdoll.createLink(upperArmRt, lowerArmRtPose.getPose())
         lowerArmRt.attachShape(Shape(BoxGeometry(lowerArmSz)))
         lowerArmRt.mass = 5f
         lowerArmRt.updateInertiaFromShapesAndMass()
 
         val handRtPose = MutableMat4f().translate(0f, -0.235f, 0f)
-        val handRt = ragdoll.createLink(lowerArmRt, handRtPose)
+        val handRt = ragdoll.createLink(lowerArmRt, handRtPose.getPose())
         handRt.attachShape(Shape(BoxGeometry(handSz)))
         handRt.mass = 1f
         handRt.updateInertiaFromShapesAndMass()
 
         // legs
         val upperLegLtPose = MutableMat4f().translate(0.1f, -0.275f, 0f)
-        val upperLegLt = ragdoll.createLink(hip, upperLegLtPose)
+        val upperLegLt = ragdoll.createLink(hip, upperLegLtPose.getPose())
         upperLegLt.attachShape(Shape(BoxGeometry(upperLegSz)))
         upperLegLt.mass = 10f
         upperLegLt.updateInertiaFromShapesAndMass()
 
         val lowerLegLtPose = MutableMat4f().translate(0f, -0.4f, 0f)
-        val lowerLegLt = ragdoll.createLink(upperLegLt, lowerLegLtPose)
+        val lowerLegLt = ragdoll.createLink(upperLegLt, lowerLegLtPose.getPose())
         lowerLegLt.attachShape(Shape(BoxGeometry(lowerLegSz)))
         lowerLegLt.mass = 5f
         lowerLegLt.updateInertiaFromShapesAndMass()
 
         val footLtPos = MutableMat4f().translate(0f, -0.2375f, 0.05f)
-        val footLt = ragdoll.createLink(lowerLegLt, footLtPos)
+        val footLt = ragdoll.createLink(lowerLegLt, footLtPos.getPose())
         footLt.attachShape(Shape(BoxGeometry(footSz)))
         footLt.mass = 1f
         footLt.updateInertiaFromShapesAndMass()
 
         val upperLegRtPose = MutableMat4f().translate(-0.1f, -0.275f, 0f)
-        val upperLegRt = ragdoll.createLink(hip, upperLegRtPose)
+        val upperLegRt = ragdoll.createLink(hip, upperLegRtPose.getPose())
         upperLegRt.attachShape(Shape(BoxGeometry(upperLegSz)))
         upperLegRt.mass = 10f
         upperLegRt.updateInertiaFromShapesAndMass()
 
         val lowerLegRtPose = MutableMat4f().translate(0f, -0.4f, 0f)
-        val lowerLegRt = ragdoll.createLink(upperLegRt, lowerLegRtPose)
+        val lowerLegRt = ragdoll.createLink(upperLegRt, lowerLegRtPose.getPose())
         lowerLegRt.attachShape(Shape(BoxGeometry(lowerLegSz)))
         lowerLegRt.mass = 5f
         lowerLegRt.updateInertiaFromShapesAndMass()
 
         val footRtPos = MutableMat4f().translate(0f, -0.2375f, 0.05f)
-        val footRt = ragdoll.createLink(lowerLegRt, footRtPos)
+        val footRt = ragdoll.createLink(lowerLegRt, footRtPos.getPose())
         footRt.attachShape(Shape(BoxGeometry(footSz)))
         footRt.mass = 1f
         footRt.updateInertiaFromShapesAndMass()
@@ -466,8 +466,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     }
 
     private fun ArticulationJoint.setup(parentPose: Mat4f, childPose: Mat4f, stiffness: Float, block: ArticulationJoint.() -> Unit) {
-        setParentPose(parentPose)
-        setChildPose(childPose)
+        setParentPose(parentPose.getPose())
+        setChildPose(childPose.getPose())
 
         val s = stiffness * 1f
 

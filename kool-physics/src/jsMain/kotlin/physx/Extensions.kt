@@ -1525,6 +1525,12 @@ external interface PxJointAngularLimitPair : PxJointLimitParameters {
 /**
  * @param lowerLimit WebIDL type: float
  * @param upperLimit WebIDL type: float
+ */
+fun PxJointAngularLimitPair(lowerLimit: Float, upperLimit: Float, _module: dynamic = PhysXJsLoader.physXJs): PxJointAngularLimitPair = js("new _module.PxJointAngularLimitPair(lowerLimit, upperLimit)")
+
+/**
+ * @param lowerLimit WebIDL type: float
+ * @param upperLimit WebIDL type: float
  * @param spring     WebIDL type: [PxSpring] (Const, Ref)
  */
 fun PxJointAngularLimitPair(lowerLimit: Float, upperLimit: Float, spring: PxSpring, _module: dynamic = PhysXJsLoader.physXJs): PxJointAngularLimitPair = js("new _module.PxJointAngularLimitPair(lowerLimit, upperLimit, spring)")
@@ -1545,6 +1551,12 @@ external interface PxJointLimitCone : PxJointLimitParameters {
      */
     var zAngle: Float
 }
+
+/**
+ * @param yLimitAngle WebIDL type: float
+ * @param zLimitAngle WebIDL type: float
+ */
+fun PxJointLimitCone(yLimitAngle: Float, zLimitAngle: Float, _module: dynamic = PhysXJsLoader.physXJs): PxJointLimitCone = js("new _module.PxJointLimitCone(yLimitAngle, zLimitAngle)")
 
 /**
  * @param yLimitAngle WebIDL type: float
@@ -1614,6 +1626,14 @@ external interface PxJointLimitPyramid : PxJointLimitParameters {
      */
     var zAngleMax: Float
 }
+
+/**
+ * @param yLimitAngleMin WebIDL type: float
+ * @param yLimitAngleMax WebIDL type: float
+ * @param zLimitAngleMin WebIDL type: float
+ * @param zLimitAngleMax WebIDL type: float
+ */
+fun PxJointLimitPyramid(yLimitAngleMin: Float, yLimitAngleMax: Float, zLimitAngleMin: Float, zLimitAngleMax: Float, _module: dynamic = PhysXJsLoader.physXJs): PxJointLimitPyramid = js("new _module.PxJointLimitPyramid(yLimitAngleMin, yLimitAngleMax, zLimitAngleMin, zLimitAngleMax)")
 
 /**
  * @param yLimitAngleMin WebIDL type: float

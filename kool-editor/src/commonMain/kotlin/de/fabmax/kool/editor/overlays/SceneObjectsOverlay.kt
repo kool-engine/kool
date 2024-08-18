@@ -1,9 +1,13 @@
 package de.fabmax.kool.editor.overlays
 
-import de.fabmax.kool.editor.KoolEditor
+import de.fabmax.kool.editor.api.CachedSceneComponents
+import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.*
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3f
+import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.Attribute
@@ -11,13 +15,19 @@ import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MdColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class SceneObjectsOverlay : Node("Scene objects overlay") {
+class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
+
+    private var lightComponentCache: CachedSceneComponents<DiscreteLightComponent>? = null
+    private val lightComponents: List<DiscreteLightComponent> get() = lightComponentCache?.getComponents() ?: emptyList()
+    private var cameraComponentCache: CachedSceneComponents<CameraComponent>? = null
+    private val cameraComponents: List<CameraComponent> get() = cameraComponentCache?.getComponents() ?: emptyList()
+    private var groupComponentCache: CachedSceneComponents<TransformComponent>? = null
+    private val groupComponents: List<TransformComponent> get() = groupComponentCache?.getComponents() ?: emptyList()
 
     private val dirLights = mutableListOf<DirLightComponentInstance>()
     private val spotLights = mutableListOf<SpotLightComponentInstance>()
@@ -234,17 +244,55 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
     }
 
     private fun updateOverlayInstances() {
-        groupInstances.clear()
-        cameraInstances.clear()
-        dirLightsInstances.clear()
-        spotLightsInstances.clear()
-        pointLightsInstances.clear()
+        if (lightComponentCache?.isOutdated == true) {
+            dirLights.clear()
+            spotLights.clear()
+            pointLights.clear()
 
-        groupInstances.addInstances(groups.size) { buf -> groups.forEach { it.addInstance(buf) } }
-        cameraInstances.addInstances(cameras.size) { buf -> cameras.forEach { it.addInstance(buf) } }
-        dirLightsInstances.addInstances(dirLights.size) { buf -> dirLights.forEach { it.addInstance(buf) } }
-        spotLightsInstances.addInstances(spotLights.size) { buf -> spotLights.forEach { it.addInstance(buf) } }
-        pointLightsInstances.addInstances(pointLights.size) { buf -> pointLights.forEach { it.addInstance(buf) } }
+            lightComponents
+                .filter { it.gameEntity.isVisible }
+                .forEach {
+                    when (it.light) {
+                        is Light.Directional -> dirLights += DirLightComponentInstance(it)
+                        is Light.Point -> pointLights += PointLightComponentInstance(it)
+                        is Light.Spot -> spotLights += SpotLightComponentInstance(it)
+                    }
+                }
+        }
+        if (cameraComponentCache?.isOutdated == true) {
+            cameras.clear()
+            cameras += cameraComponents.map { CameraComponentInstance(it) }
+        }
+        if (groupComponentCache?.isOutdated == true) {
+            groups.clear()
+            groups += groupComponents
+                .filter {
+                    it.gameEntity.isSceneChild && it.gameEntity.components.none { c ->
+                        c is SceneNodeComponent || c is PhysicsComponent
+                    }
+                }
+                .map { GroupNodeInstance(it.gameEntity) }
+        }
+
+        dirLightsInstances.addInstances(dirLights)
+        spotLightsInstances.addInstances(spotLights)
+        pointLightsInstances.addInstances(spotLights)
+        cameraInstances.addInstances(cameras)
+        groupInstances.addInstances(groups)
+    }
+
+    private fun MeshInstanceList.addInstances(objs: List<OverlayObject>) {
+        clear()
+        addInstancesUpTo(objs.size) { buf ->
+            var addCount = 0
+            for (i in objs.indices) {
+                if (objs[i].gameEntity.isVisible) {
+                    objs[i].addInstance(buf)
+                    addCount++
+                }
+            }
+            addCount
+        }
     }
 
     private fun MeshBuilder.generateArrow() {
@@ -262,32 +310,13 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         }
     }
 
-    fun updateOverlayObjects() {
-        cameras.clear()
-        groups.clear()
-        dirLights.clear()
-        spotLights.clear()
-        pointLights.clear()
-
-        val sceneModel = KoolEditor.instance.activeScene.value ?: return
-        sceneModel.sceneEntities.values.filter { it.components.none { c -> c is SceneNodeComponent } }
-            .filter { it.isVisible && it.isSceneChild }
-            .forEach { groups += GroupNodeInstance(it) }
-        sceneModel.getAllComponents<CameraComponent>()
-            .filter { it.gameEntity.isVisible }
-            .forEach { cameras += CameraComponentInstance(it) }
-        sceneModel.getAllComponents<DiscreteLightComponent>()
-            .filter { it.gameEntity.isVisible }
-            .forEach {
-                when (it.light) {
-                    is Light.Directional -> dirLights += DirLightComponentInstance(it)
-                    is Light.Point -> pointLights += PointLightComponentInstance(it)
-                    is Light.Spot -> spotLights += SpotLightComponentInstance(it)
-                }
-            }
+    override fun onEditorSceneChanged(scene: EditorScene) {
+        lightComponentCache = CachedSceneComponents(scene, DiscreteLightComponent::class)
+        cameraComponentCache = CachedSceneComponents(scene, CameraComponent::class)
+        groupComponentCache = CachedSceneComponents(scene, TransformComponent::class)
     }
 
-    fun pick(rayTest: RayTest): GameEntity? {
+    override fun pick(rayTest: RayTest): GameEntity? {
         var closest: GameEntity? = null
         cameras.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
         groups.forEach { if (it.rayTest(rayTest)) { closest = it.gameEntity } }
@@ -301,70 +330,22 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
         const val lineW = 0.06f
     }
 
-    private abstract class OverlayObject(val gameEntity: GameEntity, val mesh: Mesh) {
-        abstract val color: Color
-
-        val modelMat: Mat4f get() = gameEntity.localToGlobalF
-        val radius = mesh.geometry.bounds.size.length()
-
-        private val invModelMat = MutableMat4f()
-
-        fun addInstance(target: Float32Buffer) {
-            val selectionOv = KoolEditor.instance.selectionOverlay
-            val color = if (selectionOv.isSelected(gameEntity)) selectionOv.selectionColor.toLinear() else color
-            modelMat.putTo(target)
-            color.putTo(target)
-        }
-
-        fun rayTest(rayTest: RayTest): Boolean {
-            val pos = modelMat.getTranslation()
-            val n = pos.nearestPointOnRay(rayTest.ray.origin, rayTest.ray.direction, MutableVec3f())
-            if (n.distance(pos) < radius) {
-                val d = n.sqrDistance(rayTest.ray.origin)
-                if (d < rayTest.hitDistanceSqr) {
-                    modelMat.invert(invModelMat)
-                    return meshRayTest(rayTest)
-                }
-            }
-            return false
-        }
-
-        private fun meshRayTest(rayTest: RayTest): Boolean {
-            modelMat.invert(invModelMat)
-            val localRay = rayTest.getRayTransformed(invModelMat)
-            val isHit = mesh.rayTest.rayTest(rayTest, localRay)
-            if (isHit) {
-                // fixme: rather ugly workaround: mesh ray test transforms hit position to global coordinates using
-                //  the mesh's transform, not the instance's leading to a wrong hit-position / distance
-                mesh.toLocalCoords(rayTest.hitPositionGlobal)
-                modelMat.transform(rayTest.hitPositionGlobal)
-                rayTest.setHit(mesh, rayTest.hitPositionGlobal)
-            }
-            return isHit
-        }
-    }
-
-    private inner class PointLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.gameEntity, pointLightMesh)
-    {
+    private inner class PointLightComponentInstance(val component: DiscreteLightComponent) : OverlayObject(component.gameEntity) {
         override val color: Color get() = component.light.color
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, pointLightMesh)
     }
 
-    private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.gameEntity, spotLightMesh)
-    {
+    private inner class SpotLightComponentInstance(val component: DiscreteLightComponent) : OverlayObject(component.gameEntity) {
         override val color: Color get() = component.light.color
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, spotLightMesh)
     }
 
-    private inner class DirLightComponentInstance(val component: DiscreteLightComponent) :
-        OverlayObject(component.gameEntity, dirLightMesh)
-    {
+    private inner class DirLightComponentInstance(val component: DiscreteLightComponent) : OverlayObject(component.gameEntity) {
         override val color: Color get() = component.light.color
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, dirLightMesh)
     }
 
-    private inner class CameraComponentInstance(val component: CameraComponent) :
-        OverlayObject(component.gameEntity, cameraMesh)
-    {
+    private inner class CameraComponentInstance(val component: CameraComponent) : OverlayObject(component.gameEntity) {
         private val activeColor = MdColor.GREY toneLin 300
         private val inactiveColor = MdColor.GREY toneLin 700
 
@@ -372,11 +353,11 @@ class SceneObjectsOverlay : Node("Scene objects overlay") {
             val isActive = component.sceneComponent.cameraComponent == component
             return if (isActive) activeColor else inactiveColor
         }
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, cameraMesh)
     }
 
-    private inner class GroupNodeInstance(gameEntity: GameEntity) :
-        OverlayObject(gameEntity, groupMesh)
-    {
+    private inner class GroupNodeInstance(gameEntity: GameEntity) : OverlayObject(gameEntity) {
         override val color: Color = Color.WHITE
+        fun rayTest(rayTest: RayTest) = super.rayTest(rayTest, groupMesh)
     }
 }

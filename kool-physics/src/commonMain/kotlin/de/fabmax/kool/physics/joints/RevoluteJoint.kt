@@ -3,19 +3,21 @@ package de.fabmax.kool.physics.joints
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.RigidActor
 
-expect fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, frameA: Mat4f, frameB: Mat4f): RevoluteJoint
+expect fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, frameA: PoseF, frameB: PoseF): RevoluteJoint
 
-expect fun RevoluteJoint(bodyA: RigidActor, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f): RevoluteJoint
+expect fun RevoluteJoint(bodyA: RigidActor?, bodyB: RigidActor, pivotA: Vec3f, pivotB: Vec3f, axisA: Vec3f, axisB: Vec3f): RevoluteJoint
 
 interface RevoluteJoint : Joint {
     fun disableAngularMotor()
     fun enableAngularMotor(angularVelocity: Float, forceLimit: Float)
 
+    fun enableLimit(lowerLimit: AngleF, upperLimit: AngleF, limitBehavior: LimitBehavior = LimitBehavior.HARD_LIMIT)
+    fun disableLimit()
+
     companion object {
-        fun computeFrame(pivot: Vec3f, axis: Vec3f): Mat4f {
+        fun computeFrame(pivot: Vec3f, axis: Vec3f): PoseF {
             val ax1 = MutableVec3f()
             val ax2 = MutableVec3f()
-
             val dot = axis.dot(Vec3f.X_AXIS)
             when {
                 dot >= 1.0f - FLT_EPSILON -> {
@@ -31,13 +33,8 @@ interface RevoluteJoint : Joint {
                     axis.cross(ax2, ax1)
                 }
             }
-
-            val frame = MutableMat4f()
-            frame.translate(pivot)
-            frame.setColumn(0, axis, 0f)
-            frame.setColumn(1, ax2.norm(), 0f)
-            frame.setColumn(2, ax1.norm(), 0f)
-            return frame
+            val rot = MutableMat3f(axis, ax2.norm(), ax1.norm()).getRotation()
+            return PoseF(pivot, rot)
         }
     }
 }

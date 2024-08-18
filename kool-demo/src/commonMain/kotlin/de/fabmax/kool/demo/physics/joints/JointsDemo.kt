@@ -167,8 +167,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             val groundPlane = RigidStatic()
             groundPlane.simulationFilterData = staticSimFilterData
             groundPlane.attachShape(Shape(PlaneGeometry(), material))
-            groundPlane.position = Vec3f(0f, -20f, 0f)
-            groundPlane.setRotation(Mat3f.rotation(90f.deg, Vec3f.Z_AXIS))
+            groundPlane.pose = PoseF(Vec3f(0f, -20f, 0f), QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
             addActor(groundPlane)
         }
 
@@ -321,16 +320,14 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
 
         val firstOuter = makeOuterChainLink(linkMass)
-        firstOuter.position = t.getTranslation()
-        firstOuter.rotation = t.getRotation()
+        firstOuter.pose = PoseF(t.getTranslation(), t.getRotation())
         world.addActor(firstOuter)
 
         var prevInner = makeInnerChainLink(linkMass)
         t.translate(1.5f, 0f, 0f)
         t.rotate(0f.deg, 0f.deg, (-15f).deg)
         t.translate(0.5f, 0f, 0f)
-        prevInner.position = t.getTranslation()
-        prevInner.rotation = t.getRotation()
+        prevInner.pose = PoseF(t.getTranslation(), t.getRotation())
         world.addActor(prevInner)
 
         connectLinksOuterInner(firstOuter, prevInner, tension)
@@ -348,8 +345,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             t.translate(1.5f, 0f, 0f)
 
             val outer = makeOuterChainLink(linkMass * 2)
-            outer.position = t.getTranslation()
-            outer.rotation = t.getRotation()
+            outer.pose = PoseF(t.getTranslation(), t.getRotation())
             world.addActor(outer)
 
             connectLinksInnerOuter(prevInner, outer, tension)
@@ -360,8 +356,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                 t.rotate(0f.deg, 0f.deg, (-15f).deg)
             }
             t.translate(0.5f, 0f, 0f)
-            prevInner.position = t.getTranslation()
-            prevInner.rotation = t.getRotation()
+            prevInner.pose = PoseF(t.getTranslation(), t.getRotation())
             world.addActor(prevInner)
 
             connectLinksOuterInner(outer, prevInner, tension)
@@ -397,16 +392,20 @@ class JointsDemo : DemoScene("Physics - Joints") {
         axle.simulationFilterData = staticSimFilterData
         axle.attachShape(Shape(axleGeom, material))
 
-        axle.setRotation(MutableMat3f().rotate(frame.getRotation()).rotate(0f.deg, (-90f).deg, 0f.deg))
-        axle.position = frame.transform(MutableVec3f(origin))
+        axle.pose = PoseF(
+            frame.transform(MutableVec3f(origin)),
+            MutableMat3f().rotate(frame.getRotation()).rotate(0f.deg, (-90f).deg, 0f.deg).getRotation()
+        )
         world.addActor(axle)
         physMeshes.axles += axle
         niceMeshes.axles += axle
         axleGeom.release()
 
         val gear = makeGear(gearR, gearMass)
-        gear.rotation = frame.getRotation()
-        gear.position = frame.transform(MutableVec3f(origin))
+        gear.pose = PoseF(
+            frame.transform(MutableVec3f(origin)),
+            frame.getRotation()
+        )
         world.addActor(gear)
         physMeshes.gears += gear
         niceMeshes.gears += gear
@@ -623,17 +622,19 @@ class JointsDemo : DemoScene("Physics - Joints") {
         }
 
         private fun renderRevoluteConstraint(rc: RevoluteJoint) {
-            val tA = rc.bodyA.transform
+            val tA = rc.bodyA!!.transform
             val tB = rc.bodyB.transform
+            val matA = rc.frameA.toMat4f()
+            val matB = rc.frameB.toMat4f()
 
-            rc.frameA.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
-            rc.frameA.transform(tmpP1.set(Vec3f.ZERO), 1f)
+            matA.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
+            matA.transform(tmpP1.set(Vec3f.ZERO), 1f)
             tA.transform(tmpA1.set(tmpAx), 0f)
             tA.transform(tmpP1)
-            val lenA = rc.bodyA.worldBounds.size.dot(tmpAx) * 0.5f + 1f
+            val lenA = rc.bodyA!!.worldBounds.size.dot(tmpAx) * 0.5f + 1f
 
-            rc.frameB.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
-            rc.frameB.transform(tmpP2.set(Vec3f.ZERO), 1f)
+            matB.transform(tmpAx.set(Vec3f.X_AXIS), 0f)
+            matB.transform(tmpP2.set(Vec3f.ZERO), 1f)
             tB.transform(tmpA2.set(tmpAx), 0f)
             tB.transform(tmpP2)
             val lenB = rc.bodyB.worldBounds.size.dot(tmpAx) * 0.5f + 1f

@@ -3,13 +3,13 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.localToGlobalF
 import de.fabmax.kool.editor.ui.UiColors
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.input.Pointer
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.RayTest
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.VertexTransformBlock
@@ -24,7 +24,9 @@ import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
 import kotlin.math.max
 
-class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
+class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), EditorOverlay {
+    private val editor: KoolEditor get() = overlay.editor
+
     var selection: Set<GameEntity> = emptySet()
         private set(value) {
             field = value
@@ -41,15 +43,12 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
     private val expectedNodeIds = mutableSetOf<NodeId>()
     private var updateOverlay = false
 
-    val selectionPass = SelectionPass(editor)
+    val selectionPass = SelectionPass()
     private val overlayMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)
     private val outlineShader = SelectionOutlineShader(selectionPass.colorTexture)
 
     var selectionColor by outlineShader::outlineColorPrimary
     var selectionColorChildren by outlineShader::outlineColorChild
-
-    var lastPickPosition: Vec3f? = null
-        private set
 
     init {
         overlayMesh.generateFullscreenQuad()
@@ -64,7 +63,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
             selectionColorChildren = UiColors.selectionChild
 
             if (selectionPass.isEnabled) {
-                val vp = editor.editorOverlay.mainRenderPass.viewport
+                val vp = overlay.mainRenderPass.viewport
                 val sceneWidth = vp.width
                 val sceneHeight = vp.height
                 selectionPass.setSize(sceneWidth, sceneHeight)
@@ -83,38 +82,8 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         }
     }
 
-    fun clickSelect(ptr: Pointer) {
-        val editorScene = editor.activeScene.value ?: return
-        val rayTest = RayTest()
-
-        lastPickPosition = null
-
-        if (editorScene.hitTest.computePickRay(ptr, rayTest.ray)) {
-            rayTest.clear()
-            var selectedEntity: GameEntity? = editor.sceneObjectsOverlay.pick(rayTest)
-            var hitDist = Float.POSITIVE_INFINITY
-            if (rayTest.isHit) {
-                hitDist = rayTest.hitDistanceSqr
-                lastPickPosition = Vec3f(rayTest.hitPositionGlobal)
-            }
-
-            rayTest.clear()
-            val hitEntity = editorScene.hitTest.hitTest(rayTest)
-            if (hitEntity != null && rayTest.hitDistanceSqr < hitDist) {
-                lastPickPosition = Vec3f(rayTest.hitPositionGlobal)
-                selectedEntity = hitEntity
-            }
-
-            if (lastPickPosition == null) {
-                val cam = editorScene.scene.camera
-                val camPlane = PlaneF(cam.globalLookAt, cam.globalLookDir)
-                val pickPos = MutableVec3f()
-                camPlane.intersectionPoint(rayTest.ray, pickPos)
-                lastPickPosition = pickPos
-            }
-
-            selectSingle(selectedEntity)
-        }
+    override fun pick(rayTest: RayTest): GameEntity? {
+        return overlay.currentScene?.hitTest?.hitTest(rayTest)
     }
 
     fun selectSingle(selectModel: GameEntity?, expandIfShiftIsDown: Boolean = true, toggleSelect: Boolean = true) {
@@ -191,7 +160,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         }
     }
 
-    inner class SelectionPass(editor: KoolEditor) : OffscreenRenderPass2d(
+    inner class SelectionPass() : OffscreenRenderPass2d(
         // drawNode will be replaced by content scene, once it is loaded
         Node(),
         colorAttachmentDefaultDepth(TexFormat.RG),
@@ -201,7 +170,7 @@ class SelectionOverlay(val editor: KoolEditor) : Node("Selection overlay") {
         private val selectionPipelines = mutableMapOf<NodeId, DrawPipeline?>()
 
         init {
-            camera = editor.editorOverlay.camera
+            camera = overlay.camera
             clearColor = Color.BLACK
             isUpdateDrawNode = false
             isEnabled = true

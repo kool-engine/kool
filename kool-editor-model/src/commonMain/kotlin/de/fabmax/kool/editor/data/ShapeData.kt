@@ -20,7 +20,7 @@ sealed interface ShapeData {
     @Serializable
     data class Box(
         val size: Vec3Data = Vec3Data(1.0, 1.0, 1.0),
-        val pose: TransformData = TransformData.IDENTITY,
+        val pose: PoseData = PoseData.IDENTITY,
         val uvScale: Vec2Data = Vec2Data(1.0, 1.0),
         val color: ColorData = ColorData(MdColor.GREY),
     ) : ShapeData {
@@ -32,7 +32,7 @@ sealed interface ShapeData {
         val radius: Double = 1.0,
         val steps: Int = 20,
         val sphereType: String = "uv",
-        val pose: TransformData = TransformData.IDENTITY,
+        val pose: PoseData = PoseData.IDENTITY,
         val uvScale: Vec2Data = Vec2Data(1.0, 1.0),
         val color: ColorData = ColorData(MdColor.GREY),
     ) : ShapeData {
@@ -42,7 +42,7 @@ sealed interface ShapeData {
     @Serializable
     data class Rect(
         val size: Vec2Data = Vec2Data(1.0, 1.0),
-        val pose: TransformData = TransformData.IDENTITY,
+        val pose: PoseData = PoseData.IDENTITY,
         val uvScale: Vec2Data = Vec2Data(1.0, 1.0),
         val color: ColorData = ColorData(MdColor.GREY),
     ) : ShapeData {
@@ -55,7 +55,7 @@ sealed interface ShapeData {
         val bottomRadius: Double = 1.0,
         val length: Double = 1.0,
         val steps: Int = 32,
-        val pose: TransformData = TransformData.IDENTITY,
+        val pose: PoseData = PoseData.IDENTITY,
         val uvScale: Vec2Data = Vec2Data(1.0, 1.0),
         val color: ColorData = ColorData(MdColor.GREY),
     ) : ShapeData {
@@ -67,7 +67,7 @@ sealed interface ShapeData {
         val radius: Double = 1.0,
         val length: Double = 1.0,
         val steps: Int = 32,
-        val pose: TransformData = TransformData.IDENTITY,
+        val pose: PoseData = PoseData.IDENTITY,
         val uvScale: Vec2Data = Vec2Data(1.0, 1.0),
         val color: ColorData = ColorData(MdColor.GREY),
     ) : ShapeData {

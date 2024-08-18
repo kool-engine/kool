@@ -107,7 +107,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                             body.color.putTo(buf)
                         }
 
-                        if (body.rigidActor.position.length() > 500f) {
+                        if (body.rigidActor.pose.position.length() > 500f) {
                             removeBodies += body
                         }
                     }
@@ -189,8 +189,10 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 s.geometry.release()
             }
             body.updateInertiaFromShapesAndMass()
-            body.position = Vec3f(x, y, z)
-            body.setRotation(MutableMat3f().rotate(rand.randomF(-90f, 90f).deg, rand.randomF(-90f, 90f).deg, rand.randomF(-90f, 90f).deg))
+            body.pose = PoseF(
+                Vec3f(x, y, z),
+                MutableMat3f().rotate(rand.randomF(-90f, 90f).deg, rand.randomF(-90f, 90f).deg, rand.randomF(-90f, 90f).deg).getRotation()
+            )
             physicsWorld.addActor(body)
 
             val coloredBody = ColoredBody(body, color, shapes)
@@ -231,7 +233,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val groundShape = BoxGeometry(Vec3f(100f, 1f, 100f))
         val ground = RigidStatic().apply {
             attachShape(Shape(groundShape, groundMaterial))
-            position = Vec3f(0f, -0.5f, 0f)
+            setPosition(Vec3f(0f, -0.5f, 0f))
             simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(ground)
@@ -239,7 +241,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameLtShape = BoxGeometry(Vec3f(3f, 6f, 100f))
         val frameLt = RigidStatic().apply {
             attachShape(Shape(frameLtShape, groundMaterial))
-            position = Vec3f(-51.5f, 2f, 0f)
+            setPosition(Vec3f(-51.5f, 2f, 0f))
             simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameLt)
@@ -248,7 +250,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameRtShape = BoxGeometry(Vec3f(3f, 6f, 100f))
         val frameRt = RigidStatic().apply {
             attachShape(Shape(frameRtShape, groundMaterial))
-            position = Vec3f(51.5f, 2f, 0f)
+            setPosition(Vec3f(51.5f, 2f, 0f))
             simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameRt)
@@ -257,7 +259,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameFtShape = BoxGeometry(Vec3f(106f, 6f, 3f))
         val frameFt = RigidStatic().apply {
             attachShape(Shape(frameFtShape, groundMaterial))
-            position = Vec3f(0f, 2f, 51.5f)
+            setPosition(Vec3f(0f, 2f, 51.5f))
             simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameFt)
@@ -266,7 +268,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
         val frameBkShape = BoxGeometry(Vec3f(106f, 6f, 3f))
         val frameBk = RigidStatic().apply {
             attachShape(Shape(frameBkShape, groundMaterial))
-            position = Vec3f(0f, 2f, -51.5f)
+            setPosition(Vec3f(0f, 2f, -51.5f))
             simulationFilterData = frameSimFilter
         }
         physicsWorld.addActor(frameBk)
@@ -280,7 +282,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                 }
                 cube {
                     size.set(groundShape.size)
-                    origin.set(ground.position)
+                    origin.set(ground.pose.position)
                 }
             }
             shader = KslPbrShader {
@@ -303,7 +305,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
                     val shape = it.shapes[0].geometry as BoxGeometry
                     cube {
                         size.set(shape.size)
-                        origin.set(it.position)
+                        origin.set(it.pose.position)
                     }
                 }
             }

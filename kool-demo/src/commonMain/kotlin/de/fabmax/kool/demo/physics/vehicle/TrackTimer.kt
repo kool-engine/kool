@@ -1,10 +1,7 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.physics.RigidActor
-import de.fabmax.kool.physics.RigidStatic
-import de.fabmax.kool.physics.Shape
-import de.fabmax.kool.physics.TriggerListener
+import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.vehicle.Vehicle
 
@@ -109,28 +106,28 @@ class TrackTimer(val vehicle: Vehicle, val track: Track, val world: VehicleWorld
         enterTrigger = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(enterSize), material))
-            position = enterPos
+            setPosition(enterPos)
         }
         world.physics.addActor(enterTrigger)
 
         exitTrigger = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(exitSize), material))
-            position = exitPos
+            setPosition(exitPos)
         }
         world.physics.addActor(exitTrigger)
 
         checkTrigger1 = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(checkSize1), material))
-            position = checkPos1
+            setPosition(checkPos1)
         }
         world.physics.addActor(checkTrigger1)
 
         checkTrigger2 = RigidStatic().apply {
             isTrigger = true
             attachShape(Shape(BoxGeometry(checkSize2), material))
-            position = checkPos2
+            setPosition(checkPos2)
         }
         world.physics.addActor(checkTrigger2)
 

@@ -1,6 +1,6 @@
 package de.fabmax.kool.physics.articulations
 
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.PoseF
 import de.fabmax.kool.physics.MemoryStack
 import de.fabmax.kool.physics.PhysicsImpl
 import de.fabmax.kool.physics.SupportFunctions
@@ -35,7 +35,7 @@ class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
         }
     }
 
-    override fun createLink(parent: ArticulationLink?, pose: Mat4f): ArticulationLink {
+    override fun createLink(parent: ArticulationLink?, pose: PoseF): ArticulationLink {
         parent as ArticulationLinkImpl?
         return MemoryStack.stackPush().use { mem ->
             @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")

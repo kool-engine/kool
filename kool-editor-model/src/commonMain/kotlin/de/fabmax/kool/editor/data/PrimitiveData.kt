@@ -50,6 +50,25 @@ data class TransformData(
 }
 
 @Serializable
+data class PoseData(
+    val position: Vec3Data,
+    val rotation: Vec4Data
+) {
+    fun toPoseF(result: MutablePoseF = MutablePoseF()): MutablePoseF {
+        position.toVec3f(result.position)
+        rotation.toQuatF(result.rotation)
+        return result
+    }
+
+    companion object {
+        val IDENTITY = PoseData(
+            position = Vec3Data(Vec3d.ZERO),
+            rotation = Vec4Data(Vec4d.W_AXIS)
+        )
+    }
+}
+
+@Serializable
 data class Vec2Data(val x: Double, val y: Double) {
     constructor(vec: Vec2d): this(vec.x, vec.y)
     constructor(vec: Vec2f): this(vec.x.toDouble(), vec.y.toDouble())

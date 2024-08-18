@@ -10,10 +10,11 @@ fun UiScope.collapsablePanel(
     titleWidth: Dimension = Grow.Std,
     startExpanded: Boolean = true,
     onCollapseChanged: ((Boolean) -> Unit)? = null,
+    scopeName: String = title,
     block: ColumnScope.() -> Any?
 ) = Column(
     Grow.Std,
-    scopeName = title
+    scopeName = scopeName
 ) {
     var isExpanded by remember(startExpanded)
     var isHovered by remember(false)
@@ -65,11 +66,12 @@ inline fun UiScope.collapsablePanelLvl2(
     startExpanded: Boolean = true,
     indicatorColor: Color? = null,
     isAlwaysShowIndicator: Boolean = false,
+    scopeName: String = title,
     noinline onCollapseChanged: ((Boolean) -> Unit)? = null,
     block: ColumnScope.() -> Any?
 ) = Column(
     Grow.Std,
-    scopeName = title
+    scopeName = scopeName
 ) {
     var isExpanded by remember(startExpanded)
     var isHovered by remember(false)
@@ -88,8 +90,8 @@ inline fun UiScope.collapsablePanelLvl2(
             }
 
         Box(height = Grow.Std) {
-            if (indicatorColor != null && (isExpanded || isAlwaysShowIndicator)) {
-                Box(width = sizes.smallGap, height = Grow.Std) {
+            Box(width = sizes.smallGap, height = Grow.Std) {
+                if (indicatorColor != null && (isExpanded || isAlwaysShowIndicator)) {
                     modifier.backgroundColor(indicatorColor)
                 }
             }
@@ -125,7 +127,6 @@ inline fun UiScope.collapsablePanelLvl2(
                     )
                 }
                 block()
-                divider(colors.weakDividerColor, horizontalMargin = 0.dp)
             }
         }
     }

@@ -6,8 +6,7 @@ import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ProjectData
-import de.fabmax.kool.editor.overlays.GridOverlay
-import de.fabmax.kool.editor.overlays.SceneObjectsOverlay
+import de.fabmax.kool.editor.overlays.OverlayScene
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
@@ -19,7 +18,6 @@ import de.fabmax.kool.modules.filesystem.toZip
 import de.fabmax.kool.modules.filesystem.writeText
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.*
@@ -68,11 +66,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val loadedApp = mutableStateOf<LoadedApp?>(null)
     val activeScene = mutableStateOf<EditorScene?>(null)
 
-    val editorOverlay = scene("editor-overlay") {
-        clearColor = null
-        clearDepth = false
-        tryEnableInfiniteDepth()
-    }
+    val overlayScene = OverlayScene(this)
+    val selectionOverlay: SelectionOverlay get() = overlayScene.selection
+    val gizmoOverlay: TransformGizmoOverlay get() = overlayScene.gizmo
+
     val editorInputContext = EditorKeyListener("Edit mode")
     val editMode = EditorEditMode(this)
 
@@ -81,21 +78,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         addNode(editorCameraTransform)
         clearColor = Color.BLACK
         clearDepth = false
-    }
-
-    val gridOverlay = GridOverlay()
-    val sceneObjectsOverlay = SceneObjectsOverlay()
-    val gizmoOverlay = TransformGizmoOverlay(this)
-    val selectionOverlay = SelectionOverlay(this)
-
-    val editorContent = Node("Editor Content").apply {
-        tags[TAG_EDITOR_SUPPORT_CONTENT] = "true"
-        addNode(gridOverlay)
-        addNode(sceneObjectsOverlay)
-        addNode(selectionOverlay)
-        addNode(gizmoOverlay)
-
-        editorOverlay.addNode(this)
     }
 
     val appLoader = AppLoader(this)
@@ -193,7 +175,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
     private fun setEditorOverlayVisibility(isVisible: Boolean) {
         editorCameraTransform.isVisible = isVisible
-        editorOverlay.children.forEach {
+        overlayScene.children.forEach {
             it.isVisible = isVisible
         }
         ui.sceneView.isShowOverlays.set(isVisible)
@@ -252,10 +234,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
             val ptr = pointerState.primaryPointer
             if (!ptr.isConsumed()) {
                 when {
-                    ptr.isLeftButtonClicked -> selectionOverlay.clickSelect(ptr)
+                    ptr.isLeftButtonClicked -> overlayScene.doPicking(ptr)
                     ptr.isRightButtonClicked -> {
                         selectionOverlay.clearSelection()
-                        selectionOverlay.clickSelect(ptr)
+                        overlayScene.doPicking(ptr)
                         ui.sceneView.showSceneContextMenu(ptr)
                     }
                 }
@@ -270,12 +252,12 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         val prevSelection = selectionOverlay.selection.map { it.id }
         selectionOverlay.clearSelection()
-        ctx.scenes -= editorOverlay
+        ctx.scenes -= overlayScene
 
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
         editorCameraTransform.addNode(editorBackgroundScene.camera)
-        editorCameraTransform.addNode(editorOverlay.camera)
+        editorCameraTransform.addNode(overlayScene.camera)
 
         // dispose old scene + objects
         projectModel.createdScenes.values.forEach { editorScene ->
@@ -303,7 +285,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
                 // replace original scene cam with editor cam
                 val editorCam = PerspectiveCamera()
-                val far = if (editorOverlay.isInfiniteDepth) 1e9f else 1000f
+                val far = if (overlayScene.isInfiniteDepth) 1e9f else 1000f
                 editorCam.setClipRange(0.1f, far)
                 editorScene.sceneComponent.setCamera(editorCam)
 
@@ -313,7 +295,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
 
         this.loadedApp.set(loadedApp)
-        activeScene.set(projectModel.createdScenes.values.first())
+        val scene = projectModel.createdScenes.values.first()
+        activeScene.set(scene)
+        overlayScene.onEditorSceneChanged(scene)
 
         selectionOverlay.setSelection(prevSelection.mapNotNull { it.gameEntity })
         ui.objectProperties.windowSurface.triggerUpdate()
@@ -330,19 +314,18 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     private fun updateOverlays() {
-        ctx.scenes -= editorOverlay
-        ctx.scenes += editorOverlay
+        ctx.scenes -= overlayScene
+        ctx.scenes += overlayScene
 
-        editorOverlay.onRenderScene.clear()
+        overlayScene.onRenderScene.clear()
         ui.sceneView.applyViewportTo(editorBackgroundScene)
-        ui.sceneView.applyViewportTo(editorOverlay)
+        ui.sceneView.applyViewportTo(overlayScene)
 
         ctx.scenes -= ui
         ctx.scenes += ui
         ui.sceneBrowser.refreshSceneTree()
 
         selectionOverlay.invalidateSelection()
-        sceneObjectsOverlay.updateOverlayObjects()
     }
 
     private fun saveEditorConfig() {
@@ -371,8 +354,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     companion object {
         lateinit var instance: KoolEditor
             private set
-
-        const val TAG_EDITOR_SUPPORT_CONTENT = "%editor-content-hidden"
 
         @OptIn(ExperimentalSerializationApi::class)
         val jsonCodec = Json {

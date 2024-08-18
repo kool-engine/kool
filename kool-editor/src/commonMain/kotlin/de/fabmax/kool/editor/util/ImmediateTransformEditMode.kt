@@ -17,7 +17,6 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.gizmo.*
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.toString
 
@@ -143,7 +142,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             addNode(rotationOverlay)
             addNode(scaleOverlay)
         }
-        editor.editorOverlay += gizmoGroup
+        editor.overlayScene += gizmoGroup
         gizmo.gizmoListeners += translationOverlay
         gizmo.gizmoListeners += rotationOverlay
         gizmo.gizmoListeners += scaleOverlay
@@ -275,10 +274,10 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         }
         gizmo.applySpeedAndTickRate()
 
-        val scene = editor.editorContent.findParentOfType<Scene>()
+        val scene = editor.overlayScene
         val ptrX = virtualPointerPos.x.toFloat()
         val ptrY = virtualPointerPos.y.toFloat()
-        if (scene == null || !scene.camera.computePickRay(globalRay, ptrX, ptrY, scene.mainRenderPass.viewport)) {
+        if (!scene.camera.computePickRay(globalRay, ptrX, ptrY, scene.mainRenderPass.viewport)) {
             return
         }
 

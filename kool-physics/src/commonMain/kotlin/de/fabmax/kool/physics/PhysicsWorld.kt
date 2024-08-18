@@ -1,10 +1,7 @@
 package de.fabmax.kool.physics
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.Mat4f
-import de.fabmax.kool.math.RayF
-import de.fabmax.kool.math.Vec3f
-import de.fabmax.kool.math.deg
+import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.articulations.Articulation
 import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
@@ -196,7 +193,7 @@ abstract class PhysicsWorld : BaseReleasable() {
         val groundPlane = RigidStatic()
         val shape = Shape(PlaneGeometry(), Material(0.5f, 0.5f, 0.2f))
         groundPlane.attachShape(shape)
-        groundPlane.setRotation(0f.deg, 0f.deg, 90f.deg)
+        groundPlane.pose = PoseF(rotation = QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         addActor(groundPlane)
         return groundPlane
     }

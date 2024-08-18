@@ -75,10 +75,10 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
                 val tree = trees[random.randomI(trees.indices)]
                 val mesh = tree.drawMesh
                 val size = 0.6f + likelihood.clamp(0f, 0.4f)
-                val pose = MutableMat4f().translate(pos).rotate(random.randomF(0f, 360f).deg, Vec3f.Y_AXIS)
-                tree.instances += TreeInstance(MutableMat4f().set(pose), size, tree)
+                val pose = PoseF(pos, QuatF.rotation(random.randomF(0f, 360f).deg, Vec3f.Y_AXIS))
+                tree.instances += TreeInstance(pose, size, tree)
                 mesh.instances!!.addInstance {
-                    pose.scale(size).putTo(this)
+                    pose.toMat4f().scale(size).putTo(this)
                 }
             }
         }
@@ -163,12 +163,11 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
         val physicsMesh = TriangleMesh(collisionMesh)
     }
 
-    class TreeInstance(val pose: Mat4f, val scale: Float, tree: Tree) {
+    class TreeInstance(val pose: PoseF, val scale: Float, tree: Tree) {
         val physicsGeometry = TriangleMeshGeometry(tree.physicsMesh, Vec3f(scale))
         val physicsBody: RigidStatic = RigidStatic().apply {
             attachShape(Shape(physicsGeometry, Physics.defaultMaterial))
-            position = pose.getTranslation()
-            rotation = pose.getRotation()
+            pose = this@TreeInstance.pose
         }
     }
 }

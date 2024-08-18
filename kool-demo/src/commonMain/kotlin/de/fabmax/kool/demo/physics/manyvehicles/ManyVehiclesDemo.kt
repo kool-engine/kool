@@ -142,17 +142,16 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             simulationFilterData = groundSimFilterData
             queryFilterData = groundQryFilterData
             attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-            setRotation(Mat3f.rotation(90f.deg, Vec3f.Z_AXIS))
+            setRotation(QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         }
         physicsWorld.addActor(ground)
     }
 
     private fun spawnVehicle(pos: Vec3f, dir: Float, color: Color) {
         val vehicle = Vehicle(vehicleProps, physicsWorld)
-        vehicle.position = pos
+        vehicle.pose = PoseF(pos, QuatF.rotation(dir.deg, Vec3f.Y_AXIS))
         vehicle.throttleInput = 0.75f
         vehicle.steerInput = 0f
-        vehicle.setRotation(0f.deg, dir.deg, 0f.deg)
         physicsWorld.addActor(vehicle)
         vehicleInstances += VehicleInstance(vehicle, color)
     }

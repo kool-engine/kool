@@ -3,10 +3,9 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.data.ComponentInfo
-import de.fabmax.kool.editor.data.PhysicsWorldComponentData
-import de.fabmax.kool.editor.data.Vec3Data
+import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidActor
@@ -30,6 +29,13 @@ class PhysicsWorldComponent(
 
     private val _actors = mutableMapOf<RigidActor, RigidActorComponent>()
     val actors: Map<RigidActor, RigidActorComponent> get() = _actors
+
+    private val _materials = mutableMapOf<EntityId, PhysicsMaterial>()
+    val materials: Map<EntityId, PhysicsMaterial> get() = _materials
+
+    init {
+        updateMaterials(data)
+    }
 
     fun addActor(rigidActorComponent: RigidActorComponent) {
         val world = physicsWorld
@@ -59,6 +65,21 @@ class PhysicsWorldComponent(
             if (oldData.isContinuousCollisionDetection != newData.isContinuousCollisionDetection) {
                 logW { "Continuous collision detection can not be changed after physics world was created" }
             }
+        }
+        updateMaterials(newData)
+    }
+
+    private fun updateMaterials(data: PhysicsWorldComponentData) {
+        _materials.keys.retainAll(data.materials.map { it.id }.toSet())
+        data.materials.forEach { matData ->
+            val mat = _materials.getOrPut(matData.id) {
+                val material = Material(matData.staticFriction, matData.dynamicFriction, matData.restitution)
+                PhysicsMaterial(matData.id, matData.name, material)
+            }
+            mat.name = matData.name
+            mat.material.staticFriction = matData.staticFriction
+            mat.material.dynamicFriction = matData.dynamicFriction
+            mat.material.restitution = matData.restitution
         }
     }
 
@@ -94,3 +115,8 @@ class PhysicsWorldComponent(
         physicsWorld?.registerHandlers(sceneComponent.sceneNode)
     }
 }
+
+fun PhysicsMaterial(data: PhysicsMaterialData) =
+    PhysicsMaterial(data.id, data.name, Material(data.staticFriction, data.dynamicFriction, data.restitution))
+
+class PhysicsMaterial(val id: EntityId, var name: String, val material: Material)

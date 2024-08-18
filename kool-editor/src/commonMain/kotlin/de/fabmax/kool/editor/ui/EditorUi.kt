@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
+import de.fabmax.kool.editor.ui.componenteditors.GameEntityEditor
 import de.fabmax.kool.input.CursorMode
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerInput

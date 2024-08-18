@@ -97,7 +97,7 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
             pickUp()
         }
         val impulse = MutableVec3f(mainScene.camera.globalLookDir).mul(3f).add(Vec3f.Y_AXIS).norm()
-        tractorBox?.let { it.addImpulseAtPos(impulse.mul(it.mass * 35), it.position) }
+        tractorBox?.let { it.addImpulseAtPos(impulse.mul(it.mass * 35), it.pose.position) }
         tractorBox = null
     }
 
@@ -118,7 +118,7 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
         fun applyTractorForce(box: RigidDynamic, timeStep: Float) {
             updateDesiredPos()
 
-            val p0 = MutableVec3f(box.position)
+            val p0 = MutableVec3f(box.pose.position)
             val p1 = MutableVec3f(desiredPos)
             p0.y += 1.5f
             p1.y += 1.5f
@@ -130,7 +130,7 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
         }
 
         private fun pullTowardsDesired(box: RigidDynamic, timeStep: Float): Float {
-            val delta = desiredPos.subtract(box.position, MutableVec3f())
+            val delta = desiredPos.subtract(box.pose.position, MutableVec3f())
             val error = delta.length()
             if (error > 0.01f) {
                 val s = box.mass * kPos
@@ -140,10 +140,10 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
 
                 val f = (fk + fd).clamp(-10000f, 10000f)
                 delta.norm().mul(f)
-                box.addForceAtPos(delta, box.position, false)
+                box.addForceAtPos(delta, box.pose.position, false)
 
-                val p0 = MutableVec3f(box.position)
-                val p1 = MutableVec3f(delta).mul(0.001f).add(box.position)
+                val p0 = MutableVec3f(box.pose.position)
+                val p1 = MutableVec3f(delta).mul(0.001f).add(box.pose.position)
                 p0.y += 1.5f
                 p1.y += 1.5f
                 physics.debugLines.addLine(p0, p1, MdColor.PINK)
@@ -162,10 +162,10 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
                 prevVelocityError = error
 
                 delta.norm().mul(-fk - fd)
-                box.addForceAtPos(delta, box.position, false)
+                box.addForceAtPos(delta, box.pose.position, false)
 
-                val p0 = MutableVec3f(box.position)
-                val p1 = MutableVec3f(delta).mul(0.001f).add(box.position)
+                val p0 = MutableVec3f(box.pose.position)
+                val p1 = MutableVec3f(delta).mul(0.001f).add(box.pose.position)
                 p0.y += 1.5f
                 p1.y += 1.5f
                 physics.debugLines.addLine(p0, p1, MdColor.BLUE)
@@ -195,11 +195,11 @@ class TractorGun(val physics: PhysicsObjects, val mainScene: Scene) {
                 bestUp.cross(Vec3f.Y_AXIS, torque).norm().mul(box.mass * (1f - dot).clamp(0.05f, 0.3f) * 20f)
                 box.addTorque(torque)
 
-                val p0 = MutableVec3f(box.position)
-                val p1 = MutableVec3f(bestUp).mul(3f).add(box.position)
+                val p0 = MutableVec3f(box.pose.position)
+                val p1 = MutableVec3f(bestUp).mul(3f).add(box.pose.position)
                 physics.debugLines.addLine(p0, p1, MdColor.AMBER)
 
-                p1.set(torque).mul(0.05f).add(box.position)
+                p1.set(torque).mul(0.05f).add(box.pose.position)
                 physics.debugLines.addLine(p0, p1, MdColor.PURPLE)
             }
 

@@ -30,7 +30,7 @@ class RigidActorComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<RigidActorComponentData> = ComponentInfo(RigidActorComponentData())
 ) :
-    PhysicsComponent<RigidActorComponentData>(gameEntity, componentInfo),
+    PhysicsActorComponent<RigidActorComponentData>(gameEntity, componentInfo),
     MeshComponent.ListenerComponent
 {
     var rigidActor: RigidActor? = null
@@ -67,7 +67,7 @@ class RigidActorComponent(
 
     override fun onDataChanged(oldData: RigidActorComponentData, newData: RigidActorComponentData) {
         launchOnMainThread {
-            updateRigidActor(newData)
+            updateRigidActor(newData, forceRecreate = oldData.materialId != newData.materialId)
         }
     }
 
@@ -95,7 +95,7 @@ class RigidActorComponent(
         super.destroyComponent()
     }
 
-    private suspend fun updateRigidActor(actorData: RigidActorComponentData) {
+    private suspend fun updateRigidActor(actorData: RigidActorComponentData, forceRecreate: Boolean = false) {
         val actor = rigidActor
         val isActorOk = when (actorData.actorType) {
             RigidActorType.DYNAMIC -> actor is RigidDynamic && !actor.isKinematic
@@ -103,7 +103,7 @@ class RigidActorComponent(
             RigidActorType.STATIC -> actor is RigidStatic
         }
 
-        if (!isActorOk || actorData.shapes != bodyShapes) {
+        if (!isActorOk || actorData.shapes != bodyShapes || forceRecreate) {
             createRigidBody(actorData)
 
         } else if (actor is RigidDynamic) {
@@ -121,6 +121,7 @@ class RigidActorComponent(
                     physicsWorld?.unregisterTriggerListener(proxyTriggerListener)
                 }
             }
+
         }
     }
 
@@ -153,7 +154,8 @@ class RigidActorComponent(
                 else -> emptyList()
             }
 
-            shapes.forEach { (shape, pose) -> actor.attachShape(Shape(shape, localPose = pose)) }
+            val material = physicsWorldComponent.materials[actorData.materialId]?.material ?: Physics.defaultMaterial
+            shapes.forEach { (shape, pose) -> actor.attachShape(Shape(shape, localPose = pose, material = material)) }
             geometry = shapes.map { it.first }
             physicsWorldComponent.addActor(this@RigidActorComponent)
         }
@@ -214,10 +216,7 @@ class RigidActorComponent(
     }
 
     override fun applyPose(position: Vec3d, rotation: QuatD) {
-        rigidActor?.apply {
-            this.position = position.toVec3f()
-            this.rotation = rotation.toQuatF()
-        }
+        rigidActor?.pose = PoseF(position.toVec3f(), rotation.toQuatF())
     }
 
     override suspend fun onMeshGeometryChanged(component: MeshComponent, newData: MeshComponentData) {

@@ -16,7 +16,7 @@ import de.fabmax.kool.util.Color
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class GridOverlay : Node("Grid overlay") {
+class GridOverlay : Node("Grid overlay"), EditorOverlay {
 
     private val yPlaneShader = GridShader()
     private val yPlaneGrid: LineMesh

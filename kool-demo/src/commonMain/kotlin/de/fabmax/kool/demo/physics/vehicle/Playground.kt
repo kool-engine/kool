@@ -6,6 +6,7 @@ import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.RevoluteJoint
+import de.fabmax.kool.physics.setPosition
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -48,7 +49,7 @@ object Playground {
                 body.queryFilterData = world.obstacleQryFilterData
                 val pos = MutableVec3f(x + i * stepX, size * 0.5f + r * size, 0f)
                 frame.transform(pos)
-                body.position = pos
+                body.setPosition(pos)
                 world.physics.addActor(body)
 
                 val color = if (i % 2 == 0) VehicleDemo.color(400) else VehicleDemo.color(200)
@@ -62,20 +63,20 @@ object Playground {
             simulationFilterData = world.obstacleSimFilterData
             queryFilterData = world.obstacleQryFilterData
             attachShape(Shape(BoxGeometry(Vec3f(7.5f, 1.5f, 0.3f)), world.defaultMaterial))
-            position = frame.transform(MutableVec3f(0f, 0.75f, 0f))
+            setPosition(frame.transform(MutableVec3f(0f, 0.75f, 0f)))
         }
         val rocker = RigidDynamic(500f).apply {
             simulationFilterData = world.obstacleSimFilterData
             queryFilterData = world.obstacleQryFilterData
             attachShape(Shape(BoxGeometry(Vec3f(7.5f, 0.15f, 15f)), world.defaultMaterial))
-            position = frame.transform(MutableVec3f(0f, 1.7f, 0f))
+            setPosition(frame.transform(MutableVec3f(0f, 1.7f, 0f)))
         }
         world.physics.addActor(anchor)
         world.physics.addActor(rocker)
         world.deferredPipeline.sceneContent += world.toPrettyMesh(anchor, VehicleDemo.color(400))
         world.deferredPipeline.sceneContent += world.toPrettyMesh(rocker, VehicleDemo.color(200))
 
-        RevoluteJoint(anchor, rocker, MutableMat4f().translate(0f, 0.85f, 0f), MutableMat4f().translate(0f, 0f, 0.2f))
+        RevoluteJoint(anchor, rocker, PoseF(Vec3f(0f, 0.85f, 0f)), PoseF(Vec3f(0f, 0f, 0.2f)))
     }
 
     private fun MeshBuilder.makeRamp(frame: Mat4f) {

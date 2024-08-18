@@ -160,6 +160,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             is MaterialReferenceComponentData -> MaterialReferenceComponent(requireSceneChild, info as ComponentInfo<MaterialReferenceComponentData>)
             is MeshComponentData -> MeshComponent(requireSceneChild, info as ComponentInfo<MeshComponentData>)
             is RigidActorComponentData -> RigidActorComponent(requireSceneChild, info as ComponentInfo<RigidActorComponentData>)
+            is JointComponentData -> JointComponent(requireSceneChild, info as ComponentInfo<JointComponentData>)
             is ShadowMapComponentData -> ShadowMapComponent(requireSceneChild, info as ComponentInfo<ShadowMapComponentData>)
 
             is PhysicsWorldComponentData -> PhysicsWorldComponent(requireScene, info as ComponentInfo<PhysicsWorldComponentData>)

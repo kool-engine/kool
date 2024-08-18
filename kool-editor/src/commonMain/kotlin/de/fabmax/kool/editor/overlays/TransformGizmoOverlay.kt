@@ -30,7 +30,8 @@ import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.toString
 
-class TransformGizmoOverlay(val editor: KoolEditor) : Node("Transform gizmo") {
+class TransformGizmoOverlay(val overlay: OverlayScene) : Node("Transform gizmo"), EditorOverlay {
+    private val editor: KoolEditor get() = overlay.editor
 
     private val gizmo = SimpleGizmo()
     private val gizmoLabel = SceneView.Label()

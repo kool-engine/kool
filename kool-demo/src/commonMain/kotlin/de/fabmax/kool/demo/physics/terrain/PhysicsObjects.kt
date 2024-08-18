@@ -16,7 +16,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
     val playerController: PlayerController
     val chainBridge: ChainBridge
     val boxes = mutableListOf<RigidDynamic>()
-    private val boxInitPoses = mutableListOf<Mat4f>()
+    private val boxInitPoses = mutableListOf<PoseF>()
 
     val debugLines = LineMesh().apply { isVisible = false }
 
@@ -37,8 +37,7 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
         // put another infinitely large ground plane below terrain to catch stuff which falls of the edge of the world
         ground = RigidStatic()
         ground.attachShape(Shape(PlaneGeometry(), Physics.defaultMaterial))
-        ground.position = Vec3f(0f, -35f, 0f)
-        ground.setRotation(MutableMat3f().rotate(90f.deg, Vec3f.Z_AXIS))
+        ground.pose = PoseF(Vec3f(0f, -35f, 0f), QuatF.rotation(90f.deg, Vec3f.Z_AXIS))
         world.addActor(ground)
 
         // create a chain bridge, the player can walk across
@@ -67,18 +66,17 @@ class PhysicsObjects(mainScene: Scene, terrain: Terrain, trees: Trees, ctx: Kool
                 val body = RigidDynamic(100f)
                 body.tags["isBox"] = true
                 body.attachShape(Shape(shape, Physics.defaultMaterial))
-                body.position = Vec3f(x * 5.5f, 100f, z * 5.5f)
+                body.setPosition(Vec3f(x * 5.5f, 100f, z * 5.5f))
                 world.addActor(body)
                 boxes += body
-
-                boxInitPoses += MutableMat4f().set(body.transform.matrixF)
+                boxInitPoses += PoseF(body.pose)
             }
         }
     }
 
     fun respawnBoxes() {
         boxes.forEachIndexed { i, body ->
-            body.setTransform(boxInitPoses[i])
+            body.pose = boxInitPoses[i]
             body.linearVelocity = Vec3f.ZERO
             body.angularVelocity = Vec3f.ZERO
         }
