@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.AsyncTextureLoader
+import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
 import kotlinx.serialization.Serializable
@@ -149,7 +150,10 @@ class MsdfFont(
             val msdfMap = Texture2d(
                 props = MSDF_TEX_PROPS,
                 name = "MsdfFont:${fontInfo.fontMeta.name}",
-                loader = AsyncTextureLoader { Assets.loadTextureData("fonts/font-roboto-regular.png", MSDF_TEX_PROPS) }
+                loader = AsyncTextureLoader {
+                    Assets.loadTextureData("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
+                        .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
+                }
             )
             KoolSystem.onDestroyContext += { msdfMap.dispose() }
             MsdfFontData(msdfMap, fontInfo.fontMeta)
@@ -158,17 +162,21 @@ class MsdfFont(
     }
 }
 
-suspend fun MsdfFont(fontPath: String): MsdfFont = MsdfFont("${fontPath}.json", "${fontPath}.png")
+suspend fun MsdfFont(fontPath: String): Result<MsdfFont> = MsdfFont("${fontPath}.json", "${fontPath}.png")
 
-suspend fun MsdfFont(metaPath: String, texturePath: String): MsdfFont {
-    val json = Assets.loadBlobAsset(metaPath).decodeToString()
-    val meta = Json.Default.decodeFromString<MsdfMeta>(json)
-    return MsdfFont(MsdfFontInfo(meta, texturePath))
+suspend fun MsdfFont(metaPath: String, texturePath: String): Result<MsdfFont> {
+    return Assets.loadBlobAsset(metaPath).mapCatching {
+        val json = it.decodeToString()
+        val meta = Json.Default.decodeFromString<MsdfMeta>(json)
+        MsdfFont(MsdfFontInfo(meta, texturePath)).getOrThrow()
+    }
 }
 
-suspend fun MsdfFont(fontInfo: MsdfFontInfo): MsdfFont {
-    val fontData = MsdfFontData(Assets.loadTexture2d(fontInfo.texturePath, MsdfFont.MSDF_TEX_PROPS), fontInfo.fontMeta)
-    return MsdfFont(fontData)
+suspend fun MsdfFont(fontInfo: MsdfFontInfo): Result<MsdfFont> {
+    return Assets.loadTexture2d(fontInfo.texturePath, MsdfFont.MSDF_TEX_PROPS).mapCatching {
+        val fontData = MsdfFontData(it, fontInfo.fontMeta)
+        MsdfFont(fontData)
+    }
 }
 
 data class MsdfFontInfo(val fontMeta: MsdfMeta, val texturePath: String)

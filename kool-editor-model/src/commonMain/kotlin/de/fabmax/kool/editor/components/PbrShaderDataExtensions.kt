@@ -3,7 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.SceneShaderData
-import de.fabmax.kool.editor.api.loadTexture2d
+import de.fabmax.kool.editor.api.loadTexture2dOrNull
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -85,7 +85,7 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
                 enableSsao(it)
             }
         }
-        sceneShaderData.environmentMaps?.let {
+        sceneShaderData.environmentMap?.let {
             enableImageBasedLighting(it)
         }
         colorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(sceneShaderData.toneMapping)
@@ -104,7 +104,7 @@ suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData:
         return false
     }
 
-    val ibl = sceneShaderData.environmentMaps
+    val ibl = sceneShaderData.environmentMap
     val isIbl = ibl != null
     val isSsao = sceneShaderData.ssaoMap != null
     val isMaterialAo = aoMap != null
@@ -117,13 +117,13 @@ suspend fun PbrShaderData.updatePbrShader(shader: KslPbrShader, sceneShaderData:
         (shader.aoCfg.primaryTexture != null) != isMaterialAo -> return false
     }
 
-    val colorMap = (baseColor as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-    val roughnessMap = (roughness as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-    val metallicMap = (metallic as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-    val emissionMap = (emission as? MapAttribute)?.let { AppAssets.loadTexture2d(it.mapPath) }
-    val normalMap = normalMap?.let { AppAssets.loadTexture2d(it.mapPath) }
-    val aoMap = aoMap?.let { AppAssets.loadTexture2d(it.mapPath) }
-    val displacementMap = displacementMap?.let { AppAssets.loadTexture2d(AssetReference.Texture(it.mapPath, TexFormat.R)) }
+    val colorMap = (baseColor as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
+    val roughnessMap = (roughness as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
+    val metallicMap = (metallic as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
+    val emissionMap = (emission as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
+    val normalMap = normalMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
+    val aoMap = aoMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
+    val displacementMap = displacementMap?.let { AppAssets.loadTexture2dOrNull(AssetReference.Texture(it.mapPath, TexFormat.R)) }
 
     when (val color = baseColor) {
         is ConstColorAttribute -> shader.color = color.color.toColorLinear()

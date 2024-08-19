@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -37,24 +37,24 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         }
     }
 
-    override fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node {
+    override fun createContent(scene: Scene, envMap: EnvironmentMap, ctx: KoolContext): Node {
         content = Node().apply {
             isVisible = false
             isFrustumChecked = false
-            contentMesh = makeSpheres(true, envMaps)
+            contentMesh = makeSpheres(true, envMap)
         }
         return content!!
     }
 
-    override fun updateEnvironmentMap(envMaps: EnvironmentMaps) {
+    override fun updateEnvironmentMap(envMap: EnvironmentMap) {
         contentMesh?.let {
             val pbrShader = it.shader as KslPbrShader
-            pbrShader.ambientMap = envMaps.irradianceMap
-            pbrShader.reflectionMap = envMaps.reflectionMap
+            pbrShader.ambientMap = envMap.irradianceMap
+            pbrShader.reflectionMap = envMap.reflectionMap
         }
     }
 
-    private fun Node.makeSpheres(withIbl: Boolean, envMaps: EnvironmentMaps): Mesh {
+    private fun Node.makeSpheres(withIbl: Boolean, envMap: EnvironmentMap): Mesh {
         val nRows = 7
         val nCols = 7
         val spacing = 2.5f
@@ -80,18 +80,18 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         return addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = instances) {
             isFrustumChecked = false
             geometry.addGeometry(sphereProto.simpleSphere)
-            shader = instancedPbrShader(withIbl, envMaps).also { shaders += it }
+            shader = instancedPbrShader(withIbl, envMap).also { shaders += it }
         }
     }
 
-    private fun instancedPbrShader(withIbl: Boolean, envMaps: EnvironmentMaps) = KslPbrShader {
+    private fun instancedPbrShader(withIbl: Boolean, envMap: EnvironmentMap) = KslPbrShader {
         vertices { isInstanced = true }
         color { uniformColor(matColors[selectedColorIdx.value].linColor) }
         metallic { instanceProperty(ATTRIB_METAL) }
         roughness { instanceProperty(ATTRIB_ROUGHNESS) }
         if (withIbl) {
-            lightingCfg.imageBasedAmbientLight(envMaps.irradianceMap)
-            reflectionMap = envMaps.reflectionMap
+            lightingCfg.imageBasedAmbientLight(envMap.irradianceMap)
+            reflectionMap = envMap.reflectionMap
         }
     }
 

@@ -18,48 +18,41 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
         val url = blobRef.path
         val prefixedUrl = if (Assets.isHttpAsset(url)) url else "${basePath}/$url"
-        val response = fetch(prefixedUrl).await()
-
-        val data = if (!response.ok) {
-            logE { "Failed loading resource $prefixedUrl: ${response.status} ${response.statusText}" }
-            null
-        } else {
-            val arrayBuffer = response.arrayBuffer().await()
-            Uint8BufferImpl(Uint8Array(arrayBuffer))
-        }
-        return LoadedBlobAsset(blobRef, data)
+        val result = fetchData(prefixedUrl).map { Uint8BufferImpl(Uint8Array(it.arrayBuffer().await())) }
+        return LoadedBlobAsset(blobRef, result)
     }
 
     override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
         val resolveSz = textureRef.props?.resolveSize
-        val img = loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz)
-        val texData = ImageTextureData(img, textureRef.props?.format)
-        return LoadedTextureAsset(textureRef, texData)
+        val result = loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz).map {
+            ImageTextureData(it, textureRef.props?.format)
+        }
+        return LoadedTextureAsset(textureRef, result)
     }
 
     override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
         val resolveSz = textureRef.props?.resolveSize
-        val texData = ImageAtlasTextureData(
-            loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz),
-            textureRef.tilesX,
-            textureRef.tilesY,
-            textureRef.props?.format
-        )
-        return LoadedTextureAsset(textureRef, texData)
+        val result = loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz).map {
+            ImageAtlasTextureData(it, textureRef.tilesX, textureRef.tilesY, textureRef.props?.format)
+        }
+        return LoadedTextureAsset(textureRef, result)
     }
 
     override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
         val props = textureData2dRef.props ?: TextureProps()
         val texRef = TextureAssetRef(textureData2dRef.path, props)
-        val tex = loadTexture(texRef)
-        val texData = tex.data as ImageTextureData
-        val data = TextureData2d(
-            ImageTextureData.imageBitmapToBuffer(texData.data, props),
-            texData.width,
-            texData.height,
-            props.format
-        )
-        return LoadedTextureAsset(textureData2dRef, data)
+
+
+        val result = loadTexture(texRef).result.mapCatching {
+            val texData = it.data as ImageTextureData
+            TextureData2d(
+                ImageTextureData.imageBitmapToBuffer(texData.data, props),
+                texData.width,
+                texData.height,
+                props.format
+            )
+        }
+        return LoadedTextureAsset(textureData2dRef, result)
     }
 
     override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {
@@ -69,18 +62,19 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
         } else {
             AudioClipImpl("${basePath}/$assetPath")
         }
-        return LoadedAudioClipAsset(audioRef, clip)
+        return LoadedAudioClipAsset(audioRef, Result.success(clip))
     }
 
-    private suspend fun loadImageBitmap(path: String, isHttp: Boolean, resize: Vec2i?): ImageBitmap {
+    private suspend fun loadImageBitmap(path: String, isHttp: Boolean, resize: Vec2i?): Result<ImageBitmap> {
         val mime = MimeType.forFileName(path)
         val prefixedUrl = if (isHttp) path else "${basePath}/${path}"
 
         return if (mime != MimeType.IMAGE_SVG) {
             // raster image type -> fetch blob and create ImageBitmap directly
-            val response = fetch(prefixedUrl).await()
-            val imgBlob = response.blob().await()
-            createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
+            fetchData(prefixedUrl).mapCatching {
+                val imgBlob = it.blob().await()
+                createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
+            }
 
         } else {
             // svg image -> use an Image element to convert it to an ImageBitmap
@@ -94,7 +88,21 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
             }
             img.crossOrigin = ""
             img.src = prefixedUrl
-            deferredBitmap.await()
+            try {
+                Result.success(deferredBitmap.await())
+            } catch (t: Throwable) {
+                Result.failure(t)
+            }
+        }
+    }
+
+    private suspend fun fetchData(path: String): Result<Response> {
+        val response = fetch(path).await()
+        return if (!response.ok) {
+            logE { "Failed loading resource $path: ${response.status} ${response.statusText}" }
+            Result.failure(IllegalStateException("Failed loading resource $path: ${response.status} ${response.statusText}"))
+        } else {
+            Result.success(response)
         }
     }
 }

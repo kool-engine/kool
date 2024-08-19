@@ -106,7 +106,8 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         mainScene.tryEnableInfiniteDepth()
 
         showLoadText("Loading height map...")
-        val heightMap = Heightmap.fromRawData(loadBlobAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw"), 200f, heightOffset = -50f)
+        val heightData = loadBlobAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
+        val heightMap = Heightmap.fromRawData(heightData, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
 
@@ -134,7 +135,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         bridgeMesh = makeBridgeMesh()
 
         showLoadText("Loading player model...")
-        val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb")
+        val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb").getOrThrow()
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
         escKeyListener = KeyboardInput.addKeyListener(KeyboardInput.KEY_ESC, "Exit cursor lock") {

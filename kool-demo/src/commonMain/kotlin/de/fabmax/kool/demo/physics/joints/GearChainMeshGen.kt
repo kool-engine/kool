@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.Profile
@@ -24,7 +24,7 @@ object GearChainMeshGen {
     private val attribMetallic = Attribute("aMetallic", GpuType.FLOAT1)
     private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughness, attribMetallic)
 
-    fun makeNiceGearMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+    fun makeNiceGearMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
         MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
     ).apply {
@@ -172,7 +172,7 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceAxleMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+    fun makeNiceAxleMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
         MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
     ).apply {
@@ -275,7 +275,7 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceInnerLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+    fun makeNiceInnerLinkMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
         MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
     ).apply {
@@ -332,7 +332,7 @@ object GearChainMeshGen {
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    fun makeNiceOuterLinkMesh(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
+    fun makeNiceOuterLinkMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
         MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
     ).apply {
@@ -402,12 +402,11 @@ object GearChainMeshGen {
                     height = 1.8f
                 }
             }
-            //geometry.generateNormals()
         }
         shader = makeMeshShader(ibl, aoMap, shadows)
     }
 
-    private fun makeMeshShader(ibl: EnvironmentMaps, aoMap: Texture2d, shadows: List<ShadowMap>) = KslPbrShader {
+    private fun makeMeshShader(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = KslPbrShader {
         color { vertexColor() }
         vertices { isInstanced = true }
         roughness { vertexProperty(attribRoughness) }

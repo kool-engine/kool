@@ -4,6 +4,9 @@ import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
+import de.fabmax.kool.pipeline.ibl.hdriEnvironment
+import de.fabmax.kool.pipeline.ibl.hdriEnvironmentAsync
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
@@ -209,26 +212,26 @@ object Assets : CoroutineScope {
     /**
      * Asynchronously loads the texture data at the given path and returns it as [TextureData].
      */
-    fun loadTextureDataAsync(assetPath: String, props: TextureProps? = null): Deferred<TextureData> = defaultLoader.loadTextureDataAsync(assetPath, props)
+    fun loadTextureDataAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<TextureData>> = defaultLoader.loadTextureDataAsync(assetPath, props)
 
     /**
      * Loads the texture data at the given path and returns it as [TextureData].
      */
-    suspend fun loadTextureData(assetPath: String, props: TextureProps? = null): TextureData = defaultLoader.loadTextureData(assetPath, props)
+    suspend fun loadTextureData(assetPath: String, props: TextureProps? = null): Result<TextureData> = defaultLoader.loadTextureData(assetPath, props)
 
     /**
      * Similar to [loadTextureDataAsync], but returns the image data as [TextureData2d] object, which stores the pixels
      * in a CPU accessible buffer. This is particular useful if the image data is used to drive procedural stuff like
      * building heightmap geometry from a greyscale image.
      */
-    fun loadTextureData2dAsync(assetPath: String, props: TextureProps? = null): Deferred<TextureData2d> = defaultLoader.loadTextureData2dAsync(assetPath, props)
+    fun loadTextureData2dAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<TextureData2d>> = defaultLoader.loadTextureData2dAsync(assetPath, props)
 
     /**
      * Similar to [loadTextureData], but returns the image data as [TextureData2d] object, which stores the pixels
      * in a CPU accessible buffer. This is particular useful if the image data is used to drive procedural stuff like
      * building heightmap geometry from a greyscale image.
      */
-    suspend fun loadTextureData2d(assetPath: String, props: TextureProps? = null): TextureData2d = defaultLoader.loadTextureData2d(assetPath, props)
+    suspend fun loadTextureData2d(assetPath: String, props: TextureProps? = null): Result<TextureData2d> = defaultLoader.loadTextureData2d(assetPath, props)
 
     /**
      * Asynchronously loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
@@ -239,7 +242,7 @@ object Assets : CoroutineScope {
         tilesX: Int,
         tilesY: Int,
         props: TextureProps? = null
-    ): Deferred<TextureData> = defaultLoader.loadTextureDataAtlasAsync(assetPath, tilesX, tilesY, props)
+    ): Deferred<Result<TextureData>> = defaultLoader.loadTextureDataAtlasAsync(assetPath, tilesX, tilesY, props)
 
     /**
      * Loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
@@ -250,7 +253,7 @@ object Assets : CoroutineScope {
         tilesX: Int,
         tilesY: Int,
         props: TextureProps? = null
-    ): TextureData = defaultLoader.loadTextureDataAtlas(assetPath, tilesX, tilesY, props)
+    ): Result<TextureData> = defaultLoader.loadTextureDataAtlas(assetPath, tilesX, tilesY, props)
 
     /**
      * Asynchronously loads a cube map from the given image paths (one for each side).
@@ -262,7 +265,7 @@ object Assets : CoroutineScope {
         pathRight: String,
         pathUp: String,
         pathDown: String
-    ): Deferred<TextureDataCube> = defaultLoader.loadTextureDataCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
+    ): Deferred<Result<TextureDataCube>> = defaultLoader.loadTextureDataCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
 
     /**
      * Loads a cube map from the given image paths (one for each side).
@@ -274,25 +277,25 @@ object Assets : CoroutineScope {
         pathRight: String,
         pathUp: String,
         pathDown: String
-    ): TextureDataCube = defaultLoader.loadTextureDataCube(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
+    ): Result<TextureDataCube> = defaultLoader.loadTextureDataCube(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
 
-    fun loadTexture2dAsync(assetPath: String, props: TextureProps = TextureProps()): Deferred<Texture2d> = defaultLoader.loadTexture2dAsync(assetPath, props)
+    fun loadTexture2dAsync(assetPath: String, props: TextureProps = TextureProps()): Deferred<Result<Texture2d>> = defaultLoader.loadTexture2dAsync(assetPath, props)
 
-    suspend fun loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Texture2d = defaultLoader.loadTexture2d(assetPath, props)
+    suspend fun loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Result<Texture2d> = defaultLoader.loadTexture2d(assetPath, props)
 
     fun loadTexture3dAsync(
         assetPath: String,
         tilesX: Int,
         tilesY: Int,
         props: TextureProps = TextureProps()
-    ): Deferred<Texture3d> = defaultLoader.loadTexture3dAsync(assetPath, tilesX, tilesY, props)
+    ): Deferred<Result<Texture3d>> = defaultLoader.loadTexture3dAsync(assetPath, tilesX, tilesY, props)
 
     suspend fun loadTexture3d(
         assetPath: String,
         tilesX: Int,
         tilesY: Int,
         props: TextureProps = TextureProps()
-    ): Texture3d = defaultLoader.loadTexture3d(assetPath, tilesX, tilesY, props)
+    ): Result<Texture3d> = defaultLoader.loadTexture3d(assetPath, tilesX, tilesY, props)
 
     fun loadTextureCubeAsync(
         pathFront: String,
@@ -302,7 +305,7 @@ object Assets : CoroutineScope {
         pathUp: String,
         pathDown: String,
         props: TextureProps = TextureProps()
-    ): Deferred<TextureCube> = defaultLoader.loadTextureCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props)
+    ): Deferred<Result<TextureCube>> = defaultLoader.loadTextureCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props)
 
     suspend fun loadTextureCube(
         pathFront: String,
@@ -312,21 +315,27 @@ object Assets : CoroutineScope {
         pathUp: String,
         pathDown: String,
         props: TextureProps = TextureProps()
-    ): TextureCube = defaultLoader.loadTextureCube(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props)
+    ): Result<TextureCube> = defaultLoader.loadTextureCube(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props)
 
     /**
      * Asynchronously loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
      */
-    fun loadBlobAssetAsync(assetPath: String): Deferred<Uint8Buffer> = defaultLoader.loadBlobAssetAsync(assetPath)
+    fun loadBlobAssetAsync(assetPath: String): Deferred<Result<Uint8Buffer>> = defaultLoader.loadBlobAssetAsync(assetPath)
 
     /**
      * Loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
      */
-    suspend fun loadBlobAsset(assetPath: String,): Uint8Buffer = defaultLoader.loadBlobAsset(assetPath)
+    suspend fun loadBlobAsset(assetPath: String,): Result<Uint8Buffer> = defaultLoader.loadBlobAsset(assetPath)
 
-    fun loadAudioClipAsync(assetPath: String): Deferred<AudioClip> = defaultLoader.loadAudioClipAsync(assetPath)
+    fun loadAudioClipAsync(assetPath: String): Deferred<Result<AudioClip>> = defaultLoader.loadAudioClipAsync(assetPath)
 
-    suspend fun loadAudioClip(assetPath: String): AudioClip = defaultLoader.loadAudioClip(assetPath)
+    suspend fun loadAudioClip(assetPath: String): Result<AudioClip> = defaultLoader.loadAudioClip(assetPath)
+
+    fun hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): Deferred<Result<EnvironmentMap>> =
+        defaultLoader.hdriEnvironmentAsync(hdriPath, brightness)
+
+    suspend fun hdriEnvironment(hdriPath: String, brightness: Float = 1f): Result<EnvironmentMap> =
+        defaultLoader.hdriEnvironment(hdriPath, brightness)
 }
 
 expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader

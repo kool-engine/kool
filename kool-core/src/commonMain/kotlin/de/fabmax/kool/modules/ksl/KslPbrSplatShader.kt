@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.ksl.KslLitShader.AmbientLight
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
@@ -658,7 +658,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
             fun useSplatMap(texture2d: Texture2d?) = splatMap { textureData(texture2d) }
 
-            fun enableImageBasedLighting(iblMaps: EnvironmentMaps): Builder {
+            fun enableImageBasedLighting(iblMaps: EnvironmentMap): Builder {
                 lightingCfg.imageBasedAmbientLight(iblMaps.irradianceMap)
                 reflectionMap = iblMaps.reflectionMap
                 return this

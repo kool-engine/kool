@@ -62,7 +62,7 @@ abstract class DemoScene(val name: String) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
             launchOnMainThread {
-                resources.loadGroupParallel()
+                resources.loadParallel()
                 Assets.loadResources(ctx)
                 demoState = State.SETUP
             }

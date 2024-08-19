@@ -9,7 +9,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 
@@ -92,7 +92,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
                 return this
             }
 
-            fun enableImageBasedLighting(iblMaps: EnvironmentMaps): Builder {
+            fun enableImageBasedLighting(iblMaps: EnvironmentMap): Builder {
                 lightingCfg.imageBasedAmbientLight(iblMaps.irradianceMap)
                 reflectionMap = iblMaps.reflectionMap
                 return this

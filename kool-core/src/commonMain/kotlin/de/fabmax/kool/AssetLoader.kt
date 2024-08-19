@@ -19,7 +19,7 @@ import kotlinx.coroutines.selects.select
 abstract class AssetLoader {
 
     private val assetRefChannel = Channel<AssetRef>(Channel.UNLIMITED)
-    private val loadedAssetChannel = Channel<LoadedAsset>()
+    private val loadedAssetChannel = Channel<LoadedAsset<*>>()
     private val awaitedAssetsChannel = Channel<AwaitedAsset>()
         get() {
             // start loader coroutines the first time an asset is requested
@@ -54,13 +54,13 @@ abstract class AssetLoader {
         }
     }
 
-    private fun loadWorker(assetRefs: ReceiveChannel<AssetRef>,loadedAssets: SendChannel<LoadedAsset>) = Assets.launch {
+    private fun loadWorker(assetRefs: ReceiveChannel<AssetRef>,loadedAssets: SendChannel<LoadedAsset<*>>) = Assets.launch {
         for (ref in assetRefs) {
             loadedAssets.send(loadAsset(ref))
         }
     }
 
-    private suspend fun loadAsset(ref: AssetRef): LoadedAsset {
+    private suspend fun loadAsset(ref: AssetRef): LoadedAsset<*> {
         return when(ref) {
             is BlobAssetRef -> loadBlob(ref)
             is TextureAssetRef -> loadTexture(ref)
@@ -83,24 +83,18 @@ abstract class AssetLoader {
     /**
      * Asynchronously loads the texture data at the given path and returns it as [TextureData].
      */
-    fun loadTextureDataAsync(assetPath: String, props: TextureProps? = null): Deferred<TextureData> = Assets.async {
+    fun loadTextureDataAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<TextureData>> = Assets.async {
         val ref = TextureAssetRef(assetPath, props)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-        if (loaded.data != null) {
-            logD("AssetLoader.loadTextureDataAsync") { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
-        } else {
-            logE("AssetLoader.loadTextureDataAsync") { "Failed loading ${trimAssetPath(assetPath)}" }
-        }
-        loaded.data ?: textureDataLoadFailed
-    }
-
-    /**
-     * Loads the texture data at the given path and returns it as [TextureData].
-     */
-    suspend fun loadTextureData(assetPath: String, props: TextureProps? = null): TextureData {
-        return loadTextureDataAsync(assetPath, props).await()
+        loaded.result
+            .onSuccess {
+                logD("AssetLoader.loadTextureDataAsync") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+            }
+            .onFailure {
+                logE("AssetLoader.loadTextureDataAsync") { "Failed loading ${trimAssetPath(assetPath)}: $it" }
+            }
     }
 
     /**
@@ -108,26 +102,19 @@ abstract class AssetLoader {
      * in a CPU accessible buffer. This is particular useful if the image data is used to drive procedural stuff like
      * building heightmap geometry from a greyscale image.
      */
-    fun loadTextureData2dAsync(assetPath: String, props: TextureProps? = null): Deferred<TextureData2d> = Assets.async {
+    fun loadTextureData2dAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<TextureData2d>> = Assets.async {
         val ref = TextureData2dRef(assetPath, props)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-        if (loaded.data != null) {
-            logD("AssetLoader.loadTextureData2dAsync") { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height})" }
-        } else {
-            logE("AssetLoader.loadTextureData2dAsync") { "Failed loading ${trimAssetPath(assetPath)}" }
+        try {
+            val texData = loaded.result.getOrThrow() as TextureData2d
+            logD("AssetLoader.loadTextureData2dAsync") { "Loaded ${trimAssetPath(assetPath)} (${texData.format}, ${texData.width}x${texData.height})" }
+            Result.success(texData)
+        } catch (t: Throwable) {
+            logE("AssetLoader.loadTextureData2dAsync") { "Failed loading ${trimAssetPath(assetPath)}: $t" }
+            Result.failure(t)
         }
-        loaded.data as TextureData2d? ?: textureDataLoadFailed
-    }
-
-    /**
-     * Similar to [loadTextureData], but returns the image data as [TextureData2d] object, which stores the pixels
-     * in a CPU accessible buffer. This is particular useful if the image data is used to drive procedural stuff like
-     * building heightmap geometry from a greyscale image.
-     */
-    suspend fun loadTextureData2d(assetPath: String, props: TextureProps? = null): TextureData2d {
-        return loadTextureData2dAsync(assetPath, props).await()
     }
 
     /**
@@ -139,28 +126,19 @@ abstract class AssetLoader {
         tilesX: Int,
         tilesY: Int,
         props: TextureProps? = null
-    ): Deferred<TextureData> = Assets.async {
+    ): Deferred<Result<TextureData>> = Assets.async {
         val ref = TextureAtlasAssetRef(assetPath, props, tilesX, tilesY)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-        loaded.data?.let {
-            logD("AssetLoader.loadTextureDataAtlasAsync") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
-        }
-        if (loaded.data != null) {
-            logD("AssetLoader.loadTextureDataAtlasAsync") { "Loaded ${trimAssetPath(assetPath)} (${loaded.data.format}, ${loaded.data.width}x${loaded.data.height}x${loaded.data.depth})" }
-        } else {
-            logE("AssetLoader.loadTextureDataAtlasAsync") { "Failed loading ${trimAssetPath(assetPath)}" }
-        }
-        loaded.data ?: textureDataLoadFailed
-    }
 
-    /**
-     * Loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
-     * image tiles. The texture atlas data is returned as [TextureData].
-     */
-    suspend fun loadTextureDataAtlas(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps? = null): TextureData {
-        return loadTextureDataAtlasAsync(assetPath, tilesX, tilesY, props).await()
+        loaded.result
+            .onSuccess {
+                logD("AssetLoader.loadTextureDataAtlasAsync") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
+            }
+            .onFailure {
+                logE("AssetLoader.loadTextureDataAtlasAsync") { "Failed loading ${trimAssetPath(assetPath)}: $it" }
+            }
     }
 
     /**
@@ -173,38 +151,26 @@ abstract class AssetLoader {
         pathRight: String,
         pathUp: String,
         pathDown: String
-    ): Deferred<TextureDataCube> = Assets.async {
-        val ftd = loadTextureDataAsync(pathFront).await()
-        val bkd = loadTextureDataAsync(pathBack).await()
-        val ltd = loadTextureDataAsync(pathLeft).await()
-        val rtd = loadTextureDataAsync(pathRight).await()
-        val upd = loadTextureDataAsync(pathUp).await()
-        val dnd = loadTextureDataAsync(pathDown).await()
-        TextureDataCube(ftd, bkd, ltd, rtd, upd, dnd)
+    ): Deferred<Result<TextureDataCube>> = Assets.async {
+        try {
+            val ftd = loadTextureDataAsync(pathFront).await().getOrThrow()
+            val bkd = loadTextureDataAsync(pathBack).await().getOrThrow()
+            val ltd = loadTextureDataAsync(pathLeft).await().getOrThrow()
+            val rtd = loadTextureDataAsync(pathRight).await().getOrThrow()
+            val upd = loadTextureDataAsync(pathUp).await().getOrThrow()
+            val dnd = loadTextureDataAsync(pathDown).await().getOrThrow()
+            Result.success(TextureDataCube(ftd, bkd, ltd, rtd, upd, dnd))
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
     }
-
-    /**
-     * Loads a cube map from the given image paths (one for each side).
-     */
-    suspend fun loadTextureDataCube(
-        pathFront: String,
-        pathBack: String,
-        pathLeft: String,
-        pathRight: String,
-        pathUp: String,
-        pathDown: String
-    ): TextureDataCube = loadTextureDataCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown).await()
 
     ////////////////////////////////////////////////////////////////////
     // Prepared Textures
     ////////////////////////////////////////////////////////////////////
 
-    fun loadTexture2dAsync(assetPath: String, props: TextureProps = TextureProps()): Deferred<Texture2d> = Assets.async {
-        Assets.loadTexture2d(loadTextureDataAsync(assetPath, props).await(), props, trimAssetPath(assetPath))
-    }
-
-    suspend fun loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Texture2d {
-        return loadTexture2dAsync(assetPath, props).await()
+    fun loadTexture2dAsync(assetPath: String, props: TextureProps = TextureProps()): Deferred<Result<Texture2d>> = Assets.async {
+        loadTextureData(assetPath, props).map { Assets.loadTexture2d(it, props, trimAssetPath(assetPath)) }
     }
 
     fun loadTexture3dAsync(
@@ -212,17 +178,9 @@ abstract class AssetLoader {
         tilesX: Int,
         tilesY: Int,
         props: TextureProps = TextureProps()
-    ): Deferred<Texture3d> = Assets.async {
-        val layers = loadTextureDataAtlas(assetPath, tilesX, tilesY)
-        Assets.loadTexture3d(layers, props, trimAssetPath(assetPath))
+    ): Deferred<Result<Texture3d>> = Assets.async {
+        loadTextureDataAtlas(assetPath, tilesX, tilesY).map { Assets.loadTexture3d(it, props, trimAssetPath(assetPath)) }
     }
-
-    suspend fun loadTexture3d(
-        assetPath: String,
-        tilesX: Int,
-        tilesY: Int,
-        props: TextureProps = TextureProps()
-    ): Texture3d = loadTexture3dAsync(assetPath, tilesX, tilesY, props).await()
 
     fun loadTextureCubeAsync(
         pathFront: String,
@@ -232,21 +190,12 @@ abstract class AssetLoader {
         pathUp: String,
         pathDown: String,
         props: TextureProps = TextureProps()
-    ): Deferred<TextureCube> = Assets.async {
-        val name = trimCubeMapAssetPath(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
-        val texData = loadTextureDataCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown).await()
-        Assets.loadTextureCube(texData, props, name)
+    ): Deferred<Result<TextureCube>> = Assets.async {
+        loadTextureDataCube(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown).map {
+            val name = trimCubeMapAssetPath(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
+            Assets.loadTextureCube(it, props, name)
+        }
     }
-
-    suspend fun loadTextureCube(
-        pathFront: String,
-        pathBack: String,
-        pathLeft: String,
-        pathRight: String,
-        pathUp: String,
-        pathDown: String,
-        props: TextureProps = TextureProps()
-    ): TextureCube = loadTextureCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props).await()
 
     ////////////////////////////////////////////////////////////////////
     // Non-texture assets
@@ -255,31 +204,33 @@ abstract class AssetLoader {
     /**
      * Asynchronously loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
      */
-    fun loadBlobAssetAsync(assetPath: String): Deferred<Uint8Buffer> = Assets.async {
+    fun loadBlobAssetAsync(assetPath: String): Deferred<Result<Uint8Buffer>> = Assets.async {
         val ref = BlobAssetRef(assetPath)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedBlobAsset
-        if (loaded.data != null) {
-            logD("AssetLoader.loadBlobAssetAsync") { "Loaded ${trimAssetPath(assetPath)} (${(loaded.data.capacity / 1_048_576.0).toString(1)} mb)" }
-        }
-        loaded.data ?: error("Failed loading blob asset ${trimAssetPath(assetPath)}")
+        loaded.result
+            .onSuccess {
+                logD("AssetLoader.loadBlobAssetAsync") { "Loaded blob ${trimAssetPath(assetPath)} (${(it.capacity / 1_048_576.0).toString(1)} mb)" }
+            }
+            .onFailure {
+                logE("AssetLoader.loadBlobAssetAsync") { "Failed loading blob ${trimAssetPath(assetPath)}: $it" }
+            }
     }
 
-    /**
-     * Loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
-     */
-    suspend fun loadBlobAsset(assetPath: String): Uint8Buffer = loadBlobAssetAsync(assetPath).await()
-
-    fun loadAudioClipAsync(assetPath: String): Deferred<AudioClip> = Assets.async {
+    fun loadAudioClipAsync(assetPath: String): Deferred<Result<AudioClip>> = Assets.async {
         val ref = AudioClipRef(assetPath)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
         val loaded = awaitedAsset.awaiting.await() as LoadedAudioClipAsset
-        loaded.data ?: error("Failed loading audio clip ${trimAssetPath(assetPath)}")
+        loaded.result
+            .onSuccess {
+                logD("AssetLoader.loadAudioClipAsync") { "Loaded audio ${trimAssetPath(assetPath)} (${it.duration} secs)" }
+            }
+            .onFailure {
+                logE("AssetLoader.loadAudioClipAsync") { "Failed loading audio ${trimAssetPath(assetPath)}: $it" }
+            }
     }
-
-    suspend fun loadAudioClip(assetPath: String,): AudioClip = loadAudioClipAsync(assetPath).await()
 
     ////////////////////////////////////////////////////////////////////
     // Helper stuff
@@ -298,7 +249,7 @@ abstract class AssetLoader {
         }
     }
 
-    private class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset> = CompletableDeferred(Assets.job))
+    private class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset<*>> = CompletableDeferred(Assets.job))
 
     companion object {
         private const val NUM_LOAD_WORKERS = 8
@@ -307,36 +258,62 @@ abstract class AssetLoader {
     }
 }
 
-sealed class AssetRef(path: String) {
-    val isHttp: Boolean = Assets.isHttpAsset(path)
-}
+/**
+ * Loads the texture data at the given path and returns it as [TextureData].
+ */
+suspend fun AssetLoader.loadTextureData(assetPath: String, props: TextureProps? = null): Result<TextureData> =
+    loadTextureDataAsync(assetPath, props).await()
 
-data class BlobAssetRef(
-    val path: String
-) : AssetRef(path)
+/**
+ * Similar to [loadTextureData], but returns the image data as [TextureData2d] object, which stores the pixels
+ * in a CPU accessible buffer. This is particular useful if the image data is used to drive procedural stuff like
+ * building heightmap geometry from a greyscale image.
+ */
+suspend fun AssetLoader.loadTextureData2d(assetPath: String, props: TextureProps? = null): Result<TextureData2d> =
+    loadTextureData2dAsync(assetPath, props).await()
 
-data class TextureAssetRef(
-    val path: String,
-    val props: TextureProps?
-) : AssetRef(path)
+/**
+ * Loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
+ * image tiles. The texture atlas data is returned as [TextureData].
+ */
+suspend fun AssetLoader.loadTextureDataAtlas(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps? = null): Result<TextureData> =
+    loadTextureDataAtlasAsync(assetPath, tilesX, tilesY, props).await()
 
-data class TextureAtlasAssetRef(
-    val path: String,
-    val props: TextureProps?,
-    val tilesX: Int = 1,
-    val tilesY: Int = 1
-) : AssetRef(path)
+/**
+ * Loads a cube map from the given image paths (one for each side).
+ */
+suspend fun AssetLoader.loadTextureDataCube(
+    pathFront: String,
+    pathBack: String,
+    pathLeft: String,
+    pathRight: String,
+    pathUp: String,
+    pathDown: String
+): Result<TextureDataCube> = loadTextureDataCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown).await()
 
-data class TextureData2dRef(
-    val path: String,
-    val props: TextureProps?
-) : AssetRef(path)
+suspend fun AssetLoader.loadTexture3d(
+    assetPath: String,
+    tilesX: Int,
+    tilesY: Int,
+    props: TextureProps = TextureProps()
+): Result<Texture3d> = loadTexture3dAsync(assetPath, tilesX, tilesY, props).await()
 
-data class AudioClipRef(
-    val path: String
-) : AssetRef(path)
+suspend fun AssetLoader.loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Result<Texture2d> =
+    loadTexture2dAsync(assetPath, props).await()
 
-sealed class LoadedAsset(val ref: AssetRef, val successful: Boolean)
-class LoadedBlobAsset(ref: AssetRef, val data: Uint8Buffer?) : LoadedAsset(ref, data != null)
-class LoadedTextureAsset(ref: AssetRef, val data: TextureData?) : LoadedAsset(ref, data != null)
-class LoadedAudioClipAsset(ref: AssetRef, val data: AudioClip?) : LoadedAsset(ref, data != null)
+suspend fun AssetLoader.loadTextureCube(
+    pathFront: String,
+    pathBack: String,
+    pathLeft: String,
+    pathRight: String,
+    pathUp: String,
+    pathDown: String,
+    props: TextureProps = TextureProps()
+): Result<TextureCube> = loadTextureCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props).await()
+
+/**
+ * Loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
+ */
+suspend fun AssetLoader.loadBlobAsset(assetPath: String): Result<Uint8Buffer> = loadBlobAssetAsync(assetPath).await()
+
+suspend fun AssetLoader.loadAudioClip(assetPath: String,): Result<AudioClip> = loadAudioClipAsync(assetPath).await()

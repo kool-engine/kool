@@ -2,7 +2,6 @@
 
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.Key
 import de.fabmax.kool.editor.KoolEditor
@@ -24,7 +23,6 @@ import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.*
-import kotlinx.serialization.json.Json
 
 class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
@@ -114,9 +112,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         }
 
         launchOnMainThread {
-            val uiTex = Assets.loadTexture2d("assets/fonts/gidole/font-gidole-regular.png", MsdfFont.MSDF_TEX_PROPS)
-            val uiMeta = Assets.loadBlobAsset("assets/fonts/gidole/font-gidole-regular.json")
-            val uiFont = MsdfFont(MsdfFontData(uiTex, Json.decodeFromString(uiMeta.toArray().decodeToString())))
+            val uiFont = MsdfFont("assets/fonts/gidole/font-gidole-regular").getOrThrow()
             this@EditorUi.uiFont.set(uiFont)
 
             val sz = uiSizes.value
@@ -125,9 +121,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                 largeText = uiFont.copy(sizePts = sz.largeText.sizePts),
             ))
 
-            val consoleTex = Assets.loadTexture2d("assets/fonts/hack/font-hack-regular.png", MsdfFont.MSDF_TEX_PROPS)
-            val consoleMeta = Assets.loadBlobAsset("assets/fonts/hack/font-hack-regular.json")
-            val consoleFont = MsdfFont(MsdfFontData(consoleTex, Json.decodeFromString(consoleMeta.toArray().decodeToString())))
+            val consoleFont = MsdfFont("assets/fonts/hack/font-hack-regular").getOrThrow()
             this@EditorUi.consoleFont.set(consoleFont)
         }
 

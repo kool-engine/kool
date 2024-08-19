@@ -9,8 +9,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -26,7 +25,7 @@ class PbrDemo : DemoScene("PBR Materials") {
 
     private lateinit var skybox: Skybox.Cube
 
-    private val loadedHdris = Array<EnvironmentMaps?>(hdriTextures.size) { null }
+    private val loadedHdris = Array<EnvironmentMap?>(hdriTextures.size) { null }
 
     private val sphereProto = SphereProto()
     private val pbrContent = listOf(
@@ -131,14 +130,14 @@ class PbrDemo : DemoScene("PBR Materials") {
         pbrContent.forEach { it.updateEnvironmentMap(envMap) }
     }
 
-    private suspend fun loadHdri(idx: Int): EnvironmentMaps {
+    private suspend fun loadHdri(idx: Int): EnvironmentMap {
         val loaded = loadedHdris[idx]
         if (loaded != null) {
             return loaded
         }
 
-        val rgbe = Assets.loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps)
-        val maps = EnvironmentHelper.hdriEnvironment(rgbe)
+        val rgbe = Assets.loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps).getOrThrow()
+        val maps = EnvironmentMap.fromHdriTexture(rgbe)
         loadedHdris[idx] = maps
         return maps
     }
@@ -166,8 +165,8 @@ class PbrDemo : DemoScene("PBR Materials") {
         override fun toString() = name
 
         abstract fun UiScope.createContentMenu()
-        abstract fun createContent(scene: Scene, envMaps: EnvironmentMaps, ctx: KoolContext): Node
-        abstract fun updateEnvironmentMap(envMaps: EnvironmentMaps)
+        abstract fun createContent(scene: Scene, envMap: EnvironmentMap, ctx: KoolContext): Node
+        abstract fun updateEnvironmentMap(envMap: EnvironmentMap)
     }
 
     class SphereProto {

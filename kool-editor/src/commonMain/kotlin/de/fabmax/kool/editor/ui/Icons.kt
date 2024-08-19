@@ -45,7 +45,7 @@ object Icons {
             val height = (iconMapSize.y * s).roundToInt()
             val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
             logT { "Render small-icons map: $width x $height (${iconSize.value} dp)" }
-            Assets.loadTextureData("assets/icons/small-icons.svg", loadProps)
+            Assets.loadTextureData("assets/icons/small-icons.svg", loadProps).getOrThrow()
         }
 
         private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)
@@ -156,7 +156,7 @@ object Icons {
             val height = (iconMapSize.y * s).roundToInt()
             val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
             logT { "Render file-icons map: $width x $height (${iconSize.value} dp)" }
-            Assets.loadTextureData("assets/icons/file-icons.svg", loadProps)
+            Assets.loadTextureData("assets/icons/file-icons.svg", loadProps).getOrThrow()
         }
 
         private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)

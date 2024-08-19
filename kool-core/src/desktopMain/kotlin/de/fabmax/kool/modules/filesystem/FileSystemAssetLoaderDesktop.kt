@@ -9,28 +9,27 @@ import java.io.ByteArrayInputStream
 class FileSystemAssetLoaderDesktop(baseDir: FileSystemDirectory): FileSystemAssetLoader(baseDir) {
     override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
         val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        val texData = loadTextureData2d(refCopy).data as TextureData2d?
-        val atlasData = texData?.let {
-            imageAtlasTextureData(it, textureRef.tilesX, textureRef.tilesY)
+        val result = loadTextureData2d(refCopy).result.mapCatching {
+            imageAtlasTextureData(it as TextureData2d, textureRef.tilesX, textureRef.tilesY)
         }
-        return LoadedTextureAsset(textureRef, atlasData)
+        return LoadedTextureAsset(textureRef, result)
     }
 
     override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
         val tex = loadData(textureData2dRef.path)
-        val texData = tex?.toArray()?.let { bytes ->
-            ByteArrayInputStream(bytes).use {
+        val result = tex.mapCatching { buf ->
+            ByteArrayInputStream(buf.toArray()).use {
                 PlatformAssetsImpl.readImageData(it, MimeType.forFileName(textureData2dRef.path), textureData2dRef.props)
             }
         }
-        return LoadedTextureAsset(textureData2dRef, texData)
+        return LoadedTextureAsset(textureData2dRef, result)
     }
 
     override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {
         val blob = loadBlob(BlobAssetRef(audioRef.path))
-        val clip = blob.data?.let { buf ->
-            AudioClipImpl(buf.toArray(), audioRef.path.substringAfterLast('.').lowercase())
+        val result = blob.result.mapCatching {
+            AudioClipImpl(it.toArray(), audioRef.path.substringAfterLast('.').lowercase())
         }
-        return LoadedAudioClipAsset(audioRef, clip)
+        return LoadedAudioClipAsset(audioRef, result)
     }
 }

@@ -9,7 +9,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
@@ -107,7 +107,7 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
     }
 
     class Resources(
-        val imageEnv: EnvironmentMaps,
+        val imageEnv: EnvironmentMap,
         val shadowMaps: List<ShadowMap>
     )
 

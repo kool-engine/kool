@@ -6,7 +6,7 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.noise.MultiPerlin3d
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
-import de.fabmax.kool.modules.gltf.loadGltfFile
+import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
@@ -245,7 +245,8 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
 
         val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
-        val model = loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz").makeModel(modelCfg, 1).meshes.values.first()
+        val model = loadGltfModel("${DemoLoader.modelPath}/bunny.gltf.gz", modelCfg, 1)
+            .getOrThrow().meshes.values.first()
         bunnyMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = furShaderBunny.shells).apply {
             generate {
                 geometry.addGeometry(model.geometry)

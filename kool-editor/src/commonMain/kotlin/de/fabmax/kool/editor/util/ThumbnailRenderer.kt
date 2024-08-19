@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.SceneShaderData
 import de.fabmax.kool.editor.components.MaterialComponent
+import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
@@ -175,7 +176,7 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
         val ref = AssetReference.Texture(texPath)
         var tex = assets.getTextureIfLoaded(ref)
         if (tex == null) {
-            tex = assets.assetLoader.loadTexture2d(texPath)
+            tex = assets.assetLoader.loadTexture2d(texPath).getOrThrow()
             tex.releaseWith(this)
         }
 
@@ -219,7 +220,7 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
 fun ThumbnailRenderer.hdriThumbnail(texPath: String): ThumbnailRenderer.Thumbnail = renderThumbnail {
     val texMesh = TextureMesh().apply {
         val assets = KoolEditor.instance.cachedAppAssets
-        val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(generateMipMaps = false))
+        val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(generateMipMaps = false)).getOrThrow()
         tex.releaseWith(this)
 
         generateThumbnailRoundRect(tex.width.toFloat() / tex.height)
@@ -310,8 +311,8 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(Attribute.POSI
             }
             fragmentStage {
                 main {
-                    val ibl = shaderData.environmentMaps
-                    if (ibl != null) {
+                    val envMap = shaderData.environmentMap
+                    if (envMap != null) {
                         val sky = textureCube("sky")
                         val skyUv = float2Var(uv.output - 0.5f.const)
                         val dir = float3Var(normalize(float3Value(skyUv.x, -skyUv.y, (-1f).const)))
@@ -323,7 +324,7 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(Attribute.POSI
                 }
             }
         }.also {
-            it.textureCube("sky", shaderData.environmentMaps?.reflectionMap)
+            it.textureCube("sky", shaderData.environmentMap?.reflectionMap)
         }
     }
 

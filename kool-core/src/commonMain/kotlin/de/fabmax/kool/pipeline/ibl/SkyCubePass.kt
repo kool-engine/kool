@@ -201,7 +201,7 @@ class SkyCubeIblSystem(val parentScene: Scene, opticalDepthLut: Texture2d) {
     val irradianceMapPass = IrradianceMapPass.irradianceMap(parentScene, skyPass.colorTexture!!, 8)
     val reflectionMapPass = ReflectionMapPass.reflectionMap(parentScene, skyPass.colorTexture!!, 128)
 
-    val envMaps = EnvironmentMaps(irradianceMapPass.colorTexture!!, reflectionMapPass.colorTexture!!)
+    val environmentMap = EnvironmentMap(irradianceMapPass.colorTexture!!, reflectionMapPass.colorTexture!!)
 
     var isAutoUpdateIblMaps = true
 

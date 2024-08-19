@@ -183,6 +183,10 @@ object PlatformAssetsImpl : PlatformAssets {
 }
 
 actual suspend fun decodeDataUri(dataUri: String): Uint8Buffer {
+    return Uint8BufferImpl(dataUriToByteArray(dataUri))
+}
+
+internal fun dataUriToByteArray(dataUri: String): ByteArray {
     val dataIdx = dataUri.indexOf(";base64,") + 8
-    return Uint8BufferImpl(Base64.getDecoder().decode(dataUri.substring(dataIdx)))
+    return Base64.getDecoder().decode(dataUri.substring(dataIdx))
 }

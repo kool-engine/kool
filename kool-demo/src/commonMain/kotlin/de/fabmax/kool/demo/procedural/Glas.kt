@@ -11,7 +11,7 @@ import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addColorMesh
@@ -20,7 +20,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 
-class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), DeferredPassSwapListener {
+class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), DeferredPassSwapListener {
 
     private val glasShader: GlassShader = GlassShader(ibl, shadowMap)
 
@@ -200,13 +200,13 @@ class Glas(val ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) : Node(), Defer
         }
     }
 
-    private class GlassShader(ibl: EnvironmentMaps, shadowMap: SimpleShadowMap, cfg: Config = glassShaderConfig(ibl, shadowMap))
+    private class GlassShader(ibl: EnvironmentMap, shadowMap: SimpleShadowMap, cfg: Config = glassShaderConfig(ibl, shadowMap))
         : KslPbrShader(cfg, glassShaderModel(cfg))
     {
         var refractionColorMap by texture2d("tRefractionColor")
 
         companion object {
-            fun glassShaderConfig(ibl: EnvironmentMaps, shadowMap: SimpleShadowMap) = Config.Builder().apply {
+            fun glassShaderConfig(ibl: EnvironmentMap, shadowMap: SimpleShadowMap) = Config.Builder().apply {
                 color { vertexColor() }
                 lighting { addShadowMap(shadowMap) }
                 roughness(0f)

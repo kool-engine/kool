@@ -12,7 +12,6 @@ import java.awt.RenderingHints
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.io.ByteArrayInputStream
-import java.io.IOException
 import kotlin.math.ceil
 import kotlin.math.round
 
@@ -41,16 +40,14 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
 
     internal fun loadCustomFonts(customTtfFonts: Map<String, String>) {
         customTtfFonts.forEach { (family, path) ->
-            try {
-                val inStream = runBlocking {
-                    ByteArrayInputStream(Assets.loadBlobAsset(path).toArray())
+            runBlocking {
+                Assets.loadBlobAsset(path).onSuccess { blob ->
+                    ByteArrayInputStream(blob.toArray()).use {
+                        val ttfFont = AwtFont.createFont(AwtFont.TRUETYPE_FONT, it)
+                        customFonts[family] = ttfFont
+                        logD { "Loaded custom font: $family" }
+                    }
                 }
-                val ttfFont = AwtFont.createFont(AwtFont.TRUETYPE_FONT, inStream)
-                customFonts[family] = ttfFont
-                logD { "Loaded custom font: $family" }
-            } catch (e: IOException) {
-                logE { "Failed loading font $family: $e" }
-                e.printStackTrace()
             }
         }
     }

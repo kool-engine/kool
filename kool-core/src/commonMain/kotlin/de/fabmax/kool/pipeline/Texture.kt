@@ -19,7 +19,6 @@ abstract class Texture(
     val name: String,
     val loader: TextureLoader? = null
 ): BaseReleasable() {
-
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
      * called.
@@ -88,19 +87,6 @@ open class Texture1d(
     name: String = UniqueId.nextId("Texture1d"),
     loader: TextureLoader?
 ) : Texture(props, name, loader) {
-
-    constructor(
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture1d"),
-        loader: (suspend CoroutineScope.() -> TextureData1d)? = null
-    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
-
-    constructor(
-        props: TextureProps = TextureProps(),
-        data: TextureData1d,
-        name: String = UniqueId.nextId("Texture2d")
-    ): this(props, name, BufferedTextureLoader(data))
-
     suspend inline fun readbackTextureData(): TextureData1d {
         val deferred = CompletableDeferred<TextureData>()
         KoolSystem.requireContext().backend.readTextureData(this, deferred)
@@ -111,31 +97,23 @@ open class Texture1d(
     }
 }
 
+fun Texture1d(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture1d"),
+    loader: (suspend CoroutineScope.() -> TextureData1d)? = null
+): Texture1d = Texture1d(props, name, loader?.let { AsyncTextureLoader(it) })
+
+fun Texture1d(
+    props: TextureProps = TextureProps(),
+    data: TextureData1d,
+    name: String = UniqueId.nextId("Texture2d")
+): Texture1d = Texture1d(props, name, BufferedTextureLoader(data))
+
 open class Texture2d(
     props: TextureProps = TextureProps(),
     name: String = UniqueId.nextId("Texture2d"),
     loader: TextureLoader?
 ) : Texture(props, name, loader) {
-
-    constructor(
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture2d"),
-        loader: (suspend CoroutineScope.() -> TextureData)? = null
-    ): this(props, name, loader?.let { AsyncTextureLoader(it) })
-
-    constructor(
-        props: TextureProps = TextureProps(),
-        data: TextureData2d,
-        name: String = UniqueId.nextId("Texture2d")
-    ): this(props, name, BufferedTextureLoader(data))
-
-    @Deprecated("You should use Assets.loadTexture2d() instead", ReplaceWith("Assets.loadTexture2d(assetPath)"))
-    constructor(
-        assetPath: String,
-        name: String = UniqueId.nextId("Texture2d"),
-        props: TextureProps = TextureProps()
-    ): this(props, name, AsyncTextureLoader { Assets.loadTextureData(assetPath, props) })
-
     suspend inline fun readbackTextureData(): TextureData2d {
         val deferred = CompletableDeferred<TextureData>()
         KoolSystem.requireContext().backend.readTextureData(this, deferred)
@@ -146,24 +124,36 @@ open class Texture2d(
     }
 }
 
+fun Texture2d(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture2d"),
+    loader: (suspend CoroutineScope.() -> TextureData)? = null
+): Texture2d = Texture2d(props, name, loader?.let { AsyncTextureLoader(it) })
+
+fun Texture2d(
+    props: TextureProps = TextureProps(),
+    data: TextureData2d,
+    name: String = UniqueId.nextId("Texture2d")
+): Texture2d = Texture2d(props, name, BufferedTextureLoader(data))
+
+@Deprecated("You should use Assets.loadTexture2d() instead", ReplaceWith("Assets.loadTexture2d(assetPath)"))
+fun Texture2d(
+    assetPath: String,
+    name: String = UniqueId.nextId("Texture2d"),
+    props: TextureProps = TextureProps()
+): Texture2d = Texture2d(
+    props,
+    name,
+    AsyncTextureLoader {
+        Assets.loadTextureData(assetPath, props).getOrDefault(SingleColorTexture.getColorTextureData(Color.MAGENTA))
+    }
+)
+
 open class Texture3d(
     props: TextureProps = TextureProps(),
     name: String = UniqueId.nextId("Texture3d"),
     loader: TextureLoader?
 ) : Texture(props, name, loader) {
-
-    constructor(
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture3d"),
-        loader: (suspend CoroutineScope.() -> TextureData)? = null
-    ): this(props, name, loader?.let { AsyncTextureLoader(it) })
-
-    constructor(
-        props: TextureProps = TextureProps(),
-        data: TextureData3d,
-        name: String = UniqueId.nextId("Texture3d")
-    ): this(props, name, BufferedTextureLoader(data))
-
     suspend inline fun readbackTextureData(): TextureData3d {
         val deferred = CompletableDeferred<TextureData>()
         KoolSystem.requireContext().backend.readTextureData(this, deferred)
@@ -174,24 +164,35 @@ open class Texture3d(
     }
 }
 
+fun Texture3d(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture3d"),
+    loader: (suspend CoroutineScope.() -> TextureData)? = null
+): Texture3d = Texture3d(props, name, loader?.let { AsyncTextureLoader(it) })
+
+fun Texture3d(
+    props: TextureProps = TextureProps(),
+    data: TextureData3d,
+    name: String = UniqueId.nextId("Texture3d")
+): Texture3d = Texture3d(props, name, BufferedTextureLoader(data))
+
 open class TextureCube(
     props: TextureProps = TextureProps(),
     name: String = UniqueId.nextId("TextureCube"),
     loader: TextureLoader?
-) : Texture(props, name, loader) {
+) : Texture(props, name, loader)
 
-    constructor(
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("TextureCube"),
-        loader: (suspend CoroutineScope.() -> TextureDataCube)? = null
-    ) : this(props, name, loader?.let { AsyncTextureLoader(it) })
+fun TextureCube(
+    props: TextureProps = TextureProps(),
+    data: TextureDataCube,
+    name: String = UniqueId.nextId("Texture3d")
+): TextureCube = TextureCube(props, name, BufferedTextureLoader(data))
 
-    constructor(
-        props: TextureProps = TextureProps(),
-        data: TextureDataCube,
-        name: String = UniqueId.nextId("Texture3d")
-    ): this(props, name, BufferedTextureLoader(data))
-}
+fun TextureCube(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("TextureCube"),
+    loader: (suspend CoroutineScope.() -> TextureDataCube)? = null
+): TextureCube = TextureCube(props, name, loader?.let { AsyncTextureLoader(it) })
 
 class BufferedTexture2d(
     data: TextureData,
@@ -207,7 +208,7 @@ class BufferedTexture2d(
 }
 
 class SingleColorTexture(color: Color) : Texture2d(
-    TextureProps(generateMipMaps = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
+    props = TextureProps(generateMipMaps = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
     name = "SingleColorTex:${color}",
     loader = BufferedTextureLoader(getColorTextureData(color))
 ) {
@@ -232,13 +233,13 @@ class GradientTexture(
     isClamped: Boolean = true,
     name: String = "gradientTex-$size"
 ) : Texture1d(
-    TextureProps(
+    props = TextureProps(
         format = TexFormat.RGBA_F16,    // f16 format yields much better results with gradients in linear color space
         generateMipMaps = false,
         defaultSamplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING
     ),
     name = name,
-    data = TextureData1d.gradientF16(gradient, size)
+    loader = BufferedTextureLoader(TextureData1d.gradientF16(gradient, size))
 ) {
     companion object {
         val DEFAULT_SAMPLER_SETTINGS_CLAMPED = SamplerSettings(

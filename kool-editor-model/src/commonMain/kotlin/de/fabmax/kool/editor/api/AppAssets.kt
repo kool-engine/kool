@@ -2,129 +2,123 @@ package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
+import de.fabmax.kool.loadBlobAsset
+import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.Heightmap
 import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.logE
 
 interface AppAssetsLoader {
     val assetLoader: AssetLoader
 
-    suspend fun loadHdri(ref: AssetReference.Hdri): EnvironmentMaps?
-    suspend fun loadModel(ref: AssetReference.Model): GltfFile?
-    suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d?
-    suspend fun loadHeightmap(ref: AssetReference.Heightmap): Heightmap?
-    suspend fun loadBlob(ref: AssetReference.Blob): Uint8Buffer?
+    suspend fun loadHdri(ref: AssetReference.Hdri): Result<EnvironmentMap>
+    suspend fun loadModel(ref: AssetReference.Model): Result<GltfFile>
+    suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d>
+    suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap>
+    suspend fun loadBlob(ref: AssetReference.Blob): Result<Uint8Buffer>
 }
 
 suspend fun AppAssetsLoader.loadTexture2d(path: String) = loadTexture2d(AssetReference.Texture(path))
 suspend fun AppAssetsLoader.loadModel(path: String) = loadModel(AssetReference.Model(path))
 suspend fun AppAssetsLoader.loadHdri(path: String) = loadHdri(AssetReference.Hdri(path))
+suspend fun AppAssetsLoader.loadHeightmap(path: String) = loadHeightmap(AssetReference.Heightmap(path))
 suspend fun AppAssetsLoader.loadBlob(path: String) = loadBlob(AssetReference.Blob(path))
 
-suspend fun AppAssetsLoader.requireHdriEnvironment(ref: AssetReference.Hdri): EnvironmentMaps = checkNotNull(loadHdri(ref))
-suspend fun AppAssetsLoader.requireModel(ref: AssetReference.Model): GltfFile = checkNotNull(loadModel(ref))
-suspend fun AppAssetsLoader.requireTexture2d(ref: AssetReference.Texture): Texture2d = checkNotNull(loadTexture2d(ref))
-suspend fun AppAssetsLoader.requireHeightmap(ref: AssetReference.Heightmap): Heightmap = checkNotNull(loadHeightmap(ref))
-suspend fun AppAssetsLoader.requireBlob(ref: AssetReference.Blob): Uint8Buffer = checkNotNull(loadBlob(ref))
+suspend fun AppAssetsLoader.loadTexture2dOrNull(path: String) = loadTexture2d(AssetReference.Texture(path)).getOrNull()
+suspend fun AppAssetsLoader.loadModelOrNull(path: String) = loadModel(AssetReference.Model(path)).getOrNull()
+suspend fun AppAssetsLoader.loadHdriOrNull(path: String) = loadHdri(AssetReference.Hdri(path)).getOrNull()
+suspend fun AppAssetsLoader.loadHeightmapOrNull(path: String) = loadHeightmap(AssetReference.Heightmap(path)).getOrNull()
+suspend fun AppAssetsLoader.loadBlobOrNull(path: String) = loadBlob(AssetReference.Blob(path)).getOrNull()
+
+suspend fun AppAssetsLoader.requireHdriEnvironment(ref: AssetReference.Hdri): EnvironmentMap = loadHdri(ref).getOrThrow()
+suspend fun AppAssetsLoader.requireModel(ref: AssetReference.Model): GltfFile = loadModel(ref).getOrThrow()
+suspend fun AppAssetsLoader.requireTexture2d(ref: AssetReference.Texture): Texture2d = loadTexture2d(ref).getOrThrow()
+suspend fun AppAssetsLoader.requireHeightmap(ref: AssetReference.Heightmap): Heightmap = loadHeightmap(ref).getOrThrow()
+suspend fun AppAssetsLoader.requireBlob(ref: AssetReference.Blob): Uint8Buffer = loadBlob(ref).getOrThrow()
+
+suspend fun AppAssetsLoader.loadHdriEnvironmentOrNull(ref: AssetReference.Hdri): EnvironmentMap? = loadHdri(ref).getOrNull()
+suspend fun AppAssetsLoader.loadModelOrNull(ref: AssetReference.Model): GltfFile? = loadModel(ref).getOrNull()
+suspend fun AppAssetsLoader.loadTexture2dOrNull(ref: AssetReference.Texture): Texture2d? = loadTexture2d(ref).getOrNull()
+suspend fun AppAssetsLoader.loadHeightmapOrNull(ref: AssetReference.Heightmap): Heightmap? = loadHeightmap(ref).getOrNull()
+suspend fun AppAssetsLoader.loadBlobOrNull(ref: AssetReference.Blob): Uint8Buffer? = loadBlob(ref).getOrNull()
 
 suspend fun AppAssetsLoader.cacheAsset(ref: AssetReference): Boolean {
     return when (ref) {
-        is AssetReference.Blob -> loadBlob(ref) != null
-        is AssetReference.Hdri -> loadHdri(ref) != null
-        is AssetReference.Heightmap -> loadHeightmap(ref) != null
-        is AssetReference.Model -> loadModel(ref) != null
-        is AssetReference.Texture -> loadTexture2d(ref) != null
+        is AssetReference.Blob -> loadBlob(ref).isSuccess
+        is AssetReference.Hdri -> loadHdri(ref).isSuccess
+        is AssetReference.Heightmap -> loadHeightmap(ref).isSuccess
+        is AssetReference.Model -> loadModel(ref).isSuccess
+        is AssetReference.Texture -> loadTexture2d(ref).isSuccess
     }
 }
 
 object AppAssets : AppAssetsLoader {
-    var impl: AppAssetsLoader = DefaultLoader("assets")
+    var impl: AppAssetsLoader = DefaultLoader("assets/")
     override val assetLoader: AssetLoader
         get() = impl.assetLoader
 
-    override suspend fun loadHdri(ref: AssetReference.Hdri): EnvironmentMaps? = impl.loadHdri(ref)
-    override suspend fun loadModel(ref: AssetReference.Model): GltfFile? = impl.loadModel(ref)
-    override suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d? = impl.loadTexture2d(ref)
-    override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Heightmap? = impl.loadHeightmap(ref)
-    override suspend fun loadBlob(ref: AssetReference.Blob): Uint8Buffer? = impl.loadBlob(ref)
+    override suspend fun loadHdri(ref: AssetReference.Hdri): Result<EnvironmentMap> = impl.loadHdri(ref)
+    override suspend fun loadModel(ref: AssetReference.Model): Result<GltfFile> = impl.loadModel(ref)
+    override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> = impl.loadTexture2d(ref)
+    override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> = impl.loadHeightmap(ref)
+    override suspend fun loadBlob(ref: AssetReference.Blob): Result<Uint8Buffer> = impl.loadBlob(ref)
+}
 
-    class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
-        private val cache = mutableMapOf<AssetReference, Any>()
+open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
+    private val cache = mutableMapOf<AssetReference, Result<Any>>()
 
-        override val assetLoader: AssetLoader
-            get() = Assets.defaultLoader
+    override val assetLoader: AssetLoader
+        get() = Assets.defaultLoader
 
-        override suspend fun loadHdri(ref: AssetReference.Hdri): EnvironmentMaps? {
-            cache[ref]?.let { return it as EnvironmentMaps }
+    override suspend fun loadHdri(ref: AssetReference.Hdri): Result<EnvironmentMap> {
+        cache[ref]?.let { return it.mapCatching { r -> r as EnvironmentMap } }
 
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            val prefixed = "${pathPrefix}/${path}"
-            return try {
-                EnvironmentHelper.hdriEnvironment(Assets.loadTexture2d(prefixed)).also { cache[ref] = it }
-            } catch (e: Exception) {
-                logE { "Failed loading HDRI: $prefixed" }
-                null
-            }
-        }
+        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+        val prefixed = "${pathPrefix}${path}"
+        return assetLoader.loadTexture2d(prefixed)
+            .map { EnvironmentMap.fromHdriTexture(it) }
+            .also { cache[ref] = it }
+    }
 
-        override suspend fun loadModel(ref: AssetReference.Model): GltfFile? {
-            cache[ref]?.let { return it as GltfFile }
+    override suspend fun loadModel(ref: AssetReference.Model): Result<GltfFile> {
+        cache[ref]?.let { return it.mapCatching { r -> r as GltfFile } }
 
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            val prefixed = "${pathPrefix}/${path}"
-            return try {
-                Assets.loadGltfFile(prefixed).also { cache[ref] = it }
-            } catch (e: Exception) {
-                logE { "Failed loading model: $prefixed" }
-                null
-            }
-        }
+        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+        val prefixed = "${pathPrefix}${path}"
+        return assetLoader.loadGltfFile(prefixed)
+            .also { cache[ref] = it }
+    }
 
-        override suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d? {
-            cache[ref]?.let { return it as Texture2d }
+    override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> {
+        cache[ref]?.let { return it.mapCatching { r -> r as Texture2d } }
 
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            val prefixed = "${pathPrefix}/${path}"
-            return try {
-                val props = TextureProps(ref.texFormat)
-                Assets.loadTexture2d(prefixed, props).also { cache[ref] = it }
-            } catch (e: Exception) {
-                logE { "Failed loading texture: $prefixed" }
-                null
-            }
-        }
+        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+        val prefixed = "${pathPrefix}${path}"
+        val props = TextureProps(ref.texFormat)
+        return assetLoader.loadTexture2d(prefixed, props)
+            .also { cache[ref] = it }
+    }
 
-        override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Heightmap? {
-            cache[ref]?.let { return it as Heightmap }
+    override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> {
+        cache[ref]?.let { return it.mapCatching { r -> r as Heightmap } }
 
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            val prefixed = "${pathPrefix}/${path}"
-            return try {
-                val blob = Assets.loadBlobAsset(prefixed)
-                Heightmap.fromRawData(blob, ref.heightScale, ref.rows, ref.columns, ref.heightOffset).also { cache[ref] = it }
-            } catch (e: Exception) {
-                logE { "Failed loading heightmap: $prefixed" }
-                null
-            }
-        }
+        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+        val prefixed = "${pathPrefix}${path}"
+        return assetLoader.loadBlobAsset(prefixed)
+            .map { Heightmap.fromRawData(it, ref.heightScale, ref.rows, ref.columns, ref.heightOffset) }
+            .also { cache[ref] = it }
+    }
 
-        override suspend fun loadBlob(ref: AssetReference.Blob): Uint8Buffer? {
-            cache[ref]?.let { return it as Uint8Buffer }
+    override suspend fun loadBlob(ref: AssetReference.Blob): Result<Uint8Buffer> {
+        cache[ref]?.let { return it.mapCatching { r -> r as Uint8Buffer } }
 
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            val prefixed = "${pathPrefix}/${path}"
-            return try {
-                Assets.loadBlobAsset(prefixed).also { cache[ref] = it }
-            } catch (e: Exception) {
-                logE { "Failed loading blob: $prefixed" }
-                null
-            }
-        }
+        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
+        val prefixed = "${pathPrefix}${path}"
+        return assetLoader.loadBlobAsset(prefixed)
+            .also { cache[ref] = it }
     }
 }

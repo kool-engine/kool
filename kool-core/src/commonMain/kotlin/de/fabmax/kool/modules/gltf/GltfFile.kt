@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
+import de.fabmax.kool.loadBlobAsset
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.BlendMode
@@ -16,32 +17,29 @@ import kotlinx.serialization.json.Json
 import kotlin.math.max
 import kotlin.math.min
 
-suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoader = Assets.defaultLoader): GltfFile {
-    val gltfData = if (filePath.lowercase().endsWith(".gz")) {
-        data.inflate()
-    } else {
-        data
-    }
-    val gltfFile = when (val type = filePath.lowercase().removeSuffix(".gz").substringAfterLast('.')) {
-        "gltf" -> GltfFile.fromJson(gltfData.decodeToString())
-        "glb" -> loadGlb(gltfData)
-        else -> error("Invalid gltf file type: $type ($filePath)")
-    }
-
-    val modelBasePath = if (filePath.contains('/')) {
-        filePath.substringBeforeLast('/')
-    } else { "." }
-
-    gltfFile.let { m ->
-        m.buffers.filter { it.uri != null }.forEach {
-            val uri = it.uri!!
-            val bufferUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
-            it.data = assetLoader.loadBlobAsset(bufferUri)
+suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoader = Assets.defaultLoader): Result<GltfFile> {
+    return try {
+        val gltfData = if (filePath.lowercase().endsWith(".gz")) data.inflate() else data
+        val gltfFile = when (val type = filePath.lowercase().removeSuffix(".gz").substringAfterLast('.')) {
+            "gltf" -> GltfFile.fromJson(gltfData.decodeToString())
+            "glb" -> loadGlb(gltfData)
+            else -> error("Invalid gltf file type: $type ($filePath)")
         }
-        m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
-        m.updateReferences()
+
+        val modelBasePath = if (filePath.contains('/')) filePath.substringBeforeLast('/') else "."
+        gltfFile.let { m ->
+            m.buffers.filter { it.uri != null }.forEach {
+                val uri = it.uri!!
+                val bufferUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
+                it.data = assetLoader.loadBlobAsset(bufferUri).getOrThrow()
+            }
+            m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
+            m.updateReferences()
+        }
+        Result.success(gltfFile)
+    } catch (t: Throwable) {
+        Result.failure(t)
     }
-    return gltfFile
 }
 
 private fun loadGlb(data: Uint8Buffer): GltfFile {
@@ -650,7 +648,7 @@ data class GltfFile(
                         maxNumberOfLights = matCfg.maxNumberOfLights
                         addShadowMaps(matCfg.shadowMaps)
 
-                        matCfg.environmentMaps?.let { ibl ->
+                        matCfg.environmentMap?.let { ibl ->
                             imageBasedAmbientLight(ibl.irradianceMap)
                             reflectionMap = ibl.reflectionMap
                         }

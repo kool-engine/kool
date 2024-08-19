@@ -144,9 +144,9 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     companion object {
         suspend fun loadFromAssets(path: String = "kool-project.json"): EditorProject? {
             return try {
-                val json = Assets.loadBlobAsset(path).toArray().decodeToString()
-                val projectData: ProjectData = Json.decodeFromString(json)
-                EditorProject(projectData)
+                Assets.loadBlobAsset(path).getOrNull()?.toArray()?.decodeToString()?.let { json ->
+                    EditorProject(Json.decodeFromString(json))
+                }
             } catch (e: Exception) {
                 null
             }
