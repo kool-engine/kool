@@ -1,21 +1,17 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.physics.PhysicsWorld
+import de.fabmax.kool.editor.api.EditorScene
 
 interface PhysicsComponent {
-    context(GameEntityComponent)
-    val physicsWorldComponent: PhysicsWorldComponent?
-        get() = gameEntity.scene.sceneEntity.getComponent<PhysicsWorldComponent>()
 
-    context(GameEntityComponent)
-    val physicsWorld: PhysicsWorld?
-        get() = physicsWorldComponent?.physicsWorld
+    fun getPhysicsWorldComponent(scene: EditorScene): PhysicsWorldComponent? =
+        scene.sceneEntity.getComponent<PhysicsWorldComponent>()
 
-    context(GameEntityComponent)
-    suspend fun getOrCreatePhysicsWorldComponent(): PhysicsWorldComponent {
-        val sceneEntity = gameEntity.scene.sceneEntity
-        val physicsWorldComponent = sceneEntity.getOrPutComponentLifecycleAware<PhysicsWorldComponent> {
-            PhysicsWorldComponent(sceneEntity)
+    fun getPhysicsWorld(scene: EditorScene) = getPhysicsWorldComponent(scene)?.physicsWorld
+
+    suspend fun getOrCreatePhysicsWorldComponent(scene: EditorScene): PhysicsWorldComponent {
+        val physicsWorldComponent = scene.sceneEntity.getOrPutComponentLifecycleAware<PhysicsWorldComponent> {
+            PhysicsWorldComponent(scene.sceneEntity)
         }
         return physicsWorldComponent
     }

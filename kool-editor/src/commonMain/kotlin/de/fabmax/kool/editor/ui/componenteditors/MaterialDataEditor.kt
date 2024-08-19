@@ -16,8 +16,7 @@ abstract class MaterialDataEditor<T: MaterialShaderData>(
     var materialData: T,
     val editor: ComponentEditor<*>
 ) {
-    context(ColumnScope)
-    abstract fun materialEditor()
+    abstract fun ColumnScope.materialEditor()
 
     protected fun ColumnScope.genericSettings() {
         var isTwoSided by remember(material.shaderData.genericSettings.isTwoSided)

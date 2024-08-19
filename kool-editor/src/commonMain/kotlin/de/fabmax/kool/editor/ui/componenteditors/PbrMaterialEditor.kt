@@ -17,8 +17,7 @@ class PbrMaterialEditor(
     editor: ComponentEditor<*>
 ) : MaterialDataEditor<PbrShaderData>(material, materialData, editor) {
 
-    context(ColumnScope)
-    override fun materialEditor() {
+    override fun ColumnScope.materialEditor() {
         colorSetting("Base color:", materialData.baseColor, MdColor.GREY.toLinear()) {
             materialData.copy(baseColor = it)
         }

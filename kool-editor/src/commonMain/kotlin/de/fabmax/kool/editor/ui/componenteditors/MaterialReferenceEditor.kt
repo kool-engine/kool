@@ -99,7 +99,7 @@ class MaterialReferenceEditor : ComponentEditor<MaterialReferenceComponent>() {
                     .apply { materialData = matData }
             }
         }
-        matEditor.materialEditor()
+        with(matEditor) { materialEditor() }
     }
 
     private fun UiScope.rememberMaterialDndHandler(

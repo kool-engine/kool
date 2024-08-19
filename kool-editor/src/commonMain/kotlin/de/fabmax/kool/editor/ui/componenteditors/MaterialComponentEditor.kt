@@ -89,7 +89,7 @@ class MaterialComponentEditor : ComponentEditor<MaterialComponent>() {
                     .apply { materialData = matData }
             }
         }
-        matEditor.materialEditor()
+        with(matEditor) { materialEditor() }
     }
 
     private class MaterialTypeOption<T: MaterialShaderData>(val label: String, val dataType: KClass<T>, val factory: () -> T) {

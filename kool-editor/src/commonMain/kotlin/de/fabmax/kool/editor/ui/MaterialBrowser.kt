@@ -33,10 +33,7 @@ class MaterialBrowser(ui: EditorUi) : BrowserPanel("Material Browser", Icons.med
         }
     }
 
-    context(UiScope)
-    override fun titleBar() {
-        super.titleBar()
-
+    override fun UiScope.titleBar() {
         thumbnailRenderer.updateTileSize(sizes.browserItemSize.px.roundToInt())
         if (ui.editor.activeScene.use() != prevActiveScene) {
             prevActiveScene = ui.editor.activeScene.value

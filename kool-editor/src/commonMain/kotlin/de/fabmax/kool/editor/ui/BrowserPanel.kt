@@ -45,8 +45,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         }
     }
 
-    context(UiScope)
-    protected open fun titleBar() { }
+    protected open fun UiScope.titleBar() { }
 
     private fun UiScope.treeWidthHandle() = Row(height = Grow.Std) {
         var startDragWidth by remember(treePanelSize.value)
@@ -224,7 +223,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         gridSize: Dp,
         itemPopupMenu: ContextPopupMenu<BrowserItem>
     ) = Column(width = gridSize) {
-        modifier.installDragAndDropHandler(dndCtx, null) { item.makeDndItem() }
+        modifier.installDragAndDropHandler(dndCtx, null) { item.makeDndItem(this) }
 
         var isHovered by remember(false)
         if (isHovered) {
@@ -253,21 +252,20 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         abstract val color: Color
         var composable: BrowserItemComposable = SimpleBrowserItemComposable()
 
-        context(UiScope)
-        fun makeDndItem(): EditorDndItem<*>? {
+        fun makeDndItem(uiScope: UiScope): EditorDndItem<*>? {
             return when (this) {
-                is BrowserDir -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
+                is BrowserDir -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable(uiScope))
                 is BrowserAssetItem -> {
                     when (this.asset.type) {
-                        AppAssetType.Unknown -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
-                        AppAssetType.Directory -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable())
-                        AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this, composable.getDndComposable())
-                        AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this, composable.getDndComposable())
-                        AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this, composable.getDndComposable())
-                        AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this, composable.getDndComposable())
+                        AppAssetType.Unknown -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable(uiScope))
+                        AppAssetType.Directory -> DndItemFlavor.DndBrowserItem.itemOf(this, composable.getDndComposable(uiScope))
+                        AppAssetType.Texture -> DndItemFlavor.DndBrowserItemTexture.itemOf(this, composable.getDndComposable(uiScope))
+                        AppAssetType.Hdri -> DndItemFlavor.DndBrowserItemHdri.itemOf(this, composable.getDndComposable(uiScope))
+                        AppAssetType.Model -> DndItemFlavor.DndBrowserItemModel.itemOf(this, composable.getDndComposable(uiScope))
+                        AppAssetType.Heightmap -> DndItemFlavor.DndBrowserItemHeightmap.itemOf(this, composable.getDndComposable(uiScope))
                     }
                 }
-                is BrowserMaterialItem -> DndItemFlavor.DndBrowserItemMaterial.itemOf(this, composable.getDndComposable())
+                is BrowserMaterialItem -> DndItemFlavor.DndBrowserItemMaterial.itemOf(this, composable.getDndComposable(uiScope))
                 is BrowserBehaviorItem -> null
             }
         }
@@ -340,8 +338,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
 interface BrowserItemComposable : Composable {
     fun getComposable(sizeDp: Vec2f? = null, alpha: Float = 1f): Composable
 
-    context(UiScope)
-    fun getDndComposable() = getComposable(Vec2f(sizes.baseSize.px * 1.5f), alpha = 0.7f)
+    fun getDndComposable(uiScope: UiScope) = getComposable(Vec2f(uiScope.sizes.baseSize.px * 1.5f), alpha = 0.7f)
 
     override fun UiScope.compose() {
         getComposable().invoke()

@@ -5,10 +5,7 @@ import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.FusedAction
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.fused
-import de.fabmax.kool.editor.components.MeshComponent
-import de.fabmax.kool.editor.components.PhysicsMaterial
-import de.fabmax.kool.editor.components.RigidActorComponent
-import de.fabmax.kool.editor.components.project
+import de.fabmax.kool.editor.components.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.Vec2d
@@ -17,6 +14,8 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.character.HitActorBehavior
 
 class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
+
+    private val physicsWorldComponent: PhysicsWorldComponent? get() = component.getPhysicsWorldComponent(component.gameEntity.scene)
 
     override fun UiScope.compose() = componentPanel(
         title = "Rigid Actor",
@@ -115,53 +114,51 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
     }
 
     private fun ColumnScope.materialProperties() {
-        with(component) {
-            physicsWorldComponent?.let { world ->
-                val materialState = remember {
-                    mutableStateOf(world.dataState.use().materials.find { it.id == component.data.materialId })
-                        .onChange { _, newData -> newData?.let { makeMaterialUpdateAction(it).apply() } }
+        physicsWorldComponent?.let { world ->
+            val materialState = remember {
+                mutableStateOf(world.dataState.use().materials.find { it.id == component.data.materialId })
+                    .onChange { _, newData -> newData?.let { makeMaterialUpdateAction(it).apply() } }
+            }
+            materialState.set(world.dataState.use().materials.find { it.id == component.data.materialId })
+            val mat = materialState.use()
+            if (mat != null) {
+                labeledTextField("Name:", mat.name, labelWidth = sizes.editorLabelWidthSmall) {
+                    materialState.set(materialState.value!!.copy(name = it))
                 }
-                materialState.set(world.dataState.use().materials.find { it.id == component.data.materialId })
-                val mat = materialState.use()
-                if (mat != null) {
-                    labeledTextField("Name:", mat.name, labelWidth = sizes.editorLabelWidthSmall) {
-                        materialState.set(materialState.value!!.copy(name = it))
+                labeledDoubleTextField(
+                    label = "Static friction:",
+                    value = mat.staticFriction.toDouble(),
+                    dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
+                    minValue = 0.0,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoMat = materialState.value!!.copy(staticFriction = undoValue.toFloat())
+                        val applyMat = materialState.value!!.copy(staticFriction = applyValue.toFloat())
+                        makeMaterialUpdateAction(applyMat, undoMat)
                     }
-                    labeledDoubleTextField(
-                        label = "Static friction:",
-                        value = mat.staticFriction.toDouble(),
-                        dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
-                        minValue = 0.0,
-                        editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                            val undoMat = materialState.value!!.copy(staticFriction = undoValue.toFloat())
-                            val applyMat = materialState.value!!.copy(staticFriction = applyValue.toFloat())
-                            makeMaterialUpdateAction(applyMat, undoMat)
-                        }
-                    )
-                    labeledDoubleTextField(
-                        label = "Dynamic friction:",
-                        value = mat.dynamicFriction.toDouble(),
-                        dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
-                        minValue = 0.0,
-                        editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                            val undoMat = materialState.value!!.copy(dynamicFriction = undoValue.toFloat())
-                            val applyMat = materialState.value!!.copy(dynamicFriction = applyValue.toFloat())
-                            makeMaterialUpdateAction(applyMat, undoMat)
-                        }
-                    )
-                    labeledDoubleTextField(
-                        label = "Restitution:",
-                        value = mat.restitution.toDouble(),
-                        dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
-                        minValue = 0.0,
-                        maxValue = 1.0,
-                        editHandler = ActionValueEditHandler { undoValue, applyValue ->
-                            val undoMat = materialState.value!!.copy(restitution = undoValue.toFloat())
-                            val applyMat = materialState.value!!.copy(restitution = applyValue.toFloat())
-                            makeMaterialUpdateAction(applyMat, undoMat)
-                        }
-                    )
-                }
+                )
+                labeledDoubleTextField(
+                    label = "Dynamic friction:",
+                    value = mat.dynamicFriction.toDouble(),
+                    dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
+                    minValue = 0.0,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoMat = materialState.value!!.copy(dynamicFriction = undoValue.toFloat())
+                        val applyMat = materialState.value!!.copy(dynamicFriction = applyValue.toFloat())
+                        makeMaterialUpdateAction(applyMat, undoMat)
+                    }
+                )
+                labeledDoubleTextField(
+                    label = "Restitution:",
+                    value = mat.restitution.toDouble(),
+                    dragChangeSpeed = DragChangeRates.RANGE_0_TO_1,
+                    minValue = 0.0,
+                    maxValue = 1.0,
+                    editHandler = ActionValueEditHandler { undoValue, applyValue ->
+                        val undoMat = materialState.value!!.copy(restitution = undoValue.toFloat())
+                        val applyMat = materialState.value!!.copy(restitution = applyValue.toFloat())
+                        makeMaterialUpdateAction(applyMat, undoMat)
+                    }
+                )
             }
         }
     }

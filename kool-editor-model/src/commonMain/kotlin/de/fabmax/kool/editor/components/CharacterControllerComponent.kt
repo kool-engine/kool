@@ -83,7 +83,7 @@ class CharacterControllerComponent(
     override fun destroyComponent() {
         super.destroyComponent()
         charController?.let { existing ->
-            physicsWorldComponent?.characterControllerManager?.removeController(existing)
+            getPhysicsWorldComponent(gameEntity.scene)?.characterControllerManager?.removeController(existing)
             existing.release()
         }
         axes?.release()
@@ -91,7 +91,7 @@ class CharacterControllerComponent(
     }
 
     private suspend fun createCharController() {
-        val physicsWorldComponent = getOrCreatePhysicsWorldComponent()
+        val physicsWorldComponent = getOrCreatePhysicsWorldComponent(gameEntity.scene)
         val charManager = physicsWorldComponent.characterControllerManager
         if (charManager == null) {
             logE { "Unable to create character controller: parent physics world was not yet created" }

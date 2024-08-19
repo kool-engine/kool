@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import com.github.weisj.jsvg.parser.LoaderContext
 import com.github.weisj.jsvg.parser.SVGLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderDesktop
@@ -164,7 +165,7 @@ object PlatformAssetsImpl : PlatformAssets {
     }
 
     private fun renderSvg(inStream: InputStream, props: TextureProps?): TextureData2d {
-        val svgDoc = SVGLoader().load(inStream) ?: throw IllegalStateException("Failed loading SVG image")
+        val svgDoc = SVGLoader().load(inStream, null, LoaderContext.createDefault()) ?: error("Failed loading SVG image")
         val size = svgDoc.size()
         val scaleX = if (props?.resolveSize != null) props.resolveSize.x / size.width else 1f
         val scaleY = if (props?.resolveSize != null) props.resolveSize.y / size.height else 1f

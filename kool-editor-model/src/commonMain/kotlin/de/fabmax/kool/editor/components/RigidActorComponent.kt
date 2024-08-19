@@ -14,18 +14,6 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.launchOnMainThread
 
-context(GameEntityComponent)
-val RigidActor.component: RigidActorComponent? get() {
-    val world = sceneEntity.getComponent<PhysicsWorldComponent>()
-    return world?.actors?.get(this)
-}
-
-context(GameEntityComponent)
-val RigidActor.gameEntity: GameEntity? get() {
-    val world = sceneEntity.getComponent<PhysicsWorldComponent>()
-    return world?.actors?.get(this)?.gameEntity
-}
-
 class RigidActorComponent(
     gameEntity: GameEntity,
     componentInfo: ComponentInfo<RigidActorComponentData> = ComponentInfo(RigidActorComponentData())
@@ -35,6 +23,8 @@ class RigidActorComponent(
 {
     var rigidActor: RigidActor? = null
         private set
+
+    private val physicsWorld: PhysicsWorld? get() = getPhysicsWorld(gameEntity.scene)
 
     private var geometry: List<CollisionGeometry> = emptyList()
     private var bodyShapes: List<ShapeData> = emptyList()
@@ -126,7 +116,7 @@ class RigidActorComponent(
     }
 
     private suspend fun createRigidBody(actorData: RigidActorComponentData) {
-        val physicsWorldComponent = getOrCreatePhysicsWorldComponent()
+        val physicsWorldComponent = getOrCreatePhysicsWorldComponent(gameEntity.scene)
 
         rigidActor?.let {
             physicsWorldComponent.removeActor(this)
@@ -225,3 +215,9 @@ class RigidActorComponent(
         }
     }
 }
+
+fun GameEntityComponent.getComponentForRigidActor(actor: RigidActor): RigidActorComponent? =
+    sceneEntity.getComponent<PhysicsWorldComponent>()?.actors?.get(actor)
+
+fun GameEntityComponent.getGameEntityForRigidActor(actor: RigidActor): GameEntity? =
+    sceneEntity.getComponent<PhysicsWorldComponent>()?.actors?.get(actor)?.gameEntity

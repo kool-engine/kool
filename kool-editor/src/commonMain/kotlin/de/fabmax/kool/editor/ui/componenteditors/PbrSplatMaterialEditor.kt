@@ -18,8 +18,7 @@ class PbrSplatMaterialEditor(
     editor: ComponentEditor<*>
 ) : MaterialDataEditor<PbrSplatShaderData>(material, materialData, editor) {
 
-    context(ColumnScope)
-    override fun materialEditor() {
+    override fun ColumnScope.materialEditor() {
         textureSetting("Weight map:", materialData.splatMap, "r") {
             materialData.copy(splatMap = it)
         }

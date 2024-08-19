@@ -169,7 +169,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 val selectedMat = int1Var(0.const)
                 matStates.forEach { matState ->
                     `if`(weights[matState.index] gt maxHeight) {
-                        matState.sampleHeight(weights[matState.index])
+                        with(matState) { sampleHeight(weights[matState.index]) }
                         `if`(matState.weightedHeight gt maxHeight) {
                             maxHeight set matState.weightedHeight
                             selectedMat set matState.index.const
@@ -181,7 +181,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 val normal = float3Var(normalize(normalWorldSpace.output))
                 val arm = float3Var(float3Value(1f, 0.5f, 0f))
                 matStates.forEach { matState ->
-                    matState.sampleMaterialIfSelected(selectedMat, tangentWorldSpace.output, baseColor, normal, arm)
+                    with(matState) {
+                        sampleMaterialIfSelected(selectedMat, tangentWorldSpace.output, baseColor, normal, arm)
+                    }
                 }
 
                 // create an array with light strength values per light source (1.0 = full strength)
@@ -509,8 +511,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val height: KslExprFloat1 get() = blendInfo.z
         var weightedHeight: KslExprFloat1 = KslValueFloat1(0f)
 
-        context(KslScopeBuilder)
-        fun sampleHeight(weight: KslExprFloat1) {
+        fun KslScopeBuilder.sampleHeight(weight: KslExprFloat1) {
             blendInfo set fnGetUv(scaledUv, ddx, ddy, float3Value(uvRot, tileSize, tileRot), displacementTex)
             weightedHeight = float1Var(height * weight)
 
@@ -525,8 +526,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             ddy set (rotMat * float3Value(ddy, 0f.const)).xy
         }
 
-        context(KslScopeBuilder)
-        fun sampleMaterialIfSelected(
+        fun KslScopeBuilder.sampleMaterialIfSelected(
             selectedMat: KslExprInt1,
             inTangent: KslExprFloat4,
             outBaseColor: KslVarFloat4,
