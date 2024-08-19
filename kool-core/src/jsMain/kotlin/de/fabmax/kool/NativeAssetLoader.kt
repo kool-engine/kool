@@ -15,35 +15,33 @@ import org.w3c.dom.Image
 import org.w3c.dom.ImageBitmap
 
 class NativeAssetLoader(val basePath: String) : AssetLoader() {
-    override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
-        val url = blobRef.path
+    override suspend fun loadBlob(ref: AssetRef.Blob): LoadedAsset.Blob {
+        val url = ref.path
         val prefixedUrl = if (Assets.isHttpAsset(url)) url else "${basePath}/$url"
         val result = fetchData(prefixedUrl).map { Uint8BufferImpl(Uint8Array(it.arrayBuffer().await())) }
-        return LoadedBlobAsset(blobRef, result)
+        return LoadedAsset.Blob(ref, result)
     }
 
-    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        val resolveSz = textureRef.props?.resolveSize
-        val result = loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz).map {
-            ImageTextureData(it, textureRef.props?.format)
+    override suspend fun loadImage(ref: AssetRef.Image): LoadedAsset.Image {
+        val resolveSz = ref.props?.resolveSize
+        val result = loadImageBitmap(ref.path, ref.isHttp, resolveSz).map {
+            ImageTextureData(it, ref.props?.format)
         }
-        return LoadedTextureAsset(textureRef, result)
+        return LoadedAsset.Image(ref, result)
     }
 
-    override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
-        val resolveSz = textureRef.props?.resolveSize
-        val result = loadImageBitmap(textureRef.path, textureRef.isHttp, resolveSz).map {
-            ImageAtlasTextureData(it, textureRef.tilesX, textureRef.tilesY, textureRef.props?.format)
+    override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.Image {
+        val resolveSz = ref.props?.resolveSize
+        val result = loadImageBitmap(ref.path, ref.isHttp, resolveSz).map {
+            ImageAtlasTextureData(it, ref.tilesX, ref.tilesY, ref.props?.format)
         }
-        return LoadedTextureAsset(textureRef, result)
+        return LoadedAsset.Image(ref, result)
     }
 
-    override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
-        val props = textureData2dRef.props ?: TextureProps()
-        val texRef = TextureAssetRef(textureData2dRef.path, props)
-
-
-        val result = loadTexture(texRef).result.mapCatching {
+    override suspend fun loadImageBuffer(ref: AssetRef.ImageBuffer): LoadedAsset.ImageBuffer {
+        val props = ref.props ?: TextureProps()
+        val texRef = AssetRef.Image(ref.path, props)
+        val result = loadImage(texRef).result.mapCatching {
             val texData = it.data as ImageTextureData
             TextureData2d(
                 ImageTextureData.imageBitmapToBuffer(texData.data, props),
@@ -52,17 +50,17 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
                 props.format
             )
         }
-        return LoadedTextureAsset(textureData2dRef, result)
+        return LoadedAsset.ImageBuffer(ref, result)
     }
 
-    override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {
-        val assetPath = audioRef.path
+    override suspend fun loadAudio(ref: AssetRef.Audio): LoadedAsset.Audio {
+        val assetPath = ref.path
         val clip = if (Assets.isHttpAsset(assetPath)) {
             AudioClipImpl(assetPath)
         } else {
             AudioClipImpl("${basePath}/$assetPath")
         }
-        return LoadedAudioClipAsset(audioRef, Result.success(clip))
+        return LoadedAsset.Audio(ref, Result.success(clip))
     }
 
     private suspend fun loadImageBitmap(path: String, isHttp: Boolean, resize: Vec2i?): Result<ImageBitmap> {

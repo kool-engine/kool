@@ -62,19 +62,19 @@ abstract class AssetLoader {
 
     private suspend fun loadAsset(ref: AssetRef): LoadedAsset<*> {
         return when(ref) {
-            is BlobAssetRef -> loadBlob(ref)
-            is TextureAssetRef -> loadTexture(ref)
-            is TextureAtlasAssetRef -> loadTextureAtlas(ref)
-            is TextureData2dRef -> loadTextureData2d(ref)
-            is AudioClipRef -> loadAudioClip(ref)
+            is AssetRef.Audio -> loadAudio(ref)
+            is AssetRef.Blob -> loadBlob(ref)
+            is AssetRef.Image -> loadImage(ref)
+            is AssetRef.ImageAtlas -> loadImageAtlas(ref)
+            is AssetRef.ImageBuffer -> loadImageBuffer(ref)
         }
     }
 
-    protected abstract suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset
-    protected abstract suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset
-    protected abstract suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset
-    protected abstract suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset
-    protected abstract suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset
+    protected abstract suspend fun loadBlob(ref: AssetRef.Blob): LoadedAsset.Blob
+    protected abstract suspend fun loadImage(ref: AssetRef.Image): LoadedAsset.Image
+    protected abstract suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.Image
+    protected abstract suspend fun loadImageBuffer(ref: AssetRef.ImageBuffer): LoadedAsset.ImageBuffer
+    protected abstract suspend fun loadAudio(ref: AssetRef.Audio): LoadedAsset.Audio
 
     ////////////////////////////////////////////////////////////////////
     // Texture Data
@@ -84,10 +84,10 @@ abstract class AssetLoader {
      * Asynchronously loads the texture data at the given path and returns it as [TextureData].
      */
     fun loadTextureDataAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<TextureData>> = Assets.async {
-        val ref = TextureAssetRef(assetPath, props)
+        val ref = AssetRef.Image(assetPath, props)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
+        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.Image
         loaded.result
             .onSuccess {
                 logD("AssetLoader.loadTextureDataAsync") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
@@ -103,18 +103,17 @@ abstract class AssetLoader {
      * building heightmap geometry from a greyscale image.
      */
     fun loadTextureData2dAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<TextureData2d>> = Assets.async {
-        val ref = TextureData2dRef(assetPath, props)
+        val ref = AssetRef.ImageBuffer(assetPath, props)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-        try {
-            val texData = loaded.result.getOrThrow() as TextureData2d
-            logD("AssetLoader.loadTextureData2dAsync") { "Loaded ${trimAssetPath(assetPath)} (${texData.format}, ${texData.width}x${texData.height})" }
-            Result.success(texData)
-        } catch (t: Throwable) {
-            logE("AssetLoader.loadTextureData2dAsync") { "Failed loading ${trimAssetPath(assetPath)}: $t" }
-            Result.failure(t)
-        }
+        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.ImageBuffer
+        loaded.result
+            .onSuccess {
+                logD("AssetLoader.loadTextureData2dAsync") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+            }
+            .onFailure {
+                logE("AssetLoader.loadTextureData2dAsync") { "Failed loading ${trimAssetPath(assetPath)}: $it" }
+            }
     }
 
     /**
@@ -127,11 +126,10 @@ abstract class AssetLoader {
         tilesY: Int,
         props: TextureProps? = null
     ): Deferred<Result<TextureData>> = Assets.async {
-        val ref = TextureAtlasAssetRef(assetPath, props, tilesX, tilesY)
+        val ref = AssetRef.ImageAtlas(assetPath, props, tilesX, tilesY)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedTextureAsset
-
+        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.Image
         loaded.result
             .onSuccess {
                 logD("AssetLoader.loadTextureDataAtlasAsync") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
@@ -205,10 +203,10 @@ abstract class AssetLoader {
      * Asynchronously loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
      */
     fun loadBlobAssetAsync(assetPath: String): Deferred<Result<Uint8Buffer>> = Assets.async {
-        val ref = BlobAssetRef(assetPath)
+        val ref = AssetRef.Blob(assetPath)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedBlobAsset
+        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.Blob
         loaded.result
             .onSuccess {
                 logD("AssetLoader.loadBlobAssetAsync") { "Loaded blob ${trimAssetPath(assetPath)} (${(it.capacity / 1_048_576.0).toString(1)} mb)" }
@@ -219,10 +217,10 @@ abstract class AssetLoader {
     }
 
     fun loadAudioClipAsync(assetPath: String): Deferred<Result<AudioClip>> = Assets.async {
-        val ref = AudioClipRef(assetPath)
+        val ref = AssetRef.Audio(assetPath)
         val awaitedAsset = AwaitedAsset(ref)
         awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedAudioClipAsset
+        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.Audio
         loaded.result
             .onSuccess {
                 logD("AssetLoader.loadAudioClipAsync") { "Loaded audio ${trimAssetPath(assetPath)} (${it.duration} secs)" }

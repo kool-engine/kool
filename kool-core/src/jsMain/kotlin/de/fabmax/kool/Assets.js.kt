@@ -2,7 +2,6 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.*
-import de.fabmax.kool.pipeline.TextureData
 import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.FontMapGenerator
@@ -96,7 +95,7 @@ object PlatformAssetsImpl : PlatformAssets {
         return file.getFile().await().name
     }
 
-    override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
+    override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): ImageTextureData {
         val array = (texData as Uint8BufferImpl).buffer
         val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType))
         val imgBitmap = createImageBitmap(imgBlob, ImageBitmapOptions(props?.resolveSize)).await()

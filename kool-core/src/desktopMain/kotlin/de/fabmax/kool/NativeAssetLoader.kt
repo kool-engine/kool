@@ -14,43 +14,42 @@ import java.io.FileNotFoundException
 import java.io.InputStream
 
 class NativeAssetLoader(val basePath: String) : AssetLoader() {
-    override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
+    override suspend fun loadBlob(ref: AssetRef.Blob): LoadedAsset.Blob {
         val result = withContext(Dispatchers.IO) {
             try {
-                val data = openStream(blobRef).use { Uint8BufferImpl(it.readBytes()) }
+                val data = openStream(ref).use { Uint8BufferImpl(it.readBytes()) }
                 Result.success(data)
             } catch (t: Throwable) {
                 Result.failure(t)
             }
         }
-        return LoadedBlobAsset(blobRef, result)
+        return LoadedAsset.Blob(ref, result)
     }
 
-    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        val result = loadTextureData2d(refCopy).result.mapCatching { it as TextureData2d }
-        return LoadedTextureAsset(textureRef, result)
+    override suspend fun loadImage(ref: AssetRef.Image): LoadedAsset.Image {
+        val refCopy = AssetRef.ImageBuffer(ref.path, ref.props)
+        return LoadedAsset.Image(ref, loadImageBuffer(refCopy).result)
     }
 
-    override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
-        val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        val result = loadTextureData2d(refCopy).result.mapCatching {
-            imageAtlasTextureData(it as TextureData2d, textureRef.tilesX, textureRef.tilesY)
+    override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.Image {
+        val refCopy = AssetRef.ImageBuffer(ref.path, ref.props)
+        val result = loadImageBuffer(refCopy).result.mapCatching {
+            imageAtlasTextureData(it, ref.tilesX, ref.tilesY)
         }
-        return LoadedTextureAsset(textureRef, result)
+        return LoadedAsset.Image(ref, result)
     }
 
-    override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
+    override suspend fun loadImageBuffer(ref: AssetRef.ImageBuffer): LoadedAsset.ImageBuffer {
         val data: Result<TextureData2d> = withContext(Dispatchers.IO) {
-            loadTexture(textureData2dRef, textureData2dRef.props)
+            loadTexture(ref, ref.props)
         }
-        return LoadedTextureAsset(textureData2dRef, data)
+        return LoadedAsset.ImageBuffer(ref, data)
     }
 
-    override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {
-        val blob = loadBlob(BlobAssetRef(audioRef.path))
-        return LoadedAudioClipAsset(audioRef, blob.result.map {
-            AudioClipImpl(it.toArray(), audioRef.path.substringAfterLast('.').lowercase())
+    override suspend fun loadAudio(ref: AssetRef.Audio): LoadedAsset.Audio {
+        val blob = loadBlob(AssetRef.Blob(ref.path))
+        return LoadedAsset.Audio(ref, blob.result.map {
+            AudioClipImpl(it.toArray(), ref.path.substringAfterLast('.').lowercase())
         })
     }
 

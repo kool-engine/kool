@@ -10,14 +10,14 @@ import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logW
 
 abstract class FileSystemAssetLoader(val baseDir: FileSystemDirectory) : AssetLoader() {
-    override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
-        val blob = loadData(blobRef.path)
-        return LoadedBlobAsset(blobRef, blob)
+    override suspend fun loadBlob(ref: AssetRef.Blob): LoadedAsset.Blob {
+        val blob = loadData(ref.path)
+        return LoadedAsset.Blob(ref, blob)
     }
 
-    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        return LoadedTextureAsset(textureRef, loadTextureData2d(refCopy).result)
+    override suspend fun loadImage(ref: AssetRef.Image): LoadedAsset.Image {
+        val refCopy = AssetRef.ImageBuffer(ref.path, ref.props)
+        return LoadedAsset.Image(ref, loadImageBuffer(refCopy).result)
     }
 
     protected suspend fun loadData(path: String): Result<Uint8Buffer> {
