@@ -55,7 +55,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = vkSystem.physicalDevice.deviceName
     }
 
-    override fun writeTextureData(tex: Texture, data: TextureData) {
+    override fun uploadTextureData(tex: Texture, data: ImageData) {
         tex.gpuTexture = when (tex) {
             is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
             is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
@@ -67,11 +67,11 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         vkSystem.device.addDependingResource(tex.gpuTexture as LoadedTextureVk)
     }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         TODO("Not yet implemented")
     }
 
-    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+    override fun downloadTextureData(texture: Texture, deferred: CompletableDeferred<ImageData>) {
         TODO("Not yet implemented")
     }
 

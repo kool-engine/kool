@@ -3,11 +3,10 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.DefaultLoader
-import de.fabmax.kool.loadTextureData
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.BufferedTextureLoader
+import de.fabmax.kool.pipeline.ImageTextureLoader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.*
@@ -115,9 +114,9 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
     }
 
     private suspend fun Texture2d.reloadTexture(texPath: String) {
-        val bufferedLoader = loader as? BufferedTextureLoader
+        val bufferedLoader = loader as? ImageTextureLoader
         if (bufferedLoader != null) {
-            assetLoader.loadTextureData(texPath, props).getOrNull()?.let {
+            assetLoader.loadImage2d(texPath, props).getOrNull()?.let {
                 bufferedLoader.data = it
                 dispose()
             }

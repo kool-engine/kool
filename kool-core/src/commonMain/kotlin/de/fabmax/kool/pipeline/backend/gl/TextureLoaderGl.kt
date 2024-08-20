@@ -6,32 +6,34 @@ import kotlin.math.log2
 import kotlin.math.max
 
 object TextureLoaderGl {
-    fun loadTexture1d(tex: Texture1d, img: TextureData, backend: RenderBackendGl): LoadedTextureGl {
-        val gl = backend.gl
-        val loadedTex = LoadedTextureGl(gl.TEXTURE_1D, gl.createTexture(), backend, tex, img.estimateTexSize())
-        loadedTex.setSize(img.width, 1, 1)
-        loadedTex.bind()
-        gl.texImage1d(gl.TEXTURE_1D, img)
-        if (tex.props.generateMipMaps) {
-            gl.generateMipmap(gl.TEXTURE_1D)
+
+    fun loadTexture(tex: Texture, data: ImageData, backend: RenderBackendGl): LoadedTextureGl {
+        val loaded = when {
+            tex is Texture1d && data is ImageData1d -> loadTexture1dCompat(tex, data, backend)
+            tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data, backend)
+            tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data, backend)
+            tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data, backend)
+            else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
         }
-        return loadedTex
+        tex.gpuTexture = loaded
+        tex.loadingState = Texture.LoadingState.LOADED
+        return loaded
     }
 
-    fun loadTexture1dCompat(tex: Texture1d, img: TextureData, backend: RenderBackendGl): LoadedTextureGl {
+    private fun loadTexture1dCompat(tex: Texture1d, img: ImageData1d, backend: RenderBackendGl): LoadedTextureGl {
         // 1d texture internally uses a 2d texture
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, 1, 1)
         loadedTex.bind()
-        gl.texImage2d(gl.TEXTURE_2D, img)
+        gl.texImage1d(img)
         if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D)
         }
         return loadedTex
     }
 
-    fun loadTexture2d(tex: Texture2d, img: TextureData, backend: RenderBackendGl) : LoadedTextureGl {
+    private fun loadTexture2d(tex: Texture2d, img: ImageData2d, backend: RenderBackendGl) : LoadedTextureGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, 1)
@@ -43,7 +45,7 @@ object TextureLoaderGl {
         return loadedTex
     }
 
-    fun loadTexture3d(tex: Texture3d, img: TextureData, backend: RenderBackendGl) : LoadedTextureGl {
+    private fun loadTexture3d(tex: Texture3d, img: ImageData3d, backend: RenderBackendGl) : LoadedTextureGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_3D, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, img.depth)
@@ -55,11 +57,7 @@ object TextureLoaderGl {
         return loadedTex
     }
 
-    fun loadTextureCube(tex: TextureCube, img: TextureData, backend: RenderBackendGl) : LoadedTextureGl {
-        if (img !is TextureDataCube) {
-            throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
-        }
-
+    private fun loadTextureCube(tex: TextureCube, img: ImageDataCube, backend: RenderBackendGl) : LoadedTextureGl {
         val gl = backend.gl
         val loadedTex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, 1)
@@ -76,9 +74,28 @@ object TextureLoaderGl {
         return loadedTex
     }
 
-    private fun TextureData.estimateTexSize(): Long {
-        val layers = if (this is TextureDataCube) 6 else depth
+    private fun ImageData.estimateTexSize(): Long {
+        var width = 1
+        var height = 1
+        var depth = 1
+        when (this) {
+            is ImageData1d -> width = this.width
+            is ImageData2d -> {
+                width = this.width
+                height = this.height
+            }
+            is ImageData3d -> {
+                width = this.width
+                height = this.height
+                depth = this.depth
+            }
+            is ImageDataCube -> {
+                width = this.width
+                height = this.height
+                depth = 6
+            }
+        }
         val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
-        return Texture.estimatedTexSize(width, height, layers, mipLevels, format.pxSize).toLong()
+        return Texture.estimatedTexSize(width, height, depth, mipLevels, format.pxSize).toLong()
     }
 }

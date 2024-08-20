@@ -21,17 +21,17 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     private val multiSampledDepthTextureCopy = MultiSampledDepthTextureCopy()
     val mipmapGenerator = MipmapGenerator()
 
-    fun loadTexture(tex: Texture, data: TextureData) {
-        when (tex) {
-            is Texture1d -> loadTexture1d(tex, data)
-            is Texture2d -> loadTexture2d(tex, data)
-            is Texture3d -> loadTexture3d(tex, data)
-            is TextureCube -> loadTextureCube(tex, data)
-            else -> error("${tex::class.simpleName}")
+    fun loadTexture(tex: Texture, data: ImageData) {
+        when {
+            tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
+            tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data)
+            tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data)
+            tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data)
+            else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
         }
     }
 
-    fun loadTexture1d(tex: Texture1d, data: TextureData) {
+    private fun loadTexture1d(tex: Texture1d, data: ImageData1d) {
         val size = intArrayOf(data.width)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
         if (tex.props.generateMipMaps) {
@@ -51,7 +51,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    fun loadTexture2d(tex: Texture2d, data: TextureData) {
+    private fun loadTexture2d(tex: Texture2d, data: ImageData2d) {
         val size = intArrayOf(data.width, data.height)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val mipLevels = if (tex.props.generateMipMaps) {
@@ -76,7 +76,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    fun loadTexture3d(tex: Texture3d, data: TextureData) {
+    private fun loadTexture3d(tex: Texture3d, data: ImageData3d) {
         val size = intArrayOf(data.width, data.height, data.depth)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
         if (tex.props.generateMipMaps) {
@@ -96,10 +96,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    fun loadTextureCube(tex: TextureCube, data: TextureData) {
-        check(data is TextureDataCube || (data is TextureData3d && data.depth == 6)) {
-            "Invalid cube texture data"
-        }
+    private fun loadTextureCube(tex: TextureCube, data: ImageDataCube) {
+//        check(data is ImageDataCube || (data is BufferedImageData3d && data.depth == 6)) {
+//            "Invalid cube texture data"
+//        }
 
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val texDesc = GPUTextureDescriptor(
@@ -136,64 +136,74 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         multiSampledDepthTextureCopy.copyTexture(src, dst, encoder)
     }
 
-    private fun copyTextureData(src: TextureData, dst: GPUTexture, size: IntArray) {
+    private fun copyTextureData(src: ImageData, dst: GPUTexture, size: IntArray) {
         when (src) {
             is ImageTextureData -> {
-                device.queue.copyExternalImageToTexture(
-                    source = GPUImageCopyExternalImage(src.data),
-                    destination = GPUImageCopyTextureTagged(dst),
-                    copySize = size
-                )
+                copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
             }
-            is TextureData1d -> writeTextureData(src.arrayBufferView, src.gpuImageDataLayout, GPUImageCopyTexture(dst), size)
-            is TextureData2d -> writeTextureData(src.arrayBufferView, src.gpuImageDataLayout, GPUImageCopyTexture(dst), size)
-            is TextureData3d -> writeTextureData(src.arrayBufferView, src.gpuImageDataLayout, GPUImageCopyTexture(dst), size)
-            is TextureDataCube -> {
-                writeTextureData(src.posX.arrayBufferView, src.posX.gpuImageDataLayout, GPUImageCopyTexture(dst, origin = intArrayOf(0, 0, 0)), size)
-                writeTextureData(src.negX.arrayBufferView, src.negX.gpuImageDataLayout, GPUImageCopyTexture(dst, origin = intArrayOf(0, 0, 1)), size)
-                writeTextureData(src.posY.arrayBufferView, src.posY.gpuImageDataLayout, GPUImageCopyTexture(dst, origin = intArrayOf(0, 0, 2)), size)
-                writeTextureData(src.negY.arrayBufferView, src.negY.gpuImageDataLayout, GPUImageCopyTexture(dst, origin = intArrayOf(0, 0, 3)), size)
-                writeTextureData(src.posZ.arrayBufferView, src.posZ.gpuImageDataLayout, GPUImageCopyTexture(dst, origin = intArrayOf(0, 0, 4)), size)
-                writeTextureData(src.negZ.arrayBufferView, src.negZ.gpuImageDataLayout, GPUImageCopyTexture(dst, origin = intArrayOf(0, 0, 5)), size)
+            is BufferedImageData1d -> copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
+            is BufferedImageData2d -> copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
+            is BufferedImageData3d -> copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
+            is ImageDataCube -> {
+                copyTextureData(src.posX, dst, size, intArrayOf(0, 0, 0))
+                copyTextureData(src.negX, dst, size, intArrayOf(0, 0, 1))
+                copyTextureData(src.posY, dst, size, intArrayOf(0, 0, 2))
+                copyTextureData(src.negY, dst, size, intArrayOf(0, 0, 3))
+                copyTextureData(src.posZ, dst, size, intArrayOf(0, 0, 4))
+                copyTextureData(src.negZ, dst, size, intArrayOf(0, 0, 5))
             }
             else -> error("Not implemented: ${src::class.simpleName}")
         }
     }
 
-    private fun writeTextureData(src: ArrayBufferView, layout: GPUImageDataLayout, dst: GPUImageCopyTexture, size: IntArray) {
-        device.queue.writeTexture(
-            destination = dst,
-            data = src,
-            dataLayout = layout,
-            size = size
-        )
+    private fun copyTextureData(src: ImageData, dst: GPUTexture, size: IntArray, dstOrigin: IntArray) {
+        when (src) {
+            is BufferedImageData -> {
+                device.queue.writeTexture(
+                    data = src.arrayBufferView,
+                    destination = GPUImageCopyTexture(dst, origin = dstOrigin),
+                    dataLayout = src.gpuImageDataLayout,
+                    size = size
+                )
+            }
+            is ImageTextureData -> {
+                device.queue.copyExternalImageToTexture(
+                    source = GPUImageCopyExternalImage(src.data),
+                    destination = GPUImageCopyTextureTagged(dst, origin = dstOrigin),
+                    copySize = size
+                )
+            }
+            else -> error("Invalid src data type: $src")
+        }
     }
 
-    private val TextureData.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val ImageData.gpuImageDataLayout: GPUImageDataLayout get() {
         return when (this) {
-            is TextureData1d -> gpuImageDataLayout
-            is TextureData2d -> gpuImageDataLayout
-            is TextureData3d -> gpuImageDataLayout
+            is BufferedImageData1d -> gpuImageDataLayout
+            is BufferedImageData2d -> gpuImageDataLayout
+            is BufferedImageData3d -> gpuImageDataLayout
             else -> error("Invalid TextureData type: $this")
         }
     }
 
-    private val TextureData1d.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val BufferedImageData1d.gpuImageDataLayout: GPUImageDataLayout get() {
         val bytesPerRow = format.pxSize * width
         return GPUImageDataLayout(bytesPerRow = bytesPerRow, rowsPerImage = 1)
     }
 
-    private val TextureData2d.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val BufferedImageData2d.gpuImageDataLayout: GPUImageDataLayout get() {
         val bytesPerRow = format.pxSize * width
         return GPUImageDataLayout(bytesPerRow = bytesPerRow, rowsPerImage = height)
     }
 
-    private val TextureData3d.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val BufferedImageData3d.gpuImageDataLayout: GPUImageDataLayout get() {
         val bytesPerRow = format.pxSize * width
         return GPUImageDataLayout(bytesPerRow = bytesPerRow, rowsPerImage = height)
     }
 
-    private val TextureData.arrayBufferView: ArrayBufferView get() {
+    private val ImageData.arrayBufferView: ArrayBufferView get() {
+        check(this is BufferedImageData)
+
         val bufData = data
         return when {
             format.isF16 && bufData is Float32BufferImpl -> {

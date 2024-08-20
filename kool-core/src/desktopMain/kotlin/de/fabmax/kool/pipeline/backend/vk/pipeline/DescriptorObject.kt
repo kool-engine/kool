@@ -131,16 +131,11 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             } else {
                 if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
                     when (tex.loader) {
-                        is AsyncTextureLoader -> {
+                        is DeferredTextureLoader -> {
                             val deferredData = tex.loader.loadTextureDataAsync()
                             loadingTextures += LoadingTex(sys, tex, deferredData)
                         }
-                        is SyncTextureLoader -> {
-                            val data = tex.loader.loadTextureDataSync()
-                            tex.gpuTexture = getLoadedTex(tex, data, sys)
-                            tex.loadingState = Texture.LoadingState.LOADED
-                        }
-                        is BufferedTextureLoader -> {
+                        is ImageTextureLoader -> {
                             tex.gpuTexture = getLoadedTex(tex, tex.loader.data, sys)
                             tex.loadingState = Texture.LoadingState.LOADED
                         }
@@ -156,11 +151,8 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                         i < boundTex.size -> {
                             boundTex[i] = tex.gpuTexture as LoadedTextureVk
                         }
-                        i == boundTex.size -> {
-                            boundTex.add(tex.gpuTexture as LoadedTextureVk)
-                        }
                         else -> {
-                            throw IllegalStateException()
+                            boundTex.add(tex.gpuTexture as LoadedTextureVk)
                         }
                     }
                     isDescriptorSetUpdateRequired = true
@@ -173,7 +165,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         isValid = allValid
     }
 
-    private class LoadingTex(val sys: VkSystem, val tex: Texture, val deferredTex: Deferred<TextureData>) {
+    private class LoadingTex(val sys: VkSystem, val tex: Texture, val deferredTex: Deferred<ImageData>) {
         var isCompleted = false
 
         init {
@@ -198,9 +190,9 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
     companion object {
         private val loadingTextures = mutableListOf<LoadingTex>()
-        private val loadedTextures = mutableMapOf<TextureData, LoadedTextureVk>()
+        private val loadedTextures = mutableMapOf<ImageData, LoadedTextureVk>()
 
-        private fun getLoadedTex(tex: Texture, texData: TextureData, sys: VkSystem): LoadedTextureVk {
+        private fun getLoadedTex(tex: Texture, texData: ImageData, sys: VkSystem): LoadedTextureVk {
             return synchronized(loadedTextures) {
                 loadedTextures.values.removeIf { it.isDestroyed }
                 loadedTextures.computeIfAbsent(texData) { k ->

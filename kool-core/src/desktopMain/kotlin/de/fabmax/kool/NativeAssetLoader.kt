@@ -1,7 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClipImpl
-import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.platform.imageAtlasTextureData
@@ -26,24 +26,24 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
         return LoadedAsset.Blob(ref, result)
     }
 
-    override suspend fun loadImage(ref: AssetRef.Image): LoadedAsset.Image {
-        val refCopy = AssetRef.ImageBuffer(ref.path, ref.props)
-        return LoadedAsset.Image(ref, loadImageBuffer(refCopy).result)
+    override suspend fun loadImage2d(ref: AssetRef.Image2d): LoadedAsset.Image2d {
+        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.props)
+        return LoadedAsset.Image2d(ref, loadBufferedImage2d(refCopy).result)
     }
 
-    override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.Image {
-        val refCopy = AssetRef.ImageBuffer(ref.path, ref.props)
-        val result = loadImageBuffer(refCopy).result.mapCatching {
+    override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.ImageAtlas {
+        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.props)
+        val result = loadBufferedImage2d(refCopy).result.mapCatching {
             imageAtlasTextureData(it, ref.tilesX, ref.tilesY)
         }
-        return LoadedAsset.Image(ref, result)
+        return LoadedAsset.ImageAtlas(ref, result)
     }
 
-    override suspend fun loadImageBuffer(ref: AssetRef.ImageBuffer): LoadedAsset.ImageBuffer {
-        val data: Result<TextureData2d> = withContext(Dispatchers.IO) {
+    override suspend fun loadBufferedImage2d(ref: AssetRef.BufferedImage2d): LoadedAsset.BufferedImage2d {
+        val data: Result<BufferedImageData2d> = withContext(Dispatchers.IO) {
             loadTexture(ref, ref.props)
         }
-        return LoadedAsset.ImageBuffer(ref, data)
+        return LoadedAsset.BufferedImage2d(ref, data)
     }
 
     override suspend fun loadAudio(ref: AssetRef.Audio): LoadedAsset.Audio {
@@ -53,7 +53,7 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
         })
     }
 
-    private fun loadTexture(assetRef: AssetRef, props: TextureProps?): Result<TextureData2d> {
+    private fun loadTexture(assetRef: AssetRef, props: TextureProps?): Result<BufferedImageData2d> {
         return try {
             openStream(assetRef).use {
                 Result.success(PlatformAssetsImpl.readImageData(it, MimeType.forFileName(assetRef.path), props))

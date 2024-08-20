@@ -139,7 +139,7 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
 
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
             when (texture.loader) {
-                is AsyncTextureLoader -> {
+                is DeferredTextureLoader -> {
                     texture.loadingState = Texture.LoadingState.LOADING
                     CoroutineScope(Dispatchers.RenderLoop).launch {
                         val texData = texture.loader.loadTextureDataAsync().await()
@@ -147,12 +147,7 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
                         texture.loadingState = Texture.LoadingState.LOADED
                     }
                 }
-                is SyncTextureLoader -> {
-                    val data = texture.loader.loadTextureDataSync()
-                    texture.gpuTexture = getLoadedTex(data, texture, backend)
-                    texture.loadingState = Texture.LoadingState.LOADED
-                }
-                is BufferedTextureLoader -> {
+                is ImageTextureLoader -> {
                     texture.gpuTexture = getLoadedTex(texture.loader.data, texture, backend)
                     texture.loadingState = Texture.LoadingState.LOADED
                 }
@@ -163,7 +158,7 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
             }
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
-            val tex = texture.gpuTexture as LoadedTextureGl
+            val tex = checkNotNull(texture.gpuTexture) { "texture ${texture.name} is marked loaded but gpuTexture is null" } as LoadedTextureGl
             gl.activeTexture(gl.TEXTURE0 + texUnit)
             tex.bind()
             tex.applySamplerSettings(null)
@@ -183,24 +178,15 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
     }
 
     companion object {
-        private val loadedTextures = mutableMapOf<TextureData, LoadedTextureGl>()
+        private val loadedTextures = mutableMapOf<ImageData, LoadedTextureGl>()
 
         init {
             KoolSystem.onDestroyContext += { loadedTextures.clear() }
         }
 
-        internal fun getLoadedTex(texData: TextureData, texture: Texture, backend: RenderBackendGl): LoadedTextureGl {
+        internal fun getLoadedTex(imgData: ImageData, texture: Texture, backend: RenderBackendGl): LoadedTextureGl {
             loadedTextures.values.removeAll { it.isReleased }
-            return loadedTextures.getOrPut(texData) {
-                val loaded = when (texture) {
-                    is Texture1d -> TextureLoaderGl.loadTexture1dCompat(texture, texData, backend)
-                    is Texture2d -> TextureLoaderGl.loadTexture2d(texture, texData, backend)
-                    is Texture3d -> TextureLoaderGl.loadTexture3d(texture, texData, backend)
-                    is TextureCube -> TextureLoaderGl.loadTextureCube(texture, texData as TextureDataCube, backend)
-                    else -> throw IllegalArgumentException("Unsupported texture type")
-                }
-                loaded
-            }
+            return loadedTextures.getOrPut(imgData) { TextureLoaderGl.loadTexture(texture, imgData, backend) }
         }
     }
 }

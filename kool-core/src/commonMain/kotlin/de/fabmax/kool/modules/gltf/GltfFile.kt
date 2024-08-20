@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
-import de.fabmax.kool.loadBlobAsset
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.BlendMode
@@ -31,7 +30,7 @@ suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoad
             m.buffers.filter { it.uri != null }.forEach {
                 val uri = it.uri!!
                 val bufferUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
-                it.data = assetLoader.loadBlobAsset(bufferUri).getOrThrow()
+                it.data = assetLoader.loadBlob(bufferUri).getOrThrow()
             }
             m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
             m.updateReferences()

@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
-import de.fabmax.kool.loadBlobAsset
 import de.fabmax.kool.scene.Model
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -10,7 +9,7 @@ import kotlinx.coroutines.async
 suspend fun AssetLoader.loadGltfFile(assetPath: String): Result<GltfFile> = loadGltfFileAsync(assetPath).await()
 
 fun AssetLoader.loadGltfFileAsync(assetPath: String): Deferred<Result<GltfFile>> = Assets.async {
-    loadBlobAsset(assetPath).mapCatching { GltfFile(it, assetPath, this@loadGltfFileAsync).getOrThrow() }
+    loadBlob(assetPath).mapCatching { GltfFile(it, assetPath, this@loadGltfFileAsync).getOrThrow() }
 }
 
 suspend fun AssetLoader.loadGltfModel(

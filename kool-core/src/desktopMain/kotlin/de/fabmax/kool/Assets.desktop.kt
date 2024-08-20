@@ -5,8 +5,7 @@ import com.github.weisj.jsvg.parser.SVGLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderDesktop
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
-import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.HttpCache
@@ -48,7 +47,7 @@ object PlatformAssetsImpl : PlatformAssets {
         // on JVM all fonts should be immediately available -> nothing to wait for
     }
 
-    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): BufferedImageData2d {
         return fontGenerator.createFontMapData(font, fontScale, outMetrics)
     }
 
@@ -149,13 +148,13 @@ object PlatformAssetsImpl : PlatformAssets {
         }
     }
 
-    override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
+    override suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): BufferedImageData2d {
         return withContext(Dispatchers.IO) {
             readImageData(ByteArrayInputStream(texData.toArray()), mimeType, props)
         }
     }
 
-    fun readImageData(inStream: InputStream, mimeType: String, props: TextureProps?): TextureData2d {
+    fun readImageData(inStream: InputStream, mimeType: String, props: TextureProps?): BufferedImageData2d {
         return inStream.use {
             when (mimeType) {
                 MimeType.IMAGE_SVG -> renderSvg(inStream, props)
@@ -164,7 +163,7 @@ object PlatformAssetsImpl : PlatformAssets {
         }
     }
 
-    private fun renderSvg(inStream: InputStream, props: TextureProps?): TextureData2d {
+    private fun renderSvg(inStream: InputStream, props: TextureProps?): BufferedImageData2d {
         val svgDoc = SVGLoader().load(inStream, null, LoaderContext.createDefault()) ?: error("Failed loading SVG image")
         val size = svgDoc.size()
         val scaleX = if (props?.resolveSize != null) props.resolveSize.x / size.width else 1f

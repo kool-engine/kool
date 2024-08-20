@@ -1,8 +1,9 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.Assets
+import de.fabmax.kool.loadBlob
+import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.runBlocking
 import java.awt.Color
@@ -41,7 +42,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
     internal fun loadCustomFonts(customTtfFonts: Map<String, String>) {
         customTtfFonts.forEach { (family, path) ->
             runBlocking {
-                Assets.loadBlobAsset(path).onSuccess { blob ->
+                Assets.loadBlob(path).onSuccess { blob ->
                     ByteArrayInputStream(blob.toArray()).use {
                         val ttfFont = AwtFont.createFont(AwtFont.TRUETYPE_FONT, it)
                         customFonts[family] = ttfFont
@@ -52,7 +53,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         }
     }
 
-    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): BufferedImageData2d {
         val g = canvas.graphics as Graphics2D
         g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
 
@@ -103,7 +104,7 @@ internal class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         logD { "Generated font map for (${font}, scale=${fontScale})" }
         //ImageIO.write(canvas, "png", File("${g.font.family}-${g.font.size}.png"))
 
-        return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
+        return BufferedImageData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
 
     private fun getCanvasAlphaData(width: Int, height: Int): Uint8Buffer {

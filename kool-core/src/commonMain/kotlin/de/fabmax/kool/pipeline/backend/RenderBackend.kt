@@ -36,9 +36,9 @@ interface RenderBackend {
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
     fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl
 
-    fun writeTextureData(tex: Texture, data: TextureData)
-    fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>)
-    fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>)
+    fun uploadTextureData(tex: Texture, data: ImageData)
+    fun downloadTextureData(texture: Texture, deferred: CompletableDeferred<ImageData>)
+    fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>)
 }
 
 class DeviceCoordinates(

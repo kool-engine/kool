@@ -16,17 +16,17 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.physics.setPosition
-import de.fabmax.kool.pipeline.BufferedTextureLoader
+import de.fabmax.kool.pipeline.BufferedImageData2d
+import de.fabmax.kool.pipeline.ImageTextureLoader
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import kotlin.math.roundToInt
 
 class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
 
-    val splatMapData: TextureData2d = generateSplatMap(2)
-    val splatMap = Texture2d(name = "terrain-splat", loader = BufferedTextureLoader(splatMapData)).also { it.releaseWith(demo.mainScene) }
+    val splatMapData: BufferedImageData2d = generateSplatMap(2)
+    val splatMap = Texture2d(name = "terrain-splat", loader = ImageTextureLoader(splatMapData)).also { it.releaseWith(demo.mainScene) }
     val terrainBody: RigidStatic
 
     val terrainTransform = MutableMat4f()
@@ -62,7 +62,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
         return heightMap.getHeightLinear(pos.x, pos.z)
     }
 
-    private fun generateSplatMap(sampleStep: Int): TextureData2d {
+    private fun generateSplatMap(sampleStep: Int): BufferedImageData2d {
         val width = heightMap.columns / sampleStep
         val height = heightMap.rows / sampleStep
         val data = Uint8Buffer(width * height * 4)
@@ -106,7 +106,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
                 data.put((a * wSum * 255f).toInt().toByte())
             }
         }
-        return TextureData2d(data, width, height, TexFormat.RGBA)
+        return BufferedImageData2d(data, width, height, TexFormat.RGBA)
     }
 
     /**

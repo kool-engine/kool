@@ -204,21 +204,13 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuComputePass(parentPass, this)
     }
 
-    override fun writeTextureData(tex: Texture, data: TextureData) {
-        when (tex) {
-            is Texture1d -> textureLoader.loadTexture1d(tex, data)
-            is Texture2d -> textureLoader.loadTexture2d(tex, data)
-            is Texture3d -> textureLoader.loadTexture3d(tex, data)
-            is TextureCube -> textureLoader.loadTextureCube(tex, data)
-            else -> error("Unsupported texture type: $tex")
-        }
-    }
+    override fun uploadTextureData(tex: Texture, data: ImageData) = textureLoader.loadTexture(tex, data)
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         gpuReadbacks += ReadbackStorageBuffer(storage, deferred)
     }
 
-    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+    override fun downloadTextureData(texture: Texture, deferred: CompletableDeferred<ImageData>) {
         gpuReadbacks += ReadbackTexture(texture, deferred)
     }
 
@@ -285,14 +277,14 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             mapBuffer.mapAsync(GPUMapMode.READ).then {
                 val gpuTex = readback.texture.gpuTexture as WgpuLoadedTexture
                 val format = readback.texture.props.format
-                val dst = TextureData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
+                val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
                 dst.copyFrom(mapBuffer.getMappedRange())
                 mapBuffer.unmap()
                 mapBuffer.destroy()
                 when (readback.texture) {
-                    is Texture1d -> readback.deferred.complete(TextureData1d(dst, gpuTex.width, format))
-                    is Texture2d -> readback.deferred.complete(TextureData2d(dst, gpuTex.width, gpuTex.height, format))
-                    is Texture3d -> readback.deferred.complete(TextureData3d(dst, gpuTex.width, gpuTex.height, gpuTex.depth, format))
+                    is Texture1d -> readback.deferred.complete(BufferedImageData1d(dst, gpuTex.width, format))
+                    is Texture2d -> readback.deferred.complete(BufferedImageData2d(dst, gpuTex.width, gpuTex.height, format))
+                    is Texture3d -> readback.deferred.complete(BufferedImageData3d(dst, gpuTex.width, gpuTex.height, gpuTex.depth, format))
                     else -> readback.deferred.completeExceptionally(IllegalArgumentException("Unsupported texture type"))
                 }
             }
@@ -326,7 +318,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         var mapBuffer: GPUBuffer? = null
     }
 
-    private class ReadbackTexture(val texture: Texture, val deferred: CompletableDeferred<TextureData>) : GpuReadback {
+    private class ReadbackTexture(val texture: Texture, val deferred: CompletableDeferred<ImageData>) : GpuReadback {
         var mapBuffer: GPUBuffer? = null
     }
 

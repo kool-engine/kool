@@ -2,7 +2,6 @@ package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
-import de.fabmax.kool.loadBlobAsset
 import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
@@ -108,7 +107,7 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
 
         val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
         val prefixed = "${pathPrefix}${path}"
-        return assetLoader.loadBlobAsset(prefixed)
+        return assetLoader.loadBlob(prefixed)
             .map { Heightmap.fromRawData(it, ref.heightScale, ref.rows, ref.columns, ref.heightOffset) }
             .also { cache[ref] = it }
     }
@@ -118,7 +117,7 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
 
         val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
         val prefixed = "${pathPrefix}${path}"
-        return assetLoader.loadBlobAsset(prefixed)
+        return assetLoader.loadBlob(prefixed)
             .also { cache[ref] = it }
     }
 }

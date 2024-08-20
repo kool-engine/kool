@@ -22,12 +22,12 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
 
     companion object {
         fun fromSingleColor(color: Color): EnvironmentMap {
-            val bgColor = TextureData2d.singleColor(color.toLinear())
+            val bgColor = BufferedImageData2d.singleColor(color.toLinear())
             val props = TextureProps(
                 generateMipMaps = false,
                 defaultSamplerSettings = SamplerSettings().nearest()
             )
-            val cubeTex = TextureCube(props, "singleColorEnv-$color", BufferedTextureLoader(TextureDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)))
+            val cubeTex = TextureCube(props, "singleColorEnv-$color", ImageTextureLoader(ImageDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)))
             return EnvironmentMap(cubeTex, cubeTex)
         }
 

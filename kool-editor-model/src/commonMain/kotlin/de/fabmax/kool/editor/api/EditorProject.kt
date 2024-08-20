@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.loadBlob
 import de.fabmax.kool.math.MutableMat4d
 import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.deg
@@ -144,7 +145,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
     companion object {
         suspend fun loadFromAssets(path: String = "kool-project.json"): EditorProject? {
             return try {
-                Assets.loadBlobAsset(path).getOrNull()?.toArray()?.decodeToString()?.let { json ->
+                Assets.loadBlob(path).getOrNull()?.toArray()?.decodeToString()?.let { json ->
                     EditorProject(Json.decodeFromString(json))
                 }
             } catch (e: Exception) {

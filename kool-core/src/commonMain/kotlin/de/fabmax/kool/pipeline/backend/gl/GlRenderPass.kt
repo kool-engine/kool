@@ -195,7 +195,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         tex.setSize(width, height, layers)
         tex.bind()
         tex.applySamplerSettings(colorTexture.props.defaultSamplerSettings)
-        gl.texStorage2D(texTarget, mipLevels, intFormat, width, height)
+        gl.texStorage2d(texTarget, mipLevels, intFormat, width, height)
 
         val glColorTexture = tex.glTexture
         colorTexture.gpuTexture = tex
@@ -218,7 +218,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         tex.setSize(width, height, layers)
         tex.bind()
         tex.applySamplerSettings(depthTexture.props.defaultSamplerSettings)
-        gl.texStorage2D(texTarget, mipLevels, intFormat, width, height)
+        gl.texStorage2d(texTarget, mipLevels, intFormat, width, height)
 
         val glDepthTexture = tex.glTexture
         depthTexture.gpuTexture = tex

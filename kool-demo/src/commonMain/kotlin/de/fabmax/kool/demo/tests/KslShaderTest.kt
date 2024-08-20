@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
@@ -229,7 +230,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     addressModeV = AddressMode.CLAMP_TO_EDGE
                 )
             ),
-            loader = BufferedTextureLoader(TextureData2d(noiseTexData, w, h, TexFormat.RGBA))
+            loader = ImageTextureLoader(BufferedImageData2d(noiseTexData, w, h, TexFormat.RGBA))
         )
     }
 }

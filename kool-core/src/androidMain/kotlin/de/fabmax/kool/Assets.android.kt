@@ -8,9 +8,9 @@ import com.caverock.androidsvg.SVG
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderAndroid
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
+import de.fabmax.kool.pipeline.BufferedImageData2d
+import de.fabmax.kool.pipeline.ImageData2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.util.AtlasFont
@@ -34,13 +34,13 @@ object PlatformAssetsImpl : PlatformAssets {
         HttpCache.initCache(File(KoolSystem.configAndroid.appContext.cacheDir, "httpCache"))
     }
 
-    override suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData {
+    override suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): BufferedImageData2d {
         return withContext(Dispatchers.IO) {
             readImageData(ByteArrayInputStream(texData.toArray()), mimeType, props)
         }
     }
 
-    fun readImageData(inStream: InputStream, mimeType: String, props: TextureProps?): TextureData2d {
+    fun readImageData(inStream: InputStream, mimeType: String, props: TextureProps?): BufferedImageData2d {
         return inStream.use {
             when (mimeType) {
                 MimeType.IMAGE_SVG -> renderSvg(inStream, props)
@@ -49,13 +49,13 @@ object PlatformAssetsImpl : PlatformAssets {
                     if (props?.resolveSize != null) {
                         bmp = Bitmap.createScaledBitmap(bmp, props.resolveSize.x, props.resolveSize.y, true)
                     }
-                    bmp.toTextureData().also { bmp.recycle() }
+                    bmp.toImageData2d().also { bmp.recycle() }
                 }
             }
         }
     }
 
-    private fun renderSvg(inStream: InputStream, props: TextureProps?): TextureData2d {
+    private fun renderSvg(inStream: InputStream, props: TextureProps?): BufferedImageData2d {
         val svg = SVG.getFromInputStream(inStream)
         var width = props?.resolveSize?.x ?: ceil(svg.documentViewBox.width()).toInt()
         var height = props?.resolveSize?.y ?: ceil(svg.documentViewBox.height()).toInt()
@@ -69,10 +69,10 @@ object PlatformAssetsImpl : PlatformAssets {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         svg.renderToCanvas(canvas)
-        return bitmap.toTextureData().also { bitmap.recycle() }
+        return bitmap.toImageData2d().also { bitmap.recycle() }
     }
 
-    private fun Bitmap.toTextureData(): TextureData2d {
+    private fun Bitmap.toImageData2d(): BufferedImageData2d {
         val pixels = IntArray(width * height)
         getPixels(pixels, 0, width, 0, 0, width, height)
 
@@ -90,14 +90,14 @@ object PlatformAssetsImpl : PlatformAssets {
                 buffer.put(a.toByte())
             }
         }
-        return TextureData2d(buffer, width, height, TexFormat.RGBA)
+        return BufferedImageData2d(buffer, width, height, TexFormat.RGBA)
     }
 
     override suspend fun waitForFonts() {
         // on JVM all fonts should be immediately available -> nothing to wait for
     }
 
-    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+    override fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): BufferedImageData2d {
         error("AtlasFont is not supported on Android, use MsdfFont instead")
     }
 
@@ -111,6 +111,10 @@ object PlatformAssetsImpl : PlatformAssets {
 }
 
 actual suspend fun decodeDataUri(dataUri: String): Uint8Buffer {
+    return Uint8BufferImpl(dataUriToByteArray(dataUri))
+}
+
+internal fun dataUriToByteArray(dataUri: String): ByteArray {
     val dataIdx = dataUri.indexOf(";base64,") + 8
-    return Uint8BufferImpl(Base64.decode(dataUri.substring(dataIdx), Base64.DEFAULT))
+    return Base64.decode(dataUri.substring(dataIdx), Base64.DEFAULT)
 }

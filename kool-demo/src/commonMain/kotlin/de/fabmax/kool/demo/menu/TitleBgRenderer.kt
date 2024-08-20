@@ -189,7 +189,7 @@ class TitleBgRenderer(
                 val noiseProps = TextureProps(generateMipMaps = false)
                 Texture2d(
                     noiseProps,
-                    loader = BufferedTextureLoader(TextureData2d(data, width, height, TexFormat.RGBA)),
+                    loader = ImageTextureLoader(BufferedImageData2d(data, width, height, TexFormat.RGBA)),
                     name = "DemoMenu/TitleNoise"
                 )
             }

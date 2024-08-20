@@ -2,7 +2,8 @@ package de.fabmax.kool.modules.filesystem
 
 import de.fabmax.kool.*
 import de.fabmax.kool.modules.audio.AudioClipImpl
-import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.pipeline.BufferedImageData2d
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.ImageTextureData
@@ -12,30 +13,30 @@ import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 
 class FileSystemAssetLoaderJs(baseDir: FileSystemDirectory) : FileSystemAssetLoader(baseDir) {
-    override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.Image {
+    override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.ImageAtlas {
         val resize = ref.props?.resolveSize
         val result = loadData(ref.path).mapCatching { texData ->
             val bytes = (texData as Uint8BufferImpl).buffer
             val imgBlob = Blob(arrayOf(bytes))
             val bmp = createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
-            ImageAtlasTextureData(bmp, ref.tilesX, ref.tilesY, ref.props?.format)
+            ImageAtlasTextureData(bmp, ref.tilesX, ref.tilesY, ref.props?.format ?: TexFormat.RGBA)
         }
-        return LoadedAsset.Image(ref, result)
+        return LoadedAsset.ImageAtlas(ref, result)
     }
 
-    override suspend fun loadImageBuffer(ref: AssetRef.ImageBuffer): LoadedAsset.ImageBuffer {
+    override suspend fun loadBufferedImage2d(ref: AssetRef.BufferedImage2d): LoadedAsset.BufferedImage2d {
         val imageBuffer = loadData(ref.path).mapCatching { data ->
             val mime = MimeType.forFileName(ref.path)
             val props = ref.props ?: TextureProps()
-            val texData = PlatformAssetsImpl.loadTextureDataFromBuffer(data, mime, props)
-            TextureData2d(
+            val texData = PlatformAssetsImpl.loadImageFromBuffer(data, mime, props)
+            BufferedImageData2d(
                 ImageTextureData.imageBitmapToBuffer(texData.data, props),
                 texData.width,
                 texData.height,
                 props.format
             )
         }
-        return LoadedAsset.ImageBuffer(ref, imageBuffer)
+        return LoadedAsset.BufferedImage2d(ref, imageBuffer)
     }
 
     override suspend fun loadAudio(ref: AssetRef.Audio): LoadedAsset.Audio {

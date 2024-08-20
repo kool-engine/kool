@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.*
+import de.fabmax.kool.loadBlob
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.toDeg
@@ -106,7 +107,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         mainScene.tryEnableInfiniteDepth()
 
         showLoadText("Loading height map...")
-        val heightData = loadBlobAsset("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
+        val heightData = loadBlob("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
         val heightMap = Heightmap.fromRawData(heightData, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)

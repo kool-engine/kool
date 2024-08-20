@@ -10,13 +10,9 @@ import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.ImageBitmap
 
-class ImageTextureData(override val data: ImageBitmap, fmt: TexFormat?) : TextureData() {
-    init {
-        width = data.width
-        height = data.height
-        depth = 1
-        fmt?.let { format = it }
-    }
+class ImageTextureData(val data: ImageBitmap, override val format: TexFormat = TexFormat.RGBA) : ImageData2d {
+    override val width: Int get() = data.width
+    override val height: Int get() = data.height
 
     companion object {
         fun imageBitmapToBuffer(image: ImageBitmap, texProps: TextureProps): Buffer {

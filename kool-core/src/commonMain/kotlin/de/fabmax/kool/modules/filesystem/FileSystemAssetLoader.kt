@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.toTexture
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logW
@@ -15,9 +16,9 @@ abstract class FileSystemAssetLoader(val baseDir: FileSystemDirectory) : AssetLo
         return LoadedAsset.Blob(ref, blob)
     }
 
-    override suspend fun loadImage(ref: AssetRef.Image): LoadedAsset.Image {
-        val refCopy = AssetRef.ImageBuffer(ref.path, ref.props)
-        return LoadedAsset.Image(ref, loadImageBuffer(refCopy).result)
+    override suspend fun loadImage2d(ref: AssetRef.Image2d): LoadedAsset.Image2d {
+        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.props)
+        return LoadedAsset.Image2d(ref, loadBufferedImage2d(refCopy).result)
     }
 
     protected suspend fun loadData(path: String): Result<Uint8Buffer> {
@@ -39,8 +40,7 @@ suspend fun FileSystemFile.loadTexture2d(props: TextureProps = TextureProps()): 
         if (mimeType == MimeType.BINARY_DATA) {
             logW { "file $name seems to be no image type" }
         }
-        val texData = Assets.loadTextureDataFromBuffer(read(), mimeType, props)
-        Result.success(Assets.loadTexture2d(texData, props, name))
+        Result.success(Assets.loadImageFromBuffer(read(), mimeType, props).toTexture(props, name))
     } catch (t: Throwable) {
         Result.failure(t)
     }

@@ -4,8 +4,8 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.smoothStep
+import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureData2d
 import de.fabmax.kool.util.*
 import kotlinx.browser.document
 import org.khronos.webgl.get
@@ -50,7 +50,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
         }
     }
 
-    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): BufferedImageData2d {
         val fontSize = (font.sizePts * fontScale).roundToInt()
 
         // clear canvas
@@ -82,7 +82,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
             buffer.put(alphaLut[a])
         }
         logD { "Generated font map for (${font}, scale=${fontScale})" }
-        return TextureData2d(buffer, maxWidth, texHeight, TexFormat.R)
+        return BufferedImageData2d(buffer, maxWidth, texHeight, TexFormat.R)
     }
 
     private fun makeMap(font: AtlasFont, size: Int, outMetrics: MutableMap<Char, CharMetrics>): Int {

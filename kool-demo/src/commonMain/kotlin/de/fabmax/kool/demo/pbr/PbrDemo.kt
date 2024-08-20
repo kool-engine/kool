@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
+import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute

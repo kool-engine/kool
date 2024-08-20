@@ -133,18 +133,14 @@ sealed class WgpuPipeline(
         checkIsNotReleased()
         if (loadingState == Texture.LoadingState.NOT_LOADED) {
             when (loader) {
-                is AsyncTextureLoader -> {
+                is DeferredTextureLoader -> {
                     loadingState = Texture.LoadingState.LOADING
                     CoroutineScope(Dispatchers.RenderLoop).launch {
                         val texData = loader.loadTextureDataAsync().await()
                         backend.textureLoader.loadTexture(this@checkLoadingState, texData)
                     }
                 }
-                is SyncTextureLoader -> {
-                    val texData = loader.loadTextureDataSync()
-                    backend.textureLoader.loadTexture(this, texData)
-                }
-                is BufferedTextureLoader -> {
+                is ImageTextureLoader -> {
                     backend.textureLoader.loadTexture(this, loader.data)
                 }
                 else -> {

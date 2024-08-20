@@ -7,10 +7,10 @@ import kotlinx.coroutines.async
 
 sealed class TextureLoader
 
-class AsyncTextureLoader(val loader: (suspend CoroutineScope.() -> TextureData)) : TextureLoader() {
-    private var deferred: Deferred<TextureData>? = null
+class DeferredTextureLoader(val loader: (suspend CoroutineScope.() -> ImageData)) : TextureLoader() {
+    private var deferred: Deferred<ImageData>? = null
 
-    fun loadTextureDataAsync(): Deferred<TextureData> {
+    fun loadTextureDataAsync(): Deferred<ImageData> {
         val def = deferred ?: Assets.async { loader() }
         if (deferred == null) {
             deferred = def
@@ -23,10 +23,4 @@ class AsyncTextureLoader(val loader: (suspend CoroutineScope.() -> TextureData))
     }
 }
 
-class SyncTextureLoader(val loader: () -> TextureData) : TextureLoader() {
-    fun loadTextureDataSync(): TextureData {
-        return loader()
-    }
-}
-
-class BufferedTextureLoader(var data: TextureData) : TextureLoader()
+class ImageTextureLoader(var data: ImageData) : TextureLoader()

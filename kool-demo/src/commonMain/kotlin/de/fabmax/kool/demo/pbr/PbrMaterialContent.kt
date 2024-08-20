@@ -3,6 +3,7 @@ package de.fabmax.kool.demo.pbr
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
+import de.fabmax.kool.loadTexture2dAsync
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslPbrShader

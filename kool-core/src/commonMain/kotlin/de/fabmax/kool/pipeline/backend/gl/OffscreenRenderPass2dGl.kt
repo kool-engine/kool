@@ -178,7 +178,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         tex.setSize(width, height, 1)
         tex.bind()
         tex.applySamplerSettings(props.defaultSamplerSettings)
-        gl.texStorage2D(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
+        gl.texStorage2d(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
         gpuTexture = tex
         loadingState = Texture.LoadingState.LOADED
     }

@@ -1,7 +1,10 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.pipeline.TextureData
+import de.fabmax.kool.pipeline.BufferedImageData
+import de.fabmax.kool.pipeline.ImageData1d
+import de.fabmax.kool.pipeline.ImageData2d
+import de.fabmax.kool.pipeline.ImageData3d
 import de.fabmax.kool.util.*
 import kotlin.jvm.JvmInline
 
@@ -252,12 +255,12 @@ interface GlApi {
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
     fun scissor(x: Int, y: Int, width: Int, height: Int)
     fun shaderSource(shader: GlShader, source: String)
-    fun texImage1d(target: Int, data: TextureData)
-    fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?)
-    fun texImage2d(target: Int, data: TextureData)
-    fun texImage3d(target: Int, data: TextureData)
+    fun texImage1d(data: ImageData1d)
+    fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?)
+    fun texImage2d(target: Int, data: ImageData2d)
+    fun texImage3d(target: Int, data: ImageData3d)
     fun texParameteri(target: Int, pName: Int, param: Int)
-    fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
+    fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
     fun uniformBlockBinding(program: GlProgram, uniformBlockIndex: Int, uniformBlockBinding: Int)
     fun useProgram(program: GlProgram)
     fun uniform1f(location: Int, x: Float)
@@ -285,7 +288,7 @@ interface GlApi {
     fun viewport(x: Int, y: Int, width: Int, height: Int)
 
     fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean
-    fun readTexturePixels(src: LoadedTextureGl, dst: TextureData): Boolean
+    fun readTexturePixels(src: LoadedTextureGl, dst: BufferedImageData): Boolean
 
     fun checkNoError() = check(getError() == 0)
 }

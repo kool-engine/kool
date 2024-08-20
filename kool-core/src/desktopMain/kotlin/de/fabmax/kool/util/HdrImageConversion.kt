@@ -1,8 +1,8 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureData2d
 import org.lwjgl.stb.STBImage.stbi_failure_reason
 import org.lwjgl.stb.STBImage.stbi_loadf_from_memory
 import java.awt.image.BufferedImage
@@ -16,12 +16,12 @@ import kotlin.math.pow
 
 object HdrImageConversion {
 
-    fun loadHdrImage(hdrImage: File): TextureData2d {
+    fun loadHdrImage(hdrImage: File): BufferedImageData2d {
         val imageData = Uint8BufferImpl(hdrImage.readBytes())
         return loadHdrImage(imageData)
     }
 
-    fun loadHdrImage(imageData: Uint8Buffer): TextureData2d {
+    fun loadHdrImage(imageData: Uint8Buffer): BufferedImageData2d {
         return memStack {
             val w: IntBuffer = mallocInt(1)
             val h: IntBuffer = mallocInt(1)
@@ -30,7 +30,7 @@ object HdrImageConversion {
 
             val image: FloatBuffer? = imageData.useRaw { raw -> stbi_loadf_from_memory(raw, w, h, ch, desiredCh) }
             checkNotNull(image) { "Failed to load image: ${stbi_failure_reason()}" }
-            TextureData2d(Float32BufferImpl(image), w[0], h[0], TexFormat.RGBA_F16)
+            BufferedImageData2d(Float32BufferImpl(image), w[0], h[0], TexFormat.RGBA_F16)
         }
     }
 
@@ -38,7 +38,7 @@ object HdrImageConversion {
         return convertHdrImageToRgbe(loadHdrImage(hdrImage))
     }
 
-    fun convertHdrImageToRgbe(hdrImage: TextureData2d): BufferedImage {
+    fun convertHdrImageToRgbe(hdrImage: BufferedImageData2d): BufferedImage {
         val hdrData = (hdrImage.data as? Float32BufferImpl) ?: error("Supplied HDR image data needs to be in float format")
 
         val c = hdrImage.format.channels

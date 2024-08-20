@@ -4,7 +4,10 @@ import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkBytesPerPx
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.memStack
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 import java.nio.ByteBuffer
@@ -36,8 +39,8 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTextureCube(sys: VkSystem, props: TextureProps, cubeImg: TextureData) : LoadedTextureVk {
-        if (cubeImg !is TextureDataCube) {
+    fun loadTextureCube(sys: VkSystem, props: TextureProps, cubeImg: ImageData) : LoadedTextureVk {
+        if (cubeImg !is ImageDataCube) {
             throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
         }
 
@@ -100,15 +103,13 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTexture1d(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
+    fun loadTexture1d(sys: VkSystem, props: TextureProps, img: ImageData) : LoadedTextureVk {
         // 1d texture internally uses a 2d texture
-        if (img.height != 1) {
-            throw IllegalArgumentException("Supplied texture data is not 1-dimensional")
-        }
         return loadTexture2d(sys, props, img)
     }
 
-    fun loadTexture2d(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
+    fun loadTexture2d(sys: VkSystem, props: TextureProps, img: ImageData) : LoadedTextureVk {
+        img as ImageData2d
         val width = img.width
         val height = img.height
         val dstFmt = checkFormat(img.format)
@@ -136,8 +137,8 @@ object TextureLoader {
         return tex
     }
 
-    fun loadTexture3d(sys: VkSystem, props: TextureProps, img: TextureData) : LoadedTextureVk {
-        if (img !is TextureData3d) {
+    fun loadTexture3d(sys: VkSystem, props: TextureProps, img: ImageData) : LoadedTextureVk {
+        if (img !is BufferedImageData3d) {
             throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
         }
 
@@ -232,70 +233,70 @@ object TextureLoader {
         return format
     }
 
-    private fun reshape(dstFormat: TexFormat, img: TextureData): ByteBuffer {
-        return when (val imgData = img.data) {
-            is Uint8BufferImpl -> reshapeUint8(dstFormat, img, imgData)
-            is Float32BufferImpl -> reshapeFloat32(dstFormat, img, imgData)
-            else -> TODO("Other texture data buffers than Uint8 and Float32 are not yet implemented, provided: ${img.data::class}, dstFormat: $dstFormat")
-        }
+    @Suppress("UNUSED_PARAMETER")
+    private fun reshape(dstFormat: TexFormat, img: ImageData): ByteBuffer {
+        TODO()
+//        return when (val imgData = img.data) {
+//            is Uint8BufferImpl -> reshapeUint8(dstFormat, img, imgData)
+//            is Float32BufferImpl -> reshapeFloat32(dstFormat, img, imgData)
+//            else -> TODO("Other texture data buffers than Uint8 and Float32 are not yet implemented, provided: ${img.data::class}, dstFormat: $dstFormat")
+//        }
     }
 
-    @Suppress("DEPRECATION")
-    private fun reshapeUint8(dstFormat: TexFormat, img: TextureData, imgData: Uint8BufferImpl): ByteBuffer {
-        if (img.format != dstFormat) {
-            if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
-                val reshaped = Uint8Buffer(img.width * img.height * img.depth * 4)
-                for (i in 0 until img.width * img.height * img.depth) {
-                    reshaped[i*4+0] = imgData[i*3+0]
-                    reshaped[i*4+1] = imgData[i*3+1]
-                    reshaped[i*4+2] = imgData[i*3+2]
-                    reshaped[i*4+3] = 255u
-                }
-                return (reshaped as Uint8BufferImpl).getRawBuffer()
-            } else {
-                throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
-            }
-        }
-        return imgData.getRawBuffer()
-    }
-
-    @Suppress("DEPRECATION")
-    private fun reshapeFloat32(dstFormat: TexFormat, img: TextureData, imgData: Float32BufferImpl): ByteBuffer {
-        if (img.format == dstFormat) {
-            val reshaped = Uint8Buffer(img.width * img.height * img.depth * img.format.vkBytesPerPx)
-            if (dstFormat.isF32) {
-                for (i in 0 until img.width * img.height * img.depth * img.format.channels) {
-                    reshaped.putF32(i, imgData[i])
-                }
-            } else {
-                for (i in 0 until img.width * img.height * img.depth * img.format.channels) {
-                    reshaped.putF16(i, imgData[i])
-                }
-            }
-            return (reshaped as Uint8BufferImpl).getRawBuffer()
-
-        } else if (img.format == TexFormat.RGB_F16 && dstFormat == TexFormat.RGBA_F16) {
-            val reshaped = Uint8Buffer(img.width * img.height * img.depth * 8)
-            for (i in 0 until img.width * img.height * img.depth) {
-                reshaped.putF16(i*4+0, imgData[i*3+0])
-                reshaped.putF16(i*4+1, imgData[i*3+1])
-                reshaped.putF16(i*4+2, imgData[i*3+2])
-                reshaped.putF16(i*4+3, 1f)
-            }
-            return (reshaped as Uint8BufferImpl).getRawBuffer()
-
-        } else if (img.format == TexFormat.RGB_F32 && dstFormat == TexFormat.RGBA_F32) {
-            val reshaped = Uint8Buffer(img.width * img.height * img.depth * 16)
-            for (i in 0 until img.width * img.height * img.depth) {
-                reshaped.putF32(i*4+0, imgData[i*3+0])
-                reshaped.putF32(i*4+1, imgData[i*3+1])
-                reshaped.putF32(i*4+2, imgData[i*3+2])
-                reshaped.putF32(i*4+3, 1f)
-            }
-            return (reshaped as Uint8BufferImpl).getRawBuffer()
-        }
-        throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
-    }
+//    private fun reshapeUint8(dstFormat: TexFormat, img: ImageData, imgData: Uint8BufferImpl): ByteBuffer {
+//        if (img.format != dstFormat) {
+//            if (img.format == TexFormat.RGB && dstFormat == TexFormat.RGBA) {
+//                val reshaped = Uint8Buffer(img.width * img.height * img.depth * 4)
+//                for (i in 0 until img.width * img.height * img.depth) {
+//                    reshaped[i*4+0] = imgData[i*3+0]
+//                    reshaped[i*4+1] = imgData[i*3+1]
+//                    reshaped[i*4+2] = imgData[i*3+2]
+//                    reshaped[i*4+3] = 255u
+//                }
+//                return (reshaped as Uint8BufferImpl).getRawBuffer()
+//            } else {
+//                throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
+//            }
+//        }
+//        return imgData.getRawBuffer()
+//    }
+//
+//    private fun reshapeFloat32(dstFormat: TexFormat, img: ImageData, imgData: Float32BufferImpl): ByteBuffer {
+//        if (img.format == dstFormat) {
+//            val reshaped = Uint8Buffer(img.width * img.height * img.depth * img.format.vkBytesPerPx)
+//            if (dstFormat.isF32) {
+//                for (i in 0 until img.width * img.height * img.depth * img.format.channels) {
+//                    reshaped.putF32(i, imgData[i])
+//                }
+//            } else {
+//                for (i in 0 until img.width * img.height * img.depth * img.format.channels) {
+//                    reshaped.putF16(i, imgData[i])
+//                }
+//            }
+//            return (reshaped as Uint8BufferImpl).getRawBuffer()
+//
+//        } else if (img.format == TexFormat.RGB_F16 && dstFormat == TexFormat.RGBA_F16) {
+//            val reshaped = Uint8Buffer(img.width * img.height * img.depth * 8)
+//            for (i in 0 until img.width * img.height * img.depth) {
+//                reshaped.putF16(i*4+0, imgData[i*3+0])
+//                reshaped.putF16(i*4+1, imgData[i*3+1])
+//                reshaped.putF16(i*4+2, imgData[i*3+2])
+//                reshaped.putF16(i*4+3, 1f)
+//            }
+//            return (reshaped as Uint8BufferImpl).getRawBuffer()
+//
+//        } else if (img.format == TexFormat.RGB_F32 && dstFormat == TexFormat.RGBA_F32) {
+//            val reshaped = Uint8Buffer(img.width * img.height * img.depth * 16)
+//            for (i in 0 until img.width * img.height * img.depth) {
+//                reshaped.putF32(i*4+0, imgData[i*3+0])
+//                reshaped.putF32(i*4+1, imgData[i*3+1])
+//                reshaped.putF32(i*4+2, imgData[i*3+2])
+//                reshaped.putF32(i*4+3, 1f)
+//            }
+//            return (reshaped as Uint8BufferImpl).getRawBuffer()
+//        }
+//        throw IllegalArgumentException("${img.format} -> $dstFormat not implemented")
+//    }
 
     private fun Uint8Buffer.putF32(index: Int, f32: Float) {
         val f32bits = f32.toBits()

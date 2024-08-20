@@ -19,11 +19,11 @@ import java.nio.IntBuffer
 import kotlin.math.roundToInt
 
 object ImageDecoder {
-    fun loadImage(inputStream: InputStream, props: TextureProps?): TextureData2d {
+    fun loadImage(inputStream: InputStream, props: TextureProps?): BufferedImageData2d {
         return loadImageStb(inputStream, props)
     }
 
-    private fun loadImageStb(inputStream: InputStream, props: TextureProps?): TextureData2d {
+    private fun loadImageStb(inputStream: InputStream, props: TextureProps?): BufferedImageData2d {
         val imageData = inputStream.readAllBytes().toBuffer()
 
         return memStack {
@@ -75,7 +75,7 @@ object ImageDecoder {
                 }
                 else -> error("unreachable")
             }
-            TextureData2d(managedBuffer, outW, outH, props?.format ?: TexFormat.RGBA)
+            BufferedImageData2d(managedBuffer, outW, outH, props?.format ?: TexFormat.RGBA)
         }
     }
 
@@ -111,13 +111,13 @@ object ImageDecoder {
         )
     }
 
-    fun loadBufferedImage(image: BufferedImage, props: TextureProps?): TextureData2d {
+    fun loadBufferedImage(image: BufferedImage, props: TextureProps?): BufferedImageData2d {
         val img = if (props?.resolveSize != null && props.resolveSize != Vec2i(image.width, image.height)) {
             resizeImage(image, props.resolveSize)
         } else {
             image
         }
-        return TextureData2d(img.toBuffer(props?.format), img.width, img.height, props?.format ?: img.preferredFormat)
+        return BufferedImageData2d(img.toBuffer(props?.format), img.width, img.height, props?.format ?: img.preferredFormat)
     }
 
     private fun resizeImage(img: BufferedImage, size: Vec2i): BufferedImage {

@@ -70,15 +70,8 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun writeTextureData(tex: Texture, data: TextureData) {
-        tex.gpuTexture = when (tex) {
-            is Texture1d -> TextureLoaderGl.loadTexture1dCompat(tex, data, this)
-            is Texture2d -> TextureLoaderGl.loadTexture2d(tex, data, this)
-            is Texture3d -> TextureLoaderGl.loadTexture3d(tex, data, this)
-            is TextureCube -> TextureLoaderGl.loadTextureCube(tex, data, this)
-            else -> throw IllegalArgumentException("Unsupported texture type: $tex")
-        }
-        tex.loadingState = Texture.LoadingState.LOADED
+    override fun uploadTextureData(tex: Texture, data: ImageData) {
+        TextureLoaderGl.loadTexture(tex, data, this)
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
@@ -145,7 +138,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenRenderPassCubeGl).draw()
     protected fun ComputePassImpl.dispatch() = (this as ComputeRenderPassGl).dispatch()
 
-    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+    override fun downloadTextureData(texture: Texture, deferred: CompletableDeferred<ImageData>) {
         val glTex = texture.gpuTexture as LoadedTextureGl?
         if (glTex == null) {
             deferred.completeExceptionally(IllegalStateException("Texture not yet uploaded to GPU"))
@@ -153,11 +146,11 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
 
         val format = texture.props.format
-        val buffer = TextureData.createBuffer(format, glTex.width, glTex.height, glTex.depth)
+        val buffer = ImageData.createBuffer(format, glTex.width, glTex.height, glTex.depth)
         val targetData = when (texture) {
-            is Texture1d -> TextureData1d(buffer, glTex.width, format)
-            is Texture2d -> TextureData2d(buffer, glTex.width, glTex.height, format)
-            is Texture3d -> TextureData3d(buffer, glTex.width, glTex.height, glTex.depth, format)
+            is Texture1d -> BufferedImageData1d(buffer, glTex.width, format)
+            is Texture2d -> BufferedImageData2d(buffer, glTex.width, glTex.height, format)
+            is Texture3d -> BufferedImageData3d(buffer, glTex.width, glTex.height, glTex.depth, format)
             else -> {
                 deferred.completeExceptionally(IllegalStateException("Unsupported texture type: ${texture::class.simpleName} (texture: ${texture.name})"))
                 return
@@ -171,7 +164,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         awaitedStorageBuffers += storage to deferred
     }
 

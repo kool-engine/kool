@@ -1,23 +1,29 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.pipeline.ImageData3d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureData
 import kotlinx.browser.document
 import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.ImageBitmap
 import org.w3c.dom.ImageData
 
-class ImageAtlasTextureData(image: ImageBitmap, tilesX: Int, tilesY: Int, fmt: TexFormat?) : TextureData() {
-    override val data: Array<ImageData>
+class ImageAtlasTextureData(
+    image: ImageBitmap,
+    tilesX: Int,
+    tilesY: Int,
+    override val format: TexFormat = TexFormat.RGBA
+) : ImageData3d {
+
+    val data: Array<ImageData>
+
+    override val width = image.width / tilesX
+    override val height = image.height / tilesY
+    override val depth = tilesX * tilesY
 
     init {
-        width = image.width / tilesX
-        height = image.height / tilesY
         val w = width.toDouble()
         val h = height.toDouble()
-        depth = tilesX * tilesY
-        fmt?.let { format = it }
 
         val canvas = document.createElement("canvas") as HTMLCanvasElement
         canvas.width = width

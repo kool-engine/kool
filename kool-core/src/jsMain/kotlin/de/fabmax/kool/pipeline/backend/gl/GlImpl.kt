@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.TextureData1d
-import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.pipeline.TextureData3d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.*
@@ -296,12 +293,12 @@ object GlImpl : GlApi {
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorageMultisample(target, samples, internalformat, width, height)
     override fun scissor(x: Int, y: Int, width: Int, height: Int) = gl.scissor(x, y, width, height)
     override fun shaderSource(shader: GlShader, source: String) = gl.shaderSource(shader.webGl, source)
-    override fun texImage1d(target: Int, data: TextureData) = notSupported("texImage1d")
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
-    override fun texImage2d(target: Int, data: TextureData) = texImage2dImpl(target, data)
-    override fun texImage3d(target: Int, data: TextureData) = textImage3dImpl(target, data)
+    override fun texImage1d(data: ImageData1d) = texImage2dImpl(TEXTURE_2D, data)
+    override fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
+    override fun texImage2d(target: Int, data: ImageData2d) = texImage2dImpl(target, data)
+    override fun texImage3d(target: Int, data: ImageData3d) = textImage3dImpl(target, data)
     override fun texParameteri(target: Int, pName: Int, param: Int) = gl.texParameteri(target, pName, param)
-    override fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = gl.texStorage2D(target, levels, internalformat, width, height)
+    override fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = gl.texStorage2D(target, levels, internalformat, width, height)
     override fun uniformBlockBinding(program: GlProgram, uniformBlockIndex: Int, uniformBlockBinding: Int) = gl.uniformBlockBinding(program.webGl, uniformBlockIndex, uniformBlockBinding)
     override fun useProgram(program: GlProgram) = programs[program.handle].let { gl.useProgram(it?.webGl); activeProgram = it }
     override fun uniform1f(location: Int, x: Float) = gl.uniform1f(location.webGlUniformLoc, x)
@@ -378,7 +375,7 @@ object GlImpl : GlApi {
 
     override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean = false
 
-    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData): Boolean {
+    override fun readTexturePixels(src: LoadedTextureGl, dst: BufferedImageData): Boolean {
         if (src.target != TEXTURE_2D) {
             return false
         }
@@ -455,44 +452,40 @@ object GlImpl : GlApi {
         }
     }
 
-    private fun texImage2dImpl(target: Int, data: TextureData) {
+    private fun texImage2dImpl(target: Int, image: ImageData) {
         gl.pixelStorei(WebGLRenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL, WebGLRenderingContext.NONE)
-        when (data) {
-            is TextureData1d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat(this), data.width, 1, 0, data.format.glFormat(this), data.format.glType(this), data.arrayBufferView)
+        when (image) {
+            is BufferedImageData1d -> {
+                gl.texImage2D(target, 0, image.format.glInternalFormat(this), image.width, 1, 0, image.format.glFormat(this), image.format.glType(this), image.arrayBufferView)
             }
-            is TextureData2d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat(this), data.width, data.height, 0, data.format.glFormat(this), data.format.glType(this), data.arrayBufferView)
+            is BufferedImageData2d -> {
+                gl.texImage2D(target, 0, image.format.glInternalFormat(this), image.width, image.height, 0, image.format.glFormat(this), image.format.glType(this), image.arrayBufferView)
             }
             is ImageTextureData -> {
-                gl.texImage2D(target, 0, WebGLRenderingContext.RGBA, WebGLRenderingContext.RGBA, WebGLRenderingContext.UNSIGNED_BYTE, data.data)
+                gl.texImage2D(target, 0, WebGLRenderingContext.RGBA, WebGLRenderingContext.RGBA, WebGLRenderingContext.UNSIGNED_BYTE, image.data)
             }
-            else -> throw IllegalArgumentException("Invalid TextureData type for texImage2d: $data")
+            else -> error("Invalid ImageData type for texImage2d: $image")
         }
     }
 
-    private fun textImage3dImpl(target: Int, img: TextureData) {
-        when (img) {
-            is TextureData3d -> {
-                gl.texImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), img.arrayBufferView)
+    private fun textImage3dImpl(target: Int, image: ImageData) {
+        when (image) {
+            is BufferedImageData3d -> {
+                gl.texImage3D(target, 0, image.format.glInternalFormat(this), image.width, image.height, image.depth, 0, image.format.glFormat(this), image.format.glType(this), image.arrayBufferView)
             }
             is ImageAtlasTextureData -> {
-                gl.texStorage3D(target, 1, img.format.glInternalFormat(this), img.width, img.height, img.depth)
-                for (z in 0 until img.depth) {
-                    gl.texSubImage3D(target, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat(this), img.format.glType(this), img.data[z])
+                gl.texStorage3D(target, 1, image.format.glInternalFormat(this), image.width, image.height, image.depth)
+                for (z in 0 until image.depth) {
+                    gl.texSubImage3D(target, 0, 0, 0, z, image.width, image.height, 1, image.format.glFormat(this), image.format.glType(this), image.data[z])
                 }
             }
-            else -> {
-                throw IllegalStateException("TextureData buffer must be either TextureData3d or ImageAtlasTextureData")
-            }
+            else -> error("ImageData must be either BufferedImageData3d or ImageAtlasTextureData")
         }
     }
 
-    private fun notSupported(funcName: String): Nothing {
-        throw IllegalStateException("$funcName is not supported in WebGL")
-    }
+    private fun notSupported(funcName: String): Nothing = error("$funcName is not supported in WebGL")
 
-    private val TextureData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {
+    private val BufferedImageData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {
         is Uint8BufferImpl -> bufData.buffer
         is Uint16BufferImpl -> bufData.buffer
         is Float32BufferImpl -> bufData.buffer

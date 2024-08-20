@@ -1,9 +1,7 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.Assets
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.pipeline.AsyncTextureLoader
+import de.fabmax.kool.*
+import de.fabmax.kool.pipeline.DeferredTextureLoader
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
@@ -150,8 +148,8 @@ class MsdfFont(
             val msdfMap = Texture2d(
                 props = MSDF_TEX_PROPS,
                 name = "MsdfFont:${fontInfo.fontMeta.name}",
-                loader = AsyncTextureLoader {
-                    Assets.loadTextureData("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
+                loader = DeferredTextureLoader {
+                    Assets.loadImage2d("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
                         .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
                 }
             )
@@ -165,7 +163,7 @@ class MsdfFont(
 suspend fun MsdfFont(fontPath: String): Result<MsdfFont> = MsdfFont("${fontPath}.json", "${fontPath}.png")
 
 suspend fun MsdfFont(metaPath: String, texturePath: String): Result<MsdfFont> {
-    return Assets.loadBlobAsset(metaPath).mapCatching {
+    return Assets.loadBlob(metaPath).mapCatching {
         val json = it.decodeToString()
         val meta = Json.Default.decodeFromString<MsdfMeta>(json)
         MsdfFont(MsdfFontInfo(meta, texturePath)).getOrThrow()

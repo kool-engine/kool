@@ -242,14 +242,14 @@ class GPUImageCopyTexture(
 
 class GPUImageCopyTextureTagged(
     @JsName("texture")
-    val texture: GPUTexture
-    /*
-mipLevel: GPUIntegerCoordinate = 0
-origin: GPUOrigin3D = {}
-aspect: GPUTextureAspect = 'all'
-colorSpace: PredefinedColorSpace = 'srgb'
-premultipliedAlpha: boolean = 'false'
-     */
+    val texture: GPUTexture,
+    @JsName("mipLevel")
+    val mipLevel: Int = 0,
+    @JsName("origin")
+    val origin: IntArray = intArrayOf(0, 0, 0),
+    //aspect: GPUTextureAspect = 'all'
+    //colorSpace: PredefinedColorSpace = 'srgb'
+    //premultipliedAlpha: boolean = 'false'
 )
 
 class GPUImageDataLayout(

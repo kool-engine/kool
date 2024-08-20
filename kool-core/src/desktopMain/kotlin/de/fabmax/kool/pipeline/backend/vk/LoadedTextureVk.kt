@@ -57,12 +57,12 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
     companion object {
         private val nextTexId = AtomicLong(1L)
 
-        fun fromTexData(sys: VkSystem, texProps: TextureProps, data: TextureData): LoadedTextureVk {
+        fun fromTexData(sys: VkSystem, texProps: TextureProps, data: ImageData): LoadedTextureVk {
             return when(data) {
-                is TextureData1d -> TextureLoader.loadTexture1d(sys, texProps, data)
-                is TextureData2d -> TextureLoader.loadTexture2d(sys, texProps, data)
-                is TextureData3d -> TextureLoader.loadTexture3d(sys, texProps, data)
-                is TextureDataCube -> TextureLoader.loadTextureCube(sys, texProps, data)
+                is BufferedImageData1d -> TextureLoader.loadTexture1d(sys, texProps, data)
+                is BufferedImageData2d -> TextureLoader.loadTexture2d(sys, texProps, data)
+                is BufferedImageData3d -> TextureLoader.loadTexture3d(sys, texProps, data)
+                is ImageDataCube -> TextureLoader.loadTextureCube(sys, texProps, data)
                 else -> TODO("texture data not implemented: ${data::class.java.name}")
             }
         }
