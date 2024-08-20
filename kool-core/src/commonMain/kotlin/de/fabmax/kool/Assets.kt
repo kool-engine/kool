@@ -3,7 +3,10 @@ package de.fabmax.kool
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.AtlasFont
+import de.fabmax.kool.util.CharMetrics
+import de.fabmax.kool.util.FontMap
+import de.fabmax.kool.util.Uint8Buffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
@@ -57,20 +60,15 @@ object Assets : CoroutineScope {
         val texData = createAtlasFontMapData(font, fontScale, metrics)
 
         if (map == null) {
-            val tex = BufferedTexture2d(texData, font.fontMapProps, font.toString())
+            val tex = Texture2d(texData, font.fontMapProps, font.toString())
             map = FontMap(font, tex, metrics)
             font.scale = fontScale
             font.map = map
 
         } else {
-            val tex = map.texture as? BufferedTexture2d
-            if (tex != null) {
-                tex.updateTextureData(texData)
-                font.scale = fontScale
-                map.putAll(metrics)
-            } else {
-                logE { "Unable to update texture data of font $font" }
-            }
+            map.texture.uploadLazy(texData)
+            font.scale = fontScale
+            map.putAll(metrics)
         }
         return map
     }

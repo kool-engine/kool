@@ -1,19 +1,31 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.max
 
 object TextureLoaderGl {
+    // fixme: don't use ImageData as map key, because this prevents ImageData's being garbage collected, which
+    //  can have a significant memory impact if many large textures are used
+    private val loadedTextures = mutableMapOf<ImageData, LoadedTextureGl>()
 
-    fun loadTexture(tex: Texture, data: ImageData, backend: RenderBackendGl): LoadedTextureGl {
-        val loaded = when {
-            tex is Texture1d && data is ImageData1d -> loadTexture1dCompat(tex, data, backend)
-            tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data, backend)
-            tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data, backend)
-            tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data, backend)
-            else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
+    init {
+        KoolSystem.onDestroyContext += { loadedTextures.clear() }
+    }
+
+    fun <T: ImageData> loadTexture(tex: Texture<T>, data: T, backend: RenderBackendGl): LoadedTextureGl {
+        var loaded = loadedTextures[data]
+        if (loaded != null && loaded.isReleased) { loadedTextures -= data }
+        loaded = loadedTextures.getOrPut(data) {
+            when {
+                tex is Texture1d && data is ImageData1d -> loadTexture1dCompat(tex, data, backend)
+                tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data, backend)
+                tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data, backend)
+                tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data, backend)
+                else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
+            }
         }
         tex.gpuTexture = loaded
         tex.loadingState = Texture.LoadingState.LOADED

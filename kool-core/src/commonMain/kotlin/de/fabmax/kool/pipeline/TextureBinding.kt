@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline
 
 import kotlin.reflect.KProperty
 
-sealed class TextureBinding<T: Texture?>(
+sealed class TextureBinding<T: Texture<*>?>(
     textureName: String,
     defaultTexture: T,
     defaultSampler: SamplerSettings?,

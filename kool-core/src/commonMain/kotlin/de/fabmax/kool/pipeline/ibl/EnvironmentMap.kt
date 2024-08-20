@@ -27,7 +27,8 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
                 generateMipMaps = false,
                 defaultSamplerSettings = SamplerSettings().nearest()
             )
-            val cubeTex = TextureCube(props, "singleColorEnv-$color", ImageTextureLoader(ImageDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)))
+            val cubeData = ImageDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
+            val cubeTex = TextureCube(cubeData, props, "singleColorEnv-$color")
             return EnvironmentMap(cubeTex, cubeTex)
         }
 

@@ -1,7 +1,6 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.*
-import de.fabmax.kool.pipeline.DeferredTextureLoader
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
@@ -145,14 +144,10 @@ class MsdfFont(
 
         val DEFAULT_FONT_DATA: MsdfFontData by lazy {
             val fontInfo = KoolSystem.config.defaultFont
-            val msdfMap = Texture2d(
-                props = MSDF_TEX_PROPS,
-                name = "MsdfFont:${fontInfo.fontMeta.name}",
-                loader = DeferredTextureLoader {
-                    Assets.loadImage2d("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
-                        .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
-                }
-            )
+            val msdfMap = Texture2d(MSDF_TEX_PROPS, "MsdfFont:${fontInfo.fontMeta.name}") {
+                Assets.loadImage2d("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
+                    .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
+            }
             KoolSystem.onDestroyContext += { msdfMap.dispose() }
             MsdfFontData(msdfMap, fontInfo.fontMeta)
         }

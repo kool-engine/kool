@@ -75,9 +75,7 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
 
     override suspend fun loadHdri(ref: AssetReference.Hdri): Result<EnvironmentMap> {
         cache[ref]?.let { return it.mapCatching { r -> r as EnvironmentMap } }
-
-        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-        val prefixed = "${pathPrefix}${path}"
+        val prefixed = "${pathPrefix}${ref.path}"
         return assetLoader.loadTexture2d(prefixed)
             .map { EnvironmentMap.fromHdriTexture(it) }
             .also { cache[ref] = it }
@@ -85,18 +83,14 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
 
     override suspend fun loadModel(ref: AssetReference.Model): Result<GltfFile> {
         cache[ref]?.let { return it.mapCatching { r -> r as GltfFile } }
-
-        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-        val prefixed = "${pathPrefix}${path}"
+        val prefixed = "${pathPrefix}${ref.path}"
         return assetLoader.loadGltfFile(prefixed)
             .also { cache[ref] = it }
     }
 
     override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> {
         cache[ref]?.let { return it.mapCatching { r -> r as Texture2d } }
-
-        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-        val prefixed = "${pathPrefix}${path}"
+        val prefixed = "${pathPrefix}${ref.path}"
         val props = TextureProps(ref.texFormat)
         return assetLoader.loadTexture2d(prefixed, props)
             .also { cache[ref] = it }
@@ -104,9 +98,7 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
 
     override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> {
         cache[ref]?.let { return it.mapCatching { r -> r as Heightmap } }
-
-        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-        val prefixed = "${pathPrefix}${path}"
+        val prefixed = "${pathPrefix}${ref.path}"
         return assetLoader.loadBlob(prefixed)
             .map { Heightmap.fromRawData(it, ref.heightScale, ref.rows, ref.columns, ref.heightOffset) }
             .also { cache[ref] = it }
@@ -114,9 +106,7 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
 
     override suspend fun loadBlob(ref: AssetReference.Blob): Result<Uint8Buffer> {
         cache[ref]?.let { return it.mapCatching { r -> r as Uint8Buffer } }
-
-        val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-        val prefixed = "${pathPrefix}${path}"
+        val prefixed = "${pathPrefix}${ref.path}"
         return assetLoader.loadBlob(prefixed)
             .also { cache[ref] = it }
     }

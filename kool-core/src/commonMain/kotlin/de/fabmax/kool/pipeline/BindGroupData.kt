@@ -85,7 +85,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         }
     }
 
-    abstract inner class TextureBindingData<T: Texture> {
+    abstract inner class TextureBindingData<T: Texture<*>> {
         val isComplete get() = texture?.loadingState == Texture.LoadingState.LOADED
 
         var texture: T? = null

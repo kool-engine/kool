@@ -204,13 +204,13 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuComputePass(parentPass, this)
     }
 
-    override fun uploadTextureData(tex: Texture, data: ImageData) = textureLoader.loadTexture(tex, data)
+    override fun <T: ImageData> uploadTextureData(tex: Texture<T>, data: T) = textureLoader.loadTexture(tex, data)
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         gpuReadbacks += ReadbackStorageBuffer(storage, deferred)
     }
 
-    override fun downloadTextureData(texture: Texture, deferred: CompletableDeferred<ImageData>) {
+    override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
         gpuReadbacks += ReadbackTexture(texture, deferred)
     }
 
@@ -308,7 +308,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuBufferResource(device.createBuffer(descriptor), descriptor.size, info)
     }
 
-    fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture): WgpuTextureResource {
+    fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture<*>): WgpuTextureResource {
         return WgpuTextureResource(device.createTexture(descriptor), texture)
     }
 
@@ -318,7 +318,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         var mapBuffer: GPUBuffer? = null
     }
 
-    private class ReadbackTexture(val texture: Texture, val deferred: CompletableDeferred<ImageData>) : GpuReadback {
+    private class ReadbackTexture(val texture: Texture<*>, val deferred: CompletableDeferred<ImageData>) : GpuReadback {
         var mapBuffer: GPUBuffer? = null
     }
 

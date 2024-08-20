@@ -52,8 +52,8 @@ class RigidActorComponent(
 
         data.shapes
             .filterIsInstance<ShapeData.Heightmap>()
-            .filter { it.mapPath != null }
-            .forEach { requiredAssets += it.toAssetRef() }
+            .mapNotNull { it.toAssetRef() }
+            .forEach { requiredAssets += it }
     }
 
     override fun onDataChanged(oldData: RigidActorComponentData, newData: RigidActorComponentData) {
@@ -196,10 +196,7 @@ class RigidActorComponent(
     }
 
     private suspend fun loadHeightmapGeometry(shapeData: ShapeData.Heightmap): CollisionGeometry? {
-        if (shapeData.mapPath == null) {
-            return null
-        }
-        val heightmapRef = shapeData.toAssetRef()
+        val heightmapRef = shapeData.toAssetRef() ?: return null
         requiredAssets += heightmapRef
         val heightmap = AppAssets.loadHeightmapOrNull(heightmapRef) ?: return null
         val heightField = HeightField(heightmap, shapeData.rowScale.toFloat(), shapeData.colScale.toFloat())

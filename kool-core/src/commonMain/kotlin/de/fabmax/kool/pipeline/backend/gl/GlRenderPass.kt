@@ -90,8 +90,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
             if (cmd.isActive) {
                 val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
-                val isValid = cmd.geometry.numIndices > 0  &&  drawInfo.isValid && drawInfo.numIndices > 0
-
+                val isValid = cmd.geometry.numIndices > 0 && drawInfo.isValid && drawInfo.numIndices > 0
                 if (isValid) {
                     GlState.setupPipelineAttribs(cmd.pipeline, view.renderPass.isReverseDepth, gl)
 
@@ -183,7 +182,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         width: Int,
         height: Int,
         mipLevels: Int,
-        colorTexture: Texture,
+        colorTexture: Texture<*>,
         texTarget: Int
     ): GlTexture {
         val format = colorTexture.props.format
@@ -207,7 +206,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         width: Int,
         height: Int,
         mipLevels: Int,
-        depthTexture: Texture,
+        depthTexture: Texture<*>,
         texTarget: Int
     ): GlTexture {
         val intFormat = gl.DEPTH_COMPONENT32F

@@ -1,11 +1,10 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.Int32Buffer
+import de.fabmax.kool.util.MixedBuffer
+import de.fabmax.kool.util.logE
 
 interface MappedUniform {
     fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean
@@ -131,30 +130,15 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
 sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : MappedUniform {
     protected val gl = backend.gl
 
-    private fun checkLoadingState(texture: Texture, texUnit: Int): Boolean {
+    private fun <T: ImageData> checkLoadingState(texture: Texture<T>, texUnit: Int): Boolean {
         if (texture.isReleased) {
             logE { "Texture is already released: ${texture.name}" }
             return false
         }
-
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
-            when (texture.loader) {
-                is DeferredTextureLoader -> {
-                    texture.loadingState = Texture.LoadingState.LOADING
-                    CoroutineScope(Dispatchers.RenderLoop).launch {
-                        val texData = texture.loader.loadTextureDataAsync().await()
-                        texture.gpuTexture = getLoadedTex(texData, texture, backend)
-                        texture.loadingState = Texture.LoadingState.LOADED
-                    }
-                }
-                is ImageTextureLoader -> {
-                    texture.gpuTexture = getLoadedTex(texture.loader.data, texture, backend)
-                    texture.loadingState = Texture.LoadingState.LOADED
-                }
-                else -> {
-                    // loader is null
-                    texture.loadingState = Texture.LoadingState.LOADING_FAILED
-                }
+            texture.uploadData?.let {
+                texture.uploadData = null
+                TextureLoaderGl.loadTexture(texture, it, backend)
             }
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
@@ -164,30 +148,16 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
             tex.applySamplerSettings(null)
             return true
         }
-
         return false
     }
 
-    protected fun setTexture(texture: Texture?, bindingIndex: Int, bindCtx: CompiledShader.UniformBindContext): Boolean {
+    protected fun setTexture(texture: Texture<*>?, bindingIndex: Int, bindCtx: CompiledShader.UniformBindContext): Boolean {
         val texUnit = bindCtx.nextTexUnit++
         if (texture != null && checkLoadingState(texture, texUnit)) {
             gl.uniform1i(bindCtx.locations(bindingIndex)[0], texUnit)
             return true
         }
         return false
-    }
-
-    companion object {
-        private val loadedTextures = mutableMapOf<ImageData, LoadedTextureGl>()
-
-        init {
-            KoolSystem.onDestroyContext += { loadedTextures.clear() }
-        }
-
-        internal fun getLoadedTex(imgData: ImageData, texture: Texture, backend: RenderBackendGl): LoadedTextureGl {
-            loadedTextures.values.removeAll { it.isReleased }
-            return loadedTextures.getOrPut(imgData) { TextureLoaderGl.loadTexture(texture, imgData, backend) }
-        }
     }
 }
 

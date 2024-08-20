@@ -171,16 +171,19 @@ enum class ThumbnailState(val isUsable: Boolean) {
 }
 
 fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumbnail = renderThumbnail {
-    val texMesh = TextureMesh().apply {
+    val texMesh = TextureMesh(name = "thumb:$texPath").apply {
         val assets = KoolEditor.instance.cachedAppAssets
         val ref = AssetReference.Texture(texPath)
         var tex = assets.getTextureIfLoaded(ref)
+        var ar = 1f
         if (tex == null) {
-            tex = assets.assetLoader.loadTexture2d(texPath).getOrThrow()
-            tex.releaseWith(this)
+            tex = assets.assetLoader.loadTexture2d(texPath).getOrNull()?.also {
+                it.releaseWith(this)
+                ar = it.width.toFloat() / it.height
+            }
         }
 
-        generateThumbnailRoundRect(tex.width.toFloat() / tex.height)
+        generateThumbnailRoundRect(ar)
 
         shader = KslShader("tex2d-thumbnail-shader") {
             val uv = interStageFloat2()
@@ -201,7 +204,7 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
                     }.`else` {
                         bg set (MdColor.GREY tone 350).const
                     }
-                    val color = sampleTexture(texture2d("thumb"), uv.output)
+                    val color = float4Var(sampleTexture(texture2d("thumb"), uv.output))
                     bg.rgb set mix(bg.rgb, color.rgb, color.a)
                     colorOutput(bg)
                 }

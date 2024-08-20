@@ -170,7 +170,7 @@ class SceneNodes(val scene: EditorScene) :
             val shape = meshKey.shapes.filterIsInstance<ShapeData.Heightmap>().first()
             name = "Heightmap:${shape.mapPath}[${(meshKey.hashCode()).toHexString()}]"
 
-            val heightmap: Heightmap? = if (shape.mapPath == null) null else AppAssets.loadHeightmapOrNull(shape.toAssetRef())
+            val heightmap: Heightmap? = shape.toAssetRef()?.let { AppAssets.loadHeightmapOrNull(it) }
             val rows = heightmap?.rows ?: DEFAULT_HEIGHTMAP_ROWS
             val cols = heightmap?.columns ?: DEFAULT_HEIGHTMAP_COLS
             val szX = (cols - 1) * shape.colScale.toFloat()
@@ -314,8 +314,7 @@ class SceneNodes(val scene: EditorScene) :
             }
 
             val modelShape = meshKey.shapes.filterIsInstance<ShapeData.Model>().first()
-            val modelRef = modelShape.toAssetRef()
-            requireNotNull(modelRef.path)
+            val modelRef = requireNotNull(modelShape.toAssetRef())
 
             val gltf = AppAssets.requireModel(modelRef)
             val shaderData = scene.shaderData

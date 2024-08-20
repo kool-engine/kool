@@ -4,11 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.RenderLoop
 import de.fabmax.kool.util.checkIsNotReleased
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 sealed class WgpuPipeline(
     private val pipeline: PipelineBase,
@@ -129,24 +125,12 @@ sealed class WgpuPipeline(
         return isComplete
     }
 
-    private fun Texture.checkLoadingState(backend: RenderBackendWebGpu): Boolean {
+    private fun <T: ImageData> Texture<T>.checkLoadingState(backend: RenderBackendWebGpu): Boolean {
         checkIsNotReleased()
         if (loadingState == Texture.LoadingState.NOT_LOADED) {
-            when (loader) {
-                is DeferredTextureLoader -> {
-                    loadingState = Texture.LoadingState.LOADING
-                    CoroutineScope(Dispatchers.RenderLoop).launch {
-                        val texData = loader.loadTextureDataAsync().await()
-                        backend.textureLoader.loadTexture(this@checkLoadingState, texData)
-                    }
-                }
-                is ImageTextureLoader -> {
-                    backend.textureLoader.loadTexture(this, loader.data)
-                }
-                else -> {
-                    // loader is null
-                    loadingState = Texture.LoadingState.LOADING_FAILED
-                }
+            uploadData?.let {
+                uploadData = null
+                backend.textureLoader.loadTexture(this, it)
             }
         }
         return loadingState == Texture.LoadingState.LOADED

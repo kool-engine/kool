@@ -119,7 +119,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
     companion object {
         const val REFLECTION_MIP_LEVELS = 6
 
-        fun reflectionMap(scene: Scene, envTex: Texture, size: Int = 256): ReflectionMapPass {
+        fun reflectionMap(scene: Scene, envTex: Texture<*>, size: Int = 256): ReflectionMapPass {
             return when (envTex) {
                 is Texture2d -> ReflectionMapPass(scene, envTex, null, size)
                 is TextureCube -> ReflectionMapPass(scene, null, envTex, size)

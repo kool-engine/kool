@@ -17,7 +17,6 @@ import de.fabmax.kool.physics.geometry.HeightField
 import de.fabmax.kool.physics.geometry.HeightFieldGeometry
 import de.fabmax.kool.physics.setPosition
 import de.fabmax.kool.pipeline.BufferedImageData2d
-import de.fabmax.kool.pipeline.ImageTextureLoader
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.*
@@ -26,7 +25,7 @@ import kotlin.math.roundToInt
 class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
 
     val splatMapData: BufferedImageData2d = generateSplatMap(2)
-    val splatMap = Texture2d(name = "terrain-splat", loader = ImageTextureLoader(splatMapData)).also { it.releaseWith(demo.mainScene) }
+    val splatMap = Texture2d(splatMapData, name = "terrain-splat").also { it.releaseWith(demo.mainScene) }
     val terrainBody: RigidStatic
 
     val terrainTransform = MutableMat4f()

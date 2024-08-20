@@ -221,6 +221,7 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
         return Texture2d(
+            BufferedImageData2d(noiseTexData, w, h, TexFormat.RGBA),
             TextureProps(
                 generateMipMaps = false,
                 defaultSamplerSettings = SamplerSettings(
@@ -229,8 +230,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     addressModeU = AddressMode.CLAMP_TO_EDGE,
                     addressModeV = AddressMode.CLAMP_TO_EDGE
                 )
-            ),
-            loader = ImageTextureLoader(BufferedImageData2d(noiseTexData, w, h, TexFormat.RGBA))
+            )
         )
     }
 }

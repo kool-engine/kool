@@ -1,27 +1,25 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import kotlin.math.roundToInt
 
 /**
  * Describes a texture by its properties and a loader function which is called once the texture is used.
  */
-abstract class Texture(
+abstract class Texture<T: ImageData>(
     val props: TextureProps,
     val name: String,
-    val loader: TextureLoader? = null
 ): BaseReleasable() {
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
      * called.
      */
     var gpuTexture: GpuTexture? = null
+    internal var uploadData: T? = null
 
     var loadingState = LoadingState.NOT_LOADED
 
@@ -67,10 +65,18 @@ abstract class Texture(
         LOADING_FAILED
     }
 
-    suspend fun upload(texData: ImageData) {
+    suspend fun upload(imageData: T) {
         withContext(Dispatchers.RenderLoop) {
-            KoolSystem.requireContext().backend.uploadTextureData(this@Texture, texData)
+            KoolSystem.requireContext().backend.uploadTextureData(this@Texture, imageData)
         }
+    }
+
+    fun uploadLazy(imageData: T) {
+        uploadData = imageData
+    }
+
+    fun uploadLazy(provider: suspend CoroutineScope.() -> T) = Assets.launch {
+        uploadData = provider()
     }
 
     companion object {
@@ -86,15 +92,15 @@ abstract class Texture(
     }
 }
 
+
 open class Texture1d(
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture1d"),
-    loader: TextureLoader?
-) : Texture(props, name, loader) {
-    suspend inline fun readbackTextureData(): BufferedImageData1d {
+    name: String = UniqueId.nextId("Texture1d")
+) : Texture<ImageData1d>(props, name) {
+
+    suspend fun download(): BufferedImageData1d {
         val deferred = CompletableDeferred<ImageData>()
         KoolSystem.requireContext().backend.downloadTextureData(this, deferred)
-
         val buffer = deferred.await()
         check(buffer is BufferedImageData1d)
         return buffer
@@ -102,26 +108,26 @@ open class Texture1d(
 }
 
 fun Texture1d(
+    data: ImageData1d,
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture1d"),
-    loader: (suspend CoroutineScope.() -> BufferedImageData1d)? = null
-): Texture1d = Texture1d(props, name, loader?.let { DeferredTextureLoader(it) })
+    name: String = UniqueId.nextId("Texture2d")
+): Texture1d = Texture1d(props, name).apply { uploadLazy(data) }
 
 fun Texture1d(
     props: TextureProps = TextureProps(),
-    data: BufferedImageData1d,
-    name: String = UniqueId.nextId("Texture2d")
-): Texture1d = Texture1d(props, name, ImageTextureLoader(data))
+    name: String = UniqueId.nextId("Texture1d"),
+    loader: (suspend CoroutineScope.() -> ImageData1d)
+): Texture1d = Texture1d(props, name).apply { uploadLazy(loader) }
+
 
 open class Texture2d(
     props: TextureProps = TextureProps(),
     name: String = UniqueId.nextId("Texture2d"),
-    loader: TextureLoader?
-) : Texture(props, name, loader) {
-    suspend inline fun readbackTextureData(): BufferedImageData2d {
+) : Texture<ImageData2d>(props, name) {
+
+    suspend fun download(): BufferedImageData2d {
         val deferred = CompletableDeferred<ImageData>()
         KoolSystem.requireContext().backend.downloadTextureData(this, deferred)
-
         val buffer = deferred.await()
         check(buffer is BufferedImageData2d)
         return buffer
@@ -129,26 +135,26 @@ open class Texture2d(
 }
 
 fun Texture2d(
+    data: ImageData2d,
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture2d"),
-    loader: (suspend CoroutineScope.() -> ImageData)? = null
-): Texture2d = Texture2d(props, name, loader?.let { DeferredTextureLoader(it) })
+    name: String = UniqueId.nextId("Texture2d")
+): Texture2d = Texture2d(props, name).apply { uploadLazy(data) }
 
 fun Texture2d(
     props: TextureProps = TextureProps(),
-    data: BufferedImageData2d,
-    name: String = UniqueId.nextId("Texture2d")
-): Texture2d = Texture2d(props, name, ImageTextureLoader(data))
+    name: String = UniqueId.nextId("Texture2d"),
+    loader: (suspend CoroutineScope.() -> ImageData2d)
+): Texture2d = Texture2d(props, name).apply { uploadLazy(loader) }
+
 
 open class Texture3d(
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture3d"),
-    loader: TextureLoader?
-) : Texture(props, name, loader) {
-    suspend inline fun readbackTextureData(): BufferedImageData3d {
+    name: String = UniqueId.nextId("Texture3d")
+) : Texture<ImageData3d>(props, name) {
+
+    suspend fun download(): BufferedImageData3d {
         val deferred = CompletableDeferred<ImageData>()
         KoolSystem.requireContext().backend.downloadTextureData(this, deferred)
-
         val buffer = deferred.await()
         check(buffer is BufferedImageData3d)
         return buffer
@@ -156,53 +162,44 @@ open class Texture3d(
 }
 
 fun Texture3d(
+    data: ImageData3d,
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture3d"),
-    loader: (suspend CoroutineScope.() -> ImageData)? = null
-): Texture3d = Texture3d(props, name, loader?.let { DeferredTextureLoader(it) })
+    name: String = UniqueId.nextId("Texture3d")
+): Texture3d = Texture3d(props, name).apply { uploadLazy(data) }
 
 fun Texture3d(
     props: TextureProps = TextureProps(),
-    data: BufferedImageData3d,
-    name: String = UniqueId.nextId("Texture3d")
-): Texture3d = Texture3d(props, name, ImageTextureLoader(data))
+    name: String = UniqueId.nextId("Texture3d"),
+    loader: (suspend CoroutineScope.() -> ImageData3d)
+): Texture3d = Texture3d(props, name).apply { uploadLazy(loader) }
+
 
 open class TextureCube(
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("TextureCube"),
-    loader: TextureLoader?
-) : Texture(props, name, loader)
+    name: String = UniqueId.nextId("TextureCube")
+) : Texture<ImageDataCube>(props, name)
 
 fun TextureCube(
-    props: TextureProps = TextureProps(),
     data: ImageDataCube,
+    props: TextureProps = TextureProps(),
     name: String = UniqueId.nextId("Texture3d")
-): TextureCube = TextureCube(props, name, ImageTextureLoader(data))
+): TextureCube = TextureCube(props, name).apply { uploadLazy(data) }
 
 fun TextureCube(
     props: TextureProps = TextureProps(),
     name: String = UniqueId.nextId("TextureCube"),
-    loader: (suspend CoroutineScope.() -> ImageDataCube)? = null
-): TextureCube = TextureCube(props, name, loader?.let { DeferredTextureLoader(it) })
+    loader: (suspend CoroutineScope.() -> ImageDataCube)
+): TextureCube = TextureCube(props, name).apply { uploadLazy(loader) }
 
-class BufferedTexture2d(
-    data: ImageData,
-    props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("BufferedTexture2d")
-) : Texture2d(props, name, ImageTextureLoader(data)) {
-    fun updateTextureData(data: ImageData) {
-        (loader as ImageTextureLoader).data = data
-        if (loadingState == LoadingState.LOADED) {
-            dispose()
-        }
-    }
-}
 
 class SingleColorTexture(color: Color) : Texture2d(
     props = TextureProps(generateMipMaps = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
-    name = "SingleColorTex:${color}",
-    loader = ImageTextureLoader(getColorTextureData(color))
+    name = "SingleColorTex:${color}"
 ) {
+    init {
+        uploadLazy(getColorTextureData(color))
+    }
+
     companion object {
         val DEFAULT_SAMPLER_SETTINGS = SamplerSettings(
             minFilter = FilterMethod.NEAREST,
@@ -229,9 +226,12 @@ class GradientTexture(
         generateMipMaps = false,
         defaultSamplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING
     ),
-    name = name,
-    loader = ImageTextureLoader(BufferedImageData1d.gradientF16(gradient, size))
+    name = name
 ) {
+    init {
+        uploadLazy(BufferedImageData1d.gradientF16(gradient, size))
+    }
+
     companion object {
         val DEFAULT_SAMPLER_SETTINGS_CLAMPED = SamplerSettings(
             addressModeU = AddressMode.CLAMP_TO_EDGE,

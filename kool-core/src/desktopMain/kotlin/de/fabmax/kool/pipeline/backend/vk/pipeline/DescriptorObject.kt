@@ -130,18 +130,10 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 allValid = false
             } else {
                 if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
-                    when (tex.loader) {
-                        is DeferredTextureLoader -> {
-                            val deferredData = tex.loader.loadTextureDataAsync()
-                            loadingTextures += LoadingTex(sys, tex, deferredData)
-                        }
-                        is ImageTextureLoader -> {
-                            tex.gpuTexture = getLoadedTex(tex, tex.loader.data, sys)
-                            tex.loadingState = Texture.LoadingState.LOADED
-                        }
-                        else -> {
-                            // loader is null
-                        }
+                    tex.uploadData?.let {
+                        tex.uploadData = null
+                        tex.gpuTexture = getLoadedTex(tex, it, sys)
+                        tex.loadingState = Texture.LoadingState.LOADED
                     }
                 }
 
@@ -165,7 +157,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         isValid = allValid
     }
 
-    private class LoadingTex(val sys: VkSystem, val tex: Texture, val deferredTex: Deferred<ImageData>) {
+    private class LoadingTex(val sys: VkSystem, val tex: Texture<*>, val deferredTex: Deferred<ImageData>) {
         var isCompleted = false
 
         init {
@@ -192,7 +184,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         private val loadingTextures = mutableListOf<LoadingTex>()
         private val loadedTextures = mutableMapOf<ImageData, LoadedTextureVk>()
 
-        private fun getLoadedTex(tex: Texture, texData: ImageData, sys: VkSystem): LoadedTextureVk {
+        private fun getLoadedTex(tex: Texture<*>, texData: ImageData, sys: VkSystem): LoadedTextureVk {
             return synchronized(loadedTextures) {
                 loadedTextures.values.removeIf { it.isDestroyed }
                 loadedTextures.computeIfAbsent(texData) { k ->
@@ -229,7 +221,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 //                else -> throw IllegalStateException("Invalid mode: $mode")
 //            }
 
-        fun getTextures(data: BindGroupData): List<Texture?> {
+        fun getTextures(data: BindGroupData): List<Texture<*>?> {
             return listOf((data.bindings[bindingIndex] as BindGroupData.TextureBindingData<*>).texture)
         }
 

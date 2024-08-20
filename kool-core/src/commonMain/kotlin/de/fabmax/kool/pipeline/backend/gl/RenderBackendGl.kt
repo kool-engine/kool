@@ -70,8 +70,34 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun uploadTextureData(tex: Texture, data: ImageData) {
+    override fun <T: ImageData> uploadTextureData(tex: Texture<T>, data: T) {
         TextureLoaderGl.loadTexture(tex, data, this)
+    }
+
+    override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
+        val glTex = texture.gpuTexture as LoadedTextureGl?
+        if (glTex == null) {
+            deferred.completeExceptionally(IllegalStateException("Texture not yet uploaded to GPU"))
+            return
+        }
+
+        val format = texture.props.format
+        val buffer = ImageData.createBuffer(format, glTex.width, glTex.height, glTex.depth)
+        val targetData = when (texture) {
+            is Texture1d -> BufferedImageData1d(buffer, glTex.width, format)
+            is Texture2d -> BufferedImageData2d(buffer, glTex.width, glTex.height, format)
+            is Texture3d -> BufferedImageData3d(buffer, glTex.width, glTex.height, glTex.depth, format)
+            else -> {
+                deferred.completeExceptionally(IllegalStateException("Unsupported texture type: ${texture::class.simpleName} (texture: ${texture.name})"))
+                return
+            }
+        }
+
+        if (!gl.readTexturePixels(glTex, targetData)) {
+            deferred.completeExceptionally(IllegalStateException("Failed reading texture data of texture ${texture.name}"))
+        } else {
+            deferred.complete(targetData)
+        }
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
@@ -137,32 +163,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     protected fun OffscreenPass2dImpl.draw() = (this as OffscreenRenderPass2dGl).draw()
     protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenRenderPassCubeGl).draw()
     protected fun ComputePassImpl.dispatch() = (this as ComputeRenderPassGl).dispatch()
-
-    override fun downloadTextureData(texture: Texture, deferred: CompletableDeferred<ImageData>) {
-        val glTex = texture.gpuTexture as LoadedTextureGl?
-        if (glTex == null) {
-            deferred.completeExceptionally(IllegalStateException("Texture not yet uploaded to GPU"))
-            return
-        }
-
-        val format = texture.props.format
-        val buffer = ImageData.createBuffer(format, glTex.width, glTex.height, glTex.depth)
-        val targetData = when (texture) {
-            is Texture1d -> BufferedImageData1d(buffer, glTex.width, format)
-            is Texture2d -> BufferedImageData2d(buffer, glTex.width, glTex.height, format)
-            is Texture3d -> BufferedImageData3d(buffer, glTex.width, glTex.height, glTex.depth, format)
-            else -> {
-                deferred.completeExceptionally(IllegalStateException("Unsupported texture type: ${texture::class.simpleName} (texture: ${texture.name})"))
-                return
-            }
-        }
-
-        if (!gl.readTexturePixels(glTex, targetData)) {
-            deferred.completeExceptionally(IllegalStateException("Failed reading texture data of texture ${texture.name}"))
-        } else {
-            deferred.complete(targetData)
-        }
-    }
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         awaitedStorageBuffers += storage to deferred

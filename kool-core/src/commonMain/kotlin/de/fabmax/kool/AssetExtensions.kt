@@ -108,7 +108,7 @@ fun AssetLoader.loadTextureCubeAsync(
 /**
  * Loads the image data at the given path and returns it as [ImageData].
  */
-suspend fun Assets.loadImage2d(assetPath: String, props: TextureProps? = null): Result<ImageData> =
+suspend fun Assets.loadImage2d(assetPath: String, props: TextureProps? = null): Result<ImageData2d> =
     defaultLoader.loadImage2d(assetPath, props)
 
 /**
@@ -123,7 +123,7 @@ suspend fun Assets.loadBufferedImage(assetPath: String, props: TextureProps? = n
  * Loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
  * image tiles. The texture atlas data is returned as [ImageData].
  */
-suspend fun Assets.loadImageAtlas(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps? = null): Result<ImageData> =
+suspend fun Assets.loadImageAtlas(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps? = null): Result<ImageData3d> =
     defaultLoader.loadImageAtlas(assetPath, tilesX, tilesY, props)
 
 /**
@@ -156,7 +156,7 @@ suspend fun Assets.hdriEnvironment(hdriPath: String, brightness: Float = 1f): Re
 /**
  * Asynchronously loads the image data at the given path and returns it as [ImageData].
  */
-fun Assets.loadImage2dAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<ImageData>> =
+fun Assets.loadImage2dAsync(assetPath: String, props: TextureProps? = null): Deferred<Result<ImageData2d>> =
     defaultLoader.loadImage2dAsync(assetPath, props)
 
 /**
@@ -174,7 +174,7 @@ fun Assets.loadBufferedImageAsync(assetPath: String, props: TextureProps? = null
  * Asynchronously loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
  * image tiles. The texture atlas data is returned as [ImageData].
  */
-fun Assets.loadImageAtlasAsync(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps? = null): Deferred<Result<ImageData>> =
+fun Assets.loadImageAtlasAsync(assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps? = null): Deferred<Result<ImageData3d>> =
     defaultLoader.loadImageAtlasAsync(assetPath, tilesX, tilesY, props)
 
 /**

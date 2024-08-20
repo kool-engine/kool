@@ -163,7 +163,7 @@ class WgpuOffscreenRenderPass2d(
             width: Int,
             height: Int,
             usage: Int,
-            texture: Texture = this.texture
+            texture: Texture<*> = this.texture
         ): Pair<GPUTextureDescriptor, WgpuTextureResource> {
             val descriptor = GPUTextureDescriptor(
                 label = name,

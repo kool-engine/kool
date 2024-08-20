@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logT
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 
 object Icons {
@@ -40,7 +41,7 @@ object Icons {
 
     class EditorIconMap(override val iconSize: Dp) : IconMap {
         private val iconMapSize = Vec2i(480, 480)
-        private val iconLoader = DeferredTextureLoader {
+        private val iconLoader: suspend CoroutineScope.() -> ImageData2d = {
             val s = iconSize.value / 24f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
@@ -58,8 +59,8 @@ object Icons {
 
         fun invalidate() {
             if (iconTex.loadingState == Texture.LoadingState.LOADED) {
-                iconLoader.invalidate()
                 iconTex.dispose()
+                iconTex.uploadLazy(iconLoader)
             }
         }
 
@@ -151,7 +152,7 @@ object Icons {
 
     class BrowserIconMap(override val iconSize: Dp) : IconMap {
         private val iconMapSize = Vec2i(640, 640)
-        private val iconLoader = DeferredTextureLoader {
+        private val iconLoader: suspend CoroutineScope.() -> ImageData2d = {
             val s = iconSize.value / 80f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
@@ -169,8 +170,8 @@ object Icons {
 
         fun invalidate() {
             if (iconTex.loadingState == Texture.LoadingState.LOADED) {
-                iconLoader.invalidate()
                 iconTex.dispose()
+                iconTex.uploadLazy(iconLoader)
             }
         }
 

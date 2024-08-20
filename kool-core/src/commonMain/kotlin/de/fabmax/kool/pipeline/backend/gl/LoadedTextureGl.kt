@@ -9,7 +9,7 @@ class LoadedTextureGl(
     val target: Int,
     val glTexture: GlTexture,
     val backend: RenderBackendGl,
-    val texture: Texture,
+    val texture: Texture<*>,
     estimatedSize: Long
 ) : GpuTexture {
 
@@ -22,9 +22,7 @@ class LoadedTextureGl(
     override var depth = 0
 
     private val gl = backend.gl
-
     private val allocationInfo = TextureInfo(texture, estimatedSize)
-
     private var currentSamplerSettings: SamplerSettings? = null
 
     fun setSize(width: Int, height: Int, depth: Int) {

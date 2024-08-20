@@ -21,7 +21,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     private val multiSampledDepthTextureCopy = MultiSampledDepthTextureCopy()
     val mipmapGenerator = MipmapGenerator()
 
-    fun loadTexture(tex: Texture, data: ImageData) {
+    fun <T: ImageData> loadTexture(tex: Texture<T>, data: T) {
         when {
             tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
             tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data)

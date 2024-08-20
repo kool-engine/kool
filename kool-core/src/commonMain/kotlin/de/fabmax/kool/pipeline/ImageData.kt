@@ -1,11 +1,9 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.ImageData.Companion.checkBufferFormat
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.async
 import kotlin.math.roundToInt
 
 /**
@@ -182,26 +180,27 @@ class ImageDataCube(
     }
 }
 
+fun ImageData1d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture1d")) =
+    Texture1d(this, props, name)
+
+fun ImageData2d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture2d")) =
+    Texture2d(this, props, name)
+
+fun ImageData3d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture3d")) =
+    Texture3d(this, props, name)
+
+fun ImageDataCube.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("TextureCube")) =
+    TextureCube(this, props, name)
+
+
 suspend fun ImageData1d.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture1d")) =
-    Texture1d(props, name, ImageTextureLoader(this@toTexture)).apply { upload(this@toTexture) }
+    Texture1d(props, name).apply { upload(this@toTexture) }
 
 suspend fun ImageData2d.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture2d")) =
-    Texture2d(props, name, ImageTextureLoader(this@toTexture)).apply { upload(this@toTexture) }
+    Texture2d(props, name).apply { upload(this@toTexture) }
 
 suspend fun ImageData3d.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture3d")) =
-    Texture3d(props, name, ImageTextureLoader(this@toTexture)).apply { upload(this@toTexture) }
+    Texture3d(props, name).apply { upload(this@toTexture) }
 
 suspend fun ImageDataCube.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("TextureCube")) =
-    TextureCube(props, name, ImageTextureLoader(this@toTexture)).apply { upload(this@toTexture) }
-
-fun ImageData1d.toTextureAsync(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture1d")) =
-    Assets.async { toTexture(props, name) }
-
-fun ImageData2d.toTextureAsync(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture2d")) =
-    Assets.async { toTexture(props, name) }
-
-fun ImageData3d.toTextureAsync(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture3d")) =
-    Assets.async { toTexture(props, name) }
-
-fun ImageDataCube.toTextureAsync(props: TextureProps = TextureProps(),name: String = UniqueId.nextId("TextureCube")) =
-    Assets.async { toTexture(props, name) }
+    TextureCube(props, name).apply { upload(this@toTexture) }

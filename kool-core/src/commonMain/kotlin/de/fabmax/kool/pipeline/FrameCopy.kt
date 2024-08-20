@@ -23,7 +23,7 @@ class FrameCopy(
     val colorCopyCube: TextureCube get() = colorCopy[0] as TextureCube
     val depthCopyCube: TextureCube get() = depthCopy!! as TextureCube
 
-    val colorCopy: List<Texture> = if (!isCopyColor) emptyList() else buildList {
+    val colorCopy: List<Texture<*>> = if (!isCopyColor) emptyList() else buildList {
         when (renderPass) {
             is Scene.SceneRenderPass -> {
                 val tex = Texture2d(
@@ -58,7 +58,7 @@ class FrameCopy(
         }
     }
 
-    val depthCopy: Texture? = if (!isCopyDepth) null else {
+    val depthCopy: Texture<*>? = if (!isCopyDepth) null else {
         when (renderPass) {
             is Scene.SceneRenderPass -> {
                 Texture2d(
