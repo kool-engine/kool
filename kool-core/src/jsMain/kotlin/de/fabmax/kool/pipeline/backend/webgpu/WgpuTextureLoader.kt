@@ -22,6 +22,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     val mipmapGenerator = MipmapGenerator()
 
     fun <T: ImageData> loadTexture(tex: Texture<T>, data: T) {
+        check(tex.props.format == data.format) {
+            "Image data format doesn't match texture format: ${data.format} != ${tex.props.format}"
+        }
+
         when {
             tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
             tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data)

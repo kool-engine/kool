@@ -20,6 +20,10 @@ abstract class Texture<T: ImageData>(
      */
     var gpuTexture: GpuTexture? = null
     internal var uploadData: T? = null
+        set(value) {
+            field = value
+            value?.let { checkFormat(it.format) }
+        }
 
     var loadingState = LoadingState.NOT_LOADED
 
@@ -66,6 +70,7 @@ abstract class Texture<T: ImageData>(
     }
 
     suspend fun upload(imageData: T) {
+        checkFormat(imageData.format)
         withContext(Dispatchers.RenderLoop) {
             KoolSystem.requireContext().backend.uploadTextureData(this@Texture, imageData)
         }
@@ -77,6 +82,12 @@ abstract class Texture<T: ImageData>(
 
     fun uploadLazy(provider: suspend CoroutineScope.() -> T) = Assets.launch {
         uploadData = provider()
+    }
+
+    private fun checkFormat(format: TexFormat) {
+        check(format == props.format) {
+            "Given image format doesn't match this texture: $format != ${props.format}"
+        }
     }
 
     companion object {

@@ -16,6 +16,10 @@ object TextureLoaderGl {
     }
 
     fun <T: ImageData> loadTexture(tex: Texture<T>, data: T, backend: RenderBackendGl): LoadedTextureGl {
+        check(tex.props.format == data.format) {
+            "Image data format doesn't match texture format: ${data.format} != ${tex.props.format}"
+        }
+
         var loaded = loadedTextures[data]
         if (loaded != null && loaded.isReleased) { loadedTextures -= data }
         loaded = loadedTextures.getOrPut(data) {
