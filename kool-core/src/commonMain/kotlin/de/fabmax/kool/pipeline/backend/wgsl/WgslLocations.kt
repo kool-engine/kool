@@ -18,6 +18,8 @@ class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: Verte
                     is Texture2dLayout -> nextBinding += 2
                     is Texture3dLayout -> nextBinding += 2
                     is TextureCubeLayout -> nextBinding += 2
+                    is Texture2dArrayLayout -> nextBinding += 2
+                    is TextureCubeArrayLayout -> nextBinding += 2
 
                     is StorageBuffer1dLayout -> nextBinding++
                     is StorageBuffer2dLayout -> nextBinding++

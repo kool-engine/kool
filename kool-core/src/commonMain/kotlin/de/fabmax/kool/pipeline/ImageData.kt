@@ -65,6 +65,10 @@ class BufferedImageData1d(
 
     init {
         checkBufferFormat(data, format)
+        val dataSize = width * format.channels
+        check(data.capacity == dataSize) {
+            "Invalid buffer size: ${data.capacity} does not match image dimensions $width x ${format.channels} channels ($dataSize)"
+        }
     }
 
     companion object {
@@ -97,7 +101,7 @@ class BufferedImageData1d(
 }
 
 /**
- * Buffer based 2d texture data. Texture data can be generated and edited procedurally. Layout and format of data
+ * Buffer based 2d image data. Image data can be generated and edited procedurally. Layout and format of data
  * is specified by the format parameter. The buffer size must match the texture size and data format.
  *
  * @param data   texture data buffer, must have a size of width * height * bytes-per-pixel
@@ -114,6 +118,10 @@ class BufferedImageData2d(
 
     init {
         checkBufferFormat(data, format)
+        val dataSize = width * height * format.channels
+        check(data.capacity == dataSize) {
+            "Invalid buffer size: ${data.capacity} does not match image dimensions $width x $height x ${format.channels} channels ($dataSize)"
+        }
     }
 
     companion object {
@@ -138,6 +146,10 @@ class BufferedImageData3d(
 
     init {
         checkBufferFormat(data, format)
+        val dataSize = width * height * depth * format.channels
+        check(data.capacity == dataSize) {
+            "Invalid buffer size: ${data.capacity} does not match image dimensions $width x $height x $depth x ${format.channels} channels ($dataSize)"
+        }
     }
 }
 
@@ -179,6 +191,24 @@ class ImageDataCube(
         )
     }
 }
+
+class ImageDataCubeArray(val cubes: List<ImageDataCube>) : ImageData {
+    val width: Int = cubes[0].width
+    val height: Int = cubes[0].height
+    val slices: Int = cubes.size
+    override val format: TexFormat = cubes[0].format
+
+    init {
+        val ref = cubes[0]
+        for (i in 1 until cubes.size) {
+            val map = cubes[i]
+            check(ref.width == map.width && ref.height == map.height && ref.format == map.format) {
+                "All cube maps must have the same dimensions and format"
+            }
+        }
+    }
+}
+
 
 fun ImageData1d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture1d")) =
     Texture1d(this, props, name)

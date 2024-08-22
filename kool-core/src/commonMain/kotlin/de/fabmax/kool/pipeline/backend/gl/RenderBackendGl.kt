@@ -25,7 +25,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
 
     override var deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
         protected set
-    override val hasComputeShaders: Boolean get() = gl.capabilities.hasComputeShaders
 
     var useFloatDepthBuffer = true
     internal val shaderMgr = ShaderManager(this)

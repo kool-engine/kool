@@ -41,6 +41,8 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                         is Texture2dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
                         is Texture3dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
                         is TextureCubeLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is Texture2dArrayLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is TextureCubeArrayLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
                         is StorageBuffer1dLayout -> intArrayOf(storageIndex++)
                         is StorageBuffer2dLayout -> intArrayOf(storageIndex++)
                         is StorageBuffer3dLayout -> intArrayOf(storageIndex++)
@@ -131,6 +133,8 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                     is BindGroupData.Texture2dBindingData -> mapTexture2d(binding)
                     is BindGroupData.Texture3dBindingData -> mapTexture3d(binding)
                     is BindGroupData.TextureCubeBindingData -> mapTextureCube(binding)
+                    is BindGroupData.Texture2dArrayBindingData -> mapTexture2dArray(binding)
+                    is BindGroupData.TextureCubeArrayBindingData -> mapTextureCubeArray(binding)
                     is BindGroupData.StorageBuffer1dBindingData -> mapStorage1d(binding)
                     is BindGroupData.StorageBuffer2dBindingData -> mapStorage2d(binding)
                     is BindGroupData.StorageBuffer3dBindingData -> mapStorage3d(binding)
@@ -182,6 +186,14 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
 
         private fun mapTextureCube(cubeMap: BindGroupData.TextureCubeBindingData) {
             mappings += MappedUniformTexCube(cubeMap, backend)
+        }
+
+        private fun mapTexture2dArray(tex: BindGroupData.Texture2dArrayBindingData) {
+            mappings += MappedUniformTex2dArray(tex, backend)
+        }
+
+        private fun mapTextureCubeArray(tex: BindGroupData.TextureCubeArrayBindingData) {
+            mappings += MappedUniformTexCubeArray(tex, backend)
         }
 
         private fun mapStorage1d(storage: BindGroupData.StorageBuffer1dBindingData) {

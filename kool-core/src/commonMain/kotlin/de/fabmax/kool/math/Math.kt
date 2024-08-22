@@ -204,3 +204,5 @@ fun barycentricWeights(pt: Vec3f, va: Vec3f, vb: Vec3f, vc: Vec3f, result: Mutab
 
     return result
 }
+
+fun numMipLevels(width: Int, height: Int): Int = log2(max(width, height).toDouble()).roundToInt() + 1

@@ -86,7 +86,7 @@ abstract class Texture<T: ImageData>(
 
     private fun checkFormat(format: TexFormat) {
         check(format == props.format) {
-            "Given image format doesn't match this texture: $format != ${props.format}"
+            "Given image format doesn't match this texture ($name): $format != ${props.format}"
         }
     }
 
@@ -202,6 +202,39 @@ fun TextureCube(
     loader: (suspend CoroutineScope.() -> ImageDataCube)
 ): TextureCube = TextureCube(props, name).apply { uploadLazy(loader) }
 
+open class Texture2dArray(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture2dArray"),
+) : Texture<ImageData3d>(props, name)
+
+fun Texture2dArray(
+    data: ImageData3d,
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture3d")
+): Texture2dArray = Texture2dArray(props, name).apply { uploadLazy(data) }
+
+fun Texture2dArray(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("TextureCube"),
+    loader: (suspend CoroutineScope.() -> ImageData3d)
+): Texture2dArray = Texture2dArray(props, name).apply { uploadLazy(loader) }
+
+open class TextureCubeArray(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("TextureCubeArray"),
+) : Texture<ImageDataCubeArray>(props, name)
+
+fun TextureCubeArray(
+    data: ImageDataCubeArray,
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("Texture3d")
+): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(data) }
+
+fun TextureCubeArray(
+    props: TextureProps = TextureProps(),
+    name: String = UniqueId.nextId("TextureCube"),
+    loader: (suspend CoroutineScope.() -> ImageDataCubeArray)
+): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(loader) }
 
 class SingleColorTexture(color: Color) : Texture2d(
     props = TextureProps(generateMipMaps = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),

@@ -14,10 +14,11 @@ interface RenderBackend {
     val apiName: String
     val deviceName: String
 
+    val features: BackendFeatures
+
     val deviceCoordinates: DeviceCoordinates
     val depthRange: DepthRange get() = deviceCoordinates.ndcDepthRange
     val isInvertedNdcY: Boolean get() = deviceCoordinates.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM
-    val hasComputeShaders: Boolean
 
     val frameGpuTime: Double
 

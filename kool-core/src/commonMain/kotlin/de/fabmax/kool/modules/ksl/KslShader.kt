@@ -245,6 +245,8 @@ private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLay
             is KslColorSampler2d -> Texture2dLayout(sampler.name, texStages, sampleType)
             is KslColorSampler3d -> Texture3dLayout(sampler.name, texStages, sampleType)
             is KslColorSamplerCube -> TextureCubeLayout(sampler.name, texStages, sampleType)
+            is KslColorSampler2dArray -> Texture2dArrayLayout(sampler.name, texStages, sampleType)
+            is KslColorSamplerCubeArray -> TextureCubeArrayLayout(sampler.name, texStages, sampleType)
             else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
         }
     }

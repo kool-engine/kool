@@ -161,36 +161,52 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
     }
 }
 
-class MappedUniformTex1d(private val sampler1d: BindGroupData.Texture1dBindingData, backend: RenderBackendGl) :
+class MappedUniformTex1d(private val sampler: BindGroupData.Texture1dBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_2D, backend)
 {
     // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler1d.texture, sampler1d.layout.bindingIndex, bindCtx)
+        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTex2d(private val sampler2d: BindGroupData.Texture2dBindingData, backend: RenderBackendGl) :
+class MappedUniformTex2d(private val sampler: BindGroupData.Texture2dBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_2D, backend)
 {
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler2d.texture, sampler2d.layout.bindingIndex, bindCtx)
+        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTex3d(private val sampler3d: BindGroupData.Texture3dBindingData, backend: RenderBackendGl) :
+class MappedUniformTex3d(private val sampler: BindGroupData.Texture3dBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_3D, backend)
 {
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler3d.texture, sampler3d.layout.bindingIndex, bindCtx)
+        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
     }
 }
 
-class MappedUniformTexCube(private val samplerCube: BindGroupData.TextureCubeBindingData, backend: RenderBackendGl) :
+class MappedUniformTexCube(private val sampler: BindGroupData.TextureCubeBindingData, backend: RenderBackendGl) :
     MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP, backend)
 {
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(samplerCube.texture, samplerCube.layout.bindingIndex, bindCtx)
+        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
+    }
+}
+
+class MappedUniformTex2dArray(private val sampler: BindGroupData.Texture2dArrayBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_2D_ARRAY, backend)
+{
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
+    }
+}
+
+class MappedUniformTexCubeArray(private val sampler: BindGroupData.TextureCubeArrayBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP_ARRAY, backend)
+{
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
     }
 }
 

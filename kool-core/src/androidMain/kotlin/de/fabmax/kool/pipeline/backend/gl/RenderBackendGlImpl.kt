@@ -4,6 +4,7 @@ import android.opengl.GLSurfaceView
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configAndroid
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.platform.KoolContextAndroid
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -13,6 +14,11 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
     GLSurfaceView.Renderer
 {
     private val androidCtx = ctx
+
+    private var _features: BackendFeatures? = null
+    override val features: BackendFeatures get() = checkNotNull(_features) {
+        "features are only available after the GL context is initialized"
+    }
 
     var viewWidth: Int = 0
         private set
@@ -49,6 +55,12 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
         GlImpl.initOpenGl(this)
         lateGlslGeneratorHints = GlslGenerator.Hints(glslVersionStr = "#version ${GlImpl.version.major}${GlImpl.version.minor}0 es")
         setupGl()
+
+        _features = BackendFeatures(
+            computeShaders = false,
+            cubeMapArrays = false,
+            reversedDepth = GlImpl.capabilities.hasClipControl
+        )
 
         if (GlImpl.capabilities.hasTimestampQuery) {
             timer = TimeQuery(GlImpl)

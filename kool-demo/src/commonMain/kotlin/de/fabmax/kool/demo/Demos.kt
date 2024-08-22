@@ -16,10 +16,7 @@ import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.terrain.TerrainDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
-import de.fabmax.kool.demo.tests.GizmoTest
-import de.fabmax.kool.demo.tests.InifiniteDepthTest
-import de.fabmax.kool.demo.tests.InstancingTest
-import de.fabmax.kool.demo.tests.KslShaderTest
+import de.fabmax.kool.demo.tests.*
 import de.fabmax.kool.demo.uidemo.UiDemo
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -29,7 +26,7 @@ import kotlin.math.max
 object Demos {
 
     private val AllPlatforms = PlatformFilter { true }
-    private val NeedsComputeShaders = PlatformFilter { KoolSystem.requireContext().backend.hasComputeShaders }
+    private val NeedsComputeShaders = PlatformFilter { KoolSystem.features.computeShaders }
     private val NonJavascript = PlatformFilter { KoolSystem.platform != Platform.JAVASCRIPT }
     private val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
     private val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
@@ -91,6 +88,7 @@ object Demos {
         entry("gizmo-test", "Gizmo Test") { GizmoTest() }
         entry("inf-depth-test", "Clip Space Test") { InifiniteDepthTest() }
         entry("instancing-test", "Instancing Test") { InstancingTest() }
+        entry("tex-array-test", "Array Textures Test") { ArrayTexturesText() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)

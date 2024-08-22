@@ -200,10 +200,30 @@ class WgslGenerator : KslGenerator() {
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
         val textureName = sampleTexture.sampler.generateExpression(this)
         val level = sampleTexture.lod?.generateExpression(this)
-        return if (level != null) {
-            "textureSampleLevel(${textureName(textureName)}, ${samplerName(textureName)}, ${sampleTexture.coord.generateExpression(this)}, $level)"
-        } else {
-            "textureSample(${textureName(textureName)}, ${samplerName(textureName)}, ${sampleTexture.coord.generateExpression(this)})"
+        val coord = sampleTexture.coord.generateExpression(this)
+
+        return when (sampleTexture.sampler.expressionType) {
+            is KslSampler2dArrayType -> {
+                if (level != null) {
+                    "textureSampleLevel(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xy, i32(${coord}.z), $level)"
+                } else {
+                    "textureSample(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xy, i32(${coord}.z))"
+                }
+            }
+            is KslSamplerCubeArrayType -> {
+                if (level != null) {
+                    "textureSampleLevel(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xyz, i32(${coord}.w), $level)"
+                } else {
+                    "textureSample(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xyz, i32(${coord}.w))"
+                }
+            }
+            else -> {
+                if (level != null) {
+                    "textureSampleLevel(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $level)"
+                } else {
+                    "textureSample(${textureName(textureName)}, ${samplerName(textureName)}, $coord)"
+                }
+            }
         }
     }
 
@@ -212,7 +232,15 @@ class WgslGenerator : KslGenerator() {
         val coord = sampleTextureGrad.coord.generateExpression(this)
         val ddx = sampleTextureGrad.ddx.generateExpression(this)
         val ddy = sampleTextureGrad.ddy.generateExpression(this)
-        return "textureSampleGrad(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $ddx, $ddy)"
+
+        return when (sampleTextureGrad.sampler.expressionType) {
+            is KslSampler2dArrayType ->
+                "textureSampleGrad(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xy, i32(${coord}.z), $ddx, $ddy)"
+            is KslSamplerCubeArrayType ->
+                "textureSampleGrad(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xyz, i32(${coord}.w), $ddx, $ddy)"
+            else ->
+                "textureSampleGrad(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $ddx, $ddy)"
+        }
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
@@ -232,9 +260,16 @@ class WgslGenerator : KslGenerator() {
             }
             else -> error("Invalid depth sampler coordinate type: $coordType")
         }
-        // use "Level" variant of textureSampleCompare, as out depth maps don't have mip levels -> therefore
+        // use "Level" variant of textureSampleCompare, as our depth maps don't have mip levels -> therefore
         // no derivatives need to be computed and sampling can be invoked from non-uniform control flow
-        return "textureSampleCompareLevel(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $ref)"
+        return when (sampleTexture.sampler.expressionType) {
+            is KslSampler2dArrayType ->
+                "textureSampleCompareLevel(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xy, i32(${coord}.z), $ref)"
+            is KslSamplerCubeArrayType ->
+                "textureSampleCompareLevel(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}.xyz, i32(${coord}.w), $ref)"
+            else ->
+                "textureSampleCompareLevel(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $ref)"
+        }
     }
 
     override fun textureSize(textureSize: KslTextureSize<*, *>): String {

@@ -41,6 +41,8 @@ sealed class WgpuPipeline(
                         is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2d))
                         is Texture3dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view3d))
                         is TextureCubeLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCube))
+                        is Texture2dArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2dArray))
+                        is TextureCubeArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCubeArray))
                         is StorageBufferLayout -> {
                             val bufferType = if (binding.accessType == StorageAccessType.READ_ONLY) {
                                 GPUBufferBindingType.readOnlyStorage

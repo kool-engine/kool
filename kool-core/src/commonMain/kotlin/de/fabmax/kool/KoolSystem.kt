@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.MsdfFontInfo
 
@@ -21,6 +22,9 @@ object KoolSystem {
 
     val config: KoolConfig
         get() = initConfig ?: throw IllegalStateException("KoolSetup is not yet initialized. Call initialize(config) before accessing KoolSetup.config")
+
+    val features: BackendFeatures
+        get() = requireContext().backend.features
 
     fun initialize(config: KoolConfig) {
         if (isInitialized && config != initConfig) {

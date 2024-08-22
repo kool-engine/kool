@@ -78,10 +78,12 @@ interface GlApi {
     val STATIC_DRAW: Int
     val TEXTURE_1D: Int
     val TEXTURE_2D: Int
+    val TEXTURE_2D_ARRAY: Int
     val TEXTURE_3D: Int
     val TEXTURE_COMPARE_MODE: Int
     val TEXTURE_COMPARE_FUNC: Int
     val TEXTURE_CUBE_MAP: Int
+    val TEXTURE_CUBE_MAP_ARRAY: Int
     val TEXTURE_CUBE_MAP_POSITIVE_X: Int
     val TEXTURE_CUBE_MAP_NEGATIVE_X: Int
     val TEXTURE_CUBE_MAP_POSITIVE_Y: Int
@@ -259,8 +261,10 @@ interface GlApi {
     fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?)
     fun texImage2d(target: Int, data: ImageData2d)
     fun texImage3d(target: Int, data: ImageData3d)
+    fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer)
     fun texParameteri(target: Int, pName: Int, param: Int)
     fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
+    fun texStorage3d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int)
     fun uniformBlockBinding(program: GlProgram, uniformBlockIndex: Int, uniformBlockBinding: Int)
     fun useProgram(program: GlProgram)
     fun uniform1f(location: Int, x: Float)

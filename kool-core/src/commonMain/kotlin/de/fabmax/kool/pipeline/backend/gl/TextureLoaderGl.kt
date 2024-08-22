@@ -1,10 +1,8 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
-import kotlin.math.floor
-import kotlin.math.log2
-import kotlin.math.max
 
 object TextureLoaderGl {
     // fixme: don't use ImageData as map key, because this prevents ImageData's being garbage collected, which
@@ -28,6 +26,8 @@ object TextureLoaderGl {
                 tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data, backend)
                 tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data, backend)
                 tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data, backend)
+                tex is Texture2dArray && data is ImageData3d -> loadTexture2dArray(tex, data, backend)
+                tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeArray(tex, data, backend)
                 else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
             }
         }
@@ -90,6 +90,46 @@ object TextureLoaderGl {
         return loadedTex
     }
 
+    private fun loadTexture2dArray(tex: Texture2dArray, img: ImageData3d, backend: RenderBackendGl) : LoadedTextureGl {
+        val gl = backend.gl
+        val loadedTex = LoadedTextureGl(gl.TEXTURE_2D_ARRAY, gl.createTexture(), backend, tex, img.estimateTexSize())
+        loadedTex.setSize(img.width, img.height, img.depth)
+        loadedTex.bind()
+        gl.texImage3d(gl.TEXTURE_2D_ARRAY, img)
+        if (tex.props.generateMipMaps) {
+            gl.generateMipmap(gl.TEXTURE_2D_ARRAY)
+        }
+        return loadedTex
+    }
+
+    private fun loadTextureCubeArray(tex: TextureCubeArray, img: ImageDataCubeArray, backend: RenderBackendGl) : LoadedTextureGl {
+        val gl = backend.gl
+        val loadedTex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP_ARRAY, gl.createTexture(), backend, tex, img.estimateTexSize())
+        loadedTex.setSize(img.width, img.height, img.slices)
+        loadedTex.bind()
+        val levels = if (tex.props.generateMipMaps) numMipLevels(img.width, img.height) else 1
+        gl.texStorage3d(gl.TEXTURE_CUBE_MAP_ARRAY, levels, img.format.glInternalFormat(gl), img.width, img.height, 6 * img.slices)
+        img.cubes.forEachIndexed { i, cube ->
+            // todo: support non-buffered cube face image datas
+            val posX = cube.posX as BufferedImageData2d
+            val negX = cube.negX as BufferedImageData2d
+            val posY = cube.posY as BufferedImageData2d
+            val negY = cube.negY as BufferedImageData2d
+            val posZ = cube.posZ as BufferedImageData2d
+            val negZ = cube.negZ as BufferedImageData2d
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 0, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), posX.data)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 1, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), negX.data)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 2, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), posY.data)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 3, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), negY.data)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 4, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), posZ.data)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 5, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), negZ.data)
+        }
+        if (tex.props.generateMipMaps) {
+            gl.generateMipmap(gl.TEXTURE_CUBE_MAP_ARRAY)
+        }
+        return loadedTex
+    }
+
     private fun ImageData.estimateTexSize(): Long {
         var width = 1
         var height = 1
@@ -110,8 +150,12 @@ object TextureLoaderGl {
                 height = this.height
                 depth = 6
             }
+            is ImageDataCubeArray -> {
+                width = this.width
+                height = this.height
+                depth = 6 * this.slices
+            }
         }
-        val mipLevels = floor(log2(max(width, height).toDouble())).toInt() + 1
-        return Texture.estimatedTexSize(width, height, depth, mipLevels, format.pxSize).toLong()
+        return Texture.estimatedTexSize(width, height, depth, numMipLevels(width, height), format.pxSize).toLong()
     }
 }

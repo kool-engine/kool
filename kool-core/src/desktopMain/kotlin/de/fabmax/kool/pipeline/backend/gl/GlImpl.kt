@@ -63,10 +63,12 @@ object GlImpl : GlApi {
     override val STATIC_DRAW = GL_STATIC_DRAW
     override val TEXTURE_1D = GL_TEXTURE_1D
     override val TEXTURE_2D = GL_TEXTURE_2D
+    override val TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY
     override val TEXTURE_3D = GL_TEXTURE_3D
     override val TEXTURE_COMPARE_MODE = GL_TEXTURE_COMPARE_MODE
     override val TEXTURE_COMPARE_FUNC = GL_TEXTURE_COMPARE_FUNC
     override val TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP
+    override val TEXTURE_CUBE_MAP_ARRAY = GL_TEXTURE_CUBE_MAP_ARRAY
     override val TEXTURE_CUBE_MAP_POSITIVE_X = GL_TEXTURE_CUBE_MAP_POSITIVE_X
     override val TEXTURE_CUBE_MAP_NEGATIVE_X = GL_TEXTURE_CUBE_MAP_NEGATIVE_X
     override val TEXTURE_CUBE_MAP_POSITIVE_Y = GL_TEXTURE_CUBE_MAP_POSITIVE_Y
@@ -249,8 +251,10 @@ object GlImpl : GlApi {
     override fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
     override fun texImage2d(target: Int, data: ImageData2d) = texImage2dImpl(target, data)
     override fun texImage3d(target: Int, data: ImageData3d) = texImage3dImpl(target, data)
+    override fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer) = texSubImage3dImpl(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
     override fun texParameteri(target: Int, pName: Int, param: Int) = glTexParameteri(target, pName, param)
     override fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = glTexStorage2D(target, levels, internalformat, width, height)
+    override fun texStorage3d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int) = glTexStorage3D(target, levels, internalformat, width, height, depth)
     override fun uniformBlockBinding(program: GlProgram, uniformBlockIndex: Int, uniformBlockBinding: Int) = glUniformBlockBinding(program.handle, uniformBlockIndex, uniformBlockBinding)
     override fun useProgram(program: GlProgram) = glUseProgram(program.handle)
     override fun uniform1f(location: Int, x: Float) = glUniform1f(location, x)
@@ -471,6 +475,16 @@ object GlImpl : GlApi {
                 glTexImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), it)
             }
             else -> error("ImageData buffer must be either any of Uint8Buffer, Uint16Buffer, Int32Buffer, Float32Buffer")
+        }
+    }
+
+    private fun texSubImage3dImpl(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer) {
+        when (pixels) {
+            is Uint8BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Uint16BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Int32BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Float32BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            else -> error("Unsupported buffer type: $pixels")
         }
     }
 }

@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
@@ -25,7 +26,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
-    override val hasComputeShaders: Boolean = true
+    override val features = BackendFeatures(
+        computeShaders = true,
+        cubeMapArrays = true,
+        reversedDepth = true
+    )
 
     lateinit var adapter: GPUAdapter
         private set

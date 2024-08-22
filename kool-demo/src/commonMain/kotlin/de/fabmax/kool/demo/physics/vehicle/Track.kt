@@ -324,6 +324,11 @@ class Track(val world: VehicleWorld) : Node() {
             generateMipMaps = false,
             defaultSamplerSettings = SamplerSettings().nearest()
         )
+        val roughnessTexProps = TextureProps(
+            format = TexFormat.R,
+            generateMipMaps = false,
+            defaultSamplerSettings = SamplerSettings().nearest()
+        )
         val rand = Random(1337)
         val gradient = ColorGradient(VehicleDemo.color(50, false), VehicleDemo.color(300, false))
         val sz = 128
@@ -347,7 +352,7 @@ class Track(val world: VehicleWorld) : Node() {
         val albedoMap = Texture2d(texProps, "track-color") {
             BufferedImageData2d(colorData, sz, sz, TexFormat.RGBA)
         }
-        val roughnessMap = Texture2d(texProps, "track-roughness") {
+        val roughnessMap = Texture2d(roughnessTexProps, "track-roughness") {
             BufferedImageData2d(roughnessData, sz, sz, TexFormat.R)
         }
         albedoMap.releaseWith(trackMesh)

@@ -26,7 +26,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
 
     val gpuBees = GpuBees(mainScene)
 
-    private val isGpuSimulation = mutableStateOf(KoolSystem.requireContext().backend.hasComputeShaders).onChange { _, new ->
+    private val isGpuSimulation = mutableStateOf(KoolSystem.features.computeShaders).onChange { _, new ->
         applyMode(new)
     }
 
@@ -103,7 +103,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
             BeeConfig.beesPerTeam.set(it.roundToInt())
         }
 
-        if (ctx.backend.hasComputeShaders) {
+        if (KoolSystem.features.computeShaders) {
             LabeledSwitch("GPU simulation", isGpuSimulation)
         }
 

@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
@@ -32,7 +33,11 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         get() = vkSystem.window
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
-    override val hasComputeShaders: Boolean = false
+    override val features = BackendFeatures(
+        computeShaders = false,
+        cubeMapArrays = false,
+        reversedDepth = false
+    )
 
     private val shaderCodes = mutableMapOf<String, ShaderCodeImplVk>()
 

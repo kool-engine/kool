@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.positioned
 
 fun KslProgram.cameraData(): CameraData {
@@ -27,6 +28,8 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val clipFar: KslExprFloat1
         get() = clip.y
 
+    val frameIndex: KslExprInt1
+
     private val camUbo = KslUniformBuffer("CameraUniforms", program, BindGroupScope.VIEW).apply {
         viewMat = uniformMat4(UNIFORM_NAME_VIEW_MAT)
         projMat = uniformMat4(UNIFORM_NAME_PROJ_MAT)
@@ -36,6 +39,8 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         position = uniformFloat3(UNIFORM_NAME_CAM_POSITION)
         direction = uniformFloat3(UNIFORM_NAME_CAM_DIRECTION)
         clip = uniformFloat2(UNIFORM_NAME_CAM_CLIP)
+
+        frameIndex = uniformInt1(UNIFORM_NAME_FRAME_INDEX)
     }
 
     private var uboLayout: UniformBufferLayout? = null
@@ -46,6 +51,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     private var bufferPosProjMat: BufferPosition? = null
     private var bufferPosViewProjMat: BufferPosition? = null
     private var bufferPosViewport: BufferPosition? = null
+    private var bufferPosFrameIndex: BufferPosition? = null
 
     init {
         program.shaderListeners += this
@@ -64,6 +70,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
             bufferPosProjMat = it.layout.uniformPositions[UNIFORM_NAME_PROJ_MAT]
             bufferPosViewProjMat = it.layout.uniformPositions[UNIFORM_NAME_VIEW_PROJ_MAT]
             bufferPosViewport = it.layout.uniformPositions[UNIFORM_NAME_VIEWPORT]
+            bufferPosFrameIndex = it.layout.uniformPositions[UNIFORM_NAME_FRAME_INDEX]
         }
     }
 
@@ -80,6 +87,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         ubo.buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
         ubo.buffer.positioned(bufferPosDirection!!.byteIndex) { cam.globalLookDir.putTo(it) }
         ubo.buffer.positioned(bufferPosClip!!.byteIndex) { it.putFloat32(cam.clipNear); it.putFloat32(cam.clipFar) }
+        ubo.buffer.positioned(bufferPosFrameIndex!!.byteIndex) { it.putInt32(Time.frameCount) }
         ubo.buffer.positioned(bufferPosViewMat!!.byteIndex) { q.viewMatF.putTo(it) }
         ubo.buffer.positioned(bufferPosProjMat!!.byteIndex) { q.projMat.putTo(it) }
         ubo.buffer.positioned(bufferPosViewProjMat!!.byteIndex) { q.viewProjMatF.putTo(it) }
@@ -97,6 +105,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         const val UNIFORM_NAME_CAM_POSITION = "uCamPos"
         const val UNIFORM_NAME_CAM_DIRECTION = "uCamDir"
         const val UNIFORM_NAME_CAM_CLIP = "uCamClip"
+        const val UNIFORM_NAME_FRAME_INDEX = "uFrameIdx"
 
         const val UNIFORM_NAME_VIEW_MAT = "uViewMat"
         const val UNIFORM_NAME_PROJ_MAT = "uProjMat"

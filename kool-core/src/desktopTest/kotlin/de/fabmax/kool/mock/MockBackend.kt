@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.ComputeShaderCodeGl
@@ -18,7 +19,11 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     override val apiName: String = "MockAPI"
     override val deviceName: String = "Mock device"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
-    override val hasComputeShaders: Boolean = false
+    override val features = BackendFeatures(
+        computeShaders = false,
+        cubeMapArrays = false,
+        reversedDepth = false
+    )
 
     override var frameGpuTime: Double = 0.0
 

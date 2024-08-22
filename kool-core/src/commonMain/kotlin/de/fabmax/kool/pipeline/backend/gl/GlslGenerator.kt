@@ -65,6 +65,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.appendLine("""
             ${hints.glslVersionStr}
             precision highp float;
+            precision highp sampler2DArray;
             precision highp sampler2DShadow;
             precision highp sampler3D;
             

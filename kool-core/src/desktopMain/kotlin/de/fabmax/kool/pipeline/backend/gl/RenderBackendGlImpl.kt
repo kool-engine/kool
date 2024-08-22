@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -16,6 +17,8 @@ import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 class RenderBackendGlImpl(ctx: KoolContext) :
     RenderBackendGl(KoolSystem.configJvm.msaaSamples, GlImpl, ctx), RenderBackendJvm
 {
+    override val features: BackendFeatures
+
     override val glfwWindow: GlfwWindow
     override val glslGeneratorHints: GlslGenerator.Hints
 
@@ -39,6 +42,12 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE)
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS)
         setupGl()
+
+        features = BackendFeatures(
+            computeShaders = true,
+            cubeMapArrays = true,
+            reversedDepth = GlImpl.capabilities.hasClipControl
+        )
 
         timer = TimeQuery(gl)
     }

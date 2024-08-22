@@ -81,6 +81,8 @@ class WgpuBindGroupData(
                 is BindGroupData.Texture2dBindingData -> bindGroupEntries += binding.makeTexture2dEntry()
                 is BindGroupData.Texture3dBindingData -> bindGroupEntries += binding.makeTexture3dEntry()
                 is BindGroupData.TextureCubeBindingData -> bindGroupEntries += binding.makeTextureCubeEntry()
+                is BindGroupData.Texture2dArrayBindingData -> bindGroupEntries += binding.makeTexture2dArrayEntry()
+                is BindGroupData.TextureCubeArrayBindingData -> bindGroupEntries += binding.makeTextureCubeArrayEntry()
 
                 is BindGroupData.StorageBuffer1dBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
                 is BindGroupData.StorageBuffer2dBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
@@ -223,6 +225,57 @@ class WgpuBindGroupData(
         return listOf(
             GPUBindGroupEntry(location.binding, sampler),
             GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView(dimension = GPUTextureViewDimension.viewCube))
+        )
+    }
+
+    private fun BindGroupData.Texture2dArrayBindingData.makeTexture2dArrayEntry(): List<GPUBindGroupEntry> {
+        val location = locations[layout]
+        val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.gpuTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
+        val maxAnisotropy = if (tex.props.generateMipMaps &&
+            samplerSettings.minFilter == FilterMethod.LINEAR &&
+            samplerSettings.magFilter == FilterMethod.LINEAR
+        ) samplerSettings.maxAnisotropy else 1
+        val compare = if (layout.sampleType == TextureSampleType.DEPTH) samplerSettings.compareOp.wgpu else null
+
+        val sampler = device.createSampler(
+            addressModeU = samplerSettings.addressModeU.wgpu,
+            addressModeV = samplerSettings.addressModeV.wgpu,
+            magFilter = samplerSettings.magFilter.wgpu,
+            minFilter = samplerSettings.minFilter.wgpu,
+            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            maxAnisotropy = maxAnisotropy,
+            compare = compare,
+        )
+
+        textureBindings += TextureBinding(this, loadedTex)
+        return listOf(
+            GPUBindGroupEntry(location.binding, sampler),
+            GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView(dimension = GPUTextureViewDimension.view2dArray))
+        )
+    }
+
+    private fun BindGroupData.TextureCubeArrayBindingData.makeTextureCubeArrayEntry(): List<GPUBindGroupEntry> {
+        val location = locations[layout]
+        val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.gpuTexture as WgpuLoadedTexture?) { "Cannot create texture binding from null texture" }
+        val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
+        val compare = if (layout.sampleType == TextureSampleType.DEPTH) samplerSettings.compareOp.wgpu else null
+
+        val sampler = device.createSampler(
+            addressModeU = samplerSettings.addressModeU.wgpu,
+            addressModeV = samplerSettings.addressModeV.wgpu,
+            magFilter = samplerSettings.magFilter.wgpu,
+            minFilter = samplerSettings.minFilter.wgpu,
+            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            compare = compare,
+        )
+
+        textureBindings += TextureBinding(this, loadedTex)
+        return listOf(
+            GPUBindGroupEntry(location.binding, sampler),
+            GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView(dimension = GPUTextureViewDimension.viewCubeArray))
         )
     }
 

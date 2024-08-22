@@ -115,3 +115,37 @@ class TextureCubeBinding(
         binding.sampler = sampler
     }
 }
+
+class Texture2dArrayBinding(
+    textureName: String,
+    defaultTexture: Texture2dArray?,
+    defaultSampler: SamplerSettings?,
+    shader: ShaderBase<*>
+) : TextureBinding<Texture2dArray?>(textureName, defaultTexture, defaultSampler, shader) {
+    override fun BindGroupData.getFromData(): Texture2dArray? {
+        return texture2dArrayBindingData(bindingIndex).texture
+    }
+
+    override fun BindGroupData.setInData(texture: Texture2dArray?, sampler: SamplerSettings?) {
+        val binding = texture2dArrayBindingData(bindingIndex)
+        binding.texture = texture
+        binding.sampler = sampler
+    }
+}
+
+class TextureCubeArrayBinding(
+    textureName: String,
+    defaultTexture: TextureCubeArray?,
+    defaultSampler: SamplerSettings?,
+    shader: ShaderBase<*>
+) : TextureBinding<TextureCubeArray?>(textureName, defaultTexture, defaultSampler, shader) {
+    override fun BindGroupData.getFromData(): TextureCubeArray? {
+        return textureCubeArrayBindingData(bindingIndex).texture
+    }
+
+    override fun BindGroupData.setInData(texture: TextureCubeArray?, sampler: SamplerSettings?) {
+        val binding = textureCubeArrayBindingData(bindingIndex)
+        binding.texture = texture
+        binding.sampler = sampler
+    }
+}
