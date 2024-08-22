@@ -124,7 +124,7 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
     }
 
     fun applySize(width: Int, height: Int) {
-        if (width == renderSize.x && height == renderSize.y) {
+        if (width <= 0 || height <= 0 || (width == renderSize.x && height == renderSize.y)) {
             return
         }
         renderSize.set(width, height)

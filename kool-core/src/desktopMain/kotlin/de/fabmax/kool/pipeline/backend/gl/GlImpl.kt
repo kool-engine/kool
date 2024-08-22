@@ -251,7 +251,7 @@ object GlImpl : GlApi {
     override fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
     override fun texImage2d(target: Int, data: ImageData2d) = texImage2dImpl(target, data)
     override fun texImage3d(target: Int, data: ImageData3d) = texImage3dImpl(target, data)
-    override fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer) = texSubImage3dImpl(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+    override fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData) = texSubImage3dImpl(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
     override fun texParameteri(target: Int, pName: Int, param: Int) = glTexParameteri(target, pName, param)
     override fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = glTexStorage2D(target, levels, internalformat, width, height)
     override fun texStorage3d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int) = glTexStorage3D(target, levels, internalformat, width, height, depth)
@@ -478,12 +478,12 @@ object GlImpl : GlApi {
         }
     }
 
-    private fun texSubImage3dImpl(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer) {
-        when (pixels) {
-            is Uint8BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
-            is Uint16BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
-            is Int32BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
-            is Float32BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+    private fun texSubImage3dImpl(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData) {
+        when (val data = (pixels as BufferedImageData).data) {
+            is Uint8BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Uint16BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Int32BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Float32BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
             else -> error("Unsupported buffer type: $pixels")
         }
     }

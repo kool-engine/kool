@@ -30,17 +30,17 @@ class ArrayTexturesText : DemoScene("Array Textures Test") {
     }
 
     private fun Scene.texArray2d() {
-        val buf = Uint8Buffer(W * H * colors.size * 4)
-        colors.forEach { color ->
+        val bufs = List(colors.size) { Uint8Buffer(W * H * 4) }
+        colors.forEachIndexed { i, color ->
             for (y in 0 until H) {
                 for (x in 0 until W) {
                     var c = if (x % 2 == y % 2) color else color.mulRgb(0.75f)
                     c = c.mulRgb((y / 4 + 1).toFloat() / (H / 4))
-                    c.putTo(buf)
+                    c.putTo(bufs[i])
                 }
             }
         }
-        val arrayData = BufferedImageData3d(buf, W, H, colors.size, TexFormat.RGBA)
+        val arrayData = ImageData2dArray(bufs.map { BufferedImageData2d(it, W, H, TexFormat.RGBA) })
         val arrayTex = Texture2dArray(
             TextureProps(defaultSamplerSettings = SamplerSettings(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE))
         ).apply { uploadLazy(arrayData) }

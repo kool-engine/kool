@@ -201,6 +201,12 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                     copyTextureData(cube.negZ, dst, size, intArrayOf(0, 0, i * 6 + 5))
                 }
             }
+            is ImageData2dArray -> {
+                val size2d = intArrayOf(size[0], size[1])
+                for (i in src.images.indices) {
+                    copyTextureData(src.images[i], dst, size2d, intArrayOf(0, 0, i))
+                }
+            }
             else -> error("Not implemented: ${src::class.simpleName}")
         }
     }

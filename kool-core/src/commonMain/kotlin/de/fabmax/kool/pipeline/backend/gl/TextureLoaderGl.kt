@@ -95,7 +95,17 @@ object TextureLoaderGl {
         val loadedTex = LoadedTextureGl(gl.TEXTURE_2D_ARRAY, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, img.depth)
         loadedTex.bind()
-        gl.texImage3d(gl.TEXTURE_2D_ARRAY, img)
+
+        if (img is ImageData2dArray) {
+            val levels = if (tex.props.generateMipMaps) numMipLevels(img.width, img.height) else 1
+            gl.texStorage3d(gl.TEXTURE_2D_ARRAY, levels, img.format.glInternalFormat(gl), img.width, img.height, img.images.size)
+            for (i in img.images.indices) {
+                gl.texSubImage3d(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), img.images[i])
+            }
+        } else {
+            gl.texImage3d(gl.TEXTURE_2D_ARRAY, img)
+        }
+
         if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_2D_ARRAY)
         }
@@ -110,19 +120,12 @@ object TextureLoaderGl {
         val levels = if (tex.props.generateMipMaps) numMipLevels(img.width, img.height) else 1
         gl.texStorage3d(gl.TEXTURE_CUBE_MAP_ARRAY, levels, img.format.glInternalFormat(gl), img.width, img.height, 6 * img.slices)
         img.cubes.forEachIndexed { i, cube ->
-            // todo: support non-buffered cube face image datas
-            val posX = cube.posX as BufferedImageData2d
-            val negX = cube.negX as BufferedImageData2d
-            val posY = cube.posY as BufferedImageData2d
-            val negY = cube.negY as BufferedImageData2d
-            val posZ = cube.posZ as BufferedImageData2d
-            val negZ = cube.negZ as BufferedImageData2d
-            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 0, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), posX.data)
-            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 1, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), negX.data)
-            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 2, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), posY.data)
-            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 3, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), negY.data)
-            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 4, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), posZ.data)
-            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 5, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), negZ.data)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 0, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.posX)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 1, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.negX)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 2, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.posY)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 3, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.negY)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 4, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.posZ)
+            gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 5, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.negZ)
         }
         if (tex.props.generateMipMaps) {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP_ARRAY)

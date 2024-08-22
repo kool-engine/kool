@@ -299,7 +299,7 @@ object GlImpl : GlApi {
     override fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
     override fun texImage2d(target: Int, data: ImageData2d) = texImage2dImpl(target, data)
     override fun texImage3d(target: Int, data: ImageData3d) = textImage3dImpl(target, data)
-    override fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer) = texSubImage3dImpl(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
+    override fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData) = texSubImage3dImpl(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
     override fun texParameteri(target: Int, pName: Int, param: Int) = gl.texParameteri(target, pName, param)
     override fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = gl.texStorage2D(target, levels, internalformat, width, height)
     override fun texStorage3d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int) = gl.texStorage3D(target, levels, internalformat, width, height, depth)
@@ -487,9 +487,17 @@ object GlImpl : GlApi {
         }
     }
 
-    private fun texSubImage3dImpl(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer) {
-        val arrayBufferView = (pixels as GenericBuffer<*>).buffer
-        gl.texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, arrayBufferView)
+    private fun texSubImage3dImpl(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData) {
+        when (pixels) {
+            is BufferedImageData -> {
+                val arrayBufferView = (pixels.data as GenericBuffer<*>).buffer
+                gl.texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, arrayBufferView)
+            }
+            is ImageTextureData -> {
+                gl.texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels.data)
+            }
+            else -> error("Invalid ImageData type for texSubImage3D: $pixels")
+        }
     }
 
     private fun notSupported(name: String): Nothing = error("$name is not supported in WebGL")

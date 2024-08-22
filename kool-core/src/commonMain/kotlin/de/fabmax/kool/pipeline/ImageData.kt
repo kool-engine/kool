@@ -209,6 +209,23 @@ class ImageDataCubeArray(val cubes: List<ImageDataCube>) : ImageData {
     }
 }
 
+class ImageData2dArray(val images: List<ImageData2d>) : ImageData3d {
+    override val width: Int = images[0].width
+    override val height: Int = images[0].height
+    override val depth: Int = images.size
+    override val format: TexFormat = images[0].format
+
+    init {
+        val ref = images[0]
+        for (i in 1 until images.size) {
+            val map = images[i]
+            check(ref.width == map.width && ref.height == map.height && ref.format == map.format) {
+                "All images must have the same dimensions and format"
+            }
+        }
+    }
+}
+
 
 fun ImageData1d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture1d")) =
     Texture1d(this, props, name)

@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.pipeline.BufferedImageData
-import de.fabmax.kool.pipeline.ImageData1d
-import de.fabmax.kool.pipeline.ImageData2d
-import de.fabmax.kool.pipeline.ImageData3d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlin.jvm.JvmInline
 
@@ -261,7 +258,7 @@ interface GlApi {
     fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?)
     fun texImage2d(target: Int, data: ImageData2d)
     fun texImage3d(target: Int, data: ImageData3d)
-    fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Buffer)
+    fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData)
     fun texParameteri(target: Int, pName: Int, param: Int)
     fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
     fun texStorage3d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int)
