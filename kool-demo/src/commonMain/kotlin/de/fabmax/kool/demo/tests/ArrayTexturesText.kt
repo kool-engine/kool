@@ -66,7 +66,7 @@ class ArrayTexturesText : DemoScene("Array Textures Test") {
                         val arraySampler = texture2dArray("texArray2d")
                         val arrayIdx = int1Var((camData.frameIndex / 100.const) % colors.size.const)
                         val mipLevel = int1Var((camData.frameIndex / 600.const) % 4.const)
-                        val color = sampleTexture(arraySampler, float3Value(uv.output, arrayIdx.toFloat1()), mipLevel.toFloat1())
+                        val color = sampleTextureArray(arraySampler, arrayIdx, uv.output, mipLevel.toFloat1())
                         colorOutput(color)
                     }
                 }
@@ -131,7 +131,7 @@ class ArrayTexturesText : DemoScene("Array Textures Test") {
                         val cubeArraySampler = textureCubeArray("texArrayCube")
                         val arrayIdx = int1Var((camData.frameIndex / 100.const) % 2.const)
                         val mipLevel = int1Var((camData.frameIndex / 200.const) % 4.const)
-                        val color = sampleTexture(cubeArraySampler, float4Value(normalize(pos.output), arrayIdx.toFloat1()), mipLevel.toFloat1())
+                        val color = sampleTextureArray(cubeArraySampler, arrayIdx, normalize(pos.output), mipLevel.toFloat1())
                         colorOutput(color)
                     }
                 }

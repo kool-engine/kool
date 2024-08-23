@@ -199,8 +199,57 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
-        // always use mip-level 0 when sampling depth textures
-        return "textureLod(${sampleTexture.sampler.generateExpression(this)}, ${sampleTexture.coord.generateExpression(this)}, 0.0)"
+        val sampler = sampleTexture.sampler.generateExpression(this)
+        val coord = sampleTexture.coord.generateExpression(this)
+        val depthRef = sampleTexture.depthRef.generateExpression(this)
+        return when (sampleTexture.sampler.expressionType) {
+            KslDepthSampler2d -> "textureLod($sampler, vec3($coord, $depthRef), 0.0)"
+            KslDepthSamplerCube -> "texture($sampler, vec4($coord, $depthRef))"
+            else -> error("Unsupported depth sampler type ${sampleTexture.sampler.expressionType}")
+        }
+    }
+
+    override fun sampleColorTextureArray(sampleTexture: KslSampleColorTextureArray<*>): String {
+        val sampler = sampleTexture.sampler.generateExpression(this)
+        val coord = sampleTexture.coord.generateExpression(this)
+        val idx = "float(${sampleTexture.arrayIndex.generateExpression(this)})"
+        val combined = when (sampleTexture.sampler.expressionType) {
+            KslColorSampler2dArray -> "vec3($coord, $idx)"
+            KslColorSamplerCubeArray -> "vec4($coord, $idx)"
+            else -> error("Unsupported sampler array type ${sampleTexture.sampler.expressionType}")
+        }
+        return if (sampleTexture.lod != null) {
+            "textureLod(${sampler}, ${combined}, ${sampleTexture.lod.generateExpression(this)})"
+        } else {
+            "texture(${sampler}, ${combined})"
+        }
+    }
+
+    override fun sampleColorTextureArrayGrad(sampleTextureGrad: KslSampleColorTextureArrayGrad<*>): String {
+        val sampler = sampleTextureGrad.sampler.generateExpression(this)
+        val coord = sampleTextureGrad.coord.generateExpression(this)
+        val idx = "float(${sampleTextureGrad.arrayIndex.generateExpression(this)})"
+        val combined = when (sampleTextureGrad.sampler.expressionType) {
+            KslColorSampler2dArray -> "vec3($coord, $idx)"
+            KslColorSamplerCubeArray -> "vec4($coord, $idx)"
+            else -> error("Unsupported sampler array type ${sampleTextureGrad.sampler.expressionType}")
+        }
+        val ddx = sampleTextureGrad.ddx.generateExpression(this)
+        val ddy = sampleTextureGrad.ddy.generateExpression(this)
+
+        return "textureGrad($sampler, $combined, $ddx, $ddy)"
+    }
+
+    override fun sampleDepthTextureArray(sampleTexture: KslSampleDepthTextureArray<*>): String {
+        val sampler = sampleTexture.sampler.generateExpression(this)
+        val coord = sampleTexture.coord.generateExpression(this)
+        val idx = "float(${sampleTexture.arrayIndex.generateExpression(this)})"
+        val depthRef = sampleTexture.depthRef.generateExpression(this)
+        return when (sampleTexture.sampler.expressionType) {
+            KslDepthSampler2dArray -> "texture($sampler, vec4($coord, $idx, $depthRef))"
+            KslDepthSamplerCubeArray -> "texture($sampler, vec4($coord, $idx), $depthRef)"
+            else -> error("Unsupported depth sampler array type ${sampleTexture.sampler.expressionType}")
+        }
     }
 
     override fun textureSize(textureSize: KslTextureSize<*, *>): String {

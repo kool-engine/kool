@@ -685,8 +685,26 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ddy: KslExpression<C>,
     ) = KslSampleColorTextureGrad(sampler, coord, ddx, ddy)
 
-    fun <T: KslDepthSampler<C>, C: KslFloatType> sampleDepthTexture(sampler: KslExpression<T>, coord: KslExpression<C>) =
-        KslSampleDepthTexture(sampler, coord)
+    fun <T: KslDepthSampler<C>, C: KslFloatType> sampleDepthTexture(
+        sampler: KslExpression<T>,
+        coord: KslExpression<C>,
+        depthRef: KslExprFloat1
+    ) = KslSampleDepthTexture(sampler, coord, depthRef)
+
+    fun <T, C: KslFloatType> sampleTextureArray(
+        sampler: KslExpression<T>,
+        arrayIndex: KslExprInt1,
+        coord: KslExpression<C>,
+        lod: KslExprFloat1? = null
+    )  where T: KslColorSampler<C>, T: KslSamplerArrayType = KslSampleColorTextureArray(sampler, arrayIndex, coord, lod)
+
+    fun <T, C: KslFloatType> sampleTextureArrayGrad(
+        sampler: KslExpression<T>,
+        arrayIndex: KslExprInt1,
+        coord: KslExpression<C>,
+        ddx: KslExpression<C>,
+        ddy: KslExpression<C>,
+    )  where T: KslColorSampler<C>, T: KslSamplerArrayType = KslSampleColorTextureArrayGrad(sampler, arrayIndex, coord, ddx, ddy)
 
     /**
      * texelFetch — perform a lookup of a single texel within a texture
@@ -709,9 +727,9 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <T> textureSizeCube(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
         where T: KslSamplerType<*>, T: KslSamplerCubeType = KslTextureSizeCube(sampler, lod)
     fun <T> textureSize2dArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
-        where T: KslSamplerType<*>, T: KslSampler2dArrayType = KslTextureSize2dArray(sampler, lod)
+        where T: KslSamplerType<*>, T: KslSampler2dType, T: KslSamplerArrayType = KslTextureSize2dArray(sampler, lod)
     fun <T> textureSizeCubeArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
-        where T: KslSamplerType<*>, T: KslSamplerCubeArrayType = KslTextureSizeCubeArray(sampler, lod)
+        where T: KslSamplerType<*>, T: KslSamplerCubeType, T: KslSamplerArrayType = KslTextureSizeCubeArray(sampler, lod)
 
     // builtin storage functions
     operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslStorage<T,*>.get(coord: KslExpression<C>): KslExpression<R> =
