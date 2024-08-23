@@ -54,7 +54,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
                     }
                 }
                 mat.normalMap?.let {
-                    normalMapping { setNormalMap() }
+                    normalMapping { useNormalMap() }
                 }
 
                 val armTexNames = PbrArmTexNames.getForConfigs(mat.aoMap, mat.roughness, mat.metallic, "$i")

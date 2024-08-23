@@ -13,7 +13,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
-    var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
+    var normalMap: Texture2d? by normalTexture(cfg.normalMapCfg)
     var normalMapStrength: Float by propertyUniform(cfg.normalMapCfg.strengthCfg)
 
     var emission: Color by colorUniform(cfg.emissionCfg)
@@ -55,6 +55,14 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
     val shadowMaps = cfg.lightingCfg.shadowMaps.map { it.shadowMap }
 
     init {
+        if (cfg.normalMapCfg.isArrayNormalMap) {
+            textureArrays[cfg.normalMapCfg.textureName] = Texture2dArrayBinding(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultArrayNormalMap, null, this)
+        }
+        registerArrayTextures(cfg.colorCfg)
+        registerArrayTextures(cfg.emissionCfg)
+        registerArrayTextures(cfg.aoCfg)
+        registerArrayTextures(cfg.vertexCfg.displacementCfg)
+
         when (val ac = ambientCfg) {
             is AmbientLight.Uniform -> ambientFactor = ac.ambientFactor
             is AmbientLight.ImageBased -> {

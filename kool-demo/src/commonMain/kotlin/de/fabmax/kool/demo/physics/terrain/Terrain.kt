@@ -136,7 +136,7 @@ class Terrain(val demo: TerrainDemo, val heightMap: Heightmap) {
 
             fun KslLitShader.LitShaderConfig.Builder.terrainConfig() {
                 color { textureColor(colorMap) }
-                normalMapping { setNormalMap(normalMap) }
+                normalMapping { useNormalMap(normalMap) }
                 lighting {
                     addShadowMap(shadowMap)
                     dualImageBasedAmbientLight()

@@ -132,7 +132,7 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
             }
             shader = KslPbrShader {
                 color { textureColor(groundAlbedo) }
-                normalMapping { setNormalMap(groundNormal) }
+                normalMapping { useNormalMap(groundNormal) }
                 lightingCfg.imageBasedAmbientLight(ibl.irradianceMap)
                 reflectionMap = ibl.reflectionMap
             }

@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.Texture2dArray
 
 fun KslScopeBuilder.vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlockVertexStage {
     val propertyBlock = PropertyBlockVertexStage(cfg, this)
@@ -123,6 +124,30 @@ class PropertyBlockFragmentStage(
                             else -> error("Invalid TextureProperty channel: ${source.channel}")
                         }
                     }
+                    is PropertyBlockConfig.TextureArrayProperty -> {
+                        val texKey = "${source.textureName}[${source.arrayIndex}]"
+                        var sampleValue = findExistingSampleValue(texKey, parentStage)
+                        if (sampleValue == null) {
+                            val tex = parentStage.program.texture2dArray(source.textureName)
+                            sampleValue = parentScope.run {
+                                val texCoords = inUv ?: texCoordBlock(parentStage).getTextureCoords()
+                                val sample = if (inDdx != null && inDdy != null) {
+                                    float4Var(sampleTextureArrayGrad(tex, source.arrayIndex.const, texCoords, inDdx, inDdy))
+                                } else {
+                                    float4Var(sampleTextureArray(tex, source.arrayIndex.const, texCoords))
+                                }
+                                outSamplerValues[texKey] = sample
+                                sample
+                            }
+                        }
+                        when (source.channel) {
+                            0 -> sampleValue.r
+                            1 -> sampleValue.g
+                            2 -> sampleValue.b
+                            3 -> sampleValue.a
+                            else -> error("Invalid TextureProperty channel: ${source.channel}")
+                        }
+                    }
                 }
                 mixValue(source.blendMode, propertyValue)
             }
@@ -174,6 +199,9 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
     val primaryTexture: TextureProperty?
         get() = propertySources.find { it is TextureProperty } as? TextureProperty
 
+    val primaryArrayTexture: TextureArrayProperty?
+        get() = propertySources.find { it is TextureArrayProperty } as? TextureArrayProperty
+
     fun isEmptyOrConst(constValue: Float): Boolean {
         if (propertySources.size == 1) {
             val ps = propertySources[0]
@@ -191,6 +219,7 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
     data class UniformProperty(val defaultValue: Float?, val uniformName: String, override val blendMode: BlendMode) : PropertySource
     data class VertexProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
     data class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, override val blendMode: BlendMode) : PropertySource
+    data class TextureArrayProperty(val arrayIndex: Int, val defaultTexture: Texture2dArray?, val channel: Int, val textureName: String, override val blendMode: BlendMode) : PropertySource
     data class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
 
     enum class BlendMode {
@@ -208,6 +237,9 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
 
         val primaryTexture: TextureProperty?
             get() = propertySources.find { it is TextureProperty } as? TextureProperty
+
+        val primaryArrayTexture: TextureArrayProperty?
+            get() = propertySources.find { it is TextureArrayProperty } as? TextureArrayProperty
 
         fun constProperty(value: Float, blendMode: BlendMode = BlendMode.Set): Builder {
             propertySources += ConstProperty(value, blendMode)
@@ -235,6 +267,17 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
             blendMode: BlendMode = BlendMode.Set
         ): Builder {
             propertySources += TextureProperty(defaultTexture, channel, textureName, blendMode)
+            return this
+        }
+
+        fun textureProperty(
+            arrayIndex: Int,
+            textureName: String,
+            defaultTexture: Texture2dArray? = null,
+            channel: Int = 0,
+            blendMode: BlendMode = BlendMode.Set
+        ): Builder {
+            propertySources += TextureArrayProperty(arrayIndex, defaultTexture, channel, textureName, blendMode)
             return this
         }
 

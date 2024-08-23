@@ -287,7 +287,7 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             }
             shader = KslPbrShader {
                 color { textureColor(groundAlbedo) }
-                normalMapping { setNormalMap(groundNormal) }
+                normalMapping { useNormalMap(groundNormal) }
                 roughness(0.75f)
                 enableSsao(aoPipeline.aoMap)
                 lighting {

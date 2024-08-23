@@ -119,7 +119,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
 
         val shader = KslPbrShader {
             color { textureColor() }
-            normalMapping { setNormalMap() }
+            normalMapping { useNormalMap() }
             roughness { textureProperty() }
             metallic { textureProperty() }
             ao { textureProperty() }
@@ -144,7 +144,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
 
         val shader = KslPbrShader {
             color { textureColor() }
-            normalMapping { setNormalMap() }
+            normalMapping { useNormalMap() }
             roughness { textureProperty() }
             metallic { textureProperty() }
             ao { textureProperty() }

@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.ibl.hdriEnvironmentAsync
 import de.fabmax.kool.util.Uint8Buffer
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 
 /**
  * Loads the texture data at the given path and returns it as [ImageData].
@@ -60,6 +61,17 @@ fun AssetLoader.loadAudioClipAsync(assetPath: String,): Deferred<Result<AudioCli
 
 suspend fun AssetLoader.loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Result<Texture2d> =
     loadImage2d(assetPath, props).map { it.toTexture(props, AssetLoader.trimAssetPath(assetPath)) }
+
+suspend fun AssetLoader.loadTexture2dArray(assetPaths: List<String>, props: TextureProps = TextureProps()): Result<Texture2dArray> {
+    val images = assetPaths.map { loadImage2dAsync(it, props) }.awaitAll()
+    return try {
+        val imageArray = ImageData2dArray(images.map { it.getOrThrow() })
+        val texName = "Tex2dArray[${AssetLoader.trimAssetPath(assetPaths[0])},...]"
+        Result.success(Texture2dArray(imageArray, props, texName))
+    } catch (t: Throwable) {
+        Result.failure(t)
+    }
+}
 
 suspend fun AssetLoader.loadTexture3d(
     assetPath: String,
@@ -135,6 +147,9 @@ suspend fun Assets.loadImageCube(
 
 suspend fun Assets.loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Result<Texture2d> =
     defaultLoader.loadTexture2d(assetPath, props)
+
+suspend fun Assets.loadTexture2dArray(assetPaths: List<String>, props: TextureProps = TextureProps()): Result<Texture2dArray> =
+    defaultLoader.loadTexture2dArray(assetPaths, props)
 
 suspend fun Assets.loadTexture3d(
     assetPath: String, tilesX: Int, tilesY: Int, props: TextureProps = TextureProps()

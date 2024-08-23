@@ -42,6 +42,8 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
 
     init {
         reflectionMap = cfg.reflectionMap
+        registerArrayTextures(cfg.roughnessCfg)
+        registerArrayTextures(cfg.metallicCfg)
     }
 
     override fun createPipeline(mesh: Mesh, instances: MeshInstanceList?, ctx: KoolContext): DrawPipeline {

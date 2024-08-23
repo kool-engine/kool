@@ -164,7 +164,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     //addStaticColor(Color.WHITE)
                     textureColor(colorMap)
                 }
-                normalMapping { setNormalMap(normalMap) }
+                normalMapping { useNormalMap(normalMap) }
                 lighting { addShadowMaps(shadowMaps) }
                 pipeline { cullMethod = CullMethod.NO_CULLING }
 

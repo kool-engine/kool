@@ -242,7 +242,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
             shader = deferredKslPbrShader {
                 color { textureColor(groundColor) }
-                normalMapping { setNormalMap(groundNormals) }
+                normalMapping { useNormalMap(groundNormals) }
                 roughness { textureProperty(groundRoughness) }
                 metallic { textureProperty(groundMetallic) }
                 ao { textureProperty(groundAo) }

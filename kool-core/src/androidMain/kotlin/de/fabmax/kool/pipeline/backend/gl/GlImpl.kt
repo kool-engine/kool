@@ -471,10 +471,10 @@ object GlImpl: GlApi {
 
     private fun texSubImage3dImpl(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData) {
         when (val data = (pixels as BufferedImageData).data) {
-            is Uint8BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
-            is Uint16BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
-            is Int32BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
-            is Float32BufferImpl -> pixels.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Uint8BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Uint16BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Int32BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
+            is Float32BufferImpl -> data.useRaw { glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, it) }
             else -> error("Unsupported buffer type: $pixels")
         }
     }

@@ -23,8 +23,9 @@ interface Releasable {
  * Attaches this [Releasable] to the given [baseReleasable], so that this object is automatically released when
  * [baseReleasable] is released.
  */
-fun Releasable.releaseWith(baseReleasable: BaseReleasable) {
+fun <T: Releasable> T.releaseWith(baseReleasable: BaseReleasable): T {
     baseReleasable.onRelease { release() }
+    return this
 }
 
 fun Releasable.checkIsNotReleased() = check(!isReleased) {

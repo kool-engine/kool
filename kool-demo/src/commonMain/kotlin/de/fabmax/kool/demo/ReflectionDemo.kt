@@ -120,7 +120,7 @@ class ReflectionDemo : DemoScene("Reflections") {
 
                 shader = deferredKslPbrShader {
                     color { textureColor(floorAlbedo) }
-                    normalMapping { setNormalMap(floorNormal) }
+                    normalMapping { useNormalMap(floorNormal) }
                     roughness { textureProperty(floorRoughness) }
                 }
             }

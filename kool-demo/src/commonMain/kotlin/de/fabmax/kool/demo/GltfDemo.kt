@@ -249,7 +249,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
             fun KslPbrShader.Config.Builder.materialConfig() {
                 color { textureColor(colorMap) }
-                normalMapping { setNormalMap(normalMap) }
+                normalMapping { useNormalMap(normalMap) }
                 ao { textureProperty(aoMap) }
                 roughness { textureProperty(roughnessMap) }
             }

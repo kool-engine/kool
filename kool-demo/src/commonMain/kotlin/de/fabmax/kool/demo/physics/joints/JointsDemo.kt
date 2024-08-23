@@ -102,7 +102,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
             }
             shader = KslPbrShader {
                 color { textureColor(groundAlbedo) }
-                normalMapping { setNormalMap(groundNormal) }
+                normalMapping { useNormalMap(groundNormal) }
                 enableSsao(aoPipeline.aoMap)
                 lighting {
                     addShadowMaps(shadows)

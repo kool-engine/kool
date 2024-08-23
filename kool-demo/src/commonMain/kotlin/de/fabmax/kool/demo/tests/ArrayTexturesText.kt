@@ -1,8 +1,13 @@
 package de.fabmax.kool.demo.tests
 
+import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.loadTexture2dArray
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.mvpMatrix
@@ -14,18 +19,54 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.releaseWith
 
 class ArrayTexturesText : DemoScene("Array Textures Test") {
 
+    private lateinit var pbrArrayTex: Texture2dArray
+
+    override suspend fun Assets.loadResources(ctx: KoolContext) {
+        pbrArrayTex = loadTexture2dArray(listOf(
+            "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg",
+            "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg",
+            "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg",
+            "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-roughness.jpg",
+        )).getOrThrow().releaseWith(mainScene)
+    }
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(0f, 0f)
 
+        lighting.singleSpotLight {
+            setup(Vec3f(1f, 1f, 8f), Vec3f(-1f, -1f, -8f).normed())
+            setColor(Color.WHITE, 75f)
+        }
+
+        pbrTex()
         texArray2d()
         if (KoolSystem.features.cubeMapArrays) {
             texArrayCube()
+        }
+    }
+
+    private fun Scene.pbrTex() {
+        addTextureMesh(isNormalMapped = true) {
+            generate {
+                rect { size.set(5f, 5f) }
+            }
+
+            val texName = "pbr_textures"
+            shader = KslPbrShader {
+                color { textureColor(0, texName, pbrArrayTex) }
+                normalMapping { useNormalMapFromArray(1, texName, pbrArrayTex) }
+                ao { textureProperty(2, texName, pbrArrayTex) }
+                roughness { textureProperty(3, texName, pbrArrayTex) }
+            }.also {
+                it.texture2dArray(texName, pbrArrayTex)
+            }
         }
     }
 
@@ -50,7 +91,7 @@ class ArrayTexturesText : DemoScene("Array Textures Test") {
             generate {
                 rect { size.set(5f, 5f) }
             }
-            transform.translate(-4f, 0f, 0f)
+            transform.translate(-7f, 0f, 0f)
 
             shader = KslShader("array-2d-test") {
                 val uv = interStageFloat2()
@@ -115,7 +156,7 @@ class ArrayTexturesText : DemoScene("Array Textures Test") {
                     radius = 2.5f
                 }
             }
-            transform.translate(4f, 0f, 0f)
+            transform.translate(7f, 0f, 0f)
 
             shader = KslShader("array-cube-test") {
                 val pos = interStageFloat3()

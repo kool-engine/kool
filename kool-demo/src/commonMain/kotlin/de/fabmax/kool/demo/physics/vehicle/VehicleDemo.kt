@@ -242,7 +242,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
                     constColor(color(100), blendMode = ColorBlockConfig.BlendMode.Multiply)
                 }
                 normalMapping {
-                    setNormalMap(groundNormal)
+                    useNormalMap(groundNormal)
                 }
             }
         }

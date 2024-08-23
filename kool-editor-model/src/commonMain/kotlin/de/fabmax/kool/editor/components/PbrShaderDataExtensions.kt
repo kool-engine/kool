@@ -74,7 +74,7 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
         }
         normalMap?.let {
             normalMapping {
-                setNormalMap()
+                useNormalMap()
             }
         }
 

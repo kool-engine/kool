@@ -94,7 +94,7 @@ data class GltfMaterial(
 
         cfg.normalMapping {
             if (normalTexture != null) {
-                setNormalMap(normalTexture)
+                useNormalMap(normalTexture)
             }
         }
 

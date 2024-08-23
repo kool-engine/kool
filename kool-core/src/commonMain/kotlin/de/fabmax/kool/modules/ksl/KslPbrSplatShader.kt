@@ -538,7 +538,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                     outBaseColor set outColor
                 }
                 if (splatMatCfg.normalMapCfg.isNormalMapped) {
-                    val tNormal = program.texture2d(splatMatCfg.normalMapCfg.normalMapName)
+                    val tNormal = program.texture2d(splatMatCfg.normalMapCfg.textureName)
                     val mapNormal = float3Var(sampleTextureGrad(tNormal, tiledUv, ddx, ddy).xyz * 2f.const - 1f.const)
                     mapNormal set rotMat * normalize(mapNormal)
                     inOutNormal set calcBumpedNormal(inOutNormal, inTangent, mapNormal, 1f.const)
@@ -552,7 +552,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     inner class MaterialBinding(matCfg: SplatMaterialConfig) {
         var colorMap by colorTexture(matCfg.colorCfg)
-        var normalMap by texture2d(matCfg.normalMapCfg.normalMapName, matCfg.normalMapCfg.defaultNormalMap)
+        var normalMap by texture2d(matCfg.normalMapCfg.textureName, matCfg.normalMapCfg.defaultNormalMap)
         var displacementMap by texture2d(matCfg.displacementTex.textureName, matCfg.displacementTex.defaultTexture)
         var aoMap by propertyTexture(matCfg.aoCfg)
         var roughnessMap by propertyTexture(matCfg.roughnessCfg)
@@ -713,7 +713,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             var stochasticTileRotation: AngleF = 360f.deg
 
             fun normalMap(texture2d: Texture2d?): Builder {
-                normalMapping { setNormalMap(texture2d) }
+                normalMapping { useNormalMap(texture2d) }
                 return this
             }
 
