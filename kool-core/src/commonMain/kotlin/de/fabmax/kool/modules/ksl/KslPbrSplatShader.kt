@@ -500,7 +500,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
     ) {
         val index: Int get() = splatMatCfg.materialIndex
         val matSettings = scope.parentStage.program.uniformFloat4("uMatSetting_$index")
-//        val displacementTex = scope.parentStage.program.texture2dArray(splatMatCfg.displacementTex.textureName)
 
         val uvScale: KslExprFloat1 get() = matSettings.x
         val uvRot: KslExprFloat1 get() = matSettings.y
@@ -544,8 +543,13 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                     outBaseColor set outColor
                 }
                 if (splatMatCfg.normalMapCfg.isNormalMapped) {
-                    val tNormal = program.texture2d(splatMatCfg.normalMapCfg.textureName)
-                    val mapNormal = float3Var(sampleTextureGrad(tNormal, tiledUv, ddx, ddy).xyz * 2f.const - 1f.const)
+                    val mapNormal = if (splatMatCfg.normalMapCfg.isArrayNormalMap) {
+                        val tNormal = program.texture2dArray(splatMatCfg.normalMapCfg.textureName)
+                        float3Var(sampleTextureArrayGrad(tNormal, splatMatCfg.normalMapCfg.normalMapArrayIndex.const, tiledUv, ddx, ddy).xyz * 2f.const - 1f.const)
+                    } else {
+                        val tNormal = program.texture2d(splatMatCfg.normalMapCfg.textureName)
+                        float3Var(sampleTextureGrad(tNormal, tiledUv, ddx, ddy).xyz * 2f.const - 1f.const)
+                    }
                     mapNormal set rotMat * normalize(mapNormal)
                     inOutNormal set calcBumpedNormal(inOutNormal, inTangent, mapNormal, 1f.const)
                 }
@@ -558,7 +562,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     inner class MaterialBinding(matCfg: SplatMaterialConfig) {
         var colorMap by colorTexture(matCfg.colorCfg)
-        var normalMap by texture2d(matCfg.normalMapCfg.textureName, matCfg.normalMapCfg.defaultNormalMap)
+        var normalMap by normalTexture(matCfg.normalMapCfg)
         var aoMap by propertyTexture(matCfg.aoCfg)
         var roughnessMap by propertyTexture(matCfg.roughnessCfg)
         var metallicMap by propertyTexture(matCfg.metallicCfg)

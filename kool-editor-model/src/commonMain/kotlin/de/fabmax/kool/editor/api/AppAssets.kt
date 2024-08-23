@@ -3,12 +3,9 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
 import de.fabmax.kool.loadTexture2d
-import de.fabmax.kool.loadTexture2dArray
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.Texture2dArray
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.Heightmap
 import de.fabmax.kool.util.Uint8Buffer
@@ -94,18 +91,27 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
     }
 
     override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> {
-        cache[ref]?.let { return it.mapCatching { r -> r as Texture2d } }
         val prefixed = "${pathPrefix}${ref.path}"
         val props = TextureProps(ref.texFormat)
-        return assetLoader.loadTexture2d(prefixed, props)
-            .also { cache[ref] = it }
+        val image: Result<ImageData2d> = cache[ref]?.let { it.mapCatching { r -> r as ImageData2d } }
+            ?: assetLoader.loadImage2d(prefixed, props).also { cache[ref] = it }
+        return image.mapCatching { Texture2d(it, props, prefixed) }
     }
 
     override suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray> {
-        cache[ref]?.let { return it.mapCatching { r -> r as Texture2dArray } }
         val props = TextureProps(ref.texFormat)
-        return assetLoader.loadTexture2dArray(ref.paths.map { "$pathPrefix$it" }, props)
-            .also { cache[ref] = it }
+        val images: List<Result<ImageData2d>> = ref.paths.map { path ->
+            val prefixed = "$pathPrefix$path"
+            val texRef = AssetReference.Texture(prefixed, ref.texFormat)
+            cache[texRef]?.let { it.mapCatching { r -> r as ImageData2d } }
+                ?: assetLoader.loadImage2d(prefixed, props).also { cache[texRef] = it }
+        }
+        return try {
+            val data = ImageData2dArray(images.map { it.getOrThrow() })
+            Result.success(Texture2dArray(data, props, "Texture2dArray[${data.id}]"))
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
     }
 
     override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> {

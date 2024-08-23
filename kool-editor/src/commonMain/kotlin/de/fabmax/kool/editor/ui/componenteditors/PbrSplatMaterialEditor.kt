@@ -8,6 +8,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.modules.ksl.KslPbrSplatShader
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import kotlin.math.max
@@ -45,7 +46,7 @@ class PbrSplatMaterialEditor(
             ) {
                 val mat = getSplatMaterial(i)
                 textureSetting("Displacement:", mat.displacementMap, "r", texSingleChannels) {
-                    setSplatMaterial(i, getSplatMaterial(i).copy(displacementMap = it))
+                    setSplatMaterial(i, getSplatMaterial(i).copy(displacementMap = it?.copy(format = TexFormat.R)))
                 }
                 colorSetting("Base color:", mat.baseColor, MdColor.GREY.toLinear()) {
                     setSplatMaterial(i, getSplatMaterial(i).copy(baseColor = it))

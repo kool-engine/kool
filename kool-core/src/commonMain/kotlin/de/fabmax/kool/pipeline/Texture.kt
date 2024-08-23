@@ -122,7 +122,7 @@ open class Texture1d(
 fun Texture1d(
     data: ImageData1d,
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture2d")
+    name: String = UniqueId.nextId("Texture1d")
 ): Texture1d = Texture1d(props, name).apply { uploadLazy(data) }
 
 fun Texture1d(
@@ -194,7 +194,7 @@ open class TextureCube(
 fun TextureCube(
     data: ImageDataCube,
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture3d")
+    name: String = UniqueId.nextId("TextureCube")
 ): TextureCube = TextureCube(props, name).apply { uploadLazy(data) }
 
 fun TextureCube(
@@ -211,12 +211,12 @@ open class Texture2dArray(
 fun Texture2dArray(
     data: ImageData3d,
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture3d")
+    name: String = UniqueId.nextId("Texture2dArray")
 ): Texture2dArray = Texture2dArray(props, name).apply { uploadLazy(data) }
 
 fun Texture2dArray(
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("TextureCube"),
+    name: String = UniqueId.nextId("Texture2dArray"),
     loader: (suspend CoroutineScope.() -> ImageData3d)
 ): Texture2dArray = Texture2dArray(props, name).apply { uploadLazy(loader) }
 
@@ -228,12 +228,12 @@ open class TextureCubeArray(
 fun TextureCubeArray(
     data: ImageDataCubeArray,
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("Texture3d")
+    name: String = UniqueId.nextId("TextureCubeArray")
 ): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(data) }
 
 fun TextureCubeArray(
     props: TextureProps = TextureProps(),
-    name: String = UniqueId.nextId("TextureCube"),
+    name: String = UniqueId.nextId("TextureCubeArray"),
     loader: (suspend CoroutineScope.() -> ImageDataCubeArray)
 ): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(loader) }
 

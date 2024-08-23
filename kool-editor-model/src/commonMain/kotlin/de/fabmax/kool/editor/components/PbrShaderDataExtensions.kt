@@ -180,17 +180,18 @@ fun PbrShaderData.matchesPbrShaderConfig(shader: DrawShader?): Boolean {
             && genericSettings.matchesPipelineConfig(shader.pipelineConfig)
 }
 
-data class PbrArmTexNames(val ao: String, val roughness: String, val metallic: String) {
+data class PbrArmTexNames(val ao: String, val roughness: String, val metallic: String, val aoIndex: Int, val roughnessIndex: Int, val metallicIndex: Int) {
     companion object {
         fun getForConfigs(aoCfg: MapAttribute?, roughCfg: MaterialAttribute, metalCfg: MaterialAttribute, postfix: String = ""): PbrArmTexNames {
-            val texNames = mutableMapOf<String, String>()
+            val texNames = mutableMapOf<String, Pair<String, Int>>()
 
-            val ao = aoCfg?.let { texNames.getOrPut(it.mapPath) { "tAo_$postfix" } }
+            var mapIdx = 0
+            val ao = aoCfg?.let { texNames.getOrPut(it.mapPath) { "tAo$postfix" to mapIdx++ } }
             val roughness = if (roughCfg !is MapAttribute) null else {
-                texNames.getOrPut(roughCfg.mapPath) { "tRoughness_$postfix" }
+                texNames.getOrPut(roughCfg.mapPath) { "tRoughness$postfix" to mapIdx++ }
             }
             val metallic = if (metalCfg !is MapAttribute) null else {
-                texNames.getOrPut(metalCfg.mapPath) { "tMetal_$postfix" }
+                texNames.getOrPut(metalCfg.mapPath) { "tMetal$postfix" to mapIdx++ }
             }
 
             if (ao != null && ao == roughness && aoCfg.channels == (roughCfg as MapAttribute).channels) {
@@ -204,9 +205,12 @@ data class PbrArmTexNames(val ao: String, val roughness: String, val metallic: S
             }
 
             return PbrArmTexNames(
-                ao = ao ?: "tAo_$postfix",
-                roughness = roughness ?: "tRoughness_$postfix",
-                metallic = metallic ?: "tMetallic_$postfix"
+                ao = ao?.first ?: "tAo$postfix",
+                roughness = roughness?.first ?: "tRoughness$postfix",
+                metallic = metallic?.first ?: "tMetallic$postfix",
+                aoIndex = ao?.second ?: -1,
+                roughnessIndex = roughness?.second ?: -1,
+                metallicIndex = metallic?.second ?: -1,
             )
         }
     }

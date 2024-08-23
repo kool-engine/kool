@@ -34,13 +34,15 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
             }
         }
 
-        materialMaps.forEachIndexed { i, mat ->
+        val arrayTexName = "pbr_material_maps"
+        var arrayIndex = 0
+        materialMaps.forEach { mat ->
             addMaterial {
                 color {
                     when (val color = mat.baseColor) {
                         is ConstColorAttribute -> uniformColor()
                         is ConstValueAttribute -> uniformColor()
-                        is MapAttribute -> textureColor()
+                        is MapAttribute -> textureColor(arrayIndex++, arrayTexName)
                         is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
                     }
                 }
@@ -48,34 +50,49 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
                     when (val color = mat.emission) {
                         is ConstColorAttribute -> uniformColor()
                         is ConstValueAttribute -> uniformColor()
-                        is MapAttribute -> textureColor()
+                        is MapAttribute -> textureColor(arrayIndex++, arrayTexName)
                         is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
                     }
                 }
                 mat.normalMap?.let {
-                    normalMapping { useNormalMap() }
+                    normalMapping { useNormalMapFromArray(arrayIndex++, arrayTexName) }
                 }
 
-                val armTexNames = PbrArmTexNames.getForConfigs(mat.aoMap, mat.roughness, mat.metallic, "$i")
+                val armTexNames = PbrArmTexNames.getForConfigs(mat.aoMap, mat.roughness, mat.metallic)
                 mat.aoMap?.let {
-                    ao { textureProperty(channel = it.singleChannelIndex, textureName = armTexNames.ao) }
+                    ao {
+                        textureProperty(
+                            arrayIndex = arrayIndex + armTexNames.aoIndex,
+                            textureName = arrayTexName,
+                            channel = it.singleChannelIndex
+                        )
+                    }
                 }
                 roughness {
                     when (val rough = mat.roughness) {
                         is ConstColorAttribute -> uniformProperty()
                         is ConstValueAttribute -> uniformProperty()
-                        is MapAttribute -> textureProperty(channel = rough.singleChannelIndex, textureName = armTexNames.roughness)
                         is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.FLOAT1))
+                        is MapAttribute -> textureProperty(
+                            arrayIndex = arrayIndex + armTexNames.roughnessIndex,
+                            textureName = arrayTexName,
+                            channel = rough.singleChannelIndex
+                        )
                     }
                 }
                 metallic {
                     when (val metal = mat.metallic) {
                         is ConstColorAttribute -> uniformProperty()
                         is ConstValueAttribute -> uniformProperty()
-                        is MapAttribute -> textureProperty(channel = metal.singleChannelIndex, textureName = armTexNames.metallic)
                         is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.FLOAT1))
+                        is MapAttribute -> textureProperty(
+                            arrayIndex = arrayIndex + armTexNames.roughnessIndex,
+                            textureName = arrayTexName,
+                            channel = metal.singleChannelIndex
+                        )
                     }
                 }
+                arrayIndex += maxOf(armTexNames.aoIndex, armTexNames.roughnessIndex, armTexNames.metallicIndex) + 1
             }
         }
 
@@ -115,10 +132,66 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         shader.cfg.isWithDebugOptions != isDebugMode -> return false
     }
 
-    // fixme: this will leak textures everytime displacement maps are changed in the editor
+    val mapPaths = mutableListOf<String>()
+    materialMaps.forEachIndexed { i, mat ->
+        val matBinding = shader.materials[i]
+
+        // collect texture paths, order matters as it will determine the resulting index in the array texture
+        (mat.baseColor as? MapAttribute)?.let { mapPaths += it.mapPath }
+        (mat.emission as? MapAttribute)?.let { mapPaths += it.mapPath }
+        mat.normalMap?.let { mapPaths += it.mapPath }
+
+        val armTexNames = PbrArmTexNames.getForConfigs(mat.aoMap, mat.roughness, mat.metallic)
+        mat.aoMap?.let { mapPaths += it.mapPath }
+        if (armTexNames.roughnessIndex != armTexNames.aoIndex) {
+            (mat.roughness as? MapAttribute)?.let { mapPaths += it.mapPath }
+        }
+        if (armTexNames.metallicIndex != armTexNames.aoIndex && armTexNames.metallicIndex != armTexNames.roughnessIndex) {
+            (mat.metallic as? MapAttribute)?.let { mapPaths += it.mapPath }
+        }
+
+        when (val color = mat.baseColor) {
+            is ConstColorAttribute -> matBinding.color = color.color.toColorLinear()
+            is ConstValueAttribute -> matBinding.color = Color(color.value, color.value, color.value)
+            else -> { }
+        }
+        when (val color = mat.emission) {
+            is ConstColorAttribute -> matBinding.emission = color.color.toColorLinear()
+            is ConstValueAttribute -> matBinding.emission = Color(color.value, color.value, color.value)
+            else -> { }
+        }
+        when (val rough = mat.roughness) {
+            is ConstColorAttribute -> matBinding.roughness = rough.color.r
+            is ConstValueAttribute -> matBinding.roughness = rough.value
+            else -> { }
+        }
+        when (val metal = mat.metallic) {
+            is ConstColorAttribute -> matBinding.metallic = metal.color.r
+            is ConstValueAttribute -> matBinding.metallic = metal.value
+            else -> { }
+        }
+
+        matBinding.textureScale = mat.textureScale
+        matBinding.textureRotation = mat.textureRotation.deg
+        matBinding.tileSize = mat.stochasticTileSize
+        matBinding.tileRotation = mat.stochasticRotation.deg
+    }
+
+    shader.debugMode = debugMode
+    shader.splatMap = splatMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) } ?: SingleColorTexture(Color.BLACK)
+
+//    val oldMatMaps = shader.textureArrays["pbr_material_maps"]?.get()
+//    val oldDispMaps = shader.textureArrays[KslPbrSplatShader.DISPLACEMENTS_TEX_NAME]?.get()
+
+    val mapArray = AppAssets.loadTexture2dArray(AssetReference.TextureArray(mapPaths))
+    if (mapArray.isFailure) {
+        logE { "Failed loading splat material maps: ${mapArray.exceptionOrNull()}" }
+    }
+    val newMatMaps = mapArray.getOrNull()
+
     val dispMaps = materialMaps.map { it.displacementMap }
     val nonNullDisp = dispMaps.find { it != null }
-    var dispTex = nonNullDisp?.let {
+    var newDispMaps = nonNullDisp?.let {
         if (dispMaps.any { it == null }) {
             logW { "PbrSplatShaderData contains materials without displacement map, material blending won't work as expected" }
         }
@@ -128,61 +201,20 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         }
         AppAssets.loadTexture2dArray(AssetReference.TextureArray(nonNullDispMaps.map { it.mapPath }, TexFormat.R)).getOrNull()
     }
-    if (dispTex == null) {
+    if (newDispMaps == null) {
         logW { "PbrSplatShaderData contains no displacement maps, material blending won't work as expected" }
         val fakeDisps = ImageData2dArray(materialMaps.map { BufferedImageData2d.singleColor(Color.GRAY) })
-        dispTex = Texture2dArray(fakeDisps)
-    }
-    shader.textureArrays[KslPbrSplatShader.DISPLACEMENTS_TEX_NAME]?.set(dispTex)
-
-    materialMaps.forEachIndexed { i, mat ->
-        val matBinding = shader.materials[i]
-
-        val colorMap = (mat.baseColor as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
-        val roughnessMap = (mat.roughness as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
-        val metallicMap = (mat.metallic as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
-        val emissionMap = (mat.emission as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
-        val normalMap = mat.normalMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
-        val aoMap = mat.aoMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
-
-        when (val color = mat.baseColor) {
-            is ConstColorAttribute -> matBinding.color = color.color.toColorLinear()
-            is ConstValueAttribute -> matBinding.color = Color(color.value, color.value, color.value)
-            is MapAttribute -> matBinding.colorMap = colorMap
-            is VertexAttribute -> { }
-        }
-        when (val color = mat.emission) {
-            is ConstColorAttribute -> matBinding.emission = color.color.toColorLinear()
-            is ConstValueAttribute -> matBinding.emission = Color(color.value, color.value, color.value)
-            is MapAttribute -> matBinding.emissionMap = emissionMap
-            is VertexAttribute -> { }
-        }
-        when (val rough = mat.roughness) {
-            is ConstColorAttribute -> matBinding.roughness = rough.color.r
-            is ConstValueAttribute -> matBinding.roughness = rough.value
-            is MapAttribute -> matBinding.roughnessMap = roughnessMap
-            is VertexAttribute -> { }
-        }
-        when (val metal = mat.metallic) {
-            is ConstColorAttribute -> matBinding.metallic = metal.color.r
-            is ConstValueAttribute -> matBinding.metallic = metal.value
-            is MapAttribute -> matBinding.metallicMap = metallicMap
-            is VertexAttribute -> { }
-        }
-        normalMap?.let { matBinding.normalMap = it }
-        aoMap?.let { matBinding.aoMap = it }
-        roughnessMap?.let { matBinding.roughnessMap = it }
-        metallicMap?.let { matBinding.metallicMap = it }
-
-        matBinding.textureScale = mat.textureScale
-        matBinding.textureRotation = mat.textureRotation.deg
-        matBinding.tileSize = mat.stochasticTileSize
-        matBinding.tileRotation = mat.stochasticRotation.deg
-
-        shader.debugMode = debugMode
+        newDispMaps = Texture2dArray(fakeDisps)
     }
 
-    shader.splatMap = splatMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) } ?: SingleColorTexture(Color.BLACK)
+    // fixme: ideally, we should release previous textures on change but currently that breaks texture caching
+    //  because AppAssets is not aware of textures being released
+//    if (newMatMaps != oldMatMaps) oldMatMaps?.release()
+//    if (newDispMaps != oldDispMaps) oldDispMaps?.release()
+
+    shader.textureArrays["pbr_material_maps"]?.set(newMatMaps)
+    shader.textureArrays[KslPbrSplatShader.DISPLACEMENTS_TEX_NAME]?.set(newDispMaps)
+
 
     if (ibl != null) {
         shader.ambientFactor = Color.WHITE
