@@ -19,7 +19,13 @@ class FileSystemAssetLoaderJs(baseDir: FileSystemDirectory) : FileSystemAssetLoa
             val bytes = (texData as Uint8BufferImpl).buffer
             val imgBlob = Blob(arrayOf(bytes))
             val bmp = createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
-            ImageAtlasTextureData(bmp, ref.tilesX, ref.tilesY, ref.props?.format ?: TexFormat.RGBA)
+            ImageAtlasTextureData(
+                image = bmp,
+                tilesX = ref.tilesX,
+                tilesY = ref.tilesY,
+                id = trimAssetPath(ref.path),
+                format = ref.props?.format ?: TexFormat.RGBA
+            )
         }
         return LoadedAsset.ImageAtlas(ref, result)
     }
@@ -33,7 +39,8 @@ class FileSystemAssetLoaderJs(baseDir: FileSystemDirectory) : FileSystemAssetLoa
                 ImageTextureData.imageBitmapToBuffer(texData.data, props),
                 texData.width,
                 texData.height,
-                props.format
+                props.format,
+                trimAssetPath(ref.path)
             )
         }
         return LoadedAsset.BufferedImage2d(ref, imageBuffer)

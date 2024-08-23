@@ -8,10 +8,7 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.Viewport
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 
 abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
@@ -69,8 +66,12 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun <T: ImageData> uploadTextureData(tex: Texture<T>, data: T) {
-        TextureLoaderGl.loadTexture(tex, data, this)
+    override fun <T: ImageData> uploadTextureData(tex: Texture<T>) {
+        if (tex.uploadData == null) {
+            logE { "texture provided to uploadTextureData() has no uploadData" }
+            return
+        }
+        TextureLoaderGl.loadTexture(tex, this)
     }
 
     override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {

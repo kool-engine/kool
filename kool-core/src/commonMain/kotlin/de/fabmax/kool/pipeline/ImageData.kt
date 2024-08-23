@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.ImageData.Companion.checkBufferFormat
 import de.fabmax.kool.util.*
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
@@ -12,6 +13,13 @@ import kotlin.math.roundToInt
  * as, e.g., height fields.
  */
 sealed interface ImageData {
+    /**
+     * Unique name / ID of this image data. It is used during texture load to check if a texture with the same
+     * content already exists (and if so omits loading it again). This means that, if two image data objects with
+     * different content share the same ID, loading the second one will yield a wrong texture.
+     */
+    val id: String
+
     val format: TexFormat
 
     companion object {
@@ -33,6 +41,26 @@ sealed interface ImageData {
             }
         }
 
+        fun idForImageData(typeName: String, data: Buffer): String {
+            val hash = LongHash {
+                when (data) {
+                    is Float32Buffer -> for (i in 0 until data.capacity) this += data[i]
+                    is Int32Buffer -> for (i in 0 until data.capacity) this += data[i]
+                    is MixedBuffer -> for (i in 0 until data.capacity) this += data.getInt8(i)
+                    is Uint16Buffer -> for (i in 0 until data.capacity) this += data[i].toInt()
+                    is Uint8Buffer -> for (i in 0 until data.capacity) this += data[i].toByte()
+                    else -> this += UniqueId.nextId()
+                }
+            }
+            return "$typeName-${abs(hash.hash)}"
+        }
+
+        fun idForImageIds(typeName: String, images: List<ImageData>): String {
+            val hash = LongHash {
+                images.forEach { this += it.id }
+            }
+            return "$typeName-${abs(hash.hash)}"
+        }
     }
 }
 
@@ -60,7 +88,8 @@ interface ImageData3d : ImageData {
 class BufferedImageData1d(
     override val data: Buffer,
     override val width: Int,
-    override val format: TexFormat
+    override val format: TexFormat,
+    override val id: String = ImageData.idForImageData("BufferedImageData1d", data)
 ) : ImageData1d, BufferedImageData {
 
     init {
@@ -113,7 +142,8 @@ class BufferedImageData2d(
     override val data: Buffer,
     override val width: Int,
     override val height: Int,
-    override val format: TexFormat
+    override val format: TexFormat,
+    override val id: String = ImageData.idForImageData("BufferedImageData2d", data)
 ) : ImageData2d, BufferedImageData {
 
     init {
@@ -131,7 +161,7 @@ class BufferedImageData2d(
             buf[1] = (color.g * 255f).roundToInt().toUByte()
             buf[2] = (color.b * 255f).roundToInt().toUByte()
             buf[3] = (color.a * 255f).roundToInt().toUByte()
-            return BufferedImageData2d(buf, 1, 1, TexFormat.RGBA)
+            return BufferedImageData2d(buf, 1, 1, TexFormat.RGBA, id = "SingleColorData[$color]")
         }
     }
 }
@@ -141,7 +171,8 @@ class BufferedImageData3d(
     override val width: Int,
     override val height: Int,
     override val depth: Int,
-    override val format: TexFormat
+    override val format: TexFormat,
+    override val id: String = ImageData.idForImageData("BufferedImageData3d", data)
 ) : ImageData3d, BufferedImageData {
 
     init {
@@ -159,7 +190,8 @@ class ImageDataCube(
     val left: ImageData2d,
     val right: ImageData2d,
     val up: ImageData2d,
-    val down: ImageData2d
+    val down: ImageData2d,
+    override val id: String = "ImageDataCube[x+:${right.id},x-:${left.id},y+:${up.id},y-:${down.id},z+:${back.id},z-:${front.id}]"
 ) : ImageData {
 
     val posX: ImageData2d get() = right
@@ -192,24 +224,10 @@ class ImageDataCube(
     }
 }
 
-class ImageDataCubeArray(val cubes: List<ImageDataCube>) : ImageData {
-    val width: Int = cubes[0].width
-    val height: Int = cubes[0].height
-    val slices: Int = cubes.size
-    override val format: TexFormat = cubes[0].format
-
-    init {
-        val ref = cubes[0]
-        for (i in 1 until cubes.size) {
-            val map = cubes[i]
-            check(ref.width == map.width && ref.height == map.height && ref.format == map.format) {
-                "All cube maps must have the same dimensions and format"
-            }
-        }
-    }
-}
-
-class ImageData2dArray(val images: List<ImageData2d>) : ImageData3d {
+class ImageData2dArray(
+    val images: List<ImageData2d>,
+    override val id: String = ImageData.idForImageIds("ImageData2dArray", images)
+) : ImageData3d {
     override val width: Int = images[0].width
     override val height: Int = images[0].height
     override val depth: Int = images.size
@@ -221,6 +239,26 @@ class ImageData2dArray(val images: List<ImageData2d>) : ImageData3d {
             val map = images[i]
             check(ref.width == map.width && ref.height == map.height && ref.format == map.format) {
                 "All images must have the same dimensions and format"
+            }
+        }
+    }
+}
+
+class ImageDataCubeArray(
+    val cubes: List<ImageDataCube>,
+    override val id: String = ImageData.idForImageIds("ImageDataCubeArray", cubes)
+) : ImageData {
+    val width: Int = cubes[0].width
+    val height: Int = cubes[0].height
+    val slices: Int = cubes.size
+    override val format: TexFormat = cubes[0].format
+
+    init {
+        val ref = cubes[0]
+        for (i in 1 until cubes.size) {
+            val map = cubes[i]
+            check(ref.width == map.width && ref.height == map.height && ref.format == map.format) {
+                "All cube maps must have the same dimensions and format"
             }
         }
     }

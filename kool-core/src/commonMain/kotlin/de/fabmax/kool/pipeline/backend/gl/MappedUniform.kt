@@ -136,10 +136,7 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
             return false
         }
         if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
-            texture.uploadData?.let {
-                texture.uploadData = null
-                TextureLoaderGl.loadTexture(texture, it, backend)
-            }
+            texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
         }
         if (texture.loadingState == Texture.LoadingState.LOADED) {
             val tex = checkNotNull(texture.gpuTexture) { "texture ${texture.name} is marked loaded but gpuTexture is null" } as LoadedTextureGl

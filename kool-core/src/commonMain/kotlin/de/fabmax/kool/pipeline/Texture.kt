@@ -72,7 +72,8 @@ abstract class Texture<T: ImageData>(
     suspend fun upload(imageData: T) {
         checkFormat(imageData.format)
         withContext(Dispatchers.RenderLoop) {
-            KoolSystem.requireContext().backend.uploadTextureData(this@Texture, imageData)
+            uploadData = imageData
+            KoolSystem.requireContext().backend.uploadTextureData(this@Texture)
         }
     }
 

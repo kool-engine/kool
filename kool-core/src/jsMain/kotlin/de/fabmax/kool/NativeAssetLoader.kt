@@ -26,7 +26,7 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     override suspend fun loadImage2d(ref: AssetRef.Image2d): LoadedAsset.Image2d {
         val resolveSz = ref.props?.resolveSize
         val result = loadImageBitmap(ref.path, ref.isHttp, resolveSz).map {
-            ImageTextureData(it, ref.props?.format ?: TexFormat.RGBA)
+            ImageTextureData(it, trimAssetPath(ref.path), ref.props?.format ?: TexFormat.RGBA)
         }
         return LoadedAsset.Image2d(ref, result)
     }
@@ -34,7 +34,7 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.ImageAtlas {
         val resolveSz = ref.props?.resolveSize
         val result = loadImageBitmap(ref.path, ref.isHttp, resolveSz).map {
-            ImageAtlasTextureData(it, ref.tilesX, ref.tilesY, ref.props?.format ?: TexFormat.RGBA)
+            ImageAtlasTextureData(it, ref.tilesX, ref.tilesY, trimAssetPath(ref.path), ref.props?.format ?: TexFormat.RGBA)
         }
         return LoadedAsset.ImageAtlas(ref, result)
     }
@@ -48,7 +48,8 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
                 ImageTextureData.imageBitmapToBuffer(texData.data, props),
                 texData.width,
                 texData.height,
-                props.format
+                props.format,
+                trimAssetPath(ref.path)
             )
         }
         return LoadedAsset.BufferedImage2d(ref, result)

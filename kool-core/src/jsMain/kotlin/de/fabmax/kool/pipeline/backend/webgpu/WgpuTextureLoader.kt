@@ -14,17 +14,24 @@ import org.khronos.webgl.get
 import org.khronos.webgl.set
 
 internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
+    private val loadedTextures = mutableMapOf<String, WgpuLoadedTexture>()
 
     private val device: GPUDevice get() = backend.device
     private val multiSampledDepthTextureCopy = MultiSampledDepthTextureCopy()
     val mipmapGenerator = MipmapGenerator()
 
-    fun <T: ImageData> loadTexture(tex: Texture<T>, data: T) {
+    fun loadTexture(tex: Texture<*>) {
+        val data = checkNotNull(tex.uploadData)
+        tex.uploadData = null
+
         check(tex.props.format == data.format) {
             "Image data format doesn't match texture format: ${data.format} != ${tex.props.format}"
         }
 
-        when {
+        var loaded = loadedTextures[data.id]
+        if (loaded != null && loaded.isReleased) { loadedTextures -= data.id }
+
+        loaded = when {
             tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
             tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data)
             tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data)
@@ -33,9 +40,11 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeAray(tex, data)
             else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
         }
+        tex.gpuTexture = loaded
+        tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    private fun loadTexture1d(tex: Texture1d, data: ImageData1d) {
+    private fun loadTexture1d(tex: Texture1d, data: ImageData1d): WgpuLoadedTexture {
         val size = intArrayOf(data.width)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
         if (tex.props.generateMipMaps) {
@@ -51,11 +60,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
         val gpuTex = backend.createTexture(texDesc, tex)
         copyTextureData(data, gpuTex.gpuTexture, size)
-        tex.gpuTexture = WgpuLoadedTexture(gpuTex)
-        tex.loadingState = Texture.LoadingState.LOADED
+        return WgpuLoadedTexture(gpuTex)
     }
 
-    private fun loadTexture2d(tex: Texture2d, data: ImageData2d) {
+    private fun loadTexture2d(tex: Texture2d, data: ImageData2d): WgpuLoadedTexture {
         val size = intArrayOf(data.width, data.height)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
@@ -71,12 +79,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         if (tex.props.generateMipMaps) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
-
-        tex.gpuTexture = WgpuLoadedTexture(gpuTex)
-        tex.loadingState = Texture.LoadingState.LOADED
+        return WgpuLoadedTexture(gpuTex)
     }
 
-    private fun loadTexture3d(tex: Texture3d, data: ImageData3d) {
+    private fun loadTexture3d(tex: Texture3d, data: ImageData3d): WgpuLoadedTexture {
         val size = intArrayOf(data.width, data.height, data.depth)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
         if (tex.props.generateMipMaps) {
@@ -92,11 +98,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
         val gpuTex = backend.createTexture(texDesc, tex)
         copyTextureData(data, gpuTex.gpuTexture, size)
-        tex.gpuTexture = WgpuLoadedTexture(gpuTex)
-        tex.loadingState = Texture.LoadingState.LOADED
+        return WgpuLoadedTexture(gpuTex)
     }
 
-    private fun loadTextureCube(tex: TextureCube, data: ImageDataCube) {
+    private fun loadTextureCube(tex: TextureCube, data: ImageDataCube): WgpuLoadedTexture {
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
         val texDesc = GPUTextureDescriptor(
@@ -111,12 +116,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         if (tex.props.generateMipMaps) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
-
-        tex.gpuTexture = WgpuLoadedTexture(gpuTex)
-        tex.loadingState = Texture.LoadingState.LOADED
+        return WgpuLoadedTexture(gpuTex)
     }
 
-    private fun loadTexture2dArray(tex: Texture2dArray, data: ImageData3d) {
+    private fun loadTexture2dArray(tex: Texture2dArray, data: ImageData3d): WgpuLoadedTexture {
         val size = intArrayOf(data.width, data.height, data.depth)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
@@ -132,12 +135,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         if (tex.props.generateMipMaps) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
-
-        tex.gpuTexture = WgpuLoadedTexture(gpuTex)
-        tex.loadingState = Texture.LoadingState.LOADED
+        return WgpuLoadedTexture(gpuTex)
     }
 
-    private fun loadTextureCubeAray(tex: TextureCubeArray, data: ImageDataCubeArray) {
+    private fun loadTextureCubeAray(tex: TextureCubeArray, data: ImageDataCubeArray): WgpuLoadedTexture {
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
         val texDesc = GPUTextureDescriptor(
@@ -152,9 +153,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         if (tex.props.generateMipMaps) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
-
-        tex.gpuTexture = WgpuLoadedTexture(gpuTex)
-        tex.loadingState = Texture.LoadingState.LOADED
+        return WgpuLoadedTexture(gpuTex)
     }
 
     fun copyTexture2d(src: GPUTexture, dst: GPUTexture, mipLevels: Int, encoder: GPUCommandEncoder) {

@@ -10,7 +10,11 @@ import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.ImageBitmap
 
-class ImageTextureData(val data: ImageBitmap, override val format: TexFormat = TexFormat.RGBA) : ImageData2d {
+class ImageTextureData(
+    val data: ImageBitmap,
+    override val id: String,
+    override val format: TexFormat = TexFormat.RGBA
+) : ImageData2d {
     override val width: Int get() = data.width
     override val height: Int get() = data.height
 

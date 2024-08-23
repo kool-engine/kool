@@ -3,6 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.*
 import de.fabmax.kool.pipeline.BufferedImageData2d
+import de.fabmax.kool.pipeline.ImageData
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
@@ -99,7 +100,7 @@ object PlatformAssetsImpl : PlatformAssets {
         val array = (texData as Uint8BufferImpl).buffer
         val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType))
         val imgBitmap = createImageBitmap(imgBlob, ImageBitmapOptions(props?.resolveSize)).await()
-        return ImageTextureData(imgBitmap)
+        return ImageTextureData(imgBitmap, ImageData.idForImageData("ImageTextureData", texData))
     }
 }
 

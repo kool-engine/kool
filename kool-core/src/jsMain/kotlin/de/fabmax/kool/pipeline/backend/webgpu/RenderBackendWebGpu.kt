@@ -209,7 +209,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuComputePass(parentPass, this)
     }
 
-    override fun <T: ImageData> uploadTextureData(tex: Texture<T>, data: T) = textureLoader.loadTexture(tex, data)
+    override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         gpuReadbacks += ReadbackStorageBuffer(storage, deferred)

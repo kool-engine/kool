@@ -130,10 +130,7 @@ sealed class WgpuPipeline(
     private fun <T: ImageData> Texture<T>.checkLoadingState(backend: RenderBackendWebGpu): Boolean {
         checkIsNotReleased()
         if (loadingState == Texture.LoadingState.NOT_LOADED) {
-            uploadData?.let {
-                uploadData = null
-                backend.textureLoader.loadTexture(this, it)
-            }
+            uploadData?.let { backend.textureLoader.loadTexture(this) }
         }
         return loadingState == Texture.LoadingState.LOADED
     }

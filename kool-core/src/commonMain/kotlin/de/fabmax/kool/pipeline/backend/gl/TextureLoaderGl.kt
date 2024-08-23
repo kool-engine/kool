@@ -5,22 +5,23 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
 
 object TextureLoaderGl {
-    // fixme: don't use ImageData as map key, because this prevents ImageData's being garbage collected, which
-    //  can have a significant memory impact if many large textures are used
-    private val loadedTextures = mutableMapOf<ImageData, LoadedTextureGl>()
+    private val loadedTextures = mutableMapOf<String, LoadedTextureGl>()
 
     init {
         KoolSystem.onDestroyContext += { loadedTextures.clear() }
     }
 
-    fun <T: ImageData> loadTexture(tex: Texture<T>, data: T, backend: RenderBackendGl): LoadedTextureGl {
+    fun loadTexture(tex: Texture<*>, backend: RenderBackendGl): LoadedTextureGl {
+        val data = checkNotNull(tex.uploadData)
+        tex.uploadData = null
+
         check(tex.props.format == data.format) {
             "Image data format doesn't match texture format: ${data.format} != ${tex.props.format}"
         }
 
-        var loaded = loadedTextures[data]
-        if (loaded != null && loaded.isReleased) { loadedTextures -= data }
-        loaded = loadedTextures.getOrPut(data) {
+        var loaded = loadedTextures[data.id]
+        if (loaded != null && loaded.isReleased) { loadedTextures -= data.id }
+        loaded = loadedTextures.getOrPut(data.id) {
             when {
                 tex is Texture1d && data is ImageData1d -> loadTexture1dCompat(tex, data, backend)
                 tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data, backend)

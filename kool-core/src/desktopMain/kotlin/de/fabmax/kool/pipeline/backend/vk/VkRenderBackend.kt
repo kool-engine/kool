@@ -60,7 +60,9 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = vkSystem.physicalDevice.deviceName
     }
 
-    override fun <T : ImageData> uploadTextureData(tex: Texture<T>, data: T) {
+    override fun <T : ImageData> uploadTextureData(tex: Texture<T>,) {
+        val data = checkNotNull(tex.uploadData)
+        tex.uploadData = null
         tex.gpuTexture = when (tex) {
             is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
             is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)

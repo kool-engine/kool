@@ -12,7 +12,8 @@ class ImageAtlasTextureData(
     image: ImageBitmap,
     tilesX: Int,
     tilesY: Int,
-    override val format: TexFormat = TexFormat.RGBA
+    override val id: String,
+    override val format: TexFormat = TexFormat.RGBA,
 ) : ImageData3d {
 
     val data: Array<ImageData>

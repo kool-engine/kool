@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.selects.select
+import kotlin.time.measureTimedValue
 
 abstract class AssetLoader {
 
@@ -80,11 +81,13 @@ abstract class AssetLoader {
     suspend fun loadImage2d(assetPath: String, props: TextureProps? = null): Result<ImageData2d> {
         val ref = AssetRef.Image2d(assetPath, props)
         val awaitedAsset = AwaitedAsset(ref)
-        awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.Image2d
+        val (loaded, time) = measureTimedValue {
+            awaitedAssetsChannel.send(awaitedAsset)
+            awaitedAsset.awaiting.await() as LoadedAsset.Image2d
+        }
         return loaded.result
             .onSuccess {
-                logD("AssetLoader.loadImage2d") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+                logD("AssetLoader.loadImage2d") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}, $time)" }
             }
             .onFailure {
                 logE("AssetLoader.loadImage2d") { "Failed loading ${trimAssetPath(assetPath)}: $it" }
@@ -102,11 +105,13 @@ abstract class AssetLoader {
     suspend fun loadBufferedImage2d(assetPath: String, props: TextureProps? = null): Result<BufferedImageData2d> {
         val ref = AssetRef.BufferedImage2d(assetPath, props)
         val awaitedAsset = AwaitedAsset(ref)
-        awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.BufferedImage2d
+        val (loaded, time) = measureTimedValue {
+            awaitedAssetsChannel.send(awaitedAsset)
+            awaitedAsset.awaiting.await() as LoadedAsset.BufferedImage2d
+        }
         return loaded.result
             .onSuccess {
-                logD("AssetLoader.loadBufferedImage2d") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height})" }
+                logD("AssetLoader.loadBufferedImage2d") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}, $time)" }
             }
             .onFailure {
                 logE("AssetLoader.loadBufferedImage2d") { "Failed loading ${trimAssetPath(assetPath)}: $it" }
@@ -125,11 +130,13 @@ abstract class AssetLoader {
     ): Result<ImageData3d> {
         val ref = AssetRef.ImageAtlas(assetPath, props, tilesX, tilesY)
         val awaitedAsset = AwaitedAsset(ref)
-        awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.ImageAtlas
+        val (loaded, time) = measureTimedValue {
+            awaitedAssetsChannel.send(awaitedAsset)
+            awaitedAsset.awaiting.await() as LoadedAsset.ImageAtlas
+        }
         return loaded.result
             .onSuccess {
-                logD("AssetLoader.loadImageAtlas") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth})" }
+                logD("AssetLoader.loadImageAtlas") { "Loaded ${trimAssetPath(assetPath)} (${it.format}, ${it.width}x${it.height}x${it.depth}, $time)" }
             }
             .onFailure {
                 logE("AssetLoader.loadImageAtlas") { "Failed loading ${trimAssetPath(assetPath)}: $it" }
@@ -166,11 +173,13 @@ abstract class AssetLoader {
     suspend fun loadBlob(assetPath: String): Result<Uint8Buffer> {
         val ref = AssetRef.Blob(assetPath)
         val awaitedAsset = AwaitedAsset(ref)
-        awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.Blob
+        val (loaded, time) = measureTimedValue {
+            awaitedAssetsChannel.send(awaitedAsset)
+            awaitedAsset.awaiting.await() as LoadedAsset.Blob
+        }
         return loaded.result
             .onSuccess {
-                logD("AssetLoader.loadBlob") { "Loaded blob ${trimAssetPath(assetPath)} (${(it.capacity / 1_048_576.0).toString(1)} mb)" }
+                logD("AssetLoader.loadBlob") { "Loaded blob ${trimAssetPath(assetPath)} (${(it.capacity / 1_048_576.0).toString(1)} mb, $time)" }
             }
             .onFailure {
                 logE("AssetLoader.loadBlob") { "Failed loading blob ${trimAssetPath(assetPath)}: $it" }
@@ -180,11 +189,13 @@ abstract class AssetLoader {
     suspend fun loadAudioClip(assetPath: String): Result<AudioClip> {
         val ref = AssetRef.Audio(assetPath)
         val awaitedAsset = AwaitedAsset(ref)
-        awaitedAssetsChannel.send(awaitedAsset)
-        val loaded = awaitedAsset.awaiting.await() as LoadedAsset.Audio
+        val (loaded, time) = measureTimedValue {
+            awaitedAssetsChannel.send(awaitedAsset)
+            awaitedAsset.awaiting.await() as LoadedAsset.Audio
+        }
         return loaded.result
             .onSuccess {
-                logD("AssetLoader.loadAudioClip") { "Loaded audio ${trimAssetPath(assetPath)} (${it.duration} secs)" }
+                logD("AssetLoader.loadAudioClip") { "Loaded audio ${trimAssetPath(assetPath)} (${it.duration} secs, loaded in $time)" }
             }
             .onFailure {
                 logE("AssetLoader.loadAudioClip") { "Failed loading audio ${trimAssetPath(assetPath)}: $it" }
