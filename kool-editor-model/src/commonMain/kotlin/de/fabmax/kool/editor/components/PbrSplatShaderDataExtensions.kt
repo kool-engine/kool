@@ -12,6 +12,8 @@ import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 
 suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): KslPbrSplatShader {
     val shader = KslPbrSplatShader {
@@ -32,11 +34,8 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
             }
         }
 
-        val defaultDispTex = SingleColorTexture(Color.GRAY)
         materialMaps.forEachIndexed { i, mat ->
             addMaterial {
-                displacement(defaultDispTex)
-
                 color {
                     when (val color = mat.baseColor) {
                         is ConstColorAttribute -> uniformColor()
@@ -116,6 +115,26 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         shader.cfg.isWithDebugOptions != isDebugMode -> return false
     }
 
+    // fixme: this will leak textures everytime displacement maps are changed in the editor
+    val dispMaps = materialMaps.map { it.displacementMap }
+    val nonNullDisp = dispMaps.find { it != null }
+    var dispTex = nonNullDisp?.let {
+        if (dispMaps.any { it == null }) {
+            logW { "PbrSplatShaderData contains materials without displacement map, material blending won't work as expected" }
+        }
+        val nonNullDispMaps = dispMaps.mapNotNull { it ?: nonNullDisp }
+        if (nonNullDispMaps.any { it.channels != null && it.singleChannelIndex != 0 }) {
+            logE { "PbrSplatShaderData contains displacement maps, with invalid channels. Displacement maps must use the first (red) channel" }
+        }
+        AppAssets.loadTexture2dArray(AssetReference.TextureArray(nonNullDispMaps.map { it.mapPath }, TexFormat.R)).getOrNull()
+    }
+    if (dispTex == null) {
+        logW { "PbrSplatShaderData contains no displacement maps, material blending won't work as expected" }
+        val fakeDisps = ImageData2dArray(materialMaps.map { BufferedImageData2d.singleColor(Color.GRAY) })
+        dispTex = Texture2dArray(fakeDisps)
+    }
+    shader.textureArrays[KslPbrSplatShader.DISPLACEMENTS_TEX_NAME]?.set(dispTex)
+
     materialMaps.forEachIndexed { i, mat ->
         val matBinding = shader.materials[i]
 
@@ -125,7 +144,6 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         val emissionMap = (mat.emission as? MapAttribute)?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
         val normalMap = mat.normalMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
         val aoMap = mat.aoMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) }
-        val displacementMap = mat.displacementMap?.let { AppAssets.loadTexture2dOrNull(AssetReference.Texture(it.mapPath, TexFormat.R)) }
 
         when (val color = mat.baseColor) {
             is ConstColorAttribute -> matBinding.color = color.color.toColorLinear()
@@ -151,7 +169,6 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
             is MapAttribute -> matBinding.metallicMap = metallicMap
             is VertexAttribute -> { }
         }
-        displacementMap?.let { matBinding.displacementMap = it }
         normalMap?.let { matBinding.normalMap = it }
         aoMap?.let { matBinding.aoMap = it }
         roughnessMap?.let { matBinding.roughnessMap = it }

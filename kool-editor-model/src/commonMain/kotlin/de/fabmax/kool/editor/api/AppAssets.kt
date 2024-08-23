@@ -3,9 +3,11 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
 import de.fabmax.kool.loadTexture2d
+import de.fabmax.kool.loadTexture2dArray
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.Heightmap
@@ -17,6 +19,7 @@ interface AppAssetsLoader {
     suspend fun loadHdri(ref: AssetReference.Hdri): Result<EnvironmentMap>
     suspend fun loadModel(ref: AssetReference.Model): Result<GltfFile>
     suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d>
+    suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray>
     suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap>
     suspend fun loadBlob(ref: AssetReference.Blob): Result<Uint8Buffer>
 }
@@ -52,6 +55,7 @@ suspend fun AppAssetsLoader.cacheAsset(ref: AssetReference): Boolean {
         is AssetReference.Heightmap -> loadHeightmap(ref).isSuccess
         is AssetReference.Model -> loadModel(ref).isSuccess
         is AssetReference.Texture -> loadTexture2d(ref).isSuccess
+        is AssetReference.TextureArray -> loadTexture2dArray(ref).isSuccess
     }
 }
 
@@ -63,6 +67,7 @@ object AppAssets : AppAssetsLoader {
     override suspend fun loadHdri(ref: AssetReference.Hdri): Result<EnvironmentMap> = impl.loadHdri(ref)
     override suspend fun loadModel(ref: AssetReference.Model): Result<GltfFile> = impl.loadModel(ref)
     override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> = impl.loadTexture2d(ref)
+    override suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray> = impl.loadTexture2dArray(ref)
     override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> = impl.loadHeightmap(ref)
     override suspend fun loadBlob(ref: AssetReference.Blob): Result<Uint8Buffer> = impl.loadBlob(ref)
 }
@@ -93,6 +98,13 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
         val prefixed = "${pathPrefix}${ref.path}"
         val props = TextureProps(ref.texFormat)
         return assetLoader.loadTexture2d(prefixed, props)
+            .also { cache[ref] = it }
+    }
+
+    override suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray> {
+        cache[ref]?.let { return it.mapCatching { r -> r as Texture2dArray } }
+        val props = TextureProps(ref.texFormat)
+        return assetLoader.loadTexture2dArray(ref.paths.map { "$pathPrefix$it" }, props)
             .also { cache[ref] = it }
     }
 

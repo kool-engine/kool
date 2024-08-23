@@ -64,8 +64,6 @@ class ArrayTexturesText : DemoScene("Array Textures Test") {
                 normalMapping { useNormalMapFromArray(1, texName, pbrArrayTex) }
                 ao { textureProperty(2, texName, pbrArrayTex) }
                 roughness { textureProperty(3, texName, pbrArrayTex) }
-            }.also {
-                it.texture2dArray(texName, pbrArrayTex)
             }
         }
     }

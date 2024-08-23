@@ -70,6 +70,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         check(cfg.numSplatMaterials in 2..5)
         pipelineConfig = cfg.pipelineCfg
 
+        textureArrays[DISPLACEMENTS_TEX_NAME] = texture2dArray(DISPLACEMENTS_TEX_NAME, cfg.displacements)
+        registerArrayTextures(cfg.vertexCfg.displacementCfg)
+
         when (val ac = cfg.lightingCfg.ambientLight) {
             is AmbientLight.Uniform -> ambientFactor = ac.ambientFactor
             is AmbientLight.ImageBased -> {
@@ -305,15 +308,16 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     private fun KslShaderStage.getStochasticUv() = functionFloat4("getStochasticUv") {
         val inputUv = paramFloat2()
+        val materialIndex = paramInt1()
         val ddx = paramFloat2()
         val ddy = paramFloat2()
         val scaleRot = paramFloat3()
-        val dispTex = paramColorTex2d()
 
         body {
             val inputRot = rotationMat(scaleRot.x)
             val rotInputUv = float2Var(inputRot * inputUv)
             val uv = float2Var(rotInputUv * 3.464f.const * scaleRot.y)
+            val dispTex = program.texture2dArray(DISPLACEMENTS_TEX_NAME)
 
             // skew input space into simplex triangle grid
             val gridToSkewedGrid = mat2Value(float2Value(1f, -0.57735026f), float2Value(0f, 1.1547005f))
@@ -363,9 +367,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             if (cfg.isContinuousHeight) {
                 // sample all vertices, select highest one but use blended height
                 val selected = int1Var(0.const)
-                val h1 = float1Var(sampleTextureGrad(dispTex, shiftedUvs[0], ddx, ddy).x * w.x)
-                val h2 = float1Var(sampleTextureGrad(dispTex, shiftedUvs[1], ddx, ddy).x * w.y)
-                val h3 = float1Var(sampleTextureGrad(dispTex, shiftedUvs[2], ddx, ddy).x * w.z)
+                val h1 = float1Var(sampleTextureArrayGrad(dispTex, materialIndex, shiftedUvs[0], ddx, ddy).x * w.x)
+                val h2 = float1Var(sampleTextureArrayGrad(dispTex, materialIndex, shiftedUvs[1], ddx, ddy).x * w.y)
+                val h3 = float1Var(sampleTextureArrayGrad(dispTex, materialIndex, shiftedUvs[2], ddx, ddy).x * w.z)
                 val h = float1Var(h1 + h2 + h3)
                 `if`(h1 gt max(h2, h3)) {
                     selected set 0.const
@@ -379,10 +383,10 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             } else {
                 // try to reduce sample count by skipping vertices with weight less than current max height
                 val selected = int1Var(0.const)
-                val h = float1Var(sampleTextureGrad(dispTex, shiftedUvs[0], ddx, ddy).x)
+                val h = float1Var(sampleTextureArrayGrad(dispTex, materialIndex, shiftedUvs[0], ddx, ddy).x)
                 val hw = float1Var(h * w.x)
                 `if`(hw lt w.y) {
-                    val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[1], ddx, ddy).x)
+                    val ht = float1Var(sampleTextureArrayGrad(dispTex, materialIndex, shiftedUvs[1], ddx, ddy).x)
                     `if`(ht * w.y gt hw) {
                         h set ht
                         hw set ht * w.y
@@ -390,7 +394,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                     }
                 }
                 `if`(hw lt w.z) {
-                    val ht = float1Var(sampleTextureGrad(dispTex, shiftedUvs[2], ddx, ddy).x)
+                    val ht = float1Var(sampleTextureArrayGrad(dispTex, materialIndex, shiftedUvs[2], ddx, ddy).x)
                     `if`(ht * w.z gt hw) {
                         h set ht
                         selected set 2.const
@@ -410,10 +414,10 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         fnGetStochasticUv: KslFunctionFloat4,
     ) = functionFloat4("sampleParallax") {
         val uv = paramFloat2()
+        val materialIndex = paramInt1()
         val ddx = paramFloat2()
         val ddy = paramFloat2()
         val scaleRot = paramFloat3()
-        val dispTex = paramColorTex2d()
 
         body {
             val maxSteps = 16.const
@@ -448,7 +452,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             repeat(maxSteps) { i ->
                 val hLimit = float1Var(hStart + i.toFloat1() * step)
 
-                outBlendInfo set fnGetStochasticUv(sampleUv, ddx, ddy, scaleRot, dispTex)
+                outBlendInfo set fnGetStochasticUv(sampleUv, materialIndex, ddx, ddy, scaleRot)
                 val h = float1Var(1f.const - outBlendInfo.z)
 
                 `if` (h lt hLimit) {
@@ -482,6 +486,8 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         const val DEBUG_MODE_WEIGHTS = 1
         const val DEBUG_MODE_NORMALS = 2
         const val DEBUG_MODE_DISPLACEMENT = 3
+
+        const val DISPLACEMENTS_TEX_NAME = "disp_textures"
     }
 
     private inner class SplatMatState(
@@ -494,7 +500,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
     ) {
         val index: Int get() = splatMatCfg.materialIndex
         val matSettings = scope.parentStage.program.uniformFloat4("uMatSetting_$index")
-        val displacementTex = scope.parentStage.program.texture2d(splatMatCfg.displacementTex.textureName)
+//        val displacementTex = scope.parentStage.program.texture2dArray(splatMatCfg.displacementTex.textureName)
 
         val uvScale: KslExprFloat1 get() = matSettings.x
         val uvRot: KslExprFloat1 get() = matSettings.y
@@ -512,7 +518,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         var weightedHeight: KslExprFloat1 = KslValueFloat1(0f)
 
         fun KslScopeBuilder.sampleHeight(weight: KslExprFloat1) {
-            blendInfo set fnGetUv(scaledUv, ddx, ddy, float3Value(uvRot, tileSize, tileRot), displacementTex)
+            blendInfo set fnGetUv(scaledUv, index.const, ddx, ddy, float3Value(uvRot, tileSize, tileRot))
             weightedHeight = float1Var(height * weight)
 
             val cos = float1Var(cos(blendInfo.w))
@@ -553,7 +559,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
     inner class MaterialBinding(matCfg: SplatMaterialConfig) {
         var colorMap by colorTexture(matCfg.colorCfg)
         var normalMap by texture2d(matCfg.normalMapCfg.textureName, matCfg.normalMapCfg.defaultNormalMap)
-        var displacementMap by texture2d(matCfg.displacementTex.textureName, matCfg.displacementTex.defaultTexture)
         var aoMap by propertyTexture(matCfg.aoCfg)
         var roughnessMap by propertyTexture(matCfg.roughnessCfg)
         var metallicMap by propertyTexture(matCfg.metallicCfg)
@@ -580,6 +585,20 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         var tileRotation: AngleF
             get() = matSettings.w.rad
             set(value) { matSettings = Vec4f(matSettings.x, matSettings.y, matSettings.z, value.rad) }
+
+        init {
+            if (matCfg.normalMapCfg.isArrayNormalMap && matCfg.normalMapCfg.textureName !in textureArrays) {
+                textureArrays[matCfg.normalMapCfg.textureName] = texture2dArray(
+                    textureName = matCfg.normalMapCfg.textureName,
+                    defaultVal = matCfg.normalMapCfg.defaultArrayNormalMap,
+                )
+            }
+            registerArrayTextures(matCfg.colorCfg)
+            registerArrayTextures(matCfg.emissionCfg)
+            registerArrayTextures(matCfg.aoCfg)
+            registerArrayTextures(matCfg.roughnessCfg)
+            registerArrayTextures(matCfg.metallicCfg)
+        }
     }
 
     class Config(builder: Builder) {
@@ -588,6 +607,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val lightingCfg = builder.lightingCfg.build()
 
         val splatMapCfg = builder.splatMapCfg.build()
+        val displacements: Texture2dArray? = builder.displacements
         val materials = builder.materials.toList()
         val numSplatMaterials: Int get() = materials.size
 
@@ -610,6 +630,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             val lightingCfg = LightingConfig.Builder()
 
             val splatMapCfg = ColorBlockConfig.Builder("splatMap")
+            var displacements: Texture2dArray? = null
             private val _materials = mutableListOf<SplatMaterialConfig>()
             val materials: List<SplatMaterialConfig> get() = _materials
 
@@ -656,6 +677,10 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
                 splatMapCfg.block()
             }
 
+            fun useDisplacements(displacements: Texture2dArray?) {
+                this.displacements = displacements
+            }
+
             fun useSplatMap(texture2d: Texture2d?) = splatMap { textureData(texture2d) }
 
             fun enableImageBasedLighting(iblMaps: EnvironmentMap): Builder {
@@ -687,7 +712,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
     data class SplatMaterialConfig(
         val materialIndex: Int,
-        val displacementTex: PropertyBlockConfig.TextureProperty,
         val colorCfg: ColorBlockConfig,
         val normalMapCfg: NormalMapConfig,
         val aoCfg: PropertyBlockConfig,
@@ -700,7 +724,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
         val stochasticTileRotation: AngleF,
     ) {
         class Builder(val materialIndex: Int) {
-            var displacementTex = PropertyBlockConfig.TextureProperty(null, 0, "displacement_$materialIndex", PropertyBlockConfig.BlendMode.Set)
             val colorCfg = ColorBlockConfig.Builder("color_$materialIndex")
             val normalMapCfg = NormalMapConfig.Builder("normalMap_$materialIndex")
             val aoCfg = PropertyBlockConfig.Builder("ao_$materialIndex").apply { constProperty(1f) }
@@ -711,16 +734,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             var uvScale: Float = 10f
             var stochasticTileSize: Float = 0.5f
             var stochasticTileRotation: AngleF = 360f.deg
-
-            fun normalMap(texture2d: Texture2d?): Builder {
-                normalMapping { useNormalMap(texture2d) }
-                return this
-            }
-
-            fun displacement(texture2d: Texture2d?): Builder {
-                displacementTex = PropertyBlockConfig.TextureProperty(texture2d, 0, "displacement_$materialIndex", PropertyBlockConfig.BlendMode.Set)
-                return this
-            }
 
             inline fun ao(block: PropertyBlockConfig.Builder.() -> Unit) {
                 aoCfg.propertySources.clear()
@@ -765,7 +778,6 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             fun build(): SplatMaterialConfig {
                 return SplatMaterialConfig(
                     materialIndex = materialIndex,
-                    displacementTex = displacementTex,
                     colorCfg = colorCfg.build(),
                     normalMapCfg = normalMapCfg.build(),
                     aoCfg = aoCfg.build(),

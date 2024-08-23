@@ -7,6 +7,7 @@ import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,7 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
     private val loadedHdris = mutableMapOf<AssetReference.Hdri, MutableStateValue<EnvironmentMap?>>()
     private val loadedModels = mutableMapOf<AssetReference.Model, MutableStateValue<GltfFile?>>()
     private val loadedTextures2d = mutableMapOf<AssetReference.Texture, MutableStateValue<Texture2d?>>()
+    private val loadedTextures2dArray = mutableMapOf<AssetReference.TextureArray, MutableStateValue<Texture2dArray?>>()
     private val loadedHeightmaps = mutableMapOf<AssetReference.Heightmap, MutableStateValue<Heightmap?>>()
     private val loadedBlobs = mutableMapOf<AssetReference.Blob, MutableStateValue<Uint8Buffer?>>()
 
@@ -37,6 +39,12 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
         assetRefsByPath.getOrPut(ref.path) { mutableSetOf() } += ref
         val state = loadedTextures2d.getOrPut(ref) { mutableStateOf(null) }
         return state.value?.let { Result.success(it) } ?: super.loadTexture2d(ref).onSuccess { state.set(it) }
+    }
+
+    override suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray> {
+        ref.paths.forEach { assetRefsByPath.getOrPut(it) { mutableSetOf() } += ref }
+        val state = loadedTextures2dArray.getOrPut(ref) { mutableStateOf(null) }
+        return state.value?.let { Result.success(it) } ?: super.loadTexture2dArray(ref).onSuccess { state.set(it) }
     }
 
     override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> {
@@ -87,6 +95,12 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
                         if (asset != null) {
                             logD { "Texture ${assetItem.path} changed on disc, reloading..." }
                             asset.reloadTexture(assetItem.path)
+                        }
+                    }
+                    is AssetReference.TextureArray -> {
+                        val asset = loadedTextures2dArray.remove(ref)?.value
+                        if (asset != null) {
+                            logW { "Texture array element ${assetItem.path} changed on disc, but hot-reload is not yet implemented" }
                         }
                     }
                     is AssetReference.Blob -> {

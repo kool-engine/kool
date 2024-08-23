@@ -109,7 +109,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         sceneEntities.values.forEach { requiredAssets += it.requiredAssets }
         requiredAssets.forEach {
             if (!AppAssets.cacheAsset(it)) {
-                logW{ "Failed pre-loading asset: ${it.path}" }
+                logW{ "Failed pre-loading asset: $it" }
             }
         }
     }

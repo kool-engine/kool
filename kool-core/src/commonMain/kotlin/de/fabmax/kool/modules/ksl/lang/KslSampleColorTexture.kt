@@ -3,7 +3,6 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
 
 class KslSampleColorTexture<T: KslSamplerType<KslFloat4>>(
     val sampler: KslExpression<T>,
@@ -39,7 +38,7 @@ class KslSampleColorTextureGrad<T: KslSamplerType<KslFloat4>>(
 
     init {
         if (sampler.expressionType is KslSamplerArrayType) {
-            logW { "KslSampleColorTexture instantiated with array sampler type. You should use sampleTextureArrayGrad() when sampling from array textures" }
+            logE { "KslSampleColorTextureGrad instantiated with array sampler type. You should use sampleTextureArrayGrad() when sampling from array textures" }
         }
     }
 

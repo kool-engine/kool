@@ -56,7 +56,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
 
     init {
         if (cfg.normalMapCfg.isArrayNormalMap) {
-            textureArrays[cfg.normalMapCfg.textureName] = Texture2dArrayBinding(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultArrayNormalMap, null, this)
+            textureArrays[cfg.normalMapCfg.textureName] = texture2dArray(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultArrayNormalMap)
         }
         registerArrayTextures(cfg.colorCfg)
         registerArrayTextures(cfg.emissionCfg)
