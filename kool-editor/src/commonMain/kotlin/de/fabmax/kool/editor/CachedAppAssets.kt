@@ -38,13 +38,13 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
     override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> {
         assetRefsByPath.getOrPut(ref.path) { mutableSetOf() } += ref
         val state = loadedTextures2d.getOrPut(ref) { mutableStateOf(null) }
-        return state.value?.let { Result.success(it) } ?: super.loadTexture2d(ref).onSuccess { state.set(it) }
+        return super.loadTexture2d(ref).onSuccess { state.set(it) }
     }
 
     override suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray> {
         ref.paths.forEach { assetRefsByPath.getOrPut(it) { mutableSetOf() } += ref }
         val state = loadedTextures2dArray.getOrPut(ref) { mutableStateOf(null) }
-        return state.value?.let { Result.success(it) } ?: super.loadTexture2dArray(ref).onSuccess { state.set(it) }
+        return super.loadTexture2dArray(ref).onSuccess { state.set(it) }
     }
 
     override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> {

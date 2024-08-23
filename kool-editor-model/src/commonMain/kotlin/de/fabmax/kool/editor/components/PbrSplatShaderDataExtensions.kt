@@ -180,8 +180,8 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
     shader.debugMode = debugMode
     shader.splatMap = splatMap?.let { AppAssets.loadTexture2dOrNull(it.mapPath) } ?: SingleColorTexture(Color.BLACK)
 
-//    val oldMatMaps = shader.textureArrays["pbr_material_maps"]?.get()
-//    val oldDispMaps = shader.textureArrays[KslPbrSplatShader.DISPLACEMENTS_TEX_NAME]?.get()
+    val oldMatMaps = shader.textureArrays["pbr_material_maps"]?.get()
+    val oldDispMaps = shader.textureArrays[KslPbrSplatShader.DISPLACEMENTS_TEX_NAME]?.get()
 
     val mapArray = AppAssets.loadTexture2dArray(AssetReference.TextureArray(mapPaths))
     if (mapArray.isFailure) {
@@ -207,10 +207,10 @@ suspend fun PbrSplatShaderData.updatePbrSplatShader(shader: KslPbrSplatShader, s
         newDispMaps = Texture2dArray(fakeDisps)
     }
 
-    // fixme: ideally, we should release previous textures on change but currently that breaks texture caching
-    //  because AppAssets is not aware of textures being released
-//    if (newMatMaps != oldMatMaps) oldMatMaps?.release()
-//    if (newDispMaps != oldDispMaps) oldDispMaps?.release()
+    // fixme: releasing the old maps just like that is very hacky, it should be done via AppAssets
+    //  also old textures do not get released if the shader is recreated instead of just updated
+    if (newMatMaps != oldMatMaps) oldMatMaps?.release()
+    if (newDispMaps != oldDispMaps) oldDispMaps?.release()
 
     shader.textureArrays["pbr_material_maps"]?.set(newMatMaps)
     shader.textureArrays[KslPbrSplatShader.DISPLACEMENTS_TEX_NAME]?.set(newDispMaps)
