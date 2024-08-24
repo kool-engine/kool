@@ -1,7 +1,7 @@
 # kool - An OpenGL / WebGPU graphics engine written in Kotlin
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/fabmax/kool/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/kool-engine/kool/blob/master/LICENSE)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/de.fabmax.kool/kool-core/badge.svg)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
-![Build](https://github.com/fabmax/kool/workflows/Build/badge.svg)
+![Build](https://github.com/kool-engine/kool/workflows/Build/badge.svg)
 
 A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop Java, Android and browsers.
 
@@ -9,7 +9,7 @@ A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop 
 Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
 ## Scene Editor
-Check out the [web editor](https://fabmax.github.io/kool/kool-editor/)! (Chrome recommended).
+Check out the [web editor](https://kool-engine.github.io/live/kool-editor/)! (Chrome recommended).
 
 The engine used to be a code-only engine, but I recently made some progress in implementing a graphical scene editor.
 The editor still is in an early state and lacks several rather essential features, but the basics already work quite
@@ -19,53 +19,53 @@ To unleash the full potential of the editor, you should run it locally. You can 
 directly in the web-version by clicking the `Save Project` button in the upper right corner (this also preserves any
 changes made in the editor) or you can clone the editor template project (see [usage](#usage) below).
 
-More editor related documentation is available in [the editor docs](https://fabmax.github.io/docs/editor).
+More editor related documentation is available in [the editor docs](https://kool-engine.github.io/docs/editor).
 
 ## Web-Demos
 The following demos run directly in the browser. Chrome is recommended but other browsers might work as well.
 All demos are implemented in code-only fashion (i.e. without using the editor). The code for all demos is available in
 the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject.
 
-- [Island](https://fabmax.github.io/kool/kool-js/?demo=phys-terrain): Height-map based
+- [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
-- [Physics - Ragdoll](https://fabmax.github.io/kool/kool-js/?demo=phys-ragdoll): Ragdoll physics demo.
-- [Physics - Vehicle](https://fabmax.github.io/kool/kool-js/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
+- [Physics - Ragdoll](https://kool-engine.github.io/live/demos/?demo=phys-ragdoll): Ragdoll physics demo.
+- [Physics - Vehicle](https://kool-engine.github.io/live/demos/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
   cursor keys, R to reset) based on the Nvidia PhysX vehicles SDK.
-- [Physics - Joints](https://fabmax.github.io/kool/kool-js/?demo=phys-joints): Physics demo consisting of a chain
+- [Physics - Joints](https://kool-engine.github.io/live/demos/?demo=phys-joints): Physics demo consisting of a chain
   running over two gears. Uses a lot of multi shapes and revolute joints.
-- [Physics - Collision](https://fabmax.github.io/kool/kool-js/?demo=physics): The obligatory collision physics demo with
+- [Physics - Collision](https://kool-engine.github.io/live/demos/?demo=physics): The obligatory collision physics demo with
   various different shapes.
-- [Embedded UI](https://fabmax.github.io/kool/kool-js/?demo=ui): Integrated UI framework implemented completely within
+- [Embedded UI](https://kool-engine.github.io/live/demos/?demo=ui): Integrated UI framework implemented completely within
   the engine. Fast, highly customizable and easy-to-use.
-- [Particles](https://fabmax.github.io/kool/kool-js/?demo=bees): Two teams of bees fighting against each other.
+- [Particles](https://kool-engine.github.io/live/demos/?demo=bees): Two teams of bees fighting against each other.
   Simulation can be toggled between CPU and compute-shader (if available, i.e. on WebGPU).
-- [Fluffy Bunny](https://fabmax.github.io/kool/kool-js/?demo=shell): Shell-shading based rendering of animated fur
+- [Fluffy Bunny](https://kool-engine.github.io/live/demos/?demo=shell): Shell-shading based rendering of animated fur
   (based on this [video](https://www.youtube.com/watch?v=9dr-tRQzij4)).
-- [Creative Coding](https://fabmax.github.io/kool/kool-js/?demo=creative-coding): A few relatively simple demos
+- [Creative Coding](https://kool-engine.github.io/live/demos/?demo=creative-coding): A few relatively simple demos
   showcasing different techniques of generating procedural geometry.
-- [Procedural Geometry](https://fabmax.github.io/kool/kool-js/?demo=procedural): Small test-case for
+- [Procedural Geometry](https://kool-engine.github.io/live/demos/?demo=procedural): Small test-case for
   procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also,
   some glass shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is
   therefore opaque).
-- [glTF Models](https://fabmax.github.io/kool/kool-js/?demo=gltf): Various demo models loaded from glTF / glb format
+- [glTF Models](https://kool-engine.github.io/live/demos/?demo=gltf): Various demo models loaded from glTF / glb format
   - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
   - Polly from [Blender](https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/polly)
   - Coffee Cart from [Poly Haven](https://polyhaven.com/a/CoffeeCart_01)
   - Camera Model also from [Poly Haven](https://polyhaven.com/a/CoffeeCart_01)
   - A few feature test models also from the [glTF sample model repository](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0)
-- [Deferred Shading](https://fabmax.github.io/kool/kool-js/?demo=deferred): Thousands of dynamic
+- [Deferred Shading](https://kool-engine.github.io/live/demos/?demo=deferred): Thousands of dynamic
   light sources, bloom and ambient occlusion.
-- [Screen-space Ambient Occlusion](https://fabmax.github.io/kool/kool-js/?demo=ao): Roughly based on
+- [Screen-space Ambient Occlusion](https://kool-engine.github.io/live/demos/?demo=ao): Roughly based on
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
-- [Screen-space Reflections](https://fabmax.github.io/kool/kool-js/?demo=ssr): A simple PBR shaded
+- [Screen-space Reflections](https://kool-engine.github.io/live/demos/?demo=ssr): A simple PBR shaded
   model with screen-space reflections and up to four spot-lights with dynamic shadows.
-- [Physical Based Rendering](https://fabmax.github.io/kool/kool-js/?demo=pbr): Interactive PBR demo 
+- [Physical Based Rendering](https://kool-engine.github.io/live/demos/?demo=pbr): Interactive PBR demo 
   with image based lighting for various materials and environments (underlying PBR theory from
   [this](https://learnopengl.com/PBR/Theory) awesome article series).
-- [Instanced / LOD Drawing](https://fabmax.github.io/kool/kool-js/?demo=instance): Instanced rendering
+- [Instanced / LOD Drawing](https://kool-engine.github.io/live/demos/?demo=instance): Instanced rendering
   demo of the Stanford Bunny. Uses six levels of detail to render up to 8000 instances.
-- [Mesh Simplification](https://fabmax.github.io/kool/kool-js/?demo=simplification): Interactive mesh
+- [Mesh Simplification](https://kool-engine.github.io/live/demos/?demo=simplification): Interactive mesh
   simplification demo (based on traditional [error-quadrics](https://www.cs.cmu.edu/~./garland/Papers/quadrics.pdf))
 
 By default, the web demos use the WebGPU backend and fall back to WebGL if WebGPU is not supported by your browser. The
@@ -183,7 +183,7 @@ with a rather smooth surface. Color information is taken from the corresponding 
 The `onUpdate`-block is called on each frame and modifies the cube transform to rotate it 45° per second around its
 X-axis.
 Finally, we set up a single directional scene light (of white color and an intensity of 5), so that our cube can shine
-in its full glory. The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloWorld).
+in its full glory. The resulting scene looks like [this](https://kool-engine.github.io/live/demos/?demo=helloWorld).
 
 ## Model Loading and Advanced Lighting
 
@@ -266,7 +266,7 @@ from within the coroutine is fine, since the coroutine is launched via `launchOn
 is executed by the main render thread. If a different coroutine context / thread were used, we had to be careful to
 not modify the scene content while it is rendered.
 
-The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloGltf). Here, the
+The resulting scene looks like [this](https://kool-engine.github.io/live/demos/?demo=helloGltf). Here, the
 [Animated Box](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/BoxAnimated) from the glTF sample
 repository is loaded.
 
@@ -307,10 +307,10 @@ controlled by their `modifier`s.
 Whenever the button is clicked we increment a `clickCount` which is then displayed by the text field. This works
 because the `Panel`-block is executed each time any `remember`ed state (or `mutableStateOf()`) within the block changes.
 
-The resulting scene looks like [this](https://fabmax.github.io/kool/kool-js/?demo=hello-ui).
+The resulting scene looks like [this](https://kool-engine.github.io/live/demos/?demo=hello-ui).
 
 More complex layouts can be created by nesting `Row { }` and `Column { }` objects. The
-[full UI demo](https://fabmax.github.io/kool/kool-js/?demo=ui) should give you an impression on what's possible.
+[full UI demo](https://kool-engine.github.io/live/demos/?demo=ui) should give you an impression on what's possible.
 
 ## Kool Shader Language
 
@@ -363,7 +363,7 @@ the color attribute is taken from the vertex input and forwarded to the fragment
 fragment stage then simply takes the color from `interStageColor` and writes it to the screen.
 
 A little more complex example is available in [HelloKsl](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloKsl.kt),
-which looks like [this](https://fabmax.github.io/kool/kool-js/?demo=helloksl).
+which looks like [this](https://kool-engine.github.io/live/demos/?demo=helloksl).
 Of course, shaders can get more complex than that, you can dig further into the code. All shaders currently used in kool
 are written in ksl.
 
