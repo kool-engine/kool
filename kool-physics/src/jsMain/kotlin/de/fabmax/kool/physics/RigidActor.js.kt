@@ -122,6 +122,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     private fun updateTransform() {
         if (isActive) {
+            holder.px.globalPose.toPoseF(poseBuffer)
             holder.px.globalPose.toTrsTransform(transform)
         }
     }

@@ -4,13 +4,12 @@ import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
-import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.TouchEvent
-import de.fabmax.kool.platform.elementX
-import de.fabmax.kool.platform.elementY
+import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.logT
 import kotlinx.browser.document
+import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.events.KeyboardEvent
 import org.w3c.dom.events.MouseEvent
 
@@ -60,6 +59,26 @@ internal object PlatformInputJs : PlatformInput {
     private fun pointerMovementY(ev: MouseEvent) = js("ev.movementY") as Double * pixelRatio
 
     private fun installInputHandlers(canvas: HTMLCanvasElement) {
+        installMouseHandlers(canvas)
+        installTouchHandlers(canvas)
+        installGamepadHandlers()
+
+        navigator.getGamepads()?.forEach {
+            if (it != null) {
+                ControllerInput.addController(ControllerJs(it))
+            }
+        }
+
+        if (KoolSystem.configJs.isGlobalKeyEventGrabbing) {
+            document.onkeydown = { ev -> handleKeyDown(ev) }
+            document.onkeyup = { ev -> handleKeyUp(ev) }
+        } else {
+            canvas.onkeydown = { ev -> handleKeyDown(ev) }
+            canvas.onkeyup = { ev -> handleKeyUp(ev) }
+        }
+    }
+
+    private fun installMouseHandlers(canvas: HTMLCanvasElement) {
         // install mouse handlers
         canvas.onmousemove = { ev ->
             val bounds = canvas.getBoundingClientRect()
@@ -108,7 +127,9 @@ internal object PlatformInputJs : PlatformInput {
         }
 
         document.addEventListener("pointerlockchange", { PointerLockState.onPointerLockChange(canvas) }, false)
+    }
 
+    private fun installTouchHandlers(canvas: HTMLCanvasElement) {
         // install touch handlers
         canvas.addEventListener("touchstart", { ev ->
             ev.preventDefault()
@@ -142,14 +163,18 @@ internal object PlatformInputJs : PlatformInput {
                 PointerInput.handleTouchMove(touch.identifier, touch.elementX, touch.elementY)
             }
         }, false)
+    }
 
-        if (KoolSystem.configJs.isGlobalKeyEventGrabbing) {
-            document.onkeydown = { ev -> handleKeyDown(ev) }
-            document.onkeyup = { ev -> handleKeyUp(ev) }
-        } else {
-            canvas.onkeydown = { ev -> handleKeyDown(ev) }
-            canvas.onkeyup = { ev -> handleKeyUp(ev) }
-        }
+    private fun installGamepadHandlers() {
+        window.addEventListener("gamepadconnected", { ev ->
+            val gamepad = (ev as GamepadEvent).gamepad
+            ControllerInput.addController(ControllerJs(gamepad))
+        })
+        window.addEventListener("gamepaddisconnected", { ev ->
+            val gamepad = (ev as GamepadEvent).gamepad
+            ControllerInput.removeController(gamepad.index)
+        })
+        println("installed gamepad listeners")
     }
 
     private fun handleKeyDown(ev: KeyboardEvent) {
@@ -308,4 +333,24 @@ internal object PlatformInputJs : PlatformInput {
             }
         }
     }
+}
+
+external class GamepadEvent : Event {
+    val gamepad: Gamepad
+}
+
+external interface Gamepad {
+    val axes: DoubleArray
+    val buttons: Array<GamepadButton>
+    val connected: Boolean
+    val id: String
+    val index: Int
+    val mapping: String
+    val timestamp: Double
+}
+
+external interface GamepadButton {
+    val pressed: Boolean
+    val touched: Boolean
+    val value: Double
 }
