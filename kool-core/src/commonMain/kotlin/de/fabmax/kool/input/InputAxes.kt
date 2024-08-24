@@ -184,14 +184,14 @@ open class InputAxes(
             val negRange = 1f + axisIdleValue
 
             var mapped = when {
-                inputVal > axisIdleValue -> easing.eased((inputVal - axisIdleValue) / posRange)
-                inputVal < axisIdleValue -> -easing.eased(-((inputVal - axisIdleValue) / negRange))
+                inputVal > axisIdleValue -> (inputVal - axisIdleValue) / posRange
+                inputVal < axisIdleValue -> (inputVal - axisIdleValue) / negRange
                 else -> 0f
             }
             if (mapped > deadZone) {
-                mapped = (mapped - deadZone) / (1f - deadZone)
+                mapped = easing.eased((mapped - deadZone) / (1f - deadZone))
             } else if (mapped < -deadZone) {
-                mapped = (mapped + deadZone) / (1f - deadZone)
+                mapped = -easing.eased(-((mapped + deadZone) / (1f - deadZone)))
             } else {
                 mapped = 0f
             }
