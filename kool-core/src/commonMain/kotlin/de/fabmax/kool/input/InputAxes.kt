@@ -125,10 +125,11 @@ open class InputAxes(
         fun addControllerAxis(
             axis: ControllerAxis,
             isInverted: Boolean = false,
+            deadZone: Float = 0.025f,
             axisIdleValue: Float = 0f,
             easing: Easing.Easing = Easing.linear
         ) {
-            controllerAxes += ControllerAxisMapping(axis, isInverted, axisIdleValue, easing)
+            controllerAxes += ControllerAxisMapping(axis, isInverted, deadZone, axisIdleValue, easing)
         }
 
         fun setAnalogRiseFallTime(time: Float) {
@@ -174,6 +175,7 @@ open class InputAxes(
     data class ControllerAxisMapping(
         val axis: ControllerAxis,
         val isInverted: Boolean = false,
+        val deadZone: Float = 0.05f,
         val axisIdleValue: Float = 0f,
         val easing: Easing.Easing = Easing.linear
     ) {
@@ -181,10 +183,17 @@ open class InputAxes(
             val posRange = 1f - axisIdleValue
             val negRange = 1f + axisIdleValue
 
-            val mapped = when {
+            var mapped = when {
                 inputVal > axisIdleValue -> easing.eased((inputVal - axisIdleValue) / posRange)
                 inputVal < axisIdleValue -> -easing.eased(-((inputVal - axisIdleValue) / negRange))
                 else -> 0f
+            }
+            if (mapped > deadZone) {
+                mapped = (mapped - deadZone) / (1f - deadZone)
+            } else if (mapped < -deadZone) {
+                mapped = (mapped + deadZone) / (1f - deadZone)
+            } else {
+                mapped = 0f
             }
             return if (isInverted) -mapped else mapped
         }
@@ -196,16 +205,21 @@ open class InputAxes(
             private set
 
         val isPositive: Boolean
-            get() = analog > deadZone
+            get() = analog > 0f
         val isNegative: Boolean
-            get() = analog < -deadZone
+            get() = analog < 0f
         val isCenter: Boolean
-            get() = abs(analog) < deadZone
+            get() = analog == 0f
 
-        var isPositiveKeyPressed = false; private set
-        var isNegativeKeyPressed = false; private set
+        var isPositiveButtonPressed = false; private set
+        var isNegativeButtonPressed = false; private set
 
-        var deadZone = builder.deadZone
+        val controllerAxes = builder.controllerAxes.toList()
+        val posKeyCodes = builder.posKeyCodes.toList()
+        val negKeyCodes = builder.negKeyCodes.toList()
+        val posControllerButtons = builder.posControllerButtons.toList()
+        val negControllerButtons = builder.negControllerButtons.toList()
+
         var analogRiseTime = builder.analogRiseTime
         var analogFallTime = builder.analogFallTime
         var buttonRiseTime = builder.buttonRiseTime
@@ -213,16 +227,10 @@ open class InputAxes(
         var buttonMin = builder.buttonMin
         var buttonMax = builder.buttonMax
 
-        val posKeyCodes = builder.posKeyCodes.toList()
-        val negKeyCodes = builder.negKeyCodes.toList()
-        val posControllerButtons = builder.posControllerButtons.toList()
-        val negControllerButtons = builder.negControllerButtons.toList()
-        val controllerAxes = builder.controllerAxes.toList()
-
-        internal var usedController: Controller? = null
-        internal val keyListeners = mutableListOf<InputStack.SimpleKeyListener>()
-        internal val controllerButtonListenerPos = Controller.ButtonListener { _, newState -> isPositiveKeyPressed = newState }
-        internal val controllerButtonListenerNeg = Controller.ButtonListener { _, newState -> isNegativeKeyPressed = newState }
+        private var usedController: Controller? = null
+        private val keyListeners = mutableListOf<InputStack.SimpleKeyListener>()
+        private val controllerButtonListenerPos = Controller.ButtonListener { _, newState -> isPositiveButtonPressed = newState }
+        private val controllerButtonListenerNeg = Controller.ButtonListener { _, newState -> isNegativeButtonPressed = newState }
 
         init {
             for (key in posKeyCodes) {
@@ -259,29 +267,29 @@ open class InputAxes(
 
         internal fun processPositiveKeyInputEvent(ev: KeyEvent) {
             if (ev.isPressed || ev.isRepeated) {
-                isPositiveKeyPressed = true
+                isPositiveButtonPressed = true
             } else if (ev.isReleased) {
-                isPositiveKeyPressed = false
+                isPositiveButtonPressed = false
             }
         }
 
         internal fun processNegativeKeyInputEvent(ev: KeyEvent) {
             if (ev.isPressed || ev.isRepeated) {
-                isNegativeKeyPressed = true
+                isNegativeButtonPressed = true
             } else if (ev.isReleased) {
-                isNegativeKeyPressed = false
+                isNegativeButtonPressed = false
             }
         }
 
         internal fun updateAxisState(deltaT: Float) {
             val change = when {
-                isPositiveKeyPressed -> deltaT / buttonRiseTime
-                isNegativeKeyPressed -> deltaT / -buttonFallTime
+                isPositiveButtonPressed -> deltaT / buttonRiseTime
+                isNegativeButtonPressed -> deltaT / -buttonFallTime
                 emulatedAnalog > 0f -> deltaT / -buttonFallTime
                 emulatedAnalog < 0f -> deltaT / buttonRiseTime
                 else -> 0f
             }
-            emulatedAnalog = if (!isPositiveKeyPressed && !isNegativeKeyPressed && abs(change) > abs(emulatedAnalog)) {
+            emulatedAnalog = if (!isPositiveButtonPressed && !isNegativeButtonPressed && abs(change) > abs(emulatedAnalog)) {
                 0f
             } else {
                 (emulatedAnalog + change).clamp(buttonMin, buttonMax)
@@ -332,7 +340,7 @@ class DriveAxes(
         get() = max(0f, steerAx.analog)
 
     val recoverAx: Axis
-    val isRecover: Boolean get() = recoverAx.isPositiveKeyPressed
+    val isRecover: Boolean get() = recoverAx.isPositiveButtonPressed
 
     init {
         throttleAx = registerAxis("throttle") {
@@ -390,11 +398,11 @@ class WalkAxes(
         get() = max(0f, leftRightAx.analog)
 
     val isJump: Boolean
-        get() = jumpAx.isPositiveKeyPressed
+        get() = jumpAx.isPositiveButtonPressed
     val isRun: Boolean
-        get() = runAx.isPositiveKeyPressed
+        get() = runAx.isPositiveButtonPressed
     val isCrouch: Boolean
-        get() = crouchAx.isPositiveKeyPressed
+        get() = crouchAx.isPositiveButtonPressed
 
     val runFactor: Float
         get() = runAx.analog
