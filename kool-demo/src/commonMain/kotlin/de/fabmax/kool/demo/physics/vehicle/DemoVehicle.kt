@@ -1,10 +1,7 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.input.DriveAxes
-import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.input.LocalKeyCode
+import de.fabmax.kool.input.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
@@ -36,6 +33,11 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     private lateinit var recoverListener: InputStack.SimpleKeyListener
     private val inputAxes = DriveAxes(ctx)
     private val throttleBrakeHandler = ThrottleBrakeHandler()
+    private val resetButtonListener = Controller.ButtonListener { _, newState ->
+        if (newState) {
+            resetVehiclePos()
+        }
+    }
 
     private var previousGear = 0
 
@@ -57,6 +59,8 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             desiredHeadLightRange = if (value) 70f else 0f
         }
 
+    private var lastResetTime = 0.0
+
     init {
         vehicleModel.meshes.values.forEach { it.disableShadowCastingAboveLevel(1) }
 
@@ -66,7 +70,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         vehicle = makeRaycastVehicle(world)
         registerKeyHandlers()
 
-        resetVehiclePos()
+        resetVehiclePos(hard = true)
 
         vehicleModel.meshes["mesh_head_lights_0"]?.shader = deferredKslPbrShader {
             emission { constColor(Color(25f, 25f, 25f)) }
@@ -188,8 +192,30 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         headLightRt.radius = headLightLt.radius
     }
 
-    fun resetVehiclePos() {
-        vehicle.pose = PoseF(START_POS, QuatF.rotation(START_HEAD.deg, Vec3f.Y_AXIS))
+    private fun resetVehiclePos() {
+        val time = Time.gameTime
+        val recoverHard = time - lastResetTime < 0.3
+        lastResetTime = time
+        resetVehiclePos(recoverHard)
+    }
+
+    private fun resetVehiclePos(hard: Boolean) {
+        if (hard) {
+            vehicle.pose = PoseF(START_POS, QuatF.rotation(START_HEAD.deg, Vec3f.Y_AXIS))
+        } else {
+            // move vehicle up and reset rotation to recover from a flipped orientation
+            vehicle.setPosition(vehicle.pose.position + Vec3f(0f, 2f, 0f))
+
+            val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
+            val headDeg = atan2(head.x, head.z).toDeg()
+            val ori = QuatF.rotation(headDeg.deg, Vec3f.Y_AXIS)
+            vehicle.setRotation(ori)
+        }
+        vehicle.linearVelocity = Vec3f.ZERO
+        vehicle.angularVelocity = Vec3f.ZERO
+        vehicle.setToRestState()
+
+        demo.timer?.reset(false)
     }
 
     private fun makeRaycastVehicle(world: VehicleWorld): Vehicle {
@@ -209,7 +235,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             chassisDims = Vec3f(2.1f, 0.98f, 5.4f)
             trackWidthFront = 1.6f
             trackWidthRear = 1.65f
-            maxBrakeTorque = 3000f
+            maxBrakeTorque = 4000f
             gearFinalRatio = 3f
             maxCompression = 0.1f
             maxDroop = 0.1f
@@ -261,37 +287,16 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     }
 
     private fun registerKeyHandlers() {
-        // throttle and brake are used in a digital fashion, set low r
-
-        var prevRecoverTime = 0.0
+        ControllerInput.defaultController?.addButtonListener(ControllerButton.X, resetButtonListener)
         recoverListener = KeyboardInput.addKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
-            val time = Time.gameTime
-            val recoverHard = time - prevRecoverTime < 0.3
-            prevRecoverTime = time
-
-            if (recoverHard) {
-                // reset vehicle position to spawn point on double tap
-                resetVehiclePos()
-            } else {
-                // move vehicle up and reset rotation to recover from a flipped orientation
-                vehicle.setPosition(vehicle.pose.position + Vec3f(0f, 2f, 0f))
-
-                val head = vehicle.transform.transform(MutableVec3f(0f, 0f, 1f), 0f)
-                val headDeg = atan2(head.x, head.z).toDeg()
-                val ori = QuatF.rotation(headDeg.deg, Vec3f.Y_AXIS)
-                vehicle.setRotation(ori)
-            }
-            vehicle.linearVelocity = Vec3f.ZERO
-            vehicle.angularVelocity = Vec3f.ZERO
-            vehicle.setToRestState()
-
-            demo.timer?.reset(false)
+            resetVehiclePos()
         }
     }
 
     fun cleanUp() {
         inputAxes.release()
         vehicleAudio.stop()
+        ControllerInput.defaultController?.removeButtonListener(resetButtonListener)
         KeyboardInput.removeKeyListener(recoverListener)
     }
 

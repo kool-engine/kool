@@ -2,6 +2,7 @@ package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.math.Easing
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
@@ -11,7 +12,8 @@ import kotlin.math.max
 
 open class InputAxes(
     ctx: KoolContext,
-    val inputHandler: InputStack.InputHandler = InputStack.defaultInputHandler
+    val inputHandler: InputStack.InputHandler = InputStack.defaultInputHandler,
+    val controller: Controller? = ControllerInput.defaultController
 ) : BaseReleasable() {
     private val axesList = mutableListOf<Axis>()
     private val axes = mutableMapOf<String, Axis>()
@@ -27,30 +29,19 @@ open class InputAxes(
         ctx.onRender += updateAxes
     }
 
-    fun registerAxis(name: String, vararg keyCodes: KeyCode): Axis {
-        val posKeys = mutableSetOf<KeyCode>()
-        keyCodes.forEach { posKeys += it }
-        return registerAxis(name, posKeys, emptySet())
+    fun registerAxis(name: String, vararg keyCodes: KeyCode): Axis = registerAxis(name) {
+        setPositiveKeys(*keyCodes)
     }
 
-    fun registerAxis(name: String, posKeyCodes: Set<KeyCode>, negKeyCodes: Set<KeyCode>): Axis {
-        val axis = Axis(name)
-        for (key in posKeyCodes) {
-            axis.keyListeners += inputHandler.addKeyListener(
-                key,
-                name,
-                InputStack.KEY_FILTER_ALL,
-                axis::processPositiveKeyInputEvent
-            )
-        }
-        for (key in negKeyCodes) {
-            axis.keyListeners += inputHandler.addKeyListener(
-                key,
-                name,
-                InputStack.KEY_FILTER_ALL,
-                axis::processNegativeKeyInputEvent
-            )
-        }
+    fun registerAxis(name: String, posKeyCodes: Set<KeyCode>, negKeyCodes: Set<KeyCode>): Axis = registerAxis(name) {
+        this.posKeyCodes += posKeyCodes
+        this.negKeyCodes += negKeyCodes
+    }
+
+    fun registerAxis(name: String, block: AxisBuilder.() -> Unit): Axis {
+        val builder = AxisBuilder(name)
+        builder.block()
+        val axis = builder.build()
         axes[name] = axis
         axesList += axis
         return axis
@@ -60,40 +51,157 @@ open class InputAxes(
 
     fun analog(name: String): Float = axes[name]?.analog ?: 0f
 
-    fun digital(name: String): Boolean = axes[name]?.digital == true
+    fun digital(name: String): Boolean = axes[name]?.isPositive == true
 
     override fun release() {
         KoolSystem.requireContext().onRender -= updateAxes
-        axesList.forEach { ax ->
-            ax.keyListeners.forEach { inputHandler.removeKeyListener(it) }
-        }
+        axesList.forEach { ax -> ax.release() }
         axesList.clear()
         axes.clear()
         super.release()
     }
 
-    class Axis(val name: String) {
-        internal val keyListeners = mutableListOf<InputStack.SimpleKeyListener>()
+    inner class AxisBuilder(var name: String) {
+        var maxValue = 1f
+        var centerValue = 0f
+        var minValue = -1f
 
+        var deadZone = 0.01f
+        var analogRiseTime = 0.1f
+        var analogFallTime = 0.1f
+        var buttonRiseTime = 0.3f
+        var buttonFallTime = 0.3f
+        var buttonMin = -1f
+        var buttonMax = 1f
+
+        val posKeyCodes = mutableSetOf<KeyCode>()
+        val negKeyCodes = mutableSetOf<KeyCode>()
+
+        val posControllerButtons = mutableSetOf<ControllerButton>()
+        val negControllerButtons = mutableSetOf<ControllerButton>()
+        val controllerAxes = mutableSetOf<ControllerAxisMapping>()
+
+        fun setControllerAxes(vararg axes: ControllerAxisMapping) {
+            controllerAxes.clear()
+            controllerAxes += axes
+        }
+
+        fun addControllerAxis(axis: ControllerAxis, axisIdleValue: Float = 0f, easing: Easing.Easing = Easing.linear) {
+            controllerAxes += ControllerAxisMapping(axis, axisIdleValue, easing)
+        }
+
+        fun setAnalogRiseFallTime(time: Float) {
+            buttonRiseTime = time
+            buttonFallTime = time
+        }
+
+        fun setPositiveKeys(vararg keys: KeyCode) {
+            posKeyCodes.clear()
+            posKeyCodes += keys
+        }
+
+        fun setNegativeKeys(vararg keys: KeyCode) {
+            negKeyCodes.clear()
+            negKeyCodes += keys
+        }
+
+        fun setPositiveControllerButtons(vararg buttons: ControllerButton) {
+            posControllerButtons.clear()
+            posControllerButtons += buttons
+        }
+
+        fun setNegativeControllerButtons(vararg buttons: ControllerButton) {
+            negControllerButtons.clear()
+            negControllerButtons += buttons
+        }
+
+        fun setButtonRiseFallTime(time: Float) {
+            buttonRiseTime = time
+            buttonFallTime = time
+        }
+
+        fun setButtonRange(min: Float, max: Float) {
+            buttonMin = min
+            buttonMax = max
+        }
+
+        fun build(): Axis {
+            val axis = Axis(name, this)
+
+            for (key in posKeyCodes) {
+                axis.keyListeners += inputHandler.addKeyListener(key, name, InputStack.KEY_FILTER_ALL, axis::processPositiveKeyInputEvent)
+            }
+            for (key in negKeyCodes) {
+                axis.keyListeners += inputHandler.addKeyListener(key, name, InputStack.KEY_FILTER_ALL, axis::processNegativeKeyInputEvent)
+            }
+            controller?.let { ctrl ->
+                for (button in posControllerButtons) {
+                    ctrl.addButtonListener(button, axis.controllerButtonListenerPos)
+                }
+                for (button in negControllerButtons) {
+                    ctrl.addButtonListener(button, axis.controllerButtonListenerNeg)
+                }
+                axis.controllerAxes += controllerAxes
+            }
+
+            return axis
+        }
+    }
+
+    data class ControllerAxisMapping(
+        val axis: ControllerAxis,
+        val axisIdleValue: Float = 0f,
+        val easing: Easing.Easing = Easing.linear
+    ) {
+        fun getMappedValue(inputVal: Float): Float {
+            val posRange = 1f - axisIdleValue
+            val negRange = 1f + axisIdleValue
+
+            return when {
+                inputVal > axisIdleValue -> easing.eased((inputVal - axisIdleValue) / posRange)
+                inputVal < axisIdleValue -> -easing.eased(-((inputVal - axisIdleValue) / negRange))
+                else -> 0f
+            }
+        }
+    }
+
+    inner class Axis(val name: String, builder: AxisBuilder) {
+        private var emulatedAnalog = 0f
         var analog: Float = 0f
             private set
-        val digital: Boolean
-            get() = abs(analog) > digitalOnThreshold
-        val positive: Boolean
-            get() = analog > digitalOnThreshold
-        val negative: Boolean
-            get() = analog < -digitalOnThreshold
 
-        var digitalOnThreshold = 0.01f
-        var analogRiseTime = 1f
-        var analogFallTime = 1f
+        val isPositive: Boolean
+            get() = analog > deadZone
+        val isNegative: Boolean
+            get() = analog < -deadZone
+        val isCenter: Boolean
+            get() = abs(analog) < deadZone
+
+        val digital: Boolean
+            get() = !isCenter
+
+        var deadZone = builder.deadZone
+        var analogRiseTime = builder.analogRiseTime
+        var analogFallTime = builder.analogFallTime
+        var buttonRiseTime = builder.buttonRiseTime
+        var buttonFallTime = builder.buttonFallTime
+        var buttonMin = builder.buttonMin
+        var buttonMax = builder.buttonMax
 
         private var isPositiveKeyPressed = false
         private var isNegativeKeyPressed = false
 
-        fun setRiseFallTime(time: Float) {
-            analogRiseTime = time
-            analogFallTime = time
+        internal val controllerAxes = mutableListOf<ControllerAxisMapping>()
+        internal val keyListeners = mutableListOf<InputStack.SimpleKeyListener>()
+        internal val controllerButtonListenerPos = Controller.ButtonListener { _, newState -> isPositiveKeyPressed = newState }
+        internal val controllerButtonListenerNeg = Controller.ButtonListener { _, newState -> isNegativeKeyPressed = newState }
+
+        fun release() {
+            keyListeners.forEach { inputHandler.removeKeyListener(it) }
+            controller?.let {
+                it.removeButtonListener(controllerButtonListenerPos)
+                it.removeButtonListener(controllerButtonListenerNeg)
+            }
         }
 
         internal fun processPositiveKeyInputEvent(ev: KeyEvent) {
@@ -114,17 +222,37 @@ open class InputAxes(
 
         internal fun updateAxisState(deltaT: Float) {
             val change = when {
-                isPositiveKeyPressed -> deltaT / analogRiseTime
-                isNegativeKeyPressed -> deltaT / -analogFallTime
-                analog > 0f -> deltaT / -analogFallTime
-                analog < 0f -> deltaT / analogRiseTime
+                isPositiveKeyPressed -> deltaT / buttonRiseTime
+                isNegativeKeyPressed -> deltaT / -buttonFallTime
+                emulatedAnalog > 0f -> deltaT / -buttonFallTime
+                emulatedAnalog < 0f -> deltaT / buttonRiseTime
                 else -> 0f
             }
-            analog = if (!isPositiveKeyPressed && !isNegativeKeyPressed && abs(change) > abs(analog)) {
+            emulatedAnalog = if (!isPositiveKeyPressed && !isNegativeKeyPressed && abs(change) > abs(emulatedAnalog)) {
                 0f
             } else {
-                (analog + change).clamp(-1f, 1f)
+                (emulatedAnalog + change).clamp(buttonMin, buttonMax)
             }
+
+            var output = emulatedAnalog
+            controller?.let { ctrl ->
+                for (i in controllerAxes.indices) {
+                    val axis = controllerAxes[i]
+                    val axisVal = axis.getMappedValue(ctrl.getAxisState(axis.axis))
+                    if (abs(axisVal) > abs(output)) {
+                        output = axisVal
+                    }
+                }
+            }
+
+            var delta = output - analog
+            if (delta < 0f && analogFallTime > 0f) {
+                delta = delta.clamp(deltaT / -analogFallTime, 0f)
+            }
+            if (delta > 0f && analogRiseTime > 0f) {
+                delta = delta.clamp(0f, deltaT / analogRiseTime)
+            }
+            analog += delta
         }
     }
 }
@@ -151,14 +279,27 @@ class DriveAxes(
         get() = max(0f, steerAx.analog)
 
     init {
-        throttleAx = registerAxis("throttle", KeyboardInput.KEY_CURSOR_UP, UniversalKeyCode('w'))
-            .apply { setRiseFallTime(0.2f) }
-        brakeAx = registerAxis("brake", KeyboardInput.KEY_CURSOR_DOWN, UniversalKeyCode('s'))
-            .apply { setRiseFallTime(0.2f) }
-        steerAx = registerAxis("left / right",
-            setOf(KeyboardInput.KEY_CURSOR_RIGHT, UniversalKeyCode('d')),
-            setOf(KeyboardInput.KEY_CURSOR_LEFT, UniversalKeyCode('a')),
-        ).apply { setRiseFallTime(0.5f) }
+        throttleAx = registerAxis("throttle") {
+            addControllerAxis(ControllerAxis.RIGHT_TRIGGER, -1f)
+            setPositiveKeys(KeyboardInput.KEY_CURSOR_UP, UniversalKeyCode('w'))
+            setAnalogRiseFallTime(0f)
+            setButtonRiseFallTime(0.2f)
+        }
+        brakeAx = registerAxis("brake") {
+            addControllerAxis(ControllerAxis.LEFT_TRIGGER, -1f)
+            setPositiveKeys(KeyboardInput.KEY_CURSOR_DOWN, UniversalKeyCode('s'))
+            setAnalogRiseFallTime(0f)
+            setButtonRiseFallTime(0.2f)
+            setButtonRange(-1f, 0.75f)
+        }
+        steerAx = registerAxis("left / right") {
+            addControllerAxis(ControllerAxis.LEFT_X, easing = Easing.sqr)
+            addControllerAxis(ControllerAxis.RIGHT_X, easing = Easing.sqr)
+            setPositiveKeys(KeyboardInput.KEY_CURSOR_RIGHT, UniversalKeyCode('d'))
+            setNegativeKeys(KeyboardInput.KEY_CURSOR_LEFT, UniversalKeyCode('a'))
+            setAnalogRiseFallTime(0.1f)
+            setButtonRiseFallTime(0.5f)
+        }
     }
 }
 
@@ -189,11 +330,11 @@ class WalkAxes(
         get() = max(0f, leftRightAx.analog)
 
     val isJump: Boolean
-        get() = jumpAx.digital
+        get() = jumpAx.isPositive
     val isRun: Boolean
-        get() = runAx.digital
+        get() = runAx.isPositive
     val isCrouch: Boolean
-        get() = crouchAx.digital
+        get() = crouchAx.isPositive
 
     val runFactor: Float
         get() = runAx.analog
@@ -201,17 +342,28 @@ class WalkAxes(
         get() = crouchAx.analog
 
     init {
-        forwardBackwardAx = registerAxis("forward / backward",
-            setOf(KeyboardInput.KEY_CURSOR_UP, UniversalKeyCode('w')),
-            setOf(KeyboardInput.KEY_CURSOR_DOWN, UniversalKeyCode('s')),
-        ).apply { setRiseFallTime(0.15f) }
-        leftRightAx = registerAxis("left / right",
-            setOf(KeyboardInput.KEY_CURSOR_RIGHT, UniversalKeyCode('d')),
-            setOf(KeyboardInput.KEY_CURSOR_LEFT, UniversalKeyCode('a')),
-        ).apply { setRiseFallTime(0.15f) }
+        forwardBackwardAx = registerAxis("forward / backward") {
+            setPositiveKeys(KeyboardInput.KEY_CURSOR_UP, UniversalKeyCode('w'))
+            setNegativeKeys(KeyboardInput.KEY_CURSOR_DOWN, UniversalKeyCode('s'))
+            setButtonRiseFallTime(0.15f)
+        }
+        leftRightAx = registerAxis("left / right") {
+            setPositiveKeys(KeyboardInput.KEY_CURSOR_RIGHT, UniversalKeyCode('d'))
+            setNegativeKeys(KeyboardInput.KEY_CURSOR_LEFT, UniversalKeyCode('a'))
+            setButtonRiseFallTime(0.15f)
+        }
 
-        jumpAx = registerAxis("jump", UniversalKeyCode(' ')).apply { setRiseFallTime(0.01f) }
-        runAx = registerAxis("run", KeyboardInput.KEY_SHIFT_LEFT, KeyboardInput.KEY_SHIFT_RIGHT).apply { setRiseFallTime(0.5f) }
-        crouchAx = registerAxis("crouch", KeyboardInput.KEY_CTRL_LEFT, KeyboardInput.KEY_CTRL_RIGHT).apply { setRiseFallTime(0.5f) }
+        jumpAx = registerAxis("jump") {
+            setPositiveKeys(UniversalKeyCode(' '))
+            setButtonRiseFallTime(0.01f)
+        }
+        runAx = registerAxis("run") {
+            setPositiveKeys(KeyboardInput.KEY_SHIFT_LEFT, KeyboardInput.KEY_SHIFT_RIGHT)
+            setButtonRiseFallTime(0.5f)
+        }
+        crouchAx = registerAxis("crouch") {
+            setPositiveKeys(KeyboardInput.KEY_CTRL_LEFT, KeyboardInput.KEY_CTRL_RIGHT)
+            setButtonRiseFallTime(0.5f)
+        }
     }
 }
