@@ -21,8 +21,8 @@ class ControllerJvm(id: Int) : Controller(id) {
 
     init {
         if (isGamepad) {
-            buttonStates = BooleanArray(15)
-            axisStates = FloatArray(6)
+            buttonStates = BooleanArray(STANDARD_LAYOUT_NUM_BUTTONS)
+            axisStates = FloatArray(STANDARD_LAYOUT_NUM_AXES)
         } else {
             buttonStates = BooleanArray(glfwGetJoystickButtons(id)?.capacity() ?: 0)
             axisStates = FloatArray(glfwGetJoystickAxes(id)?.capacity() ?: 0)
@@ -30,33 +30,36 @@ class ControllerJvm(id: Int) : Controller(id) {
         logI { "Controller connected: $name (${axisStates.size} axes, ${buttonStates.size} buttons, isGamepad: $isGamepad)" }
     }
 
+    private fun setButtonState(button: ControllerButton, state: Byte) =
+        setButtonState(button, state == GLFW_PRESS.toByte())
+
     override fun updateState() {
         if (isGamepad && glfwGetGamepadState(id, gamepadState)) {
-            buttonStates[ControllerButton.A.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_A) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.B.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_B) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.X.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_X) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.Y.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_Y) == GLFW_PRESS.toByte()
+            setButtonState(ControllerButton.A, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_A))
+            setButtonState(ControllerButton.B, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_B))
+            setButtonState(ControllerButton.X, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_X))
+            setButtonState(ControllerButton.Y, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_Y))
 
-            buttonStates[ControllerButton.DPAD_LEFT.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_LEFT) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.DPAD_RIGHT.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.DPAD_UP.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_UP) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.DPAD_DOWN.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_DOWN) == GLFW_PRESS.toByte()
+            setButtonState(ControllerButton.DPAD_LEFT, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_LEFT))
+            setButtonState(ControllerButton.DPAD_RIGHT, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT))
+            setButtonState(ControllerButton.DPAD_UP, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_UP))
+            setButtonState(ControllerButton.DPAD_DOWN, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_DPAD_DOWN))
 
-            buttonStates[ControllerButton.SHOULDER_LEFT.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.SHOULDER_RIGHT.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.THUMB_LEFT.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_LEFT_THUMB) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.THUMB_RIGHT.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB) == GLFW_PRESS.toByte()
+            setButtonState(ControllerButton.SHOULDER_LEFT, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER))
+            setButtonState(ControllerButton.SHOULDER_RIGHT, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER))
+            setButtonState(ControllerButton.THUMB_LEFT, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_LEFT_THUMB))
+            setButtonState(ControllerButton.THUMB_RIGHT, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB))
 
-            buttonStates[ControllerButton.START.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_START) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.BACK.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_BACK) == GLFW_PRESS.toByte()
-            buttonStates[ControllerButton.GUIDE.defaultIndex] = gamepadState.buttons(GLFW_GAMEPAD_BUTTON_GUIDE) == GLFW_PRESS.toByte()
+            setButtonState(ControllerButton.START, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_START))
+            setButtonState(ControllerButton.BACK, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_BACK))
+            setButtonState(ControllerButton.GUIDE, gamepadState.buttons(GLFW_GAMEPAD_BUTTON_GUIDE))
 
-            axisStates[ControllerAxis.LEFT_X.defaultIndex] = gamepadState.axes(GLFW_GAMEPAD_AXIS_LEFT_X)
-            axisStates[ControllerAxis.LEFT_Y.defaultIndex] = gamepadState.axes(GLFW_GAMEPAD_AXIS_LEFT_Y)
-            axisStates[ControllerAxis.RIGHT_X.defaultIndex] = gamepadState.axes(GLFW_GAMEPAD_AXIS_RIGHT_X)
-            axisStates[ControllerAxis.RIGHT_X.defaultIndex] = gamepadState.axes(GLFW_GAMEPAD_AXIS_RIGHT_X)
-            axisStates[ControllerAxis.LEFT_TRIGGER.defaultIndex] = gamepadState.axes(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER)
-            axisStates[ControllerAxis.RIGHT_TRIGGER.defaultIndex] = gamepadState.axes(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER)
+            setAxisState(ControllerAxis.LEFT_X, gamepadState.axes(GLFW_GAMEPAD_AXIS_LEFT_X))
+            setAxisState(ControllerAxis.LEFT_Y, gamepadState.axes(GLFW_GAMEPAD_AXIS_LEFT_Y))
+            setAxisState(ControllerAxis.RIGHT_X, gamepadState.axes(GLFW_GAMEPAD_AXIS_RIGHT_X))
+            setAxisState(ControllerAxis.RIGHT_Y, gamepadState.axes(GLFW_GAMEPAD_AXIS_RIGHT_Y))
+            setAxisState(ControllerAxis.TRIGGER_LEFT, gamepadState.axes(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER) * 0.5f + 0.5f)
+            setAxisState(ControllerAxis.TRIGGER_RIGHT, gamepadState.axes(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER) * 0.5f + 0.5f)
 
         } else {
             glfwGetJoystickButtons(id)?.let { buttons ->

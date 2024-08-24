@@ -75,8 +75,8 @@ abstract class Controller(val id: Int) {
     val axisLeftY: Float get() = getAxisState(ControllerAxis.LEFT_Y)
     val axisRightX: Float get() = getAxisState(ControllerAxis.RIGHT_X)
     val axisRightY: Float get() = getAxisState(ControllerAxis.RIGHT_Y)
-    val axisLeftTrigger: Float get() = getAxisState(ControllerAxis.LEFT_TRIGGER)
-    val axisRightTrigger: Float get() = getAxisState(ControllerAxis.RIGHT_TRIGGER)
+    val axisLeftTrigger: Float get() = getAxisState(ControllerAxis.TRIGGER_LEFT)
+    val axisRightTrigger: Float get() = getAxisState(ControllerAxis.TRIGGER_RIGHT)
 
     protected abstract fun updateState()
 
@@ -120,6 +120,18 @@ abstract class Controller(val id: Int) {
         logI { "Controller disconnected: $name" }
     }
 
+    protected fun setButtonState(button: ControllerButton, state: Boolean) {
+        if (button.defaultIndex in buttonStates.indices) {
+            buttonStates[button.defaultIndex] = state
+        }
+    }
+
+    protected fun setAxisState(axis: ControllerAxis, state: Float) {
+        if (axis.defaultIndex in axisStates.indices) {
+            axisStates[axis.defaultIndex] = state
+        }
+    }
+
     private inner class ButtonMonitor(val button: ControllerButton) {
         val listeners = BufferedList<ButtonListener>()
         var oldState: Boolean = false
@@ -138,6 +150,11 @@ abstract class Controller(val id: Int) {
 
     fun interface ButtonListener {
         fun buttonChanged(button: ControllerButton, newState: Boolean)
+    }
+
+    companion object {
+        const val STANDARD_LAYOUT_NUM_BUTTONS = 15
+        const val STANDARD_LAYOUT_NUM_AXES = 6
     }
 }
 
@@ -167,6 +184,6 @@ enum class ControllerAxis(val defaultIndex: Int) {
     LEFT_Y(1),
     RIGHT_X(2),
     RIGHT_Y(3),
-    LEFT_TRIGGER(4),
-    RIGHT_TRIGGER(5),
+    TRIGGER_LEFT(4),
+    TRIGGER_RIGHT(5),
 }

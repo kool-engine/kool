@@ -3,8 +3,6 @@ package de.fabmax.kool.demo.physics.vehicle
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.input.Controller
 import de.fabmax.kool.input.DriveAxes
-import de.fabmax.kool.input.InputStack
-import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
@@ -33,7 +31,6 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
     val vehicleAudio = VehicleAudio(world.physics)
 
-    private lateinit var recoverListener: InputStack.SimpleKeyListener
     private val inputAxes = DriveAxes(ctx)
     private val throttleBrakeHandler = ThrottleBrakeHandler()
     private val resetButtonListener = Controller.ButtonListener { _, newState ->
@@ -202,7 +199,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
 
     private fun resetVehiclePos() {
         val time = Time.gameTime
-        val recoverHard = time - lastResetTime < 0.3
+        val recoverHard = time - lastResetTime < 0.5
         lastResetTime = time
         resetVehiclePos(recoverHard)
     }
@@ -297,7 +294,6 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
     fun cleanUp() {
         inputAxes.release()
         vehicleAudio.stop()
-        KeyboardInput.removeKeyListener(recoverListener)
     }
 
     fun toggleSound(enabled: Boolean) {

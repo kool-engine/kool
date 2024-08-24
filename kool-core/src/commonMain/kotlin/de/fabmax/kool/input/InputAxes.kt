@@ -103,7 +103,7 @@ open class InputAxes(
         var centerValue = 0f
         var minValue = -1f
 
-        var deadZone = 0.01f
+        var deadZone = 0.05f
         var analogRiseTime = 0.1f
         var analogFallTime = 0.1f
         var buttonRiseTime = 0.3f
@@ -122,8 +122,13 @@ open class InputAxes(
             controllerAxes += axes
         }
 
-        fun addControllerAxis(axis: ControllerAxis, axisIdleValue: Float = 0f, easing: Easing.Easing = Easing.linear) {
-            controllerAxes += ControllerAxisMapping(axis, axisIdleValue, easing)
+        fun addControllerAxis(
+            axis: ControllerAxis,
+            isInverted: Boolean = false,
+            axisIdleValue: Float = 0f,
+            easing: Easing.Easing = Easing.linear
+        ) {
+            controllerAxes += ControllerAxisMapping(axis, isInverted, axisIdleValue, easing)
         }
 
         fun setAnalogRiseFallTime(time: Float) {
@@ -168,6 +173,7 @@ open class InputAxes(
 
     data class ControllerAxisMapping(
         val axis: ControllerAxis,
+        val isInverted: Boolean = false,
         val axisIdleValue: Float = 0f,
         val easing: Easing.Easing = Easing.linear
     ) {
@@ -175,11 +181,12 @@ open class InputAxes(
             val posRange = 1f - axisIdleValue
             val negRange = 1f + axisIdleValue
 
-            return when {
+            val mapped = when {
                 inputVal > axisIdleValue -> easing.eased((inputVal - axisIdleValue) / posRange)
                 inputVal < axisIdleValue -> -easing.eased(-((inputVal - axisIdleValue) / negRange))
                 else -> 0f
             }
+            return if (isInverted) -mapped else mapped
         }
     }
 
@@ -195,8 +202,8 @@ open class InputAxes(
         val isCenter: Boolean
             get() = abs(analog) < deadZone
 
-        val digital: Boolean
-            get() = !isCenter
+        var isPositiveKeyPressed = false; private set
+        var isNegativeKeyPressed = false; private set
 
         var deadZone = builder.deadZone
         var analogRiseTime = builder.analogRiseTime
@@ -211,9 +218,6 @@ open class InputAxes(
         val posControllerButtons = builder.posControllerButtons.toList()
         val negControllerButtons = builder.negControllerButtons.toList()
         val controllerAxes = builder.controllerAxes.toList()
-
-        private var isPositiveKeyPressed = false
-        private var isNegativeKeyPressed = false
 
         internal var usedController: Controller? = null
         internal val keyListeners = mutableListOf<InputStack.SimpleKeyListener>()
@@ -328,17 +332,17 @@ class DriveAxes(
         get() = max(0f, steerAx.analog)
 
     val recoverAx: Axis
-    val isRecover: Boolean get() = recoverAx.digital
+    val isRecover: Boolean get() = recoverAx.isPositiveKeyPressed
 
     init {
         throttleAx = registerAxis("throttle") {
-            addControllerAxis(ControllerAxis.RIGHT_TRIGGER, -1f)
+            addControllerAxis(ControllerAxis.TRIGGER_RIGHT)
             setPositiveKeys(KeyboardInput.KEY_CURSOR_UP, UniversalKeyCode('w'))
             setAnalogRiseFallTime(0f)
             setButtonRiseFallTime(0.2f)
         }
         brakeAx = registerAxis("brake") {
-            addControllerAxis(ControllerAxis.LEFT_TRIGGER, -1f)
+            addControllerAxis(ControllerAxis.TRIGGER_LEFT)
             setPositiveKeys(KeyboardInput.KEY_CURSOR_DOWN, UniversalKeyCode('s'))
             setAnalogRiseFallTime(0f)
             setButtonRiseFallTime(0.2f)
@@ -386,11 +390,11 @@ class WalkAxes(
         get() = max(0f, leftRightAx.analog)
 
     val isJump: Boolean
-        get() = jumpAx.isPositive
+        get() = jumpAx.isPositiveKeyPressed
     val isRun: Boolean
-        get() = runAx.isPositive
+        get() = runAx.isPositiveKeyPressed
     val isCrouch: Boolean
-        get() = crouchAx.isPositive
+        get() = crouchAx.isPositiveKeyPressed
 
     val runFactor: Float
         get() = runAx.analog
@@ -399,25 +403,30 @@ class WalkAxes(
 
     init {
         forwardBackwardAx = registerAxis("forward / backward") {
+            addControllerAxis(ControllerAxis.LEFT_Y, isInverted = true)
             setPositiveKeys(KeyboardInput.KEY_CURSOR_UP, UniversalKeyCode('w'))
             setNegativeKeys(KeyboardInput.KEY_CURSOR_DOWN, UniversalKeyCode('s'))
             setButtonRiseFallTime(0.15f)
         }
         leftRightAx = registerAxis("left / right") {
+            addControllerAxis(ControllerAxis.LEFT_X)
             setPositiveKeys(KeyboardInput.KEY_CURSOR_RIGHT, UniversalKeyCode('d'))
             setNegativeKeys(KeyboardInput.KEY_CURSOR_LEFT, UniversalKeyCode('a'))
             setButtonRiseFallTime(0.15f)
         }
 
         jumpAx = registerAxis("jump") {
+            setPositiveControllerButtons(ControllerButton.A)
             setPositiveKeys(UniversalKeyCode(' '))
             setButtonRiseFallTime(0.01f)
         }
         runAx = registerAxis("run") {
+            setPositiveControllerButtons(ControllerButton.SHOULDER_RIGHT)
             setPositiveKeys(KeyboardInput.KEY_SHIFT_LEFT, KeyboardInput.KEY_SHIFT_RIGHT)
             setButtonRiseFallTime(0.5f)
         }
         crouchAx = registerAxis("crouch") {
+            setPositiveControllerButtons(ControllerButton.X)
             setPositiveKeys(KeyboardInput.KEY_CTRL_LEFT, KeyboardInput.KEY_CTRL_RIGHT)
             setButtonRiseFallTime(0.5f)
         }

@@ -7,13 +7,6 @@ import org.khronos.webgl.ArrayBufferView
 import org.w3c.dom.RenderingContext
 import kotlin.js.Promise
 
-
-external val navigator: Navigator
-
-external class Navigator {
-    val gpu: GPU
-}
-
 external class GPU {
     fun getPreferredCanvasFormat(): GPUTextureFormat
     fun requestAdapter(options: GPURequestAdapterOptions = definedExternally): Promise<GPUAdapter?>
