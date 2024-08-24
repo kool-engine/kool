@@ -4,41 +4,46 @@ import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.logI
 
 object ControllerInput {
+    internal val _controllers = mutableListOf<Controller>()
+    val controllers: List<Controller> get() = _controllers
 
-    internal val _controllers = mutableMapOf<Int, Controller>()
-    val controllers: Map<Int, Controller> get() = _controllers
-
-    var defaultController: Controller? = null
+    val connectionListeners = BufferedList<ConnectionListener>()
 
     fun poll() {
-        if (controllers.size == 1) {
-            defaultController?.poll()
-        } else if (controllers.size > 1) {
-            for (ctrl in controllers.values) {
-                ctrl.poll()
-            }
+        for (i in controllers.indices) {
+            controllers[i].poll()
         }
+    }
+
+    fun findDefaultController(): Controller? {
+        return controllers.find { it.isConnected && it.isGamepad } ?: controllers.getOrNull(0)
     }
 
     internal fun addController(controller: Controller) {
-        _controllers[controller.id] = controller
-        if (defaultController == null) {
-            defaultController = controller
-        }
+        _controllers.removeAll { it.id == controller.id }
+        _controllers += controller
+        connectionListeners.updated().forEach { it.onControllerConnected(controller) }
     }
 
     internal fun removeController(controllerId: Int) {
-        _controllers[controllerId]?.onDisconnect()
-        _controllers -= controllerId
-        if (defaultController?.id == controllerId) {
-            defaultController = _controllers.keys.minOrNull()?.let { _controllers[it] }
+        val existing = _controllers.find { it.id == controllerId }
+        existing?.let { ctrl ->
+            ctrl.onDisconnect()
+            _controllers -= ctrl
+            connectionListeners.updated().forEach { it.onControllerDisconnected(ctrl) }
         }
+    }
+
+    interface ConnectionListener {
+        fun onControllerConnected(controller: Controller) { }
+        fun onControllerDisconnected(controller: Controller) { }
     }
 }
 
 abstract class Controller(val id: Int) {
     abstract val name: String
     abstract val isGamepad: Boolean
+    abstract val isConnected: Boolean
 
     abstract val buttonStates: BooleanArray
     abstract val axisStates: FloatArray

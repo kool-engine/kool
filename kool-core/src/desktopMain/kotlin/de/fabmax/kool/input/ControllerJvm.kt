@@ -6,6 +6,7 @@ import org.lwjgl.glfw.GLFWGamepadState
 import kotlin.math.min
 
 class ControllerJvm(id: Int) : Controller(id) {
+    override var isConnected: Boolean = true
     override val isGamepad = glfwJoystickIsGamepad(id)
     override val name = if (isGamepad) {
         glfwGetGamepadName(id) ?: "unknown-gamepad"
@@ -69,5 +70,10 @@ class ControllerJvm(id: Int) : Controller(id) {
                 }
             }
         }
+    }
+
+    override fun onDisconnect() {
+        isConnected = false
+        super.onDisconnect()
     }
 }

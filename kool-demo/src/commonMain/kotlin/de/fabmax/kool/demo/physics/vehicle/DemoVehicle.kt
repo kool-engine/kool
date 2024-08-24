@@ -1,7 +1,10 @@
 package de.fabmax.kool.demo.physics.vehicle
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.input.*
+import de.fabmax.kool.input.Controller
+import de.fabmax.kool.input.DriveAxes
+import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.geometry.ConvexMesh
 import de.fabmax.kool.physics.geometry.ConvexMeshGeometry
@@ -60,6 +63,7 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         }
 
     private var lastResetTime = 0.0
+    private var wasRecoverPressed = false
 
     init {
         vehicleModel.meshes.values.forEach { it.disableShadowCastingAboveLevel(1) }
@@ -68,7 +72,6 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         vehicleGroupInner += vehicleModel
 
         vehicle = makeRaycastVehicle(world)
-        registerKeyHandlers()
 
         resetVehiclePos(hard = true)
 
@@ -115,6 +118,11 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         vehicle.isReverse = throttleBrakeHandler.isReverse
         vehicle.throttleInput = throttleBrakeHandler.throttle
         vehicle.brakeInput = throttleBrakeHandler.brake
+
+        if (inputAxes.isRecover && !wasRecoverPressed) {
+            resetVehiclePos()
+        }
+        wasRecoverPressed = inputAxes.isRecover
 
         val steerScale = 1f - (abs(vehicle.forwardSpeed) / 100f).clamp(0f, 0.9f)
         vehicle.steerInput = inputAxes.leftRight * steerScale
@@ -286,17 +294,9 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         return vehicle
     }
 
-    private fun registerKeyHandlers() {
-        ControllerInput.defaultController?.addButtonListener(ControllerButton.X, resetButtonListener)
-        recoverListener = KeyboardInput.addKeyListener(LocalKeyCode('r'), "recover", filter = { it.isPressed }) {
-            resetVehiclePos()
-        }
-    }
-
     fun cleanUp() {
         inputAxes.release()
         vehicleAudio.stop()
-        ControllerInput.defaultController?.removeButtonListener(resetButtonListener)
         KeyboardInput.removeKeyListener(recoverListener)
     }
 

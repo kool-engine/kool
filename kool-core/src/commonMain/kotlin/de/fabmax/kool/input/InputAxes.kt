@@ -13,10 +13,12 @@ import kotlin.math.max
 open class InputAxes(
     ctx: KoolContext,
     val inputHandler: InputStack.InputHandler = InputStack.defaultInputHandler,
-    val controller: Controller? = ControllerInput.defaultController
-) : BaseReleasable() {
+    fixedController: Controller? = null
+) : BaseReleasable(), ControllerInput.ConnectionListener {
     private val axesList = mutableListOf<Axis>()
     private val axes = mutableMapOf<String, Axis>()
+
+    private var controller: Controller? = fixedController
 
     private val updateAxes: ((KoolContext) -> Unit) = {
         checkIsNotReleased()
@@ -27,6 +29,10 @@ open class InputAxes(
 
     init {
         ctx.onRender += updateAxes
+        if (fixedController == null) {
+            ControllerInput.connectionListeners += this
+            controller = ControllerInput.findDefaultController()
+        }
     }
 
     fun registerAxis(name: String, vararg keyCodes: KeyCode): Axis = registerAxis(name) {
@@ -55,10 +61,41 @@ open class InputAxes(
 
     override fun release() {
         KoolSystem.requireContext().onRender -= updateAxes
+        ControllerInput.connectionListeners -= this
         axesList.forEach { ax -> ax.release() }
         axesList.clear()
         axes.clear()
         super.release()
+    }
+
+    override fun onControllerConnected(controller: Controller) {
+        val current = this.controller
+        var newController = current
+        if (current == null) {
+            // anything is better than nothing
+            newController = controller
+        } else if (current.isGamepad) {
+            // existing controller already offers standardized input, won't get better than this
+            newController = current
+        } else if (controller.isGamepad) {
+            // new controller offers standardized input, won't get better than this
+            newController = controller
+        } else if (controller.axisStates.size >= current.axisStates.size && controller.buttonStates.size >= current.buttonStates.size) {
+            // more inputs are probably better?
+            newController = controller
+        }
+
+        if (newController != current) {
+            this.controller = newController
+            axesList.forEach { it.setController(newController) }
+        }
+    }
+
+    override fun onControllerDisconnected(controller: Controller) {
+        if (this.controller == controller) {
+            this.controller = ControllerInput.findDefaultController()
+            axesList.forEach { it.setController(this.controller) }
+        }
     }
 
     inner class AxisBuilder(var name: String) {
@@ -76,7 +113,6 @@ open class InputAxes(
 
         val posKeyCodes = mutableSetOf<KeyCode>()
         val negKeyCodes = mutableSetOf<KeyCode>()
-
         val posControllerButtons = mutableSetOf<ControllerButton>()
         val negControllerButtons = mutableSetOf<ControllerButton>()
         val controllerAxes = mutableSetOf<ControllerAxisMapping>()
@@ -125,26 +161,8 @@ open class InputAxes(
             buttonMax = max
         }
 
-        fun build(): Axis {
-            val axis = Axis(name, this)
-
-            for (key in posKeyCodes) {
-                axis.keyListeners += inputHandler.addKeyListener(key, name, InputStack.KEY_FILTER_ALL, axis::processPositiveKeyInputEvent)
-            }
-            for (key in negKeyCodes) {
-                axis.keyListeners += inputHandler.addKeyListener(key, name, InputStack.KEY_FILTER_ALL, axis::processNegativeKeyInputEvent)
-            }
-            controller?.let { ctrl ->
-                for (button in posControllerButtons) {
-                    ctrl.addButtonListener(button, axis.controllerButtonListenerPos)
-                }
-                for (button in negControllerButtons) {
-                    ctrl.addButtonListener(button, axis.controllerButtonListenerNeg)
-                }
-                axis.controllerAxes += controllerAxes
-            }
-
-            return axis
+        fun build(): Axis = Axis(name, this).apply {
+            controller?.let { setController(it) }
         }
     }
 
@@ -188,19 +206,50 @@ open class InputAxes(
         var buttonMin = builder.buttonMin
         var buttonMax = builder.buttonMax
 
+        val posKeyCodes = builder.posKeyCodes.toList()
+        val negKeyCodes = builder.negKeyCodes.toList()
+        val posControllerButtons = builder.posControllerButtons.toList()
+        val negControllerButtons = builder.negControllerButtons.toList()
+        val controllerAxes = builder.controllerAxes.toList()
+
         private var isPositiveKeyPressed = false
         private var isNegativeKeyPressed = false
 
-        internal val controllerAxes = mutableListOf<ControllerAxisMapping>()
+        internal var usedController: Controller? = null
         internal val keyListeners = mutableListOf<InputStack.SimpleKeyListener>()
         internal val controllerButtonListenerPos = Controller.ButtonListener { _, newState -> isPositiveKeyPressed = newState }
         internal val controllerButtonListenerNeg = Controller.ButtonListener { _, newState -> isNegativeKeyPressed = newState }
 
+        init {
+            for (key in posKeyCodes) {
+                keyListeners += inputHandler.addKeyListener(key, name, InputStack.KEY_FILTER_ALL, this::processPositiveKeyInputEvent)
+            }
+            for (key in negKeyCodes) {
+                keyListeners += inputHandler.addKeyListener(key, name, InputStack.KEY_FILTER_ALL, this::processNegativeKeyInputEvent)
+            }
+        }
+
         fun release() {
             keyListeners.forEach { inputHandler.removeKeyListener(it) }
-            controller?.let {
+            usedController?.let {
                 it.removeButtonListener(controllerButtonListenerPos)
                 it.removeButtonListener(controllerButtonListenerNeg)
+            }
+        }
+
+        internal fun setController(controller: Controller?) {
+            usedController?.let {
+                it.removeButtonListener(controllerButtonListenerPos)
+                it.removeButtonListener(controllerButtonListenerNeg)
+            }
+            usedController = controller
+            usedController?.let {
+                for (button in posControllerButtons) {
+                    it.addButtonListener(button, controllerButtonListenerPos)
+                }
+                for (button in negControllerButtons) {
+                    it.addButtonListener(button, controllerButtonListenerNeg)
+                }
             }
         }
 
@@ -235,7 +284,7 @@ open class InputAxes(
             }
 
             var output = emulatedAnalog
-            controller?.let { ctrl ->
+            usedController?.let { ctrl ->
                 for (i in controllerAxes.indices) {
                     val axis = controllerAxes[i]
                     val axisVal = axis.getMappedValue(ctrl.getAxisState(axis.axis))
@@ -278,6 +327,9 @@ class DriveAxes(
     val right: Float
         get() = max(0f, steerAx.analog)
 
+    val recoverAx: Axis
+    val isRecover: Boolean get() = recoverAx.digital
+
     init {
         throttleAx = registerAxis("throttle") {
             addControllerAxis(ControllerAxis.RIGHT_TRIGGER, -1f)
@@ -299,6 +351,10 @@ class DriveAxes(
             setNegativeKeys(KeyboardInput.KEY_CURSOR_LEFT, UniversalKeyCode('a'))
             setAnalogRiseFallTime(0.1f)
             setButtonRiseFallTime(0.5f)
+        }
+        recoverAx = registerAxis("recover vehicle") {
+            setPositiveKeys(LocalKeyCode('r'))
+            setPositiveControllerButtons(ControllerButton.X)
         }
     }
 }
