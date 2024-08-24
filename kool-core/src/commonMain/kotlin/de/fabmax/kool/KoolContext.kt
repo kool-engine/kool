@@ -1,7 +1,6 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.input.PointerInput
+import de.fabmax.kool.input.Input
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.Texture2d
@@ -114,8 +113,7 @@ abstract class KoolContext {
         for (i in frameTimes.indices) { sum += frameTimes[i] }
         fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
-        KeyboardInput.onNewFrame(this)
-        PointerInput.onNewFrame(this)
+        Input.poll(this)
 
         onRender.update()
         for (i in onRender.indices) {

@@ -10,8 +10,6 @@ object PointerInput {
 
     private val inputPointers = Array(MAX_POINTERS) { BufferedPointerInput() }
 
-    internal val platformInput = PlatformInput()
-
     val pointerState = PointerState()
     val primaryPointer: Pointer get() = pointerState.primaryPointer
 
@@ -23,14 +21,13 @@ object PointerInput {
             if (value != field) {
                 cursorLockTime = if (value == CursorMode.LOCKED) Time.frameCount.toUInt() else 0u
                 field = value
-                platformInput.setCursorMode(value)
+                Input.platformInput.setCursorMode(value)
             }
         }
     var cursorShape: CursorShape = CursorShape.DEFAULT
 
-
-    internal fun onNewFrame(ctx: KoolContext) {
-        platformInput.applyCursorShape(cursorShape)
+    internal fun poll(ctx: KoolContext) {
+        Input.platformInput.applyCursorShape(cursorShape)
         cursorShape = CursorShape.DEFAULT
         pointerState.onNewFrame(inputPointers, ctx)
     }
@@ -145,16 +142,6 @@ object PointerInput {
     const val CONSUMED_SCROLL_Y = 64
     const val CONSUMED_X = 128
     const val CONSUMED_Y = 256
-}
-
-internal expect fun PlatformInput(): PlatformInput
-
-internal interface PlatformInput {
-    fun setCursorMode(cursorMode: CursorMode)
-    fun applyCursorShape(cursorShape: CursorShape)
-
-    fun requestKeyboard() { }
-    fun hideKeyboard() { }
 }
 
 enum class CursorMode {
