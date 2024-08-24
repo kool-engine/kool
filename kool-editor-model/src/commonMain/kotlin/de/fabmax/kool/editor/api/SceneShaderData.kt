@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ksl.blocks.ToneMapping
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DrawShader
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
@@ -33,7 +33,7 @@ class SceneShaderData(val scene: EditorScene, private val isNotifying: Boolean =
             }
         }
 
-    var environmentMaps: EnvironmentMaps? = null
+    var environmentMap: EnvironmentMap? = null
         set(value) {
             if (value != field) {
                 field = value
@@ -76,7 +76,7 @@ class SceneShaderData(val scene: EditorScene, private val isNotifying: Boolean =
     fun set(other: SceneShaderData) {
         maxNumberOfLights = other.maxNumberOfLights
         toneMapping = other.toneMapping
-        environmentMaps = other.environmentMaps
+        environmentMap = other.environmentMap
         ambientColorLinear = other.ambientColorLinear
         shadowMaps = other.shadowMaps
         ssaoMap = other.ssaoMap

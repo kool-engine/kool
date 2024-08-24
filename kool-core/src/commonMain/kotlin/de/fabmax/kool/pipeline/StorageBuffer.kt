@@ -156,7 +156,7 @@ abstract class StorageBuffer(
      */
     suspend inline fun readbackBuffer() {
         val deferred = CompletableDeferred<Unit>()
-        KoolSystem.requireContext().backend.readStorageBuffer(this, deferred)
+        KoolSystem.requireContext().backend.downloadStorageBuffer(this, deferred)
         deferred.await()
     }
 

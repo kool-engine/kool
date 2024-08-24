@@ -69,6 +69,8 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                     BindingType.STORAGE_BUFFER_1D -> TODO()
                     BindingType.STORAGE_BUFFER_2D -> TODO()
                     BindingType.STORAGE_BUFFER_3D -> TODO()
+                    BindingType.TEXTURE_2D_ARRAY -> TODO()
+                    BindingType.TEXTURE_CUBE_ARRAY -> TODO()
                 }
             }
         }

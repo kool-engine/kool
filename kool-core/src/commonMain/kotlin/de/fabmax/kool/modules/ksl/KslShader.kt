@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
@@ -26,6 +28,8 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         this.pipelineConfig = pipelineConfig
     }
 
+    val textureArrays = mutableMapOf<String, Texture2dArrayBinding>()
+
     var pipelineConfig: PipelineConfig = PipelineConfig()
         set(value) {
             if (createdPipeline == null) {
@@ -34,6 +38,24 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
                 logE { "pipelineConfig cannot be changed after the pipeline is created" }
             }
         }
+
+    fun registerArrayTextures(colorCfg: ColorBlockConfig) {
+        colorCfg.colorSources
+            .filterIsInstance<ColorBlockConfig.TextureArrayColor>()
+            .filter { it.textureName !in textureArrays || it.defaultTexture != null && textureArrays[it.textureName] == null }
+            .forEach {
+                textureArrays[it.textureName] = texture2dArray(it.textureName, it.defaultTexture, null)
+            }
+    }
+
+    fun registerArrayTextures(propCfg: PropertyBlockConfig) {
+        propCfg.propertySources
+            .filterIsInstance<PropertyBlockConfig.TextureArrayProperty>()
+            .filter { it.textureName !in textureArrays || it.defaultTexture != null && textureArrays[it.textureName] == null }
+            .forEach {
+                textureArrays[it.textureName] = texture2dArray(it.textureName, it.defaultTexture, null)
+            }
+    }
 
     /**
      * Retrieves the set of vertex attributes required by this shader. The [program] needs
@@ -245,6 +267,8 @@ private fun KslProgram.setupBindGroupLayoutTextures(bindGrpBuilder: BindGroupLay
             is KslColorSampler2d -> Texture2dLayout(sampler.name, texStages, sampleType)
             is KslColorSampler3d -> Texture3dLayout(sampler.name, texStages, sampleType)
             is KslColorSamplerCube -> TextureCubeLayout(sampler.name, texStages, sampleType)
+            is KslColorSampler2dArray -> Texture2dArrayLayout(sampler.name, texStages, sampleType)
+            is KslColorSamplerCubeArray -> TextureCubeArrayLayout(sampler.name, texStages, sampleType)
             else -> throw IllegalStateException("Unsupported sampler uniform type: ${type.typeName}")
         }
     }

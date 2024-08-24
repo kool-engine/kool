@@ -14,10 +14,11 @@ interface RenderBackend {
     val apiName: String
     val deviceName: String
 
+    val features: BackendFeatures
+
     val deviceCoordinates: DeviceCoordinates
     val depthRange: DepthRange get() = deviceCoordinates.ndcDepthRange
     val isInvertedNdcY: Boolean get() = deviceCoordinates.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM
-    val hasComputeShaders: Boolean
 
     val frameGpuTime: Double
 
@@ -36,9 +37,9 @@ interface RenderBackend {
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
     fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl
 
-    fun writeTextureData(tex: Texture, data: TextureData)
-    fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>)
-    fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>)
+    fun <T: ImageData> uploadTextureData(tex: Texture<T>)
+    fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>)
+    fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>)
 }
 
 class DeviceCoordinates(

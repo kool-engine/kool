@@ -139,9 +139,19 @@ open class KslProgram(val name: String) {
         getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler3d, false)) }
     fun textureCube(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
         getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSamplerCube, false)) }
+    fun texture2dArray(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
+        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler2dArray, false)) }
+    fun textureCubeArray(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
+        getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSamplerCubeArray, false)) }
 
-    fun depthTexture2d(name: String) = getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
-    fun depthTextureCube(name: String) = getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
+    fun depthTexture2d(name: String) =
+        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2d, false)) }
+    fun depthTextureCube(name: String) =
+        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCube, false)) }
+    fun depthTexture2dArray(name: String) =
+        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSampler2dArray, false)) }
+    fun depthTextureCubeArray(name: String) =
+        getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
 
     inline fun <reified T: KslNumericType> storage1d(
         name: String,

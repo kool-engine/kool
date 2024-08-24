@@ -95,7 +95,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
     }
 
     companion object {
-        fun irradianceMap(scene: Scene, envTex: Texture, size: Int = 16): IrradianceMapPass {
+        fun irradianceMap(scene: Scene, envTex: Texture<*>, size: Int = 16): IrradianceMapPass {
             return when (envTex) {
                 is Texture2d -> IrradianceMapPass(scene, envTex, null, size)
                 is TextureCube -> IrradianceMapPass(scene, null, envTex, size)

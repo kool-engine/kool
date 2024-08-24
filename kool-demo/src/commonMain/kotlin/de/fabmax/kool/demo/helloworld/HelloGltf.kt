@@ -50,7 +50,7 @@ class HelloGltf : DemoScene("Hello glTF") {
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
             val modelCfg = GltfLoadConfig(materialConfig = materialCfg)
-            val model = Assets.loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg)
+            val model = Assets.loadGltfModel("${DemoLoader.modelPath}/BoxAnimated.gltf", modelCfg).getOrThrow()
 
             model.transform.translate(0f, 0.5f, 0f)
             if (model.animations.isNotEmpty()) {

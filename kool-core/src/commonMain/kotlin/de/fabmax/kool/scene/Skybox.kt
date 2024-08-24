@@ -11,16 +11,15 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.PipelineConfig
 import de.fabmax.kool.pipeline.TextureCube
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.UniqueId
 
-fun Scene.skybox(ibl: EnvironmentMaps, lod: Float = 1f) {
+fun Scene.skybox(ibl: EnvironmentMap, lod: Float = 1f) {
     this += Skybox.cube(ibl.reflectionMap, lod)
 }
 
 object Skybox {
-
     fun cube(
         environmentMap: TextureCube,
         texLod: Float = 0f,

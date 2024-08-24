@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.ComputeShaderCodeGl
@@ -18,7 +19,11 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     override val apiName: String = "MockAPI"
     override val deviceName: String = "Mock device"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL
-    override val hasComputeShaders: Boolean = false
+    override val features = BackendFeatures(
+        computeShaders = false,
+        cubeMapArrays = false,
+        reversedDepth = false
+    )
 
     override var frameGpuTime: Double = 0.0
 
@@ -48,13 +53,15 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         TODO("Not yet implemented")
     }
 
-    override fun writeTextureData(tex: Texture, data: TextureData) { }
+    override fun <T: ImageData> uploadTextureData(tex: Texture<T>) {
+        tex.uploadData = null
+    }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         deferred.complete(Unit)
     }
 
-    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+    override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
         TODO("Not yet implemented")
     }
 }

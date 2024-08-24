@@ -252,7 +252,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         val modelShapes = components.map { it.data.shapes[0] as ShapeData.Model }
         val allTheSameModel = modelShapes.all { it == modelShapes[0] }
         val assetRef = modelShapes[0].toAssetRef()
-        val gltf = if (assetRef.path == null) null else {
+        val gltf = if (assetRef?.path == null) null else {
             KoolEditor.instance.cachedAppAssets.getModelMutableState(assetRef).use()
         }
         if (allTheSameModel && gltf != null) {
@@ -297,7 +297,7 @@ class MeshEditor : ComponentEditor<MeshComponent>() {
         }
 
         val loaded = heightmaps.map {
-            KoolEditor.instance.cachedAppAssets.getHeightmapMutableState(it.toAssetRef()).use()
+            it.toAssetRef()?.let { ref -> KoolEditor.instance.cachedAppAssets.getHeightmapMutableState(ref).use() }
         }
         val sizeX = condenseDouble(heightmaps.mapIndexed { i, heightmap ->
             val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS

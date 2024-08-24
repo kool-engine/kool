@@ -82,7 +82,7 @@ sealed interface ShapeData {
     ) : ShapeData, AssetBased {
         override val name: String get() = "Model"
 
-        override fun toAssetRef() = AssetReference.Model(modelPath)
+        override fun toAssetRef() = modelPath?.let { AssetReference.Model(it) }
     }
 
     @Serializable
@@ -96,7 +96,7 @@ sealed interface ShapeData {
     ) : ShapeData, AssetBased {
         override val name: String get() = "Heightmap"
 
-        override fun toAssetRef() = AssetReference.Heightmap(mapPath, heightScale.toFloat(), heightOffset.toFloat())
+        override fun toAssetRef() = mapPath?.let { AssetReference.Heightmap(it, heightScale.toFloat(), heightOffset.toFloat()) }
     }
 
     @Serializable
@@ -120,6 +120,6 @@ sealed interface ShapeData {
     }
 
     interface AssetBased {
-        fun toAssetRef(): AssetReference
+        fun toAssetRef(): AssetReference?
     }
 }

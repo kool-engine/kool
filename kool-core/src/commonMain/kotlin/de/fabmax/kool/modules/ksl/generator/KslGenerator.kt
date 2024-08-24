@@ -63,6 +63,9 @@ abstract class KslGenerator {
     abstract fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String
     abstract fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String
     abstract fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String
+    abstract fun sampleColorTextureArray(sampleTexture: KslSampleColorTextureArray<*>): String
+    abstract fun sampleColorTextureArrayGrad(sampleTextureGrad: KslSampleColorTextureArrayGrad<*>): String
+    abstract fun sampleDepthTextureArray(sampleTexture: KslSampleDepthTextureArray<*>): String
     abstract fun textureSize(textureSize: KslTextureSize<*, *>): String
     abstract fun texelFetch(expression: KslTexelFetch<*>): String
 

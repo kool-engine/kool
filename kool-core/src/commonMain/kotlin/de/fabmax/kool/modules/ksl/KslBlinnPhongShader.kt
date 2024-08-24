@@ -20,6 +20,11 @@ open class KslBlinnPhongShader(cfg: Config, model: KslProgram = Model(cfg)) : Ks
     val shininessCfg = PropertyBlockConfig(cfg.shininessCfg.propertyName, cfg.shininessCfg.propertySources.copy().toMutableList())
     val specularStrengthCfg = PropertyBlockConfig(cfg.specularStrengthCfg.propertyName, cfg.specularStrengthCfg.propertySources.copy().toMutableList())
 
+    init {
+        registerArrayTextures(cfg.shininessCfg)
+        registerArrayTextures(cfg.specularStrengthCfg)
+    }
+
     class Config(builder: Builder) : LitShaderConfig(builder) {
         val specularColor: Color = builder.specularColor
         val shininessCfg: PropertyBlockConfig = builder.shininessCfg.build()

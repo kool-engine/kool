@@ -7,6 +7,7 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MapAttribute
 import de.fabmax.kool.editor.data.MaterialReferenceComponentData
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.launchOnMainThread
 
 class MaterialReferenceComponent(
@@ -42,7 +43,7 @@ class MaterialReferenceComponent(
             return
         }
         material.shaderData.collectAttributes().filterIsInstance<MapAttribute>().forEach { matMap ->
-            requiredAssets += AssetReference.Texture(matMap.mapPath)
+            requiredAssets += AssetReference.Texture(matMap.mapPath, matMap.format ?: TexFormat.RGBA)
         }
     }
 

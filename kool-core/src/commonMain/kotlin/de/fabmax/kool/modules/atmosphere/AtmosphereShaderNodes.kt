@@ -149,7 +149,8 @@ class AtmosphereBlock(
 
                 val shadowFac = if (sunShadowProj != null && sunShadowTex != null) {
                     val projPos = float4Var(sunShadowProj * float4Value(inScatterPt, 1f.const))
-                    float1Var(sampleDepthTexture(sunShadowTex, projPos.xyz / projPos.w))
+                    val shadowCoord = float3Var(projPos.xyz / projPos.w)
+                    float1Var(sampleDepthTexture(sunShadowTex, shadowCoord.xy, shadowCoord.z))
                 } else {
                     1f.const
                 }

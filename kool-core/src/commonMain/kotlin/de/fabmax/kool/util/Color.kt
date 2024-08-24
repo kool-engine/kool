@@ -157,7 +157,7 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
     }
 
     /**
-     * Appends the components of this [Vec4f] to the given [Float32Buffer].
+     * Appends the components of this [Color] to the given [Float32Buffer].
      */
     fun putTo(target: Float32Buffer) {
         target.put(r)
@@ -167,13 +167,23 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
     }
 
     /**
-     * Appends the components of this [Vec4f] to the given [MixedBuffer].
+     * Appends the components of this [Color] to the given [MixedBuffer].
      */
     fun putTo(target: MixedBuffer) {
         target.putFloat32(r)
         target.putFloat32(g)
         target.putFloat32(b)
         target.putFloat32(a)
+    }
+
+    /**
+     * Appends the components of this [Color] to the given [Uint8Buffer].
+     */
+    fun putTo(target: Uint8Buffer) {
+        target.put((r * 255).roundToInt().clamp(0, 255).toUByte())
+        target.put((g * 255).roundToInt().clamp(0, 255).toUByte())
+        target.put((b * 255).roundToInt().clamp(0, 255).toUByte())
+        target.put((a * 255).roundToInt().clamp(0, 255).toUByte())
     }
 
     companion object {

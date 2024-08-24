@@ -15,6 +15,10 @@ class LongHashBuilder {
         hash = hash * 31L + int
     }
 
+    operator fun plusAssign(byte: Byte) {
+        hash = hash * 31L + byte
+    }
+
     operator fun plusAssign(bool: Boolean) {
         hash = hash * 31L + bool.hashCode()
     }

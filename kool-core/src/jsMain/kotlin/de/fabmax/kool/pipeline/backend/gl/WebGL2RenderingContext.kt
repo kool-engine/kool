@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import org.khronos.webgl.*
 import org.w3c.dom.HTMLImageElement
-import org.w3c.dom.ImageData
 
 abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun beginQuery(target: Int, query: WebGLQuery?)
@@ -27,7 +26,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
     fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int)
     fun texImage3D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, depth: Int, border: Int, format: Int, type: Int, srcData: ArrayBufferView?)
     fun texImage3D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, depth: Int, border: Int, format: Int, type: Int, source: HTMLImageElement?)
-    fun texSubImage3D(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData?)
+    fun texSubImage3D(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: Any?)
     fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int)
     fun texStorage3D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int)
     fun uniformBlockBinding(program: WebGLProgram?, uniformBlockIndex: Int, uniformBlockBinding: Int)
@@ -47,6 +46,7 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
 
         val DEPTH_COMPONENT24: Int
         val DEPTH_COMPONENT32F: Int
+        val TEXTURE_2D_ARRAY: Int
         val TEXTURE_3D: Int
         val TEXTURE_WRAP_R: Int
         val TEXTURE_COMPARE_MODE: Int

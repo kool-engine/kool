@@ -72,7 +72,7 @@ class Wind {
         logD { "Generated wind density in ${pt.takeSecs().toString(3)} s, tex saturation: min = $min, max = $max" }
 
         val props = TextureProps(generateMipMaps = false)
-        return Texture3d(props, "wind-density") { TextureData3d(buf, sz, sz, sz, TexFormat.RGBA) }
+        return Texture3d(props, "wind-density") { BufferedImageData3d(buf, sz, sz, sz, TexFormat.RGBA) }
     }
 
     companion object {

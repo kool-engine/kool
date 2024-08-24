@@ -12,7 +12,7 @@ import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.Color
@@ -233,7 +233,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
         var isScrSpcAmbientOcclusion = false
         var isScrSpcReflections = false
 
-        var environmentMaps: EnvironmentMaps? = null
+        var environmentMap: EnvironmentMap? = null
         var ambientShadowFactor = 0f
 
         val lightingConfig = LightingConfig.Builder()
@@ -247,14 +247,14 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
                 isTextureReflection = value != null
             }
 
-        fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
-            this.environmentMaps = environmentMaps
-            isImageBasedLighting = environmentMaps != null
+        fun useImageBasedLighting(environmentMap: EnvironmentMap?) {
+            this.environmentMap = environmentMap
+            isImageBasedLighting = environmentMap != null
 
-            if (environmentMaps != null) {
-                ambientLight = KslLitShader.AmbientLight.ImageBased(environmentMaps.irradianceMap, Color.WHITE)
+            if (environmentMap != null) {
+                ambientLight = KslLitShader.AmbientLight.ImageBased(environmentMap.irradianceMap, Color.WHITE)
                 isTextureReflection = true
-                reflectionMap = environmentMaps.reflectionMap
+                reflectionMap = environmentMap.reflectionMap
             } else {
                 ambientLight = KslLitShader.AmbientLight.Uniform(Color(0.2f, 0.2f, 0.2f).toLinear())
                 isTextureReflection = false

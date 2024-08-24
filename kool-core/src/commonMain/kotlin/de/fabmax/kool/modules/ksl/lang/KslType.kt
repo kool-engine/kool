@@ -103,20 +103,19 @@ interface KslSampler1dType
 interface KslSampler2dType
 interface KslSampler3dType
 interface KslSamplerCubeType
-interface KslSampler2dArrayType
-interface KslSamplerCubeArrayType
+interface KslSamplerArrayType
 
 object KslColorSampler1d : KslColorSampler<KslFloat1>("sampler1d"), KslSampler1dType
 object KslColorSampler2d : KslColorSampler<KslFloat2>("sampler2d"), KslSampler2dType
 object KslColorSampler3d : KslColorSampler<KslFloat3>("sampler3d"), KslSampler3dType
 object KslColorSamplerCube : KslColorSampler<KslFloat3>("samplerCube"), KslSamplerCubeType
-object KslColorSampler2dArray : KslColorSampler<KslFloat3>("sampler2dArray"), KslSampler2dArrayType
-object KslColorSamplerCubeArray : KslColorSampler<KslFloat4>("samplerCubeArray"), KslSamplerCubeArrayType
+object KslColorSampler2dArray : KslColorSampler<KslFloat2>("sampler2dArray"), KslSampler2dType, KslSamplerArrayType
+object KslColorSamplerCubeArray : KslColorSampler<KslFloat3>("samplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
-object KslDepthSampler2d : KslDepthSampler<KslFloat3>("depthSampler2d"), KslSampler2dType
-object KslDepthSamplerCube : KslDepthSampler<KslFloat4>("depthSamplerCube"), KslSamplerCubeType
-object KslDepthSampler2dArray : KslDepthSampler<KslFloat4>("depthSampler2dArray"), KslSampler2dArrayType
-object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat4>("depthSamplerCubeArray"), KslSamplerCubeArrayType
+object KslDepthSampler2d : KslDepthSampler<KslFloat2>("depthSampler2d"), KslSampler2dType
+object KslDepthSamplerCube : KslDepthSampler<KslFloat3>("depthSamplerCube"), KslSamplerCubeType
+object KslDepthSampler2dArray : KslDepthSampler<KslFloat2>("depthSampler2dArray"), KslSampler2dType, KslSamplerArrayType
+object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat3>("depthSamplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
 
 class KslStorage1dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt1>("KslStorage1dType<${elemType.typeName}>", elemType, KslInt1) {

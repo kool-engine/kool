@@ -1,96 +1,66 @@
 package de.fabmax.kool.editor
 
 import de.fabmax.kool.AssetLoader
-import de.fabmax.kool.editor.api.AppAssetsLoader
 import de.fabmax.kool.editor.api.AssetReference
+import de.fabmax.kool.editor.api.DefaultLoader
 import de.fabmax.kool.modules.gltf.GltfFile
-import de.fabmax.kool.modules.gltf.loadGltfFile
 import de.fabmax.kool.modules.ui2.MutableStateValue
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.BufferedTextureLoader
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.Texture2dArray
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
-    private val loadedHdris = mutableMapOf<AssetReference.Hdri, MutableStateValue<EnvironmentMaps?>>()
+class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("") {
+    private val loadedHdris = mutableMapOf<AssetReference.Hdri, MutableStateValue<EnvironmentMap?>>()
     private val loadedModels = mutableMapOf<AssetReference.Model, MutableStateValue<GltfFile?>>()
     private val loadedTextures2d = mutableMapOf<AssetReference.Texture, MutableStateValue<Texture2d?>>()
+    private val loadedTextures2dArray = mutableMapOf<AssetReference.TextureArray, MutableStateValue<Texture2dArray?>>()
     private val loadedHeightmaps = mutableMapOf<AssetReference.Heightmap, MutableStateValue<Heightmap?>>()
     private val loadedBlobs = mutableMapOf<AssetReference.Blob, MutableStateValue<Uint8Buffer?>>()
 
     private val assetRefsByPath = mutableMapOf<String, MutableSet<AssetReference>>()
 
-    override suspend fun loadHdri(ref: AssetReference.Hdri): EnvironmentMaps? {
-        val hdriState = loadedHdris.getOrPut(ref) { mutableStateOf(null) }
-        return try {
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            assetRefsByPath.getOrPut(path) { mutableSetOf() } += ref
-            hdriState.value ?: EnvironmentHelper.hdriEnvironment(assetLoader.loadTexture2d(path)).also { hdriState.set(it) }
-        } catch (e: Exception) {
-            logE { "Failed loading HDRI: ${ref.path}" }
-            null
-        }
+    override suspend fun loadHdri(ref: AssetReference.Hdri): Result<EnvironmentMap> {
+        assetRefsByPath.getOrPut(ref.path) { mutableSetOf() } += ref
+        val state = loadedHdris.getOrPut(ref) { mutableStateOf(null) }
+        return state.value?.let { Result.success(it) } ?: super.loadHdri(ref).onSuccess { state.set(it) }
     }
 
-    override suspend fun loadModel(ref: AssetReference.Model): GltfFile? {
-        val modelState = loadedModels.getOrPut(ref) { mutableStateOf(null) }
-        return try {
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            assetRefsByPath.getOrPut(path) { mutableSetOf() } += ref
-            modelState.value ?: assetLoader.loadGltfFile(path).also { modelState.set(it) }
-        } catch (e: Exception) {
-            logE { "Failed loading model: ${ref.path}" }
-            null
-        }
+    override suspend fun loadModel(ref: AssetReference.Model): Result<GltfFile> {
+        assetRefsByPath.getOrPut(ref.path) { mutableSetOf() } += ref
+        val state = loadedModels.getOrPut(ref) { mutableStateOf(null) }
+        return state.value?.let { Result.success(it) } ?: super.loadModel(ref).onSuccess { state.set(it) }
     }
 
-    override suspend fun loadTexture2d(ref: AssetReference.Texture): Texture2d? {
-        val texState = loadedTextures2d.getOrPut(ref) { mutableStateOf(null) }
-        return try {
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            assetRefsByPath.getOrPut(path) { mutableSetOf() } += ref
-            texState.value ?: assetLoader.loadTexture2d(path, TextureProps(ref.texFormat)).also { texState.set(it) }
-        } catch (e: Exception) {
-            logE { "Failed loading texture: ${ref.path}" }
-            null
-        }
+    override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> {
+        assetRefsByPath.getOrPut(ref.path) { mutableSetOf() } += ref
+        val state = loadedTextures2d.getOrPut(ref) { mutableStateOf(null) }
+        return super.loadTexture2d(ref).onSuccess { state.set(it) }
     }
 
-    override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Heightmap? {
+    override suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray> {
+        ref.paths.forEach { assetRefsByPath.getOrPut(it) { mutableSetOf() } += ref }
+        val state = loadedTextures2dArray.getOrPut(ref) { mutableStateOf(null) }
+        return super.loadTexture2dArray(ref).onSuccess { state.set(it) }
+    }
+
+    override suspend fun loadHeightmap(ref: AssetReference.Heightmap): Result<Heightmap> {
+        assetRefsByPath.getOrPut(ref.path) { mutableSetOf() } += ref
         loadedHeightmaps.keys.removeAll { it.path == ref.path && it != ref }
-
-        val heightmapState = loadedHeightmaps.getOrPut(ref) { mutableStateOf(null) }
-        heightmapState.value?.let { return it }
-
-        return try {
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            assetRefsByPath.getOrPut(path) { mutableSetOf() } += ref
-            val blob = assetLoader.loadBlobAsset(path)
-            val heightmap = Heightmap.fromRawData(blob, ref.heightScale, ref.rows, ref.columns, ref.heightOffset)
-            heightmap.also { heightmapState.set(it) }
-
-        } catch (e: Exception) {
-            logE { "Failed loading heightmap: ${ref.path}" }
-            null
-        }
+        val state = loadedHeightmaps.getOrPut(ref) { mutableStateOf(null) }
+        return state.value?.let { Result.success(it) } ?: super.loadHeightmap(ref).onSuccess { state.set(it) }
     }
 
-    override suspend fun loadBlob(ref: AssetReference.Blob): Uint8Buffer? {
-        val blobState = loadedBlobs.getOrPut(ref) { mutableStateOf(null) }
-        return try {
-            val path = requireNotNull(ref.path) { "invalid AssetReference: path is null" }
-            assetRefsByPath.getOrPut(path) { mutableSetOf() } += ref
-            blobState.value ?: assetLoader.loadBlobAsset(path).also { blobState.set(it) }
-        } catch (e: Exception) {
-            logE { "Failed loading blob: ${ref.path}" }
-            null
-        }
+    override suspend fun loadBlob(ref: AssetReference.Blob): Result<Uint8Buffer> {
+        assetRefsByPath.getOrPut(ref.path) { mutableSetOf() } += ref
+        val state = loadedBlobs.getOrPut(ref) { mutableStateOf(null) }
+        return state.value?.let { Result.success(it) } ?: super.loadBlob(ref).onSuccess { state.set(it) }
     }
 
-    fun getHdriEnvironmentMutableState(ref: AssetReference.Hdri): MutableStateValue<EnvironmentMaps?> {
+    fun getHdriEnvironmentMutableState(ref: AssetReference.Hdri): MutableStateValue<EnvironmentMap?> {
         return loadedHdris.getOrPut(ref) { mutableStateOf(null) }
     }
 
@@ -127,6 +97,12 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
                             asset.reloadTexture(assetItem.path)
                         }
                     }
+                    is AssetReference.TextureArray -> {
+                        val asset = loadedTextures2dArray.remove(ref)?.value
+                        if (asset != null) {
+                            logW { "Texture array element ${assetItem.path} changed on disc, but hot-reload is not yet implemented" }
+                        }
+                    }
                     is AssetReference.Blob -> {
                         val asset = loadedBlobs.remove(ref)?.value
                         if (asset != null) {
@@ -158,12 +134,11 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : AppAssetsLoader {
     }
 
     private suspend fun Texture2d.reloadTexture(texPath: String) {
-        val bufferedLoader = loader as? BufferedTextureLoader
-        if (bufferedLoader != null) {
-            bufferedLoader.data = assetLoader.loadTextureData(texPath, props)
-            dispose()
-        } else {
-            logW { "Failed reloading texture: $texPath, loader is not a BufferedTextureLoader $loader" }
+        assetLoader.loadImage2d(texPath, props).getOrNull()?.let {
+            withContext(Dispatchers.RenderLoop) {
+                dispose()
+                upload(it)
+            }
         }
     }
 }

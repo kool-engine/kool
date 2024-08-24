@@ -2,11 +2,13 @@ package de.fabmax.kool.editor.ui
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.loadImage2d
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logT
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 
 object Icons {
@@ -39,13 +41,13 @@ object Icons {
 
     class EditorIconMap(override val iconSize: Dp) : IconMap {
         private val iconMapSize = Vec2i(480, 480)
-        private val iconLoader = AsyncTextureLoader {
+        private val iconLoader: suspend CoroutineScope.() -> ImageData2d = {
             val s = iconSize.value / 24f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
             val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
             logT { "Render small-icons map: $width x $height (${iconSize.value} dp)" }
-            Assets.loadTextureData("assets/icons/small-icons.svg", loadProps)
+            Assets.loadImage2d("assets/icons/small-icons.svg", loadProps).getOrThrow()
         }
 
         private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)
@@ -57,8 +59,8 @@ object Icons {
 
         fun invalidate() {
             if (iconTex.loadingState == Texture.LoadingState.LOADED) {
-                iconLoader.invalidate()
                 iconTex.dispose()
+                iconTex.uploadLazy(iconLoader)
             }
         }
 
@@ -150,13 +152,13 @@ object Icons {
 
     class BrowserIconMap(override val iconSize: Dp) : IconMap {
         private val iconMapSize = Vec2i(640, 640)
-        private val iconLoader = AsyncTextureLoader {
+        private val iconLoader: suspend CoroutineScope.() -> ImageData2d = {
             val s = iconSize.value / 80f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
             val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
             logT { "Render file-icons map: $width x $height (${iconSize.value} dp)" }
-            Assets.loadTextureData("assets/icons/file-icons.svg", loadProps)
+            Assets.loadImage2d("assets/icons/file-icons.svg", loadProps).getOrThrow()
         }
 
         private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)
@@ -168,8 +170,8 @@ object Icons {
 
         fun invalidate() {
             if (iconTex.loadingState == Texture.LoadingState.LOADED) {
-                iconLoader.invalidate()
                 iconTex.dispose()
+                iconTex.uploadLazy(iconLoader)
             }
         }
 

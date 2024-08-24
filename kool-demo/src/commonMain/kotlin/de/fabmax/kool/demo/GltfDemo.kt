@@ -70,7 +70,7 @@ class GltfDemo : DemoScene("glTF Models") {
     private val aoMap by texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_AmbientOcclusion.jpg")
     private val roughnessMap by texture2d("${DemoLoader.materialPath}/Fabric030/Fabric030_1K_Roughness.jpg")
 
-    private val envMaps by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
+    private val envMap by hdriImage("${DemoLoader.hdriPath}/shanghai_bund_1k.rgbe.png")
 
     private lateinit var orbitTransform: OrbitInputTransform
     private var camTranslationTarget: Vec3d? = null
@@ -114,7 +114,7 @@ class GltfDemo : DemoScene("glTF Models") {
             baseReflectionStep = 0.02f
             maxGlobalLights = 2
             isWithVignette = true
-            useImageBasedLighting(envMaps)
+            useImageBasedLighting(envMap)
         }
         deferredPipeline = DeferredPipeline(mainScene, defCfg)
         deferredPipeline.aoPipeline?.apply {
@@ -146,7 +146,7 @@ class GltfDemo : DemoScene("glTF Models") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         setupCamera()
 
-        addNode(Skybox.cube(envMaps.reflectionMap, 1.5f))
+        addNode(Skybox.cube(envMap.reflectionMap, 1.5f))
 
         makeDeferredContent()
         makeForwardContent()
@@ -249,7 +249,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
             fun KslPbrShader.Config.Builder.materialConfig() {
                 color { textureColor(colorMap) }
-                normalMapping { setNormalMap(normalMap) }
+                normalMapping { useNormalMap(normalMap) }
                 ao { textureProperty(aoMap) }
                 roughness { textureProperty(roughnessMap) }
             }
@@ -264,9 +264,9 @@ class GltfDemo : DemoScene("glTF Models") {
                     lighting {
                         enableSsao(aoPipelineForward?.aoMap)
                         addShadowMaps(shadowsForward)
-                        imageBasedAmbientLight(envMaps.irradianceMap)
+                        imageBasedAmbientLight(envMap.irradianceMap)
                     }
-                    reflectionMap = envMaps.reflectionMap
+                    reflectionMap = envMap.reflectionMap
                 }
             }
         }
@@ -387,7 +387,7 @@ class GltfDemo : DemoScene("glTF Models") {
             val materialCfg = GltfMaterialConfig(
                 shadowMaps = if (isDeferredShading) deferredPipeline.shadowMaps else shadowsForward,
                 scrSpcAmbientOcclusionMap = if (isDeferredShading) deferredPipeline.aoPipeline?.aoMap else aoPipelineForward?.aoMap,
-                environmentMaps = envMaps,
+                environmentMap = envMap,
                 isDeferredShading = isDeferredShading
             )
             val modelCfg = GltfLoadConfig(
@@ -399,7 +399,7 @@ class GltfDemo : DemoScene("glTF Models") {
                 applyTransforms = true,
                 mergeMeshesByMaterial = true
             )
-            val model = Assets.loadGltfModel(assetPath, modelCfg).apply {
+            val model = Assets.loadGltfModel(assetPath, modelCfg).getOrThrow().apply {
                 transform.translate(translation)
                 transform.scale(scale)
 

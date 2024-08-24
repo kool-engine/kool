@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.blocks.BlinnPhongMaterialBlock
@@ -20,8 +21,10 @@ class KslShaderTest : DemoScene("KslShader") {
     private lateinit var normalMap: Texture2d
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        colorMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg").also { it.releaseWith(mainScene) }
-        normalMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg").also { it.releaseWith(mainScene) }
+        colorMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg")
+            .getOrThrow().also { it.releaseWith(mainScene) }
+        normalMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg")
+            .getOrThrow().also { it.releaseWith(mainScene) }
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -161,7 +164,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     //addStaticColor(Color.WHITE)
                     textureColor(colorMap)
                 }
-                normalMapping { setNormalMap(normalMap) }
+                normalMapping { useNormalMap(normalMap) }
                 lighting { addShadowMaps(shadowMaps) }
                 pipeline { cullMethod = CullMethod.NO_CULLING }
 
@@ -218,6 +221,7 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
         return Texture2d(
+            BufferedImageData2d(noiseTexData, w, h, TexFormat.RGBA),
             TextureProps(
                 generateMipMaps = false,
                 defaultSamplerSettings = SamplerSettings(
@@ -226,8 +230,7 @@ class KslShaderTest : DemoScene("KslShader") {
                     addressModeU = AddressMode.CLAMP_TO_EDGE,
                     addressModeV = AddressMode.CLAMP_TO_EDGE
                 )
-            ),
-            loader = BufferedTextureLoader(TextureData2d(noiseTexData, w, h, TexFormat.RGBA))
+            )
         )
     }
 }

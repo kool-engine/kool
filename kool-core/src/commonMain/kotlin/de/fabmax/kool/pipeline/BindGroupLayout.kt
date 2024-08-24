@@ -145,6 +145,18 @@ class TextureCubeLayout(
     sampleType: TextureSampleType = TextureSampleType.FLOAT,
 ) : TextureLayout(name, stages, BindingType.TEXTURE_CUBE, sampleType)
 
+class Texture2dArrayLayout(
+    name: String,
+    stages: Set<ShaderStage>,
+    sampleType: TextureSampleType = TextureSampleType.FLOAT,
+) : TextureLayout(name, stages, BindingType.TEXTURE_2D_ARRAY, sampleType)
+
+class TextureCubeArrayLayout(
+    name: String,
+    stages: Set<ShaderStage>,
+    sampleType: TextureSampleType = TextureSampleType.FLOAT,
+) : TextureLayout(name, stages, BindingType.TEXTURE_CUBE_ARRAY, sampleType)
+
 sealed class StorageBufferLayout(
     name: String,
     val format: GpuType,
@@ -195,6 +207,8 @@ enum class BindingType {
     TEXTURE_2D,
     TEXTURE_3D,
     TEXTURE_CUBE,
+    TEXTURE_2D_ARRAY,
+    TEXTURE_CUBE_ARRAY,
     UNIFORM_BUFFER,
     STORAGE_BUFFER_1D,
     STORAGE_BUFFER_2D,

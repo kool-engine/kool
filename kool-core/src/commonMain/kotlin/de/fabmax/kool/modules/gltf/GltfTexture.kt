@@ -2,10 +2,8 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 
@@ -55,9 +53,9 @@ data class GltfTexture(
                 name
             ) {
                 if (uri != null) {
-                    assetLoader.loadTextureData(uri)
+                    assetLoader.loadImage2d(uri).getOrDefault(SingleColorTexture.getColorTextureData(Color.MAGENTA))
                 } else {
-                    Assets.loadTextureDataFromBuffer(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
+                    Assets.loadImageFromBuffer(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
                 }
             }
         }

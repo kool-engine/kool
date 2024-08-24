@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.loadHeightmapOrNull
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.*
@@ -51,8 +52,8 @@ class RigidActorComponent(
 
         data.shapes
             .filterIsInstance<ShapeData.Heightmap>()
-            .filter { it.mapPath != null }
-            .forEach { requiredAssets += it.toAssetRef() }
+            .mapNotNull { it.toAssetRef() }
+            .forEach { requiredAssets += it }
     }
 
     override fun onDataChanged(oldData: RigidActorComponentData, newData: RigidActorComponentData) {
@@ -195,12 +196,9 @@ class RigidActorComponent(
     }
 
     private suspend fun loadHeightmapGeometry(shapeData: ShapeData.Heightmap): CollisionGeometry? {
-        if (shapeData.mapPath == null) {
-            return null
-        }
-        val heightmapRef = shapeData.toAssetRef()
+        val heightmapRef = shapeData.toAssetRef() ?: return null
         requiredAssets += heightmapRef
-        val heightmap = AppAssets.loadHeightmap(heightmapRef) ?: return null
+        val heightmap = AppAssets.loadHeightmapOrNull(heightmapRef) ?: return null
         val heightField = HeightField(heightmap, shapeData.rowScale.toFloat(), shapeData.colScale.toFloat())
         return HeightFieldGeometry(heightField)
     }

@@ -1,8 +1,8 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureData2d
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -54,28 +54,28 @@ class Heightmap(val heightData: FloatArray, val rows: Int, val columns: Int) {
 
     companion object {
         /**
-         * Constructs a [Heightmap] from the provided [TextureData2d] object. Format must be either [TexFormat.R_F16]
+         * Constructs a [Heightmap] from the provided [BufferedImageData2d] object. Format must be either [TexFormat.R_F16]
          * or [TexFormat.R]
          */
-        fun fromTextureData2d(textureData2d: TextureData2d, heightScale: Float, heightOffset: Float = 0f): Heightmap {
-            check(textureData2d.format == TexFormat.R_F16 || textureData2d.format == TexFormat.R) {
+        fun fromTextureData2d(bufferedImageData2D: BufferedImageData2d, heightScale: Float, heightOffset: Float = 0f): Heightmap {
+            check(bufferedImageData2D.format == TexFormat.R_F16 || bufferedImageData2D.format == TexFormat.R) {
                 "Texture format must be either TexFormat.R_F16 or TexFormat.R"
             }
 
-            val heightData = FloatArray(textureData2d.width * textureData2d.height)
-            if (textureData2d.data is Float32Buffer) {
-                val float32Buf = textureData2d.data
-                for (i in 0 until textureData2d.width * textureData2d.height) {
+            val heightData = FloatArray(bufferedImageData2D.width * bufferedImageData2D.height)
+            if (bufferedImageData2D.data is Float32Buffer) {
+                val float32Buf = bufferedImageData2D.data
+                for (i in 0 until bufferedImageData2D.width * bufferedImageData2D.height) {
                     heightData[i] = float32Buf[i] * heightScale + heightOffset
                 }
             } else {
                 logW { "Constructing height map from 8-bit texture data, consider using raw data for higher height resolution" }
-                val uint8Buf = textureData2d.data as Uint8Buffer
-                for (i in 0 until textureData2d.width * textureData2d.height) {
+                val uint8Buf = bufferedImageData2D.data as Uint8Buffer
+                for (i in 0 until bufferedImageData2D.width * bufferedImageData2D.height) {
                     heightData[i] = ((uint8Buf[i].toInt() and 0xff) / 255f) * heightScale + heightOffset
                 }
             }
-            return Heightmap(heightData, textureData2d.height, textureData2d.width)
+            return Heightmap(heightData, bufferedImageData2D.height, bufferedImageData2D.width)
         }
 
         /**

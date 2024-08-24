@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.ShadowMap
 
 data class GltfLoadConfig(
@@ -28,7 +28,7 @@ data class GltfLoadConfig(
 data class GltfMaterialConfig(
     val shadowMaps: List<ShadowMap> = emptyList(),
     val scrSpcAmbientOcclusionMap: Texture2d? = null,
-    val environmentMaps: EnvironmentMaps? = null,
+    val environmentMap: EnvironmentMap? = null,
     val isDeferredShading: Boolean = false,
     val maxNumberOfLights: Int = 4,
     val fixedNumberOfJoints: Int = 0,

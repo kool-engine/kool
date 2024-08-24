@@ -1,15 +1,8 @@
 package de.fabmax.kool.modules.filesystem
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.MimeType
-import de.fabmax.kool.modules.gltf.GltfFile
-import de.fabmax.kool.modules.gltf.GltfLoadConfig
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.decodeToString
-import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.toBuffer
 
 interface FileSystemItem {
@@ -132,20 +125,4 @@ fun WritableFileSystemDirectory.getOrCreateDirectories(path: String): WritableFi
         it = it.getOrCreateDirectory(name)
     }
     return it
-}
-
-suspend fun FileSystemFile.loadTexture2d(props: TextureProps = TextureProps()): Texture2d {
-    val mimeType = this.mimeType
-    if (mimeType == MimeType.BINARY_DATA) {
-        logW { "file $name seems to be no image type" }
-    }
-    val texData = Assets.loadTextureDataFromBuffer(read(), mimeType, props)
-    return Assets.loadTexture2d(texData, props, name)
-}
-
-suspend fun FileSystemFile.loadGltfModel(
-    modelCfg: GltfLoadConfig = GltfLoadConfig(),
-    scene: Int = 0
-): Model {
-    return GltfFile(read(), name).makeModel(modelCfg, scene)
 }

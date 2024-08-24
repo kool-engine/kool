@@ -119,12 +119,12 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
             val internalFormat = if (isColor) gl.RGBA8 else gl.DEPTH_COMPONENT32F
             val format = if (isColor) gl.RGBA else gl.DEPTH_COMPONENT
             val type = if (isColor) gl.UNSIGNED_BYTE else gl.FLOAT
-            gl.texImage2D(tex.target, 0, internalFormat, width, height, 0,  format, type, null)
+            gl.texImage2d(tex.target, 0, internalFormat, width, height, 0,  format, type, null)
         }
     }
 
     fun applySize(width: Int, height: Int) {
-        if (width == renderSize.x && height == renderSize.y) {
+        if (width <= 0 || height <= 0 || (width == renderSize.x && height == renderSize.y)) {
             return
         }
         renderSize.set(width, height)
@@ -167,7 +167,7 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
 
         loadedTex.setSize(width, height, 1)
         loadedTex.bind()
-        gl.texStorage2D(gl.TEXTURE_2D, 1, TexFormat.RGBA.glInternalFormat(gl), renderSize.x, renderSize.y)
+        gl.texStorage2d(gl.TEXTURE_2D, 1, TexFormat.RGBA.glInternalFormat(gl), renderSize.x, renderSize.y)
         loadedTex.applySamplerSettings(resolvedColor.props.defaultSamplerSettings)
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, resolveDepth)

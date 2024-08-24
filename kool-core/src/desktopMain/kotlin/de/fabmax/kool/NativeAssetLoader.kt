@@ -1,128 +1,88 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.modules.audio.AudioClipImpl
-import de.fabmax.kool.pipeline.TextureData2d
+import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.platform.imageAtlasTextureData
-import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayInputStream
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.InputStream
 
 class NativeAssetLoader(val basePath: String) : AssetLoader() {
-    override suspend fun loadBlob(blobRef: BlobAssetRef): LoadedBlobAsset {
-        return if (blobRef.isHttp) {
-            loadHttpBlob(blobRef)
-        } else {
-            loadLocalBlob(blobRef)
-        }
-    }
-
-    private suspend fun loadLocalBlob(localRawRef: BlobAssetRef): LoadedBlobAsset {
-        var data: Uint8Buffer? = null
-        withContext(Dispatchers.IO) {
+    override suspend fun loadBlob(ref: AssetRef.Blob): LoadedAsset.Blob {
+        val result = withContext(Dispatchers.IO) {
             try {
-                openLocalStream(localRawRef.path)?.use { data = Uint8BufferImpl(it.readBytes()) }
-            } catch (e: Exception) {
-                logE { "Failed loading asset ${localRawRef.path}: $e" }
+                val data = openStream(ref).use { Uint8BufferImpl(it.readBytes()) }
+                Result.success(data)
+            } catch (t: Throwable) {
+                Result.failure(t)
             }
         }
-        return LoadedBlobAsset(localRawRef, data)
+        return LoadedAsset.Blob(ref, result)
     }
 
-    private suspend fun loadHttpBlob(httpRawRef: BlobAssetRef): LoadedBlobAsset {
-        var data: Uint8Buffer? = null
-        if (httpRawRef.path.startsWith("data:", true)) {
-            data = decodeDataUri(httpRawRef.path)
-        } else {
-            withContext(Dispatchers.IO) {
-                try {
-                    HttpCache.loadHttpResource(httpRawRef.path)?.let { f ->
-                        FileInputStream(f).use { data = Uint8BufferImpl(it.readBytes()) }
-                    }
-                } catch (e: Exception) {
-                    logE { "Failed loading asset ${httpRawRef.path}: $e" }
-                }
-            }
+    override suspend fun loadImage2d(ref: AssetRef.Image2d): LoadedAsset.Image2d {
+        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.props)
+        return LoadedAsset.Image2d(ref, loadBufferedImage2d(refCopy).result)
+    }
+
+    override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.ImageAtlas {
+        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.props)
+        val result = loadBufferedImage2d(refCopy).result.mapCatching {
+            imageAtlasTextureData(it, ref.tilesX, ref.tilesY)
         }
-        return LoadedBlobAsset(httpRawRef, data)
+        return LoadedAsset.ImageAtlas(ref, result)
     }
 
-    private fun openLocalStream(assetPath: String): InputStream? {
+    override suspend fun loadBufferedImage2d(ref: AssetRef.BufferedImage2d): LoadedAsset.BufferedImage2d {
+        val data: Result<BufferedImageData2d> = withContext(Dispatchers.IO) {
+            loadTexture(ref, ref.props)
+        }
+        return LoadedAsset.BufferedImage2d(ref, data)
+    }
+
+    override suspend fun loadAudio(ref: AssetRef.Audio): LoadedAsset.Audio {
+        val blob = loadBlob(AssetRef.Blob(ref.path))
+        return LoadedAsset.Audio(ref, blob.result.map {
+            AudioClipImpl(it.toArray(), ref.path.substringAfterLast('.').lowercase())
+        })
+    }
+
+    private fun loadTexture(assetRef: AssetRef, props: TextureProps?): Result<BufferedImageData2d> {
         return try {
-            val resPath = (KoolSystem.configJvm.classloaderAssetPath + "/" + assetPath.replace('\\', '/'))
-                .removePrefix("/")
-            var inStream = this::class.java.classLoader.getResourceAsStream(resPath)
-            if (inStream == null) {
-                // if asset wasn't found in resources try to load it from file system
-                inStream = FileInputStream("${basePath}/$assetPath")
+            openStream(assetRef).use {
+                Result.success(PlatformAssetsImpl.readImageData(it, MimeType.forFileName(assetRef.path), props))
             }
-            inStream
-        } catch (e: Exception) {
-            logE { "Failed opening asset $assetPath: $e" }
-            null
+        } catch (t: Throwable) {
+            Result.failure(t)
         }
     }
 
-    override suspend fun loadTexture(textureRef: TextureAssetRef): LoadedTextureAsset {
-        val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        val texData = loadTextureData2d(refCopy).data as TextureData2d?
-        return LoadedTextureAsset(textureRef, texData)
-    }
+    private fun openStream(assetRef: AssetRef): InputStream =
+        if (assetRef.isHttp) openHttpStream(assetRef) else openLocalStream(assetRef)
 
-    override suspend fun loadTextureAtlas(textureRef: TextureAtlasAssetRef): LoadedTextureAsset {
-        val refCopy = TextureData2dRef(textureRef.path, textureRef.props)
-        val texData = loadTextureData2d(refCopy).data as TextureData2d?
-        val atlasData = texData?.let {
-            imageAtlasTextureData(it, textureRef.tilesX, textureRef.tilesY)
+    private fun openLocalStream(assetRef: AssetRef): InputStream {
+        val resPath = (KoolSystem.configJvm.classloaderAssetPath + "/" + assetRef.path.replace('\\', '/'))
+            .removePrefix("/")
+        var inStream = this::class.java.classLoader.getResourceAsStream(resPath)
+        if (inStream == null) {
+            // if asset wasn't found in resources try to load it from file system
+            inStream = FileInputStream("${basePath}/${assetRef.path}")
         }
-        return LoadedTextureAsset(textureRef, atlasData)
+        return inStream
     }
 
-    override suspend fun loadTextureData2d(textureData2dRef: TextureData2dRef): LoadedTextureAsset {
-        val data: TextureData2d? = withContext(Dispatchers.IO) {
-            if (textureData2dRef.isHttp) {
-                loadHttpTexture(textureData2dRef.path, textureData2dRef.props)
-            } else {
-                loadLocalTexture(textureData2dRef.path, textureData2dRef.props)
-            }
-        }
-        return LoadedTextureAsset(textureData2dRef, data)
-    }
-
-    override suspend fun loadAudioClip(audioRef: AudioClipRef): LoadedAudioClipAsset {
-        val blob = loadBlob(BlobAssetRef(audioRef.path))
-        val clip = blob.data?.let { buf ->
-            AudioClipImpl(buf.toArray(), audioRef.path.substringAfterLast('.').lowercase())
-        }
-        return LoadedAudioClipAsset(audioRef, clip)
-    }
-
-    private fun loadLocalTexture(path: String, props: TextureProps?): TextureData2d? {
-        return openLocalStream(path)?.use {
-            try {
-                PlatformAssetsImpl.readImageData(it, MimeType.forFileName(path), props)
-            } catch (e: Exception) {
-                logE { "Failed reading image at $path: $e" }
-                null
-            }
-        }
-    }
-
-    private fun loadHttpTexture(path: String, props: TextureProps?): TextureData2d? {
-        return HttpCache.loadHttpResource(path)?.let { f ->
-            try {
-                FileInputStream(f).use { data ->
-                    PlatformAssetsImpl.readImageData(data, MimeType.forFileName(path), props)
-                }
-            } catch (e: Exception) {
-                logE { "Failed reading image at $path: $e" }
-                null
-            }
+    private fun openHttpStream(assetRef: AssetRef): InputStream {
+        return if (assetRef.path.startsWith("data:", true)) {
+            ByteArrayInputStream(dataUriToByteArray(assetRef.path))
+        } else {
+            HttpCache.loadHttpResource(assetRef.path)?.let { f -> FileInputStream(f) }
+                ?: throw FileNotFoundException("Failed loading HTTP asset: ${assetRef.path}")
         }
     }
 }

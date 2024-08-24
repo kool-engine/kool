@@ -4,6 +4,7 @@ import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.PipelineConfig
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.logE
@@ -130,28 +131,28 @@ sealed interface MaterialAttribute {
 }
 
 @Serializable
-class ConstColorAttribute(val color: ColorData) : MaterialAttribute {
+data class ConstColorAttribute(val color: ColorData) : MaterialAttribute {
     override fun matchesCfg(cfg: ColorBlockConfig): Boolean {
         return cfg.colorSources.any { it is ColorBlockConfig.UniformColor }
     }
 }
 
 @Serializable
-class ConstValueAttribute(val value: Float) : MaterialAttribute {
+data class ConstValueAttribute(val value: Float) : MaterialAttribute {
     override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
         return cfg.propertySources.any { it is PropertyBlockConfig.UniformProperty }
     }
 }
 
 @Serializable
-class VertexAttribute(val attribName: String) : MaterialAttribute {
+data class VertexAttribute(val attribName: String) : MaterialAttribute {
     override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
         return cfg.propertySources.any { it is PropertyBlockConfig.VertexProperty }
     }
 }
 
 @Serializable
-class MapAttribute(val mapPath: String, val channels: String? = null) : MaterialAttribute {
+data class MapAttribute(val mapPath: String, val channels: String? = null, val format: TexFormat? = null) : MaterialAttribute {
     val singleChannelIndex: Int
         get() {
             return when (channels?.lowercase()) {
@@ -170,12 +171,13 @@ class MapAttribute(val mapPath: String, val channels: String? = null) : Material
         get() = mapPath.replaceBeforeLast("/", "").removePrefix("/")
 
     override fun matchesCfg(cfg: ColorBlockConfig): Boolean {
-        return cfg.colorSources.any { it is ColorBlockConfig.TextureColor }
+        return cfg.colorSources.any { it is ColorBlockConfig.TextureColor || it is ColorBlockConfig.TextureArrayColor }
     }
 
     override fun matchesCfg(cfg: PropertyBlockConfig): Boolean {
         return cfg.propertySources.any {
-            it is PropertyBlockConfig.TextureProperty && it.channel == singleChannelIndex
+            (it is PropertyBlockConfig.TextureProperty && it.channel == singleChannelIndex) ||
+            (it is PropertyBlockConfig.TextureArrayProperty && it.channel == singleChannelIndex)
         }
     }
 }

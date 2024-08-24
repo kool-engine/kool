@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
@@ -32,7 +33,11 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         get() = vkSystem.window
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
-    override val hasComputeShaders: Boolean = false
+    override val features = BackendFeatures(
+        computeShaders = false,
+        cubeMapArrays = false,
+        reversedDepth = false
+    )
 
     private val shaderCodes = mutableMapOf<String, ShaderCodeImplVk>()
 
@@ -55,7 +60,9 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = vkSystem.physicalDevice.deviceName
     }
 
-    override fun writeTextureData(tex: Texture, data: TextureData) {
+    override fun <T : ImageData> uploadTextureData(tex: Texture<T>,) {
+        val data = checkNotNull(tex.uploadData)
+        tex.uploadData = null
         tex.gpuTexture = when (tex) {
             is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
             is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
@@ -67,11 +74,11 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         vkSystem.device.addDependingResource(tex.gpuTexture as LoadedTextureVk)
     }
 
-    override fun readStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         TODO("Not yet implemented")
     }
 
-    override fun readTextureData(texture: Texture, deferred: CompletableDeferred<TextureData>) {
+    override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
         TODO("Not yet implemented")
     }
 

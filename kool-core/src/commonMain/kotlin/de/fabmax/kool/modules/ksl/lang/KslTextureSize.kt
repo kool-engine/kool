@@ -16,18 +16,23 @@ abstract class KslTextureSize<T: KslSamplerType<*>, R: KslType>(
 class KslTextureSize1d<T>(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1>) :
     KslTextureSize<T, KslInt1>(sampler, lod, KslInt1), KslScalarExpression<KslInt1>
         where T: KslSamplerType<*>, T: KslSampler1dType
+
 class KslTextureSize2d<T>(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1>) :
     KslTextureSize<T, KslInt2>(sampler, lod, KslInt2), KslVectorExpression<KslInt2, KslInt1>
         where T: KslSamplerType<*>, T: KslSampler2dType
+
 class KslTextureSize3d<T>(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1>) :
     KslTextureSize<T, KslInt3>(sampler, lod, KslInt3), KslVectorExpression<KslInt3, KslInt1>
         where T: KslSamplerType<*>, T: KslSampler3dType
+
 class KslTextureSizeCube<T>(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1>) :
     KslTextureSize<T, KslInt2>(sampler, lod, KslInt2), KslVectorExpression<KslInt2, KslInt1>
         where T: KslSamplerType<*>, T: KslSamplerCubeType
+
 class KslTextureSize2dArray<T>(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1>) :
     KslTextureSize<T, KslInt3>(sampler, lod, KslInt3), KslVectorExpression<KslInt3, KslInt1>
-        where T: KslSamplerType<*>, T: KslSampler2dArrayType
+        where T: KslSamplerType<*>, T: KslSampler2dType, T: KslSamplerArrayType
+
 class KslTextureSizeCubeArray<T>(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1>) :
     KslTextureSize<T, KslInt3>(sampler, lod, KslInt3), KslVectorExpression<KslInt3, KslInt1>
-        where T: KslSamplerType<*>, T: KslSamplerCubeArrayType
+        where T: KslSamplerType<*>, T: KslSamplerCubeType, T: KslSamplerArrayType

@@ -187,7 +187,7 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
         tex.setSize(width, height, 1)
         tex.bind()
         tex.applySamplerSettings(props.defaultSamplerSettings)
-        gl.texStorage2D(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
+        gl.texStorage2d(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
         gpuTexture = tex
         loadingState = Texture.LoadingState.LOADED
     }

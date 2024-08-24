@@ -166,7 +166,7 @@ class WgpuOffscreenRenderPassCube(
             width: Int,
             height: Int,
             usage: Int,
-            texture: Texture = this.texture
+            texture: Texture<*> = this.texture
         ): Pair<GPUTextureDescriptor, WgpuTextureResource> {
             val desc = GPUTextureDescriptor(
                 label = "${parentPass.name}.colorAttachment",

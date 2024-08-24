@@ -26,7 +26,7 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
     var color: Color by colorUniform(cfg.colorCfg)
     var colorMap: Texture2d? by colorTexture(cfg.colorCfg)
 
-    var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.normalMapName, cfg.normalMapCfg.defaultNormalMap)
+    var normalMap: Texture2d? by texture2d(cfg.normalMapCfg.textureName, cfg.normalMapCfg.defaultNormalMap)
     var normalMapStrength: Float by propertyUniform(cfg.normalMapCfg.strengthCfg)
 
     var displacement: Float by propertyUniform(cfg.vertexCfg.displacementCfg)

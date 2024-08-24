@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
+import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
 import kotlinx.browser.window
@@ -12,6 +13,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
     RenderBackendGl(KoolSystem.configJs.numSamples, GlImpl, ctx), RenderBackendJs
 {
     override val deviceName = "WebGL"
+    override val features: BackendFeatures
 
     override val glslGeneratorHints: GlslGenerator.Hints = GlslGenerator.Hints(
         glslVersionStr = "#version 300 es",
@@ -33,6 +35,12 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         }
         GlImpl.initWebGl(webGlCtx)
         setupGl()
+
+        features = BackendFeatures(
+            computeShaders = false,
+            cubeMapArrays = false,
+            reversedDepth = GlImpl.capabilities.hasClipControl
+        )
 
         sceneRenderer.resolveDirect = false
         useFloatDepthBuffer = KoolSystem.configJs.forceFloatDepthBuffer

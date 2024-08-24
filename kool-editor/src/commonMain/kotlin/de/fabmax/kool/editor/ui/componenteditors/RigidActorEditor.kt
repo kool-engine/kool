@@ -333,7 +333,7 @@ class RigidActorEditor : ComponentEditor<RigidActorComponent>() {
         }
 
         val loaded = heightmaps.map {
-            KoolEditor.instance.cachedAppAssets.getHeightmapMutableState(it.toAssetRef()).use()
+            it.toAssetRef()?.let { ref -> KoolEditor.instance.cachedAppAssets.getHeightmapMutableState(ref).use() }
         }
         val sizeX = condenseDouble(heightmaps.mapIndexed { i, heightmap ->
             val numCols = loaded[i]?.columns ?: MeshComponent.DEFAULT_HEIGHTMAP_COLS

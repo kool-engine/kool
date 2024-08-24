@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
+import de.fabmax.kool.modules.ksl.blocks.NormalMapConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.UniqueId
@@ -87,6 +88,11 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun textureCube(textureName: String, defaultVal: TextureCube? = null, defaultSampler: SamplerSettings? = null): TextureCubeBinding =
         getOrCreateBinding(textureName) { TextureCubeBinding(textureName, defaultVal, defaultSampler, this) } as TextureCubeBinding
 
+    fun texture2dArray(textureName: String, defaultVal: Texture2dArray? = null, defaultSampler: SamplerSettings? = null): Texture2dArrayBinding =
+        getOrCreateBinding(textureName) { Texture2dArrayBinding(textureName, defaultVal, defaultSampler, this) } as Texture2dArrayBinding
+    fun textureCubeArray(textureName: String, defaultVal: TextureCubeArray? = null, defaultSampler: SamplerSettings? = null): TextureCubeArrayBinding =
+        getOrCreateBinding(textureName) { TextureCubeArrayBinding(textureName, defaultVal, defaultSampler, this) } as TextureCubeArrayBinding
+
     fun storage1d(storageName: String, defaultVal: StorageBuffer1d? = null): StorageBuffer1dBinding =
         getOrCreateBinding(storageName) { StorageBuffer1dBinding(storageName, defaultVal, this) } as StorageBuffer1dBinding
     fun storage2d(storageName: String, defaultVal: StorageBuffer2d? = null): StorageBuffer2dBinding =
@@ -98,6 +104,9 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
         uniformColor(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultColor ?: Color.BLACK)
     fun colorTexture(cfg: ColorBlockConfig): Texture2dBinding =
         texture2d(cfg.primaryTexture?.textureName ?: UniqueId.nextId("_"), cfg.primaryTexture?.defaultTexture)
+
+    fun normalTexture(cfg: NormalMapConfig): Texture2dBinding =
+        if (cfg.isNormalMapped && !cfg.isArrayNormalMap) texture2d(cfg.textureName, cfg.defaultNormalMap) else Texture2dBinding("-", null, null, this)
 
     fun propertyUniform(cfg: PropertyBlockConfig): UniformBinding1f =
         uniform1f(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultValue ?: 0f)

@@ -119,7 +119,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     private suspend fun Assets.loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
         val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
-        val model = loadGltfModel(path, modelCfg)
+        val model = loadGltfModel(path, modelCfg).getOrThrow()
         val mesh = model.meshes.values.first()
         val geometry = mesh.geometry
         for (i in 0 until geometry.numVertices) {

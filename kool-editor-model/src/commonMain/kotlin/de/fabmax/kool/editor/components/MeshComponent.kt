@@ -57,8 +57,7 @@ class MeshComponent(
         requiredAssets.clear()
         requiredAssets += data.shapes
             .filterIsInstance<ShapeData.AssetBased>()
-            .map { it.toAssetRef() }
-            .filter { it.path != null }
+            .mapNotNull { it.toAssetRef() }
     }
 
     private suspend fun updateDrawNode(data: MeshComponentData) {

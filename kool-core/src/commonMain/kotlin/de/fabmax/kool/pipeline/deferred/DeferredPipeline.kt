@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.ao.AoPipeline
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import kotlin.math.min
@@ -106,7 +106,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
                 maxNumberOfLights = cfg.maxGlobalLights
                 addShadowMaps(this@DeferredPipeline.shadowMaps)
             }
-            useImageBasedLighting(cfg.environmentMaps)
+            useImageBasedLighting(cfg.environmentMap)
         })
 
         setupLightingPassContent()
@@ -296,7 +296,7 @@ class DeferredPipelineConfig {
     var baseReflectionStep = 0.1f
     var bloomKernelSize = 8
     var bloomAvgDownSampling = true
-    var environmentMaps: EnvironmentMaps? = null
+    var environmentMap: EnvironmentMap? = null
     var shadowMaps: List<ShadowMap>? = null
 
     var pbrSceneShader: PbrSceneShader? = null
@@ -307,8 +307,8 @@ class DeferredPipelineConfig {
         this.shadowMaps = shadowMaps
     }
 
-    fun useImageBasedLighting(environmentMaps: EnvironmentMaps?) {
-        this.environmentMaps = environmentMaps
-        isWithImageBasedLighting = environmentMaps != null
+    fun useImageBasedLighting(environmentMap: EnvironmentMap?) {
+        this.environmentMap = environmentMap
+        isWithImageBasedLighting = environmentMap != null
     }
 }

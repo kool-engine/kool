@@ -108,7 +108,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
                 }
                 shader = KslPbrShader {
                     color { textureColor(groundAlbedo) }
-                    normalMapping { setNormalMap(groundNormal) }
+                    normalMapping { useNormalMap(groundNormal) }
                     lighting {
                         addShadowMaps(shadows)
                         imageBasedAmbientLight(ibl.irradianceMap)

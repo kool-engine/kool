@@ -201,7 +201,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
                 buf[i * 4 + 2] = ((vec.z + 1f) * 127.5f).toInt().toUByte()
                 buf[i * 4 + 3] = rand.randomI(0..255).toUByte()
             }
-            val data = TextureData2d(buf, sz, sz, TexFormat.RGBA)
+            val data = BufferedImageData2d(buf, sz, sz, TexFormat.RGBA)
             val texProps = TextureProps(
                 format = TexFormat.RGBA,
                 generateMipMaps = false,

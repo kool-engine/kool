@@ -25,7 +25,7 @@ class Table(demo: ProceduralDemo) : Mesh(IndexedVertexList(Attribute.POSITIONS, 
 
         shader = deferredKslPbrShader {
             color { textureColor(demo.tableColor) }
-            normalMapping { setNormalMap(demo.tableNormal) }
+            normalMapping { useNormalMap(demo.tableNormal) }
             roughness { textureProperty(demo.tableRoughness) }
         }
     }

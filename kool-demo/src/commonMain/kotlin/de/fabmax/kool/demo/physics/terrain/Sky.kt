@@ -8,7 +8,7 @@ import de.fabmax.kool.modules.ksl.UnlitShaderConfig
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
@@ -28,7 +28,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     val isDay: Boolean
         get() = timeOfDay > 0.25f && timeOfDay < 0.75f
 
-    val skies = TreeMap<Float, EnvironmentMaps>()
+    val skies = TreeMap<Float, EnvironmentMap>()
 
     val sunDirection = MutableVec3f()
     val moonDirection = MutableVec3f()
@@ -149,7 +149,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
             val skyIrradiance = sky.irradianceMapPass.copyColor()
             val skyReflection = sky.reflectionMapPass.copyColor()
-            skies[timeOfDay] = EnvironmentMaps(skyIrradiance, skyReflection)
+            skies[timeOfDay] = EnvironmentMap(skyIrradiance, skyReflection)
 
             delayFrames(1)
 
@@ -302,7 +302,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         private val moonColor = MdColor.BLUE toneLin 200
     }
 
-    class WeightedEnvMaps(var envA: EnvironmentMaps, var envB: EnvironmentMaps) {
+    class WeightedEnvMaps(var envA: EnvironmentMap, var envB: EnvironmentMap) {
         var weightA = 1f
         var weightB = 0f
     }

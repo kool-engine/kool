@@ -13,6 +13,8 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             is Texture2dLayout -> Texture2dBindingData(it)
             is Texture3dLayout -> Texture3dBindingData(it)
             is TextureCubeLayout -> TextureCubeBindingData(it)
+            is Texture2dArrayLayout -> Texture2dArrayBindingData(it)
+            is TextureCubeArrayLayout -> TextureCubeArrayBindingData(it)
             is StorageBuffer1dLayout -> StorageBuffer1dBindingData(it)
             is StorageBuffer2dLayout -> StorageBuffer2dBindingData(it)
             is StorageBuffer3dLayout -> StorageBuffer3dBindingData(it)
@@ -31,6 +33,8 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     fun texture2dBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture2dBindingData
     fun texture3dBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture3dBindingData
     fun textureCubeBindingData(bindingIndex: Int) = bindings[bindingIndex] as TextureCubeBindingData
+    fun texture2dArrayBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture2dArrayBindingData
+    fun textureCubeArrayBindingData(bindingIndex: Int) = bindings[bindingIndex] as TextureCubeArrayBindingData
     fun storageTexture1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBuffer1dBindingData
     fun storageTexture2dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBuffer2dBindingData
     fun storageTexture3dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBuffer3dBindingData
@@ -44,6 +48,8 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
                 is Texture2dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture2dBindingData)
                 is Texture3dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture3dBindingData)
                 is TextureCubeBindingData -> bindingData.copyTo(copy.bindings[i] as TextureCubeBindingData)
+                is Texture2dArrayBindingData -> bindingData.copyTo(copy.bindings[i] as Texture2dArrayBindingData)
+                is TextureCubeArrayBindingData -> bindingData.copyTo(copy.bindings[i] as TextureCubeArrayBindingData)
                 is StorageBuffer1dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBuffer1dBindingData)
                 is StorageBuffer2dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBuffer2dBindingData)
                 is StorageBuffer3dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBuffer3dBindingData)
@@ -85,7 +91,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         }
     }
 
-    abstract inner class TextureBindingData<T: Texture> {
+    abstract inner class TextureBindingData<T: Texture<*>> {
         val isComplete get() = texture?.loadingState == Texture.LoadingState.LOADED
 
         var texture: T? = null
@@ -110,6 +116,8 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     inner class Texture2dBindingData(override val layout: Texture2dLayout) : TextureBindingData<Texture2d>(), BindingData
     inner class Texture3dBindingData(override val layout: Texture3dLayout) : TextureBindingData<Texture3d>(), BindingData
     inner class TextureCubeBindingData(override val layout: TextureCubeLayout) : TextureBindingData<TextureCube>(), BindingData
+    inner class Texture2dArrayBindingData(override val layout: Texture2dArrayLayout) : TextureBindingData<Texture2dArray>(), BindingData
+    inner class TextureCubeArrayBindingData(override val layout: TextureCubeArrayLayout) : TextureBindingData<TextureCubeArray>(), BindingData
 
     abstract inner class StorageBufferBindingData<T: StorageBuffer> {
         var storageBuffer: T? = null

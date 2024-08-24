@@ -1,54 +1,58 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
+import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
-import de.fabmax.kool.modules.gltf.loadGltfModelAsync
+import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.pipeline.ibl.EnvironmentHelper
-import de.fabmax.kool.pipeline.ibl.EnvironmentMaps
+import de.fabmax.kool.pipeline.ibl.EnvironmentMap
+import de.fabmax.kool.pipeline.ibl.hdriEnvironment
 import de.fabmax.kool.scene.Model
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlin.reflect.KProperty
 
-class ResourceGroup : BaseReleasable() {
+class ResourceGroup(val assetLoader: AssetLoader = Assets.defaultLoader) : BaseReleasable() {
 
     private val loadables = mutableListOf<Loadable<*>>()
 
     var loadInfoCallback: ((Loadable<*>) -> Unit)? = null
 
-    suspend fun loadGroupSequential() {
-        loadables.map {
-            loadInfoCallback?.invoke(it)
-            it.load()?.releaseWith(this)
+    suspend fun loadSequential() {
+        loadables.map { loadable ->
+            loadInfoCallback?.invoke(loadable)
+            loadable.load().onSuccess { it.releaseWith(this) }
         }
     }
 
-    suspend fun loadGroupParallel() {
-        loadables.map { it to it.loadAsync() }.forEach { (loadable, deferred) ->
-            loadInfoCallback?.invoke(loadable)
-            deferred.await()?.releaseWith(this)
-        }
+    suspend fun loadParallel() {
+        loadables
+            .map { it to it.loadAsync() }
+            .forEach { (loadable, deferred) ->
+                loadInfoCallback?.invoke(loadable)
+                deferred.await().onSuccess { it.releaseWith(this) }
+            }
     }
 
     fun hdriGradient(gradient: ColorGradient, name: String = "hdriGradient"): Hdri {
         val loadebleHdri = Hdri(name) {
-            CompletableDeferred(EnvironmentHelper.gradientColorEnvironment(gradient))
+            Result.success(EnvironmentMap.fromGradientColor(gradient))
         }
         return loadebleHdri.also { loadables += it }
     }
 
     fun hdriImage(path: String, brightness: Float = 1f): Hdri {
         val loadebleHdri = Hdri(path) {
-            EnvironmentHelper.hdriEnvironmentAsync(path, brightness)
+            assetLoader.hdriEnvironment(path, brightness)
         }
         return loadebleHdri.also { loadables += it }
     }
 
     fun hdriSingleColor(color: Color, name: String = "hdriSingleColor"): Hdri {
         val loadebleHdri = Hdri(name) {
-            CompletableDeferred(EnvironmentHelper.singleColorEnvironment(color))
+            Result.success(EnvironmentMap.fromSingleColor(color))
         }
         return loadebleHdri.also { loadables += it }
     }
@@ -70,8 +74,8 @@ class ResourceGroup : BaseReleasable() {
 
         private val onLoaded = mutableListOf<(T) -> Unit>()
 
-        suspend fun load(): Releasable? = loadAsync().await()
-        abstract fun loadAsync(): Deferred<Releasable?>
+        abstract suspend fun load(): Result<T>
+        fun loadAsync(): Deferred<Result<T>> = Assets.async { load() }
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): T = loaded ?: error("$name not yet loaded")
 
@@ -85,21 +89,14 @@ class ResourceGroup : BaseReleasable() {
     }
 
     inner class GltfModel(name: String, val config: GltfLoadConfig) : Loadable<Model>(name) {
-        override fun loadAsync() = Assets.loadGltfModelAsync(name, config).also { deferred ->
-            deferred.invokeOnCompletion { loaded = deferred.getCompleted() }
-        }
+        override suspend fun load() = assetLoader.loadGltfModel(name, config).onSuccess { loaded = it }
     }
 
-    inner class Hdri(name: String, val loader: () -> Deferred<EnvironmentMaps>) : Loadable<EnvironmentMaps>(name) {
-        override fun loadAsync() = loader().also { deferred ->
-            deferred.invokeOnCompletion { loaded = deferred.getCompleted() }
-        }
+    inner class Hdri(name: String, val loader: suspend () -> Result<EnvironmentMap>) : Loadable<EnvironmentMap>(name) {
+        override suspend fun load() = loader().onSuccess { loaded = it }
     }
 
     inner class Tex2d(name: String, private val props: TextureProps) : Loadable<Texture2d>(name) {
-        override fun loadAsync() = Assets.loadTexture2dAsync(name, props).also { deferred ->
-            deferred.invokeOnCompletion { loaded = deferred.getCompleted() }
-        }
+        override suspend fun load() = Assets.loadTexture2d(name, props).onSuccess { loaded = it }
     }
-
 }

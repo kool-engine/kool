@@ -4,11 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.RenderLoop
 import de.fabmax.kool.util.checkIsNotReleased
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 sealed class WgpuPipeline(
     private val pipeline: PipelineBase,
@@ -45,6 +41,8 @@ sealed class WgpuPipeline(
                         is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2d))
                         is Texture3dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view3d))
                         is TextureCubeLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCube))
+                        is Texture2dArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2dArray))
+                        is TextureCubeArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCubeArray))
                         is StorageBufferLayout -> {
                             val bufferType = if (binding.accessType == StorageAccessType.READ_ONLY) {
                                 GPUBufferBindingType.readOnlyStorage
@@ -129,29 +127,10 @@ sealed class WgpuPipeline(
         return isComplete
     }
 
-    private fun Texture.checkLoadingState(backend: RenderBackendWebGpu): Boolean {
+    private fun <T: ImageData> Texture<T>.checkLoadingState(backend: RenderBackendWebGpu): Boolean {
         checkIsNotReleased()
         if (loadingState == Texture.LoadingState.NOT_LOADED) {
-            when (loader) {
-                is AsyncTextureLoader -> {
-                    loadingState = Texture.LoadingState.LOADING
-                    CoroutineScope(Dispatchers.RenderLoop).launch {
-                        val texData = loader.loadTextureDataAsync().await()
-                        backend.textureLoader.loadTexture(this@checkLoadingState, texData)
-                    }
-                }
-                is SyncTextureLoader -> {
-                    val texData = loader.loadTextureDataSync()
-                    backend.textureLoader.loadTexture(this, texData)
-                }
-                is BufferedTextureLoader -> {
-                    backend.textureLoader.loadTexture(this, loader.data)
-                }
-                else -> {
-                    // loader is null
-                    loadingState = Texture.LoadingState.LOADING_FAILED
-                }
-            }
+            uploadData?.let { backend.textureLoader.loadTexture(this) }
         }
         return loadingState == Texture.LoadingState.LOADED
     }

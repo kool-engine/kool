@@ -240,7 +240,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
                 buf[i*4+3] = 1u
             }
 
-            val data = TextureData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)
+            val data = BufferedImageData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)
             val texProps = TextureProps(
                 format = TexFormat.RGBA,
                 generateMipMaps = false,

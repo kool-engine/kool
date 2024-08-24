@@ -179,7 +179,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
 
             val shader = KslPbrShader {
                 color { textureColor(albedoMap) }
-                normalMapping { setNormalMap(normalMap) }
+                normalMapping { useNormalMap(normalMap) }
                 roughness { textureProperty(roughnessMap) }
                 ao {
                     textureProperty(ambientOcclusionMap)

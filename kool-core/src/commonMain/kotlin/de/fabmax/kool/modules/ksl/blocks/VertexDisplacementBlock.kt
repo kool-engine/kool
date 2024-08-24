@@ -52,6 +52,26 @@ class VertexDisplacementBlock(
                             else -> throw IllegalArgumentException("Invalid TextureProperty channel: ${source.channel}")
                         }
                     }
+                    is PropertyBlockConfig.TextureArrayProperty -> {
+                        val texKey = "${source.textureName}[${source.arrayIndex}]"
+                        var sampleValue = findExistingSampleValue(texKey, parentStage)
+                        if (sampleValue == null) {
+                            val tex = parentStage.program.texture2dArray(source.textureName)
+                            sampleValue = parentScope.run {
+                                val texCoords = this@apply.parentStage.vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
+                                float4Var(sampleTextureArray(tex, source.arrayIndex.const, texCoords, 0f.const)).also {
+                                    outSamplerValues[texKey] = it
+                                }
+                            }
+                        }
+                        when (source.channel) {
+                            0 -> sampleValue.r
+                            1 -> sampleValue.g
+                            2 -> sampleValue.b
+                            3 -> sampleValue.a
+                            else -> error("Invalid TextureProperty channel: ${source.channel}")
+                        }
+                    }
                 }
                 mixValue(source.blendMode, propertyValue)
             }

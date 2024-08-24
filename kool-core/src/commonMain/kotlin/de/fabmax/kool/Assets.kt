@@ -1,11 +1,16 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.*
-import kotlinx.coroutines.*
+import de.fabmax.kool.util.AtlasFont
+import de.fabmax.kool.util.CharMetrics
+import de.fabmax.kool.util.FontMap
+import de.fabmax.kool.util.Uint8Buffer
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlin.coroutines.CoroutineContext
 
 object Assets : CoroutineScope {
@@ -55,20 +60,15 @@ object Assets : CoroutineScope {
         val texData = createAtlasFontMapData(font, fontScale, metrics)
 
         if (map == null) {
-            val tex = BufferedTexture2d(texData, font.fontMapProps, font.toString())
+            val tex = Texture2d(texData, font.fontMapProps, font.toString())
             map = FontMap(font, tex, metrics)
             font.scale = fontScale
             font.map = map
 
         } else {
-            val tex = map.texture as? BufferedTexture2d
-            if (tex != null) {
-                tex.updateTextureData(texData)
-                font.scale = fontScale
-                map.putAll(metrics)
-            } else {
-                logE { "Unable to update texture data of font $font" }
-            }
+            map.texture.uploadLazy(texData)
+            font.scale = fontScale
+            map.putAll(metrics)
         }
         return map
     }
@@ -78,7 +78,7 @@ object Assets : CoroutineScope {
      * [outMetrics] map. This function is usually not called directly (but you can if you want to).
      */
     @Deprecated("createAtlasFontMapData() is deprecated, use superior MsdfFont instead of AtlasFont")
-    fun createAtlasFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d {
+    fun createAtlasFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): BufferedImageData2d {
         return platformAssets.createFontMapData(font, fontScale, outMetrics)
     }
 
@@ -118,215 +118,21 @@ object Assets : CoroutineScope {
 
     /**
      * Loads the texture data from the given byte buffer using the image type specified in [mimeType] to decode the
-     * image (e.g. 'image/png') and returns the image as [TextureData].
+     * image (e.g. 'image/png') and returns the image as [ImageData].
      */
-    suspend fun loadTextureDataFromBuffer(
+    suspend fun loadImageFromBuffer(
         texData: Uint8Buffer,
         mimeType: String,
         props: TextureProps? = null
-    ): TextureData = loadTextureDataFromBufferAsync(texData, mimeType, props).await()
-
-    suspend fun loadTexture1d(
-        texData: TextureData1d,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture1d")
-    ): Texture1d = loadTexture1dAsync(texData, props, name).await()
-
-    suspend fun loadTexture2d(
-        texData: TextureData,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture2d")
-    ): Texture2d = loadTexture2dAsync(texData, props, name).await()
-
-    suspend fun loadTexture3d(
-        texData: TextureData,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture3d")
-    ): Texture3d = loadTexture3dAsync(texData, props, name).await()
-
-    suspend fun loadTextureCube(
-        texData: TextureDataCube,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("TextureCube")
-    ): TextureCube = loadTextureCubeAsync(texData, props, name).await()
+    ): ImageData2d = platformAssets.loadImageFromBuffer(texData, mimeType, props)
 
     /**
      * Asynchronously loads the texture data from the given byte buffer using the image type specified in [mimeType]
-     * to decode the image (e.g. 'image/png') and returns the image as [TextureData].
+     * to decode the image (e.g. 'image/png') and returns the image as [ImageData].
      */
-    fun loadTextureDataFromBufferAsync(texData: Uint8Buffer, mimeType: String, props: TextureProps? = null): Deferred<TextureData> = async {
-        platformAssets.loadTextureDataFromBuffer(texData, mimeType, props)
+    fun loadImageFromBufferAsync(texData: Uint8Buffer, mimeType: String, props: TextureProps? = null): Deferred<ImageData2d> = async {
+        loadImageFromBuffer(texData, mimeType, props)
     }
-
-    fun loadTexture1dAsync(
-        texData: TextureData1d,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture1d")
-    ): Deferred<Texture1d> = async {
-        val tex = Texture1d(props, name) { texData }
-        uploadTextureToGpu(tex, texData)
-        tex
-    }
-
-    fun loadTexture2dAsync(
-        texData: TextureData,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture2d")
-    ): Deferred<Texture2d> = async {
-        Texture2d(props, name, BufferedTextureLoader(texData)).also { uploadTextureToGpu(it, texData) }
-    }
-
-    fun loadTexture3dAsync(
-        texData: TextureData,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("Texture3d")
-    ): Deferred<Texture3d> = async {
-        val tex = Texture3d(props, name) { texData }
-        uploadTextureToGpu(tex, texData)
-        tex
-    }
-
-    fun loadTextureCubeAsync(
-        texData: TextureDataCube,
-        props: TextureProps = TextureProps(),
-        name: String = UniqueId.nextId("TextureCube")
-    ): Deferred<TextureCube> = async {
-        val tex = TextureCube(props, name) { texData }
-        uploadTextureToGpu(tex, texData)
-        tex
-    }
-
-    private suspend fun uploadTextureToGpu(texture: Texture, texData: TextureData) {
-        withContext(Dispatchers.RenderLoop) {
-            KoolSystem.requireContext().backend.writeTextureData(texture, texData)
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////
-    // Delegates to defaultLoader
-    ////////////////////////////////////////////////////////////////////
-
-    /**
-     * Asynchronously loads the texture data at the given path and returns it as [TextureData].
-     */
-    fun loadTextureDataAsync(assetPath: String, props: TextureProps? = null): Deferred<TextureData> = defaultLoader.loadTextureDataAsync(assetPath, props)
-
-    /**
-     * Loads the texture data at the given path and returns it as [TextureData].
-     */
-    suspend fun loadTextureData(assetPath: String, props: TextureProps? = null): TextureData = defaultLoader.loadTextureData(assetPath, props)
-
-    /**
-     * Similar to [loadTextureDataAsync], but returns the image data as [TextureData2d] object, which stores the pixels
-     * in a CPU accessible buffer. This is particular useful if the image data is used to drive procedural stuff like
-     * building heightmap geometry from a greyscale image.
-     */
-    fun loadTextureData2dAsync(assetPath: String, props: TextureProps? = null): Deferred<TextureData2d> = defaultLoader.loadTextureData2dAsync(assetPath, props)
-
-    /**
-     * Similar to [loadTextureData], but returns the image data as [TextureData2d] object, which stores the pixels
-     * in a CPU accessible buffer. This is particular useful if the image data is used to drive procedural stuff like
-     * building heightmap geometry from a greyscale image.
-     */
-    suspend fun loadTextureData2d(assetPath: String, props: TextureProps? = null): TextureData2d = defaultLoader.loadTextureData2d(assetPath, props)
-
-    /**
-     * Asynchronously loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
-     * image tiles. The texture atlas data is returned as [TextureData].
-     */
-    fun loadTextureDataAtlasAsync(
-        assetPath: String,
-        tilesX: Int,
-        tilesY: Int,
-        props: TextureProps? = null
-    ): Deferred<TextureData> = defaultLoader.loadTextureDataAtlasAsync(assetPath, tilesX, tilesY, props)
-
-    /**
-     * Loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
-     * image tiles. The texture atlas data is returned as [TextureData].
-     */
-    suspend fun loadTextureDataAtlas(
-        assetPath: String,
-        tilesX: Int,
-        tilesY: Int,
-        props: TextureProps? = null
-    ): TextureData = defaultLoader.loadTextureDataAtlas(assetPath, tilesX, tilesY, props)
-
-    /**
-     * Asynchronously loads a cube map from the given image paths (one for each side).
-     */
-    fun loadTextureDataCubeAsync(
-        pathFront: String,
-        pathBack: String,
-        pathLeft: String,
-        pathRight: String,
-        pathUp: String,
-        pathDown: String
-    ): Deferred<TextureDataCube> = defaultLoader.loadTextureDataCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
-
-    /**
-     * Loads a cube map from the given image paths (one for each side).
-     */
-    suspend fun loadTextureDataCube(
-        pathFront: String,
-        pathBack: String,
-        pathLeft: String,
-        pathRight: String,
-        pathUp: String,
-        pathDown: String
-    ): TextureDataCube = defaultLoader.loadTextureDataCube(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown)
-
-    fun loadTexture2dAsync(assetPath: String, props: TextureProps = TextureProps()): Deferred<Texture2d> = defaultLoader.loadTexture2dAsync(assetPath, props)
-
-    suspend fun loadTexture2d(assetPath: String, props: TextureProps = TextureProps()): Texture2d = defaultLoader.loadTexture2d(assetPath, props)
-
-    fun loadTexture3dAsync(
-        assetPath: String,
-        tilesX: Int,
-        tilesY: Int,
-        props: TextureProps = TextureProps()
-    ): Deferred<Texture3d> = defaultLoader.loadTexture3dAsync(assetPath, tilesX, tilesY, props)
-
-    suspend fun loadTexture3d(
-        assetPath: String,
-        tilesX: Int,
-        tilesY: Int,
-        props: TextureProps = TextureProps()
-    ): Texture3d = defaultLoader.loadTexture3d(assetPath, tilesX, tilesY, props)
-
-    fun loadTextureCubeAsync(
-        pathFront: String,
-        pathBack: String,
-        pathLeft: String,
-        pathRight: String,
-        pathUp: String,
-        pathDown: String,
-        props: TextureProps = TextureProps()
-    ): Deferred<TextureCube> = defaultLoader.loadTextureCubeAsync(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props)
-
-    suspend fun loadTextureCube(
-        pathFront: String,
-        pathBack: String,
-        pathLeft: String,
-        pathRight: String,
-        pathUp: String,
-        pathDown: String,
-        props: TextureProps = TextureProps()
-    ): TextureCube = defaultLoader.loadTextureCube(pathFront, pathBack, pathLeft, pathRight, pathUp, pathDown, props)
-
-    /**
-     * Asynchronously loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
-     */
-    fun loadBlobAssetAsync(assetPath: String): Deferred<Uint8Buffer> = defaultLoader.loadBlobAssetAsync(assetPath)
-
-    /**
-     * Loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
-     */
-    suspend fun loadBlobAsset(assetPath: String,): Uint8Buffer = defaultLoader.loadBlobAsset(assetPath)
-
-    fun loadAudioClipAsync(assetPath: String): Deferred<AudioClip> = defaultLoader.loadAudioClipAsync(assetPath)
-
-    suspend fun loadAudioClip(assetPath: String): AudioClip = defaultLoader.loadAudioClip(assetPath)
 }
 
 expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader
@@ -338,11 +144,11 @@ data class FileFilterItem(val name: String, val mimeType: String, val fileExtens
 internal expect fun PlatformAssets(): PlatformAssets
 
 internal interface PlatformAssets {
-    suspend fun loadTextureDataFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): TextureData
+    suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): ImageData2d
 
     suspend fun waitForFonts()
 
-    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): TextureData2d
+    fun createFontMapData(font: AtlasFont, fontScale: Float, outMetrics: MutableMap<Char, CharMetrics>): BufferedImageData2d
 
     suspend fun loadFileByUser(filterList: List<FileFilterItem>, multiSelect: Boolean): List<LoadableFile>
     suspend fun saveFileByUser(

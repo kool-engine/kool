@@ -65,7 +65,12 @@ class Lwjgl3Context : KoolContext() {
         while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
             sysInfo.update()
             backend.glfwWindow.pollEvents()
-            renderFrame()
+
+            if (!backend.glfwWindow.isMinimized) {
+                renderFrame()
+            } else {
+                Thread.sleep(10)
+            }
         }
         backend.cleanup(this)
     }

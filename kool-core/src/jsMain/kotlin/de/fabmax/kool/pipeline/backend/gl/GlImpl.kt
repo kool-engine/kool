@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.pipeline.TextureData
-import de.fabmax.kool.pipeline.TextureData1d
-import de.fabmax.kool.pipeline.TextureData2d
-import de.fabmax.kool.pipeline.TextureData3d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.*
@@ -24,7 +21,7 @@ object GlImpl : GlApi {
     override val COLOR_BUFFER_BIT = WebGLRenderingContext.COLOR_BUFFER_BIT
     override val COMPARE_REF_TO_TEXTURE = WebGL2RenderingContext.COMPARE_REF_TO_TEXTURE
     override val COMPILE_STATUS = WebGLRenderingContext.COMPILE_STATUS
-    override val COMPUTE_SHADER = 0
+    override val COMPUTE_SHADER: Int get() = notSupported("COMPUTE_SHADER")
     override val CULL_FACE = WebGLRenderingContext.CULL_FACE
     override val DEPTH_ATTACHMENT = WebGLRenderingContext.DEPTH_ATTACHMENT
     override val DEPTH_BUFFER_BIT = WebGLRenderingContext.DEPTH_BUFFER_BIT
@@ -54,21 +51,23 @@ object GlImpl : GlApi {
     override val QUERY_RESULT: Int = WebGL2RenderingContext.QUERY_RESULT
     override val QUERY_RESULT_AVAILABLE: Int = WebGL2RenderingContext.QUERY_RESULT_AVAILABLE
     override val READ_FRAMEBUFFER = WebGL2RenderingContext.READ_FRAMEBUFFER
-    override val READ_ONLY = 0
-    override val READ_WRITE = 0
+    override val READ_ONLY: Int get() = notSupported("READ_ONLY")
+    override val READ_WRITE: Int get() = notSupported("READ_WRITE")
     override val RENDERBUFFER = WebGLRenderingContext.RENDERBUFFER
     override val REPEAT = WebGLRenderingContext.REPEAT
     override val SAMPLES = WebGLRenderingContext.SAMPLES
     override val SCISSOR_TEST = WebGLRenderingContext.SCISSOR_TEST
-    override val SHADER_STORAGE_BUFFER = 0
+    override val SHADER_STORAGE_BUFFER: Int get() = notSupported("SHADER_STORAGE_BUFFER")
     override val SRC_ALPHA = WebGLRenderingContext.SRC_ALPHA
     override val STATIC_DRAW = WebGLRenderingContext.STATIC_DRAW
-    override val TEXTURE_1D = 0
+    override val TEXTURE_1D: Int get() = notSupported("TEXTURE_1D")
     override val TEXTURE_2D = WebGLRenderingContext.TEXTURE_2D
+    override val TEXTURE_2D_ARRAY: Int = WebGL2RenderingContext.TEXTURE_2D_ARRAY
     override val TEXTURE_3D = WebGL2RenderingContext.TEXTURE_3D
     override val TEXTURE_COMPARE_MODE = WebGL2RenderingContext.TEXTURE_COMPARE_MODE
     override val TEXTURE_COMPARE_FUNC = WebGL2RenderingContext.TEXTURE_COMPARE_FUNC
     override val TEXTURE_CUBE_MAP = WebGLRenderingContext.TEXTURE_CUBE_MAP
+    override val TEXTURE_CUBE_MAP_ARRAY: Int get() = notSupported("TEXTURE_CUBE_MAP_ARRAY")
     override val TEXTURE_CUBE_MAP_POSITIVE_X = WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X
     override val TEXTURE_CUBE_MAP_NEGATIVE_X = WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X
     override val TEXTURE_CUBE_MAP_POSITIVE_Y = WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Y
@@ -81,8 +80,8 @@ object GlImpl : GlApi {
     override val TEXTURE_WRAP_S = WebGLRenderingContext.TEXTURE_WRAP_S
     override val TEXTURE_WRAP_T = WebGLRenderingContext.TEXTURE_WRAP_T
     override val TEXTURE0 = WebGLRenderingContext.TEXTURE0
-    override val TIME_ELAPSED: Int = 0
-    override val TIMESTAMP: Int = 0
+    override val TIME_ELAPSED: Int get() = notSupported("TIME_ELAPSED")
+    override val TIMESTAMP: Int get() = notSupported("TIMESTAMP")
     override val TRIANGLES = WebGLRenderingContext.TRIANGLES
     override val TRIANGLE_STRIP = WebGLRenderingContext.TRIANGLE_STRIP
     override val TRUE = true
@@ -90,7 +89,7 @@ object GlImpl : GlApi {
     override val UNIFORM_BUFFER = WebGL2RenderingContext.UNIFORM_BUFFER
     override val UNIFORM_OFFSET = WebGL2RenderingContext.UNIFORM_OFFSET
     override val VERTEX_SHADER = WebGLRenderingContext.VERTEX_SHADER
-    override val WRITE_ONLY = 0
+    override val WRITE_ONLY: Int get() = notSupported("WRITE_ONLY")
 
     override val INT = WebGLRenderingContext.INT
     override val FLOAT = WebGLRenderingContext.FLOAT
@@ -136,21 +135,21 @@ object GlImpl : GlApi {
     override val EQUAL = WebGLRenderingContext.EQUAL
     override val NOTEQUAL = WebGLRenderingContext.NOTEQUAL
 
-    override val VERTEX_ATTRIB_ARRAY_BARRIER_BIT = 0
-    override val ELEMENT_ARRAY_BARRIER_BIT = 0
-    override val UNIFORM_BARRIER_BIT = 0
-    override val TEXTURE_FETCH_BARRIER_BIT = 0
-    override val SHADER_IMAGE_ACCESS_BARRIER_BIT = 0
-    override val COMMAND_BARRIER_BIT = 0
-    override val PIXEL_BUFFER_BARRIER_BIT = 0
-    override val TEXTURE_UPDATE_BARRIER_BIT = 0
-    override val BUFFER_UPDATE_BARRIER_BIT = 0
-    override val CLIENT_MAPPED_BUFFER_BARRIER_BIT = 0
-    override val FRAMEBUFFER_BARRIER_BIT = 0
-    override val TRANSFORM_FEEDBACK_BARRIER_BIT = 0
-    override val ATOMIC_COUNTER_BARRIER_BIT = 0
-    override val SHADER_STORAGE_BARRIER_BIT = 0
-    override val QUERY_BUFFER_BARRIER_BIT = 0
+    override val VERTEX_ATTRIB_ARRAY_BARRIER_BIT: Int get() = notSupported("VERTEX_ATTRIB_ARRAY_BARRIER_BIT")
+    override val ELEMENT_ARRAY_BARRIER_BIT: Int get() = notSupported("ELEMENT_ARRAY_BARRIER_BIT")
+    override val UNIFORM_BARRIER_BIT: Int get() = notSupported("UNIFORM_BARRIER_BIT")
+    override val TEXTURE_FETCH_BARRIER_BIT: Int get() = notSupported("TEXTURE_FETCH_BARRIER_BIT")
+    override val SHADER_IMAGE_ACCESS_BARRIER_BIT: Int get() = notSupported("SHADER_IMAGE_ACCESS_BARRIER_BIT")
+    override val COMMAND_BARRIER_BIT: Int get() = notSupported("COMMAND_BARRIER_BIT")
+    override val PIXEL_BUFFER_BARRIER_BIT: Int get() = notSupported("PIXEL_BUFFER_BARRIER_BIT")
+    override val TEXTURE_UPDATE_BARRIER_BIT: Int get() = notSupported("TEXTURE_UPDATE_BARRIER_BIT")
+    override val BUFFER_UPDATE_BARRIER_BIT: Int get() = notSupported("BUFFER_UPDATE_BARRIER_BIT")
+    override val CLIENT_MAPPED_BUFFER_BARRIER_BIT: Int get() = notSupported("CLIENT_MAPPED_BUFFER_BARRIER_BIT")
+    override val FRAMEBUFFER_BARRIER_BIT: Int get() = notSupported("FRAMEBUFFER_BARRIER_BIT")
+    override val TRANSFORM_FEEDBACK_BARRIER_BIT: Int get() = notSupported("TRANSFORM_FEEDBACK_BARRIER_BIT")
+    override val ATOMIC_COUNTER_BARRIER_BIT: Int get() = notSupported("ATOMIC_COUNTER_BARRIER_BIT")
+    override val SHADER_STORAGE_BARRIER_BIT: Int get() = notSupported("SHADER_STORAGE_BARRIER_BIT")
+    override val QUERY_BUFFER_BARRIER_BIT: Int get() = notSupported("QUERY_BUFFER_BARRIER_BIT")
 
     override val DEFAULT_FRAMEBUFFER: GlFramebuffer = GlFramebuffer(-1)
     override val NULL_BUFFER: GlBuffer = GlBuffer(-1)
@@ -296,12 +295,14 @@ object GlImpl : GlApi {
     override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = gl.renderbufferStorageMultisample(target, samples, internalformat, width, height)
     override fun scissor(x: Int, y: Int, width: Int, height: Int) = gl.scissor(x, y, width, height)
     override fun shaderSource(shader: GlShader, source: String) = gl.shaderSource(shader.webGl, source)
-    override fun texImage1d(target: Int, data: TextureData) = notSupported("texImage1d")
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
-    override fun texImage2d(target: Int, data: TextureData) = texImage2dImpl(target, data)
-    override fun texImage3d(target: Int, data: TextureData) = textImage3dImpl(target, data)
+    override fun texImage1d(data: ImageData1d) = texImage2dImpl(TEXTURE_2D, data)
+    override fun texImage2d(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: Buffer?) = texImage2dImpl(target, level, internalformat, width, height, border, format, type, pixels)
+    override fun texImage2d(target: Int, data: ImageData2d) = texImage2dImpl(target, data)
+    override fun texImage3d(target: Int, data: ImageData3d) = textImage3dImpl(target, data)
+    override fun texSubImage3d(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData) = texSubImage3dImpl(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels)
     override fun texParameteri(target: Int, pName: Int, param: Int) = gl.texParameteri(target, pName, param)
-    override fun texStorage2D(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = gl.texStorage2D(target, levels, internalformat, width, height)
+    override fun texStorage2d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int) = gl.texStorage2D(target, levels, internalformat, width, height)
+    override fun texStorage3d(target: Int, levels: Int, internalformat: Int, width: Int, height: Int, depth: Int) = gl.texStorage3D(target, levels, internalformat, width, height, depth)
     override fun uniformBlockBinding(program: GlProgram, uniformBlockIndex: Int, uniformBlockBinding: Int) = gl.uniformBlockBinding(program.webGl, uniformBlockIndex, uniformBlockBinding)
     override fun useProgram(program: GlProgram) = programs[program.handle].let { gl.useProgram(it?.webGl); activeProgram = it }
     override fun uniform1f(location: Int, x: Float) = gl.uniform1f(location.webGlUniformLoc, x)
@@ -378,7 +379,7 @@ object GlImpl : GlApi {
 
     override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean = false
 
-    override fun readTexturePixels(src: LoadedTextureGl, dst: TextureData): Boolean {
+    override fun readTexturePixels(src: LoadedTextureGl, dst: BufferedImageData): Boolean {
         if (src.target != TEXTURE_2D) {
             return false
         }
@@ -455,44 +456,53 @@ object GlImpl : GlApi {
         }
     }
 
-    private fun texImage2dImpl(target: Int, data: TextureData) {
+    private fun texImage2dImpl(target: Int, image: ImageData) {
         gl.pixelStorei(WebGLRenderingContext.UNPACK_COLORSPACE_CONVERSION_WEBGL, WebGLRenderingContext.NONE)
-        when (data) {
-            is TextureData1d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat(this), data.width, 1, 0, data.format.glFormat(this), data.format.glType(this), data.arrayBufferView)
+        when (image) {
+            is BufferedImageData1d -> {
+                gl.texImage2D(target, 0, image.format.glInternalFormat(this), image.width, 1, 0, image.format.glFormat(this), image.format.glType(this), image.arrayBufferView)
             }
-            is TextureData2d -> {
-                gl.texImage2D(target, 0, data.format.glInternalFormat(this), data.width, data.height, 0, data.format.glFormat(this), data.format.glType(this), data.arrayBufferView)
+            is BufferedImageData2d -> {
+                gl.texImage2D(target, 0, image.format.glInternalFormat(this), image.width, image.height, 0, image.format.glFormat(this), image.format.glType(this), image.arrayBufferView)
             }
             is ImageTextureData -> {
-                gl.texImage2D(target, 0, WebGLRenderingContext.RGBA, WebGLRenderingContext.RGBA, WebGLRenderingContext.UNSIGNED_BYTE, data.data)
+                gl.texImage2D(target, 0, WebGLRenderingContext.RGBA, WebGLRenderingContext.RGBA, WebGLRenderingContext.UNSIGNED_BYTE, image.data)
             }
-            else -> throw IllegalArgumentException("Invalid TextureData type for texImage2d: $data")
+            else -> error("Invalid ImageData type for texImage2d: $image")
         }
     }
 
-    private fun textImage3dImpl(target: Int, img: TextureData) {
-        when (img) {
-            is TextureData3d -> {
-                gl.texImage3D(target, 0, img.format.glInternalFormat(this), img.width, img.height, img.depth, 0, img.format.glFormat(this), img.format.glType(this), img.arrayBufferView)
+    private fun textImage3dImpl(target: Int, image: ImageData) {
+        when (image) {
+            is BufferedImageData3d -> {
+                gl.texImage3D(target, 0, image.format.glInternalFormat(this), image.width, image.height, image.depth, 0, image.format.glFormat(this), image.format.glType(this), image.arrayBufferView)
             }
             is ImageAtlasTextureData -> {
-                gl.texStorage3D(target, 1, img.format.glInternalFormat(this), img.width, img.height, img.depth)
-                for (z in 0 until img.depth) {
-                    gl.texSubImage3D(target, 0, 0, 0, z, img.width, img.height, 1, img.format.glFormat(this), img.format.glType(this), img.data[z])
+                gl.texStorage3D(target, 1, image.format.glInternalFormat(this), image.width, image.height, image.depth)
+                for (z in 0 until image.depth) {
+                    gl.texSubImage3D(target, 0, 0, 0, z, image.width, image.height, 1, image.format.glFormat(this), image.format.glType(this), image.data[z])
                 }
             }
-            else -> {
-                throw IllegalStateException("TextureData buffer must be either TextureData3d or ImageAtlasTextureData")
-            }
+            else -> error("ImageData must be either BufferedImageData3d or ImageAtlasTextureData")
         }
     }
 
-    private fun notSupported(funcName: String): Nothing {
-        throw IllegalStateException("$funcName is not supported in WebGL")
+    private fun texSubImage3dImpl(target: Int, level: Int, xoffset: Int, yoffset: Int, zoffset: Int, width: Int, height: Int, depth: Int, format: Int, type: Int, pixels: ImageData) {
+        when (pixels) {
+            is BufferedImageData -> {
+                val arrayBufferView = (pixels.data as GenericBuffer<*>).buffer
+                gl.texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, arrayBufferView)
+            }
+            is ImageTextureData -> {
+                gl.texSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type, pixels.data)
+            }
+            else -> error("Invalid ImageData type for texSubImage3D: $pixels")
+        }
     }
 
-    private val TextureData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {
+    private fun notSupported(name: String): Nothing = error("$name is not supported in WebGL")
+
+    private val BufferedImageData.arrayBufferView: ArrayBufferView get() = when (val bufData = data) {
         is Uint8BufferImpl -> bufData.buffer
         is Uint16BufferImpl -> bufData.buffer
         is Float32BufferImpl -> bufData.buffer
