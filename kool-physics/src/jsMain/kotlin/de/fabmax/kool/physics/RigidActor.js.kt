@@ -8,6 +8,7 @@ import de.fabmax.kool.physics.character.HitActorBehavior
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.checkIsNotReleased
 import physx.*
 
@@ -62,7 +63,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
 
     override val transform = TrsTransformF()
 
-    override val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
+    override val onPhysicsUpdate = BufferedList<PhysicsStepListener>()
 
     private val _shapes = mutableListOf<Shape>()
     override val shapes: List<Shape>

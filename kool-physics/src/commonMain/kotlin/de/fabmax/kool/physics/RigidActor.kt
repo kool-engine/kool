@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Tags
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Releasable
 
@@ -40,7 +41,7 @@ interface RigidActor : Releasable {
 
     var isActive: Boolean
 
-    val onPhysicsUpdate: MutableList<(Float) -> Unit>
+    val onPhysicsUpdate: BufferedList<PhysicsStepListener>
 
     val shapes: List<Shape>
 
@@ -51,8 +52,9 @@ interface RigidActor : Releasable {
     fun detachShape(shape: Shape)
 
     fun onPhysicsUpdate(timeStep: Float) {
+        onPhysicsUpdate.update()
         for (i in onPhysicsUpdate.indices) {
-            onPhysicsUpdate[i](timeStep)
+            onPhysicsUpdate[i].onPhysicsStep(timeStep)
         }
     }
 

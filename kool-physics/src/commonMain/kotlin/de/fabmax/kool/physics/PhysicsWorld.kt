@@ -7,6 +7,7 @@ import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.logW
 
 expect fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean = false) : PhysicsWorld
@@ -23,8 +24,8 @@ abstract class PhysicsWorld : BaseReleasable() {
     var isStepInProgress = false
     var prevStepTime = 0f
 
-    val onAdvancePhysics = mutableListOf<(Float) -> Unit>()
-    val onPhysicsUpdate = mutableListOf<(Float) -> Unit>()
+    val onAdvancePhysics = BufferedList<PhysicsStepListener>()
+    val onPhysicsUpdate = BufferedList<PhysicsStepListener>()
 
     protected val mutActors = mutableListOf<RigidActor>()
     val actors: List<RigidActor>
@@ -169,8 +170,9 @@ abstract class PhysicsWorld : BaseReleasable() {
     }
 
     protected open fun onAdvancePhysics(timeStep: Float) {
+        onAdvancePhysics.update()
         for (i in onAdvancePhysics.indices) {
-            onAdvancePhysics[i](timeStep)
+            onAdvancePhysics[i].onPhysicsStep(timeStep)
         }
     }
 
@@ -181,8 +183,9 @@ abstract class PhysicsWorld : BaseReleasable() {
         for (i in mutArticulations.indices) {
             mutArticulations[i].onPhysicsUpdate(timeStep)
         }
+        onPhysicsUpdate.update()
         for (i in onPhysicsUpdate.indices) {
-            onPhysicsUpdate[i](timeStep)
+            onPhysicsUpdate[i].onPhysicsStep(timeStep)
         }
     }
 
@@ -202,4 +205,5 @@ abstract class PhysicsWorld : BaseReleasable() {
         val listeners = mutableListOf<TriggerListener>()
         val actorEnterCounts = mutableMapOf<RigidActor, Int>()
     }
+
 }
