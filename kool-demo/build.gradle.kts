@@ -67,10 +67,9 @@ task("cacheRuntimeLibs") {
 
         val runtimeLibs = configurations
             .filter { it.name == "desktopRuntimeClasspath" }
-            .flatMap { it.copyRecursive().files }
+            .flatMap { it.files.toList() }
             .filter { it.name.endsWith("$platformName.jar") && !it.path.startsWith(projectDir.path) }
-        runtimeLibs
-            .forEach {
+            .onEach {
                 if (!File("${projectDir}/runtimeLibs/${it.name}").exists()) {
                     copy {
                         from(it)

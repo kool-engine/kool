@@ -302,16 +302,18 @@ fun main() = KoolApplication {
     }
 }
 ```
-Here, we create a new `UiScene` and add a `Panel` to it, which serves as top-level container for our UI content. Within
-the `Panel`-block, we add a button and a text field. All appearance and layout-properties of the UI elements are
-controlled by their `modifier`s.
+Here, we create a new `Scene` and configure it to be a UI scene containing a single panel surface. Within
+the `addPanelSurface`-block, we add a button and a text field. All appearance and layout-properties of the UI elements
+are controlled by their `modifier`s.
 
 Whenever the button is clicked we increment a `clickCount` which is then displayed by the text field. This works
-because the `Panel`-block is executed each time any `remember`ed state (or `mutableStateOf()`) within the block changes.
+because the `addPanelSurfcae`-block is executed each time any `remember`ed state (or `mutableStateOf()`) within the
+block changes.
 
 The resulting scene looks like [this](https://kool-engine.github.io/live/demos/?demo=hello-ui).
 
 More complex layouts can be created by nesting `Row { }` and `Column { }` objects. The
+[kool editor](https://kool-engine.github.io/live/kool-editor/) as well as the
 [full UI demo](https://kool-engine.github.io/live/demos/?demo=ui) should give you an impression on what's possible.
 
 ## Kool Shader Language
