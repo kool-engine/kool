@@ -276,8 +276,10 @@ Kool comes with an embedded UI framework, which is heavily inspired by [Jetpack 
 but was implemented from scratch. Here is a small example:
 ```kotlin
 fun main() = KoolApplication {
-    ctx.scenes += UiScene(clearScreen = true) {
-        Panel(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
+    addScene {
+        setupUiScene(Scene.DEFAULT_CLEAR_COLOR)
+      
+        addPanelSurface(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier
                 .size(400.dp, 300.dp)
                 .align(AlignmentX.Center, AlignmentY.Center)

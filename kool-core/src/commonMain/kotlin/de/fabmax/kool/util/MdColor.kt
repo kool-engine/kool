@@ -4,7 +4,7 @@ package de.fabmax.kool.util
  * Classic 2014 Material Design color palette
  * https://material.io/guidelines/style/color.html#color-color-palette
  */
-class MdColor constructor(private val shades: ColorGradient) : Color(shades.getColor(500f, 50f, 900f)) {
+class MdColor(private val shades: ColorGradient) : Color(shades.getColor(500f, 50f, 900f)) {
 
     infix fun tone(tone: Int) = shades.getColor(tone.toFloat(), 50f, 900f)
 
