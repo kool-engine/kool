@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.ui.Icons
+import de.fabmax.kool.editor.ui.labeledCheckbox
 import de.fabmax.kool.editor.ui.labeledCombobox
 import de.fabmax.kool.editor.ui.labeledIntTextField
 import de.fabmax.kool.modules.ksl.blocks.ToneMapping
@@ -31,6 +32,10 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
 
         labeledIntTextField("Max number of lights:", component.data.maxNumLights, minValue = 0, maxValue = 8) {
             SetComponentDataAction(component, component.data, component.data.copy(maxNumLights = it)).apply()
+        }
+
+        labeledCheckbox("Floating origin:", component.data.isFloatingOrigin) {
+            SetComponentDataAction(component, component.data, component.data.copy(isFloatingOrigin = it)).apply()
         }
     }
 

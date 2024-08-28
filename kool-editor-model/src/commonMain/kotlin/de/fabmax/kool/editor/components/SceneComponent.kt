@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneComponentData
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.logW
 
 class SceneComponent(
     gameEntity: GameEntity,
@@ -16,7 +17,11 @@ class SceneComponent(
     val sceneNode: Scene = Scene(gameEntity.name).apply {
         tryEnableInfiniteDepth()
         lighting.clear()
+        mainRenderPass.isDoublePrecision = data.isFloatingOrigin
     }
+
+    val isFloatingOrigin: Boolean get() = data.isFloatingOrigin
+    val isDoublePrecision: Boolean get() = sceneNode.mainRenderPass.isDoublePrecision
 
     val cameraComponent: CameraComponent? get() = gameEntity.scene.sceneEntities[data.cameraEntityId]?.getComponent()
 
@@ -31,6 +36,11 @@ class SceneComponent(
     }
 
     override fun onDataChanged(oldData: SceneComponentData, newData: SceneComponentData) {
+        if (oldData.isFloatingOrigin != newData.isFloatingOrigin) {
+            logW { "Changing floating origin property only takes full effect after full scene reload" }
+        }
+        sceneNode.mainRenderPass.isDoublePrecision = newData.isFloatingOrigin
+
         gameEntity.scene.shaderData.apply {
             maxNumberOfLights = newData.maxNumLights
             toneMapping = newData.toneMapping
