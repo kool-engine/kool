@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 data class SceneComponentData(
     val cameraEntityId: EntityId = EntityId.NULL,
     val maxNumLights: Int = 4,
-    val toneMapping: ToneMapping = ToneMapping.AcesApproximated
+    val toneMapping: ToneMapping = ToneMapping.AcesApproximated,
+    val isFloatingOrigin: Boolean = false,
 ) : ComponentData

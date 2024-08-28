@@ -3,6 +3,7 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.cachedEntityComponents
 import de.fabmax.kool.editor.data.ComponentInfo
+import de.fabmax.kool.editor.data.SceneComponentData
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.math.Mat4d
@@ -11,6 +12,7 @@ import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Transform
+import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.SyncedMatrixFd
 
@@ -22,7 +24,7 @@ class TransformComponent(
     private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
     val globalTransform = SyncedMatrixFd()
-    var transform: Transform = TrsTransformF()
+    var transform: Transform = createTransform()
         set(value) {
             field = value
             updateTransform()
@@ -72,6 +74,16 @@ class TransformComponent(
                 listeners[i].onTransformChanged(this, data)
             }
         }
+    }
+
+    private fun createTransform(): Transform {
+        val isDoublePrecision = if (gameEntity.isSceneChild) {
+            sceneComponent.isDoublePrecision
+        } else {
+            gameEntity.entityData.components
+                .map { it.data }.filterIsInstance<SceneComponentData>().firstOrNull()?.isFloatingOrigin == true
+        }
+        return if (isDoublePrecision) TrsTransformD() else TrsTransformF()
     }
 
     fun interface ListenerComponent {
