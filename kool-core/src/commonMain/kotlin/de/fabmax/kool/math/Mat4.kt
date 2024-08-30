@@ -65,6 +65,39 @@ fun MutableMat4d.set(that: Mat4f): MutableMat4d {
 }
 
 /**
+ * Transforms (i.e. multiplies) the given [Vec3d] and [w]-value with this matrix and stores the resulting transformed vector
+ * in [result].
+ */
+fun Mat4f.transform(that: Vec3d, w: Double, result: MutableVec3d): MutableVec3d {
+    val x = that.x * m00 + that.y * m01 + that.z * m02 + w * m03
+    val y = that.x * m10 + that.y * m11 + that.z * m12 + w * m13
+    val z = that.x * m20 + that.y * m21 + that.z * m22 + w * m23
+    return result.set(x, y, z)
+}
+
+/**
+ * Transforms (i.e. multiplies) the given [Vec3f] and [w]-value in place with this matrix.
+ */
+fun Mat4f.transform(that: MutableVec3d, w: Double = 1.0): MutableVec3d = transform(that, w, that)
+
+/**
+ * Transforms (i.e. multiplies) the given [Vec4d] with this matrix and stores the resulting transformed vector in [result].
+ */
+fun Mat4f.transform(that: Vec4d, result: MutableVec4d): MutableVec4d {
+    val x = that.x * m00 + that.y * m01 + that.z * m02 + that.w * m03
+    val y = that.x * m10 + that.y * m11 + that.z * m12 + that.w * m13
+    val z = that.x * m20 + that.y * m21 + that.z * m22 + that.w * m23
+    val w = that.x * m30 + that.y * m31 + that.z * m32 + that.w * m33
+    return result.set(x, y, z, w)
+}
+
+/**
+ * Transforms (i.e. multiplies) the given [MutableVec4d] by this matrix, changing the contents of the given
+ * vector.
+ */
+fun Mat4f.transform(that: MutableVec4d): MutableVec4d = transform(that, that)
+
+/**
  * Transforms (i.e. multiplies) the given [Vec3f] and [w]-value with this matrix and stores the resulting transformed vector
  * in [result].
  */

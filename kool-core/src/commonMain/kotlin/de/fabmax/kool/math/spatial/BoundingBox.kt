@@ -258,7 +258,7 @@ open class BoundingBoxF() {
      */
     fun pointDistance(pt: Vec3f): Float {
         if (isEmpty) {
-            return Float.MAX_VALUE
+            return Float.POSITIVE_INFINITY
         }
         return sqrt(pointDistanceSqr(pt))
     }
@@ -269,7 +269,7 @@ open class BoundingBoxF() {
      */
     fun pointDistanceSqr(pt: Vec3f): Float {
         if (isEmpty) {
-            return Float.MAX_VALUE
+            return Float.POSITIVE_INFINITY
         }
         if (pt in this) {
             return 0f
@@ -320,13 +320,13 @@ open class BoundingBoxF() {
 
     /**
      * Computes the squared hit distance for the given ray. If the ray does not intersect this BoundingBox
-     * Float.MAX_VALUE is returned. If the ray origin is inside this BoundingBox 0 is returned.
+     * Float.POSITIVE_INFINITY is returned. If the ray origin is inside this BoundingBox 0 is returned.
      * The method returns the squared distance because it's faster to compute. If the exact distance is needed
      * the square root of the result has to be taken.
      *
      * @param ray    The ray to test
      * @return squared distance between origin and the hit point on the BoundingBox surface or
-     * Float.MAX_VALUE if the ray does not intersect the BoundingBox
+     * Float.POSITIVE_INFINITY if the ray does not intersect the BoundingBox
      */
     fun hitDistanceSqr(ray: RayF): Float {
         var tmin: Float
@@ -337,7 +337,7 @@ open class BoundingBoxF() {
         val tzmax: Float
 
         if (isEmpty) {
-            return Float.MAX_VALUE
+            return Float.POSITIVE_INFINITY
         }
         if (ray.origin in this) {
             return 0f
@@ -363,7 +363,7 @@ open class BoundingBoxF() {
 
         if (tmin > tymax || tymin > tmax) {
             // no intersection
-            return Float.MAX_VALUE
+            return Float.POSITIVE_INFINITY
         }
         if (tymin > tmin) {
             tmin = tymin
@@ -383,7 +383,7 @@ open class BoundingBoxF() {
 
         if (tmin > tzmax || tzmin > tmax) {
             // no intersection
-            return Float.MAX_VALUE
+            return Float.POSITIVE_INFINITY
         }
         if (tzmin > tmin) {
             tmin = tzmin
@@ -400,7 +400,7 @@ open class BoundingBoxF() {
             dist / ray.direction.sqrLength()
         } else {
             // no intersection: box is behind ray
-            Float.MAX_VALUE
+            Float.POSITIVE_INFINITY
         }
     }
 
@@ -666,7 +666,7 @@ open class BoundingBoxD() {
      */
     fun pointDistance(pt: Vec3d): Double {
         if (isEmpty) {
-            return Double.MAX_VALUE
+            return Double.POSITIVE_INFINITY
         }
         return sqrt(pointDistanceSqr(pt))
     }
@@ -677,7 +677,7 @@ open class BoundingBoxD() {
      */
     fun pointDistanceSqr(pt: Vec3d): Double {
         if (isEmpty) {
-            return Double.MAX_VALUE
+            return Double.POSITIVE_INFINITY
         }
         if (pt in this) {
             return 0.0
@@ -728,13 +728,13 @@ open class BoundingBoxD() {
 
     /**
      * Computes the squared hit distance for the given ray. If the ray does not intersect this BoundingBox
-     * Double.MAX_VALUE is returned. If the ray origin is inside this BoundingBox 0 is returned.
+     * Double.POSITIVE_INFINITY is returned. If the ray origin is inside this BoundingBox 0 is returned.
      * The method returns the squared distance because it's faster to compute. If the exact distance is needed
      * the square root of the result has to be taken.
      *
      * @param ray    The ray to test
      * @return squared distance between origin and the hit point on the BoundingBox surface or
-     * Double.MAX_VALUE if the ray does not intersect the BoundingBox
+     * Double.POSITIVE_INFINITY if the ray does not intersect the BoundingBox
      */
     fun hitDistanceSqr(ray: RayD): Double {
         var tmin: Double
@@ -745,7 +745,7 @@ open class BoundingBoxD() {
         val tzmax: Double
 
         if (isEmpty) {
-            return Double.MAX_VALUE
+            return Double.POSITIVE_INFINITY
         }
         if (ray.origin in this) {
             return 0.0
@@ -771,7 +771,7 @@ open class BoundingBoxD() {
 
         if (tmin > tymax || tymin > tmax) {
             // no intersection
-            return Double.MAX_VALUE
+            return Double.POSITIVE_INFINITY
         }
         if (tymin > tmin) {
             tmin = tymin
@@ -791,7 +791,7 @@ open class BoundingBoxD() {
 
         if (tmin > tzmax || tzmin > tmax) {
             // no intersection
-            return Double.MAX_VALUE
+            return Double.POSITIVE_INFINITY
         }
         if (tzmin > tmin) {
             tmin = tzmin
@@ -808,7 +808,7 @@ open class BoundingBoxD() {
             dist / ray.direction.sqrLength()
         } else {
             // no intersection: box is behind ray
-            Double.MAX_VALUE
+            Double.POSITIVE_INFINITY
         }
     }
 

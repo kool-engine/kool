@@ -27,11 +27,11 @@ interface MeshRayTest {
             override fun rayTest(test: RayTest, localRay: RayF): Boolean {
                 val mesh = this.mesh ?: return false
                 val distSqr = mesh.geometry.bounds.hitDistanceSqr(localRay)
-                if (distSqr < Float.MAX_VALUE) {
+                if (distSqr < Float.POSITIVE_INFINITY) {
                     tmpVec.set(localRay.direction).mul(sqrt(distSqr))
-                    val globalDistSqr = mesh.toGlobalCoords(tmpVec, 0f).sqrLength()
-                    if (globalDistSqr <= test.hitDistanceSqr) {
-                        test.setHit(mesh, sqrt(globalDistSqr))
+                    val globalDist = mesh.toGlobalCoords(tmpVec, 0f).length()
+                    if (globalDist <= test.hitDistance) {
+                        test.setHit(mesh, globalDist.toDouble())
                         return true
                     }
                 }
@@ -49,11 +49,10 @@ interface MeshRayTest {
     }
 
     class TriangleGeometry(val mesh: Mesh) : MeshRayTest {
-        var triangleTree: KdTree<Triangle>? = null
-            private set
+        var triangleTree: KdTree<Triangle>? = null; private set
+
         private val rayD = RayD()
-        private val posD = MutableVec3d()
-        private val posF = MutableVec3f()
+        private val normalF = MutableVec3f()
         private val rayTraverser = TriangleHitTraverser<Triangle>()
 
         override fun onMeshDataChanged(mesh: Mesh) {
@@ -74,10 +73,10 @@ interface MeshRayTest {
             rayTraverser.nearest?.let { hitTri ->
                 // hit
                 val globalHit = mesh.toGlobalCoords(rayTraverser.hitPoint)
-                val globalDistSqr = globalHit.sqrDistance(test.ray.origin.toMutableVec3d(posD))
-                if (globalDistSqr < test.hitDistanceSqr) {
-                    test.setHit(mesh, globalHit.toMutableVec3f(posF))
-                    mesh.toGlobalCoords(hitTri.e1.cross(hitTri.e2, test.hitNormalGlobal), 0f)
+                val globalDist = globalHit.distance(test.ray.origin)
+                if (globalDist < test.hitDistance) {
+                    test.setHit(mesh, globalHit)
+                    mesh.toGlobalCoords(hitTri.e1.cross(hitTri.e2, test.hitNormalGlobal.toMutableVec3f(normalF)), 0f)
                     return true
                 }
             }
@@ -86,8 +85,8 @@ interface MeshRayTest {
     }
 
     class LineGeometry(val mesh: Mesh) : MeshRayTest {
-        var edgeTree: KdTree<Edge<Vec3f>>? = null
-            private set
+        var edgeTree: KdTree<Edge<Vec3f>>? = null; private set
+
         private val rayTraverser = NearestEdgeToRayTraverser<Edge<Vec3f>>()
         private val tmpVec = MutableVec3f()
         private val rayD = RayD()
@@ -109,9 +108,9 @@ interface MeshRayTest {
 
             if (rayTraverser.nearest != null) {
                 tmpVec.set(localRay.direction).mul(sqrt(rayTraverser.distanceSqr).toFloat())
-                val globalDistSqr = mesh.toGlobalCoords(tmpVec, 0f).sqrLength()
-                if (globalDistSqr < test.hitDistanceSqr) {
-                    test.setHit(mesh, globalDistSqr)
+                val globalDist = mesh.toGlobalCoords(tmpVec, 0f).length()
+                if (globalDist < test.hitDistance) {
+                    test.setHit(mesh, globalDist.toDouble())
                     return true
                 }
             }

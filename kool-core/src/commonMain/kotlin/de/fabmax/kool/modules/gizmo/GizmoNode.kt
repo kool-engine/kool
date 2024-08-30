@@ -201,7 +201,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         }
 
         rayTest.clear(camera = scene.camera)
-        pickRay.toRayF(rayTest.ray)
+        rayTest.ray.set(pickRay)
         rayTest(rayTest)
 
         if (dragMode == DragMode.NO_DRAG) {

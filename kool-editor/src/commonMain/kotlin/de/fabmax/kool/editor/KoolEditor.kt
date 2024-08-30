@@ -66,7 +66,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val loadedApp = mutableStateOf<LoadedApp?>(null)
     val activeScene = mutableStateOf<EditorScene?>(null)
 
-    val overlayScene = OverlayScene(this)
+    val editorCam = PerspectiveCamera()
+    val overlayScene = OverlayScene(this).apply { camera = editorCam }
     val selectionOverlay: SelectionOverlay get() = overlayScene.selection
     val gizmoOverlay: TransformGizmoOverlay get() = overlayScene.gizmo
 
@@ -257,7 +258,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         // clear scene objects from old app
         editorCameraTransform.clearChildren()
         editorCameraTransform.addNode(editorBackgroundScene.camera)
-        editorCameraTransform.addNode(overlayScene.camera)
 
         // dispose old scene + objects
         projectModel.createdScenes.values.forEach { editorScene ->
@@ -284,9 +284,10 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 selectionOverlay.selectionPass.drawNode = scene
 
                 // replace original scene cam with editor cam
-                val editorCam = PerspectiveCamera()
-                val far = if (overlayScene.isInfiniteDepth) 1e9f else 1000f
-                editorCam.setClipRange(0.1f, far)
+                if (overlayScene.isInfiniteDepth) {
+                    editorCam.setClipRange(0.01f, 1e15f)
+                    editorCameraTransform.maxZoom = 1e15
+                }
                 editorScene.sceneComponent.setCamera(editorCam)
 
                 editorCameraTransform.addNode(scene.camera)
