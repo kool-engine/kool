@@ -151,9 +151,15 @@ open class Node(name: String? = null) : BaseReleasable() {
         }
 
         // update global center and radius, don't do modCount-based caching here since bounds can change too
-        val toGlobal = modelMatrix.matF
-        toGlobal.transform(globalCenterMut.set(bounds.center))
-        globalRadius = toGlobal.transform(tmpVec.set(bounds.size), 0f).length() * 0.5f
+        if (updateEvent.view.renderPass.isDoublePrecision) {
+            val toGlobal = modelMatD
+            toGlobal.transform(globalCenterMut.set(bounds.center))
+            globalRadius = toGlobal.transform(tmpVec.set(bounds.size), 0f).length() * 0.5f
+        } else {
+            val toGlobal = modelMatF
+            toGlobal.transform(globalCenterMut.set(bounds.center))
+            globalRadius = toGlobal.transform(tmpVec.set(bounds.size), 0f).length() * 0.5f
+        }
     }
 
     private fun addBoundsToParentBounds(parentBounds: BoundingBoxF) {
@@ -261,10 +267,10 @@ open class Node(name: String? = null) : BaseReleasable() {
             }
 
             val dLocal = bounds.hitDistanceSqr(localRay)
-            if (dLocal < Float.MAX_VALUE) {
+            if (dLocal < Float.POSITIVE_INFINITY) {
                 test.collectHitBoundingBox(this)
-                val dGlobal = toGlobalCoords(tmpVec.set(localRay.direction).mul(sqrt(dLocal)), 0f).sqrLength()
-                if (dGlobal <= test.hitDistanceSqr) {
+                val dGlobal = toGlobalCoords(tmpVec.set(localRay.direction).mul(sqrt(dLocal)), 0f).length()
+                if (dGlobal <= test.hitDistance) {
                     // local bounding box hit, test node content
                     rayTestLocal(test, localRay)
 

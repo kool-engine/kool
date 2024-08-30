@@ -50,8 +50,11 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
     fun focusObject(gameEntity: GameEntity) = focusObjects(listOf(gameEntity))
 
     fun focusObjects(gameEntities: List<GameEntity>) {
+        val flattenedEntities = mutableListOf<GameEntity>()
+        gameEntities.forEach { it.collectChildren(flattenedEntities) }
+
         val bounds = BoundingBoxF()
-        gameEntities.forEach { gameEntity ->
+        flattenedEntities.forEach { gameEntity ->
             val c: Vec3f
             val r: Float
             val sceneNode = gameEntity.getComponent<MeshComponent>()?.sceneNode
@@ -69,6 +72,11 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
             panTarget = bounds.center.toVec3d()
             zoom = bounds.size.length().toDouble() * 0.7
         }
+    }
+
+    private fun GameEntity.collectChildren(result: MutableList<GameEntity>) {
+        result += this
+        children.forEach { it.collectChildren(result) }
     }
 
     override fun handlePointer(pointerState: PointerState, ctx: KoolContext) {

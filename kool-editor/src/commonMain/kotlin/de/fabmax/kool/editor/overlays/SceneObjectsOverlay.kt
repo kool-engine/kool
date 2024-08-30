@@ -276,7 +276,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
 
         dirLightsInstances.addInstances(dirLights)
         spotLightsInstances.addInstances(spotLights)
-        pointLightsInstances.addInstances(spotLights)
+        pointLightsInstances.addInstances(pointLights)
         cameraInstances.addInstances(cameras)
         groupInstances.addInstances(groups)
     }

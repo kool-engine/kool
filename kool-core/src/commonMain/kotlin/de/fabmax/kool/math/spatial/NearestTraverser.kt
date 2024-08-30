@@ -7,10 +7,10 @@ import kotlin.math.max
 import kotlin.math.sqrt
 
 open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
-    var sqrDist = MAX_RADIUS * MAX_RADIUS
+    var sqrDist = Double.POSITIVE_INFINITY
     var nearest: T? = null
 
-    open fun setup(center: Vec3f, maxRadius: Double = MAX_RADIUS): NearestTraverser<T> {
+    open fun setup(center: Vec3f, maxRadius: Double = Double.POSITIVE_INFINITY): NearestTraverser<T> {
         super.setup(center)
         sqrDist = maxRadius * maxRadius
         nearest = null
@@ -62,16 +62,12 @@ open class NearestTraverser<T: Any> : CenterPointTraverser<T>() {
             }
         }
     }
-
-    companion object {
-        val MAX_RADIUS = sqrt(Double.MAX_VALUE)
-    }
 }
 
 open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
     var k = 10
         protected set
-    var radiusSqr = MAX_RADIUS * MAX_RADIUS
+    var radiusSqr = Double.POSITIVE_INFINITY
         protected set
 
     val result = mutableListOf<T>()
@@ -84,7 +80,7 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
 
     private val childLists = ChildNodesWithDistance { pointDistance.nodeSqrDistanceToPoint(it, center) }
 
-    open fun setup(center: Vec3f, k: Int, maxRadius: Double = MAX_RADIUS): KNearestTraverser<T> {
+    open fun setup(center: Vec3f, k: Int, maxRadius: Double = Double.POSITIVE_INFINITY): KNearestTraverser<T> {
         super.setup(center)
         this.k = k
         this.radiusSqr = maxRadius * maxRadius
@@ -178,19 +174,15 @@ open class KNearestTraverser<T: Any> : CenterPointTraverser<T>() {
             return this
         }
     }
-
-    companion object {
-        val MAX_RADIUS = sqrt(Double.MAX_VALUE)
-    }
 }
 
 open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
     val ray = RayD()
     var nearest: T? = null
         protected set
-    var distance = 0.0
+    var distance = Double.POSITIVE_INFINITY
         protected set
-    var distanceSqr = Double.MAX_VALUE
+    var distanceSqr = Double.POSITIVE_INFINITY
         protected set
 
     var rayDistance = object : RayDistance<T> { }
@@ -200,13 +192,14 @@ open class NearestToRayTraverser<T: Any> : SpatialTreeTraverser<T>() {
     open fun setup(ray: RayD): NearestToRayTraverser<T> {
         this.ray.set(ray)
         nearest = null
-        distanceSqr = Double.MAX_VALUE
+        distanceSqr = Double.POSITIVE_INFINITY
+        distance = Double.POSITIVE_INFINITY
         return this
     }
 
     override fun traverse(tree: SpatialTree<T>) {
         super.traverse(tree)
-        distance = if (distanceSqr != Double.MAX_VALUE) sqrt(distanceSqr) else Double.MAX_VALUE
+        distance = if (distanceSqr < Double.POSITIVE_INFINITY) sqrt(distanceSqr) else Double.POSITIVE_INFINITY
     }
 
     override fun traverseChildren(tree: SpatialTree<T>, node: SpatialTree<T>.Node) {
@@ -297,10 +290,10 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
         rayDistance = object : RayDistance<T> {
             override fun itemSqrDistanceToRay(tree: SpatialTree<T>, item: T, ray: RayD): Double {
                 val dist = item.hitDistance(ray.toRayF())
-                return if (dist < Float.MAX_VALUE) {
+                return if (dist < Float.POSITIVE_INFINITY) {
                     (dist * dist).toDouble()
                 } else {
-                    return Double.MAX_VALUE
+                    return Double.POSITIVE_INFINITY
                 }
             }
         }
@@ -323,7 +316,7 @@ open class TriangleHitTraverser<T: Triangle> : NearestToRayTraverser<T>() {
 interface RayDistance<T: Any> {
     fun nodeSqrDistanceToRay(node: SpatialTree<T>.Node, ray: RayD): Double {
         return if (node.isEmpty) {
-            Double.MAX_VALUE
+            Double.POSITIVE_INFINITY
         } else {
             node.bounds.center
             val d = max(0.0, ray.distanceToPoint(node.bounds.center) - node.bounds.size.length() * 0.5)

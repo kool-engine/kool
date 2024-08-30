@@ -179,7 +179,7 @@ class AxisRotationHandle(
             proxyTest.ray.set(test.ray)
             if (triTest.rayTest(proxyTest, localRay)) {
                 val isFrontHit = test.camera?.let { sceneCam ->
-                    val normal = (proxyTest.hitPositionGlobal - globalCenter).normed()
+                    val normal = (proxyTest.hitPositionGlobal.toVec3f() - globalCenter).normed()
                     normal dot sceneCam.globalLookDir < 0.1f
                 } ?: true
 

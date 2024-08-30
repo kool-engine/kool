@@ -20,6 +20,12 @@ fun RayF.transformBy(matrix: Mat4d, result: RayF = this): RayF {
     return result
 }
 
+fun RayD.transformBy(matrix: Mat4f, result: RayD = this): RayD {
+    matrix.transform(origin, 1.0, result.origin)
+    matrix.transform(direction, 0.0, result.direction).norm()
+    return result
+}
+
 // <template> Changes made within the template section will also affect the other type variants of this class
 
 class RayF() {

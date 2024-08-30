@@ -160,7 +160,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
         }
     }
 
-    inner class SelectionPass() : OffscreenRenderPass2d(
+    inner class SelectionPass : OffscreenRenderPass2d(
         // drawNode will be replaced by content scene, once it is loaded
         Node(),
         colorAttachmentDefaultDepth(TexFormat.RG),
@@ -170,7 +170,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
         private val selectionPipelines = mutableMapOf<NodeId, DrawPipeline?>()
 
         init {
-            camera = overlay.camera
+            camera = editor.editorCam
             clearColor = Color.BLACK
             isUpdateDrawNode = false
             isEnabled = true
