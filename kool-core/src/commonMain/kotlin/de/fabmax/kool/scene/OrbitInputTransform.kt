@@ -10,6 +10,7 @@ import de.fabmax.kool.math.spatial.BoundingBoxD
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.animation.ExponentialDecayDouble
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.Viewport
 import kotlin.math.abs
 
 /**
@@ -64,6 +65,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
     var isKeepingStandardTransform = false
     var isInfiniteDragCursor = false
+    var isApplyTranslation = true
 
     var invertRotX = false
     var invertRotY = false
@@ -84,6 +86,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private var dragStart = false
     private val deltaPos = MutableVec2d()
     private var deltaScroll = 0.0
+    private val panStartTranslation = MutableVec3d()
 
     private val ptrPos = MutableVec2d()
     private val panPlane = PlaneD()
@@ -98,7 +101,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val matrixTransform: MatrixTransformD
         get() = transform as MatrixTransformD
 
-    var panSmoothness: Double = 0.5
+    var panSmoothness: Double by panMethod::panDecay
     var zoomRotationDecay: Double = 0.0
         set(value) {
             field = value
@@ -113,8 +116,8 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
-        onUpdate += { (view, ctx) ->
-            doCamTransform(view, ctx)
+        onUpdate += { ev ->
+            doCamTransform(ev.view)
         }
     }
 
@@ -154,7 +157,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         val vr = vertRotAnimator.actual
         val hr = horiRotAnimator.actual
         mouseTransform.setIdentity()
-        mouseTransform.translate(translation.x, translation.y, translation.z)
+        if (isApplyTranslation) {
+            mouseTransform.translate(translation.x, translation.y, translation.z)
+        }
         mouseTransform.scale(z)
         mouseTransform.rotate(vr.deg, verticalAxis)
         mouseTransform.rotate(hr.deg, horizontalAxis)
@@ -166,27 +171,21 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
     }
 
-    private fun doCamTransform(view: RenderPass.View, ctx: KoolContext) {
-        if (dragMethod == DragMethod.PAN && panMethod.computePanPoint(pointerHit, view, ptrPos, ctx)) {
+    private fun doCamTransform(view: RenderPass.View) {
+        if (dragMethod == DragMethod.PAN) {
             if (dragStart) {
                 dragStart = false
+                panMethod.startPan(view, ptrPos)
                 pointerHitStart.set(pointerHit)
+                panStartTranslation.set(translation)
 
                 // stop any ongoing smooth motion, as we start a new one
                 stopSmoothMotion()
 
             } else {
-                val s = (1 - panSmoothness).clamp(0.1, 1.0)
-                tmpVec1.set(pointerHitStart).subtract(pointerHit).mul(s)
+                tmpVec1.set(panMethod.computePan(view, ptrPos))
                 parent?.toLocalCoords(tmpVec1, 0.0)
-
-                // limit panning speed
-                val tLen = tmpVec1.length()
-                if (tLen > view.camera.globalRange * 0.5f) {
-                    tmpVec1.mul(view.camera.globalRange * 0.5f / tLen)
-                }
-
-                translation.add(tmpVec1)
+                translation.set(panStartTranslation).add(tmpVec1)
             }
         } else {
             pointerHit.set(view.camera.globalLookAt)
@@ -210,10 +209,11 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
         val oldZ = zoomAnimator.actual
         val z = zoomAnimator.animate(Time.deltaT)
-        if (!isFuzzyEqual(oldZ, z)
-                && zoomMethod == ZoomMethod.ZOOM_TRANSLATE
-                && panMethod.computePanPoint(pointerHit, view, ptrPos, ctx)) {
-            computeZoomTranslationPerspective(view.camera, oldZ, z)
+        if (!isFuzzyEqual(oldZ, z) && zoomMethod == ZoomMethod.ZOOM_TRANSLATE) {
+            panMethod.startPan(view, ptrPos)
+            if (panMethod.computePanPoint(view, ptrPos, pointerHit)) {
+                computeZoomTranslationPerspective(view.camera, oldZ, z)
+            }
         }
 
         vertRotAnimator.animate(Time.deltaT)
@@ -306,38 +306,111 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 }
 
 abstract class PanBase {
-    abstract fun computePanPoint(result: MutableVec3d, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean
+    private val invViewProj = MutableMat4d()
+    private val pointerRay = RayD()
+    private val tmpVec3d = MutableVec3d()
+    private val tmpVec4d = MutableVec4d()
+
+    private val startPanPos = MutableVec3d()
+    private val panPos = MutableVec3d()
+    private val pan = MutableVec3d()
+
+    var panDecay = 50.0
+
+    open fun startPan(view: RenderPass.View, ptrPos: Vec2d) {
+        invViewProj.set(view.camera.dataD.lazyInvViewProj.get())
+        computePanPoint(view, ptrPos, startPanPos)
+        pan.set(Vec3f.ZERO)
+    }
+
+    open fun computePan(view: RenderPass.View, ptrPos: Vec2d): Vec3d {
+        if (computePanPoint(view, ptrPos, panPos)) {
+            tmpVec3d.set(startPanPos).subtract(panPos)
+            pan.expDecay(tmpVec3d, panDecay)
+        }
+        return pan
+    }
+
+    abstract fun computePanPoint(view: RenderPass.View, ptrPos: Vec2d, result: MutableVec3d): Boolean
+
+    protected fun computePickRay(ptrPos: Vec2d, viewport: Viewport): RayD? {
+        var valid = unProjectScreen(tmpVec3d.set(ptrPos.x, ptrPos.y, 0.0), viewport, pointerRay.origin)
+        valid = valid && unProjectScreen(tmpVec3d.set(ptrPos.x, ptrPos.y, 1.0), viewport, pointerRay.direction)
+        if (valid) {
+            pointerRay.direction.subtract(pointerRay.origin)
+            pointerRay.direction.norm()
+            return pointerRay
+        } else {
+            return null
+        }
+    }
+
+    private fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
+        val x = screen.x - viewport.x
+        val y = viewport.y + viewport.height - screen.y
+        val z = screen.z
+
+        tmpVec4d.set(2.0 * x / viewport.width - 1.0, 2.0 * y / viewport.height - 1.0, z, 1.0)
+        invViewProj.transform(tmpVec4d)
+        val s = 1.0 / tmpVec4d.w
+        result.set(tmpVec4d.x * s, tmpVec4d.y * s, tmpVec4d.z * s)
+        return true
+    }
 }
 
 class CameraOrthogonalPan : PanBase() {
-    val panPlane = PlaneD()
-    private val pointerRay = RayD()
+    private val panPlane = PlaneD()
 
-    override fun computePanPoint(result: MutableVec3d, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
+    override fun startPan(view: RenderPass.View, ptrPos: Vec2d) {
         panPlane.p.set(view.camera.globalLookAt)
         panPlane.n.set(view.camera.globalLookDir)
-        return view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport) &&
-                panPlane.intersectionPoint(pointerRay, result)
+        super.startPan(view, ptrPos)
+    }
+
+    override fun computePanPoint(view: RenderPass.View, ptrPos: Vec2d, result: MutableVec3d): Boolean {
+        val ray = computePickRay(ptrPos, view.viewport) ?: return false
+        return panPlane.intersectionPoint(ray, result)
     }
 }
 
 class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
-    val panPlane = PlaneD()
-    private val pointerRay = RayD()
+    private val panPlane = PlaneD()
+
+    private val prevPan = MutableVec3d()
+    private val deltaPan = MutableVec3d()
+    private val panLimited = MutableVec3d()
 
     init {
         panPlane.n.set(planeNormal)
     }
 
-    override fun computePanPoint(result: MutableVec3d, view: RenderPass.View, ptrPos: Vec2d, ctx: KoolContext): Boolean {
+    override fun startPan(view: RenderPass.View, ptrPos: Vec2d) {
         panPlane.p.set(view.camera.globalLookAt)
-        if (!view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport)) {
+        prevPan.set(Vec3f.ZERO)
+        super.startPan(view, ptrPos)
+    }
+
+    override fun computePanPoint(view: RenderPass.View, ptrPos: Vec2d, result: MutableVec3d): Boolean {
+        val ray = computePickRay(ptrPos, view.viewport) ?: return false
+        if (abs(ray.direction dot panPlane.n) < 0.01) {
             return false
         }
-        if (abs(pointerRay.direction dot panPlane.n) < 0.01) {
-            return false
+        return panPlane.intersectionPoint(ray, result)
+    }
+
+    override fun computePan(view: RenderPass.View, ptrPos: Vec2d): Vec3d {
+        panLimited.set(super.computePan(view, ptrPos))
+        deltaPan.set(panLimited).subtract(prevPan)
+
+        // limit panning speed
+        val tLen = deltaPan.length()
+        if (tLen > view.camera.globalRange * 0.5f) {
+            deltaPan.mul(view.camera.globalRange * 0.5f / tLen)
+            panLimited.set(prevPan).add(deltaPan)
         }
-        return panPlane.intersectionPoint(pointerRay, result)
+        prevPan.set(panLimited)
+
+        return panLimited
     }
 }
 
