@@ -131,12 +131,10 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun computePickRay(pickRay: RayD, screenX: Float, screenY: Float, viewport: Viewport): Boolean {
         var valid = unProjectScreen(tmpVec3d.set(screenX.toDouble(), screenY.toDouble(), 0.0), viewport, pickRay.origin)
         valid = valid && unProjectScreen(tmpVec3d.set(screenX.toDouble(), screenY.toDouble(), 1.0), viewport, pickRay.direction)
-
         if (valid) {
             pickRay.direction.subtract(pickRay.origin)
             pickRay.direction.norm()
         }
-
         return valid
     }
 
@@ -232,8 +230,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
     fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
         val x = screen.x - viewport.x
         val y = viewport.y + viewport.height - screen.y
+        val z = screen.z
 
-        tmpVec4d.set(2.0 * x / viewport.width - 1.0, 2.0 * y / viewport.height - 1.0, 2.0 * screen.z - 1.0, 1.0)
+        tmpVec4d.set(2.0 * x / viewport.width - 1.0, 2.0 * y / viewport.height - 1.0, z, 1.0)
         dataD.lazyInvViewProj.get().transform(tmpVec4d)
         val s = 1.0 / tmpVec4d.w
         result.set(tmpVec4d.x * s, tmpVec4d.y * s, tmpVec4d.z * s)
