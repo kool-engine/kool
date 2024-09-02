@@ -66,7 +66,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val loadedApp = mutableStateOf<LoadedApp?>(null)
     val activeScene = mutableStateOf<EditorScene?>(null)
 
-    val editorCam = PerspectiveCamera()
+    val editorCam = PerspectiveCamera(name = "editor-cam")
     val overlayScene = OverlayScene(this).apply { camera = editorCam }
     val selectionOverlay: SelectionOverlay get() = overlayScene.selection
     val gizmoOverlay: TransformGizmoOverlay get() = overlayScene.gizmo
@@ -75,9 +75,11 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val editMode = EditorEditMode(this)
 
     val editorCameraTransform = EditorCamTransform(this)
-    private val editorBackgroundScene = scene("editor-camera") {
+    private val editorBackgroundScene = scene("editor-background") {
+        tryEnableInfiniteDepth()
         addNode(editorCameraTransform)
         clearColor = Color.BLACK
+        camera = editorCam
         clearDepth = false
     }
 
@@ -289,8 +291,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                     editorCameraTransform.maxZoom = 1e15
                 }
                 editorScene.sceneComponent.setCamera(editorCam)
-
-                editorCameraTransform.addNode(scene.camera)
                 ui.sceneView.applyViewportTo(scene)
             }
         }

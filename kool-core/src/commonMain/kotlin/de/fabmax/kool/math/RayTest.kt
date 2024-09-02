@@ -11,6 +11,7 @@ class RayTest(isCollectHits: Boolean = false) {
     val hitNormalGlobal = MutableVec3d()
 
     private val tmpRayF = RayF()
+    private val tmpRayD = RayD()
     private val tmpHitPoint = MutableVec3d()
     private val tmpVec = MutableVec3d()
 
@@ -70,7 +71,7 @@ class RayTest(isCollectHits: Boolean = false) {
     }
 
     fun getRayTransformed(matrix: Mat4d): RayF {
-        return ray.toRayF(tmpRayF).transformBy(matrix)
+        return ray.transformBy(matrix, tmpRayD).toRayF(tmpRayF)
     }
 
     fun collectHitBoundingSphere(node: Node) {

@@ -1,9 +1,9 @@
 package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.editor.components.MeshComponent
-import de.fabmax.kool.editor.components.globalToLocalF
 import de.fabmax.kool.editor.components.localToGlobalD
 import de.fabmax.kool.editor.components.localToGlobalF
+import de.fabmax.kool.editor.components.viewToLocalD
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Mesh
@@ -24,7 +24,7 @@ class SceneHitTest(val scene: EditorScene) {
         val meshes = meshComponents
         for (i in meshes.indices) {
             val mesh = meshes[i]
-            if (mesh.hitTest(rayTest)) {
+            if (mesh.gameEntity.isVisible && mesh.hitTest(rayTest)) {
                 hitEntity = mesh.gameEntity
             }
         }
@@ -33,7 +33,7 @@ class SceneHitTest(val scene: EditorScene) {
 
     private fun MeshComponent.hitTest(rayTest: RayTest): Boolean {
         val node = sceneNode ?: return false
-        val localRay = rayTest.getRayTransformed(gameEntity.globalToLocalF)
+        val localRay = rayTest.getRayTransformed(gameEntity.viewToLocalD)
         val hitDistSqr = node.bounds.hitDistanceSqr(localRay)
         if (hitDistSqr < Float.POSITIVE_INFINITY) {
             val dGlobal = gameEntity.localToGlobalD

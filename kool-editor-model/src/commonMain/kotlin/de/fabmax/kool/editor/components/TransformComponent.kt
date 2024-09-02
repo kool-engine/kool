@@ -24,6 +24,7 @@ class TransformComponent(
     private val changeListeners by cachedEntityComponents<ListenerComponent>()
 
     val globalTransform = SyncedMatrixFd()
+    val viewTransform = SyncedMatrixFd()
     var transform: Transform = createTransform()
         set(value) {
             field = value
@@ -58,7 +59,9 @@ class TransformComponent(
 
     fun updateTransform() {
         val parentModelMat = gameEntity.parent?.localToGlobalD ?: Mat4d.IDENTITY
+        //val parentModelMat = gameEntity.parent?.localToGlobalD ?: gameEntity.scene.sceneOrigin.matrixD
         globalTransform.setMatD { parentModelMat.mul(transform.matrixD, it) }
+        viewTransform.setMatD { gameEntity.scene.sceneOrigin.matrixD.mul(globalTransform.matD, it) }
     }
 
     fun updateTransformRecursive() {
@@ -100,3 +103,8 @@ fun GameEntity.toGlobalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = 
 fun GameEntity.toGlobalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = localToGlobalD.transform(vec, w)
 fun GameEntity.toLocalCoords(vec: MutableVec3f, w: Float = 1f): MutableVec3f = globalToLocalF.transform(vec, w)
 fun GameEntity.toLocalCoords(vec: MutableVec3d, w: Double = 1.0): MutableVec3d = globalToLocalD.transform(vec, w)
+
+val GameEntity.localToViewF: Mat4f get() = transform.viewTransform.matF
+val GameEntity.localToViewD: Mat4d get() = transform.viewTransform.matD
+val GameEntity.viewToLocalF: Mat4f get() = transform.viewTransform.invF
+val GameEntity.viewToLocalD: Mat4d get() = transform.viewTransform.invD

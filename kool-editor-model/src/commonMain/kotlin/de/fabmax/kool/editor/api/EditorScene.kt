@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logE
@@ -39,6 +40,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         }
 
     val hitTest = SceneHitTest(this)
+    val sceneOrigin = TrsTransformD()
 
     val listenerComponents = mutableListOf<Any>(sceneNodes)
 
