@@ -306,6 +306,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 }
 
 abstract class PanBase {
+    private var camFar = 1000.0
+    private var isZeroToOneDepth = false
+    private var isReverseDepth = false
     private val invViewProj = MutableMat4d()
     private val pointerRay = RayD()
     private val tmpVec3d = MutableVec3d()
@@ -318,6 +321,9 @@ abstract class PanBase {
     var panDecay = 50.0
 
     open fun startPan(view: RenderPass.View, ptrPos: Vec2d) {
+        camFar = view.camera.clipFar.toDouble()
+        isZeroToOneDepth = view.camera.isZeroToOneDepth
+        isReverseDepth = view.camera.isReverseDepthProjection
         invViewProj.set(view.camera.dataD.lazyInvViewProj.get())
         computePanPoint(view, ptrPos, startPanPos)
         pan.set(Vec3f.ZERO)
@@ -336,6 +342,7 @@ abstract class PanBase {
     protected fun computePickRay(ptrPos: Vec2d, viewport: Viewport): RayD? {
         var valid = unProjectScreen(tmpVec3d.set(ptrPos.x, ptrPos.y, 0.0), viewport, pointerRay.origin)
         valid = valid && unProjectScreen(tmpVec3d.set(ptrPos.x, ptrPos.y, 1.0), viewport, pointerRay.direction)
+
         if (valid) {
             pointerRay.direction.subtract(pointerRay.origin)
             pointerRay.direction.norm()
@@ -345,12 +352,30 @@ abstract class PanBase {
         }
     }
 
-    private fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
-        val x = screen.x - viewport.x
-        val y = viewport.y + viewport.height - screen.y
-        val z = screen.z
+    private fun unProject(proj: Vec4d, viewport: Viewport, result: MutableVec3d): Boolean {
+        val x = proj.x - viewport.x
+        val y = viewport.y + viewport.height - proj.y
 
-        tmpVec4d.set(2.0 * x / viewport.width - 1.0, 2.0 * y / viewport.height - 1.0, z, 1.0)
+        tmpVec4d.set((2.0 * x / viewport.width - 1.0) * proj.w, (2.0 * y / viewport.height - 1.0) * proj.w, proj.z, proj.w)
+        invViewProj.transform(tmpVec4d)
+        val s = 1.0 / tmpVec4d.w
+        result.set(tmpVec4d.x * s, tmpVec4d.y * s, tmpVec4d.z * s)
+        return true
+    }
+
+    open fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
+        val viewX = screen.x - viewport.x
+        val viewY = viewport.y + viewport.height - screen.y
+        val x = 2f * viewX / viewport.width - 1f
+        val y = 2f * viewY / viewport.height - 1f
+        val z = if (isZeroToOneDepth) screen.z else 2f * screen.z - 1f
+
+        if (isReverseDepth) {
+            val w = camFar * z
+            tmpVec4d.set(x * w, y * w, 1.0, w)
+        } else {
+            tmpVec4d.set(x, y, z, 1.0)
+        }
         invViewProj.transform(tmpVec4d)
         val s = 1.0 / tmpVec4d.w
         result.set(tmpVec4d.x * s, tmpVec4d.y * s, tmpVec4d.z * s)
