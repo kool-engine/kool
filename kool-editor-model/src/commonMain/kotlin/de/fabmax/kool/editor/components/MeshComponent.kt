@@ -39,7 +39,7 @@ class MeshComponent(
     }
 
     fun addInstanceData(target: Float32Buffer) {
-        gameEntity.localToGlobalF.putTo(target)
+        gameEntity.localToViewF.putTo(target)
     }
 
     override suspend fun applyComponent() {

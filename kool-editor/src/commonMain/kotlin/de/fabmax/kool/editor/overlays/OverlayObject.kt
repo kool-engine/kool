@@ -2,7 +2,7 @@ package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.components.localToGlobalD
+import de.fabmax.kool.editor.components.localToViewD
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
@@ -11,7 +11,7 @@ import de.fabmax.kool.util.Float32Buffer
 abstract class OverlayObject(val gameEntity: GameEntity) {
     abstract val color: Color
 
-    val modelMat: Mat4d get() = gameEntity.localToGlobalD
+    private val modelMat: Mat4d get() = gameEntity.localToViewD
 
     private val invModelMat = MutableMat4d()
 

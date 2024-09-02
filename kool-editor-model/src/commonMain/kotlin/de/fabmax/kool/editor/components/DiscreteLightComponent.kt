@@ -24,7 +24,7 @@ class DiscreteLightComponent(
         private set
 
     private val entityTransformUpdateCb: (RenderPass.UpdateEvent) -> Unit = {
-        light.transform.setMatrix(gameEntity.transform.globalTransform.matF)
+        light.transform.setMatrix(gameEntity.localToViewF)
     }
 
     override suspend fun applyComponent() {

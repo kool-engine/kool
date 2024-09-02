@@ -4,7 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.MeshComponent
-import de.fabmax.kool.editor.components.localToGlobalF
+import de.fabmax.kool.editor.components.localToViewF
 import de.fabmax.kool.editor.ui.UiColors
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.math.RayTest
@@ -280,7 +280,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                 for (i in selectedInstances.indices) {
                     val inst = selectedInstances[i]
                     if (inst.component.sceneNode?.id == nodeId) {
-                        inst.component.gameEntity.localToGlobalF.putTo(buf)
+                        inst.component.gameEntity.localToViewF.putTo(buf)
                         buf.put(inst.type.mask.toFloat())
                         buf.put((inst.id and 0x7fffff).toFloat())
                         buf.put(0f)
