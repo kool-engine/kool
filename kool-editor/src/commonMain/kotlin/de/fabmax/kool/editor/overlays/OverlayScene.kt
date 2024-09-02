@@ -10,7 +10,7 @@ import de.fabmax.kool.scene.Scene
 
 class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverlay {
 
-    val grid = GridOverlay()
+    val grid = GridOverlay(this)
     val selection = SelectionOverlay(this)
     val gizmo = TransformGizmoOverlay(this)
     val sceneObjects = SceneObjectsOverlay()
