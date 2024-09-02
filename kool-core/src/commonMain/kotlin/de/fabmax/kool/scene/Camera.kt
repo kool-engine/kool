@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.RenderPass
@@ -42,6 +43,11 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var clipNear = 0.1f
     var clipFar = 1000f
 
+    val isZeroToOneDepth: Boolean
+        get() = KoolSystem.getContextOrNull()?.backend?.depthRange == DepthRange.ZERO_TO_ONE
+    var isReverseDepthProjection = false
+        protected set
+
     val proj = MutableMat4f()
     private val lazyInvProj = LazyMat4f { proj.invert(it) }
     val invProj: Mat4f get() = lazyInvProj.get()
@@ -81,6 +87,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     open fun updateCamera(updateEvent: RenderPass.UpdateEvent) {
+        isReverseDepthProjection = updateEvent.renderPass.isReverseDepth
         if (useViewportAspectRatio) {
             aspectRatio = updateEvent.view.viewport.aspectRatio
         }
@@ -187,15 +194,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return projectOk
     }
 
-    fun unProjectScreen(screen: Vec3f, viewport: Viewport, result: MutableVec3f): Boolean {
-        val x = screen.x - viewport.x
-        val y = viewport.y + viewport.height - screen.y
-
-        tmpVec4.set(2f * x / viewport.width - 1f, 2f * y / viewport.height - 1f, 2f * screen.z - 1f, 1f)
-        invViewProj.transform(tmpVec4)
-        val s = 1f / tmpVec4.w
-        result.set(tmpVec4.x * s, tmpVec4.y * s, tmpVec4.z * s)
-        return true
+    open fun unProjectScreen(screen: Vec3f, viewport: Viewport, result: MutableVec3f): Boolean {
+        if (unProjectScreen(tmpVec3d.set(screen), viewport, tmpVec3d)) {
+            result.set(tmpVec3d)
+            return true
+        }
+        return false
     }
 
     fun project(world: Vec3d, result: MutableVec3d): Boolean {
@@ -227,25 +231,23 @@ abstract class Camera(name: String = "camera") : Node(name) {
         return projectOk
     }
 
-    fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
-        val x = screen.x - viewport.x
-        val y = viewport.y + viewport.height - screen.y
-        val z = screen.z
+    open fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {
+        val viewX = screen.x - viewport.x
+        val viewY = viewport.y + viewport.height - screen.y
+        val x = 2f * viewX / viewport.width - 1f
+        val y = 2f * viewY / viewport.height - 1f
+        val z = if (isZeroToOneDepth) screen.z else 2f * screen.z - 1f
 
-        tmpVec4d.set(2.0 * x / viewport.width - 1.0, 2.0 * y / viewport.height - 1.0, z, 1.0)
+        if (isReverseDepthProjection) {
+            val w = clipFar * z
+            tmpVec4d.set(x * w, y * w, 1.0, w)
+        } else {
+            tmpVec4d.set(x, y, z, 1.0)
+        }
         dataD.lazyInvViewProj.get().transform(tmpVec4d)
         val s = 1.0 / tmpVec4d.w
         result.set(tmpVec4d.x * s, tmpVec4d.y * s, tmpVec4d.z * s)
         return true
-    }
-
-    companion object {
-        val PROJ_CORRECTION_ZERO_TO_ONE = Mat4f(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 0.5f, 0.5f,
-            0.0f, 0.0f, 0.0f, 1.0f
-        )
     }
 
     inner class DataF {
@@ -386,6 +388,10 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     }
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
+        check(!isReverseDepthProjection) {
+            "Reverse depth is not yet implemented for orthographic cameras"
+        }
+
         if (left != right && bottom != top && clipNear != clipFar) {
             proj.setIdentity()
             if (updateEvent.renderPass.isMirrorY) {
@@ -436,9 +442,6 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     var fovX = 0f.deg
         private set
 
-    var isReverseDepthProjection = false
-        private set
-
     private var sphereFacX = 1f
     private var sphereFacY = 1f
     private var tangX = 1f
@@ -450,8 +453,6 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
     private var complainedAboutDepthRange = false
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
-        isReverseDepthProjection = updateEvent.renderPass.isReverseDepth
-
         proj.setIdentity()
         if (updateEvent.renderPass.isMirrorY) {
             proj.m11 *= -1f
