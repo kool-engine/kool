@@ -3,8 +3,8 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.editor.EditorKeyListener
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.components.globalToLocalD
-import de.fabmax.kool.editor.components.localToGlobalD
+import de.fabmax.kool.editor.components.localToViewD
+import de.fabmax.kool.editor.components.viewToLocalD
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_ACCURATE
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.SPEED_MOD_NORMAL
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay.Companion.TICK_NO_TICK
@@ -135,9 +135,9 @@ class TransformGizmoOverlay(val overlay: OverlayScene) : Node("Transform gizmo")
 
 class GizmoClientEntity(val gameEntity: GameEntity) : GizmoClient {
     override val clientTransform: Transform get() = gameEntity.transform.transform
-    override val localToGlobal: Mat4d get() = gameEntity.localToGlobalD
-    override val parentToGlobal: Mat4d get() = gameEntity.parent?.localToGlobalD ?: Mat4d.IDENTITY
-    override val globalToParent: Mat4d get() = gameEntity.parent?.globalToLocalD ?: Mat4d.IDENTITY
+    override val localToGlobal: Mat4d get() = gameEntity.localToViewD
+    override val parentToGlobal: Mat4d get() = gameEntity.parent?.localToViewD ?: Mat4d.IDENTITY
+    override val globalToParent: Mat4d get() = gameEntity.parent?.viewToLocalD ?: Mat4d.IDENTITY
 
     override fun updateMatrices() {
         gameEntity.transform.updateTransformRecursive()
