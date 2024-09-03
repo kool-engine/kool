@@ -1,7 +1,11 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
-import de.fabmax.kool.math.*
+import de.fabmax.kool.editor.overlays.GridOverlay.PlaneOffset
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.smoothStep
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
@@ -9,38 +13,49 @@ import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.vertexAttribFloat4
-import de.fabmax.kool.scene.*
+import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.LineMesh
+import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.addLineMesh
 import de.fabmax.kool.util.Color
 import kotlin.math.roundToLong
 
 class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverlay {
     private val editor: KoolEditor get() = overlay.editor
 
+    private val xPlaneShader = GridShader()
     private val yPlaneShader = GridShader()
-    private val gridTransform = TrsTransformD()
+    private val zPlaneShader = GridShader()
 
-    private val yPlaneGrid: LineMesh
-    private val camPos = MutableVec3d()
-    private val camLookAt = MutableVec3d()
+    val xPlaneGrid: LineMesh
+    val yPlaneGrid: LineMesh
+    val zPlaneGrid: LineMesh
 
     init {
-        yPlaneGrid = addLineMesh("Y-Plane") {
-            makeGrid()
+        xPlaneGrid = addLineMesh("x-plane") {
+            makeGrid(Vec3f.Y_AXIS, Vec3f.Z_AXIS)
+            shader = xPlaneShader
+            isVisible = false
+        }
+        yPlaneGrid = addLineMesh("y-plane") {
+            makeGrid(Vec3f.X_AXIS, Vec3f.Z_AXIS)
             shader = yPlaneShader
-            transform = gridTransform
+        }
+        zPlaneGrid = addLineMesh("z-plane") {
+            makeGrid(Vec3f.X_AXIS, Vec3f.Y_AXIS)
+            shader = zPlaneShader
+            isVisible = false
         }
 
         onUpdate {
-            updateShader(it.camera, yPlaneShader)
+            updateShader(it.camera, xPlaneShader, planeOffsetX)
+            updateShader(it.camera, yPlaneShader, planeOffsetY)
+            updateShader(it.camera, zPlaneShader, planeOffsetZ)
         }
     }
 
-    private fun updateShader(cam: Camera, shader: GridShader) {
-        val sceneOrigin = editor.activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
-
-        camPos.set(cam.globalPos)
-        camLookAt.set(cam.globalLookAt)
-        val scale = camPos.distance(camLookAt) / 32
+    private fun updateShader(cam: Camera, shader: GridShader, planeOffset: PlaneOffset) {
+        val scale = cam.globalPos.distance(cam.globalLookAt) / 32
         var sDiscrete = 1.0 / 32.0
         while (sDiscrete < scale) {
             sDiscrete *= 4.0
@@ -48,44 +63,65 @@ class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverl
         val lowerDiscrete = sDiscrete / 4f
         val wx = ((scale - lowerDiscrete) / (sDiscrete - lowerDiscrete)).toFloat()
 
-        val mod = 32.0 * sDiscrete
-        val offsetX = (camPos.x / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.x % mod
-        val offsetZ = (camPos.z / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.z % mod
-        val offsetY = sceneOrigin.y
-
-        shader.posOffset = Vec3f(offsetX.toFloat(), offsetY.toFloat(), offsetZ.toFloat())
-        shader.scale = Vec2f(scale.toFloat(), sDiscrete.toFloat())
+        shader.posOffset = planeOffset.computeOffset(cam, sDiscrete)
+        shader.scale = Vec2f(scale, sDiscrete.toFloat())
         shader.majorWeight = smoothStep(0f, 0.1f, wx) * 0.75f + smoothStep(0.8f, 1f, wx) * 0.25f
         shader.superTickColor = editor.ui.uiColors.value.primaryVariant.withAlpha(0.4f)
     }
 
-    private fun LineMesh.makeGrid() {
+    private fun LineMesh.makeGrid(baseA: Vec3f, baseB: Vec3f) {
         isFrustumChecked = false
         val superTick = Color.MAGENTA
         val majorColor = Color.RED
         val minorColor = Color.GREEN
         val n = GRID_N
+        val fn = n.toFloat()
 
-        for (x in -n..n) {
+        for (i in -n..n) {
+            val fi = i.toFloat()
             val color = when {
-                x % 32 == 0 -> superTick
-                x % 4 == 0 -> majorColor
+                i % 32 == 0 -> superTick
+                i % 4 == 0 -> majorColor
                 else -> minorColor
             }
-            addLine(Vec3f(x.toFloat(), 0f, -n.toFloat()), Vec3f(x.toFloat(), 0f, n.toFloat()), color)
+            addLine(baseA * fi + baseB * -fn, baseA * fi + baseB * fn, color)
+            addLine(baseB * fi + baseA * -fn, baseB * fi + baseA * fn, color)
         }
-        for (z in -n..n) {
-            val color = when {
-                z % 32 == 0 -> superTick
-                z % 4 == 0 -> majorColor
-                else -> minorColor
-            }
-            addLine(Vec3f(-n.toFloat(), 0f, z.toFloat()), Vec3f(n.toFloat(), 0f, z.toFloat()), color)
-        }
+    }
+
+    private val planeOffsetX = PlaneOffset { cam, sDiscrete ->
+        val sceneOrigin = editor.activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
+        val mod = 32.0 * sDiscrete
+        val offsetY = (cam.globalPos.y / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.y % mod
+        val offsetZ = (cam.globalPos.z / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.z % mod
+        val offsetX = sceneOrigin.x
+        Vec3f(offsetX.toFloat(), offsetY.toFloat(), offsetZ.toFloat())
+    }
+
+    private val planeOffsetY = PlaneOffset { cam, sDiscrete ->
+        val sceneOrigin = editor.activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
+        val mod = 32.0 * sDiscrete
+        val offsetX = (cam.globalPos.x / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.x % mod
+        val offsetZ = (cam.globalPos.z / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.z % mod
+        val offsetY = sceneOrigin.y
+        Vec3f(offsetX.toFloat(), offsetY.toFloat(), offsetZ.toFloat())
+    }
+
+    private val planeOffsetZ = PlaneOffset { cam, sDiscrete ->
+        val sceneOrigin = editor.activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
+        val mod = 32.0 * sDiscrete
+        val offsetX = (cam.globalPos.x / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.x % mod
+        val offsetY = (cam.globalPos.y / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.y % mod
+        val offsetZ = sceneOrigin.z
+        Vec3f(offsetX.toFloat(), offsetY.toFloat(), offsetZ.toFloat())
     }
 
     companion object {
         private const val GRID_N = 400
+    }
+
+    private fun interface PlaneOffset {
+        fun computeOffset(cam: Camera, sDiscrete: Double): Vec3f
     }
 
     private class GridShader : KslShader("grid-shader") {
