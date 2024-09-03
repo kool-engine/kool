@@ -7,9 +7,9 @@ import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.data.JointData
 import de.fabmax.kool.editor.data.LightTypeData
 import de.fabmax.kool.editor.data.ShapeData
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec3d
 
-fun addSceneObjectMenu(label: String, parent: GameEntity?, position: Vec3f? = null) = SubMenuItem<GameEntity?>(label, Icons.small.plus) {
+fun addSceneObjectMenu(label: String, parent: GameEntity?, position: Vec3d? = null) = SubMenuItem<GameEntity?>(label, Icons.small.plus) {
     val editor = KoolEditor.instance
     val scene = editor.activeScene.value ?: return@SubMenuItem
 

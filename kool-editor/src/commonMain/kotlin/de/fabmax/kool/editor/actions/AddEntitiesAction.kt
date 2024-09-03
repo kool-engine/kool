@@ -4,12 +4,14 @@ import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.api.toHierarchy
 import de.fabmax.kool.editor.components.globalToLocalD
 import de.fabmax.kool.editor.data.*
+import de.fabmax.kool.editor.globalLookAt
 import de.fabmax.kool.editor.util.gameEntity
-import de.fabmax.kool.math.*
+import de.fabmax.kool.math.MutableVec3d
+import de.fabmax.kool.math.QuatD
+import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.util.launchOnMainThread
 
 class AddEntitiesAction(
@@ -40,15 +42,15 @@ class AddEntitiesAction(
     }
 }
 
-private fun makeTransformComponent(parent: GameEntity?, position: Vec3f?, rotation: QuatD = QuatD.IDENTITY): ComponentInfo<TransformComponentData> {
+private fun makeTransformComponent(parent: GameEntity?, position: Vec3d?, rotation: QuatD = QuatD.IDENTITY): ComponentInfo<TransformComponentData> {
     val editor = KoolEditor.instance
-    val globalPos = position ?: editor.overlayScene.lastPickPosition ?: editor.activeScene.value?.scene?.camera?.globalLookAt ?: Vec3f.ZERO
-    val localPos = parent?.globalToLocalD?.transform(MutableVec3d(globalPos.toVec3d())) ?: globalPos.toVec3d()
+    val globalPos = position ?: editor.overlayScene.lastPickPosition ?: editor.globalLookAt
+    val localPos = parent?.globalToLocalD?.transform(MutableVec3d(globalPos)) ?: globalPos
     val transform = TransformData(Vec3Data(localPos), Vec4Data(rotation), Vec3Data(Vec3d.ONES))
     return ComponentInfo(TransformComponentData(transform), displayOrder = 0)
 }
 
-fun EditorScene.addMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3f? = null) {
+fun EditorScene.addMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3d? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val shapeName = (meshShape as? ShapeData.Model)?.modelPath
@@ -62,7 +64,7 @@ fun EditorScene.addMesh(parent: GameEntity?, meshShape: ShapeData, pos: Vec3f? =
     AddEntitiesAction(listOf(entityData)).apply()
 }
 
-fun EditorScene.addJoint(parent: GameEntity?, joint: JointData, pos: Vec3f? = null) {
+fun EditorScene.addJoint(parent: GameEntity?, joint: JointData, pos: Vec3d? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val entityData = GameEntityData(id, parentId, GameEntitySettings(project.uniquifyName(joint::class.simpleName ?: "joint")))
@@ -72,7 +74,7 @@ fun EditorScene.addJoint(parent: GameEntity?, joint: JointData, pos: Vec3f? = nu
     AddEntitiesAction(listOf(entityData)).apply()
 }
 
-fun EditorScene.addLight(parent: GameEntity?, lightType: LightTypeData, pos: Vec3f? = null) {
+fun EditorScene.addLight(parent: GameEntity?, lightType: LightTypeData, pos: Vec3d? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val name = project.uniquifyName(lightType.name)
@@ -84,7 +86,7 @@ fun EditorScene.addLight(parent: GameEntity?, lightType: LightTypeData, pos: Vec
     AddEntitiesAction(listOf(entityData)).apply()
 }
 
-fun EditorScene.addCamera(parent: GameEntity?, pos: Vec3f? = null) {
+fun EditorScene.addCamera(parent: GameEntity?, pos: Vec3d? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val name = project.uniquifyName("Camera")
@@ -95,7 +97,7 @@ fun EditorScene.addCamera(parent: GameEntity?, pos: Vec3f? = null) {
     AddEntitiesAction(listOf(entityData)).apply()
 }
 
-fun EditorScene.addEmptyNode(parent: GameEntity?, pos: Vec3f? = null) {
+fun EditorScene.addEmptyNode(parent: GameEntity?, pos: Vec3d? = null) {
     val id = project.nextId()
     val parentId = parent?.id ?: sceneEntity.id
     val name = project.uniquifyName("Empty")
