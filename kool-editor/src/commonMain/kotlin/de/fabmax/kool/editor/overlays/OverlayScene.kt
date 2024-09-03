@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.scene
+import de.fabmax.kool.editor.sceneOrigin
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Scene
@@ -18,7 +19,7 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
 
     var currentScene: EditorScene? = null
         private set
-    var lastPickPosition: Vec3f? = null
+    var lastPickPosition: Vec3d? = null
         private set
 
     private val overlays: List<EditorOverlay> = listOf(
@@ -55,7 +56,7 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
                 val hitEntity = overlays[i].pick(rayTest)
                 if (rayTest.isHit && rayTest.hitDistance < hitDist) {
                     hitDist = rayTest.hitDistance
-                    lastPickPosition = rayTest.hitPositionGlobal.toVec3f()
+                    lastPickPosition = rayTest.hitPositionGlobal - editor.sceneOrigin
                     selectedEntity = hitEntity
                 }
             }
@@ -63,10 +64,10 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
 
             if (lastPickPosition == null) {
                 val cam = editorScene.scene.camera
-                val camPlane = PlaneF(cam.globalLookAt, cam.globalLookDir)
-                val pickPos = MutableVec3f()
-                camPlane.intersectionPoint(rayTest.ray.toRayF(), pickPos)
-                lastPickPosition = pickPos
+                val camPlane = PlaneD(cam.globalLookAt.toVec3d(), cam.globalLookDir.toVec3d())
+                val pickPos = MutableVec3d()
+                camPlane.intersectionPoint(rayTest.ray, pickPos)
+                lastPickPosition = pickPos - editor.sceneOrigin
             }
         }
     }

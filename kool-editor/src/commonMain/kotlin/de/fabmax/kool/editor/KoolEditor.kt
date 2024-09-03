@@ -12,6 +12,8 @@ import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
 import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.input.InputStack
+import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.toVec3d
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
 import de.fabmax.kool.modules.filesystem.copyRecursively
 import de.fabmax.kool.modules.filesystem.toZip
@@ -59,6 +61,9 @@ suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor
     }
     return KoolEditor(projectFiles, EditorProject(data), ctx)
 }
+
+val KoolEditor.sceneOrigin: Vec3d get() = activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
+val KoolEditor.globalLookAt: Vec3d get() = activeScene.value?.let { it.scene.camera.globalLookAt.toVec3d() - sceneOrigin } ?: Vec3d.ZERO
 
 class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject, val ctx: KoolContext) {
     init { instance = this }

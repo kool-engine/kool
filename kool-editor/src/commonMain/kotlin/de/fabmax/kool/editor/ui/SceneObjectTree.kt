@@ -7,10 +7,9 @@ import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.actions.deleteNode
 import de.fabmax.kool.editor.api.EditorScene
 import de.fabmax.kool.editor.api.GameEntity
-import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.components.*
+import de.fabmax.kool.editor.globalLookAt
 import de.fabmax.kool.input.KeyboardInput
-import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_DOWN
 import de.fabmax.kool.modules.ui2.ArrowScope.Companion.ROTATION_RIGHT
@@ -95,8 +94,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
     }
 
     private fun makeMenu(item: SceneObjectItem) = SubMenuItem {
-        val pos = editor.activeScene.value?.scene?.camera?.globalLookAt ?: Vec3f.ZERO
-        menuItems += addSceneObjectMenu("Add child object", item.gameEntity, pos)
+        menuItems += addSceneObjectMenu("Add child object", item.gameEntity, editor.globalLookAt)
         if (item.type != SceneObjectType.SCENE) {
             divider()
             item("Focus object", Icons.small.circleCrosshair) { editor.focusObject(it) }

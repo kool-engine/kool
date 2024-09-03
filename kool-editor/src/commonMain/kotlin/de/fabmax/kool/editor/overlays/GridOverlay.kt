@@ -2,8 +2,8 @@ package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.overlays.GridOverlay.PlaneOffset
+import de.fabmax.kool.editor.sceneOrigin
 import de.fabmax.kool.math.Vec2f
-import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.smoothStep
 import de.fabmax.kool.modules.ksl.BasicVertexConfig
@@ -90,7 +90,7 @@ class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverl
     }
 
     private val planeOffsetX = PlaneOffset { cam, sDiscrete ->
-        val sceneOrigin = editor.activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
+        val sceneOrigin = editor.sceneOrigin
         val mod = 32.0 * sDiscrete
         val offsetY = (cam.globalPos.y / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.y % mod
         val offsetZ = (cam.globalPos.z / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.z % mod
@@ -99,7 +99,7 @@ class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverl
     }
 
     private val planeOffsetY = PlaneOffset { cam, sDiscrete ->
-        val sceneOrigin = editor.activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
+        val sceneOrigin = editor.sceneOrigin
         val mod = 32.0 * sDiscrete
         val offsetX = (cam.globalPos.x / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.x % mod
         val offsetZ = (cam.globalPos.z / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.z % mod
@@ -108,7 +108,7 @@ class GridOverlay(val overlay: OverlayScene) : Node("Grid overlay"), EditorOverl
     }
 
     private val planeOffsetZ = PlaneOffset { cam, sDiscrete ->
-        val sceneOrigin = editor.activeScene.value?.sceneOrigin?.translation ?: Vec3d.ZERO
+        val sceneOrigin = editor.sceneOrigin
         val mod = 32.0 * sDiscrete
         val offsetX = (cam.globalPos.x / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.x % mod
         val offsetY = (cam.globalPos.y / (32.0 * sDiscrete)).roundToLong() * mod + sceneOrigin.y % mod
