@@ -29,7 +29,7 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
 
             val localPos = float3Var(inLocalPos)
             val localNormal = float3Var(inLocalNormal)
-            val localTangent = float4Var(inLocalTangent)
+            val localTangent = float3Var(inLocalTangent.xyz)
 
             if (cfg.modelMatrixComposition.isEmpty()) {
                 outModelMat set mat4Value(Vec4f.X_AXIS.const, Vec4f.Y_AXIS.const, Vec4f.Z_AXIS.const, Vec4f.W_AXIS.const)
@@ -66,7 +66,7 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
                             localNormal += stage.vertexAttribFloat3(morphAttrib.name) * weight
                         }
                         morphAttrib.name.startsWith(Attribute.TANGENTS.name) -> {
-                            localTangent.xyz += stage.vertexAttribFloat3(morphAttrib.name) * weight
+                            localTangent += stage.vertexAttribFloat3(morphAttrib.name) * weight
                         }
                     }
                 }
@@ -79,7 +79,7 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
 
             val worldPos = float4Var(outModelMat * float4Value(localPos, 1f))
             val worldNrm = float4Var(outModelMat * float4Value(localNormal, 0f))
-            val worldTan = float4Var(outModelMat * localTangent)
+            val worldTan = float4Var(outModelMat * float4Value(localTangent, 0f))
 
             outWorldPos set worldPos.xyz
             outWorldNormal set normalize(worldNrm.xyz)
