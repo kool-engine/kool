@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.data.ComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.math.*
+import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.set
 import de.fabmax.kool.util.logW
@@ -17,8 +18,10 @@ abstract class PhysicsActorComponent<T: ComponentData>(
     PhysicsComponent,
     TransformComponent.ListenerComponent
 {
+    protected val physicsWorldComponent: PhysicsWorldComponent? get() = getPhysicsWorldComponent(gameEntity.scene)
+    protected val physicsWorld: PhysicsWorld? get() = physicsWorldComponent?.physicsWorld
 
-    abstract val globalActorTransform: TrsTransformF?
+    abstract val physicsActorTransform: TrsTransformF?
     val localActorTransform = TrsTransformF()
 
     private val tmpMat4 = MutableMat4d()
@@ -38,12 +41,15 @@ abstract class PhysicsActorComponent<T: ComponentData>(
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
-        val globalTrs = globalActorTransform ?: return
+        val world = physicsWorldComponent ?: return
+        val physicsTrs = physicsActorTransform ?: return
         val globalToParent = gameEntity.parent?.globalToLocalD ?: return
 
-        globalToParent.mul(globalTrs.matrixD, tmpMat4)
-        tmpMat4.scale(scale)
-        localActorTransform.setMatrix(tmpMat4)
+        tmpMat4
+            .set(globalToParent)
+            .mul(world.gameEntity.localToGlobalD)
+            .mul(physicsTrs.matrixD)
+        localActorTransform.setMatrix(tmpMat4).scale(scale)
     }
 
     override fun onTransformChanged(component: TransformComponent, transformData: TransformComponentData) {
@@ -51,10 +57,12 @@ abstract class PhysicsActorComponent<T: ComponentData>(
     }
 
     fun setPhysicsTransformFromDrawNode() {
+        val world = physicsWorldComponent ?: return
         val t = MutableVec3d()
         val r = MutableQuatD()
         val s = MutableVec3d()
-        gameEntity.localToGlobalD.decompose(t, r, s)
+        val mat = MutableMat4d(world.gameEntity.globalToLocalD).mul(gameEntity.localToGlobalD)
+        mat.decompose(t, r, s)
 
         if (warnOnNonUniformScale && !s.isFuzzyEqual(Vec3d.ONES, eps = 1e-3)) {
             logW { "${gameEntity.name} / ${this::class.simpleName}: transform contains a scaling component $s, which may lead to unexpected behavior." }

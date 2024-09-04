@@ -153,6 +153,7 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             is BehaviorComponentData -> BehaviorComponent(this, info as ComponentInfo<BehaviorComponentData>)
             is TransformComponentData -> TransformComponent(this, info as ComponentInfo<TransformComponentData>)
             is MaterialComponentData -> MaterialComponent(this, info as ComponentInfo<MaterialComponentData>)
+            is PhysicsWorldComponentData -> PhysicsWorldComponent(this, info as ComponentInfo<PhysicsWorldComponentData>)
 
             is CameraComponentData -> CameraComponent(requireSceneChild, info as ComponentInfo<CameraComponentData>)
             is CharacterControllerComponentData -> CharacterControllerComponent(requireSceneChild, info as ComponentInfo<CharacterControllerComponentData>)
@@ -163,7 +164,6 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
             is JointComponentData -> JointComponent(requireSceneChild, info as ComponentInfo<JointComponentData>)
             is ShadowMapComponentData -> ShadowMapComponent(requireSceneChild, info as ComponentInfo<ShadowMapComponentData>)
 
-            is PhysicsWorldComponentData -> PhysicsWorldComponent(requireScene, info as ComponentInfo<PhysicsWorldComponentData>)
             is SceneBackgroundComponentData -> SceneBackgroundComponent(requireScene, info as ComponentInfo<SceneBackgroundComponentData>)
             is SceneComponentData -> SceneComponent(requireScene, info as ComponentInfo<SceneComponentData>)
             is SsaoComponentData -> SsaoComponent(requireScene, info as ComponentInfo<SsaoComponentData>)

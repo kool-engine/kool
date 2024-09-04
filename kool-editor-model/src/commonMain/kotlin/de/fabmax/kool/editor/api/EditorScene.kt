@@ -147,7 +147,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
     fun startScene() {
         sceneEntities.values.forEach { it.onStart() }
-        sceneEntity.getComponent<PhysicsWorldComponent>()?.physicsWorld?.let { physics ->
+        getAllComponents<PhysicsWorldComponent>().firstOrNull()?.physicsWorld?.let { physics ->
             physics.onPhysicsUpdate += { timeStep ->
                 for (entity in sceneEntities.values) {
                     entity.onPhysicsUpdate(timeStep)
@@ -167,12 +167,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
     override fun release() {
         super.release()
 
-        sceneEntities.values.forEach {
-            if (it != sceneEntity) {
-                it.destroyComponents()
-            }
-        }
-        sceneEntity.destroyComponents()
+        sceneEntities.values.forEach { it.destroyComponents() }
         sceneComponent.sceneNode.release()
         lifecycle = EntityLifecycle.DESTROYED
     }

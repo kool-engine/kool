@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.isDestroyed
 import de.fabmax.kool.editor.api.loadHeightmapOrNull
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.*
@@ -25,8 +26,6 @@ class RigidActorComponent(
     var rigidActor: RigidActor? = null
         private set
 
-    private val physicsWorld: PhysicsWorld? get() = getPhysicsWorld(gameEntity.scene)
-
     private var geometry: List<CollisionGeometry> = emptyList()
     private var bodyShapes: List<ShapeData> = emptyList()
 
@@ -45,7 +44,7 @@ class RigidActorComponent(
         }
     }
 
-    override val globalActorTransform: TrsTransformF? get() = rigidActor?.transform
+    override val physicsActorTransform: TrsTransformF? get() = rigidActor?.transform
 
     init {
         dependsOn(MeshComponent::class, isOptional = true)
@@ -76,9 +75,13 @@ class RigidActorComponent(
     }
 
     override fun destroyComponent() {
-        rigidActor?.let {
-            physicsWorld?.removeActor(it)
-            it.release()
+        physicsWorldComponent?.let { world ->
+            if (!world.isDestroyed) {
+                rigidActor?.let { actor ->
+                    world.physicsWorld?.removeActor(actor)
+                    actor.release()
+                }
+            }
         }
         rigidActor = null
         geometry.forEach { it.release() }

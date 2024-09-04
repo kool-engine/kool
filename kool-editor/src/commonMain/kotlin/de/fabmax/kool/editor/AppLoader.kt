@@ -48,7 +48,7 @@ class AppLoader(val editor: KoolEditor) : AppSourcesChangeListener {
     val appReloadListeners = mutableListOf<AppReloadListener>()
 
     private val loadService = AppLoadService(editor.projectFiles)
-    private var appSourcesChanged = false
+    private var appSourcesChanged = true
     private var isBuildInProgress = false
 
     init {
