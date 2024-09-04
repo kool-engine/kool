@@ -34,8 +34,8 @@ class ProceduralDemo : DemoScene("Procedural Geometry") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         orbitCamera {
-            setMouseRotation(-20f, -10f)
-            setMouseTranslation(0f, 16f, 0f)
+            setRotation(-20f, -10f)
+            setTranslation(0f, 16f, 0f)
             setZoom(40.0)
 
             onUpdate += {

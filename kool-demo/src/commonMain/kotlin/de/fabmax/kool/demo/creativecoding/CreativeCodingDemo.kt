@@ -95,7 +95,7 @@ class CreativeCodingDemo : DemoScene("Creative Coding") {
             rightDragMethod = OrbitInputTransform.DragMethod.NONE
 
             camera.setClipRange(2f, 2000f)
-            setMouseRotation(0f, -10f)
+            setRotation(0f, -10f)
 
             onUpdate += {
                 if (isAutoRotate.value) {

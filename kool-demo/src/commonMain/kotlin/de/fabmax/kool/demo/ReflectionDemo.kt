@@ -62,7 +62,7 @@ class ReflectionDemo : DemoScene("Reflections") {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             setZoom(17.0, max = 50.0)
             translation.set(0.0, 2.0, 0.0)
-            setMouseRotation(0f, -5f)
+            setRotation(0f, -5f)
             // let the camera slowly rotate around vertical axis
             onUpdate += {
                 if (isAutoRotate.value) {

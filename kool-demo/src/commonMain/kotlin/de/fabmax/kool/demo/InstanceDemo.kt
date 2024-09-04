@@ -50,7 +50,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             zoomMethod = OrbitInputTransform.ZoomMethod.ZOOM_CENTER
             setZoom(40.0, 1.0, 250.0)
 
-            setMouseRotation(30f, -40f)
+            setRotation(30f, -40f)
 
             onUpdate += {
                 if (isAutoRotate.value) {

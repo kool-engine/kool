@@ -59,7 +59,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         orbitCamera {
             translation.set(0.0, -0.7, 0.0)
             // Set some initial rotation so that we look down on the scene
-            setMouseRotation(0f, -30f)
+            setRotation(0f, -30f)
             setZoom(8.0)
 
             onUpdate += {

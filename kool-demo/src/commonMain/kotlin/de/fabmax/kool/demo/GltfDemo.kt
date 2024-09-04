@@ -190,7 +190,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
     private fun Scene.setupCamera() {
         orbitTransform = orbitCamera {
-            setMouseRotation(0f, -30f)
+            setRotation(0f, -30f)
             zoom = currentModel.zoom
             translation.set(currentModel.lookAt)
 
