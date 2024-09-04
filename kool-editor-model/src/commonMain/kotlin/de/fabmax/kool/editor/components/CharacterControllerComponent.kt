@@ -54,7 +54,7 @@ class CharacterControllerComponent(
         return fac
     }
 
-    override val globalActorTransform: TrsTransformF? get() = charController?.actor?.transform
+    override val physicsActorTransform: TrsTransformF? get() = charController?.actor?.transform
 
     override fun onDataChanged(oldData: CharacterControllerComponentData, newData: CharacterControllerComponentData) {
         launchOnMainThread {

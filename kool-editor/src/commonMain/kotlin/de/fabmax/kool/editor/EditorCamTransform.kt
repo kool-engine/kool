@@ -20,25 +20,27 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         maxZoom = 10000.0
         zoom = 50.0
         zoomRotationDecay = 20.0
-        setMouseRotation(20f, -30f)
+        setRotation(20f, -30f)
         InputStack.defaultInputHandler.pointerListeners += this
 
         middleDragMethod = DragMethod.ROTATE
         isInfiniteDragCursor = true
 
         onUpdate {
-            panTarget?.let { animatePan(it) }
+            if (isVisible) {
+                panTarget?.let { animatePan(it) }
 
-            editor.activeScene.value?.let { scene ->
-                val isFloatingOrigin = scene.sceneComponent.isFloatingOrigin
-                if (isFloatingOrigin) {
-                    isApplyTranslation = false
-                    scene.sceneOrigin.translation.set(translation).mul(-1.0)
-                    scene.sceneOrigin.markDirty()
-                } else {
-                    isApplyTranslation = true
-                    scene.sceneOrigin.translation.set(Vec3d.ZERO)
-                    scene.sceneOrigin.markDirty()
+                editor.activeScene.value?.let { scene ->
+                    val isFloatingOrigin = scene.sceneComponent.isFloatingOrigin
+                    if (isFloatingOrigin) {
+                        isApplyTranslation = false
+                        scene.sceneOrigin.translation.set(translation).mul(-1.0)
+                        scene.sceneOrigin.markDirty()
+                    } else {
+                        isApplyTranslation = true
+                        scene.sceneOrigin.translation.set(Vec3d.ZERO)
+                        scene.sceneOrigin.markDirty()
+                    }
                 }
             }
         }
@@ -48,7 +50,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         val diff = MutableVec3d(target).subtract(translation)
         if (diff.length() < 0.001) {
             // target reached
-            setMouseTranslation(target.x, target.y, target.z)
+            setTranslation(target.x, target.y, target.z)
             panTarget = null
 
         } else {

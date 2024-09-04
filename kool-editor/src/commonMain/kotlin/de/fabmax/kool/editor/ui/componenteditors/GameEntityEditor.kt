@@ -350,7 +350,7 @@ class GameEntityEditor(ui: EditorUi) :
 
         data object AddPhysicsWorldComponent : ComponentAdder<PhysicsWorldComponent>("Physics World") {
             override fun hasComponent(gameEntity: GameEntity) = gameEntity.hasComponent<PhysicsWorldComponent>()
-            override fun accept(gameEntity: GameEntity) = gameEntity.isSceneRoot
+            override fun accept(gameEntity: GameEntity) = !gameEntity.hasComponent<PhysicsComponent>()
             override fun createComponent(target: GameEntity): PhysicsWorldComponent = PhysicsWorldComponent(target)
         }
 
