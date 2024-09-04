@@ -39,7 +39,7 @@ fun Scene.orbitCamera(name: String? = null, block: OrbitInputTransform.() -> Uni
 
 fun Scene.defaultOrbitCamera(yaw: Float = 20f, pitch: Float = -30f): OrbitInputTransform {
     return orbitCamera {
-        setMouseRotation(yaw, pitch)
+        setRotation(yaw, pitch)
     }
 }
 
@@ -63,7 +63,6 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
             field = value.clamp(minZoom, maxZoom)
         }
 
-    var isKeepingStandardTransform = false
     var isInfiniteDragCursor = false
     var isApplyTranslation = true
 
@@ -95,9 +94,6 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val tmpVec1 = MutableVec3d()
     private val tmpVec2 = MutableVec3d()
 
-    private val mouseTransform = MutableMat4d()
-    private val mouseTransformInv = MutableMat4d()
-
     private val matrixTransform: MatrixTransformD
         get() = transform as MatrixTransformD
 
@@ -121,18 +117,18 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
     }
 
-    fun setMouseRotation(yaw: Float, pitch: Float) = setMouseRotation(yaw.toDouble(), pitch.toDouble())
+    fun setRotation(yaw: Float, pitch: Float) = setRotation(yaw.toDouble(), pitch.toDouble())
 
-    fun setMouseRotation(yaw: Double, pitch: Double) {
+    fun setRotation(yaw: Double, pitch: Double) {
         vertRotAnimator.set(yaw)
         horiRotAnimator.set(pitch)
         verticalRotation = yaw
         horizontalRotation = pitch
     }
 
-    fun setMouseTranslation(x: Float, y: Float, z: Float) = setMouseTranslation(x.toDouble(), y.toDouble(), z.toDouble())
+    fun setTranslation(x: Float, y: Float, z: Float) = setTranslation(x.toDouble(), y.toDouble(), z.toDouble())
 
-    fun setMouseTranslation(x: Double, y: Double, z: Double) {
+    fun setTranslation(x: Double, y: Double, z: Double) {
         translation.set(x, y, z)
     }
 
@@ -148,27 +144,17 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     fun updateTransform() {
         translationBounds?.clampToBounds(translation)
 
-        if (isKeepingStandardTransform) {
-            mouseTransform.invert(mouseTransformInv)
-            matrixTransform.mul(mouseTransformInv)
-        }
-
         val z = zoomAnimator.actual
         val vr = vertRotAnimator.actual
         val hr = horiRotAnimator.actual
-        mouseTransform.setIdentity()
+        matrixTransform.setIdentity()
         if (isApplyTranslation) {
-            mouseTransform.translate(translation.x, translation.y, translation.z)
+            parent?.toLocalCoords(tmpVec1.set(translation), 0.0)
+            matrixTransform.translate(tmpVec1.x, tmpVec1.y, tmpVec1.z)
         }
-        mouseTransform.scale(z)
-        mouseTransform.rotate(vr.deg, verticalAxis)
-        mouseTransform.rotate(hr.deg, horizontalAxis)
-
-        if (isKeepingStandardTransform) {
-            matrixTransform.mul(mouseTransform)
-        } else {
-            matrixTransform.setMatrix(mouseTransform)
-        }
+        matrixTransform.scale(z)
+        matrixTransform.rotate(vr.deg, verticalAxis)
+        matrixTransform.rotate(hr.deg, horizontalAxis)
     }
 
     private fun doCamTransform(view: RenderPass.View) {
@@ -184,7 +170,6 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
             } else {
                 tmpVec1.set(panMethod.computePan(view, ptrPos))
-                parent?.toLocalCoords(tmpVec1, 0.0)
                 translation.set(panStartTranslation).add(tmpVec1)
             }
         } else {
@@ -350,17 +335,6 @@ abstract class PanBase {
         } else {
             return null
         }
-    }
-
-    private fun unProject(proj: Vec4d, viewport: Viewport, result: MutableVec3d): Boolean {
-        val x = proj.x - viewport.x
-        val y = viewport.y + viewport.height - proj.y
-
-        tmpVec4d.set((2.0 * x / viewport.width - 1.0) * proj.w, (2.0 * y / viewport.height - 1.0) * proj.w, proj.z, proj.w)
-        invViewProj.transform(tmpVec4d)
-        val s = 1.0 / tmpVec4d.w
-        result.set(tmpVec4d.x * s, tmpVec4d.y * s, tmpVec4d.z * s)
-        return true
     }
 
     open fun unProjectScreen(screen: Vec3d, viewport: Viewport, result: MutableVec3d): Boolean {

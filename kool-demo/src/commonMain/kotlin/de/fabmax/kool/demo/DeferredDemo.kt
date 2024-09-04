@@ -81,7 +81,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         orbitCamera {
             // Set some initial rotation so that we look down on the scene
-            setMouseRotation(0f, -40f)
+            setRotation(0f, -40f)
             setZoom(28.0, max = 50.0)
 
             translation.set(0.0, -11.0, 0.0)
