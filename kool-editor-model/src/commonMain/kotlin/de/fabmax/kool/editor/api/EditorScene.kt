@@ -13,6 +13,7 @@ import de.fabmax.kool.util.logW
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.sceneNode
+val EditorScene.upAxis: SceneUpAxis get() = sceneComponent.data.upAxis
 
 class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseReleasable() {
 

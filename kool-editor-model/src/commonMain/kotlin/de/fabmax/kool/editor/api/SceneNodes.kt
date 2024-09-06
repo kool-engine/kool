@@ -266,6 +266,12 @@ class SceneNodes(val scene: EditorScene) :
 
         private fun MeshBuilder.applyCommon(pose: PoseData? = null, shapeColor: ColorData? = null, uvScale: Vec2Data? = null) {
             pose?.toPoseF()?.toMat4f(transform)
+            when (scene.upAxis) {
+                SceneUpAxis.X_AXIS -> rotate(90f.deg, Vec3f.NEG_Z_AXIS)
+                SceneUpAxis.Y_AXIS -> { }
+                SceneUpAxis.Z_AXIS -> rotate(90f.deg, Vec3f.X_AXIS)
+            }
+
             shapeColor?.let { color = it.toColorLinear() }
             uvScale?.let { scale ->
                 vertexModFun = {

@@ -161,7 +161,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
 
             scenes += SceneData(SceneMeta(sceneId, "New Scene")).apply {
                 entities += GameEntityData(sceneId, EntityId.NULL, GameEntitySettings(meta.name)).apply {
-                    components += ComponentInfo(SceneComponentData(cameraEntityId = camId))
+                    components += ComponentInfo(SceneComponentData(cameraEntityId = camId, upAxis = SceneUpAxis.Z_AXIS))
                     components += ComponentInfo(SceneBackgroundComponentData(
                         SceneBackgroundData.SingleColor(ColorData(MdColor.GREY toneLin 900))
                     ))

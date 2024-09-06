@@ -6,6 +6,7 @@ import de.fabmax.kool.editor.actions.EditorActions
 import de.fabmax.kool.editor.actions.SetVisibilityAction
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ProjectData
+import de.fabmax.kool.editor.data.SceneUpAxis
 import de.fabmax.kool.editor.overlays.OverlayScene
 import de.fabmax.kool.editor.overlays.SelectionOverlay
 import de.fabmax.kool.editor.overlays.TransformGizmoOverlay
@@ -13,6 +14,8 @@ import de.fabmax.kool.editor.ui.EditorUi
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.math.Vec3d
+import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.toVec3d
 import de.fabmax.kool.modules.filesystem.InMemoryFileSystem
 import de.fabmax.kool.modules.filesystem.copyRecursively
@@ -20,6 +23,7 @@ import de.fabmax.kool.modules.filesystem.toZip
 import de.fabmax.kool.modules.filesystem.writeText
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.*
@@ -80,9 +84,11 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val editMode = EditorEditMode(this)
 
     val editorCameraTransform = EditorCamTransform(this)
+    private val editorCamParent = Node()
     private val editorBackgroundScene = scene("editor-background") {
         tryEnableInfiniteDepth()
-        addNode(editorCameraTransform)
+        addNode(editorCamParent)
+        editorCamParent.addNode(editorCameraTransform)
         clearColor = Color.BLACK
         camera = editorCam
         clearDepth = false
@@ -305,6 +311,14 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         activeScene.set(scene)
         overlayScene.onEditorSceneChanged(scene)
 
+        scene.sceneComponent.dataState.onChange { oldData, newData ->
+            //applyUpAxis(newData.upAxis)
+            if (oldData.upAxis != newData.upAxis) {
+                appLoader.reloadApp()
+            }
+        }
+        applyUpAxis(scene.sceneComponent.data.upAxis)
+
         selectionOverlay.setSelection(prevSelection.mapNotNull { it.gameEntity })
         ui.objectProperties.windowSurface.triggerUpdate()
 
@@ -317,6 +331,26 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         }
 
         updateOverlays()
+    }
+
+    private fun applyUpAxis(upAxis: SceneUpAxis) {
+        overlayScene.grid.xPlaneGrid.isVisible = false
+        overlayScene.grid.yPlaneGrid.isVisible = false
+        overlayScene.grid.zPlaneGrid.isVisible = false
+        editorCamParent.transform.setIdentity()
+        when (upAxis) {
+            SceneUpAxis.X_AXIS -> {
+                overlayScene.grid.xPlaneGrid.isVisible = true
+                editorCamParent.transform.rotate(90f.deg, Vec3f.NEG_Z_AXIS)
+            }
+            SceneUpAxis.Y_AXIS -> {
+                overlayScene.grid.yPlaneGrid.isVisible = true
+            }
+            SceneUpAxis.Z_AXIS -> {
+                overlayScene.grid.zPlaneGrid.isVisible = true
+                editorCamParent.transform.rotate(90f.deg, Vec3f.X_AXIS)
+            }
+        }
     }
 
     private fun updateOverlays() {
