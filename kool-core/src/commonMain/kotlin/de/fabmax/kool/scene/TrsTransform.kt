@@ -43,12 +43,11 @@ class TrsTransformF : TransformF() {
 
     override fun setIdentity(): TrsTransformF {
         super.setIdentity()
-
         translation.set(Vec3d.ZERO)
         rotation.set(QuatF.IDENTITY)
         scale.set(Vec3f.ONES)
-
         lazyTransformMat.setIdentity()
+        markDirty()
         return this
     }
 
@@ -162,12 +161,11 @@ class TrsTransformD : TransformD() {
 
     override fun setIdentity(): TrsTransformD {
         super.setIdentity()
-
         translation.set(Vec3d.ZERO)
         rotation.set(QuatD.IDENTITY)
         scale.set(Vec3d.ONES)
-
         lazyTransformMat.setIdentity()
+        markDirty()
         return this
     }
 

@@ -4,6 +4,7 @@ import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.components.CameraComponent
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.EntityId
+import de.fabmax.kool.editor.data.SceneUpAxis
 import de.fabmax.kool.editor.ui.Icons
 import de.fabmax.kool.editor.ui.labeledCheckbox
 import de.fabmax.kool.editor.ui.labeledCombobox
@@ -25,13 +26,18 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
             SetComponentDataAction(component, component.data, component.data.copy(cameraEntityId = it.camEntityId)).apply()
         }
 
-        val selectedIdx = toneMappingOptions.indexOfFirst { it.toneMap == component.data.toneMapping }
-        labeledCombobox("Tone mapping:", toneMappingOptions, selectedIdx) {
+        val selectedToneMappingIdx = toneMappingOptions.indexOfFirst { it.toneMap == component.data.toneMapping }
+        labeledCombobox("Tone mapping:", toneMappingOptions, selectedToneMappingIdx) {
             SetComponentDataAction(component, component.data, component.data.copy(toneMapping = it.toneMap)).apply()
         }
 
         labeledIntTextField("Max number of lights:", component.data.maxNumLights, minValue = 0, maxValue = 8) {
             SetComponentDataAction(component, component.data, component.data.copy(maxNumLights = it)).apply()
+        }
+
+        val selectedAxisIdx = upAxisOptions.indexOfFirst { it.upAxis == component.data.upAxis }
+        labeledCombobox("Up Axis:", upAxisOptions, selectedAxisIdx) {
+            SetComponentDataAction(component, component.data, component.data.copy(upAxis = it.upAxis)).apply()
         }
 
         labeledCheckbox("Floating origin:", component.data.isFloatingOrigin) {
@@ -48,6 +54,10 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
         override fun toString(): String = label
     }
 
+    private class UpAxisOption(val upAxis: SceneUpAxis, val label: String) {
+        override fun toString(): String = label
+    }
+
     companion object {
         private val toneMappingOptions = listOf(
             ToneMappingOption(ToneMapping.Aces, "ACES"),
@@ -55,6 +65,12 @@ class ScenePropertiesEditor : ComponentEditor<SceneComponent>() {
             ToneMappingOption(ToneMapping.KhronosPbrNeutral, "Khronos PBR Neutral"),
             ToneMappingOption(ToneMapping.Uncharted2, "Uncharted 2"),
             ToneMappingOption(ToneMapping.ReinhardJodie, "Reinhard-Jodie"),
+        )
+
+        private val upAxisOptions = listOf(
+            UpAxisOption(SceneUpAxis.X_AXIS, "X-Axis"),
+            UpAxisOption(SceneUpAxis.Y_AXIS, "Y-Axis"),
+            UpAxisOption(SceneUpAxis.Z_AXIS, "Z-Axis"),
         )
     }
 }

@@ -16,6 +16,7 @@ class MatrixTransformF : TransformF() {
     override fun setIdentity(): MatrixTransformF {
         super.setIdentity()
         matrixF.setIdentity()
+        markDirty()
         return this
     }
 
@@ -98,6 +99,7 @@ class MatrixTransformD : TransformD() {
     override fun setIdentity(): MatrixTransformD {
         super.setIdentity()
         matrixD.setIdentity()
+        markDirty()
         return this
     }
 
