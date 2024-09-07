@@ -157,6 +157,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = prop.dragChangeSpeed,
         minValue = prop.min.x,
         maxValue = prop.max.x,
+        precision = { if (prop.precision > 0) prop.precision else precisionForValue(it) }
     )
 
     private fun ColumnScope.vec2dEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
@@ -168,6 +169,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
         minValues = prop.min.xy,
         maxValues = prop.max.xy,
+        precision = { if (prop.precision > 0) Vec2i(prop.precision) else Vec2i(precisionForValue(it.x), precisionForValue(it.y)) }
     )
 
     private fun ColumnScope.vec3dEditor(prop: BehaviorProperty) = vec3dPropertyEditor(
@@ -179,6 +181,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
         minValues = prop.min.xyz,
         maxValues = prop.max.xyz,
+        precision = { if (prop.precision > 0) Vec3i(prop.precision) else Vec3i(precisionForValue(it.x), precisionForValue(it.y), precisionForValue(it.z)) }
     )
 
     private fun ColumnScope.vec4dEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
@@ -190,6 +193,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
         minValues = prop.min,
         maxValues = prop.max,
+        precision = { if (prop.precision > 0) Vec4i(prop.precision) else Vec4i(precisionForValue(it.x), precisionForValue(it.y), precisionForValue(it.z), precisionForValue(it.w)) }
     )
 
     private fun ColumnScope.floatEditor(prop: BehaviorProperty) = doublePropertyEditor(
@@ -201,6 +205,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = prop.dragChangeSpeed,
         minValue = prop.min.x,
         maxValue = prop.max.x,
+        precision = { if (prop.precision > 0) prop.precision else precisionForValue(it) }
     )
 
     private fun ColumnScope.vec2fEditor(prop: BehaviorProperty) = vec2dPropertyEditor(
@@ -212,6 +217,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = Vec2d(prop.dragChangeSpeed),
         minValues = prop.min.xy,
         maxValues = prop.max.xy,
+        precision = { if (prop.precision > 0) Vec2i(prop.precision) else Vec2i(precisionForValue(it.x), precisionForValue(it.y)) }
     )
 
     private fun ColumnScope.vec3fEditor(prop: BehaviorProperty)  = vec3dPropertyEditor(
@@ -223,6 +229,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = Vec3d(prop.dragChangeSpeed),
         minValues = prop.min.xyz,
         maxValues = prop.max.xyz,
+        precision = { if (prop.precision > 0) Vec3i(prop.precision) else Vec3i(precisionForValue(it.x), precisionForValue(it.y), precisionForValue(it.z)) }
     )
 
     private fun ColumnScope.vec4fEditor(prop: BehaviorProperty) = vec4dPropertyEditor(
@@ -234,6 +241,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dragChangeSpeed = Vec4d(prop.dragChangeSpeed),
         minValues = prop.min,
         maxValues = prop.max,
+        precision = { if (prop.precision > 0) Vec4i(prop.precision) else Vec4i(precisionForValue(it.x), precisionForValue(it.y), precisionForValue(it.z), precisionForValue(it.w)) }
     )
 
     private fun ColumnScope.intEditor(prop: BehaviorProperty) = doublePropertyEditor(

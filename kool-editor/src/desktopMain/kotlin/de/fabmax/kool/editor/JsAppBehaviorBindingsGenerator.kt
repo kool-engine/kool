@@ -109,7 +109,7 @@ object JsAppBehaviorBindingsGenerator {
             val properties = behavior.properties.joinToString("") { p ->
                 val min = p.min.toSrc()?.let { ", min = $it" } ?: ""
                 val max = p.min.toSrc()?.let { ", max = $it" } ?: ""
-                "\n                BehaviorProperty(\"${p.name}\", BehaviorPropertyType.${p.type}, typeOf<${p.kType.qualifiedName}>(), \"${p.label}\"$min$max),"
+                "\n                BehaviorProperty(\"${p.name}\", BehaviorPropertyType.${p.type}, typeOf<${p.kType.qualifiedName}>(), \"${p.label}\"$min$max, precision = ${p.precision}),"
             }
             appendLine("""
                 |        ${behavior.simpleName}::class to AppBehavior(

@@ -116,7 +116,7 @@ fun UiScope.doubleTextField(
     textFieldModifier: ((TextFieldModifier) -> Unit)? = null,
     selectTextOnFocusGain: Boolean = true
 ) = TextField {
-    var text by remember(if (value.isFinite()) value.toString(precision) else "")
+    var text by remember(value.formatted(precision))
     var wasFocuesd by remember(false)
     var dragStartValue by remember(value)
 
@@ -125,7 +125,7 @@ fun UiScope.doubleTextField(
             // focus lost, apply edited value
             text.parseDouble(minValue, maxValue)?.let { editHandler.onEditEnd(dragStartValue, it) }
         } else {
-            text = if (value.isFinite()) value.toString(precision) else ""
+            text = value.formatted(precision)
         }
     } else if (!wasFocuesd) {
         // gained focus
@@ -179,6 +179,15 @@ fun String.parseDouble(min: Double = Double.NEGATIVE_INFINITY, max: Double = Dou
         d = d.clamp(min, max)
     }
     return d
+}
+
+fun Double.formatted(precision: Int): String {
+    val isScientific = precision >= 9 || abs(this) > 1e9 || (this != 0.0 && abs(this) < 1e-3)
+    return when {
+        !isFinite() -> ""
+        isScientific -> toString()
+        else -> toString(precision)
+    }
 }
 
 fun UiScope.intTextField(

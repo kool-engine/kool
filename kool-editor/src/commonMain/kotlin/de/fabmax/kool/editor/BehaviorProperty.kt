@@ -15,6 +15,7 @@ class BehaviorProperty(
     val label: String,
     val min: Vec4d = Vec4d(Double.NEGATIVE_INFINITY),
     val max: Vec4d = Vec4d(Double.POSITIVE_INFINITY),
+    val precision: Int = 0
 ) {
     fun get(behaviorComponent: BehaviorComponent): Any? {
         return behaviorComponent.getProperty(name)
