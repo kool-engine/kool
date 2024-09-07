@@ -15,6 +15,8 @@ abstract class KoolBehavior {
     private val componentNonNull: BehaviorComponent
         get() = checkNotNull(component) { "KoolBehavior is not yet initialized" }
 
+    val isInitialized: Boolean get() = component != null
+
     val scene: EditorScene get() = componentNonNull.gameEntity.scene
     val gameEntity: GameEntity get() = componentNonNull.gameEntity
     val transform: Transform get() = gameEntity.transform.transform

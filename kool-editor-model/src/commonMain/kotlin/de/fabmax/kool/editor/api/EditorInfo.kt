@@ -3,7 +3,8 @@ package de.fabmax.kool.editor.api
 @Target(AnnotationTarget.PROPERTY)
 annotation class EditorInfo(
     val label: String = "",
-    val order: Int = 0
+    val order: Int = 0,
+    val precision: Int = 0
 )
 
 @Target(AnnotationTarget.PROPERTY)

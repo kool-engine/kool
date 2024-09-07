@@ -72,7 +72,7 @@ class BehaviorComponent(
             }
 
         } catch (e: Exception) {
-            logE { "Failed to initialize BehaviorComponent for node ${gameEntity.name}: $e" }
+            logE { "Failed to initialize BehaviorComponent in entity ${gameEntity.id}('${gameEntity.name}'): $e" }
             e.printStackTrace()
         }
 
@@ -111,6 +111,7 @@ class BehaviorComponent(
             true
         } catch (e: Exception) {
             logE { "${data.behaviorClassName}: Failed setting property $name to value $value: $e" }
+            e.printStackTrace()
             false
         }
     }

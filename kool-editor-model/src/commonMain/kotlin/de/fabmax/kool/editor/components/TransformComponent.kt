@@ -14,6 +14,7 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Transform
 import de.fabmax.kool.scene.TrsTransformD
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.SyncedMatrixFd
 
 class TransformComponent(
@@ -22,6 +23,8 @@ class TransformComponent(
 ) : GameEntityDataComponent<TransformComponentData>(gameEntity, componentInfo) {
 
     private val changeListeners by cachedEntityComponents<ListenerComponent>()
+    val onUpdateTransformEarly = BufferedList<() -> Unit>()
+    val onUpdateTransformLate = BufferedList<() -> Unit>()
 
     val globalTransform = SyncedMatrixFd()
     val viewTransform = SyncedMatrixFd()
@@ -58,10 +61,19 @@ class TransformComponent(
     }
 
     fun updateTransform() {
+        onUpdateTransformEarly.update()
+        for (i in onUpdateTransformEarly.indices) {
+            onUpdateTransformEarly[i].invoke()
+        }
+
         val parentModelMat = gameEntity.parent?.localToGlobalD ?: Mat4d.IDENTITY
-        //val parentModelMat = gameEntity.parent?.localToGlobalD ?: gameEntity.scene.sceneOrigin.matrixD
         globalTransform.setMatD { parentModelMat.mul(transform.matrixD, it) }
         viewTransform.setMatD { gameEntity.scene.sceneOrigin.matrixD.mul(globalTransform.matD, it) }
+
+        onUpdateTransformLate.update()
+        for (i in onUpdateTransformLate.indices) {
+            onUpdateTransformLate[i].invoke()
+        }
     }
 
     fun updateTransformRecursive() {
