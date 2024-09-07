@@ -34,7 +34,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
                     val isFloatingOrigin = scene.sceneComponent.isFloatingOrigin
                     if (isFloatingOrigin) {
                         isApplyTranslation = false
-                        scene.sceneOrigin.translation.set(translation).mul(-1.0)
+                        scene.sceneOrigin.translation.set(globalTranslation).mul(-1.0)
                         scene.sceneOrigin.markDirty()
                     } else {
                         isApplyTranslation = true
@@ -84,7 +84,9 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         }
 
         if (bounds.isNotEmpty) {
-            panTarget = bounds.center
+            val target = MutableVec3d(bounds.center)
+            parent?.toLocalCoords(target)
+            panTarget = target
             zoom = bounds.size.length() * 0.7
         }
     }
