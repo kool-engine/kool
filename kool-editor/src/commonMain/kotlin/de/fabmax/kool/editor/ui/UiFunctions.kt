@@ -182,7 +182,7 @@ fun String.parseDouble(min: Double = Double.NEGATIVE_INFINITY, max: Double = Dou
 }
 
 fun Double.formatted(precision: Int): String {
-    val isScientific = precision >= 9 || abs(this) > 1e9 || (this != 0.0 && abs(this) < 1e-3)
+    val isScientific = precision >= 9 || abs(this) > 1e9
     return when {
         !isFinite() -> ""
         isScientific -> toString()

@@ -228,6 +228,11 @@ class GameEntity(val entityData: GameEntityData, val scene: EditorScene) {
     suspend inline fun <reified T: GameEntityComponent> getOrPutComponentLifecycleAware(factory: () -> T): T =
         getComponent<T>() ?: factory().also { addComponentLifecycleAware(it) }
 
+    inline fun <reified T: KoolBehavior> getBehavior(): T? =
+        (components.find { it is BehaviorComponent && it.behaviorInstance.value is T } as BehaviorComponent?)?.behaviorInstance?.value as T?
+
+    inline fun <reified T: KoolBehavior> requireBehavior(): T = checkNotNull(getBehavior())
+
     private fun incComponentModCount() {
         componentModCnt++
         scene.componentModCnt++

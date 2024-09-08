@@ -1,7 +1,6 @@
 package de.fabmax.kool.editor.ui.componenteditors
 
 import de.fabmax.kool.editor.*
-import de.fabmax.kool.editor.actions.EditorAction
 import de.fabmax.kool.editor.actions.SetBehaviorPropertyAction
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.KoolBehavior
@@ -64,7 +63,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
                 Vec4i::class -> vec4iEditor(prop)
 
                 Boolean::class -> boolEditor(prop)
-                Color::class -> { logE { "TODO: ${prop.name}: color editor" } }
+                Color::class -> colorEditor(prop)
                 String::class -> { stringEditor(prop) }
                 GameEntity::class -> gameEntityEditor(prop)
 
@@ -136,6 +135,14 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         dataGetter = { PropertyValue(bool = prop.getBoolean(it)) },
         valueGetter = { it.bool!! },
         valueSetter = { _, newValue -> PropertyValue(bool = newValue) },
+        actionMapper = SetBehaviorPropertyAction(prop),
+        label = prop.label
+    )
+
+    private fun ColumnScope.colorEditor(prop: BehaviorProperty) = colorPropertyEditor(
+        dataGetter = { PropertyValue(color = ColorData(prop.getColor(it) ?: Color.BLACK, isLinear = false)) },
+        valueGetter = { it.color!!.toColorSrgb() },
+        valueSetter = { _, newValue -> PropertyValue(color = ColorData(newValue, false)) },
         actionMapper = SetBehaviorPropertyAction(prop),
         label = prop.label
     )
@@ -328,7 +335,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
             value.i3 != null -> set(behaviorComponent, value.i3!!.toVec3i())
             value.i4 != null -> set(behaviorComponent, value.i4!!.toVec4i())
 
-            value.color != null -> set(behaviorComponent, value.color!!.toColorLinear())
+            value.color != null -> set(behaviorComponent, if (value.color!!.isLinear) value.color!!.toColorLinear() else value.color!!.toColorSrgb())
             value.transform != null -> set(behaviorComponent, value.transform!!.toMat4d())
             value.str != null -> set(behaviorComponent, value.str)
             value.gameEntityRef != null -> set(behaviorComponent, value.gameEntityRef!!.gameEntity)
@@ -339,7 +346,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
         }
     }
 
-    private fun UiScope.SetBehaviorPropertyAction(prop: BehaviorProperty): (BehaviorComponent, PropertyValue, PropertyValue) -> EditorAction {
+    private fun UiScope.SetBehaviorPropertyAction(prop: BehaviorProperty): (BehaviorComponent, PropertyValue, PropertyValue) -> SetBehaviorPropertyAction {
         return { component: BehaviorComponent, undoData: PropertyValue, applyData: PropertyValue ->
             SetBehaviorPropertyAction(component.gameEntity.id, prop.name, undoData, applyData) { comp, value ->
                 prop.setProperty(comp, value)

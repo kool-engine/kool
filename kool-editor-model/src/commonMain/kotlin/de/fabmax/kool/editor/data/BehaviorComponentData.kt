@@ -55,7 +55,7 @@ data class PropertyValue(
             i4 != null -> i4.toVec4i()
 
             bool != null -> bool
-            color != null -> color.toColorLinear()
+            color != null -> if (color.isLinear) color.toColorLinear() else color.toColorSrgb()
             transform != null -> transform.toMat4d()
             str != null -> str
             gameEntityRef != null -> gameEntityRef
