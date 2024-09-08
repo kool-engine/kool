@@ -11,7 +11,9 @@ import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.toColor
 
 abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
     var components: List<T> = emptyList()
@@ -303,6 +305,35 @@ abstract class ComponentEditor<T: GameEntityDataComponent<*>> : Composable {
                 FusedAction(actions).apply()
             }
         }
+    }
+
+    protected fun <D> ColumnScope.colorPropertyEditor(
+        dataGetter: (T) -> D,
+        valueGetter: (D) -> Color,
+        valueSetter: (oldData: D, newValue: Color) -> D,
+        actionMapper: (component: T, undoData: D, applyData: D) -> EditorAction,
+
+        label: String,
+        isWithAlpha: Boolean = false
+    ) {
+        val colors = components.map { valueGetter(dataGetter(it)) }
+        val color = if (colors.all { it == colors[0] }) colors[0] else Color.BLACK
+
+        labeledColorPicker(
+            label = label,
+            pickerColor = color,
+            isWithAlpha = isWithAlpha,
+            editHandler = ActionValueEditHandler { undo, apply ->
+                components.map { component ->
+                    val componentData = dataGetter(component)
+                    val mergedUndo = mergeVec4(undo.toVec4f().toVec4d(), valueGetter(componentData).toVec4f().toVec4d())
+                    val mergedApply = mergeVec4(apply.toVec4f().toVec4d(), valueGetter(componentData).toVec4f().toVec4d())
+                    val undoData = valueSetter(componentData, mergedUndo.toVec4f().toColor())
+                    val applyData = valueSetter(componentData, mergedApply.toVec4f().toColor())
+                    actionMapper(component, undoData, applyData)
+                }.fused()
+            }
+        )
     }
 
     protected fun <D> ColumnScope.stringPropertyEditor(

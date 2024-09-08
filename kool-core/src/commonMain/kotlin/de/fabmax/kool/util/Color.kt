@@ -7,6 +7,9 @@ import kotlin.math.*
  * @author fabmax
  */
 
+fun Vec3f.toColor(alpha: Float = 1f): Color = Color(x, y, z, alpha)
+fun Vec4f.toColor(): Color = Color(x, y, z, w)
+
 open class Color(open val r: Float, open val g: Float, open val b: Float, open val a: Float = 1f) {
 
     val rgb: Vec3f
