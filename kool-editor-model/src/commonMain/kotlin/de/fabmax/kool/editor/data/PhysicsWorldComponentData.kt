@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class PhysicsWorldComponentData(
     val gravity: Vec3Data = Vec3Data(0.0, -9.81, 0.0),
     val isContinuousCollisionDetection: Boolean = true,
+    val physicsRange: Vec3Data = Vec3Data(0.0, 0.0, 0.0),
     val materials: List<PhysicsMaterialData> = emptyList()
 ) : ComponentData
 
