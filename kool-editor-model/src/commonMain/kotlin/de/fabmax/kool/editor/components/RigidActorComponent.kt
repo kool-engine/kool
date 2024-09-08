@@ -76,11 +76,9 @@ class RigidActorComponent(
 
     override fun destroyComponent() {
         physicsWorldComponent?.let { world ->
+            world.removeActor(this)
             if (!world.isDestroyed) {
-                rigidActor?.let { actor ->
-                    world.physicsWorld?.removeActor(actor)
-                    actor.release()
-                }
+                rigidActor?.release()
             }
         }
         rigidActor = null

@@ -5,6 +5,7 @@ import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
@@ -12,6 +13,7 @@ import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.character.CharacterControllerManager
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
 
 class PhysicsWorldComponent(
@@ -25,8 +27,12 @@ class PhysicsWorldComponent(
         get() = data.gravity.toVec3f()
         set(value) { dataState.set(data.copy(gravity = Vec3Data(value))) }
 
+    var physicsBounds: BoundingBoxF? = null
+    val isLimitedRange: Boolean get() = physicsBounds != null
+
     var characterControllerManager: CharacterControllerManager? = null
 
+    private val actorStates = mutableListOf<ActorState>()
     private val _actors = mutableMapOf<RigidActor, RigidActorComponent>()
     val actors: Map<RigidActor, RigidActorComponent> get() = _actors
 
@@ -35,6 +41,7 @@ class PhysicsWorldComponent(
 
     init {
         updateMaterials(data)
+        updateBounds(data)
     }
 
     fun addActor(rigidActorComponent: RigidActorComponent) {
@@ -49,14 +56,31 @@ class PhysicsWorldComponent(
             return
         }
         _actors[actor] = rigidActorComponent
-        world.addActor(actor)
+
+        val actorState = ActorState(actor, rigidActorComponent)
+        actorStates += actorState
+        actorState.isAttached = !isLimitedRange
+        if (actorState.isAttached) {
+            world.addActor(actor)
+        }
     }
 
     fun removeActor(rigidActorComponent: RigidActorComponent) {
-        val world = physicsWorld ?: return
         val actor = rigidActorComponent.rigidActor ?: return
         _actors -= actor
-        world.removeActor(actor)
+        val state = actorStates.find { it.component === rigidActorComponent }
+        state?.let {
+            actorStates -= it
+            if (it.isAttached) {
+                physicsWorld?.removeActor(actor)
+            }
+        }
+    }
+
+    fun updateReferenceFrame() {
+        actorStates.forEach { state ->
+            state.component.setPhysicsTransformFromDrawNode()
+        }
     }
 
     override fun onDataChanged(oldData: PhysicsWorldComponentData, newData: PhysicsWorldComponentData) {
@@ -67,6 +91,20 @@ class PhysicsWorldComponent(
             }
         }
         updateMaterials(newData)
+        updateBounds(newData)
+    }
+
+    private fun updateBounds(data: PhysicsWorldComponentData) {
+        physicsBounds = if (data.physicsRange.x > 1.0) {
+            BoundingBoxF(Vec3f(-data.physicsRange.x.toFloat()), Vec3f(data.physicsRange.x.toFloat()))
+        } else {
+            null
+        }
+    }
+
+    private fun isInBounds(actor: RigidActor): Boolean {
+        val bounds = physicsBounds ?: return true
+        return actor.pose.position in bounds
     }
 
     private fun updateMaterials(data: PhysicsWorldComponentData) {
@@ -87,9 +125,31 @@ class PhysicsWorldComponent(
         super.applyComponent()
 
         Physics.loadAndAwaitPhysics()
-        physicsWorld = PhysicsWorld(null, data.isContinuousCollisionDetection).also {
-            it.gravity = gravity
-            characterControllerManager = CharacterControllerManager(it)
+        physicsWorld = PhysicsWorld(null, data.isContinuousCollisionDetection).also { world ->
+            world.gravity = gravity
+            characterControllerManager = CharacterControllerManager(world)
+
+            world.onAdvancePhysics += {
+                if (isLimitedRange) {
+                    world.applyWorldBounds()
+                }
+            }
+        }
+    }
+
+    private fun PhysicsWorld.applyWorldBounds() {
+        for (i in actorStates.indices) {
+            val state = actorStates[i]
+
+            if (state.isAttached && !isInBounds(state.actor)) {
+                logT { "Actor ${state.component.gameEntity.name} left physics bounds" }
+                removeActor(state.actor)
+                state.isAttached = false
+            } else if (!state.isAttached && isInBounds(state.actor)) {
+                logT { "Actor ${state.component.gameEntity.name} entered physics bounds" }
+                addActor(state.actor)
+                state.isAttached = true
+            }
         }
     }
 
@@ -113,6 +173,10 @@ class PhysicsWorldComponent(
     override fun onStart() {
         super.onStart()
         physicsWorld?.registerHandlers(sceneComponent.sceneNode)
+    }
+
+    private class ActorState(val actor: RigidActor, val component: PhysicsActorComponent<*>) {
+        var isAttached: Boolean by component::isAttachedToSimulation
     }
 }
 

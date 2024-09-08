@@ -21,6 +21,9 @@ abstract class PhysicsActorComponent<T: ComponentData>(
     protected val physicsWorldComponent: PhysicsWorldComponent? get() = getPhysicsWorldComponent(gameEntity.scene)
     protected val physicsWorld: PhysicsWorld? get() = physicsWorldComponent?.physicsWorld
 
+    var isAttachedToSimulation = false
+        internal set
+
     abstract val physicsActorTransform: TrsTransformF?
     val localActorTransform = TrsTransformF()
 
@@ -41,6 +44,10 @@ abstract class PhysicsActorComponent<T: ComponentData>(
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {
+        if (!isAttachedToSimulation) {
+            return
+        }
+
         val world = physicsWorldComponent ?: return
         val physicsTrs = physicsActorTransform ?: return
         val globalToParent = gameEntity.parent?.globalToLocalD ?: return
