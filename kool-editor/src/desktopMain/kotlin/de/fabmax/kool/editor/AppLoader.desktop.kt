@@ -170,13 +170,15 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
                 try {
                     val behaviorClass = loader.reloadClass(className)
                     val kclass = behaviorClass.kotlin
-                    if (KoolBehavior::class.java.isAssignableFrom(behaviorClass.superclass)) {
+                    val superClass = behaviorClass.superclass
+                    if (superClass != null && KoolBehavior::class.java.isAssignableFrom(superClass)) {
                         val simple = kclass.simpleName ?: "<unknown>"
                         val qualified = kclass.qualifiedName ?: "<unknown>"
                         behaviorClasses[kclass] = AppBehavior(simple, qualified, BehaviorReflection.getEditableProperties(kclass))
                     }
                 } catch (e: Exception) {
                     logE { "Failed examining class $className: $e" }
+                    e.printStackTrace()
                 }
             }
         }
