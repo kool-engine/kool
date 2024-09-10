@@ -1,7 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.math.RayTest
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec3d
 import de.fabmax.kool.mock.Mock
 import org.junit.Test
 
@@ -9,8 +9,8 @@ class RayPickTest {
     @Test
     fun pickNodeNoTransform() {
         val rayTest = RayTest()
-        rayTest.ray.origin.set(0f, 0f, 10f)
-        rayTest.ray.direction.set(0f, 0f, -1f)
+        rayTest.ray.origin.set(0.0, 0.0, 10.0)
+        rayTest.ray.direction.set(0.0, 0.0, -1.0)
 
         val unitCube = ColorMesh().apply {
             generate {
@@ -22,7 +22,7 @@ class RayPickTest {
         unitCube.rayTest(rayTest)
         assert(rayTest.isHit)
         assert(rayTest.hitNode == unitCube)
-        assert(rayTest.hitPositionGlobal.isFuzzyEqual(Vec3f(0f, 0f, 0.5f))) {
+        assert(rayTest.hitPositionGlobal.isFuzzyEqual(Vec3d(0.0, 0.0, 0.5))) {
             "Expected hit position: (0.5, 0.0, 0.0) but is ${rayTest.hitPositionGlobal}"
         }
     }
@@ -30,8 +30,8 @@ class RayPickTest {
     @Test
     fun pickNodeTranslated() {
         val rayTest = RayTest()
-        rayTest.ray.origin.set(1f, 0f, 10f)
-        rayTest.ray.direction.set(0f, 0f, -1f)
+        rayTest.ray.origin.set(1.0, 0.0, 10.0)
+        rayTest.ray.direction.set(0.0, 0.0, -1.0)
 
         val unitCube = ColorMesh().apply {
             generate {
@@ -44,7 +44,7 @@ class RayPickTest {
         unitCube.rayTest(rayTest)
         assert(rayTest.isHit)
         assert(rayTest.hitNode == unitCube)
-        assert(rayTest.hitPositionGlobal.isFuzzyEqual(Vec3f(1f, 0f, 0.5f))) {
+        assert(rayTest.hitPositionGlobal.isFuzzyEqual(Vec3d(1.0, 0.0, 0.5))) {
             "Expected hit position: (0.5, 0.0, 0.0) but is ${rayTest.hitPositionGlobal}"
         }
     }
@@ -52,8 +52,8 @@ class RayPickTest {
     @Test
     fun pickNodeNested() {
         val rayTest = RayTest()
-        rayTest.ray.origin.set(2f, 0f, 10f)
-        rayTest.ray.direction.set(0f, 0f, -1f)
+        rayTest.ray.origin.set(2.0, 0.0, 10.0)
+        rayTest.ray.direction.set(0.0, 0.0, -1.0)
 
         val unitCube1 = ColorMesh().apply {
             generate {
@@ -77,7 +77,7 @@ class RayPickTest {
         unitCube1.rayTest(rayTest)
         assert(rayTest.isHit)
         assert(rayTest.hitNode == unitCube2)
-        assert(rayTest.hitPositionGlobal.isFuzzyEqual(Vec3f(2f, 0f, 0.5f))) {
+        assert(rayTest.hitPositionGlobal.isFuzzyEqual(Vec3d(2.0, 0.0, 0.5))) {
             "Expected hit position: (0.5, 0.0, 0.0) but is ${rayTest.hitPositionGlobal}"
         }
     }
