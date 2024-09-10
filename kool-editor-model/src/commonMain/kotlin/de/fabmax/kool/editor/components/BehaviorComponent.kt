@@ -63,10 +63,9 @@ class BehaviorComponent(
                     else -> value.get()
                 }
 
-                //if (!setProperty(name, setValue)) {
-                //    removeProps += name
-                //}
-                setProperty(name, setValue)
+                if (!setProperty(name, setValue)) {
+                    removeProps += name
+                }
             }
             if (removeProps.isNotEmpty()) {
                 setPersistent(data.copy(propertyValues = data.propertyValues - removeProps))
