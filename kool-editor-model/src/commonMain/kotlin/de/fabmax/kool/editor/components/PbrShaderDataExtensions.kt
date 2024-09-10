@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.SceneShaderData
-import de.fabmax.kool.editor.api.loadTexture2dOrNull
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
@@ -13,7 +10,11 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logW
 
-suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): KslPbrShader {
+suspend fun PbrShaderData.createPbrShader(
+    meshLayoutInfo: MeshLayoutInfo,
+    modelMats: List<ModelMatrixComposition>,
+    sceneShaderData: SceneShaderData
+): KslPbrShader {
     val shader = KslPbrShader {
         pipeline {
             if (genericSettings.isTwoSided) {
@@ -23,6 +24,9 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
         vertices {
             isInstanced = true
             modelMatrixComposition = modelMats
+            if (meshLayoutInfo.numJoints > 0) {
+                enableArmature(meshLayoutInfo.numJoints)
+            }
         }
         color {
             when (val color = baseColor) {
@@ -61,7 +65,6 @@ suspend fun PbrShaderData.createPbrShader(sceneShaderData: SceneShaderData, mode
         aoMap?.let {
             ao { textureProperty(channel = it.singleChannelIndex, textureName = armTexNames.ao) }
         }
-
         displacementMap?.let {
             vertices {
                 displacement {

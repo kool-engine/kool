@@ -30,8 +30,13 @@ data class BasicVertexConfig(
         val displacementCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("displacement").apply { constProperty(0f) }
         var modelMatrixComposition = listOf<ModelMatrixComposition>()
 
-        fun enableArmature(maxNumberOfBones: Int = 32): Builder {
-            this.maxNumberOfBones = maxNumberOfBones
+        fun enableArmatureFixedNumberOfBones(fixedNumberOfBones: Int): Builder {
+            this.maxNumberOfBones = fixedNumberOfBones
+            return this
+        }
+
+        fun enableArmature(numberOfBones: Int): Builder {
+            this.maxNumberOfBones = (numberOfBones + 63) and 63.inv()
             return this
         }
 

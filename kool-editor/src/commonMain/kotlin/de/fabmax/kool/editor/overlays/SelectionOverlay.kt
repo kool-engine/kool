@@ -140,7 +140,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
             meshComponent.sceneNode?.let { sceneNode ->
                 val meshSelection = when (sceneNode) {
                     is Mesh -> listOf(selectedMeshes.getOrPut(sceneNode.id) { SelectedMeshes(sceneNode.id) })
-                    is Model -> sceneNode.meshes.values.map { selectedMeshes.getOrPut(it.id) { SelectedMeshes(it.id) } }
+                    is Model -> sceneNode.meshes.values.map { selectedMeshes.getOrPut(it.id) { SelectedMeshes(sceneNode.id) } }
                     else -> emptyList()
                 }
                 val selectionType = if (entity in selection) MeshSelectionType.PRIMARY else MeshSelectionType.CHILD
@@ -161,8 +161,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
     }
 
     inner class SelectionPass : OffscreenRenderPass2d(
-        // drawNode will be replaced by content scene, once it is loaded
-        Node(),
+        Node(),  // drawNode will be replaced by content scene, once it is loaded
         colorAttachmentDefaultDepth(TexFormat.RG),
         Vec2i(128),
         name = "selection-overlay"

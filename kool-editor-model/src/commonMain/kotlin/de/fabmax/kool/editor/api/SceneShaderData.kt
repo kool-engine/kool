@@ -91,7 +91,7 @@ class SceneShaderData(val scene: EditorScene, private val isNotifying: Boolean =
 }
 
 class SceneShaderCache : EditorScene.SceneShaderDataListener {
-    private val materialShaders = mutableMapOf<EntityId, MutableMap<MeshLayoutKey, DrawShader>>()
+    private val materialShaders = mutableMapOf<EntityId, MutableMap<MeshLayoutInfo, DrawShader>>()
 
     override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
         materialShaders.keys.forEach { matId ->
@@ -99,23 +99,26 @@ class SceneShaderCache : EditorScene.SceneShaderDataListener {
         }
     }
 
-    fun getShaderCache(material: MaterialComponent): MutableMap<MeshLayoutKey, DrawShader>? {
+    fun getShaderCache(material: MaterialComponent): MutableMap<MeshLayoutInfo, DrawShader>? {
         return materialShaders[material.id]
     }
 
-    fun getOrPutShaderCache(material: MaterialComponent): MutableMap<MeshLayoutKey, DrawShader> {
+    fun getOrPutShaderCache(material: MaterialComponent): MutableMap<MeshLayoutInfo, DrawShader> {
         return materialShaders.getOrPut(material.id) { mutableMapOf() }
     }
 }
 
-fun MeshLayoutKey(mesh: Mesh): MeshLayoutKey = MeshLayoutKey(
+fun MeshLayoutInfo(mesh: Mesh): MeshLayoutInfo = MeshLayoutInfo(
     vertexLayout = mesh.geometry.vertexAttributes,
     instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
-    primitiveType = mesh.geometry.primitiveType
+    primitiveType = mesh.geometry.primitiveType,
+    numJoints = ((mesh.skin?.nodes?.size ?: 0) + 63) and 63.inv()
+    //todo: morphWeights = mesh.geometry.getMorphAttributes()
 )
 
-data class MeshLayoutKey(
+data class MeshLayoutInfo(
     val vertexLayout: List<Attribute>,
     val instanceLayout: List<Attribute>,
-    val primitiveType: PrimitiveType
+    val primitiveType: PrimitiveType,
+    val numJoints: Int
 )

@@ -8,7 +8,6 @@ import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
-import kotlin.math.max
 
 fun depthShader(cfgBlock: DepthShader.Config.() -> Unit): DepthShader {
     val cfg = DepthShader.Config().apply(cfgBlock)
@@ -110,7 +109,7 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                 vertices {
                     isInstanced = mesh.instances != null
                     mesh.skin?.let {
-                        enableArmature(max(DepthMapPass.defaultMaxNumberOfJoints, it.nodes.size))
+                        enableArmature(it.nodes.size)
                     }
                     morphAttributes += mesh.geometry.getMorphAttributes()
 

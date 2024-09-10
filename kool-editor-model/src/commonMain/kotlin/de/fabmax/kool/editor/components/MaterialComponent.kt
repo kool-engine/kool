@@ -30,10 +30,10 @@ class MaterialComponent(
     suspend fun applyMaterialTo(mesh: Mesh, sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): Boolean {
         mesh.isCastingShadow = shaderData.genericSettings.isCastingShadow
 
-        val meshKey = MeshLayoutKey(mesh)
+        val meshKey = MeshLayoutInfo(mesh)
         val shader = sceneShaderData.shaderCache.getOrPutShaderCache(this).getOrPut(meshKey) {
             logT { "Creating new material shader $name (for mesh: ${mesh.name})" }
-            data.createShader(sceneShaderData, modelMats)
+            data.createShader(meshKey, modelMats, sceneShaderData)
         }
         if (mesh.shader == shader) {
             return true

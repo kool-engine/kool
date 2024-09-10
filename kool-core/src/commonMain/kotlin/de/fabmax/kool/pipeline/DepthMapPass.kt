@@ -85,8 +85,6 @@ open class DepthMapPass(
     )
 
     companion object {
-        var defaultMaxNumberOfJoints = 16
-
         val defaultRenderPassAttachmentConfig = AttachmentConfig(
             ColorAttachmentNone,
             DepthAttachmentTexture()

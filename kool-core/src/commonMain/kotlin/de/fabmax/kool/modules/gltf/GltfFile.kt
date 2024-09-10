@@ -13,7 +13,6 @@ import de.fabmax.kool.scene.animation.*
 import de.fabmax.kool.util.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import kotlin.math.max
 import kotlin.math.min
 
 suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoader = Assets.defaultLoader): Result<GltfFile> {
@@ -632,7 +631,11 @@ data class GltfFile(
                         isInstanced = true
                     }
                     if (mesh.skin != null) {
-                        enableArmature(max(cfg.materialConfig.fixedNumberOfJoints, mesh.skin.nodes.size))
+                        if (cfg.materialConfig.fixedNumberOfJoints > 0) {
+                            enableArmatureFixedNumberOfBones(cfg.materialConfig.fixedNumberOfJoints)
+                        } else {
+                            enableArmature(mesh.skin.nodes.size)
+                        }
                         if (cfg.materialConfig.fixedNumberOfJoints > 0 && cfg.materialConfig.fixedNumberOfJoints < mesh.skin.nodes.size) {
                             logW("GltfFile") { "\"${model.name}\": Number of joints exceeds the material config's fixedNumberOfJoints (mesh has ${mesh.skin.nodes.size}, materialConfig.fixedNumberOfJoints is ${cfg.materialConfig.fixedNumberOfJoints})" }
                         }

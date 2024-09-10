@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.editor.api.AppAssets
-import de.fabmax.kool.editor.api.AssetReference
-import de.fabmax.kool.editor.api.SceneShaderData
-import de.fabmax.kool.editor.api.loadTexture2dOrNull
+import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslLitShader
@@ -15,7 +12,11 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
-suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShaderData, modelMats: List<ModelMatrixComposition>): KslPbrSplatShader {
+suspend fun PbrSplatShaderData.createPbrSplatShader(
+    meshLayoutInfo: MeshLayoutInfo,
+    modelMats: List<ModelMatrixComposition>,
+    sceneShaderData: SceneShaderData
+): KslPbrSplatShader {
     val shader = KslPbrSplatShader {
         pipeline {
             if (genericSettings.isTwoSided) {
@@ -25,6 +26,9 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(sceneShaderData: SceneShader
         vertices {
             isInstanced = true
             modelMatrixComposition = modelMats
+            if (meshLayoutInfo.numJoints > 0) {
+                enableArmature(meshLayoutInfo.numJoints)
+            }
         }
         lighting {
             maxNumberOfLights = sceneShaderData.maxNumberOfLights
