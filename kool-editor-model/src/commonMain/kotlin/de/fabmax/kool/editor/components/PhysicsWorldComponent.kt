@@ -3,14 +3,18 @@ package de.fabmax.kool.editor.components
 import de.fabmax.kool.editor.api.AppMode
 import de.fabmax.kool.editor.api.AppState
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.components.CharacterControllerComponent.Companion.CHARACTER_CONTACT_OFFSET
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.physics.Material
 import de.fabmax.kool.physics.Physics
 import de.fabmax.kool.physics.PhysicsWorld
 import de.fabmax.kool.physics.RigidActor
+import de.fabmax.kool.physics.character.CharacterController
 import de.fabmax.kool.physics.character.CharacterControllerManager
+import de.fabmax.kool.physics.character.CharacterControllerProperties
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
@@ -30,7 +34,8 @@ class PhysicsWorldComponent(
     var physicsBounds: BoundingBoxF? = null
     val isLimitedRange: Boolean get() = physicsBounds != null
 
-    var characterControllerManager: CharacterControllerManager? = null
+    var characterControllerManager: CharacterControllerManager? = null; private set
+    private val charControllers = mutableListOf<CharacterControllerComponent>()
 
     private val actorStates = mutableListOf<ActorState>()
     private val _actors = mutableMapOf<RigidActor, RigidActorComponent>()
@@ -48,7 +53,7 @@ class PhysicsWorldComponent(
         val world = physicsWorld
         val actor = rigidActorComponent.rigidActor
         if (world == null) {
-            logE { "Unable to create rigid actor: parent physics world was not yet created" }
+            logE { "Unable to add rigid actor: parent physics world was not yet created" }
             return
         }
         if (actor == null) {
@@ -75,6 +80,37 @@ class PhysicsWorldComponent(
                 physicsWorld?.removeActor(actor)
             }
         }
+    }
+
+    fun addCharController(charController: CharacterControllerComponent): CharacterController? {
+        val world = physicsWorld
+        val charMgr = characterControllerManager
+        if (world == null) {
+            logE { "Unable to add character controller: parent physics world was not yet created" }
+            return null
+        }
+        if (charMgr == null) {
+            logE { "Unable to add character controller: controller manager was not yet created" }
+            return null
+        }
+        charControllers += charController
+        charController.isAttachedToSimulation = true
+
+        val props = CharacterControllerProperties(
+            height = charController.data.shape.length.toFloat(),
+            radius = charController.data.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
+            slopeLimit = charController.data.slopeLimit.deg,
+            contactOffset = CHARACTER_CONTACT_OFFSET
+        )
+        return charController.charController ?: charMgr.createController(props)
+    }
+
+    fun removeCharController(charController: CharacterControllerComponent) {
+        val charMgr = characterControllerManager ?: return
+        val ctrl = charController.charController ?: return
+        charMgr.removeController(ctrl)
+        charControllers -= charController
+        charController.isAttachedToSimulation = false
     }
 
     fun updateReferenceFrame() {
@@ -160,7 +196,17 @@ class PhysicsWorldComponent(
     }
 
     override fun destroyComponent() {
-        characterControllerManager?.release()
+        characterControllerManager?.let { mgr ->
+            charControllers.forEach {
+                it.charController?.let { ctrl ->
+                    mgr.removeController(ctrl)
+                    ctrl.release()
+                }
+                it.charController = null
+                it.isAttachedToSimulation = false
+            }
+            mgr.release()
+        }
         characterControllerManager = null
         physicsWorld?.let {
             it.unregisterHandlers()

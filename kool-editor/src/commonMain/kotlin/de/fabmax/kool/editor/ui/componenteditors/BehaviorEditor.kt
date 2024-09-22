@@ -348,7 +348,7 @@ class BehaviorEditor : ComponentEditor<BehaviorComponent>() {
 
     private fun UiScope.SetBehaviorPropertyAction(prop: BehaviorProperty): (BehaviorComponent, PropertyValue, PropertyValue) -> SetBehaviorPropertyAction {
         return { component: BehaviorComponent, undoData: PropertyValue, applyData: PropertyValue ->
-            SetBehaviorPropertyAction(component.gameEntity.id, prop.name, undoData, applyData) { comp, value ->
+            SetBehaviorPropertyAction(component.gameEntity.id, prop.name, component.data.behaviorClassName, undoData, applyData) { comp, value ->
                 prop.setProperty(comp, value)
                 val props = comp.data.propertyValues.toMutableMap()
                 props[prop.name] = value

@@ -2,6 +2,7 @@ package de.fabmax.kool.editor.components
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.GameEntity
+import de.fabmax.kool.editor.api.isDestroyed
 import de.fabmax.kool.editor.data.CharacterControllerComponentData
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.input.WalkAxes
@@ -9,11 +10,9 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.physics.RigidActor
 import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.CharacterController
-import de.fabmax.kool.physics.character.CharacterControllerProperties
 import de.fabmax.kool.physics.character.OnHitActorListener
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.launchOnMainThread
-import de.fabmax.kool.util.logE
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -25,8 +24,7 @@ class CharacterControllerComponent(
     PhysicsActorComponent<CharacterControllerComponentData>(gameEntity, componentInfo),
     OnHitActorListener
 {
-    var charController: CharacterController? = null
-        private set
+    var charController: CharacterController? = null; internal set
 
     var referenceFrontDirection = 0f.deg
 
@@ -81,37 +79,34 @@ class CharacterControllerComponent(
     }
 
     override fun destroyComponent() {
-        super.destroyComponent()
-        charController?.let { existing ->
-            getPhysicsWorldComponent(gameEntity.scene)?.characterControllerManager?.removeController(existing)
-            existing.release()
+        physicsWorldComponent?.let { world ->
+            if (!world.isDestroyed) {
+                charController?.let { ctrl ->
+                    world.removeCharController(this)
+                    ctrl.release()
+                    charController = null
+                }
+            }
         }
+        isAttachedToSimulation = false
+        charController = null
         axes?.release()
         axes = null
+        super.destroyComponent()
     }
 
     private suspend fun createCharController() {
         val physicsWorldComponent = getOrCreatePhysicsWorldComponent(gameEntity.scene)
-        val charManager = physicsWorldComponent.characterControllerManager
-        if (charManager == null) {
-            logE { "Unable to create character controller: parent physics world was not yet created" }
-            return
-        }
 
         var oldPos: Vec3d? = null
         charController?.let { existing ->
             oldPos = existing.position
-            charManager.removeController(existing)
+            physicsWorldComponent.removeCharController(this)
             existing.release()
+            charController = null
         }
 
-        val props = CharacterControllerProperties(
-            height = data.shape.length.toFloat(),
-            radius = data.shape.radius.toFloat() - CHARACTER_CONTACT_OFFSET,
-            slopeLimit = data.slopeLimit.deg,
-            contactOffset = CHARACTER_CONTACT_OFFSET
-        )
-        charController = charManager.createController(props).also {
+        charController = physicsWorldComponent.addCharController(this)?.also {
             it.onHitActorListeners += this
         }
 

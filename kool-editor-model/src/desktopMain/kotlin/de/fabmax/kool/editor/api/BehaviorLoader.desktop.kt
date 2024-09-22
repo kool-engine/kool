@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.api
 
+import de.fabmax.kool.util.logE
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -13,13 +14,22 @@ actual object BehaviorLoader {
     }
 
     actual fun getProperty(behavior: KoolBehavior, propertyName: String): Any? {
-        val prop = behavior::class.declaredMemberProperties.first { it.name == propertyName }
-        return prop.getter.call(behavior)
+        val prop = behavior::class.declaredMemberProperties.find { it.name == propertyName }
+        return if (prop == null) {
+            logE { "Property \"$propertyName\" not found in KoolBehavior \"${behavior::class.simpleName}\"" }
+            null
+        } else {
+            prop.getter.call(behavior)
+        }
     }
 
     actual fun setProperty(behavior: KoolBehavior, propertyName: String, value: Any?) {
-        val prop = behavior::class.declaredMemberProperties.first { it.name == propertyName } as KMutableProperty<*>
-        prop.setter.call(behavior, value)
+        val prop = behavior::class.declaredMemberProperties.find { it.name == propertyName } as KMutableProperty<*>?
+        if (prop == null) {
+            logE { "Property \"$propertyName\" not found in KoolBehavior \"${behavior::class.simpleName}\"" }
+        } else {
+            prop.setter.call(behavior, value)
+        }
     }
 
     interface AppBehaviorLoader {
