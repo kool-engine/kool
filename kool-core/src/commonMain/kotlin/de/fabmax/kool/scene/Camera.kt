@@ -43,6 +43,12 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var clipNear = 0.1f
     var clipFar = 1000f
 
+    /**
+     * Projection specific factors to convert linear depth to view space position (primarily used in shaders via
+     * [de.fabmax.kool.modules.ksl.blocks.CameraData]).
+     */
+    val depthToViewSpace = MutableVec4f()
+
     val isZeroToOneDepth: Boolean
         get() = KoolSystem.getContextOrNull()?.backend?.depthRange == DepthRange.ZERO_TO_ONE
     var isReverseDepthProjection = false
@@ -399,6 +405,8 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
             }
             proj.orthographic(left, right, bottom, top, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
         }
+
+        depthToViewSpace.set(1f, 1f, (right - left) / 2f, (top - bottom) / 2f)
     }
 
     override fun computeFrustumPlane(z: Float, result: FrustumPlane) {
@@ -477,6 +485,8 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
         sphereFacX = 1f / cos(angX)
         tangX = tan(angX)
         fovX = (angX * 2).rad
+
+        depthToViewSpace.set(tangX, tangY, 1f, 1f)
     }
 
     override fun computeFrustumPlane(z: Float, result: FrustumPlane) {

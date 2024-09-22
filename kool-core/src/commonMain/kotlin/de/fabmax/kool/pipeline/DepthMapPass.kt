@@ -102,7 +102,7 @@ class NormalLinearDepthMapPass(
     init {
         mirrorIfInvertedClipY()
         onAfterCollectDrawCommands += {
-            clearColor = Color(0f, 1f, 0f, 1f)
+            clearColor = Color.GREEN
         }
     }
 

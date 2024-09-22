@@ -177,9 +177,13 @@ class WgpuBindGroupData(
         )
 
         textureBindings += TextureBinding(this, loadedTex)
+        val texView = loadedTex.texture.gpuTexture.createView(
+            baseMipLevel = samplerSettings.baseMipLevel,
+            mipLevelCount = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else null
+        )
         return listOf(
             GPUBindGroupEntry(location.binding, sampler),
-            GPUBindGroupEntry(location.binding + 1, loadedTex.texture.gpuTexture.createView())
+            GPUBindGroupEntry(location.binding + 1, texView)
         )
     }
 
