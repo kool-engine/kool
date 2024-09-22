@@ -82,6 +82,7 @@ tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleOnlyVariants")
                 File(it, "de/fabmax/kool/math/Mat4.kt"),
                 File(it, "de/fabmax/kool/math/Mat4Stack.kt"),
                 File(it, "de/fabmax/kool/math/Quat.kt"),
+                File(it, "de/fabmax/kool/math/Pose.kt"),
                 File(it, "de/fabmax/kool/math/PointDistance.kt"),
                 File(it, "de/fabmax/kool/math/Plane.kt"),
                 File(it, "de/fabmax/kool/math/Ray.kt"),
