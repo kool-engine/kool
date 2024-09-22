@@ -23,14 +23,14 @@ abstract class KoolContext {
                 field = userValue
                 UiScale.windowScale.set(field)
                 UiScale.measuredScale = UiScale.windowScale.value * UiScale.uiScale.value
-                onWindowScaleChanged.forEach { it(this) }
+                onWindowScaleChanged.updated().forEach { it(this) }
             }
         }
 
     var isWindowFocused = true
         protected set(value) {
             field = value
-            onWindowFocusChanged.forEach { it(this) }
+            onWindowFocusChanged.updated().forEach { it(this) }
         }
 
     var isProfileRenderPasses = false
@@ -46,8 +46,9 @@ abstract class KoolContext {
     abstract val backend: RenderBackend
 
     var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
-    val onWindowScaleChanged = mutableListOf<(KoolContext) -> Unit>()
-    val onWindowFocusChanged = mutableListOf<(KoolContext) -> Unit>()
+    val onWindowScaleChanged = BufferedList<(KoolContext) -> Unit>()
+    val onWindowFocusChanged = BufferedList<(KoolContext) -> Unit>()
+    val onWindowSizeChanged = BufferedList<(KoolContext) -> Unit>()
     val onRender = BufferedList<(KoolContext) -> Unit>()
 
     /**

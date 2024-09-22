@@ -160,6 +160,7 @@ class JsContext internal constructor() : KoolContext() {
             // by canvas.style.width / canvas.style.height set on init
             canvas.width = windowWidth
             canvas.height = windowHeight
+            onWindowSizeChanged.updated().forEach { it(this) }
         }
 
         // render frame
