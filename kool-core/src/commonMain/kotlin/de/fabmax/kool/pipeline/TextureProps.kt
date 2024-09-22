@@ -65,6 +65,21 @@ data class SamplerSettings(
      * Compare method to use in case this sampler is used to sample a depth map. Otherwise, compare op is ignored.
      */
     val compareOp: DepthCompareOp = DepthCompareOp.ALWAYS,
+
+    /**
+     * Set the base mip level of the bound texture to the given level. Currently only used in WebGPU implementation.
+     *
+     * **Notice**: This is not really a sampler setting but a texture view setting.
+     */
+    val baseMipLevel: Int = 0,
+
+    /**
+     * Limit the accessible number of mip levels of the bound texture to the given level. Currently only used in
+     * WebGPU implementation.
+     *
+     * **Notice**: This is not really a sampler setting but a texture view setting.
+     */
+    val numMipLevels: Int = 0,
 ) {
     /**
      * Returns a copy of this [SamplerSettings] with [minFilter] and [magFilter] set to [FilterMethod.NEAREST].
@@ -105,6 +120,8 @@ data class SamplerSettings(
 
     fun noAnisotropy(): SamplerSettings = copy(maxAnisotropy = 1)
     fun withAnisotropy(maxAnisotropy: Int): SamplerSettings = copy(maxAnisotropy = maxAnisotropy)
+
+    fun limitMipLevels(baseLevel: Int, numLevels: Int) = copy(baseMipLevel = baseLevel, numMipLevels = numLevels)
 }
 
 enum class FilterMethod {

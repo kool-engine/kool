@@ -10,7 +10,7 @@ sealed class TextureBinding<T: Texture<*>?>(
 ) : PipelineBinding(textureName, shader) {
 
     private var cache: T = defaultTexture
-    private var samplerCache: SamplerSettings? = defaultSampler
+    private var cachedSamplerSettings: SamplerSettings? = defaultSampler
 
     fun get(): T {
         if (isValid) {
@@ -21,10 +21,10 @@ sealed class TextureBinding<T: Texture<*>?>(
         return cache
     }
 
-    fun set(value: T) {
+    fun set(value: T, samplerSettings: SamplerSettings? = cachedSamplerSettings) {
         cache = value
         if (isValid) {
-            bindGroupData?.setInData(value, samplerCache)
+            bindGroupData?.setInData(value, samplerSettings)
         }
     }
 
@@ -40,7 +40,7 @@ sealed class TextureBinding<T: Texture<*>?>(
             }
             bindGroup = group.group
             bindingIndex = tex.bindingIndex
-            pipeline.pipelineData.setInData(cache, samplerCache)
+            pipeline.pipelineData.setInData(cache, cachedSamplerSettings)
         }
     }
 

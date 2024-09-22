@@ -7,6 +7,7 @@ import de.fabmax.kool.math.toMutableMat4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.positioned
 
 fun KslProgram.mvpMatrix(): MvpMatrixData {
     return (dataBlocks.find { it is MvpMatrixData } as? MvpMatrixData) ?: MvpMatrixData(this)
@@ -14,6 +15,10 @@ fun KslProgram.mvpMatrix(): MvpMatrixData {
 
 fun KslProgram.modelMatrix(): ModelMatrixData {
     return (dataBlocks.find { it is ModelMatrixData } as? ModelMatrixData) ?: ModelMatrixData(this)
+}
+
+fun KslProgram.invProjMatrix(): InvProjMatrixData {
+    return (dataBlocks.find { it is InvProjMatrixData } as? InvProjMatrixData) ?: InvProjMatrixData(this)
 }
 
 abstract class MeshMatrixData(program: KslProgram, val uniformName: String) : KslDataBlock, KslShaderListener {
@@ -98,5 +103,49 @@ class ModelMatrixData(program: KslProgram) : MeshMatrixData(program, "uModelMat"
 
     companion object {
         const val NAME = "ModelMatrixData"
+    }
+}
+
+
+class InvProjMatrixData(program: KslProgram) : KslDataBlock, KslShaderListener {
+    override val name = NAME
+    val matrix: KslUniformMatrix<KslMat4, KslFloat4>
+
+    private val matrixUbo = KslUniformBuffer("uInvProjMat_ubo", program, BindGroupScope.VIEW).apply {
+        matrix = uniformMat4("uInvProjMat")
+    }
+
+    private var uboLayout: UniformBufferLayout? = null
+    private var bufferPos: BufferPosition? = null
+    private val tmpMat4f = MutableMat4f()
+
+    init {
+        program.shaderListeners += this
+        program.dataBlocks += this
+        program.uniformBuffers += matrixUbo
+    }
+
+    override fun onShaderCreated(shader: ShaderBase<*>) {
+        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.hasUniform("uInvProjMat") }
+        uboLayout = binding?.second
+        uboLayout?.let {
+            bufferPos = it.layout.uniformPositions["uInvProjMat"]
+        }
+    }
+
+    override fun onUpdate(cmd: DrawCommand) {
+        val bindingLayout = uboLayout ?: return
+        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
+
+        val q = cmd.queue
+        val cam = q.view.camera
+        val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
+
+        ubo.isBufferDirty = true
+        ubo.buffer.positioned(bufferPos!!.byteIndex) { cam.invProj.putTo(it) }
+    }
+
+    companion object {
+        const val NAME = "InvProjMatrixData"
     }
 }
