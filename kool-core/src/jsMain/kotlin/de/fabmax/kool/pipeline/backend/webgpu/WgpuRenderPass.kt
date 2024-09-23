@@ -34,28 +34,20 @@ abstract class WgpuRenderPass<T: RenderPass>(
             }
         }
 
-        for (mipLevel in 0 until renderPass.numRenderMipLevels) {
-            renderPass.setupMipLevel(mipLevel)
-
-            when (renderPass.viewRenderMode) {
-                RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
-                    passEncoderState.setup(encoder, renderPass)
-                    passEncoderState.begin(0, mipLevel, timestampWrites)
-                    for (viewIndex in renderPass.views.indices) {
-                        renderView(viewIndex, mipLevel, passEncoderState)
+        when (val mode = renderPass.mipMode) {
+            is RenderPass.MipMode.Render -> {
+                val numLevels = mode.getRenderMipLevels(renderPass.size)
+                if (mode.renderOrder == RenderPass.MipMapRenderOrder.HigherResolutionFirst) {
+                    for (mipLevel in 0 until numLevels) {
+                        renderPass.renderMipLevel(mipLevel, encoder, timestampWrites)
                     }
-                    passEncoderState.end()
-                }
-
-                RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
-                    for (viewIndex in renderPass.views.indices) {
-                        passEncoderState.setup(encoder, renderPass)
-                        passEncoderState.begin(viewIndex, mipLevel)
-                        renderView(viewIndex, mipLevel, passEncoderState)
-                        passEncoderState.end()
+                } else {
+                    for (mipLevel in (numLevels-1) downTo 0) {
+                        renderPass.renderMipLevel(mipLevel, encoder, timestampWrites)
                     }
                 }
             }
+            else -> renderPass.renderMipLevel(0, encoder, timestampWrites)
         }
 
         if (renderPass.mipMode == RenderPass.MipMode.Generate) {
@@ -71,6 +63,30 @@ abstract class WgpuRenderPass<T: RenderPass>(
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
         renderPass.afterDraw()
+    }
+
+    private fun T.renderMipLevel(mipLevel: Int, encoder: GPUCommandEncoder, timestampWrites: GPURenderPassTimestampWrites?) {
+        setupMipLevel(mipLevel)
+
+        when (viewRenderMode) {
+            RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
+                passEncoderState.setup(encoder, this)
+                passEncoderState.begin(0, mipLevel, timestampWrites)
+                for (viewIndex in views.indices) {
+                    renderView(viewIndex, mipLevel, passEncoderState)
+                }
+                passEncoderState.end()
+            }
+
+            RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
+                for (viewIndex in views.indices) {
+                    passEncoderState.setup(encoder, this)
+                    passEncoderState.begin(viewIndex, mipLevel)
+                    renderView(viewIndex, mipLevel, passEncoderState)
+                    passEncoderState.end()
+                }
+            }
+        }
     }
 
     private fun createTimestampQueries() {

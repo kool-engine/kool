@@ -709,7 +709,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     /**
      * texelFetch — perform a lookup of a single texel within a texture
      * @param sampler Specifies the sampler to which the texture from which texels will be retrieved is bound.
-     * @param coord Specifies the texture coordinates at which texture will be sampled.
+     * @param coord Specifies the integer texture coordinates at which texture will be sampled.
      * @param lod If present, specifies the level-of-detail within the texture from which the texel will be fetched.
      */
     fun <T: KslColorSampler<R>, R : KslFloatType> texelFetch(

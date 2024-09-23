@@ -160,13 +160,21 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             override fun getRenderMipLevels(size: Vec3i) = 1
         }
 
-        data class Render(val numMipLevels: Int = 0) : MipMode(true) {
+        data class Render(
+            val numMipLevels: Int,
+            val renderOrder: MipMapRenderOrder = MipMapRenderOrder.HigherResolutionFirst
+        ) : MipMode(true) {
             override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) getNumMipLevels(size.x, size.y) else numMipLevels
             override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)
         }
 
         abstract fun getTextureMipLevels(size: Vec3i): Int
         abstract fun getRenderMipLevels(size: Vec3i): Int
+    }
+
+    enum class MipMapRenderOrder {
+        HigherResolutionFirst,
+        LowerResolutionFirst
     }
 
     class UpdateEvent(val view: View, val ctx: KoolContext) {
