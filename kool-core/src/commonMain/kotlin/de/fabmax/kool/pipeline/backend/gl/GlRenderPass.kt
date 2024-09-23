@@ -22,30 +22,20 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
             it.begin()
         }
 
-        for (mipLevel in 0 until renderPass.numRenderMipLevels) {
-            renderPass.setupMipLevel(mipLevel)
-
-            when (renderPass.viewRenderMode) {
-                RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
-                    setupFramebuffer(0, mipLevel)
-                    clear(renderPass)
-                    for (viewIndex in renderPass.views.indices) {
-                        val view = renderPass.views[viewIndex]
-                        view.setupView()
-                        renderView(view, viewIndex, mipLevel)
+        when (val mode = renderPass.mipMode) {
+            is RenderPass.MipMode.Render -> {
+                val numLevels = mode.getRenderMipLevels(renderPass.size)
+                if (mode.renderOrder == RenderPass.MipMapRenderOrder.HigherResolutionFirst) {
+                    for (mipLevel in 0 until numLevels) {
+                        renderPass.renderMipLevel(mipLevel)
                     }
-                }
-
-                RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
-                    for (viewIndex in renderPass.views.indices) {
-                        setupFramebuffer(viewIndex, mipLevel)
-                        clear(renderPass)
-                        val view = renderPass.views[viewIndex]
-                        view.setupView()
-                        renderView(view, viewIndex, mipLevel)
+                } else {
+                    for (mipLevel in (numLevels-1) downTo 0) {
+                        renderPass.renderMipLevel(mipLevel)
                     }
                 }
             }
+            else -> renderPass.renderMipLevel(0)
         }
 
         var anySingleShots = false
@@ -58,6 +48,32 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         }
 
         q?.end()
+    }
+
+    private fun RenderPass.renderMipLevel(mipLevel: Int) {
+        setupMipLevel(mipLevel)
+
+        when (viewRenderMode) {
+            RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
+                setupFramebuffer(0, mipLevel)
+                clear(this)
+                for (viewIndex in views.indices) {
+                    val view = views[viewIndex]
+                    view.setupView()
+                    renderView(view, viewIndex, mipLevel)
+                }
+            }
+
+            RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
+                for (viewIndex in views.indices) {
+                    setupFramebuffer(viewIndex, mipLevel)
+                    clear(this)
+                    val view = views[viewIndex]
+                    view.setupView()
+                    renderView(view, viewIndex, mipLevel)
+                }
+            }
+        }
     }
 
     protected fun renderView(view: RenderPass.View, viewIndex: Int, mipLevel: Int) {
