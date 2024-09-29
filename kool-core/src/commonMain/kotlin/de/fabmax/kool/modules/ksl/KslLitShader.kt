@@ -303,7 +303,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     if (cfg.lightingCfg.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
                         val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
-                        aoFactor *= sampleTexture(aoMap, aoUv).x
+                        aoFactor *= sampleTexture(aoMap, aoUv, 0f.const).x
                     }
 
                     val irradiance = when (cfg.lightingCfg.ambientLight) {
