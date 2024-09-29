@@ -11,7 +11,11 @@ fun KslProgram.cameraData(): CameraData {
 }
 
 fun KslScopeBuilder.depthToViewSpacePos(linearDepth: KslExprFloat1, clipSpaceXy: KslExprFloat2, camData: CameraData): KslExprFloat3 {
-    return float3Value(clipSpaceXy * linearDepth * camData.depthToViewSpace.xy * camData.depthToViewSpace.zw, -linearDepth)
+    return depthToViewSpacePos(linearDepth, clipSpaceXy, camData.viewParams)
+}
+
+fun KslScopeBuilder.depthToViewSpacePos(linearDepth: KslExprFloat1, clipSpaceXy: KslExprFloat2, viewParams: KslExprFloat4): KslExprFloat3 {
+    return float3Value(clipSpaceXy * linearDepth * viewParams.xy + clipSpaceXy * viewParams.zw, -linearDepth)
 }
 
 class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
@@ -21,7 +25,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     val position: KslUniformVector<KslFloat3, KslFloat1>
     val direction: KslUniformVector<KslFloat3, KslFloat1>
     val clip: KslUniformVector<KslFloat2, KslFloat1>
-    val depthToViewSpace: KslUniformVector<KslFloat4, KslFloat1>
+    val viewParams: KslUniformVector<KslFloat4, KslFloat1>
 
     val viewMat: KslUniformMatrix<KslMat4, KslFloat4>
     val projMat: KslUniformMatrix<KslMat4, KslFloat4>
@@ -48,7 +52,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         position = uniformFloat3(UNIFORM_NAME_CAM_POSITION)
         direction = uniformFloat3(UNIFORM_NAME_CAM_DIRECTION)
         clip = uniformFloat2(UNIFORM_NAME_CAM_CLIP)
-        depthToViewSpace = uniformFloat4(UNIFORM_NAME_DEPTH_TO_VIEWSPACE)
+        viewParams = uniformFloat4(UNIFORM_NAME_VIEW_PARAMS)
 
         frameIndex = uniformInt1(UNIFORM_NAME_FRAME_INDEX)
     }
@@ -77,7 +81,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
             bufferPosPosition = it.layout.uniformPositions[UNIFORM_NAME_CAM_POSITION]
             bufferPosDirection = it.layout.uniformPositions[UNIFORM_NAME_CAM_DIRECTION]
             bufferPosClip = it.layout.uniformPositions[UNIFORM_NAME_CAM_CLIP]
-            bufferPosDepthToViewSpace = it.layout.uniformPositions[UNIFORM_NAME_DEPTH_TO_VIEWSPACE]
+            bufferPosDepthToViewSpace = it.layout.uniformPositions[UNIFORM_NAME_VIEW_PARAMS]
             bufferPosViewMat = it.layout.uniformPositions[UNIFORM_NAME_VIEW_MAT]
             bufferPosProjMat = it.layout.uniformPositions[UNIFORM_NAME_PROJ_MAT]
             bufferPosViewProjMat = it.layout.uniformPositions[UNIFORM_NAME_VIEW_PROJ_MAT]
@@ -99,7 +103,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         ubo.buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
         ubo.buffer.positioned(bufferPosDirection!!.byteIndex) { cam.globalLookDir.putTo(it) }
         ubo.buffer.positioned(bufferPosClip!!.byteIndex) { it.putFloat32(cam.clipNear); it.putFloat32(cam.clipFar) }
-        ubo.buffer.positioned(bufferPosDepthToViewSpace!!.byteIndex) { cam.depthToViewSpace.putTo(it) }
+        ubo.buffer.positioned(bufferPosDepthToViewSpace!!.byteIndex) { cam.viewParams.putTo(it) }
         ubo.buffer.positioned(bufferPosFrameIndex!!.byteIndex) { it.putInt32(Time.frameCount) }
         ubo.buffer.positioned(bufferPosViewMat!!.byteIndex) { q.viewMatF.putTo(it) }
         ubo.buffer.positioned(bufferPosProjMat!!.byteIndex) { q.projMat.putTo(it) }
@@ -118,7 +122,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         const val UNIFORM_NAME_CAM_POSITION = "uCamPos"
         const val UNIFORM_NAME_CAM_DIRECTION = "uCamDir"
         const val UNIFORM_NAME_CAM_CLIP = "uCamClip"
-        const val UNIFORM_NAME_DEPTH_TO_VIEWSPACE = "uDepthToViewSpace"
+        const val UNIFORM_NAME_VIEW_PARAMS = "uViewParams"
         const val UNIFORM_NAME_FRAME_INDEX = "uFrameIdx"
 
         const val UNIFORM_NAME_VIEW_MAT = "uViewMat"
