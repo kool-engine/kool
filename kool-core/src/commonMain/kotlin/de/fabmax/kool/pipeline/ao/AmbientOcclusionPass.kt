@@ -14,7 +14,6 @@ import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.releaseWith
 import kotlin.math.*
-import kotlin.random.Random
 
 class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
     OffscreenRenderPass2d(
@@ -78,7 +77,6 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
         val scales = (0 until n)
             .map { lerp(0.1f, 1f, (it.toFloat() / n).pow(2)) }
-            .shuffled(Random(17))
 
         for (i in 0 until n) {
             val xi = hammersley(i, n)

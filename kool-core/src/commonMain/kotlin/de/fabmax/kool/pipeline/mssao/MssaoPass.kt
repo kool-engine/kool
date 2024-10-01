@@ -36,6 +36,7 @@ class MssaoPass(
 
     var aoPower = mssaoShader.aoPower
     var aoDistance = mssaoShader.maxDist
+    var isUpsampling = mssaoShader.isUpsample
 
     private val mipLevelDatas = Array<MipLevelData?>(numLevels) { null }
 
@@ -116,6 +117,7 @@ class MssaoPass(
         private fun updateParams() {
             mssaoShader.aoPower = aoPower
             mssaoShader.maxDist = aoDistance
+            mssaoShader.isUpsample = isUpsampling
             scene?.let {
                 mssaoShader.viewportHeight = it.mainRenderPass.height
                 mssaoShader.camClipNear = it.camera.clipNear
@@ -130,6 +132,7 @@ class MssaoPass(
 
         var aoPower by uniform1f("aoPower", 1.3f)
         var maxDist by uniform1f("maxDist", 2f)
+        var isUpsample by uniform1i("isUpsample", 1)
 
         var viewportHeight by uniform1i("viewportHeight")
         var camViewParams by uniform4f("camViewParams")
@@ -164,6 +167,8 @@ class MssaoPass(
                 val viewportHeight = uniformInt1("viewportHeight")
                 val viewParams = uniformFloat4("camViewParams")
                 val clipNear = uniformFloat1("camClipNear")
+
+                val isUpsample = uniformInt1("isUpsample")
 
                 val level = uniformInt1("mipLevel")
                 val lowerLevel = uniformInt1("lowerAoMipLevel")
@@ -205,7 +210,6 @@ class MssaoPass(
                     val depth = float1Var(clipNear / texelFetch(gDepth, pxCoord, gBufferLevel).x)
                     val viewPos = float3Var(depthToViewSpacePos(depth, clipXy, viewParams))
                     val normal = float3Var(texelFetch(gNormal, pxCoord, gBufferLevel).xyz)
-                    normal.z set float1Var(sqrt(1f.const - normal.x * normal.x - normal.y * normal.y))
 
                     val dSample = float1Var()
                     val posSample = float3Var()
@@ -226,9 +230,9 @@ class MssaoPass(
                         posDiff set posSample - viewPos
                         dist set length(posDiff)
                         posDiff set posDiff / dist
-                        dist /= maxDist
+                        dist set saturate(dist / maxDist)
 
-                        ao1 += (1f.const - min(1f.const, dist * dist)) * saturate(dot(posDiff, normal))
+                        ao1 += (1f.const - dist * dist) * saturate(dot(posDiff, normal))
                     }
                     ao1 set ao1 / kernelSize.toFloat1()
 
@@ -255,13 +259,9 @@ class MssaoPass(
                         val wd3 = float1Var(pow(1f.const / (1f.const + abs(d3 - depth)), td))
 
                         val n0 = float3Var(texelFetch(gPrevNormal, prevPx0, gBufferLowerLevel).xyz)
-                        n0.z set float1Var(sqrt(1f.const - n0.x * n0.x - n0.y * n0.y))
                         val n1 = float3Var(texelFetch(gPrevNormal, prevPx1, gBufferLowerLevel).xyz)
-                        n1.z set float1Var(sqrt(1f.const - n1.x * n1.x - n1.y * n1.y))
                         val n2 = float3Var(texelFetch(gPrevNormal, prevPx2, gBufferLowerLevel).xyz)
-                        n2.z set float1Var(sqrt(1f.const - n2.x * n2.x - n2.y * n2.y))
                         val n3 = float3Var(texelFetch(gPrevNormal, prevPx3, gBufferLowerLevel).xyz)
-                        n3.z set float1Var(sqrt(1f.const - n3.x * n3.x - n3.y * n3.y))
 
                         val wn0 = float1Var(pow(dot(normal, n0) * 0.5f.const + 0.5f.const, tn))
                         val wn1 = float1Var(pow(dot(normal, n1) * 0.5f.const + 0.5f.const, tn))
@@ -282,9 +282,13 @@ class MssaoPass(
                         ao2 += sampleBlurred(prevPx3) * wbx1 * wby1 * wn3 * wd3
                     }
 
-                    val finalAo = float1Var(1f.const - pow(1f.const - max(ao1, ao2), aoPower))
+                    `if`(isUpsample eq 0.const) {
+                        ao2 set ao1
+                    }
+
+                    val finalAo = float1Var(max(ao1, ao2))
                     `if`(level eq 0.const) {
-                        finalAo set 1f.const - finalAo
+                        finalAo set pow(1f.const - finalAo, aoPower)
                     }
                     colorOutput(float4Value(finalAo, 0f.const, 0f.const, 1f.const))
                 }

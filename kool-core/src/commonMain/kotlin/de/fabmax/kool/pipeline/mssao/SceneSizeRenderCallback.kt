@@ -26,7 +26,7 @@ class SceneSizeRenderCallback(
 
         val mapW = (nW * sizeFactor).roundToInt()
         val mapH = (nH * sizeFactor).roundToInt()
-        if (renderPass.isEnabled && mapW > 0 && mapH > 0) {
+        if (renderPass.isEnabled && mapW > 0 && mapH > 0 && (mapW != renderPass.width || mapH != renderPass.height)) {
             renderPass.setSize(mapW, mapH)
         }
     }
