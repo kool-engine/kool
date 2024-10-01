@@ -10,17 +10,14 @@ import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.shading.AlphaMode
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.NodeId
-import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.logE
 
 class GbufferPass : OffscreenRenderPass2d(
     drawNode = Node(),
     attachmentConfig = AttachmentConfig(
         colorAttachments = ColorAttachmentTextures(
-            listOf(TextureAttachmentConfig(TexFormat.RG_F16, SamplerSettings().clamped().nearest()))
+            listOf(TextureAttachmentConfig(TexFormat.RGBA_F16, SamplerSettings().clamped().nearest()))
         ),
         depthAttachment = DepthAttachmentTexture()
     ),
@@ -38,11 +35,18 @@ class GbufferPass : OffscreenRenderPass2d(
             logE { "Gbuffer pass requires reverse depth scene" }
             return
         }
+
+        val proxyCam = PerspectiveProxyCam(scene.camera as PerspectiveCamera)
+
         isReverseDepth = true
         drawNode = scene
-        camera = scene.camera
+        camera = proxyCam
         sceneRenderCallback = SceneSizeRenderCallback(this, scene)
         scene.addOffscreenPass(this)
+
+        onBeforeCollectDrawCommands += { ev ->
+            proxyCam.sync(ev)
+        }
 
         mirrorIfInvertedClipY()
         onAfterCollectDrawCommands += { ev ->

@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.mssao
 
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.math.Vec3f
+import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
@@ -17,7 +17,7 @@ class GbufferDownsamplingPass(val gBuffer: GbufferPass, numLevels: Int) : Offscr
     drawNode = Node(),
     attachmentConfig = AttachmentConfig(
         colorAttachments = ColorAttachmentTextures(
-            listOf(TextureAttachmentConfig(TexFormat.RG_F16, SamplerSettings().clamped().nearest()))
+            listOf(TextureAttachmentConfig(TexFormat.RGBA_F16, SamplerSettings().clamped().nearest()))
         ),
         depthAttachment = DepthAttachmentTexture(),
         mipLevels = MipMode.Render(numLevels)
@@ -112,25 +112,25 @@ class GbufferDownsamplingPass(val gBuffer: GbufferPass, numLevels: Int) : Offscr
 
                     val texScale = int2Var(textureSize2d(normalTex, sampleLevel) - Vec2i.ONES.const)
                     val sampleCoord = int2Var((texScale.toFloat2() * uv.output).toInt2())
-                    val dnArray = float3Array(4, Vec3f.ZERO.const)
+                    val dnArray = float4Array(4, Vec4f.ZERO.const)
 
-                    dnArray[0].xy set texelFetch(normalTex, sampleCoord + int2Value(0, 0), sampleLevel).xy
-                    dnArray[0].z set clipNear / texelFetch(depthTex, sampleCoord + int2Value(0, 0), sampleLevel).x
+                    dnArray[0].xyz set texelFetch(normalTex, sampleCoord + int2Value(0, 0), sampleLevel).xyz
+                    dnArray[0].w set clipNear / texelFetch(depthTex, sampleCoord + int2Value(0, 0), sampleLevel).x
 
-                    dnArray[1].xy set texelFetch(normalTex, sampleCoord + int2Value(0, 1), sampleLevel).xy
-                    dnArray[1].z set clipNear / texelFetch(depthTex, sampleCoord + int2Value(0, 1), sampleLevel).x
+                    dnArray[1].xyz set texelFetch(normalTex, sampleCoord + int2Value(0, 1), sampleLevel).xyz
+                    dnArray[1].w set clipNear / texelFetch(depthTex, sampleCoord + int2Value(0, 1), sampleLevel).x
 
-                    dnArray[2].xy set texelFetch(normalTex, sampleCoord + int2Value(1, 0), sampleLevel).xy
-                    dnArray[2].z set clipNear / texelFetch(depthTex, sampleCoord + int2Value(1, 0), sampleLevel).x
+                    dnArray[2].xyz set texelFetch(normalTex, sampleCoord + int2Value(1, 0), sampleLevel).xyz
+                    dnArray[2].w set clipNear / texelFetch(depthTex, sampleCoord + int2Value(1, 0), sampleLevel).x
 
-                    dnArray[3].xy set texelFetch(normalTex, sampleCoord + int2Value(1, 1), sampleLevel).xy
-                    dnArray[3].z set clipNear / texelFetch(depthTex, sampleCoord + int2Value(1, 1), sampleLevel).x
+                    dnArray[3].xyz set texelFetch(normalTex, sampleCoord + int2Value(1, 1), sampleLevel).xyz
+                    dnArray[3].w set clipNear / texelFetch(depthTex, sampleCoord + int2Value(1, 1), sampleLevel).x
 
                     // bubble sort sampled values by depth
-                    val swap = float3Var()
+                    val swap = float4Var()
                     for (i in 0 until 3) {
                         for (j in (i + 1) until 4) {
-                            `if`(dnArray[j].z lt dnArray[i].z) {
+                            `if`(dnArray[j].w lt dnArray[i].w) {
                                 swap set dnArray[i]
                                 dnArray[i] set dnArray[j]
                                 dnArray[j] set swap
@@ -138,18 +138,18 @@ class GbufferDownsamplingPass(val gBuffer: GbufferPass, numLevels: Int) : Offscr
                         }
                     }
 
-                    val dRange = float1Var(dnArray[3].z - dnArray[0].z)
-                    val d = float1Var(dnArray[1].z)
-                    val n = float2Var(dnArray[1].xy)
+                    val dRange = float1Var(dnArray[3].w - dnArray[0].w)
+                    val d = float1Var(dnArray[1].w)
+                    val n = float3Var(dnArray[1].xyz)
 
                     `if`(dRange lt medianThresh) {
-                        val n1 = float3Var(float3Value(dnArray[1].xy, sqrt(1f.const - dnArray[1].x * dnArray[1].x - dnArray[1].y * dnArray[1].y)))
-                        val n2 = float3Var(float3Value(dnArray[2].xy, sqrt(1f.const - dnArray[2].x * dnArray[2].x - dnArray[2].y * dnArray[2].y)))
-                        n set ((n1 + n2) * 0.5f.const).xy
-                        d set (dnArray[1].z + dnArray[2].z) * 0.5f.const
+                        val n1 = dnArray[1].xyz
+                        val n2 = dnArray[2].xyz
+                        n set normalize(n1 + n2)
+                        d set (dnArray[1].w + dnArray[2].w) * 0.5f.const
                     }
 
-                    colorOutput(float4Value(n, 0f.const, 1f.const))
+                    colorOutput(float4Value(n, 1f.const))
                     outDepth set clipNear / d
                 }
             }
