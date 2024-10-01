@@ -42,7 +42,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private val teapotMesh: Mesh get() = teapot.meshes.values.first()
 
     private val isAoEnabled = mutableStateOf(true).onChange { _, new -> aoPipeline.isEnabled = new }
-    private val isAutoRotate = mutableStateOf(true)
+    private val isAutoRotate = mutableStateOf(false)
     private val isSpotLight = mutableStateOf(true).onChange { _, new -> updateLighting(new) }
     private val showAoMapValues = listOf("None", "Filtered", "Noisy")
     private val showAoMapIndex = mutableStateOf(0)
@@ -53,10 +53,12 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private val aoSamples = mutableStateOf(16).onChange { _, new -> aoPipeline.kernelSz = new }
     private val aoMapSize = mutableStateOf(1f).onChange { _, new -> aoPipeline.mapSize = new }
 
+    private lateinit var orbitCam: OrbitInputTransform
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         updateLighting(isSpotLight.value)
 
-        orbitCamera {
+        orbitCam = orbitCamera {
             translation.set(0.0, -0.7, 0.0)
             // Set some initial rotation so that we look down on the scene
             setRotation(0f, -30f)
@@ -80,7 +82,13 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         aoSamples.set(aoPipeline.kernelSz)
         aoMapSize.set(aoPipeline.mapSize)
 
-        addColorMesh("teapots") {
+        addTeapots()
+
+        addNode(Skybox.cube(ibl.reflectionMap, 1.5f))
+    }
+
+    private fun Scene.addTeapots() {
+        addColorMesh {
             generate {
                 for (x in -3..3) {
                     for (y in -3..3) {
@@ -111,7 +119,6 @@ class AoDemo : DemoScene("Ambient Occlusion") {
         }
 
         addTextureMesh("ground", isNormalMapped = true) {
-            isCastingShadow = false
             generate {
                 // generate a cube (as set of rects for better control over tex coords)
                 val texScale = 0.1955f
@@ -193,8 +200,6 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             }
             this.shader = shader
         }
-
-        addNode(Skybox.cube(ibl.reflectionMap, 1.5f))
     }
 
     private fun RectProps.setUvs(u: Float, v: Float, width: Float, height: Float) {
@@ -221,6 +226,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        surface.inputMode = UiSurface.InputCaptureMode.CaptureOverBackground
+
         LabeledSwitch("AO enabled", isAoEnabled)
         MenuRow {
             Text("Show AO map") { labelStyle() }
@@ -280,13 +287,14 @@ class AoDemo : DemoScene("Ambient Occlusion") {
             if (shader != null) {
                 surface.popup().apply {
                     modifier
-                        .margin(sizes.gap)
-                        .zLayer(UiSurface.LAYER_BACKGROUND)
+                        .zLayer(UiSurface.LAYER_BACKGROUND - 100)
                         .align(AlignmentX.Start, AlignmentY.Bottom)
+                        .size(Grow.Std, Grow.Std)
 
                     Image {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.45f / aoMapSize.value))
+                            .size(Grow.Std, Grow.Std)
+                            .imageSize(ImageSize.Stretch)
                             .imageProvider(FlatImageProvider(shader.colorMap, true).mirrorY())
                             .customShader(shader)
                     }
