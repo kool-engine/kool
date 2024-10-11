@@ -20,7 +20,7 @@ kotlin {
                 outputDirectory.set(File("${rootDir}/dist/kool-demo"))
             }
             commonWebpackConfig {
-                mode = if (LocalProperties.get(project).isRelease) {
+                mode = if (localProperties.isRelease) {
                     KotlinWebpackConfig.Mode.PRODUCTION
                 } else {
                     KotlinWebpackConfig.Mode.DEVELOPMENT

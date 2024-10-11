@@ -13,9 +13,13 @@ class LocalProperties private constructor(file: File) : Properties() {
 
     operator fun get(key: String): String? = getProperty(key, System.getenv(key))
 
+    fun getOrElse(key: String, default: String) = get(key) ?: default
+
     companion object {
         fun get(project: Project): LocalProperties {
             return LocalProperties(project.rootProject.file("local.properties"))
         }
     }
 }
+
+val Project.localProperties: LocalProperties get() = LocalProperties.get(this)

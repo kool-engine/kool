@@ -1,6 +1,8 @@
 plugins {
     id("kool.lib-conventions")
     id("kool.publish-conventions")
+
+    id("de.fabmax.webidl-util") version "0.9.0"
 }
 
 kotlin {
@@ -21,5 +23,17 @@ kotlin {
             api(npm(libs.physxjswebidl.get().name, libs.versions.physxjswebidl.get()))
 //            api(npm(File("$projectDir/npm/physx-js-webidl")))
         }
+    }
+}
+
+webidl {
+    localProperties["physx-js.webidldir"]?.let { modelPath = file(it) }
+    modelName = "PhysXJs"
+
+    generateKotlinJsInterfaces {
+        outputDirectory = file("${projectDir}/src/jsMain/kotlin/physx")
+        packagePrefix = "physx"
+        moduleName = "physx-js-webidl"
+        modulePromiseName = "PhysX"
     }
 }
