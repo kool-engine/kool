@@ -1,5 +1,7 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.Platform
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.editor.ui.componenteditors.BehaviorEditor
 import de.fabmax.kool.util.launchOnMainThread
@@ -70,8 +72,10 @@ class AppLoader(val editor: KoolEditor) : AppSourcesChangeListener {
                 try {
                     if (appSourcesChanged) {
                         appSourcesChanged = false
-                        editor.ui.appStateInfo.set("Building app...")
-                        loadService.buildApp()
+                        if (KoolSystem.platform != Platform.JAVASCRIPT) {
+                            editor.ui.appStateInfo.set("Building app...")
+                            loadService.buildApp()
+                        }
                     }
                     editor.ui.appStateInfo.set("Loading app...")
                     val app = loadService.loadApp()

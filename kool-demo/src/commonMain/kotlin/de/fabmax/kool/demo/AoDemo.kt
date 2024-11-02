@@ -42,7 +42,7 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private val teapotMesh: Mesh get() = teapot.meshes.values.first()
 
     private val isAoEnabled = mutableStateOf(true).onChange { _, new -> aoPipeline.isEnabled = new }
-    private val isAutoRotate = mutableStateOf(false)
+    private val isAutoRotate = mutableStateOf(true)
     private val isSpotLight = mutableStateOf(true).onChange { _, new -> updateLighting(new) }
     private val showAoMapValues = listOf("None", "Filtered", "Noisy")
     private val showAoMapIndex = mutableStateOf(0)
