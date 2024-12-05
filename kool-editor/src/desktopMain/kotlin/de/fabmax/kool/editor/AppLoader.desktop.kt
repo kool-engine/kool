@@ -49,14 +49,15 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
 
         private fun checkIfSourceFileChanged(file: FileSystemFile) {
             // only trigger app reload if an actual source file has changed
-            // valid source file need to be kotlin files be somewhere under /src/ - this excludes assets under /src/*/resources/
+            // valid source file needs to be kotlin file and located under /src/ - this excludes assets under /src/*/resources/
+            // generated behavior bindings file is not watched
             if (file is PhysicalFileSystem.File) {
                 if (file.path.startsWith("/src/") &&
                     file.path.endsWith(".kt") &&
                     file.path.removePrefix("/") != JS_BEHAVIOR_GEN_OUTPUT &&
                     !appSourcesChanged.getAndSet(true)
                 ) {
-                    logD { "App sources changed" }
+                    logD { "App sources have changed" }
                     changeListeners.forEach { it.onAppSourcesChanged() }
                 }
             }
@@ -65,7 +66,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
 
     init {
         if (physFs == null) {
-            logW { "Project file system is not physical, dynamic app building and loading will not work." }
+            logW { "Project's file system is not physical, dynamic app building and loading will not work" }
         }
         projectFiles.fileSystem.addFileSystemWatcher(fsWatcher)
     }
