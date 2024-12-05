@@ -192,16 +192,16 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         }
     }
 
+    private class EmptyApp : EditorAwareApp {
+        override suspend fun loadApp(projectModel: EditorProject, ctx: KoolContext) {
+            projectModel.createScenes()
+        }
+    }
+
     companion object {
         private const val BUILD_GRADLE = "build.gradle.kts"
         private const val GRADLE_BUILD_TASK = "jvmMainClasses"
         private const val BUILD_OUTPUT_CLASSES = "build/classes/kotlin/jvm/main"
         private const val JS_BEHAVIOR_GEN_OUTPUT = "src/jsMain/kotlin/BehaviorBindings.kt"
-    }
-
-    private class EmptyApp : EditorAwareApp {
-        override suspend fun loadApp(projectModel: EditorProject, ctx: KoolContext) {
-            projectModel.createScenes()
-        }
     }
 }
