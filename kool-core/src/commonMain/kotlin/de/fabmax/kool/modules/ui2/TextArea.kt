@@ -172,38 +172,45 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         selectionHandler.updateSelectionRange()
         linesHolder.indices(lineProvider.size) { lineIndex ->
             val line = lineProvider[lineIndex]
-            AttributedText(line) {
-                modifier.width(Grow.MinFit)
+            setupTextLine(line, lineIndex, textAreaMod, lineProvider)
+        }
+    }
 
-                if (this@TextAreaNode.modifier.onSelectionChanged != null) {
-                    modifier
-                        .onClick {
-                            when (it.pointer.leftButtonRepeatedClickCount) {
-                                1 -> selectionHandler.onSelectStart(this, lineIndex, it, false)
-                                2 -> selectionHandler.selectWord(this, line.text, lineIndex, it)
-                                3 -> selectionHandler.selectLine(this, line.text, lineIndex)
-                            }
-                        }
-                        .onDragStart { selectionHandler.onSelectStart(this, lineIndex, it, true) }
-                        .onDrag { selectionHandler.onDrag(it) }
-                        .onDragEnd { selectionHandler.onSelectEnd() }
-                        .onPointer { selectionHandler.onPointer(this, lineIndex, it) }
+    protected fun UiScope.setupTextLine(
+        line: TextLine,
+        lineIndex: Int,
+        textAreaMod: TextAreaModifier,
+        lineProvider: TextLineProvider,
+    ) = AttributedText(line) {
+        modifier.width(Grow.MinFit)
 
-                    modifier.padding(start = textAreaMod.lineStartPadding, end = textAreaMod.lineEndPadding)
-                    if (lineIndex == 0) {
-                        modifier
-                            .textAlignY(AlignmentY.Bottom)
-                            .padding(top = textAreaMod.firstLineTopPadding)
+        if (this@TextAreaNode.modifier.onSelectionChanged != null) {
+            modifier
+                .onClick {
+                    when (it.pointer.leftButtonRepeatedClickCount) {
+                        1 -> selectionHandler.onSelectStart(this, lineIndex, it, false)
+                        2 -> selectionHandler.selectWord(this, line.text, lineIndex, it)
+                        3 -> selectionHandler.selectLine(this, line.text, lineIndex)
                     }
-                    if (lineIndex == lineProvider.lastIndex) {
-                        modifier
-                            .textAlignY(AlignmentY.Top)
-                            .padding(bottom = textAreaMod.lastLineBottomPadding)
-                    }
-
-                    selectionHandler.applySelectionRange(this, line, lineIndex)
                 }
+                .onDragStart { selectionHandler.onSelectStart(this, lineIndex, it, true) }
+                .onDrag { selectionHandler.onDrag(it) }
+                .onDragEnd { selectionHandler.onSelectEnd() }
+                .onPointer { selectionHandler.onPointer(this, lineIndex, it) }
+
+            modifier.padding(start = textAreaMod.lineStartPadding, end = textAreaMod.lineEndPadding)
+            if (lineIndex == 0) {
+                modifier
+                    .textAlignY(AlignmentY.Bottom)
+                    .padding(top = textAreaMod.firstLineTopPadding)
             }
+            if (lineIndex == lineProvider.lastIndex) {
+                modifier
+                    .textAlignY(AlignmentY.Top)
+                    .padding(bottom = textAreaMod.lastLineBottomPadding)
+            }
+
+            selectionHandler.applySelectionRange(this, line, lineIndex)
         }
     }
 
