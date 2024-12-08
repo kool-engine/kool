@@ -172,16 +172,17 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         selectionHandler.updateSelectionRange()
         linesHolder.indices(lineProvider.size) { lineIndex ->
             val line = lineProvider[lineIndex]
-            setupTextLine(line, lineIndex, textAreaMod, lineProvider)
+            setupTextLine(this, line, lineIndex, textAreaMod, lineProvider)
         }
     }
 
-    protected fun UiScope.setupTextLine(
+    protected open fun setupTextLine(
+        scope: UiScope,
         line: TextLine,
         lineIndex: Int,
         textAreaMod: TextAreaModifier,
         lineProvider: TextLineProvider,
-    ) = AttributedText(line) {
+    ): UiScope = scope.AttributedText(line) {
         modifier.width(Grow.MinFit)
 
         if (this@TextAreaNode.modifier.onSelectionChanged != null) {
