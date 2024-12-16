@@ -6,7 +6,7 @@ kotlin-serialization = "1.7.3"
 kotlin-datetime = "0.6.1"
 kotlin-atomicfu = "0.26.1"
 kotlin-dokka = "1.9.20"
-lwjgl = "3.3.4"
+lwjgl = "3.3.5"
 jsvg = "1.6.1"
 androidsvg = "1.4"
 physxjni = "2.4.2"
@@ -32,7 +32,6 @@ lwjgl-vma = { group = "org.lwjgl", name = "lwjgl-vma", version.ref = "lwjgl" }
 lwjgl-shaderc = { group = "org.lwjgl", name = "lwjgl-shaderc", version.ref = "lwjgl" }
 lwjgl-nfd = { group = "org.lwjgl", name = "lwjgl-nfd", version.ref = "lwjgl" }
 lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
-lwjgl-ktx = { group = "org.lwjgl", name = "lwjgl-ktx", version = "3.3.3" } # with 3.3.4 ktx crashes on windows when compressing textures to basis format
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
 physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
 
@@ -44,4 +43,4 @@ plugindep-dokka = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin",
 plugindep-android-library = { group = "com.android.library", name = "com.android.library.gradle.plugin", version.ref = "agp" }
 
 [bundles]
-lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb", "lwjgl-ktx"]
+lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb"]

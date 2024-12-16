@@ -37,7 +37,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
 
     override fun hideTitleBar(windowPtr: Long) {
         val glfwHWnd = glfwGetWin32Window(windowPtr)
-        val originalWndProcPtr = GetWindowLongPtr(glfwHWnd, GWL_WNDPROC)
+        val originalWndProcPtr = GetWindowLongPtr(null, glfwHWnd, GWL_WNDPROC)
 
         val wndProc = WindowProc.create { hWnd, uMsg, wParam, lParam ->
             when (uMsg) {
@@ -105,7 +105,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
             }
         }
 
-        SetWindowLongPtr(glfwHWnd, GWL_WNDPROC, wndProc.address())
+        SetWindowLongPtr(null, glfwHWnd, GWL_WNDPROC, wndProc.address())
         isHiddenTitleBar = true
     }
 
@@ -119,7 +119,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
         return memStack {
             val hWnd = glfwGetWin32Window(windowPtr)
             val rect = RECT.calloc(this)
-            GetWindowRect(hWnd, rect)
+            GetWindowRect(null, hWnd, rect)
             Vec2i(rect.left(), rect.top())
         }
     }
@@ -127,7 +127,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     override fun setWindowPos(windowPtr: Long, x: Int, y: Int) {
         if (isHiddenTitleBar) {
             val hWnd = glfwGetWin32Window(windowPtr)
-            SetWindowPos(hWnd, 0L, x, y, 0, 0, SWP_FRAMECHANGED or SWP_NOSIZE)
+            SetWindowPos(null, hWnd, 0L, x, y, 0, 0, SWP_FRAMECHANGED or SWP_NOSIZE)
         } else {
             super.setWindowPos(windowPtr, x, y)
         }
@@ -136,7 +136,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     override fun setWindowSize(windowPtr: Long, width: Int, height: Int) {
         if (isHiddenTitleBar) {
             val hWnd = glfwGetWin32Window(windowPtr)
-            SetWindowPos(hWnd, 0L, 0, 0, width + nonTopBorder * 2, height + nonTopBorder + topBorder, SWP_FRAMECHANGED or SWP_NOMOVE)
+            SetWindowPos(null, hWnd, 0L, 0, 0, width + nonTopBorder * 2, height + nonTopBorder + topBorder, SWP_FRAMECHANGED or SWP_NOMOVE)
         } else {
             super.setWindowSize(windowPtr, width, height)
         }
