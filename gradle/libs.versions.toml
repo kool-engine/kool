@@ -32,7 +32,7 @@ lwjgl-vma = { group = "org.lwjgl", name = "lwjgl-vma", version.ref = "lwjgl" }
 lwjgl-shaderc = { group = "org.lwjgl", name = "lwjgl-shaderc", version.ref = "lwjgl" }
 lwjgl-nfd = { group = "org.lwjgl", name = "lwjgl-nfd", version.ref = "lwjgl" }
 lwjgl-stb = { group = "org.lwjgl", name = "lwjgl-stb", version.ref = "lwjgl" }
-lwjgl-ktx = { group = "org.lwjgl", name = "lwjgl-ktx", version = "3.3.3" } # with 3.3.4 ktx crashes on windows when compressing textures to basis format
+lwjgl-ktx = { group = "org.lwjgl", name = "lwjgl-ktx", version = "3.3.5" } # with 3.3.4 ktx crashes on windows when compressing textures to basis format
 physxjni = { group = "de.fabmax", name = "physx-jni", version.ref = "physxjni" }
 physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxjswebidl" }
 
