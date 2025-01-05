@@ -60,7 +60,7 @@ task("cacheRuntimeLibs") {
         val platformName = when {
             os.isLinux -> "natives-linux"
             os.isWindows -> "natives-windows"
-            os.isMacOsX && "arm" in os.nativePrefix -> "natives-macos-arm64"
+            os.isMacOsX && "aarch64" in System.getProperty("os.arch") -> "natives-macos-arm64"
             os.isMacOsX -> "natives-macos"
             else -> ""
         }

@@ -23,7 +23,8 @@ kotlin {
             implementation(libs.jsvg)
 
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                libs.bundles.lwjgl.get().filter { it.name != "lwjgl-vulkan" }.forEach { lib ->
+                val hasVulkanRuntime = "macos" in platform
+                libs.bundles.lwjgl.get().filter { it.name != "lwjgl-vulkan" || hasVulkanRuntime }.forEach { lib ->
                     runtimeOnly("$lib:$platform")
                 }
             }
