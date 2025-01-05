@@ -34,3 +34,7 @@ kotlin {
         }
     }
 }
+
+dokka {
+    dokkaGeneratorIsolation = ClassLoaderIsolation()
+}
