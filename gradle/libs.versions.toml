@@ -9,8 +9,8 @@ kotlin-dokka = "2.0.0"
 lwjgl = "3.3.5"
 jsvg = "1.6.1"
 androidsvg = "1.4"
-physxjni = "2.4.2"
-physxjswebidl = "2.4.2"
+physxjni = "2.5.0"
+physxjswebidl = "2.5.0"
 
 [libraries]
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
