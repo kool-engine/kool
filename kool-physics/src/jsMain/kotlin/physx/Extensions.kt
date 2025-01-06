@@ -5,668 +5,6 @@
 
 package physx
 
-external interface PxExtensionTopLevelFunctions {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param sdk        WebIDL type: [PxPhysics] (Ref)
-     * @param plane      WebIDL type: [PxPlane] (Const, Ref)
-     * @param material   WebIDL type: [PxMaterial] (Ref)
-     * @param filterData WebIDL type: [PxFilterData] (Const, Ref)
-     * @return WebIDL type: [PxRigidStatic]
-     */
-    fun CreatePlane(sdk: PxPhysics, plane: PxPlane, material: PxMaterial, filterData: PxFilterData): PxRigidStatic
-
-}
-
-fun PxExtensionTopLevelFunctionsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxExtensionTopLevelFunctions = js("_module.wrapPointer(ptr, _module.PxExtensionTopLevelFunctions)")
-
-external interface PxCollectionExt {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param collection WebIDL type: [PxCollection] (Ref)
-     */
-    fun releaseObjects(collection: PxCollection)
-
-    /**
-     * @param collection             WebIDL type: [PxCollection] (Ref)
-     * @param releaseExclusiveShapes WebIDL type: boolean
-     */
-    fun releaseObjects(collection: PxCollection, releaseExclusiveShapes: Boolean)
-
-    /**
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param concreteType WebIDL type: unsigned short
-     */
-    fun remove(collection: PxCollection, concreteType: Short)
-
-    /**
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param concreteType WebIDL type: unsigned short
-     * @param to           WebIDL type: [PxCollection]
-     */
-    fun remove(collection: PxCollection, concreteType: Short, to: PxCollection)
-
-    /**
-     * @param scene WebIDL type: [PxScene] (Ref)
-     * @return WebIDL type: [PxCollection]
-     */
-    fun createCollection(scene: PxScene): PxCollection
-
-}
-
-fun PxCollectionExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCollectionExt = js("_module.wrapPointer(ptr, _module.PxCollectionExt)")
-
-fun PxCollectionExt.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxDefaultMemoryInputData : PxInputData {
-    /**
-     * @param dest  WebIDL type: VoidPtr
-     * @param count WebIDL type: unsigned long
-     * @return WebIDL type: unsigned long
-     */
-    fun read(dest: Any, count: Int): Int
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getLength(): Int
-
-    /**
-     * @param pos WebIDL type: unsigned long
-     */
-    fun seek(pos: Int)
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun tell(): Int
-
-}
-
-/**
- * @param data   WebIDL type: [PxU8Ptr] (Ref)
- * @param length WebIDL type: unsigned long
- */
-fun PxDefaultMemoryInputData(data: PxU8Ptr, length: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryInputData = js("new _module.PxDefaultMemoryInputData(data, length)")
-
-fun PxDefaultMemoryInputDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryInputData = js("_module.wrapPointer(ptr, _module.PxDefaultMemoryInputData)")
-
-fun PxDefaultMemoryInputData.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-val PxDefaultMemoryInputData.length
-    get() = getLength()
-
-external interface PxDefaultMemoryOutputStream : PxOutputStream {
-    /**
-     * @param src   WebIDL type: VoidPtr
-     * @param count WebIDL type: unsigned long
-     */
-    fun write(src: Any, count: Int)
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getSize(): Int
-
-    /**
-     * @return WebIDL type: VoidPtr
-     */
-    fun getData(): Any
-
-}
-
-fun PxDefaultMemoryOutputStream(_module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryOutputStream = js("new _module.PxDefaultMemoryOutputStream()")
-
-fun PxDefaultMemoryOutputStreamFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryOutputStream = js("_module.wrapPointer(ptr, _module.PxDefaultMemoryOutputStream)")
-
-fun PxDefaultMemoryOutputStream.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-val PxDefaultMemoryOutputStream.size
-    get() = getSize()
-val PxDefaultMemoryOutputStream.data
-    get() = getData()
-
-external interface PxMassProperties {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxMat33] (Value)
-     */
-    var inertiaTensor: PxMat33
-    /**
-     * WebIDL type: [PxVec3] (Value)
-     */
-    var centerOfMass: PxVec3
-    /**
-     * WebIDL type: float
-     */
-    var mass: Float
-
-    /**
-     * @param t WebIDL type: [PxVec3] (Const, Ref)
-     */
-    fun translate(t: PxVec3)
-
-    /**
-     * @param inertia   WebIDL type: [PxMat33] (Const, Ref)
-     * @param massFrame WebIDL type: [PxQuat] (Ref)
-     * @return WebIDL type: [PxVec3] (Value)
-     */
-    fun getMassSpaceInertia(inertia: PxMat33, massFrame: PxQuat): PxVec3
-
-    /**
-     * @param inertia WebIDL type: [PxMat33] (Const, Ref)
-     * @param mass    WebIDL type: float
-     * @param t       WebIDL type: [PxVec3] (Const, Ref)
-     * @return WebIDL type: [PxMat33] (Value)
-     */
-    fun translateInertia(inertia: PxMat33, mass: Float, t: PxVec3): PxMat33
-
-    /**
-     * @param inertia WebIDL type: [PxMat33] (Const, Ref)
-     * @param q       WebIDL type: [PxQuat] (Const, Ref)
-     * @return WebIDL type: [PxMat33] (Value)
-     */
-    fun rotateInertia(inertia: PxMat33, q: PxQuat): PxMat33
-
-    /**
-     * @param inertia       WebIDL type: [PxMat33] (Const, Ref)
-     * @param scaleRotation WebIDL type: [PxQuat] (Const, Ref)
-     * @param scale         WebIDL type: [PxVec3] (Const, Ref)
-     * @return WebIDL type: [PxMat33] (Value)
-     */
-    fun scaleInertia(inertia: PxMat33, scaleRotation: PxQuat, scale: PxVec3): PxMat33
-
-    /**
-     * @param props      WebIDL type: [PxMassProperties] (Const)
-     * @param transforms WebIDL type: [PxTransform] (Const)
-     * @param count      WebIDL type: unsigned long
-     * @return WebIDL type: [PxMassProperties] (Value)
-     */
-    fun sum(props: PxMassProperties, transforms: PxTransform, count: Int): PxMassProperties
-
-}
-
-fun PxMassProperties(_module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties()")
-
-/**
- * @param m        WebIDL type: float
- * @param inertiaT WebIDL type: [PxMat33] (Const, Ref)
- * @param com      WebIDL type: [PxVec3] (Const, Ref)
- */
-fun PxMassProperties(m: Float, inertiaT: PxMat33, com: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties(m, inertiaT, com)")
-
-/**
- * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
- */
-fun PxMassProperties(geometry: PxGeometry, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties(geometry)")
-
-fun PxMassPropertiesFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("_module.wrapPointer(ptr, _module.PxMassProperties)")
-
-fun PxMassProperties.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxMeshOverlapUtil {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param geom     WebIDL type: [PxGeometry] (Const, Ref)
-     * @param geomPose WebIDL type: [PxTransform] (Const, Ref)
-     * @param meshGeom WebIDL type: [PxTriangleMeshGeometry] (Const, Ref)
-     * @param meshPose WebIDL type: [PxTransform] (Const, Ref)
-     * @return WebIDL type: unsigned long
-     */
-    fun findOverlap(geom: PxGeometry, geomPose: PxTransform, meshGeom: PxTriangleMeshGeometry, meshPose: PxTransform): Int
-
-    /**
-     * @return WebIDL type: [PxU32ConstPtr] (Value)
-     */
-    fun getResults(): PxU32ConstPtr
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getNbResults(): Int
-
-}
-
-fun PxMeshOverlapUtil(_module: dynamic = PhysXJsLoader.physXJs): PxMeshOverlapUtil = js("new _module.PxMeshOverlapUtil()")
-
-fun PxMeshOverlapUtilFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMeshOverlapUtil = js("_module.wrapPointer(ptr, _module.PxMeshOverlapUtil)")
-
-fun PxMeshOverlapUtil.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-val PxMeshOverlapUtil.results
-    get() = getResults()
-val PxMeshOverlapUtil.nbResults
-    get() = getNbResults()
-
-external interface PxRigidActorExt {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param actor    WebIDL type: [PxRigidActor] (Ref)
-     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
-     * @param material WebIDL type: [PxMaterial] (Const, Ref)
-     * @return WebIDL type: [PxShape]
-     */
-    fun createExclusiveShape(actor: PxRigidActor, geometry: PxGeometry, material: PxMaterial): PxShape
-
-    /**
-     * @param actor    WebIDL type: [PxRigidActor] (Ref)
-     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
-     * @param material WebIDL type: [PxMaterial] (Const, Ref)
-     * @param flags    WebIDL type: [PxShapeFlags] (Ref)
-     * @return WebIDL type: [PxShape]
-     */
-    fun createExclusiveShape(actor: PxRigidActor, geometry: PxGeometry, material: PxMaterial, flags: PxShapeFlags): PxShape
-
-}
-
-fun PxRigidActorExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidActorExt = js("_module.wrapPointer(ptr, _module.PxRigidActorExt)")
-
-fun PxRigidActorExt.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxRigidBodyExt {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param body    WebIDL type: [PxRigidBody] (Ref)
-     * @param density WebIDL type: float
-     * @return WebIDL type: boolean
-     */
-    fun updateMassAndInertia(body: PxRigidBody, density: Float): Boolean
-
-    /**
-     * @param body          WebIDL type: [PxRigidBody] (Ref)
-     * @param density       WebIDL type: float
-     * @param massLocalPose WebIDL type: [PxVec3]
-     * @return WebIDL type: boolean
-     */
-    fun updateMassAndInertia(body: PxRigidBody, density: Float, massLocalPose: PxVec3): Boolean
-
-    /**
-     * @param body                WebIDL type: [PxRigidBody] (Ref)
-     * @param density             WebIDL type: float
-     * @param massLocalPose       WebIDL type: [PxVec3]
-     * @param includeNonSimShapes WebIDL type: boolean
-     * @return WebIDL type: boolean
-     */
-    fun updateMassAndInertia(body: PxRigidBody, density: Float, massLocalPose: PxVec3, includeNonSimShapes: Boolean): Boolean
-
-    /**
-     * @param body WebIDL type: [PxRigidBody] (Ref)
-     * @param mass WebIDL type: float
-     * @return WebIDL type: boolean
-     */
-    fun setMassAndUpdateInertia(body: PxRigidBody, mass: Float): Boolean
-
-    /**
-     * @param body          WebIDL type: [PxRigidBody] (Ref)
-     * @param mass          WebIDL type: float
-     * @param massLocalPose WebIDL type: [PxVec3]
-     * @return WebIDL type: boolean
-     */
-    fun setMassAndUpdateInertia(body: PxRigidBody, mass: Float, massLocalPose: PxVec3): Boolean
-
-    /**
-     * @param body                WebIDL type: [PxRigidBody] (Ref)
-     * @param mass                WebIDL type: float
-     * @param massLocalPose       WebIDL type: [PxVec3]
-     * @param includeNonSimShapes WebIDL type: boolean
-     * @return WebIDL type: boolean
-     */
-    fun setMassAndUpdateInertia(body: PxRigidBody, mass: Float, massLocalPose: PxVec3, includeNonSimShapes: Boolean): Boolean
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     */
-    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
-     */
-    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
-
-    /**
-     * @param body   WebIDL type: [PxRigidBody] (Ref)
-     * @param force  WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
-     * @param wakeup WebIDL type: boolean
-     */
-    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     */
-    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
-     */
-    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
-
-    /**
-     * @param body   WebIDL type: [PxRigidBody] (Ref)
-     * @param force  WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
-     * @param wakeup WebIDL type: boolean
-     */
-    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     */
-    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
-     */
-    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
-
-    /**
-     * @param body   WebIDL type: [PxRigidBody] (Ref)
-     * @param force  WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
-     * @param wakeup WebIDL type: boolean
-     */
-    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     */
-    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
-
-    /**
-     * @param body  WebIDL type: [PxRigidBody] (Ref)
-     * @param force WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
-     */
-    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
-
-    /**
-     * @param body   WebIDL type: [PxRigidBody] (Ref)
-     * @param force  WebIDL type: [PxVec3] (Const, Ref)
-     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
-     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
-     * @param wakeup WebIDL type: boolean
-     */
-    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
-
-    /**
-     * @param body WebIDL type: [PxRigidBody] (Const, Ref)
-     * @param pos  WebIDL type: [PxVec3] (Const, Ref)
-     * @return WebIDL type: [PxVec3] (Value)
-     */
-    fun getVelocityAtPos(body: PxRigidBody, pos: PxVec3): PxVec3
-
-    /**
-     * @param body WebIDL type: [PxRigidBody] (Const, Ref)
-     * @param pos  WebIDL type: [PxVec3] (Const, Ref)
-     * @return WebIDL type: [PxVec3] (Value)
-     */
-    fun getLocalVelocityAtLocalPos(body: PxRigidBody, pos: PxVec3): PxVec3
-
-    /**
-     * @param body WebIDL type: [PxRigidBody] (Const, Ref)
-     * @param pos  WebIDL type: [PxVec3] (Const, Ref)
-     * @return WebIDL type: [PxVec3] (Value)
-     */
-    fun getVelocityAtOffset(body: PxRigidBody, pos: PxVec3): PxVec3
-
-    /**
-     * @param body                 WebIDL type: [PxRigidBody] (Const, Ref)
-     * @param impulsiveForce       WebIDL type: [PxVec3] (Const, Ref)
-     * @param impulsiveTorque      WebIDL type: [PxVec3] (Const, Ref)
-     * @param deltaLinearVelocity  WebIDL type: [PxVec3] (Ref)
-     * @param deltaAngularVelocity WebIDL type: [PxVec3] (Ref)
-     */
-    fun computeVelocityDeltaFromImpulse(body: PxRigidBody, impulsiveForce: PxVec3, impulsiveTorque: PxVec3, deltaLinearVelocity: PxVec3, deltaAngularVelocity: PxVec3)
-
-    /**
-     * @param body                 WebIDL type: [PxRigidBody] (Const, Ref)
-     * @param globalPose           WebIDL type: [PxTransform] (Const, Ref)
-     * @param point                WebIDL type: [PxVec3] (Const, Ref)
-     * @param impulse              WebIDL type: [PxVec3] (Const, Ref)
-     * @param invMassScale         WebIDL type: float
-     * @param invInertiaScale      WebIDL type: float
-     * @param deltaLinearVelocity  WebIDL type: [PxVec3] (Ref)
-     * @param deltaAngularVelocity WebIDL type: [PxVec3] (Ref)
-     */
-    fun computeVelocityDeltaFromImpulse(body: PxRigidBody, globalPose: PxTransform, point: PxVec3, impulse: PxVec3, invMassScale: Float, invInertiaScale: Float, deltaLinearVelocity: PxVec3, deltaAngularVelocity: PxVec3)
-
-    /**
-     * @param body            WebIDL type: [PxRigidBody] (Const, Ref)
-     * @param globalPose      WebIDL type: [PxTransform] (Const, Ref)
-     * @param point           WebIDL type: [PxVec3] (Const, Ref)
-     * @param impulse         WebIDL type: [PxVec3] (Const, Ref)
-     * @param invMassScale    WebIDL type: float
-     * @param invInertiaScale WebIDL type: float
-     * @param linearImpulse   WebIDL type: [PxVec3] (Ref)
-     * @param angularImpulse  WebIDL type: [PxVec3] (Ref)
-     */
-    fun computeLinearAngularImpulse(body: PxRigidBody, globalPose: PxTransform, point: PxVec3, impulse: PxVec3, invMassScale: Float, invInertiaScale: Float, linearImpulse: PxVec3, angularImpulse: PxVec3)
-
-}
-
-fun PxRigidBodyExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidBodyExt = js("_module.wrapPointer(ptr, _module.PxRigidBodyExt)")
-
-fun PxRigidBodyExt.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxSerialization {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @param collection WebIDL type: [PxCollection] (Ref)
-     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
-     * @return WebIDL type: boolean
-     */
-    fun isSerializable(collection: PxCollection, sr: PxSerializationRegistry): Boolean
-
-    /**
-     * @param collection         WebIDL type: [PxCollection] (Ref)
-     * @param sr                 WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param externalReferences WebIDL type: [PxCollection] (Const)
-     * @return WebIDL type: boolean
-     */
-    fun isSerializable(collection: PxCollection, sr: PxSerializationRegistry, externalReferences: PxCollection): Boolean
-
-    /**
-     * @param collection WebIDL type: [PxCollection] (Ref)
-     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
-     */
-    fun complete(collection: PxCollection, sr: PxSerializationRegistry)
-
-    /**
-     * @param collection WebIDL type: [PxCollection] (Ref)
-     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param exceptFor  WebIDL type: [PxCollection] (Const)
-     */
-    fun complete(collection: PxCollection, sr: PxSerializationRegistry, exceptFor: PxCollection)
-
-    /**
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param exceptFor    WebIDL type: [PxCollection] (Const)
-     * @param followJoints WebIDL type: boolean
-     */
-    fun complete(collection: PxCollection, sr: PxSerializationRegistry, exceptFor: PxCollection, followJoints: Boolean)
-
-    /**
-     * @param collection WebIDL type: [PxCollection] (Ref)
-     * @param base       WebIDL type: unsigned long long
-     */
-    fun createSerialObjectIds(collection: PxCollection, base: Long)
-
-    /**
-     * @param inputData WebIDL type: [PxInputData] (Ref)
-     * @param params    WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param sr        WebIDL type: [PxSerializationRegistry] (Ref)
-     * @return WebIDL type: [PxCollection]
-     */
-    fun createCollectionFromXml(inputData: PxInputData, params: PxCookingParams, sr: PxSerializationRegistry): PxCollection
-
-    /**
-     * @param inputData    WebIDL type: [PxInputData] (Ref)
-     * @param params       WebIDL type: [PxCookingParams] (Const, Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param externalRefs WebIDL type: [PxCollection] (Const)
-     * @return WebIDL type: [PxCollection]
-     */
-    fun createCollectionFromXml(inputData: PxInputData, params: PxCookingParams, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
-
-    /**
-     * @param memBlock WebIDL type: VoidPtr
-     * @param sr       WebIDL type: [PxSerializationRegistry] (Ref)
-     * @return WebIDL type: [PxCollection]
-     */
-    fun createCollectionFromBinary(memBlock: Any, sr: PxSerializationRegistry): PxCollection
-
-    /**
-     * @param memBlock     WebIDL type: VoidPtr
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param externalRefs WebIDL type: [PxCollection] (Const)
-     * @return WebIDL type: [PxCollection]
-     */
-    fun createCollectionFromBinary(memBlock: Any, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
-
-    /**
-     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @return WebIDL type: boolean
-     */
-    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry): Boolean
-
-    /**
-     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param params       WebIDL type: [PxCookingParams] (Const)
-     * @return WebIDL type: boolean
-     */
-    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, params: PxCookingParams): Boolean
-
-    /**
-     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param params       WebIDL type: [PxCookingParams] (Const)
-     * @param externalRefs WebIDL type: [PxCollection] (Const)
-     * @return WebIDL type: boolean
-     */
-    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, params: PxCookingParams, externalRefs: PxCollection): Boolean
-
-    /**
-     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @return WebIDL type: boolean
-     */
-    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry): Boolean
-
-    /**
-     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param externalRefs WebIDL type: [PxCollection] (Const)
-     * @return WebIDL type: boolean
-     */
-    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, externalRefs: PxCollection): Boolean
-
-    /**
-     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
-     * @param collection   WebIDL type: [PxCollection] (Ref)
-     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
-     * @param externalRefs WebIDL type: [PxCollection] (Const)
-     * @param exportNames  WebIDL type: boolean
-     * @return WebIDL type: boolean
-     */
-    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, externalRefs: PxCollection, exportNames: Boolean): Boolean
-
-    /**
-     * @param physics WebIDL type: [PxPhysics] (Ref)
-     * @return WebIDL type: [PxSerializationRegistry]
-     */
-    fun createSerializationRegistry(physics: PxPhysics): PxSerializationRegistry
-
-}
-
-fun PxSerializationFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerialization = js("_module.wrapPointer(ptr, _module.PxSerialization)")
-
-fun PxSerialization.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxSerializationRegistry {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    fun release()
-
-}
-
-fun PxSerializationRegistryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerializationRegistry = js("_module.wrapPointer(ptr, _module.PxSerializationRegistry)")
-
 external interface PxGjkQueryProximityInfoResult {
     /**
      * Native object address.
@@ -1382,6 +720,36 @@ fun PxFixedJoint.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxGearJoint : PxJoint {
+    /**
+     * @param hinge0 WebIDL type: [PxBase] (Const)
+     * @param hinge1 WebIDL type: [PxBase] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun setHinges(hinge0: PxBase, hinge1: PxBase): Boolean
+
+    /**
+     * @param ratio WebIDL type: float
+     */
+    fun setGearRatio(ratio: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getGearRatio(): Float
+
+}
+
+fun PxGearJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxGearJoint = js("_module.wrapPointer(ptr, _module.PxGearJoint)")
+
+fun PxGearJoint.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxGearJoint.gearRatio
+    get() = getGearRatio()
+    set(value) { setGearRatio(value) }
+
 external interface PxJoint : PxBase {
     /**
      * WebIDL type: VoidPtr
@@ -1777,6 +1145,44 @@ fun PxPrismaticJointFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxRackAndPinionJoint : PxJoint {
+    /**
+     * @param hinge     WebIDL type: [PxBase] (Const)
+     * @param prismatic WebIDL type: [PxBase] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun setJoints(hinge: PxBase, prismatic: PxBase): Boolean
+
+    /**
+     * @param ratio WebIDL type: float
+     */
+    fun setRatio(ratio: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getRatio(): Float
+
+    /**
+     * @param nbRackTeeth   WebIDL type: unsigned long
+     * @param nbPinionTeeth WebIDL type: unsigned long
+     * @param rackLength    WebIDL type: float
+     * @return WebIDL type: boolean
+     */
+    fun setData(nbRackTeeth: Int, nbPinionTeeth: Int, rackLength: Float): Boolean
+
+}
+
+fun PxRackAndPinionJointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRackAndPinionJoint = js("_module.wrapPointer(ptr, _module.PxRackAndPinionJoint)")
+
+fun PxRackAndPinionJoint.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+var PxRackAndPinionJoint.ratio
+    get() = getRatio()
+    set(value) { setRatio(value) }
+
 external interface PxRevoluteJoint : PxJoint {
     /**
      * @return WebIDL type: float
@@ -2017,6 +1423,668 @@ fun PxSpringFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxS
 fun PxSpring.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+external interface PxExtensionTopLevelFunctions {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param sdk        WebIDL type: [PxPhysics] (Ref)
+     * @param plane      WebIDL type: [PxPlane] (Const, Ref)
+     * @param material   WebIDL type: [PxMaterial] (Ref)
+     * @param filterData WebIDL type: [PxFilterData] (Const, Ref)
+     * @return WebIDL type: [PxRigidStatic]
+     */
+    fun CreatePlane(sdk: PxPhysics, plane: PxPlane, material: PxMaterial, filterData: PxFilterData): PxRigidStatic
+
+}
+
+fun PxExtensionTopLevelFunctionsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxExtensionTopLevelFunctions = js("_module.wrapPointer(ptr, _module.PxExtensionTopLevelFunctions)")
+
+external interface PxCollectionExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     */
+    fun releaseObjects(collection: PxCollection)
+
+    /**
+     * @param collection             WebIDL type: [PxCollection] (Ref)
+     * @param releaseExclusiveShapes WebIDL type: boolean
+     */
+    fun releaseObjects(collection: PxCollection, releaseExclusiveShapes: Boolean)
+
+    /**
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param concreteType WebIDL type: unsigned short
+     */
+    fun remove(collection: PxCollection, concreteType: Short)
+
+    /**
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param concreteType WebIDL type: unsigned short
+     * @param to           WebIDL type: [PxCollection]
+     */
+    fun remove(collection: PxCollection, concreteType: Short, to: PxCollection)
+
+    /**
+     * @param scene WebIDL type: [PxScene] (Ref)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollection(scene: PxScene): PxCollection
+
+}
+
+fun PxCollectionExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxCollectionExt = js("_module.wrapPointer(ptr, _module.PxCollectionExt)")
+
+fun PxCollectionExt.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxDefaultMemoryInputData : PxInputData {
+    /**
+     * @param dest  WebIDL type: VoidPtr
+     * @param count WebIDL type: unsigned long
+     * @return WebIDL type: unsigned long
+     */
+    fun read(dest: Any, count: Int): Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getLength(): Int
+
+    /**
+     * @param pos WebIDL type: unsigned long
+     */
+    fun seek(pos: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun tell(): Int
+
+}
+
+/**
+ * @param data   WebIDL type: [PxU8Ptr] (Ref)
+ * @param length WebIDL type: unsigned long
+ */
+fun PxDefaultMemoryInputData(data: PxU8Ptr, length: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryInputData = js("new _module.PxDefaultMemoryInputData(data, length)")
+
+fun PxDefaultMemoryInputDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryInputData = js("_module.wrapPointer(ptr, _module.PxDefaultMemoryInputData)")
+
+fun PxDefaultMemoryInputData.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxDefaultMemoryInputData.length
+    get() = getLength()
+
+external interface PxDefaultMemoryOutputStream : PxOutputStream {
+    /**
+     * @param src   WebIDL type: VoidPtr
+     * @param count WebIDL type: unsigned long
+     */
+    fun write(src: Any, count: Int)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getSize(): Int
+
+    /**
+     * @return WebIDL type: VoidPtr
+     */
+    fun getData(): Any
+
+}
+
+fun PxDefaultMemoryOutputStream(_module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryOutputStream = js("new _module.PxDefaultMemoryOutputStream()")
+
+fun PxDefaultMemoryOutputStreamFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDefaultMemoryOutputStream = js("_module.wrapPointer(ptr, _module.PxDefaultMemoryOutputStream)")
+
+fun PxDefaultMemoryOutputStream.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxDefaultMemoryOutputStream.size
+    get() = getSize()
+val PxDefaultMemoryOutputStream.data
+    get() = getData()
+
+external interface PxMassProperties {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxMat33] (Value)
+     */
+    var inertiaTensor: PxMat33
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var centerOfMass: PxVec3
+    /**
+     * WebIDL type: float
+     */
+    var mass: Float
+
+    /**
+     * @param t WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun translate(t: PxVec3)
+
+    /**
+     * @param inertia   WebIDL type: [PxMat33] (Const, Ref)
+     * @param massFrame WebIDL type: [PxQuat] (Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getMassSpaceInertia(inertia: PxMat33, massFrame: PxQuat): PxVec3
+
+    /**
+     * @param inertia WebIDL type: [PxMat33] (Const, Ref)
+     * @param mass    WebIDL type: float
+     * @param t       WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun translateInertia(inertia: PxMat33, mass: Float, t: PxVec3): PxMat33
+
+    /**
+     * @param inertia WebIDL type: [PxMat33] (Const, Ref)
+     * @param q       WebIDL type: [PxQuat] (Const, Ref)
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun rotateInertia(inertia: PxMat33, q: PxQuat): PxMat33
+
+    /**
+     * @param inertia       WebIDL type: [PxMat33] (Const, Ref)
+     * @param scaleRotation WebIDL type: [PxQuat] (Const, Ref)
+     * @param scale         WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun scaleInertia(inertia: PxMat33, scaleRotation: PxQuat, scale: PxVec3): PxMat33
+
+    /**
+     * @param props      WebIDL type: [PxMassProperties] (Const)
+     * @param transforms WebIDL type: [PxTransform] (Const)
+     * @param count      WebIDL type: unsigned long
+     * @return WebIDL type: [PxMassProperties] (Value)
+     */
+    fun sum(props: PxMassProperties, transforms: PxTransform, count: Int): PxMassProperties
+
+}
+
+fun PxMassProperties(_module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties()")
+
+/**
+ * @param m        WebIDL type: float
+ * @param inertiaT WebIDL type: [PxMat33] (Const, Ref)
+ * @param com      WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun PxMassProperties(m: Float, inertiaT: PxMat33, com: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties(m, inertiaT, com)")
+
+/**
+ * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+ */
+fun PxMassProperties(geometry: PxGeometry, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("new _module.PxMassProperties(geometry)")
+
+fun PxMassPropertiesFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMassProperties = js("_module.wrapPointer(ptr, _module.PxMassProperties)")
+
+fun PxMassProperties.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxMeshOverlapUtil {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param geom     WebIDL type: [PxGeometry] (Const, Ref)
+     * @param geomPose WebIDL type: [PxTransform] (Const, Ref)
+     * @param meshGeom WebIDL type: [PxTriangleMeshGeometry] (Const, Ref)
+     * @param meshPose WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: unsigned long
+     */
+    fun findOverlap(geom: PxGeometry, geomPose: PxTransform, meshGeom: PxTriangleMeshGeometry, meshPose: PxTransform): Int
+
+    /**
+     * @return WebIDL type: [PxU32ConstPtr] (Value)
+     */
+    fun getResults(): PxU32ConstPtr
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbResults(): Int
+
+}
+
+fun PxMeshOverlapUtil(_module: dynamic = PhysXJsLoader.physXJs): PxMeshOverlapUtil = js("new _module.PxMeshOverlapUtil()")
+
+fun PxMeshOverlapUtilFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMeshOverlapUtil = js("_module.wrapPointer(ptr, _module.PxMeshOverlapUtil)")
+
+fun PxMeshOverlapUtil.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+val PxMeshOverlapUtil.results
+    get() = getResults()
+val PxMeshOverlapUtil.nbResults
+    get() = getNbResults()
+
+external interface PxRigidActorExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param actor    WebIDL type: [PxRigidActor] (Ref)
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @param material WebIDL type: [PxMaterial] (Const, Ref)
+     * @return WebIDL type: [PxShape]
+     */
+    fun createExclusiveShape(actor: PxRigidActor, geometry: PxGeometry, material: PxMaterial): PxShape
+
+    /**
+     * @param actor    WebIDL type: [PxRigidActor] (Ref)
+     * @param geometry WebIDL type: [PxGeometry] (Const, Ref)
+     * @param material WebIDL type: [PxMaterial] (Const, Ref)
+     * @param flags    WebIDL type: [PxShapeFlags] (Ref)
+     * @return WebIDL type: [PxShape]
+     */
+    fun createExclusiveShape(actor: PxRigidActor, geometry: PxGeometry, material: PxMaterial, flags: PxShapeFlags): PxShape
+
+}
+
+fun PxRigidActorExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidActorExt = js("_module.wrapPointer(ptr, _module.PxRigidActorExt)")
+
+fun PxRigidActorExt.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxRigidBodyExt {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param body    WebIDL type: [PxRigidBody] (Ref)
+     * @param density WebIDL type: float
+     * @return WebIDL type: boolean
+     */
+    fun updateMassAndInertia(body: PxRigidBody, density: Float): Boolean
+
+    /**
+     * @param body          WebIDL type: [PxRigidBody] (Ref)
+     * @param density       WebIDL type: float
+     * @param massLocalPose WebIDL type: [PxVec3]
+     * @return WebIDL type: boolean
+     */
+    fun updateMassAndInertia(body: PxRigidBody, density: Float, massLocalPose: PxVec3): Boolean
+
+    /**
+     * @param body                WebIDL type: [PxRigidBody] (Ref)
+     * @param density             WebIDL type: float
+     * @param massLocalPose       WebIDL type: [PxVec3]
+     * @param includeNonSimShapes WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun updateMassAndInertia(body: PxRigidBody, density: Float, massLocalPose: PxVec3, includeNonSimShapes: Boolean): Boolean
+
+    /**
+     * @param body WebIDL type: [PxRigidBody] (Ref)
+     * @param mass WebIDL type: float
+     * @return WebIDL type: boolean
+     */
+    fun setMassAndUpdateInertia(body: PxRigidBody, mass: Float): Boolean
+
+    /**
+     * @param body          WebIDL type: [PxRigidBody] (Ref)
+     * @param mass          WebIDL type: float
+     * @param massLocalPose WebIDL type: [PxVec3]
+     * @return WebIDL type: boolean
+     */
+    fun setMassAndUpdateInertia(body: PxRigidBody, mass: Float, massLocalPose: PxVec3): Boolean
+
+    /**
+     * @param body                WebIDL type: [PxRigidBody] (Ref)
+     * @param mass                WebIDL type: float
+     * @param massLocalPose       WebIDL type: [PxVec3]
+     * @param includeNonSimShapes WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun setMassAndUpdateInertia(body: PxRigidBody, mass: Float, massLocalPose: PxVec3, includeNonSimShapes: Boolean): Boolean
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
+     */
+    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+
+    /**
+     * @param body   WebIDL type: [PxRigidBody] (Ref)
+     * @param force  WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
+     * @param wakeup WebIDL type: boolean
+     */
+    fun addForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
+     */
+    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+
+    /**
+     * @param body   WebIDL type: [PxRigidBody] (Ref)
+     * @param force  WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
+     * @param wakeup WebIDL type: boolean
+     */
+    fun addForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
+     */
+    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+
+    /**
+     * @param body   WebIDL type: [PxRigidBody] (Ref)
+     * @param force  WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
+     * @param wakeup WebIDL type: boolean
+     */
+    fun addLocalForceAtPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3)
+
+    /**
+     * @param body  WebIDL type: [PxRigidBody] (Ref)
+     * @param force WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos   WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode  WebIDL type: [PxForceModeEnum] (enum)
+     */
+    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int)
+
+    /**
+     * @param body   WebIDL type: [PxRigidBody] (Ref)
+     * @param force  WebIDL type: [PxVec3] (Const, Ref)
+     * @param pos    WebIDL type: [PxVec3] (Const, Ref)
+     * @param mode   WebIDL type: [PxForceModeEnum] (enum)
+     * @param wakeup WebIDL type: boolean
+     */
+    fun addLocalForceAtLocalPos(body: PxRigidBody, force: PxVec3, pos: PxVec3, mode: Int, wakeup: Boolean)
+
+    /**
+     * @param body WebIDL type: [PxRigidBody] (Const, Ref)
+     * @param pos  WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getVelocityAtPos(body: PxRigidBody, pos: PxVec3): PxVec3
+
+    /**
+     * @param body WebIDL type: [PxRigidBody] (Const, Ref)
+     * @param pos  WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getLocalVelocityAtLocalPos(body: PxRigidBody, pos: PxVec3): PxVec3
+
+    /**
+     * @param body WebIDL type: [PxRigidBody] (Const, Ref)
+     * @param pos  WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun getVelocityAtOffset(body: PxRigidBody, pos: PxVec3): PxVec3
+
+    /**
+     * @param body                 WebIDL type: [PxRigidBody] (Const, Ref)
+     * @param impulsiveForce       WebIDL type: [PxVec3] (Const, Ref)
+     * @param impulsiveTorque      WebIDL type: [PxVec3] (Const, Ref)
+     * @param deltaLinearVelocity  WebIDL type: [PxVec3] (Ref)
+     * @param deltaAngularVelocity WebIDL type: [PxVec3] (Ref)
+     */
+    fun computeVelocityDeltaFromImpulse(body: PxRigidBody, impulsiveForce: PxVec3, impulsiveTorque: PxVec3, deltaLinearVelocity: PxVec3, deltaAngularVelocity: PxVec3)
+
+    /**
+     * @param body                 WebIDL type: [PxRigidBody] (Const, Ref)
+     * @param globalPose           WebIDL type: [PxTransform] (Const, Ref)
+     * @param point                WebIDL type: [PxVec3] (Const, Ref)
+     * @param impulse              WebIDL type: [PxVec3] (Const, Ref)
+     * @param invMassScale         WebIDL type: float
+     * @param invInertiaScale      WebIDL type: float
+     * @param deltaLinearVelocity  WebIDL type: [PxVec3] (Ref)
+     * @param deltaAngularVelocity WebIDL type: [PxVec3] (Ref)
+     */
+    fun computeVelocityDeltaFromImpulse(body: PxRigidBody, globalPose: PxTransform, point: PxVec3, impulse: PxVec3, invMassScale: Float, invInertiaScale: Float, deltaLinearVelocity: PxVec3, deltaAngularVelocity: PxVec3)
+
+    /**
+     * @param body            WebIDL type: [PxRigidBody] (Const, Ref)
+     * @param globalPose      WebIDL type: [PxTransform] (Const, Ref)
+     * @param point           WebIDL type: [PxVec3] (Const, Ref)
+     * @param impulse         WebIDL type: [PxVec3] (Const, Ref)
+     * @param invMassScale    WebIDL type: float
+     * @param invInertiaScale WebIDL type: float
+     * @param linearImpulse   WebIDL type: [PxVec3] (Ref)
+     * @param angularImpulse  WebIDL type: [PxVec3] (Ref)
+     */
+    fun computeLinearAngularImpulse(body: PxRigidBody, globalPose: PxTransform, point: PxVec3, impulse: PxVec3, invMassScale: Float, invInertiaScale: Float, linearImpulse: PxVec3, angularImpulse: PxVec3)
+
+}
+
+fun PxRigidBodyExtFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRigidBodyExt = js("_module.wrapPointer(ptr, _module.PxRigidBodyExt)")
+
+fun PxRigidBodyExt.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxSerialization {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun isSerializable(collection: PxCollection, sr: PxSerializationRegistry): Boolean
+
+    /**
+     * @param collection         WebIDL type: [PxCollection] (Ref)
+     * @param sr                 WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalReferences WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun isSerializable(collection: PxCollection, sr: PxSerializationRegistry, externalReferences: PxCollection): Boolean
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
+     */
+    fun complete(collection: PxCollection, sr: PxSerializationRegistry)
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param sr         WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param exceptFor  WebIDL type: [PxCollection] (Const)
+     */
+    fun complete(collection: PxCollection, sr: PxSerializationRegistry, exceptFor: PxCollection)
+
+    /**
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param exceptFor    WebIDL type: [PxCollection] (Const)
+     * @param followJoints WebIDL type: boolean
+     */
+    fun complete(collection: PxCollection, sr: PxSerializationRegistry, exceptFor: PxCollection, followJoints: Boolean)
+
+    /**
+     * @param collection WebIDL type: [PxCollection] (Ref)
+     * @param base       WebIDL type: unsigned long long
+     */
+    fun createSerialObjectIds(collection: PxCollection, base: Long)
+
+    /**
+     * @param inputData WebIDL type: [PxInputData] (Ref)
+     * @param params    WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param sr        WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromXml(inputData: PxInputData, params: PxCookingParams, sr: PxSerializationRegistry): PxCollection
+
+    /**
+     * @param inputData    WebIDL type: [PxInputData] (Ref)
+     * @param params       WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromXml(inputData: PxInputData, params: PxCookingParams, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
+
+    /**
+     * @param memBlock WebIDL type: VoidPtr
+     * @param sr       WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromBinary(memBlock: Any, sr: PxSerializationRegistry): PxCollection
+
+    /**
+     * @param memBlock     WebIDL type: VoidPtr
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: [PxCollection]
+     */
+    fun createCollectionFromBinary(memBlock: Any, sr: PxSerializationRegistry, externalRefs: PxCollection): PxCollection
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param params       WebIDL type: [PxCookingParams] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, params: PxCookingParams): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param params       WebIDL type: [PxCookingParams] (Const)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToXml(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, params: PxCookingParams, externalRefs: PxCollection): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, externalRefs: PxCollection): Boolean
+
+    /**
+     * @param outputStream WebIDL type: [PxOutputStream] (Ref)
+     * @param collection   WebIDL type: [PxCollection] (Ref)
+     * @param sr           WebIDL type: [PxSerializationRegistry] (Ref)
+     * @param externalRefs WebIDL type: [PxCollection] (Const)
+     * @param exportNames  WebIDL type: boolean
+     * @return WebIDL type: boolean
+     */
+    fun serializeCollectionToBinary(outputStream: PxOutputStream, collection: PxCollection, sr: PxSerializationRegistry, externalRefs: PxCollection, exportNames: Boolean): Boolean
+
+    /**
+     * @param physics WebIDL type: [PxPhysics] (Ref)
+     * @return WebIDL type: [PxSerializationRegistry]
+     */
+    fun createSerializationRegistry(physics: PxPhysics): PxSerializationRegistry
+
+}
+
+fun PxSerializationFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerialization = js("_module.wrapPointer(ptr, _module.PxSerialization)")
+
+fun PxSerialization.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxSerializationRegistry {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    fun release()
+
+}
+
+fun PxSerializationRegistryFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxSerializationRegistry = js("_module.wrapPointer(ptr, _module.PxSerializationRegistry)")
 
 object PxD6AxisEnum {
     val eX: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxD6AxisEnum_eX()

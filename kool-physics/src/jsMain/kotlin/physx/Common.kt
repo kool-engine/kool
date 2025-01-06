@@ -5,6 +5,181 @@
 
 package physx
 
+external interface PxDebugPoint {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color: Int
+}
+
+fun PxDebugPointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugPoint = js("_module.wrapPointer(ptr, _module.PxDebugPoint)")
+
+external interface PxDebugLine {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos0: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color0: Int
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos1: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color1: Int
+}
+
+fun PxDebugLineFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugLine = js("_module.wrapPointer(ptr, _module.PxDebugLine)")
+
+external interface PxDebugTriangle {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos0: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color0: Int
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos1: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color1: Int
+    /**
+     * WebIDL type: [PxVec3] (Value)
+     */
+    var pos2: PxVec3
+    /**
+     * WebIDL type: unsigned long
+     */
+    var color2: Int
+}
+
+fun PxDebugTriangleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugTriangle = js("_module.wrapPointer(ptr, _module.PxDebugTriangle)")
+
+external interface PxRenderBuffer {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbPoints(): Int
+
+    /**
+     * @return WebIDL type: [PxDebugPoint] (Const)
+     */
+    fun getPoints(): PxDebugPoint
+
+    /**
+     * @param point WebIDL type: [PxDebugPoint] (Const, Ref)
+     */
+    fun addPoint(point: PxDebugPoint)
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbLines(): Int
+
+    /**
+     * @return WebIDL type: [PxDebugLine] (Const)
+     */
+    fun getLines(): PxDebugLine
+
+    /**
+     * @param line WebIDL type: [PxDebugLine] (Const, Ref)
+     */
+    fun addLine(line: PxDebugLine)
+
+    /**
+     * @param nbLines WebIDL type: unsigned long (Const)
+     * @return WebIDL type: [PxDebugLine]
+     */
+    fun reserveLines(nbLines: Int): PxDebugLine
+
+    /**
+     * @param nbLines WebIDL type: unsigned long (Const)
+     * @return WebIDL type: [PxDebugPoint]
+     */
+    fun reservePoints(nbLines: Int): PxDebugPoint
+
+    /**
+     * @return WebIDL type: unsigned long
+     */
+    fun getNbTriangles(): Int
+
+    /**
+     * @return WebIDL type: [PxDebugTriangle] (Const)
+     */
+    fun getTriangles(): PxDebugTriangle
+
+    /**
+     * @param triangle WebIDL type: [PxDebugTriangle] (Const, Ref)
+     */
+    fun addTriangle(triangle: PxDebugTriangle)
+
+    /**
+     * @param other WebIDL type: [PxRenderBuffer] (Const, Ref)
+     */
+    fun append(other: PxRenderBuffer)
+
+    fun clear()
+
+    /**
+     * @param delta WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun shift(delta: PxVec3)
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun empty(): Boolean
+
+}
+
+fun PxRenderBufferFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRenderBuffer = js("_module.wrapPointer(ptr, _module.PxRenderBuffer)")
+
+val PxRenderBuffer.nbPoints
+    get() = getNbPoints()
+val PxRenderBuffer.points
+    get() = getPoints()
+val PxRenderBuffer.nbLines
+    get() = getNbLines()
+val PxRenderBuffer.lines
+    get() = getLines()
+val PxRenderBuffer.nbTriangles
+    get() = getNbTriangles()
+val PxRenderBuffer.triangles
+    get() = getTriangles()
+
 external interface PxBase {
     /**
      * Native object address.
@@ -428,6 +603,34 @@ external interface PxMat33 {
      * WebIDL type: [PxVec3] (Value)
      */
     var column2: PxVec3
+
+    /**
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun getTranspose(): PxMat33
+
+    /**
+     * @return WebIDL type: [PxMat33] (Value)
+     */
+    fun getInverse(): PxMat33
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getDeterminant(): Float
+
+    /**
+     * @param other WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun transform(other: PxVec3): PxVec3
+
+    /**
+     * @param other WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun transformTranspose(other: PxVec3): PxVec3
+
 }
 
 fun PxMat33(_module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module.PxMat33()")
@@ -437,11 +640,25 @@ fun PxMat33(_module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module
  */
 fun PxMat33(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module.PxMat33(r)")
 
+/**
+ * @param col0 WebIDL type: [PxVec3] (Const, Ref)
+ * @param col1 WebIDL type: [PxVec3] (Const, Ref)
+ * @param col2 WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun PxMat33(col0: PxVec3, col1: PxVec3, col2: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("new _module.PxMat33(col0, col1, col2)")
+
 fun PxMat33FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxMat33 = js("_module.wrapPointer(ptr, _module.PxMat33)")
 
 fun PxMat33.destroy() {
     PhysXJsLoader.destroy(this)
 }
+
+val PxMat33.transpose
+    get() = getTranspose()
+val PxMat33.inverse
+    get() = getInverse()
+val PxMat33.determinant
+    get() = getDeterminant()
 
 external interface PxOutputStream
 
@@ -661,12 +878,18 @@ fun PxQuat(_module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.P
 fun PxQuat(r: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(r)")
 
 /**
- * @param x WebIDL type: float
- * @param y WebIDL type: float
- * @param z WebIDL type: float
- * @param w WebIDL type: float
+ * @param nx WebIDL type: float
+ * @param ny WebIDL type: float
+ * @param nz WebIDL type: float
+ * @param nw WebIDL type: float
  */
-fun PxQuat(x: Float, y: Float, z: Float, w: Float, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(x, y, z, w)")
+fun PxQuat(nx: Float, ny: Float, nz: Float, nw: Float, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(nx, ny, nz, nw)")
+
+/**
+ * @param angleRadians WebIDL type: float
+ * @param unitAxis     WebIDL type: [PxVec3] (Const, Ref)
+ */
+fun PxQuat(angleRadians: Float, unitAxis: PxVec3, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("new _module.PxQuat(angleRadians, unitAxis)")
 
 fun PxQuatFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxQuat = js("_module.wrapPointer(ptr, _module.PxQuat)")
 
@@ -726,7 +949,27 @@ fun PxStridedData.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxTolerancesScale
+external interface PxTolerancesScale {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: float
+     */
+    var length: Float
+    /**
+     * WebIDL type: float
+     */
+    var speed: Float
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+}
 
 fun PxTolerancesScale(_module: dynamic = PhysXJsLoader.physXJs): PxTolerancesScale = js("new _module.PxTolerancesScale()")
 
@@ -750,6 +993,44 @@ external interface PxTransform {
      * WebIDL type: [PxVec3] (Value)
      */
     var p: PxVec3
+
+    /**
+     * @return WebIDL type: [PxTransform] (Value)
+     */
+    fun getInverse(): PxTransform
+
+    /**
+     * @param input WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun transform(input: PxVec3): PxVec3
+
+    /**
+     * @param input WebIDL type: [PxVec3] (Const, Ref)
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun transformInv(input: PxVec3): PxVec3
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isValid(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isSane(): Boolean
+
+    /**
+     * @return WebIDL type: boolean
+     */
+    fun isFinite(): Boolean
+
+    /**
+     * @return WebIDL type: [PxTransform] (Value)
+     */
+    fun getNormalized(): PxTransform
+
 }
 
 fun PxTransform(_module: dynamic = PhysXJsLoader.physXJs): PxTransform = js("new _module.PxTransform()")
@@ -771,7 +1052,34 @@ fun PxTransform.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxU16StridedData {
+val PxTransform.inverse
+    get() = getInverse()
+val PxTransform.normalized
+    get() = getNormalized()
+
+external interface PxTypedStridedData_PxU16 {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * WebIDL type: unsigned long
+     */
+    var stride: Int
+    /**
+     * WebIDL type: [PxU16Ptr] (Value)
+     */
+    var data: PxU16Ptr
+}
+
+fun PxTypedStridedData_PxU16FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedStridedData_PxU16 = js("_module.wrapPointer(ptr, _module.PxTypedStridedData_PxU16)")
+
+fun PxTypedStridedData_PxU16.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
+external interface PxTypedStridedData_PxU16Const {
     /**
      * Native object address.
      */
@@ -787,9 +1095,9 @@ external interface PxU16StridedData {
     var data: PxU16ConstPtr
 }
 
-fun PxU16StridedDataFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxU16StridedData = js("_module.wrapPointer(ptr, _module.PxU16StridedData)")
+fun PxTypedStridedData_PxU16ConstFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedStridedData_PxU16Const = js("_module.wrapPointer(ptr, _module.PxTypedStridedData_PxU16Const)")
 
-fun PxU16StridedData.destroy() {
+fun PxTypedStridedData_PxU16Const.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
@@ -1032,180 +1340,20 @@ val PxVec4.normalized
 val PxVec4.xYZ
     get() = getXYZ()
 
-external interface PxDebugPoint {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVec3] (Value)
-     */
-    var pos: PxVec3
-    /**
-     * WebIDL type: unsigned long
-     */
-    var color: Int
+object PxDebugColorEnum {
+    val eARGB_BLACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLACK()
+    val eARGB_RED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_RED()
+    val eARGB_GREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREEN()
+    val eARGB_BLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLUE()
+    val eARGB_YELLOW: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_YELLOW()
+    val eARGB_MAGENTA: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_MAGENTA()
+    val eARGB_CYAN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_CYAN()
+    val eARGB_WHITE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_WHITE()
+    val eARGB_GREY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREY()
+    val eARGB_DARKRED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKRED()
+    val eARGB_DARKGREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKGREEN()
+    val eARGB_DARKBLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKBLUE()
 }
-
-fun PxDebugPointFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugPoint = js("_module.wrapPointer(ptr, _module.PxDebugPoint)")
-
-external interface PxDebugLine {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVec3] (Value)
-     */
-    var pos0: PxVec3
-    /**
-     * WebIDL type: unsigned long
-     */
-    var color0: Int
-    /**
-     * WebIDL type: [PxVec3] (Value)
-     */
-    var pos1: PxVec3
-    /**
-     * WebIDL type: unsigned long
-     */
-    var color1: Int
-}
-
-fun PxDebugLineFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugLine = js("_module.wrapPointer(ptr, _module.PxDebugLine)")
-
-external interface PxDebugTriangle {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: [PxVec3] (Value)
-     */
-    var pos0: PxVec3
-    /**
-     * WebIDL type: unsigned long
-     */
-    var color0: Int
-    /**
-     * WebIDL type: [PxVec3] (Value)
-     */
-    var pos1: PxVec3
-    /**
-     * WebIDL type: unsigned long
-     */
-    var color1: Int
-    /**
-     * WebIDL type: [PxVec3] (Value)
-     */
-    var pos2: PxVec3
-    /**
-     * WebIDL type: unsigned long
-     */
-    var color2: Int
-}
-
-fun PxDebugTriangleFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxDebugTriangle = js("_module.wrapPointer(ptr, _module.PxDebugTriangle)")
-
-external interface PxRenderBuffer {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getNbPoints(): Int
-
-    /**
-     * @return WebIDL type: [PxDebugPoint] (Const)
-     */
-    fun getPoints(): PxDebugPoint
-
-    /**
-     * @param point WebIDL type: [PxDebugPoint] (Const, Ref)
-     */
-    fun addPoint(point: PxDebugPoint)
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getNbLines(): Int
-
-    /**
-     * @return WebIDL type: [PxDebugLine] (Const)
-     */
-    fun getLines(): PxDebugLine
-
-    /**
-     * @param line WebIDL type: [PxDebugLine] (Const, Ref)
-     */
-    fun addLine(line: PxDebugLine)
-
-    /**
-     * @param nbLines WebIDL type: unsigned long (Const)
-     * @return WebIDL type: [PxDebugLine]
-     */
-    fun reserveLines(nbLines: Int): PxDebugLine
-
-    /**
-     * @param nbLines WebIDL type: unsigned long (Const)
-     * @return WebIDL type: [PxDebugPoint]
-     */
-    fun reservePoints(nbLines: Int): PxDebugPoint
-
-    /**
-     * @return WebIDL type: unsigned long
-     */
-    fun getNbTriangles(): Int
-
-    /**
-     * @return WebIDL type: [PxDebugTriangle] (Const)
-     */
-    fun getTriangles(): PxDebugTriangle
-
-    /**
-     * @param triangle WebIDL type: [PxDebugTriangle] (Const, Ref)
-     */
-    fun addTriangle(triangle: PxDebugTriangle)
-
-    /**
-     * @param other WebIDL type: [PxRenderBuffer] (Const, Ref)
-     */
-    fun append(other: PxRenderBuffer)
-
-    fun clear()
-
-    /**
-     * @param delta WebIDL type: [PxVec3] (Const, Ref)
-     */
-    fun shift(delta: PxVec3)
-
-    /**
-     * @return WebIDL type: boolean
-     */
-    fun empty(): Boolean
-
-}
-
-fun PxRenderBufferFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxRenderBuffer = js("_module.wrapPointer(ptr, _module.PxRenderBuffer)")
-
-val PxRenderBuffer.nbPoints
-    get() = getNbPoints()
-val PxRenderBuffer.points
-    get() = getPoints()
-val PxRenderBuffer.nbLines
-    get() = getNbLines()
-val PxRenderBuffer.lines
-    get() = getLines()
-val PxRenderBuffer.nbTriangles
-    get() = getNbTriangles()
-val PxRenderBuffer.triangles
-    get() = getTriangles()
 
 object PxBaseFlagEnum {
     val eOWNS_MEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxBaseFlagEnum_eOWNS_MEMORY()
@@ -1227,20 +1375,5 @@ object PxErrorCodeEnum {
 
 object PxIDENTITYEnum {
     val PxIdentity: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxIDENTITYEnum_PxIdentity()
-}
-
-object PxDebugColorEnum {
-    val eARGB_BLACK: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLACK()
-    val eARGB_RED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_RED()
-    val eARGB_GREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREEN()
-    val eARGB_BLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_BLUE()
-    val eARGB_YELLOW: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_YELLOW()
-    val eARGB_MAGENTA: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_MAGENTA()
-    val eARGB_CYAN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_CYAN()
-    val eARGB_WHITE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_WHITE()
-    val eARGB_GREY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_GREY()
-    val eARGB_DARKRED: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKRED()
-    val eARGB_DARKGREEN: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKGREEN()
-    val eARGB_DARKBLUE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxDebugColorEnum_eARGB_DARKBLUE()
 }
 

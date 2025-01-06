@@ -127,6 +127,16 @@ external interface PxTopLevelFunctions {
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param localFrame0 WebIDL type: [PxTransform] (Ref)
+     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param localFrame1 WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: [PxGearJoint]
+     */
+    fun GearJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxGearJoint
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
      * @param actor0      WebIDL type: [PxRigidActor] (Nullable)
      * @param localFrame0 WebIDL type: [PxTransform] (Ref)
      * @param actor1      WebIDL type: [PxRigidActor] (Nullable)
@@ -134,6 +144,16 @@ external interface PxTopLevelFunctions {
      * @return WebIDL type: [PxPrismaticJoint]
      */
     fun PrismaticJointCreate(physics: PxPhysics, actor0: PxRigidActor?, localFrame0: PxTransform, actor1: PxRigidActor?, localFrame1: PxTransform): PxPrismaticJoint
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param actor0      WebIDL type: [PxRigidActor]
+     * @param localFrame0 WebIDL type: [PxTransform] (Ref)
+     * @param actor1      WebIDL type: [PxRigidActor]
+     * @param localFrame1 WebIDL type: [PxTransform] (Ref)
+     * @return WebIDL type: [PxRackAndPinionJoint]
+     */
+    fun RackAndPinionJointCreate(physics: PxPhysics, actor0: PxRigidActor, localFrame0: PxTransform, actor1: PxRigidActor, localFrame1: PxTransform): PxRackAndPinionJoint
 
     /**
      * @param physics     WebIDL type: [PxPhysics] (Ref)
@@ -174,6 +194,148 @@ external interface PxTopLevelFunctions {
      * @return WebIDL type: [PxHeightField]
      */
     fun CreateHeightField(desc: PxHeightFieldDesc): PxHeightField
+
+    /**
+     * @param params WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param desc   WebIDL type: [PxTriangleMeshDesc] (Const, Ref)
+     * @param stream WebIDL type: [PxOutputStream] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun CookTriangleMesh(params: PxCookingParams, desc: PxTriangleMeshDesc, stream: PxOutputStream): Boolean
+
+    /**
+     * @param params WebIDL type: [PxCookingParams] (Const, Ref)
+     * @param desc   WebIDL type: [PxConvexMeshDesc] (Const, Ref)
+     * @param stream WebIDL type: [PxOutputStream] (Ref)
+     * @return WebIDL type: boolean
+     */
+    fun CookConvexMesh(params: PxCookingParams, desc: PxConvexMeshDesc, stream: PxOutputStream): Boolean
+
+    /**
+     * @param sdk       WebIDL type: [PxPhysics] (Ref)
+     * @param transform WebIDL type: [PxTransform] (Const, Ref)
+     * @param shape     WebIDL type: [PxShape] (Ref)
+     * @param density   WebIDL type: float
+     * @return WebIDL type: [PxRigidDynamic]
+     */
+    fun CreateDynamicFromShape(sdk: PxPhysics, transform: PxTransform, shape: PxShape, density: Float): PxRigidDynamic
+
+    /**
+     * @param sdk       WebIDL type: [PxPhysics] (Ref)
+     * @param transform WebIDL type: [PxTransform] (Const, Ref)
+     * @param geometry  WebIDL type: [PxGeometry] (Const, Ref)
+     * @param material  WebIDL type: [PxMaterial] (Ref)
+     * @param density   WebIDL type: float
+     * @return WebIDL type: [PxRigidDynamic]
+     */
+    fun CreateDynamic(sdk: PxPhysics, transform: PxTransform, geometry: PxGeometry, material: PxMaterial, density: Float): PxRigidDynamic
+
+    /**
+     * @param sdk         WebIDL type: [PxPhysics] (Ref)
+     * @param transform   WebIDL type: [PxTransform] (Const, Ref)
+     * @param geometry    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param material    WebIDL type: [PxMaterial] (Ref)
+     * @param density     WebIDL type: float
+     * @param shapeOffset WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: [PxRigidDynamic]
+     */
+    fun CreateDynamic(sdk: PxPhysics, transform: PxTransform, geometry: PxGeometry, material: PxMaterial, density: Float, shapeOffset: PxTransform): PxRigidDynamic
+
+    /**
+     * @param sdk       WebIDL type: [PxPhysics] (Ref)
+     * @param transform WebIDL type: [PxTransform] (Const, Ref)
+     * @param shape     WebIDL type: [PxShape] (Ref)
+     * @param density   WebIDL type: float
+     * @return WebIDL type: [PxRigidDynamic]
+     */
+    fun CreateKinematicFromShape(sdk: PxPhysics, transform: PxTransform, shape: PxShape, density: Float): PxRigidDynamic
+
+    /**
+     * @param sdk       WebIDL type: [PxPhysics] (Ref)
+     * @param transform WebIDL type: [PxTransform] (Const, Ref)
+     * @param geometry  WebIDL type: [PxGeometry] (Const, Ref)
+     * @param material  WebIDL type: [PxMaterial] (Ref)
+     * @param density   WebIDL type: float
+     * @return WebIDL type: [PxRigidDynamic]
+     */
+    fun CreateKinematic(sdk: PxPhysics, transform: PxTransform, geometry: PxGeometry, material: PxMaterial, density: Float): PxRigidDynamic
+
+    /**
+     * @param sdk         WebIDL type: [PxPhysics] (Ref)
+     * @param transform   WebIDL type: [PxTransform] (Const, Ref)
+     * @param geometry    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param material    WebIDL type: [PxMaterial] (Ref)
+     * @param density     WebIDL type: float
+     * @param shapeOffset WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: [PxRigidDynamic]
+     */
+    fun CreateKinematic(sdk: PxPhysics, transform: PxTransform, geometry: PxGeometry, material: PxMaterial, density: Float, shapeOffset: PxTransform): PxRigidDynamic
+
+    /**
+     * @param sdk       WebIDL type: [PxPhysics] (Ref)
+     * @param transform WebIDL type: [PxTransform] (Const, Ref)
+     * @param shape     WebIDL type: [PxShape] (Ref)
+     * @return WebIDL type: [PxRigidStatic]
+     */
+    fun CreateStaticFromShape(sdk: PxPhysics, transform: PxTransform, shape: PxShape): PxRigidStatic
+
+    /**
+     * @param sdk         WebIDL type: [PxPhysics] (Ref)
+     * @param transform   WebIDL type: [PxTransform] (Const, Ref)
+     * @param geometry    WebIDL type: [PxGeometry] (Const, Ref)
+     * @param material    WebIDL type: [PxMaterial] (Ref)
+     * @param shapeOffset WebIDL type: [PxTransform] (Const, Ref)
+     * @return WebIDL type: [PxRigidStatic]
+     */
+    fun CreateStatic(sdk: PxPhysics, transform: PxTransform, geometry: PxGeometry, material: PxMaterial, shapeOffset: PxTransform): PxRigidStatic
+
+    /**
+     * @param sdk      WebIDL type: [PxPhysics] (Ref)
+     * @param plane    WebIDL type: [PxPlane] (Const, Ref)
+     * @param material WebIDL type: [PxMaterial] (Ref)
+     * @return WebIDL type: [PxRigidStatic]
+     */
+    fun CreatePlane(sdk: PxPhysics, plane: PxPlane, material: PxMaterial): PxRigidStatic
+
+    /**
+     * @param physics     WebIDL type: [PxPhysics] (Ref)
+     * @param from        WebIDL type: [PxShape] (Const, Ref)
+     * @param isExclusive WebIDL type: boolean
+     * @return WebIDL type: [PxShape]
+     */
+    fun CloneShape(physics: PxPhysics, from: PxShape, isExclusive: Boolean): PxShape
+
+    /**
+     * @param physicsSDK WebIDL type: [PxPhysics] (Ref)
+     * @param transform  WebIDL type: [PxTransform] (Const, Ref)
+     * @param from       WebIDL type: [PxRigidActor] (Const, Ref)
+     * @return WebIDL type: [PxRigidStatic]
+     */
+    fun CloneStatic(physicsSDK: PxPhysics, transform: PxTransform, from: PxRigidActor): PxRigidStatic
+
+    /**
+     * @param physicsSDK WebIDL type: [PxPhysics] (Ref)
+     * @param transform  WebIDL type: [PxTransform] (Const, Ref)
+     * @param from       WebIDL type: [PxRigidDynamic] (Const, Ref)
+     * @return WebIDL type: [PxRigidDynamic]
+     */
+    fun CloneDynamic(physicsSDK: PxPhysics, transform: PxTransform, from: PxRigidDynamic): PxRigidDynamic
+
+    /**
+     * @param actor          WebIDL type: [PxRigidActor] (Ref)
+     * @param scale          WebIDL type: float
+     * @param scaleMassProps WebIDL type: boolean
+     */
+    fun ScaleRigidActor(actor: PxRigidActor, scale: Float, scaleMassProps: Boolean)
+
+    /**
+     * @param curTrans WebIDL type: [PxTransform] (Const, Ref)
+     * @param linvel   WebIDL type: [PxVec3] (Const, Ref)
+     * @param angvel   WebIDL type: [PxVec3] (Const, Ref)
+     * @param timeStep WebIDL type: float
+     * @param result   WebIDL type: [PxTransform] (Ref)
+     */
+    fun IntegrateTransform(curTrans: PxTransform, linvel: PxVec3, angvel: PxVec3, timeStep: Float, result: PxTransform)
 
 }
 
