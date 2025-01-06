@@ -263,9 +263,9 @@ val PxMidphaseDesc.type
 
 external interface PxTriangleMeshDesc : PxSimpleTriangleMesh {
     /**
-     * WebIDL type: [PxU16StridedData] (Value)
+     * WebIDL type: [PxTypedStridedData_PxU16Const] (Const, Value)
      */
-    var materialIndices: PxU16StridedData
+    var materialIndices: PxTypedStridedData_PxU16Const
 }
 
 fun PxTriangleMeshDesc(_module: dynamic = PhysXJsLoader.physXJs): PxTriangleMeshDesc = js("new _module.PxTriangleMeshDesc()")

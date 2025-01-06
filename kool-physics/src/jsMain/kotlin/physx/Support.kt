@@ -552,6 +552,12 @@ external interface PxArray_PxU8 {
      */
     fun pushBack(value: Byte)
 
+    /**
+     * @param buffer WebIDL type: VoidPtr
+     * @param size   WebIDL type: unsigned long
+     */
+    fun setFromBuffer(buffer: Any, size: Int)
+
     fun clear()
 
 }
@@ -1544,28 +1550,6 @@ fun Vector_PxSweepHit(size: Int, _module: dynamic = PhysXJsLoader.physXJs): Vect
 fun Vector_PxSweepHitFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): Vector_PxSweepHit = js("_module.wrapPointer(ptr, _module.Vector_PxSweepHit)")
 
 fun Vector_PxSweepHit.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
-external interface PxTypedStridedData_PxU16 {
-    /**
-     * Native object address.
-     */
-    val ptr: Int
-
-    /**
-     * WebIDL type: unsigned long
-     */
-    var stride: Int
-    /**
-     * WebIDL type: [PxU16ConstPtr] (Value)
-     */
-    var data: PxU16ConstPtr
-}
-
-fun PxTypedStridedData_PxU16FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedStridedData_PxU16 = js("_module.wrapPointer(ptr, _module.PxTypedStridedData_PxU16)")
-
-fun PxTypedStridedData_PxU16.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
