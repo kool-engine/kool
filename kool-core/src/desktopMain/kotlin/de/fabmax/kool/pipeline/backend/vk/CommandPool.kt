@@ -19,7 +19,6 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
     init {
         memStack {
             val poolInfo = callocVkCommandPoolCreateInfo {
-                sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
                 queueFamilyIndex(queueIndex)
             }
             vkCommandPool = checkCreatePointer { vkCreateCommandPool(sys.device.vkDevice, poolInfo, null, it) }
@@ -38,7 +37,6 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
     inline fun singleTimeCommands(block: MemoryStack.(VkCommandBuffer) -> Unit) {
         memStack {
             val allocInfo = callocVkCommandBufferAllocateInfo {
-                sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
                 commandPool(vkCommandPool)
                 level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
                 commandBufferCount(1)
@@ -49,7 +47,6 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
             val commandBuffer = VkCommandBuffer(pCommandBuffer[0], sys.device.vkDevice)
 
             val beginInfo = callocVkCommandBufferBeginInfo {
-                sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
                 flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
             }
             vkBeginCommandBuffer(commandBuffer, beginInfo)
@@ -57,7 +54,6 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
             vkEndCommandBuffer(commandBuffer)
 
             val submitInfo = callocVkSubmitInfoN(1) {
-                sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
                 pCommandBuffers(pCommandBuffer)
             }
             vkQueueSubmit(queue, submitInfo, VK_NULL_HANDLE)

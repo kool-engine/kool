@@ -19,7 +19,6 @@ class Device(val sys: VkSystem) : VkResource() {
             val queueCreateInfo = callocVkDeviceQueueCreateInfoN(uniqueFamilies.size) {
                 uniqueFamilies.forEachIndexed { i, famIdx ->
                     this[i].apply {
-                        sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO)
                         queueFamilyIndex(famIdx)
                         pQueuePriorities(floats(1f))
                     }
@@ -31,11 +30,10 @@ class Device(val sys: VkSystem) : VkResource() {
                 //sampleRateShading(true)
             }
 
-            val extNames = mallocPointer(sys.setup.deviceExtensions.size)
-            sys.setup.deviceExtensions.forEachIndexed { i, name -> extNames.put(i, ASCII(name)) }
+            val extNames = mallocPointer(sys.setup.enabledDeviceExtensions.size)
+            sys.setup.enabledDeviceExtensions.forEachIndexed { i, name -> extNames.put(i, ASCII(name)) }
 
             val createInfo = callocVkDeviceCreateInfo {
-                sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
                 pQueueCreateInfos(queueCreateInfo)
                 pEnabledFeatures(features)
                 ppEnabledExtensionNames(extNames)

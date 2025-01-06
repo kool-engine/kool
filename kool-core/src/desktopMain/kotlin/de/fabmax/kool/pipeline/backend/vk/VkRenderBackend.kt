@@ -51,7 +51,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     init {
         val vkSetup = VkSetup().apply {
-            isValidating = true
+            isValidation = true
+            isPortability = true
         }
         vkSystem = VkSystem(vkSetup, vkScene, ctx)
         semaPool = SemaphorePool(vkSystem)
