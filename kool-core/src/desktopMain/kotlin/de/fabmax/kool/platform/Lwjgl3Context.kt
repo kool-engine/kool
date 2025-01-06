@@ -38,10 +38,6 @@ class Lwjgl3Context : KoolContext() {
     private val sysInfo = SysInfo()
 
     init {
-//        if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
-//            logE { "Vulkan support is currently disabled, falling back to OpenGL" }
-//        }
-//        backend = RenderBackendGlImpl(this)
         backend = when (KoolSystem.configJvm.renderBackend) {
             KoolConfigJvm.Backend.VULKAN -> VkRenderBackend(this)
             KoolConfigJvm.Backend.OPEN_GL -> RenderBackendGlImpl(this)

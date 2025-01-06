@@ -72,7 +72,7 @@ class AppLoader(val editor: KoolEditor) : AppSourcesChangeListener {
                 try {
                     if (appSourcesChanged) {
                         appSourcesChanged = false
-                        if (KoolSystem.platform != Platform.JAVASCRIPT) {
+                        if (KoolSystem.platform != Platform.Javascript) {
                             editor.ui.appStateInfo.set("Building app...")
                             loadService.buildApp()
                         }

@@ -16,7 +16,7 @@ import kotlin.math.sin
 
 class WindowTitleBar(val editor: KoolEditor) : Composable {
 
-    val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.JAVASCRIPT)
+    val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.Javascript)
 
     private val hoverHandler: WindowTitleHoverHandler get() = editor.ctx.windowTitleHoverHandler
     private val excludeBounds = List(3) { WindowTitleHoverHandler.HitBounds() }

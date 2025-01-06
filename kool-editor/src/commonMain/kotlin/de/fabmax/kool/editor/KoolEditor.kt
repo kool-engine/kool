@@ -103,7 +103,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
             onExit()
             return when (KoolSystem.platform) {
-                Platform.JAVASCRIPT -> false
+                Platform.Javascript -> false
                 else -> true
             }
         }

@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
 internal actual fun PlatformProperties(): KoolSystem.PlatformProperties {
-    return KoolSystem.PlatformProperties(Platform.JVM_DESKTOP)
+    val osName = System.getProperty("os.name", "unknown")
+    return KoolSystem.PlatformProperties(Platform.Desktop(osName))
 }

@@ -216,7 +216,6 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
     protected open fun onFileDrop(numFiles: Int, pathPtr: Long) {
         val files = mutableListOf<LoadableFile>()
         val pathPtrs = PointerBuffer.create(pathPtr, numFiles)
@@ -239,6 +238,15 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     fun setWindowIcon(icon: List<BufferedImage>) {
+        (KoolSystem.platform as? Platform.Desktop)?.let {
+            if (it.isMacOs) {
+                // Mac OS has no window icons, only the icon in the dock
+                // todo: setting the dock icon via AWT Taskbar kind of works but messes up GLFW
+                //Taskbar.getTaskbar().iconImage = icon.first()
+                return
+            }
+        }
+
         MemoryStack.stackPush().use { stack ->
             val images = GLFWImage.malloc(icon.size, stack)
             icon.forEachIndexed { i, img ->

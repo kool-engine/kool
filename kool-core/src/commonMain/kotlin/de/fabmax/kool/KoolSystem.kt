@@ -59,10 +59,17 @@ object KoolSystem {
 
 internal expect fun PlatformProperties(): KoolSystem.PlatformProperties
 
-enum class Platform {
-    JVM_DESKTOP,
-    JVM_ANDROID,
-    JAVASCRIPT
+sealed interface Platform {
+    data class Desktop(val os: String) : Platform {
+        val isWindows: Boolean get() = "windows" in os.lowercase()
+        val isLinux: Boolean get() = "linux" in os.lowercase()
+        val isMacOs: Boolean get() {
+            val osLowercase = os.lowercase()
+            return "mac os" in osLowercase || "darwin" in osLowercase || "osx" in osLowercase
+        }
+    }
+    data object Android : Platform
+    data object Javascript : Platform
 }
 
 interface KoolConfig {
