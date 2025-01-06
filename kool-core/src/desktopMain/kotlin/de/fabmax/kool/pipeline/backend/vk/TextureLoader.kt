@@ -219,7 +219,7 @@ object TextureLoader {
                 maxLod(texImage.mipLevels.toFloat())
             }
             val ptr = mallocLong(1)
-            check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
+            check(vkCreateSampler(sys.logicalDevice.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
             return ptr[0]
         }
     }

@@ -38,7 +38,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                 }
 
                 val sets = mallocLong(graphicsPipeline.nImages)
-                check(vkAllocateDescriptorSets(graphicsPipeline.sys.device.vkDevice, allocInfo, sets) == VK_SUCCESS)
+                check(vkAllocateDescriptorSets(graphicsPipeline.sys.logicalDevice.vkDevice, allocInfo, sets) == VK_SUCCESS)
                 for (i in 0 until graphicsPipeline.nImages) {
                     descriptorSets += sets[i]
                 }
@@ -95,7 +95,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                         descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIdx], cmd)
                     }
                 }
-                vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)
+                vkUpdateDescriptorSets(graphicsPipeline.sys.logicalDevice.vkDevice, descriptorWrite, null)
             }
         }
     }

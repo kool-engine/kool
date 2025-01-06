@@ -189,7 +189,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 loadedTextures.values.removeIf { it.isDestroyed }
                 loadedTextures.computeIfAbsent(texData) { k ->
                     val loaded = LoadedTextureVk.fromTexData(sys, tex.props, k)
-                    sys.device.addDependingResource(loaded)
+                    sys.logicalDevice.addDependingResource(loaded)
                     loaded
                 }
             }

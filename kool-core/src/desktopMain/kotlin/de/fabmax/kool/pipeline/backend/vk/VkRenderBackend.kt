@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -8,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
@@ -16,6 +17,8 @@ import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.memStack
 import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.PointerBuffer
+import org.lwjgl.glfw.GLFW
+import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkClearValue
@@ -29,8 +32,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val apiName: String
     override val deviceName: String
 
-    override val glfwWindow: GlfwWindow
-        get() = vkSystem.window
+    override val glfwWindow: GlfwVkWindow
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val features = BackendFeatures(
@@ -39,40 +41,71 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         reversedDepth = false
     )
 
+    val setup = VkSetup().apply {
+        isValidation = true
+        isPortability = true
+    }
+
+    val instance: Instance
+    val physicalDevice: PhysicalDevice
+    val logicalDevice: LogicalDevice
+    //val memManager: MemoryManager
+    //val pipelineManager = PipelineManager(this)
+
+    //val commandPool: CommandPool
+    //val transferCommandPool: CommandPool
+    //val renderLoop: RenderLoop
+    //var swapChain: SwapChain? = null
+
+
+
+
+
+
+
     private val shaderCodes = mutableMapOf<String, ShaderCodeImplVk>()
 
-    val vkSystem: VkSystem
+    //val vkSystem: VkSystem
     private val vkScene = KoolVkScene()
 
-    private val semaPool: SemaphorePool
+    //private val semaPool: SemaphorePool
     private val renderPassGraph = RenderPassGraph()
 
     override var frameGpuTime: Double = 0.0
 
     init {
-        val vkSetup = VkSetup().apply {
-            isValidation = true
-            isPortability = true
-        }
-        vkSystem = VkSystem(vkSetup, vkScene, ctx)
-        semaPool = SemaphorePool(vkSystem)
-        vkSystem.addDependingResource(semaPool)
-        apiName = "Vulkan ${vkSystem.physicalDevice.apiVersion}"
-        deviceName = vkSystem.physicalDevice.deviceName
+        // tell GLFW to not initialize default OpenGL API before we create the window
+        check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
+        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
+
+        glfwWindow = GlfwVkWindow(this, ctx)
+        glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
+        instance = Instance(this, KoolSystem.configJvm.windowTitle)
+        glfwWindow.createSurface()
+
+        physicalDevice = PhysicalDevice(this)
+        logicalDevice = LogicalDevice(this)
+
+        apiName = "Vulkan ${physicalDevice.apiVersion}"
+        deviceName = physicalDevice.deviceName
+
+        //vkSystem = VkSystem(vkSetup, vkScene, ctx)
+        //semaPool = SemaphorePool(vkSystem)
+        //vkSystem.addDependingResource(semaPool)
     }
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>,) {
-        val data = checkNotNull(tex.uploadData)
-        tex.uploadData = null
-        tex.gpuTexture = when (tex) {
-            is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
-            is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
-            is Texture3d -> TextureLoader.loadTexture3d(vkSystem, tex.props, data)
-            is TextureCube -> TextureLoader.loadTextureCube(vkSystem, tex.props, data)
-            else -> throw IllegalArgumentException("Unsupported texture type: $tex")
-        }
-        tex.loadingState = Texture.LoadingState.LOADED
-        vkSystem.device.addDependingResource(tex.gpuTexture as LoadedTextureVk)
+//        val data = checkNotNull(tex.uploadData)
+//        tex.uploadData = null
+//        tex.gpuTexture = when (tex) {
+//            is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
+//            is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
+//            is Texture3d -> TextureLoader.loadTexture3d(vkSystem, tex.props, data)
+//            is TextureCube -> TextureLoader.loadTextureCube(vkSystem, tex.props, data)
+//            else -> throw IllegalArgumentException("Unsupported texture type: $tex")
+//        }
+//        tex.loadingState = Texture.LoadingState.LOADED
+//        device.addDependingResource(tex.gpuTexture as LoadedTextureVk)
     }
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
@@ -118,12 +151,12 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun renderFrame(ctx: KoolContext) {
-        vkSystem.renderLoop.drawFrame()
+//        vkSystem.renderLoop.drawFrame()
     }
 
     override fun cleanup(ctx: KoolContext) {
-        vkDeviceWaitIdle(vkSystem.device.vkDevice)
-        vkSystem.destroy()
+        vkDeviceWaitIdle(logicalDevice.vkDevice)
+        instance.destroy()
     }
 
     private inner class KoolVkScene: VkScene {
@@ -144,13 +177,13 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             cmdBuffers.forEach { it.destroy() }
             cmdBuffers.clear()
             cmdPools.forEach {
-                sys.device.removeDependingResource(it)
+                sys.logicalDevice.removeDependingResource(it)
                 it.destroy()
             }
             cmdPools.clear()
 
             for (i in swapChain.images.indices) {
-                val pool = CommandPool(sys, sys.device.graphicsQueue)
+                val pool = CommandPool(sys, sys.logicalDevice.graphicsQueue)
                 cmdPools += pool
                 cmdBuffers += pool.createCommandBuffers(swapChain.images.size)
             }
@@ -188,17 +221,17 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
              * generally better. Note that VkSemaphore-based synchronization can only be done across vkQueueSubmit()
              * calls, so you may be forced to split work up into multiple submits.
              */
-            renderPassGraph.updateGraph(ctx)
-            semaPool.reclaimAll(imageIndex)
-
-            for (iGrp in renderPassGraph.groups.indices) {
-                val grp = renderPassGraph.groups[iGrp]
-                if (grp.isOnScreen) {
-                    grp.signalSemaphore = signalSema
-                } else {
-                    grp.signalSemaphore = semaPool.getSemaphore(imageIndex)
-                }
-            }
+//            renderPassGraph.updateGraph(ctx)
+//            semaPool.reclaimAll(imageIndex)
+//
+//            for (iGrp in renderPassGraph.groups.indices) {
+//                val grp = renderPassGraph.groups[iGrp]
+//                if (grp.isOnScreen) {
+//                    grp.signalSemaphore = signalSema
+//                } else {
+//                    grp.signalSemaphore = semaPool.getSemaphore(imageIndex)
+//                }
+//            }
 
 //            renderPassGraph.apply {
 //                System.err.println("graph update: ${groups.size} groups, frame wait sema: $waitSema, frame signal sema: $signalSema")
@@ -245,10 +278,10 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                         pSignalSemaphores(longs(group.signalSemaphore))
                     }
                     if (group.isOnScreen) {
-                        vkResetFences(sys.device.vkDevice, fence)
-                        check(vkQueueSubmit(sys.device.graphicsQueue, submitInfo, fence[0]) == VK_SUCCESS)
+                        vkResetFences(sys.logicalDevice.vkDevice, fence)
+                        check(vkQueueSubmit(sys.logicalDevice.graphicsQueue, submitInfo, fence[0]) == VK_SUCCESS)
                     } else {
-                        check(vkQueueSubmit(sys.device.graphicsQueue, submitInfo, 0L) == VK_SUCCESS)
+                        check(vkQueueSubmit(sys.logicalDevice.graphicsQueue, submitInfo, 0L) == VK_SUCCESS)
                     }
 
                     for (i in group.renderPasses.indices) {
@@ -390,13 +423,13 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
                             // fixme: don't do this here, should have happened before (async?)
                             meshMap.remove(pipelineCfg.instanceId(cmd.mesh))?.let {
                                 actionQueue += DelayAction {
-                                    sys.device.removeDependingResource(it)
+                                    sys.logicalDevice.removeDependingResource(it)
                                     it.destroy()
                                 }
                             }
                             model = IndexedMesh(sys, cmd.mesh)
                             meshMap[pipelineCfg.instanceId(cmd.mesh)] = model
-                            sys.device.addDependingResource(model)
+                            sys.logicalDevice.addDependingResource(model)
                         }
 
                         if (cmd.mesh.instances?.hasChanged == true) {
@@ -614,7 +647,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             } else {
                 memStack {
                     val semaphoreInfo = callocVkSemaphoreCreateInfo { sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO) }
-                    sema = checkCreatePointer { vkCreateSemaphore(sys.device.vkDevice, semaphoreInfo, null, it) }
+                    sema = checkCreatePointer { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
                     pools[imageIndex].add(sema)
                 }
             }
@@ -624,7 +657,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
         override fun freeResources() {
             pools.forEach { pool ->
                 pool.forEach { sema ->
-                    vkDestroySemaphore(sys.device.vkDevice, sema, null)
+                    vkDestroySemaphore(sys.logicalDevice.vkDevice, sema, null)
                 }
                 pool.clear()
             }

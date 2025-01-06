@@ -34,13 +34,13 @@ class ImageView(val sys: VkSystem, image: Long, format: Int, aspectFlags: Int, m
                     it.layerCount(layerCount)
                 }
             }
-            vkImageView = checkCreatePointer { vkCreateImageView(sys.device.vkDevice, createInfo, null, it) }
+            vkImageView = checkCreatePointer { vkCreateImageView(sys.logicalDevice.vkDevice, createInfo, null, it) }
         }
         logD { "Created image view" }
     }
 
     override fun freeResources() {
-        vkDestroyImageView(sys.device.vkDevice, vkImageView, null)
+        vkDestroyImageView(sys.logicalDevice.vkDevice, vkImageView, null)
         logD { "Destroyed image view" }
     }
 }

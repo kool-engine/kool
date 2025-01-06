@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -228,7 +227,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
     }
 
     private fun create() {
-        val sys = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
+        val sys: VkSystem = TODO()// = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val width = parentPass.width
         val height = parentPass.height
@@ -305,19 +304,19 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
     }
 
     private fun Texture2d.createCopyTexColor(ctx: Lwjgl3Context) {
-        val vkBackend = ctx.backend as VkRenderBackend
-        val prev = gpuTexture
-        if (prev != null) {
-            launchDelayed(3) {
-                prev.release()
-            }
-        }
-
-        val width = parentPass.width
-        val height = parentPass.height
-        val tex = TextureLoader.createTexture(vkBackend.vkSystem, props, width, height, 1)
-        gpuTexture = tex
-        loadingState = Texture.LoadingState.LOADED
-        vkBackend.vkSystem.device.addDependingResource(tex)
+//        val vkBackend = ctx.backend as VkRenderBackend
+//        val prev = gpuTexture
+//        if (prev != null) {
+//            launchDelayed(3) {
+//                prev.release()
+//            }
+//        }
+//
+//        val width = parentPass.width
+//        val height = parentPass.height
+//        val tex = TextureLoader.createTexture(vkBackend.vkSystem, props, width, height, 1)
+//        gpuTexture = tex
+//        loadingState = Texture.LoadingState.LOADED
+//        vkBackend.vkSystem.device.addDependingResource(tex)
     }
 }

@@ -38,7 +38,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
 
     override fun freeResources() {
         if (!isSharedRes) {
-            vkDestroySampler(sys.device.vkDevice, sampler, null)
+            vkDestroySampler(sys.logicalDevice.vkDevice, sampler, null)
             // todo: TextureInfo.deleted()
         }
         logD { "Destroyed texture" }
@@ -48,7 +48,7 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
         if (!isDestroyed) {
             // fixme: kinda hacky... also might be depending resource of something else than sys.device
             launchDelayed(sys.swapChain?.nImages ?: 3) {
-                sys.device.removeDependingResource(this)
+                sys.logicalDevice.removeDependingResource(this)
                 destroy()
             }
         }

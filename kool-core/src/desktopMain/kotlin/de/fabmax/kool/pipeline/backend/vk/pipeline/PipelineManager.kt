@@ -46,7 +46,7 @@ class PipelineManager(val sys: VkSystem) {
 //                }
 
             val gp = GraphicsPipeline(sys, koolRenderPass, renderPass, numSamples, dynVp, pipeline, nImages)
-            sys.device.addDependingResource(gp)
+            sys.logicalDevice.addDependingResource(gp)
             val createdPipeline = createdPipelines.getOrPut(pipeline.pipelineHash) { CreatedPipeline(false) }
             createdPipeline.addRenderPassPipeline(renderPass, gp)
         }
@@ -87,7 +87,7 @@ class PipelineManager(val sys: VkSystem) {
                     if (isOnScreen) {
                         swapChain?.removeDependingResource(gp)
                     } else {
-                        sys.device.removeDependingResource(gp)
+                        sys.logicalDevice.removeDependingResource(gp)
                     }
                     gp.destroy()
                     iterator.remove()

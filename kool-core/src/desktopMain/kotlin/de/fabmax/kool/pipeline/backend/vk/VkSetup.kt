@@ -32,10 +32,6 @@ class VkSetup {
             enabledDeviceExtensions.enableOrDisable(KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME, value)
         }
 
-    fun selectPhysicalDevice(devices: List<PhysicalDevice.PhysicalDevice>): PhysicalDevice.PhysicalDevice {
-        return devices[0]
-    }
-
     private fun MutableSet<String>.enableOrDisable(name: String, flag: Boolean) {
         if (flag) {
             add(name)

@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
-class Instance(val sys: VkSystem, appName: String) : VkResource() {
+class Instance(val backend: VkRenderBackend, appName: String) : VkResource() {
 
     val vkInstance: VkInstance
     private var debugMessenger = 0L
@@ -24,7 +24,7 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
                 applicationVersion(VK_MAKE_VERSION(1, 0, 0))
                 pEngineName(UTF8("Kool ${KoolContext.KOOL_VERSION}"))
                 engineVersion(VK_MAKE_VERSION(1, 0, 0))
-                apiVersion(sys.setup.vkApiVersion)
+                apiVersion(backend.setup.vkApiVersion)
             }
 
             val createInfo = callocVkInstanceCreateInfo {
@@ -34,7 +34,7 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
                 flags(KHRPortabilityEnumeration.VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR)
             }
 
-            val dbgMessengerInfo: VkDebugUtilsMessengerCreateInfoEXT? = if (sys.setup.isValidation) {
+            val dbgMessengerInfo: VkDebugUtilsMessengerCreateInfoEXT? = if (backend.setup.isValidation) {
                 setupDebugMessengerCreateInfo().also { createInfo.pNext(it.address()) }
             } else {
                 null
@@ -51,7 +51,6 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
             }
         }
 
-        sys.addDependingResource(this)
         logD { "Created instance" }
     }
 
@@ -70,8 +69,8 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
         checkVk(vkEnumerateInstanceLayerProperties(ip, availableLayers))
 
         val layerNames = availableLayers.map { it.layerNameString() }.toSet()
-        val enableLayers = sys.setup.enabledLayers.toMutableSet().also { it.retainAll(layerNames) }
-        val missingLayers = sys.setup.enabledLayers - enableLayers
+        val enableLayers = backend.setup.enabledLayers.toMutableSet().also { it.retainAll(layerNames) }
+        val missingLayers = backend.setup.enabledLayers - enableLayers
         if (missingLayers.isNotEmpty()) {
             logW { "Requested layers are not available:" }
             missingLayers.forEach { logW { "  $it" } }
@@ -105,8 +104,8 @@ class Instance(val sys: VkSystem, appName: String) : VkResource() {
         checkVk(vkEnumerateInstanceExtensionProperties(null as String?, ip, availableExtensions))
 
         val extensionNames = availableExtensions.map { it.extensionNameString() }.toSet()
-        val addExtensions = sys.setup.enabledInstanceExtensions.toMutableSet().also { it.retainAll(extensionNames) }
-        val missingExtensions = sys.setup.enabledInstanceExtensions - addExtensions
+        val addExtensions = backend.setup.enabledInstanceExtensions.toMutableSet().also { it.retainAll(extensionNames) }
+        val missingExtensions = backend.setup.enabledInstanceExtensions - addExtensions
         if (missingExtensions.isNotEmpty()) {
             logW { "Requested extensions are not available:" }
             missingExtensions.forEach { logW { "  $it" } }

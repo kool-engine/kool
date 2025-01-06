@@ -70,19 +70,19 @@ class VkOffscreenRenderPass(
         if (!isExtDepthAttachments) {
             addDependingResource(depthAttachment)
         }
-        sys.device.addDependingResource(this)
+        sys.logicalDevice.addDependingResource(this)
 
         logD { "Created offscreen render pass" }
     }
 
     fun destroyNow() {
-        sys.device.removeDependingResource(this)
+        sys.logicalDevice.removeDependingResource(this)
         destroy()
     }
 
     override fun freeResources() {
-        vkDestroyRenderPass(sys.device.vkDevice, vkRenderPass, null)
-        vkDestroyFramebuffer(sys.device.vkDevice, frameBuffer, null)
+        vkDestroyRenderPass(sys.logicalDevice.vkDevice, vkRenderPass, null)
+        vkDestroyFramebuffer(sys.logicalDevice.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
     }
 
@@ -100,7 +100,7 @@ class VkOffscreenRenderPass(
                 height(maxHeight)
                 layers(1)
             }
-            return checkCreatePointer { vkCreateFramebuffer(sys.device.vkDevice, framebufferInfo, null, it) }
+            return checkCreatePointer { vkCreateFramebuffer(sys.logicalDevice.vkDevice, framebufferInfo, null, it) }
         }
     }
 
@@ -199,7 +199,7 @@ class VkOffscreenRenderPass(
                 pSubpasses(subpass)
                 pDependencies(dependencies)
             }
-            return checkCreatePointer { vkCreateRenderPass(sys.device.vkDevice, renderPassInfo, null, it) }
+            return checkCreatePointer { vkCreateRenderPass(sys.logicalDevice.vkDevice, renderPassInfo, null, it) }
         }
     }
 
@@ -261,7 +261,7 @@ class VkOffscreenRenderPass(
         }
 
         override fun freeResources() {
-            colorSamplers.forEach { vkDestroySampler(sys.device.vkDevice, it, null) }
+            colorSamplers.forEach { vkDestroySampler(sys.logicalDevice.vkDevice, it, null) }
         }
     }
 
@@ -301,7 +301,7 @@ class VkOffscreenRenderPass(
         }
 
         override fun freeResources() {
-            vkDestroySampler(sys.device.vkDevice, depthSampler, null)
+            vkDestroySampler(sys.logicalDevice.vkDevice, depthSampler, null)
         }
     }
 
@@ -328,7 +328,7 @@ class VkOffscreenRenderPass(
                     }
                 }
                 val lp = mallocLong(1)
-                check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, lp) == VK_SUCCESS)
+                check(vkCreateSampler(sys.logicalDevice.vkDevice, samplerInfo, null, lp) == VK_SUCCESS)
                 return lp[0]
             }
         }

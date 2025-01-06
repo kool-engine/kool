@@ -81,7 +81,7 @@ class OnScreenRenderPass(val swapChain: SwapChain) :
                 pDependencies(dependency)
             }
 
-            vkRenderPass = checkCreatePointer { vkCreateRenderPass(swapChain.sys.device.vkDevice, renderPassInfo, null, it) }
+            vkRenderPass = checkCreatePointer { vkCreateRenderPass(swapChain.sys.logicalDevice.vkDevice, renderPassInfo, null, it) }
         }
 
         swapChain.addDependingResource(this)
@@ -129,7 +129,7 @@ class OnScreenRenderPass(val swapChain: SwapChain) :
     }
 
     override fun freeResources() {
-        vkDestroyRenderPass(sys.device.vkDevice, vkRenderPass, null)
+        vkDestroyRenderPass(sys.logicalDevice.vkDevice, vkRenderPass, null)
         logD { "Destroyed render pass" }
     }
 }

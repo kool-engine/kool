@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW.glfwTerminate
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.KHRSurface
 
-class GlfwVkWindow(val sys: VkSystem, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
+class GlfwVkWindow(val backend: VkRenderBackend, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
 
     val onResize = mutableListOf<OnWindowResizeListener>()
 
@@ -47,15 +47,15 @@ class GlfwVkWindow(val sys: VkSystem, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
         init {
             memStack {
                 val lp = mallocLong(1)
-                checkVk(GLFWVulkan.glfwCreateWindowSurface(sys.instance.vkInstance, windowPtr, null, lp))
+                checkVk(GLFWVulkan.glfwCreateWindowSurface(backend.instance.vkInstance, windowPtr, null, lp))
                 surfaceHandle = lp[0]
             }
-            sys.instance.addDependingResource(this)
+            backend.instance.addDependingResource(this)
             logD { "Created surface" }
         }
 
         override fun freeResources() {
-            KHRSurface.vkDestroySurfaceKHR(sys.instance.vkInstance, surfaceHandle, null)
+            KHRSurface.vkDestroySurfaceKHR(backend.instance.vkInstance, surfaceHandle, null)
             logD { "Destroyed surface" }
 
             glfwDestroyWindow(windowPtr)

@@ -20,10 +20,10 @@ class CommandBuffers(val commandPool: CommandPool, nBuffers: Int) : VkResource()
                 commandBufferCount(cmdBuffers.capacity())
             }
 
-            checkVk(vkAllocateCommandBuffers(commandPool.sys.device.vkDevice, allocInfo, cmdBuffers))
+            checkVk(vkAllocateCommandBuffers(commandPool.sys.logicalDevice.vkDevice, allocInfo, cmdBuffers))
             val commandBuffers = mutableListOf<VkCommandBuffer>()
             for (i in 0 until nBuffers) {
-                commandBuffers += VkCommandBuffer(cmdBuffers[i], commandPool.sys.device.vkDevice)
+                commandBuffers += VkCommandBuffer(cmdBuffers[i], commandPool.sys.logicalDevice.vkDevice)
             }
             vkCommandBuffers = commandBuffers
         }
@@ -39,7 +39,7 @@ class CommandBuffers(val commandPool: CommandPool, nBuffers: Int) : VkResource()
 
     override fun freeResources() {
         vkCommandBuffers.forEach {
-            vkFreeCommandBuffers(commandPool.sys.device.vkDevice, commandPool.vkCommandPool, it)
+            vkFreeCommandBuffers(commandPool.sys.logicalDevice.vkDevice, commandPool.vkCommandPool, it)
         }
     }
 }

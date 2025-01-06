@@ -11,8 +11,8 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
 
     val vkCommandPool: Long
     val queueIndex = when {
-        queue === sys.device.graphicsQueue -> sys.physicalDevice.queueFamiliyIndices.graphicsFamily!!
-        queue === sys.device.transferQueue -> sys.physicalDevice.queueFamiliyIndices.transferFamily!!
+        queue === sys.logicalDevice.graphicsQueue -> sys.physicalDevice.queueFamiliyIndices.graphicsFamily!!
+        queue === sys.logicalDevice.transferQueue -> sys.physicalDevice.queueFamiliyIndices.transferFamily!!
         else -> throw IllegalArgumentException("Invalid queue (neither graphics nor transfer)")
     }
 
@@ -21,15 +21,15 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
             val poolInfo = callocVkCommandPoolCreateInfo {
                 queueFamilyIndex(queueIndex)
             }
-            vkCommandPool = checkCreatePointer { vkCreateCommandPool(sys.device.vkDevice, poolInfo, null, it) }
+            vkCommandPool = checkCreatePointer { vkCreateCommandPool(sys.logicalDevice.vkDevice, poolInfo, null, it) }
         }
 
-        sys.device.addDependingResource(this)
+        sys.logicalDevice.addDependingResource(this)
         logD { "Created command pool (queue index: $queueIndex)" }
     }
 
     fun reset() {
-        vkResetCommandPool(sys.device.vkDevice, vkCommandPool, 0)
+        vkResetCommandPool(sys.logicalDevice.vkDevice, vkCommandPool, 0)
     }
 
     fun createCommandBuffers(nBuffers: Int): CommandBuffers = CommandBuffers(this, nBuffers)
@@ -43,8 +43,8 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
             }
 
             val pCommandBuffer = mallocPointer(1)
-            checkVk(vkAllocateCommandBuffers(sys.device.vkDevice, allocInfo, pCommandBuffer))
-            val commandBuffer = VkCommandBuffer(pCommandBuffer[0], sys.device.vkDevice)
+            checkVk(vkAllocateCommandBuffers(sys.logicalDevice.vkDevice, allocInfo, pCommandBuffer))
+            val commandBuffer = VkCommandBuffer(pCommandBuffer[0], sys.logicalDevice.vkDevice)
 
             val beginInfo = callocVkCommandBufferBeginInfo {
                 flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
@@ -58,12 +58,12 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
             }
             vkQueueSubmit(queue, submitInfo, VK_NULL_HANDLE)
             vkQueueWaitIdle(queue)
-            vkFreeCommandBuffers(sys.device.vkDevice, vkCommandPool, pCommandBuffer)
+            vkFreeCommandBuffers(sys.logicalDevice.vkDevice, vkCommandPool, pCommandBuffer)
         }
     }
 
     override fun freeResources() {
-        vkDestroyCommandPool(sys.device.vkDevice, vkCommandPool, null)
+        vkDestroyCommandPool(sys.logicalDevice.vkDevice, vkCommandPool, null)
         logD { "Destroyed command pool" }
     }
 }

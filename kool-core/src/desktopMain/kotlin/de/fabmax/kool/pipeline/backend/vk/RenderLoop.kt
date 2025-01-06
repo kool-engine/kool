@@ -27,13 +27,13 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
             }
 
             for (i in 0 until MAX_FRAMES_IN_FLIGHT) {
-                imageAvailableSemaphore += checkCreatePointer { vkCreateSemaphore(sys.device.vkDevice, semaphoreInfo, null, it) }
-                renderFinishedSemaphore += checkCreatePointer { vkCreateSemaphore(sys.device.vkDevice, semaphoreInfo, null, it) }
-                inFlightFences += checkCreatePointer { vkCreateFence(sys.device.vkDevice, fenceInfo, null, it) }
+                imageAvailableSemaphore += checkCreatePointer { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
+                renderFinishedSemaphore += checkCreatePointer { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
+                inFlightFences += checkCreatePointer { vkCreateFence(sys.logicalDevice.vkDevice, fenceInfo, null, it) }
             }
         }
 
-        sys.device.addDependingResource(this)
+        sys.logicalDevice.addDependingResource(this)
 
         sys.window.onResize += object : GlfwVkWindow.OnWindowResizeListener {
             override fun onResize(window: GlfwVkWindow, newWidth: Int, newHeight: Int) {
@@ -48,7 +48,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
             glfwPollEvents()
             drawFrame()
         }
-        vkDeviceWaitIdle(sys.device.vkDevice)
+        vkDeviceWaitIdle(sys.logicalDevice.vkDevice)
     }
 
     fun drawFrame() {
@@ -56,10 +56,10 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
 
         memStack {
             val fence = longs(inFlightFences[currentFrame])
-            vkWaitForFences(sys.device.vkDevice, fence, true, -1L)
+            vkWaitForFences(sys.logicalDevice.vkDevice, fence, true, -1L)
 
             val ip = mallocInt(1)
-            var result = vkAcquireNextImageKHR(sys.device.vkDevice, swapChain.vkSwapChain, -1L, imageAvailableSemaphore[currentFrame], VK_NULL_HANDLE, ip)
+            var result = vkAcquireNextImageKHR(sys.logicalDevice.vkDevice, swapChain.vkSwapChain, -1L, imageAvailableSemaphore[currentFrame], VK_NULL_HANDLE, ip)
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
                 sys.recreateSwapChain()
                 return
@@ -79,7 +79,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
                 pSwapchains(longs(swapChain.vkSwapChain))
                 pImageIndices(ints(imageIndex))
             }
-            result = vkQueuePresentKHR(sys.device.presentQueue, presentInfo)
+            result = vkQueuePresentKHR(sys.logicalDevice.presentQueue, presentInfo)
             if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
                 framebufferResized = false
                 sys.recreateSwapChain()
@@ -94,9 +94,9 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
 
     override fun freeResources() {
         for (i in 0 until MAX_FRAMES_IN_FLIGHT) {
-            vkDestroySemaphore(sys.device.vkDevice, imageAvailableSemaphore[i], null)
-            vkDestroySemaphore(sys.device.vkDevice, renderFinishedSemaphore[i], null)
-            vkDestroyFence(sys.device.vkDevice, inFlightFences[i], null)
+            vkDestroySemaphore(sys.logicalDevice.vkDevice, imageAvailableSemaphore[i], null)
+            vkDestroySemaphore(sys.logicalDevice.vkDevice, renderFinishedSemaphore[i], null)
+            vkDestroyFence(sys.logicalDevice.vkDevice, inFlightFences[i], null)
         }
     }
 

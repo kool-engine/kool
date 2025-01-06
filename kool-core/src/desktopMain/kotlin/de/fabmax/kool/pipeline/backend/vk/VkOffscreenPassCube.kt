@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -176,7 +175,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
     }
 
     private fun create() {
-        val sys = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
+        val sys: VkSystem = TODO()// = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val cfg = (pass.colorAttachments as OffscreenRenderPass.ColorAttachmentTextures).attachments[0]
         val rp = VkOffscreenRenderPass(sys, pass.size.x, pass.size.y, true, cfg.textureFormat.vkFormat)
@@ -215,20 +214,20 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
     }
 
     private fun TextureCube.createCopyTexColor(ctx: Lwjgl3Context) {
-        val vkBackend = ctx.backend as VkRenderBackend
-        val prev = gpuTexture
-        if (prev != null) {
-            launchDelayed(3) {
-                prev.release()
-            }
-        }
-
-        val width = parentPass.width
-        val height = parentPass.height
-        val tex = TextureLoader.createCubeTexture(vkBackend.vkSystem, props, width, height)
-        gpuTexture = tex
-        loadingState = Texture.LoadingState.LOADED
-        vkBackend.vkSystem.device.addDependingResource(tex)
+//        val vkBackend = ctx.backend as VkRenderBackend
+//        val prev = gpuTexture
+//        if (prev != null) {
+//            launchDelayed(3) {
+//                prev.release()
+//            }
+//        }
+//
+//        val width = parentPass.width
+//        val height = parentPass.height
+//        val tex = TextureLoader.createCubeTexture(vkBackend.vkSystem, props, width, height)
+//        gpuTexture = tex
+//        loadingState = Texture.LoadingState.LOADED
+//        vkBackend.vkSystem.device.addDependingResource(tex)
     }
 
     private fun createSampler(sys: VkSystem, texImage: Image): Long {
@@ -252,7 +251,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
                 maxLod(texImage.mipLevels.toFloat())
             }
             val ptr = mallocLong(1)
-            check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
+            check(vkCreateSampler(sys.logicalDevice.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
             return ptr[0]
         }
     }

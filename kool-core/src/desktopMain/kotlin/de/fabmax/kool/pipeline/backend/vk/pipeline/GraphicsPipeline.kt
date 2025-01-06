@@ -260,7 +260,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 pPushConstantRanges(pushConstantRanges)
             }
             pipelineLayout = checkCreatePointer {
-                vkCreatePipelineLayout(sys.device.vkDevice, pipelineLayoutInfo, null, it )
+                vkCreatePipelineLayout(sys.logicalDevice.vkDevice, pipelineLayoutInfo, null, it )
             }
 
             val pipelineInfo = callocVkGraphicsPipelineCreateInfoN(1) {
@@ -282,7 +282,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
             vkGraphicsPipeline = checkCreatePointer {
                 vkCreateGraphicsPipelines(
-                    sys.device.vkDevice,
+                    sys.logicalDevice.vkDevice,
                     VK_NULL_HANDLE,
                     pipelineInfo,
                     null,
@@ -291,7 +291,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             for (module in shaderStageModules) {
-                vkDestroyShaderModule(sys.device.vkDevice, module, null)
+                vkDestroyShaderModule(sys.logicalDevice.vkDevice, module, null)
             }
         }
 
@@ -306,7 +306,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
                 pCode(code)
             }
-            checkCreatePointer { vkCreateShaderModule(sys.device.vkDevice, createInfo, null, it) }
+            checkCreatePointer { vkCreateShaderModule(sys.logicalDevice.vkDevice, createInfo, null, it) }
         }
     }
 
@@ -340,7 +340,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             pBindings(bindings)
         }
 
-        return checkCreatePointer { vkCreateDescriptorSetLayout(sys.device.vkDevice, layoutInfo, null, it) }
+        return checkCreatePointer { vkCreateDescriptorSetLayout(sys.logicalDevice.vkDevice, layoutInfo, null, it) }
     }
 
     private fun createDescriptorPool(bindGroupLayout: BindGroupLayout): Long {
@@ -361,7 +361,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     maxSets(nImages * descriptorSetPoolSize)
                 }
 
-                return checkCreatePointer { vkCreateDescriptorPool(sys.device.vkDevice, poolInfo, null, it) }
+                return checkCreatePointer { vkCreateDescriptorPool(sys.logicalDevice.vkDevice, poolInfo, null, it) }
             }
         }
         return 0L
@@ -400,11 +400,11 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
     fun isEmpty(): Boolean = descriptorSetInstances.isEmpty()
 
     override fun freeResources() {
-        vkDestroyPipeline(sys.device.vkDevice, vkGraphicsPipeline, null)
-        vkDestroyPipelineLayout(sys.device.vkDevice, pipelineLayout, null)
-        vkDestroyDescriptorSetLayout(sys.device.vkDevice, descriptorSetLayout, null)
+        vkDestroyPipeline(sys.logicalDevice.vkDevice, vkGraphicsPipeline, null)
+        vkDestroyPipelineLayout(sys.logicalDevice.vkDevice, pipelineLayout, null)
+        vkDestroyDescriptorSetLayout(sys.logicalDevice.vkDevice, descriptorSetLayout, null)
         if (descriptorPool != 0L) {
-            vkDestroyDescriptorPool(sys.device.vkDevice, descriptorPool, null)
+            vkDestroyDescriptorPool(sys.logicalDevice.vkDevice, descriptorPool, null)
         }
 
         descriptorSetInstances.clear()

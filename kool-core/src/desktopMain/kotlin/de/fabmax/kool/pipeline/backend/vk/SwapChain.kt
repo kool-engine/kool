@@ -67,14 +67,14 @@ class SwapChain(val sys: VkSystem) : VkResource() {
                 }
             }
 
-            vkSwapChain = checkCreatePointer { vkCreateSwapchainKHR(sys.device.vkDevice, createInfo, null, it) }
+            vkSwapChain = checkCreatePointer { vkCreateSwapchainKHR(sys.logicalDevice.vkDevice, createInfo, null, it) }
             imageFormat = surfaceFormat.format()
             this@SwapChain.extent.set(extent)
 
             val ip = mallocInt(1)
-            vkGetSwapchainImagesKHR(sys.device.vkDevice, vkSwapChain, ip, null)
+            vkGetSwapchainImagesKHR(sys.logicalDevice.vkDevice, vkSwapChain, ip, null)
             val imgs = mallocLong(ip[0])
-            vkGetSwapchainImagesKHR(sys.device.vkDevice, vkSwapChain, ip, imgs)
+            vkGetSwapchainImagesKHR(sys.logicalDevice.vkDevice, vkSwapChain, ip, imgs)
             for (i in 0 until ip[0]) {
                 images += imgs[i]
                 imageViews += ImageView(sys, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_VIEW_TYPE_2D, 1)
@@ -94,7 +94,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
             createFramebuffers()
         }
 
-        sys.device.addDependingResource(this)
+        sys.logicalDevice.addDependingResource(this)
         logD { "Created swap chain" }
     }
 
@@ -142,7 +142,7 @@ class SwapChain(val sys: VkSystem) : VkResource() {
                 height(extent.height())
                 layers(1)
             }
-            framebuffers += checkCreatePointer { vkCreateFramebuffer(sys.device.vkDevice, framebufferInfo, null, it) }
+            framebuffers += checkCreatePointer { vkCreateFramebuffer(sys.logicalDevice.vkDevice, framebufferInfo, null, it) }
         }
     }
 
@@ -176,14 +176,14 @@ class SwapChain(val sys: VkSystem) : VkResource() {
     }
 
     override fun freeResources() {
-        sys.device.removeDependingResource(this)
+        sys.logicalDevice.removeDependingResource(this)
 
         framebuffers.forEach { fb ->
-            vkDestroyFramebuffer(sys.device.vkDevice, fb, null)
+            vkDestroyFramebuffer(sys.logicalDevice.vkDevice, fb, null)
         }
         framebuffers.clear()
 
-        vkDestroySwapchainKHR(sys.device.vkDevice, vkSwapChain, null)
+        vkDestroySwapchainKHR(sys.logicalDevice.vkDevice, vkSwapChain, null)
         images.clear()
         imageViews.clear()
         extent.free()

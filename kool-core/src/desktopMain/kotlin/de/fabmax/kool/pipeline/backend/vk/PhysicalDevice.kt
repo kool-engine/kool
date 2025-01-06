@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 import kotlin.math.min
 
-class PhysicalDevice(val sys: VkSystem) : VkResource() {
+class PhysicalDevice(val backend: VkRenderBackend) : VkResource() {
 
     val vkPhysicalDevice: VkPhysicalDevice
     val queueFamiliyIndices: QueueFamilyIndices
@@ -25,12 +25,12 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
     init {
         memStack {
             val ip = mallocInt(1)
-            checkVk(vkEnumeratePhysicalDevices(sys.instance.vkInstance, ip, null))
+            checkVk(vkEnumeratePhysicalDevices(backend.instance.vkInstance, ip, null))
             val devPtrs = mallocPointer(ip[0])
-            checkVk(vkEnumeratePhysicalDevices(sys.instance.vkInstance, ip, devPtrs))
+            checkVk(vkEnumeratePhysicalDevices(backend.instance.vkInstance, ip, devPtrs))
 
-            val devices = (0 until ip[0]).map { PhysicalDevice(devPtrs[it], this) }
-            val selectedDevice = sys.setup.selectPhysicalDevice(devices)
+            val devices = (0 until ip[0]).map { PhysicalDeviceWrapper(devPtrs[it], this) }
+            val selectedDevice = selectPhysicalDevice(devices)
             check(selectedDevice.queueFamiliyIndices.isComplete) {
                 "Failed to find a suitable GPU"
             }
@@ -47,12 +47,11 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
             driverVersion = "${VK_VERSION_MAJOR(drv)}.${VK_VERSION_MINOR(drv)}.${VK_VERSION_PATCH(drv)}"
             deviceName = vkDeviceProperties.deviceNameString()
 
-            logI {
-                "Selected GPU: $deviceName [api: $apiVersion, driver: $driverVersion]"
-            }
+            logI { "Selected GPU: $deviceName [api: $apiVersion, driver: $driverVersion]" }
             logD {
                 "Using queue families: present: ${queueFamiliyIndices.presentFamily}, " +
                         "graphics: ${queueFamiliyIndices.graphicsFamily}, " +
+                        "compute: ${queueFamiliyIndices.computeFamily}, " +
                         "transfer: ${queueFamiliyIndices.transferFamily}"
             }
         }
@@ -61,7 +60,18 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
                     listOf(VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT),
                     VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
 
-        sys.instance.addDependingResource(this)
+        backend.instance.addDependingResource(this)
+    }
+
+    private fun selectPhysicalDevice(devices: List<PhysicalDeviceWrapper>): PhysicalDeviceWrapper {
+        val suitableDevices = devices.filter { it.queueFamiliyIndices.isComplete }
+        check(suitableDevices.isNotEmpty()) { "No suitable Vulkan devices found!" }
+
+        if (suitableDevices.size > 1) {
+            logI { "Multiple Vulkan capable GPUS found:" }
+            suitableDevices.forEach { dev -> logI { "  ${dev.properties.deviceNameString()}" } }
+        }
+        return suitableDevices.find { it.properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU } ?: devices.first()
     }
 
     private fun getMaxUsableSampleCount(): Int {
@@ -111,8 +121,8 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
         vkDeviceFeatures.free()
     }
 
-    inner class PhysicalDevice(ptr: Long, stack: MemoryStack) {
-        val device = VkPhysicalDevice(ptr, sys.instance.vkInstance)
+    private inner class PhysicalDeviceWrapper(ptr: Long, stack: MemoryStack) {
+        val device = VkPhysicalDevice(ptr, backend.instance.vkInstance)
         val queueFamiliyIndices: QueueFamilyIndices
         val properties: VkPhysicalDeviceProperties
         val features: VkPhysicalDeviceFeatures
@@ -135,37 +145,37 @@ class PhysicalDevice(val sys: VkSystem) : VkResource() {
                 val ip = mallocInt(1)
                 var presentFamily: Int? = null
                 var graphicsFamily: Int? = null
+                var computeFamily: Int? = null
                 var transferFamily: Int? = null
                 for (i in 0 until nFams[0]) {
                     val props = queueFamilies[i]
-                    KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(device, i, sys.window.surface.surfaceHandle, ip)
+                    KHRSurface.vkGetPhysicalDeviceSurfaceSupportKHR(device, i, backend.glfwWindow.surface.surfaceHandle, ip)
                     if (presentFamily == null && props.queueCount() > 0 && ip[0] != 0) {
                         presentFamily = i
                     }
                     if (graphicsFamily == null && props.queueCount() > 0 && props.queueFlags() and VK_QUEUE_GRAPHICS_BIT != 0) {
                         graphicsFamily = i
                     }
-                    if (transferFamily == null && props.queueCount() > 0 && props.queueFlags() and VK_QUEUE_GRAPHICS_BIT == 0 && props.queueFlags() and VK_QUEUE_TRANSFER_BIT != 0) {
+                    if (computeFamily == null && props.queueCount() > 0 && props.queueFlags() and VK_QUEUE_COMPUTE_BIT != 0) {
+                        computeFamily = i
+                    }
+                    if (transferFamily == null && props.queueCount() > 0 && props.queueFlags() and VK_QUEUE_TRANSFER_BIT != 0) {
                         transferFamily = i
                     }
                 }
-
-                val indices = QueueFamilyIndices(graphicsFamily, presentFamily, transferFamily)
+                val indices = QueueFamilyIndices(graphicsFamily, computeFamily, presentFamily, transferFamily)
                 return indices
             }
         }
     }
 
-    class QueueFamilyIndices(val graphicsFamily: Int?, val presentFamily: Int?, val transferFamily: Int?) {
-        val uniqueFamilies: Set<Int>
+    class QueueFamilyIndices(val graphicsFamily: Int?, val computeFamily: Int?, val presentFamily: Int?, val transferFamily: Int?) {
         val isComplete = graphicsFamily != null && presentFamily != null
-
-        init {
-            val fams = mutableSetOf<Int>()
-            if (graphicsFamily != null) { fams += graphicsFamily }
-            if (presentFamily != null) { fams += presentFamily }
-            if (transferFamily != null) { fams += transferFamily }
-            uniqueFamilies = fams
+        val uniqueFamilies: Set<Int> = buildSet {
+            if (graphicsFamily != null) { add(graphicsFamily) }
+            if (computeFamily != null) { add(computeFamily) }
+            if (presentFamily != null) { add(presentFamily) }
+            if (transferFamily != null) { add(transferFamily) }
         }
     }
 }
