@@ -21,7 +21,7 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
             val poolInfo = callocVkCommandPoolCreateInfo {
                 queueFamilyIndex(queueIndex)
             }
-            vkCommandPool = checkCreatePointer { vkCreateCommandPool(sys.logicalDevice.vkDevice, poolInfo, null, it) }
+            vkCommandPool = checkCreateLongPtr { vkCreateCommandPool(sys.logicalDevice.vkDevice, poolInfo, null, it) }
         }
 
         sys.logicalDevice.addDependingResource(this)

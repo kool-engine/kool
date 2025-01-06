@@ -27,9 +27,9 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
             }
 
             for (i in 0 until MAX_FRAMES_IN_FLIGHT) {
-                imageAvailableSemaphore += checkCreatePointer { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
-                renderFinishedSemaphore += checkCreatePointer { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
-                inFlightFences += checkCreatePointer { vkCreateFence(sys.logicalDevice.vkDevice, fenceInfo, null, it) }
+                imageAvailableSemaphore += checkCreateLongPtr { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
+                renderFinishedSemaphore += checkCreateLongPtr { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
+                inFlightFences += checkCreateLongPtr { vkCreateFence(sys.logicalDevice.vkDevice, fenceInfo, null, it) }
             }
         }
 

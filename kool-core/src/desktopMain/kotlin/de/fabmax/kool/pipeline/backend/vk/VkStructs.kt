@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Struct
 import org.lwjgl.system.StructBuffer
@@ -8,6 +9,8 @@ import org.lwjgl.vulkan.EXTDebugUtils.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CR
 import org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
 import org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
 import org.lwjgl.vulkan.VK10.*
+import java.nio.IntBuffer
+import java.nio.LongBuffer
 
 inline fun <T: Struct<T>> MemoryStack.allocStruct(
     factory: (MemoryStack) -> T,
@@ -322,3 +325,19 @@ inline fun MemoryStack.callocVkWriteDescriptorSetN(n: Int, block: VkWriteDescrip
     allocStructBufferItems(n, VkWriteDescriptorSet::calloc, block) {
         get(it).apply { sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET) }
     }
+
+inline fun MemoryStack.getLongs(block: (IntBuffer, LongBuffer?) -> Unit): Pair<Int, LongBuffer> {
+    val ip = mallocInt(1)
+    block(ip, null)
+    val longs = mallocLong(ip[0])
+    block(ip, longs)
+    return ip[0] to longs
+}
+
+inline fun MemoryStack.getPointers(block: (IntBuffer, PointerBuffer?) -> Unit): Pair<Int, PointerBuffer> {
+    val ip = mallocInt(1)
+    block(ip, null)
+    val pointers = mallocPointer(ip[0])
+    block(ip, pointers)
+    return ip[0] to pointers
+}

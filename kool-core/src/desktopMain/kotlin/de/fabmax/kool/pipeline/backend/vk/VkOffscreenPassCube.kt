@@ -6,7 +6,6 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.memStack
-import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
@@ -185,32 +184,33 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
     }
 
     private fun createTex(rp: VkOffscreenRenderPass, sys: VkSystem) {
-        val imgConfig = Image.Config()
-        imgConfig.width = rp.maxWidth
-        imgConfig.height = rp.maxHeight
-        imgConfig.mipLevels = parentPass.numTextureMipLevels
-        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
-        imgConfig.format = rp.colorFormats[0]
-        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
-        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
-        imgConfig.arrayLayers = 6
-        imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
-
-        image = Image(sys, imgConfig)
-        imageView = ImageView(sys, image.vkImage, image.format, VK_IMAGE_ASPECT_COLOR_BIT, image.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE, 6)
-        sampler = createSampler(sys, image)
-
-        image.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-
-        val loadedTex = LoadedTextureVk(sys, rp.texFormat, image, imageView, sampler)
-        loadedTex.setSize(rp.maxWidth, rp.maxHeight, 1)
-        rp.addDependingResource(loadedTex)
-
-        parentPass.colorTexture!!.apply {
-            gpuTexture = loadedTex
-            loadingState = Texture.LoadingState.LOADING
-        }
+        TODO()
+//        val imgConfig = Image.Config()
+//        imgConfig.width = rp.maxWidth
+//        imgConfig.height = rp.maxHeight
+//        imgConfig.mipLevels = parentPass.numTextureMipLevels
+//        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
+//        imgConfig.format = rp.colorFormats[0]
+//        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+//        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
+//        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+//        imgConfig.arrayLayers = 6
+//        imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+//
+//        image = Image(sys, imgConfig)
+//        imageView = ImageView(sys, image.vkImage, image.format, VK_IMAGE_ASPECT_COLOR_BIT, image.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE, 6)
+//        sampler = createSampler(sys, image)
+//
+//        image.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+//
+//        val loadedTex = LoadedTextureVk(sys, rp.texFormat, image, imageView, sampler)
+//        loadedTex.setSize(rp.maxWidth, rp.maxHeight, 1)
+//        rp.addDependingResource(loadedTex)
+//
+//        parentPass.colorTexture!!.apply {
+//            gpuTexture = loadedTex
+//            loadingState = Texture.LoadingState.LOADING
+//        }
     }
 
     private fun TextureCube.createCopyTexColor(ctx: Lwjgl3Context) {

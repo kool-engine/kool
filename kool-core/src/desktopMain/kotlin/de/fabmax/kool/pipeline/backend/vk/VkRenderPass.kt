@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.pipeline.TexFormat
 import org.lwjgl.vulkan.VK10.*
 
-abstract class VkRenderPass(val sys: VkSystem, val maxWidth: Int, val maxHeight: Int, val colorFormats: List<Int>) : VkResource() {
+abstract class VkRenderPass(val backend: VkRenderBackend, val maxWidth: Int, val maxHeight: Int, val colorFormats: List<Int>) : VkResource() {
 
     var triFrontDirection = VK_FRONT_FACE_COUNTER_CLOCKWISE
 
@@ -14,6 +14,9 @@ abstract class VkRenderPass(val sys: VkSystem, val maxWidth: Int, val maxHeight:
 
     val texFormat: TexFormat
         get() = getTexFormat(0)
+
+    val physicalDevice: PhysicalDevice get() = backend.physicalDevice
+    val logicalDevice: LogicalDevice get() = backend.logicalDevice
 
     fun getTexFormat(attachment: Int): TexFormat {
         @Suppress("DEPRECATION")

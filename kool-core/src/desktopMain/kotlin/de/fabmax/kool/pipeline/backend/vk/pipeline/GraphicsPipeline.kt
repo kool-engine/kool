@@ -259,7 +259,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 pSetLayouts(longs(descriptorSetLayout))
                 pPushConstantRanges(pushConstantRanges)
             }
-            pipelineLayout = checkCreatePointer {
+            pipelineLayout = checkCreateLongPtr {
                 vkCreatePipelineLayout(sys.logicalDevice.vkDevice, pipelineLayoutInfo, null, it )
             }
 
@@ -280,7 +280,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)
             }
-            vkGraphicsPipeline = checkCreatePointer {
+            vkGraphicsPipeline = checkCreateLongPtr {
                 vkCreateGraphicsPipelines(
                     sys.logicalDevice.vkDevice,
                     VK_NULL_HANDLE,
@@ -306,7 +306,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
                 pCode(code)
             }
-            checkCreatePointer { vkCreateShaderModule(sys.logicalDevice.vkDevice, createInfo, null, it) }
+            checkCreateLongPtr { vkCreateShaderModule(sys.logicalDevice.vkDevice, createInfo, null, it) }
         }
     }
 
@@ -340,7 +340,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             pBindings(bindings)
         }
 
-        return checkCreatePointer { vkCreateDescriptorSetLayout(sys.logicalDevice.vkDevice, layoutInfo, null, it) }
+        return checkCreateLongPtr { vkCreateDescriptorSetLayout(sys.logicalDevice.vkDevice, layoutInfo, null, it) }
     }
 
     private fun createDescriptorPool(bindGroupLayout: BindGroupLayout): Long {
@@ -361,7 +361,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     maxSets(nImages * descriptorSetPoolSize)
                 }
 
-                return checkCreatePointer { vkCreateDescriptorPool(sys.logicalDevice.vkDevice, poolInfo, null, it) }
+                return checkCreateLongPtr { vkCreateDescriptorPool(sys.logicalDevice.vkDevice, poolInfo, null, it) }
             }
         }
         return 0L

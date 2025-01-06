@@ -40,9 +40,8 @@ class Instance(val backend: VkRenderBackend, appName: String) : VkResource() {
                 null
             }
 
-            val pp = mallocPointer(1)
-            checkVk(vkCreateInstance(createInfo, null, pp))
-            vkInstance = VkInstance(pp[0], createInfo)
+            val ptr = checkCreatePointer { vkCreateInstance(createInfo, null, it) }
+            vkInstance = VkInstance(ptr, createInfo)
 
             if (dbgMessengerInfo != null) {
                 val lp = mallocLong(1)

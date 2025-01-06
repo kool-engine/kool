@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkFormatProperties
 import kotlin.math.max
 
-class Image(val sys: VkSystem, config: Config) : VkResource() {
+class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
     val width = config.width
     val height = config.height
     val depth = config.depth
@@ -53,7 +53,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
 
             val pBuffer = mallocLong(1)
             val pAllocation = mallocPointer(1)
-            checkVk(sys.memManager.createImage(imageInfo, config.allocUsage, pBuffer, pAllocation)) { "Image creation failed with code: $it" }
+            checkVk(backend.memManager.createImage(imageInfo, config.allocUsage, pBuffer, pAllocation)) { "Image creation failed with code: $it" }
             vkImage = pBuffer[0]
             allocation = pAllocation[0]
         }
@@ -73,7 +73,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
         }
 
         val formatProperties = VkFormatProperties.malloc(stack)
-        vkGetPhysicalDeviceFormatProperties(sys.physicalDevice.vkPhysicalDevice, format, formatProperties)
+        vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice, format, formatProperties)
         if (formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT == 0) {
             logW { "Texture image format does not support linear blitting!" }
             transitionLayout(dstLayout)
@@ -166,9 +166,9 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
     }
 
     fun transitionLayout(newLayout: Int) {
-        sys.commandPool.singleTimeCommands { commandBuffer ->
-            transitionLayout(this, commandBuffer, newLayout)
-        }
+//        sys.commandPool.singleTimeCommands { commandBuffer ->
+//            transitionLayout(this, commandBuffer, newLayout)
+//        }
     }
 
     fun transitionLayout(stack: MemoryStack, commandBuffer: VkCommandBuffer, newLayout: Int) {
@@ -237,7 +237,7 @@ class Image(val sys: VkSystem, config: Config) : VkResource() {
     }
 
     override fun freeResources() {
-        sys.memManager.freeImage(vkImage, allocation)
+        backend.memManager.freeImage(vkImage, allocation)
     }
 
     class Config {

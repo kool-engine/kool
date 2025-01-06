@@ -49,13 +49,14 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val instance: Instance
     val physicalDevice: PhysicalDevice
     val logicalDevice: LogicalDevice
-    //val memManager: MemoryManager
+    val memManager: MemoryManager
+    var swapChain: SwapChain
+
     //val pipelineManager = PipelineManager(this)
 
     //val commandPool: CommandPool
     //val transferCommandPool: CommandPool
     //val renderLoop: RenderLoop
-    //var swapChain: SwapChain? = null
 
 
 
@@ -65,7 +66,6 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private val shaderCodes = mutableMapOf<String, ShaderCodeImplVk>()
 
-    //val vkSystem: VkSystem
     private val vkScene = KoolVkScene()
 
     //private val semaPool: SemaphorePool
@@ -85,6 +85,8 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         physicalDevice = PhysicalDevice(this)
         logicalDevice = LogicalDevice(this)
+        memManager = MemoryManager(this)
+        swapChain = SwapChain(this)
 
         apiName = "Vulkan ${physicalDevice.apiVersion}"
         deviceName = physicalDevice.deviceName
@@ -647,7 +649,7 @@ class VkRenderBackend(val ctx: Lwjgl3Context) : RenderBackendJvm {
             } else {
                 memStack {
                     val semaphoreInfo = callocVkSemaphoreCreateInfo { sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO) }
-                    sema = checkCreatePointer { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
+                    sema = checkCreateLongPtr { vkCreateSemaphore(sys.logicalDevice.vkDevice, semaphoreInfo, null, it) }
                     pools[imageIndex].add(sema)
                 }
             }

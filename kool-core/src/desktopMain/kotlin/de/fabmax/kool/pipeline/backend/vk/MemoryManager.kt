@@ -14,14 +14,12 @@ import org.lwjgl.vulkan.VkImageCreateInfo
 import org.lwjgl.vulkan.VkMemoryRequirements
 import java.nio.LongBuffer
 
-class MemoryManager(val sys: VkSystem) : VkResource() {
+class MemoryManager(val backend: VkRenderBackend) : VkResource() {
 
-    private val impl: IMemManager
+    private val impl: IMemManager = VmaMemManager(backend)
 
     init {
-        impl = VmaMemManager(sys)
-        //impl = NaiveMemManager(sys)
-        sys.logicalDevice.addDependingResource(this)
+        backend.logicalDevice.addDependingResource(this)
     }
 
     fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer) =
@@ -47,14 +45,14 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
         fun freeResources()
     }
 
-    private class VmaMemManager(val sys: VkSystem) : IMemManager {
+    private class VmaMemManager(val backend: VkRenderBackend) : IMemManager {
         val allocator: Long
 
         init {
             memStack {
                 val vkFunctions = VmaVulkanFunctions.calloc(this).apply {
-                    val pCaps = sys.physicalDevice.vkPhysicalDevice.capabilities
-                    val dCaps = sys.logicalDevice.vkDevice.capabilities
+                    val pCaps = backend.physicalDevice.vkPhysicalDevice.capabilities
+                    val dCaps = backend.logicalDevice.vkDevice.capabilities
                     vkGetPhysicalDeviceMemoryProperties(pCaps.vkGetPhysicalDeviceMemoryProperties)
                     vkGetPhysicalDeviceProperties(pCaps.vkGetPhysicalDeviceProperties)
                     vkAllocateMemory(dCaps.vkAllocateMemory)
@@ -77,9 +75,9 @@ class MemoryManager(val sys: VkSystem) : VkResource() {
                 }
 
                 val createInfo = VmaAllocatorCreateInfo.calloc(this).apply {
-                    physicalDevice(sys.physicalDevice.vkPhysicalDevice)
-                    device(sys.logicalDevice.vkDevice)
-                    instance(sys.instance.vkInstance)
+                    physicalDevice(backend.physicalDevice.vkPhysicalDevice)
+                    device(backend.logicalDevice.vkDevice)
+                    instance(backend.instance.vkInstance)
                     pVulkanFunctions(vkFunctions)
                 }
                 val pp = mallocPointer(1)

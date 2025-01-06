@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10
 import java.nio.LongBuffer
@@ -38,8 +39,14 @@ abstract class VkResource {
         check(code == VK10.VK_SUCCESS) { msg(code) }
     }
 
-    inline fun MemoryStack.checkCreatePointer(block: MemoryStack.(LongBuffer) -> Int): Long {
+    inline fun MemoryStack.checkCreateLongPtr(block: MemoryStack.(LongBuffer) -> Int): Long {
         val lp = mallocLong(1)
+        checkVk(block(lp))
+        return lp[0]
+    }
+
+    inline fun MemoryStack.checkCreatePointer(block: MemoryStack.(PointerBuffer) -> Int): Long {
+        val lp = mallocPointer(1)
         checkVk(block(lp))
         return lp[0]
     }

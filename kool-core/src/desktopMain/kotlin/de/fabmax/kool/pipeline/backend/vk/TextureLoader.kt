@@ -29,14 +29,15 @@ object TextureLoader {
         imgConfig.arrayLayers = 6
         imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
 
-        val textureImage = Image(sys, imgConfig)
-        val textureImageView =  ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
-                textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE, 6)
-        val sampler = createSampler(sys, props, textureImage)
-
-        val tex =  LoadedTextureVk(sys, format, textureImage, textureImageView, sampler)
-        tex.setSize(width, height, 1)
-        return tex
+//        val textureImage = Image(sys, imgConfig)
+//        val textureImageView =  ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
+//                textureImage.mipLevels, VK_IMAGE_VIEW_TYPE_CUBE, 6)
+//        val sampler = createSampler(sys, props, textureImage)
+//
+//        val tex =  LoadedTextureVk(sys, format, textureImage, textureImageView, sampler)
+//        tex.setSize(width, height, 1)
+//        return tex
+        TODO()
     }
 
     fun loadTextureCube(sys: VkSystem, props: TextureProps, cubeImg: ImageData) : LoadedTextureVk {
@@ -94,13 +95,14 @@ object TextureLoader {
         imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
         imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
 
-        val textureImage = Image(sys, imgConfig)
-        val textureImageView = ImageView(sys, textureImage, VK_IMAGE_ASPECT_COLOR_BIT)
-        val sampler = createSampler(sys, props, textureImage)
-
-        val tex =  LoadedTextureVk(sys, format, textureImage, textureImageView, sampler)
-        tex.setSize(width, height, depth)
-        return tex
+//        val textureImage = Image(sys, imgConfig)
+//        val textureImageView = ImageView(sys, textureImage, VK_IMAGE_ASPECT_COLOR_BIT)
+//        val sampler = createSampler(sys, props, textureImage)
+//
+//        val tex =  LoadedTextureVk(sys, format, textureImage, textureImageView, sampler)
+//        tex.setSize(width, height, depth)
+//        return tex
+        TODO()
     }
 
     fun loadTexture1d(sys: VkSystem, props: TextureProps, img: ImageData) : LoadedTextureVk {

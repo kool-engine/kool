@@ -14,7 +14,7 @@ class VkOffscreenRenderPass(
     val depthAttachment: DepthAttachment,
     val isExtDepthAttachments: Boolean,
     val isMultiSampled: Boolean
-) : VkRenderPass(sys, maxWidth, maxHeight, colorAttachments.colorFormats) {
+) : VkRenderPass(sys.backend, maxWidth, maxHeight, colorAttachments.colorFormats) {
 
     constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
                 colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
@@ -76,13 +76,13 @@ class VkOffscreenRenderPass(
     }
 
     fun destroyNow() {
-        sys.logicalDevice.removeDependingResource(this)
+        backend.logicalDevice.removeDependingResource(this)
         destroy()
     }
 
     override fun freeResources() {
-        vkDestroyRenderPass(sys.logicalDevice.vkDevice, vkRenderPass, null)
-        vkDestroyFramebuffer(sys.logicalDevice.vkDevice, frameBuffer, null)
+        vkDestroyRenderPass(logicalDevice.vkDevice, vkRenderPass, null)
+        vkDestroyFramebuffer(logicalDevice.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
     }
 
@@ -100,7 +100,7 @@ class VkOffscreenRenderPass(
                 height(maxHeight)
                 layers(1)
             }
-            return checkCreatePointer { vkCreateFramebuffer(sys.logicalDevice.vkDevice, framebufferInfo, null, it) }
+            return checkCreateLongPtr { vkCreateFramebuffer(logicalDevice.vkDevice, framebufferInfo, null, it) }
         }
     }
 
@@ -118,7 +118,7 @@ class VkOffscreenRenderPass(
                     VK_ATTACHMENT_LOAD_OP_CLEAR
                 }
 
-                val samples = if (isMultiSampled) sys.physicalDevice.msaaSamples else VK_SAMPLE_COUNT_1_BIT
+                val samples = if (isMultiSampled) physicalDevice.msaaSamples else VK_SAMPLE_COUNT_1_BIT
 
                 for (i in colorFormats.indices) {
                     this[i].apply {
@@ -138,7 +138,7 @@ class VkOffscreenRenderPass(
                     }
                 }
                 this[nColorAttachments].apply {
-                    format(sys.physicalDevice.depthFormat)
+                    format(physicalDevice.depthFormat)
                     samples(samples)
                     loadOp(depthLoadOp)
                     storeOp(VK_ATTACHMENT_STORE_OP_STORE)
@@ -199,7 +199,7 @@ class VkOffscreenRenderPass(
                 pSubpasses(subpass)
                 pDependencies(dependencies)
             }
-            return checkCreatePointer { vkCreateRenderPass(sys.logicalDevice.vkDevice, renderPassInfo, null, it) }
+            return checkCreateLongPtr { vkCreateRenderPass(logicalDevice.vkDevice, renderPassInfo, null, it) }
         }
     }
 
@@ -247,9 +247,9 @@ class VkOffscreenRenderPass(
                     }
                 }
 
-                val img = Image(sys, fbImageCfg)
+                val img = Image(sys.backend, fbImageCfg)
                 mImages += img
-                mImageViews += ImageView(sys, img, VK_IMAGE_ASPECT_COLOR_BIT)
+                mImageViews += ImageView.imageView2d(sys.backend.logicalDevice, img, VK_IMAGE_ASPECT_COLOR_BIT)
                 mSamplers += createSampler(sys, filterMethod, false, VK_COMPARE_OP_NEVER)
             }
             colorImages = mImages
@@ -292,8 +292,8 @@ class VkOffscreenRenderPass(
                     numSamples = sys.physicalDevice.msaaSamples
                 }
             }
-            depthImage = Image(sys, depthImageCfg)
-            depthImageView = ImageView(sys, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
+            depthImage = Image(sys.backend, depthImageCfg)
+            depthImageView = ImageView.imageView2d(sys.backend.logicalDevice, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
             depthSampler = createSampler(sys, filterMethod, true, depthCompareOp)
 
             addDependingResource(depthImage)
