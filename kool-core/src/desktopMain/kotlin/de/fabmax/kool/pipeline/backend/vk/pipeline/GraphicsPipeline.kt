@@ -36,7 +36,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(shaderStages.size) {
                 for (i in shaderStages.indices) {
                     this[i]
-                        .sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO)
                         .stage(shaderStages[i].stage)
                         .module(shaderStageModules[i])
                         .pName(ASCII(shaderStages[i].entryPoint))
@@ -79,13 +78,11 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 }
             }
             val vertexInputInfo = callocVkPipelineVertexInputStateCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)
                 pVertexBindingDescriptions(bindingDescription)
                 pVertexAttributeDescriptions(attributeDescriptions)
             }
 
             val inputAssembly = callocVkPipelineInputAssemblyStateCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
                 when (pipeline.vertexLayout.primitiveType) {
                     PrimitiveType.LINES -> topology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST)
                     PrimitiveType.POINTS -> topology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
@@ -112,7 +109,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             viewportState = callocVkPipelineViewportStateCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO)
                 viewportCount(1)
                 pViewports(viewport)
                 scissorCount(1)
@@ -121,7 +117,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 
             val dynamicState = if (dynamicViewPort) {
                 callocVkPipelineDynamicStateCreateInfo {
-                    sType(VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO)
                     pDynamicStates(ints(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
                 }
             } else {
@@ -129,7 +124,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             val rasterizer = callocVkPipelineRasterizationStateCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
                 depthClampEnable(false)
                 rasterizerDiscardEnable(false)
                 polygonMode(VK_POLYGON_MODE_FILL)
@@ -147,7 +141,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             val multisampling = callocVkPipelineMultisampleStateCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
                 sampleShadingEnable(false)
                 rasterizationSamples(msaaSamples)
                 minSampleShading(1f)
@@ -198,7 +191,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             val colorBlending = callocVkPipelineColorBlendStateCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO)
                 logicOpEnable(false)
                 logicOp(VK_LOGIC_OP_COPY)
                 pAttachments(colorBlendAttachment)
@@ -209,7 +201,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             val depthStencil = callocVkPipelineDepthStencilStateCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
                 depthTestEnable(pipeline.isWriteDepth || pipeline.depthCompareOp != DepthCompareOp.ALWAYS)
                 depthWriteEnable(pipeline.isWriteDepth)
 
@@ -255,7 +246,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
 //                }
 
             val pipelineLayoutInfo = callocVkPipelineLayoutCreateInfo {
-                sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
                 pSetLayouts(longs(descriptorSetLayout))
                 pPushConstantRanges(pushConstantRanges)
             }
@@ -264,7 +254,6 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             }
 
             val pipelineInfo = callocVkGraphicsPipelineCreateInfoN(1) {
-                sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO)
                 pStages(shaderStageInfos)
                 pVertexInputState(vertexInputInfo)
                 pInputAssemblyState(inputAssembly)

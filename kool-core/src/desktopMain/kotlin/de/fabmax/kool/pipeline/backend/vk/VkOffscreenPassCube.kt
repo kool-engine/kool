@@ -167,7 +167,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
                 dstOffset { it.set(0, 0, 0) }
                 extent { it.set(width, height, 1) }
             }
-            vkCmdCopyImage(commandBuffer, rp.image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+            vkCmdCopyImage(commandBuffer, rp.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
             rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
             parentPass.colorTexture!!.loadingState = Texture.LoadingState.LOADED
         }

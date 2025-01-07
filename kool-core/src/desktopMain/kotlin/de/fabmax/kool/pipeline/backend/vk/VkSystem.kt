@@ -21,7 +21,7 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjg
 
     var swapChain: SwapChain? = null
 
-    val backend: VkRenderBackend get() = TODO()
+    val backend: RenderBackendVk get() = TODO()
 
 //    init {
 //        check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }

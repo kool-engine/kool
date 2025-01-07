@@ -11,7 +11,7 @@ import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
 import kotlin.math.min
 
-class PhysicalDevice(val backend: VkRenderBackend) : VkResource() {
+class PhysicalDevice(val backend: RenderBackendVk) : VkResource() {
 
     val vkPhysicalDevice: VkPhysicalDevice
     val queueFamiliyIndices: QueueFamilyIndices
@@ -28,12 +28,9 @@ class PhysicalDevice(val backend: VkRenderBackend) : VkResource() {
 
     init {
         memStack {
-            val (cnt, devPtrs) = getPointers { cnt, ptrs -> vkEnumeratePhysicalDevices(backend.instance.vkInstance, cnt, ptrs) }
-            val devices = (0 until cnt).map { PhysicalDeviceWrapper(devPtrs[it], this) }
+            val devPtrs = enumeratePointers { cnt, ptrs -> vkEnumeratePhysicalDevices(backend.instance.vkInstance, cnt, ptrs) }
+            val devices = (0 until devPtrs.capacity()).map { PhysicalDeviceWrapper(devPtrs[it], this) }
             val selectedDevice = selectPhysicalDevice(devices)
-            check(selectedDevice.queueFamiliyIndices.isComplete) {
-                "Failed to find a suitable GPU"
-            }
 
             val stackSwapChain = selectedDevice.querySwapChainSupport(this)
             swapChainSupport = selectedDevice.querySwapChainSupport(this,
@@ -77,11 +74,13 @@ class PhysicalDevice(val backend: VkRenderBackend) : VkResource() {
                     it.querySwapChainSupport(this).isValid
         }
         check(suitableDevices.isNotEmpty()) {
-            "No suitable Vulkan devices found! Available devices: ${devices.map { it.properties.deviceName() }}, none matched the required extensions and capabilities"
+            "No suitable Vulkan devices found! Available devices: " +
+                    "${devices.map { it.properties.deviceName() }}, " +
+                    "none matched the required extensions and capabilities"
         }
 
         if (suitableDevices.size > 1) {
-            logI { "Multiple Vulkan capable GPUS found:" }
+            logD { "Multiple Vulkan capable GPUs found:" }
             suitableDevices.forEach { dev -> logI { "  ${dev.properties.deviceNameString()}" } }
         }
         return suitableDevices.find { it.properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU } ?: devices.first()
@@ -106,7 +105,7 @@ class PhysicalDevice(val backend: VkRenderBackend) : VkResource() {
                 }
             }
         }
-        throw RuntimeException("Failed to find supported format")
+        error("Failed to find supported format")
     }
 
     fun findMemoryType(typeFiler: Int, properties: Int): Int {
@@ -119,7 +118,7 @@ class PhysicalDevice(val backend: VkRenderBackend) : VkResource() {
                 }
             }
         }
-        throw RuntimeException("Failed to find suitable memory type")
+        error("Failed to find suitable memory type")
     }
 
     override fun freeResources() {
@@ -275,5 +274,14 @@ class PhysicalDevice(val backend: VkRenderBackend) : VkResource() {
                     .height(window.framebufferHeight.clamp(minHeight, maxHeight))
             }
         }
+    }
+}
+
+inline fun PhysicalDevice.createLogicalDevice(stack: MemoryStack? = null, block: VkDeviceCreateInfo.() -> Unit): VkDevice {
+    memStack(stack) {
+        val createInfo = callocVkDeviceCreateInfo(block)
+        val handle = pointers(0)
+        checkVk(vkCreateDevice(vkPhysicalDevice, createInfo, null, handle)) { "Failed creating framebuffer" }
+        return VkDevice(handle[0], vkPhysicalDevice, createInfo)
     }
 }

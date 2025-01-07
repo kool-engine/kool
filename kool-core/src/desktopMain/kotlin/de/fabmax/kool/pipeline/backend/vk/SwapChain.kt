@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
+import org.lwjgl.BufferUtils
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_GPU_ONLY
 import org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
@@ -9,27 +10,33 @@ import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkExtent2D
 
-class SwapChain(val backend: VkRenderBackend) : VkResource() {
-    val vkSwapChain: Long
+class SwapChain(val backend: RenderBackendVk) : VkResource() {
+
+    private val physicalDevice: PhysicalDevice get() = backend.physicalDevice
+    private val logicalDevice: LogicalDevice get() = backend.logicalDevice
+
+    private val nextImage = BufferUtils.createIntBuffer(1)
+
+    val vkSwapchain: VkSwapchain
     val imageFormat: Int
-    val extent = VkExtent2D.malloc()
-    val images = mutableListOf<Long>()
-    val imageViews = mutableListOf<ImageView>()
-    val framebuffers = mutableListOf<Long>()
+    val extent: VkExtent2D = VkExtent2D.malloc()
+    val images: List<VkImage>
+    val imageViews: List<ImageView>
+    val framebuffers: List<VkFramebuffer>
 
     val nImages: Int
         get() = images.size
 
     val colorImage: Image
     private val colorImageView: ImageView
-
     private val depthImage: Image
     private val depthImageView: ImageView
 
     val renderPass: OnScreenRenderPass
 
-    private val physicalDevice: PhysicalDevice get() = backend.physicalDevice
-    private val logicalDevice: LogicalDevice get() = backend.logicalDevice
+    val imageAvailableSema: VkSemaphore
+    val renderFinishedSema: VkSemaphore
+    val inFlightFence: VkFence
 
     init {
         memStack {
@@ -42,7 +49,7 @@ class SwapChain(val backend: VkRenderBackend) : VkResource() {
                 imageCount = imageCount.coerceAtMost(swapChainSupport.capabilities.maxImageCount())
             }
 
-            val createInfo = callocVkSwapchainCreateInfoKHR {
+            vkSwapchain = logicalDevice.createSwapchain(this) {
                 surface(backend.glfwWindow.surface.surfaceHandle)
                 minImageCount(imageCount)
                 imageFormat(surfaceFormat.format())
@@ -64,15 +71,21 @@ class SwapChain(val backend: VkRenderBackend) : VkResource() {
                 }
             }
 
-            vkSwapChain = checkCreateLongPtr { vkCreateSwapchainKHR(logicalDevice.vkDevice, createInfo, null, it) }
             imageFormat = surfaceFormat.format()
             this@SwapChain.extent.set(extent)
 
-            val (cnt, imgs) = getLongs { cnt, imgs -> vkGetSwapchainImagesKHR(logicalDevice.vkDevice, vkSwapChain, cnt, imgs) }
-            for (i in 0 until cnt) {
-                images += imgs[i]
-                imageViews += ImageView(logicalDevice, imgs[i], imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_VIEW_TYPE_2D, 1)
-                    .also { addDependingResource(it) }
+            val imgs = enumerateLongs { cnt, imgs ->
+                vkGetSwapchainImagesKHR(logicalDevice.vkDevice, vkSwapchain.handle, cnt, imgs)
+            }
+            images = buildList {
+                for (i in 0 until imgs.capacity()) {
+                    add(VkImage(imgs[i], 0))
+                }
+            }
+            imageViews = images.map {
+                ImageView(logicalDevice, it, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_VIEW_TYPE_2D, 1).also {
+                    addDependingResource(it)
+                }
             }
 
             renderPass = OnScreenRenderPass(this@SwapChain)
@@ -85,11 +98,32 @@ class SwapChain(val backend: VkRenderBackend) : VkResource() {
             depthImage = dImage.also { addDependingResource(it) }
             depthImageView = dImageView.also { addDependingResource(it) }
 
-            createFramebuffers()
+            framebuffers = createFramebuffers()
+
+            imageAvailableSema = logicalDevice.createSemaphore(this)
+            renderFinishedSema = logicalDevice.createSemaphore(this)
+            inFlightFence = logicalDevice.createFence(this) { flags(VK_FENCE_CREATE_SIGNALED_BIT) }
         }
 
         logicalDevice.addDependingResource(this)
         logD { "Created swap chain" }
+    }
+
+    fun acquireNextImage(): Int {
+        vkWaitForFences(logicalDevice.vkDevice, inFlightFence.handle, true, -1)
+        vkResetFences(logicalDevice.vkDevice, inFlightFence.handle)
+        vkAcquireNextImageKHR(logicalDevice.vkDevice, vkSwapchain.handle, -1, imageAvailableSema.handle, 0, nextImage)
+        return nextImage[0]
+    }
+
+    fun presentNextImage(stack: MemoryStack) = stack.apply {
+        val presentInfo = callocVkPresentInfoKHR {
+            pWaitSemaphores(longs(renderFinishedSema.handle))
+            pSwapchains(longs(vkSwapchain.handle))
+            swapchainCount(1)
+            pImageIndices(nextImage)
+        }
+        vkQueuePresentKHR(logicalDevice.presentQueue, presentInfo)
     }
 
     private fun createColorResources(): Pair<Image, ImageView> {
@@ -126,32 +160,27 @@ class SwapChain(val backend: VkRenderBackend) : VkResource() {
         return image to imageView
     }
 
-    private fun MemoryStack.createFramebuffers() {
+    private fun MemoryStack.createFramebuffers(): List<VkFramebuffer> = buildList {
         imageViews.forEach { imgView ->
-            val framebufferInfo = callocVkFramebufferCreateInfo {
-                sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
+            add(logicalDevice.createFramebuffer(this@createFramebuffers) {
                 renderPass(renderPass.vkRenderPass)
-                pAttachments(longs(colorImageView.vkImageView, depthImageView.vkImageView, imgView.vkImageView))
+                pAttachments(longs(colorImageView.vkImageView.handle, depthImageView.vkImageView.handle, imgView.vkImageView.handle))
                 width(extent.width())
                 height(extent.height())
                 layers(1)
-            }
-            framebuffers += checkCreateLongPtr { vkCreateFramebuffer(logicalDevice.vkDevice, framebufferInfo, null, it) }
+            })
         }
     }
 
     override fun freeResources() {
         logicalDevice.removeDependingResource(this)
-
-        framebuffers.forEach { fb ->
-            vkDestroyFramebuffer(logicalDevice.vkDevice, fb, null)
-        }
-        framebuffers.clear()
-
-        vkDestroySwapchainKHR(logicalDevice.vkDevice, vkSwapChain, null)
-        images.clear()
-        imageViews.clear()
+        framebuffers.forEach { fb -> logicalDevice.destroyFramebuffer(fb) }
+        logicalDevice.destroySwapchain(vkSwapchain)
         extent.free()
+
+        logicalDevice.destroySemaphore(imageAvailableSema)
+        logicalDevice.destroySemaphore(renderFinishedSema)
+        logicalDevice.destroyFence(inFlightFence)
 
         logD { "Destroyed swap chain" }
     }

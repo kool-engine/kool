@@ -8,7 +8,7 @@ import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.pipeline.backend.vk.VkRenderBackend
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
@@ -39,7 +39,7 @@ class Lwjgl3Context : KoolContext() {
 
     init {
         backend = when (KoolSystem.configJvm.renderBackend) {
-            KoolConfigJvm.Backend.VULKAN -> VkRenderBackend(this)
+            KoolConfigJvm.Backend.VULKAN -> RenderBackendVk(this)
             KoolConfigJvm.Backend.OPEN_GL -> RenderBackendGlImpl(this)
         }
 

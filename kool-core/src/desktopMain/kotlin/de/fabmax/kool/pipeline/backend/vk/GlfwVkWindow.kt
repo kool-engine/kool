@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFW.glfwTerminate
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.KHRSurface
 
-class GlfwVkWindow(val backend: VkRenderBackend, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
+class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
 
     val onResize = mutableListOf<OnWindowResizeListener>()
 

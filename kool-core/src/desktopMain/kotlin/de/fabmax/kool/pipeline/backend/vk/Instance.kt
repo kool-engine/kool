@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
-class Instance(val backend: VkRenderBackend, appName: String) : VkResource() {
+class Instance(val backend: RenderBackendVk, appName: String) : VkResource() {
 
     val vkInstance: VkInstance
     private var debugMessenger = 0L
@@ -62,13 +62,11 @@ class Instance(val backend: VkRenderBackend, appName: String) : VkResource() {
     }
 
     private fun MemoryStack.getRequestedLayers(): PointerBuffer? {
-        val ip = mallocInt(1)
-        checkVk(vkEnumerateInstanceLayerProperties(ip, null))
-        val availableLayers = VkLayerProperties.malloc(ip[0], this)
-        checkVk(vkEnumerateInstanceLayerProperties(ip, availableLayers))
+        val availableLayers = enumerateLayerProperties { cnt, buffer ->
+            vkEnumerateInstanceLayerProperties(cnt, buffer)
+        }.map { it.layerNameString() }.toSet()
 
-        val layerNames = availableLayers.map { it.layerNameString() }.toSet()
-        val enableLayers = backend.setup.enabledLayers.toMutableSet().also { it.retainAll(layerNames) }
+        val enableLayers = backend.setup.enabledLayers.toMutableSet().also { it.retainAll(availableLayers) }
         val missingLayers = backend.setup.enabledLayers - enableLayers
         if (missingLayers.isNotEmpty()) {
             logW { "Requested layers are not available:" }
@@ -90,32 +88,34 @@ class Instance(val backend: VkRenderBackend, appName: String) : VkResource() {
     }
 
     private fun MemoryStack.getRequestedExtensions(): PointerBuffer {
-        val enableExtensions = MemoryUtil.memAllocPointer(64)
+        val requestedExtensions = backend.setup.enabledInstanceExtensions.toMutableSet()
 
         // add all extensions required by glfw
-        val requiredExtensions = GLFWVulkan.glfwGetRequiredInstanceExtensions() ?:
-            throw IllegalStateException("glfwGetRequiredInstanceExtensions failed to find the platform surface extensions.")
-        enableExtensions.put(requiredExtensions)
+        val glfwExtensions = checkNotNull(GLFWVulkan.glfwGetRequiredInstanceExtensions()) {
+            "glfwGetRequiredInstanceExtensions failed to find the platform surface extensions."
+        }
+        for (i in 0 until glfwExtensions.limit()) {
+            requestedExtensions += MemoryUtil.memASCII(glfwExtensions[i])
+        }
 
-        val ip = mallocInt(1)
-        checkVk(vkEnumerateInstanceExtensionProperties(null as String?, ip, null))
-        val availableExtensions = VkExtensionProperties.malloc(ip[0], this)
-        checkVk(vkEnumerateInstanceExtensionProperties(null as String?, ip, availableExtensions))
+        val availableExtensions = enumerateExtensionProperties { cnt, buffer ->
+            vkEnumerateInstanceExtensionProperties(null as String?, cnt, buffer)
+        }.map { it.extensionNameString() }.toSet()
 
-        val extensionNames = availableExtensions.map { it.extensionNameString() }.toSet()
-        val addExtensions = backend.setup.enabledInstanceExtensions.toMutableSet().also { it.retainAll(extensionNames) }
+        val addExtensions = requestedExtensions.toMutableSet().also { it.retainAll(availableExtensions) }
         val missingExtensions = backend.setup.enabledInstanceExtensions - addExtensions
         if (missingExtensions.isNotEmpty()) {
             logW { "Requested extensions are not available:" }
             missingExtensions.forEach { logW { "  $it" } }
         }
-        addExtensions.forEach { enableExtensions.put(ASCII(it)) }
-        enableExtensions.flip()
 
         logD { "Enabling Vulkan instance extensions:" }
-        for (i in 0 until enableExtensions.limit()) {
-            logD { "  ${MemoryUtil.memASCII(enableExtensions[i])}" }
+        val enableExtensions = mallocPointer(addExtensions.size)
+        addExtensions.forEach {
+            logD { "  $it" }
+            enableExtensions.put(ASCII(it))
         }
+        enableExtensions.flip()
         return enableExtensions
     }
 

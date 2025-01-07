@@ -59,7 +59,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
             vkWaitForFences(sys.logicalDevice.vkDevice, fence, true, -1L)
 
             val ip = mallocInt(1)
-            var result = vkAcquireNextImageKHR(sys.logicalDevice.vkDevice, swapChain.vkSwapChain, -1L, imageAvailableSemaphore[currentFrame], VK_NULL_HANDLE, ip)
+            var result = vkAcquireNextImageKHR(sys.logicalDevice.vkDevice, swapChain.vkSwapchain.handle, -1L, imageAvailableSemaphore[currentFrame], VK_NULL_HANDLE, ip)
             if (result == VK_ERROR_OUT_OF_DATE_KHR) {
                 sys.recreateSwapChain()
                 return
@@ -76,7 +76,7 @@ class RenderLoop(val sys: VkSystem) : VkResource() {
                 sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
                 pWaitSemaphores(signalSemaphores)
                 swapchainCount(1)
-                pSwapchains(longs(swapChain.vkSwapChain))
+                pSwapchains(longs(swapChain.vkSwapchain.handle))
                 pImageIndices(ints(imageIndex))
             }
             result = vkQueuePresentKHR(sys.logicalDevice.presentQueue, presentInfo)

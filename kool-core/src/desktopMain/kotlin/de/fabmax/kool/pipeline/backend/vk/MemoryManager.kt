@@ -14,9 +14,9 @@ import org.lwjgl.vulkan.VkImageCreateInfo
 import org.lwjgl.vulkan.VkMemoryRequirements
 import java.nio.LongBuffer
 
-class MemoryManager(val backend: VkRenderBackend) : VkResource() {
+class MemoryManager(val backend: RenderBackendVk) : VkResource() {
 
-    private val impl: IMemManager = VmaMemManager(backend)
+    private val impl: MemManager = VmaMemManager(backend)
 
     init {
         backend.logicalDevice.addDependingResource(this)
@@ -26,26 +26,25 @@ class MemoryManager(val backend: VkRenderBackend) : VkResource() {
         impl.createBuffer(bufferInfo, allocUsage, pBuffer, pAllocation)
     fun freeBuffer(buffer: Long, allocation: Long) = impl.freeBuffer(buffer, allocation)
 
-    fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int, pImage: LongBuffer, pAllocation: PointerBuffer) =
-        impl.createImage(imageInfo, allocUsage, pImage, pAllocation)
-    fun freeImage(image: Long, allocation: Long) = impl.freeImage(image, allocation)
+    fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage = impl.createImage(imageInfo, allocUsage)
+    fun freeImage(image: VkImage) = impl.freeImage(image)
 
     fun mapMemory(allocation: Long) = impl.mapMemory(allocation)
     fun unmapMemory(allocation: Long) = impl.unmapMemory(allocation)
 
     override fun freeResources() = impl.freeResources()
 
-    interface IMemManager {
+    interface MemManager {
         fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer): Int
         fun freeBuffer(buffer: Long, allocation: Long)
-        fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int, pImage: LongBuffer, pAllocation: PointerBuffer): Int
-        fun freeImage(image: Long, allocation: Long)
+        fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage
+        fun freeImage(image: VkImage)
         fun mapMemory(allocation: Long): Long
         fun unmapMemory(allocation: Long)
         fun freeResources()
     }
 
-    private class VmaMemManager(val backend: VkRenderBackend) : IMemManager {
+    private class VmaMemManager(val backend: RenderBackendVk) : MemManager {
         val allocator: Long
 
         init {
@@ -98,15 +97,20 @@ class MemoryManager(val backend: VkRenderBackend) : VkResource() {
             vmaDestroyBuffer(allocator, buffer, allocation)
         }
 
-        override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int, pImage: LongBuffer, pAllocation: PointerBuffer): Int {
+        override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage {
             return memStack {
+                val pImage = mallocLong(1)
+                val pAllocation = mallocPointer(1)
                 val allocInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(allocUsage) }
-                vmaCreateImage(allocator, imageInfo, allocInfo, pImage, pAllocation, null)
+                check(vmaCreateImage(allocator, imageInfo, allocInfo, pImage, pAllocation, null) == VK_SUCCESS) {
+                    "Failed allocating image"
+                }
+                VkImage(pImage[0], pAllocation[0])
             }
         }
 
-        override fun freeImage(image: Long, allocation: Long) {
-            vmaDestroyImage(allocator, image, allocation)
+        override fun freeImage(image: VkImage) {
+            vmaDestroyImage(allocator, image.handle, image.allocation)
         }
 
         override fun mapMemory(allocation: Long): Long {
@@ -137,7 +141,7 @@ class MemoryManager(val backend: VkRenderBackend) : VkResource() {
         }
     }
 
-    private class NaiveMemManager(val sys: VkSystem) : IMemManager {
+    private class NaiveMemManager(val sys: VkSystem) : MemManager {
 
         class BufferInfo(val buffer: Long, val memory: Long, val size: Long, val allocUsage: Int)
 
@@ -181,10 +185,11 @@ class MemoryManager(val backend: VkRenderBackend) : VkResource() {
             }
         }
 
-        override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int, pImage: LongBuffer, pAllocation: PointerBuffer): Int {
+        override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage {
             memStack {
-                var res = vkCreateImage(sys.logicalDevice.vkDevice, imageInfo, null, pImage)
-                if (res != VK_SUCCESS) { return res }
+                val pImage = mallocLong(1)
+                val pAllocation = mallocPointer(1)
+                check(vkCreateImage(sys.logicalDevice.vkDevice, imageInfo, null, pImage) == VK_SUCCESS)
 
                 val properties = getPropertiesForAllocationUsage(allocUsage)
                 val memRequirements = VkMemoryRequirements.malloc(this)
@@ -196,21 +201,19 @@ class MemoryManager(val backend: VkRenderBackend) : VkResource() {
                 }
 
                 val lp = mallocLong(1)
-                res = vkAllocateMemory(sys.logicalDevice.vkDevice, allocInfo, null, lp)
-                if (res != VK_SUCCESS) { return res }
+                check(vkAllocateMemory(sys.logicalDevice.vkDevice, allocInfo, null, lp) == VK_SUCCESS)
                 pAllocation.put(0, lp[0])
-                res = vkBindImageMemory(sys.logicalDevice.vkDevice, pImage[0], lp[0], 0L)
-                if (res != VK_SUCCESS) { return res }
+                check(vkBindImageMemory(sys.logicalDevice.vkDevice, pImage[0], lp[0], 0L) == VK_SUCCESS)
 
                 allocatedBuffers[pAllocation[0]] = BufferInfo(pImage[0], pAllocation[0], memRequirements.size(), allocUsage)
+                return VkImage(pImage[0], pAllocation[0])
             }
-            return VK_SUCCESS
         }
 
-        override fun freeImage(image: Long, allocation: Long) {
-            val bufferInfo = allocatedBuffers.remove(allocation)
+        override fun freeImage(image: VkImage) {
+            val bufferInfo = allocatedBuffers.remove(image.allocation)
             bufferInfo?.let {
-                vkDestroyImage(sys.logicalDevice.vkDevice, image, null)
+                vkDestroyImage(sys.logicalDevice.vkDevice, image.handle, null)
                 vkFreeMemory(sys.logicalDevice.vkDevice, it.memory, null)
             }
         }

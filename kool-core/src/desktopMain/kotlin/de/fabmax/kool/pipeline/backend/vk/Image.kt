@@ -8,7 +8,7 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkFormatProperties
 import kotlin.math.max
 
-class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
+class Image(val backend: RenderBackendVk, config: Config) : VkResource() {
     val width = config.width
     val height = config.height
     val depth = config.depth
@@ -17,8 +17,7 @@ class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
     val format = config.format
     val arrayLayers = config.arrayLayers
 
-    val vkImage: Long
-    val allocation: Long
+    val vkImage: VkImage
 
     var layout = VK_IMAGE_LAYOUT_UNDEFINED
 
@@ -51,11 +50,7 @@ class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
                 flags(config.flags)
             }
 
-            val pBuffer = mallocLong(1)
-            val pAllocation = mallocPointer(1)
-            checkVk(backend.memManager.createImage(imageInfo, config.allocUsage, pBuffer, pAllocation)) { "Image creation failed with code: $it" }
-            vkImage = pBuffer[0]
-            allocation = pAllocation[0]
+            vkImage = backend.memManager.createImage(imageInfo, config.allocUsage)
         }
     }
 
@@ -82,7 +77,7 @@ class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
 
         val barrier = stack.callocVkImageMemoryBarrierN(1) {
             sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
-            image(vkImage)
+            image(vkImage.handle)
             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             subresourceRange {
@@ -134,8 +129,8 @@ class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
                 }
             }
             vkCmdBlitImage(commandBuffer,
-                    vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     blit, VK_FILTER_LINEAR)
 
             barrier
@@ -196,7 +191,7 @@ class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
                     newLayout(newLayout)
                     srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                     dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                    image(vkImage)
+                    image(vkImage.handle)
                     srcAccessMask(srcAccessMask)
                     dstAccessMask(dstAccessMask)
                     subresourceRange {
@@ -237,7 +232,7 @@ class Image(val backend: VkRenderBackend, config: Config) : VkResource() {
     }
 
     override fun freeResources() {
-        backend.memManager.freeImage(vkImage, allocation)
+        backend.memManager.freeImage(vkImage)
     }
 
     class Config {

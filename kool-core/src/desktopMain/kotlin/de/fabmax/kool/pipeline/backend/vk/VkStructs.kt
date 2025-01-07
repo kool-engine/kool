@@ -326,18 +326,22 @@ inline fun MemoryStack.callocVkWriteDescriptorSetN(n: Int, block: VkWriteDescrip
         get(it).apply { sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET) }
     }
 
-inline fun MemoryStack.getLongs(block: (IntBuffer, LongBuffer?) -> Unit): Pair<Int, LongBuffer> {
+inline fun <T> MemoryStack.enumerateBuffer(createBuffer: (Int) -> T, block: (IntBuffer, T?) -> Unit): T {
     val ip = mallocInt(1)
     block(ip, null)
-    val longs = mallocLong(ip[0])
-    block(ip, longs)
-    return ip[0] to longs
+    val buffer = createBuffer(ip[0])
+    block(ip, buffer)
+    return buffer
 }
 
-inline fun MemoryStack.getPointers(block: (IntBuffer, PointerBuffer?) -> Unit): Pair<Int, PointerBuffer> {
-    val ip = mallocInt(1)
-    block(ip, null)
-    val pointers = mallocPointer(ip[0])
-    block(ip, pointers)
-    return ip[0] to pointers
-}
+inline fun MemoryStack.enumerateExtensionProperties(block: (IntBuffer, VkExtensionProperties.Buffer?) -> Unit): VkExtensionProperties.Buffer =
+    enumerateBuffer(VkExtensionProperties::malloc, block)
+
+inline fun MemoryStack.enumerateLayerProperties(block: (IntBuffer, VkLayerProperties.Buffer?) -> Unit): VkLayerProperties.Buffer =
+    enumerateBuffer(VkLayerProperties::malloc, block)
+
+inline fun MemoryStack.enumerateLongs(block: (IntBuffer, LongBuffer?) -> Unit): LongBuffer =
+    enumerateBuffer(this::mallocLong, block)
+
+inline fun MemoryStack.enumeratePointers(block: (IntBuffer, PointerBuffer?) -> Unit): PointerBuffer =
+    enumerateBuffer(this::mallocPointer, block)

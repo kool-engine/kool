@@ -335,7 +335,7 @@ object TextureLoader {
                 imageOffset { it.set(0, 0, 0) }
                 imageExtent { it.set(width, height, depth) }
             }
-            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer, image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
+            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
         }
     }
 
@@ -355,7 +355,7 @@ object TextureLoader {
                     }
                 }
             }
-            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer, image.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions)
+            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions)
         }
     }
 }

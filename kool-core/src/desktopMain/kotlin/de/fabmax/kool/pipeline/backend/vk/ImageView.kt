@@ -1,34 +1,32 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.memStack
-import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK10.VK_IMAGE_VIEW_TYPE_2D
 
-class ImageView(val logicalDevice: LogicalDevice, image: Long, format: Int, aspectMask: Int, mipLevels: Int, viewType: Int, layerCount: Int) : VkResource() {
-    val vkImageView: Long
+class ImageView(
+    val logicalDevice: LogicalDevice,
+    image: VkImage,
+    format: Int,
+    aspectMask: Int,
+    mipLevels: Int,
+    viewType: Int,
+    layerCount: Int
+) : VkResource() {
 
-    init {
-        memStack {
-            val createInfo = callocVkImageViewCreateInfo {
-                image(image)
-                viewType(viewType)
-                format(format)
-                subresourceRange {
-                    it.aspectMask(aspectMask)
-                    it.baseMipLevel(0)
-                    it.levelCount(mipLevels)
-                    it.baseArrayLayer(0)
-                    it.layerCount(layerCount)
-                }
-            }
-            vkImageView = checkCreateLongPtr { vkCreateImageView(logicalDevice.vkDevice, createInfo, null, it) }
+    val vkImageView: VkImageView = logicalDevice.createImageView {
+        image(image.handle)
+        viewType(viewType)
+        format(format)
+        subresourceRange {
+            it.aspectMask(aspectMask)
+            it.baseMipLevel(0)
+            it.levelCount(mipLevels)
+            it.baseArrayLayer(0)
+            it.layerCount(layerCount)
         }
-        logD { "Created image view" }
     }
 
     override fun freeResources() {
-        vkDestroyImageView(logicalDevice.vkDevice, vkImageView, null)
-        logD { "Destroyed image view" }
+        logicalDevice.destroyImageView(vkImageView)
     }
 
     companion object {

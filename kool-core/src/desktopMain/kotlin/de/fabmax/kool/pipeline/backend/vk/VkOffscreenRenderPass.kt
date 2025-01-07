@@ -89,8 +89,8 @@ class VkOffscreenRenderPass(
     private fun createFrameBuffer(renderPass: Long, imageViews: List<ImageView>, depthView: ImageView): Long {
         memStack {
             val attachments = mallocLong(imageViews.size + 1)
-            imageViews.forEachIndexed { i, imageView -> attachments.put(i, imageView.vkImageView) }
-            attachments.put(imageViews.size, depthView.vkImageView)
+            imageViews.forEachIndexed { i, imageView -> attachments.put(i, imageView.vkImageView.handle) }
+            attachments.put(imageViews.size, depthView.vkImageView.handle)
 
             val framebufferInfo = callocVkFramebufferCreateInfo {
                 sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)

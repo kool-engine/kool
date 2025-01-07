@@ -91,7 +91,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                     this[i].apply {
                         val vkTex = textures[i]?.gpuTexture as LoadedTextureVk?
                         imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                        imageView(vkTex?.textureImageView?.vkImageView ?: 0L)
+                        imageView(vkTex?.textureImageView?.vkImageView?.handle ?: 0L)
                         sampler(vkTex?.sampler ?: 0L)
                     }
                 }
