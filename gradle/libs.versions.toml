@@ -2,7 +2,7 @@
 agp = "8.2.0"
 kotlin = "2.1.0"
 kotlin-coroutines = "1.10.1"
-kotlin-serialization = "1.7.3"
+kotlin-serialization = "1.8.0"
 kotlin-datetime = "0.6.1"
 kotlin-atomicfu = "0.26.1"
 kotlin-dokka = "2.0.0"
