@@ -5,8 +5,8 @@ import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 
-class OnScreenRenderPass(val swapChain: SwapChain) :
-    VkRenderPass(swapChain.backend, swapChain.extent.width(), swapChain.extent.height(), listOf(swapChain.imageFormat))
+class OnScreenRenderPass(val swapchain: Swapchain) :
+    VkRenderPass(swapchain.backend, swapchain.extent.width(), swapchain.extent.height(), listOf(swapchain.imageFormat))
 {
 
     override val vkRenderPass: Long
@@ -15,7 +15,7 @@ class OnScreenRenderPass(val swapChain: SwapChain) :
         memStack {
             val attachments = callocVkAttachmentDescriptionN(3) {
                 this[0]
-                    .format(swapChain.imageFormat)
+                    .format(swapchain.imageFormat)
                     .samples(physicalDevice.msaaSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                     .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
@@ -33,7 +33,7 @@ class OnScreenRenderPass(val swapChain: SwapChain) :
                     .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
                     .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
                 this[2]
-                    .format(swapChain.imageFormat)
+                    .format(swapchain.imageFormat)
                     .samples(VK_SAMPLE_COUNT_1_BIT)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                     .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
@@ -83,7 +83,7 @@ class OnScreenRenderPass(val swapChain: SwapChain) :
             vkRenderPass = checkCreateLongPtr { vkCreateRenderPass(logicalDevice.vkDevice, renderPassInfo, null, it) }
         }
 
-        swapChain.addDependingResource(this)
+        swapchain.addDependingResource(this)
         logD { "Created render pass" }
     }
 

@@ -44,7 +44,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val physicalDevice: PhysicalDevice
     val logicalDevice: LogicalDevice
     val memManager: MemoryManager
-    var swapchain: SwapChain
+    var swapchain: Swapchain
     val commandPool: CommandPool
     val commandBuffer: VkCommandBuffer
 
@@ -53,8 +53,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     //val transferCommandPool: CommandPool
     //val renderLoop: RenderLoop
-
-//    private val shaderCodes = mutableMapOf<String, ShaderCodeImplVk>()
 
 //    private val vkScene = KoolVkScene()
 
@@ -79,7 +77,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = physicalDevice.deviceName
 
         memManager = MemoryManager(this)
-        swapchain = SwapChain(this)
+        swapchain = Swapchain(this)
         commandPool = CommandPool(this, logicalDevice.graphicsQueue)
 
         val buffers = commandPool.createCommandBuffers(1)
@@ -125,27 +123,13 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
-        TODO()
-//        val src = KslGlslGeneratorVk().generateProgram(shader.program, pipeline)
-//        if (shader.program.dumpCode) {
-//            src.dump()
-//        }
-//        val codeKey = src.vertexSrc + src.fragmentSrc
-//        return shaderCodes.getOrPut(codeKey) {
-//            ShaderCodeImplVk.vkCodeFromSource(src.vertexSrc, src.fragmentSrc)
-//        }
+        val src = KslGlslGeneratorVk().generateProgram(shader.program, pipeline)
+        return ShaderCodeVk.drawShaderCode(src.vertexSrc, src.fragmentSrc)
     }
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
-        TODO()
-//        val src = KslGlslGeneratorVk().generateComputeProgram(shader.program, pipeline)
-//        if (shader.program.dumpCode) {
-//            src.dump()
-//        }
-//        val codeKey = src.computeSrc
-//        return shaderCodes.getOrPut(codeKey) {
-//            ShaderCodeImplVk.vkComputeCodeFromSource(src.computeSrc)
-//        }
+        val src = KslGlslGeneratorVk().generateComputeProgram(shader.program, pipeline)
+        return ShaderCodeVk.computeShaderCode(src.computeSrc)
     }
 
     override fun renderFrame(ctx: KoolContext) {

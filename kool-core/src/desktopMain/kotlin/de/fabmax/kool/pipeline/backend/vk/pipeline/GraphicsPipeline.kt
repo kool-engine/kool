@@ -4,7 +4,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
 import de.fabmax.kool.pipeline.backend.gl.locationSize
 import de.fabmax.kool.pipeline.backend.vk.*
-import de.fabmax.kool.pipeline.backend.vk.util.bitValue
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
@@ -31,7 +30,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
             descriptorSetLayout = createDescriptorSetLayout(pipeline.bindGroupLayouts[BindGroupScope.PIPELINE])
             descriptorPool = createDescriptorPool(pipeline.bindGroupLayouts[BindGroupScope.PIPELINE])
 
-            val shaderStages = (pipeline.shaderCode as ShaderCodeImplVk).vkStages
+            val shaderStages = (pipeline.shaderCode as ShaderCodeVk).stages
             val shaderStageModules = shaderStages.map { createShaderModule(it) }
             val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(shaderStages.size) {
                 for (i in shaderStages.indices) {

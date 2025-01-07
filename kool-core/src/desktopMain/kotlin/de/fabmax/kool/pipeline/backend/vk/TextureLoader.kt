@@ -2,8 +2,6 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.vk.util.vkBytesPerPx
-import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW

@@ -6,9 +6,9 @@ interface VkScene {
 
     fun onLoad(sys: VkSystem)
 
-    fun onSwapChainCreated(swapChain: SwapChain)
+    fun onSwapChainCreated(swapChain: Swapchain)
 
-    fun onDrawFrame(swapChain: SwapChain, imageIndex: Int, fence: LongBuffer, waitSema: LongBuffer, signalSema: LongBuffer)
+    fun onDrawFrame(swapChain: Swapchain, imageIndex: Int, fence: LongBuffer, waitSema: LongBuffer, signalSema: LongBuffer)
 
     fun onDestroy(sys: VkSystem)
 

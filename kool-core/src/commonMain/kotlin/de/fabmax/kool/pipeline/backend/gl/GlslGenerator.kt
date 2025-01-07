@@ -24,14 +24,22 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return GlslGeneratorOutput.shaderOutput(
             generateVertexSrc(vertexStage, pipeline),
             generateFragmentSrc(fragmentStage, pipeline)
-        )
+        ).also {
+            if (program.dumpCode) {
+                it.dump()
+            }
+        }
     }
 
     override fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GlslGeneratorOutput {
         val computeStage = checkNotNull(program.computeStage) {
             "KslProgram computeStage is missing"
         }
-        return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
+        return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline)).also {
+            if (program.dumpCode) {
+                it.dump()
+            }
+        }
     }
 
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {

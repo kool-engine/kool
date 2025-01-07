@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkExtent2D
 
-class SwapChain(val backend: RenderBackendVk) : VkResource() {
+class Swapchain(val backend: RenderBackendVk) : VkResource() {
 
     private val physicalDevice: PhysicalDevice get() = backend.physicalDevice
     private val logicalDevice: LogicalDevice get() = backend.logicalDevice
@@ -72,7 +72,7 @@ class SwapChain(val backend: RenderBackendVk) : VkResource() {
             }
 
             imageFormat = surfaceFormat.format()
-            this@SwapChain.extent.set(extent)
+            this@Swapchain.extent.set(extent)
 
             val imgs = enumerateLongs { cnt, imgs ->
                 vkGetSwapchainImagesKHR(logicalDevice.vkDevice, vkSwapchain.handle, cnt, imgs)
@@ -88,7 +88,7 @@ class SwapChain(val backend: RenderBackendVk) : VkResource() {
                 }
             }
 
-            renderPass = OnScreenRenderPass(this@SwapChain)
+            renderPass = OnScreenRenderPass(this@Swapchain)
 
             val (cImage, cImageView) = createColorResources()
             colorImage = cImage.also { addDependingResource(it) }

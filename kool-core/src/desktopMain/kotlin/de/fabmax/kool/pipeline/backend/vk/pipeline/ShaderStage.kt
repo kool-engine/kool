@@ -1,9 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
-import de.fabmax.kool.pipeline.backend.vk.util.Shaderc
+import de.fabmax.kool.pipeline.backend.vk.Shaderc
 import de.fabmax.kool.util.LongHash
-import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_FRAGMENT_BIT
-import org.lwjgl.vulkan.VK10.VK_SHADER_STAGE_VERTEX_BIT
+import org.lwjgl.vulkan.VK10.*
 import java.io.InputStream
 
 class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val entryPoint: String = "main") {
@@ -25,7 +24,8 @@ class ShaderStage(val name: String, val code: ByteArray, val stage: Int, val ent
             val compileResult = when (stage) {
                 VK_SHADER_STAGE_VERTEX_BIT -> Shaderc.compileVertexShader(srcCode, name, entryPoint)
                 VK_SHADER_STAGE_FRAGMENT_BIT -> Shaderc.compileFragmentShader(srcCode, name, entryPoint)
-                else -> throw IllegalArgumentException("Invalid shader stage: $stage")
+                VK_SHADER_STAGE_COMPUTE_BIT -> Shaderc.compileComputeShader(srcCode, name, entryPoint)
+                else -> error("Invalid shader stage: $stage")
             }
             val data = checkNotNull(compileResult.spirvData)  { "Shader compilation failed" }
             val codeArray = ByteArray(data.remaining())

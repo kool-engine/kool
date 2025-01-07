@@ -19,7 +19,7 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjg
 
     val renderLoop: RenderLoop
 
-    var swapChain: SwapChain? = null
+    var swapChain: Swapchain? = null
 
     val backend: RenderBackendVk get() = TODO()
 

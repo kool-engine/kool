@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.vk.util.vkFormat
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed

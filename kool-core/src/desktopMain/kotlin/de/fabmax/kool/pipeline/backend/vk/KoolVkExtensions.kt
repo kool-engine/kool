@@ -1,4 +1,4 @@
-package de.fabmax.kool.pipeline.backend.vk.util
+package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.pipeline.TexFormat

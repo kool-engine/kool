@@ -30,7 +30,11 @@ class WgslGenerator : KslGenerator() {
         return WgslGeneratorOutput.shaderOutput(
             generateVertexSrc(vertexStage, pipeline),
             generateFragmentSrc(fragmentStage, pipeline)
-        )
+        ).also {
+            if (program.dumpCode) {
+                it.dump()
+            }
+        }
     }
 
     override fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): WgslGeneratorOutput {
@@ -39,7 +43,11 @@ class WgslGenerator : KslGenerator() {
         }
 
         generatorState = GeneratorState(pipeline.bindGroupLayouts, null)
-        return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
+        return WgslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline)).also {
+            if (program.dumpCode) {
+                it.dump()
+            }
+        }
     }
 
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
