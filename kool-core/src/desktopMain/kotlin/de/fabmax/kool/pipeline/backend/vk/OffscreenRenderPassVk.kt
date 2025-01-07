@@ -5,7 +5,7 @@ import de.fabmax.kool.util.memStack
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
-class VkOffscreenRenderPass(
+class OffscreenRenderPassVk(
     sys: VkSystem,
     maxWidth: Int,
     maxHeight: Int,
@@ -14,7 +14,7 @@ class VkOffscreenRenderPass(
     val depthAttachment: DepthAttachment,
     val isExtDepthAttachments: Boolean,
     val isMultiSampled: Boolean
-) : VkRenderPass(sys.backend, maxWidth, maxHeight, colorAttachments.colorFormats) {
+) : RenderPassVk(sys.backend, maxWidth, maxHeight, colorAttachments.colorFormats) {
 
     constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
                 colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
@@ -33,7 +33,7 @@ class VkOffscreenRenderPass(
                 isMultiSampled = false
             )
 
-    override val vkRenderPass: Long
+    override val vkRenderPass: VkRenderPass
 
     val images: List<Image>
         get() = colorAttachments.colorImages
@@ -81,12 +81,12 @@ class VkOffscreenRenderPass(
     }
 
     override fun freeResources() {
-        vkDestroyRenderPass(logicalDevice.vkDevice, vkRenderPass, null)
+        vkDestroyRenderPass(logicalDevice.vkDevice, vkRenderPass.handle, null)
         vkDestroyFramebuffer(logicalDevice.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
     }
 
-    private fun createFrameBuffer(renderPass: Long, imageViews: List<ImageView>, depthView: ImageView): Long {
+    private fun createFrameBuffer(renderPass: VkRenderPass, imageViews: List<ImageView>, depthView: ImageView): Long {
         memStack {
             val attachments = mallocLong(imageViews.size + 1)
             imageViews.forEachIndexed { i, imageView -> attachments.put(i, imageView.vkImageView.handle) }
@@ -94,7 +94,7 @@ class VkOffscreenRenderPass(
 
             val framebufferInfo = callocVkFramebufferCreateInfo {
                 sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
-                renderPass(renderPass)
+                renderPass(renderPass.handle)
                 pAttachments(attachments)
                 width(maxWidth)
                 height(maxHeight)
@@ -104,7 +104,7 @@ class VkOffscreenRenderPass(
         }
     }
 
-    private fun createRenderPass(): Long {
+    private fun createRenderPass(): VkRenderPass {
         memStack {
             val attachments = callocVkAttachmentDescriptionN(nColorAttachments + 1) {
                 val colorLoadOp = if (isExtColorAttachments) {
@@ -193,13 +193,12 @@ class VkOffscreenRenderPass(
                         .dependencyFlags(VK_DEPENDENCY_BY_REGION_BIT)
             }
 
-            val renderPassInfo = callocVkRenderPassCreateInfo {
+            return logicalDevice.createRenderPass {
                 sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)
                 pAttachments(attachments)
                 pSubpasses(subpass)
                 pDependencies(dependencies)
             }
-            return checkCreateLongPtr { vkCreateRenderPass(logicalDevice.vkDevice, renderPassInfo, null, it) }
         }
     }
 

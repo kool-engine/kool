@@ -9,11 +9,10 @@ import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkPipelineViewportStateCreateInfo
 import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
 
-class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vkRenderPass: VkRenderPass, val msaaSamples: Int, val dynamicViewPort: Boolean,
+class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val renderPassVk: RenderPassVk, val msaaSamples: Int, val dynamicViewPort: Boolean,
                        val pipeline: DrawPipeline, val nImages: Int, val descriptorSetPoolSize: Int = 500) : VkResource() {
 
     val descriptorSetLayout: Long
@@ -91,34 +90,29 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 primitiveRestartEnable(false)
             }
 
-            val viewportState: VkPipelineViewportStateCreateInfo?
-            val viewport = callocVkViewportN(1) {
-                // actual viewport size is set on render
-                x(0f)
-                y(0f)
-                width(vkRenderPass.maxWidth.toFloat())
-                height(vkRenderPass.maxHeight.toFloat())
-                minDepth(0f)
-                maxDepth(1f)
-            }
-
-            val scissor = callocVkRect2DN(1) {
-                offset { it.set(0, 0) }
-                extent { it.width(vkRenderPass.maxWidth); it.height(vkRenderPass.maxHeight) }
-            }
-
-            viewportState = callocVkPipelineViewportStateCreateInfo {
+            val viewportState = callocVkPipelineViewportStateCreateInfo {
                 viewportCount(1)
-                pViewports(viewport)
                 scissorCount(1)
-                pScissors(scissor)
             }
-
             val dynamicState = if (dynamicViewPort) {
                 callocVkPipelineDynamicStateCreateInfo {
                     pDynamicStates(ints(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
                 }
             } else {
+                viewportState.apply {
+                    pViewports(callocVkViewportN(1) {
+                        x(0f)
+                        y(0f)
+                        width(renderPassVk.maxWidth.toFloat())
+                        height(renderPassVk.maxHeight.toFloat())
+                        minDepth(0f)
+                        maxDepth(1f)
+                    })
+                    pScissors(callocVkRect2DN(1) {
+                        offset { it.set(0, 0) }
+                        extent { it.width(renderPassVk.maxWidth); it.height(renderPassVk.maxHeight) }
+                    })
+                }
                 null
             }
 
@@ -132,7 +126,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                     CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
                     CullMethod.NO_CULLING -> VK_CULL_MODE_NONE
                 })
-                frontFace(vkRenderPass.triFrontDirection)
+                frontFace(renderPassVk.triFrontDirection)
                 depthBiasEnable(false)
                 depthBiasConstantFactor(0f)
                 depthBiasClamp(0f)
@@ -150,8 +144,8 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 //minSampleShading(0.2f)
             }
 
-            val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(vkRenderPass.nColorAttachments) {
-                for (i in 0 until vkRenderPass.nColorAttachments) {
+            val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.nColorAttachments) {
+                for (i in 0 until renderPassVk.nColorAttachments) {
                     this[i].apply {
                         colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
                         // pre-multiplied alpha
@@ -263,7 +257,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val vk
                 pDepthStencilState(depthStencil)
                 pColorBlendState(colorBlending)
                 layout(pipelineLayout)
-                renderPass(vkRenderPass.vkRenderPass)
+                renderPass(renderPassVk.vkRenderPass.handle)
                 subpass(0)
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)

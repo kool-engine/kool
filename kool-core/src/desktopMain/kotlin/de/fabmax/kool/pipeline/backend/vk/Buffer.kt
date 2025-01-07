@@ -53,7 +53,7 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
     }
 
     fun put(srcBuffer: Buffer) {
-        sys.transferCommandPool.singleTimeCommands { commandBuffer ->
+        sys.transferCommandPool.singleShotCommands { commandBuffer ->
             val copyRegion = callocVkBufferCopyN(1) { size(srcBuffer.bufferSize) }
             vkCmdCopyBuffer(commandBuffer, srcBuffer.vkBuffer, vkBuffer, copyRegion)
         }

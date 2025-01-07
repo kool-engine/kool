@@ -53,6 +53,10 @@ class LogicalDevice(val backend: RenderBackendVk) : VkResource() {
         logD { "Created logical device" }
     }
 
+    fun waitForIdle() {
+        vkDeviceWaitIdle(vkDevice)
+    }
+
     override fun freeResources() {
         vkDestroyDevice(vkDevice, null)
         logD { "Destroyed logical device" }
@@ -62,6 +66,15 @@ class LogicalDevice(val backend: RenderBackendVk) : VkResource() {
         val ptr = mallocPointer(1)
         vkGetDeviceQueue(vkDevice, queueFamily, queueIndex, ptr)
         return VkQueue(ptr[0], vkDevice)
+    }
+}
+
+inline fun LogicalDevice.createCommandPool(stack: MemoryStack? = null, block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPool {
+    memStack(stack) {
+        val createInfo = callocVkCommandPoolCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreateCommandPool(vkDevice, createInfo, null, handle)) { "Failed creating command pool" }
+        return VkCommandPool(handle[0])
     }
 }
 
@@ -92,6 +105,15 @@ inline fun LogicalDevice.createImageView(stack: MemoryStack? = null, block: VkIm
     }
 }
 
+fun LogicalDevice.createRenderPass(stack: MemoryStack? = null, block: VkRenderPassCreateInfo.() -> Unit): VkRenderPass {
+    memStack(stack) {
+        val createInfo = callocVkRenderPassCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreateRenderPass(vkDevice, createInfo, null, handle)) { "Failed creating render pass" }
+        return VkRenderPass(handle[0])
+    }
+}
+
 fun LogicalDevice.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
     memStack(stack) {
         val createInfo = callocVkSemaphoreCreateInfo { }
@@ -110,6 +132,10 @@ fun LogicalDevice.createSwapchain(stack: MemoryStack? = null, block: VkSwapchain
     }
 }
 
+fun LogicalDevice.destroyCommandPool(commandPool: VkCommandPool) {
+    vkDestroyCommandPool(vkDevice, commandPool.handle, null)
+}
+
 fun LogicalDevice.destroyFramebuffer(framebuffer: VkFramebuffer) {
     vkDestroyFramebuffer(vkDevice, framebuffer.handle, null)
 }
@@ -122,10 +148,18 @@ fun LogicalDevice.destroyImageView(imageView: VkImageView) {
     vkDestroyImageView(vkDevice, imageView.handle, null)
 }
 
+fun LogicalDevice.destroyRenderPass(renderPass: VkRenderPass) {
+    vkDestroyRenderPass(vkDevice, renderPass.handle, null)
+}
+
 fun LogicalDevice.destroySemaphore(semaphore: VkSemaphore) {
     vkDestroySemaphore(vkDevice, semaphore.handle, null)
 }
 
 fun LogicalDevice.destroySwapchain(swapchain: VkSwapchain) {
     vkDestroySwapchainKHR(vkDevice, swapchain.handle, null)
+}
+
+fun LogicalDevice.resetCommandPool(commandPool: VkCommandPool, flags: Int = 0) {
+    vkResetCommandPool(vkDevice, commandPool.handle, flags)
 }

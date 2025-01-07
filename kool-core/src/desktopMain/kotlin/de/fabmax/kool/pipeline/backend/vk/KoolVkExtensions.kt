@@ -2,7 +2,9 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.util.Color
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkClearValue
 
 fun ShaderStage.bitValue(): Int {
     return when (this) {
@@ -73,3 +75,12 @@ val TexFormat.vkBytesPerPx: Int
         TexFormat.RGB_U32 -> 12
         TexFormat.RGBA_U32 -> 16
     }
+
+fun VkClearValue.setColor(color: Color) {
+    color {
+        it.float32(0, color.r)
+        it.float32(1, color.g)
+        it.float32(2, color.b)
+        it.float32(3, color.a)
+    }
+}

@@ -262,17 +262,14 @@ class PhysicalDevice(val backend: RenderBackendVk) : VkResource() {
         }
 
         fun chooseSwapExtent(window: GlfwVkWindow, stack: MemoryStack): VkExtent2D {
-            return if (capabilities.currentExtent().width() != -1) {
-                capabilities.currentExtent()
-            } else {
-                val minWidth = capabilities.minImageExtent().width()
-                val maxWidth = capabilities.maxImageExtent().width()
-                val minHeight = capabilities.minImageExtent().height()
-                val maxHeight = capabilities.maxImageExtent().height()
-                VkExtent2D.malloc(stack)
-                    .width(window.framebufferWidth.clamp(minWidth, maxWidth))
-                    .height(window.framebufferHeight.clamp(minHeight, maxHeight))
-            }
+            val minWidth = capabilities.minImageExtent().width()
+            val maxWidth = capabilities.maxImageExtent().width()
+            val minHeight = capabilities.minImageExtent().height()
+            val maxHeight = capabilities.maxImageExtent().height()
+
+            return VkExtent2D.malloc(stack)
+                .width(window.framebufferWidth.clamp(minWidth, maxWidth))
+                .height(window.framebufferHeight.clamp(minHeight, maxHeight))
         }
     }
 }

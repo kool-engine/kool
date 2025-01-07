@@ -12,7 +12,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
     private var isCreated = false
     private var isCreationBlocked = false
 
-    var renderPass: VkOffscreenRenderPass? = null
+    var renderPass: OffscreenRenderPassVk? = null
         private set
 
     lateinit var image: Image
@@ -176,13 +176,13 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
         val sys: VkSystem = TODO()// = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val cfg = (pass.colorAttachments as OffscreenRenderPass.ColorAttachmentTextures).attachments[0]
-        val rp = VkOffscreenRenderPass(sys, pass.size.x, pass.size.y, true, cfg.textureFormat.vkFormat)
+        val rp = OffscreenRenderPassVk(sys, pass.size.x, pass.size.y, true, cfg.textureFormat.vkFormat)
         createTex(rp, sys)
         renderPass = rp
         isCreated = true
     }
 
-    private fun createTex(rp: VkOffscreenRenderPass, sys: VkSystem) {
+    private fun createTex(rp: OffscreenRenderPassVk, sys: VkSystem) {
         TODO()
 //        val imgConfig = Image.Config()
 //        imgConfig.width = rp.maxWidth

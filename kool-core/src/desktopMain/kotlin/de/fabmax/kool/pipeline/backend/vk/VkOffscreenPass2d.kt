@@ -16,7 +16,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
     private val resultImages = Array<Image?>(parentPass.colorTextures.size) { null }
     private val isCopyResult = parentPass.numTextureMipLevels > 1
 
-    var renderPass: VkOffscreenRenderPass? = null
+    var renderPass: OffscreenRenderPassVk? = null
         private set
 
     fun draw() {
@@ -242,21 +242,21 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
             cfgs.forEach { formats += it.textureFormat }
         }
 
-        val colorAttachments = VkOffscreenRenderPass.CreatedColorAttachments(sys, width, height, false, formats.map { it.vkFormat }, VK_FILTER_LINEAR, isMultiSampling)
+        val colorAttachments = OffscreenRenderPassVk.CreatedColorAttachments(sys, width, height, false, formats.map { it.vkFormat }, VK_FILTER_LINEAR, isMultiSampling)
 
         var isProvidedDepth = false
         val depthAttachment = if (pass.depthAttachment !is OffscreenRenderPass.DepthAttachmentTexture) {
-            VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, VK_FILTER_NEAREST, VK_COMPARE_OP_NEVER, isMultiSampling)
+            OffscreenRenderPassVk.CreatedDepthAttachment(sys, width, height, false, VK_FILTER_NEAREST, VK_COMPARE_OP_NEVER, isMultiSampling)
         } else {
             val texDepth = pass.depthAttachment
             val depth = texDepth.attachment
             val filterMethod = if (depth.defaultSamplerSettings.minFilter == FilterMethod.LINEAR) VK_FILTER_LINEAR else VK_FILTER_NEAREST
             //val depthCompareOp = if (depth.depthCompareOp != DepthCompareOp.DISABLED) VK_COMPARE_OP_LESS else VK_COMPARE_OP_NEVER
             val depthCompareOp = VK_COMPARE_OP_LESS
-            VkOffscreenRenderPass.CreatedDepthAttachment(sys, width, height, false, filterMethod, depthCompareOp, isMultiSampling)
+            OffscreenRenderPassVk.CreatedDepthAttachment(sys, width, height, false, filterMethod, depthCompareOp, isMultiSampling)
         }
 
-        val rp = VkOffscreenRenderPass(sys, width, height, colorAttachments, isProvidedColor, depthAttachment, isProvidedDepth, isMultiSampling)
+        val rp = OffscreenRenderPassVk(sys, width, height, colorAttachments, isProvidedColor, depthAttachment, isProvidedDepth, isMultiSampling)
         if (!isProvidedColor) {
             for (i in parentPass.colorTextures.indices) {
                 createTex(parentPass.colorTextures[i], i, true, rp, sys)
@@ -271,7 +271,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
         isCreated = true
     }
 
-    private fun createTex(tex: Texture2d, iAttachment: Int, isColor: Boolean, rp: VkOffscreenRenderPass, sys: VkSystem) {
+    private fun createTex(tex: Texture2d, iAttachment: Int, isColor: Boolean, rp: OffscreenRenderPassVk, sys: VkSystem) {
         tex.apply {
             if (isCopyResult) {
                 val vkTex = if (isColor) {

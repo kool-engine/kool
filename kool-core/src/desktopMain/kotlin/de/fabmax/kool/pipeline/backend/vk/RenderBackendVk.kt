@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.memStack
 import kotlinx.coroutines.CompletableDeferred
@@ -18,7 +17,6 @@ import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkCommandBuffer
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
@@ -44,10 +42,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val physicalDevice: PhysicalDevice
     val logicalDevice: LogicalDevice
     val memManager: MemoryManager
-    var swapchain: Swapchain
+    val screenRenderPass: OnScreenRenderPassVk
     val commandPool: CommandPool
-    val commandBuffer: VkCommandBuffer
+    val commandBuffers: List<VkCommandBuffer>
 
+    var swapchain: Swapchain
+    private var windowResized = false
 
     //val pipelineManager = PipelineManager(this)
 
@@ -77,11 +77,13 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = physicalDevice.deviceName
 
         memManager = MemoryManager(this)
-        swapchain = Swapchain(this)
+        screenRenderPass = OnScreenRenderPassVk(this)
         commandPool = CommandPool(this, logicalDevice.graphicsQueue)
+        commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
 
-        val buffers = commandPool.createCommandBuffers(1)
-        commandBuffer = buffers.nextCommandBuffer()
+        swapchain = Swapchain(this)
+
+        glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
 
         //vkSystem = VkSystem(vkSetup, vkScene, ctx)
         //semaPool = SemaphorePool(vkSystem)
@@ -135,38 +137,31 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override fun renderFrame(ctx: KoolContext) {
 //        vkSystem.renderLoop.drawFrame()
 
-//        vkWaitForFences(logicalDevice.vkDevice, inFlightFence.handle, true, -1)
-//        vkResetFences(logicalDevice.vkDevice, inFlightFence.handle)
-
         memStack {
-            val imgIndex = swapchain.acquireNextImage()
+            var imgOk = swapchain.acquireNextImage()
+            if (imgOk) {
+                val commandBuffer = commandBuffers[swapchain.currentFrameIndex]
+                vkResetCommandBuffer(commandBuffer, 0)
+                recordCommandBuffer(commandBuffer, swapchain.nextSwapImage)
 
-//            val imgIndex = ints(0)
-//            KHRSwapchain.vkAcquireNextImageKHR(logicalDevice.vkDevice, swapchain.vkSwapchain.handle, -1, imageAvailableSema.handle, 0, imgIndex)
+                val waitSemas = longs(swapchain.imageAvailableSema.handle)
+                val signalSemas = longs(swapchain.renderFinishedSema.handle)
 
-            vkResetCommandBuffer(commandBuffer, 0)
-            recordCommandBuffer(commandBuffer, imgIndex)
+                val submitInfo = callocVkSubmitInfo {
+                    pWaitSemaphores(waitSemas)
+                    waitSemaphoreCount(1)
+                    pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
+                    pCommandBuffers(pointers(commandBuffer))
+                    pSignalSemaphores(signalSemas)
+                }
+                check(vkQueueSubmit(logicalDevice.graphicsQueue, submitInfo, swapchain.inFlightFence.handle) == VK_SUCCESS)
 
-            val waitSemas = longs(swapchain.imageAvailableSema.handle)
-            val signalSemas = longs(swapchain.renderFinishedSema.handle)
-
-            val submitInfo = callocVkSubmitInfo {
-                pWaitSemaphores(waitSemas)
-                waitSemaphoreCount(1)
-                pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
-                pCommandBuffers(pointers(commandBuffer))
-                pSignalSemaphores(signalSemas)
+                imgOk = swapchain.presentNextImage(this)
             }
-            check(vkQueueSubmit(logicalDevice.graphicsQueue, submitInfo, swapchain.inFlightFence.handle) == VK_SUCCESS)
-
-            swapchain.presentNextImage(this)
-//            val presentInfo = callocVkPresentInfoKHR {
-//                pWaitSemaphores(signalSemas)
-//                pSwapchains(longs(swapchain.vkSwapchain.handle))
-//                swapchainCount(1)
-//                pImageIndices(imgIndex)
-//            }
-//            KHRSwapchain.vkQueuePresentKHR(logicalDevice.presentQueue, presentInfo)
+            if (!imgOk || windowResized) {
+                windowResized = false
+                recreateSwapchain()
+            }
         }
     }
 
@@ -175,7 +170,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         check(vkBeginCommandBuffer(commandBuffer, beginInfo) == VK_SUCCESS)
 
         val renderPassInfo = callocVkRenderPassBeginInfo {
-            renderPass(swapchain.renderPass.vkRenderPass)
+            renderPass(screenRenderPass.vkRenderPass.handle)
             framebuffer(swapchain.framebuffers[imageIndex].handle)
             renderArea().extent(swapchain.extent)
 
@@ -218,13 +213,20 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
     }
 
+    private fun recreateSwapchain() {
+        // Theoretically it might be possible for the swapchain image format to change (e.g. because the window
+        // is moved to another monitor with HDR) in that case the screen render pass would also need to be
+        // recreated.
+        // However, currently, image format is more or less hardcoded to 8-bit SRGB in PhysicalDevice, so no need
+        // for all the fuzz.
+
+        logicalDevice.waitForIdle()
+        swapchain.destroy()
+        swapchain = Swapchain(this)
+    }
+
     override fun cleanup(ctx: KoolContext) {
-        vkDeviceWaitIdle(logicalDevice.vkDevice)
-
-//        logicalDevice.destroySemaphore(imageAvailableSema)
-//        logicalDevice.destroySemaphore(renderFinishedSema)
-//        logicalDevice.destroyFence(inFlightFence)
-
+        logicalDevice.waitForIdle()
         instance.destroy()
     }
 
@@ -691,15 +693,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 //                    }
 //                })
 //            }
-
-    private fun VkClearValue.setColor(color: Color) {
-        color {
-            it.float32(0, color.r)
-            it.float32(1, color.g)
-            it.float32(2, color.b)
-            it.float32(3, color.a)
-        }
-    }
 
 //    private class SemaphorePool(val sys: VkSystem) : VkResource() {
 //        private val pools = Array(sys.swapChain?.nImages ?: 3) { mutableListOf<Long>() }

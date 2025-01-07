@@ -5,17 +5,17 @@ import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 
-class OnScreenRenderPass(val swapchain: Swapchain) :
-    VkRenderPass(swapchain.backend, swapchain.extent.width(), swapchain.extent.height(), listOf(swapchain.imageFormat))
+class OnScreenRenderPassVk(backend: RenderBackendVk) :
+    RenderPassVk(backend, 0, 0, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
 {
-
-    override val vkRenderPass: Long
+    override val vkRenderPass: VkRenderPass
 
     init {
         memStack {
+            val imageFormat = colorFormats[0]
             val attachments = callocVkAttachmentDescriptionN(3) {
                 this[0]
-                    .format(swapchain.imageFormat)
+                    .format(imageFormat)
                     .samples(physicalDevice.msaaSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                     .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
@@ -33,7 +33,7 @@ class OnScreenRenderPass(val swapchain: Swapchain) :
                     .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
                     .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
                 this[2]
-                    .format(swapchain.imageFormat)
+                    .format(imageFormat)
                     .samples(VK_SAMPLE_COUNT_1_BIT)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                     .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
@@ -74,16 +74,14 @@ class OnScreenRenderPass(val swapchain: Swapchain) :
                 //dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
             }
 
-            val renderPassInfo = callocVkRenderPassCreateInfo {
+            vkRenderPass = logicalDevice.createRenderPass {
                 pAttachments(attachments)
                 pSubpasses(subpass)
                 pDependencies(dependency)
             }
-
-            vkRenderPass = checkCreateLongPtr { vkCreateRenderPass(logicalDevice.vkDevice, renderPassInfo, null, it) }
         }
 
-        swapchain.addDependingResource(this)
+        backend.logicalDevice.addDependingResource(this)
         logD { "Created render pass" }
     }
 
@@ -128,7 +126,7 @@ class OnScreenRenderPass(val swapchain: Swapchain) :
 //    }
 
     override fun freeResources() {
-        vkDestroyRenderPass(logicalDevice.vkDevice, vkRenderPass, null)
+        logicalDevice.destroyRenderPass(vkRenderPass)
         logD { "Destroyed render pass" }
     }
 }

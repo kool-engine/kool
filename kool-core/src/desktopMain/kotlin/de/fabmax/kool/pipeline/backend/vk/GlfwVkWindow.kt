@@ -28,7 +28,7 @@ class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindo
     override fun onFramebufferSizeChanged(width: Int, height: Int) {
         super.onFramebufferSizeChanged(width, height)
         for (listener in onResize) {
-            listener.onResize(this, width, height)
+            listener.onResize(width, height)
         }
     }
 
@@ -36,8 +36,8 @@ class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindo
         surface = Surface()
     }
 
-    interface OnWindowResizeListener {
-        fun onResize(window: GlfwVkWindow, newWidth: Int, newHeight: Int)
+    fun interface OnWindowResizeListener {
+        fun onResize(newWidth: Int, newHeight: Int)
     }
 
     inner class Surface : VkResource() {

@@ -16,6 +16,9 @@ class Swapchain(val backend: RenderBackendVk) : VkResource() {
     private val logicalDevice: LogicalDevice get() = backend.logicalDevice
 
     private val nextImage = BufferUtils.createIntBuffer(1)
+    val nextSwapImage: Int get() = nextImage[0]
+    var currentFrameIndex = 0
+        private set
 
     val vkSwapchain: VkSwapchain
     val imageFormat: Int
@@ -32,11 +35,13 @@ class Swapchain(val backend: RenderBackendVk) : VkResource() {
     private val depthImage: Image
     private val depthImageView: ImageView
 
-    val renderPass: OnScreenRenderPass
+    private val imageAvailableSemas: List<VkSemaphore>
+    private val renderFinishedSemas: List<VkSemaphore>
+    private val inFlightFences: List<VkFence>
 
-    val imageAvailableSema: VkSemaphore
-    val renderFinishedSema: VkSemaphore
-    val inFlightFence: VkFence
+    val imageAvailableSema: VkSemaphore get() = imageAvailableSemas[currentFrameIndex]
+    val renderFinishedSema: VkSemaphore get() = renderFinishedSemas[currentFrameIndex]
+    val inFlightFence: VkFence get() = inFlightFences[currentFrameIndex]
 
     init {
         memStack {
@@ -88,8 +93,6 @@ class Swapchain(val backend: RenderBackendVk) : VkResource() {
                 }
             }
 
-            renderPass = OnScreenRenderPass(this@Swapchain)
-
             val (cImage, cImageView) = createColorResources()
             colorImage = cImage.also { addDependingResource(it) }
             colorImageView = cImageView.also { addDependingResource(it) }
@@ -100,30 +103,50 @@ class Swapchain(val backend: RenderBackendVk) : VkResource() {
 
             framebuffers = createFramebuffers()
 
-            imageAvailableSema = logicalDevice.createSemaphore(this)
-            renderFinishedSema = logicalDevice.createSemaphore(this)
-            inFlightFence = logicalDevice.createFence(this) { flags(VK_FENCE_CREATE_SIGNALED_BIT) }
+            imageAvailableSemas = buildList {
+                repeat(MAX_FRAMES_IN_FLIGHT) { add(logicalDevice.createSemaphore(this@memStack)) }
+            }
+            renderFinishedSemas = buildList {
+                repeat(MAX_FRAMES_IN_FLIGHT) { add(logicalDevice.createSemaphore(this@memStack)) }
+            }
+            inFlightFences = buildList {
+                repeat(MAX_FRAMES_IN_FLIGHT) {
+                    add(logicalDevice.createFence(this@memStack) { flags(VK_FENCE_CREATE_SIGNALED_BIT) })
+                }
+            }
         }
 
         logicalDevice.addDependingResource(this)
         logD { "Created swap chain" }
     }
 
-    fun acquireNextImage(): Int {
+    fun acquireNextImage(): Boolean {
         vkWaitForFences(logicalDevice.vkDevice, inFlightFence.handle, true, -1)
         vkResetFences(logicalDevice.vkDevice, inFlightFence.handle)
-        vkAcquireNextImageKHR(logicalDevice.vkDevice, vkSwapchain.handle, -1, imageAvailableSema.handle, 0, nextImage)
-        return nextImage[0]
+        return when (vkAcquireNextImageKHR(logicalDevice.vkDevice, vkSwapchain.handle, -1, imageAvailableSema.handle, 0, nextImage)) {
+            VK_SUCCESS -> true
+            VK_SUBOPTIMAL_KHR -> true   // also considered OK
+            VK_ERROR_OUT_OF_DATE_KHR -> false
+            else -> error("failed to acquire swap chain image")
+        }
     }
 
-    fun presentNextImage(stack: MemoryStack) = stack.apply {
-        val presentInfo = callocVkPresentInfoKHR {
-            pWaitSemaphores(longs(renderFinishedSema.handle))
-            pSwapchains(longs(vkSwapchain.handle))
-            swapchainCount(1)
-            pImageIndices(nextImage)
+    fun presentNextImage(stack: MemoryStack): Boolean{
+        stack.apply {
+            val presentInfo = callocVkPresentInfoKHR {
+                pWaitSemaphores(longs(renderFinishedSema.handle))
+                pSwapchains(longs(vkSwapchain.handle))
+                swapchainCount(1)
+                pImageIndices(nextImage)
+            }
+            currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT
+            return when (vkQueuePresentKHR(logicalDevice.presentQueue, presentInfo)) {
+                VK_SUCCESS -> true
+                VK_SUBOPTIMAL_KHR -> false   // not considered OK
+                VK_ERROR_OUT_OF_DATE_KHR -> false
+                else -> error("failed to acquire swap chain image")
+            }
         }
-        vkQueuePresentKHR(logicalDevice.presentQueue, presentInfo)
     }
 
     private fun createColorResources(): Pair<Image, ImageView> {
@@ -163,7 +186,7 @@ class Swapchain(val backend: RenderBackendVk) : VkResource() {
     private fun MemoryStack.createFramebuffers(): List<VkFramebuffer> = buildList {
         imageViews.forEach { imgView ->
             add(logicalDevice.createFramebuffer(this@createFramebuffers) {
-                renderPass(renderPass.vkRenderPass)
+                renderPass(backend.screenRenderPass.vkRenderPass.handle)
                 pAttachments(longs(colorImageView.vkImageView.handle, depthImageView.vkImageView.handle, imgView.vkImageView.handle))
                 width(extent.width())
                 height(extent.height())
@@ -178,10 +201,14 @@ class Swapchain(val backend: RenderBackendVk) : VkResource() {
         logicalDevice.destroySwapchain(vkSwapchain)
         extent.free()
 
-        logicalDevice.destroySemaphore(imageAvailableSema)
-        logicalDevice.destroySemaphore(renderFinishedSema)
-        logicalDevice.destroyFence(inFlightFence)
+        imageAvailableSemas.forEach { logicalDevice.destroySemaphore(it) }
+        renderFinishedSemas.forEach { logicalDevice.destroySemaphore(it) }
+        inFlightFences.forEach { logicalDevice.destroyFence(it) }
 
         logD { "Destroyed swap chain" }
+    }
+
+    companion object {
+        const val MAX_FRAMES_IN_FLIGHT = 2
     }
 }

@@ -322,7 +322,7 @@ object TextureLoader {
     }
 
     private fun copyBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int, depth: Int) {
-        sys.transferCommandPool.singleTimeCommands { commandBuffer ->
+        sys.transferCommandPool.singleShotCommands { commandBuffer ->
             val region = callocVkBufferImageCopyN(1) {
                 imageSubresource {
                     it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -338,7 +338,7 @@ object TextureLoader {
     }
 
     private fun copyCubeBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int) {
-        sys.transferCommandPool.singleTimeCommands { commandBuffer ->
+        sys.transferCommandPool.singleShotCommands { commandBuffer ->
             val regions = callocVkBufferImageCopyN(6) {
                 for (face in 0..5) {
                     this[face].apply {

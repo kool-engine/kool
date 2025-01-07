@@ -3,11 +3,12 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.pipeline.TexFormat
 import org.lwjgl.vulkan.VK10.*
 
-abstract class VkRenderPass(val backend: RenderBackendVk, val maxWidth: Int, val maxHeight: Int, val colorFormats: List<Int>) : VkResource() {
+// fixme: changed maxWidth and maxHeight
+abstract class RenderPassVk(val backend: RenderBackendVk, val maxWidth: Int, val maxHeight: Int, val colorFormats: List<Int>) : VkResource() {
 
     var triFrontDirection = VK_FRONT_FACE_COUNTER_CLOCKWISE
 
-    abstract val vkRenderPass: Long
+    abstract val vkRenderPass: VkRenderPass
 
     val nColorAttachments: Int
         get() = colorFormats.size
