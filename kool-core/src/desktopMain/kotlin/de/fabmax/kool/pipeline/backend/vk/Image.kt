@@ -55,8 +55,8 @@ class Image(val backend: RenderBackendVk, config: Config) : BaseReleasable() {
         }
     }
 
-    fun generateMipmaps(sys: VkSystem, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-        sys.commandPool.singleShotCommands { commandBuffer ->
+    fun generateMipmaps(dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        backend.commandPool.singleShotCommands { commandBuffer ->
             generateMipmaps(this, commandBuffer, dstLayout)
         }
     }

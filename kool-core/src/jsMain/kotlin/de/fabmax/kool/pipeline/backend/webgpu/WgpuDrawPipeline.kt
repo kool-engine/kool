@@ -144,7 +144,7 @@ class WgpuDrawPipeline(
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
         val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
 
-        if (!pipelineData.checkBindings(backend) || !viewData.checkBindings(backend) || !meshData.checkBindings(backend)) {
+        if (!pipelineData.checkBindings() || !viewData.checkBindings() || !meshData.checkBindings()) {
             return false
         }
 

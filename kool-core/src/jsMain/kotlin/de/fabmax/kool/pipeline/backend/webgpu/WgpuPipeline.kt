@@ -20,7 +20,11 @@ sealed class WgpuPipeline(
     protected val pipelineLayout: GPUPipelineLayout = pipeline.createPipelineLayout()
 
     private fun createBindGroupLayouts(pipeline: PipelineBase): List<GPUBindGroupLayout> {
-        val layouts = if (this is WgpuComputePipeline) listOf(pipeline.bindGroupLayouts.pipelineScope) else pipeline.bindGroupLayouts.asList
+        val layouts = if (this is WgpuComputePipeline) {
+            listOf(pipeline.bindGroupLayouts.pipelineScope)
+        } else {
+            pipeline.bindGroupLayouts.asList
+        }
 
         return layouts.map { group ->
             val layoutEntries = buildList {
@@ -103,31 +107,31 @@ sealed class WgpuPipeline(
         )
     }
 
-    protected fun BindGroupData.checkBindings(backend: RenderBackendWebGpu): Boolean {
-        return checkStorageBuffers() && checkTextures(backend)
+    protected fun BindGroupData.checkBindings(): Boolean {
+        return checkStorageBuffers() && checkTextures()
     }
 
-    protected fun BindGroupData.checkStorageBuffers(): Boolean {
+    private fun BindGroupData.checkStorageBuffers(): Boolean {
         return bindings
             .filterIsInstance<BindGroupData.StorageBufferBindingData<*>>()
             .all { it.storageBuffer != null }
     }
 
-    protected fun BindGroupData.checkTextures(backend: RenderBackendWebGpu): Boolean {
+    private fun BindGroupData.checkTextures(): Boolean {
         var isComplete = true
         bindings
             .filterIsInstance<BindGroupData.TextureBindingData<*>>()
             .map { it.texture }
             .filter { it?.loadingState != Texture.LoadingState.LOADED }
             .forEach {
-                if (it == null || !it.checkLoadingState(backend)) {
+                if (it == null || !it.checkLoadingState()) {
                     isComplete = false
                 }
             }
         return isComplete
     }
 
-    private fun <T: ImageData> Texture<T>.checkLoadingState(backend: RenderBackendWebGpu): Boolean {
+    private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
         checkIsNotReleased()
         if (loadingState == Texture.LoadingState.NOT_LOADED) {
             uploadData?.let { backend.textureLoader.loadTexture(this) }

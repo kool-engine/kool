@@ -1,6 +1,5 @@
-package de.fabmax.kool.pipeline.backend.vk.pipeline
+package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.backend.vk.Shaderc
 import de.fabmax.kool.util.LongHash
 import org.lwjgl.vulkan.VK10.*
 import java.io.InputStream

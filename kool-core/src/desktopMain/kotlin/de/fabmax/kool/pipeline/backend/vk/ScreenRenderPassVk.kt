@@ -90,9 +90,13 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         logD { "Created screen render pass" }
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, commandBuffer: VkCommandBuffer, stack: MemoryStack) {
-        stack.apply {
-            val renderPassInfo = callocVkRenderPassBeginInfo {
+    override fun beginRenderPass(
+        passEncoderState: RenderPassEncoderState<Scene.SceneRenderPass>,
+        viewIndex: Int,
+        mipLevel: Int
+    ) {
+        passEncoderState.stack.apply {
+            val beginInfo = callocVkRenderPassBeginInfo {
                 renderPass(vkRenderPass.handle)
 
                 val swapchain = backend.swapchain
@@ -100,7 +104,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                 renderArea().extent(swapchain.extent)
 
                 val clearValues = callocVkClearValueN(2) {
-                    this[0].setColor(scenePass.clearColor ?: Color.BLACK)
+                    this[0].setColor(passEncoderState.renderPass.clearColor ?: Color.BLACK)
                     this[1].depthStencil {
                         it.depth(1f)
                         it.stencil(0)
@@ -108,11 +112,12 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                 }
                 pClearValues(clearValues)
             }
-
-            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-            render(scenePass, commandBuffer, stack)
-            vkCmdEndRenderPass(commandBuffer)
+            vkCmdBeginRenderPass(passEncoderState.commandBuffer, beginInfo, VK_SUBPASS_CONTENTS_INLINE)
         }
+    }
+
+    fun renderScene(scenePass: Scene.SceneRenderPass, commandBuffer: VkCommandBuffer, stack: MemoryStack) {
+        render(scenePass, commandBuffer, stack)
     }
 
     override fun release() {

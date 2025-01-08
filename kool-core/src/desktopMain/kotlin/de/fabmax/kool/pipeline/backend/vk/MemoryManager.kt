@@ -146,11 +146,13 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    private class NaiveMemManager(val sys: VkSystem) : MemManager {
+    private class NaiveMemManager(val backend: RenderBackendVk) : MemManager {
 
         class BufferInfo(val buffer: Long, val memory: Long, val size: Long, val allocUsage: Int)
 
         private val allocatedBuffers = mutableMapOf<Long, BufferInfo>()
+        private val physicalDevice: PhysicalDevice get() = backend.physicalDevice
+        private val device: Device get() = backend.device
 
         init {
             logD { "Created naive memory allocator" }
@@ -158,23 +160,23 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
         override fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer): Int {
             memStack {
-                var res = vkCreateBuffer(sys.device.vkDevice, bufferInfo, null, pBuffer)
+                var res = vkCreateBuffer(device.vkDevice, bufferInfo, null, pBuffer)
                 if (res != VK_SUCCESS) { return res }
 
                 val properties = getPropertiesForAllocationUsage(allocUsage)
                 val memRequirements = VkMemoryRequirements.malloc(this)
-                vkGetBufferMemoryRequirements(sys.device.vkDevice, pBuffer[0], memRequirements)
+                vkGetBufferMemoryRequirements(device.vkDevice, pBuffer[0], memRequirements)
                 val allocInfo = callocVkMemoryAllocateInfo {
                     sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
                     allocationSize(memRequirements.size())
-                    memoryTypeIndex(sys.physicalDevice.findMemoryType(memRequirements.memoryTypeBits(), properties))
+                    memoryTypeIndex(physicalDevice.findMemoryType(memRequirements.memoryTypeBits(), properties))
                 }
 
                 val lp = mallocLong(1)
-                res = vkAllocateMemory(sys.device.vkDevice, allocInfo, null, lp)
+                res = vkAllocateMemory(device.vkDevice, allocInfo, null, lp)
                 if (res != VK_SUCCESS) { return res }
                 pAllocation.put(0, lp[0])
-                res = vkBindBufferMemory(sys.device.vkDevice, pBuffer[0], lp[0], 0L)
+                res = vkBindBufferMemory(device.vkDevice, pBuffer[0], lp[0], 0L)
                 if (res != VK_SUCCESS) { return res }
 
                 allocatedBuffers[pAllocation[0]] = BufferInfo(pBuffer[0], pAllocation[0], bufferInfo.size(), allocUsage)
@@ -185,8 +187,8 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         override fun freeBuffer(buffer: Long, allocation: Long) {
             val bufferInfo = allocatedBuffers.remove(allocation)
             bufferInfo?.let {
-                vkDestroyBuffer(sys.device.vkDevice, buffer, null)
-                vkFreeMemory(sys.device.vkDevice, it.memory, null)
+                vkDestroyBuffer(device.vkDevice, buffer, null)
+                vkFreeMemory(device.vkDevice, it.memory, null)
             }
         }
 
@@ -194,21 +196,21 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
             memStack {
                 val pImage = mallocLong(1)
                 val pAllocation = mallocPointer(1)
-                check(vkCreateImage(sys.device.vkDevice, imageInfo, null, pImage) == VK_SUCCESS)
+                check(vkCreateImage(device.vkDevice, imageInfo, null, pImage) == VK_SUCCESS)
 
                 val properties = getPropertiesForAllocationUsage(allocUsage)
                 val memRequirements = VkMemoryRequirements.malloc(this)
-                vkGetImageMemoryRequirements(sys.device.vkDevice, pImage[0], memRequirements)
+                vkGetImageMemoryRequirements(device.vkDevice, pImage[0], memRequirements)
                 val allocInfo = callocVkMemoryAllocateInfo {
                     sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
                     allocationSize(memRequirements.size())
-                    memoryTypeIndex(sys.physicalDevice.findMemoryType(memRequirements.memoryTypeBits(), properties))
+                    memoryTypeIndex(physicalDevice.findMemoryType(memRequirements.memoryTypeBits(), properties))
                 }
 
                 val lp = mallocLong(1)
-                check(vkAllocateMemory(sys.device.vkDevice, allocInfo, null, lp) == VK_SUCCESS)
+                check(vkAllocateMemory(device.vkDevice, allocInfo, null, lp) == VK_SUCCESS)
                 pAllocation.put(0, lp[0])
-                check(vkBindImageMemory(sys.device.vkDevice, pImage[0], lp[0], 0L) == VK_SUCCESS)
+                check(vkBindImageMemory(device.vkDevice, pImage[0], lp[0], 0L) == VK_SUCCESS)
 
                 allocatedBuffers[pAllocation[0]] = BufferInfo(pImage[0], pAllocation[0], memRequirements.size(), allocUsage)
                 return VkImage(pImage[0], pAllocation[0])
@@ -218,8 +220,8 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         override fun freeImage(image: VkImage) {
             val bufferInfo = allocatedBuffers.remove(image.allocation)
             bufferInfo?.let {
-                vkDestroyImage(sys.device.vkDevice, image.handle, null)
-                vkFreeMemory(sys.device.vkDevice, it.memory, null)
+                vkDestroyImage(device.vkDevice, image.handle, null)
+                vkFreeMemory(device.vkDevice, it.memory, null)
             }
         }
 
@@ -227,13 +229,13 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
             val bufferInfo = allocatedBuffers[allocation] ?: throw IllegalArgumentException("Invalid allocation")
             return memStack {
                 val data = mallocPointer(1)
-                vkMapMemory(sys.device.vkDevice, allocation, 0L, bufferInfo.size, 0, data)
+                vkMapMemory(device.vkDevice, allocation, 0L, bufferInfo.size, 0, data)
                 data[0]
             }
         }
 
         override fun unmapMemory(allocation: Long) {
-            vkUnmapMemory(sys.device.vkDevice, allocation)
+            vkUnmapMemory(device.vkDevice, allocation)
         }
 
         override fun freeResources() {

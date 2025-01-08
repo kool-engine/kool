@@ -115,7 +115,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
 
-        releaseWith(backend.glfwWindow.surface)
+        releaseWith(backend.device)
         logD { "Created swap chain" }
     }
 
@@ -196,7 +196,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
 
     override fun release() {
         super.release()
-        cancelReleaseWith(backend.glfwWindow.surface)
+        cancelReleaseWith(backend.device)
         framebuffers.forEach { fb -> device.destroyFramebuffer(fb) }
         device.destroySwapchain(vkSwapchain)
         extent.free()

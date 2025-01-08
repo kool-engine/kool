@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.pipeline.backend.vk.pipeline.PipelineManager
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.memStack
@@ -46,6 +45,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val pipelineManager: PipelineManager
     val screenRenderPass: ScreenRenderPassVk
     val commandPool: CommandPool
+    val transferCommandPool: CommandPool
     val commandBuffers: List<VkCommandBuffer>
 
     var swapchain: Swapchain
@@ -82,6 +82,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         pipelineManager = PipelineManager(this)
         screenRenderPass = ScreenRenderPassVk(this)
         commandPool = CommandPool(this, device.graphicsQueue)
+        transferCommandPool = CommandPool(this, device.transferQueue)
         commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
 
         swapchain = Swapchain(this)

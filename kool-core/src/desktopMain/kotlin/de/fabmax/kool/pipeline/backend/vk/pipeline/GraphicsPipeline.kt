@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
 import de.fabmax.kool.pipeline.backend.gl.locationSize
 import de.fabmax.kool.pipeline.backend.vk.*
+import de.fabmax.kool.pipeline.backend.vk.ShaderStage
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
@@ -13,7 +14,8 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
 
-class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val renderPassVk: RenderPassVk<*>, val msaaSamples: Int,
+@Deprecated("to be replaced by VkDrawPipeline")
+class GraphicsPipeline(val backend: RenderBackendVk, val koolRenderPass: RenderPass, val renderPassVk: RenderPassVk<*>, val msaaSamples: Int,
                        val pipeline: DrawPipeline, val nImages: Int, val descriptorSetPoolSize: Int = 500) : BaseReleasable() {
 
     val descriptorSetLayout: Long
@@ -223,7 +225,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val re
                 pPushConstantRanges(pushConstantRanges)
             }
             pipelineLayout = checkCreateLongPtr {
-                vkCreatePipelineLayout(sys.device.vkDevice, pipelineLayoutInfo, null, it )
+                vkCreatePipelineLayout(backend.device.vkDevice, pipelineLayoutInfo, null, it )
             }
 
             val pipelineInfo = callocVkGraphicsPipelineCreateInfoN(1) {
@@ -244,7 +246,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val re
             }
             vkGraphicsPipeline = checkCreateLongPtr {
                 vkCreateGraphicsPipelines(
-                    sys.device.vkDevice,
+                    backend.device.vkDevice,
                     VK_NULL_HANDLE,
                     pipelineInfo,
                     null,
@@ -253,7 +255,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val re
             }
 
             for (module in shaderStageModules) {
-                vkDestroyShaderModule(sys.device.vkDevice, module, null)
+                vkDestroyShaderModule(backend.device.vkDevice, module, null)
             }
         }
 
@@ -268,7 +270,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val re
                 sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
                 pCode(code)
             }
-            checkCreateLongPtr { vkCreateShaderModule(sys.device.vkDevice, createInfo, null, it) }
+            checkCreateLongPtr { vkCreateShaderModule(backend.device.vkDevice, createInfo, null, it) }
         }
     }
 
@@ -302,7 +304,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val re
             pBindings(bindings)
         }
 
-        return checkCreateLongPtr { vkCreateDescriptorSetLayout(sys.device.vkDevice, layoutInfo, null, it) }
+        return checkCreateLongPtr { vkCreateDescriptorSetLayout(backend.device.vkDevice, layoutInfo, null, it) }
     }
 
     private fun createDescriptorPool(bindGroupLayout: BindGroupLayout): Long {
@@ -323,7 +325,7 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val re
                     maxSets(nImages * descriptorSetPoolSize)
                 }
 
-                return checkCreateLongPtr { vkCreateDescriptorPool(sys.device.vkDevice, poolInfo, null, it) }
+                return checkCreateLongPtr { vkCreateDescriptorPool(backend.device.vkDevice, poolInfo, null, it) }
             }
         }
         return 0L
@@ -363,11 +365,11 @@ class GraphicsPipeline(val sys: VkSystem, val koolRenderPass: RenderPass, val re
 
     override fun release() {
         super.release()
-        vkDestroyPipeline(sys.device.vkDevice, vkGraphicsPipeline, null)
-        vkDestroyPipelineLayout(sys.device.vkDevice, pipelineLayout, null)
-        vkDestroyDescriptorSetLayout(sys.device.vkDevice, descriptorSetLayout, null)
+        vkDestroyPipeline(backend.device.vkDevice, vkGraphicsPipeline, null)
+        vkDestroyPipelineLayout(backend.device.vkDevice, pipelineLayout, null)
+        vkDestroyDescriptorSetLayout(backend.device.vkDevice, descriptorSetLayout, null)
         if (descriptorPool != 0L) {
-            vkDestroyDescriptorPool(sys.device.vkDevice, descriptorPool, null)
+            vkDestroyDescriptorPool(backend.device.vkDevice, descriptorPool, null)
         }
 
         descriptorSetInstances.clear()

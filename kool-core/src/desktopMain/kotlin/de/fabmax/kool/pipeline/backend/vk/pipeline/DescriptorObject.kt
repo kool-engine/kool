@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk.pipeline
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.LoadedTextureVk
-import de.fabmax.kool.pipeline.backend.vk.VkSystem
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorBufferInfoN
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorImageInfoN
 import de.fabmax.kool.util.MixedBufferImpl
@@ -21,7 +21,7 @@ abstract class DescriptorObject(val binding: Int, val descriptor: BindingLayout)
 
     abstract fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long, cmd: DrawCommand)
 
-    abstract fun update(cmd: DrawCommand, sys: VkSystem)
+    abstract fun update(cmd: DrawCommand, backend: RenderBackendVk)
 
     open fun destroy(graphicsPipeline: GraphicsPipeline) { }
 }
@@ -33,7 +33,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
         val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
         val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
         buffer = de.fabmax.kool.pipeline.backend.vk.Buffer(
-            graphicsPipeline.sys,
+            graphicsPipeline.backend,
             ubo.layout.size.toLong(),
             usage,
             allocUsage
@@ -60,7 +60,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
         }
     }
 
-    override fun update(cmd: DrawCommand, sys: VkSystem) {
+    override fun update(cmd: DrawCommand, backend: RenderBackendVk) {
         val hostBuffer = cmd.pipeline.pipelineData.uniformBufferBindingData(binding).buffer as MixedBufferImpl
         hostBuffer.useRaw { host ->
             buffer.mapped { put(host) }
@@ -109,7 +109,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         }
     }
 
-    override fun update(cmd: DrawCommand, sys: VkSystem) {
+    override fun update(cmd: DrawCommand, backend: RenderBackendVk) {
         if (loadingTextures.isNotEmpty()) {
             val iterator = loadingTextures.iterator()
             for (loading in iterator) {
@@ -134,7 +134,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 if (tex.loadingState == Texture.LoadingState.NOT_LOADED) {
                     tex.uploadData?.let {
                         tex.uploadData = null
-                        tex.gpuTexture = getLoadedTex(tex, it, sys)
+                        tex.gpuTexture = getLoadedTex(tex, it, backend)
                         tex.loadingState = Texture.LoadingState.LOADED
                     }
                 }
@@ -159,7 +159,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         isValid = allValid
     }
 
-    private class LoadingTex(val sys: VkSystem, val tex: Texture<*>, val deferredTex: Deferred<ImageData>) {
+    private class LoadingTex(val backend: RenderBackendVk, val tex: Texture<*>, val deferredTex: Deferred<ImageData>) {
         var isCompleted = false
 
         init {
@@ -175,7 +175,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         fun pollCompleted(): Boolean {
             if (isCompleted && tex.loadingState != Texture.LoadingState.LOADING_FAILED) {
-                tex.gpuTexture = getLoadedTex(tex, deferredTex.getCompleted(), sys)
+                tex.gpuTexture = getLoadedTex(tex, deferredTex.getCompleted(), backend)
                 tex.loadingState = Texture.LoadingState.LOADED
             }
             return isCompleted
@@ -186,12 +186,12 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
         private val loadingTextures = mutableListOf<LoadingTex>()
         private val loadedTextures = mutableMapOf<ImageData, LoadedTextureVk>()
 
-        private fun getLoadedTex(tex: Texture<*>, texData: ImageData, sys: VkSystem): LoadedTextureVk {
+        private fun getLoadedTex(tex: Texture<*>, texData: ImageData, backend: RenderBackendVk): LoadedTextureVk {
             return synchronized(loadedTextures) {
                 loadedTextures.values.removeIf { it.isReleased }
                 loadedTextures.computeIfAbsent(texData) { k ->
-                    val loaded = LoadedTextureVk.fromTexData(sys, tex.props, k)
-                    sys.device.addDependingReleasable(loaded)
+                    val loaded = LoadedTextureVk.fromTexData(backend, tex.props, k)
+                    backend.device.addDependingReleasable(loaded)
                     loaded
                 }
             }

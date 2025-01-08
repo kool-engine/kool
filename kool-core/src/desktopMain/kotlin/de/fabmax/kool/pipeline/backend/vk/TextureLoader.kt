@@ -11,7 +11,7 @@ import org.lwjgl.vulkan.VK10.*
 import java.nio.ByteBuffer
 
 object TextureLoader {
-    fun createCubeTexture(sys: VkSystem, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVk {
+    fun createCubeTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVk {
         val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val imgConfig = Image.Config()
@@ -38,7 +38,7 @@ object TextureLoader {
         TODO()
     }
 
-    fun loadTextureCube(sys: VkSystem, props: TextureProps, cubeImg: ImageData) : LoadedTextureVk {
+    fun loadTextureCube(backend: RenderBackendVk, props: TextureProps, cubeImg: ImageData) : LoadedTextureVk {
         if (cubeImg !is ImageDataCube) {
             throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
         }
@@ -50,7 +50,7 @@ object TextureLoader {
         val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
-        val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
+        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
         stagingBuffer.mapped {
             // order: +x, -x, +y, -y, +z, -z
             put(reshape(dstFmt, cubeImg.right))
@@ -65,9 +65,9 @@ object TextureLoader {
             logW { "Mip-map generation for cube maps not yet implemented" }
         }
 
-        val tex = createCubeTexture(sys, props, width, height, dstFmt)
+        val tex = createCubeTexture(backend, props, width, height, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyCubeBufferToImage(sys, stagingBuffer, tex.textureImage, width, height)
+        copyCubeBufferToImage(backend, stagingBuffer, tex.textureImage, width, height)
         stagingBuffer.release()
 
         if (mipLevels > 1) {
@@ -79,7 +79,7 @@ object TextureLoader {
         return tex
     }
 
-    fun createTexture(sys: VkSystem, props: TextureProps, width: Int, height: Int, depth: Int, format: TexFormat = props.format) : LoadedTextureVk {
+    fun createTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, depth: Int, format: TexFormat = props.format) : LoadedTextureVk {
         val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val imgConfig = Image.Config()
@@ -103,12 +103,12 @@ object TextureLoader {
         TODO()
     }
 
-    fun loadTexture1d(sys: VkSystem, props: TextureProps, img: ImageData) : LoadedTextureVk {
+    fun loadTexture1d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVk {
         // 1d texture internally uses a 2d texture
-        return loadTexture2d(sys, props, img)
+        return loadTexture2d(backend, props, img)
     }
 
-    fun loadTexture2d(sys: VkSystem, props: TextureProps, img: ImageData) : LoadedTextureVk {
+    fun loadTexture2d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVk {
         img as ImageData2d
         val width = img.width
         val height = img.height
@@ -119,25 +119,25 @@ object TextureLoader {
         val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
-        val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
+        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
         stagingBuffer.mapped {
             put(buf)
         }
 
-        val tex = createTexture(sys, props, width, height, 1, dstFmt)
+        val tex = createTexture(backend, props, width, height, 1, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyBufferToImage(sys, stagingBuffer, tex.textureImage, width, height, 1)
+        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, 1)
         stagingBuffer.release()
 
         if (mipLevels > 1) {
-            tex.textureImage.generateMipmaps(sys)
+            tex.textureImage.generateMipmaps()
         } else {
             tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         }
         return tex
     }
 
-    fun loadTexture3d(sys: VkSystem, props: TextureProps, img: ImageData) : LoadedTextureVk {
+    fun loadTexture3d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVk {
         if (img !is BufferedImageData3d) {
             throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
         }
@@ -157,18 +157,18 @@ object TextureLoader {
         val mipLevels = if (noMipMappingProps.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
-        val stagingBuffer = Buffer(sys, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
+        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
         stagingBuffer.mapped {
             put(buf)
         }
 
-        val tex = createTexture(sys, noMipMappingProps, width, height, depth, dstFmt)
+        val tex = createTexture(backend, noMipMappingProps, width, height, depth, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyBufferToImage(sys, stagingBuffer, tex.textureImage, width, height, depth)
+        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, depth)
         stagingBuffer.release()
 
         if (mipLevels > 1) {
-            tex.textureImage.generateMipmaps(sys)
+            tex.textureImage.generateMipmaps()
         } else {
             tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         }
@@ -190,7 +190,7 @@ object TextureLoader {
         }
     }
 
-    private fun createSampler(sys: VkSystem, props: TextureProps, texImage: Image): Long {
+    private fun createSampler(backend: RenderBackendVk, props: TextureProps, texImage: Image): Long {
         memStack {
             val samplerSettings = props.defaultSamplerSettings
             val isAnisotropy = props.generateMipMaps &&
@@ -219,7 +219,7 @@ object TextureLoader {
                 maxLod(texImage.mipLevels.toFloat())
             }
             val ptr = mallocLong(1)
-            check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
+            check(vkCreateSampler(backend.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
             return ptr[0]
         }
     }
@@ -321,8 +321,8 @@ object TextureLoader {
         this[byteI+1] = (f16bits shr 8).toUByte()
     }
 
-    private fun copyBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int, depth: Int) {
-        sys.transferCommandPool.singleShotCommands { commandBuffer ->
+    private fun copyBufferToImage(backend: RenderBackendVk, buffer: Buffer, image: Image, width: Int, height: Int, depth: Int) {
+        backend.transferCommandPool.singleShotCommands { commandBuffer ->
             val region = callocVkBufferImageCopyN(1) {
                 imageSubresource {
                     it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -337,8 +337,8 @@ object TextureLoader {
         }
     }
 
-    private fun copyCubeBufferToImage(sys: VkSystem, buffer: Buffer, image: Image, width: Int, height: Int) {
-        sys.transferCommandPool.singleShotCommands { commandBuffer ->
+    private fun copyCubeBufferToImage(backend: RenderBackendVk, buffer: Buffer, image: Image, width: Int, height: Int) {
+        backend.transferCommandPool.singleShotCommands { commandBuffer ->
             val regions = callocVkBufferImageCopyN(6) {
                 for (face in 0..5) {
                     this[face].apply {

@@ -1,26 +1,104 @@
-package de.fabmax.kool.pipeline.backend.vk.pipeline
+package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
+import de.fabmax.kool.pipeline.ComputePipeline
+import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.DrawPipeline
+import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.util.LongHash
+import de.fabmax.kool.util.Uint8BufferImpl
+import de.fabmax.kool.util.toBuffer
 
-class PipelineManager(val backendVk: RenderBackendVk) {
+class PipelineManager(val backend: RenderBackendVk) {
 
+    private val vertexShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
+    private val fragmentShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
+    private val computeShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
 
-//    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState<*>): Boolean {
-//        val gpuPipeline = cmd.pipeline.getWgpuPipeline()
-//        cmd.pipeline.update(cmd)
-//        return gpuPipeline.bind(cmd, passEncoderState)
-//    }
-//
-//    private fun DrawPipeline.getVkPipeline(): WgpuDrawPipeline {
-//        (pipelineBackend as WgpuDrawPipeline?)?.let { return it }
-//
-//        val vertexShader = getOrCreateVertexShaderModule(this)
-//        val fragmentShader = getOrCreateFragmentShaderModule(this)
-//        return WgpuDrawPipeline(this, vertexShader, fragmentShader, backend).also { pipelineBackend = it }
-//    }
+    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState<*>): Boolean {
+        val vkPipeline = cmd.pipeline.getVkPipeline()
+        cmd.pipeline.update(cmd)
+        return vkPipeline.bind(cmd, passEncoderState)
+    }
 
+    private fun DrawPipeline.getVkPipeline(): VkDrawPipeline {
+        (pipelineBackend as VkDrawPipeline?)?.let { return it }
 
+        val vertexShader = getOrCreateVertexShaderModule(this)
+        val fragmentShader = getOrCreateFragmentShaderModule(this)
+        return VkDrawPipeline(this, vertexShader, fragmentShader, backend).also { pipelineBackend = it }
+    }
 
+    private fun getOrCreateVertexShaderModule(pipeline: DrawPipeline): VkShaderModule {
+        val shaderCode = pipeline.shaderCode as ShaderCodeVk
+        val stage = checkNotNull(shaderCode.vertexStage) { "Draw pipeline has no vertex stage!" }
+        return getOrCreateShaderModule(pipeline, stage, vertexShaderModules)
+    }
+
+    private fun getOrCreateFragmentShaderModule(pipeline: DrawPipeline): VkShaderModule {
+        val shaderCode = pipeline.shaderCode as ShaderCodeVk
+        val stage = checkNotNull(shaderCode.fragmentStage) { "Draw pipeline has no fragment stage!" }
+        return getOrCreateShaderModule(pipeline, stage, fragmentShaderModules)
+    }
+
+    private fun getOrCreateComputeShaderModule(pipeline: ComputePipeline): VkShaderModule {
+        val shaderCode = pipeline.shaderCode as ShaderCodeVk
+        val stage = checkNotNull(shaderCode.computeStage) { "Compute pipeline has no compute stage!" }
+        return getOrCreateShaderModule(pipeline, stage, fragmentShaderModules)
+    }
+
+    private fun getOrCreateShaderModule(
+        pipeline: PipelineBase,
+        stage: ShaderStage,
+        cache: MutableMap<LongHash, UsedShaderModule>
+    ): VkShaderModule {
+        val usedModule = cache.getOrPut(stage.hash) {
+            val buf = (stage.code.toBuffer() as Uint8BufferImpl).getRawBuffer()
+            val shaderModule = backend.device.createShaderModule { pCode(buf) }
+            UsedShaderModule(shaderModule)
+        }
+        usedModule.users += pipeline
+        return usedModule.shaderModule
+    }
+
+    internal fun removeDrawPipeline(pipeline: VkDrawPipeline) {
+        pipeline.drawPipeline.pipelineBackend = null
+        val shaderCode = pipeline.drawPipeline.shaderCode as ShaderCodeVk
+
+        shaderCode.vertexStage?.let { vertexStage ->
+            vertexShaderModules[vertexStage.hash]?.let { usedModule ->
+                usedModule.users -= pipeline.drawPipeline
+                if (usedModule.users.isEmpty()) {
+                    vertexShaderModules.remove(vertexStage.hash)
+                }
+            }
+        }
+        shaderCode.fragmentStage?.let { fragmentStage ->
+            fragmentShaderModules[fragmentStage.hash]?.let { usedModule ->
+                usedModule.users -= pipeline.drawPipeline
+                if (usedModule.users.isEmpty()) {
+                    fragmentShaderModules.remove(fragmentStage.hash)
+                }
+            }
+        }
+    }
+
+    internal fun removeComputePipeline(pipeline: VkComputePipeline) {
+        pipeline.computePipeline.pipelineBackend = null
+        val shaderCode = pipeline.computePipeline.shaderCode as ShaderCodeVk
+
+        shaderCode.computeStage?.let { computeStage ->
+            computeShaderModules[computeStage.hash]?.let { usedModule ->
+                usedModule.users -= pipeline.computePipeline
+                if (usedModule.users.isEmpty()) {
+                    computeShaderModules.remove(computeStage.hash)
+                }
+            }
+        }
+    }
+
+    private class UsedShaderModule(val shaderModule: VkShaderModule) {
+        val users = mutableSetOf<PipelineBase>()
+    }
 
 
 

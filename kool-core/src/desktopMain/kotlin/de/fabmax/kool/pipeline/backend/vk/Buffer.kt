@@ -10,7 +10,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocUsage: Int) : BaseReleasable() {
+class Buffer(val backend: RenderBackendVk, val bufferSize: Long, val usage: Int, val allocUsage: Int) : BaseReleasable() {
     val vkBuffer: Long
     val allocation: Long
 
@@ -27,7 +27,7 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
 
             val pBuffer = mallocLong(1)
             val pAllocation = mallocPointer(1)
-            checkVk(sys.memManager.createBuffer(bufferInfo, allocUsage, pBuffer, pAllocation))
+            checkVk(backend.memManager.createBuffer(bufferInfo, allocUsage, pBuffer, pAllocation))
             vkBuffer = pBuffer[0]
             allocation = pAllocation[0]
 
@@ -36,25 +36,25 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
     }
 
     inline fun mapped(block: ByteBuffer.() -> Unit) {
-        val addr = sys.memManager.mapMemory(allocation)
+        val addr = backend.memManager.mapMemory(allocation)
         MemoryUtil.memByteBuffer(addr, bufferSize.toInt()).block()
-        sys.memManager.unmapMemory(allocation)
+        backend.memManager.unmapMemory(allocation)
     }
 
     inline fun mappedFloats(block: FloatBuffer.() -> Unit) {
-        val addr = sys.memManager.mapMemory(allocation)
+        val addr = backend.memManager.mapMemory(allocation)
         MemoryUtil.memFloatBuffer(addr, bufferSize.toInt()).block()
-        sys.memManager.unmapMemory(allocation)
+        backend.memManager.unmapMemory(allocation)
     }
 
     inline fun mappedInts(block: IntBuffer.() -> Unit) {
-        val addr = sys.memManager.mapMemory(allocation)
+        val addr = backend.memManager.mapMemory(allocation)
         MemoryUtil.memIntBuffer(addr, bufferSize.toInt()).block()
-        sys.memManager.unmapMemory(allocation)
+        backend.memManager.unmapMemory(allocation)
     }
 
     fun put(srcBuffer: Buffer) {
-        sys.transferCommandPool.singleShotCommands { commandBuffer ->
+        backend.transferCommandPool.singleShotCommands { commandBuffer ->
             val copyRegion = callocVkBufferCopyN(1) { size(srcBuffer.bufferSize) }
             vkCmdCopyBuffer(commandBuffer, srcBuffer.vkBuffer, vkBuffer, copyRegion)
         }
@@ -62,7 +62,7 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
 
     override fun release() {
         super.release()
-        sys.memManager.freeBuffer(vkBuffer, allocation)
+        backend.memManager.freeBuffer(vkBuffer, allocation)
         allocInfo.deleted()
     }
 }

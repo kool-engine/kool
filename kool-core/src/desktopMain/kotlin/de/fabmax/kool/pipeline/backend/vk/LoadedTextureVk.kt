@@ -6,7 +6,7 @@ import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.vkDestroySampler
 import java.util.concurrent.atomic.AtomicLong
 
-class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage: Image,
+class LoadedTextureVk(val backend: RenderBackendVk, val format: TexFormat, val textureImage: Image,
                       val textureImageView: ImageView, val sampler: Long,
                       private val isSharedRes: Boolean = false) : BaseReleasable(), GpuTexture {
 
@@ -36,11 +36,11 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
         super.release()
         if (!isReleased) {
             // fixme: kinda hacky... also might be depending resource of something else than sys.device
-            launchDelayed(sys.swapChain?.nImages ?: 3) {
-                cancelReleaseWith(sys.device)
+            launchDelayed(backend.swapchain.nImages) {
+                cancelReleaseWith(backend.device)
 
                 if (!isSharedRes) {
-                    vkDestroySampler(sys.device.vkDevice, sampler, null)
+                    vkDestroySampler(backend.device.vkDevice, sampler, null)
                     // todo: TextureInfo.deleted()
                 }
                 logD { "Destroyed texture" }
@@ -51,12 +51,12 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
     companion object {
         private val nextTexId = AtomicLong(1L)
 
-        fun fromTexData(sys: VkSystem, texProps: TextureProps, data: ImageData): LoadedTextureVk {
+        fun fromTexData(backend: RenderBackendVk, texProps: TextureProps, data: ImageData): LoadedTextureVk {
             return when(data) {
-                is BufferedImageData1d -> TextureLoader.loadTexture1d(sys, texProps, data)
-                is BufferedImageData2d -> TextureLoader.loadTexture2d(sys, texProps, data)
-                is BufferedImageData3d -> TextureLoader.loadTexture3d(sys, texProps, data)
-                is ImageDataCube -> TextureLoader.loadTextureCube(sys, texProps, data)
+                is BufferedImageData1d -> TextureLoader.loadTexture1d(backend, texProps, data)
+                is BufferedImageData2d -> TextureLoader.loadTexture2d(backend, texProps, data)
+                is BufferedImageData3d -> TextureLoader.loadTexture3d(backend, texProps, data)
+                is ImageDataCube -> TextureLoader.loadTextureCube(backend, texProps, data)
                 else -> TODO("texture data not implemented: ${data::class.java.name}")
             }
         }

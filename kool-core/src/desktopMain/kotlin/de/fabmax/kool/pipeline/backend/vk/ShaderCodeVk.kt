@@ -2,12 +2,15 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.ComputeShaderCode
 import de.fabmax.kool.pipeline.ShaderCode
-import de.fabmax.kool.pipeline.backend.vk.pipeline.ShaderStage
 import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10.*
 
 class ShaderCodeVk(val stages: List<ShaderStage>): ShaderCode, ComputeShaderCode {
+
+    val vertexStage: ShaderStage? = stages.find { it.stage == VK_SHADER_STAGE_VERTEX_BIT }
+    val fragmentStage: ShaderStage? = stages.find { it.stage == VK_SHADER_STAGE_FRAGMENT_BIT }
+    val computeStage: ShaderStage? = stages.find { it.stage == VK_SHADER_STAGE_COMPUTE_BIT }
 
     override val hash: LongHash = LongHash {
         stages.forEach { this += it.hash }

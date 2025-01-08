@@ -81,6 +81,15 @@ internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: 
     }
 }
 
+internal inline fun Device.createDescriptorSetLayout(stack: MemoryStack? = null, block: VkDescriptorSetLayoutCreateInfo.() -> Unit): VkDescriptorSetLayout {
+    memStack(stack) {
+        val createInfo = callocVkDescriptorSetLayoutCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreateDescriptorSetLayout(vkDevice, createInfo, null, handle)) { "Failed creating descriptor set layout: $it" }
+        return VkDescriptorSetLayout(handle[0])
+    }
+}
+
 internal inline fun Device.createFramebuffer(stack: MemoryStack? = null, block: VkFramebufferCreateInfo.() -> Unit): VkFramebuffer {
     memStack(stack) {
         val createInfo = callocVkFramebufferCreateInfo(block)
@@ -108,6 +117,15 @@ internal inline fun Device.createImageView(stack: MemoryStack? = null, block: Vk
     }
 }
 
+internal fun Device.createPipelineLayout(stack: MemoryStack? = null, block: VkPipelineLayoutCreateInfo.() -> Unit): VkPipelineLayout {
+    memStack(stack) {
+        val createInfo = callocVkPipelineLayoutCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreatePipelineLayout(vkDevice, createInfo, null, handle)) { "Failed creating pipeline layout: $it" }
+        return VkPipelineLayout(handle[0])
+    }
+}
+
 internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRenderPassCreateInfo.() -> Unit): VkRenderPass {
     memStack(stack) {
         val createInfo = callocVkRenderPassCreateInfo(block)
@@ -126,6 +144,15 @@ internal fun Device.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
     }
 }
 
+internal fun Device.createShaderModule(stack: MemoryStack? = null, block: VkShaderModuleCreateInfo.() -> Unit): VkShaderModule {
+    memStack(stack) {
+        val createInfo = callocVkShaderModuleCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreateShaderModule(vkDevice, createInfo, null, handle)) { "Failed creating shader module: $it" }
+        return VkShaderModule(handle[0])
+    }
+}
+
 internal fun Device.createSwapchain(stack: MemoryStack? = null, block: VkSwapchainCreateInfoKHR.() -> Unit): VkSwapchain {
     memStack(stack) {
         val createInfo = callocVkSwapchainCreateInfoKHR(block)
@@ -139,6 +166,10 @@ internal fun Device.destroyCommandPool(commandPool: VkCommandPool) {
     vkDestroyCommandPool(vkDevice, commandPool.handle, null)
 }
 
+internal fun Device.destroyDescriptorSetLayout(descriptorSetLayout: VkDescriptorSetLayout) {
+    vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout.handle, null)
+}
+
 internal fun Device.destroyFramebuffer(framebuffer: VkFramebuffer) {
     vkDestroyFramebuffer(vkDevice, framebuffer.handle, null)
 }
@@ -149,6 +180,10 @@ internal fun Device.destroyFence(fence: VkFence) {
 
 internal fun Device.destroyImageView(imageView: VkImageView) {
     vkDestroyImageView(vkDevice, imageView.handle, null)
+}
+
+internal fun Device.destroyPipelineLayout(pipelineLayout: VkPipelineLayout) {
+    vkDestroyPipelineLayout(vkDevice, pipelineLayout.handle, null)
 }
 
 internal fun Device.destroyRenderPass(renderPass: VkRenderPass) {

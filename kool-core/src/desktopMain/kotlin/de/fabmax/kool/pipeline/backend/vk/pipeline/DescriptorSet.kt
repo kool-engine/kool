@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.vk.VkSystem
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorSetAllocateInfo
 import de.fabmax.kool.pipeline.backend.vk.callocVkWriteDescriptorSetN
 import de.fabmax.kool.util.memStack
@@ -38,7 +38,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                 }
 
                 val sets = mallocLong(graphicsPipeline.nImages)
-                check(vkAllocateDescriptorSets(graphicsPipeline.sys.device.vkDevice, allocInfo, sets) == VK_SUCCESS)
+                check(vkAllocateDescriptorSets(graphicsPipeline.backend.device.vkDevice, allocInfo, sets) == VK_SUCCESS)
                 for (i in 0 until graphicsPipeline.nImages) {
                     descriptorSets += sets[i]
                 }
@@ -95,7 +95,7 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
                         descObj.setDescriptorSet(this@memStack, this[descIdx], descriptorSets[imageIdx], cmd)
                     }
                 }
-                vkUpdateDescriptorSets(graphicsPipeline.sys.device.vkDevice, descriptorWrite, null)
+                vkUpdateDescriptorSets(graphicsPipeline.backend.device.vkDevice, descriptorWrite, null)
             }
         }
     }
@@ -105,13 +105,13 @@ class DescriptorSet(val graphicsPipeline: GraphicsPipeline) {
         objects[imageIdx].forEach { it.isDescriptorSetUpdateRequired = false }
     }
 
-    fun updateDescriptors(cmd: DrawCommand, imageIndex: Int, sys: VkSystem): Boolean {
+    fun updateDescriptors(cmd: DrawCommand, imageIndex: Int, backend: RenderBackendVk): Boolean {
         val descs = objects[imageIndex]
         allValid = true
         var updateRequired = false
         for (i in descs.indices) {
             val desc = descs[i]
-            desc.update(cmd, sys)
+            desc.update(cmd, backend)
             allValid = allValid && desc.isValid
             updateRequired = updateRequired || desc.isDescriptorSetUpdateRequired
         }
