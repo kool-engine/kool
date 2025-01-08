@@ -1,17 +1,14 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logI
-import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
 import kotlin.math.min
 
-class PhysicalDevice(val backend: RenderBackendVk) : VkResource() {
+class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 
     val vkPhysicalDevice: VkPhysicalDevice
     val queueFamiliyIndices: QueueFamilyIndices
@@ -64,7 +61,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : VkResource() {
             features = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
         )
 
-        backend.instance.addDependingResource(this)
+        releaseWith(backend.instance)
     }
 
     private fun MemoryStack.selectPhysicalDevice(devices: List<PhysicalDeviceWrapper>): PhysicalDeviceWrapper {
@@ -121,7 +118,8 @@ class PhysicalDevice(val backend: RenderBackendVk) : VkResource() {
         error("Failed to find suitable memory type")
     }
 
-    override fun freeResources() {
+    override fun release() {
+        super.release()
         vkDeviceProperties.free()
         vkDeviceFeatures.free()
     }
@@ -274,11 +272,11 @@ class PhysicalDevice(val backend: RenderBackendVk) : VkResource() {
     }
 }
 
-inline fun PhysicalDevice.createLogicalDevice(stack: MemoryStack? = null, block: VkDeviceCreateInfo.() -> Unit): VkDevice {
+internal inline fun PhysicalDevice.createDevice(stack: MemoryStack? = null, block: VkDeviceCreateInfo.() -> Unit): VkDevice {
     memStack(stack) {
         val createInfo = callocVkDeviceCreateInfo(block)
         val handle = pointers(0)
-        checkVk(vkCreateDevice(vkPhysicalDevice, createInfo, null, handle)) { "Failed creating framebuffer" }
+        checkVk(vkCreateDevice(vkPhysicalDevice, createInfo, null, handle)) { "Failed creating device: $it" }
         return VkDevice(handle[0], vkPhysicalDevice, createInfo)
     }
 }

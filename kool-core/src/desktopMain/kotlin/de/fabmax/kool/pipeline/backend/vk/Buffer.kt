@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryUtil
@@ -9,7 +10,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocUsage: Int) : VkResource() {
+class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocUsage: Int) : BaseReleasable() {
     val vkBuffer: Long
     val allocation: Long
 
@@ -59,7 +60,8 @@ class Buffer(val sys: VkSystem, val bufferSize: Long, val usage: Int, val allocU
         }
     }
 
-    override fun freeResources() {
+    override fun release() {
+        super.release()
         sys.memManager.freeBuffer(vkBuffer, allocation)
         allocInfo.deleted()
     }

@@ -9,14 +9,15 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
+import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.pipeline.backend.vk.pipeline.PipelineManager
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.memStack
 import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
-import org.lwjgl.system.MemoryStack
-import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
 import org.lwjgl.vulkan.VkCommandBuffer
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
@@ -40,9 +41,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     val instance: Instance
     val physicalDevice: PhysicalDevice
-    val logicalDevice: LogicalDevice
+    val device: Device
     val memManager: MemoryManager
-    val screenRenderPass: OnScreenRenderPassVk
+    val pipelineManager: PipelineManager
+    val screenRenderPass: ScreenRenderPassVk
     val commandPool: CommandPool
     val commandBuffers: List<VkCommandBuffer>
 
@@ -72,13 +74,14 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         glfwWindow.createSurface()
 
         physicalDevice = PhysicalDevice(this)
-        logicalDevice = LogicalDevice(this)
+        device = Device(this)
         apiName = "Vulkan ${physicalDevice.apiVersion}"
         deviceName = physicalDevice.deviceName
 
         memManager = MemoryManager(this)
-        screenRenderPass = OnScreenRenderPassVk(this)
-        commandPool = CommandPool(this, logicalDevice.graphicsQueue)
+        pipelineManager = PipelineManager(this)
+        screenRenderPass = ScreenRenderPassVk(this)
+        commandPool = CommandPool(this, device.graphicsQueue)
         commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
 
         swapchain = Swapchain(this)
@@ -135,27 +138,49 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun renderFrame(ctx: KoolContext) {
-//        vkSystem.renderLoop.drawFrame()
+        BackendStats.resetPerFrameCounts()
 
         memStack {
             var imgOk = swapchain.acquireNextImage()
             if (imgOk) {
                 val commandBuffer = commandBuffers[swapchain.currentFrameIndex]
-                vkResetCommandBuffer(commandBuffer, 0)
-                recordCommandBuffer(commandBuffer, swapchain.nextSwapImage)
+                commandBuffer.reset()
+                commandBuffer.begin(this) { }
 
-                val waitSemas = longs(swapchain.imageAvailableSema.handle)
-                val signalSemas = longs(swapchain.renderFinishedSema.handle)
+                //ctx.backgroundScene.renderOffscreenPasses(commandBuffer)
 
-                val submitInfo = callocVkSubmitInfo {
-                    pWaitSemaphores(waitSemas)
-                    waitSemaphoreCount(1)
+                //recordCommandBuffer(commandBuffer, swapchain.nextSwapImage)
+                for (i in ctx.scenes.indices) {
+                    val scene = ctx.scenes[i]
+                    if (scene.isVisible) {
+                        //val t = Time.precisionTime
+                        //scene.renderOffscreenPasses(commandBuffer)
+                        screenRenderPass.renderScene(scene.mainRenderPass, commandBuffer, this)
+                        //scene.sceneDrawTime = Time.precisionTime - t
+                    }
+                }
+
+//        if (gpuReadbacks.isNotEmpty()) {
+//            // copy all buffers requested for readback to temporary buffers using the current command encoder
+//            copyReadbacks(encoder)
+//        }
+//        timestampQuery.resolve(encoder)
+//        device.queue.submit(arrayOf(encoder.finish()))
+
+                commandBuffer.end()
+                device.graphicsQueue.submit(swapchain.inFlightFence, this) {
                     pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
                     pCommandBuffers(pointers(commandBuffer))
-                    pSignalSemaphores(signalSemas)
+                    pSignalSemaphores(longs(swapchain.renderFinishedSema.handle))
+                    pWaitSemaphores(longs(swapchain.imageAvailableSema.handle))
+                    waitSemaphoreCount(1)
                 }
-                check(vkQueueSubmit(logicalDevice.graphicsQueue, submitInfo, swapchain.inFlightFence.handle) == VK_SUCCESS)
 
+//        timestampQuery.readTimestamps()
+//        if (gpuReadbacks.isNotEmpty()) {
+//            // after encoder is finished and submitted, temp buffers can be mapped for readback
+//            mapReadbacks()
+//        }
                 imgOk = swapchain.presentNextImage(this)
             }
             if (!imgOk || windowResized) {
@@ -165,53 +190,39 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun MemoryStack.recordCommandBuffer(commandBuffer: VkCommandBuffer, imageIndex: Int) {
-        val beginInfo = callocVkCommandBufferBeginInfo { }
-        check(vkBeginCommandBuffer(commandBuffer, beginInfo) == VK_SUCCESS)
-
-        val renderPassInfo = callocVkRenderPassBeginInfo {
-            renderPass(screenRenderPass.vkRenderPass.handle)
-            framebuffer(swapchain.framebuffers[imageIndex].handle)
-            renderArea().extent(swapchain.extent)
-
-            val clearValues = callocVkClearValueN(2) {
-                this[0].apply {
-                    setColor(MdColor.PINK)
-                }
-                this[1].apply {
-                    depthStencil {
-                        it.depth(1f)
-                        it.stencil(0)
-                    }
-                }
+    private fun Scene.renderOffscreenPasses(commandBuffer: VkCommandBuffer) {
+        for (i in sortedOffscreenPasses.indices) {
+            val pass = sortedOffscreenPasses[i]
+            if (pass.isEnabled) {
+                pass.render(commandBuffer)
             }
-            pClearValues(clearValues)
         }
-
-        vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
-
-        // todo vkCmdBindPipeline()...
-
-        val viewport = callocVkViewportN(1) {
-            x(0f)
-            y(0f)
-            width(swapchain.extent.width().toFloat())
-            height(swapchain.extent.height().toFloat())
-            minDepth(0f)
-            maxDepth(1f)
-        }
-        vkCmdSetViewport(commandBuffer, 0, viewport)
-
-        val scissor = callocVkRect2DN(1) {
-            extent(swapchain.extent)
-        }
-        vkCmdSetScissor(commandBuffer, 0, scissor)
-
-        // todo vkCmdDraw()
-
-        vkCmdEndRenderPass(commandBuffer)
-        check(vkEndCommandBuffer(commandBuffer) == VK_SUCCESS)
     }
+
+    private fun OffscreenRenderPass.render(commandBuffer: VkCommandBuffer) {
+        when (this) {
+            is OffscreenRenderPass2d -> draw(commandBuffer)
+            is OffscreenRenderPassCube -> draw(commandBuffer)
+            is OffscreenRenderPass2dPingPong -> draw(commandBuffer)
+            is ComputeRenderPass -> dispatch(commandBuffer)
+            else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
+        }
+    }
+
+    private fun OffscreenRenderPass2dPingPong.draw(commandBuffer: VkCommandBuffer) {
+        for (i in 0 until pingPongPasses) {
+            onDrawPing?.invoke(i)
+            ping.draw(commandBuffer)
+            onDrawPong?.invoke(i)
+            pong.draw(commandBuffer)
+        }
+    }
+
+    private fun OffscreenRenderPass2d.draw(commandBuffer: VkCommandBuffer): Unit = TODO() //(impl as WgpuOffscreenRenderPass2d).draw(encoder)
+
+    private fun OffscreenRenderPassCube.draw(commandBuffer: VkCommandBuffer): Unit = TODO() //(impl as WgpuOffscreenRenderPassCube).draw(encoder)
+
+    private fun ComputeRenderPass.dispatch(commandBuffer: VkCommandBuffer): Unit = TODO() //(impl as WgpuComputePass).dispatch(encoder)
 
     private fun recreateSwapchain() {
         // Theoretically it might be possible for the swapchain image format to change (e.g. because the window
@@ -220,14 +231,14 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         // However, currently, image format is more or less hardcoded to 8-bit SRGB in PhysicalDevice, so no need
         // for all the fuzz.
 
-        logicalDevice.waitForIdle()
-        swapchain.destroy()
+        device.waitForIdle()
+        swapchain.release()
         swapchain = Swapchain(this)
     }
 
     override fun cleanup(ctx: KoolContext) {
-        logicalDevice.waitForIdle()
-        instance.destroy()
+        device.waitForIdle()
+        instance.release()
     }
 
 //    private inner class KoolVkScene: VkScene {

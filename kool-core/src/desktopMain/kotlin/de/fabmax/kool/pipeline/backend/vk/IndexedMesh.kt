@@ -2,12 +2,11 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.util.memStack
-import de.fabmax.kool.util.useRaw
+import de.fabmax.kool.util.*
 import org.lwjgl.util.vma.Vma.*
 import org.lwjgl.vulkan.VK10.*
 
-class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
+class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : BaseReleasable() {
 
     val numVertices = mesh.geometry.numVertices
     val numIndices = mesh.geometry.indices.position
@@ -20,9 +19,9 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
         private set
 
     init {
-        addDependingResource(vertexBuffer)
-        addDependingResource(indexBuffer)
-        vertexBufferI?.let { addDependingResource(it) }
+        vertexBuffer.releaseWith(this)
+        indexBuffer.releaseWith(this)
+        vertexBufferI?.let { it.releaseWith(this) }
 
         mesh.instances?.let { recreateInstanceBuffer(it) }
     }
@@ -43,8 +42,8 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
 
     private fun recreateInstanceBuffer(instances: MeshInstanceList) {
         instanceBuffer?.let {
-            removeDependingResource(it.buffer)
-            it.buffer.destroy()
+            it.buffer.cancelReleaseWith(this)
+            it.buffer.release()
         }
 
         memStack {
@@ -68,7 +67,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
             val allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
             val buffer = Buffer(sys, bufferSize, usage, allocUsage)
             buffer.put(stagingBuffer)
-            stagingBuffer.destroy()
+            stagingBuffer.release()
             return buffer
         }
     }
@@ -87,7 +86,7 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
                 val allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
                 val buffer = Buffer(sys, bufferSize, usage, allocUsage)
                 buffer.put(stagingBuffer)
-                stagingBuffer.destroy()
+                stagingBuffer.release()
                 return buffer
             }
         } else {
@@ -108,14 +107,14 @@ class IndexedMesh(val sys: VkSystem, val mesh: Mesh) : VkResource() {
             val allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
             val buffer = Buffer(sys, bufferSize, usage, allocUsage)
             buffer.put(stagingBuffer)
-            stagingBuffer.destroy()
+            stagingBuffer.release()
             return buffer
         }
     }
 
-    override fun freeResources() {
+//    override fun freeResources() {
         //logD { "Destroyed IndexedMesh" }
-    }
+//    }
 
     class InstanceBuffer(val buffer: Buffer, val maxInsts: Int)
 }

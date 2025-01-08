@@ -1,23 +1,23 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.backend.vk.pipeline.PipelineManager
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.BaseReleasable
 
-class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjgl3Context) : VkResource() {
+@Deprecated("to be removed")
+class VkSystem(val setup: VkSetup = VkSetup(), val ctx: Lwjgl3Context) : BaseReleasable() {
 
     val window: GlfwVkWindow = TODO()
 
     val instance: Instance
     val physicalDevice: PhysicalDevice
-    val logicalDevice: LogicalDevice
+    val device: Device
     val memManager: MemoryManager
-    val pipelineManager = PipelineManager(this)
+    //val pipelineManager = PipelineManager(this)
 
     val commandPool: CommandPool
     val transferCommandPool: CommandPool
 
-    val renderLoop: RenderLoop
+    //val renderLoop: RenderLoop
 
     var swapChain: Swapchain? = null
 
@@ -46,8 +46,8 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjg
 //    }
 
     fun run() {
-        renderLoop.run()
-        destroy()
+//        renderLoop.run()
+//        destroy()
     }
 
     fun recreateSwapChain() {
@@ -70,9 +70,5 @@ class VkSystem(val setup: VkSetup = VkSetup(), val scene: VkScene, val ctx: Lwjg
 //            pipelineManager.onSwapchainCreated(it)
 //            scene.onSwapChainCreated(it)
 //        }
-    }
-
-    override fun freeResources() {
-        logD { "Destroyed VkSystem" }
     }
 }

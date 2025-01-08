@@ -68,7 +68,7 @@ object TextureLoader {
         val tex = createCubeTexture(sys, props, width, height, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
         copyCubeBufferToImage(sys, stagingBuffer, tex.textureImage, width, height)
-        stagingBuffer.destroy()
+        stagingBuffer.release()
 
         if (mipLevels > 1) {
             logE { "Mipmap generation for cube maps not yet supported" }
@@ -127,7 +127,7 @@ object TextureLoader {
         val tex = createTexture(sys, props, width, height, 1, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
         copyBufferToImage(sys, stagingBuffer, tex.textureImage, width, height, 1)
-        stagingBuffer.destroy()
+        stagingBuffer.release()
 
         if (mipLevels > 1) {
             tex.textureImage.generateMipmaps(sys)
@@ -165,7 +165,7 @@ object TextureLoader {
         val tex = createTexture(sys, noMipMappingProps, width, height, depth, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
         copyBufferToImage(sys, stagingBuffer, tex.textureImage, width, height, depth)
-        stagingBuffer.destroy()
+        stagingBuffer.release()
 
         if (mipLevels > 1) {
             tex.textureImage.generateMipmaps(sys)
@@ -219,7 +219,7 @@ object TextureLoader {
                 maxLod(texImage.mipLevels.toFloat())
             }
             val ptr = mallocLong(1)
-            check(vkCreateSampler(sys.logicalDevice.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
+            check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
             return ptr[0]
         }
     }

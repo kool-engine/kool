@@ -4,8 +4,10 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.releaseWith
 import org.lwjgl.glfw.GLFW.glfwDestroyWindow
 import org.lwjgl.glfw.GLFW.glfwTerminate
 import org.lwjgl.glfw.GLFWVulkan
@@ -40,7 +42,7 @@ class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindo
         fun onResize(newWidth: Int, newHeight: Int)
     }
 
-    inner class Surface : VkResource() {
+    inner class Surface : BaseReleasable() {
         var surfaceHandle = 0L
             private set
 
@@ -50,11 +52,12 @@ class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindo
                 checkVk(GLFWVulkan.glfwCreateWindowSurface(backend.instance.vkInstance, windowPtr, null, lp))
                 surfaceHandle = lp[0]
             }
-            backend.instance.addDependingResource(this)
+            releaseWith(backend.instance)
             logD { "Created surface" }
         }
 
-        override fun freeResources() {
+        override fun release() {
+            super.release()
             KHRSurface.vkDestroySurfaceKHR(backend.instance.vkInstance, surfaceHandle, null)
             logD { "Destroyed surface" }
 

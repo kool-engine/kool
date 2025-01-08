@@ -5,10 +5,6 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Struct
 import org.lwjgl.system.StructBuffer
 import org.lwjgl.vulkan.*
-import org.lwjgl.vulkan.EXTDebugUtils.VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT
-import org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_PRESENT_INFO_KHR
-import org.lwjgl.vulkan.KHRSwapchain.VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR
-import org.lwjgl.vulkan.VK10.*
 import java.nio.IntBuffer
 import java.nio.LongBuffer
 
@@ -39,97 +35,97 @@ inline fun <T: StructBuffer<S, T>, S: Struct<S>> MemoryStack.allocStructBufferIt
 
 inline fun MemoryStack.callocVkApplicationInfo(block: VkApplicationInfo.() -> Unit): VkApplicationInfo =
     allocStruct(VkApplicationInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_APPLICATION_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkBufferCreateInfo(block: VkBufferCreateInfo.() -> Unit): VkBufferCreateInfo =
     allocStruct(VkBufferCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkCommandBufferAllocateInfo(block: VkCommandBufferAllocateInfo.() -> Unit): VkCommandBufferAllocateInfo =
     allocStruct(VkCommandBufferAllocateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkCommandBufferBeginInfo(block: VkCommandBufferBeginInfo.() -> Unit): VkCommandBufferBeginInfo =
     allocStruct(VkCommandBufferBeginInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkCommandPoolCreateInfo(block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPoolCreateInfo =
     allocStruct(VkCommandPoolCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkDebugUtilsMessengerCreateInfoEXT(block: VkDebugUtilsMessengerCreateInfoEXT.() -> Unit): VkDebugUtilsMessengerCreateInfoEXT =
     allocStruct(VkDebugUtilsMessengerCreateInfoEXT::calloc) {
-        sType(VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkDescriptorPoolCreateInfo(block: VkDescriptorPoolCreateInfo.() -> Unit): VkDescriptorPoolCreateInfo =
     allocStruct(VkDescriptorPoolCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkDescriptorSetAllocateInfo(block: VkDescriptorSetAllocateInfo.() -> Unit): VkDescriptorSetAllocateInfo =
     allocStruct(VkDescriptorSetAllocateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkDescriptorSetLayoutCreateInfo(block: VkDescriptorSetLayoutCreateInfo.() -> Unit): VkDescriptorSetLayoutCreateInfo =
     allocStruct(VkDescriptorSetLayoutCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkDeviceCreateInfo(block: VkDeviceCreateInfo.() -> Unit): VkDeviceCreateInfo =
     allocStruct(VkDeviceCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkFenceCreateInfo(block: VkFenceCreateInfo.() -> Unit): VkFenceCreateInfo =
     allocStruct( VkFenceCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_FENCE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkFramebufferCreateInfo(block: VkFramebufferCreateInfo.() -> Unit): VkFramebufferCreateInfo =
     allocStruct(VkFramebufferCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkImageCreateInfo(block: VkImageCreateInfo.() -> Unit): VkImageCreateInfo =
     allocStruct(VkImageCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkImageViewCreateInfo(block: VkImageViewCreateInfo.() -> Unit): VkImageViewCreateInfo =
     allocStruct(VkImageViewCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkInstanceCreateInfo(block: VkInstanceCreateInfo.() -> Unit): VkInstanceCreateInfo =
     allocStruct(VkInstanceCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkMemoryAllocateInfo(block: VkMemoryAllocateInfo.() -> Unit): VkMemoryAllocateInfo =
     allocStruct(VkMemoryAllocateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO)
+        `sType$Default`()
         block()
     }
 
@@ -138,103 +134,103 @@ inline fun MemoryStack.callocVkPhysicalDeviceFeatures(block: VkPhysicalDeviceFea
 
 inline fun MemoryStack.callocVkPipelineColorBlendStateCreateInfo(block: VkPipelineColorBlendStateCreateInfo.() -> Unit): VkPipelineColorBlendStateCreateInfo =
     allocStruct(VkPipelineColorBlendStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineDepthStencilStateCreateInfo(block: VkPipelineDepthStencilStateCreateInfo.() -> Unit): VkPipelineDepthStencilStateCreateInfo =
     allocStruct(VkPipelineDepthStencilStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineDynamicStateCreateInfo(block: VkPipelineDynamicStateCreateInfo.() -> Unit): VkPipelineDynamicStateCreateInfo =
     allocStruct(VkPipelineDynamicStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineInputAssemblyStateCreateInfo(block: VkPipelineInputAssemblyStateCreateInfo.() -> Unit): VkPipelineInputAssemblyStateCreateInfo =
     allocStruct(VkPipelineInputAssemblyStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineLayoutCreateInfo(block: VkPipelineLayoutCreateInfo.() -> Unit): VkPipelineLayoutCreateInfo =
     allocStruct(VkPipelineLayoutCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineMultisampleStateCreateInfo(block: VkPipelineMultisampleStateCreateInfo.() -> Unit): VkPipelineMultisampleStateCreateInfo =
     allocStruct(VkPipelineMultisampleStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineRasterizationStateCreateInfo(block: VkPipelineRasterizationStateCreateInfo.() -> Unit): VkPipelineRasterizationStateCreateInfo =
     allocStruct(VkPipelineRasterizationStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineVertexInputStateCreateInfo(block: VkPipelineVertexInputStateCreateInfo.() -> Unit): VkPipelineVertexInputStateCreateInfo =
     allocStruct(VkPipelineVertexInputStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPipelineViewportStateCreateInfo(block: VkPipelineViewportStateCreateInfo.() -> Unit): VkPipelineViewportStateCreateInfo =
     allocStruct(VkPipelineViewportStateCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkPresentInfoKHR(block: VkPresentInfoKHR.() -> Unit): VkPresentInfoKHR =
     allocStruct(VkPresentInfoKHR::calloc) {
-        sType(VK_STRUCTURE_TYPE_PRESENT_INFO_KHR)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkRenderPassBeginInfo(block: VkRenderPassBeginInfo.() -> Unit): VkRenderPassBeginInfo =
     allocStruct(VkRenderPassBeginInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkRenderPassCreateInfo(block: VkRenderPassCreateInfo.() -> Unit): VkRenderPassCreateInfo =
     allocStruct(VkRenderPassCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkSamplerCreateInfo(block: VkSamplerCreateInfo.() -> Unit): VkSamplerCreateInfo =
     allocStruct(VkSamplerCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkSemaphoreCreateInfo(block: VkSemaphoreCreateInfo.() -> Unit): VkSemaphoreCreateInfo =
     allocStruct(VkSemaphoreCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkShaderModuleCreateInfo(block: VkShaderModuleCreateInfo.() -> Unit): VkShaderModuleCreateInfo =
     allocStruct(VkShaderModuleCreateInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkSubmitInfo(block: VkSubmitInfo.() -> Unit): VkSubmitInfo =
     allocStruct(VkSubmitInfo::calloc) {
-        sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
+        `sType$Default`()
         block()
     }
 
 inline fun MemoryStack.callocVkSwapchainCreateInfoKHR(block: VkSwapchainCreateInfoKHR.() -> Unit): VkSwapchainCreateInfoKHR =
     allocStruct(VkSwapchainCreateInfoKHR::calloc) {
-        sType(VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR)
+        `sType$Default`()
         block()
     }
 
@@ -268,12 +264,12 @@ inline fun MemoryStack.callocVkDescriptorSetLayoutBindingN(n: Int, block: VkDesc
 
 inline fun MemoryStack.callocVkDeviceQueueCreateInfoN(n: Int, block: VkDeviceQueueCreateInfo.Buffer.() -> Unit): VkDeviceQueueCreateInfo.Buffer =
     allocStructBufferItems(n, VkDeviceQueueCreateInfo::calloc, block) {
-        get(it).apply { sType(VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO) }
+        get(it).apply { `sType$Default`() }
     }
 
 inline fun MemoryStack.callocVkGraphicsPipelineCreateInfoN(n: Int, block: VkGraphicsPipelineCreateInfo.Buffer.() -> Unit): VkGraphicsPipelineCreateInfo.Buffer =
     allocStructBufferItems(n, VkGraphicsPipelineCreateInfo::calloc, block) {
-        get(it).apply { sType(VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO) }
+        get(it).apply { `sType$Default`() }
     }
 
 inline fun MemoryStack.callocVkImageBlitN(n: Int, block: VkImageBlit.Buffer.() -> Unit): VkImageBlit.Buffer =
@@ -284,7 +280,7 @@ inline fun MemoryStack.callocVkImageCopyN(n: Int, block: VkImageCopy.Buffer.() -
 
 inline fun MemoryStack.callocVkImageMemoryBarrierN(n: Int, block: VkImageMemoryBarrier.Buffer.() -> Unit): VkImageMemoryBarrier.Buffer =
     allocStructBufferItems(n, VkImageMemoryBarrier::calloc, block) {
-        get(it).apply { sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER) }
+        get(it).apply { `sType$Default`() }
     }
 
 inline fun MemoryStack.callocVkPipelineColorBlendAttachmentStateN(n: Int, block: VkPipelineColorBlendAttachmentState.Buffer.() -> Unit): VkPipelineColorBlendAttachmentState.Buffer =
@@ -292,7 +288,7 @@ inline fun MemoryStack.callocVkPipelineColorBlendAttachmentStateN(n: Int, block:
 
 inline fun MemoryStack.callocVkPipelineShaderStageCreateInfoN(n: Int, block: VkPipelineShaderStageCreateInfo.Buffer.() -> Unit): VkPipelineShaderStageCreateInfo.Buffer =
     allocStructBufferItems(n, VkPipelineShaderStageCreateInfo::calloc, block) {
-        get(it).apply { sType(VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO) }
+        get(it).apply { `sType$Default`() }
     }
 
 inline fun MemoryStack.callocVkPushConstantRangeN(n: Int, block: VkPushConstantRange.Buffer.() -> Unit): VkPushConstantRange.Buffer =
@@ -303,7 +299,7 @@ inline fun MemoryStack.callocVkRect2DN(n: Int, block: VkRect2D.Buffer.() -> Unit
 
 inline fun MemoryStack.callocVkSubmitInfoN(n: Int, block: VkSubmitInfo.Buffer.() -> Unit): VkSubmitInfo.Buffer =
     allocStructBufferItems(n, VkSubmitInfo::calloc, block) {
-        get(it).apply { sType(VK_STRUCTURE_TYPE_SUBMIT_INFO) }
+        get(it).apply { `sType$Default`() }
     }
 
 inline fun MemoryStack.callocVkSubpassDependencyN(n: Int, block: VkSubpassDependency.Buffer.() -> Unit): VkSubpassDependency.Buffer =
@@ -323,7 +319,7 @@ inline fun MemoryStack.callocVkViewportN(n: Int, block: VkViewport.Buffer.() -> 
 
 inline fun MemoryStack.callocVkWriteDescriptorSetN(n: Int, block: VkWriteDescriptorSet.Buffer.() -> Unit): VkWriteDescriptorSet.Buffer =
     allocStructBufferItems(n, VkWriteDescriptorSet::calloc, block) {
-        get(it).apply { sType(VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET) }
+        get(it).apply { `sType$Default`() }
     }
 
 inline fun <T> MemoryStack.enumerateBuffer(createBuffer: (Int) -> T, block: (IntBuffer, T?) -> Unit): T {

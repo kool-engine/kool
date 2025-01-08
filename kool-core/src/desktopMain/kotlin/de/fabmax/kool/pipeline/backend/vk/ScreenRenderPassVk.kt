@@ -1,12 +1,17 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.releaseWith
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
 
-class OnScreenRenderPassVk(backend: RenderBackendVk) :
-    RenderPassVk(backend, 0, 0, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
+class ScreenRenderPassVk(backend: RenderBackendVk) :
+    RenderPassVk<Scene.SceneRenderPass>(backend, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
 {
     override val vkRenderPass: VkRenderPass
 
@@ -74,15 +79,46 @@ class OnScreenRenderPassVk(backend: RenderBackendVk) :
                 //dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
             }
 
-            vkRenderPass = logicalDevice.createRenderPass {
+            vkRenderPass = device.createRenderPass {
                 pAttachments(attachments)
                 pSubpasses(subpass)
                 pDependencies(dependency)
             }
         }
 
-        backend.logicalDevice.addDependingResource(this)
-        logD { "Created render pass" }
+        releaseWith(backend.device)
+        logD { "Created screen render pass" }
+    }
+
+    fun renderScene(scenePass: Scene.SceneRenderPass, commandBuffer: VkCommandBuffer, stack: MemoryStack) {
+        stack.apply {
+            val renderPassInfo = callocVkRenderPassBeginInfo {
+                renderPass(vkRenderPass.handle)
+
+                val swapchain = backend.swapchain
+                framebuffer(swapchain.framebuffers[swapchain.nextSwapImage].handle)
+                renderArea().extent(swapchain.extent)
+
+                val clearValues = callocVkClearValueN(2) {
+                    this[0].setColor(scenePass.clearColor ?: Color.BLACK)
+                    this[1].depthStencil {
+                        it.depth(1f)
+                        it.stencil(0)
+                    }
+                }
+                pClearValues(clearValues)
+            }
+
+            vkCmdBeginRenderPass(commandBuffer, renderPassInfo, VK_SUBPASS_CONTENTS_INLINE)
+            render(scenePass, commandBuffer, stack)
+            vkCmdEndRenderPass(commandBuffer)
+        }
+    }
+
+    override fun release() {
+        super.release()
+        device.destroyRenderPass(vkRenderPass)
+        logD { "Destroyed render pass" }
     }
 
 //    fun blitFrom(src: VkOffscreenPass2d, commandBuffer: VkCommandBuffer, mipLevel: Int) {
@@ -124,9 +160,4 @@ class OnScreenRenderPassVk(backend: RenderBackendVk) :
 //            swapChain.colorImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 //        }
 //    }
-
-    override fun freeResources() {
-        logicalDevice.destroyRenderPass(vkRenderPass)
-        logD { "Destroyed render pass" }
-    }
 }

@@ -9,7 +9,7 @@ import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
 
-class Instance(val backend: RenderBackendVk, appName: String) : VkResource() {
+class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable() {
 
     val vkInstance: VkInstance
     private var debugMessenger = 0L
@@ -50,10 +50,11 @@ class Instance(val backend: RenderBackendVk, appName: String) : VkResource() {
             }
         }
 
-        logD { "Created instance" }
+        logD { "Created Vulkan instance" }
     }
 
-    override fun freeResources() {
+    override fun release() {
+        super.release()
         if (debugMessenger != 0L) {
             EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, null)
         }

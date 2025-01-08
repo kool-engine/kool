@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
@@ -8,7 +9,7 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkFormatProperties
 import kotlin.math.max
 
-class Image(val backend: RenderBackendVk, config: Config) : VkResource() {
+class Image(val backend: RenderBackendVk, config: Config) : BaseReleasable() {
     val width = config.width
     val height = config.height
     val depth = config.depth
@@ -231,7 +232,8 @@ class Image(val backend: RenderBackendVk, config: Config) : VkResource() {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT
     }
 
-    override fun freeResources() {
+    override fun release() {
+        super.release()
         backend.memManager.freeImage(vkImage)
     }
 

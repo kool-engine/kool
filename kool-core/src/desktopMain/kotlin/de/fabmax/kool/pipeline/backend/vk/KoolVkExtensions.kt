@@ -1,10 +1,12 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Color
+import org.lwjgl.system.MemoryStack
+import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkClearValue
 
 fun ShaderStage.bitValue(): Int {
     return when (this) {
@@ -76,6 +78,12 @@ val TexFormat.vkBytesPerPx: Int
         TexFormat.RGBA_U32 -> 16
     }
 
+val CullMethod.vkCullMode: Int get() = when (this) {
+    CullMethod.CULL_BACK_FACES -> VK_CULL_MODE_BACK_BIT
+    CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
+    CullMethod.NO_CULLING -> VK_CULL_MODE_NONE
+}
+
 fun VkClearValue.setColor(color: Color) {
     color {
         it.float32(0, color.r)
@@ -83,4 +91,22 @@ fun VkClearValue.setColor(color: Color) {
         it.float32(2, color.b)
         it.float32(3, color.a)
     }
+}
+
+fun VkCommandBuffer.reset(flags: Int = 0) {
+    check(vkResetCommandBuffer(this, flags) == VK_SUCCESS)
+}
+
+inline fun VkCommandBuffer.begin(stack: MemoryStack, block: VkCommandBufferBeginInfo.() -> Unit) {
+    val beginInfo = stack.callocVkCommandBufferBeginInfo(block)
+    check(vkBeginCommandBuffer(this, beginInfo) == VK_SUCCESS)
+}
+
+fun VkCommandBuffer.end() {
+    check(vkEndCommandBuffer(this) == VK_SUCCESS)
+}
+
+inline fun VkQueue.submit(fence: VkFence, stack: MemoryStack, block: VkSubmitInfo.() -> Unit) {
+    val submitInfo = stack.callocVkSubmitInfo(block)
+    check(vkQueueSubmit(this, submitInfo, fence.handle) == VK_SUCCESS)
 }

@@ -1,18 +1,19 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.util.BaseReleasable
 import org.lwjgl.vulkan.VK10.VK_IMAGE_VIEW_TYPE_2D
 
 class ImageView(
-    val logicalDevice: LogicalDevice,
+    val device: Device,
     image: VkImage,
     format: Int,
     aspectMask: Int,
     mipLevels: Int,
     viewType: Int,
     layerCount: Int
-) : VkResource() {
+) : BaseReleasable() {
 
-    val vkImageView: VkImageView = logicalDevice.createImageView {
+    val vkImageView: VkImageView = device.createImageView {
         image(image.handle)
         viewType(viewType)
         format(format)
@@ -25,15 +26,16 @@ class ImageView(
         }
     }
 
-    override fun freeResources() {
-        logicalDevice.destroyImageView(vkImageView)
+    override fun release() {
+        super.release()
+        device.destroyImageView(vkImageView)
     }
 
     companion object {
-        fun imageView2d(logicalDevice: LogicalDevice, image: Image, aspectMask: Int): ImageView {
+        fun imageView2d(device: Device, image: Image, aspectMask: Int): ImageView {
             require(image.depth == 1)
             return ImageView(
-                logicalDevice,
+                device,
                 image.vkImage,
                 image.format,
                 aspectMask,

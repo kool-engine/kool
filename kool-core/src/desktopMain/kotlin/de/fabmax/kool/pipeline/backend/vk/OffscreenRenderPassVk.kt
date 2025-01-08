@@ -1,20 +1,20 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.util.*
 import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
 class OffscreenRenderPassVk(
     sys: VkSystem,
-    maxWidth: Int,
-    maxHeight: Int,
+    val maxWidth: Int,
+    val maxHeight: Int,
     val colorAttachments: ColorAttachments,
     val isExtColorAttachments: Boolean,
     val depthAttachment: DepthAttachment,
     val isExtDepthAttachments: Boolean,
     val isMultiSampled: Boolean
-) : RenderPassVk(sys.backend, maxWidth, maxHeight, colorAttachments.colorFormats) {
+) : RenderPassVk<OffscreenRenderPass>(sys.backend, colorAttachments.colorFormats) {
 
     constructor(sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
                 colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
@@ -59,30 +59,31 @@ class OffscreenRenderPassVk(
     val frameBuffer: Long
 
     init {
-        triFrontDirection = VK_FRONT_FACE_CLOCKWISE
+        //triFrontDirection = VK_FRONT_FACE_CLOCKWISE
 
         vkRenderPass = createRenderPass()
         frameBuffer = createFrameBuffer(vkRenderPass, imageViews, depthImageView)
 
         if (!isExtColorAttachments) {
-            addDependingResource(colorAttachments)
+            colorAttachments.releaseWith(this)
         }
         if (!isExtDepthAttachments) {
-            addDependingResource(depthAttachment)
+            depthAttachment.releaseWith(this)
         }
-        sys.logicalDevice.addDependingResource(this)
+        releaseWith(sys.device)
 
         logD { "Created offscreen render pass" }
     }
 
     fun destroyNow() {
-        backend.logicalDevice.removeDependingResource(this)
-        destroy()
+        cancelReleaseWith(backend.device)
+        release()
     }
 
-    override fun freeResources() {
-        vkDestroyRenderPass(logicalDevice.vkDevice, vkRenderPass.handle, null)
-        vkDestroyFramebuffer(logicalDevice.vkDevice, frameBuffer, null)
+    override fun release() {
+        super.release()
+        vkDestroyRenderPass(device.vkDevice, vkRenderPass.handle, null)
+        vkDestroyFramebuffer(device.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
     }
 
@@ -100,7 +101,7 @@ class OffscreenRenderPassVk(
                 height(maxHeight)
                 layers(1)
             }
-            return checkCreateLongPtr { vkCreateFramebuffer(logicalDevice.vkDevice, framebufferInfo, null, it) }
+            return checkCreateLongPtr { vkCreateFramebuffer(device.vkDevice, framebufferInfo, null, it) }
         }
     }
 
@@ -193,7 +194,7 @@ class OffscreenRenderPassVk(
                         .dependencyFlags(VK_DEPENDENCY_BY_REGION_BIT)
             }
 
-            return logicalDevice.createRenderPass {
+            return device.createRenderPass {
                 sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)
                 pAttachments(attachments)
                 pSubpasses(subpass)
@@ -202,13 +203,13 @@ class OffscreenRenderPassVk(
         }
     }
 
-    abstract class ColorAttachments(val isCopied: Boolean, val colorFormats: List<Int>) : VkResource() {
+    abstract class ColorAttachments(val isCopied: Boolean, val colorFormats: List<Int>) : BaseReleasable() {
         abstract val colorImages: List<Image>
         abstract val colorImageViews: List<ImageView>
         abstract val colorSamplers: List<Long>
     }
 
-    abstract class DepthAttachment(val isCopied: Boolean) : VkResource() {
+    abstract class DepthAttachment(val isCopied: Boolean) : BaseReleasable() {
         abstract val depthImage: Image
         abstract val depthImageView: ImageView
         abstract val depthSampler: Long
@@ -218,8 +219,6 @@ class OffscreenRenderPassVk(
         override val colorImages: List<Image> = images
         override val colorImageViews: List<ImageView> = imageViews
         override val colorSamplers: List<Long> = samplers
-
-        override fun freeResources() { }
     }
 
     class CreatedColorAttachments(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean,
@@ -248,19 +247,20 @@ class OffscreenRenderPassVk(
 
                 val img = Image(sys.backend, fbImageCfg)
                 mImages += img
-                mImageViews += ImageView.imageView2d(sys.backend.logicalDevice, img, VK_IMAGE_ASPECT_COLOR_BIT)
+                mImageViews += ImageView.imageView2d(sys.backend.device, img, VK_IMAGE_ASPECT_COLOR_BIT)
                 mSamplers += createSampler(sys, filterMethod, false, VK_COMPARE_OP_NEVER)
             }
             colorImages = mImages
             colorImageViews = mImageViews
             colorSamplers = mSamplers
 
-            colorImages.forEach { addDependingResource(it) }
-            colorImageViews.forEach { addDependingResource(it) }
+            colorImages.forEach { it.releaseWith(this) }
+            colorImageViews.forEach { it.releaseWith(this) }
         }
 
-        override fun freeResources() {
-            colorSamplers.forEach { vkDestroySampler(sys.logicalDevice.vkDevice, it, null) }
+        override fun release() {
+            super.release()
+            colorSamplers.forEach { vkDestroySampler(sys.device.vkDevice, it, null) }
         }
     }
 
@@ -268,8 +268,6 @@ class OffscreenRenderPassVk(
         override val depthImage: Image = image
         override val depthImageView: ImageView = imageView
         override val depthSampler: Long = sampler
-
-        override fun freeResources() { }
     }
 
     class CreatedDepthAttachment(val sys: VkSystem, maxWidth: Int, maxHeight: Int, isCopied: Boolean,
@@ -292,15 +290,16 @@ class OffscreenRenderPassVk(
                 }
             }
             depthImage = Image(sys.backend, depthImageCfg)
-            depthImageView = ImageView.imageView2d(sys.backend.logicalDevice, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
+            depthImageView = ImageView.imageView2d(sys.backend.device, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
             depthSampler = createSampler(sys, filterMethod, true, depthCompareOp)
 
-            addDependingResource(depthImage)
-            addDependingResource(depthImageView)
+            depthImage.releaseWith(this)
+            depthImageView.releaseWith(this)
         }
 
-        override fun freeResources() {
-            vkDestroySampler(sys.logicalDevice.vkDevice, depthSampler, null)
+        override fun release() {
+            super.release()
+            vkDestroySampler(sys.device.vkDevice, depthSampler, null)
         }
     }
 
@@ -327,7 +326,7 @@ class OffscreenRenderPassVk(
                     }
                 }
                 val lp = mallocLong(1)
-                check(vkCreateSampler(sys.logicalDevice.vkDevice, samplerInfo, null, lp) == VK_SUCCESS)
+                check(vkCreateSampler(sys.device.vkDevice, samplerInfo, null, lp) == VK_SUCCESS)
                 return lp[0]
             }
         }

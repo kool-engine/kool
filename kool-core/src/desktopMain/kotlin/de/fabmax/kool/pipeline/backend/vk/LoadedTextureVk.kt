@@ -2,14 +2,13 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.GpuTexture
-import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.vkDestroySampler
 import java.util.concurrent.atomic.AtomicLong
 
 class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage: Image,
                       val textureImageView: ImageView, val sampler: Long,
-                      private val isSharedRes: Boolean = false) : VkResource(), GpuTexture {
+                      private val isSharedRes: Boolean = false) : BaseReleasable(), GpuTexture {
 
     val texId = nextTexId.getAndIncrement()
 
@@ -17,13 +16,10 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
     override var height = 0
     override var depth = 0
 
-    override val isReleased: Boolean
-        get() = isDestroyed
-
     init {
         if (!isSharedRes) {
-            addDependingResource(textureImage)
-            addDependingResource(textureImageView)
+            textureImage.releaseWith(this)
+            textureImageView.releaseWith(this)
 
             // todo: add TextureInfo() to BackendStats
         }
@@ -36,20 +32,18 @@ class LoadedTextureVk(val sys: VkSystem, val format: TexFormat, val textureImage
         this.depth = depth
     }
 
-    override fun freeResources() {
-        if (!isSharedRes) {
-            vkDestroySampler(sys.logicalDevice.vkDevice, sampler, null)
-            // todo: TextureInfo.deleted()
-        }
-        logD { "Destroyed texture" }
-    }
-
     override fun release() {
-        if (!isDestroyed) {
+        super.release()
+        if (!isReleased) {
             // fixme: kinda hacky... also might be depending resource of something else than sys.device
             launchDelayed(sys.swapChain?.nImages ?: 3) {
-                sys.logicalDevice.removeDependingResource(this)
-                destroy()
+                cancelReleaseWith(sys.device)
+
+                if (!isSharedRes) {
+                    vkDestroySampler(sys.device.vkDevice, sampler, null)
+                    // todo: TextureInfo.deleted()
+                }
+                logD { "Destroyed texture" }
             }
         }
     }

@@ -1,14 +1,16 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.releaseWith
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSwapchain.vkCreateSwapchainKHR
 import org.lwjgl.vulkan.KHRSwapchain.vkDestroySwapchainKHR
 import org.lwjgl.vulkan.VK10.*
 
-class LogicalDevice(val backend: RenderBackendVk) : VkResource() {
+class Device(val backend: RenderBackendVk) : BaseReleasable() {
 
     private val physicalDevice: PhysicalDevice get() = backend.physicalDevice
 
@@ -34,7 +36,7 @@ class LogicalDevice(val backend: RenderBackendVk) : VkResource() {
                 samplerAnisotropy(physicalDevice.vkDeviceFeatures.samplerAnisotropy())
             }
 
-            vkDevice = physicalDevice.createLogicalDevice {
+            vkDevice = physicalDevice.createDevice {
                 pQueueCreateInfos(queueCreateInfo)
                 pEnabledFeatures(features)
 
@@ -49,7 +51,7 @@ class LogicalDevice(val backend: RenderBackendVk) : VkResource() {
             computeQueue = physicalDevice.queueFamiliyIndices.computeFamily?.let { getQueue(it, 0) }
         }
 
-        backend.instance.addDependingResource(this)
+        releaseWith(backend.instance)
         logD { "Created logical device" }
     }
 
@@ -57,7 +59,8 @@ class LogicalDevice(val backend: RenderBackendVk) : VkResource() {
         vkDeviceWaitIdle(vkDevice)
     }
 
-    override fun freeResources() {
+    override fun release() {
+        super.release()
         vkDestroyDevice(vkDevice, null)
         logD { "Destroyed logical device" }
     }
@@ -69,97 +72,97 @@ class LogicalDevice(val backend: RenderBackendVk) : VkResource() {
     }
 }
 
-inline fun LogicalDevice.createCommandPool(stack: MemoryStack? = null, block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPool {
+internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPool {
     memStack(stack) {
         val createInfo = callocVkCommandPoolCreateInfo(block)
         val handle = mallocLong(1)
-        checkVk(vkCreateCommandPool(vkDevice, createInfo, null, handle)) { "Failed creating command pool" }
+        checkVk(vkCreateCommandPool(vkDevice, createInfo, null, handle)) { "Failed creating command pool: $it" }
         return VkCommandPool(handle[0])
     }
 }
 
-inline fun LogicalDevice.createFramebuffer(stack: MemoryStack? = null, block: VkFramebufferCreateInfo.() -> Unit): VkFramebuffer {
+internal inline fun Device.createFramebuffer(stack: MemoryStack? = null, block: VkFramebufferCreateInfo.() -> Unit): VkFramebuffer {
     memStack(stack) {
         val createInfo = callocVkFramebufferCreateInfo(block)
         val handle = mallocLong(1)
-        checkVk(vkCreateFramebuffer(vkDevice, createInfo, null, handle)) { "Failed creating framebuffer" }
+        checkVk(vkCreateFramebuffer(vkDevice, createInfo, null, handle)) { "Failed creating framebuffer: $it" }
         return VkFramebuffer(handle[0])
     }
 }
 
-inline fun LogicalDevice.createFence(stack: MemoryStack? = null, block: VkFenceCreateInfo.() -> Unit): VkFence {
+internal inline fun Device.createFence(stack: MemoryStack? = null, block: VkFenceCreateInfo.() -> Unit): VkFence {
     memStack(stack) {
         val createInfo = callocVkFenceCreateInfo(block)
         val handle = mallocLong(1)
-        checkVk(vkCreateFence(vkDevice, createInfo, null, handle)) { "Failed creating fence" }
+        checkVk(vkCreateFence(vkDevice, createInfo, null, handle)) { "Failed creating fence: $it" }
         return VkFence(handle[0])
     }
 }
 
-inline fun LogicalDevice.createImageView(stack: MemoryStack? = null, block: VkImageViewCreateInfo.() -> Unit): VkImageView {
+internal inline fun Device.createImageView(stack: MemoryStack? = null, block: VkImageViewCreateInfo.() -> Unit): VkImageView {
     memStack(stack) {
         val createInfo = callocVkImageViewCreateInfo(block)
         val handle = mallocLong(1)
-        checkVk(vkCreateImageView(vkDevice, createInfo, null, handle)) { "Failed creating image view" }
+        checkVk(vkCreateImageView(vkDevice, createInfo, null, handle)) { "Failed creating image view: $it" }
         return VkImageView(handle[0])
     }
 }
 
-fun LogicalDevice.createRenderPass(stack: MemoryStack? = null, block: VkRenderPassCreateInfo.() -> Unit): VkRenderPass {
+internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRenderPassCreateInfo.() -> Unit): VkRenderPass {
     memStack(stack) {
         val createInfo = callocVkRenderPassCreateInfo(block)
         val handle = mallocLong(1)
-        checkVk(vkCreateRenderPass(vkDevice, createInfo, null, handle)) { "Failed creating render pass" }
+        checkVk(vkCreateRenderPass(vkDevice, createInfo, null, handle)) { "Failed creating render pass: $it" }
         return VkRenderPass(handle[0])
     }
 }
 
-fun LogicalDevice.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
+internal fun Device.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
     memStack(stack) {
         val createInfo = callocVkSemaphoreCreateInfo { }
         val handle = mallocLong(1)
-        checkVk(vkCreateSemaphore(vkDevice, createInfo, null, handle)) { "Failed creating semaphore" }
+        checkVk(vkCreateSemaphore(vkDevice, createInfo, null, handle)) { "Failed creating semaphore: $it" }
         return VkSemaphore(handle[0])
     }
 }
 
-fun LogicalDevice.createSwapchain(stack: MemoryStack? = null, block: VkSwapchainCreateInfoKHR.() -> Unit): VkSwapchain {
+internal fun Device.createSwapchain(stack: MemoryStack? = null, block: VkSwapchainCreateInfoKHR.() -> Unit): VkSwapchain {
     memStack(stack) {
         val createInfo = callocVkSwapchainCreateInfoKHR(block)
         val handle = mallocLong(1)
-        checkVk(vkCreateSwapchainKHR(vkDevice, createInfo, null, handle)) { "Failed creating swapchain" }
+        checkVk(vkCreateSwapchainKHR(vkDevice, createInfo, null, handle)) { "Failed creating swapchain: $it" }
         return VkSwapchain(handle[0])
     }
 }
 
-fun LogicalDevice.destroyCommandPool(commandPool: VkCommandPool) {
+internal fun Device.destroyCommandPool(commandPool: VkCommandPool) {
     vkDestroyCommandPool(vkDevice, commandPool.handle, null)
 }
 
-fun LogicalDevice.destroyFramebuffer(framebuffer: VkFramebuffer) {
+internal fun Device.destroyFramebuffer(framebuffer: VkFramebuffer) {
     vkDestroyFramebuffer(vkDevice, framebuffer.handle, null)
 }
 
-fun LogicalDevice.destroyFence(fence: VkFence) {
+internal fun Device.destroyFence(fence: VkFence) {
     vkDestroyFence(vkDevice, fence.handle, null)
 }
 
-fun LogicalDevice.destroyImageView(imageView: VkImageView) {
+internal fun Device.destroyImageView(imageView: VkImageView) {
     vkDestroyImageView(vkDevice, imageView.handle, null)
 }
 
-fun LogicalDevice.destroyRenderPass(renderPass: VkRenderPass) {
+internal fun Device.destroyRenderPass(renderPass: VkRenderPass) {
     vkDestroyRenderPass(vkDevice, renderPass.handle, null)
 }
 
-fun LogicalDevice.destroySemaphore(semaphore: VkSemaphore) {
+internal fun Device.destroySemaphore(semaphore: VkSemaphore) {
     vkDestroySemaphore(vkDevice, semaphore.handle, null)
 }
 
-fun LogicalDevice.destroySwapchain(swapchain: VkSwapchain) {
+internal fun Device.destroySwapchain(swapchain: VkSwapchain) {
     vkDestroySwapchainKHR(vkDevice, swapchain.handle, null)
 }
 
-fun LogicalDevice.resetCommandPool(commandPool: VkCommandPool, flags: Int = 0) {
+internal fun Device.resetCommandPool(commandPool: VkCommandPool, flags: Int = 0) {
     vkResetCommandPool(vkDevice, commandPool.handle, flags)
 }

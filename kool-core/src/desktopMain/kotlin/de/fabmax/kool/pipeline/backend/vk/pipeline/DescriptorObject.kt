@@ -6,7 +6,9 @@ import de.fabmax.kool.pipeline.backend.vk.VkSystem
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorBufferInfoN
 import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorImageInfoN
 import de.fabmax.kool.util.MixedBufferImpl
+import de.fabmax.kool.util.cancelReleaseWith
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.releaseWith
 import kotlinx.coroutines.Deferred
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.util.vma.Vma
@@ -36,7 +38,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
             usage,
             allocUsage
         ).also {
-            graphicsPipeline.addDependingResource(it)
+            it.releaseWith(graphicsPipeline)
         }
     }
 
@@ -66,8 +68,8 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     }
 
     override fun destroy(graphicsPipeline: GraphicsPipeline) {
-        graphicsPipeline.removeDependingResource(buffer)
-        buffer.destroy()
+        buffer.cancelReleaseWith(graphicsPipeline)
+        buffer.release()
     }
 }
 
@@ -186,10 +188,10 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
         private fun getLoadedTex(tex: Texture<*>, texData: ImageData, sys: VkSystem): LoadedTextureVk {
             return synchronized(loadedTextures) {
-                loadedTextures.values.removeIf { it.isDestroyed }
+                loadedTextures.values.removeIf { it.isReleased }
                 loadedTextures.computeIfAbsent(texData) { k ->
                     val loaded = LoadedTextureVk.fromTexData(sys, tex.props, k)
-                    sys.logicalDevice.addDependingResource(loaded)
+                    sys.device.addDependingReleasable(loaded)
                     loaded
                 }
             }
