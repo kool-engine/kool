@@ -8,6 +8,7 @@ object TextCaretNavigation {
     private fun Char.isLimitingChar() = this in LIMITING_CHARS
 
     fun startOfWord(text: String, caretPos: Int): Int {
+        if (text.isEmpty()) return 0
         var i = caretPos.clamp(0, text.lastIndex)
         while (i > 0 && !text[i].isLimitingChar()) i--
         if (text[i].isLimitingChar()) i++
@@ -15,6 +16,7 @@ object TextCaretNavigation {
     }
 
     fun endOfWord(text: String, caretPos: Int): Int {
+        if(text.isEmpty()) return 0
         var i = caretPos.clamp(0, text.lastIndex)
         while (i < text.length && !text[i].isLimitingChar()) i++
         return i

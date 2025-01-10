@@ -31,7 +31,11 @@ suspend fun GltfFile(data: Uint8Buffer, filePath: String, assetLoader: AssetLoad
                 val bufferUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
                 it.data = assetLoader.loadBlob(bufferUri).getOrThrow()
             }
-            m.images.filter { it.uri != null }.forEach { it.uri = "$modelBasePath/${it.uri}" }
+            m.images.filter { it.uri != null }.forEach {
+                val uri = it.uri!!
+                val imageUri = if (uri.startsWith("data:", true)) { uri } else { "$modelBasePath/$uri" }
+                it.uri = imageUri
+            }
             m.updateReferences()
         }
         Result.success(gltfFile)
