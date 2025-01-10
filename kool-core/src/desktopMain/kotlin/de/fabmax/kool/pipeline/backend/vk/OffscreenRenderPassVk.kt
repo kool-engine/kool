@@ -34,6 +34,7 @@ class OffscreenRenderPassVk(
             )
 
     override val vkRenderPass: VkRenderPass
+    override val numSamples: Int = 1
 
     override fun beginRenderPass(
         passEncoderState: RenderPassEncoderState<OffscreenRenderPass>,
@@ -115,7 +116,7 @@ class OffscreenRenderPassVk(
 
     private fun createRenderPass(): VkRenderPass {
         memStack {
-            val attachments = callocVkAttachmentDescriptionN(nColorAttachments + 1) {
+            val attachments = callocVkAttachmentDescriptionN(numColorAttachments + 1) {
                 val colorLoadOp = if (isExtColorAttachments) {
                     VK_ATTACHMENT_LOAD_OP_LOAD
                 } else {
@@ -146,7 +147,7 @@ class OffscreenRenderPassVk(
                         }
                     }
                 }
-                this[nColorAttachments].apply {
+                this[numColorAttachments].apply {
                     format(physicalDevice.depthFormat)
                     samples(samples)
                     loadOp(depthLoadOp)
@@ -163,8 +164,8 @@ class OffscreenRenderPassVk(
                 }
             }
 
-            val colorAttachmentRefs = callocVkAttachmentReferenceN(nColorAttachments) {
-                for (i in 0 until nColorAttachments) {
+            val colorAttachmentRefs = callocVkAttachmentReferenceN(numColorAttachments) {
+                for (i in 0 until numColorAttachments) {
                     this[i].apply {
                         attachment(i)
                         layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
@@ -172,13 +173,13 @@ class OffscreenRenderPassVk(
                 }
             }
             val depthAttachmentRef = callocVkAttachmentReferenceN(1) {
-                attachment(nColorAttachments)
+                attachment(numColorAttachments)
                 layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
             }
 
             val subpass = callocVkSubpassDescriptionN(1) {
                 pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
-                colorAttachmentCount(nColorAttachments)
+                colorAttachmentCount(numColorAttachments)
                 pColorAttachments(colorAttachmentRefs)
                 pDepthStencilAttachment(depthAttachmentRef[0])
             }

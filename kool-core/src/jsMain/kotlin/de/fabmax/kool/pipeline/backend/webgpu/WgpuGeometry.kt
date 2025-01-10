@@ -20,10 +20,10 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
 
     init {
         val geom = mesh.geometry
-        createdIndexBuffer = WgpuVertexBuffer(backend, "${mesh.name} index data", 4 * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
-        createdFloatBuffer = WgpuVertexBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices)
+        createdIndexBuffer = WgpuVertexBuffer(backend, "${mesh.name} index data", 4L * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
+        createdFloatBuffer = WgpuVertexBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices.toLong())
         createdIntBuffer = if (geom.byteStrideI == 0) null else {
-            WgpuVertexBuffer(backend, "${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices)
+            WgpuVertexBuffer(backend, "${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices.toLong())
         }
     }
 

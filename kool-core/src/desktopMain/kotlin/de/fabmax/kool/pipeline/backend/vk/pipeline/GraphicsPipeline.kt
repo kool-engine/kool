@@ -126,8 +126,8 @@ class GraphicsPipeline(val backend: RenderBackendVk, val koolRenderPass: RenderP
                 //minSampleShading(0.2f)
             }
 
-            val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.nColorAttachments) {
-                for (i in 0 until renderPassVk.nColorAttachments) {
+            val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.numColorAttachments) {
+                for (i in 0 until renderPassVk.numColorAttachments) {
                     this[i].apply {
                         colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
                         // pre-multiplied alpha

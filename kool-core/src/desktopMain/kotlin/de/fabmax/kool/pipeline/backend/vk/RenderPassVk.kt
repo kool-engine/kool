@@ -17,12 +17,8 @@ abstract class RenderPassVk<T: RenderPass>(
     private val passEncoderState = RenderPassEncoderState(this)
 
     abstract val vkRenderPass: VkRenderPass
-
-    val nColorAttachments: Int
-        get() = colorFormats.size
-
-    val texFormat: TexFormat
-        get() = getTexFormat(0)
+    abstract val numSamples: Int
+    val numColorAttachments: Int get() = colorFormats.size
 
     val physicalDevice: PhysicalDevice get() = backend.physicalDevice
     val device: Device get() = backend.device
@@ -115,7 +111,7 @@ abstract class RenderPassVk<T: RenderPass>(
             nextFrameCopy?.let { frameCopy ->
                 if (cmd.drawGroupId > frameCopy.drawGroupId) {
                     passEncoderState.end()
-//                    /copy(frameCopy, passEncoderState.encoder)
+//                    copy(frameCopy, passEncoderState.encoder)
                     passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
                     anySingleShots = anySingleShots || frameCopy.isSingleShot
                     nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
@@ -128,11 +124,13 @@ abstract class RenderPassVk<T: RenderPass>(
                 if (insts == null) {
 //                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices)
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
+                    vkCmdDrawIndexed(passEncoderState.commandBuffer, cmd.geometry.numIndices, 1, 0, 0, 0)
+                    //vkCmdDraw(passEncoderState.commandBuffer, 3, 1, 0, 0)
                 } else if (insts.numInstances > 0) {
 //                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
+                    TODO()
                 }
-                TODO("drawIndexed()")
             }
         }
 

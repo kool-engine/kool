@@ -273,6 +273,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
 
     private fun createTex(tex: Texture2d, iAttachment: Int, isColor: Boolean, rp: OffscreenRenderPassVk, backend: RenderBackendVk) {
         tex.apply {
+            val texFormat = rp.getTexFormat(0)
             if (isCopyResult) {
                 val vkTex = if (isColor) {
                     val props = parentPass.createColorTextureProps(iAttachment)
@@ -281,7 +282,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
                     resultImages[iAttachment] = cpTex.textureImage
                     cpTex
                 } else {
-                    LoadedTextureVk(backend, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
+                    LoadedTextureVk(backend, texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
                 vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
                 gpuTexture = vkTex
@@ -293,7 +294,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
                     resultImages[iAttachment] = rpTex.textureImage
                     rpTex
                 } else {
-                    LoadedTextureVk(backend, rp.texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
+                    LoadedTextureVk(backend, texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
                 vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
                 gpuTexture = vkTex

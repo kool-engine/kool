@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Color
@@ -82,6 +83,17 @@ val CullMethod.vkCullMode: Int get() = when (this) {
     CullMethod.CULL_BACK_FACES -> VK_CULL_MODE_BACK_BIT
     CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
     CullMethod.NO_CULLING -> VK_CULL_MODE_NONE
+}
+
+val DepthCompareOp.vkCompareOp: Int get() = when (this) {
+    DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
+    DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
+    DepthCompareOp.LESS -> VK_COMPARE_OP_GREATER
+    DepthCompareOp.LESS_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
+    DepthCompareOp.GREATER -> VK_COMPARE_OP_LESS
+    DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+    DepthCompareOp.EQUAL -> VK_COMPARE_OP_EQUAL
+    DepthCompareOp.NOT_EQUAL -> VK_COMPARE_OP_NOT_EQUAL
 }
 
 fun VkClearValue.setColor(color: Color) {

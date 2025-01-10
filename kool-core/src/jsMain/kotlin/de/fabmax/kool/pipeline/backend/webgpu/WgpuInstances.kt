@@ -10,7 +10,7 @@ class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendW
     private val device: GPUDevice get() = backend.device
 
     private val createdInstanceBuffer: WgpuVertexBuffer? = if (instances.instanceSizeF == 0) null else {
-        WgpuVertexBuffer(backend, "${mesh.name} instance data", instances.strideBytesF * instances.maxInstances)
+        WgpuVertexBuffer(backend, "${mesh.name} instance data", instances.strideBytesF * instances.maxInstances.toLong())
     }
     val instanceBuffer: GPUBuffer? get() = createdInstanceBuffer?.buffer?.buffer
 

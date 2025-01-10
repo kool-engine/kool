@@ -4,15 +4,20 @@ import de.fabmax.kool.pipeline.ComputePipeline
 import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.util.LongHash
-import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.toBuffer
+import de.fabmax.kool.util.*
 
-class PipelineManager(val backend: RenderBackendVk) {
+class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
 
     private val vertexShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
     private val fragmentShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
     private val computeShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
+
+    private val drawPipelines = mutableSetOf<VkDrawPipeline>()
+    private val computePipelines = mutableSetOf<VkComputePipeline>()
+
+    init {
+        releaseWith(backend.device)
+    }
 
     fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState<*>): Boolean {
         val vkPipeline = cmd.pipeline.getVkPipeline()
@@ -25,7 +30,10 @@ class PipelineManager(val backend: RenderBackendVk) {
 
         val vertexShader = getOrCreateVertexShaderModule(this)
         val fragmentShader = getOrCreateFragmentShaderModule(this)
-        return VkDrawPipeline(this, vertexShader, fragmentShader, backend).also { pipelineBackend = it }
+        val pipeline = VkDrawPipeline(this, vertexShader, fragmentShader, backend)
+        pipelineBackend = pipeline
+        drawPipelines += pipeline
+        return pipeline
     }
 
     private fun getOrCreateVertexShaderModule(pipeline: DrawPipeline): VkShaderModule {
@@ -69,6 +77,7 @@ class PipelineManager(val backend: RenderBackendVk) {
                 usedModule.users -= pipeline.drawPipeline
                 if (usedModule.users.isEmpty()) {
                     vertexShaderModules.remove(vertexStage.hash)
+                    backend.device.destroyShaderModule(usedModule.shaderModule)
                 }
             }
         }
@@ -77,6 +86,7 @@ class PipelineManager(val backend: RenderBackendVk) {
                 usedModule.users -= pipeline.drawPipeline
                 if (usedModule.users.isEmpty()) {
                     fragmentShaderModules.remove(fragmentStage.hash)
+                    backend.device.destroyShaderModule(usedModule.shaderModule)
                 }
             }
         }
@@ -91,9 +101,16 @@ class PipelineManager(val backend: RenderBackendVk) {
                 usedModule.users -= pipeline.computePipeline
                 if (usedModule.users.isEmpty()) {
                     computeShaderModules.remove(computeStage.hash)
+                    backend.device.destroyShaderModule(usedModule.shaderModule)
                 }
             }
         }
+    }
+
+    override fun release() {
+        super.release()
+        drawPipelines.toList().forEach { it.release() }
+        computePipelines.toList().forEach { it.release() }
     }
 
     private class UsedShaderModule(val shaderModule: VkShaderModule) {

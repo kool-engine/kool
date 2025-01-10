@@ -108,6 +108,17 @@ internal inline fun Device.createFence(stack: MemoryStack? = null, block: VkFenc
     }
 }
 
+internal fun Device.createGraphicsPipeline(stack: MemoryStack? = null, block: VkGraphicsPipelineCreateInfo.() -> Unit): VkGraphicsPipeline {
+    memStack(stack) {
+        val createInfo = callocVkGraphicsPipelineCreateInfoN(1) {
+            this[0].block()
+        }
+        val handle = mallocLong(1)
+        checkVk(vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, createInfo, null, handle)) { "Failed creating graphicsPipeline: $it" }
+        return VkGraphicsPipeline(handle[0])
+    }
+}
+
 internal inline fun Device.createImageView(stack: MemoryStack? = null, block: VkImageViewCreateInfo.() -> Unit): VkImageView {
     memStack(stack) {
         val createInfo = callocVkImageViewCreateInfo(block)
@@ -178,6 +189,10 @@ internal fun Device.destroyFence(fence: VkFence) {
     vkDestroyFence(vkDevice, fence.handle, null)
 }
 
+internal fun Device.destroyGraphicsPipeline(graphicsPipeline: VkGraphicsPipeline) {
+    vkDestroyPipeline(vkDevice, graphicsPipeline.handle, null)
+}
+
 internal fun Device.destroyImageView(imageView: VkImageView) {
     vkDestroyImageView(vkDevice, imageView.handle, null)
 }
@@ -188,6 +203,10 @@ internal fun Device.destroyPipelineLayout(pipelineLayout: VkPipelineLayout) {
 
 internal fun Device.destroyRenderPass(renderPass: VkRenderPass) {
     vkDestroyRenderPass(vkDevice, renderPass.handle, null)
+}
+
+internal fun Device.destroyShaderModule(shaderModule: VkShaderModule) {
+    vkDestroyShaderModule(vkDevice, shaderModule.handle, null)
 }
 
 internal fun Device.destroySemaphore(semaphore: VkSemaphore) {

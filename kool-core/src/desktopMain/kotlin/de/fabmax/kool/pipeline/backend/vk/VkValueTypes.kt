@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+data class VkBuffer(val handle: Long, val allocation: Long, val bufferSize: Long)
+
 @JvmInline
 value class VkCommandPool(val handle: Long)
 

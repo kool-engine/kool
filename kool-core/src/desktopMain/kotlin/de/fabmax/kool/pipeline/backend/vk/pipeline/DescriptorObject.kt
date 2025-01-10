@@ -45,7 +45,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
     override fun setDescriptorSet(stack: MemoryStack, vkWriteDescriptorSet: VkWriteDescriptorSet, dstSet: Long, cmd: DrawCommand) {
         stack.apply {
             val buffereInfo = callocVkDescriptorBufferInfoN(1) {
-                buffer(buffer.vkBuffer)
+                buffer(buffer.vkBuffer.handle)
                 offset(0L)
                 range(ubo.layout.size.toLong())
             }
@@ -62,9 +62,9 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 
     override fun update(cmd: DrawCommand, backend: RenderBackendVk) {
         val hostBuffer = cmd.pipeline.pipelineData.uniformBufferBindingData(binding).buffer as MixedBufferImpl
-        hostBuffer.useRaw { host ->
-            buffer.mapped { put(host) }
-        }
+//        hostBuffer.useRaw { host ->
+//            buffer.mapped { put(host) }
+//        }
     }
 
     override fun destroy(graphicsPipeline: GraphicsPipeline) {

@@ -16,10 +16,10 @@ sealed class WgpuPipeline(
     protected val device: GPUDevice get() = backend.device
 
     protected val locations = WgslLocations(pipeline.bindGroupLayouts, (pipeline as? DrawPipeline)?.vertexLayout)
-    private val bindGroupLayouts: List<GPUBindGroupLayout> = createBindGroupLayouts(pipeline)
-    protected val pipelineLayout: GPUPipelineLayout = pipeline.createPipelineLayout()
+    private val bindGroupLayouts: List<GPUBindGroupLayout> = createBindGroupLayouts()
+    protected val pipelineLayout: GPUPipelineLayout = createPipelineLayout()
 
-    private fun createBindGroupLayouts(pipeline: PipelineBase): List<GPUBindGroupLayout> {
+    private fun createBindGroupLayouts(): List<GPUBindGroupLayout> {
         val layouts = if (this is WgpuComputePipeline) {
             listOf(pipeline.bindGroupLayouts.pipelineScope)
         } else {
@@ -66,10 +66,10 @@ sealed class WgpuPipeline(
         }
     }
 
-    private fun PipelineBase.createPipelineLayout(): GPUPipelineLayout {
+    private fun createPipelineLayout(): GPUPipelineLayout {
         return device.createPipelineLayout(GPUPipelineLayoutDescriptor(
-            label = "${name}-bindGroupLayout",
-            bindGroupLayouts = this@WgpuPipeline.bindGroupLayouts.toTypedArray()
+            label = "${pipeline.name}-bindGroupLayout",
+            bindGroupLayouts = bindGroupLayouts.toTypedArray()
         ))
     }
 

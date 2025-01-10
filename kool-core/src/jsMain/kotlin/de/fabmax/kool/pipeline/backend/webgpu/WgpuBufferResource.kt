@@ -22,15 +22,18 @@ class WgpuBufferResource(val buffer: GPUBuffer, size: Long, info: String?) :
 internal class WgpuVertexBuffer(
     val backend: RenderBackendWebGpu,
     val label: String,
-    var size: Int,
+    size: Long,
     val usage: Int = GPUBufferUsage.VERTEX or GPUBufferUsage.COPY_DST
 ) {
     private val device: GPUDevice get() = backend.device
 
-    var buffer: WgpuBufferResource = makeBuffer()
+    var size: Long = size
+        private set
+    var buffer: WgpuBufferResource = makeBuffer(size)
+        private set
 
     fun writeData(data: Float32Buffer) {
-        checkSize(data.limit * 4)
+        checkSize(data.limit * 4L)
         device.queue.writeBuffer(
             buffer = buffer.buffer,
             bufferOffset = 0L,
@@ -41,7 +44,7 @@ internal class WgpuVertexBuffer(
     }
 
     fun writeData(data: Int32Buffer) {
-        checkSize(data.limit * 4)
+        checkSize(data.limit * 4L)
         device.queue.writeBuffer(
             buffer = buffer.buffer,
             bufferOffset = 0L,
@@ -51,18 +54,18 @@ internal class WgpuVertexBuffer(
         )
     }
 
-    private fun checkSize(required: Int) {
+    private fun checkSize(required: Long) {
         if (required > size) {
             buffer.release()
             size = required
-            buffer = makeBuffer()
+            buffer = makeBuffer(required)
         }
     }
 
-    private fun makeBuffer() = backend.createBuffer(
+    private fun makeBuffer(size: Long) = backend.createBuffer(
         GPUBufferDescriptor(
             label = label,
-            size = size.toLong(),
+            size = size,
             usage = usage
         ),
         label

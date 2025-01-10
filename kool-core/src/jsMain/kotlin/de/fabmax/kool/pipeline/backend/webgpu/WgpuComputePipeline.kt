@@ -36,7 +36,7 @@ class WgpuComputePipeline(
         computePipeline.update(task.pass)
 
         val pipelineData = computePipeline.pipelineData
-        if (!pipelineData.checkBindings(backend)) {
+        if (!pipelineData.checkBindings()) {
             return false
         }
 

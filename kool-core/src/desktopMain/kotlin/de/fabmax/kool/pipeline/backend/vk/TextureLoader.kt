@@ -51,15 +51,15 @@ object TextureLoader {
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
-        stagingBuffer.mapped {
-            // order: +x, -x, +y, -y, +z, -z
-            put(reshape(dstFmt, cubeImg.right))
-            put(reshape(dstFmt, cubeImg.left))
-            put(reshape(dstFmt, cubeImg.up))
-            put(reshape(dstFmt, cubeImg.down))
-            put(reshape(dstFmt, cubeImg.back))
-            put(reshape(dstFmt, cubeImg.front))
-        }
+//        stagingBuffer.mapped {
+//            // order: +x, -x, +y, -y, +z, -z
+//            put(reshape(dstFmt, cubeImg.right))
+//            put(reshape(dstFmt, cubeImg.left))
+//            put(reshape(dstFmt, cubeImg.up))
+//            put(reshape(dstFmt, cubeImg.down))
+//            put(reshape(dstFmt, cubeImg.back))
+//            put(reshape(dstFmt, cubeImg.front))
+//        }
 
         if (props.generateMipMaps) {
             logW { "Mip-map generation for cube maps not yet implemented" }
@@ -120,9 +120,9 @@ object TextureLoader {
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
-        stagingBuffer.mapped {
-            put(buf)
-        }
+//        stagingBuffer.mapped {
+//            put(buf)
+//        }
 
         val tex = createTexture(backend, props, width, height, 1, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
@@ -158,9 +158,9 @@ object TextureLoader {
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
         val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
-        stagingBuffer.mapped {
-            put(buf)
-        }
+//        stagingBuffer.mapped {
+//            put(buf)
+//        }
 
         val tex = createTexture(backend, noMipMappingProps, width, height, depth, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
@@ -333,7 +333,7 @@ object TextureLoader {
                 imageOffset { it.set(0, 0, 0) }
                 imageExtent { it.set(width, height, depth) }
             }
-            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
+            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer.handle, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
         }
     }
 
@@ -353,7 +353,7 @@ object TextureLoader {
                     }
                 }
             }
-            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions)
+            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer.handle, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions)
         }
     }
 }

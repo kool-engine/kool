@@ -11,13 +11,11 @@ class WgpuDrawPipeline(
     backend: RenderBackendWebGpu,
 ): WgpuPipeline(drawPipeline, backend) {
 
-    private val vertexBufferLayout: List<GPUVertexBufferLayout> = createVertexBufferLayout(drawPipeline)
     private val renderPipelines = mutableMapOf<WgpuRenderPass<*>, GPURenderPipeline>()
-
     private val users = mutableSetOf<NodeId>()
 
-    private fun createVertexBufferLayout(pipeline: DrawPipeline): List<GPUVertexBufferLayout> {
-        return pipeline.vertexLayout.bindings
+    private fun createVertexBufferLayout(): List<GPUVertexBufferLayout> {
+        return drawPipeline.vertexLayout.bindings
             .sortedBy { it.inputRate.name }     // INSTANCE first, VERTEX second
             .mapNotNull { vertexBinding ->
                 val attributes = vertexBinding.vertexAttributes.flatMap { attr ->
@@ -67,7 +65,7 @@ class WgpuDrawPipeline(
         val vertexState = GPUVertexState(
             module = vertexShaderModule,
             entryPoint = shaderCode.vertexEntryPoint,
-            buffers = vertexBufferLayout.toTypedArray()
+            buffers = createVertexBufferLayout().toTypedArray()
         )
 
         val blendMode = when (drawPipeline.pipelineConfig.blendMode) {
@@ -101,7 +99,7 @@ class WgpuDrawPipeline(
         )
 
         val depthOp = when {
-            passEncoderState.renderPass.isReverseDepth && drawPipeline.autoReverseDepthFunc -> {
+            renderPass.isReverseDepth && drawPipeline.autoReverseDepthFunc -> {
                 when (drawPipeline.pipelineConfig.depthTest) {
                     DepthCompareOp.LESS -> DepthCompareOp.GREATER
                     DepthCompareOp.LESS_EQUAL -> DepthCompareOp.GREATER_EQUAL
@@ -120,7 +118,7 @@ class WgpuDrawPipeline(
             gpuRenderPass.depthFormat?.let { depthFormat ->
                 GPUDepthStencilState(
                     format = depthFormat,
-                    depthWriteEnabled = drawPipeline.pipelineConfig.isWriteDepth,
+                    depthWriteEnabled = drawPipeline.isWriteDepth,
                     depthCompare = depthOp.wgpu
                 )
             }

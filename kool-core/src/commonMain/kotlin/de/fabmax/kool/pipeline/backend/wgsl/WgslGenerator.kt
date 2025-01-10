@@ -341,9 +341,9 @@ class WgslGenerator : KslGenerator() {
                 val params = func.parameters.joinToString { p ->
                     if (p.expressionType is KslSamplerType<*>) {
                         val (samplerType, texType) = p.expressionType.wgslSamplerAndTextureTypeName()
-                        "${samplerName(p.name())}: $samplerType, ${textureName(p.name())}: $texType"
+                        "${samplerName(getStateName(p))}: $samplerType, ${textureName(getStateName(p))}: $texType"
                     } else {
-                        "${p.name()}: ${p.expressionType.wgslTypeName()}"
+                        "${getStateName(p)}: ${p.expressionType.wgslTypeName()}"
                     }
                 }
                 appendLine("fn ${func.name}($params)$returnType {")
@@ -357,7 +357,7 @@ class WgslGenerator : KslGenerator() {
     override fun opDeclareVar(op: KslDeclareVar): String {
         val initExpr = op.initExpression?.generateExpression(this) ?: ""
         val state = op.declareVar
-        return "var ${state.name()} = ${state.expressionType.wgslTypeName()}(${initExpr});"
+        return "var ${getStateName(state)} = ${state.expressionType.wgslTypeName()}(${initExpr});"
     }
 
     override fun opDeclareArray(op: KslDeclareArray): String {
@@ -365,10 +365,10 @@ class WgslGenerator : KslGenerator() {
         val typeName = array.expressionType.wgslTypeName()
 
         return if (op.elements.size == 1 && op.elements[0].expressionType == array.expressionType) {
-            "var ${array.name()} = ${op.elements[0].generateExpression(this)};"
+            "var ${getStateName(array)} = ${op.elements[0].generateExpression(this)};"
         } else {
             val initExpr = op.elements.joinToString { it.generateExpression(this) }
-            "var ${array.name()} = ${typeName}(${initExpr});"
+            "var ${getStateName(array)} = ${typeName}(${initExpr});"
         }
     }
 
@@ -593,7 +593,7 @@ class WgslGenerator : KslGenerator() {
         return "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
     }
 
-    override fun KslState.name(): String = generatorState.getVarName(stateName)
+    override fun getStateName(state: KslState): String = generatorState.getVarName(state.stateName)
 
     companion object {
         fun samplerName(samplerExpression: String): String {

@@ -14,6 +14,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
     RenderPassVk<Scene.SceneRenderPass>(backend, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
 {
     override val vkRenderPass: VkRenderPass
+    override val numSamples: Int = physicalDevice.msaaSamples
 
     init {
         memStack {
@@ -21,7 +22,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
             val attachments = callocVkAttachmentDescriptionN(3) {
                 this[0]
                     .format(imageFormat)
-                    .samples(physicalDevice.msaaSamples)
+                    .samples(numSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                     .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
                     .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
@@ -30,7 +31,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                     .finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                 this[1]
                     .format(physicalDevice.depthFormat)
-                    .samples(physicalDevice.msaaSamples)
+                    .samples(numSamples)
                     .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                     .storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
                     .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)

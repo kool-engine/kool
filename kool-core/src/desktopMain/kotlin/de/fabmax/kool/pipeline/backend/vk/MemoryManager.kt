@@ -4,7 +4,6 @@ import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
 import de.fabmax.kool.util.releaseWith
-import org.lwjgl.PointerBuffer
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.util.vma.Vma.*
 import org.lwjgl.util.vma.VmaAllocationCreateInfo
@@ -14,34 +13,74 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkBufferCreateInfo
 import org.lwjgl.vulkan.VkImageCreateInfo
 import org.lwjgl.vulkan.VkMemoryRequirements
-import java.nio.LongBuffer
+import java.nio.ByteBuffer
+import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
 class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
     private val impl: MemManager = VmaMemManager(backend)
 
+    private val buffers = mutableSetOf<VkBuffer>()
+    private val images = mutableSetOf<VkImage>()
+
     init {
         releaseWith(backend.device)
     }
 
-    fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer) =
-        impl.createBuffer(bufferInfo, allocUsage, pBuffer, pAllocation)
-    fun freeBuffer(buffer: Long, allocation: Long) = impl.freeBuffer(buffer, allocation)
+    fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int): VkBuffer{
+        val buffer = impl.createBuffer(bufferInfo, allocUsage)
+        buffers += buffer
+        return buffer
+    }
 
-    fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage = impl.createImage(imageInfo, allocUsage)
-    fun freeImage(image: VkImage) = impl.freeImage(image)
+    fun freeBuffer(buffer: VkBuffer) {
+        buffers -= buffer
+        impl.freeBuffer(buffer)
+    }
 
-    fun mapMemory(allocation: Long) = impl.mapMemory(allocation)
-    fun unmapMemory(allocation: Long) = impl.unmapMemory(allocation)
+    fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage {
+        val image = impl.createImage(imageInfo, allocUsage)
+        images += image
+        return image
+    }
+
+    fun freeImage(image: VkImage) {
+        images -= image
+        impl.freeImage(image)
+    }
+
+    fun mapMemory(buffer: VkBuffer) = impl.mapMemory(buffer.allocation)
+    fun unmapMemory(buffer: VkBuffer) = impl.unmapMemory(buffer.allocation)
+
+    inline fun mappedBytes(buffer: VkBuffer, block: (ByteBuffer) -> Unit) {
+        val addr = mapMemory(buffer)
+        block(MemoryUtil.memByteBuffer(addr, buffer.bufferSize.toInt()))
+        unmapMemory(buffer)
+    }
+
+    inline fun mappedFloats(buffer: VkBuffer, block: (FloatBuffer) -> Unit) {
+        val addr = mapMemory(buffer)
+        block(MemoryUtil.memFloatBuffer(addr, buffer.bufferSize.toInt()))
+        unmapMemory(buffer)
+    }
+
+    inline fun mappedInts(buffer: VkBuffer, block: (IntBuffer) -> Unit) {
+        val addr = mapMemory(buffer)
+        block(MemoryUtil.memIntBuffer(addr, buffer.bufferSize.toInt()))
+        unmapMemory(buffer)
+    }
 
     override fun release() {
         super.release()
+        buffers.toList().forEach { freeBuffer(it) }
+        images.toList().forEach { freeImage(it) }
         impl.freeResources()
     }
 
     interface MemManager {
-        fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer): Int
-        fun freeBuffer(buffer: Long, allocation: Long)
+        fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int): VkBuffer
+        fun freeBuffer(buffer: VkBuffer)
         fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage
         fun freeImage(image: VkImage)
         fun mapMemory(allocation: Long): Long
@@ -91,15 +130,20 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
             logD { "Created VMA memory allocator" }
         }
 
-        override fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer): Int {
+        override fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int): VkBuffer {
             return memStack {
+                val pBuffer = mallocLong(1)
+                val pAllocation = mallocPointer(1)
                 val allocInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(allocUsage) }
-                vmaCreateBuffer(allocator, bufferInfo, allocInfo, pBuffer, pAllocation, null)
+                checkVk(vmaCreateBuffer(allocator, bufferInfo, allocInfo, pBuffer, pAllocation, null)) {
+                    "Failed allocating buffer: $it"
+                }
+                VkBuffer(pBuffer[0], pAllocation[0], bufferInfo.size())
             }
         }
 
-        override fun freeBuffer(buffer: Long, allocation: Long) {
-            vmaDestroyBuffer(allocator, buffer, allocation)
+        override fun freeBuffer(buffer: VkBuffer) {
+            vmaDestroyBuffer(allocator, buffer.handle, buffer.allocation)
         }
 
         override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage {
@@ -107,8 +151,8 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
                 val pImage = mallocLong(1)
                 val pAllocation = mallocPointer(1)
                 val allocInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(allocUsage) }
-                check(vmaCreateImage(allocator, imageInfo, allocInfo, pImage, pAllocation, null) == VK_SUCCESS) {
-                    "Failed allocating image"
+                checkVk(vmaCreateImage(allocator, imageInfo, allocInfo, pImage, pAllocation, null)) {
+                    "Failed allocating image: $it"
                 }
                 VkImage(pImage[0], pAllocation[0])
             }
@@ -158,10 +202,11 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
             logD { "Created naive memory allocator" }
         }
 
-        override fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int, pBuffer: LongBuffer, pAllocation: PointerBuffer): Int {
-            memStack {
-                var res = vkCreateBuffer(device.vkDevice, bufferInfo, null, pBuffer)
-                if (res != VK_SUCCESS) { return res }
+        override fun createBuffer(bufferInfo: VkBufferCreateInfo, allocUsage: Int): VkBuffer {
+            return memStack {
+                val pBuffer = mallocLong(1)
+                val pAllocation = mallocPointer(1)
+                checkVk(vkCreateBuffer(device.vkDevice, bufferInfo, null, pBuffer))
 
                 val properties = getPropertiesForAllocationUsage(allocUsage)
                 val memRequirements = VkMemoryRequirements.malloc(this)
@@ -173,27 +218,25 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
                 }
 
                 val lp = mallocLong(1)
-                res = vkAllocateMemory(device.vkDevice, allocInfo, null, lp)
-                if (res != VK_SUCCESS) { return res }
+                checkVk(vkAllocateMemory(device.vkDevice, allocInfo, null, lp))
                 pAllocation.put(0, lp[0])
-                res = vkBindBufferMemory(device.vkDevice, pBuffer[0], lp[0], 0L)
-                if (res != VK_SUCCESS) { return res }
+                checkVk(vkBindBufferMemory(device.vkDevice, pBuffer[0], lp[0], 0L))
 
                 allocatedBuffers[pAllocation[0]] = BufferInfo(pBuffer[0], pAllocation[0], bufferInfo.size(), allocUsage)
+                VkBuffer(pBuffer[0], pAllocation[0], bufferInfo.size())
             }
-            return VK_SUCCESS
         }
 
-        override fun freeBuffer(buffer: Long, allocation: Long) {
-            val bufferInfo = allocatedBuffers.remove(allocation)
+        override fun freeBuffer(buffer: VkBuffer) {
+            val bufferInfo = allocatedBuffers.remove(buffer.allocation)
             bufferInfo?.let {
-                vkDestroyBuffer(device.vkDevice, buffer, null)
+                vkDestroyBuffer(device.vkDevice, buffer.handle, null)
                 vkFreeMemory(device.vkDevice, it.memory, null)
             }
         }
 
         override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage {
-            memStack {
+            return memStack {
                 val pImage = mallocLong(1)
                 val pAllocation = mallocPointer(1)
                 check(vkCreateImage(device.vkDevice, imageInfo, null, pImage) == VK_SUCCESS)
@@ -213,7 +256,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
                 check(vkBindImageMemory(device.vkDevice, pImage[0], lp[0], 0L) == VK_SUCCESS)
 
                 allocatedBuffers[pAllocation[0]] = BufferInfo(pImage[0], pAllocation[0], memRequirements.size(), allocUsage)
-                return VkImage(pImage[0], pAllocation[0])
+                VkImage(pImage[0], pAllocation[0])
             }
         }
 

@@ -22,39 +22,42 @@ sealed class VkPipeline(
     protected val pipelineLayout: VkPipelineLayout = createPipelineLayout()
 
     private fun createBindGroupLayouts(pipeline: PipelineBase): List<VkDescriptorSetLayout> = memStack {
-        val layouts = if (this@VkPipeline is VkComputePipeline) {
-            listOf(pipeline.bindGroupLayouts.pipelineScope)
-        } else {
-            pipeline.bindGroupLayouts.asList
-        }
-
-        layouts.map { group ->
-            val bindings = callocVkDescriptorSetLayoutBindingN(group.bindings.size) {
-                group.bindings.forEachIndexed { i, binding ->
-                    val location = locations[binding]
-
-                    this[i].apply {
-                        binding(location.binding)
-                        descriptorType(binding.type.intType())
-                        stageFlags(binding.stages.fold(0) { acc, stage -> acc or stage.bitValue() })
-                        descriptorCount(1)
-                    }
-                }
-            }
-
-            device.createDescriptorSetLayout(this) {
-                pBindings(bindings)
-            }
-        }
+//        val layouts = if (this@VkPipeline is VkComputePipeline) {
+//            listOf(pipeline.bindGroupLayouts.pipelineScope)
+//        } else {
+//            pipeline.bindGroupLayouts.asList
+//        }
+//
+//        layouts.map { group ->
+//            val bindings = callocVkDescriptorSetLayoutBindingN(group.bindings.size) {
+//                group.bindings.forEachIndexed { i, binding ->
+//                    val location = locations[binding]
+//
+//                    this[i].apply {
+//                        binding(location.binding)
+//                        descriptorType(binding.type.intType())
+//                        stageFlags(binding.stages.fold(0) { acc, stage -> acc or stage.bitValue() })
+//                        descriptorCount(1)
+//                    }
+//                }
+//            }
+//
+//            device.createDescriptorSetLayout(this) {
+//                pBindings(bindings)
+//            }
+//        }
+        emptyList()
     }
 
     private fun createPipelineLayout(): VkPipelineLayout = memStack {
         device.createPipelineLayout(this) {
-            val ptrs = mallocLong(bindGroupLayouts.size)
-            for (i in bindGroupLayouts.indices) {
-                ptrs.put(i, bindGroupLayouts[i].handle)
+            if (bindGroupLayouts.isNotEmpty()) {
+                val ptrs = mallocLong(bindGroupLayouts.size)
+                for (i in bindGroupLayouts.indices) {
+                    ptrs.put(i, bindGroupLayouts[i].handle)
+                }
+                this.pSetLayouts(ptrs)
             }
-            this.pSetLayouts(ptrs)
         }
     }
 
@@ -92,7 +95,7 @@ sealed class VkPipeline(
     }
 
     protected fun BindGroupData.getOrCreateVkData(): BindGroupDataVk {
-        val group = layout.group //if (this@VkPipeline is VkComputeComputePipeline) 0 else layout.group
+        val group = if (this@VkPipeline is VkComputePipeline) 0 else layout.group
         if (gpuData == null) {
             gpuData = BindGroupDataVk(this, bindGroupLayouts[group], locations, backend)
         }
@@ -109,6 +112,7 @@ sealed class VkPipeline(
                 is VkDrawPipeline -> backend.pipelineManager.removeDrawPipeline(this)
                 is VkComputePipeline -> backend.pipelineManager.removeComputePipeline(this)
             }
+            backend.device.destroyPipelineLayout(pipelineLayout)
             pipelineInfo.deleted()
         }
     }
