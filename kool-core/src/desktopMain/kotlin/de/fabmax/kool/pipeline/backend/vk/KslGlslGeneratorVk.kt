@@ -29,7 +29,7 @@ class KslGlslGeneratorVk : GlslGenerator(Hints("#version 450")) {
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
-                val set = pipeline.bindGroupLayouts[BindGroupScope.PIPELINE]
+                val set = pipeline.bindGroupLayouts[ubo.scope]
                 val desc = pipeline.findBindGroupItemByName(ubo.name)!!
                 appendLine("layout(std140, set=${set.group}, binding=${desc.bindingIndex}) uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {

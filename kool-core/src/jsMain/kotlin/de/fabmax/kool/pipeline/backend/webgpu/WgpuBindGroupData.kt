@@ -23,7 +23,7 @@ class WgpuBindGroupData(
     var bindGroup: GPUBindGroup? = null
         private set
 
-    fun bind(passEncoderState: PassEncoderState, renderPass: RenderPass, group: Int = data.layout.group) {
+    fun bind(passEncoderState: PassEncoderState, group: Int = data.layout.group) {
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.gpuTexture !== tex.loadedTex) {
@@ -35,12 +35,12 @@ class WgpuBindGroupData(
         val recreatedBindGroup = bindGroup == null || data.isDirty
         if (recreatedBindGroup) {
             data.isDirty = false
-            createBindGroup(renderPass)
+            createBindGroup(passEncoderState.renderPass)
         }
 
         for (i in bufferBindings.indices) {
             val ubo = bufferBindings[i]
-            if (ubo.binding.getAndClearDirtyFlag() || recreatedBindGroup) {
+            if (ubo.version != ubo.binding.version || recreatedBindGroup) {
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
                     bufferOffset = 0L,
@@ -72,21 +72,21 @@ class WgpuBindGroupData(
         bufferBindings.clear()
         textureBindings.clear()
 
-        val bindGroupEntries = mutableListOf<GPUBindGroupEntry>()
+        val bindGroupEntries: List<GPUBindGroupEntry> = buildList {
+            data.bindings.map { binding ->
+                when (binding) {
+                    is BindGroupData.UniformBufferBindingData -> add(binding.makeEntry(renderPass))
+                    is BindGroupData.Texture1dBindingData -> addAll(binding.makeTexture1dEntry())
+                    is BindGroupData.Texture2dBindingData -> addAll(binding.makeTexture2dEntry())
+                    is BindGroupData.Texture3dBindingData -> addAll(binding.makeTexture3dEntry())
+                    is BindGroupData.TextureCubeBindingData -> addAll(binding.makeTextureCubeEntry())
+                    is BindGroupData.Texture2dArrayBindingData -> addAll(binding.makeTexture2dArrayEntry())
+                    is BindGroupData.TextureCubeArrayBindingData -> addAll(binding.makeTextureCubeArrayEntry())
 
-        data.bindings.forEach { binding ->
-            when (binding) {
-                is BindGroupData.UniformBufferBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
-                is BindGroupData.Texture1dBindingData -> bindGroupEntries += binding.makeTexture1dEntry()
-                is BindGroupData.Texture2dBindingData -> bindGroupEntries += binding.makeTexture2dEntry()
-                is BindGroupData.Texture3dBindingData -> bindGroupEntries += binding.makeTexture3dEntry()
-                is BindGroupData.TextureCubeBindingData -> bindGroupEntries += binding.makeTextureCubeEntry()
-                is BindGroupData.Texture2dArrayBindingData -> bindGroupEntries += binding.makeTexture2dArrayEntry()
-                is BindGroupData.TextureCubeArrayBindingData -> bindGroupEntries += binding.makeTextureCubeArrayEntry()
-
-                is BindGroupData.StorageBuffer1dBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
-                is BindGroupData.StorageBuffer2dBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
-                is BindGroupData.StorageBuffer3dBindingData -> bindGroupEntries += binding.makeEntry(renderPass)
+                    is BindGroupData.StorageBuffer1dBindingData -> add(binding.makeEntry(renderPass))
+                    is BindGroupData.StorageBuffer2dBindingData -> add(binding.makeEntry(renderPass))
+                    is BindGroupData.StorageBuffer3dBindingData -> add(binding.makeEntry(renderPass))
+                }
             }
         }
         bindGroup = backend.device.createBindGroup(
@@ -294,7 +294,9 @@ class WgpuBindGroupData(
     private data class BufferBinding(
         val binding: BindGroupData.UniformBufferBindingData,
         val gpuBuffer: WgpuBufferResource
-    )
+    ) {
+        var version = -1
+    }
 
     private data class StorageBufferBinding(
         val binding: BindGroupData.StorageBufferBindingData<*>,

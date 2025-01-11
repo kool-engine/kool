@@ -71,15 +71,14 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
 
     inner class UniformBufferBindingData(override val layout: UniformBufferLayout) : BindingData {
-        var isBufferDirty = true
+        var version = 0
+            private set
         val buffer: MixedBuffer = MixedBuffer(layout.layout.size)
 
         override val isComplete = true
 
-        fun getAndClearDirtyFlag(): Boolean {
-            val isDirty = isBufferDirty
-            isBufferDirty = false
-            return isDirty
+        fun markDirty() {
+            version++
         }
 
         fun copyTo(other: UniformBufferBindingData) {
@@ -87,7 +86,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             for (i in 0 until buffer.capacity) {
                 other.buffer.setInt8(i, buffer.getInt8(i))
             }
-            other.isBufferDirty = true
+            other.markDirty()
         }
     }
 

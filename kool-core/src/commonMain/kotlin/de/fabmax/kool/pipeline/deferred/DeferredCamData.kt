@@ -59,7 +59,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
                 .getPipelineData(cmd.pipeline)
                 .uniformBufferBindingData(bindingLayout.bindingIndex)
 
-            uboData.isBufferDirty = true
+            uboData.markDirty()
             val buffer = uboData.buffer
 
             buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }

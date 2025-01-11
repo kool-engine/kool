@@ -16,7 +16,7 @@ object TextCaretNavigation {
     }
 
     fun endOfWord(text: String, caretPos: Int): Int {
-        if(text.isEmpty()) return 0
+        if (text.isEmpty()) return 0
         var i = caretPos.clamp(0, text.lastIndex)
         while (i < text.length && !text[i].isLimitingChar()) i++
         return i

@@ -44,13 +44,14 @@ interface RenderBackend {
 
 class DeviceCoordinates(
     val ndcYDirection: NdcYDirection,
-    val ndcDepthRange: DepthRange
+    val ndcDepthRange: DepthRange,
+    val isFlipWindowY: Boolean,
 ) {
     companion object {
-        val OPEN_GL = DeviceCoordinates(NdcYDirection.BOTTOM_TO_TOP, DepthRange.NEGATIVE_ONE_TO_ONE)
-        val OPEN_GL_ZERO_TO_ONE = DeviceCoordinates(NdcYDirection.BOTTOM_TO_TOP, DepthRange.ZERO_TO_ONE)
-        val WEB_GPU = DeviceCoordinates(NdcYDirection.TOP_TO_BOTTOM, DepthRange.ZERO_TO_ONE)
-        val VULKAN = DeviceCoordinates(NdcYDirection.TOP_TO_BOTTOM, DepthRange.ZERO_TO_ONE)
+        val OPEN_GL = DeviceCoordinates(NdcYDirection.BOTTOM_TO_TOP, DepthRange.NEGATIVE_ONE_TO_ONE, false)
+        val OPEN_GL_ZERO_TO_ONE = DeviceCoordinates(NdcYDirection.BOTTOM_TO_TOP, DepthRange.ZERO_TO_ONE, false)
+        val WEB_GPU = DeviceCoordinates(NdcYDirection.TOP_TO_BOTTOM, DepthRange.ZERO_TO_ONE, false)
+        val VULKAN = DeviceCoordinates(NdcYDirection.TOP_TO_BOTTOM, DepthRange.ZERO_TO_ONE, true)
     }
 }
 

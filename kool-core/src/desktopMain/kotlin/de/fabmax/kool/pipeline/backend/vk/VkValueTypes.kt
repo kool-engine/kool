@@ -6,6 +6,12 @@ data class VkBuffer(val handle: Long, val allocation: Long, val bufferSize: Long
 value class VkCommandPool(val handle: Long)
 
 @JvmInline
+value class VkDescriptorPool(val handle: Long)
+
+@JvmInline
+value class VkDescriptorSet(val handle: Long)
+
+@JvmInline
 value class VkDescriptorSetLayout(val handle: Long)
 
 @JvmInline

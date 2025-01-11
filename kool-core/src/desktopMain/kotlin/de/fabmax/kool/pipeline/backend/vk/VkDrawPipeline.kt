@@ -235,9 +235,9 @@ class VkDrawPipeline(
         }
 
         passEncoderState.setPipeline(renderPipeline)
-//        viewData.getOrCreateVkData().bind(passEncoderState, cmd.queue.renderPass)
-//        pipelineData.getOrCreateVkData().bind(passEncoderState, cmd.queue.renderPass)
-//        meshData.getOrCreateVkData().bind(passEncoderState, cmd.queue.renderPass)
+        viewData.getOrCreateVkData().bind(passEncoderState, this)
+        pipelineData.getOrCreateVkData().bind(passEncoderState, this)
+        meshData.getOrCreateVkData().bind(passEncoderState, this)
         bindVertexBuffers(passEncoderState, cmd)
         return true
     }

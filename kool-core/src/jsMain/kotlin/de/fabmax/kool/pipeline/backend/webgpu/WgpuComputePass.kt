@@ -36,7 +36,7 @@ class WgpuComputePass(val parentPass: ComputeRenderPass, val backend: RenderBack
         }
         val desc = GPUComputePassDescriptor(parentPass.name, timestampWrites)
 
-        computePassEncoderState.setup(encoder, encoder.beginComputePass(desc))
+        computePassEncoderState.setup(encoder, encoder.beginComputePass(desc), parentPass)
         for (i in tasks.indices) {
             val task = tasks[i]
             if (task.isEnabled) {

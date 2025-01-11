@@ -24,7 +24,7 @@ class ComputeRenderPass(name: String) :
     internal val impl = KoolSystem.requireContext().backend.createComputePass(this)
 
     fun addTask(computeShader: ComputeShader, numGroups: Vec3i): Task {
-        val task = Task(this, computeShader, numGroups)
+        val task = Task(computeShader, numGroups)
         _tasks += task
         return task
     }
@@ -42,7 +42,8 @@ class ComputeRenderPass(name: String) :
         private val renderPassAttachmentConfig = AttachmentConfig(ColorAttachmentNone, DepthAttachmentNone)
     }
 
-    inner class Task(val pass: ComputeRenderPass, val shader: ComputeShader, numGroups: Vec3i) {
+    inner class Task(val shader: ComputeShader, numGroups: Vec3i) {
+        val pass: ComputeRenderPass get() = this@ComputeRenderPass
         val numGroups = MutableVec3i(numGroups)
         var isEnabled = true
         val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputeRenderPass)

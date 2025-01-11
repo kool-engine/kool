@@ -41,7 +41,7 @@ class WgpuComputePipeline(
         }
 
         passEncoderState.setPipeline(gpuComputePipeline)
-        pipelineData.getOrCreateWgpuData().bind(passEncoderState, task.pass, 0)
+        pipelineData.getOrCreateWgpuData().bind(passEncoderState, 0)
         return true
     }
 }

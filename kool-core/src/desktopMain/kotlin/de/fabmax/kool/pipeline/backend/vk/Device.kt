@@ -72,12 +72,30 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
     }
 }
 
+internal inline fun Device.allocateDescriptorSets(stack: MemoryStack? = null, block: VkDescriptorSetAllocateInfo.() -> Unit): List<VkDescriptorSet> {
+    memStack(stack) {
+        val allocInfo = callocVkDescriptorSetAllocateInfo(block)
+        val handles = mallocLong(allocInfo.descriptorSetCount())
+        checkVk(vkAllocateDescriptorSets(vkDevice, allocInfo, handles)) { "Failed allocating descriptor sets: $it" }
+        return buildList { repeat(allocInfo.descriptorSetCount()) { add(VkDescriptorSet(handles[it])) } }
+    }
+}
+
 internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPool {
     memStack(stack) {
         val createInfo = callocVkCommandPoolCreateInfo(block)
         val handle = mallocLong(1)
         checkVk(vkCreateCommandPool(vkDevice, createInfo, null, handle)) { "Failed creating command pool: $it" }
         return VkCommandPool(handle[0])
+    }
+}
+
+internal inline fun Device.createDescriptorPool(stack: MemoryStack? = null, block: VkDescriptorPoolCreateInfo.() -> Unit): VkDescriptorPool {
+    memStack(stack) {
+        val createInfo = callocVkDescriptorPoolCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreateDescriptorPool(vkDevice, createInfo, null, handle)) { "Failed creating descriptor pool: $it" }
+        return VkDescriptorPool(handle[0])
     }
 }
 
@@ -175,6 +193,10 @@ internal fun Device.createSwapchain(stack: MemoryStack? = null, block: VkSwapcha
 
 internal fun Device.destroyCommandPool(commandPool: VkCommandPool) {
     vkDestroyCommandPool(vkDevice, commandPool.handle, null)
+}
+
+internal fun Device.destroyDescriptorPool(descriptorPool: VkDescriptorPool) {
+    vkDestroyDescriptorPool(vkDevice, descriptorPool.handle, null)
 }
 
 internal fun Device.destroyDescriptorSetLayout(descriptorSetLayout: VkDescriptorSetLayout) {

@@ -19,34 +19,32 @@ sealed class VkPipeline(
 
     protected val locations = WgslLocations(pipeline.bindGroupLayouts, (pipeline as? DrawPipeline)?.vertexLayout)
     private val bindGroupLayouts: List<VkDescriptorSetLayout> = createBindGroupLayouts(pipeline)
-    protected val pipelineLayout: VkPipelineLayout = createPipelineLayout()
+    val pipelineLayout: VkPipelineLayout = createPipelineLayout()
 
     private fun createBindGroupLayouts(pipeline: PipelineBase): List<VkDescriptorSetLayout> = memStack {
-//        val layouts = if (this@VkPipeline is VkComputePipeline) {
-//            listOf(pipeline.bindGroupLayouts.pipelineScope)
-//        } else {
-//            pipeline.bindGroupLayouts.asList
-//        }
-//
-//        layouts.map { group ->
-//            val bindings = callocVkDescriptorSetLayoutBindingN(group.bindings.size) {
-//                group.bindings.forEachIndexed { i, binding ->
-//                    val location = locations[binding]
-//
-//                    this[i].apply {
-//                        binding(location.binding)
-//                        descriptorType(binding.type.intType())
-//                        stageFlags(binding.stages.fold(0) { acc, stage -> acc or stage.bitValue() })
-//                        descriptorCount(1)
-//                    }
-//                }
-//            }
-//
-//            device.createDescriptorSetLayout(this) {
-//                pBindings(bindings)
-//            }
-//        }
-        emptyList()
+        val layouts = if (this@VkPipeline is VkComputePipeline) {
+            listOf(pipeline.bindGroupLayouts.pipelineScope)
+        } else {
+            pipeline.bindGroupLayouts.asList
+        }
+
+        layouts.map { group ->
+            val bindings = callocVkDescriptorSetLayoutBindingN(group.bindings.size) {
+                group.bindings.forEachIndexed { i, binding ->
+                    val location = locations[binding]
+                    this[i].apply {
+                        binding(location.binding)
+                        descriptorType(binding.type.intType())
+                        stageFlags(binding.stages.fold(0) { acc, stage -> acc or stage.bitValue() })
+                        descriptorCount(1)
+                    }
+                }
+            }
+
+            device.createDescriptorSetLayout(this) {
+                pBindings(bindings)
+            }
+        }
     }
 
     private fun createPipelineLayout(): VkPipelineLayout = memStack {
@@ -112,6 +110,7 @@ sealed class VkPipeline(
                 is VkDrawPipeline -> backend.pipelineManager.removeDrawPipeline(this)
                 is VkComputePipeline -> backend.pipelineManager.removeComputePipeline(this)
             }
+            bindGroupLayouts.forEach { backend.device.destroyDescriptorSetLayout(it) }
             backend.device.destroyPipelineLayout(pipelineLayout)
             pipelineInfo.deleted()
         }

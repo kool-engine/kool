@@ -6,56 +6,11 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
 interface PassEncoderState {
-    fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk)
+    val frameIndex: Int
+    val renderPass: RenderPass
+    val stack: MemoryStack
+    fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipeline: VkPipeline)
 }
-
-//class ComputePassEncoderState: PassEncoderState {
-//    private var _encoder: VkCommandBuffer? = null
-//    //private var _passEncoder: GPUComputePassEncoder? = null
-//
-//    val encoder: VkCommandBuffer
-//        get() = _encoder!!
-////    val passEncoder: GPUComputePassEncoder
-////        get() = _passEncoder!!
-//    var isPassActive = false
-//        private set
-//
-//    private var computePipeline: GPUComputePipeline? = null
-//    private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
-//
-//    fun setup(encoder: GPUCommandEncoder, passEncoder: GPUComputePassEncoder) {
-//        check(!isPassActive)
-//        _encoder = encoder
-//        _passEncoder = passEncoder
-//        isPassActive = true
-//    }
-//
-//    fun end() {
-//        if (isPassActive) {
-//            passEncoder.end()
-//            isPassActive = false
-//
-//            computePipeline = null
-//            for (i in bindGroups.indices) {
-//                bindGroups[i] = null
-//            }
-//        }
-//    }
-//
-//    fun setPipeline(computePipeline: GPUComputePipeline) {
-//        if (this.computePipeline !== computePipeline) {
-//            this.computePipeline = computePipeline
-//            passEncoder.setPipeline(computePipeline)
-//        }
-//    }
-//
-//    override fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData) {
-//        if (bindGroups[group] !== bindGroupData) {
-//            bindGroups[group] = bindGroupData
-//            passEncoder.setBindGroup(group, bindGroupData.bindGroup!!)
-//        }
-//    }
-//}
 
 class RenderPassEncoderState<T: RenderPass>(val renderPassVk: RenderPassVk<T>): PassEncoderState {
     private var isPassActive = false
@@ -64,11 +19,13 @@ class RenderPassEncoderState<T: RenderPass>(val renderPassVk: RenderPassVk<T>): 
     private var _stack: MemoryStack? = null
 
     val commandBuffer: VkCommandBuffer get() = _commandBuffer!!
-    val renderPass: T get() = _renderPass!!
-    val stack: MemoryStack get() = _stack!!
+    override val stack: MemoryStack get() = _stack!!
+    override val renderPass: T get() = _renderPass!!
 
     private var activePipeline: VkGraphicsPipeline = VkGraphicsPipeline(0L)
     private val bindGroups = Array<BindGroupDataVk?>(4) { null }
+
+    override val frameIndex: Int get() = renderPassVk.backend.swapchain.currentFrameIndex
 
     fun setup(
         commandBuffer: VkCommandBuffer,
@@ -83,7 +40,6 @@ class RenderPassEncoderState<T: RenderPass>(val renderPassVk: RenderPassVk<T>): 
     fun begin(viewIndex: Int, mipLevel: Int, /*timestampWrites: GPURenderPassTimestampWrites? = null,*/ forceLoad: Boolean = false) {
         check(!isPassActive)
         isPassActive = true
-
         renderPassVk.beginRenderPass(this, viewIndex, mipLevel)
     }
 
@@ -105,10 +61,18 @@ class RenderPassEncoderState<T: RenderPass>(val renderPassVk: RenderPassVk<T>): 
         }
     }
 
-    override fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk) {
-        if (bindGroups[group] !== bindGroupData) {
+    override fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipeline: VkPipeline) {
+        val bindGroup = bindGroupData.bindGroup
+        if (bindGroups[group] !== bindGroupData && bindGroup != null) {
             bindGroups[group] = bindGroupData
-            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, bindGroupData.gpuLayout.handle, 0, ...)
+            vkCmdBindDescriptorSets(
+                commandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipeline.pipelineLayout.handle,
+                group,
+                stack.longs(bindGroup.descriptorSets[frameIndex].handle),
+                null
+            )
         }
     }
 }

@@ -48,7 +48,7 @@ abstract class MeshMatrixData(program: KslProgram, val uniformName: String) : Ks
     protected fun putMatrixToBuffer(matrix: Mat4f, groupData: BindGroupData) {
         val bindingLayout = uboLayout ?: return
         val uboData = groupData.uniformBufferBindingData(bindingLayout.bindingIndex)
-        uboData.isBufferDirty = true
+        uboData.markDirty()
         uboData.buffer.position = bufferPos!!.byteIndex
         matrix.putTo(uboData.buffer)
     }
@@ -141,7 +141,7 @@ class InvProjMatrixData(program: KslProgram) : KslDataBlock, KslShaderListener {
         val cam = q.view.camera
         val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
 
-        ubo.isBufferDirty = true
+        ubo.markDirty()
         ubo.buffer.positioned(bufferPos!!.byteIndex) { cam.invProj.putTo(it) }
     }
 

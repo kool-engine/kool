@@ -151,9 +151,9 @@ class WgpuDrawPipeline(
         }
 
         passEncoderState.setPipeline(renderPipeline)
-        viewData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
-        pipelineData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
-        meshData.getOrCreateWgpuData().bind(passEncoderState, cmd.queue.renderPass)
+        viewData.getOrCreateWgpuData().bind(passEncoderState)
+        pipelineData.getOrCreateWgpuData().bind(passEncoderState)
+        meshData.getOrCreateWgpuData().bind(passEncoderState)
         bindVertexBuffers(passEncoderState.passEncoder, cmd)
         return true
     }

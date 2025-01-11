@@ -1,29 +1,31 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.pipeline.ComputeRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 
 interface PassEncoderState {
+    val renderPass: RenderPass
     fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData)
 }
 
 class ComputePassEncoderState: PassEncoderState {
+    private var isPassActive = false
+    private var _renderPass: ComputeRenderPass? = null
     private var _encoder: GPUCommandEncoder? = null
     private var _passEncoder: GPUComputePassEncoder? = null
 
-    val encoder: GPUCommandEncoder
-        get() = _encoder!!
-    val passEncoder: GPUComputePassEncoder
-        get() = _passEncoder!!
-    var isPassActive = false
-        private set
+    val encoder: GPUCommandEncoder get() = _encoder!!
+    val passEncoder: GPUComputePassEncoder get() = _passEncoder!!
+    override val renderPass: ComputeRenderPass get() = _renderPass!!
 
     private var computePipeline: GPUComputePipeline? = null
     private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
 
-    fun setup(encoder: GPUCommandEncoder, passEncoder: GPUComputePassEncoder) {
+    fun setup(encoder: GPUCommandEncoder, passEncoder: GPUComputePassEncoder, renderPass: ComputeRenderPass) {
         check(!isPassActive)
         _encoder = encoder
         _passEncoder = passEncoder
+        _renderPass = renderPass
         isPassActive = true
     }
 
@@ -56,13 +58,13 @@ class ComputePassEncoderState: PassEncoderState {
 
 class RenderPassEncoderState<T: RenderPass>(val gpuRenderPass: WgpuRenderPass<T>): PassEncoderState {
     private var isPassActive = false
-    private var _encoder: GPUCommandEncoder? = null
     private var _renderPass: T? = null
+    private var _encoder: GPUCommandEncoder? = null
     private var _passEncoder: GPURenderPassEncoder? = null
 
     val encoder: GPUCommandEncoder get() = _encoder!!
     val passEncoder: GPURenderPassEncoder get() = _passEncoder!!
-    val renderPass: T get() = _renderPass!!
+    override val renderPass: T get() = _renderPass!!
 
     private var activePipeline: GPURenderPipeline? = null
     private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
@@ -77,7 +79,6 @@ class RenderPassEncoderState<T: RenderPass>(val gpuRenderPass: WgpuRenderPass<T>
 
     fun begin(viewIndex: Int, mipLevel: Int, timestampWrites: GPURenderPassTimestampWrites? = null, forceLoad: Boolean = false) {
         check(!isPassActive)
-
         val (colorAttachments, depthAttachment) = gpuRenderPass.getRenderAttachments(renderPass, viewIndex, mipLevel, forceLoad)
         _passEncoder = encoder.beginRenderPass(colorAttachments, depthAttachment, timestampWrites, renderPass.name)
         isPassActive = true
