@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.vk.trash.LoadedTextureVkOld
+import de.fabmax.kool.pipeline.backend.vk.trash.TextureLoaderOld
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed
@@ -44,7 +46,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
 
         memStack {
             for (i in resultImages.indices) {
-                resultImages[i]?.generateMipmaps(this, commandBuffer)
+//                resultImages[i]?.generateMipmaps(this, commandBuffer)
             }
         }
     }
@@ -66,7 +68,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
         memStack {
             for (i in rp.images.indices) {
                 val srcImage = rp.images[i]
-                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+//                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
                 val imageCopy = callocVkImageCopyN(1) {
                     srcSubresource {
                         it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -85,7 +87,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
                     extent { it.set(width, height, 1) }
                 }
                 vkCmdCopyImage(commandBuffer, srcImage.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, resultImages[i]!!.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
-                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+//                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
             }
         }
     }
@@ -102,7 +104,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
         memStack {
             for (i in rp.images.indices) {
                 val srcImage = rp.images[i]
-                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+//                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
                 val imageCopy = callocVkImageCopyN(1) {
                     srcSubresource {
                         it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
@@ -121,7 +123,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
                     extent { it.set(width, height, 1) }
                 }
                 vkCmdCopyImage(commandBuffer, srcImage.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, resultImages[i]!!.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
-                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+//                srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
             }
         }
     }
@@ -242,7 +244,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
             cfgs.forEach { formats += it.textureFormat }
         }
 
-        val colorAttachments = OffscreenRenderPassVk.CreatedColorAttachments(backend, width, height, false, formats.map { it.vkFormat }, VK_FILTER_LINEAR, isMultiSampling)
+        val colorAttachments = OffscreenRenderPassVk.CreatedColorAttachments(backend, width, height, false, formats.map { it.vk }, VK_FILTER_LINEAR, isMultiSampling)
 
         var isProvidedDepth = false
         val depthAttachment = if (pass.depthAttachment !is OffscreenRenderPass.DepthAttachmentTexture) {
@@ -277,12 +279,12 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
             if (isCopyResult) {
                 val vkTex = if (isColor) {
                     val props = parentPass.createColorTextureProps(iAttachment)
-                    val cpTex = TextureLoader.createTexture(backend, props, rp.maxWidth, rp.maxHeight, 1)
-                    cpTex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                    val cpTex = TextureLoaderOld.createTexture(backend, props, rp.maxWidth, rp.maxHeight, 1)
+//                    cpTex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                     resultImages[iAttachment] = cpTex.textureImage
                     cpTex
                 } else {
-                    LoadedTextureVk(backend, texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
+                    LoadedTextureVkOld(backend, texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
                 vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
                 gpuTexture = vkTex
@@ -290,11 +292,18 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
 
             } else {
                 val vkTex = if (isColor) {
-                    val rpTex = LoadedTextureVk(backend, rp.getTexFormat(iAttachment), rp.images[iAttachment], rp.imageViews[iAttachment], rp.samplers[iAttachment], true)
+                    val rpTex = LoadedTextureVkOld(
+                        backend,
+                        rp.getTexFormat(iAttachment),
+                        rp.images[iAttachment],
+                        rp.imageViews[iAttachment],
+                        rp.samplers[iAttachment],
+                        true
+                    )
                     resultImages[iAttachment] = rpTex.textureImage
                     rpTex
                 } else {
-                    LoadedTextureVk(backend, texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
+                    LoadedTextureVkOld(backend, texFormat, rp.depthImage, rp.depthImageView, rp.depthSampler, true)
                 }
                 vkTex.setSize(rp.maxWidth, rp.maxHeight, 1)
                 gpuTexture = vkTex

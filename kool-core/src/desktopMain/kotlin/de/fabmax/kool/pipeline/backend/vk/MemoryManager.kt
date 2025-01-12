@@ -10,8 +10,7 @@ import org.lwjgl.util.vma.VmaAllocationCreateInfo
 import org.lwjgl.util.vma.VmaAllocationInfo
 import org.lwjgl.util.vma.VmaAllocatorCreateInfo
 import org.lwjgl.util.vma.VmaVulkanFunctions
-import org.lwjgl.vulkan.VK10.VK_SHARING_MODE_EXCLUSIVE
-import org.lwjgl.vulkan.VkImageCreateInfo
+import org.lwjgl.vulkan.VK10.*
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -39,8 +38,19 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         impl.freeBuffer(buffer)
     }
 
-    fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage {
-        val image = impl.createImage(imageInfo, allocUsage)
+    inline fun stagingBuffer(size: Long, usage: Int = VK_BUFFER_USAGE_TRANSFER_SRC_BIT, block: (VkBuffer) -> Unit) {
+        val stagingInfo = MemoryInfo(
+            size = size,
+            usage = usage,
+            createMapped = true
+        )
+        val stagingBuf = createBuffer(stagingInfo)
+        block(stagingBuf)
+        freeBuffer(stagingBuf)
+    }
+
+    fun createImage(imageInfo: ImageInfo): VkImage {
+        val image = impl.createImage(imageInfo)
         images += image
         return image
     }
@@ -79,7 +89,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
     interface MemManager {
         fun createBuffer(info: MemoryInfo): VkBuffer
         fun freeBuffer(buffer: VkBuffer)
-        fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage
+        fun createImage(info: ImageInfo): VkImage
         fun freeImage(image: VkImage)
         fun mapMemory(allocation: Long): Long
         fun unmapMemory(allocation: Long)
@@ -158,12 +168,24 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
             vmaDestroyBuffer(allocator, buffer.handle, buffer.allocation)
         }
 
-        override fun createImage(imageInfo: VkImageCreateInfo, allocUsage: Int): VkImage {
+        override fun createImage(info: ImageInfo): VkImage {
             return memStack {
                 val pImage = mallocLong(1)
                 val pAllocation = mallocPointer(1)
-                val allocInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(allocUsage) }
-                checkVk(vmaCreateImage(allocator, imageInfo, allocInfo, pImage, pAllocation, null)) {
+                val imageInfo = callocVkImageCreateInfo {
+                    imageType(info.imageType)
+                    format(info.format)
+                    extent().set(info.width, info.height, info.depth)
+                    arrayLayers(info.arrayLayers)
+                    mipLevels(info.mipLevels)
+                    samples(info.samples)
+                    usage(info.usage)
+                    tiling(info.tiling)
+                    initialLayout(info.initialLayout)
+                    sharingMode(info.sharingMode)
+                }
+                val createInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(info.allocUsage) }
+                checkVk(vmaCreateImage(allocator, imageInfo, createInfo, pImage, pAllocation, null)) {
                     "Failed allocating image: $it"
                 }
                 VkImage(pImage[0], pAllocation[0])
@@ -203,4 +225,25 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
     }
 }
 
-data class MemoryInfo(val size: Long, val usage: Int, val allocUsage: Int = VMA_MEMORY_USAGE_AUTO, val createMapped: Boolean = false)
+data class MemoryInfo(
+    val size: Long,
+    val usage: Int,
+    val allocUsage: Int = VMA_MEMORY_USAGE_AUTO,
+    val createMapped: Boolean = false
+)
+
+data class ImageInfo(
+    val imageType: Int,
+    val format: Int,
+    val width: Int,
+    val height: Int,
+    val depth: Int,
+    val arrayLayers: Int,
+    val mipLevels: Int,
+    val samples: Int,
+    val usage: Int,
+    val tiling: Int = VK_IMAGE_TILING_OPTIMAL,
+    val initialLayout: Int = VK_IMAGE_LAYOUT_UNDEFINED,
+    val sharingMode: Int = VK_SHARING_MODE_EXCLUSIVE,
+    val allocUsage: Int = VMA_MEMORY_USAGE_AUTO
+)

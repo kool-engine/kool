@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
-import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 import de.fabmax.kool.util.memStack
@@ -17,7 +16,6 @@ sealed class VkPipeline(
 
     protected val device: Device get() = backend.device
 
-    protected val locations = WgslLocations(pipeline.bindGroupLayouts, (pipeline as? DrawPipeline)?.vertexLayout)
     private val bindGroupLayouts: List<VkDescriptorSetLayout> = createBindGroupLayouts(pipeline)
     val pipelineLayout: VkPipelineLayout = createPipelineLayout()
 
@@ -31,9 +29,8 @@ sealed class VkPipeline(
         layouts.map { group ->
             val bindings = callocVkDescriptorSetLayoutBindingN(group.bindings.size) {
                 group.bindings.forEachIndexed { i, binding ->
-                    val location = locations[binding]
                     this[i].apply {
-                        binding(location.binding)
+                        binding(binding.bindingIndex)
                         descriptorType(binding.type.intType())
                         stageFlags(binding.stages.fold(0) { acc, stage -> acc or stage.bitValue() })
                         descriptorCount(1)
@@ -86,8 +83,7 @@ sealed class VkPipeline(
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
         checkIsNotReleased()
         if (loadingState == Texture.LoadingState.NOT_LOADED) {
-            TODO()
-            //uploadData?.let { backend.textureLoader.loadTexture(this) }
+            uploadData?.let { backend.textureLoader.loadTexture(this) }
         }
         return loadingState == Texture.LoadingState.LOADED
     }
@@ -95,7 +91,7 @@ sealed class VkPipeline(
     protected fun BindGroupData.getOrCreateVkData(): BindGroupDataVk {
         val group = if (this@VkPipeline is VkComputePipeline) 0 else layout.group
         if (gpuData == null) {
-            gpuData = BindGroupDataVk(this, bindGroupLayouts[group], locations, backend)
+            gpuData = BindGroupDataVk(this, bindGroupLayouts[group], backend)
         }
         return gpuData as BindGroupDataVk
     }

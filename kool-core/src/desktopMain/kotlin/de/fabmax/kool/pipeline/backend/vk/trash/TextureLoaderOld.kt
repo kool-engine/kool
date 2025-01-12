@@ -1,31 +1,34 @@
-package de.fabmax.kool.pipeline.backend.vk
+package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.math.getNumMipLevels
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.vk.*
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
 import org.lwjgl.util.vma.Vma
-import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK10
 import java.nio.ByteBuffer
 
-object TextureLoader {
-    fun createCubeTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVk {
-        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
+object TextureLoaderOld {
+    fun createCubeTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVkOld {
+        val mipLevels = if (props.generateMipMaps) {
+            getNumMipLevels(width, height)
+        } else { 1 }
 
-        val imgConfig = Image.Config()
-        imgConfig.width = width
-        imgConfig.height = height
-        imgConfig.depth = 1
-        imgConfig.mipLevels = mipLevels
-        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
-        imgConfig.format = format.vkFormat
-        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
-        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
-        imgConfig.arrayLayers = 6
-        imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+//        val imgConfig = Image.Config()
+//        imgConfig.width = width
+//        imgConfig.height = height
+//        imgConfig.depth = 1
+//        imgConfig.mipLevels = mipLevels
+//        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
+//        imgConfig.format = format.vkFormat
+//        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+//        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
+//        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+//        imgConfig.arrayLayers = 6
+//        imgConfig.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
 
 //        val textureImage = Image(sys, imgConfig)
 //        val textureImageView =  ImageView(sys, textureImage.vkImage, textureImage.format, VK_IMAGE_ASPECT_COLOR_BIT,
@@ -38,7 +41,7 @@ object TextureLoader {
         TODO()
     }
 
-    fun loadTextureCube(backend: RenderBackendVk, props: TextureProps, cubeImg: ImageData) : LoadedTextureVk {
+    fun loadTextureCube(backend: RenderBackendVk, props: TextureProps, cubeImg: ImageData) : LoadedTextureVkOld {
         if (cubeImg !is ImageDataCube) {
             throw IllegalArgumentException("Provided TextureData must be of type TextureDataCube")
         }
@@ -47,7 +50,9 @@ object TextureLoader {
         val height = cubeImg.height
         val dstFmt = checkFormat(cubeImg.format)
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong() * 6
-        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (props.generateMipMaps) {
+            getNumMipLevels(width, height)
+        } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
 //        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -66,7 +71,7 @@ object TextureLoader {
         }
 
         val tex = createCubeTexture(backend, props, width, height, dstFmt)
-        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+//        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 //        copyCubeBufferToImage(backend, stagingBuffer, tex.textureImage, width, height)
 //        stagingBuffer.release()
 
@@ -74,24 +79,26 @@ object TextureLoader {
             logE { "Mipmap generation for cube maps not yet supported" }
             //tex.textureImage.generateMipmaps(sys)
         } else {
-            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+//            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         }
         return tex
     }
 
-    fun createTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, depth: Int, format: TexFormat = props.format) : LoadedTextureVk {
-        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
+    fun createTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, depth: Int, format: TexFormat = props.format) : LoadedTextureVkOld {
+        val mipLevels = if (props.generateMipMaps) {
+            getNumMipLevels(width, height)
+        } else { 1 }
 
-        val imgConfig = Image.Config()
-        imgConfig.width = width
-        imgConfig.height = height
-        imgConfig.depth = depth
-        imgConfig.mipLevels = mipLevels
-        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
-        imgConfig.format = format.vkFormat
-        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
-        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+//        val imgConfig = Image.Config()
+//        imgConfig.width = width
+//        imgConfig.height = height
+//        imgConfig.depth = depth
+//        imgConfig.mipLevels = mipLevels
+//        imgConfig.numSamples = VK_SAMPLE_COUNT_1_BIT
+//        imgConfig.format = format.vkFormat
+//        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
+//        imgConfig.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
+//        imgConfig.allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
 
 //        val textureImage = Image(sys, imgConfig)
 //        val textureImageView = ImageView(sys, textureImage, VK_IMAGE_ASPECT_COLOR_BIT)
@@ -103,12 +110,12 @@ object TextureLoader {
         TODO()
     }
 
-    fun loadTexture1d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVk {
+    fun loadTexture1d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVkOld {
         // 1d texture internally uses a 2d texture
         return loadTexture2d(backend, props, img)
     }
 
-    fun loadTexture2d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVk {
+    fun loadTexture2d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVkOld {
         img as ImageData2d
         val width = img.width
         val height = img.height
@@ -116,7 +123,9 @@ object TextureLoader {
         val buf = reshape(dstFmt, img)
 
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong()
-        val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (props.generateMipMaps) {
+            getNumMipLevels(width, height)
+        } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
 //        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -125,19 +134,19 @@ object TextureLoader {
 //        }
 
         val tex = createTexture(backend, props, width, height, 1, dstFmt)
-        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+//        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 //        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, 1)
 //        stagingBuffer.release()
 
-        if (mipLevels > 1) {
-            tex.textureImage.generateMipmaps()
-        } else {
-            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        }
+//        if (mipLevels > 1) {
+//            tex.textureImage.generateMipmaps()
+//        } else {
+//            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+//        }
         return tex
     }
 
-    fun loadTexture3d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVk {
+    fun loadTexture3d(backend: RenderBackendVk, props: TextureProps, img: ImageData) : LoadedTextureVkOld {
         if (img !is BufferedImageData3d) {
             throw IllegalArgumentException("Provided TextureData must be of type TextureData3d")
         }
@@ -154,7 +163,9 @@ object TextureLoader {
         val buf = reshape(dstFmt, img)
 
         val imageSize = width * height * depth * dstFmt.vkBytesPerPx.toLong()
-        val mipLevels = if (noMipMappingProps.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
+        val mipLevels = if (noMipMappingProps.generateMipMaps) {
+            getNumMipLevels(width, height)
+        } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
 //        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
@@ -163,30 +174,30 @@ object TextureLoader {
 //        }
 
         val tex = createTexture(backend, noMipMappingProps, width, height, depth, dstFmt)
-        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+//        tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 //        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, depth)
 //        stagingBuffer.release()
 
-        if (mipLevels > 1) {
-            tex.textureImage.generateMipmaps()
-        } else {
-            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-        }
+//        if (mipLevels > 1) {
+//            tex.textureImage.generateMipmaps()
+//        } else {
+//            tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+//        }
         return tex
     }
 
     private fun FilterMethod.vkFilterMethod(): Int {
         return when (this) {
-            FilterMethod.NEAREST -> VK_FILTER_NEAREST
-            FilterMethod.LINEAR -> VK_FILTER_LINEAR
+            FilterMethod.NEAREST -> VK10.VK_FILTER_NEAREST
+            FilterMethod.LINEAR -> VK10.VK_FILTER_LINEAR
         }
     }
 
     private fun AddressMode.vkAddressMode(): Int {
         return when(this) {
-            AddressMode.CLAMP_TO_EDGE -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
-            AddressMode.MIRRORED_REPEAT -> VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT
-            AddressMode.REPEAT -> VK_SAMPLER_ADDRESS_MODE_REPEAT
+            AddressMode.CLAMP_TO_EDGE -> VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+            AddressMode.MIRRORED_REPEAT -> VK10.VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT
+            AddressMode.REPEAT -> VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT
         }
     }
 
@@ -194,11 +205,11 @@ object TextureLoader {
         memStack {
             val samplerSettings = props.defaultSamplerSettings
             val isAnisotropy = props.generateMipMaps &&
-                samplerSettings.minFilter == FilterMethod.LINEAR &&
-                samplerSettings.magFilter == FilterMethod.LINEAR
+                    samplerSettings.minFilter == FilterMethod.LINEAR &&
+                    samplerSettings.magFilter == FilterMethod.LINEAR
 
             val samplerInfo = callocVkSamplerCreateInfo {
-                sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
+                sType(VK10.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
                 magFilter(samplerSettings.magFilter.vkFilterMethod())
                 minFilter(samplerSettings.minFilter.vkFilterMethod())
                 addressModeU(samplerSettings.addressModeU.vkAddressMode())
@@ -206,20 +217,20 @@ object TextureLoader {
                 addressModeW(samplerSettings.addressModeW.vkAddressMode())
                 anisotropyEnable(isAnisotropy)
                 maxAnisotropy(if (isAnisotropy) samplerSettings.maxAnisotropy.toFloat() else 1f)
-                borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
+                borderColor(VK10.VK_BORDER_COLOR_INT_OPAQUE_BLACK)
                 unnormalizedCoordinates(false)
                 compareEnable(false)
-                compareOp(VK_COMPARE_OP_ALWAYS)
+                compareOp(VK10.VK_COMPARE_OP_ALWAYS)
                 when (samplerSettings.minFilter) {
-                    FilterMethod.NEAREST -> mipmapMode(VK_SAMPLER_MIPMAP_MODE_NEAREST)
-                    FilterMethod.LINEAR -> mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                    FilterMethod.NEAREST -> mipmapMode(VK10.VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                    FilterMethod.LINEAR -> mipmapMode(VK10.VK_SAMPLER_MIPMAP_MODE_LINEAR)
                 }
                 mipLodBias(0f)
                 minLod(0f)
                 maxLod(texImage.mipLevels.toFloat())
             }
             val ptr = mallocLong(1)
-            check(vkCreateSampler(backend.device.vkDevice, samplerInfo, null, ptr) == VK_SUCCESS)
+            check(VK10.vkCreateSampler(backend.device.vkDevice, samplerInfo, null, ptr) == VK10.VK_SUCCESS)
             return ptr[0]
         }
     }
@@ -322,10 +333,10 @@ object TextureLoader {
     }
 
     private fun copyBufferToImage(backend: RenderBackendVk, buffer: Buffer, image: Image, width: Int, height: Int, depth: Int) {
-        backend.transferCommandPool.singleShotCommands { commandBuffer ->
+        backend.commandPool.singleShotCommands { commandBuffer ->
             val region = callocVkBufferImageCopyN(1) {
                 imageSubresource {
-                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.aspectMask(VK10.VK_IMAGE_ASPECT_COLOR_BIT)
                     it.mipLevel(0)
                     it.baseArrayLayer(0)
                     it.layerCount(1)
@@ -333,18 +344,24 @@ object TextureLoader {
                 imageOffset { it.set(0, 0, 0) }
                 imageExtent { it.set(width, height, depth) }
             }
-            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer.handle, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
+            VK10.vkCmdCopyBufferToImage(
+                commandBuffer,
+                buffer.vkBuffer.handle,
+                image.vkImage.handle,
+                VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                region
+            )
         }
     }
 
     private fun copyCubeBufferToImage(backend: RenderBackendVk, buffer: Buffer, image: Image, width: Int, height: Int) {
-        backend.transferCommandPool.singleShotCommands { commandBuffer ->
+        backend.commandPool.singleShotCommands { commandBuffer ->
             val regions = callocVkBufferImageCopyN(6) {
                 for (face in 0..5) {
                     this[face].apply {
                         bufferOffset(width * height * 4L * face)
                         imageSubresource {
-                            it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                            it.aspectMask(VK10.VK_IMAGE_ASPECT_COLOR_BIT)
                             it.mipLevel(0)
                             it.baseArrayLayer(face)
                             it.layerCount(1)
@@ -353,7 +370,13 @@ object TextureLoader {
                     }
                 }
             }
-            vkCmdCopyBufferToImage(commandBuffer, buffer.vkBuffer.handle, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, regions)
+            VK10.vkCmdCopyBufferToImage(
+                commandBuffer,
+                buffer.vkBuffer.handle,
+                image.vkImage.handle,
+                VK10.VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                regions
+            )
         }
     }
 }

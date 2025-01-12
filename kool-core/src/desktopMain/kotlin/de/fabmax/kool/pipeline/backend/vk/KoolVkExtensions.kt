@@ -1,9 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.DepthCompareOp
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ShaderStage
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Color
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
@@ -22,7 +20,7 @@ fun ShaderStage.bitValue(): Int {
 }
 
 @Suppress("DEPRECATION")
-val TexFormat.vkFormat: Int
+val TexFormat.vk: Int
     get() = when(this) {
         TexFormat.R -> VK_FORMAT_R8_UNORM
         TexFormat.RG -> VK_FORMAT_R8G8_UNORM
@@ -79,13 +77,13 @@ val TexFormat.vkBytesPerPx: Int
         TexFormat.RGBA_U32 -> 16
     }
 
-val CullMethod.vkCullMode: Int get() = when (this) {
+val CullMethod.vk: Int get() = when (this) {
     CullMethod.CULL_BACK_FACES -> VK_CULL_MODE_BACK_BIT
     CullMethod.CULL_FRONT_FACES -> VK_CULL_MODE_FRONT_BIT
     CullMethod.NO_CULLING -> VK_CULL_MODE_NONE
 }
 
-val DepthCompareOp.vkCompareOp: Int get() = when (this) {
+val DepthCompareOp.vk: Int get() = when (this) {
     DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
     DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
     DepthCompareOp.LESS -> VK_COMPARE_OP_LESS
@@ -94,6 +92,17 @@ val DepthCompareOp.vkCompareOp: Int get() = when (this) {
     DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
     DepthCompareOp.EQUAL -> VK_COMPARE_OP_EQUAL
     DepthCompareOp.NOT_EQUAL -> VK_COMPARE_OP_NOT_EQUAL
+}
+
+val FilterMethod.vk: Int get() = when (this) {
+    FilterMethod.LINEAR -> VK_FILTER_LINEAR
+    FilterMethod.NEAREST -> VK_FILTER_NEAREST
+}
+
+val AddressMode.vk: Int get() = when (this) {
+    AddressMode.CLAMP_TO_EDGE -> VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
+    AddressMode.MIRRORED_REPEAT -> VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT
+    AddressMode.REPEAT -> VK_SAMPLER_ADDRESS_MODE_REPEAT
 }
 
 fun VkClearValue.setColor(color: Color) {

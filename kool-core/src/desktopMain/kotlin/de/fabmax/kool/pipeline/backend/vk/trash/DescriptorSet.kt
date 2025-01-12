@@ -1,4 +1,4 @@
-package de.fabmax.kool.pipeline.backend.vk.pipeline
+package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk

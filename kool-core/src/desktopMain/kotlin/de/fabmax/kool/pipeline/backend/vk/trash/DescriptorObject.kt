@@ -1,7 +1,10 @@
-package de.fabmax.kool.pipeline.backend.vk.pipeline
+package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.vk.*
+import de.fabmax.kool.pipeline.backend.vk.MemoryInfo
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
+import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorBufferInfoN
+import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorImageInfoN
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.cancelReleaseWith
 import de.fabmax.kool.util.logE
@@ -72,7 +75,7 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
 }
 
 class SamplerDescriptor private constructor(binding: Int, private val sampler: TexSamplerWrapper, desc: BindingLayout) : DescriptorObject(binding, desc) {
-    private var boundTex = mutableListOf<LoadedTextureVk>()
+    private var boundTex = mutableListOf<LoadedTextureVkOld>()
 
     constructor(binding: Int, sampler1d: Texture1dLayout) : this(binding, TexSamplerWrapper(binding, sampler1d), sampler1d)
     constructor(binding: Int, sampler2d: Texture2dLayout) : this(binding, TexSamplerWrapper(binding, sampler2d), sampler2d)
@@ -89,7 +92,7 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
             val imageInfo = callocVkDescriptorImageInfoN(sampler.arraySize) {
                 for (i in 0 until sampler.arraySize) {
                     this[i].apply {
-                        val vkTex = textures[i]?.gpuTexture as LoadedTextureVk?
+                        val vkTex = textures[i]?.gpuTexture as LoadedTextureVkOld?
                         imageLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                         imageView(vkTex?.textureImageView?.vkImageView?.handle ?: 0L)
                         sampler(vkTex?.sampler ?: 0L)
@@ -141,10 +144,10 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
                 if (tex.loadingState == Texture.LoadingState.LOADED && bound != tex.gpuTexture) {
                     when {
                         i < boundTex.size -> {
-                            boundTex[i] = tex.gpuTexture as LoadedTextureVk
+                            boundTex[i] = tex.gpuTexture as LoadedTextureVkOld
                         }
                         else -> {
-                            boundTex.add(tex.gpuTexture as LoadedTextureVk)
+                            boundTex.add(tex.gpuTexture as LoadedTextureVkOld)
                         }
                     }
                     isDescriptorSetUpdateRequired = true
@@ -182,13 +185,13 @@ class SamplerDescriptor private constructor(binding: Int, private val sampler: T
 
     companion object {
         private val loadingTextures = mutableListOf<LoadingTex>()
-        private val loadedTextures = mutableMapOf<ImageData, LoadedTextureVk>()
+        private val loadedTextures = mutableMapOf<ImageData, LoadedTextureVkOld>()
 
-        private fun getLoadedTex(tex: Texture<*>, texData: ImageData, backend: RenderBackendVk): LoadedTextureVk {
+        private fun getLoadedTex(tex: Texture<*>, texData: ImageData, backend: RenderBackendVk): LoadedTextureVkOld {
             return synchronized(loadedTextures) {
                 loadedTextures.values.removeIf { it.isReleased }
                 loadedTextures.computeIfAbsent(texData) { k ->
-                    val loaded = LoadedTextureVk.fromTexData(backend, tex.props, k)
+                    val loaded = LoadedTextureVkOld.fromTexData(backend, tex.props, k)
                     backend.device.addDependingReleasable(loaded)
                     loaded
                 }

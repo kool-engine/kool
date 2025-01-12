@@ -42,24 +42,15 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val physicalDevice: PhysicalDevice
     val device: Device
     val memManager: MemoryManager
+    val textureLoader: TextureLoaderVk
     val pipelineManager: PipelineManager
     val screenRenderPass: ScreenRenderPassVk
     val commandPool: CommandPool
-    val transferCommandPool: CommandPool
+    //val transferCommandPool: CommandPool
     val commandBuffers: List<VkCommandBuffer>
 
     var swapchain: Swapchain
     private var windowResized = false
-
-    //val pipelineManager = PipelineManager(this)
-
-    //val transferCommandPool: CommandPool
-    //val renderLoop: RenderLoop
-
-//    private val vkScene = KoolVkScene()
-
-    //private val semaPool: SemaphorePool
-//    private val renderPassGraph = RenderPassGraph()
 
     override var frameGpuTime: Double = 0.0
 
@@ -79,10 +70,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = physicalDevice.deviceName
 
         memManager = MemoryManager(this)
+        textureLoader = TextureLoaderVk(this)
         pipelineManager = PipelineManager(this)
         screenRenderPass = ScreenRenderPassVk(this)
         commandPool = CommandPool(this, device.graphicsQueue)
-        transferCommandPool = CommandPool(this, device.transferQueue)
+        //transferCommandPool = CommandPool(this, device.transferQueue)
         commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
 
         swapchain = Swapchain(this)
@@ -94,19 +86,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         //vkSystem.addDependingResource(semaPool)
     }
 
-    override fun <T : ImageData> uploadTextureData(tex: Texture<T>,) {
-//        val data = checkNotNull(tex.uploadData)
-//        tex.uploadData = null
-//        tex.gpuTexture = when (tex) {
-//            is Texture1d -> TextureLoader.loadTexture1d(vkSystem, tex.props, data)
-//            is Texture2d -> TextureLoader.loadTexture2d(vkSystem, tex.props, data)
-//            is Texture3d -> TextureLoader.loadTexture3d(vkSystem, tex.props, data)
-//            is TextureCube -> TextureLoader.loadTextureCube(vkSystem, tex.props, data)
-//            else -> throw IllegalArgumentException("Unsupported texture type: $tex")
-//        }
-//        tex.loadingState = Texture.LoadingState.LOADED
-//        device.addDependingResource(tex.gpuTexture as LoadedTextureVk)
-    }
+    override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         TODO("Not yet implemented")
@@ -149,6 +129,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 commandBuffer.begin(this) { }
 
                 //ctx.backgroundScene.renderOffscreenPasses(commandBuffer)
+                if (ctx.scenes.isEmpty()) {
+                    screenRenderPass.renderScene(ctx.backgroundScene.mainRenderPass, commandBuffer, this)
+                }
 
                 //recordCommandBuffer(commandBuffer, swapchain.nextSwapImage)
                 for (i in ctx.scenes.indices) {

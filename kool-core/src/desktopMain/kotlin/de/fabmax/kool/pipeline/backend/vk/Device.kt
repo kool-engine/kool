@@ -164,6 +164,15 @@ internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRender
     }
 }
 
+internal fun Device.createSampler(stack: MemoryStack? = null, block: VkSamplerCreateInfo.() -> Unit): VkSampler {
+    memStack(stack) {
+        val createInfo = callocVkSamplerCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreateSampler(vkDevice, createInfo, null, handle)) { "Failed creating sampler: $it" }
+        return VkSampler(handle[0])
+    }
+}
+
 internal fun Device.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
     memStack(stack) {
         val createInfo = callocVkSemaphoreCreateInfo { }
@@ -229,6 +238,10 @@ internal fun Device.destroyRenderPass(renderPass: VkRenderPass) {
 
 internal fun Device.destroyShaderModule(shaderModule: VkShaderModule) {
     vkDestroyShaderModule(vkDevice, shaderModule.handle, null)
+}
+
+internal fun Device.destroySampler(sampler: VkSampler) {
+    vkDestroySampler(vkDevice, sampler.handle, null)
 }
 
 internal fun Device.destroySemaphore(semaphore: VkSemaphore) {

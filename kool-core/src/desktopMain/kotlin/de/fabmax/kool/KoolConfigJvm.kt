@@ -3,6 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
+import de.fabmax.kool.util.logD
 import kotlinx.serialization.json.Json
 import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
@@ -50,6 +51,18 @@ data class KoolConfigJvm(
 
 ) : KoolConfig {
     companion object {
+        init {
+            // on macOS, AWT clashes with GLFW, because GLFW also has to run on the first thread enabling AWT
+            // headless-mode somewhat mitigates this problem.
+            // The headless property is set here because it has to happen before any AWT class (as e.g. BufferedImage)
+            // is loaded.
+            val osName = System.getProperty("os.name", "unknown").lowercase()
+            if ("mac os" in osName || "darwin" in osName || "osx" in osName) {
+                logD("KoolConfig") { "Detected macOS. Enabling AWT headless mode to mitigate AWT / GLFW compatibility issues" }
+                System.setProperty("java.awt.headless", "true")
+            }
+        }
+
         val DEFAULT_ICON: BufferedImage? = try {
             KoolConfigJvm::class.java.classLoader.getResourceAsStream("icon.png").use {
                 ImageIO.read(it)

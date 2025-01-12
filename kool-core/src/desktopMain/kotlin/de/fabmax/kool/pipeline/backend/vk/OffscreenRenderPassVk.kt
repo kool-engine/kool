@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.util.*
-import org.lwjgl.util.vma.Vma
 import org.lwjgl.vulkan.VK10.*
 
 class OffscreenRenderPassVk(
@@ -242,22 +241,23 @@ class OffscreenRenderPassVk(
             val mImageViews = mutableListOf<ImageView>()
             val mSamplers = mutableListOf<Long>()
             for (i in colorFormats.indices) {
-                val fbImageCfg = Image.Config().apply {
-                    width = maxWidth
-                    height = maxHeight
-                    format = colorFormats[i]
-                    tiling = VK_IMAGE_TILING_OPTIMAL
-                    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or if (!isCopied) VK_IMAGE_USAGE_SAMPLED_BIT else 0
-                    allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
-                    if (multiSampling) {
-                        numSamples = backend.physicalDevice.msaaSamples
-                    }
-                }
-
-                val img = Image(backend, fbImageCfg)
-                mImages += img
-                mImageViews += ImageView.imageView2d(backend.device, img, VK_IMAGE_ASPECT_COLOR_BIT)
-                mSamplers += createSampler(backend, filterMethod, false, VK_COMPARE_OP_NEVER)
+                TODO()
+//                val fbImageCfg = Image.Config().apply {
+//                    width = maxWidth
+//                    height = maxHeight
+//                    format = colorFormats[i]
+//                    tiling = VK_IMAGE_TILING_OPTIMAL
+//                    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or if (!isCopied) VK_IMAGE_USAGE_SAMPLED_BIT else 0
+//                    allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+//                    if (multiSampling) {
+//                        numSamples = backend.physicalDevice.msaaSamples
+//                    }
+//                }
+//
+//                val img = Image(backend, fbImageCfg)
+//                mImages += img
+//                mImageViews += ImageView.imageView2d(backend.device, img, VK_IMAGE_ASPECT_COLOR_BIT)
+//                mSamplers += createSampler(backend, filterMethod, false, VK_COMPARE_OP_NEVER)
             }
             colorImages = mImages
             colorImageViews = mImageViews
@@ -282,28 +282,28 @@ class OffscreenRenderPassVk(
     class CreatedDepthAttachment(val backend: RenderBackendVk, maxWidth: Int, maxHeight: Int, isCopied: Boolean,
                                  filterMethod: Int, depthCompareOp: Int, multiSampling: Boolean) :
             DepthAttachment(isCopied) {
-        override val depthImage: Image
+        override val depthImage: Image = TODO()
         override val depthImageView: ImageView
         override val depthSampler: Long
 
         init {
-            val depthImageCfg = Image.Config().apply {
-                width = maxWidth
-                height = maxHeight
-                format = backend.physicalDevice.depthFormat
-                tiling = VK_IMAGE_TILING_OPTIMAL
-                usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else VK_IMAGE_USAGE_SAMPLED_BIT
-                allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
-                if (multiSampling) {
-                    numSamples = backend.physicalDevice.msaaSamples
-                }
-            }
-            depthImage = Image(backend, depthImageCfg)
-            depthImageView = ImageView.imageView2d(backend.device, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
-            depthSampler = createSampler(backend, filterMethod, true, depthCompareOp)
-
-            depthImage.releaseWith(this)
-            depthImageView.releaseWith(this)
+//            val depthImageCfg = Image.Config().apply {
+//                width = maxWidth
+//                height = maxHeight
+//                format = backend.physicalDevice.depthFormat
+//                tiling = VK_IMAGE_TILING_OPTIMAL
+//                usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or if (isCopied) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else VK_IMAGE_USAGE_SAMPLED_BIT
+//                allocUsage = Vma.VMA_MEMORY_USAGE_GPU_ONLY
+//                if (multiSampling) {
+//                    numSamples = backend.physicalDevice.msaaSamples
+//                }
+//            }
+//            depthImage = Image(backend, depthImageCfg)
+//            depthImageView = ImageView.imageView2d(backend.device, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT)
+//            depthSampler = createSampler(backend, filterMethod, true, depthCompareOp)
+//
+//            depthImage.releaseWith(this)
+//            depthImageView.releaseWith(this)
         }
 
         override fun release() {

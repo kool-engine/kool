@@ -1,4 +1,4 @@
-package de.fabmax.kool.pipeline.backend.vk.pipeline
+package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
@@ -107,7 +107,7 @@ class GraphicsPipeline(val backend: RenderBackendVk, val koolRenderPass: RenderP
                 rasterizerDiscardEnable(false)
                 polygonMode(VK_POLYGON_MODE_FILL)
                 lineWidth(pipeline.lineWidth)
-                cullMode(pipeline.cullMethod.vkCullMode)
+                cullMode(pipeline.cullMethod.vk)
                 frontFace(VK_FRONT_FACE_CLOCKWISE)
                 depthBiasEnable(false)
                 depthBiasConstantFactor(0f)

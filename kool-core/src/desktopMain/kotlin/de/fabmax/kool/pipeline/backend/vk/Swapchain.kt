@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.util.*
 import org.lwjgl.BufferUtils
 import org.lwjgl.system.MemoryStack
-import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_GPU_ONLY
 import org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
 import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
@@ -87,7 +86,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
                 }
             }
             imageViews = images.map {
-                ImageView(device, it, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1, VK_IMAGE_VIEW_TYPE_2D, 1).also {
+                ImageView(device, it, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1).also {
                     addDependingReleasable(it)
                 }
             }
@@ -149,16 +148,19 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     private fun createColorResources(): Pair<Image, ImageView> {
-        val imgConfig = Image.Config()
-        imgConfig.width = extent.width()
-        imgConfig.height = extent.height()
-        imgConfig.mipLevels = 1
-        imgConfig.numSamples = physicalDevice.msaaSamples
-        imgConfig.format = imageFormat
-        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT //or VK_IMAGE_USAGE_TRANSFER_DST_BIT // does not work because of VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT flag
-        imgConfig.allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
-        val image = Image(backend, imgConfig)
+        val imgInfo = ImageInfo(
+            imageType = VK_IMAGE_TYPE_2D,
+            format = imageFormat,
+            width = extent.width(),
+            height = extent.height(),
+            depth = 1,
+            arrayLayers = 1,
+            mipLevels = 1,
+            samples = physicalDevice.msaaSamples,
+            tiling = VK_IMAGE_TILING_OPTIMAL,
+            usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, //or VK_IMAGE_USAGE_TRANSFER_DST_BIT // does not work because of VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT flag
+        )
+        val image = Image(backend, imgInfo)
 
         val imageView = ImageView.imageView2d(device, image, VK_IMAGE_ASPECT_COLOR_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
@@ -166,16 +168,19 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     private fun createDepthResources(): Pair<Image, ImageView> {
-        val imgConfig = Image.Config()
-        imgConfig.width = extent.width()
-        imgConfig.height = extent.height()
-        imgConfig.mipLevels = 1
-        imgConfig.numSamples = physicalDevice.msaaSamples
-        imgConfig.format = physicalDevice.depthFormat
-        imgConfig.tiling = VK_IMAGE_TILING_OPTIMAL
-        imgConfig.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
-        imgConfig.allocUsage = VMA_MEMORY_USAGE_GPU_ONLY
-        val image = Image(backend, imgConfig)
+        val imgInfo = ImageInfo(
+            imageType = VK_IMAGE_TYPE_2D,
+            format = physicalDevice.depthFormat,
+            width = extent.width(),
+            height = extent.height(),
+            depth = 1,
+            arrayLayers = 1,
+            mipLevels = 1,
+            samples = physicalDevice.msaaSamples,
+            tiling = VK_IMAGE_TILING_OPTIMAL,
+            usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+        )
+        val image = Image(backend, imgInfo)
 
         val imageView = ImageView.imageView2d(device, image, VK_IMAGE_ASPECT_DEPTH_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)

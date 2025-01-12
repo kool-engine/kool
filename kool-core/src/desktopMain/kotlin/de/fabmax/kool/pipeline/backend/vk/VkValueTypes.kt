@@ -46,6 +46,9 @@ value class VkPipelineLayout(val handle: Long)
 value class VkRenderPass(val handle: Long)
 
 @JvmInline
+value class VkSampler(val handle: Long)
+
+@JvmInline
 value class VkSemaphore(val handle: Long)
 
 @JvmInline

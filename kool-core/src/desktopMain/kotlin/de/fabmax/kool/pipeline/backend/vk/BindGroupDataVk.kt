@@ -4,14 +4,12 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.BindGroupData
 import de.fabmax.kool.pipeline.Std140BufferLayout
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
-import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 
 class BindGroupDataVk(
     private val data: BindGroupData,
     private val gpuLayout: VkDescriptorSetLayout,
-    private val locations: WgslLocations,
     private val backend: RenderBackendVk
 ) : BaseReleasable(), GpuBindGroupData {
     private val device: Device get() = backend.device
@@ -52,16 +50,29 @@ class BindGroupDataVk(
             UboBinding(ubo, layout)
         }
 
+        val textures = data.bindings.filterIsInstance<BindGroupData.Texture2dBindingData>()
+
+        val nPoolSizes =
+            if (ubos.isEmpty()) 0 else 1 +
+            if (textures.isEmpty()) 0 else 1
+
         val descriptorPool = backend.device.createDescriptorPool(this) {
-            if (uboBindings.isNotEmpty()) {
-                val poolSizes = callocVkDescriptorPoolSizeN(1) {
-                    this[0].let {
-                        it.descriptorCount(uboBindings.size)
+            val poolSizes = callocVkDescriptorPoolSizeN(nPoolSizes) {
+                var iPoolSize = 0
+                if (ubos.isNotEmpty()) {
+                    this[iPoolSize++].let {
+                        it.descriptorCount(ubos.size)
                         it.type(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
                     }
                 }
-                pPoolSizes(poolSizes)
+                if (textures.isNotEmpty()) {
+                    this[iPoolSize++].let {
+                        it.descriptorCount(textures.size)
+                        it.type(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                    }
+                }
             }
+            pPoolSizes(poolSizes)
             maxSets(Swapchain.MAX_FRAMES_IN_FLIGHT)
         }
 
@@ -91,6 +102,44 @@ class BindGroupDataVk(
                         .pBufferInfo(bufferInfo)
                 }
                 vkUpdateDescriptorSets(backend.device.vkDevice, descriptorWrite, null)
+            }
+            if (textures.isNotEmpty()) {
+                val descriptorWrite = callocVkWriteDescriptorSetN(textures.size) { }
+                for (imgIdx in textures.indices) {
+                    val img = textures[imgIdx]
+                    val tex = img.texture!!
+                    val vkTex = tex.gpuTexture as LoadedTextureVk
+
+                    val sampler = backend.device.createSampler {
+                        val samplerSettings = img.sampler ?: tex.props.defaultSamplerSettings
+                        magFilter(samplerSettings.magFilter.vk)
+                        minFilter(samplerSettings.minFilter.vk)
+                        addressModeU(samplerSettings.addressModeU.vk)
+                        addressModeV(samplerSettings.addressModeV.vk)
+                        addressModeW(samplerSettings.addressModeW.vk)
+                        anisotropyEnable(false)
+                        compareEnable(false)
+                        compareOp(VK_COMPARE_OP_ALWAYS)
+                        mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                    }
+
+                    val imgInfo = callocVkDescriptorImageInfoN(1) {
+                        this[0].set(
+                            sampler.handle,
+                            vkTex.imageView.vkImageView.handle,
+                            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+                        )
+                    }
+
+                    descriptorWrite[imgIdx]
+                        .dstSet(descriptorSet.handle)
+                        .dstBinding(img.layout.bindingIndex)
+                        .dstArrayElement(0)
+                        .descriptorType(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER)
+                        .descriptorCount(1)
+                        .pImageInfo(imgInfo)
+                    vkUpdateDescriptorSets(backend.device.vkDevice, descriptorWrite, null)
+                }
             }
         }
         return@memStack BindGroup(descriptorPool, descriptorSets, uboBindings, backend)

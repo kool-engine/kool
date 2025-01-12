@@ -151,7 +151,7 @@ class VkDrawPipeline(
             rasterizerDiscardEnable(false)
             polygonMode(VK_POLYGON_MODE_FILL)
             lineWidth(drawPipeline.lineWidth)
-            cullMode(drawPipeline.cullMethod.vkCullMode)
+            cullMode(drawPipeline.cullMethod.vk)
             frontFace(if (renderPass.isMirrorY) VK_FRONT_FACE_COUNTER_CLOCKWISE else VK_FRONT_FACE_CLOCKWISE)
             depthBiasEnable(false)
             depthBiasConstantFactor(0f)
@@ -178,7 +178,7 @@ class VkDrawPipeline(
         val depthStencil = if (!hasDepthAttachment) null else callocVkPipelineDepthStencilStateCreateInfo {
             depthTestEnable(true)
             depthWriteEnable(drawPipeline.isWriteDepth)
-            depthCompareOp(depthOp.vkCompareOp)
+            depthCompareOp(depthOp.vk)
             depthBoundsTestEnable(false)
             stencilTestEnable(false)
         }

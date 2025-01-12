@@ -240,8 +240,9 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     fun setWindowIcon(icon: List<BufferedImage>) {
         (KoolSystem.platform as? Platform.Desktop)?.let {
             if (it.isMacOs) {
-                // Mac OS has no window icons, only the icon in the dock
-                // todo: setting the dock icon via AWT Taskbar kind of works but messes up GLFW
+                // macOS has no window icons, only the icon in the dock. We could set the dock icon via the
+                // following line if AWT wouldn't run in headless mode. However, headless mode is required because
+                // otherwise AWT and GLFW event threads clash
                 //Taskbar.getTaskbar().iconImage = icon.first()
                 return
             }

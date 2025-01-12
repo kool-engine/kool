@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.util.*
-import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_SRC_BIT
 import org.lwjgl.vulkan.VK10.vkCmdCopyBuffer
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
@@ -28,10 +27,10 @@ class Buffer(
     inline fun mappedFloats(block: (FloatBuffer) -> Unit) = backend.memManager.mappedFloats(vkBuffer, block)
     inline fun mappedInts(block: (IntBuffer) -> Unit) = backend.memManager.mappedInts(vkBuffer, block)
 
-    fun copyFrom(srcBuffer: Buffer) {
-        backend.transferCommandPool.singleShotCommands { commandBuffer ->
-            val copyRegion = callocVkBufferCopyN(1) { size(srcBuffer.bufferSize) }
-            vkCmdCopyBuffer(commandBuffer, srcBuffer.vkBuffer.handle, vkBuffer.handle, copyRegion)
+    fun copyFrom(srcBuffer: VkBuffer, size: Long = srcBuffer.bufferSize) {
+        backend.commandPool.singleShotCommands { commandBuffer ->
+            val copyRegion = callocVkBufferCopyN(1) { size(size) }
+            vkCmdCopyBuffer(commandBuffer, srcBuffer.handle, vkBuffer.handle, copyRegion)
         }
     }
 
@@ -56,26 +55,20 @@ class GrowingBuffer(
         val bufSize = data.limit * 4L
         checkSize(bufSize)
 
-        val stagingInfo = MemoryInfo(bufSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, createMapped = true)
-        val stagingBuffer = Buffer(backend, stagingInfo, "vertex staging float buffer")
-        stagingBuffer.mappedFloats { floats ->
-            data.useRaw { floats.put(it) }
+        backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
+            backend.memManager.mappedFloats(stagingBuf) { floats -> data.useRaw { floats.put(it) } }
+            buffer.copyFrom(stagingBuf)
         }
-        buffer.copyFrom(stagingBuffer)
-        stagingBuffer.release()
     }
 
     fun writeData(data: Int32Buffer) {
         val bufSize = data.limit * 4L
         checkSize(bufSize)
 
-        val stagingInfo = MemoryInfo(bufSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, createMapped = true)
-        val stagingBuffer = Buffer(backend, stagingInfo, "vertex staging int buffer")
-        stagingBuffer.mappedInts { ints ->
-            data.useRaw { ints.put(it) }
+        backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
+            backend.memManager.mappedInts(stagingBuf) { floats -> data.useRaw { floats.put(it) } }
+            buffer.copyFrom(stagingBuf)
         }
-        buffer.copyFrom(stagingBuffer)
-        stagingBuffer.release()
     }
 
     private fun checkSize(required: Long) {

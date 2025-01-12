@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.backend.stats.TextureInfo
 import de.fabmax.kool.util.BaseReleasable
 
 class WgpuTextureResource(val gpuTexture: GPUTexture, texture: Texture<*>) : BaseReleasable() {
-    private val bufferInfo = TextureInfo(
+    private val textureInfo = TextureInfo(
         texture = texture,
         size = (gpuTexture.width * gpuTexture.height * gpuTexture.depthOrArrayLayers * texture.bytePerPx * texture.mipMapFactor).toLong()
     )
@@ -18,6 +18,6 @@ class WgpuTextureResource(val gpuTexture: GPUTexture, texture: Texture<*>) : Bas
     override fun release() {
         super.release()
         gpuTexture.destroy()
-        bufferInfo.deleted()
+        textureInfo.deleted()
     }
 }

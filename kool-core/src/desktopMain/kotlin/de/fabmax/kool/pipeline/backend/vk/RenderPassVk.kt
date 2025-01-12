@@ -85,11 +85,14 @@ abstract class RenderPassVk<T: RenderPass>(
         val view = passEncoderState.renderPass.views[viewIndex]
         view.setupView()
 
+        val renderWidth = view.viewport.width.coerceAtLeast(1)
+        val renderHeight = view.viewport.height.coerceAtLeast(1)
+
         val viewport = callocVkViewportN(1) {
             x(view.viewport.x.toFloat())
             y(view.viewport.y.toFloat())
-            width(view.viewport.width.toFloat())
-            height(view.viewport.height.toFloat())
+            width(renderWidth.toFloat())
+            height(renderHeight.toFloat())
             minDepth(0f)
             maxDepth(1f)
         }
@@ -97,7 +100,7 @@ abstract class RenderPassVk<T: RenderPass>(
 
         val scissor = callocVkRect2DN(1) {
             offset { it.set(view.viewport.x, view.viewport.y) }
-            extent { it.set(view.viewport.width, view.viewport.height) }
+            extent { it.set(renderWidth, renderHeight) }
         }
         vkCmdSetScissor(passEncoderState.commandBuffer, 0, scissor)
 
@@ -144,61 +147,6 @@ abstract class RenderPassVk<T: RenderPass>(
 //            view.frameCopies.removeAll { it.isSingleShot }
 //        }
     }
-
-    /*
-
-    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: RenderPassEncoderState<*>) {
-        val view = passEncoderState.renderPass.views[viewIndex]
-        view.setupView()
-
-        val viewport = view.viewport
-        val x = (viewport.x shr mipLevel).toFloat()
-        val y = (viewport.y shr mipLevel).toFloat()
-        val w = (viewport.width shr mipLevel).toFloat()
-        val h = (viewport.height shr mipLevel).toFloat()
-        passEncoderState.passEncoder.setViewport(x, y, w, h, 0f, 1f)
-
-        // only do copy when last mip-level is rendered
-        val isLastMipLevel = mipLevel == view.renderPass.numRenderMipLevels - 1
-        var nextFrameCopyI = 0
-        var nextFrameCopy = if (isLastMipLevel) view.frameCopies.getOrNull(nextFrameCopyI++) else null
-        var anySingleShots = false
-
-        view.drawQueue.forEach { cmd ->
-            nextFrameCopy?.let { frameCopy ->
-                if (cmd.drawGroupId > frameCopy.drawGroupId) {
-                    passEncoderState.end()
-                    copy(frameCopy, passEncoderState.encoder)
-                    passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
-                    anySingleShots = anySingleShots || frameCopy.isSingleShot
-                    nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
-                }
-            }
-
-            val isCmdValid = cmd.isActive && cmd.geometry.numIndices > 0
-            if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
-                val insts = cmd.instances
-                if (insts == null) {
-                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices)
-                    BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
-                } else if (insts.numInstances > 0) {
-                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
-                    BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
-                }
-            }
-        }
-
-        nextFrameCopy?.let {
-            passEncoderState.end()
-            copy(it, passEncoderState.encoder)
-            passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
-            anySingleShots = anySingleShots || it.isSingleShot
-        }
-        if (anySingleShots) {
-            view.frameCopies.removeAll { it.isSingleShot }
-        }
-    }
-     */
 
     fun getTexFormat(attachment: Int): TexFormat {
         return when(colorFormats[attachment]) {

@@ -8,8 +8,8 @@ class ImageView(
     image: VkImage,
     format: Int,
     aspectMask: Int,
-    mipLevels: Int,
     viewType: Int,
+    mipLevels: Int,
     layerCount: Int
 ) : BaseReleasable() {
 
@@ -39,8 +39,8 @@ class ImageView(
                 image.vkImage,
                 image.format,
                 aspectMask,
-                image.mipLevels,
                 VK_IMAGE_VIEW_TYPE_2D,
+                image.mipLevels,
                 image.arrayLayers
             )
         }

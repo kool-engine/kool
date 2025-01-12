@@ -127,14 +127,14 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
 
     fun transitionTexLayout(commandBuffer: VkCommandBuffer, dstLayout: Int) {
         memStack {
-            image.transitionLayout(this, commandBuffer, dstLayout)
+//            image.transitionLayout(this, commandBuffer, dstLayout)
         }
     }
 
     fun generateMipmaps(commandBuffer: VkCommandBuffer, dstLayout: Int) {
         if (parentPass.mipMode == RenderPass.MipMode.Generate) {
             memStack {
-                image.generateMipmaps(this, commandBuffer, dstLayout)
+//                image.generateMipmaps(this, commandBuffer, dstLayout)
             }
         }
     }
@@ -146,7 +146,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
         val height = parentPass.height shr mipLevel
 
         memStack {
-            rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+//            rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
 
             val layer = VIEW_TO_CUBE_LAYER_MAP[viewDir.index]
             val imageCopy = callocVkImageCopyN(1) {
@@ -167,7 +167,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
                 extent { it.set(width, height, 1) }
             }
             vkCmdCopyImage(commandBuffer, rp.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
-            rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+//            rp.image.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
             parentPass.colorTexture!!.loadingState = Texture.LoadingState.LOADED
         }
     }
@@ -176,7 +176,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
         val backend: RenderBackendVk = TODO()// = (KoolSystem.requireContext().backend as VkRenderBackend).vkSystem
         val pass = parentPass
         val cfg = (pass.colorAttachments as OffscreenRenderPass.ColorAttachmentTextures).attachments[0]
-        val rp = OffscreenRenderPassVk(backend, pass.size.x, pass.size.y, true, cfg.textureFormat.vkFormat)
+        val rp = OffscreenRenderPassVk(backend, pass.size.x, pass.size.y, true, cfg.textureFormat.vk)
         createTex(rp, backend)
         renderPass = rp
         isCreated = true
