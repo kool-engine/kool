@@ -336,6 +336,34 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
         w = w * s
         return this
     }
+
+    fun slerp(target: QuatF, alpha: Float): QuatF {
+        val cosom = x * target.x + y * target.y + z * target.z + w * target.w
+        val absCosom = kotlin.math.abs(cosom)
+        val scale0: Float
+        val scale1: Float
+
+        if (1.0f - absCosom > MICRO) {
+            val sinSqr = 1.0f - absCosom * absCosom
+            val sinom = 1.0f / sqrt(sinSqr)
+            val omega = kotlin.math.atan2(sinSqr * sinom, absCosom)
+            scale0 = sin((1.0f - alpha) * omega) * sinom
+            scale1 = sin(alpha * omega) * sinom
+        } else {
+            scale0 = 1.0f - alpha
+            scale1 = alpha
+        }
+
+        val adjustedScale1 = if (cosom >= 0.0f) scale1 else -scale1
+
+        this.x = scale0 * x + adjustedScale1 * target.x
+        this.y = scale0 * y + adjustedScale1 * target.y
+        this.z = scale0 * z + adjustedScale1 * target.z
+        this.w = scale0 * w + adjustedScale1 * target.w
+
+        return this
+    }
+
 }
 
 fun QuatF(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
@@ -657,6 +685,34 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         w = w * s
         return this
     }
+
+    fun slerp(target: QuatD, alpha: Double): QuatD {
+        val cosom = x * target.x + y * target.y + z * target.z + w * target.w
+        val absCosom = kotlin.math.abs(cosom)
+        val scale0: Double
+        val scale1: Double
+
+        if (1.0 - absCosom > MICRO) {
+            val sinSqr = 1.0 - absCosom * absCosom
+            val sinom = 1.0 / sqrt(sinSqr)
+            val omega = kotlin.math.atan2(sinSqr * sinom, absCosom)
+            scale0 = sin((1.0 - alpha) * omega) * sinom
+            scale1 = sin(alpha * omega) * sinom
+        } else {
+            scale0 = 1.0 - alpha
+            scale1 = alpha
+        }
+
+        val adjustedScale1 = if (cosom >= 0.0) scale1 else -scale1
+
+        this.x = scale0 * x + adjustedScale1 * target.x
+        this.y = scale0 * y + adjustedScale1 * target.y
+        this.z = scale0 * z + adjustedScale1 * target.z
+        this.w = scale0 * w + adjustedScale1 * target.w
+
+        return this
+    }
+
 }
 
 fun QuatD(angle: AngleD, axis: Vec3d): QuatD = MutableQuatD().set(angle, axis)
