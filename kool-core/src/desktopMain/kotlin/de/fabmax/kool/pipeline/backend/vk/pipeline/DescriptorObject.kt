@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk.pipeline
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.vk.LoadedTextureVk
-import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
-import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorBufferInfoN
-import de.fabmax.kool.pipeline.backend.vk.callocVkDescriptorImageInfoN
+import de.fabmax.kool.pipeline.backend.vk.*
 import de.fabmax.kool.util.MixedBufferImpl
 import de.fabmax.kool.util.cancelReleaseWith
 import de.fabmax.kool.util.logE
@@ -34,9 +31,10 @@ class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private va
         val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
         buffer = de.fabmax.kool.pipeline.backend.vk.Buffer(
             graphicsPipeline.backend,
-            ubo.layout.size.toLong(),
-            usage,
-            allocUsage
+            MemoryInfo(0, 0)
+//            ubo.layout.size.toLong(),
+//            usage,
+//            allocUsage
         ).also {
             it.releaseWith(graphicsPipeline)
         }

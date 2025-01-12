@@ -283,8 +283,6 @@ class VkDrawPipeline(
     override fun release() {
         super.release()
         renderPipelines.values.forEach { backend.device.destroyGraphicsPipeline(it) }
-        val pipelineData = drawPipeline.pipelineData.gpuData as BindGroupDataVk?
-        pipelineData?.release()
     }
 
     private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)

@@ -50,7 +50,7 @@ object TextureLoader {
         val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
-        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
+//        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
 //        stagingBuffer.mapped {
 //            // order: +x, -x, +y, -y, +z, -z
 //            put(reshape(dstFmt, cubeImg.right))
@@ -67,8 +67,8 @@ object TextureLoader {
 
         val tex = createCubeTexture(backend, props, width, height, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyCubeBufferToImage(backend, stagingBuffer, tex.textureImage, width, height)
-        stagingBuffer.release()
+//        copyCubeBufferToImage(backend, stagingBuffer, tex.textureImage, width, height)
+//        stagingBuffer.release()
 
         if (mipLevels > 1) {
             logE { "Mipmap generation for cube maps not yet supported" }
@@ -119,15 +119,15 @@ object TextureLoader {
         val mipLevels = if (props.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
-        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
+//        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
 //        stagingBuffer.mapped {
 //            put(buf)
 //        }
 
         val tex = createTexture(backend, props, width, height, 1, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, 1)
-        stagingBuffer.release()
+//        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, 1)
+//        stagingBuffer.release()
 
         if (mipLevels > 1) {
             tex.textureImage.generateMipmaps()
@@ -157,15 +157,15 @@ object TextureLoader {
         val mipLevels = if (noMipMappingProps.generateMipMaps) { getNumMipLevels(width, height) } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
-        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
+//        val stagingBuffer = Buffer(backend, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingAllocUsage)
 //        stagingBuffer.mapped {
 //            put(buf)
 //        }
 
         val tex = createTexture(backend, noMipMappingProps, width, height, depth, dstFmt)
         tex.textureImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, depth)
-        stagingBuffer.release()
+//        copyBufferToImage(backend, stagingBuffer, tex.textureImage, width, height, depth)
+//        stagingBuffer.release()
 
         if (mipLevels > 1) {
             tex.textureImage.generateMipmaps()

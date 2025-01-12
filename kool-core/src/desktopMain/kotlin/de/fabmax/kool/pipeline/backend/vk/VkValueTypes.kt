@@ -1,6 +1,17 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-data class VkBuffer(val handle: Long, val allocation: Long, val bufferSize: Long)
+import java.nio.ByteBuffer
+
+class VkBuffer(val handle: Long, val allocation: Long, val bufferSize: Long, val mapped: ByteBuffer?) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return handle == (other as VkBuffer).handle
+    }
+
+    override fun hashCode(): Int {
+        return handle.hashCode()
+    }
+}
 
 @JvmInline
 value class VkCommandPool(val handle: Long)

@@ -5,12 +5,7 @@ import de.fabmax.kool.pipeline.BindGroupData
 import de.fabmax.kool.pipeline.Std140BufferLayout
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.memStack
-import de.fabmax.kool.util.releaseWith
-import de.fabmax.kool.util.useRaw
-import org.lwjgl.system.MemoryUtil
-import org.lwjgl.util.vma.Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
+import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 
 class BindGroupDataVk(
@@ -101,6 +96,12 @@ class BindGroupDataVk(
         return@memStack BindGroup(descriptorPool, descriptorSets, uboBindings, backend)
     }
 
+    override fun release() {
+        checkIsNotReleased()
+        super.release()
+        bindGroup?.release()
+    }
+
     class BindGroup(
         val descriptorPool: VkDescriptorPool,
         val descriptorSets: List<VkDescriptorSet>,
@@ -155,17 +156,14 @@ class BindGroupDataVk(
         val setEntries: List<Buffer> = List(Swapchain.MAX_FRAMES_IN_FLIGHT) {
             Buffer(
                 backend,
-                layout.size.toLong(),
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VMA_MEMORY_USAGE_CPU_TO_GPU,    // todo: USAGE_AUTO + create mapped flags
+                MemoryInfo(layout.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, createMapped = true),
                 "bindGroup[${data.layout.scope}]-ubo-${binding.name}"
             )
         }
 
         private val modCounts = IntArray(setEntries.size) { -1 }
         val mappedBuffers = setEntries.map { buffer ->
-            val addr = backend.memManager.mapMemory(buffer.vkBuffer)
-            MemoryUtil.memByteBuffer(addr, buffer.bufferSize.toInt())
+            checkNotNull(buffer.vkBuffer.mapped) { "UBO buffer was not created as mapped buffer" }
         }
 
         fun isUpdate(frameIndex: Int, modCount: Int): Boolean {
