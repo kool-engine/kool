@@ -152,7 +152,7 @@ class VkDrawPipeline(
             polygonMode(VK_POLYGON_MODE_FILL)
             lineWidth(drawPipeline.lineWidth)
             cullMode(drawPipeline.cullMethod.vkCullMode)
-            frontFace(if (renderPass.isMirrorY) VK_FRONT_FACE_CLOCKWISE else VK_FRONT_FACE_COUNTER_CLOCKWISE)
+            frontFace(if (renderPass.isMirrorY) VK_FRONT_FACE_COUNTER_CLOCKWISE else VK_FRONT_FACE_CLOCKWISE)
             depthBiasEnable(false)
             depthBiasConstantFactor(0f)
             depthBiasClamp(0f)
@@ -283,6 +283,8 @@ class VkDrawPipeline(
     override fun release() {
         super.release()
         renderPipelines.values.forEach { backend.device.destroyGraphicsPipeline(it) }
+        val pipelineData = drawPipeline.pipelineData.gpuData as BindGroupDataVk?
+        pipelineData?.release()
     }
 
     private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)

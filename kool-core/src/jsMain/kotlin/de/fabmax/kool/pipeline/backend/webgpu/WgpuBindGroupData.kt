@@ -40,7 +40,7 @@ class WgpuBindGroupData(
 
         for (i in bufferBindings.indices) {
             val ubo = bufferBindings[i]
-            if (ubo.version != ubo.binding.version || recreatedBindGroup) {
+            if (ubo.modCount != ubo.binding.modCount || recreatedBindGroup) {
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
                     bufferOffset = 0L,
@@ -295,7 +295,7 @@ class WgpuBindGroupData(
         val binding: BindGroupData.UniformBufferBindingData,
         val gpuBuffer: WgpuBufferResource
     ) {
-        var version = -1
+        var modCount = -1
     }
 
     private data class StorageBufferBinding(

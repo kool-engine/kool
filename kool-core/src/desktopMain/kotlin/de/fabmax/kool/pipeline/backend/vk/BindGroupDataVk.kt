@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.BindGroupData
 import de.fabmax.kool.pipeline.Std140BufferLayout
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
@@ -32,18 +33,20 @@ class BindGroupDataVk(
 
         val bg = bindGroup!!
         val frameIdx = passEncoderState.frameIndex
-        for (i in bg.bufferBindings.indices) {
-            val ubo = bg.bufferBindings[i]
-            if (ubo.isUpdate(frameIdx, ubo.binding.version) || recreatedBindGroup) {
-                ubo.binding.buffer.useRaw { raw ->
-                    ubo.mappedBuffers[frameIdx].put(raw).flip()
-                }
+        for (i in bg.uboBindings.indices) {
+            val ubo = bg.uboBindings[i]
+            if (ubo.isUpdate(frameIdx, ubo.binding.modCount) || recreatedBindGroup) {
+                ubo.binding.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
             }
         }
         passEncoderState.setBindGroup(group, this, pipeline)
     }
 
     private fun createBindGroup(): BindGroup = memStack {
+        if (data.bindings.isEmpty()) {
+            return@memStack BindGroup.emptyBindGroup
+        }
+
         bindGroup?.release()
 
         // todo: other binding types...
@@ -51,7 +54,7 @@ class BindGroupDataVk(
         val ubos = data.bindings.filterIsInstance<BindGroupData.UniformBufferBindingData>()
         val uboBindings = ubos.map { ubo ->
             val layout = Std140BufferLayout(ubo.layout.uniforms)
-            BufferBinding(ubo, layout)
+            UboBinding(ubo, layout)
         }
 
         val descriptorPool = backend.device.createDescriptorPool(this) {
@@ -89,31 +92,63 @@ class BindGroupDataVk(
                         .dstBinding(ubo.binding.layout.bindingIndex)
                         .dstArrayElement(0)
                         .descriptorType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-                        .descriptorCount(uboBindings.size)
+                        .descriptorCount(1)
                         .pBufferInfo(bufferInfo)
                 }
                 vkUpdateDescriptorSets(backend.device.vkDevice, descriptorWrite, null)
             }
         }
-        return@memStack BindGroup(descriptorPool, descriptorSets, uboBindings)
+        return@memStack BindGroup(descriptorPool, descriptorSets, uboBindings, backend)
     }
 
-    inner class BindGroup(
+    class BindGroup(
         val descriptorPool: VkDescriptorPool,
         val descriptorSets: List<VkDescriptorSet>,
-        val bufferBindings: List<BufferBinding>
+        val uboBindings: List<UboBinding>,
+        val backend: RenderBackendVk,
     ) : BaseReleasable() {
+
         init {
-            bufferBindings.forEach { it.releaseWith(this) }
+            uboBindings.forEach { it.releaseWith(this) }
         }
 
         override fun release() {
             super.release()
             backend.device.destroyDescriptorPool(descriptorPool)
         }
+
+        fun getDescriptorSet(frameIndex: Int): VkDescriptorSet {
+            return if (frameIndex < descriptorSets.size) {
+                descriptorSets[frameIndex]
+            } else {
+                descriptorSets[0]
+            }
+        }
+
+        companion object {
+            val emptyBindGroup by lazy {
+                memStack {
+                    val backend = KoolSystem.requireContext().backend as RenderBackendVk
+                    val device = backend.device
+
+                    val emptyPool = device.createDescriptorPool(this) { maxSets(1) }
+                    val emptySetLayout = device.createDescriptorSetLayout { }
+                    val emptySet = device.allocateDescriptorSets {
+                        descriptorPool(emptyPool.handle)
+                        pSetLayouts(longs(emptySetLayout.handle))
+                    }
+                    BindGroup(emptyPool, emptySet, emptyList(), backend).also {
+                        it.releaseWith(device)
+                        it.onRelease {
+                            device.destroyDescriptorSetLayout(emptySetLayout)
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    inner class BufferBinding(
+    inner class UboBinding(
         val binding: BindGroupData.UniformBufferBindingData,
         val layout: Std140BufferLayout
     ) : BaseReleasable() {
@@ -127,15 +162,15 @@ class BindGroupDataVk(
             )
         }
 
-        private val bufferVersions = IntArray(setEntries.size) { -1 }
+        private val modCounts = IntArray(setEntries.size) { -1 }
         val mappedBuffers = setEntries.map { buffer ->
             val addr = backend.memManager.mapMemory(buffer.vkBuffer)
             MemoryUtil.memByteBuffer(addr, buffer.bufferSize.toInt())
         }
 
-        fun isUpdate(frameIndex: Int, version: Int): Boolean {
-            if (bufferVersions[frameIndex] != version) {
-                bufferVersions[frameIndex] = version
+        fun isUpdate(frameIndex: Int, modCount: Int): Boolean {
+            if (modCounts[frameIndex] != modCount) {
+                modCounts[frameIndex] = modCount
                 return true
             }
             return false

@@ -70,7 +70,7 @@ class RenderPassEncoderState<T: RenderPass>(val renderPassVk: RenderPassVk<T>): 
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
                 pipeline.pipelineLayout.handle,
                 group,
-                stack.longs(bindGroup.descriptorSets[frameIndex].handle),
+                stack.longs(bindGroup.getDescriptorSet(frameIndex).handle),
                 null
             )
         }

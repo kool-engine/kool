@@ -88,10 +88,10 @@ val CullMethod.vkCullMode: Int get() = when (this) {
 val DepthCompareOp.vkCompareOp: Int get() = when (this) {
     DepthCompareOp.ALWAYS -> VK_COMPARE_OP_ALWAYS
     DepthCompareOp.NEVER -> VK_COMPARE_OP_NEVER
-    DepthCompareOp.LESS -> VK_COMPARE_OP_GREATER
-    DepthCompareOp.LESS_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
-    DepthCompareOp.GREATER -> VK_COMPARE_OP_LESS
-    DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+    DepthCompareOp.LESS -> VK_COMPARE_OP_LESS
+    DepthCompareOp.LESS_EQUAL -> VK_COMPARE_OP_LESS_OR_EQUAL
+    DepthCompareOp.GREATER -> VK_COMPARE_OP_GREATER
+    DepthCompareOp.GREATER_EQUAL -> VK_COMPARE_OP_GREATER_OR_EQUAL
     DepthCompareOp.EQUAL -> VK_COMPARE_OP_EQUAL
     DepthCompareOp.NOT_EQUAL -> VK_COMPARE_OP_NOT_EQUAL
 }

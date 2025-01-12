@@ -71,14 +71,14 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
 
     inner class UniformBufferBindingData(override val layout: UniformBufferLayout) : BindingData {
-        var version = 0
+        var modCount = 0
             private set
         val buffer: MixedBuffer = MixedBuffer(layout.layout.size)
 
         override val isComplete = true
 
         fun markDirty() {
-            version++
+            modCount++
         }
 
         fun copyTo(other: UniformBufferBindingData) {
