@@ -14,7 +14,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
     RenderPassVk<Scene.SceneRenderPass>(backend, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
 {
     override val vkRenderPass: VkRenderPass
-    override val numSamples: Int = physicalDevice.msaaSamples
+    override val numSamples: Int = physicalDevice.maxSamples
 
     init {
         memStack {

@@ -156,7 +156,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
-            samples = physicalDevice.msaaSamples,
+            samples = physicalDevice.maxSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, //or VK_IMAGE_USAGE_TRANSFER_DST_BIT // does not work because of VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT flag
         )
@@ -176,7 +176,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
-            samples = physicalDevice.msaaSamples,
+            samples = physicalDevice.maxSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         )

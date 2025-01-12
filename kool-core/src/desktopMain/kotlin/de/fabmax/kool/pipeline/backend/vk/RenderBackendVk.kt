@@ -33,10 +33,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         reversedDepth = false
     )
 
-    val setup = VkSetup().apply {
-        isValidation = true
-        isPortability = true
-    }
+    val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()
 
     val instance: Instance
     val physicalDevice: PhysicalDevice

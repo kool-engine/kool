@@ -117,7 +117,12 @@ class BindGroupDataVk(
                         addressModeU(samplerSettings.addressModeU.vk)
                         addressModeV(samplerSettings.addressModeV.vk)
                         addressModeW(samplerSettings.addressModeW.vk)
-                        anisotropyEnable(false)
+
+                        val anisotropy = samplerSettings.maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)
+                        if (anisotropy > 1) {
+                            anisotropyEnable(true)
+                            maxAnisotropy(anisotropy)
+                        }
                         compareEnable(false)
                         compareOp(VK_COMPARE_OP_ALWAYS)
                         mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)

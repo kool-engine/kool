@@ -127,7 +127,7 @@ class OffscreenRenderPassVk(
                     VK_ATTACHMENT_LOAD_OP_CLEAR
                 }
 
-                val samples = if (isMultiSampled) physicalDevice.msaaSamples else VK_SAMPLE_COUNT_1_BIT
+                val samples = if (isMultiSampled) physicalDevice.maxSamples else VK_SAMPLE_COUNT_1_BIT
 
                 for (i in colorFormats.indices) {
                     this[i].apply {

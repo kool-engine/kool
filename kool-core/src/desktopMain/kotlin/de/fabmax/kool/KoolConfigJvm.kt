@@ -1,6 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.pipeline.backend.vk.VkSetup
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
 import de.fabmax.kool.util.logD
@@ -31,6 +32,7 @@ data class KoolConfigJvm(
     val httpCacheDir: String = "./.httpCache",
 
     val renderBackend: Backend = Backend.OPEN_GL,
+    val vkSetup: VkSetup? = null,
     val windowTitle: String = "Kool App",
     val windowSize: Vec2i = Vec2i(1600, 900),
     val isFullscreen: Boolean = false,

@@ -67,20 +67,23 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
             vkEnumerateInstanceLayerProperties(cnt, buffer)
         }.map { it.layerNameString() }.toSet()
 
-        val enableLayers = backend.setup.enabledLayers.toMutableSet().also { it.retainAll(availableLayers) }
-        val missingLayers = backend.setup.enabledLayers - enableLayers
+        val missingLayers = backend.setup.requestedLayers.filter { it.name !in availableLayers }
         if (missingLayers.isNotEmpty()) {
-            logW { "Requested layers are not available:" }
-            missingLayers.forEach { logW { "  $it" } }
+            logD { "Requested optional layers are not available:" }
+            missingLayers.filter { !it.isRequired }.forEach { logD { "  ${it.name}" } }
             logW { "Make sure that the VK_LAYER_PATH environment variable is set and points to the directory with the layer specification json files" }
+            if (missingLayers.any { it.isRequired }) {
+                error("Missing non-optional layers: ${missingLayers.filter { it.isRequired }.map { it.name }}")
+            }
         }
 
+        val enableLayers = backend.setup.requestedLayers - missingLayers
         return if (enableLayers.isNotEmpty()) {
             val ptrs = mallocPointer(enableLayers.size)
             logD { "Enabling layers:" }
             enableLayers.forEachIndexed { i, layer ->
-                logD { "  $layer" }
-                ptrs.put(i, ASCII(layer))
+                logD { "  ${layer.name}" }
+                ptrs.put(i, ASCII(layer.name))
             }
             ptrs
         } else {
@@ -88,36 +91,42 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
         }
     }
 
-    private fun MemoryStack.getRequestedExtensions(): PointerBuffer {
-        val requestedExtensions = backend.setup.enabledInstanceExtensions.toMutableSet()
+    private fun MemoryStack.getRequestedExtensions(): PointerBuffer? {
+        val requestedExtensions = backend.setup.requestedInstanceExtensions.toMutableSet()
 
         // add all extensions required by glfw
         val glfwExtensions = checkNotNull(GLFWVulkan.glfwGetRequiredInstanceExtensions()) {
             "glfwGetRequiredInstanceExtensions failed to find the platform surface extensions."
         }
         for (i in 0 until glfwExtensions.limit()) {
-            requestedExtensions += MemoryUtil.memASCII(glfwExtensions[i])
+            requestedExtensions += VkSetup.RequestedFeature(MemoryUtil.memASCII(glfwExtensions[i]), true)
         }
 
         val availableExtensions = enumerateExtensionProperties { cnt, buffer ->
             vkEnumerateInstanceExtensionProperties(null as String?, cnt, buffer)
         }.map { it.extensionNameString() }.toSet()
 
-        val addExtensions = requestedExtensions.toMutableSet().also { it.retainAll(availableExtensions) }
-        val missingExtensions = backend.setup.enabledInstanceExtensions - addExtensions
+        val missingExtensions = requestedExtensions.filter { it.name !in availableExtensions }
         if (missingExtensions.isNotEmpty()) {
-            logW { "Requested extensions are not available:" }
-            missingExtensions.forEach { logW { "  $it" } }
+            logD { "Requested optional extensions are not available:" }
+            missingExtensions.filter { !it.isRequired }.forEach { logD { "  ${it.name}" } }
+            if (missingExtensions.any { it.isRequired }) {
+                error("Missing non-optional extensions: ${missingExtensions.filter { it.isRequired }.map { it.name }}")
+            }
         }
 
-        logD { "Enabling Vulkan instance extensions:" }
-        val enableExtensions = mallocPointer(addExtensions.size)
-        addExtensions.forEach {
-            logD { "  $it" }
-            enableExtensions.put(ASCII(it))
+        val enableExtensions = requestedExtensions - missingExtensions
+        return if (enableExtensions.isNotEmpty()) {
+            val ptrs = mallocPointer(enableExtensions.size)
+            logD { "Enabling extensions:" }
+            enableExtensions.forEachIndexed { i, extension ->
+                logD { "  ${extension.name}" }
+                ptrs.put(i, ASCII(extension.name))
+            }
+            ptrs
+        } else {
+            null
         }
-        enableExtensions.flip()
-        return enableExtensions
     }
 
     private fun MemoryStack.setupDebugMessengerCreateInfo() = callocVkDebugUtilsMessengerCreateInfoEXT {

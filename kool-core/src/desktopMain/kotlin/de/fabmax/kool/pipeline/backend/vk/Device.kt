@@ -36,12 +36,13 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 samplerAnisotropy(physicalDevice.vkDeviceFeatures.samplerAnisotropy())
             }
 
+            val enableExtensions = backend.setup.requestedDeviceExtensions.filter { it.name in physicalDevice.availableDeviceExtensions }
+            val extNames = mallocPointer(enableExtensions.size)
+            enableExtensions.forEachIndexed { i, ext -> extNames.put(i, ASCII(ext.name)) }
+
             vkDevice = physicalDevice.createDevice {
                 pQueueCreateInfos(queueCreateInfo)
                 pEnabledFeatures(features)
-
-                val extNames = mallocPointer(backend.setup.enabledDeviceExtensions.size)
-                backend.setup.enabledDeviceExtensions.forEachIndexed { i, name -> extNames.put(i, ASCII(name)) }
                 ppEnabledExtensionNames(extNames)
             }
 

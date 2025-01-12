@@ -15,7 +15,10 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     val swapChainSupport: SwapChainSupportDetails
     val vkDeviceProperties = VkPhysicalDeviceProperties.calloc()
     val vkDeviceFeatures = VkPhysicalDeviceFeatures.calloc()
-    val msaaSamples: Int
+    val availableDeviceExtensions: Set<String>
+
+    val maxSamples: Int
+    val maxAnisotropy: Float
 
     val deviceName: String
     val apiVersion: String
@@ -34,11 +37,16 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 VkSurfaceCapabilitiesKHR.malloc(), VkSurfaceFormatKHR.malloc(stackSwapChain.formats.size)
             )
 
-            vkPhysicalDevice = selectedDevice.device
+            vkPhysicalDevice = selectedDevice.physicalDevice
             queueFamiliyIndices = selectedDevice.queueFamiliyIndices
             vkGetPhysicalDeviceProperties(vkPhysicalDevice, vkDeviceProperties)
             vkGetPhysicalDeviceFeatures(vkPhysicalDevice, vkDeviceFeatures)
-            msaaSamples = getMaxUsableSampleCount()
+            availableDeviceExtensions = selectedDevice.availableExtensions
+
+            maxSamples = getMaxUsableSampleCount()
+            maxAnisotropy = if (!vkDeviceFeatures.samplerAnisotropy()) 1f else {
+                vkDeviceProperties.limits().maxSamplerAnisotropy()
+            }
 
             val api = vkDeviceProperties.apiVersion()
             val drv = vkDeviceProperties.driverVersion()
@@ -67,7 +75,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     private fun MemoryStack.selectPhysicalDevice(devices: List<PhysicalDeviceWrapper>): PhysicalDeviceWrapper {
         val suitableDevices = devices.filter {
             it.queueFamiliyIndices.isComplete &&
-                    it.isSupportingExtensions(backend.setup.enabledDeviceExtensions) &&
+                    it.isSupportingExtensions(backend.setup.requestedDeviceExtensions) &&
                     it.querySwapChainSupport(this).isValid
         }
         check(suitableDevices.isNotEmpty()) {
@@ -125,25 +133,32 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     private inner class PhysicalDeviceWrapper(ptr: Long, stack: MemoryStack) {
-        val device = VkPhysicalDevice(ptr, backend.instance.vkInstance)
+        val physicalDevice = VkPhysicalDevice(ptr, backend.instance.vkInstance)
         val queueFamiliyIndices: QueueFamilyIndices
         val properties: VkPhysicalDeviceProperties
         val features: VkPhysicalDeviceFeatures
+        val availableExtensions: Set<String>
 
         init {
             queueFamiliyIndices = findQueueFamilies()
             properties = VkPhysicalDeviceProperties.malloc(stack)
             features = VkPhysicalDeviceFeatures.malloc(stack)
-            vkGetPhysicalDeviceProperties(device, properties)
-            vkGetPhysicalDeviceFeatures(device, features)
+            vkGetPhysicalDeviceProperties(physicalDevice, properties)
+            vkGetPhysicalDeviceFeatures(physicalDevice, features)
+
+            availableExtensions = memStack {
+                enumerateExtensionProperties { cnt, buffer ->
+                    vkEnumerateDeviceExtensionProperties(physicalDevice, null as String?, cnt, buffer)
+                }.map { it.extensionNameString() }.toSet()
+            }
         }
 
         private fun findQueueFamilies(): QueueFamilyIndices {
             memStack {
                 val nFams = mallocInt(1)
-                vkGetPhysicalDeviceQueueFamilyProperties(device, nFams, null)
+                vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, nFams, null)
                 val queueFamilies = VkQueueFamilyProperties.malloc(nFams[0], this)
-                vkGetPhysicalDeviceQueueFamilyProperties(device, nFams, queueFamilies)
+                vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, nFams, queueFamilies)
 
                 val ip = mallocInt(1)
                 var presentFamily: Int? = null
@@ -152,7 +167,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 var transferFamily: Int? = null
                 for (i in 0 until nFams[0]) {
                     val props = queueFamilies[i]
-                    vkGetPhysicalDeviceSurfaceSupportKHR(device, i, backend.glfwWindow.surface.surfaceHandle, ip)
+                    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, backend.glfwWindow.surface.surfaceHandle, ip)
                     if (presentFamily == null && props.queueCount() > 0 && ip[0] != 0) {
                         presentFamily = i
                     }
@@ -171,22 +186,13 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
 
-        fun isSupportingExtensions(extensions: Set<String>): Boolean {
-            memStack {
-                val ip = mallocInt(1)
-                checkVk(vkEnumerateDeviceExtensionProperties(device, null as String?, ip, null))
-                val availableExtensions = VkExtensionProperties.malloc(ip[0], this)
-                checkVk(vkEnumerateDeviceExtensionProperties(device, null as String?, ip, availableExtensions))
-
-                val layerNames = availableExtensions.map { it.extensionNameString() }.toSet()
-                val enableExtensions = extensions.toMutableSet().also { it.retainAll(layerNames) }
-                val missingExtensions = extensions - enableExtensions
-                if (missingExtensions.isNotEmpty()) {
-                    logW { "Requested device extensions are not available:" }
-                    missingExtensions.forEach { logW { "  $it" } }
-                }
-                return missingExtensions.isEmpty()
+        fun isSupportingExtensions(extensions: Set<VkSetup.RequestedFeature>): Boolean {
+            val missingExtensions = extensions.filter { it.isRequired && it.name !in availableExtensions }
+            if (missingExtensions.isNotEmpty()) {
+                logW { "Requested device extensions are not available:" }
+                missingExtensions.forEach { logW { "  $it" } }
             }
+            return missingExtensions.isEmpty()
         }
 
         fun querySwapChainSupport(
@@ -198,22 +204,22 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             val surface = backend.glfwWindow.surface.surfaceHandle
 
             val capabilities = caps ?: VkSurfaceCapabilitiesKHR.malloc(stack)
-            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, capabilities)
+            vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, capabilities)
 
             val formatList = buildList {
-                vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, ip, null)
+                vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, ip, null)
                 if (ip[0] > 0) {
                     val formats = fmts ?: VkSurfaceFormatKHR.malloc(ip[0], stack)
-                    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, ip, formats)
+                    vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, ip, formats)
                     addAll(formats)
                 }
             }
 
             val presentModeList = buildList {
-                vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, ip, null)
+                vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, ip, null)
                 if (ip[0] > 0) {
                     val presentModes = stack.mallocInt(ip[0])
-                    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, ip, presentModes)
+                    vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, surface, ip, presentModes)
                     for (i in 0 until ip[0]) {
                         add(presentModes[i])
                     }

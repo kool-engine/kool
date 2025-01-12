@@ -1,42 +1,56 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import org.lwjgl.vulkan.EXTDebugUtils
-import org.lwjgl.vulkan.KHRMaintenance1.VK_KHR_MAINTENANCE1_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRPortabilityEnumeration
 import org.lwjgl.vulkan.KHRPortabilitySubset
 import org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
-import org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1
+import org.lwjgl.vulkan.VK12.VK_API_VERSION_1_2
 
-class VkSetup {
+class VkSetup(
+    val vkApiVersion: Int = VK_API_VERSION_1_2,
+    isPortability: Boolean = true,
+    isValidation: Boolean = false
+) {
+    val requestedLayers = mutableSetOf<RequestedFeature>()
 
-    var vkApiVersion = VK_API_VERSION_1_1
+    val requestedInstanceExtensions = mutableSetOf<RequestedFeature>()
+    val requestedDeviceExtensions = mutableSetOf(deviceExtensionSwapchain)
 
-    val enabledLayers = mutableSetOf<String>()
-    val enabledInstanceExtensions = mutableSetOf<String>()
-    val enabledDeviceExtensions = mutableSetOf(
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        VK_KHR_MAINTENANCE1_EXTENSION_NAME
-    )
-
-    var isValidation = false
+    var isValidation: Boolean = false
         set(value) {
             field = value
-            enabledLayers.enableOrDisable("VK_LAYER_KHRONOS_validation", value)
-            enabledInstanceExtensions.enableOrDisable(EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME, value)
+            requestedLayers.addOrRemove(RequestedFeature("VK_LAYER_KHRONOS_validation", false), value)
+            requestedInstanceExtensions.addOrRemove(
+                RequestedFeature(EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false),
+                value
+            )
         }
 
-    var isPortability = false
+    var isPortability: Boolean = false
         set(value) {
             field = value
-            enabledInstanceExtensions.enableOrDisable(KHRPortabilityEnumeration.VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, value)
-            enabledDeviceExtensions.enableOrDisable(KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME, value)
+            requestedInstanceExtensions.addOrRemove(instanceExtensionPortability, value)
+            requestedDeviceExtensions.addOrRemove(deviceExtensionPortability, value)
         }
 
-    private fun MutableSet<String>.enableOrDisable(name: String, flag: Boolean) {
+    init {
+        this.isValidation = isValidation
+        this.isPortability = isPortability
+    }
+
+    private fun MutableSet<RequestedFeature>.addOrRemove(feature: RequestedFeature, flag: Boolean) {
         if (flag) {
-            add(name)
+            add(feature)
         } else {
-            remove(name)
+            remove(feature)
         }
+    }
+
+    data class RequestedFeature(val name: String, val isRequired: Boolean)
+
+    companion object {
+        val instanceExtensionPortability = RequestedFeature(KHRPortabilityEnumeration.VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, false)
+        val deviceExtensionPortability = RequestedFeature(KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME, false)
+        val deviceExtensionSwapchain = RequestedFeature(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true)
     }
 }
