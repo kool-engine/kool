@@ -38,7 +38,11 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
 
             val enableExtensions = backend.setup.requestedDeviceExtensions.filter { it.name in physicalDevice.availableDeviceExtensions }
             val extNames = mallocPointer(enableExtensions.size)
-            enableExtensions.forEachIndexed { i, ext -> extNames.put(i, ASCII(ext.name)) }
+            logD { "Enabling device extensions:" }
+            enableExtensions.forEachIndexed { i, extension ->
+                logD { "  ${extension.name}" }
+                extNames.put(i, ASCII(extension.name))
+            }
 
             vkDevice = physicalDevice.createDevice {
                 pQueueCreateInfos(queueCreateInfo)

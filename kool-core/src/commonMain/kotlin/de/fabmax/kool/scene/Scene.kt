@@ -161,11 +161,6 @@ open class Scene(name: String? = null) : Node(name) {
         init {
             parentScene = this@Scene
             lighting = this@Scene.lighting
-            // todo: flip viewport if needed (i.e. if vulkan is used). Doing this here might not
-            //  be the best place
-            if (KoolSystem.getContextOrNull()?.backend?.deviceCoordinates?.isFlipWindowY == true) {
-                isMirrorY = true
-            }
         }
 
         fun createView(name: String): View {

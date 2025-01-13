@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.memStack
-import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.util.vma.Vma.*
 import org.lwjgl.util.vma.VmaAllocationCreateInfo
@@ -81,8 +78,14 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
     override fun release() {
         super.release()
-        buffers.toList().forEach { freeBuffer(it) }
-        images.toList().forEach { freeImage(it) }
+        if (buffers.isNotEmpty()) {
+            logW { "Freeing ${buffers.size} leaked buffers" }
+            buffers.toList().forEach { freeBuffer(it) }
+        }
+        if (images.isNotEmpty()) {
+            logW { "Freeing ${images.size} leaked images" }
+            images.toList().forEach { freeImage(it) }
+        }
         impl.freeResources()
     }
 

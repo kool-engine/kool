@@ -8,7 +8,6 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
-// fixme: change maxWidth and maxHeight
 abstract class RenderPassVk<T: RenderPass>(
     val backend: RenderBackendVk,
     val colorFormats: List<Int>
@@ -90,9 +89,9 @@ abstract class RenderPassVk<T: RenderPass>(
 
         val viewport = callocVkViewportN(1) {
             x(view.viewport.x.toFloat())
-            y(view.viewport.y.toFloat())
+            y(renderHeight + view.viewport.y.toFloat())
             width(renderWidth.toFloat())
-            height(renderHeight.toFloat())
+            height(-renderHeight.toFloat())
             minDepth(0f)
             maxDepth(1f)
         }
