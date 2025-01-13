@@ -45,21 +45,21 @@ class OffscreenRenderPassVk(
 
     val images: List<Image>
         get() = colorAttachments.colorImages
-    val imageViews: List<ImageView>
+    val imageViews: List<VkImageView>
         get() = colorAttachments.colorImageViews
     val samplers: List<Long>
         get() = colorAttachments.colorSamplers
 
     val image: Image
         get() = images[0]
-    val imageView: ImageView
+    val imageView: VkImageView
         get() = imageViews[0]
     val sampler: Long
         get() = samplers[0]
 
     val depthImage: Image
         get() = depthAttachment.depthImage
-    val depthImageView: ImageView
+    val depthImageView: VkImageView
         get() = depthAttachment.depthImageView
     val depthSampler: Long
         get() = depthAttachment.depthSampler
@@ -95,11 +95,11 @@ class OffscreenRenderPassVk(
         logD { "Destroyed offscreen render pass" }
     }
 
-    private fun createFrameBuffer(renderPass: VkRenderPass, imageViews: List<ImageView>, depthView: ImageView): Long {
+    private fun createFrameBuffer(renderPass: VkRenderPass, imageViews: List<VkImageView>, depthView: VkImageView): Long {
         memStack {
             val attachments = mallocLong(imageViews.size + 1)
-            imageViews.forEachIndexed { i, imageView -> attachments.put(i, imageView.vkImageView.handle) }
-            attachments.put(imageViews.size, depthView.vkImageView.handle)
+            imageViews.forEachIndexed { i, imageView -> attachments.put(i, imageView.handle) }
+            attachments.put(imageViews.size, depthView.handle)
 
             val framebufferInfo = callocVkFramebufferCreateInfo {
                 sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
@@ -213,19 +213,19 @@ class OffscreenRenderPassVk(
 
     abstract class ColorAttachments(val isCopied: Boolean, val colorFormats: List<Int>) : BaseReleasable() {
         abstract val colorImages: List<Image>
-        abstract val colorImageViews: List<ImageView>
+        abstract val colorImageViews: List<VkImageView>
         abstract val colorSamplers: List<Long>
     }
 
     abstract class DepthAttachment(val isCopied: Boolean) : BaseReleasable() {
         abstract val depthImage: Image
-        abstract val depthImageView: ImageView
+        abstract val depthImageView: VkImageView
         abstract val depthSampler: Long
     }
 
-    class ProvidedColorAttachments(isCopied: Boolean, images: List<Image>, imageViews: List<ImageView>, samplers: List<Long>) : ColorAttachments(isCopied, images.map { it.format }) {
+    class ProvidedColorAttachments(isCopied: Boolean, images: List<Image>, imageViews: List<VkImageView>, samplers: List<Long>) : ColorAttachments(isCopied, images.map { it.format }) {
         override val colorImages: List<Image> = images
-        override val colorImageViews: List<ImageView> = imageViews
+        override val colorImageViews: List<VkImageView> = imageViews
         override val colorSamplers: List<Long> = samplers
     }
 
@@ -233,12 +233,12 @@ class OffscreenRenderPassVk(
                                   colorFormats: List<Int>, filterMethod: Int, multiSampling: Boolean) :
             ColorAttachments(isCopied, colorFormats) {
         override val colorImages: List<Image>
-        override val colorImageViews: List<ImageView>
+        override val colorImageViews: List<VkImageView>
         override val colorSamplers: List<Long>
 
         init {
             val mImages = mutableListOf<Image>()
-            val mImageViews = mutableListOf<ImageView>()
+            val mImageViews = mutableListOf<VkImageView>()
             val mSamplers = mutableListOf<Long>()
             for (i in colorFormats.indices) {
                 TODO()
@@ -264,7 +264,7 @@ class OffscreenRenderPassVk(
             colorSamplers = mSamplers
 
             colorImages.forEach { it.releaseWith(this) }
-            colorImageViews.forEach { it.releaseWith(this) }
+//            colorImageViews.forEach { it.releaseWith(this) }
         }
 
         override fun release() {
@@ -273,9 +273,9 @@ class OffscreenRenderPassVk(
         }
     }
 
-    class ProvidedDepthAttachment(isCopied: Boolean, image: Image, imageView: ImageView, sampler: Long) : DepthAttachment(isCopied) {
+    class ProvidedDepthAttachment(isCopied: Boolean, image: Image, imageView: VkImageView, sampler: Long) : DepthAttachment(isCopied) {
         override val depthImage: Image = image
-        override val depthImageView: ImageView = imageView
+        override val depthImageView: VkImageView = imageView
         override val depthSampler: Long = sampler
     }
 
@@ -283,7 +283,7 @@ class OffscreenRenderPassVk(
                                  filterMethod: Int, depthCompareOp: Int, multiSampling: Boolean) :
             DepthAttachment(isCopied) {
         override val depthImage: Image = TODO()
-        override val depthImageView: ImageView
+        override val depthImageView: VkImageView
         override val depthSampler: Long
 
         init {

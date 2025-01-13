@@ -2,7 +2,9 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.BindGroupData
+import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.Std140BufferLayout
+import de.fabmax.kool.pipeline.TextureSampleType
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
@@ -46,20 +48,20 @@ class BindGroupDataVk(
         val numSets = Swapchain.MAX_FRAMES_IN_FLIGHT
 
         val ubos = data.bindings.filterIsInstance<BindGroupData.UniformBufferBindingData>()
-        val textures = data.bindings.filterIsInstance<BindGroupData.Texture2dBindingData>()
+        val textures2d = data.bindings.filterIsInstance<BindGroupData.Texture2dBindingData>()
 
         val uboBindings = ubos.map { ubo -> UboBinding(ubo, numSets) }
-        val textureBindings = textures.map { tex -> TextureBinding(tex) }
+        val texture2dBindings = textures2d.map { tex -> Texture2dBinding(tex) }
 
-        val nPoolSizes = ubos.size.coerceAtMost(1) + textures.size.coerceAtMost(1)
+        val nPoolSizes = ubos.size.coerceAtMost(1) + textures2d.size.coerceAtMost(1)
         val descriptorPool = backend.device.createDescriptorPool(this) {
             val poolSizes = callocVkDescriptorPoolSizeN(nPoolSizes) {
                 var iPoolSize = 0
                 if (ubos.isNotEmpty()) {
                     this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubos.size)
                 }
-                if (textures.isNotEmpty()) {
-                    this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textures.size)
+                if (textures2d.isNotEmpty()) {
+                    this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textures2d.size)
                 }
             }
             pPoolSizes(poolSizes)
@@ -73,21 +75,21 @@ class BindGroupDataVk(
             descriptorPool(descriptorPool.handle)
         }
 
-        val descriptorWrite = callocVkWriteDescriptorSetN(numSets * (uboBindings.size + textures.size)) { }
+        val descriptorWrite = callocVkWriteDescriptorSetN(numSets * (uboBindings.size + textures2d.size)) { }
         var descriptorWriteIdx = 0
         uboBindings.forEach { ubo ->
             descriptorSets.forEachIndexed { setIdx, descriptorSet ->
                 ubo.setupDescriptor(descriptorWrite[descriptorWriteIdx++], descriptorSet, setIdx, this)
             }
         }
-        textureBindings.forEach { tex ->
+        texture2dBindings.forEach { tex ->
             descriptorSets.forEach { descriptorSet ->
                 tex.setupDescriptor(descriptorWrite[descriptorWriteIdx++], descriptorSet, this)
             }
         }
         vkUpdateDescriptorSets(backend.device.vkDevice, descriptorWrite, null)
 
-        return@memStack BindGroup(descriptorPool, descriptorSets, uboBindings, textureBindings, backend)
+        return@memStack BindGroup(descriptorPool, descriptorSets, uboBindings, texture2dBindings, backend)
     }
 
     override fun release() {
@@ -193,35 +195,63 @@ class BindGroupDataVk(
         }
     }
 
-    private fun MemoryStack.TextureBinding(binding: BindGroupData.TextureBindingData<*>): TextureBinding {
+    private fun MemoryStack.Texture2dBinding(binding: BindGroupData.Texture2dBindingData): TextureBinding {
+        return TextureBinding(binding, VK_IMAGE_VIEW_TYPE_2D)
+    }
+
+    private fun MemoryStack.TextureBinding(
+        binding: BindGroupData.TextureBindingData<*>,
+        viewType: Int,
+    ): TextureBinding {
         val tex = checkNotNull(binding.texture) { "Cannot create texture binding from null texture" }
         val loadedTex = checkNotNull(tex.gpuTexture as LoadedTextureVk?) { "Cannot create texture binding from null texture" }
+        val image = loadedTex.image
+        val samplerSettings = binding.sampler ?: tex.props.defaultSamplerSettings
+
+        val maxAnisotropy = if (tex.props.generateMipMaps &&
+            samplerSettings.minFilter == FilterMethod.LINEAR &&
+            samplerSettings.magFilter == FilterMethod.LINEAR
+        ) samplerSettings.maxAnisotropy else 1
+
+        val isDepthTex = binding.layout.sampleType == TextureSampleType.DEPTH
+        val compare = if (isDepthTex) samplerSettings.compareOp.vk else VK_COMPARE_OP_ALWAYS
 
         val sampler = backend.device.createSampler {
-            val samplerSettings = binding.sampler ?: tex.props.defaultSamplerSettings
             magFilter(samplerSettings.magFilter.vk)
             minFilter(samplerSettings.minFilter.vk)
             addressModeU(samplerSettings.addressModeU.vk)
             addressModeV(samplerSettings.addressModeV.vk)
             addressModeW(samplerSettings.addressModeW.vk)
 
-            val anisotropy = samplerSettings.maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)
+            mipmapMode(if (tex.props.generateMipMaps) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
+
+            val anisotropy = maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)
             if (anisotropy > 1) {
                 anisotropyEnable(true)
                 maxAnisotropy(anisotropy)
             }
-            compareEnable(false)
 
-            // todo:
-            compareOp(VK_COMPARE_OP_ALWAYS)
-            mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
+            compareEnable(isDepthTex)
+            compareOp(compare)
         }
-        return TextureBinding(binding, loadedTex, sampler)
+
+        val view = backend.device.createImageView(
+            image = image.vkImage,
+            viewType = viewType,
+            format = image.format,
+            aspectMask = if (isDepthTex) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT,
+            levelCount = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else image.mipLevels,
+            layerCount = image.arrayLayers,
+            baseMipLevel = samplerSettings.baseMipLevel,
+            baseArrayLayer = 0,
+            stack = this
+        )
+        return TextureBinding(binding, view, sampler)
     }
 
     inner class TextureBinding(
         val binding: BindGroupData.TextureBindingData<*>,
-        val loadedTex: LoadedTextureVk,
+        val view: VkImageView,
         val sampler: VkSampler
     ) : BaseReleasable() {
 
@@ -233,7 +263,7 @@ class BindGroupDataVk(
             val imgInfo = stack.callocVkDescriptorImageInfoN(1) {
                 this[0].set(
                     sampler.handle,
-                    loadedTex.imageView.vkImageView.handle,
+                    view.handle,
                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
                 )
             }
@@ -248,6 +278,7 @@ class BindGroupDataVk(
 
         override fun release() {
             super.release()
+            backend.device.destroyImageView(view)
             backend.device.destroySampler(sampler)
         }
     }

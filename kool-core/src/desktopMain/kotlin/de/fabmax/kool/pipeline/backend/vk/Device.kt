@@ -142,6 +142,31 @@ internal fun Device.createGraphicsPipeline(stack: MemoryStack? = null, block: Vk
     }
 }
 
+internal fun Device.createImageView(
+    image: VkImage,
+    viewType: Int,
+    format: Int,
+    aspectMask: Int,
+    levelCount: Int,
+    layerCount: Int,
+    baseMipLevel: Int = 0,
+    baseArrayLayer: Int = 0,
+    stack: MemoryStack? = null
+): VkImageView {
+    return createImageView(stack) {
+        image(image.handle)
+        viewType(viewType)
+        format(format)
+        subresourceRange {
+            it.aspectMask(aspectMask)
+            it.baseMipLevel(baseMipLevel)
+            it.levelCount(levelCount)
+            it.baseArrayLayer(baseArrayLayer)
+            it.layerCount(layerCount)
+        }
+    }
+}
+
 internal inline fun Device.createImageView(stack: MemoryStack? = null, block: VkImageViewCreateInfo.() -> Unit): VkImageView {
     memStack(stack) {
         val createInfo = callocVkImageViewCreateInfo(block)

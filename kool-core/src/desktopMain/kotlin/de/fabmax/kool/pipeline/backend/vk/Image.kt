@@ -1,13 +1,11 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.backend.stats.TextureInfo
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.UniqueId
-import de.fabmax.kool.util.logW
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import org.lwjgl.vulkan.VkFormatProperties
 import kotlin.math.max
 
 class Image(
@@ -67,8 +65,10 @@ class Image(
     }
 
     fun transitionLayout(newLayout: Int) {
-        backend.commandPool.singleShotCommands { commandBuffer ->
-            transitionLayout(this, commandBuffer, newLayout)
+        if (newLayout != layout) {
+            backend.commandPool.singleShotCommands { commandBuffer ->
+                transitionLayout(this, commandBuffer, newLayout)
+            }
         }
     }
 
@@ -108,6 +108,7 @@ class Image(
             }
         }
         vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier)
+        layout = newLayout
     }
 
     private fun getSrcAccessMask(srcLayout: Int): Int = when (srcLayout) {
@@ -138,110 +139,115 @@ class Image(
         textureInfo.deleted()
     }
 
-//    fun generateMipmaps(dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-//        backend.commandPool.singleShotCommands { commandBuffer ->
-//            generateMipmaps(this, commandBuffer, dstLayout)
-//        }
-//    }
-//
-//    fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-//        if (mipLevels <= 1) {
-//            // not much to generate...
-//            transitionLayout(dstLayout)
-//            return
-//        }
-//
-//        val formatProperties = VkFormatProperties.malloc(stack)
-//        vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice, format, formatProperties)
-//        if (formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT == 0) {
-//            logW { "Texture image format does not support linear blitting!" }
-//            transitionLayout(dstLayout)
-//            return
-//        }
-//
-//        val barrier = stack.callocVkImageMemoryBarrierN(1) {
-//            sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
-//            image(vkImage.handle)
-//            srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-//            dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-//            subresourceRange {
-//                it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-//                it.baseArrayLayer(0)
-//                it.layerCount(arrayLayers)
-//                it.levelCount(1)
-//            }
-//        }
-//
-//        val srcAccessMaskSrcOpt = srcAccessMask(layout)
-//        val dstAccessMaskSrcOpt = dstAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-//        val srcAccessMaskDst = srcAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-//        val dstAccessMaskDst = dstAccessMask(dstLayout)
-//
-//        var mipWidth = width
-//        var mipHeight = height
-//        for (i in 1 until mipLevels) {
-//            barrier
-//                    .subresourceRange { it.baseMipLevel(i - 1) }
-//                    .oldLayout(layout)
-//                    .newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-//                    .srcAccessMask(srcAccessMaskSrcOpt)
-//                    .dstAccessMask(dstAccessMaskSrcOpt)
-//
-//            vkCmdPipelineBarrier(commandBuffer,
-//                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-//                    null, null, barrier)
-//
-//            val blit = stack.callocVkImageBlitN(1) {
-//                srcOffsets(0).set(0, 0, 0)
-//                srcOffsets(1).set(mipWidth, mipHeight, 1)
-//                srcSubresource {
-//                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-//                    it.mipLevel(i - 1)
-//                    it.baseArrayLayer(0)
-//                    it.layerCount(arrayLayers)
-//                }
-//                dstOffsets(0).set(0, 0, 0)
-//                dstOffsets(1)
-//                        .x(if (mipWidth > 1) mipWidth / 2 else 1)
-//                        .y(if (mipHeight > 1) mipHeight / 2 else 1)
-//                        .z(1)
-//                dstSubresource {
-//                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-//                    it.mipLevel(i)
-//                    it.baseArrayLayer(0)
-//                    it.layerCount(arrayLayers)
-//                }
-//            }
-//            vkCmdBlitImage(commandBuffer,
-//                    vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-//                    vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-//                    blit, VK_FILTER_LINEAR)
-//
-//            barrier
-//                    .oldLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-//                    .newLayout(dstLayout)
-//                    .srcAccessMask(srcAccessMaskDst)
-//                    .dstAccessMask(dstAccessMaskDst)
-//
-//            vkCmdPipelineBarrier(commandBuffer,
-//                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-//                    null, null, barrier)
-//
-//            if (mipWidth > 1) { mipWidth /= 2 }
-//            if (mipHeight > 1) { mipHeight /= 2 }
-//        }
-//
-//        barrier.subresourceRange { it.baseMipLevel(mipLevels - 1) }
-//                .oldLayout(layout)
-//                .newLayout(dstLayout)
-//                .srcAccessMask(srcAccessMask(layout))
-//                .dstAccessMask(dstAccessMask(dstLayout))
-//
-//        vkCmdPipelineBarrier(commandBuffer,
-//                VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
-//                null, null, barrier)
-//
-//        layout = dstLayout
-//    }
-//
+    fun generateMipmaps(dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        backend.commandPool.singleShotCommands { commandBuffer ->
+            generateMipmaps(this, commandBuffer, dstLayout)
+        }
+    }
+
+    fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        if (mipLevels <= 1) {
+            // not much to generate...
+            transitionLayout(dstLayout)
+            return
+        }
+
+        val formatProperties = VkFormatProperties.malloc(stack)
+        vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice, format, formatProperties)
+        if (formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT == 0) {
+            logE { "Unable to generate mip maps: Texture image format does not support linear blitting!" }
+            transitionLayout(dstLayout)
+            return
+        }
+
+        val barrier = stack.callocVkImageMemoryBarrierN(1) {
+            sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER)
+            image(vkImage.handle)
+            srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            subresourceRange {
+                it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                it.baseArrayLayer(0)
+                it.layerCount(arrayLayers)
+                it.levelCount(1)
+            }
+        }
+
+        val srcAccessMaskSrcOpt = getSrcAccessMask(layout)
+        val dstAccessMaskSrcOpt = getDstAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        val srcAccessMaskDst = getSrcAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        val dstAccessMaskDst = getDstAccessMask(dstLayout)
+
+        var mipWidth = width
+        var mipHeight = height
+        for (i in 1 until mipLevels) {
+            barrier
+                .subresourceRange { it.baseMipLevel(i - 1) }
+                .oldLayout(layout)
+                .newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+                .srcAccessMask(srcAccessMaskSrcOpt)
+                .dstAccessMask(dstAccessMaskSrcOpt)
+
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, barrier)
+
+            val blit = stack.callocVkImageBlitN(1) {
+                srcOffsets(0).set(0, 0, 0)
+                srcOffsets(1).set(mipWidth, mipHeight, 1)
+                srcSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.mipLevel(i - 1)
+                    it.baseArrayLayer(0)
+                    it.layerCount(arrayLayers)
+                }
+                dstOffsets(0).set(0, 0, 0)
+                dstOffsets(1).set((mipWidth shr 1).coerceAtLeast(1), (mipHeight shr 1).coerceAtLeast(1), 1)
+                dstSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.mipLevel(i)
+                    it.baseArrayLayer(0)
+                    it.layerCount(arrayLayers)
+                }
+            }
+            vkCmdBlitImage(commandBuffer,
+                vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                blit, VK_FILTER_LINEAR
+            )
+
+            barrier
+                .oldLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+                .newLayout(dstLayout)
+                .srcAccessMask(srcAccessMaskDst)
+                .dstAccessMask(dstAccessMaskDst)
+
+            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, barrier)
+
+            if (mipWidth > 1) { mipWidth /= 2 }
+            if (mipHeight > 1) { mipHeight /= 2 }
+        }
+
+        barrier
+            .subresourceRange { it.baseMipLevel(mipLevels - 1) }
+            .oldLayout(layout)
+            .newLayout(dstLayout)
+            .srcAccessMask(getSrcAccessMask(layout))
+            .dstAccessMask(getDstAccessMask(dstLayout))
+
+        vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, barrier)
+        layout = dstLayout
+    }
+
+    companion object {
+        fun imageView2d(device: Device, image: Image, aspectMask: Int): VkImageView {
+            require(image.depth == 1)
+            return device.createImageView(
+                image = image.vkImage,
+                viewType = VK_IMAGE_VIEW_TYPE_2D,
+                format = image.format,
+                aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                levelCount = image.mipLevels,
+                layerCount = 1
+            )
+        }
+    }
 }

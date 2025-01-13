@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.math.getNumMipLevels
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
@@ -156,7 +156,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         }
 
         data object Generate : MipMode(true) {
-            override fun getTextureMipLevels(size: Vec3i) = getNumMipLevels(size.x, size.y)
+            override fun getTextureMipLevels(size: Vec3i) = numMipLevels(size.x, size.y)
             override fun getRenderMipLevels(size: Vec3i) = 1
         }
 
@@ -164,7 +164,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             val numMipLevels: Int,
             val renderOrder: MipMapRenderOrder = MipMapRenderOrder.HigherResolutionFirst
         ) : MipMode(true) {
-            override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) getNumMipLevels(size.x, size.y) else numMipLevels
+            override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) numMipLevels(size.x, size.y) else numMipLevels
             override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)
         }
 

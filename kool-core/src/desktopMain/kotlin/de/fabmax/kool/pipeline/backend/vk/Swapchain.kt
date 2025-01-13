@@ -22,16 +22,16 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     val imageFormat: Int
     val extent: VkExtent2D = VkExtent2D.malloc()
     val images: List<VkImage>
-    val imageViews: List<ImageView>
+    val imageViews: List<VkImageView>
     val framebuffers: List<VkFramebuffer>
 
     val nImages: Int
         get() = images.size
 
     val colorImage: Image
-    private val colorImageView: ImageView
+    private val colorImageView: VkImageView
     private val depthImage: Image
-    private val depthImageView: ImageView
+    private val depthImageView: VkImageView
 
     private val imageAvailableSemas: List<VkSemaphore>
     private val renderFinishedSemas: List<VkSemaphore>
@@ -85,19 +85,24 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
                     add(VkImage(imgs[i], 0))
                 }
             }
-            imageViews = images.map {
-                ImageView(device, it, imageFormat, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_VIEW_TYPE_2D, 1, 1).also {
-                    addDependingReleasable(it)
-                }
+            imageViews = images.map { img ->
+                device.createImageView(
+                    image = img,
+                    viewType = VK_IMAGE_VIEW_TYPE_2D,
+                    format = imageFormat,
+                    aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    levelCount = 1,
+                    layerCount = 1
+                )
             }
 
             val (cImage, cImageView) = createColorResources()
             colorImage = cImage.also { addDependingReleasable(it) }
-            colorImageView = cImageView.also { addDependingReleasable(it) }
+            colorImageView = cImageView
 
             val (dImage, dImageView) = createDepthResources()
             depthImage = dImage.also { addDependingReleasable(it) }
-            depthImageView = dImageView.also { addDependingReleasable(it) }
+            depthImageView = dImageView
 
             framebuffers = createFramebuffers()
 
@@ -147,7 +152,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    private fun createColorResources(): Pair<Image, ImageView> {
+    private fun createColorResources(): Pair<Image, VkImageView> {
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = imageFormat,
@@ -162,12 +167,13 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         )
         val image = Image(backend, imgInfo)
 
-        val imageView = ImageView.imageView2d(device, image, VK_IMAGE_ASPECT_COLOR_BIT)
+        val imageView = Image.imageView2d(device, image, VK_IMAGE_ASPECT_COLOR_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        image.onRelease { device.destroyImageView(imageView) }
         return image to imageView
     }
 
-    private fun createDepthResources(): Pair<Image, ImageView> {
+    private fun createDepthResources(): Pair<Image, VkImageView> {
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = physicalDevice.depthFormat,
@@ -182,8 +188,9 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         )
         val image = Image(backend, imgInfo)
 
-        val imageView = ImageView.imageView2d(device, image, VK_IMAGE_ASPECT_DEPTH_BIT)
+        val imageView = Image.imageView2d(device, image, VK_IMAGE_ASPECT_DEPTH_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+        image.onRelease { device.destroyImageView(imageView) }
         return image to imageView
     }
 
@@ -191,7 +198,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         imageViews.forEach { imgView ->
             add(device.createFramebuffer(this@createFramebuffers) {
                 renderPass(backend.screenRenderPass.vkRenderPass.handle)
-                pAttachments(longs(colorImageView.vkImageView.handle, depthImageView.vkImageView.handle, imgView.vkImageView.handle))
+                pAttachments(longs(colorImageView.handle, depthImageView.handle, imgView.handle))
                 width(extent.width())
                 height(extent.height())
                 layers(1)
@@ -205,6 +212,8 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         framebuffers.forEach { fb -> device.destroyFramebuffer(fb) }
         device.destroySwapchain(vkSwapchain)
         extent.free()
+
+        imageViews.forEach { device.destroyImageView(it) }
 
         imageAvailableSemas.forEach { device.destroySemaphore(it) }
         renderFinishedSemas.forEach { device.destroySemaphore(it) }

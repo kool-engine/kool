@@ -151,10 +151,6 @@ fun Double.wrap(low: Double, high: Double): Double {
     return t + low
 }
 
-fun getNumMipLevels(texWidth: Int, texHeight: Int): Int {
-    return floor(log2(max(texWidth, texHeight).toDouble())).toInt() + 1
-}
-
 fun smoothStep(low: Float, high: Float, x: Float): Float {
     val nx = ((x - low) / (high - low)).clamp()
     return nx * nx * (3 - 2 * nx)
@@ -205,4 +201,4 @@ fun barycentricWeights(pt: Vec3f, va: Vec3f, vb: Vec3f, vc: Vec3f, result: Mutab
     return result
 }
 
-fun numMipLevels(width: Int, height: Int): Int = log2(max(width, height).toDouble()).roundToInt() + 1
+fun numMipLevels(width: Int, height: Int): Int = floor(log2(max(width, height).toDouble())).toInt() + 1

@@ -1,7 +1,11 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Float32BufferImpl
+import de.fabmax.kool.util.Int32BufferImpl
+import de.fabmax.kool.util.Uint16BufferImpl
+import de.fabmax.kool.util.Uint8BufferImpl
 import org.lwjgl.vulkan.VK10.*
 
 
@@ -35,6 +39,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
     }
 
     private fun loadTexture2d(tex: Texture2d, data: ImageData2d): LoadedTextureVk {
+        val isMipMap = tex.props.generateMipMaps
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = data.format.vk,
@@ -42,25 +47,23 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
             height = data.height,
             depth = 1,
             arrayLayers = 1,
-            mipLevels = 1,
+            mipLevels = if (isMipMap) numMipLevels(data.width, data.height) else 1,
             samples = VK_SAMPLE_COUNT_1_BIT,
-            usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
+            usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
         )
         val image = Image(backend, imgInfo)
 
         val bufSize = data.width * data.height * data.format.vkBytesPerPx.toLong()
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
+            val dstLayout = if (isMipMap) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL else VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             data.copyToStagingBuffer(stagingBuf)
-            image.copyFromBuffer(stagingBuf)
+            image.copyFromBuffer(stagingBuf, dstLayout)
         }
 
-        if (tex.props.generateMipMaps) {
-            logE { "todo: generate mipmaps" }
-//            mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
+        if (isMipMap) {
+            image.generateMipmaps()
         }
-
-        val imageView = ImageView.imageView2d(backend.device, image, VK_IMAGE_ASPECT_COLOR_BIT)
-        return LoadedTextureVk(image, imageView)
+        return LoadedTextureVk(image)
     }
 
     private fun ImageData.copyToStagingBuffer(target: VkBuffer) {

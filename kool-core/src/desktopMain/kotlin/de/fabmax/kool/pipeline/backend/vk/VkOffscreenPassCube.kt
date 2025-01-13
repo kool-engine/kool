@@ -16,7 +16,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
         private set
 
     lateinit var image: Image
-    lateinit var imageView: ImageView
+    var imageView: VkImageView = TODO()
     var sampler: Long = 0L
 
     fun draw() {

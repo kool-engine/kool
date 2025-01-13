@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk.trash
 
-import de.fabmax.kool.math.getNumMipLevels
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.vk.*
 import de.fabmax.kool.util.Uint8Buffer
@@ -14,7 +14,7 @@ import java.nio.ByteBuffer
 object TextureLoaderOld {
     fun createCubeTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, format: TexFormat = props.format) : LoadedTextureVkOld {
         val mipLevels = if (props.generateMipMaps) {
-            getNumMipLevels(width, height)
+            numMipLevels(width, height)
         } else { 1 }
 
 //        val imgConfig = Image.Config()
@@ -51,7 +51,7 @@ object TextureLoaderOld {
         val dstFmt = checkFormat(cubeImg.format)
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong() * 6
         val mipLevels = if (props.generateMipMaps) {
-            getNumMipLevels(width, height)
+            numMipLevels(width, height)
         } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
@@ -86,7 +86,7 @@ object TextureLoaderOld {
 
     fun createTexture(backend: RenderBackendVk, props: TextureProps, width: Int, height: Int, depth: Int, format: TexFormat = props.format) : LoadedTextureVkOld {
         val mipLevels = if (props.generateMipMaps) {
-            getNumMipLevels(width, height)
+            numMipLevels(width, height)
         } else { 1 }
 
 //        val imgConfig = Image.Config()
@@ -124,7 +124,7 @@ object TextureLoaderOld {
 
         val imageSize = width * height * dstFmt.vkBytesPerPx.toLong()
         val mipLevels = if (props.generateMipMaps) {
-            getNumMipLevels(width, height)
+            numMipLevels(width, height)
         } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
@@ -164,7 +164,7 @@ object TextureLoaderOld {
 
         val imageSize = width * height * depth * dstFmt.vkBytesPerPx.toLong()
         val mipLevels = if (noMipMappingProps.generateMipMaps) {
-            getNumMipLevels(width, height)
+            numMipLevels(width, height)
         } else { 1 }
 
         val stagingAllocUsage = Vma.VMA_MEMORY_USAGE_CPU_ONLY
