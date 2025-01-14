@@ -150,16 +150,18 @@ class VkDrawPipeline(
         val nVertexBindings = drawPipeline.vertexLayout.bindings.size
         val bindingDescription = callocVkVertexInputBindingDescriptionN(nVertexBindings) {
             var iBinding = 0
-            drawPipeline.vertexLayout.bindings.forEach { binding ->
-                this[iBinding++].apply {
-                    binding(binding.binding)
-                    stride(binding.strideBytes)
-                    when (binding.inputRate) {
-                        InputRate.VERTEX -> inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
-                        InputRate.INSTANCE -> inputRate(VK_VERTEX_INPUT_RATE_INSTANCE)
+            drawPipeline.vertexLayout.bindings
+                .sortedBy { it.inputRate.name }     // INSTANCE first, VERTEX second
+                .forEach { binding ->
+                    this[iBinding++].apply {
+                        binding(binding.binding)
+                        stride(binding.strideBytes)
+                        when (binding.inputRate) {
+                            InputRate.VERTEX -> inputRate(VK_VERTEX_INPUT_RATE_VERTEX)
+                            InputRate.INSTANCE -> inputRate(VK_VERTEX_INPUT_RATE_INSTANCE)
+                        }
                     }
                 }
-            }
         }
 
         val locations = drawPipeline.vertexLayout.getAttribLocations()
@@ -250,24 +252,22 @@ class VkDrawPipeline(
         gpuGeom.checkBuffers()
 
         var numBuffers = 1
-        //if (cmd.instances != null) numSlots++
+        if (cmd.instances != null) numBuffers++
         if (gpuGeom.intBuffer != null) numBuffers++
         val buffers = passEncoderState.stack.mallocLong(numBuffers)
         val offsets = passEncoderState.stack.callocLong(numBuffers)
 
         var slot = 0
-        cmd.instances?.let { insts ->
-            TODO()
-//            if (insts.gpuInstances == null) {
-//                insts.gpuInstances = WgpuInstances(insts, backend, cmd.mesh)
-//            }
-//            val gpuInsts = insts.gpuInstances as WgpuInstances
-//            gpuInsts.checkBuffers()
-//            gpuInsts.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
-        }
-
         buffers.put(slot++, gpuGeom.floatBuffer.handle)
         gpuGeom.intBuffer?.let { buffers.put(slot++, it.handle) }
+        cmd.instances?.let { insts ->
+            if (insts.gpuInstances == null) {
+                insts.gpuInstances = InstancesVk(insts, backend, cmd.mesh)
+            }
+            val gpuInsts = insts.gpuInstances as InstancesVk
+            gpuInsts.checkBuffers()
+            gpuInsts.instanceBuffer?.let { buffers.put(slot++, it.handle) }
+        }
 
         vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, buffers, offsets)
         vkCmdBindIndexBuffer(passEncoderState.commandBuffer, gpuGeom.indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32)

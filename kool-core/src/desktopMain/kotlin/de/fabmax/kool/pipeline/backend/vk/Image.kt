@@ -244,7 +244,7 @@ class Image(
                 image = image.vkImage,
                 viewType = VK_IMAGE_VIEW_TYPE_2D,
                 format = image.format,
-                aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                aspectMask = aspectMask,
                 levelCount = image.mipLevels,
                 layerCount = 1
             )

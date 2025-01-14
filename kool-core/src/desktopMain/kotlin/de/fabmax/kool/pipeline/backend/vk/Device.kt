@@ -148,8 +148,8 @@ internal fun Device.createImageView(
     format: Int,
     aspectMask: Int,
     levelCount: Int,
-    layerCount: Int,
     baseMipLevel: Int = 0,
+    layerCount: Int = 1,
     baseArrayLayer: Int = 0,
     stack: MemoryStack? = null
 ): VkImageView {
