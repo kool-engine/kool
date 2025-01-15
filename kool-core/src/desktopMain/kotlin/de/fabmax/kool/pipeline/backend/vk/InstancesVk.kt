@@ -11,9 +11,9 @@ import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 class InstancesVk(val instances: MeshInstanceList, val backend: RenderBackendVk, mesh: Mesh) : BaseReleasable(), GpuInstances {
     private val device: Device get() = backend.device
 
-    private val createdInstanceBuffer: GrowingBuffer? = if (instances.instanceSizeF == 0) null else {
+    private val createdInstanceBuffer: GrowingBufferVk? = if (instances.instanceSizeF == 0) null else {
         val memInfo = MemoryInfo(instances.strideBytesF * instances.maxInstances.toLong(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-        GrowingBuffer(backend, memInfo, "${mesh.name} instance data")
+        GrowingBufferVk(backend, memInfo, "${mesh.name} instance data")
     }
     val instanceBuffer: VkBuffer? get() = createdInstanceBuffer?.buffer?.vkBuffer
 

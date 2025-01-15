@@ -234,7 +234,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
 
         gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
-            val gpuTex = readback.texture.gpuTexture as WgpuLoadedTexture?
+            val gpuTex = readback.texture.gpuTexture as WgpuTextureResource?
             if (gpuTex == null || readback.texture.props.format.isF16) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
             } else {
@@ -248,7 +248,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
                     )
                 )
                 encoder.copyTextureToBuffer(
-                    source = GPUImageCopyTexture(gpuTex.texture.gpuTexture),
+                    source = GPUImageCopyTexture(gpuTex.gpuTexture),
                     destination = GPUImageCopyBuffer(
                         buffer = mapBuffer,
                         bytesPerRow = format.pxSize * gpuTex.width,
@@ -275,7 +275,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         gpuReadbacks.filterIsInstance<ReadbackTexture>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
             mapBuffer.mapAsync(GPUMapMode.READ).then {
-                val gpuTex = readback.texture.gpuTexture as WgpuLoadedTexture
+                val gpuTex = readback.texture.gpuTexture as WgpuTextureResource
                 val format = readback.texture.props.format
                 val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
                 dst.copyFrom(mapBuffer.getMappedRange())

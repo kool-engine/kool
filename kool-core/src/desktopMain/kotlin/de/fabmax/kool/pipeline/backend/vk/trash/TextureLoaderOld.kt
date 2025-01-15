@@ -332,7 +332,7 @@ object TextureLoaderOld {
         this[byteI+1] = (f16bits shr 8).toUByte()
     }
 
-    private fun copyBufferToImage(backend: RenderBackendVk, buffer: Buffer, image: Image, width: Int, height: Int, depth: Int) {
+    private fun copyBufferToImage(backend: RenderBackendVk, buffer: BufferResourceVk, image: Image, width: Int, height: Int, depth: Int) {
         backend.commandPool.singleShotCommands { commandBuffer ->
             val region = callocVkBufferImageCopyN(1) {
                 imageSubresource {
@@ -354,7 +354,7 @@ object TextureLoaderOld {
         }
     }
 
-    private fun copyCubeBufferToImage(backend: RenderBackendVk, buffer: Buffer, image: Image, width: Int, height: Int) {
+    private fun copyCubeBufferToImage(backend: RenderBackendVk, buffer: BufferResourceVk, image: Image, width: Int, height: Int) {
         backend.commandPool.singleShotCommands { commandBuffer ->
             val regions = callocVkBufferImageCopyN(6) {
                 for (face in 0..5) {

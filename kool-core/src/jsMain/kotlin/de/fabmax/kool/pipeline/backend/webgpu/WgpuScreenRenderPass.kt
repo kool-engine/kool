@@ -43,11 +43,11 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         val width = colorSrc.width
         val height = colorSrc.height
 
-        var colorDstWgpu: WgpuLoadedTexture? = null
-        var depthDstWgpu: WgpuLoadedTexture? = null
+        var colorDstWgpu: WgpuTextureResource? = null
+        var depthDstWgpu: WgpuTextureResource? = null
 
         colorDst?.let { dst ->
-            var copyDstC = (dst.gpuTexture as WgpuLoadedTexture?)
+            var copyDstC = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstC == null || copyDstC.width != width || copyDstC.height != height) {
                 copyDstC?.let {
                     launchDelayed(1) { it.release() }
@@ -60,7 +60,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
                 val texResource = backend.createTexture(descriptor, dst)
-                copyDstC = WgpuLoadedTexture(texResource)
+                copyDstC = texResource
                 dst.gpuTexture = copyDstC
                 dst.loadingState = Texture.LoadingState.LOADED
             }
@@ -68,7 +68,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         }
 
         depthDst?.let { dst ->
-            var copyDstD = (dst.gpuTexture as WgpuLoadedTexture?)
+            var copyDstD = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstD == null || copyDstD.width != width || copyDstD.height != height) {
                 copyDstD?.let {
                     launchDelayed(1) { it.release() }
@@ -81,7 +81,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
                 val texResource = backend.createTexture(descriptor, dst)
-                copyDstD = WgpuLoadedTexture(texResource)
+                copyDstD = texResource
                 dst.gpuTexture = copyDstD
                 dst.loadingState = Texture.LoadingState.LOADED
             }
@@ -93,18 +93,18 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
             val passEncoder = encoder.beginRenderPass(
                 colorAttachments = arrayOf(GPURenderPassColorAttachment(
                     view = colorTextureView!!,
-                    resolveTarget = colorDstWgpu!!.texture.gpuTexture.createView(),
+                    resolveTarget = colorDstWgpu.gpuTexture.createView(),
                 )),
             )
             passEncoder.end()
 
         } else {
             colorDstWgpu?.let { copyDst ->
-                backend.textureLoader.copyTexture2d(colorSrc, copyDst.texture.gpuTexture, 1, encoder)
+                backend.textureLoader.copyTexture2d(colorSrc, copyDst.gpuTexture, 1, encoder)
             }
         }
         depthDstWgpu?.let { copyDst ->
-            backend.textureLoader.resolveMultiSampledDepthTexture(depthAttachment!!, copyDst.texture.gpuTexture, encoder)
+            backend.textureLoader.resolveMultiSampledDepthTexture(depthAttachment!!, copyDst.gpuTexture, encoder)
         }
     }
 

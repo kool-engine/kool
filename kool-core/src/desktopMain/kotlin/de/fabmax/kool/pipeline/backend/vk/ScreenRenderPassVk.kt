@@ -77,7 +77,6 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                 srcAccessMask(0)
                 dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
                 dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-                //dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
             }
 
             vkRenderPass = device.createRenderPass {

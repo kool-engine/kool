@@ -19,7 +19,7 @@ class WgpuBufferResource(val buffer: GPUBuffer, size: Long, info: String?) :
     }
 }
 
-internal class WgpuVertexBuffer(
+internal class WgpuGrowingBuffer(
     val backend: RenderBackendWebGpu,
     val label: String,
     size: Long,

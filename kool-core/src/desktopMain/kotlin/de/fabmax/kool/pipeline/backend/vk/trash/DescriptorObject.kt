@@ -27,12 +27,12 @@ abstract class DescriptorObject(val binding: Int, val descriptor: BindingLayout)
 }
 
 class UboDescriptor(binding: Int, graphicsPipeline: GraphicsPipeline, private val ubo: UniformBufferLayout) : DescriptorObject(binding, ubo) {
-    private val buffer: de.fabmax.kool.pipeline.backend.vk.Buffer
+    private val buffer: de.fabmax.kool.pipeline.backend.vk.BufferResourceVk
 
     init {
         val usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT
         val allocUsage = Vma.VMA_MEMORY_USAGE_CPU_TO_GPU
-        buffer = de.fabmax.kool.pipeline.backend.vk.Buffer(
+        buffer = de.fabmax.kool.pipeline.backend.vk.BufferResourceVk(
             graphicsPipeline.backend,
             MemoryInfo(0, 0)
 //            ubo.layout.size.toLong(),

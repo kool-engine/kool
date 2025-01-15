@@ -7,21 +7,16 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class Buffer(
+class BufferResourceVk(
     val backend: RenderBackendVk,
     bufferInfo: MemoryInfo,
     label: String = UniqueId.nextId("VkBuffer")
 ) : BaseReleasable() {
 
-    val vkBuffer: VkBuffer
+    val vkBuffer: VkBuffer = backend.memManager.createBuffer(bufferInfo)
     val bufferSize: Long get() = vkBuffer.bufferSize
 
-    private val allocInfo = BufferInfo(label, "<none>")
-
-    init {
-        vkBuffer = backend.memManager.createBuffer(bufferInfo)
-        allocInfo.allocated(bufferSize)
-    }
+    private val allocInfo = BufferInfo(label, "<none>").apply { allocated(bufferSize) }
 
     inline fun mappedBytes(block: (ByteBuffer) -> Unit) = backend.memManager.mappedBytes(vkBuffer, block)
     inline fun mappedFloats(block: (FloatBuffer) -> Unit) = backend.memManager.mappedFloats(vkBuffer, block)
@@ -41,7 +36,7 @@ class Buffer(
     }
 }
 
-class GrowingBuffer(
+class GrowingBufferVk(
     val backend: RenderBackendVk,
     bufferInfo: MemoryInfo,
     val label: String
@@ -49,7 +44,7 @@ class GrowingBuffer(
     var bufferInfo = bufferInfo
         private set
     val size: Long get() = bufferInfo.size
-    var buffer: Buffer = makeBuffer(bufferInfo)
+    var buffer: BufferResourceVk = makeBuffer(bufferInfo)
 
     fun writeData(data: Float32Buffer) {
         val bufSize = data.limit * 4L
@@ -79,5 +74,5 @@ class GrowingBuffer(
         }
     }
 
-    private fun makeBuffer(bufferInfo: MemoryInfo) = Buffer(backend, bufferInfo, label)
+    private fun makeBuffer(bufferInfo: MemoryInfo) = BufferResourceVk(backend, bufferInfo, label)
 }

@@ -9,8 +9,8 @@ import de.fabmax.kool.util.checkIsNotReleased
 class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendWebGpu, mesh: Mesh) : BaseReleasable(), GpuInstances {
     private val device: GPUDevice get() = backend.device
 
-    private val createdInstanceBuffer: WgpuVertexBuffer? = if (instances.instanceSizeF == 0) null else {
-        WgpuVertexBuffer(backend, "${mesh.name} instance data", instances.strideBytesF * instances.maxInstances.toLong())
+    private val createdInstanceBuffer: WgpuGrowingBuffer? = if (instances.instanceSizeF == 0) null else {
+        WgpuGrowingBuffer(backend, "${mesh.name} instance data", instances.strideBytesF * instances.maxInstances.toLong())
     }
     val instanceBuffer: GPUBuffer? get() = createdInstanceBuffer?.buffer?.buffer
 

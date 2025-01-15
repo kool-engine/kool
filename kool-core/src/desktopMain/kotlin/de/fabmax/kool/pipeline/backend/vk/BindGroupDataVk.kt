@@ -150,8 +150,8 @@ class BindGroupDataVk(
         numSets: Int
     ) : BaseReleasable() {
         val layout: Std140BufferLayout = Std140BufferLayout(binding.layout.uniforms)
-        val buffers: List<Buffer> = List(numSets) {
-            Buffer(
+        val buffers: List<BufferResourceVk> = List(numSets) {
+            BufferResourceVk(
                 backend,
                 MemoryInfo(layout.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, createMapped = true),
                 "bindGroup[${data.layout.scope}]-ubo-${binding.name}"
@@ -204,7 +204,7 @@ class BindGroupDataVk(
         viewType: Int,
     ): TextureBinding {
         val tex = checkNotNull(binding.texture) { "Cannot create texture binding from null texture" }
-        val loadedTex = checkNotNull(tex.gpuTexture as LoadedTextureVk?) { "Cannot create texture binding from null texture" }
+        val loadedTex = checkNotNull(tex.gpuTexture as TextureResourceVk?) { "Cannot create texture binding from null texture" }
         val image = loadedTex.image
         val samplerSettings = binding.sampler ?: tex.props.defaultSamplerSettings
 
