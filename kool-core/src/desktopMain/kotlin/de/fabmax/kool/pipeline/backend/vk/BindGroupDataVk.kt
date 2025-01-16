@@ -105,6 +105,7 @@ class BindGroupDataVk(
         val textureBindings: List<TextureBinding>,
         val backend: RenderBackendVk,
     ) : BaseReleasable() {
+        private var isReleasable: Boolean = true
 
         init {
             uboBindings.forEach { it.releaseWith(this) }
@@ -112,8 +113,10 @@ class BindGroupDataVk(
         }
 
         override fun release() {
-            super.release()
-            backend.device.destroyDescriptorPool(descriptorPool)
+            if (isReleasable) {
+                super.release()
+                backend.device.destroyDescriptorPool(descriptorPool)
+            }
         }
 
         fun getDescriptorSet(frameIndex: Int): VkDescriptorSet {
@@ -134,9 +137,11 @@ class BindGroupDataVk(
                         descriptorPool(emptyPool.handle)
                         pSetLayouts(longs(emptySetLayout.handle))
                     }
-                    BindGroup(emptyPool, emptySet, emptyList(), emptyList(), backend).also {
-                        it.releaseWith(backend.device)
-                        it.onRelease {
+                    BindGroup(emptyPool, emptySet, emptyList(), emptyList(), backend).also { emptyBg ->
+                        emptyBg.isReleasable = false
+                        backend.device.onRelease {
+                            emptyBg.isReleasable = true
+                            emptyBg.release()
                             backend.device.destroyDescriptorSetLayout(emptySetLayout)
                         }
                     }
