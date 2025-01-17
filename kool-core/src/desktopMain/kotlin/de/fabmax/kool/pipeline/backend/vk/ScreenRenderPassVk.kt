@@ -1,10 +1,9 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.memStack
-import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
@@ -126,7 +125,71 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         logD { "Destroyed render pass" }
     }
 
-//    fun blitFrom(src: VkOffscreenPass2d, commandBuffer: VkCommandBuffer, mipLevel: Int) {
+    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState<Scene.SceneRenderPass>) {
+
+        val colorDst = frameCopy.colorCopy2d
+
+        val swapchain = backend.swapchain
+        val colorTexture = swapchain.colorImage
+
+        val colorSrc = colorTexture
+        val width = colorSrc.width
+        val height = colorSrc.height
+
+        var colorDstVk: TextureResourceVk? = null
+        //var depthDstVk: TextureResourceVk? = null
+
+        colorDst.let { dst ->
+            var copyDstC = (dst.gpuTexture as TextureResourceVk?)
+            if (copyDstC == null || copyDstC.width != width || copyDstC.height != height) {
+                copyDstC?.let {
+                    launchDelayed(1) { it.release() }
+                }
+
+                val imgInfo = ImageInfo(
+                    imageType = VK_IMAGE_TYPE_2D,
+                    format = colorSrc.format,
+                    width = width,
+                    height = height,
+                    depth = 1,
+                    arrayLayers = 1,
+                    mipLevels = 1,
+                    samples = VK_SAMPLE_COUNT_1_BIT,
+                    usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT /*or VK_IMAGE_USAGE_TRANSFER_SRC_BIT*/ or VK_IMAGE_USAGE_SAMPLED_BIT
+                )
+                val texResource = TextureResourceVk(Image(backend, imgInfo))
+
+                copyDstC = texResource
+                dst.gpuTexture = copyDstC
+                dst.loadingState = Texture.LoadingState.LOADED
+            }
+            colorDstVk = copyDstC
+        }
+
+        memStack {
+            val imageCopy = callocVkImageCopyN(1) {
+                srcSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.mipLevel(0)
+                    it.baseArrayLayer(0)
+                    it.layerCount(1)
+                }
+                srcOffset { it.set(0, 0, 0) }
+                dstSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.mipLevel(0)
+                    it.baseArrayLayer(0)
+                    it.layerCount(1)
+                }
+                dstOffset { it.set(0, 0, 0) }
+                extent { it.set(width, height, 1) }
+            }
+            // todo: layout transitions
+            vkCmdCopyImage(encoder.commandBuffer, colorSrc.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorDstVk!!.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+        }
+    }
+
+    //    fun blitFrom(src: VkOffscreenPass2d, commandBuffer: VkCommandBuffer, mipLevel: Int) {
 //        logE { "Blitting render passes is not yet implemented on Vulkan backend" }
 //
 //        val rp = src.renderPass ?: return

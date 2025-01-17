@@ -56,39 +56,76 @@ class ComputePassEncoderState: PassEncoderState {
     }
 }
 
-class RenderPassEncoderState<T: RenderPass>(val gpuRenderPass: WgpuRenderPass<T>): PassEncoderState {
-    private var isPassActive = false
-    private var _renderPass: T? = null
+class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState {
+    private var _gpuRenderPass: WgpuRenderPass? = null
+    private var _renderPass: RenderPass? = null
     private var _encoder: GPUCommandEncoder? = null
     private var _passEncoder: GPURenderPassEncoder? = null
 
     val encoder: GPUCommandEncoder get() = _encoder!!
     val passEncoder: GPURenderPassEncoder get() = _passEncoder!!
-    override val renderPass: T get() = _renderPass!!
+    val gpuRenderPass: WgpuRenderPass get() = _gpuRenderPass!!
+    override val renderPass: RenderPass get() = _renderPass!!
 
     private var activePipeline: GPURenderPipeline? = null
     private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
 
-    fun setup(
-        encoder: GPUCommandEncoder,
-        renderPass: T
+    private var isPassActive = false
+    private var currentLevel = 0
+    private var currentLayer = 0
+
+    fun beginFrame() {
+        _encoder = backend.device.createCommandEncoder()
+    }
+
+    fun endFrame(): GPUCommandBuffer {
+        if (isPassActive) {
+            ensureRenderPassInactive()
+        }
+        val cmdBuffer = encoder.finish()
+        _encoder = null
+        return cmdBuffer
+    }
+
+    fun beginRenderPass(
+        renderPass: RenderPass,
+        gpuRenderPass: WgpuRenderPass,
+        mipLevel: Int,
+        layer: Int = 0,
+        timestampWrites: GPURenderPassTimestampWrites? = null,
+        forceLoad: Boolean = false
     ) {
-        _encoder = encoder
+        if (isPassActive) {
+            if (gpuRenderPass === _gpuRenderPass && currentLevel == mipLevel && currentLayer == layer && renderPass.clearColors.size == 1) {
+                _renderPass = renderPass
+                if (renderPass.clearDepth || renderPass.clearColor != null) {
+                    backend.clearHelper.clear(this)
+                    activePipeline = null
+                    for (i in bindGroups.indices) {
+                        bindGroups[i] = null
+                    }
+                }
+                return
+            }
+            ensureRenderPassInactive()
+        }
+
+        val attachments = gpuRenderPass.getRenderAttachments(renderPass, mipLevel, layer, forceLoad)
+        _passEncoder = encoder.beginRenderPass(attachments.colorAttachments, attachments.depthAttachment, timestampWrites, renderPass.name)
+        isPassActive = true
+        currentLevel = mipLevel
+        currentLayer = layer
+        _gpuRenderPass = gpuRenderPass
         _renderPass = renderPass
     }
 
-    fun begin(viewIndex: Int, mipLevel: Int, timestampWrites: GPURenderPassTimestampWrites? = null, forceLoad: Boolean = false) {
-        check(!isPassActive)
-        val (colorAttachments, depthAttachment) = gpuRenderPass.getRenderAttachments(renderPass, viewIndex, mipLevel, forceLoad)
-        _passEncoder = encoder.beginRenderPass(colorAttachments, depthAttachment, timestampWrites, renderPass.name)
-        isPassActive = true
-    }
-
-    fun end() {
+    fun ensureRenderPassInactive() {
         if (isPassActive) {
             passEncoder.end()
             isPassActive = false
-
+            _gpuRenderPass = null
+            _renderPass = null
+            _passEncoder = null
             activePipeline = null
             for (i in bindGroups.indices) {
                 bindGroups[i] = null

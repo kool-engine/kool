@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
@@ -59,28 +60,28 @@ abstract class RenderPassVk<T: RenderPass>(
     private fun T.renderMipLevel(mipLevel: Int, commandBuffer: VkCommandBuffer, /*timestampWrites: GPURenderPassTimestampWrites?,*/ stack: MemoryStack) {
         setupMipLevel(mipLevel)
 
-        when (viewRenderMode) {
-            RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
+//        when (viewRenderMode) {
+//            RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
                 passEncoderState.setup(commandBuffer, this, stack)
                 passEncoderState.begin(0, mipLevel, /*timestampWrites*/)
                 for (viewIndex in views.indices) {
                     renderView(viewIndex, mipLevel, passEncoderState)
                 }
                 passEncoderState.end()
-            }
-
-            RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
-                for (viewIndex in views.indices) {
-                    passEncoderState.setup(commandBuffer, this, stack)
-                    passEncoderState.begin(viewIndex, mipLevel)
-                    renderView(viewIndex, mipLevel, passEncoderState)
-                    passEncoderState.end()
-                }
-            }
-        }
+//            }
+//
+//            RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
+//                for (viewIndex in views.indices) {
+//                    passEncoderState.setup(commandBuffer, this, stack)
+//                    passEncoderState.begin(viewIndex, mipLevel)
+//                    renderView(viewIndex, mipLevel, passEncoderState)
+//                    passEncoderState.end()
+//                }
+//            }
+//        }
     }
 
-    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: RenderPassEncoderState<*>) = passEncoderState.stack.apply {
+    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: RenderPassEncoderState<T>) = passEncoderState.stack.apply {
         val view = passEncoderState.renderPass.views[viewIndex]
         view.setupView()
 
@@ -133,16 +134,18 @@ abstract class RenderPassVk<T: RenderPass>(
             }
         }
 
-//        nextFrameCopy?.let {
-//            passEncoderState.end()
-//            copy(it, passEncoderState.encoder)
-//            passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
-//            anySingleShots = anySingleShots || it.isSingleShot
-//        }
-//        if (anySingleShots) {
-//            view.frameCopies.removeAll { it.isSingleShot }
-//        }
+        nextFrameCopy?.let {
+            //passEncoderState.end()
+            copy(it, passEncoderState)
+            //passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
+            anySingleShots = anySingleShots || it.isSingleShot
+        }
+        if (anySingleShots) {
+            view.frameCopies.removeAll { it.isSingleShot }
+        }
     }
+
+    protected abstract fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState<T>)
 
     fun getTexFormat(attachment: Int): TexFormat {
         return when(colorFormats[attachment]) {

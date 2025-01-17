@@ -19,7 +19,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
 
     private val resInfo = OffscreenPassInfo(parent)
 
-    override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
+    override fun setupFramebuffer(mipLevel: Int, layer: Int) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
     }
 

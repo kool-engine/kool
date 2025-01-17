@@ -18,11 +18,11 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
 
     private val resInfo = OffscreenPassInfo(parent)
 
-    override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
+    override fun setupFramebuffer(mipLevel: Int, layer: Int) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
-        attachColorTextures(mipLevel, viewIndex)
+        attachColorTextures(mipLevel, layer)
         if (depthTexture != gl.NULL_TEXTURE) {
-            attachDepthTexture(mipLevel, viewIndex)
+            attachDepthTexture(mipLevel, layer)
         }
     }
 
@@ -152,12 +152,12 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
         isCreated = true
     }
 
-    private fun attachColorTextures(mipLevel: Int, viewIndex: Int) {
+    private fun attachColorTextures(mipLevel: Int, layer: Int) {
         colorTextures.forEachIndexed { iAttachment, tex ->
             gl.framebufferTexture2D(
                 target = gl.FRAMEBUFFER,
                 attachment = gl.COLOR_ATTACHMENT0 + iAttachment,
-                textarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex,
+                textarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + layer,
                 texture = tex,
                 level = mipLevel
             )
@@ -168,10 +168,10 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
         }
     }
 
-    private fun attachDepthTexture(mipLevel: Int, viewIndex: Int) = gl.framebufferTexture2D(
+    private fun attachDepthTexture(mipLevel: Int, layer: Int) = gl.framebufferTexture2D(
         target = gl.FRAMEBUFFER,
         attachment = gl.DEPTH_ATTACHMENT,
-        textarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + viewIndex,
+        textarget = gl.TEXTURE_CUBE_MAP_POSITIVE_X + layer,
         texture = depthTexture,
         level = mipLevel
     )

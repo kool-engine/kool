@@ -41,23 +41,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
      */
     val frameCopies = mutableListOf<FrameCopy>()
 
-    /**
-     * Determines whether individual [views] are rendered in a single render pass or one separate pass per view.
-     *
-     * If [ViewRenderMode.SINGLE_RENDER_PASS], each view is rendered with its individual viewport but without applying
-     * clear values or changing any attached frame buffer textures. This mode can be used, e.g., to put multiple
-     * camera perspectives on a single tiled texture.
-     *
-     * If [ViewRenderMode.MULTI_RENDER_PASS], each view is rendered in a separate render pass. For each pass
-     * clear values are applied as configured and the render attachments can change (depending on the render pass
-     * implementation). This is the default mode for [OffscreenRenderPassCube], where each cube face is rendered to
-     * the corresponding cube face of the attached cube map texture.
-     */
-    var viewRenderMode = ViewRenderMode.SINGLE_RENDER_PASS
-
     var lighting: Lighting? = null
-
-    private var updateEvent: UpdateEvent? = null
 
     var isDoublePrecision = false
     open var isReverseDepth = false
@@ -74,8 +58,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
 
     var isMirrorY = false
         protected set
-
-    protected var complainedAboutReversedDepth = false
 
     protected fun mirrorIfInvertedClipY() {
         isMirrorY = KoolSystem.requireContext().backend.isInvertedNdcY
@@ -224,6 +206,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         fun copyOutput(isCopyColor: Boolean, isCopyDepth: Boolean, drawGroupId: Int = 0, isSingleShot: Boolean = false): FrameCopy {
             val copy = FrameCopy(this@RenderPass, isCopyColor, isCopyDepth, drawGroupId, isSingleShot)
             frameCopies += copy
+            frameCopies.sortBy { it.drawGroupId }
             return copy
         }
 

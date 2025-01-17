@@ -130,7 +130,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     screenRenderPass.renderScene(ctx.backgroundScene.mainRenderPass, commandBuffer, this)
                 }
 
-                //recordCommandBuffer(commandBuffer, swapchain.nextSwapImage)
                 for (i in ctx.scenes.indices) {
                     val scene = ctx.scenes[i]
                     if (scene.isVisible) {

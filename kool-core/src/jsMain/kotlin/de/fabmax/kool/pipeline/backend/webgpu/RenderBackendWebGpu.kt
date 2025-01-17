@@ -60,6 +60,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     // right now, we can only query individual render pass times, not the entire frame time
     override val frameGpuTime: Double = 0.0
 
+    val clearHelper: ClearHelper by lazy { ClearHelper(this) }
+    private val passEncoderState = RenderPassEncoderState(this)
+
     init {
         check(isSupported()) {
             val txt = "WebGPU not supported on this browser."
@@ -108,26 +111,26 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             sceneRenderer.applySize(canvas.width, canvas.height)
         }
 
-        val encoder = device.createCommandEncoder()
+        passEncoderState.beginFrame()
 
-        ctx.backgroundScene.renderOffscreenPasses(encoder)
+        ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
                 val t = Time.precisionTime
-                scene.renderOffscreenPasses(encoder)
-                sceneRenderer.renderScene(scene.mainRenderPass, encoder)
+                scene.renderOffscreenPasses(passEncoderState)
+                sceneRenderer.renderScene(scene.mainRenderPass, passEncoderState)
                 scene.sceneDrawTime = Time.precisionTime - t
             }
         }
 
         if (gpuReadbacks.isNotEmpty()) {
             // copy all buffers requested for readback to temporary buffers using the current command encoder
-            copyReadbacks(encoder)
+            copyReadbacks(passEncoderState.encoder)
         }
-        timestampQuery.resolve(encoder)
-        device.queue.submit(arrayOf(encoder.finish()))
+        timestampQuery.resolve(passEncoderState.encoder)
+        device.queue.submit(arrayOf(passEncoderState.endFrame()))
 
         timestampQuery.readTimestamps()
         if (gpuReadbacks.isNotEmpty()) {
@@ -136,37 +139,37 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun Scene.renderOffscreenPasses(encoder: GPUCommandEncoder) {
+    private fun Scene.renderOffscreenPasses(passEncoderState: RenderPassEncoderState) {
         for (i in sortedOffscreenPasses.indices) {
             val pass = sortedOffscreenPasses[i]
             if (pass.isEnabled) {
-                pass.render(encoder)
+                pass.render(passEncoderState)
             }
         }
     }
 
-    private fun OffscreenRenderPass.render(encoder: GPUCommandEncoder) {
+    private fun OffscreenRenderPass.render(passEncoderState: RenderPassEncoderState) {
         when (this) {
-            is OffscreenRenderPass2d -> draw(encoder)
-            is OffscreenRenderPassCube -> draw(encoder)
-            is OffscreenRenderPass2dPingPong -> draw(encoder)
-            is ComputeRenderPass -> dispatch(encoder)
+            is OffscreenRenderPass2d -> draw(passEncoderState)
+            is OffscreenRenderPassCube -> draw(passEncoderState)
+            is OffscreenRenderPass2dPingPong -> draw(passEncoderState)
+            is ComputeRenderPass -> dispatch(passEncoderState.encoder)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
 
-    private fun OffscreenRenderPass2dPingPong.draw(encoder: GPUCommandEncoder) {
+    private fun OffscreenRenderPass2dPingPong.draw(passEncoderState: RenderPassEncoderState) {
         for (i in 0 until pingPongPasses) {
             onDrawPing?.invoke(i)
-            ping.draw(encoder)
+            ping.draw(passEncoderState)
             onDrawPong?.invoke(i)
-            pong.draw(encoder)
+            pong.draw(passEncoderState)
         }
     }
 
-    private fun OffscreenRenderPass2d.draw(encoder: GPUCommandEncoder) = (impl as WgpuOffscreenRenderPass2d).draw(encoder)
+    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState) = (impl as WgpuOffscreenRenderPass2d).draw(passEncoderState)
 
-    private fun OffscreenRenderPassCube.draw(encoder: GPUCommandEncoder) = (impl as WgpuOffscreenRenderPassCube).draw(encoder)
+    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) = (impl as WgpuOffscreenRenderPassCube).draw(passEncoderState)
 
     private fun ComputeRenderPass.dispatch(encoder: GPUCommandEncoder) = (impl as WgpuComputePass).dispatch(encoder)
 

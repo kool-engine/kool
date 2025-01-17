@@ -11,7 +11,7 @@ class WgpuDrawPipeline(
     backend: RenderBackendWebGpu,
 ): WgpuPipeline(drawPipeline, backend) {
 
-    private val renderPipelines = mutableMapOf<WgpuRenderPass<*>, GPURenderPipeline>()
+    private val renderPipelines = mutableMapOf<WgpuRenderPass, GPURenderPipeline>()
     private val users = mutableSetOf<NodeId>()
 
     private fun createVertexBufferLayout(): List<GPUVertexBufferLayout> {
@@ -57,7 +57,7 @@ class WgpuDrawPipeline(
             }
     }
 
-    private fun createRenderPipeline(passEncoderState: RenderPassEncoderState<*>): GPURenderPipeline {
+    private fun createRenderPipeline(passEncoderState: RenderPassEncoderState): GPURenderPipeline {
         val renderPass = passEncoderState.renderPass
         val gpuRenderPass = passEncoderState.gpuRenderPass
 
@@ -135,7 +135,7 @@ class WgpuDrawPipeline(
         )
     }
 
-    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState<*>): Boolean {
+    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
         users.add(cmd.mesh.id)
 
         val pipelineData = drawPipeline.pipelineData

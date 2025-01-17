@@ -36,7 +36,7 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
         }
     }
 
-    override fun setupFramebuffer(viewIndex: Int, mipLevel: Int) {
+    override fun setupFramebuffer(mipLevel: Int, layer: Int) {
         if (backend.useFloatDepthBuffer) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, renderFbo)
         } else {

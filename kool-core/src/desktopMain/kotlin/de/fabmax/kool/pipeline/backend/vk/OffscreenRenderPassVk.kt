@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
@@ -209,6 +210,10 @@ class OffscreenRenderPassVk(
                 pDependencies(dependencies)
             }
         }
+    }
+
+    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState<OffscreenRenderPass>) {
+        TODO("Not yet implemented")
     }
 
     abstract class ColorAttachments(val isCopied: Boolean, val colorFormats: List<Int>) : BaseReleasable() {

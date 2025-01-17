@@ -1,12 +1,13 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.releaseWith
 
-abstract class WgpuRenderPass<T: RenderPass>(
+abstract class WgpuRenderPass(
     val depthFormat: GPUTextureFormat?,
     val numSamples: Int,
     val backend: RenderBackendWebGpu
@@ -15,14 +16,12 @@ abstract class WgpuRenderPass<T: RenderPass>(
     private var beginTimestamp: WgpuTimestamps.QuerySlot? = null
     private var endTimestamp: WgpuTimestamps.QuerySlot? = null
 
-    private val passEncoderState = RenderPassEncoderState(this)
-
     protected val device: GPUDevice
         get() = backend.device
 
     abstract val colorTargetFormats: List<GPUTextureFormat>
 
-    protected fun render(renderPass: T, encoder: GPUCommandEncoder) {
+    protected fun render(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
         var timestampWrites: GPURenderPassTimestampWrites? = null
         if (renderPass.isProfileTimes) {
             createTimestampQueries()
@@ -39,24 +38,26 @@ abstract class WgpuRenderPass<T: RenderPass>(
                 val numLevels = mode.getRenderMipLevels(renderPass.size)
                 if (mode.renderOrder == RenderPass.MipMapRenderOrder.HigherResolutionFirst) {
                     for (mipLevel in 0 until numLevels) {
-                        renderPass.renderMipLevel(mipLevel, encoder, timestampWrites)
+                        renderPass.renderMipLevel(mipLevel, passEncoderState, timestampWrites)
                     }
                 } else {
                     for (mipLevel in (numLevels-1) downTo 0) {
-                        renderPass.renderMipLevel(mipLevel, encoder, timestampWrites)
+                        renderPass.renderMipLevel(mipLevel, passEncoderState, timestampWrites)
                     }
                 }
             }
-            else -> renderPass.renderMipLevel(0, encoder, timestampWrites)
+            else -> renderPass.renderMipLevel(0, passEncoderState, timestampWrites)
         }
 
         if (renderPass.mipMode == RenderPass.MipMode.Generate) {
-            generateMipLevels(encoder)
+            passEncoderState.ensureRenderPassInactive()
+            generateMipLevels(passEncoderState.encoder)
         }
 
         var anySingleShots = false
         for (i in renderPass.frameCopies.indices) {
-            copy(renderPass.frameCopies[i], encoder)
+            passEncoderState.ensureRenderPassInactive()
+            copy(renderPass.frameCopies[i], passEncoderState.encoder)
             anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
         }
         if (anySingleShots) {
@@ -65,26 +66,18 @@ abstract class WgpuRenderPass<T: RenderPass>(
         renderPass.afterDraw()
     }
 
-    private fun T.renderMipLevel(mipLevel: Int, encoder: GPUCommandEncoder, timestampWrites: GPURenderPassTimestampWrites?) {
+    private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState, timestampWrites: GPURenderPassTimestampWrites?) {
         setupMipLevel(mipLevel)
 
-        when (viewRenderMode) {
-            RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
-                passEncoderState.setup(encoder, this)
-                passEncoderState.begin(0, mipLevel, timestampWrites)
-                for (viewIndex in views.indices) {
-                    renderView(viewIndex, mipLevel, passEncoderState)
-                }
-                passEncoderState.end()
+        if (this is OffscreenRenderPassCube) {
+            for (layer in views.indices) {
+                passEncoderState.beginRenderPass(this, this@WgpuRenderPass, mipLevel, layer)
+                renderView(layer, mipLevel, layer, passEncoderState)
             }
-
-            RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
-                for (viewIndex in views.indices) {
-                    passEncoderState.setup(encoder, this)
-                    passEncoderState.begin(viewIndex, mipLevel)
-                    renderView(viewIndex, mipLevel, passEncoderState)
-                    passEncoderState.end()
-                }
+        } else {
+            passEncoderState.beginRenderPass(this, this@WgpuRenderPass, mipLevel)
+            for (viewIndex in views.indices) {
+                renderView(viewIndex, mipLevel, 0, passEncoderState)
             }
         }
     }
@@ -102,7 +95,7 @@ abstract class WgpuRenderPass<T: RenderPass>(
 
     protected abstract fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder)
 
-    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: RenderPassEncoderState<*>) {
+    private fun renderView(viewIndex: Int, mipLevel: Int, layer: Int, passEncoderState: RenderPassEncoderState) {
         val view = passEncoderState.renderPass.views[viewIndex]
         view.setupView()
 
@@ -122,9 +115,10 @@ abstract class WgpuRenderPass<T: RenderPass>(
         view.drawQueue.forEach { cmd ->
             nextFrameCopy?.let { frameCopy ->
                 if (cmd.drawGroupId > frameCopy.drawGroupId) {
-                    passEncoderState.end()
+                    val rp = passEncoderState.renderPass
+                    passEncoderState.ensureRenderPassInactive()
                     copy(frameCopy, passEncoderState.encoder)
-                    passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
+                    passEncoderState.beginRenderPass(rp, this, mipLevel, layer, forceLoad = true)
                     anySingleShots = anySingleShots || frameCopy.isSingleShot
                     nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
                 }
@@ -144,9 +138,10 @@ abstract class WgpuRenderPass<T: RenderPass>(
         }
 
         nextFrameCopy?.let {
-            passEncoderState.end()
+            val rp = passEncoderState.renderPass
+            passEncoderState.ensureRenderPassInactive()
             copy(it, passEncoderState.encoder)
-            passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
+            passEncoderState.beginRenderPass(rp, this, mipLevel, layer, forceLoad = true)
             anySingleShots = anySingleShots || it.isSingleShot
         }
         if (anySingleShots) {
@@ -154,9 +149,9 @@ abstract class WgpuRenderPass<T: RenderPass>(
         }
     }
 
-    abstract fun getRenderAttachments(renderPass: T, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments
+    abstract fun getRenderAttachments(renderPass: RenderPass, mipLevel: Int, layer: Int, forceLoad: Boolean): RenderAttachments
 
-    data class RenderAttachments(
+    class RenderAttachments(
         val colorAttachments: Array<GPURenderPassColorAttachment>,
         val depthAttachment: GPURenderPassDepthStencilAttachment?
     )

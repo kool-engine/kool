@@ -39,7 +39,6 @@ open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentC
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
 
     init {
-        viewRenderMode = ViewRenderMode.MULTI_RENDER_PASS
         if (attachmentConfig.depthAttachment is DepthAttachmentTexture) {
             throw RuntimeException("CubeMapDepthTexture not yet implemented")
         }

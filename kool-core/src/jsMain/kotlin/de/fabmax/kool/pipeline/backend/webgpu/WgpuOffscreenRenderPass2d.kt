@@ -8,7 +8,7 @@ class WgpuOffscreenRenderPass2d(
     val parentPass: OffscreenRenderPass2d,
     numSamples: Int,
     backend: RenderBackendWebGpu
-) : WgpuRenderPass<OffscreenRenderPass2d>(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPass2dImpl {
+) : WgpuRenderPass(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPass2dImpl {
 
     override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
 
@@ -41,7 +41,7 @@ class WgpuOffscreenRenderPass2d(
         depthAttachment?.release()
     }
 
-    fun draw(encoder: GPUCommandEncoder) {
+    fun draw(passEncoderState: RenderPassEncoderState) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
         if (isCopySrc && copySrcFlag == 0) {
             // recreate attachment textures with COPY_SRC flag set
@@ -50,7 +50,7 @@ class WgpuOffscreenRenderPass2d(
             depthAttachment?.recreate(parentPass.width, parentPass.height)
         }
 
-        render(parentPass, encoder)
+        render(parentPass, passEncoderState)
     }
 
     override fun generateMipLevels(encoder: GPUCommandEncoder) {
@@ -70,7 +70,7 @@ class WgpuOffscreenRenderPass2d(
         }
     }
 
-    override fun getRenderAttachments(renderPass: OffscreenRenderPass2d, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments {
+    override fun getRenderAttachments(renderPass: RenderPass, mipLevel: Int, layer: Int, forceLoad: Boolean): RenderAttachments {
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load

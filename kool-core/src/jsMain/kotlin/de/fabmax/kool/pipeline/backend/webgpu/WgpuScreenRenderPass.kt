@@ -3,12 +3,13 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 
 class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
-    WgpuRenderPass<Scene.SceneRenderPass>(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
+    WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
 {
     private val canvasContext: GPUCanvasContext
         get() = backend.canvasContext
@@ -26,11 +27,11 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width, height)
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, encoder: GPUCommandEncoder) {
+    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.canvas.width, backend.canvas.height)
         }
-        render(scenePass, encoder)
+        render(scenePass, passEncoderState)
     }
 
     override fun generateMipLevels(encoder: GPUCommandEncoder) { }
@@ -108,7 +109,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         }
     }
 
-    override fun getRenderAttachments(renderPass: Scene.SceneRenderPass, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments {
+    override fun getRenderAttachments(renderPass: RenderPass, mipLevel: Int, layer: Int, forceLoad: Boolean): RenderAttachments {
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
             renderPass.clearColor == null -> GPULoadOp.load

@@ -8,7 +8,7 @@ class WgpuOffscreenRenderPassCube(
     val parentPass: OffscreenRenderPassCube,
     numSamples: Int,
     backend: RenderBackendWebGpu
-) : WgpuRenderPass<OffscreenRenderPassCube>(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPassCubeImpl {
+) : WgpuRenderPass(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPassCubeImpl {
 
     override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
 
@@ -41,7 +41,7 @@ class WgpuOffscreenRenderPassCube(
         depthAttachment?.release()
     }
 
-    fun draw(encoder: GPUCommandEncoder) {
+    fun draw(passEncoderState: RenderPassEncoderState) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
         if (isCopySrc && copySrcFlag == 0) {
             // recreate attachment textures with COPY_SRC flag set
@@ -50,7 +50,7 @@ class WgpuOffscreenRenderPassCube(
             depthAttachment?.recreate(parentPass.width, parentPass.height)
         }
 
-        render(parentPass, encoder)
+        render(parentPass, passEncoderState)
     }
 
     override fun generateMipLevels(encoder: GPUCommandEncoder) {
@@ -70,7 +70,7 @@ class WgpuOffscreenRenderPassCube(
         }
     }
 
-    override fun getRenderAttachments(renderPass:OffscreenRenderPassCube, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments {
+    override fun getRenderAttachments(renderPass: RenderPass, mipLevel: Int, layer: Int, forceLoad: Boolean): RenderAttachments {
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load
@@ -80,7 +80,7 @@ class WgpuOffscreenRenderPassCube(
             val clearColor = if (colorLoadOp == GPULoadOp.load) null else parentPass.clearColors[i]?.let { GPUColorDict(it) }
 
             GPURenderPassColorAttachment(
-                view = colorTex.getView(viewIndex, mipLevel),
+                view = colorTex.getView(layer, mipLevel),
                 loadOp = colorLoadOp,
                 clearValue = clearColor,
             )
@@ -93,7 +93,7 @@ class WgpuOffscreenRenderPassCube(
         }
         val depth = depthAttachment?.let {
             GPURenderPassDepthStencilAttachment(
-                view = it.getView(viewIndex, mipLevel),
+                view = it.getView(layer, mipLevel),
                 depthLoadOp = depthLoadOp,
                 depthStoreOp = GPUStoreOp.store,
                 depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
