@@ -4,13 +4,11 @@ import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
 
 class ScreenRenderPassVk(backend: RenderBackendVk) :
-    RenderPassVk<Scene.SceneRenderPass>(backend, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
+    RenderPassVk(backend, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
 {
     override val vkRenderPass: VkRenderPass
     override val numSamples: Int = physicalDevice.maxSamples
@@ -89,12 +87,8 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         logD { "Created screen render pass" }
     }
 
-    override fun beginRenderPass(
-        passEncoderState: RenderPassEncoderState<Scene.SceneRenderPass>,
-        viewIndex: Int,
-        mipLevel: Int
-    ) {
-        passEncoderState.stack.apply {
+    override fun beginRenderPass(passEncoderState: RenderPassEncoderState) {
+        with(passEncoderState.stack) {
             val beginInfo = callocVkRenderPassBeginInfo {
                 renderPass(vkRenderPass.handle)
 
@@ -115,8 +109,8 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         }
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, commandBuffer: VkCommandBuffer, stack: MemoryStack) {
-        render(scenePass, commandBuffer, stack)
+    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: RenderPassEncoderState) {
+        render(scenePass, passEncoderState)
     }
 
     override fun release() {
@@ -125,8 +119,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         logD { "Destroyed render pass" }
     }
 
-    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState<Scene.SceneRenderPass>) {
-
+    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState) {
         val colorDst = frameCopy.colorCopy2d
 
         val swapchain = backend.swapchain
@@ -188,44 +181,4 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
             vkCmdCopyImage(encoder.commandBuffer, colorSrc.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorDstVk!!.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
         }
     }
-
-    //    fun blitFrom(src: VkOffscreenPass2d, commandBuffer: VkCommandBuffer, mipLevel: Int) {
-//        logE { "Blitting render passes is not yet implemented on Vulkan backend" }
-//
-//        val rp = src.renderPass ?: return
-//        val srcWidth = src.parentPass.width shr mipLevel
-//        val srcHeight = src.parentPass.height shr mipLevel
-//        val width = maxWidth
-//        val height = maxHeight
-//
-//        if (srcWidth != width || srcHeight != height) {
-//            logE { "Render pass blitting requires source and destination pass to have the same size" }
-//        }
-//
-//        memStack {
-//            val srcImage = rp.images[0]
-//            swapChain.colorImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-//            srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-//            val imageCopy = callocVkImageCopyN(1) {
-//                srcSubresource {
-//                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-//                    it.mipLevel(mipLevel)
-//                    it.baseArrayLayer(0)
-//                    it.layerCount(1)
-//                }
-//                srcOffset { it.set(0, 0, 0) }
-//                dstSubresource {
-//                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
-//                    it.mipLevel(mipLevel)
-//                    it.baseArrayLayer(0)
-//                    it.layerCount(1)
-//                }
-//                dstOffset { it.set(0, 0, 0) }
-//                extent { it.set(width, height, 1) }
-//            }
-//            vkCmdCopyImage(commandBuffer, srcImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, swapChain.colorImage.vkImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
-//            srcImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-//            swapChain.colorImage.transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-//        }
-//    }
 }

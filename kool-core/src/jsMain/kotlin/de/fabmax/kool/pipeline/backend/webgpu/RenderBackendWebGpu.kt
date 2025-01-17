@@ -112,7 +112,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
 
         passEncoderState.beginFrame()
-
         ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
 
         for (i in ctx.scenes.indices) {
@@ -129,8 +128,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             // copy all buffers requested for readback to temporary buffers using the current command encoder
             copyReadbacks(passEncoderState.encoder)
         }
+        passEncoderState.ensureRenderPassInactive()
         timestampQuery.resolve(passEncoderState.encoder)
-        device.queue.submit(arrayOf(passEncoderState.endFrame()))
+        passEncoderState.endFrame()
 
         timestampQuery.readTimestamps()
         if (gpuReadbacks.isNotEmpty()) {

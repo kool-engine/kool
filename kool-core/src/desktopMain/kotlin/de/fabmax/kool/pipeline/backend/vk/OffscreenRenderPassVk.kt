@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 
@@ -14,7 +13,7 @@ class OffscreenRenderPassVk(
     val depthAttachment: DepthAttachment,
     val isExtDepthAttachments: Boolean,
     val isMultiSampled: Boolean
-) : RenderPassVk<OffscreenRenderPass>(backend, colorAttachments.colorFormats) {
+) : RenderPassVk(backend, colorAttachments.colorFormats) {
 
     constructor(backend: RenderBackendVk, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
                 colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
@@ -36,11 +35,7 @@ class OffscreenRenderPassVk(
     override val vkRenderPass: VkRenderPass
     override val numSamples: Int = 1
 
-    override fun beginRenderPass(
-        passEncoderState: RenderPassEncoderState<OffscreenRenderPass>,
-        viewIndex: Int,
-        mipLevel: Int
-    ) {
+    override fun beginRenderPass(passEncoderState: RenderPassEncoderState) {
         TODO("Not yet implemented")
     }
 
@@ -212,7 +207,7 @@ class OffscreenRenderPassVk(
         }
     }
 
-    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState<OffscreenRenderPass>) {
+    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState) {
         TODO("Not yet implemented")
     }
 

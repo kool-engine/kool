@@ -15,7 +15,7 @@ import org.lwjgl.vulkan.VkPushConstantRange
 import java.nio.ByteBuffer
 
 @Deprecated("to be replaced by VkDrawPipeline")
-class GraphicsPipeline(val backend: RenderBackendVk, val koolRenderPass: RenderPass, val renderPassVk: RenderPassVk<*>, val msaaSamples: Int,
+class GraphicsPipeline(val backend: RenderBackendVk, val koolRenderPass: RenderPass, val renderPassVk: RenderPassVk, val msaaSamples: Int,
                        val pipeline: DrawPipeline, val nImages: Int, val descriptorSetPoolSize: Int = 500) : BaseReleasable() {
 
     val descriptorSetLayout: Long

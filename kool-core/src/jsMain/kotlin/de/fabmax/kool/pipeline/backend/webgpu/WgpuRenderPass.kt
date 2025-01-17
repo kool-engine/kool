@@ -71,13 +71,13 @@ abstract class WgpuRenderPass(
 
         if (this is OffscreenRenderPassCube) {
             for (layer in views.indices) {
-                passEncoderState.beginRenderPass(this, this@WgpuRenderPass, mipLevel, layer)
-                renderView(layer, mipLevel, layer, passEncoderState)
+                passEncoderState.beginRenderPass(this, this@WgpuRenderPass, mipLevel, layer, timestampWrites)
+                renderView(layer, passEncoderState)
             }
         } else {
-            passEncoderState.beginRenderPass(this, this@WgpuRenderPass, mipLevel)
+            passEncoderState.beginRenderPass(this, this@WgpuRenderPass, mipLevel, timestampWrites = timestampWrites)
             for (viewIndex in views.indices) {
-                renderView(viewIndex, mipLevel, 0, passEncoderState)
+                renderView(viewIndex, passEncoderState)
             }
         }
     }
@@ -95,7 +95,9 @@ abstract class WgpuRenderPass(
 
     protected abstract fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder)
 
-    private fun renderView(viewIndex: Int, mipLevel: Int, layer: Int, passEncoderState: RenderPassEncoderState) {
+    private fun renderView(viewIndex: Int, passEncoderState: RenderPassEncoderState) {
+        val mipLevel = passEncoderState.mipLevel
+        val layer = passEncoderState.layer
         val view = passEncoderState.renderPass.views[viewIndex]
         view.setupView()
 
@@ -149,7 +151,7 @@ abstract class WgpuRenderPass(
         }
     }
 
-    abstract fun getRenderAttachments(renderPass: RenderPass, mipLevel: Int, layer: Int, forceLoad: Boolean): RenderAttachments
+    abstract fun getRenderAttachments(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): RenderAttachments
 
     class RenderAttachments(
         val colorAttachments: Array<GPURenderPassColorAttachment>,

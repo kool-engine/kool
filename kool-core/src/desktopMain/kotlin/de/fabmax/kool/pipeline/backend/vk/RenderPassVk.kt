@@ -1,20 +1,18 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
-import org.lwjgl.system.MemoryStack
+import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
 
-abstract class RenderPassVk<T: RenderPass>(
+abstract class RenderPassVk(
     val backend: RenderBackendVk,
     val colorFormats: List<Int>
 ) : BaseReleasable() {
-
-    private val passEncoderState = RenderPassEncoderState(this)
 
     abstract val vkRenderPass: VkRenderPass
     abstract val numSamples: Int
@@ -23,23 +21,23 @@ abstract class RenderPassVk<T: RenderPass>(
     val physicalDevice: PhysicalDevice get() = backend.physicalDevice
     val device: Device get() = backend.device
 
-    abstract fun beginRenderPass(passEncoderState: RenderPassEncoderState<T>, viewIndex: Int, mipLevel: Int)
+    abstract fun beginRenderPass(passEncoderState: RenderPassEncoderState)
 
-    protected fun render(renderPass: T, commandBuffer: VkCommandBuffer, stack: MemoryStack) {
+    protected fun render(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
         when (val mode = renderPass.mipMode) {
             is RenderPass.MipMode.Render -> {
                 val numLevels = mode.getRenderMipLevels(renderPass.size)
                 if (mode.renderOrder == RenderPass.MipMapRenderOrder.HigherResolutionFirst) {
                     for (mipLevel in 0 until numLevels) {
-                        renderPass.renderMipLevel(mipLevel, commandBuffer, /*timestampWrites,*/ stack)
+                        renderPass.renderMipLevel(mipLevel, passEncoderState)
                     }
                 } else {
                     for (mipLevel in (numLevels-1) downTo 0) {
-                        renderPass.renderMipLevel(mipLevel, commandBuffer, /*timestampWrites,*/ stack)
+                        renderPass.renderMipLevel(mipLevel, passEncoderState)
                     }
                 }
             }
-            else -> renderPass.renderMipLevel(0, commandBuffer, /*timestampWrites,*/ stack)
+            else -> renderPass.renderMipLevel(0, passEncoderState)
         }
 
 //        if (renderPass.mipMode == RenderPass.MipMode.Generate) {
@@ -57,31 +55,25 @@ abstract class RenderPassVk<T: RenderPass>(
         renderPass.afterDraw()
     }
 
-    private fun T.renderMipLevel(mipLevel: Int, commandBuffer: VkCommandBuffer, /*timestampWrites: GPURenderPassTimestampWrites?,*/ stack: MemoryStack) {
+    private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState) {
         setupMipLevel(mipLevel)
 
-//        when (viewRenderMode) {
-//            RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
-                passEncoderState.setup(commandBuffer, this, stack)
-                passEncoderState.begin(0, mipLevel, /*timestampWrites*/)
-                for (viewIndex in views.indices) {
-                    renderView(viewIndex, mipLevel, passEncoderState)
-                }
-                passEncoderState.end()
-//            }
-//
-//            RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
-//                for (viewIndex in views.indices) {
-//                    passEncoderState.setup(commandBuffer, this, stack)
-//                    passEncoderState.begin(viewIndex, mipLevel)
-//                    renderView(viewIndex, mipLevel, passEncoderState)
-//                    passEncoderState.end()
-//                }
-//            }
-//        }
+        if (this is OffscreenRenderPassCube) {
+            for (layer in views.indices) {
+                passEncoderState.beginRenderPass(this, this@RenderPassVk, mipLevel, layer)
+                renderView(layer, passEncoderState)
+            }
+        } else {
+            passEncoderState.beginRenderPass(this, this@RenderPassVk, mipLevel)
+            for (viewIndex in views.indices) {
+                renderView(viewIndex, passEncoderState)
+            }
+        }
     }
 
-    private fun renderView(viewIndex: Int, mipLevel: Int, passEncoderState: RenderPassEncoderState<T>) = passEncoderState.stack.apply {
+    private fun renderView(viewIndex: Int, passEncoderState: RenderPassEncoderState) = with(passEncoderState.stack) {
+        val mipLevel = passEncoderState.mipLevel
+        val layer = passEncoderState.layer
         val view = passEncoderState.renderPass.views[viewIndex]
         view.setupView()
 
@@ -113,9 +105,11 @@ abstract class RenderPassVk<T: RenderPass>(
         view.drawQueue.forEach { cmd ->
             nextFrameCopy?.let { frameCopy ->
                 if (cmd.drawGroupId > frameCopy.drawGroupId) {
-                    passEncoderState.end()
-//                    copy(frameCopy, passEncoderState.encoder)
-                    passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
+                    val rp = passEncoderState.renderPass
+                    passEncoderState.ensureRenderPassInactive()
+                    logE { "TODO: copy view" }
+                    //copy(frameCopy, passEncoderState.encoder)
+                    passEncoderState.beginRenderPass(rp, this@RenderPassVk, mipLevel, layer, forceLoad = true)
                     anySingleShots = anySingleShots || frameCopy.isSingleShot
                     nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
                 }
@@ -129,15 +123,18 @@ abstract class RenderPassVk<T: RenderPass>(
                     vkCmdDrawIndexed(passEncoderState.commandBuffer, cmd.geometry.numIndices, 1, 0, 0, 0)
                 } else if (insts.numInstances > 0) {
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
-                    vkCmdDrawIndexed(passEncoderState.commandBuffer, cmd.geometry.numIndices, cmd.geometry.numIndices, 0, 0, 0)
+                    vkCmdDrawIndexed(passEncoderState.commandBuffer, cmd.geometry.numIndices, insts.numInstances, 0, 0, 0)
                 }
             }
         }
 
         nextFrameCopy?.let {
-            //passEncoderState.end()
+            val rp = passEncoderState.renderPass
+            passEncoderState.ensureRenderPassInactive()
             copy(it, passEncoderState)
+            logE { "TODO: copy frame" }
             //passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
+            passEncoderState.beginRenderPass(rp, this@RenderPassVk, mipLevel, layer, forceLoad = true)
             anySingleShots = anySingleShots || it.isSingleShot
         }
         if (anySingleShots) {
@@ -145,7 +142,7 @@ abstract class RenderPassVk<T: RenderPass>(
         }
     }
 
-    protected abstract fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState<T>)
+    protected abstract fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState)
 
     fun getTexFormat(attachment: Int): TexFormat {
         return when(colorFormats[attachment]) {

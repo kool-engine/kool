@@ -5,6 +5,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10
 import java.nio.LongBuffer
 
+@PublishedApi
 internal fun checkVk(code: Int, msg: (Int) -> String = { "Vulkan operation failed (error: $code)" }) {
     check(code == VK10.VK_SUCCESS) { msg(code) }
 }

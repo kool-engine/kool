@@ -70,7 +70,10 @@ class WgpuOffscreenRenderPassCube(
         }
     }
 
-    override fun getRenderAttachments(renderPass: RenderPass, mipLevel: Int, layer: Int, forceLoad: Boolean): RenderAttachments {
+    override fun getRenderAttachments(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): RenderAttachments {
+        val renderPass = passEncoderState.renderPass
+        val mipLevel = passEncoderState.mipLevel
+        val layer = passEncoderState.layer
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load

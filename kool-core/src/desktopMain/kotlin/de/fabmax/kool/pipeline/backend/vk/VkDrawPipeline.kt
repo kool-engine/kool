@@ -19,10 +19,10 @@ class VkDrawPipeline(
     backend: RenderBackendVk,
 ): VkPipeline(drawPipeline, backend) {
 
-    private val renderPipelines = mutableMapOf<RenderPassVk<*>, VkGraphicsPipeline>()
+    private val renderPipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
     private val users = mutableSetOf<NodeId>()
 
-    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState<*>): Boolean {
+    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
         users.add(cmd.mesh.id)
 
         val pipelineData = drawPipeline.pipelineData
@@ -33,7 +33,7 @@ class VkDrawPipeline(
             return false
         }
 
-        val renderPipeline = renderPipelines.getOrPut(passEncoderState.renderPassVk) {
+        val renderPipeline = renderPipelines.getOrPut(passEncoderState.gpuRenderPass) {
             createRenderPipeline(passEncoderState)
         }
 
@@ -45,9 +45,9 @@ class VkDrawPipeline(
         return true
     }
 
-    private fun createRenderPipeline(passEncoderState: RenderPassEncoderState<*>): VkGraphicsPipeline = memStack {
+    private fun createRenderPipeline(passEncoderState: RenderPassEncoderState): VkGraphicsPipeline = memStack {
         val renderPass = passEncoderState.renderPass
-        val renderPassVk = passEncoderState.renderPassVk
+        val renderPassVk = passEncoderState.gpuRenderPass
 
         val shaderCode = drawPipeline.shaderCode as ShaderCodeVk
         val shaderStages = listOf(
@@ -191,9 +191,9 @@ class VkDrawPipeline(
         }
     }
 
-    private fun MemoryStack.blendInfo(passEncoderState: RenderPassEncoderState<*>): VkPipelineColorBlendStateCreateInfo {
+    private fun MemoryStack.blendInfo(passEncoderState: RenderPassEncoderState): VkPipelineColorBlendStateCreateInfo {
         val renderPass = passEncoderState.renderPass
-        val renderPassVk = passEncoderState.renderPassVk
+        val renderPassVk = passEncoderState.gpuRenderPass
 
         val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.numColorAttachments) {
             for (i in 0 until renderPass.clearColors.size) {
@@ -244,7 +244,7 @@ class VkDrawPipeline(
         }
     }
 
-    private fun bindVertexBuffers(passEncoderState: RenderPassEncoderState<*>, cmd: DrawCommand) {
+    private fun bindVertexBuffers(passEncoderState: RenderPassEncoderState, cmd: DrawCommand) {
         if (cmd.mesh.geometry.gpuGeometry == null) {
             cmd.mesh.geometry.gpuGeometry = VkGeometry(cmd.mesh, backend)
         }

@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
@@ -109,7 +108,8 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         }
     }
 
-    override fun getRenderAttachments(renderPass: RenderPass, mipLevel: Int, layer: Int, forceLoad: Boolean): RenderAttachments {
+    override fun getRenderAttachments(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): RenderAttachments {
+        val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
             renderPass.clearColor == null -> GPULoadOp.load

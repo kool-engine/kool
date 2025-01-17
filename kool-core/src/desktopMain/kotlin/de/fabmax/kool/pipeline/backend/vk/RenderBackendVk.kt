@@ -16,7 +16,6 @@ import de.fabmax.kool.util.memStack
 import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
-import org.lwjgl.vulkan.VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
 import org.lwjgl.vulkan.VkCommandBuffer
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
@@ -45,6 +44,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val commandPool: CommandPool
     //val transferCommandPool: CommandPool
     val commandBuffers: List<VkCommandBuffer>
+    private val passEncoderState = RenderPassEncoderState(this)
 
     var swapchain: Swapchain
     private var windowResized = false
@@ -121,13 +121,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         memStack {
             var imgOk = swapchain.acquireNextImage()
             if (imgOk) {
-                val commandBuffer = commandBuffers[swapchain.currentFrameIndex]
-                commandBuffer.reset()
-                commandBuffer.begin(this) { }
+                passEncoderState.beginFrame(this)
 
                 //ctx.backgroundScene.renderOffscreenPasses(commandBuffer)
                 if (ctx.scenes.isEmpty()) {
-                    screenRenderPass.renderScene(ctx.backgroundScene.mainRenderPass, commandBuffer, this)
+                    screenRenderPass.renderScene(ctx.backgroundScene.mainRenderPass, passEncoderState)
                 }
 
                 for (i in ctx.scenes.indices) {
@@ -135,7 +133,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     if (scene.isVisible) {
                         //val t = Time.precisionTime
                         //scene.renderOffscreenPasses(commandBuffer)
-                        screenRenderPass.renderScene(scene.mainRenderPass, commandBuffer, this)
+                        screenRenderPass.renderScene(scene.mainRenderPass, passEncoderState)
                         //scene.sceneDrawTime = Time.precisionTime - t
                     }
                 }
@@ -147,14 +145,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 //        timestampQuery.resolve(encoder)
 //        device.queue.submit(arrayOf(encoder.finish()))
 
-                commandBuffer.end()
-                device.graphicsQueue.submit(swapchain.inFlightFence, this) {
-                    pWaitDstStageMask(ints(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT))
-                    pCommandBuffers(pointers(commandBuffer))
-                    pSignalSemaphores(longs(swapchain.renderFinishedSema.handle))
-                    pWaitSemaphores(longs(swapchain.imageAvailableSema.handle))
-                    waitSemaphoreCount(1)
-                }
+                passEncoderState.endFrame()
 
 //        timestampQuery.readTimestamps()
 //        if (gpuReadbacks.isNotEmpty()) {

@@ -115,19 +115,19 @@ fun VkClearValue.setColor(color: Color) {
 }
 
 fun VkCommandBuffer.reset(flags: Int = 0) {
-    check(vkResetCommandBuffer(this, flags) == VK_SUCCESS)
+    checkVk(vkResetCommandBuffer(this, flags)) { "Failed resetting command buffer: $it" }
 }
 
 inline fun VkCommandBuffer.begin(stack: MemoryStack, block: VkCommandBufferBeginInfo.() -> Unit) {
     val beginInfo = stack.callocVkCommandBufferBeginInfo(block)
-    check(vkBeginCommandBuffer(this, beginInfo) == VK_SUCCESS)
+    checkVk(vkBeginCommandBuffer(this, beginInfo)) { "Failed beginning command buffer: $it" }
 }
 
 fun VkCommandBuffer.end() {
-    check(vkEndCommandBuffer(this) == VK_SUCCESS)
+    checkVk(vkEndCommandBuffer(this)) { "Failed ending command buffer: $it" }
 }
 
 inline fun VkQueue.submit(fence: VkFence, stack: MemoryStack, block: VkSubmitInfo.() -> Unit) {
     val submitInfo = stack.callocVkSubmitInfo(block)
-    check(vkQueueSubmit(this, submitInfo, fence.handle) == VK_SUCCESS)
+    checkVk(vkQueueSubmit(this, submitInfo, fence.handle)) { "Failed submitting queue: $it" }
 }
