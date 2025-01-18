@@ -225,7 +225,7 @@ data class GltfFile(
                 val modelAnim = Animation(anim.name)
                 modelAnimations += modelAnim
 
-                val animNodes = mutableMapOf<Node, AnimationNode>()
+                val animNodes = mutableMapOf<Node, AnimatedTransformGroup>()
                 anim.channels.forEach { channel ->
                     val nodeGrp = modelNodes[channel.target.nodeRef]
                     if (nodeGrp != null) {
@@ -240,7 +240,7 @@ data class GltfFile(
             }
         }
 
-        private fun makeTranslationAnimation(animCh: GltfAnimation.Channel, animNd: AnimationNode, modelAnim: Animation) {
+        private fun makeTranslationAnimation(animCh: GltfAnimation.Channel, animNd: AnimatedTransformGroup, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -261,6 +261,7 @@ data class GltfFile(
             }
             modelAnim.channels += transChannel
 
+            val bindTranslation = animNd.initTranslation
             val inTime = FloatAccessor(inputAcc)
             val outTranslation = Vec3fAccessor(outputAcc)
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
@@ -269,16 +270,21 @@ data class GltfFile(
                     val startTan = outTranslation.next()
                     val point = outTranslation.next()
                     val endTan = outTranslation.next()
-                    CubicTranslationKey(t, point, startTan, endTan)
+                    CubicTranslationKey(
+                        t,
+                        point - bindTranslation,
+                        startTan - bindTranslation,
+                        endTan - bindTranslation
+                    )
                 } else {
-                    TranslationKey(t, outTranslation.next())
+                    TranslationKey(t, outTranslation.next() - bindTranslation)
                 }
                 transKey.interpolation = interpolation
                 transChannel.keys[t] = transKey
             }
         }
 
-        private fun makeRotationAnimation(animCh: GltfAnimation.Channel, animNd: AnimationNode, modelAnim: Animation) {
+        private fun makeRotationAnimation(animCh: GltfAnimation.Channel, animNd: AnimatedTransformGroup, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -299,6 +305,7 @@ data class GltfFile(
             }
             modelAnim.channels += rotChannel
 
+            val bindRotation = animNd.initRotation
             val inTime = FloatAccessor(inputAcc)
             val outRotation = Vec4fAccessor(outputAcc)
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
@@ -307,16 +314,21 @@ data class GltfFile(
                     val startTan = outRotation.next().toQuatF()
                     val point = outRotation.next().toQuatF()
                     val endTan = outRotation.next().toQuatF()
-                    CubicRotationKey(t, point, startTan, endTan)
+                    CubicRotationKey(
+                        t,
+                        bindRotation.inverted().mul(point),
+                        bindRotation.inverted().mul(startTan),
+                        bindRotation.inverted().mul(endTan)
+                    )
                 } else {
-                    RotationKey(t, outRotation.next().toQuatF())
+                    RotationKey(t, bindRotation.inverted().mul(outRotation.next().toQuatF()))
                 }
                 rotKey.interpolation = interpolation
                 rotChannel.keys[t] = rotKey
             }
         }
 
-        private fun makeScaleAnimation(animCh: GltfAnimation.Channel, animNd: AnimationNode, modelAnim: Animation) {
+        private fun makeScaleAnimation(animCh: GltfAnimation.Channel, animNd: AnimatedTransformGroup, modelAnim: Animation) {
             val inputAcc = animCh.samplerRef.inputAccessorRef
             val outputAcc = animCh.samplerRef.outputAccessorRef
 
@@ -337,6 +349,7 @@ data class GltfFile(
             }
             modelAnim.channels += scaleChannel
 
+            val bindScale = animNd.initScale
             val inTime = FloatAccessor(inputAcc)
             val outScale = Vec3fAccessor(outputAcc)
             for (i in 0 until min(inputAcc.count, outputAcc.count)) {
@@ -345,9 +358,9 @@ data class GltfFile(
                     val startTan = outScale.next()
                     val point = outScale.next()
                     val endTan = outScale.next()
-                    CubicScaleKey(t, point, startTan, endTan)
+                    CubicScaleKey(t, bindScale / point, bindScale / startTan, bindScale / endTan)
                 } else {
-                    ScaleKey(t, outScale.next())
+                    ScaleKey(t, bindScale / outScale.next())
                 }
                 scaleKey.interpolation = interpolation
                 scaleChannel.keys[t] = scaleKey
