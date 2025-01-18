@@ -426,13 +426,6 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
         return this
     }
 
-    fun lerp(that: Vec3f, factor: Float): MutableVec3f {
-        this.x += (that.x - x) * factor
-        this.y += (that.y - y) * factor
-        this.z += (that.z - z) * factor
-        return this
-    }
-
     // </noInt>
 }
 
@@ -828,13 +821,6 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
         x = rx
         y = ry
         z = rz
-        return this
-    }
-
-    fun lerp(that: Vec3d, factor: Double): MutableVec3d {
-        this.x += (that.x - x) * factor
-        this.y += (that.y - y) * factor
-        this.z += (that.z - z) * factor
         return this
     }
 

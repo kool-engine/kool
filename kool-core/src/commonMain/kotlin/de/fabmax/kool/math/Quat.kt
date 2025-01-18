@@ -2,9 +2,7 @@ package de.fabmax.kool.math
 
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MixedBuffer
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 fun QuatF.toQuatD() = QuatD(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
 fun QuatF.toMutableQuatD(result: MutableQuatD = MutableQuatD()) = result.set(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
@@ -113,11 +111,31 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
      * [MutableVec4f]: result = that * weight + this * (1 - weight).
      */
     fun mix(that: QuatF, weight: Float, result: MutableQuatF = MutableQuatF()): MutableQuatF {
-        result.x = that.x * weight + x * (1f - weight)
-        result.y = that.y * weight + y * (1f - weight)
-        result.z = that.z * weight + z * (1f - weight)
-        result.w = that.w * weight + w * (1f - weight)
-        return result.norm()
+        val dot = x * that.x + y * that.y + z * that.z + w * that.w
+        val absCosom = abs(dot)
+
+        val scale0: Float
+        val scale1: Float
+
+        if (1.0f - absCosom > FUZZY_EQ_F) {
+            val sinSqr = 1.0f - absCosom * absCosom
+            val sinom = 1.0f / sqrt(sinSqr)
+            val omega = atan2(sqrt(sinSqr), absCosom)
+            scale0 = sin((1.0f - weight) * omega) * sinom
+            scale1 = sin(weight * omega) * sinom
+        } else {
+            scale0 = 1.0f - weight
+            scale1 = weight
+        }
+
+        val adjustedScale = if (dot >= 0.0f) scale1 else -scale1
+
+        result.x = scale0 * x + adjustedScale * that.x
+        result.y = scale0 * y + adjustedScale * that.y
+        result.z = scale0 * z + adjustedScale * that.z
+        result.w = scale0 * w + adjustedScale * that.w
+
+        return result
     }
 
     /**
@@ -336,34 +354,6 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
         w = w * s
         return this
     }
-
-    fun slerp(target: QuatF, alpha: Float): QuatF {
-        val cosom = x * target.x + y * target.y + z * target.z + w * target.w
-        val absCosom = kotlin.math.abs(cosom)
-        val scale0: Float
-        val scale1: Float
-
-        if (1.0f - absCosom > MICRO) {
-            val sinSqr = 1.0f - absCosom * absCosom
-            val sinom = 1.0f / sqrt(sinSqr)
-            val omega = kotlin.math.atan2(sinSqr * sinom, absCosom)
-            scale0 = sin((1.0f - alpha) * omega) * sinom
-            scale1 = sin(alpha * omega) * sinom
-        } else {
-            scale0 = 1.0f - alpha
-            scale1 = alpha
-        }
-
-        val adjustedScale1 = if (cosom >= 0.0f) scale1 else -scale1
-
-        this.x = scale0 * x + adjustedScale1 * target.x
-        this.y = scale0 * y + adjustedScale1 * target.y
-        this.z = scale0 * z + adjustedScale1 * target.z
-        this.w = scale0 * w + adjustedScale1 * target.w
-
-        return this
-    }
-
 }
 
 fun QuatF(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
@@ -462,11 +452,31 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
      * [MutableVec4d]: result = that * weight + this * (1 - weight).
      */
     fun mix(that: QuatD, weight: Double, result: MutableQuatD = MutableQuatD()): MutableQuatD {
-        result.x = that.x * weight + x * (1.0 - weight)
-        result.y = that.y * weight + y * (1.0 - weight)
-        result.z = that.z * weight + z * (1.0 - weight)
-        result.w = that.w * weight + w * (1.0 - weight)
-        return result.norm()
+        val dot = x * that.x + y * that.y + z * that.z + w * that.w
+        val absCosom = abs(dot)
+
+        val scale0: Double
+        val scale1: Double
+
+        if (1.0 - absCosom > FUZZY_EQ_D) {
+            val sinSqr = 1.0 - absCosom * absCosom
+            val sinom = 1.0 / sqrt(sinSqr)
+            val omega = atan2(sqrt(sinSqr), absCosom)
+            scale0 = sin((1.0 - weight) * omega) * sinom
+            scale1 = sin(weight * omega) * sinom
+        } else {
+            scale0 = 1.0 - weight
+            scale1 = weight
+        }
+
+        val adjustedScale = if (dot >= 0.0) scale1 else -scale1
+
+        result.x = scale0 * x + adjustedScale * that.x
+        result.y = scale0 * y + adjustedScale * that.y
+        result.z = scale0 * z + adjustedScale * that.z
+        result.w = scale0 * w + adjustedScale * that.w
+
+        return result
     }
 
     /**
@@ -685,34 +695,6 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         w = w * s
         return this
     }
-
-    fun slerp(target: QuatD, alpha: Double): QuatD {
-        val cosom = x * target.x + y * target.y + z * target.z + w * target.w
-        val absCosom = kotlin.math.abs(cosom)
-        val scale0: Double
-        val scale1: Double
-
-        if (1.0 - absCosom > MICRO) {
-            val sinSqr = 1.0 - absCosom * absCosom
-            val sinom = 1.0 / sqrt(sinSqr)
-            val omega = kotlin.math.atan2(sinSqr * sinom, absCosom)
-            scale0 = sin((1.0 - alpha) * omega) * sinom
-            scale1 = sin(alpha * omega) * sinom
-        } else {
-            scale0 = 1.0 - alpha
-            scale1 = alpha
-        }
-
-        val adjustedScale1 = if (cosom >= 0.0) scale1 else -scale1
-
-        this.x = scale0 * x + adjustedScale1 * target.x
-        this.y = scale0 * y + adjustedScale1 * target.y
-        this.z = scale0 * z + adjustedScale1 * target.z
-        this.w = scale0 * w + adjustedScale1 * target.w
-
-        return this
-    }
-
 }
 
 fun QuatD(angle: AngleD, axis: Vec3d): QuatD = MutableQuatD().set(angle, axis)

@@ -117,6 +117,9 @@ class AnimatedTransformGroup(val target: Node) : AnimationNode {
     private val animRotation = MutableQuatF()
     private val animScale = MutableVec3f(1f, 1f, 1f)
 
+    private val baseRotation = MutableQuatF()
+    private val baseScale = MutableVec3f(Vec3f.ONES)
+
     init {
         val vec4 = MutableVec4f()
         target.transform.matrixF.getColumn(3, vec4)
@@ -149,8 +152,8 @@ class AnimatedTransformGroup(val target: Node) : AnimationNode {
         }
 
         t.translate(animTranslation.mul(weight))
-        t.rotate(MutableQuatF().slerp(animRotation, weight))
-        t.scale(MutableVec3f(Vec3f.ONES).lerp(animScale, weight))
+        t.rotate(baseRotation.mix(animRotation, weight))
+        t.scale(baseScale.mix(animScale, weight))
 
         t.markDirty()
     }
