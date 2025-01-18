@@ -5,7 +5,115 @@ import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
 
 class ClearHelper(val backend: RenderBackendWebGpu) {
-    private val shaderModule = backend.device.createShaderModule("""
+    private val clearPipelines = mutableMapOf<WgpuRenderPass, ClearPipeline>()
+    private val shaderModule = backend.device.createShaderModule(SHADER_SRC)
+
+    fun clear(passEncoderState: RenderPassEncoderState) {
+        val clearPipeline = clearPipelines.getOrPut(passEncoderState.gpuRenderPass) {
+            ClearPipeline(passEncoderState.gpuRenderPass)
+        }
+        clearPipeline.clear(passEncoderState)
+    }
+
+    private inner class ClearPipeline(val gpuRenderPass: WgpuRenderPass) {
+        val clearValues = Float32Buffer(8) as Float32BufferImpl
+        var prevColor: Color? = null
+        var prevDepth = 0f
+
+        val clearValuesBuffer: WgpuBufferResource = backend.createBuffer(
+            GPUBufferDescriptor(
+                label = "clearHelper-clearValues",
+                size = 32,
+                usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
+            ),
+            "clearHelper-clearValues"
+        )
+        val bindGroupLayout = backend.device.createBindGroupLayout(arrayOf(
+            GPUBindGroupLayoutEntryBuffer(
+                binding = 0,
+                visibility = GPUShaderStage.VERTEX or GPUShaderStage.FRAGMENT,
+                buffer = GPUBufferBindingLayout()
+            )
+        ))
+        val bindGroup: GPUBindGroup = backend.device.createBindGroup(bindGroupLayout, arrayOf(
+            GPUBindGroupEntry(0, GPUBufferBinding(clearValuesBuffer.buffer))
+        ))
+
+        val clearColorOnly: GPURenderPipeline by lazy { makeClearPipeline(true, false) }
+        val clearDepthOnly: GPURenderPipeline by lazy { makeClearPipeline(false, true) }
+        val clearColorAndDepth: GPURenderPipeline by lazy { makeClearPipeline(true, true) }
+
+        init {
+            gpuRenderPass.onRelease { clearPipelines -= gpuRenderPass }
+        }
+
+        fun clear(passEncoderState: RenderPassEncoderState) {
+            val rp = passEncoderState.renderPass
+            val clearColor = rp.clearColor
+            val clearDepth = if (rp.isReverseDepth) 0f else 1f
+
+            if (clearColor != prevColor || clearDepth != prevDepth) {
+                prevColor = clearColor
+                prevDepth = clearDepth
+                clearValues.clear()
+                clearColor?.putTo(clearValues)
+                clearValues[4] = clearDepth
+                backend.device.queue.writeBuffer(clearValuesBuffer.buffer, 0, clearValues.buffer, 0)
+            }
+
+            val clearPipeline = when {
+                clearColor == null -> clearDepthOnly
+                !rp.clearDepth -> clearColorOnly
+                else -> clearColorAndDepth
+            }
+
+            passEncoderState.passEncoder.setPipeline(clearPipeline)
+            passEncoderState.passEncoder.setBindGroup(0, bindGroup)
+            passEncoderState.passEncoder.draw(4)
+        }
+
+        private fun makeClearPipeline(isClearColor: Boolean, isClearDepth: Boolean): GPURenderPipeline {
+            val colorFormat: GPUTextureFormat = gpuRenderPass.colorTargetFormats[0]
+            val depthFormat: GPUTextureFormat? = gpuRenderPass.depthFormat
+            val colorSrcFactor = if (isClearColor) GPUBlendFactor.one else GPUBlendFactor.zero
+            val colorDstFactor = if (isClearColor) GPUBlendFactor.zero else GPUBlendFactor.one
+
+            return backend.device.createRenderPipeline(
+                GPURenderPipelineDescriptor(
+                    vertex = GPUVertexState(
+                        module = shaderModule,
+                        entryPoint = "vertexMain"
+                    ),
+                    fragment = GPUFragmentState(
+                        module = shaderModule,
+                        entryPoint = "fragmentMain",
+                        targets = arrayOf(
+                            GPUColorTargetState(colorFormat, GPUBlendState(
+                                color = GPUBlendComponent(srcFactor = colorSrcFactor, dstFactor = colorDstFactor),
+                                alpha = GPUBlendComponent(srcFactor = colorSrcFactor, dstFactor = colorDstFactor),
+                            ))
+                        )
+                    ),
+                    depthStencil = depthFormat?.let { depthFormat ->
+                        GPUDepthStencilState(
+                            format = depthFormat,
+                            depthWriteEnabled = isClearDepth,
+                            depthCompare = GPUCompareFunction.always
+                        )
+                    },
+                    primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
+                    layout = backend.device.createPipelineLayout(GPUPipelineLayoutDescriptor(
+                        label = "clear-pipeline-layout",
+                        bindGroupLayouts = arrayOf(bindGroupLayout)
+                    )),
+                    multisample = GPUMultisampleState(gpuRenderPass.numSamples)
+                )
+            )
+        }
+    }
+
+    companion object {
+        private val SHADER_SRC = """
             var<private> pos: array<vec2f, 4> = array<vec2f, 4>(
                 vec2f(-1.0, 1.0), vec2f(1.0, 1.0),
                 vec2f(-1.0, -1.0), vec2f(1.0, -1.0)
@@ -27,80 +135,6 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
             fn fragmentMain() -> @location(0) vec4f {
                 return clearValues.color;
             }
-        """.trimIndent())
-
-    private val pipelines = mutableMapOf<ClearFormat, GPURenderPipeline>()
-    private var bindGroup: GPUBindGroup? = null
-    private var clearColorBuffer: WgpuBufferResource? = null
-    private val clearValues = Float32Buffer(8) as Float32BufferImpl
-
-    private fun getRenderPipeline(clearFormat: ClearFormat): GPURenderPipeline = pipelines.getOrPut(clearFormat) {
-        println("make clear pipeline $clearFormat")
-        backend.device.createRenderPipeline(
-            GPURenderPipelineDescriptor(
-                vertex = GPUVertexState(
-                    module = shaderModule,
-                    entryPoint = "vertexMain"
-                ),
-                fragment = GPUFragmentState(
-                    module = shaderModule,
-                    entryPoint = "fragmentMain",
-                    targets = arrayOf(
-                        GPUColorTargetState(
-                            clearFormat.colorFormat, GPUBlendState(
-                                color = GPUBlendComponent(srcFactor = GPUBlendFactor.srcAlpha, dstFactor = GPUBlendFactor.oneMinusSrcAlpha),
-                                alpha = GPUBlendComponent(),
-                            )
-                        )
-                    )
-                ),
-                depthStencil = clearFormat.depthFormat?.let { depthFormat ->
-                    GPUDepthStencilState(
-                        format = depthFormat,
-                        depthWriteEnabled = clearFormat.isClearDepth,
-                        depthCompare = GPUCompareFunction.always
-                    )
-                },
-                primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
-                layout = GPUAutoLayoutMode.auto,
-                multisample = GPUMultisampleState(clearFormat.numSamples)
-            )
-        )
+        """.trimIndent()
     }
-
-    private fun makeBindGroup(layout: GPUBindGroupLayout): GPUBindGroup {
-        clearColorBuffer = backend.createBuffer(
-            GPUBufferDescriptor(
-                label = "clearHelper-clearColor",
-                size = 32,
-                usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
-            ),
-            "clearHelper-clearColor"
-        )
-        val entry = GPUBindGroupEntry(0, GPUBufferBinding(clearColorBuffer!!.buffer))
-        return backend.device.createBindGroup(layout, arrayOf(entry)).also { bindGroup = it }
-    }
-
-    fun clear(passEncoderState: RenderPassEncoderState) {
-        val passEncoder = passEncoderState.passEncoder
-        val gpuRenderPass = passEncoderState.gpuRenderPass
-        val renderPass = passEncoderState.renderPass
-        val clearDepth = renderPass.clearDepth
-        val clearColor = renderPass.clearColor
-
-        val key = ClearFormat(gpuRenderPass.colorTargetFormats[0], gpuRenderPass.depthFormat, clearColor != null, clearDepth, gpuRenderPass.numSamples)
-        val pipeline = getRenderPipeline(key)
-
-        val bindGrp = bindGroup ?: makeBindGroup(pipeline.getBindGroupLayout(0))
-        val clr = clearColor ?: Color.BLACK.withAlpha(0f)
-        clr.putTo(clearValues)
-        clearValues[4] = if (renderPass.isReverseDepth) 0f else 1f
-        backend.device.queue.writeBuffer(clearColorBuffer!!.buffer, 0L, clearValues.buffer)
-
-        passEncoder.setPipeline(pipeline)
-        passEncoder.setBindGroup(0, bindGrp)
-        passEncoder.draw(4)
-    }
-
-    data class ClearFormat(val colorFormat: GPUTextureFormat, val depthFormat: GPUTextureFormat?, val isClearColor: Boolean, val isClearDepth: Boolean, val numSamples: Int)
 }

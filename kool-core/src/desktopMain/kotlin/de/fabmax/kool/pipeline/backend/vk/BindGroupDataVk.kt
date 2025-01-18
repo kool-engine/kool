@@ -21,7 +21,7 @@ class BindGroupDataVk(
     var bindGroup: BindGroup? = null
         private set
 
-    fun bind(passEncoderState: PassEncoderState, pipeline: VkPipeline, group: Int = data.layout.group) {
+    fun bind(passEncoderState: PassEncoderState, pipelineLayout: VkPipelineLayout, group: Int = data.layout.group) {
         val recreatedBindGroup = bindGroup == null || data.isDirty
         if (recreatedBindGroup) {
             data.isDirty = false
@@ -36,7 +36,7 @@ class BindGroupDataVk(
                 ubo.binding.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
             }
         }
-        passEncoderState.setBindGroup(group, this, pipeline)
+        passEncoderState.setBindGroup(group, this, pipelineLayout)
     }
 
     private fun createBindGroup(): BindGroup = memStack {
@@ -157,9 +157,9 @@ class BindGroupDataVk(
         val layout: Std140BufferLayout = Std140BufferLayout(binding.layout.uniforms)
         val buffers: List<BufferResourceVk> = List(numSets) {
             BufferResourceVk(
-                backend,
-                MemoryInfo(layout.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, createMapped = true),
-                "bindGroup[${data.layout.scope}]-ubo-${binding.name}"
+                backend = backend,
+                bufferInfo = MemoryInfo(layout.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, createMapped = true),
+                label = "bindGroup[${data.layout.scope}]-ubo-${binding.name}"
             )
         }
 

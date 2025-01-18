@@ -38,9 +38,9 @@ class VkDrawPipeline(
         }
 
         passEncoderState.setPipeline(renderPipeline)
-        viewData.getOrCreateVkData().bind(passEncoderState, this)
-        pipelineData.getOrCreateVkData().bind(passEncoderState, this)
-        meshData.getOrCreateVkData().bind(passEncoderState, this)
+        viewData.getOrCreateVkData().bind(passEncoderState, pipelineLayout)
+        pipelineData.getOrCreateVkData().bind(passEncoderState, pipelineLayout)
+        meshData.getOrCreateVkData().bind(passEncoderState, pipelineLayout)
         bindVertexBuffers(passEncoderState, cmd)
         return true
     }
@@ -68,9 +68,11 @@ class VkDrawPipeline(
                 PrimitiveType.LINES -> topology(VK_PRIMITIVE_TOPOLOGY_LINE_LIST)
                 PrimitiveType.POINTS -> topology(VK_PRIMITIVE_TOPOLOGY_POINT_LIST)
                 PrimitiveType.TRIANGLES -> topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
-                PrimitiveType.TRIANGLE_STRIP -> topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP)
+                PrimitiveType.TRIANGLE_STRIP -> {
+                    topology(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP)
+                    primitiveRestartEnable(true)
+                }
             }
-            primitiveRestartEnable(false)
         }
 
         val rasterizer = callocVkPipelineRasterizationStateCreateInfo {

@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.util.logE
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -10,7 +9,7 @@ interface PassEncoderState {
     val frameIndex: Int
     val renderPass: RenderPass
     val stack: MemoryStack
-    fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipeline: VkPipeline)
+    fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipelineLayout: VkPipelineLayout)
 }
 
 class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
@@ -72,8 +71,7 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
             if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.clearColors.size == 1) {
                 _renderPass = renderPass
                 if (renderPass.clearDepth || renderPass.clearColor != null) {
-                    logE { "TODO: clear" }
-                    //backend.clearHelper.clear(this)
+                    backend.clearHelper.clear(this)
                     activePipeline = VkGraphicsPipeline(0L)
                     for (i in bindGroups.indices) {
                         bindGroups[i] = null
@@ -114,14 +112,14 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
         }
     }
 
-    override fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipeline: VkPipeline) {
+    override fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipelineLayout: VkPipelineLayout) {
         val bindGroup = bindGroupData.bindGroup
         if (bindGroups[group] !== bindGroupData && bindGroup != null) {
             bindGroups[group] = bindGroupData
             vkCmdBindDescriptorSets(
                 commandBuffer,
                 VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipeline.pipelineLayout.handle,
+                pipelineLayout.handle,
                 group,
                 stack.longs(bindGroup.getDescriptorSet(frameIndex).handle),
                 null

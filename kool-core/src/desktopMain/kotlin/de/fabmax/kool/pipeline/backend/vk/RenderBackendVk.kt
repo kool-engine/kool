@@ -42,8 +42,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val pipelineManager: PipelineManager
     val screenRenderPass: ScreenRenderPassVk
     val commandPool: CommandPool
-    //val transferCommandPool: CommandPool
     val commandBuffers: List<VkCommandBuffer>
+    val clearHelper = ClearHelper(this)
     private val passEncoderState = RenderPassEncoderState(this)
 
     var swapchain: Swapchain
@@ -71,16 +71,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         pipelineManager = PipelineManager(this)
         screenRenderPass = ScreenRenderPassVk(this)
         commandPool = CommandPool(this, device.graphicsQueue)
-        //transferCommandPool = CommandPool(this, device.transferQueue)
         commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
 
         swapchain = Swapchain(this)
 
         glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
-
-        //vkSystem = VkSystem(vkSetup, vkScene, ctx)
-        //semaPool = SemaphorePool(vkSystem)
-        //vkSystem.addDependingResource(semaPool)
     }
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
