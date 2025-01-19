@@ -8,6 +8,8 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.platform.KoolContextAndroid
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class RenderBackendGlImpl(ctx: KoolContextAndroid) :
     RenderBackendGl(1, GlImpl, ctx),
@@ -30,7 +32,7 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
         get() = lateGlslGeneratorHints
 
     private var timer: TimeQuery? = null
-    override var frameGpuTime: Double = 0.0
+    override var frameGpuTime: Duration = 0.0.seconds
 
     private var isGlContextInitialized = false
 
@@ -80,7 +82,7 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
         val t = timer
         if (t != null) {
             if (t.isAvailable) {
-                frameGpuTime = t.getQueryResultMillis()
+                frameGpuTime = t.getQueryResult()
             }
             t.timedScope { super.renderFrame(ctx) }
         } else {
