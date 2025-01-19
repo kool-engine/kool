@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.ComputeRenderPass
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.releaseWith
+import kotlin.time.Duration.Companion.nanoseconds
 
 class WgpuComputePass(val parentPass: ComputeRenderPass, val backend: RenderBackendWebGpu) :
     BaseReleasable(),
@@ -30,7 +31,7 @@ class WgpuComputePass(val parentPass: ComputeRenderPass, val backend: RenderBack
             val begin = beginTimestamp
             val end = endTimestamp
             if (begin != null && end != null && begin.isReady && end.isReady) {
-                parentPass.tGpu = (end.latestResult - begin.latestResult) / 1e6
+                parentPass.tGpu = (end.latestResult - begin.latestResult).nanoseconds
                 timestampWrites = GPUComputePassTimestampWrites(backend.timestampQuery.querySet, begin.index, end.index)
             }
         }

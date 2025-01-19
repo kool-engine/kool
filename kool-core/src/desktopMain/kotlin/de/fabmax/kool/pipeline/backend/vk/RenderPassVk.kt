@@ -18,7 +18,16 @@ abstract class RenderPassVk(
 
     protected val device: Device get() = backend.device
 
+    private val timeQuery = Timer(backend.timestampQueryPool) { }
+
     protected fun render(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
+        if (renderPass.isProfileTimes) {
+            if (timeQuery.isComplete) {
+                renderPass.tGpu = timeQuery.latestResult
+            }
+            timeQuery.begin(passEncoderState.commandBuffer)
+        }
+
         when (val mode = renderPass.mipMode) {
             is RenderPass.MipMode.Render -> {
                 val numLevels = mode.getRenderMipLevels(renderPass.size)
@@ -50,6 +59,10 @@ abstract class RenderPassVk(
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
         renderPass.afterDraw()
+
+        if (renderPass.isProfileTimes) {
+            timeQuery.end(passEncoderState.commandBuffer)
+        }
     }
 
     private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState) {

@@ -21,6 +21,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.*
 import org.w3c.dom.HTMLCanvasElement
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
     override val name: String = "WebGPU Backend"
@@ -57,8 +59,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
 
-    // right now, we can only query individual render pass times, not the entire frame time
-    override val frameGpuTime: Double = 0.0
+    override val frameGpuTime: Duration = 0.0.seconds
 
     val clearHelper: ClearHelper by lazy { ClearHelper(this) }
     private val passEncoderState = RenderPassEncoderState(this)

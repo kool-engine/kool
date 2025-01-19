@@ -12,6 +12,8 @@ import de.fabmax.kool.pipeline.backend.gl.ComputeShaderCodeGl
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 import de.fabmax.kool.pipeline.backend.gl.ShaderCodeGl
 import kotlinx.coroutines.CompletableDeferred
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hints("#version 330 core"))) : RenderBackend {
 
@@ -25,7 +27,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         reversedDepth = false
     )
 
-    override var frameGpuTime: Double = 0.0
+    override var frameGpuTime: Duration = 0.0.seconds
 
     override fun renderFrame(ctx: KoolContext) { }
 

@@ -192,6 +192,12 @@ inline fun MemoryStack.callocVkPresentInfoKHR(block: VkPresentInfoKHR.() -> Unit
         block()
     }
 
+inline fun MemoryStack.callocVkQueryPoolCreateInfo(block: VkQueryPoolCreateInfo.() -> Unit): VkQueryPoolCreateInfo =
+    allocStruct(VkQueryPoolCreateInfo::calloc) {
+        `sType$Default`()
+        block()
+    }
+
 inline fun MemoryStack.callocVkRenderPassBeginInfo(block: VkRenderPassBeginInfo.() -> Unit): VkRenderPassBeginInfo =
     allocStruct(VkRenderPassBeginInfo::calloc) {
         `sType$Default`()
@@ -335,6 +341,9 @@ inline fun MemoryStack.enumerateExtensionProperties(block: (IntBuffer, VkExtensi
 
 inline fun MemoryStack.enumerateLayerProperties(block: (IntBuffer, VkLayerProperties.Buffer?) -> Unit): VkLayerProperties.Buffer =
     enumerateBuffer(VkLayerProperties::malloc, block)
+
+inline fun MemoryStack.enumerateQueueProperties(block: (IntBuffer, VkQueueFamilyProperties.Buffer?) -> Unit): VkQueueFamilyProperties.Buffer =
+    enumerateBuffer(VkQueueFamilyProperties::malloc, block)
 
 inline fun MemoryStack.enumerateLongs(block: (IntBuffer, LongBuffer?) -> Unit): LongBuffer =
     enumerateBuffer(this::mallocLong, block)

@@ -19,7 +19,7 @@ class ComputeRenderPassGl(val parent: ComputeRenderPass, private val backend: Re
         val q = if (parent.isProfileTimes) timeQuery else null
         q?.let {
             if (it.isAvailable) {
-                parent.tGpu = it.getQueryResultMillis()
+                parent.tGpu = it.getQueryResult()
             }
             it.begin()
         }

@@ -9,6 +9,8 @@ import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 abstract class RenderPass(var name: String) : BaseReleasable() {
 
@@ -52,9 +54,9 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
     var isProfileTimes = false
-    var tUpdate = 0.0
-    var tCollect = 0.0
-    var tGpu = 0.0
+    var tUpdate: Duration = 0.0.seconds
+    var tCollect: Duration = 0.0.seconds
+    var tGpu: Duration = 0.0.seconds
 
     var isMirrorY = false
         protected set
@@ -69,7 +71,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         for (i in views.indices) {
             views[i].update(ctx)
         }
-        tUpdate = if (isProfileTimes) Time.precisionTime - t else 0.0
+        tUpdate = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
     }
 
     open fun collectDrawCommands(ctx: KoolContext) {
@@ -77,7 +79,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         for (i in views.indices) {
             views[i].collectDrawCommands(ctx)
         }
-        tCollect = if (isProfileTimes) Time.precisionTime - t else 0.0
+        tCollect = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
     }
 
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {

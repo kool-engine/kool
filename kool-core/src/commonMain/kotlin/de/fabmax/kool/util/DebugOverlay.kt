@@ -49,9 +49,9 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
         ui = UiScene("debug-overlay") {
             onUpdate += {
-                val frameTime = it.ctx.backend.frameGpuTime
-                if (frameTime != 0.0) {
-                    frameTimeText.set("${frameTime.toString(2)} ms @ GPU")
+                val frameMillis = it.ctx.backend.frameGpuTime.inWholeMicroseconds / 1000.0
+                if (frameMillis != 0.0) {
+                    frameTimeText.set("${frameMillis.toString(2)} ms @ GPU")
                 }
 
                 fpsText.set("${it.ctx.fps.toString(1)} fps")
@@ -188,9 +188,9 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     private fun printRenderPassStats() {
         fun RenderPass.printTimes() {
             println("  $name")
-            println("    update:  ${(tUpdate * 1000).toString(2)} ms, " +
-                    "collect: ${(tCollect * 1000).toString(2)} ms, " +
-                    "draw: ${(tGpu * 1000).toString(2)} ms")
+            println("    update:  ${(tUpdate.inWholeMicroseconds / 1000.0).toString(2)} ms, " +
+                    "collect: ${(tCollect.inWholeMicroseconds / 1000.0).toString(2)} ms, " +
+                    "draw: ${(tGpu.inWholeMicroseconds / 1000.0).toString(2)} ms")
         }
 
         val scenes = KoolSystem.requireContext().scenes

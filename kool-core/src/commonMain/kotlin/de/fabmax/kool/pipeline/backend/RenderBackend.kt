@@ -7,6 +7,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Viewport
 import kotlinx.coroutines.CompletableDeferred
+import kotlin.time.Duration
 
 interface RenderBackend {
 
@@ -20,7 +21,7 @@ interface RenderBackend {
     val depthRange: DepthRange get() = deviceCoordinates.ndcDepthRange
     val isInvertedNdcY: Boolean get() = deviceCoordinates.ndcYDirection == NdcYDirection.TOP_TO_BOTTOM
 
-    val frameGpuTime: Double
+    val frameGpuTime: Duration
 
     fun renderFrame(ctx: KoolContext)
     fun cleanup(ctx: KoolContext)

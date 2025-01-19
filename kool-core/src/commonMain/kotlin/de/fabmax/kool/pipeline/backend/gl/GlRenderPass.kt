@@ -17,7 +17,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         val q = if (renderPass.isProfileTimes) timeQuery else null
         q?.let {
             if (it.isAvailable) {
-                renderPass.tGpu = it.getQueryResultMillis()
+                renderPass.tGpu = it.getQueryResult()
             }
             it.begin()
         }

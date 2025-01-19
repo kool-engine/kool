@@ -18,6 +18,8 @@ import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.VkCommandBuffer
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val name = "Vulkan backend"
@@ -46,11 +48,14 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val pipelineManager: PipelineManager
     val screenRenderPass: ScreenRenderPassVk
     val clearHelper = ClearHelper(this)
+    val timestampQueryPool: TimestampQueryPool
+
     private val passEncoderState = RenderPassEncoderState(this)
+    private val frameTimer: Timer
 
     private var windowResized = false
 
-    override var frameGpuTime: Double = 0.0
+    override var frameGpuTime: Duration = 0.0.seconds
 
     init {
         // tell GLFW to not initialize default OpenGL API before we create the window
@@ -71,11 +76,14 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         commandPool = CommandPool(this, device.graphicsQueue)
         commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
         swapchain = Swapchain(this)
+        timestampQueryPool = TimestampQueryPool(this)
         textureLoader = TextureLoaderVk(this)
         pipelineManager = PipelineManager(this)
         screenRenderPass = ScreenRenderPassVk(this)
 
         glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
+
+        frameTimer = Timer(timestampQueryPool) { delta -> frameGpuTime = delta }
     }
 
     override fun renderFrame(ctx: KoolContext) {
@@ -85,6 +93,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             var imgOk = swapchain.acquireNextImage()
             if (imgOk) {
                 passEncoderState.beginFrame(this)
+                timestampQueryPool.reset(passEncoderState.commandBuffer)
+                frameTimer.begin(passEncoderState.commandBuffer)
 
                 ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
                 if (ctx.scenes.isEmpty()) {
@@ -108,6 +118,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 //        timestampQuery.resolve(encoder)
 //        device.queue.submit(arrayOf(encoder.finish()))
 
+                frameTimer.end(passEncoderState.commandBuffer)
+                timestampQueryPool.pollResults(this)
                 passEncoderState.endFrame()
 
 //        timestampQuery.readTimestamps()

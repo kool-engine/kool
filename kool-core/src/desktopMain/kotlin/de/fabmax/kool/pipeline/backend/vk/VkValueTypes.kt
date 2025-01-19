@@ -43,6 +43,9 @@ value class VkFence(val handle: Long)
 value class VkPipelineLayout(val handle: Long)
 
 @JvmInline
+value class VkQueryPool(val handle: Long)
+
+@JvmInline
 value class VkRenderPass(val handle: Long)
 
 @JvmInline

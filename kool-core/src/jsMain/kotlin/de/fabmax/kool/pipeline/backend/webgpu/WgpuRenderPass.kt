@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.releaseWith
+import kotlin.time.Duration.Companion.nanoseconds
 
 abstract class WgpuRenderPass(
     val depthFormat: GPUTextureFormat?,
@@ -28,7 +29,7 @@ abstract class WgpuRenderPass(
             val begin = beginTimestamp
             val end = endTimestamp
             if (begin != null && end != null && begin.isReady && end.isReady) {
-                renderPass.tGpu = (end.latestResult - begin.latestResult) / 1e6
+                renderPass.tGpu = (end.latestResult - begin.latestResult).nanoseconds
                 timestampWrites = GPURenderPassTimestampWrites(backend.timestampQuery.querySet, begin.index, end.index)
             }
         }

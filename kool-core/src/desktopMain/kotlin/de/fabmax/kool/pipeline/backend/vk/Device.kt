@@ -17,6 +17,11 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
     val transferQueue: VkQueue
     val computeQueue: VkQueue?
 
+    val graphicsQueueProperties: VkQueueFamilyProperties
+    val presentQueueProperties: VkQueueFamilyProperties
+    val transferQueueProperties: VkQueueFamilyProperties
+    val computeQueueProperties: VkQueueFamilyProperties?
+
     init {
         memStack {
             val uniqueFamilies = physicalDevice.queueFamiliyIndices.uniqueFamilies
@@ -47,10 +52,23 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 ppEnabledExtensionNames(extNames)
             }
 
-            graphicsQueue = getQueue(physicalDevice.queueFamiliyIndices.graphicsFamily!!, 0)
-            presentQueue = getQueue(physicalDevice.queueFamiliyIndices.presentFamily!!, 0)
-            transferQueue = physicalDevice.queueFamiliyIndices.transferFamily?.let { getQueue(it, 0) } ?: graphicsQueue
-            computeQueue = physicalDevice.queueFamiliyIndices.computeFamily?.let { getQueue(it, 0) }
+            val graphicsQueueIdx = physicalDevice.queueFamiliyIndices.graphicsFamily!!
+            val presentQueueIdx = physicalDevice.queueFamiliyIndices.presentFamily!!
+            val transferQueueIdx = physicalDevice.queueFamiliyIndices.transferFamily ?: graphicsQueueIdx
+            val computeQueueIdx = physicalDevice.queueFamiliyIndices.computeFamily
+
+            graphicsQueue = getQueue(graphicsQueueIdx, 0)
+            presentQueue = getQueue(presentQueueIdx, 0)
+            transferQueue = getQueue(transferQueueIdx, 0)
+            computeQueue = computeQueueIdx?.let { getQueue(it, 0) }
+
+            val queueProperties = enumerateQueueProperties { cnt, buf ->
+                vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice.vkPhysicalDevice, cnt, buf)
+            }
+            graphicsQueueProperties = queueProperties[graphicsQueueIdx]
+            presentQueueProperties = queueProperties[presentQueueIdx]
+            transferQueueProperties = queueProperties[transferQueueIdx]
+            computeQueueProperties = computeQueueIdx?.let { queueProperties[it] }
         }
 
         releaseWith(backend.instance)
@@ -191,6 +209,16 @@ internal fun Device.createPipelineLayout(stack: MemoryStack? = null, block: VkPi
     }
 }
 
+internal fun Device.createQueryPool(stack: MemoryStack? = null, block: VkQueryPoolCreateInfo.() -> Unit): VkQueryPool {
+    logT { "create query pool" }
+    memStack(stack) {
+        val createInfo = callocVkQueryPoolCreateInfo(block)
+        val handle = mallocLong(1)
+        checkVk(vkCreateQueryPool(vkDevice, createInfo, null, handle)) { "Failed creating query pool: $it" }
+        return VkQueryPool(handle[0])
+    }
+}
+
 internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRenderPassCreateInfo.() -> Unit): VkRenderPass {
     logT { "create render pass" }
     memStack(stack) {
@@ -271,6 +299,10 @@ internal fun Device.destroyImageView(imageView: VkImageView) {
 
 internal fun Device.destroyPipelineLayout(pipelineLayout: VkPipelineLayout) {
     vkDestroyPipelineLayout(vkDevice, pipelineLayout.handle, null)
+}
+
+internal fun Device.destroyQueryPool(queryPool: VkQueryPool) {
+    vkDestroyQueryPool(vkDevice, queryPool.handle, null)
 }
 
 internal fun Device.destroyRenderPass(renderPass: VkRenderPass) {

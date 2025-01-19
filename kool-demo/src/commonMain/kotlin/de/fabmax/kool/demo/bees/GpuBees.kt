@@ -287,7 +287,7 @@ class GpuBees(beeScene: Scene) {
             } else {
                 numSimulatedBees = currentInstances
             }
-            beeUpdateTime.set(simulationPass.tGpu)
+            beeUpdateTime.set(simulationPass.tGpu.inWholeMicroseconds / 1000.0)
         }
 
         taskA.onBeforeDispatch {

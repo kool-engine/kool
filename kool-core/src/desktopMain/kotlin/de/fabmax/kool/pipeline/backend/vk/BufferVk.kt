@@ -40,7 +40,8 @@ class GrowingBufferVk(
     val backend: RenderBackendVk,
     bufferInfo: MemoryInfo,
     val label: String
-) {
+) : BaseReleasable() {
+
     var bufferInfo = bufferInfo
         private set
     val size: Long get() = bufferInfo.size
@@ -75,4 +76,9 @@ class GrowingBufferVk(
     }
 
     private fun makeBuffer(bufferInfo: MemoryInfo) = BufferVk(backend, bufferInfo, label)
+
+    override fun release() {
+        super.release()
+        buffer.release()
+    }
 }

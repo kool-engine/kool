@@ -69,6 +69,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     internal fun removeDrawPipeline(pipeline: DrawPipelineVk) {
+        drawPipelines -= pipeline
         pipeline.drawPipeline.pipelineBackend = null
         val shaderCode = pipeline.drawPipeline.shaderCode as ShaderCodeVk
 
@@ -93,6 +94,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     internal fun removeComputePipeline(pipeline: ComputePipelineVk) {
+        computePipelines -= pipeline
         pipeline.computePipeline.pipelineBackend = null
         val shaderCode = pipeline.computePipeline.shaderCode as ShaderCodeVk
 

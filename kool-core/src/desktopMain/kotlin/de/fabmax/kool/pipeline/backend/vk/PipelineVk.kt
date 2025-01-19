@@ -97,19 +97,17 @@ sealed class PipelineVk(
     }
 
     override fun release() {
-        if (!isReleased) {
-            super.release()
-            if (!pipeline.isReleased) {
-                pipeline.release()
-            }
-            when (this) {
-                is DrawPipelineVk -> backend.pipelineManager.removeDrawPipeline(this)
-                is ComputePipelineVk -> backend.pipelineManager.removeComputePipeline(this)
-            }
-            bindGroupLayouts.forEach { backend.device.destroyDescriptorSetLayout(it) }
-            backend.device.destroyPipelineLayout(pipelineLayout)
-            pipelineInfo.deleted()
+        super.release()
+        if (!pipeline.isReleased) {
+            pipeline.release()
         }
+        when (this) {
+            is DrawPipelineVk -> backend.pipelineManager.removeDrawPipeline(this)
+            is ComputePipelineVk -> backend.pipelineManager.removeComputePipeline(this)
+        }
+        bindGroupLayouts.forEach { backend.device.destroyDescriptorSetLayout(it) }
+        backend.device.destroyPipelineLayout(pipelineLayout)
+        pipelineInfo.deleted()
     }
 
     private fun BindingType.intType() = when (this) {
