@@ -10,7 +10,7 @@ import org.lwjgl.vulkan.VK10.*
 
 
 class TextureLoaderVk(val backend: RenderBackendVk) {
-    private val loadedTextures = mutableMapOf<String, TextureResourceVk>()
+    private val loadedTextures = mutableMapOf<String, ImageVk>()
 
     private val device: Device get() = backend.device
 
@@ -38,7 +38,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    private fun loadTexture2d(tex: Texture2d, data: ImageData2d): TextureResourceVk {
+    private fun loadTexture2d(tex: Texture2d, data: ImageData2d): ImageVk {
         val isMipMap = tex.props.generateMipMaps
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
@@ -51,7 +51,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
             samples = VK_SAMPLE_COUNT_1_BIT,
             usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
         )
-        val image = Image(backend, imgInfo)
+        val image = ImageVk(backend, imgInfo)
 
         val bufSize = data.width * data.height * data.format.vkBytesPerPx.toLong()
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
@@ -65,7 +65,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         if (isMipMap) {
             image.generateMipmaps()
         }
-        return TextureResourceVk(image)
+        return image
     }
 
     private fun ImageData.copyToStagingBuffer(target: VkBuffer) {

@@ -52,11 +52,11 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         val width = colorSrc.width
         val height = colorSrc.height
 
-        var colorDstVk: TextureResourceVk? = null
-        //var depthDstVk: TextureResourceVk? = null
+        var colorDstVk: ImageVk? = null
+        //var depthDstVk: ImageVk? = null
 
         colorDst.let { dst ->
-            var copyDstC = (dst.gpuTexture as TextureResourceVk?)
+            var copyDstC = (dst.gpuTexture as ImageVk?)
             if (copyDstC == null || copyDstC.width != width || copyDstC.height != height) {
                 copyDstC?.let {
                     launchDelayed(1) { it.release() }
@@ -73,7 +73,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                     samples = VK_SAMPLE_COUNT_1_BIT,
                     usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT /*or VK_IMAGE_USAGE_TRANSFER_SRC_BIT*/ or VK_IMAGE_USAGE_SAMPLED_BIT
                 )
-                val texResource = TextureResourceVk(Image(backend, imgInfo))
+                val texResource = ImageVk(backend, imgInfo)
 
                 copyDstC = texResource
                 dst.gpuTexture = copyDstC
@@ -101,7 +101,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                 extent { it.set(width, height, 1) }
             }
             // todo: layout transitions
-            vkCmdCopyImage(passEncoderState.commandBuffer, colorSrc.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorDstVk!!.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+            vkCmdCopyImage(passEncoderState.commandBuffer, colorSrc.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorDstVk!!.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
         }
     }
 

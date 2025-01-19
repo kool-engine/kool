@@ -16,7 +16,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
     var renderPass: OffscreenRenderPassVk? = null
         private set
 
-    lateinit var image: Image
+    lateinit var image: ImageVk
     var imageView: VkImageView = TODO()
     var sampler: Long = 0L
 
@@ -230,7 +230,7 @@ class VkOffscreenPassCube(val parentPass: OffscreenRenderPassCube) : BaseReleasa
 //        vkBackend.vkSystem.device.addDependingResource(tex)
     }
 
-    private fun createSampler(backend: RenderBackendVk, texImage: Image): Long {
+    private fun createSampler(backend: RenderBackendVk, texImage: ImageVk): Long {
         memStack {
             val samplerInfo = callocVkSamplerCreateInfo {
                 sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)

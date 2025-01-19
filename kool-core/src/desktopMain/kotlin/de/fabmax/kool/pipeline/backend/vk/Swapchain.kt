@@ -28,9 +28,9 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     val nImages: Int
         get() = images.size
 
-    val colorImage: Image
+    val colorImage: ImageVk
     val colorImageView: VkImageView
-    val depthImage: Image
+    val depthImage: ImageVk
     val depthImageView: VkImageView
 
     private val imageAvailableSemas: List<VkSemaphore>
@@ -152,7 +152,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    private fun createColorResources(commandBuffer: VkCommandBuffer): Pair<Image, VkImageView> {
+    private fun createColorResources(commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = imageFormat,
@@ -165,15 +165,15 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, //or VK_IMAGE_USAGE_TRANSFER_DST_BIT // does not work because of VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT flag
         )
-        val image = Image(backend, imgInfo)
+        val image = ImageVk(backend, imgInfo)
 
-        val imageView = Image.imageView2d(device, image, VK_IMAGE_ASPECT_COLOR_BIT)
+        val imageView = ImageVk.imageView2d(device, image, VK_IMAGE_ASPECT_COLOR_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, commandBuffer)
         image.onRelease { device.destroyImageView(imageView) }
         return image to imageView
     }
 
-    private fun createDepthResources(commandBuffer: VkCommandBuffer): Pair<Image, VkImageView> {
+    private fun createDepthResources(commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = physicalDevice.depthFormat,
@@ -186,9 +186,9 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         )
-        val image = Image(backend, imgInfo)
+        val image = ImageVk(backend, imgInfo)
 
-        val imageView = Image.imageView2d(device, image, VK_IMAGE_ASPECT_DEPTH_BIT)
+        val imageView = ImageVk.imageView2d(device, image, VK_IMAGE_ASPECT_DEPTH_BIT)
         image.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandBuffer)
         image.onRelease { device.destroyImageView(imageView) }
         return image to imageView

@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.pipeline.backend.stats.TextureInfo
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
@@ -8,14 +9,15 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkFormatProperties
 import kotlin.math.max
 
-class Image(
+class ImageVk(
     val backend: RenderBackendVk,
     val imageInfo: ImageInfo,
     label: String = UniqueId.nextId("Image")
-) : BaseReleasable() {
-    val width: Int get() = imageInfo.width
-    val height: Int get() = imageInfo.height
-    val depth: Int get() = imageInfo.depth
+) : BaseReleasable(), GpuTexture {
+
+    override val width: Int get() = imageInfo.width
+    override val height: Int get() = imageInfo.height
+    override val depth: Int get() = imageInfo.depth
     val mipLevels: Int get() = imageInfo.mipLevels
     val samples: Int get() = imageInfo.samples
     val format: Int get() = imageInfo.format
@@ -68,7 +70,7 @@ class Image(
     }
 
     fun copyFromImage(
-        src: Image,
+        src: ImageVk,
         commandBuffer: VkCommandBuffer,
         dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
         stack: MemoryStack? = null
@@ -260,7 +262,7 @@ class Image(
     }
 
     companion object {
-        fun imageView2d(device: Device, image: Image, aspectMask: Int): VkImageView {
+        fun imageView2d(device: Device, image: ImageVk, aspectMask: Int): VkImageView {
             require(image.depth == 1)
             return device.createImageView(
                 image = image.vkImage,

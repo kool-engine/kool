@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.vk.Image
+import de.fabmax.kool.pipeline.backend.vk.ImageVk
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.pipeline.backend.vk.callocVkImageCopyN
 import de.fabmax.kool.pipeline.backend.vk.vk
@@ -17,7 +17,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
     private var isCreated = false
     private var isCreationBlocked = false
 
-    private val resultImages = Array<Image?>(parentPass.colorTextures.size) { null }
+    private val resultImages = Array<ImageVk?>(parentPass.colorTextures.size) { null }
     private val isCopyResult = parentPass.numTextureMipLevels > 1
 
     var renderPass: OffscreenRenderPassVk? = null

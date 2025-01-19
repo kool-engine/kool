@@ -85,7 +85,7 @@ class OffscreenPass2dVk(
 
     private inner class RenderAttachment(val texture: Texture2d, val isDepth: Boolean, val name: String) : BaseReleasable() {
         var descriptor: ImageInfo
-        var gpuTexture: TextureResourceVk
+        var gpuTexture: ImageVk
         val mipViews = mutableListOf<VkImageView>()
 
         init {
@@ -122,7 +122,7 @@ class OffscreenPass2dVk(
             height: Int,
             usage: Int,
             texture: Texture<*> = this.texture
-        ): Pair<ImageInfo, TextureResourceVk> {
+        ): Pair<ImageInfo, ImageVk> {
             val descriptor = ImageInfo(
                 imageType = VK_IMAGE_TYPE_2D,
                 format = if (isDepth) backend.physicalDevice.depthFormat else texture.props.format.vk,
@@ -134,7 +134,7 @@ class OffscreenPass2dVk(
                 samples = numSamples,
                 usage = usage
             )
-            val tex = TextureResourceVk(Image(backend, descriptor, name))
+            val tex = ImageVk(backend, descriptor, name)
             return descriptor to tex
         }
 
@@ -143,9 +143,9 @@ class OffscreenPass2dVk(
             mipViews.clear()
             for (i in 0 until parentPass.numRenderMipLevels) {
                 mipViews += backend.device.createImageView(
-                    image = gpuTexture.image.vkImage,
+                    image = gpuTexture.vkImage,
                     viewType = VK_IMAGE_VIEW_TYPE_2D,
-                    format = gpuTexture.image.format,
+                    format = gpuTexture.format,
                     aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT,
                     levelCount = 1,
                     baseMipLevel = i
@@ -154,7 +154,7 @@ class OffscreenPass2dVk(
         }
 
         fun copyToTexture(target: Texture2d, passEncoderState: RenderPassEncoderState) {
-            var copyDst = (target.gpuTexture as TextureResourceVk?)
+            var copyDst = (target.gpuTexture as ImageVk?)
             if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
                 copyDst?.release()
                 val (_, gpuTex) = createTexture(
@@ -167,7 +167,7 @@ class OffscreenPass2dVk(
                 target.gpuTexture = copyDst
                 target.loadingState = Texture.LoadingState.LOADED
             }
-            copyDst.image.copyFromImage(gpuTexture.image, passEncoderState.commandBuffer)
+            copyDst.copyFromImage(gpuTexture, passEncoderState.commandBuffer)
         }
 
         override fun release() {

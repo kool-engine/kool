@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class BufferResourceVk(
+class BufferVk(
     val backend: RenderBackendVk,
     bufferInfo: MemoryInfo,
     label: String = UniqueId.nextId("VkBuffer")
@@ -44,7 +44,7 @@ class GrowingBufferVk(
     var bufferInfo = bufferInfo
         private set
     val size: Long get() = bufferInfo.size
-    var buffer: BufferResourceVk = makeBuffer(bufferInfo)
+    var buffer: BufferVk = makeBuffer(bufferInfo)
 
     fun writeData(data: Float32Buffer) {
         val bufSize = data.limit * 4L
@@ -74,5 +74,5 @@ class GrowingBufferVk(
         }
     }
 
-    private fun makeBuffer(bufferInfo: MemoryInfo) = BufferResourceVk(backend, bufferInfo, label)
+    private fun makeBuffer(bufferInfo: MemoryInfo) = BufferVk(backend, bufferInfo, label)
 }
