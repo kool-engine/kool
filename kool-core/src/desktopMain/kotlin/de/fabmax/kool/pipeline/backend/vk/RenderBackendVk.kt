@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.pipeline.backend.vk.trash.VkOffscreenPassCube
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.memStack

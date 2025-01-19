@@ -1,8 +1,9 @@
-package de.fabmax.kool.pipeline.backend.vk
+package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.backend.vk.*
 import de.fabmax.kool.util.*
-import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK10
 
 @Deprecated("to be removed")
 class OffscreenRenderPassVk(
@@ -17,11 +18,13 @@ class OffscreenRenderPassVk(
 ) : RenderPassVk(0, 0, backend) {
 
     constructor(backend: RenderBackendVk, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
-                colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
+                colorFilterMethod: Int = VK10.VK_FILTER_LINEAR, depthFilterMethod: Int = VK10.VK_FILTER_NEAREST, depthCopmpareOp: Int = VK10.VK_COMPARE_OP_NEVER
+    ) :
             this(backend, maxWidth, maxHeight, isCopied, listOf(texFormat), colorFilterMethod, depthFilterMethod, depthCopmpareOp)
 
     constructor(backend: RenderBackendVk, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormats: List<Int>,
-                colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
+                colorFilterMethod: Int = VK10.VK_FILTER_LINEAR, depthFilterMethod: Int = VK10.VK_FILTER_NEAREST, depthCopmpareOp: Int = VK10.VK_COMPARE_OP_NEVER
+    ) :
             this(
                 backend,
                 maxWidth,
@@ -90,8 +93,8 @@ class OffscreenRenderPassVk(
 
     override fun release() {
         super.release()
-        vkDestroyRenderPass(device.vkDevice, vkRenderPass.handle, null)
-        vkDestroyFramebuffer(device.vkDevice, frameBuffer, null)
+        VK10.vkDestroyRenderPass(device.vkDevice, vkRenderPass.handle, null)
+        VK10.vkDestroyFramebuffer(device.vkDevice, frameBuffer, null)
         logD { "Destroyed offscreen render pass" }
     }
 
@@ -102,14 +105,14 @@ class OffscreenRenderPassVk(
             attachments.put(imageViews.size, depthView.handle)
 
             val framebufferInfo = callocVkFramebufferCreateInfo {
-                sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
+                sType(VK10.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO)
                 renderPass(renderPass.handle)
                 pAttachments(attachments)
                 width(maxWidth)
                 height(maxHeight)
                 layers(1)
             }
-            return checkCreateLongPtr { vkCreateFramebuffer(device.vkDevice, framebufferInfo, null, it) }
+            return checkCreateLongPtr { VK10.vkCreateFramebuffer(device.vkDevice, framebufferInfo, null, it) }
         }
     }
 
@@ -119,32 +122,32 @@ class OffscreenRenderPassVk(
             val colorFormats = emptyList<Int>()
             val attachments = callocVkAttachmentDescriptionN(numColorAttachments + 1) {
                 val colorLoadOp = if (isExtColorAttachments) {
-                    VK_ATTACHMENT_LOAD_OP_LOAD
+                    VK10.VK_ATTACHMENT_LOAD_OP_LOAD
                 } else {
-                    VK_ATTACHMENT_LOAD_OP_CLEAR
+                    VK10.VK_ATTACHMENT_LOAD_OP_CLEAR
                 }
                 val depthLoadOp = if (isExtDepthAttachments) {
-                    VK_ATTACHMENT_LOAD_OP_LOAD
+                    VK10.VK_ATTACHMENT_LOAD_OP_LOAD
                 } else {
-                    VK_ATTACHMENT_LOAD_OP_CLEAR
+                    VK10.VK_ATTACHMENT_LOAD_OP_CLEAR
                 }
 
-                val samples = if (isMultiSampled) physicalDevice.maxSamples else VK_SAMPLE_COUNT_1_BIT
+                val samples = if (isMultiSampled) physicalDevice.maxSamples else VK10.VK_SAMPLE_COUNT_1_BIT
 
                 for (i in colorFormats.indices) {
                     this[i].apply {
                         format(colorFormats[i])
                         samples(samples)
                         loadOp(colorLoadOp)
-                        storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                        stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                        stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                        initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                        storeOp(VK10.VK_ATTACHMENT_STORE_OP_STORE)
+                        stencilLoadOp(VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        stencilStoreOp(VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                        initialLayout(VK10.VK_IMAGE_LAYOUT_UNDEFINED)
 
                         if (colorAttachments.isCopied) {
-                            finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                            finalLayout(VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                         } else {
-                            finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                            finalLayout(VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                         }
                     }
                 }
@@ -152,15 +155,15 @@ class OffscreenRenderPassVk(
                     format(physicalDevice.depthFormat)
                     samples(samples)
                     loadOp(depthLoadOp)
-                    storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                    storeOp(VK10.VK_ATTACHMENT_STORE_OP_STORE)
+                    stencilLoadOp(VK10.VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                    stencilStoreOp(VK10.VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                    initialLayout(VK10.VK_IMAGE_LAYOUT_UNDEFINED)
 
                     if (depthAttachment.isCopied) {
-                        finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                        finalLayout(VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
                     } else {
-                        finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+                        finalLayout(VK10.VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
                     }
                 }
             }
@@ -169,17 +172,17 @@ class OffscreenRenderPassVk(
                 for (i in 0 until numColorAttachments) {
                     this[i].apply {
                         attachment(i)
-                        layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                        layout(VK10.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
                     }
                 }
             }
             val depthAttachmentRef = callocVkAttachmentReferenceN(1) {
                 attachment(numColorAttachments)
-                layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                layout(VK10.VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
             }
 
             val subpass = callocVkSubpassDescriptionN(1) {
-                pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
+                pipelineBindPoint(VK10.VK_PIPELINE_BIND_POINT_GRAPHICS)
                 colorAttachmentCount(numColorAttachments)
                 pColorAttachments(colorAttachmentRefs)
                 pDepthStencilAttachment(depthAttachmentRef[0])
@@ -187,25 +190,25 @@ class OffscreenRenderPassVk(
 
             val dependencies = callocVkSubpassDependencyN(2) {
                 this[0]
-                        .srcSubpass(VK_SUBPASS_EXTERNAL)
-                        .dstSubpass(0)
-                        .srcStageMask(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-                        .srcAccessMask(VK_ACCESS_SHADER_READ_BIT)
-                        .dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                        .dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-                        .dependencyFlags(VK_DEPENDENCY_BY_REGION_BIT)
+                    .srcSubpass(VK10.VK_SUBPASS_EXTERNAL)
+                    .dstSubpass(0)
+                    .srcStageMask(VK10.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
+                    .srcAccessMask(VK10.VK_ACCESS_SHADER_READ_BIT)
+                    .dstStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                    .dstAccessMask(VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+                    .dependencyFlags(VK10.VK_DEPENDENCY_BY_REGION_BIT)
                 this[1]
-                        .srcSubpass(0)
-                        .dstSubpass(VK_SUBPASS_EXTERNAL)
-                        .srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                        .srcAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-                        .dstStageMask(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-                        .dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
-                        .dependencyFlags(VK_DEPENDENCY_BY_REGION_BIT)
+                    .srcSubpass(0)
+                    .dstSubpass(VK10.VK_SUBPASS_EXTERNAL)
+                    .srcStageMask(VK10.VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                    .srcAccessMask(VK10.VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+                    .dstStageMask(VK10.VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
+                    .dstAccessMask(VK10.VK_ACCESS_SHADER_READ_BIT)
+                    .dependencyFlags(VK10.VK_DEPENDENCY_BY_REGION_BIT)
             }
 
             return device.createRenderPass {
-                sType(VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)
+                sType(VK10.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO)
                 pAttachments(attachments)
                 pSubpasses(subpass)
                 pDependencies(dependencies)
@@ -275,7 +278,7 @@ class OffscreenRenderPassVk(
 
         override fun release() {
             super.release()
-            colorSamplers.forEach { vkDestroySampler(backend.device.vkDevice, it, null) }
+            colorSamplers.forEach { VK10.vkDestroySampler(backend.device.vkDevice, it, null) }
         }
     }
 
@@ -314,7 +317,7 @@ class OffscreenRenderPassVk(
 
         override fun release() {
             super.release()
-            vkDestroySampler(backend.device.vkDevice, depthSampler, null)
+            VK10.vkDestroySampler(backend.device.vkDevice, depthSampler, null)
         }
     }
 
@@ -322,26 +325,26 @@ class OffscreenRenderPassVk(
         private fun createSampler(backend: RenderBackendVk, filterMethod: Int, isDepth: Boolean, depthCompareOp: Int): Long {
             memStack {
                 val samplerInfo = callocVkSamplerCreateInfo {
-                    sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
+                    sType(VK10.VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO)
                     magFilter(filterMethod)
                     minFilter(filterMethod)
-                    mipmapMode(if (filterMethod == VK_FILTER_NEAREST) VK_SAMPLER_MIPMAP_MODE_NEAREST else VK_SAMPLER_MIPMAP_MODE_LINEAR)
-                    addressModeU(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-                    addressModeV(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-                    addressModeW(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                    mipmapMode(if (filterMethod == VK10.VK_FILTER_NEAREST) VK10.VK_SAMPLER_MIPMAP_MODE_NEAREST else VK10.VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                    addressModeU(VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                    addressModeV(VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                    addressModeW(VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                     anisotropyEnable(false)
                     maxAnisotropy(1f)
                     minLod(0f)
                     maxLod(1f)
-                    borderColor(VK_BORDER_COLOR_INT_OPAQUE_BLACK)
+                    borderColor(VK10.VK_BORDER_COLOR_INT_OPAQUE_BLACK)
 
-                    if (isDepth && filterMethod == VK_FILTER_LINEAR) {
+                    if (isDepth && filterMethod == VK10.VK_FILTER_LINEAR) {
                         compareEnable(true)
                         compareOp(depthCompareOp)
                     }
                 }
                 val lp = mallocLong(1)
-                check(vkCreateSampler(backend.device.vkDevice, samplerInfo, null, lp) == VK_SUCCESS)
+                check(VK10.vkCreateSampler(backend.device.vkDevice, samplerInfo, null, lp) == VK10.VK_SUCCESS)
                 return lp[0]
             }
         }

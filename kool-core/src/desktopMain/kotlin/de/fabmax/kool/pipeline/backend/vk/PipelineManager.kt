@@ -12,8 +12,8 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
     private val fragmentShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
     private val computeShaderModules = mutableMapOf<LongHash, UsedShaderModule>()
 
-    private val drawPipelines = mutableSetOf<VkDrawPipeline>()
-    private val computePipelines = mutableSetOf<VkComputePipeline>()
+    private val drawPipelines = mutableSetOf<DrawPipelineVk>()
+    private val computePipelines = mutableSetOf<ComputePipelineVk>()
 
     init {
         releaseWith(backend.device)
@@ -25,12 +25,12 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
         return vkPipeline.bind(cmd, passEncoderState)
     }
 
-    private fun DrawPipeline.getVkPipeline(): VkDrawPipeline {
-        (pipelineBackend as VkDrawPipeline?)?.let { return it }
+    private fun DrawPipeline.getVkPipeline(): DrawPipelineVk {
+        (pipelineBackend as DrawPipelineVk?)?.let { return it }
 
         val vertexShader = getOrCreateVertexShaderModule(this)
         val fragmentShader = getOrCreateFragmentShaderModule(this)
-        val pipeline = VkDrawPipeline(this, vertexShader, fragmentShader, backend)
+        val pipeline = DrawPipelineVk(this, vertexShader, fragmentShader, backend)
         pipelineBackend = pipeline
         drawPipelines += pipeline
         return pipeline
@@ -68,7 +68,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
         return usedModule.shaderModule
     }
 
-    internal fun removeDrawPipeline(pipeline: VkDrawPipeline) {
+    internal fun removeDrawPipeline(pipeline: DrawPipelineVk) {
         pipeline.drawPipeline.pipelineBackend = null
         val shaderCode = pipeline.drawPipeline.shaderCode as ShaderCodeVk
 
@@ -92,7 +92,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    internal fun removeComputePipeline(pipeline: VkComputePipeline) {
+    internal fun removeComputePipeline(pipeline: ComputePipelineVk) {
         pipeline.computePipeline.pipelineBackend = null
         val shaderCode = pipeline.computePipeline.shaderCode as ShaderCodeVk
 

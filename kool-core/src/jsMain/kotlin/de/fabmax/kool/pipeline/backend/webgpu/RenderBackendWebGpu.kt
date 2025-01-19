@@ -167,9 +167,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState) = (impl as WgpuOffscreenRenderPass2d).draw(passEncoderState)
+    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState) = (impl as WgpuOffscreenPass2d).draw(passEncoderState)
 
-    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) = (impl as WgpuOffscreenRenderPassCube).draw(passEncoderState)
+    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) = (impl as WgpuOffscreenPassCube).draw(passEncoderState)
 
     private fun ComputeRenderPass.dispatch(encoder: GPUCommandEncoder) = (impl as WgpuComputePass).dispatch(encoder)
 
@@ -196,11 +196,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
-        return WgpuOffscreenRenderPass2d(parentPass, 1, this)
+        return WgpuOffscreenPass2d(parentPass, 1, this)
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-        return WgpuOffscreenRenderPassCube(parentPass, 1, this)
+        return WgpuOffscreenPassCube(parentPass, 1, this)
     }
 
     override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {

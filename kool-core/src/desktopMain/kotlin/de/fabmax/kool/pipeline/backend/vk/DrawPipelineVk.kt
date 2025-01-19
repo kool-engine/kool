@@ -12,12 +12,12 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkPipelineColorBlendStateCreateInfo
 import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo
 
-class VkDrawPipeline(
+class DrawPipelineVk(
     val drawPipeline: DrawPipeline,
     private val vertexShaderModule: VkShaderModule,
     private val fragmentShaderModule: VkShaderModule,
     backend: RenderBackendVk,
-): VkPipeline(drawPipeline, backend) {
+): PipelineVk(drawPipeline, backend) {
 
     private val renderPipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
     private val users = mutableSetOf<NodeId>()
@@ -248,9 +248,9 @@ class VkDrawPipeline(
 
     private fun bindVertexBuffers(passEncoderState: RenderPassEncoderState, cmd: DrawCommand) {
         if (cmd.mesh.geometry.gpuGeometry == null) {
-            cmd.mesh.geometry.gpuGeometry = VkGeometry(cmd.mesh, backend)
+            cmd.mesh.geometry.gpuGeometry = GeometryVk(cmd.mesh, backend)
         }
-        val gpuGeom = cmd.mesh.geometry.gpuGeometry as VkGeometry
+        val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk
         gpuGeom.checkBuffers()
 
         var numBuffers = 1

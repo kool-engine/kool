@@ -1,8 +1,10 @@
-package de.fabmax.kool.pipeline.backend.vk
+package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.vk.trash.LoadedTextureVkOld
-import de.fabmax.kool.pipeline.backend.vk.trash.TextureLoaderOld
+import de.fabmax.kool.pipeline.backend.vk.Image
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
+import de.fabmax.kool.pipeline.backend.vk.callocVkImageCopyN
+import de.fabmax.kool.pipeline.backend.vk.vk
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchDelayed
@@ -258,7 +260,16 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
             OffscreenRenderPassVk.CreatedDepthAttachment(backend, width, height, false, filterMethod, depthCompareOp, isMultiSampling)
         }
 
-        val rp = OffscreenRenderPassVk(backend, width, height, colorAttachments, isProvidedColor, depthAttachment, isProvidedDepth, isMultiSampling)
+        val rp = OffscreenRenderPassVk(
+            backend,
+            width,
+            height,
+            colorAttachments,
+            isProvidedColor,
+            depthAttachment,
+            isProvidedDepth,
+            isMultiSampling
+        )
         if (!isProvidedColor) {
             for (i in parentPass.colorTextures.indices) {
                 createTex(parentPass.colorTextures[i], i, true, rp, backend)

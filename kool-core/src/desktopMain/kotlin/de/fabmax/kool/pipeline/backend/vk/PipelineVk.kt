@@ -7,7 +7,7 @@ import de.fabmax.kool.util.checkIsNotReleased
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
 
-sealed class VkPipeline(
+sealed class PipelineVk(
     private val pipeline: PipelineBase,
     protected val backend: RenderBackendVk,
 ): BaseReleasable(), PipelineBackend {
@@ -20,7 +20,7 @@ sealed class VkPipeline(
     val pipelineLayout: VkPipelineLayout = createPipelineLayout()
 
     private fun createBindGroupLayouts(pipeline: PipelineBase): List<VkDescriptorSetLayout> = memStack {
-        val layouts = if (this@VkPipeline is VkComputePipeline) {
+        val layouts = if (this@PipelineVk is ComputePipelineVk) {
             listOf(pipeline.bindGroupLayouts.pipelineScope)
         } else {
             pipeline.bindGroupLayouts.asList
@@ -89,7 +89,7 @@ sealed class VkPipeline(
     }
 
     protected fun BindGroupData.getOrCreateVkData(): BindGroupDataVk {
-        val group = if (this@VkPipeline is VkComputePipeline) 0 else layout.group
+        val group = if (this@PipelineVk is ComputePipelineVk) 0 else layout.group
         if (gpuData == null) {
             gpuData = BindGroupDataVk(this, bindGroupLayouts[group], backend)
         }
@@ -103,8 +103,8 @@ sealed class VkPipeline(
                 pipeline.release()
             }
             when (this) {
-                is VkDrawPipeline -> backend.pipelineManager.removeDrawPipeline(this)
-                is VkComputePipeline -> backend.pipelineManager.removeComputePipeline(this)
+                is DrawPipelineVk -> backend.pipelineManager.removeDrawPipeline(this)
+                is ComputePipelineVk -> backend.pipelineManager.removeComputePipeline(this)
             }
             bindGroupLayouts.forEach { backend.device.destroyDescriptorSetLayout(it) }
             backend.device.destroyPipelineLayout(pipelineLayout)

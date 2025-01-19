@@ -4,11 +4,11 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.releaseWith
 
-class WgpuOffscreenRenderPassCube(
-    val parentPass: OffscreenRenderPassCube,
+class WgpuOffscreenPass2d(
+    val parentPass: OffscreenRenderPass2d,
     numSamples: Int,
     backend: RenderBackendWebGpu
-) : WgpuRenderPass(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPassCubeImpl {
+) : WgpuRenderPass(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPass2dImpl {
 
     override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
 
@@ -21,7 +21,7 @@ class WgpuOffscreenRenderPassCube(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            OffscreenRenderPass.DepthAttachmentRender -> TextureCube(
+            OffscreenRenderPass.DepthAttachmentRender -> Texture2d(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}:render-depth"
             )
@@ -62,11 +62,11 @@ class WgpuOffscreenRenderPassCube(
     override fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder) {
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
-                colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as TextureCube, encoder)
+                colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as Texture2d, encoder)
             }
         }
         if (frameCopy.isCopyDepth) {
-            depthAttachment?.copyToTexture(frameCopy.depthCopyCube, encoder)
+            depthAttachment?.copyToTexture(frameCopy.depthCopy2d, encoder)
         }
     }
 
@@ -77,7 +77,6 @@ class WgpuOffscreenRenderPassCube(
     ): GPURenderPassEncoder {
         val renderPass = passEncoderState.renderPass
         val mipLevel = passEncoderState.mipLevel
-        val layer = passEncoderState.layer
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load
@@ -87,7 +86,7 @@ class WgpuOffscreenRenderPassCube(
             val clearColor = if (colorLoadOp == GPULoadOp.load) null else parentPass.clearColors[i]?.let { GPUColorDict(it) }
 
             GPURenderPassColorAttachment(
-                view = colorTex.getView(layer, mipLevel),
+                view = colorTex.mipViews[mipLevel],
                 loadOp = colorLoadOp,
                 clearValue = clearColor,
             )
@@ -100,7 +99,7 @@ class WgpuOffscreenRenderPassCube(
         }
         val depth = depthAttachment?.let {
             GPURenderPassDepthStencilAttachment(
-                view = it.getView(layer, mipLevel),
+                view = it.mipViews[mipLevel],
                 depthLoadOp = depthLoadOp,
                 depthStoreOp = GPUStoreOp.store,
                 depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
@@ -109,21 +108,23 @@ class WgpuOffscreenRenderPassCube(
         return passEncoderState.encoder.beginRenderPass(colors, depth, timestampWrites, renderPass.name)
     }
 
-    private inner class RenderAttachment(val texture: TextureCube, val isDepth: Boolean, val name: String) : BaseReleasable() {
+    private inner class RenderAttachment(val texture: Texture2d, val isDepth: Boolean, val name: String) : BaseReleasable() {
         var descriptor: GPUTextureDescriptor
         var gpuTexture: WgpuTextureResource
+        val mipViews = mutableListOf<GPUTextureView>()
 
         init {
             val (desc, tex) = createTexture(
                 width = parentPass.width,
                 height = parentPass.height,
-                usage = GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+                usage = GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
             )
             descriptor = desc
             gpuTexture = tex
 
             texture.gpuTexture = gpuTexture
             texture.loadingState = Texture.LoadingState.LOADED
+            createViews()
         }
 
         fun recreate(width: Int, height: Int) {
@@ -137,22 +138,10 @@ class WgpuOffscreenRenderPassCube(
 
             texture.gpuTexture?.release()
             texture.gpuTexture = gpuTexture
+            createViews()
         }
 
-        fun getView(face: Int, mipLevel: Int): GPUTextureView {
-            // View is newly created every time it is needed. Feels a bit suboptimal but caching multiple views for
-            // different baseArrayLayers results in all views pointing to the last baseArrayLayer.
-            // Not sure if this is a bug or intended WebGPU behavior...
-            return gpuTexture.gpuTexture.createView(
-                baseArrayLayer = face,
-                baseMipLevel = mipLevel,
-                mipLevelCount = 1,
-                arrayLayerCount = 1,
-                dimension = GPUTextureViewDimension.view2d
-            )
-        }
-
-        fun copyToTexture(target: TextureCube, encoder: GPUCommandEncoder) {
+        fun copyToTexture(target: Texture2d, encoder: GPUCommandEncoder) {
             var copyDst = (target.gpuTexture as WgpuTextureResource?)
             if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
                 copyDst?.release()
@@ -169,23 +158,29 @@ class WgpuOffscreenRenderPassCube(
             backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.gpuTexture, parentPass.numTextureMipLevels, encoder)
         }
 
+        private fun createViews() {
+            mipViews.clear()
+            for (i in 0 until parentPass.numRenderMipLevels) {
+                mipViews += gpuTexture.gpuTexture.createView(baseMipLevel = i, mipLevelCount = 1)
+            }
+        }
+
         private fun createTexture(
             width: Int,
             height: Int,
             usage: Int,
             texture: Texture<*> = this.texture
         ): Pair<GPUTextureDescriptor, WgpuTextureResource> {
-            val desc = GPUTextureDescriptor(
-                label = "${parentPass.name}.colorAttachment",
-                size = intArrayOf(width, height, 6),
+            val descriptor = GPUTextureDescriptor(
+                label = name,
+                size = intArrayOf(width, height),
                 format = if (isDepth) GPUTextureFormat.depth32float else texture.props.format.wgpu,
                 usage = usage,
-                dimension = GPUTextureDimension.texture2d,
-                mipLevelCount = parentPass.numRenderMipLevels,
-                sampleCount = numSamples,
+                mipLevelCount = parentPass.numTextureMipLevels,
+                sampleCount = numSamples
             )
-            val tex = backend.createTexture(desc, texture)
-            return desc to tex
+            val tex = backend.createTexture(descriptor, texture)
+            return descriptor to tex
         }
 
         override fun release() {
