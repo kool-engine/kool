@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.memStack
-import de.fabmax.kool.util.releaseWith
+import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSwapchain.vkCreateSwapchainKHR
@@ -78,6 +75,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
 }
 
 internal inline fun Device.allocateDescriptorSets(stack: MemoryStack? = null, block: VkDescriptorSetAllocateInfo.() -> Unit): List<VkDescriptorSet> {
+    logT { "allocate descriptor sets" }
     memStack(stack) {
         val allocInfo = callocVkDescriptorSetAllocateInfo(block)
         val handles = mallocLong(allocInfo.descriptorSetCount())
@@ -87,6 +85,7 @@ internal inline fun Device.allocateDescriptorSets(stack: MemoryStack? = null, bl
 }
 
 internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: VkCommandPoolCreateInfo.() -> Unit): VkCommandPool {
+    logT { "create command pool" }
     memStack(stack) {
         val createInfo = callocVkCommandPoolCreateInfo(block)
         val handle = mallocLong(1)
@@ -96,6 +95,7 @@ internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: 
 }
 
 internal inline fun Device.createDescriptorPool(stack: MemoryStack? = null, block: VkDescriptorPoolCreateInfo.() -> Unit): VkDescriptorPool {
+    logT { "create descriptor pool" }
     memStack(stack) {
         val createInfo = callocVkDescriptorPoolCreateInfo(block)
         val handle = mallocLong(1)
@@ -105,6 +105,7 @@ internal inline fun Device.createDescriptorPool(stack: MemoryStack? = null, bloc
 }
 
 internal inline fun Device.createDescriptorSetLayout(stack: MemoryStack? = null, block: VkDescriptorSetLayoutCreateInfo.() -> Unit): VkDescriptorSetLayout {
+    logT { "create descriptor set layout" }
     memStack(stack) {
         val createInfo = callocVkDescriptorSetLayoutCreateInfo(block)
         val handle = mallocLong(1)
@@ -114,6 +115,7 @@ internal inline fun Device.createDescriptorSetLayout(stack: MemoryStack? = null,
 }
 
 internal inline fun Device.createFramebuffer(stack: MemoryStack? = null, block: VkFramebufferCreateInfo.() -> Unit): VkFramebuffer {
+    logT { "create framebuffer" }
     memStack(stack) {
         val createInfo = callocVkFramebufferCreateInfo(block)
         val handle = mallocLong(1)
@@ -123,6 +125,7 @@ internal inline fun Device.createFramebuffer(stack: MemoryStack? = null, block: 
 }
 
 internal inline fun Device.createFence(stack: MemoryStack? = null, block: VkFenceCreateInfo.() -> Unit): VkFence {
+    logT { "create fence" }
     memStack(stack) {
         val createInfo = callocVkFenceCreateInfo(block)
         val handle = mallocLong(1)
@@ -132,6 +135,7 @@ internal inline fun Device.createFence(stack: MemoryStack? = null, block: VkFenc
 }
 
 internal fun Device.createGraphicsPipeline(stack: MemoryStack? = null, block: VkGraphicsPipelineCreateInfo.() -> Unit): VkGraphicsPipeline {
+    logT { "create graphics pipeline" }
     memStack(stack) {
         val createInfo = callocVkGraphicsPipelineCreateInfoN(1) {
             this[0].block()
@@ -168,6 +172,7 @@ internal fun Device.createImageView(
 }
 
 internal inline fun Device.createImageView(stack: MemoryStack? = null, block: VkImageViewCreateInfo.() -> Unit): VkImageView {
+    logT { "create image view" }
     memStack(stack) {
         val createInfo = callocVkImageViewCreateInfo(block)
         val handle = mallocLong(1)
@@ -177,6 +182,7 @@ internal inline fun Device.createImageView(stack: MemoryStack? = null, block: Vk
 }
 
 internal fun Device.createPipelineLayout(stack: MemoryStack? = null, block: VkPipelineLayoutCreateInfo.() -> Unit): VkPipelineLayout {
+    logT { "create pipeline layout" }
     memStack(stack) {
         val createInfo = callocVkPipelineLayoutCreateInfo(block)
         val handle = mallocLong(1)
@@ -186,6 +192,7 @@ internal fun Device.createPipelineLayout(stack: MemoryStack? = null, block: VkPi
 }
 
 internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRenderPassCreateInfo.() -> Unit): VkRenderPass {
+    logT { "create render pass" }
     memStack(stack) {
         val createInfo = callocVkRenderPassCreateInfo(block)
         val handle = mallocLong(1)
@@ -195,6 +202,7 @@ internal fun Device.createRenderPass(stack: MemoryStack? = null, block: VkRender
 }
 
 internal fun Device.createSampler(stack: MemoryStack? = null, block: VkSamplerCreateInfo.() -> Unit): VkSampler {
+    logT { "create sampler" }
     memStack(stack) {
         val createInfo = callocVkSamplerCreateInfo(block)
         val handle = mallocLong(1)
@@ -204,6 +212,7 @@ internal fun Device.createSampler(stack: MemoryStack? = null, block: VkSamplerCr
 }
 
 internal fun Device.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
+    logT { "create semaphore" }
     memStack(stack) {
         val createInfo = callocVkSemaphoreCreateInfo { }
         val handle = mallocLong(1)
@@ -213,6 +222,7 @@ internal fun Device.createSemaphore(stack: MemoryStack? = null): VkSemaphore {
 }
 
 internal fun Device.createShaderModule(stack: MemoryStack? = null, block: VkShaderModuleCreateInfo.() -> Unit): VkShaderModule {
+    logT { "create shader module" }
     memStack(stack) {
         val createInfo = callocVkShaderModuleCreateInfo(block)
         val handle = mallocLong(1)
@@ -222,6 +232,7 @@ internal fun Device.createShaderModule(stack: MemoryStack? = null, block: VkShad
 }
 
 internal fun Device.createSwapchain(stack: MemoryStack? = null, block: VkSwapchainCreateInfoKHR.() -> Unit): VkSwapchain {
+    logT { "create swapchain" }
     memStack(stack) {
         val createInfo = callocVkSwapchainCreateInfoKHR(block)
         val handle = mallocLong(1)

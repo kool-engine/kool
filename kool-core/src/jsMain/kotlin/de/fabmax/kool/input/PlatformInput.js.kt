@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.platform.*
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -174,7 +175,7 @@ internal object PlatformInputJs : PlatformInput {
             val gamepad = (ev as GamepadEvent).gamepad
             ControllerInput.removeController(gamepad.index)
         })
-        println("installed gamepad listeners")
+        logD { "installed gamepad listeners" }
     }
 
     private fun handleKeyDown(ev: KeyboardEvent) {

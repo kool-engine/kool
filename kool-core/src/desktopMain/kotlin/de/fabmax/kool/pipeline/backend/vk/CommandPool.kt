@@ -8,6 +8,8 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkQueue
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 class CommandPool(val backendVk: RenderBackendVk, val queue: VkQueue) : BaseReleasable() {
 
@@ -35,9 +37,9 @@ class CommandPool(val backendVk: RenderBackendVk, val queue: VkQueue) : BaseRele
     }
 
     inline fun singleShotCommands(block: MemoryStack.(VkCommandBuffer) -> Unit) {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         memStack {
             val commandBuffer = allocateCommandBuffers(1, stack = this).first()
-
             val beginInfo = callocVkCommandBufferBeginInfo {
                 flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
             }

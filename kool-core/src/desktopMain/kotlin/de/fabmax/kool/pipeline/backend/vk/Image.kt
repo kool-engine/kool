@@ -46,69 +46,91 @@ class Image(
         }
     }
 
-    fun copyFromBuffer(buffer: VkBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-        backend.commandPool.singleShotCommands { commandBuffer ->
-            memStack {
-                transitionLayout(this, commandBuffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-                val region = callocVkBufferImageCopyN(1) {
-                    bufferOffset(0)
-                    bufferRowLength(0)
-                    bufferImageHeight(0)
-                    imageSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1)
-                    imageOffset().set(0, 0, 0)
-                    imageExtent().set(width, height, depth)
+    fun copyFromBuffer(
+        buffer: VkBuffer,
+        commandBuffer: VkCommandBuffer,
+        dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        stack: MemoryStack? = null
+    ) {
+        memStack(stack) {
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer, stack = this)
+            val region = callocVkBufferImageCopyN(1) {
+                bufferOffset(0)
+                bufferRowLength(0)
+                bufferImageHeight(0)
+                imageSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1)
+                imageOffset().set(0, 0, 0)
+                imageExtent().set(width, height, depth)
+            }
+            vkCmdCopyBufferToImage(commandBuffer, buffer.handle, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
+            transitionLayout(dstLayout, commandBuffer, stack = this)
+        }
+    }
+
+    fun copyFromImage(
+        src: Image,
+        commandBuffer: VkCommandBuffer,
+        dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        stack: MemoryStack? = null
+    ) {
+        memStack(stack) {
+            src.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, commandBuffer, stack = this)
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer, stack = this)
+            val region = callocVkImageCopyN(1) {
+                srcSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1)
+                srcOffset().set(0, 0, 0)
+                dstSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1)
+                dstOffset().set(0, 0, 0)
+                extent().set(width, height, depth)
+            }
+            vkCmdCopyImage(commandBuffer, src.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
+            transitionLayout(dstLayout, commandBuffer, stack = this)
+        }
+    }
+
+    fun transitionLayout(newLayout: Int, commandBuffer: VkCommandBuffer, stack: MemoryStack? = null) {
+        if (newLayout == layout) {
+            return
+        }
+
+        memStack(stack) {
+            val oldLayout = layout
+            val aspectMask = when (newLayout) {
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL if (hasStencilComponent()) -> VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_IMAGE_ASPECT_DEPTH_BIT
+                else -> VK_IMAGE_ASPECT_COLOR_BIT
+            }
+
+            val barrier = callocVkImageMemoryBarrierN(1) {
+                oldLayout(oldLayout)
+                newLayout(newLayout)
+                srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+                srcAccessMask(getSrcAccessMask(oldLayout))
+                dstAccessMask(getDstAccessMask(newLayout))
+                image(vkImage.handle)
+                subresourceRange().set(aspectMask, 0, mipLevels, 0, arrayLayers)
+            }
+
+            val srcStage: Int
+            val dstStage: Int
+            when {
+                oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> {
+                    srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+                    dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT
                 }
-                vkCmdCopyBufferToImage(commandBuffer, buffer.handle, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
-                transitionLayout(this, commandBuffer, dstLayout)
+                oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> {
+                    srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT
+                    dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                }
+                else -> {
+                    srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+                    dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+                }
             }
+            vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier)
+            layout = newLayout
         }
-    }
-
-    fun transitionLayout(newLayout: Int) {
-        if (newLayout != layout) {
-            backend.commandPool.singleShotCommands { commandBuffer ->
-                transitionLayout(this, commandBuffer, newLayout)
-            }
-        }
-    }
-
-    fun transitionLayout(stack: MemoryStack, commandBuffer: VkCommandBuffer, newLayout: Int) {
-        val oldLayout = layout
-        val aspectMask = when (newLayout) {
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL if (hasStencilComponent()) -> VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_IMAGE_ASPECT_DEPTH_BIT
-            else -> VK_IMAGE_ASPECT_COLOR_BIT
-        }
-
-        val barrier = stack.callocVkImageMemoryBarrierN(1) {
-            oldLayout(oldLayout)
-            newLayout(newLayout)
-            srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-            dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-            srcAccessMask(getSrcAccessMask(oldLayout))
-            dstAccessMask(getDstAccessMask(newLayout))
-            image(vkImage.handle)
-            subresourceRange().set(aspectMask, 0, mipLevels, 0, arrayLayers)
-        }
-
-        val srcStage: Int
-        val dstStage: Int
-        when {
-            oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> {
-                srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-                dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT
-            }
-            oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> {
-                srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT
-                dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-            }
-            else -> {
-                srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
-                dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
-            }
-        }
-        vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier)
-        layout = newLayout
     }
 
     private fun getSrcAccessMask(srcLayout: Int): Int = when (srcLayout) {
@@ -148,7 +170,7 @@ class Image(
     fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         if (mipLevels <= 1) {
             // not much to generate...
-            transitionLayout(dstLayout)
+            transitionLayout(dstLayout, commandBuffer)
             return
         }
 
@@ -156,7 +178,7 @@ class Image(
         vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice, format, formatProperties)
         if (formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT == 0) {
             logE { "Unable to generate mip maps: Texture image format does not support linear blitting!" }
-            transitionLayout(dstLayout)
+            transitionLayout(dstLayout, commandBuffer)
             return
         }
 

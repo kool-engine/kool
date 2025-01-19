@@ -40,7 +40,11 @@ class OffscreenRenderPassVk(
         get() = TODO("Not yet implemented")
 
     val vkRenderPass: VkRenderPass
+
     //val numSamples: Int = 1
+    override fun generateMipLevels(passEncoderState: RenderPassEncoderState) {
+        TODO("Not yet implemented")
+    }
 
     override fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass {
         TODO("Not yet implemented")
@@ -216,7 +220,7 @@ class OffscreenRenderPassVk(
         }
     }
 
-    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState) {
+    override fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState) {
         TODO("Not yet implemented")
     }
 

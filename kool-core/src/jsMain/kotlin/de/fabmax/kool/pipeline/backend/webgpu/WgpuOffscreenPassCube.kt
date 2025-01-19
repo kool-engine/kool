@@ -49,7 +49,6 @@ class WgpuOffscreenPassCube(
             colorAttachments.forEach { it.recreate(parentPass.width, parentPass.height) }
             depthAttachment?.recreate(parentPass.width, parentPass.height)
         }
-
         render(parentPass, passEncoderState)
     }
 

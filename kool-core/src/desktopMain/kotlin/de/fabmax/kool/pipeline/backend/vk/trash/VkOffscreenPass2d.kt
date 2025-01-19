@@ -33,10 +33,9 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
         if (!isCopyResult) {
             return
         }
-
         memStack {
             for (i in resultImages.indices) {
-                resultImages[i]?.transitionLayout(this, commandBuffer, dstLayout)
+                resultImages[i]?.transitionLayout(dstLayout, commandBuffer, this)
             }
         }
     }

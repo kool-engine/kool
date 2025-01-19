@@ -11,7 +11,6 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
     RenderPassVk(backend.physicalDevice.depthFormat, backend.physicalDevice.maxSamples, backend)
 {
     override val colorTargetFormats: List<Int> = listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format())
-
     private val vkRenderPasses = Array<RenderPassWrapper?>(2) { null }
 
     init {
@@ -41,7 +40,9 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         render(scenePass, passEncoderState)
     }
 
-    override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState) {
+    override fun generateMipLevels(passEncoderState: RenderPassEncoderState) { }
+
+    override fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState) {
         val colorDst = frameCopy.colorCopy2d
 
         val swapchain = backend.swapchain
@@ -100,7 +101,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                 extent { it.set(width, height, 1) }
             }
             // todo: layout transitions
-            vkCmdCopyImage(encoder.commandBuffer, colorSrc.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorDstVk!!.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+            vkCmdCopyImage(passEncoderState.commandBuffer, colorSrc.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorDstVk!!.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
         }
     }
 
@@ -109,6 +110,10 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         var framebuffers: List<VkFramebuffer>
 
         init {
+            if (forceLoad) {
+                TODO()
+            }
+
             memStack {
                 val imageFormat = colorTargetFormats[0]
                 val attachments = callocVkAttachmentDescriptionN(3) {

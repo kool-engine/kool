@@ -5,7 +5,6 @@ import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10.*
 
 abstract class RenderPassVk(
@@ -36,20 +35,20 @@ abstract class RenderPassVk(
             else -> renderPass.renderMipLevel(0, passEncoderState)
         }
 
-//        if (renderPass.mipMode == RenderPass.MipMode.Generate) {
-//            passEncoderState.ensureRenderPassInactive()
-//            generateMipLevels(commandBuffer)
-//        }
+        if (renderPass.mipMode == RenderPass.MipMode.Generate) {
+            passEncoderState.ensureRenderPassInactive()
+            generateMipLevels(passEncoderState)
+        }
 
-//        var anySingleShots = false
-//        for (i in renderPass.frameCopies.indices) {
-//            passEncoderState.ensureRenderPassInactive()
-//            copy(renderPass.frameCopies[i], encoder)
-//            anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
-//        }
-//        if (anySingleShots) {
-//            renderPass.frameCopies.removeAll { it.isSingleShot }
-//        }
+        var anySingleShots = false
+        for (i in renderPass.frameCopies.indices) {
+            passEncoderState.ensureRenderPassInactive()
+            copy(renderPass.frameCopies[i], passEncoderState)
+            anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
+        }
+        if (anySingleShots) {
+            renderPass.frameCopies.removeAll { it.isSingleShot }
+        }
         renderPass.afterDraw()
     }
 
@@ -105,8 +104,7 @@ abstract class RenderPassVk(
                 if (cmd.drawGroupId > frameCopy.drawGroupId) {
                     val rp = passEncoderState.renderPass
                     passEncoderState.ensureRenderPassInactive()
-                    logE { "TODO: copy view" }
-                    //copy(frameCopy, passEncoderState.encoder)
+                    copy(frameCopy, passEncoderState)
                     passEncoderState.beginRenderPass(rp, this@RenderPassVk, mipLevel, layer, forceLoad = true)
                     anySingleShots = anySingleShots || frameCopy.isSingleShot
                     nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
@@ -130,8 +128,6 @@ abstract class RenderPassVk(
             val rp = passEncoderState.renderPass
             passEncoderState.ensureRenderPassInactive()
             copy(it, passEncoderState)
-            logE { "TODO: copy frame" }
-            //passEncoderState.begin(viewIndex, mipLevel, forceLoad = true)
             passEncoderState.beginRenderPass(rp, this@RenderPassVk, mipLevel, layer, forceLoad = true)
             anySingleShots = anySingleShots || it.isSingleShot
         }
@@ -142,31 +138,7 @@ abstract class RenderPassVk(
 
     abstract fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass
 
-    protected abstract fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState)
+    protected abstract fun generateMipLevels(passEncoderState: RenderPassEncoderState)
 
-//    fun getTexFormat(attachment: Int): TexFormat {
-//        return when(colorFormats[attachment]) {
-//            VK_FORMAT_R8_UNORM -> TexFormat.R
-//            VK_FORMAT_R8G8_UNORM -> TexFormat.RG
-//            VK_FORMAT_R8G8B8A8_UNORM -> TexFormat.RGBA
-//
-//            VK_FORMAT_R32_SINT -> TexFormat.R_I32
-//            VK_FORMAT_R32G32_SINT -> TexFormat.RG_I32
-//            VK_FORMAT_R32G32B32A32_SINT -> TexFormat.RGBA_I32
-//
-//            VK_FORMAT_R32_UINT -> TexFormat.R_U32
-//            VK_FORMAT_R32G32_UINT -> TexFormat.RG_U32
-//            VK_FORMAT_R32G32B32A32_UINT -> TexFormat.RGBA_U32
-//
-//            VK_FORMAT_R16_SFLOAT -> TexFormat.R_F16
-//            VK_FORMAT_R16G16_SFLOAT -> TexFormat.RG_F16
-//            VK_FORMAT_R16G16B16A16_SFLOAT -> TexFormat.RGBA_F16
-//
-//            VK_FORMAT_R32_SFLOAT -> TexFormat.R_F32
-//            VK_FORMAT_R32G32_SFLOAT -> TexFormat.RG_F32
-//            VK_FORMAT_R32G32B32A32_SFLOAT -> TexFormat.RGBA_F32
-//
-//            else -> error("Unsupported format: ${colorFormats[attachment]}")
-//        }
-//    }
+    protected abstract fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState)
 }

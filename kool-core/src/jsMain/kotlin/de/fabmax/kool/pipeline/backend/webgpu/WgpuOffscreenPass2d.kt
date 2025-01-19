@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.releaseWith
 
 class WgpuOffscreenPass2d(
     val parentPass: OffscreenRenderPass2d,
@@ -28,7 +27,6 @@ class WgpuOffscreenPass2d(
             else -> parentPass.depthTexture
         }
         depthAttachment = depthTex?.let { RenderAttachment(it, true,  it.name) }
-        releaseWith(parentPass)
     }
 
     override fun applySize(width: Int, height: Int) {
@@ -37,6 +35,7 @@ class WgpuOffscreenPass2d(
     }
 
     override fun release() {
+        super.release()
         colorAttachments.forEach { it.release() }
         depthAttachment?.release()
     }
@@ -49,7 +48,6 @@ class WgpuOffscreenPass2d(
             colorAttachments.forEach { it.recreate(parentPass.width, parentPass.height) }
             depthAttachment?.recreate(parentPass.width, parentPass.height)
         }
-
         render(parentPass, passEncoderState)
     }
 
@@ -77,6 +75,7 @@ class WgpuOffscreenPass2d(
     ): GPURenderPassEncoder {
         val renderPass = passEncoderState.renderPass
         val mipLevel = passEncoderState.mipLevel
+
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load
@@ -141,23 +140,6 @@ class WgpuOffscreenPass2d(
             createViews()
         }
 
-        fun copyToTexture(target: Texture2d, encoder: GPUCommandEncoder) {
-            var copyDst = (target.gpuTexture as WgpuTextureResource?)
-            if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
-                copyDst?.release()
-                val (_, gpuTex) = createTexture(
-                    width = parentPass.width,
-                    height = parentPass.height,
-                    usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
-                    texture = target
-                )
-                copyDst = gpuTex
-                target.gpuTexture = copyDst
-                target.loadingState = Texture.LoadingState.LOADED
-            }
-            backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.gpuTexture, parentPass.numTextureMipLevels, encoder)
-        }
-
         private fun createViews() {
             mipViews.clear()
             for (i in 0 until parentPass.numRenderMipLevels) {
@@ -181,6 +163,23 @@ class WgpuOffscreenPass2d(
             )
             val tex = backend.createTexture(descriptor, texture)
             return descriptor to tex
+        }
+
+        fun copyToTexture(target: Texture2d, encoder: GPUCommandEncoder) {
+            var copyDst = (target.gpuTexture as WgpuTextureResource?)
+            if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
+                copyDst?.release()
+                val (_, gpuTex) = createTexture(
+                    width = parentPass.width,
+                    height = parentPass.height,
+                    usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+                    texture = target
+                )
+                copyDst = gpuTex
+                target.gpuTexture = copyDst
+                target.loadingState = Texture.LoadingState.LOADED
+            }
+            backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.gpuTexture, parentPass.numTextureMipLevels, encoder)
         }
 
         override fun release() {

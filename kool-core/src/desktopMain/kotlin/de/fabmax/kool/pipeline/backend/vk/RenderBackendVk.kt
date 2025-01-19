@@ -86,7 +86,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             if (imgOk) {
                 passEncoderState.beginFrame(this)
 
-                //ctx.backgroundScene.renderOffscreenPasses(commandBuffer)
+                ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
                 if (ctx.scenes.isEmpty()) {
                     screenRenderPass.renderScene(ctx.backgroundScene.mainRenderPass, passEncoderState)
                 }
@@ -95,7 +95,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     val scene = ctx.scenes[i]
                     if (scene.isVisible) {
                         //val t = Time.precisionTime
-                        //scene.renderOffscreenPasses(commandBuffer)
+                        scene.renderOffscreenPasses(passEncoderState)
                         screenRenderPass.renderScene(scene.mainRenderPass, passEncoderState)
                         //scene.sceneDrawTime = Time.precisionTime - t
                     }
@@ -152,11 +152,17 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState): Unit = TODO() //(impl as WgpuOffscreenRenderPass2d).draw(encoder)
+    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState) {
+        (impl as OffscreenPass2dVk).draw(passEncoderState)
+    }
 
-    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState): Unit = TODO() //(impl as WgpuOffscreenRenderPassCube).draw(encoder)
+    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) {
+        TODO()
+    }
 
-    private fun ComputeRenderPass.dispatch(passEncoderState: RenderPassEncoderState): Unit = TODO() //(impl as WgpuComputePass).dispatch(encoder)
+    private fun ComputeRenderPass.dispatch(passEncoderState: RenderPassEncoderState) {
+        TODO()
+    }
 
     override fun cleanup(ctx: KoolContext) {
         device.waitForIdle()

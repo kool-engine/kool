@@ -57,7 +57,9 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
             val dstLayout = if (isMipMap) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL else VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             data.copyToStagingBuffer(stagingBuf)
-            image.copyFromBuffer(stagingBuf, dstLayout)
+            backend.commandPool.singleShotCommands {
+                image.copyFromBuffer(stagingBuf, it, dstLayout)
+            }
         }
 
         if (isMipMap) {
