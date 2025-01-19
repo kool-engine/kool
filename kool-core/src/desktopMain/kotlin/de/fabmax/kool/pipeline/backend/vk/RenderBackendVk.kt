@@ -27,9 +27,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val features = BackendFeatures(
-        computeShaders = false,
+        computeShaders = true,
         cubeMapArrays = false,
-        reversedDepth = false
+        reversedDepth = true
     )
 
     val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()
@@ -38,15 +38,15 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val physicalDevice: PhysicalDevice
     val device: Device
     val memManager: MemoryManager
+    val commandPool: CommandPool
+    val commandBuffers: List<VkCommandBuffer>
+    var swapchain: Swapchain; private set
     val textureLoader: TextureLoaderVk
     val pipelineManager: PipelineManager
     val screenRenderPass: ScreenRenderPassVk
-    val commandPool: CommandPool
-    val commandBuffers: List<VkCommandBuffer>
     val clearHelper = ClearHelper(this)
     private val passEncoderState = RenderPassEncoderState(this)
 
-    var swapchain: Swapchain
     private var windowResized = false
 
     override var frameGpuTime: Double = 0.0
@@ -67,47 +67,14 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = physicalDevice.deviceName
 
         memManager = MemoryManager(this)
+        commandPool = CommandPool(this, device.graphicsQueue)
+        commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
+        swapchain = Swapchain(this)
         textureLoader = TextureLoaderVk(this)
         pipelineManager = PipelineManager(this)
         screenRenderPass = ScreenRenderPassVk(this)
-        commandPool = CommandPool(this, device.graphicsQueue)
-        commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
-
-        swapchain = Swapchain(this)
 
         glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
-    }
-
-    override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
-
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
-        return VkOffscreenPass2d(parentPass)
-    }
-
-    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-        return VkOffscreenPassCube(parentPass)
-    }
-
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
-        TODO("Not yet implemented")
-    }
-
-    override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
-        val src = KslGlslGeneratorVk().generateProgram(shader.program, pipeline)
-        return ShaderCodeVk.drawShaderCode(src.vertexSrc, src.fragmentSrc)
-    }
-
-    override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
-        val src = KslGlslGeneratorVk().generateComputeProgram(shader.program, pipeline)
-        return ShaderCodeVk.computeShaderCode(src.computeSrc)
     }
 
     override fun renderFrame(ctx: KoolContext) {
@@ -156,39 +123,76 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun Scene.renderOffscreenPasses(commandBuffer: VkCommandBuffer) {
+    private fun Scene.renderOffscreenPasses(passEncoderState: RenderPassEncoderState) {
         for (i in sortedOffscreenPasses.indices) {
             val pass = sortedOffscreenPasses[i]
             if (pass.isEnabled) {
-                pass.render(commandBuffer)
+                pass.render(passEncoderState)
             }
         }
     }
 
-    private fun OffscreenRenderPass.render(commandBuffer: VkCommandBuffer) {
+    private fun OffscreenRenderPass.render(passEncoderState: RenderPassEncoderState) {
         when (this) {
-            is OffscreenRenderPass2d -> draw(commandBuffer)
-            is OffscreenRenderPassCube -> draw(commandBuffer)
-            is OffscreenRenderPass2dPingPong -> draw(commandBuffer)
-            is ComputeRenderPass -> dispatch(commandBuffer)
+            is OffscreenRenderPass2d -> draw(passEncoderState)
+            is OffscreenRenderPassCube -> draw(passEncoderState)
+            is OffscreenRenderPass2dPingPong -> draw(passEncoderState)
+            is ComputeRenderPass -> dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
 
-    private fun OffscreenRenderPass2dPingPong.draw(commandBuffer: VkCommandBuffer) {
+    private fun OffscreenRenderPass2dPingPong.draw(passEncoderState: RenderPassEncoderState) {
         for (i in 0 until pingPongPasses) {
             onDrawPing?.invoke(i)
-            ping.draw(commandBuffer)
+            ping.draw(passEncoderState)
             onDrawPong?.invoke(i)
-            pong.draw(commandBuffer)
+            pong.draw(passEncoderState)
         }
     }
 
-    private fun OffscreenRenderPass2d.draw(commandBuffer: VkCommandBuffer): Unit = TODO() //(impl as WgpuOffscreenRenderPass2d).draw(encoder)
+    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState): Unit = TODO() //(impl as WgpuOffscreenRenderPass2d).draw(encoder)
 
-    private fun OffscreenRenderPassCube.draw(commandBuffer: VkCommandBuffer): Unit = TODO() //(impl as WgpuOffscreenRenderPassCube).draw(encoder)
+    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState): Unit = TODO() //(impl as WgpuOffscreenRenderPassCube).draw(encoder)
 
-    private fun ComputeRenderPass.dispatch(commandBuffer: VkCommandBuffer): Unit = TODO() //(impl as WgpuComputePass).dispatch(encoder)
+    private fun ComputeRenderPass.dispatch(passEncoderState: RenderPassEncoderState): Unit = TODO() //(impl as WgpuComputePass).dispatch(encoder)
+
+    override fun cleanup(ctx: KoolContext) {
+        device.waitForIdle()
+        instance.release()
+    }
+
+    override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
+        val src = KslGlslGeneratorVk().generateProgram(shader.program, pipeline)
+        return ShaderCodeVk.drawShaderCode(src.vertexSrc, src.fragmentSrc)
+    }
+
+    override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
+        val src = KslGlslGeneratorVk().generateComputeProgram(shader.program, pipeline)
+        return ShaderCodeVk.computeShaderCode(src.computeSrc)
+    }
+
+    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
+        return OffscreenPass2dVk(parentPass, 1, this)
+    }
+
+    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
+        return VkOffscreenPassCube(parentPass)
+    }
+
+    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
+
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+        TODO("Not yet implemented")
+    }
+
+    override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
+        TODO("Not yet implemented")
+    }
 
     private fun recreateSwapchain() {
         // Theoretically it might be possible for the swapchain image format to change (e.g. because the window
@@ -200,11 +204,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         device.waitForIdle()
         swapchain.release()
         swapchain = Swapchain(this)
-    }
-
-    override fun cleanup(ctx: KoolContext) {
-        device.waitForIdle()
-        instance.release()
+        screenRenderPass.onSwapchainRecreated()
     }
 
 //    private inner class KoolVkScene: VkScene {

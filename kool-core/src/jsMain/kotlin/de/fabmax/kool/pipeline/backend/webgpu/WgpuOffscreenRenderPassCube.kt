@@ -70,7 +70,11 @@ class WgpuOffscreenRenderPassCube(
         }
     }
 
-    override fun getRenderAttachments(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): RenderAttachments {
+    override fun beginRenderPass(
+        passEncoderState: RenderPassEncoderState,
+        forceLoad: Boolean,
+        timestampWrites: GPURenderPassTimestampWrites?
+    ): GPURenderPassEncoder {
         val renderPass = passEncoderState.renderPass
         val mipLevel = passEncoderState.mipLevel
         val layer = passEncoderState.layer
@@ -102,7 +106,7 @@ class WgpuOffscreenRenderPassCube(
                 depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
             )
         }
-        return RenderAttachments(colors, depth)
+        return passEncoderState.encoder.beginRenderPass(colors, depth, timestampWrites, renderPass.name)
     }
 
     private inner class RenderAttachment(val texture: TextureCube, val isDepth: Boolean, val name: String) : BaseReleasable() {

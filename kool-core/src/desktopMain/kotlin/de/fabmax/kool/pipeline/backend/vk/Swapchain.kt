@@ -23,15 +23,14 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     val extent: VkExtent2D = VkExtent2D.malloc()
     val images: List<VkImage>
     val imageViews: List<VkImageView>
-    val framebuffers: List<VkFramebuffer>
 
     val nImages: Int
         get() = images.size
 
     val colorImage: Image
-    private val colorImageView: VkImageView
-    private val depthImage: Image
-    private val depthImageView: VkImageView
+    val colorImageView: VkImageView
+    val depthImage: Image
+    val depthImageView: VkImageView
 
     private val imageAvailableSemas: List<VkSemaphore>
     private val renderFinishedSemas: List<VkSemaphore>
@@ -103,8 +102,6 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             val (dImage, dImageView) = createDepthResources()
             depthImage = dImage.also { addDependingReleasable(it) }
             depthImageView = dImageView
-
-            framebuffers = createFramebuffers()
 
             imageAvailableSemas = buildList {
                 repeat(MAX_FRAMES_IN_FLIGHT) { add(device.createSemaphore(this@memStack)) }
@@ -194,22 +191,9 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         return image to imageView
     }
 
-    private fun MemoryStack.createFramebuffers(): List<VkFramebuffer> = buildList {
-        imageViews.forEach { imgView ->
-            add(device.createFramebuffer(this@createFramebuffers) {
-                renderPass(backend.screenRenderPass.vkRenderPass.handle)
-                pAttachments(longs(colorImageView.handle, depthImageView.handle, imgView.handle))
-                width(extent.width())
-                height(extent.height())
-                layers(1)
-            })
-        }
-    }
-
     override fun release() {
         super.release()
         cancelReleaseWith(backend.device)
-        framebuffers.forEach { fb -> device.destroyFramebuffer(fb) }
         device.destroySwapchain(vkSwapchain)
         extent.free()
 

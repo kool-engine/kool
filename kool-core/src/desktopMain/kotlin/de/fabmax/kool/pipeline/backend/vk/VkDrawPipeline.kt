@@ -141,7 +141,7 @@ class VkDrawPipeline(
             pDepthStencilState(depthStencil)
             pColorBlendState(blendInfo(passEncoderState))
             layout(pipelineLayout.handle)
-            renderPass(renderPassVk.vkRenderPass.handle)
+            renderPass(passEncoderState.vkRenderPass.handle)
             subpass(0)
             basePipelineHandle(VK_NULL_HANDLE)
             basePipelineIndex(-1)

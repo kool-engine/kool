@@ -7,7 +7,7 @@ import org.lwjgl.vulkan.VK10.*
 
 class ClearHelper(val backend: RenderBackendVk) {
     private val device: Device get() = backend.device
-    private val clearPipelines = mutableMapOf<RenderPassVk, ClearPipeline>()
+    private val clearPipelines = mutableMapOf<VkRenderPass, ClearPipeline>()
 
     private val vertexModule: VkShaderModule by lazy {
         val spirv = checkNotNull(Shaderc.compileVertexShader(VERT_SRC, "clear-shader.vert", "main").spirvData)
@@ -23,13 +23,13 @@ class ClearHelper(val backend: RenderBackendVk) {
     }
 
     fun clear(passEncoderState: RenderPassEncoderState) {
-        val clearPipeline = clearPipelines.getOrPut(passEncoderState.gpuRenderPass) {
-            ClearPipeline(passEncoderState.gpuRenderPass)
+        val clearPipeline = clearPipelines.getOrPut(passEncoderState.vkRenderPass) {
+            ClearPipeline(passEncoderState.gpuRenderPass, passEncoderState.vkRenderPass)
         }
         clearPipeline.clear(passEncoderState)
     }
 
-    private inner class ClearPipeline(val gpuRenderPass: RenderPassVk) : BaseReleasable() {
+    private inner class ClearPipeline(val gpuRenderPass: RenderPassVk, val vkRenderPass: VkRenderPass) : BaseReleasable() {
         val pipelineLayout: VkPipelineLayout
         val bindGroupData: BindGroupDataVk
         val clearValues: BindGroupData.UniformBufferBindingData
@@ -160,7 +160,7 @@ class ClearHelper(val backend: RenderBackendVk) {
                 pDepthStencilState(depthStencil)
                 pColorBlendState(blendInfo)
                 layout(pipelineLayout.handle)
-                renderPass(gpuRenderPass.vkRenderPass.handle)
+                renderPass(vkRenderPass.handle)
                 subpass(0)
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)

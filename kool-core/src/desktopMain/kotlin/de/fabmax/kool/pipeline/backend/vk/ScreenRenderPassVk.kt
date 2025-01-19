@@ -8,115 +8,37 @@ import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 
 class ScreenRenderPassVk(backend: RenderBackendVk) :
-    RenderPassVk(backend, listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format()))
+    RenderPassVk(backend.physicalDevice.depthFormat, backend.physicalDevice.maxSamples, backend)
 {
-    override val vkRenderPass: VkRenderPass
-    override val numSamples: Int = physicalDevice.maxSamples
+    override val colorTargetFormats: List<Int> = listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format())
+
+    private val vkRenderPasses = Array<RenderPassWrapper?>(2) { null }
 
     init {
-        memStack {
-            val imageFormat = colorFormats[0]
-            val attachments = callocVkAttachmentDescriptionN(3) {
-                this[0]
-                    .format(imageFormat)
-                    .samples(numSamples)
-                    .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                    .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-                    .finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                this[1]
-                    .format(physicalDevice.depthFormat)
-                    .samples(numSamples)
-                    .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                    .storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-                    .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-                this[2]
-                    .format(imageFormat)
-                    .samples(VK_SAMPLE_COUNT_1_BIT)
-                    .loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                    .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                    .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-                    .finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
-            }
-
-            val colorAttachmentRef = callocVkAttachmentReferenceN(1) {
-                attachment(0)
-                layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-            }
-            val depthAttachmentRef = callocVkAttachmentReferenceN(1) {
-                attachment(1)
-                layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-            }
-            val colorAttachmentResolveRef  = callocVkAttachmentReferenceN(1) {
-                attachment(2)
-                layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-            }
-
-            val subpass = callocVkSubpassDescriptionN(1) {
-                pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
-                colorAttachmentCount(1)
-                pColorAttachments(colorAttachmentRef)
-                pDepthStencilAttachment(depthAttachmentRef[0])
-                pResolveAttachments(colorAttachmentResolveRef)
-            }
-
-            val dependency = callocVkSubpassDependencyN(1) {
-                srcSubpass(VK_SUBPASS_EXTERNAL)
-                dstSubpass(0)
-                srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                srcAccessMask(0)
-                dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-            }
-
-            vkRenderPass = device.createRenderPass {
-                pAttachments(attachments)
-                pSubpasses(subpass)
-                pDependencies(dependency)
-            }
-        }
-
         releaseWith(backend.device)
-        logD { "Created screen render pass" }
     }
 
-    override fun beginRenderPass(passEncoderState: RenderPassEncoderState) {
-        with(passEncoderState.stack) {
-            val beginInfo = callocVkRenderPassBeginInfo {
-                renderPass(vkRenderPass.handle)
+    private fun getOrCreateRenderPass(forceLoad: Boolean): RenderPassWrapper {
+        val idx = if (forceLoad) 1 else 0
+        vkRenderPasses[idx]?.let { return it }
 
-                val swapchain = backend.swapchain
-                framebuffer(swapchain.framebuffers[swapchain.nextSwapImage].handle)
-                renderArea().extent(swapchain.extent)
+        val rp = RenderPassWrapper(forceLoad)
+        vkRenderPasses[idx] = rp
+        return rp
+    }
 
-                val clearValues = callocVkClearValueN(2) {
-                    this[0].setColor(passEncoderState.renderPass.clearColor ?: Color.BLACK)
-                    this[1].depthStencil {
-                        it.depth(1f)
-                        it.stencil(0)
-                    }
-                }
-                pClearValues(clearValues)
-            }
-            vkCmdBeginRenderPass(passEncoderState.commandBuffer, beginInfo, VK_SUBPASS_CONTENTS_INLINE)
-        }
+    fun onSwapchainRecreated() {
+        vkRenderPasses.forEach { it?.createFramebuffers() }
+    }
+
+    override fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass {
+        val rp = getOrCreateRenderPass(forceLoad)
+        rp.begin(passEncoderState)
+        return rp.vkRenderPass
     }
 
     fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: RenderPassEncoderState) {
         render(scenePass, passEncoderState)
-    }
-
-    override fun release() {
-        super.release()
-        device.destroyRenderPass(vkRenderPass)
-        logD { "Destroyed render pass" }
     }
 
     override fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState) {
@@ -179,6 +101,128 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
             }
             // todo: layout transitions
             vkCmdCopyImage(encoder.commandBuffer, colorSrc.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, colorDstVk!!.image.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageCopy)
+        }
+    }
+
+    private inner class RenderPassWrapper(forceLoad: Boolean) : BaseReleasable() {
+        val vkRenderPass: VkRenderPass
+        var framebuffers: List<VkFramebuffer>
+
+        init {
+            memStack {
+                val imageFormat = colorTargetFormats[0]
+                val attachments = callocVkAttachmentDescriptionN(3) {
+                    this[0]
+                        .format(imageFormat)
+                        .samples(numSamples)
+                        .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+                        .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                        .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                        .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                        .finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                    this[1]
+                        .format(depthFormat)
+                        .samples(numSamples)
+                        .loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+                        .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                        .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                        .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                        .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                    this[2]
+                        .format(imageFormat)
+                        .samples(VK_SAMPLE_COUNT_1_BIT)
+                        .loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                        .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                        .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                        .finalLayout(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
+                }
+
+                val colorAttachmentRef = callocVkAttachmentReferenceN(1) {
+                    attachment(0)
+                    layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                }
+                val depthAttachmentRef = callocVkAttachmentReferenceN(1) {
+                    attachment(1)
+                    layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                }
+                val colorAttachmentResolveRef  = callocVkAttachmentReferenceN(1) {
+                    attachment(2)
+                    layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                }
+
+                val subpass = callocVkSubpassDescriptionN(1) {
+                    pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
+                    colorAttachmentCount(1)
+                    pColorAttachments(colorAttachmentRef)
+                    pDepthStencilAttachment(depthAttachmentRef[0])
+                    pResolveAttachments(colorAttachmentResolveRef)
+                }
+
+                val dependency = callocVkSubpassDependencyN(1) {
+                    srcSubpass(VK_SUBPASS_EXTERNAL)
+                    dstSubpass(0)
+                    srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                    srcAccessMask(0)
+                    dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
+                    dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
+                }
+
+                vkRenderPass = device.createRenderPass {
+                    pAttachments(attachments)
+                    pSubpasses(subpass)
+                    pDependencies(dependency)
+                }
+            }
+            framebuffers = createFramebuffers()
+
+            releaseWith(this@ScreenRenderPassVk)
+            logD { "Created screen render pass (loading = $forceLoad)" }
+        }
+
+        fun begin(passEncoderState: RenderPassEncoderState) = with(passEncoderState.stack) {
+            val beginInfo = callocVkRenderPassBeginInfo {
+                renderPass(vkRenderPass.handle)
+
+                val swapchain = backend.swapchain
+                framebuffer(framebuffers[swapchain.nextSwapImage].handle)
+                renderArea().extent(swapchain.extent)
+
+                val clearValues = callocVkClearValueN(2) {
+                    this[0].setColor(passEncoderState.renderPass.clearColor ?: Color.BLACK)
+                    this[1].depthStencil {
+                        it.depth(if (passEncoderState.renderPass.isReverseDepth) 0f else 1f)
+                        it.stencil(0)
+                    }
+                }
+                pClearValues(clearValues)
+            }
+            vkCmdBeginRenderPass(passEncoderState.commandBuffer, beginInfo, VK_SUBPASS_CONTENTS_INLINE)
+        }
+
+        override fun release() {
+            super.release()
+            device.destroyRenderPass(vkRenderPass)
+        }
+
+        fun createFramebuffers(): List<VkFramebuffer> = buildList {
+            val swapchain = backend.swapchain
+            memStack {
+                swapchain.imageViews.forEach { imgView ->
+                    val fb = device.createFramebuffer(this@memStack) {
+                        renderPass(vkRenderPass.handle)
+                        pAttachments(longs(swapchain.colorImageView.handle, swapchain.depthImageView.handle, imgView.handle))
+                        width(swapchain.extent.width())
+                        height(swapchain.extent.height())
+                        layers(1)
+                    }
+                    add(fb)
+                    swapchain.onRelease { device.destroyFramebuffer(fb) }
+                }
+            }
         }
     }
 }

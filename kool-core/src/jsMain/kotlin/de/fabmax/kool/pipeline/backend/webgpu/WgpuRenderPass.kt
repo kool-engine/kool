@@ -91,10 +91,6 @@ abstract class WgpuRenderPass(
         }
     }
 
-    protected abstract fun generateMipLevels(encoder: GPUCommandEncoder)
-
-    protected abstract fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder)
-
     private fun renderView(viewIndex: Int, passEncoderState: RenderPassEncoderState) {
         val mipLevel = passEncoderState.mipLevel
         val layer = passEncoderState.layer
@@ -151,10 +147,13 @@ abstract class WgpuRenderPass(
         }
     }
 
-    abstract fun getRenderAttachments(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): RenderAttachments
+    abstract fun beginRenderPass(
+        passEncoderState: RenderPassEncoderState,
+        forceLoad: Boolean,
+        timestampWrites: GPURenderPassTimestampWrites?
+    ): GPURenderPassEncoder
 
-    class RenderAttachments(
-        val colorAttachments: Array<GPURenderPassColorAttachment>,
-        val depthAttachment: GPURenderPassDepthStencilAttachment?
-    )
+    protected abstract fun generateMipLevels(encoder: GPUCommandEncoder)
+
+    protected abstract fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder)
 }

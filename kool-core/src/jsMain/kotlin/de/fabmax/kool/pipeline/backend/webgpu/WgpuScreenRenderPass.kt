@@ -108,7 +108,11 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         }
     }
 
-    override fun getRenderAttachments(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): RenderAttachments {
+    override fun beginRenderPass(
+        passEncoderState: RenderPassEncoderState,
+        forceLoad: Boolean,
+        timestampWrites: GPURenderPassTimestampWrites?
+    ): GPURenderPassEncoder {
         val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
@@ -137,7 +141,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
             depthStoreOp = GPUStoreOp.store,
             depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
         )
-        return RenderAttachments(colors, depth)
+        return passEncoderState.encoder.beginRenderPass(colors, depth, timestampWrites, renderPass.name)
     }
 
     private fun updateRenderTextures(width: Int, height: Int) {

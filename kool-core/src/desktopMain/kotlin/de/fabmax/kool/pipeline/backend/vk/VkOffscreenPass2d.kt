@@ -275,7 +275,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
 
     private fun createTex(tex: Texture2d, iAttachment: Int, isColor: Boolean, rp: OffscreenRenderPassVk, backend: RenderBackendVk) {
         tex.apply {
-            val texFormat = rp.getTexFormat(0)
+            val texFormat = TexFormat.R//rp.getTexFormat(0)
             if (isCopyResult) {
                 val vkTex = if (isColor) {
                     val props = parentPass.createColorTextureProps(iAttachment)
@@ -294,7 +294,7 @@ class VkOffscreenPass2d(val parentPass: OffscreenRenderPass2d) : BaseReleasable(
                 val vkTex = if (isColor) {
                     val rpTex = LoadedTextureVkOld(
                         backend,
-                        rp.getTexFormat(iAttachment),
+                        TexFormat.R,//rp.getTexFormat(iAttachment),
                         rp.images[iAttachment],
                         rp.imageViews[iAttachment],
                         rp.samplers[iAttachment],

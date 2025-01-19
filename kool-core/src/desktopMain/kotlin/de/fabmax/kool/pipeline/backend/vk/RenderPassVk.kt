@@ -3,25 +3,21 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.OffscreenRenderPassCube
 import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10.*
 
 abstract class RenderPassVk(
-    val backend: RenderBackendVk,
-    val colorFormats: List<Int>
+    val depthFormat: Int,
+    val numSamples: Int,
+    val backend: RenderBackendVk
 ) : BaseReleasable() {
 
-    abstract val vkRenderPass: VkRenderPass
-    abstract val numSamples: Int
-    val numColorAttachments: Int get() = colorFormats.size
+    abstract val colorTargetFormats: List<Int>
+    val numColorAttachments: Int get() = colorTargetFormats.size
 
-    val physicalDevice: PhysicalDevice get() = backend.physicalDevice
-    val device: Device get() = backend.device
-
-    abstract fun beginRenderPass(passEncoderState: RenderPassEncoderState)
+    protected val device: Device get() = backend.device
 
     protected fun render(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
         when (val mode = renderPass.mipMode) {
@@ -41,11 +37,13 @@ abstract class RenderPassVk(
         }
 
 //        if (renderPass.mipMode == RenderPass.MipMode.Generate) {
+//            passEncoderState.ensureRenderPassInactive()
 //            generateMipLevels(commandBuffer)
 //        }
 
 //        var anySingleShots = false
 //        for (i in renderPass.frameCopies.indices) {
+//            passEncoderState.ensureRenderPassInactive()
 //            copy(renderPass.frameCopies[i], encoder)
 //            anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
 //        }
@@ -142,31 +140,33 @@ abstract class RenderPassVk(
         }
     }
 
+    abstract fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass
+
     protected abstract fun copy(frameCopy: FrameCopy, encoder: RenderPassEncoderState)
 
-    fun getTexFormat(attachment: Int): TexFormat {
-        return when(colorFormats[attachment]) {
-            VK_FORMAT_R8_UNORM -> TexFormat.R
-            VK_FORMAT_R8G8_UNORM -> TexFormat.RG
-            VK_FORMAT_R8G8B8A8_UNORM -> TexFormat.RGBA
-
-            VK_FORMAT_R32_SINT -> TexFormat.R_I32
-            VK_FORMAT_R32G32_SINT -> TexFormat.RG_I32
-            VK_FORMAT_R32G32B32A32_SINT -> TexFormat.RGBA_I32
-
-            VK_FORMAT_R32_UINT -> TexFormat.R_U32
-            VK_FORMAT_R32G32_UINT -> TexFormat.RG_U32
-            VK_FORMAT_R32G32B32A32_UINT -> TexFormat.RGBA_U32
-
-            VK_FORMAT_R16_SFLOAT -> TexFormat.R_F16
-            VK_FORMAT_R16G16_SFLOAT -> TexFormat.RG_F16
-            VK_FORMAT_R16G16B16A16_SFLOAT -> TexFormat.RGBA_F16
-
-            VK_FORMAT_R32_SFLOAT -> TexFormat.R_F32
-            VK_FORMAT_R32G32_SFLOAT -> TexFormat.RG_F32
-            VK_FORMAT_R32G32B32A32_SFLOAT -> TexFormat.RGBA_F32
-
-            else -> error("Unsupported format: ${colorFormats[attachment]}")
-        }
-    }
+//    fun getTexFormat(attachment: Int): TexFormat {
+//        return when(colorFormats[attachment]) {
+//            VK_FORMAT_R8_UNORM -> TexFormat.R
+//            VK_FORMAT_R8G8_UNORM -> TexFormat.RG
+//            VK_FORMAT_R8G8B8A8_UNORM -> TexFormat.RGBA
+//
+//            VK_FORMAT_R32_SINT -> TexFormat.R_I32
+//            VK_FORMAT_R32G32_SINT -> TexFormat.RG_I32
+//            VK_FORMAT_R32G32B32A32_SINT -> TexFormat.RGBA_I32
+//
+//            VK_FORMAT_R32_UINT -> TexFormat.R_U32
+//            VK_FORMAT_R32G32_UINT -> TexFormat.RG_U32
+//            VK_FORMAT_R32G32B32A32_UINT -> TexFormat.RGBA_U32
+//
+//            VK_FORMAT_R16_SFLOAT -> TexFormat.R_F16
+//            VK_FORMAT_R16G16_SFLOAT -> TexFormat.RG_F16
+//            VK_FORMAT_R16G16B16A16_SFLOAT -> TexFormat.RGBA_F16
+//
+//            VK_FORMAT_R32_SFLOAT -> TexFormat.R_F32
+//            VK_FORMAT_R32G32_SFLOAT -> TexFormat.RG_F32
+//            VK_FORMAT_R32G32B32A32_SFLOAT -> TexFormat.RGBA_F32
+//
+//            else -> error("Unsupported format: ${colorFormats[attachment]}")
+//        }
+//    }
 }

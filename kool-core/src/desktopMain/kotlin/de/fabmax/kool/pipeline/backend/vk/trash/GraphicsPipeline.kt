@@ -239,7 +239,7 @@ class GraphicsPipeline(val backend: RenderBackendVk, val koolRenderPass: RenderP
                 pDepthStencilState(depthStencil)
                 pColorBlendState(colorBlending)
                 layout(pipelineLayout)
-                renderPass(renderPassVk.vkRenderPass.handle)
+                //renderPass(renderPassVk.vkRenderPass.handle)
                 subpass(0)
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)

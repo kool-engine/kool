@@ -117,9 +117,7 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
         this.layer = layer
         _gpuRenderPass = gpuRenderPass
         _renderPass = renderPass
-
-        val attachments = gpuRenderPass.getRenderAttachments(this, forceLoad)
-        _passEncoder = encoder.beginRenderPass(attachments.colorAttachments, attachments.depthAttachment, timestampWrites, renderPass.name)
+        _passEncoder = gpuRenderPass.beginRenderPass(this, forceLoad, timestampWrites)
     }
 
     fun ensureRenderPassInactive() {

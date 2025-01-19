@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 
+@Deprecated("to be removed")
 class OffscreenRenderPassVk(
     backend: RenderBackendVk,
     val maxWidth: Int,
@@ -13,7 +14,7 @@ class OffscreenRenderPassVk(
     val depthAttachment: DepthAttachment,
     val isExtDepthAttachments: Boolean,
     val isMultiSampled: Boolean
-) : RenderPassVk(backend, colorAttachments.colorFormats) {
+) : RenderPassVk(0, 0, backend) {
 
     constructor(backend: RenderBackendVk, maxWidth: Int, maxHeight: Int, isCopied: Boolean, texFormat: Int,
                 colorFilterMethod: Int = VK_FILTER_LINEAR, depthFilterMethod: Int = VK_FILTER_NEAREST, depthCopmpareOp: Int = VK_COMPARE_OP_NEVER) :
@@ -32,10 +33,13 @@ class OffscreenRenderPassVk(
                 isMultiSampled = false
             )
 
-    override val vkRenderPass: VkRenderPass
-    override val numSamples: Int = 1
+    override val colorTargetFormats: List<Int>
+        get() = TODO("Not yet implemented")
 
-    override fun beginRenderPass(passEncoderState: RenderPassEncoderState) {
+    val vkRenderPass: VkRenderPass
+    //val numSamples: Int = 1
+
+    override fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass {
         TODO("Not yet implemented")
     }
 
@@ -111,6 +115,8 @@ class OffscreenRenderPassVk(
 
     private fun createRenderPass(): VkRenderPass {
         memStack {
+            val physicalDevice = backend.physicalDevice
+            val colorFormats = emptyList<Int>()
             val attachments = callocVkAttachmentDescriptionN(numColorAttachments + 1) {
                 val colorLoadOp = if (isExtColorAttachments) {
                     VK_ATTACHMENT_LOAD_OP_LOAD
