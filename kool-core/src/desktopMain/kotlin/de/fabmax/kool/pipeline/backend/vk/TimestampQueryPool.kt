@@ -16,9 +16,8 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
     private val poolSize: Int
     private val querySlots: List<QuerySlot>
 
-    private var isReady = true
-    private var queriesInFlight = false
     private var nextQuery: Int = 0
+    private val queriesInFlight: Boolean get() = nextQuery > 0
 
     init {
         if (isSupported()) {
@@ -31,7 +30,7 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
             vkQueryPool = VkQueryPool(0L)
             poolSize = 0
         }
-        querySlots = List(poolSize) { QuerySlot(it) }
+        querySlots = List(poolSize) { QuerySlot() }
 
         backend.commandPool.singleShotCommands {
             vkCmdResetQueryPool(it, vkQueryPool.handle, 0, poolSize)
@@ -52,20 +51,19 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
                 backend.device.graphicsQueueProperties.timestampValidBits() != 0
     }
 
-    fun reset(commandBuffer: VkCommandBuffer) {
-        if (queriesInFlight || poolSize == 0) {
-            return
-        }
-        isReady = true
-        vkCmdResetQueryPool(commandBuffer, vkQueryPool.handle, 0, poolSize)
-        nextQuery = 0
-    }
+//    fun reset(commandBuffer: VkCommandBuffer) {
+//        if (queriesInFlight || poolSize == 0) {
+//            return
+//        }
+//        isReady = true
+//        vkCmdResetQueryPool(commandBuffer, vkQueryPool.handle, 0, poolSize)
+//        nextQuery = 0
+//    }
 
     fun queryTimestamp(isOnBegin: Boolean, commandBuffer: VkCommandBuffer): QuerySlot? {
-        if (!isReady || nextQuery >= poolSize) {
+        if (nextQuery >= poolSize) {
             return null
         }
-        queriesInFlight = true
 
         val queryIndex = nextQuery++
         val stage = if (isOnBegin) VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT else VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT
@@ -73,11 +71,10 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
         return querySlots[queryIndex].apply { reset() }
     }
 
-    fun pollResults(stack: MemoryStack) {
+    fun pollResults(commandBuffer: VkCommandBuffer, stack: MemoryStack) {
         if (!queriesInFlight) {
             return
         }
-        isReady = false
 
         val results = stack.mallocLong(nextQuery * 2)
         vkGetQueryPoolResults(backend.device.vkDevice, vkQueryPool.handle, 0, nextQuery, results, 16, VK_QUERY_RESULT_64_BIT or VK_QUERY_RESULT_WITH_AVAILABILITY_BIT)
@@ -92,14 +89,15 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
         }
 
         if (allComplete) {
-            queriesInFlight = false
             for (i in 0 until nextQuery) {
                 querySlots[i].onComplete?.invoke()
             }
+            vkCmdResetQueryPool(commandBuffer, vkQueryPool.handle, 0, poolSize)
+            nextQuery = 0
         }
     }
 
-    inner class QuerySlot(val slot: Int) {
+    inner class QuerySlot {
         var isComplete = false
             private set
         var timestamp = 0L
@@ -130,18 +128,23 @@ class Timer(val pool: TimestampQueryPool, val onAvailable: OnTimerAvailable) {
         private set
 
     fun begin(commandBuffer: VkCommandBuffer) {
-        beginSlot = pool.queryTimestamp(true, commandBuffer)
+        if (beginSlot == null) {
+            beginSlot = pool.queryTimestamp(true, commandBuffer)
+        }
     }
 
     fun end(commandBuffer: VkCommandBuffer) {
-        endSlot = pool.queryTimestamp(false, commandBuffer)?.also {
-            it.onComplete = this::onComplete
+        if (endSlot == null) {
+            endSlot = pool.queryTimestamp(false, commandBuffer)
+            endSlot?.onComplete = this::onComplete
         }
     }
 
     private fun onComplete() {
         val start = beginSlot
         val end = endSlot
+        beginSlot = null
+        endSlot = null
         if (start != null && end != null) {
             latestResult = (end.timestamp - start.timestamp).nanoseconds
             isComplete = true

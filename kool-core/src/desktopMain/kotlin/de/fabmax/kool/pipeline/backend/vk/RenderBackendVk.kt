@@ -93,7 +93,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             var imgOk = swapchain.acquireNextImage()
             if (imgOk) {
                 passEncoderState.beginFrame(this)
-                timestampQueryPool.reset(passEncoderState.commandBuffer)
                 frameTimer.begin(passEncoderState.commandBuffer)
 
                 ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
@@ -118,8 +117,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 //        timestampQuery.resolve(encoder)
 //        device.queue.submit(arrayOf(encoder.finish()))
 
+                passEncoderState.ensureRenderPassInactive()
                 frameTimer.end(passEncoderState.commandBuffer)
-                timestampQueryPool.pollResults(this)
+                timestampQueryPool.pollResults(passEncoderState.commandBuffer, this)
                 passEncoderState.endFrame()
 
 //        timestampQuery.readTimestamps()

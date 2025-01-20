@@ -1,6 +1,8 @@
 package de.fabmax.kool.input
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.Platform
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW.*
@@ -15,6 +17,9 @@ object PlatformInputJvm : PlatformInput {
     private val localCharKeyCodes = mutableMapOf<Int, Int>()
     private val cursorShapes = mutableMapOf<CursorShape, Long>()
     private var currentCursorShape = CursorShape.DEFAULT
+
+    private val isMacOs: Boolean by lazy { (KoolSystem.platform as Platform.Desktop).isMacOs }
+    private val ctx: KoolContext by lazy { KoolSystem.requireContext() }
 
     override fun setCursorMode(cursorMode: CursorMode) {
         val ctx = KoolSystem.getContextOrNull() as Lwjgl3Context? ?: return
@@ -114,7 +119,8 @@ object PlatformInputJvm : PlatformInput {
             PointerInput.handleMouseButtonEvent(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            PointerInput.handleMouseMove(x, y)
+            val scale = if (isMacOs) ctx.windowScale.toDouble() else 1.0
+            PointerInput.handleMouseMove(x * scale, y * scale)
         }
         glfwSetCursorEnterCallback(windowHandle) { _, entered ->
             if (!entered) {

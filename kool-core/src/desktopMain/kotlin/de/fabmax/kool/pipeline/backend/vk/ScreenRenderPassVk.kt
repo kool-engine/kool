@@ -27,7 +27,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
     }
 
     fun onSwapchainRecreated() {
-        vkRenderPasses.forEach { it?.createFramebuffers() }
+        vkRenderPasses.forEach { it?.recreateFramebuffers() }
     }
 
     override fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass {
@@ -213,7 +213,11 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
             device.destroyRenderPass(vkRenderPass)
         }
 
-        fun createFramebuffers(): List<VkFramebuffer> = buildList {
+        fun recreateFramebuffers() {
+            framebuffers = createFramebuffers()
+        }
+
+        private fun createFramebuffers(): List<VkFramebuffer> = buildList {
             val swapchain = backend.swapchain
             memStack {
                 swapchain.imageViews.forEach { imgView ->
