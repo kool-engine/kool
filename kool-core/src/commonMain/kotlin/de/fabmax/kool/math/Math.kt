@@ -202,3 +202,17 @@ fun barycentricWeights(pt: Vec3f, va: Vec3f, vb: Vec3f, vc: Vec3f, result: Mutab
 }
 
 fun numMipLevels(width: Int, height: Int): Int = floor(log2(max(width, height).toDouble())).toInt() + 1
+
+internal inline fun float32ToFloat16(f32: Float, block: (high: Byte, low: Byte) -> Unit) {
+    // from: https://stackoverflow.com/questions/3026441/float32-to-float16
+    val f32bits = f32.toBits()
+    var f16bits = (f32bits shr 31) shl 5
+    var tmp = (f32bits shr 23) and 0xff
+    tmp = (tmp - 0x70) and ((((0x70 - tmp) shr 4) shr 27) and 0x1f)
+    f16bits = (f16bits or tmp) shl 10
+    f16bits = f16bits or ((f32bits shr 13) and 0x3ff)
+
+    val high = (f16bits shr 8).toByte()
+    val low = (f16bits and 0xff).toByte()
+    block(high, low)
+}
