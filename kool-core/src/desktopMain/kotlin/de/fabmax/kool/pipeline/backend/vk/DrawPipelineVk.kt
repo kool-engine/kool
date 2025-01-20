@@ -193,9 +193,12 @@ class DrawPipelineVk(
         }
     }
 
-    private fun MemoryStack.blendInfo(passEncoderState: RenderPassEncoderState): VkPipelineColorBlendStateCreateInfo {
+    private fun MemoryStack.blendInfo(passEncoderState: RenderPassEncoderState): VkPipelineColorBlendStateCreateInfo? {
         val renderPass = passEncoderState.renderPass
         val renderPassVk = passEncoderState.gpuRenderPass
+        if (renderPassVk.numColorAttachments == 0) {
+            return null
+        }
 
         val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.numColorAttachments) {
             for (i in 0 until renderPass.clearColors.size) {

@@ -2,10 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Float32BufferImpl
-import de.fabmax.kool.util.Int32BufferImpl
-import de.fabmax.kool.util.Uint16BufferImpl
-import de.fabmax.kool.util.Uint8BufferImpl
+import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 
 
@@ -57,13 +54,13 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
             val dstLayout = if (isMipMap) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL else VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             data.copyToStagingBuffer(stagingBuf)
-            backend.commandPool.singleShotCommands {
-                image.copyFromBuffer(stagingBuf, it, dstLayout)
-            }
-        }
 
-        if (isMipMap) {
-            image.generateMipmaps()
+            backend.commandPool.singleShotCommands { commandBuffer ->
+                image.copyFromBuffer(stagingBuf, commandBuffer, dstLayout)
+                if (isMipMap) {
+                    memStack { image.generateMipmaps(this, commandBuffer) }
+                }
+            }
         }
         return image
     }

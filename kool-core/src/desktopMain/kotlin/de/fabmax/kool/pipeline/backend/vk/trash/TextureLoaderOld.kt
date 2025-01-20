@@ -235,12 +235,7 @@ object TextureLoaderOld {
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun checkFormat(format: TexFormat): TexFormat {
-        if (format == TexFormat.RGB) {
-            // fixme: check support for 3-channel textures on system init, for now we assume that 3-channel textures are not supported...
-            return TexFormat.RGBA
-        }
         return format
     }
 

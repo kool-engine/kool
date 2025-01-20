@@ -163,12 +163,6 @@ class ImageVk(
         textureInfo.deleted()
     }
 
-    fun generateMipmaps(dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-        backend.commandPool.singleShotCommands { commandBuffer ->
-            generateMipmaps(this, commandBuffer, dstLayout)
-        }
-    }
-
     fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         if (mipLevels <= 1) {
             // not much to generate...
