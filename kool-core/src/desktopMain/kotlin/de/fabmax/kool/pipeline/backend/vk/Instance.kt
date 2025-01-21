@@ -55,11 +55,13 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
 
     override fun release() {
         super.release()
-        if (debugMessenger != 0L) {
-            EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, null)
+        DeferredRelease.defer {
+            if (debugMessenger != 0L) {
+                EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, null)
+            }
+            vkDestroyInstance(vkInstance, null)
+            logD { "Destroyed instance" }
         }
-        vkDestroyInstance(vkInstance, null)
-        logD { "Destroyed instance" }
     }
 
     private fun MemoryStack.getRequestedLayers(): PointerBuffer? {

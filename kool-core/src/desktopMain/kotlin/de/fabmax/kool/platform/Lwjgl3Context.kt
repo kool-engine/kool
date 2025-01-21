@@ -73,6 +73,7 @@ class Lwjgl3Context : KoolContext() {
                 Thread.sleep(10)
             }
         }
+        scenes.forEach { it.release() }
         backend.cleanup(this)
     }
 

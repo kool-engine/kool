@@ -58,12 +58,14 @@ class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindo
 
         override fun release() {
             super.release()
-            KHRSurface.vkDestroySurfaceKHR(backend.instance.vkInstance, surfaceHandle, null)
-            logD { "Destroyed surface" }
+            DeferredRelease.defer {
+                KHRSurface.vkDestroySurfaceKHR(backend.instance.vkInstance, surfaceHandle, null)
+                logD { "Destroyed surface" }
 
-            glfwDestroyWindow(windowPtr)
-            glfwTerminate()
-            logD { "Destroyed GLFW window" }
+                glfwDestroyWindow(windowPtr)
+                glfwTerminate()
+                logD { "Destroyed GLFW window" }
+            }
         }
     }
 }

@@ -9,16 +9,19 @@ class ClearHelper(val backend: RenderBackendVk) {
     private val device: Device get() = backend.device
     private val clearPipelines = mutableMapOf<VkRenderPass, ClearPipeline>()
 
-    private val vertexModule: VkShaderModule by lazy {
+    private val vertexModule: VkShaderModule = device.createShaderModule {
         val spirv = checkNotNull(Shaderc.compileVertexShader(VERT_SRC, "clear-shader.vert", "main").spirvData)
-        device.createShaderModule { pCode(spirv) }.also {
-            device.onRelease { device.destroyShaderModule(it) }
-        }
+        pCode(spirv)
     }
-    private val fragmentModule: VkShaderModule by lazy {
+    private val fragmentModule: VkShaderModule = device.createShaderModule {
         val spirv = checkNotNull(Shaderc.compileFragmentShader(FRAG_SRC, "clear-shader.frag", "main").spirvData)
-        device.createShaderModule { pCode(spirv) }.also {
-            device.onRelease { device.destroyShaderModule(it) }
+        pCode(spirv)
+    }
+
+    init {
+        backend.device.onRelease {
+            backend.device.destroyShaderModule(vertexModule)
+            backend.device.destroyShaderModule(fragmentModule)
         }
     }
 
@@ -30,6 +33,7 @@ class ClearHelper(val backend: RenderBackendVk) {
     }
 
     private inner class ClearPipeline(val gpuRenderPass: RenderPassVk, val vkRenderPass: VkRenderPass) : BaseReleasable() {
+        val descriptorSetLayout: VkDescriptorSetLayout
         val pipelineLayout: VkPipelineLayout
         val bindGroupData: BindGroupDataVk
         val clearValues: BindGroupData.UniformBufferBindingData
@@ -59,23 +63,24 @@ class ClearHelper(val backend: RenderBackendVk) {
                     stageFlags(VK_SHADER_STAGE_VERTEX_BIT or VK_SHADER_STAGE_FRAGMENT_BIT)
                     descriptorCount(1)
                 }
-                val gpuLayout = device.createDescriptorSetLayout(this) {
+                descriptorSetLayout = device.createDescriptorSetLayout(this) {
                     pBindings(bindings)
                 }
                 pipelineLayout = device.createPipelineLayout(this) {
-                    pSetLayouts(longs(gpuLayout.handle))
+                    pSetLayouts(longs(descriptorSetLayout.handle))
                 }
-                bindGroupData = BindGroupDataVk(bindGrpData, gpuLayout, backend)
+                bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend)
             }
 
             releaseWith(gpuRenderPass)
-            bindGroupData.releaseWith(this)
         }
 
         override fun release() {
             super.release()
             cancelReleaseWith(gpuRenderPass)
+            bindGroupData.release()
             device.destroyPipelineLayout(pipelineLayout)
+            device.destroyDescriptorSetLayout(descriptorSetLayout)
         }
 
         fun clear(passEncoderState: RenderPassEncoderState) {

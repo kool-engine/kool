@@ -29,10 +29,10 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         return buffer
     }
 
-    fun freeBuffer(buffer: VkBuffer) {
+    fun freeBuffer(buffer: VkBuffer, deferTicks: Int = 1) {
         check(buffer in buffers) { "buffer was already release" }
         buffers -= buffer
-        impl.freeBuffer(buffer)
+        impl.freeBuffer(deferTicks, buffer)
     }
 
     inline fun stagingBuffer(size: Long, usage: Int = VK_BUFFER_USAGE_TRANSFER_SRC_BIT, block: (VkBuffer) -> Unit) {
@@ -43,7 +43,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         )
         val stagingBuf = createBuffer(stagingInfo)
         block(stagingBuf)
-        freeBuffer(stagingBuf)
+        freeBuffer(stagingBuf, 0)
     }
 
     fun createImage(imageInfo: ImageInfo): VkImage {
@@ -52,9 +52,9 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         return image
     }
 
-    fun freeImage(image: VkImage) {
+    fun freeImage(image: VkImage, deferTicks: Int = 1) {
         images -= image
-        impl.freeImage(image)
+        impl.freeImage(deferTicks, image)
     }
 
     fun mapMemory(buffer: VkBuffer) = impl.mapMemory(buffer.allocation)
@@ -91,9 +91,9 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
     interface MemManager {
         fun createBuffer(info: MemoryInfo): VkBuffer
-        fun freeBuffer(buffer: VkBuffer)
+        fun freeBuffer(deferTicks: Int, buffer: VkBuffer)
         fun createImage(info: ImageInfo): VkImage
-        fun freeImage(image: VkImage)
+        fun freeImage(deferTicks: Int, image: VkImage)
         fun mapMemory(allocation: Long): Long
         fun unmapMemory(allocation: Long)
         fun freeResources()
@@ -167,8 +167,14 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
 
-        override fun freeBuffer(buffer: VkBuffer) {
-            vmaDestroyBuffer(allocator, buffer.handle, buffer.allocation)
+        override fun freeBuffer(deferTicks: Int, buffer: VkBuffer) {
+            if (deferTicks > 0) {
+                DeferredRelease.defer(deferTicks) {
+                    vmaDestroyBuffer(allocator, buffer.handle, buffer.allocation)
+                }
+            } else {
+                vmaDestroyBuffer(allocator, buffer.handle, buffer.allocation)
+            }
         }
 
         override fun createImage(info: ImageInfo): VkImage {
@@ -195,8 +201,14 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
 
-        override fun freeImage(image: VkImage) {
-            vmaDestroyImage(allocator, image.handle, image.allocation)
+        override fun freeImage(deferTicks: Int, image: VkImage) {
+            if (deferTicks > 0) {
+                DeferredRelease.defer(deferTicks) {
+                    vmaDestroyImage(allocator, image.handle, image.allocation)
+                }
+            } else {
+                vmaDestroyImage(allocator, image.handle, image.allocation)
+            }
         }
 
         override fun mapMemory(allocation: Long): Long {
@@ -222,8 +234,10 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         override fun freeResources() {
-            vmaDestroyAllocator(allocator)
-            logD { "Destroyed VMA memory allocator" }
+            DeferredRelease.defer {
+                vmaDestroyAllocator(allocator)
+                logD { "Destroyed VMA memory allocator" }
+            }
         }
     }
 }

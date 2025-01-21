@@ -48,7 +48,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val textureLoader: TextureLoaderVk
     val pipelineManager: PipelineManager
     val screenRenderPass: ScreenRenderPassVk
-    val clearHelper = ClearHelper(this)
+    val clearHelper: ClearHelper
     val timestampQueryPool: TimestampQueryPool
 
     private val passEncoderState = RenderPassEncoderState(this)
@@ -80,6 +80,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         timestampQueryPool = TimestampQueryPool(this)
         textureLoader = TextureLoaderVk(this)
         pipelineManager = PipelineManager(this)
+        clearHelper = ClearHelper(this)
         screenRenderPass = ScreenRenderPassVk(this)
 
         glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
@@ -93,6 +94,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         memStack {
             var imgOk = swapchain.acquireNextImage()
             if (imgOk) {
+                DeferredRelease.processTasks()
+
                 passEncoderState.beginFrame(this)
                 frameTimer.begin(passEncoderState.commandBuffer)
 
@@ -115,15 +118,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 //            // copy all buffers requested for readback to temporary buffers using the current command encoder
 //            copyReadbacks(encoder)
 //        }
-//        timestampQuery.resolve(encoder)
-//        device.queue.submit(arrayOf(encoder.finish()))
 
                 passEncoderState.ensureRenderPassInactive()
                 frameTimer.end(passEncoderState.commandBuffer)
                 timestampQueryPool.pollResults(passEncoderState.commandBuffer, this)
                 passEncoderState.endFrame()
 
-//        timestampQuery.readTimestamps()
 //        if (gpuReadbacks.isNotEmpty()) {
 //            // after encoder is finished and submitted, temp buffers can be mapped for readback
 //            mapReadbacks()
@@ -180,6 +180,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override fun cleanup(ctx: KoolContext) {
         device.waitForIdle()
         instance.release()
+        DeferredRelease.processTasks(true)
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
