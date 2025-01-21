@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.Color
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL
@@ -48,7 +49,8 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         features = BackendFeatures(
             computeShaders = true,
             cubeMapArrays = true,
-            reversedDepth = GlImpl.capabilities.hasClipControl
+            reversedDepth = GlImpl.capabilities.hasClipControl,
+            depthOnlyShaderColorOutput = Color.BLACK,
         )
 
         timer = TimeQuery(gl)

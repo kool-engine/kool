@@ -4,6 +4,7 @@ import org.lwjgl.vulkan.EXTDebugUtils
 import org.lwjgl.vulkan.KHRPortabilityEnumeration.VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
+import org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1
 import org.lwjgl.vulkan.VK12.VK_API_VERSION_1_2
 
 class VkSetup(
@@ -36,7 +37,15 @@ class VkSetup(
     init {
         this.isValidation = isValidation
         this.isPortability = isPortability
+
         requestedDeviceExtensions += vmaHelperExtensions
+        if (vkApiVersion < VK_API_VERSION_1_2) {
+            requestedDeviceExtensions.add(vmaHelperBufferDeviceAddress)
+        }
+        if (vkApiVersion < VK_API_VERSION_1_1) {
+            requestedDeviceExtensions.add(vmaHelperDedicatedAllocation)
+            requestedDeviceExtensions.add(vmaHelperBindMemory2)
+        }
     }
 
     private fun MutableSet<RequestedFeature>.addOrRemove(feature: RequestedFeature, flag: Boolean) {
@@ -54,13 +63,13 @@ class VkSetup(
         val deviceExtensionPortability = RequestedFeature(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME, false)
         val deviceExtensionSwapchain = RequestedFeature(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true)
 
+        val vmaHelperBufferDeviceAddress = RequestedFeature("VK_KHR_buffer_device_address", false)
+        val vmaHelperDedicatedAllocation = RequestedFeature("VK_KHR_dedicated_allocation", false)
+        val vmaHelperBindMemory2 = RequestedFeature("VK_KHR_bind_memory2", false)
         val vmaHelperExtensions = listOf(
-            RequestedFeature("VK_KHR_dedicated_allocation", false),
-            RequestedFeature("VK_KHR_bind_memory2", false),
             RequestedFeature("VK_KHR_maintenance4", false),
             RequestedFeature("VK_KHR_maintenance5", false),
             RequestedFeature("VK_EXT_memory_budget", false),
-            RequestedFeature("VK_KHR_buffer_device_address", false),
             RequestedFeature("VK_EXT_memory_priority", false),
             RequestedFeature("VK_AMD_device_coherent_memory", false),
             RequestedFeature("VK_KHR_external_memory_win32", false),

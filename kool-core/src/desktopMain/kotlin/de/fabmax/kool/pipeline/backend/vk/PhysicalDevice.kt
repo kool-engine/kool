@@ -6,6 +6,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK11.vkGetPhysicalDeviceFeatures2
 import kotlin.math.min
 
 class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
@@ -13,10 +14,13 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     val vkPhysicalDevice: VkPhysicalDevice
     val queueFamiliyIndices: QueueFamilyIndices
     val swapChainSupport: SwapChainSupportDetails
-    val vkDeviceProperties = VkPhysicalDeviceProperties.calloc()
-    val vkDeviceFeatures = VkPhysicalDeviceFeatures.calloc()
+    val deviceProperties = VkPhysicalDeviceProperties.calloc()
+    val vkDeviceFeatures2 = VkPhysicalDeviceFeatures2.calloc()
+    val deviceFeatures: VkPhysicalDeviceFeatures get() = vkDeviceFeatures2.features()
+    val portabilityFeatures = VkPhysicalDevicePortabilitySubsetFeaturesKHR.calloc()
     val availableDeviceExtensions: Set<String>
 
+    val isPortabilityDevice: Boolean
     val maxSamples: Int
     val maxAnisotropy: Float
 
@@ -37,25 +41,32 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 VkSurfaceCapabilitiesKHR.malloc(), VkSurfaceFormatKHR.malloc(stackSwapChain.formats.size)
             )
 
+            availableDeviceExtensions = selectedDevice.availableExtensions
+            isPortabilityDevice = "VK_KHR_portability_subset" in availableDeviceExtensions
             vkPhysicalDevice = selectedDevice.physicalDevice
             queueFamiliyIndices = selectedDevice.queueFamiliyIndices
-            vkGetPhysicalDeviceProperties(vkPhysicalDevice, vkDeviceProperties)
-            vkGetPhysicalDeviceFeatures(vkPhysicalDevice, vkDeviceFeatures)
-            availableDeviceExtensions = selectedDevice.availableExtensions
+            vkGetPhysicalDeviceProperties(vkPhysicalDevice, deviceProperties)
+
+            vkDeviceFeatures2.`sType$Default`()
+            portabilityFeatures.`sType$Default`()
+            if (isPortabilityDevice) {
+                vkDeviceFeatures2.pNext(portabilityFeatures)
+            }
+            vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkDeviceFeatures2)
 
             maxSamples = getMaxUsableSampleCount()
-            maxAnisotropy = if (!vkDeviceFeatures.samplerAnisotropy()) 1f else {
-                vkDeviceProperties.limits().maxSamplerAnisotropy()
+            maxAnisotropy = if (!deviceFeatures.samplerAnisotropy()) 1f else {
+                deviceProperties.limits().maxSamplerAnisotropy()
             }
 
-            val api = vkDeviceProperties.apiVersion()
-            val drv = vkDeviceProperties.driverVersion()
+            val api = deviceProperties.apiVersion()
+            val drv = deviceProperties.driverVersion()
             apiVersion = "${VK_VERSION_MAJOR(api)}.${VK_VERSION_MINOR(api)}.${VK_VERSION_PATCH(api)}"
             driverVersion = "${VK_VERSION_MAJOR(drv)}.${VK_VERSION_MINOR(drv)}.${VK_VERSION_PATCH(drv)}"
-            deviceName = vkDeviceProperties.deviceNameString()
+            deviceName = deviceProperties.deviceNameString()
 
-            logI { "Selected GPU: $deviceName [api: $apiVersion, driver: $driverVersion]" }
-            logD {
+            logI("PhysicalDevice") { "Selected GPU: $deviceName [api: $apiVersion, driver: $driverVersion]" }
+            logD("PhysicalDevice") {
                 "Using queue families: present: ${queueFamiliyIndices.presentFamily}, " +
                         "graphics: ${queueFamiliyIndices.graphicsFamily}, " +
                         "compute: ${queueFamiliyIndices.computeFamily}, " +
@@ -93,8 +104,8 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 
     private fun getMaxUsableSampleCount(): Int {
         return min(
-            vkDeviceProperties.limits().framebufferColorSampleCounts(),
-            vkDeviceProperties.limits().framebufferDepthSampleCounts()
+            deviceProperties.limits().framebufferColorSampleCounts(),
+            deviceProperties.limits().framebufferDepthSampleCounts()
         ).takeHighestOneBit().coerceAtLeast(VK_SAMPLE_COUNT_1_BIT)
     }
 
@@ -128,8 +139,9 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 
     override fun release() {
         super.release()
-        vkDeviceProperties.free()
-        vkDeviceFeatures.free()
+        deviceProperties.free()
+        vkDeviceFeatures2.free()
+        portabilityFeatures.free()
     }
 
     private inner class PhysicalDeviceWrapper(ptr: Long, stack: MemoryStack) {

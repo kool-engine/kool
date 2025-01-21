@@ -32,7 +32,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val features = BackendFeatures(
         computeShaders = true,
         cubeMapArrays = false,
-        reversedDepth = true
+        reversedDepth = true,
+        depthOnlyShaderColorOutput = null,
     )
 
     val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()

@@ -6,6 +6,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configAndroid
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.platform.KoolContextAndroid
+import de.fabmax.kool.util.Color
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.time.Duration
@@ -61,7 +62,8 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
         _features = BackendFeatures(
             computeShaders = false,
             cubeMapArrays = false,
-            reversedDepth = GlImpl.capabilities.hasClipControl
+            reversedDepth = GlImpl.capabilities.hasClipControl,
+            depthOnlyShaderColorOutput = Color.BLACK,
         )
 
         if (GlImpl.capabilities.hasTimestampQuery) {

@@ -45,12 +45,12 @@ class BindGroupDataVk(
         }
         bindGroup?.release()
 
-        val numSets = Swapchain.MAX_FRAMES_IN_FLIGHT
+        val numFrames = Swapchain.MAX_FRAMES_IN_FLIGHT
 
         val ubos = data.bindings.filterIsInstance<BindGroupData.UniformBufferBindingData>()
         val textures2d = data.bindings.filterIsInstance<BindGroupData.Texture2dBindingData>()
 
-        val uboBindings = ubos.map { ubo -> UboBinding(ubo, numSets) }
+        val uboBindings = ubos.map { ubo -> UboBinding(ubo, numFrames) }
         val texture2dBindings = textures2d.map { tex -> Texture2dBinding(tex) }
 
         val nPoolSizes = ubos.size.coerceAtMost(1) + textures2d.size.coerceAtMost(1)
@@ -58,24 +58,24 @@ class BindGroupDataVk(
             val poolSizes = callocVkDescriptorPoolSizeN(nPoolSizes) {
                 var iPoolSize = 0
                 if (ubos.isNotEmpty()) {
-                    this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubos.size)
+                    this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubos.size * numFrames)
                 }
                 if (textures2d.isNotEmpty()) {
-                    this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textures2d.size)
+                    this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textures2d.size * numFrames)
                 }
             }
             pPoolSizes(poolSizes)
-            maxSets(numSets)
+            maxSets(numFrames)
         }
 
         val descriptorSets = backend.device.allocateDescriptorSets(this) {
-            val layouts = mallocLong(numSets)
-            repeat(numSets) { layouts.put(it, gpuLayout.handle) }
+            val layouts = mallocLong(numFrames)
+            repeat(numFrames) { layouts.put(it, gpuLayout.handle) }
             pSetLayouts(layouts)
             descriptorPool(descriptorPool.handle)
         }
 
-        val descriptorWrite = callocVkWriteDescriptorSetN(numSets * (uboBindings.size + textures2d.size)) { }
+        val descriptorWrite = callocVkWriteDescriptorSetN(numFrames * (uboBindings.size + textures2d.size)) { }
         var descriptorWriteIdx = 0
         uboBindings.forEach { ubo ->
             descriptorSets.forEachIndexed { setIdx, descriptorSet ->

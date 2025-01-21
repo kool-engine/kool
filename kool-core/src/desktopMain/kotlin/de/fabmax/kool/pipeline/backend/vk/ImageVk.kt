@@ -114,21 +114,22 @@ class ImageVk(
                 subresourceRange().set(aspectMask, 0, mipLevels, 0, arrayLayers)
             }
 
-            val srcStage: Int
-            val dstStage: Int
-            when {
-                oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> {
-                    srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-                    dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT
-                }
-                oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> {
-                    srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT
-                    dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-                }
-                else -> {
-                    srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
-                    dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
-                }
+            val srcStage = when (oldLayout) {
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                VK_IMAGE_LAYOUT_UNDEFINED -> VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+                else -> VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+            }
+            val dstStage = when (newLayout) {
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+                else -> VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
             }
             vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier)
             layout = newLayout

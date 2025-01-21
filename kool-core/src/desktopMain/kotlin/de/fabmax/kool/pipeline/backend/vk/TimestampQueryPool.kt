@@ -11,7 +11,7 @@ import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
 
 class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseReleasable() {
-    private val nanosPerTick: Double = backend.physicalDevice.vkDeviceProperties.limits().timestampPeriod().toDouble()
+    private val nanosPerTick: Double = backend.physicalDevice.deviceProperties.limits().timestampPeriod().toDouble()
     private val vkQueryPool: VkQueryPool
     private val poolSize: Int
     private val querySlots: List<QuerySlot>
@@ -47,7 +47,7 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
         if (nanosPerTick == 0.0) {
             return false
         }
-        return backend.physicalDevice.vkDeviceProperties.limits().timestampComputeAndGraphics() ||
+        return backend.physicalDevice.deviceProperties.limits().timestampComputeAndGraphics() ||
                 backend.device.graphicsQueueProperties.timestampValidBits() != 0
     }
 

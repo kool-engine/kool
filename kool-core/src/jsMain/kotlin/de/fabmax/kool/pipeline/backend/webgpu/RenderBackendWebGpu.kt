@@ -32,7 +32,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     override val features = BackendFeatures(
         computeShaders = true,
         cubeMapArrays = true,
-        reversedDepth = true
+        reversedDepth = true,
+        depthOnlyShaderColorOutput = Color.BLACK,
     )
 
     lateinit var adapter: GPUAdapter

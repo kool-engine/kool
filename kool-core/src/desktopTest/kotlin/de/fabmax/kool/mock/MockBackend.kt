@@ -24,7 +24,8 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     override val features = BackendFeatures(
         computeShaders = false,
         cubeMapArrays = false,
-        reversedDepth = false
+        reversedDepth = false,
+        depthOnlyShaderColorOutput = null,
     )
 
     override var frameGpuTime: Duration = 0.0.seconds

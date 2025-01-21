@@ -6,6 +6,7 @@ import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.Color
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
@@ -41,7 +42,8 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         features = BackendFeatures(
             computeShaders = false,
             cubeMapArrays = false,
-            reversedDepth = GlImpl.capabilities.hasClipControl
+            reversedDepth = GlImpl.capabilities.hasClipControl,
+            depthOnlyShaderColorOutput = Color.BLACK,
         )
 
         sceneRenderer.resolveDirect = false
