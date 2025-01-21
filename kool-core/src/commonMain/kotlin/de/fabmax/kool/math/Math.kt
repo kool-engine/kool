@@ -34,22 +34,31 @@ inline fun isFuzzyEqual(a: Double, b: Double, eps: Double = FUZZY_EQ_D) = (a - b
 inline fun Float.isFuzzyZero(eps: Float = FUZZY_EQ_F) = abs(this) <= eps
 inline fun Double.isFuzzyZero(eps: Double = FUZZY_EQ_D) = abs(this) <= eps
 
-inline fun Int.clamp(min: Int, max: Int): Int = when {
-    this < min -> min
-    this > max -> max
-    else -> this
+inline fun Int.clamp(min: Int, max: Int): Int {
+    require(max >= min) { "max ($max) is smaller than min ($min) " }
+    return when {
+        this < min -> min
+        this > max -> max
+        else -> this
+    }
 }
 
-inline fun Float.clamp(min: Float = 0f, max: Float = 1f): Float = when {
-    this < min -> min
-    this > max -> max
-    else -> this
+inline fun Float.clamp(min: Float = 0f, max: Float = 1f): Float {
+    require(max >= min) { "max ($max) is smaller than min ($min) " }
+    return when {
+        this < min -> min
+        this > max -> max
+        else -> this
+    }
 }
 
-inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
-    this < min -> min
-    this > max -> max
-    else -> this
+inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double {
+    require(max >= min) { "max ($max) is smaller than min ($min) " }
+    return when {
+        this < min -> min
+        this > max -> max
+        else -> this
+    }
 }
 
 fun Float.expDecay(target: Float, decay: Float, deltaT: Float = Time.deltaT): Float {

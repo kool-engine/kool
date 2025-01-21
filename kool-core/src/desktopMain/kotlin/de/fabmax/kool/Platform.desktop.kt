@@ -3,9 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
-import de.fabmax.kool.util.Log
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.*
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.text.SimpleDateFormat
@@ -46,13 +44,27 @@ internal object DesktopImpl {
             val dateFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
             Log.printer = { lvl, tag, message ->
                 synchronized(dateFmt) {
-                    val frmTxt = ctx?.let { "|f:${Time.frameCount}" } ?: ""
-                    val txt = "${dateFmt.format(System.currentTimeMillis())}$frmTxt ${lvl.indicator}/$tag: $message"
-                    if (lvl.level < Log.Level.WARN.level) {
-                        println(txt)
-                    } else {
-                        System.err.println(txt)
+                    val timestamp = coloredText(dateFmt.format(System.currentTimeMillis()), MdColor.BROWN tone 300)
+                    val frame = coloredText("f:${Time.frameCount}", MdColor.PURPLE tone 300)
+
+                    val tagColor = when (lvl) {
+                        Log.Level.TRACE -> MdColor.INDIGO tone 300
+                        Log.Level.DEBUG -> MdColor.CYAN tone 300
+                        Log.Level.INFO -> MdColor.GREY tone 300
+                        Log.Level.WARN -> MdColor.AMBER
+                        Log.Level.ERROR -> MdColor.RED
+                        Log.Level.OFF -> MdColor.PURPLE
                     }
+                    val tagStr = coloredText("${lvl.indicator}/$tag", tagColor)
+
+                    val txt = message.replace("\n", "\n  ")
+                    val messageStr = when (lvl) {
+                        Log.Level.WARN -> coloredText(txt, MdColor.AMBER tone 200)
+                        Log.Level.ERROR -> coloredText(txt, MdColor.RED tone 200)
+                        else -> txt
+                    }
+
+                    println("$timestamp|$frame  $tagStr: $messageStr")
                 }
             }
         }
@@ -74,6 +86,13 @@ internal object DesktopImpl {
             }
         }
         primaryMonitor = primMon
+    }
+
+    private fun coloredText(text: String, color: Color): String {
+        val r = (color.r.clamp() * 255).toInt()
+        val g = (color.g.clamp() * 255).toInt()
+        val b = (color.b.clamp() * 255).toInt()
+        return "\u001b[38;2;$r;$g;${b}m$text\u001b[0m"
     }
 
     fun createContext(): Lwjgl3Context {

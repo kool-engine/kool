@@ -35,14 +35,14 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
             }
 
             val features = callocVkPhysicalDeviceFeatures {
-                samplerAnisotropy(physicalDevice.vkDeviceFeatures.samplerAnisotropy())
+                samplerAnisotropy(physicalDevice.deviceFeatures.samplerAnisotropy())
             }
 
             val enableExtensions = backend.setup.requestedDeviceExtensions.filter { it.name in physicalDevice.availableDeviceExtensions }
             val extNames = mallocPointer(enableExtensions.size)
-            logD { "Enabling device extensions:" }
+            logD("Device") { "Enabling device extensions:" }
             enableExtensions.forEachIndexed { i, extension ->
-                logD { "  ${extension.name}" }
+                logD("Device") { "  ${extension.name}" }
                 extNames.put(i, ASCII(extension.name))
             }
 
@@ -50,6 +50,11 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 pQueueCreateInfos(queueCreateInfo)
                 pEnabledFeatures(features)
                 ppEnabledExtensionNames(extNames)
+                if (physicalDevice.isPortabilityDevice) {
+                    // this enables all available portability features for the device, e.g.
+                    // mutableComparisonSamplers which is needed to create samplers for shadow maps
+                    pNext(physicalDevice.portabilityFeatures)
+                }
             }
 
             val graphicsQueueIdx = physicalDevice.queueFamiliyIndices.graphicsFamily!!

@@ -69,9 +69,9 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
 
         val missingLayers = backend.setup.requestedLayers.filter { it.name !in availableLayers }
         if (missingLayers.isNotEmpty()) {
-            logD { "Requested optional layers are not available:" }
-            missingLayers.filter { !it.isRequired }.forEach { logD { "  ${it.name}" } }
-            logW { "Make sure that the VK_LAYER_PATH environment variable is set and points to the directory with the layer specification json files" }
+            logD("Instance") { "Requested optional layers are not available:" }
+            missingLayers.filter { !it.isRequired }.forEach { logD("Instance") { "  ${it.name}" } }
+            logW("Instance") { "Make sure that the VK_LAYER_PATH environment variable is set and points to the directory with the layer specification json files" }
             if (missingLayers.any { it.isRequired }) {
                 error("Missing non-optional layers: ${missingLayers.filter { it.isRequired }.map { it.name }}")
             }
@@ -80,9 +80,9 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
         val enableLayers = backend.setup.requestedLayers - missingLayers
         return if (enableLayers.isNotEmpty()) {
             val ptrs = mallocPointer(enableLayers.size)
-            logD { "Enabling layers:" }
+            logD("Instance") { "Enabling layers:" }
             enableLayers.forEachIndexed { i, layer ->
-                logD { "  ${layer.name}" }
+                logD("Instance") { "  ${layer.name}" }
                 ptrs.put(i, ASCII(layer.name))
             }
             ptrs
@@ -108,8 +108,8 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
 
         val missingExtensions = requestedExtensions.filter { it.name !in availableExtensions }
         if (missingExtensions.isNotEmpty()) {
-            logD { "Requested optional extensions are not available:" }
-            missingExtensions.filter { !it.isRequired }.forEach { logD { "  ${it.name}" } }
+            logD("Instance") { "Requested optional extensions are not available:" }
+            missingExtensions.filter { !it.isRequired }.forEach { logD("Instance") { "  ${it.name}" } }
             if (missingExtensions.any { it.isRequired }) {
                 error("Missing non-optional extensions: ${missingExtensions.filter { it.isRequired }.map { it.name }}")
             }
@@ -118,9 +118,9 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
         val enableExtensions = requestedExtensions - missingExtensions
         return if (enableExtensions.isNotEmpty()) {
             val ptrs = mallocPointer(enableExtensions.size)
-            logD { "Enabling extensions:" }
+            logD("Instance") { "Enabling extensions:" }
             enableExtensions.forEachIndexed { i, extension ->
-                logD { "  ${extension.name}" }
+                logD("Instance") { "  ${extension.name}" }
                 ptrs.put(i, ASCII(extension.name))
             }
             ptrs
