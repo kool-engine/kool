@@ -25,16 +25,42 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         if (loaded != null && loaded.isReleased) { loadedTextures -= data.id }
 
         loaded = when {
-//            tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
+            tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
             tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data)
 //            tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data)
-//            tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data)
+            tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data)
 //            tex is Texture2dArray && data is ImageData3d -> loadTexture2dArray(tex, data)
 //            tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeAray(tex, data)
             else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
         }
         tex.gpuTexture = loaded
         tex.loadingState = Texture.LoadingState.LOADED
+    }
+
+    private fun loadTexture1d(tex: Texture1d, data: ImageData1d): ImageVk {
+        val imgInfo = ImageInfo(
+            imageType = VK_IMAGE_TYPE_1D,
+            format = data.format.vk,
+            width = data.width,
+            height = 1,
+            depth = 1,
+            arrayLayers = 1,
+            mipLevels = 1,
+            samples = VK_SAMPLE_COUNT_1_BIT,
+            usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_SAMPLED_BIT
+        )
+        val image = ImageVk(backend, imgInfo)
+
+        val bufSize = data.width * data.format.vkBytesPerPx.toLong()
+        backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
+            val dstLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            copyTextureData(data, stagingBuf, data.format)
+
+            backend.commandPool.singleShotCommands { commandBuffer ->
+                image.copyFromBuffer(stagingBuf, commandBuffer, dstLayout)
+            }
+        }
+        return image
     }
 
     private fun loadTexture2d(tex: Texture2d, data: ImageData2d): ImageVk {
@@ -53,6 +79,37 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         val image = ImageVk(backend, imgInfo)
 
         val bufSize = data.width * data.height * data.format.vkBytesPerPx.toLong()
+        backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
+            val dstLayout = if (isMipMap) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL else VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            copyTextureData(data, stagingBuf, data.format)
+
+            backend.commandPool.singleShotCommands { commandBuffer ->
+                image.copyFromBuffer(stagingBuf, commandBuffer, dstLayout)
+                if (isMipMap) {
+                    memStack { image.generateMipmaps(this, commandBuffer) }
+                }
+            }
+        }
+        return image
+    }
+
+    private fun loadTextureCube(tex: TextureCube, data: ImageDataCube): ImageVk {
+        val isMipMap = tex.props.generateMipMaps
+        val imgInfo = ImageInfo(
+            imageType = VK_IMAGE_TYPE_2D,
+            format = data.format.vk,
+            width = data.width,
+            height = data.height,
+            depth = 1,
+            arrayLayers = 6,
+            mipLevels = if (isMipMap) numMipLevels(data.width, data.height) else 1,
+            samples = VK_SAMPLE_COUNT_1_BIT,
+            usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+            flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+        )
+        val image = ImageVk(backend, imgInfo)
+
+        val bufSize = data.width * data.height * 6 * data.format.vkBytesPerPx.toLong()
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
             val dstLayout = if (isMipMap) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL else VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             copyTextureData(data, stagingBuf, data.format)

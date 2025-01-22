@@ -190,8 +190,9 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
                     samples(info.samples)
                     usage(info.usage)
                     tiling(info.tiling)
-                    initialLayout(info.initialLayout)
+                    initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
                     sharingMode(info.sharingMode)
+                    flags(info.flags)
                 }
                 val createInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(info.allocUsage) }
                 checkVk(vmaCreateImage(allocator, imageInfo, createInfo, pImage, pAllocation, null)) {
@@ -260,7 +261,7 @@ data class ImageInfo(
     val samples: Int,
     val usage: Int,
     val tiling: Int = VK_IMAGE_TILING_OPTIMAL,
-    val initialLayout: Int = VK_IMAGE_LAYOUT_UNDEFINED,
     val sharingMode: Int = VK_SHARING_MODE_EXCLUSIVE,
-    val allocUsage: Int = VMA_MEMORY_USAGE_AUTO
+    val allocUsage: Int = VMA_MEMORY_USAGE_AUTO,
+    val flags: Int = 0
 )

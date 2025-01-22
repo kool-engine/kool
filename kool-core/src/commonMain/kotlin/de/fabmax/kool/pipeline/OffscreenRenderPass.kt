@@ -6,7 +6,11 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 
-abstract class OffscreenRenderPass(attachmentConfig: AttachmentConfig, initialSize: Vec3i, name: String) : RenderPass(name) {
+abstract class OffscreenRenderPass(
+    attachmentConfig: AttachmentConfig,
+    initialSize: Vec3i,
+    name: String
+) : RenderPass(name, attachmentConfig.mipLevels) {
 
     private val _size = MutableVec3i(initialSize)
     override val size: Vec3i get() = _size
@@ -21,10 +25,6 @@ abstract class OffscreenRenderPass(attachmentConfig: AttachmentConfig, initialSi
 
     val dependencies = mutableListOf<RenderPass>()
     var isEnabled = true
-
-    init {
-        mipMode = attachmentConfig.mipLevels
-    }
 
     fun dependsOn(renderPass: RenderPass) {
         dependencies += renderPass

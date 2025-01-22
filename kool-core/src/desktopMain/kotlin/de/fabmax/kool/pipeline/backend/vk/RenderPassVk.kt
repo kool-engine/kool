@@ -87,8 +87,8 @@ abstract class RenderPassVk(
         val view = passEncoderState.renderPass.views[viewIndex]
         view.setupView()
 
-        val renderWidth = view.viewport.width.coerceAtLeast(1)
-        val renderHeight = view.viewport.height.coerceAtLeast(1)
+        val renderWidth = (view.viewport.width shr mipLevel).coerceAtLeast(1)
+        val renderHeight = (view.viewport.height shr mipLevel).coerceAtLeast(1)
 
         val viewport = callocVkViewportN(1) {
             x(view.viewport.x.toFloat())

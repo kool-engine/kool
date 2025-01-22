@@ -6,7 +6,6 @@ import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
-import org.lwjgl.vulkan.VkFormatProperties
 import kotlin.math.max
 
 class ImageVk(
@@ -18,15 +17,14 @@ class ImageVk(
     override val width: Int get() = imageInfo.width
     override val height: Int get() = imageInfo.height
     override val depth: Int get() = imageInfo.depth
+    val arrayLayers: Int get() = imageInfo.arrayLayers
     val mipLevels: Int get() = imageInfo.mipLevels
     val samples: Int get() = imageInfo.samples
     val format: Int get() = imageInfo.format
-    val arrayLayers: Int get() = imageInfo.arrayLayers
 
     val vkImage: VkImage
 
-    var layout = imageInfo.initialLayout
-        private set
+    var layout = VK_IMAGE_LAYOUT_UNDEFINED
 
     private val textureInfo = TextureInfo(
         texture = null,
@@ -60,7 +58,7 @@ class ImageVk(
                 bufferOffset(0)
                 bufferRowLength(0)
                 bufferImageHeight(0)
-                imageSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1)
+                imageSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, arrayLayers)
                 imageOffset().set(0, 0, 0)
                 imageExtent().set(width, height, depth)
             }
@@ -78,14 +76,21 @@ class ImageVk(
         memStack(stack) {
             src.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, commandBuffer, stack = this)
             transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer, stack = this)
-            val region = callocVkImageCopyN(1) {
-                srcSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1)
-                srcOffset().set(0, 0, 0)
-                dstSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1)
-                dstOffset().set(0, 0, 0)
-                extent().set(width, height, depth)
+            val region = callocVkImageCopyN(1) { }
+            for (level in 0 until src.mipLevels) {
+                region[0].apply {
+                    srcSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, level, 0, arrayLayers)
+                    srcOffset().set(0, 0, 0)
+                    dstSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, level, 0, arrayLayers)
+                    dstOffset().set(0, 0, 0)
+                    extent().set(
+                        (width shr level).coerceAtLeast(1),
+                        (height shr level).coerceAtLeast(1),
+                        (depth shr level).coerceAtLeast(1)
+                    )
+                }
+                vkCmdCopyImage(commandBuffer, src.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
             }
-            vkCmdCopyImage(commandBuffer, src.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
             transitionLayout(dstLayout, commandBuffer, stack = this)
         }
     }
@@ -108,50 +113,17 @@ class ImageVk(
                 newLayout(newLayout)
                 srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
                 dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-                srcAccessMask(getSrcAccessMask(oldLayout))
-                dstAccessMask(getDstAccessMask(newLayout))
+                srcAccessMask(srcAccessMaskForLayout(oldLayout))
+                dstAccessMask(dstAccessMaskForLayout(newLayout))
                 image(vkImage.handle)
                 subresourceRange().set(aspectMask, 0, mipLevels, 0, arrayLayers)
             }
 
-            val srcStage = when (oldLayout) {
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-                VK_IMAGE_LAYOUT_UNDEFINED -> VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
-                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
-                else -> VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
-            }
-            val dstStage = when (newLayout) {
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
-                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
-                else -> VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
-            }
+            val srcStage = srcStageForLayout(oldLayout)
+            val dstStage = datStageForLayout(newLayout)
             vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier)
             layout = newLayout
         }
-    }
-
-    private fun getSrcAccessMask(srcLayout: Int): Int = when (srcLayout) {
-        VK_IMAGE_LAYOUT_UNDEFINED -> 0
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_ACCESS_TRANSFER_WRITE_BIT
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_ACCESS_TRANSFER_READ_BIT
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_ACCESS_SHADER_READ_BIT
-        else -> error("Layout not supported / implemented: $srcLayout")
-    }
-
-    private fun getDstAccessMask(dstLayout: Int): Int = when (dstLayout) {
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_ACCESS_TRANSFER_WRITE_BIT
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_ACCESS_SHADER_READ_BIT
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
-        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_ACCESS_TRANSFER_READ_BIT
-        else -> error("Destination layout not supported: $dstLayout")
     }
 
     private fun hasStencilComponent(): Boolean {
@@ -160,7 +132,7 @@ class ImageVk(
 
     override fun release() {
         super.release()
-        backend.memManager.freeImage(vkImage)
+        backend.memManager.freeImage(vkImage, 2)
         textureInfo.deleted()
     }
 
@@ -170,10 +142,7 @@ class ImageVk(
             transitionLayout(dstLayout, commandBuffer)
             return
         }
-
-        val formatProperties = VkFormatProperties.malloc(stack)
-        vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice, format, formatProperties)
-        if (formatProperties.optimalTilingFeatures() and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT == 0) {
+        if (!backend.physicalDevice.isImageFormatSupportingBlitting(format)) {
             logE { "Unable to generate mip maps: Texture image format does not support linear blitting!" }
             transitionLayout(dstLayout, commandBuffer)
             return
@@ -184,30 +153,42 @@ class ImageVk(
             image(vkImage.handle)
             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
+            oldLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+            newLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+            srcAccessMask(srcAccessMaskForLayout(VK_IMAGE_LAYOUT_UNDEFINED))
+            dstAccessMask(dstAccessMaskForLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL))
             subresourceRange {
                 it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
                 it.baseArrayLayer(0)
                 it.layerCount(arrayLayers)
-                it.levelCount(1)
+                it.baseMipLevel(1)
+                it.levelCount(mipLevels - 1)
             }
         }
 
-        val srcAccessMaskSrcOpt = getSrcAccessMask(layout)
-        val dstAccessMaskSrcOpt = getDstAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-        val srcAccessMaskDst = getSrcAccessMask(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-        val dstAccessMaskDst = getDstAccessMask(dstLayout)
+        val dstAccessMaskSrcOpt = dstAccessMaskForLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        val srcAccessMaskDst = srcAccessMaskForLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+        val dstAccessMaskDst = dstAccessMaskForLayout(dstLayout)
+
+        // generating mipmaps requires higher mip levels to be in transfer dst layout
+        vkCmdPipelineBarrier(commandBuffer, srcStageForLayout(layout), VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, barrier)
 
         var mipWidth = width
         var mipHeight = height
         for (i in 1 until mipLevels) {
+            val srcLayout = if (i == 1) layout else VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+            val srcAccessMaskSrcOpt = srcAccessMaskForLayout(srcLayout)
+
             barrier
-                .subresourceRange { it.baseMipLevel(i - 1) }
-                .oldLayout(layout)
+                .subresourceRange {
+                    it.baseMipLevel(i - 1)
+                    it.levelCount(1)
+                }
+                .oldLayout(srcLayout)
                 .newLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
                 .srcAccessMask(srcAccessMaskSrcOpt)
                 .dstAccessMask(dstAccessMaskSrcOpt)
-
-            vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, barrier)
+            vkCmdPipelineBarrier(commandBuffer, srcStageForLayout(srcLayout), VK_PIPELINE_STAGE_TRANSFER_BIT, 0, null, null, barrier)
 
             val blit = stack.callocVkImageBlitN(1) {
                 srcOffsets(0).set(0, 0, 0)
@@ -247,10 +228,10 @@ class ImageVk(
 
         barrier
             .subresourceRange { it.baseMipLevel(mipLevels - 1) }
-            .oldLayout(layout)
+            .oldLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
             .newLayout(dstLayout)
-            .srcAccessMask(getSrcAccessMask(layout))
-            .dstAccessMask(getDstAccessMask(dstLayout))
+            .srcAccessMask(srcAccessMaskForLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL))
+            .dstAccessMask(dstAccessMaskForLayout(dstLayout))
 
         vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, null, null, barrier)
         layout = dstLayout
@@ -268,5 +249,43 @@ class ImageVk(
                 layerCount = 1
             )
         }
+
+        fun srcAccessMaskForLayout(layout: Int): Int = when (layout) {
+            VK_IMAGE_LAYOUT_UNDEFINED -> 0
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_ACCESS_TRANSFER_WRITE_BIT
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_ACCESS_TRANSFER_READ_BIT
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_ACCESS_SHADER_READ_BIT
+            else -> error("Layout not supported / implemented: $layout")
+        }
+
+        fun dstAccessMaskForLayout(layout: Int): Int = when (layout) {
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_ACCESS_TRANSFER_WRITE_BIT
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_ACCESS_SHADER_READ_BIT
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT or VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_READ_BIT or VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_ACCESS_TRANSFER_READ_BIT
+            else -> error("Destination layout not supported: $layout")
+        }
+
+        fun srcStageForLayout(layout: Int): Int = when (layout) {
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+            VK_IMAGE_LAYOUT_UNDEFINED -> VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+            else -> VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+        }
+
+        fun datStageForLayout(layout: Int): Int = when (layout) {
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_TRANSFER_BIT
+            else -> VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
+        }
+
     }
 }

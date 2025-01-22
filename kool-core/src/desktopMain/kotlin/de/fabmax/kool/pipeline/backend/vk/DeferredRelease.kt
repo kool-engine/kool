@@ -13,9 +13,10 @@ internal object DeferredRelease {
                 deferredTasks.forEach { it.task() }
                 deferredTasks.clear()
             } else {
-                deferredTasks.forEach {
-                    if (--it.delay <= 0) {
-                        it.task()
+                for (i in deferredTasks.indices) {
+                    val task = deferredTasks[i]
+                    if (--task.delay <= 0) {
+                        task.task()
                     }
                 }
                 deferredTasks.removeIf { it.delay <= 0 }

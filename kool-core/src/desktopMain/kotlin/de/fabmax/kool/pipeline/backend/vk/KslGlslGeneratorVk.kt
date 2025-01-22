@@ -9,7 +9,12 @@ import de.fabmax.kool.pipeline.BindGroupScope
 import de.fabmax.kool.pipeline.PipelineBase
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 
-class KslGlslGeneratorVk : GlslGenerator(Hints("#version 450")) {
+class KslGlslGeneratorVk : GlslGenerator(
+    Hints(
+        glslVersionStr = "#version 450",
+        compat1dSampler = false
+    )
+) {
 
     override fun StringBuilder.generateUniformSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
         val samplers = stage.getUsedSamplers()

@@ -178,7 +178,10 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
         val sampler = sampleTexture.sampler.generateExpression(this)
-        val coord = if (sampleTexture.sampler.expressionType is KslSampler1dType && sampleTexture.coord.expressionType is KslFloat1) {
+        val isCompatSampler = hints.compat1dSampler &&
+                sampleTexture.sampler.expressionType is KslSampler1dType &&
+                sampleTexture.coord.expressionType is KslFloat1
+        val coord = if (isCompatSampler) {
             // for better OpenGL ES compatibility 1d textures actually are 2d textures...
             "vec2(${sampleTexture.coord.generateExpression(this)}, 0.5)"
         } else {
@@ -194,7 +197,10 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     override fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String {
         val sampler = sampleTextureGrad.sampler.generateExpression(this)
-        val coord = if (sampleTextureGrad.sampler.expressionType is KslSampler1dType && sampleTextureGrad.coord.expressionType is KslFloat1) {
+        val isCompatSampler = hints.compat1dSampler &&
+                sampleTextureGrad.sampler.expressionType is KslSampler1dType &&
+                sampleTextureGrad.coord.expressionType is KslFloat1
+        val coord = if (isCompatSampler) {
             // for better OpenGL ES compatibility 1d textures actually are 2d textures...
             "vec2(${sampleTextureGrad.coord.generateExpression(this)}, 0.5)"
         } else {
@@ -663,7 +669,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             KslMat3 -> "mat3"
             KslMat4 -> "mat4"
 
-            KslColorSampler1d -> "sampler2D"    // in WebGL2, 1d textures are not supported, simply use 2d instead (with height = 1px)
+            KslColorSampler1d -> if (hints.compat1dSampler) "sampler2D" else "sampler1D"
             KslColorSampler2d -> "sampler2D"
             KslColorSampler3d -> "sampler3D"
             KslColorSamplerCube -> "samplerCube"
@@ -698,6 +704,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     data class Hints(
         val glslVersionStr: String,
+        val compat1dSampler: Boolean = true,
         val replaceUbosByPlainUniforms: Boolean = false
     )
 

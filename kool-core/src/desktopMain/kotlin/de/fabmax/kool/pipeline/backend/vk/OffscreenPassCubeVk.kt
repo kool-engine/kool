@@ -4,11 +4,11 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 
-class OffscreenPass2dVk(
-    val parentPass: OffscreenRenderPass2d,
+class OffscreenPassCubeVk(
+    val parentPass: OffscreenRenderPassCube,
     numSamples: Int,
     backend: RenderBackendVk
-) : RenderPassVk(0, numSamples, backend), OffscreenPass2dImpl {
+) : RenderPassVk(0, numSamples, backend), OffscreenPassCubeImpl {
 
     override val colorTargetFormats: List<Int> = parentPass.colorTextures.map { it.props.format.vk }
     private val vkRenderPasses = Array<RenderPassWrapper?>(2) { null }
@@ -19,11 +19,10 @@ class OffscreenPass2dVk(
     private val depthAttachment: RenderAttachment?
 
     private var copySrcFlag = 0
-    private var copyDstFlag = 0
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            OffscreenRenderPass.DepthAttachmentRender -> Texture2d(
+            OffscreenRenderPass.DepthAttachmentRender -> TextureCube(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}:render-depth"
             )
@@ -33,7 +32,7 @@ class OffscreenPass2dVk(
     }
 
     override fun applySize(width: Int, height: Int) {
-        logT { "Resize 2d offscreen pass ${parentPass.name} to $width x $height" }
+        logT { "Resize cube offscreen pass ${parentPass.name} to $width x $height" }
         colorAttachments.forEach { it.recreate(width, height) }
         depthAttachment?.recreate(width, height)
         vkRenderPasses.filterNotNull().forEach { it.recreateFramebuffers() }
@@ -56,12 +55,9 @@ class OffscreenPass2dVk(
 
     fun draw(passEncoderState: RenderPassEncoderState) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
-        val isCopyDst = parentPass.mipMode == RenderPass.MipMode.Generate
-        if ((isCopySrc && copySrcFlag == 0) || (isCopyDst && copyDstFlag == 0)) {
+        if (isCopySrc && copySrcFlag == 0) {
+            // recreate attachment textures with COPY_SRC flag set
             copySrcFlag = VK_IMAGE_USAGE_TRANSFER_SRC_BIT
-            if (isCopyDst) {
-                copyDstFlag = VK_IMAGE_USAGE_TRANSFER_DST_BIT
-            }
             colorAttachments.forEach { it.recreate(parentPass.width, parentPass.height) }
             depthAttachment?.recreate(parentPass.width, parentPass.height)
         }
@@ -75,33 +71,31 @@ class OffscreenPass2dVk(
     }
 
     override fun generateMipLevels(passEncoderState: RenderPassEncoderState) {
-        colorAttachments.forEach {
-            it.gpuTexture.generateMipmaps(passEncoderState.stack, passEncoderState.commandBuffer)
-        }
+        TODO("Not yet implemented")
     }
 
     override fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState) {
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
-                colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as Texture2d, passEncoderState)
+                colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as TextureCube, passEncoderState)
             }
         }
         if (frameCopy.isCopyDepth) {
-            depthAttachment?.copyToTexture(frameCopy.depthCopy2d, passEncoderState)
+            depthAttachment?.copyToTexture(frameCopy.depthCopyCube, passEncoderState)
         }
     }
 
-    private inner class RenderAttachment(val texture: Texture2d, val isDepth: Boolean, val name: String) : BaseReleasable() {
+    private inner class RenderAttachment(val texture: TextureCube, val isDepth: Boolean, val name: String) : BaseReleasable() {
         var descriptor: ImageInfo
         var gpuTexture: ImageVk
-        val mipViews = mutableListOf<VkImageView>()
+        val mipViews = mutableListOf<List<VkImageView>>()
 
         init {
             val attachmentUsage = if (isDepth) VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT else VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
             val (desc, tex) = createTexture(
                 width = parentPass.width,
                 height = parentPass.height,
-                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag or copyDstFlag
+                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag
             )
             descriptor = desc
             gpuTexture = tex
@@ -116,7 +110,7 @@ class OffscreenPass2dVk(
             val (desc, tex) = createTexture(
                 width = width,
                 height = height,
-                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag or copyDstFlag
+                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag
             )
             descriptor = desc
             gpuTexture.release()
@@ -137,31 +131,35 @@ class OffscreenPass2dVk(
                 width = width,
                 height = height,
                 depth = 1,
-                arrayLayers = 1,
+                arrayLayers = 6,
                 mipLevels = parentPass.numTextureMipLevels,
                 samples = numSamples,
-                usage = usage
+                usage = usage,
+                flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
             )
             val tex = ImageVk(backend, descriptor, name)
             return descriptor to tex
         }
 
         private fun createViews() {
-            mipViews.forEach { backend.device.destroyImageView(it, 2) }
+            mipViews.flatMap { it }.forEach { backend.device.destroyImageView(it) }
             mipViews.clear()
             for (i in 0 until parentPass.numRenderMipLevels) {
-                mipViews += backend.device.createImageView(
-                    image = gpuTexture.vkImage,
-                    viewType = VK_IMAGE_VIEW_TYPE_2D,
-                    format = gpuTexture.format,
-                    aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT,
-                    levelCount = 1,
-                    baseMipLevel = i
-                )
+                mipViews += List<VkImageView>(6) { face ->
+                    backend.device.createImageView(
+                        image = gpuTexture.vkImage,
+                        viewType = VK_IMAGE_VIEW_TYPE_2D,
+                        format = gpuTexture.format,
+                        aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT,
+                        levelCount = 1,
+                        baseArrayLayer = face,
+                        baseMipLevel = i
+                    )
+                }
             }
         }
 
-        fun copyToTexture(target: Texture2d, passEncoderState: RenderPassEncoderState) {
+        fun copyToTexture(target: TextureCube, passEncoderState: RenderPassEncoderState) {
             var copyDst = (target.gpuTexture as ImageVk?)
             if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
                 copyDst?.release()
@@ -180,13 +178,13 @@ class OffscreenPass2dVk(
 
         override fun release() {
             super.release()
-            mipViews.forEach { backend.device.destroyImageView(it) }
+            mipViews.flatMap { it }.forEach { backend.device.destroyImageView(it) }
         }
     }
 
     private inner class RenderPassWrapper(forceLoad: Boolean) : BaseReleasable() {
         val vkRenderPass: VkRenderPass
-        var framebuffers: List<VkFramebuffer>
+        var framebuffers: List<List<VkFramebuffer>>
 
         init {
             if (forceLoad) {
@@ -272,17 +270,18 @@ class OffscreenPass2dVk(
             }
             framebuffers = createFramebuffers()
 
-            releaseWith(this@OffscreenPass2dVk)
-            logD { "Created off-screen 2d pass ${parentPass.name} (loading = $forceLoad)" }
+            releaseWith(this@OffscreenPassCubeVk)
+            logD { "Created off-screen cube pass ${parentPass.name} (loading = $forceLoad)" }
         }
 
         fun begin(passEncoderState: RenderPassEncoderState) = with(passEncoderState.stack) {
             val renderPass = passEncoderState.renderPass
             val mipLevel = passEncoderState.mipLevel
+            val face = passEncoderState.layer
 
             val beginInfo = callocVkRenderPassBeginInfo {
                 renderPass(vkRenderPass.handle)
-                framebuffer(framebuffers[mipLevel].handle)
+                framebuffer(framebuffers[mipLevel][face].handle)
                 renderArea().extent().set(
                     (parentPass.width shr mipLevel).coerceAtLeast(1),
                     (parentPass.height shr mipLevel).coerceAtLeast(1)
@@ -314,29 +313,33 @@ class OffscreenPass2dVk(
         override fun release() {
             super.release()
             device.destroyRenderPass(vkRenderPass)
-            framebuffers.forEach { device.destroyFramebuffer(it) }
+            framebuffers.flatMap { it }.forEach { device.destroyFramebuffer(it) }
         }
 
         fun recreateFramebuffers() {
-            framebuffers.forEach { device.destroyFramebuffer(it, 2) }
+            framebuffers.flatMap { it }.forEach { device.destroyFramebuffer(it) }
             framebuffers = createFramebuffers()
         }
 
-        private fun createFramebuffers(): List<VkFramebuffer> = memStack {
+        private fun createFramebuffers(): List<List<VkFramebuffer>> = memStack {
             val numAttachments = colorAttachments.size + if (depthAttachment != null) 1 else 0
             val attachments = mallocLong(numAttachments)
 
             List(parentPass.numRenderMipLevels) { level ->
-                colorAttachments.forEachIndexed { i, colorAttach -> attachments.put(i, colorAttach.mipViews[level].handle) }
-                depthAttachment?.let {
-                    attachments.put(numAttachments - 1, it.mipViews[level].handle)
-                }
-                device.createFramebuffer(this@memStack) {
-                    renderPass(vkRenderPass.handle)
-                    pAttachments(attachments)
-                    width((parentPass.width shr level).coerceAtLeast(1))
-                    height((parentPass.height shr level).coerceAtLeast(1))
-                    layers(1)
+                List<VkFramebuffer>(6) { face ->
+                    colorAttachments.forEachIndexed { i, colorAttach ->
+                        attachments.put(i, colorAttach.mipViews[level][face].handle)
+                    }
+                    depthAttachment?.let {
+                        attachments.put(numAttachments - 1, it.mipViews[level][face].handle)
+                    }
+                    device.createFramebuffer(this@memStack) {
+                        renderPass(vkRenderPass.handle)
+                        pAttachments(attachments)
+                        width((parentPass.width shr level).coerceAtLeast(1))
+                        height((parentPass.height shr level).coerceAtLeast(1))
+                        layers(1)
+                    }
                 }
             }
         }

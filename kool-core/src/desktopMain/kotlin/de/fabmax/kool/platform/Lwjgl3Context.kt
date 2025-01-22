@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.awt.image.BufferedImage
@@ -73,6 +74,7 @@ class Lwjgl3Context : KoolContext() {
                 Thread.sleep(10)
             }
         }
+        logI { "Exiting..." }
         scenes.forEach { it.release() }
         backend.cleanup(this)
     }

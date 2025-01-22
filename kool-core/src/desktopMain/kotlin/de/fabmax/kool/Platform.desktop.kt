@@ -12,6 +12,7 @@ import java.util.*
 actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)}f".format(Locale.ENGLISH, this)
 
 val KoolSystem.configJvm: KoolConfigJvm get() = config as KoolConfigJvm
+val KoolSystem.isMacOs: Boolean get() = (platform as Platform.Desktop).isMacOs
 
 /**
  * Creates a new [KoolContext] with the given [KoolConfigJvm]. Notice that there can only be one [KoolContext], calling
@@ -47,15 +48,15 @@ internal object DesktopImpl {
                     val timestamp = coloredText(dateFmt.format(System.currentTimeMillis()), MdColor.BROWN tone 300)
                     val frame = coloredText("f:${Time.frameCount}", MdColor.PURPLE tone 300)
 
-                    val tagColor = when (lvl) {
-                        Log.Level.TRACE -> MdColor.INDIGO tone 300
-                        Log.Level.DEBUG -> MdColor.CYAN tone 300
-                        Log.Level.INFO -> MdColor.GREY tone 300
-                        Log.Level.WARN -> MdColor.AMBER
-                        Log.Level.ERROR -> MdColor.RED
-                        Log.Level.OFF -> MdColor.PURPLE
+                    val (tagColor, bold) = when (lvl) {
+                        Log.Level.TRACE -> MdColor.INDIGO tone 200 to false
+                        Log.Level.DEBUG -> MdColor.CYAN tone 300 to false
+                        Log.Level.INFO -> MdColor.LIGHT_GREEN to true
+                        Log.Level.WARN -> MdColor.AMBER to true
+                        Log.Level.ERROR -> MdColor.RED to true
+                        Log.Level.OFF -> MdColor.PURPLE to true
                     }
-                    val tagStr = coloredText("${lvl.indicator}/$tag", tagColor)
+                    val tagStr = coloredText("${lvl.indicator}/$tag", tagColor, bold)
 
                     val txt = message.replace("\n", "\n  ")
                     val messageStr = when (lvl) {
@@ -88,11 +89,12 @@ internal object DesktopImpl {
         primaryMonitor = primMon
     }
 
-    private fun coloredText(text: String, color: Color): String {
+    private fun coloredText(text: String, color: Color, bold: Boolean = false): String {
         val r = (color.r.clamp() * 255).toInt()
         val g = (color.g.clamp() * 255).toInt()
         val b = (color.b.clamp() * 255).toInt()
-        return "\u001b[38;2;$r;$g;${b}m$text\u001b[0m"
+        val weight = if (bold) "\u001b[1m" else ""
+        return "\u001b[38;2;$r;$g;${b}m$weight$text\u001b[0m"
     }
 
     fun createContext(): Lwjgl3Context {

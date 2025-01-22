@@ -10,7 +10,6 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.pipeline.backend.vk.trash.VkOffscreenPassCube
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.memStack
@@ -170,7 +169,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) {
-        TODO()
+        (impl as OffscreenPassCubeVk).draw(passEncoderState)
     }
 
     private fun ComputeRenderPass.dispatch(passEncoderState: RenderPassEncoderState) {
@@ -198,7 +197,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-        return VkOffscreenPassCube(parentPass)
+        return OffscreenPassCubeVk(parentPass, 1, this)
     }
 
     override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {

@@ -288,8 +288,8 @@ internal fun Device.destroyDescriptorSetLayout(descriptorSetLayout: VkDescriptor
     DeferredRelease.defer { vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout.handle, null) }
 }
 
-internal fun Device.destroyFramebuffer(framebuffer: VkFramebuffer) {
-    DeferredRelease.defer { vkDestroyFramebuffer(vkDevice, framebuffer.handle, null) }
+internal fun Device.destroyFramebuffer(framebuffer: VkFramebuffer, deferTicks: Int = 1) {
+    DeferredRelease.defer(deferTicks) { vkDestroyFramebuffer(vkDevice, framebuffer.handle, null) }
 }
 
 internal fun Device.destroyFence(fence: VkFence) {
@@ -300,8 +300,8 @@ internal fun Device.destroyGraphicsPipeline(graphicsPipeline: VkGraphicsPipeline
     DeferredRelease.defer { vkDestroyPipeline(vkDevice, graphicsPipeline.handle, null) }
 }
 
-internal fun Device.destroyImageView(imageView: VkImageView) {
-    DeferredRelease.defer { vkDestroyImageView(vkDevice, imageView.handle, null) }
+internal fun Device.destroyImageView(imageView: VkImageView, deferTicks: Int = 1) {
+    DeferredRelease.defer(deferTicks) { vkDestroyImageView(vkDevice, imageView.handle, null) }
 }
 
 internal fun Device.destroyPipelineLayout(pipelineLayout: VkPipelineLayout) {
@@ -317,9 +317,7 @@ internal fun Device.destroyRenderPass(renderPass: VkRenderPass) {
 }
 
 internal fun Device.destroyShaderModule(shaderModule: VkShaderModule) {
-    DeferredRelease.defer {
-        vkDestroyShaderModule(vkDevice, shaderModule.handle, null)
-    }
+    DeferredRelease.defer { vkDestroyShaderModule(vkDevice, shaderModule.handle, null) }
 }
 
 internal fun Device.destroySampler(sampler: VkSampler) {

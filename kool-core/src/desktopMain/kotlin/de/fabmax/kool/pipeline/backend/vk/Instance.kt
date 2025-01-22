@@ -145,13 +145,15 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
         )
         pfnUserCallback { messageSeverity, messageTypes, pCallbackData, _ ->
             val arg = VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData)
-            val logStr = arg.pMessage()?.let { MemoryUtil.memUTF8(it) } ?: "<null>"
             val tag = "[VkValidation/${getMessageTypeName(messageTypes)}]"
+            val logStr = arg.pMessage()?.let { MemoryUtil.memUTF8(it) } ?: "<null>"
+            val msgSplit = logStr.replace(" | ", "\n")
+
             when {
-                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT -> logE(tag) { logStr }
-                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT -> logW(tag) { logStr }
-                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT -> logI(tag) { logStr }
-                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT -> logD(tag) { logStr }
+                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT -> logE(tag) { msgSplit }
+                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT -> logW(tag) { msgSplit }
+                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT -> logI(tag) { msgSplit }
+                messageSeverity >= EXTDebugUtils.VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT -> logD(tag) { msgSplit }
             }
             VK_FALSE
         }

@@ -1,4 +1,4 @@
-package de.fabmax.kool.pipeline.backend.vk
+package de.fabmax.kool.pipeline.backend.vk.trash
 
 import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.OffscreenRenderPass2dPingPong

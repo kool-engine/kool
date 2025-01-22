@@ -12,7 +12,7 @@ import de.fabmax.kool.util.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-abstract class RenderPass(var name: String) : BaseReleasable() {
+abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasable() {
 
     /**
      * Dimension of the output (window / screen or framebuffer / texture). Notice, that the part
@@ -23,8 +23,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     val height: Int get() = size.y
     val depth: Int get() = size.z
 
-    var mipMode: MipMode = MipMode.None
-        protected set
     val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
     val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
 

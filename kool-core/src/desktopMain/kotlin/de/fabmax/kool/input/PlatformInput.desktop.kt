@@ -2,7 +2,7 @@ package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.Platform
+import de.fabmax.kool.isMacOs
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.logD
 import org.lwjgl.glfw.GLFW.*
@@ -18,7 +18,7 @@ object PlatformInputJvm : PlatformInput {
     private val cursorShapes = mutableMapOf<CursorShape, Long>()
     private var currentCursorShape = CursorShape.DEFAULT
 
-    private val isMacOs: Boolean by lazy { (KoolSystem.platform as Platform.Desktop).isMacOs }
+    private val isMacOs: Boolean = KoolSystem.isMacOs
     private val ctx: KoolContext by lazy { KoolSystem.requireContext() }
 
     override fun setCursorMode(cursorMode: CursorMode) {

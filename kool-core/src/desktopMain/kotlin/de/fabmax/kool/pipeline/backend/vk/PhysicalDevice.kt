@@ -30,6 +30,8 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 
     val depthFormat: Int
 
+    private val imgFormatTilingFeatures = mutableMapOf<Int, Int>()
+
     init {
         memStack {
             val devPtrs = enumeratePointers { cnt, ptrs -> vkEnumeratePhysicalDevices(backend.instance.vkInstance, cnt, ptrs) }
@@ -135,6 +137,17 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
         error("Failed to find suitable memory type")
+    }
+
+    fun isImageFormatSupportingBlitting(format: Int): Boolean {
+        val tilingFeatures = imgFormatTilingFeatures.getOrPut(format) {
+            memStack {
+                val formatProperties = VkFormatProperties.malloc(this)
+                vkGetPhysicalDeviceFormatProperties(backend.physicalDevice.vkPhysicalDevice, format, formatProperties)
+                formatProperties.optimalTilingFeatures()
+            }
+        }
+        return tilingFeatures and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT != 0
     }
 
     override fun release() {

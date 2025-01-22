@@ -139,7 +139,7 @@ open class Scene(name: String? = null) : Node(name) {
         AfterRender
     }
 
-    inner class SceneRenderPass : RenderPass("${name}:OnScreenRenderPass") {
+    inner class SceneRenderPass : RenderPass("${name}:OnScreenRenderPass", MipMode.None) {
         val screenView = View("screen", this@Scene, PerspectiveCamera())
         var camera: Camera by screenView::camera
         val viewport: Viewport by screenView::viewport
