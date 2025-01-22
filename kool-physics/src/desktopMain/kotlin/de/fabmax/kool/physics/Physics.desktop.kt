@@ -1,8 +1,11 @@
 package de.fabmax.kool.physics
 
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.isMacOs
 import de.fabmax.kool.physics.geometry.ConvexMeshImpl
 import de.fabmax.kool.physics.geometry.CylinderGeometry
 import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
 import physx.common.*
@@ -46,10 +49,12 @@ object PhysicsImpl : PhysicsSystem {
         val allocator = PxDefaultAllocator()
         foundation = PxTopLevelFunctions.CreateFoundation(version, allocator, KoolErrorCallback())
 
-        MemoryStack.stackPush().use { mem ->
-            val desc = PxCudaContextManagerDesc.createAt(mem, MemoryStack::nmalloc)
-            // cudaManager will be null CreateCudaContextManager() fails
-            cudaManager = PxCudaTopLevelFunctions.CreateCudaContextManager(foundation, desc)
+        cudaManager = if (KoolSystem.isMacOs) null else {
+            memStack {
+                val desc = PxCudaContextManagerDesc.createAt(this, MemoryStack::nmalloc)
+                // cudaManager will be null if CreateCudaContextManager() fails
+                PxCudaTopLevelFunctions.CreateCudaContextManager(foundation, desc)
+            }
         }
 
         val pvd: PxPvd? = null
