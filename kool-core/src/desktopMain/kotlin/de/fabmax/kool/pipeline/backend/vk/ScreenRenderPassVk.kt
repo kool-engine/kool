@@ -8,7 +8,11 @@ import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
 
 class ScreenRenderPassVk(backend: RenderBackendVk) :
-    RenderPassVk(backend.physicalDevice.depthFormat, backend.physicalDevice.maxSamples, backend)
+    RenderPassVk(
+        backend.physicalDevice.depthFormat,
+        backend.swapchain.numSamples,
+        backend
+    )
 {
     override val colorTargetFormats: List<Int> = listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format())
     private val vkRenderPasses = Array<RenderPassWrapper?>(2) { null }

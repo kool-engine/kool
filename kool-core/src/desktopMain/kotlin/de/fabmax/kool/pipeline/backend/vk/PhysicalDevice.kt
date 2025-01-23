@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
@@ -23,6 +25,9 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     val isPortabilityDevice: Boolean
     val maxSamples: Int
     val maxAnisotropy: Float
+    val wideLines: Boolean
+    val minLineWidth: Float
+    val maxLineWidth: Float
 
     val deviceName: String
     val apiVersion: String
@@ -55,6 +60,15 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 vkDeviceFeatures2.pNext(portabilityFeatures)
             }
             vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkDeviceFeatures2)
+
+            wideLines = deviceFeatures.wideLines()
+            if (wideLines) {
+                minLineWidth = deviceProperties.limits().lineWidthRange(0)
+                maxLineWidth = deviceProperties.limits().lineWidthRange(1)
+            } else {
+                minLineWidth = 1f
+                maxLineWidth = 1f
+            }
 
             maxSamples = getMaxUsableSampleCount()
             maxAnisotropy = if (!deviceFeatures.samplerAnisotropy()) 1f else {
@@ -277,6 +291,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         val isValid: Boolean get() = formats.isNotEmpty() && presentModes.isNotEmpty()
 
         fun chooseSurfaceFormat(): VkSurfaceFormatKHR {
+            // other possible color spaces: e.g. VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT
             return formats
                 .find {
                     it.format() == VK_FORMAT_B8G8R8A8_UNORM && it.colorSpace() == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
@@ -284,10 +299,12 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         fun choosePresentationMode(): Int {
-            // VK_PRESENT_MODE_FIFO_KHR is guaranteed to be supported this also implies enabled V-Sync
-            // other options which may not be supported by every device would be VK_PRESENT_MODE_MAILBOX_KHR
-            // or VK_PRESENT_MODE_FIFO_RELAXED_KHR
-            return VK_PRESENT_MODE_FIFO_KHR
+            return when {
+                KoolSystem.configJvm.isVsync -> VK_PRESENT_MODE_FIFO_KHR
+                VK_PRESENT_MODE_MAILBOX_KHR in presentModes -> VK_PRESENT_MODE_MAILBOX_KHR
+                VK_PRESENT_MODE_IMMEDIATE_KHR in presentModes -> VK_PRESENT_MODE_IMMEDIATE_KHR
+                else -> VK_PRESENT_MODE_FIFO_KHR
+            }
         }
 
         fun chooseSwapExtent(window: GlfwVkWindow, stack: MemoryStack): VkExtent2D {

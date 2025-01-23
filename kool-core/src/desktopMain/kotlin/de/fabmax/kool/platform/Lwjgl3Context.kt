@@ -76,6 +76,8 @@ class Lwjgl3Context : KoolContext() {
         }
         logI { "Exiting..." }
         scenes.forEach { it.release() }
+        backgroundScene.release()
+        onShutdown.updated().forEach { it(this) }
         backend.cleanup(this)
     }
 

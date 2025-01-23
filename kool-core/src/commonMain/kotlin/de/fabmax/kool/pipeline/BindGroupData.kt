@@ -96,14 +96,14 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
         var texture: T? = null
             set(value) {
+                isDirty = field !== value
                 field = value
-                isDirty = true
             }
 
         var sampler: SamplerSettings? = null
             set(value) {
+                isDirty = field !== value
                 field = value
-                isDirty = true
             }
 
         fun copyTo(other: TextureBindingData<T>) {

@@ -81,6 +81,9 @@ open class Scene(name: String? = null) : Node(name) {
             // offscreen passes have changed, re-sort them to maintain correct dependency order
             sortedOffscreenPasses.clear()
             sortedOffscreenPasses.addAll(offscreenPasses)
+            if (sortedOffscreenPasses.distinct().size != sortedOffscreenPasses.size) {
+                logW { "Multiple occurrences of offscreen passes: $sortedOffscreenPasses" }
+            }
             OffscreenRenderPass.sortByDependencies(sortedOffscreenPasses)
         }
 

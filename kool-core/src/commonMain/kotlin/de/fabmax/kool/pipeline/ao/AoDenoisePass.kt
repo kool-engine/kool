@@ -24,7 +24,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         "ambient-occlusion-denoise"
     )
 {
-    private val denoiseShader = DenoiseShader(aoPass, depthComponent)
+    val denoiseShader = DenoiseShader(aoPass, depthComponent)
 
     var radius: Float by denoiseShader::uRadius
     var noisyAo: Texture2d? by denoiseShader::noisyAoTex
@@ -77,7 +77,7 @@ class AoDenoisePass(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         super.update(ctx)
     }
 
-    private inner class DenoiseShader(aoPass: OffscreenRenderPass2d, depthComponent: String) :
+    inner class DenoiseShader(aoPass: OffscreenRenderPass2d, depthComponent: String) :
         KslShader("Ambient Occlusion Denoise Pass")
     {
         var noisyAoTex by texture2d("noisyAoTex", aoPass.colorTexture)

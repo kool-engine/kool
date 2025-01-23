@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.util.*
 import org.lwjgl.BufferUtils
 import org.lwjgl.system.MemoryStack
@@ -24,6 +26,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     val extent: VkExtent2D = VkExtent2D.malloc()
     val images: List<VkImage>
     val imageViews: List<VkImageView>
+    val numSamples = backend.physicalDevice.maxSamples.coerceAtMost(KoolSystem.configJvm.msaaSamples)
 
     val nImages: Int
         get() = images.size
@@ -161,7 +164,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
-            samples = physicalDevice.maxSamples,
+            samples = numSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
         )
@@ -182,7 +185,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
-            samples = physicalDevice.maxSamples,
+            samples = numSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
         )

@@ -26,7 +26,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
 
     var sceneCam: Camera? = null
 
-    private val aoPassShader = AoPassShader()
+    val aoPassShader = AoPassShader()
 
     var fwdNormalDepth: Texture2d? by aoPassShader::viewSpaceTex
     var deferredPosition: Texture2d? by aoPassShader::viewSpaceTex
@@ -203,7 +203,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
         }
     }
 
-    private inner class AoPassShader : KslShader(aoPassProg(), fullscreenShaderPipelineCfg) {
+    inner class AoPassShader : KslShader(aoPassProg(), fullscreenShaderPipelineCfg) {
         var noiseTex by texture2d("noiseTex", generateNoiseTex().also { it.releaseWith(this@AmbientOcclusionPass) })
         var viewSpaceTex by texture2d("viewSpaceTex")
         var normalTex by texture2d("normalTex")

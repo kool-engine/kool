@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
 import de.fabmax.kool.pipeline.backend.gl.locationSize
@@ -79,7 +80,7 @@ class DrawPipelineVk(
             depthClampEnable(false)
             rasterizerDiscardEnable(false)
             polygonMode(VK_POLYGON_MODE_FILL)
-            lineWidth(drawPipeline.lineWidth)
+            lineWidth(drawPipeline.lineWidth.clamp(backend.physicalDevice.minLineWidth, backend.physicalDevice.maxLineWidth))
             cullMode(drawPipeline.cullMethod.vk)
             frontFace(if (renderPass.isMirrorY) VK_FRONT_FACE_CLOCKWISE else VK_FRONT_FACE_COUNTER_CLOCKWISE)
             depthBiasEnable(false)

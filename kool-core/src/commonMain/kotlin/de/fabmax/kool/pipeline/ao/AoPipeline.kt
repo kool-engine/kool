@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.ao
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.pipeline.BindGroupData
 import de.fabmax.kool.pipeline.NormalLinearDepthMapPass
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
@@ -14,6 +15,7 @@ import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.releaseWith
 import kotlin.math.max
 
 abstract class AoPipeline : BaseReleasable() {
@@ -147,6 +149,9 @@ abstract class AoPipeline : BaseReleasable() {
         private var mapWidth = max(32, (deferredPipeline.scene.mainRenderPass.viewport.width * mapSize).toInt())
         private var mapHeight = max(32, (deferredPipeline.scene.mainRenderPass.viewport.height * mapSize).toInt())
 
+        private val aoPassBindGroups = mutableMapOf<DeferredPasses, BindGroupData>()
+        private val denoisePassBindGroups = mutableMapOf<DeferredPasses, BindGroupData>()
+
         init {
             aoPass = AmbientOcclusionPass(AoSetup.deferred(), mapWidth, mapHeight)
             denoisePass = AoDenoisePass(aoPass, "z")
@@ -159,6 +164,21 @@ abstract class AoPipeline : BaseReleasable() {
         }
 
         override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
+            val aoPipeline = aoPass.aoPassShader.createdPipeline
+            if (aoPipeline != null) {
+                aoPipeline.pipelineData = aoPassBindGroups.getOrPut(currentPasses) {
+                    aoPipeline.pipelineData.releaseWith(aoPipeline)
+                    aoPipeline.pipelineData.copy()
+                }
+            }
+            val denoisePipeline = denoisePass.denoiseShader.createdPipeline
+            if (denoisePipeline != null) {
+                denoisePipeline.pipelineData = denoisePassBindGroups.getOrPut(currentPasses) {
+                    denoisePipeline.pipelineData.releaseWith(denoisePipeline)
+                    denoisePipeline.pipelineData.copy()
+                }
+            }
+
             aoPass.sceneCam = currentPasses.materialPass.mainView.camera
             aoPass.deferredPosition = currentPasses.materialPass.positionFlags
             aoPass.deferredNormal = currentPasses.materialPass.normalRoughness

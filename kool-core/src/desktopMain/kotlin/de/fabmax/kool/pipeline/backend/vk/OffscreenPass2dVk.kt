@@ -33,16 +33,23 @@ class OffscreenPass2dVk(
     }
 
     override fun applySize(width: Int, height: Int) {
-        logT { "Resize 2d offscreen pass ${parentPass.name} to $width x $height" }
+        logT { "Resize offscreen 2d pass ${parentPass.name} to $width x $height" }
         colorAttachments.forEach { it.recreate(width, height) }
         depthAttachment?.recreate(width, height)
         vkRenderPasses.filterNotNull().forEach { it.recreateFramebuffers() }
     }
 
     override fun release() {
+        val alreadyReleased = isReleased
         super.release()
-        colorAttachments.forEach { it.release() }
-        depthAttachment?.release()
+        if (!alreadyReleased) {
+            colorAttachments.forEach { it.release() }
+            depthAttachment?.release()
+        }
+    }
+
+    override fun toString(): String {
+        return "OffscreenPass2dVk:${parentPass.name}"
     }
 
     private fun getOrCreateRenderPass(forceLoad: Boolean): RenderPassWrapper {
@@ -140,7 +147,7 @@ class OffscreenPass2dVk(
                 arrayLayers = 1,
                 mipLevels = parentPass.numTextureMipLevels,
                 samples = numSamples,
-                usage = usage
+                usage = usage,
             )
             val tex = ImageVk(backend, descriptor, name)
             return descriptor to tex
@@ -327,7 +334,9 @@ class OffscreenPass2dVk(
             val attachments = mallocLong(numAttachments)
 
             List(parentPass.numRenderMipLevels) { level ->
-                colorAttachments.forEachIndexed { i, colorAttach -> attachments.put(i, colorAttach.mipViews[level].handle) }
+                colorAttachments.forEachIndexed { i, colorAttach ->
+                    attachments.put(i, colorAttach.mipViews[level].handle)
+                }
                 depthAttachment?.let {
                     attachments.put(numAttachments - 1, it.mipViews[level].handle)
                 }

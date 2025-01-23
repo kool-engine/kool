@@ -50,6 +50,7 @@ abstract class KoolContext {
     val onWindowFocusChanged = BufferedList<(KoolContext) -> Unit>()
     val onWindowSizeChanged = BufferedList<(KoolContext) -> Unit>()
     val onRender = BufferedList<(KoolContext) -> Unit>()
+    val onShutdown = BufferedList<(KoolContext) -> Unit>()
 
     /**
      * Frames per second (averaged over last 25 frames)

@@ -38,7 +38,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data)
             tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data)
             tex is Texture2dArray && data is ImageData3d -> loadTexture2dArray(tex, data)
-            tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeAray(tex, data)
+            tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeArray(tex, data)
             else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
         }
         tex.gpuTexture = loaded
@@ -139,7 +139,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         return gpuTex
     }
 
-    private fun loadTextureCubeAray(tex: TextureCubeArray, data: ImageDataCubeArray): WgpuTextureResource {
+    private fun loadTextureCubeArray(tex: TextureCubeArray, data: ImageDataCubeArray): WgpuTextureResource {
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
         val texDesc = GPUTextureDescriptor(

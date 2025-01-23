@@ -30,7 +30,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val features = BackendFeatures(
         computeShaders = true,
-        cubeMapArrays = false,
+        cubeMapArrays = true,
         reversedDepth = true,
         depthOnlyShaderColorOutput = null,
     )

@@ -19,6 +19,7 @@ class OffscreenPassCubeVk(
     private val depthAttachment: RenderAttachment?
 
     private var copySrcFlag = 0
+    private var copyDstFlag = 0
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
@@ -32,16 +33,23 @@ class OffscreenPassCubeVk(
     }
 
     override fun applySize(width: Int, height: Int) {
-        logT { "Resize cube offscreen pass ${parentPass.name} to $width x $height" }
+        logT { "Resize offscreen cube pass ${parentPass.name} to $width x $height" }
         colorAttachments.forEach { it.recreate(width, height) }
         depthAttachment?.recreate(width, height)
         vkRenderPasses.filterNotNull().forEach { it.recreateFramebuffers() }
     }
 
     override fun release() {
+        val alreadyReleased = isReleased
         super.release()
-        colorAttachments.forEach { it.release() }
-        depthAttachment?.release()
+        if (!alreadyReleased) {
+            colorAttachments.forEach { it.release() }
+            depthAttachment?.release()
+        }
+    }
+
+    override fun toString(): String {
+        return "OffscreenPassCubeVk:${parentPass.name}"
     }
 
     private fun getOrCreateRenderPass(forceLoad: Boolean): RenderPassWrapper {
@@ -55,9 +63,12 @@ class OffscreenPassCubeVk(
 
     fun draw(passEncoderState: RenderPassEncoderState) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
-        if (isCopySrc && copySrcFlag == 0) {
-            // recreate attachment textures with COPY_SRC flag set
+        val isCopyDst = parentPass.mipMode == RenderPass.MipMode.Generate
+        if ((isCopySrc && copySrcFlag == 0) || (isCopyDst && copyDstFlag == 0)) {
             copySrcFlag = VK_IMAGE_USAGE_TRANSFER_SRC_BIT
+            if (isCopyDst) {
+                copyDstFlag = VK_IMAGE_USAGE_TRANSFER_DST_BIT
+            }
             colorAttachments.forEach { it.recreate(parentPass.width, parentPass.height) }
             depthAttachment?.recreate(parentPass.width, parentPass.height)
         }
@@ -95,7 +106,7 @@ class OffscreenPassCubeVk(
             val (desc, tex) = createTexture(
                 width = parentPass.width,
                 height = parentPass.height,
-                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag
+                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag or copyDstFlag
             )
             descriptor = desc
             gpuTexture = tex
@@ -110,7 +121,7 @@ class OffscreenPassCubeVk(
             val (desc, tex) = createTexture(
                 width = width,
                 height = height,
-                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag
+                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag or copyDstFlag
             )
             descriptor = desc
             gpuTexture.release()

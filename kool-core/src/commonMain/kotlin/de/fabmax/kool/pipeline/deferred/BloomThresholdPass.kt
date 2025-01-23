@@ -6,12 +6,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.FullscreenShaderUtil
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
@@ -34,6 +31,8 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
 
     private val quad: Mesh
 
+    private val bindGroups = mutableMapOf<PbrLightingPass, BindGroupData>()
+
     init {
         clearColor = Color.BLACK
 
@@ -51,6 +50,13 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
     }
 
     fun setLightingInput(newPass: PbrLightingPass) {
+        val pipeline = outputShader.createdPipeline
+        if (pipeline != null) {
+            pipeline.pipelineData = bindGroups.getOrPut(newPass) {
+                pipeline.pipelineData.releaseWith(pipeline)
+                pipeline.pipelineData.copy()
+            }
+        }
         outputShader.inputTexture = newPass.colorTexture
     }
 
