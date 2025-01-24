@@ -9,7 +9,6 @@ import de.fabmax.kool.modules.ksl.blocks.pbrLightBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Light
-import de.fabmax.kool.util.releaseWith
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -31,16 +30,8 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
     var colorMetallic by texture2d("colorMetallic")
     var emissiveAo by texture2d("emissiveAo")
 
-    private val bindGroups = mutableMapOf<MaterialPass, BindGroupData>()
-
     fun setMaterialInput(materialPass: MaterialPass) {
-        val pipeline = createdPipeline
-        if (pipeline != null) {
-            pipeline.pipelineData = bindGroups.getOrPut(materialPass) {
-                pipeline.pipelineData.releaseWith(pipeline)
-                pipeline.pipelineData.copy()
-            }
-        }
+        createdPipeline?.swapPipelineData(materialPass)
         positionFlags = materialPass.positionFlags
         normalRoughness = materialPass.normalRoughness
         colorMetallic = materialPass.albedoMetal

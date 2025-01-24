@@ -16,7 +16,6 @@ import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.releaseWith
 
 /**
  * 2nd pass shader for deferred pbr shading: Uses textures with view space position, normals, albedo, roughness,
@@ -64,8 +63,6 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
             reflectionMapWeights = Vec2f.X_AXIS
         }
 
-    private val bindGroups = mutableMapOf<MaterialPass, BindGroupData>()
-
     init {
         reflectionMap = cfg.reflectionMap
         when (val ambient = cfg.ambientLight) {
@@ -89,13 +86,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
     }
 
     fun setMaterialInput(materialPass: MaterialPass) {
-        val pipeline = createdPipeline
-        if (pipeline != null) {
-            pipeline.pipelineData = bindGroups.getOrPut(materialPass) {
-                pipeline.pipelineData.releaseWith(pipeline)
-                pipeline.pipelineData.copy()
-            }
-        }
+        createdPipeline?.swapPipelineData(materialPass)
         depth = materialPass.depthTexture
         positionFlags = materialPass.positionFlags
         normalRoughness = materialPass.normalRoughness

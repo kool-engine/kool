@@ -7,7 +7,6 @@ import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
-import de.fabmax.kool.util.releaseWith
 
 class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     KslShader(
@@ -35,20 +34,12 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     var chromaticAberrationStrength by uniform3f("uChromaticAberration", Vec3f(-0.001f, 0.0f, 0.001f))
     var chromaticAberrationStrengthBloom by uniform3f("uChromaticAberration", Vec3f(-0.003f, 0.0f, 0.003f))
 
-    private val bindGroups = mutableMapOf<DeferredPasses, BindGroupData>()
-
     fun setupVignette(strength: Float = vignetteStrength, innerRadius: Float = vignetteInnerRadius, outerRadius: Float = vignetteOuterRadius) {
         vignetteCfg = Vec3f(innerRadius, outerRadius, strength)
     }
 
     fun setDeferredInput(current: DeferredPasses) {
-        val pipeline = createdPipeline
-        if (pipeline != null) {
-            pipeline.pipelineData = bindGroups.getOrPut(current) {
-                pipeline.pipelineData.releaseWith(pipeline)
-                pipeline.pipelineData.copy()
-            }
-        }
+        createdPipeline?.swapPipelineData(current)
         currentLighting = current.lightingPass.colorTexture
         depthTex = current.materialPass.depthTexture
     }
