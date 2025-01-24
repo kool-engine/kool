@@ -65,7 +65,9 @@ abstract class KoolContext {
         get() = backgroundScene.offscreenPasses
 
     val defaultPbrBrdfLut: Texture2d by lazy {
-        BrdfLutPass(backgroundScene).also { addBackgroundRenderPass(it) }.copyColor()
+        BrdfLutPass(backgroundScene)
+            .also { pass -> addBackgroundRenderPass(pass) }.copyColor()
+            .also { brdf -> onShutdown += { brdf.release() } }
     }
 
     private val frameTimes = DoubleArray(25) { 0.017 }

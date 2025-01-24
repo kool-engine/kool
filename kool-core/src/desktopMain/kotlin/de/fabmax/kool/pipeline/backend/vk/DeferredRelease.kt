@@ -3,14 +3,14 @@ package de.fabmax.kool.pipeline.backend.vk
 internal object DeferredRelease {
     private val deferredTasks = mutableListOf<DeferredTask>()
 
-    fun defer(ticks: Int = 1, task: () -> Unit) {
+    fun defer(ticks: Int = 2, task: () -> Unit) {
         deferredTasks += DeferredTask(ticks, task)
     }
 
     fun processTasks(force: Boolean = false) {
         if (deferredTasks.isNotEmpty()) {
             if (force) {
-                deferredTasks.forEach { it.task() }
+                deferredTasks.sortedBy { it.delay }.forEach { it.task() }
                 deferredTasks.clear()
             } else {
                 for (i in deferredTasks.indices) {

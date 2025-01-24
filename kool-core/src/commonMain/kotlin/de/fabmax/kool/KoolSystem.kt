@@ -9,8 +9,6 @@ object KoolSystem {
     private var defaultContext: KoolContext? = null
     private val properties: PlatformProperties = PlatformProperties()
 
-    internal val onDestroyContext = mutableListOf<() -> Unit>()
-
     val platform: Platform
         get() = properties.platform
 
@@ -34,16 +32,15 @@ object KoolSystem {
         isInitialized = true
     }
 
-    internal fun destroyContext() {
-        initConfig = null
-        defaultContext = null
-        isInitialized = false
-        BackendStats.onDestroy()
-        onDestroyContext.forEach { it() }
-    }
-
     internal fun onContextCreated(ctx: KoolContext) {
         defaultContext = ctx
+
+        ctx.onShutdown += {
+            initConfig = null
+            defaultContext = null
+            isInitialized = false
+            BackendStats.onDestroy()
+        }
     }
 
     fun requireContext(): KoolContext {

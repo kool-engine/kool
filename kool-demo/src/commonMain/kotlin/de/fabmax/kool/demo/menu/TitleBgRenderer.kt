@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.menu
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.Demos
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec3f
@@ -192,6 +193,13 @@ class TitleBgRenderer(
                     props = noiseProps,
                     name = "DemoMenu/TitleNoise"
                 )
+            }
+
+            init {
+                KoolSystem.getContextOrNull()?.onShutdown += {
+                    bgGradientTex.release()
+                    bgNoiseTex.release()
+                }
             }
         }
     }
