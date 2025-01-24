@@ -21,39 +21,76 @@ class DrawPipelineVk(
     backend: RenderBackendVk,
 ): PipelineVk(drawPipeline, backend) {
 
-    private val renderPipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
+    private val pipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
     private val users = mutableSetOf<NodeId>()
 
-    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
+    fun updateGeometry(cmd: DrawCommand, passEncoderState: RenderPassEncoderState) {
+        if (cmd.geometry.numIndices == 0) return
         users.add(cmd.mesh.id)
 
+        if (cmd.geometry.gpuGeometry == null) {
+            cmd.geometry.gpuGeometry = GeometryVk(cmd.mesh, backend)
+        }
+        val gpuGeom = cmd.geometry.gpuGeometry as GeometryVk
+        gpuGeom.checkBuffers(passEncoderState.commandBuffer)
+
+        cmd.instances?.let { insts ->
+            if (insts.gpuInstances == null) {
+                insts.gpuInstances = InstancesVk(insts, backend, cmd.mesh)
+            }
+            val gpuInsts = insts.gpuInstances as InstancesVk
+            gpuInsts.checkBuffers(passEncoderState.commandBuffer)
+        }
+    }
+
+    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
         val pipelineData = drawPipeline.pipelineData
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
         val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
 
-        if (!pipelineData.checkBindings() || !viewData.checkBindings() || !meshData.checkBindings()) {
+        val pipelineDataOk = pipelineData.checkBindings()
+        val viewDataOk = viewData.checkBindings()
+        val meshDataOk = meshData.checkBindings()
+        if (!viewDataOk || !pipelineDataOk || !meshDataOk) {
             return false
         }
 
-        val renderPipeline = renderPipelines.getOrPut(passEncoderState.gpuRenderPass) {
-            createRenderPipeline(passEncoderState)
-        }
+        val pipeline = pipelines.getOrPut(passEncoderState.gpuRenderPass) { createPipeline(passEncoderState) }
+        passEncoderState.setPipeline(pipeline)
 
-        passEncoderState.setPipeline(renderPipeline)
-        val viewGroup = viewData.getOrCreateVkData()
         val pipelineGroup = pipelineData.getOrCreateVkData()
+        val viewGroup = viewData.getOrCreateVkData()
         val meshGroup = meshData.getOrCreateVkData()
 
-        viewGroup.prepareBind(passEncoderState)
         pipelineGroup.prepareBind(passEncoderState)
+        viewGroup.prepareBind(passEncoderState)
         meshGroup.prepareBind(passEncoderState)
         passEncoderState.setBindGroups(viewGroup, pipelineGroup, meshGroup, pipelineLayout)
 
-        bindVertexBuffers(passEncoderState, cmd)
+        return bindVertexBuffers(cmd, passEncoderState)
+    }
+
+    private fun bindVertexBuffers(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
+        val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk? ?: return false
+        val gpuInsts = cmd.instances?.gpuInstances as InstancesVk?
+
+        var numBuffers = 1
+        if (gpuInsts?.instanceBuffer != null) numBuffers++
+        if (gpuGeom.intBuffer != null) numBuffers++
+        bufferHandles.limit(numBuffers)
+        bufferOffsets.limit(numBuffers)
+
+        var slot = 0
+        bufferHandles.put(slot++, gpuGeom.floatBuffer.handle)
+        gpuGeom.intBuffer?.let { bufferHandles.put(slot++, it.handle) }
+        gpuInsts?.instanceBuffer?.let { bufferHandles.put(slot++, it.handle) }
+
+        vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, bufferHandles, bufferOffsets)
+        vkCmdBindIndexBuffer(passEncoderState.commandBuffer, gpuGeom.indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32)
         return true
     }
 
-    private fun createRenderPipeline(passEncoderState: RenderPassEncoderState): VkGraphicsPipeline = memStack {
+    private fun createPipeline(passEncoderState: RenderPassEncoderState): VkGraphicsPipeline = memStack {
         val renderPass = passEncoderState.renderPass
         val renderPassVk = passEncoderState.gpuRenderPass
 
@@ -257,35 +294,6 @@ class DrawPipelineVk(
         }
     }
 
-    private fun bindVertexBuffers(passEncoderState: RenderPassEncoderState, cmd: DrawCommand) {
-        if (cmd.mesh.geometry.gpuGeometry == null) {
-            cmd.mesh.geometry.gpuGeometry = GeometryVk(cmd.mesh, backend)
-        }
-        val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk
-        gpuGeom.checkBuffers(passEncoderState.commandBuffer)
-
-        var numBuffers = 1
-        if (cmd.instances != null) numBuffers++
-        if (gpuGeom.intBuffer != null) numBuffers++
-        bufferHandles.limit(numBuffers)
-        bufferOffsets.limit(numBuffers)
-
-        var slot = 0
-        bufferHandles.put(slot++, gpuGeom.floatBuffer.handle)
-        gpuGeom.intBuffer?.let { bufferHandles.put(slot++, it.handle) }
-        cmd.instances?.let { insts ->
-            if (insts.gpuInstances == null) {
-                insts.gpuInstances = InstancesVk(insts, backend, cmd.mesh)
-            }
-            val gpuInsts = insts.gpuInstances as InstancesVk
-            gpuInsts.checkBuffers(passEncoderState.commandBuffer)
-            gpuInsts.instanceBuffer?.let { bufferHandles.put(slot++, it.handle) }
-        }
-
-        vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, bufferHandles, bufferOffsets)
-        vkCmdBindIndexBuffer(passEncoderState.commandBuffer, gpuGeom.indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32)
-    }
-
     override fun removeUser(user: Any) {
         (user as? Mesh)?.let { users.remove(it.id) }
         if (users.isEmpty()) {
@@ -295,7 +303,7 @@ class DrawPipelineVk(
 
     override fun release() {
         super.release()
-        renderPipelines.values.forEach { backend.device.destroyGraphicsPipeline(it) }
+        pipelines.values.forEach { backend.device.destroyGraphicsPipeline(it) }
     }
 
     private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)

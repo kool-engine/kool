@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.checkIsNotReleased
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
@@ -57,20 +58,24 @@ sealed class PipelineVk(
     }
 
     protected fun BindGroupData.checkBindings(): Boolean {
+        if (Time.frameCount == checkFrame) return isCheckOk
+        checkFrame = Time.frameCount
+        isCheckOk = true
+
         for (i in bindings.indices) {
             val binding = bindings[i]
             when (binding) {
-                is BindGroupData.StorageBufferBindingData<*> if binding.storageBuffer != null -> return false
+                is BindGroupData.StorageBufferBindingData<*> if binding.storageBuffer != null -> isCheckOk = false
                 is BindGroupData.TextureBindingData<*> -> {
                     val tex = binding.texture
                     if (tex == null || (tex.loadingState != Texture.LoadingState.LOADED && !tex.checkLoadingState())) {
-                        return false
+                        isCheckOk = false
                     }
                 }
                 else -> { }
             }
         }
-        return true
+        return isCheckOk
     }
 
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {

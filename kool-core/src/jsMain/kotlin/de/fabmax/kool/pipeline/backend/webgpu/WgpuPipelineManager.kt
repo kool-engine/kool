@@ -8,10 +8,13 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
     private val fragmentShaderModules = mutableMapOf<String, UsedShaderModule>()
     private val computeShaderModules = mutableMapOf<String, UsedShaderModule>()
 
-    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
-        val gpuPipeline = cmd.pipeline.getWgpuPipeline()
+    fun prepareDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState) {
         cmd.pipeline.update(cmd)
-        return gpuPipeline.bind(cmd, passEncoderState)
+        cmd.pipeline.getWgpuPipeline().updateGeometry(cmd, passEncoderState)
+    }
+
+    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
+        return cmd.pipeline.getWgpuPipeline().bind(cmd, passEncoderState)
     }
 
     fun bindComputePipeline(task: ComputeRenderPass.Task, passEncoderState: ComputePassEncoderState): Boolean {

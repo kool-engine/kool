@@ -22,6 +22,9 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
     var isDirty = true
 
+    internal var checkFrame = -1
+    internal var isCheckOk = false
+
     val isComplete: Boolean
         get() = bindings.all { it.isComplete }
 

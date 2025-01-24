@@ -6,10 +6,8 @@ import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Int32Buffer
 import de.fabmax.kool.util.useRaw
 import org.lwjgl.vulkan.VK10.vkCmdCopyBuffer
+import org.lwjgl.vulkan.VkBufferCopy
 import org.lwjgl.vulkan.VkCommandBuffer
-import java.nio.ByteBuffer
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
 
 class BufferVk(
     val backend: RenderBackendVk,
@@ -21,15 +19,9 @@ class BufferVk(
 
     private val allocInfo = BufferInfo(bufferInfo.label, "<none>").apply { allocated(bufferSize) }
 
-    inline fun mappedBytes(block: (ByteBuffer) -> Unit) = backend.memManager.mappedBytes(vkBuffer, block)
-    inline fun mappedFloats(block: (FloatBuffer) -> Unit) = backend.memManager.mappedFloats(vkBuffer, block)
-    inline fun mappedInts(block: (IntBuffer) -> Unit) = backend.memManager.mappedInts(vkBuffer, block)
-
     fun copyFrom(srcBuffer: VkBuffer, commandBuffer: VkCommandBuffer, size: Long = srcBuffer.bufferSize) {
-        backend.commandPool.singleShotCommands { commandBuffer ->
-            val copyRegion = callocVkBufferCopyN(1) { size(size) }
-            vkCmdCopyBuffer(commandBuffer, srcBuffer.handle, vkBuffer.handle, copyRegion)
-        }
+        bufferCopy[0].set(0L, 0L, size)
+        vkCmdCopyBuffer(commandBuffer, srcBuffer.handle, vkBuffer.handle, bufferCopy)
     }
 
     override fun release() {
@@ -39,6 +31,10 @@ class BufferVk(
             backend.memManager.freeBuffer(vkBuffer)
             allocInfo.deleted()
         }
+    }
+
+    companion object {
+        private val bufferCopy = VkBufferCopy.malloc(1)
     }
 }
 

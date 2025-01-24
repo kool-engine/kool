@@ -115,6 +115,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
 
         passEncoderState.beginFrame()
+        preparePipelines(passEncoderState, ctx)
         ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
 
         for (i in ctx.scenes.indices) {
@@ -139,6 +140,26 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         if (gpuReadbacks.isNotEmpty()) {
             // after encoder is finished and submitted, temp buffers can be mapped for readback
             mapReadbacks()
+        }
+    }
+
+    private fun preparePipelines(passEncoderState: RenderPassEncoderState, ctx: KoolContext) {
+        for (i in ctx.backgroundScene.sortedOffscreenPasses.indices) {
+            preparePipelines(ctx.backgroundScene.sortedOffscreenPasses[i], passEncoderState)
+        }
+        for (i in ctx.scenes.indices) {
+            val scene = ctx.scenes[i]
+            for (j in scene.sortedOffscreenPasses.indices) {
+                preparePipelines(scene.sortedOffscreenPasses[j], passEncoderState)
+            }
+            preparePipelines(scene.mainRenderPass, passEncoderState)
+        }
+    }
+
+    private fun preparePipelines(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
+        for (i in renderPass.views.indices) {
+            val queue = renderPass.views[i].drawQueue
+            queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
         }
     }
 

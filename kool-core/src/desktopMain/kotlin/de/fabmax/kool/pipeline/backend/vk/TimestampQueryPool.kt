@@ -18,6 +18,7 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
 
     private var nextQuery: Int = 0
     private val queriesInFlight: Boolean get() = nextQuery > 0
+    private var completeCnt = 2
 
     init {
         if (isSupported()) {
@@ -30,7 +31,7 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
             vkQueryPool = VkQueryPool(0L)
             poolSize = 0
         }
-        querySlots = List(poolSize) { QuerySlot() }
+        querySlots = List(poolSize) { QuerySlot(it) }
 
         backend.commandPool.singleShotCommands {
             vkCmdResetQueryPool(it, vkQueryPool.handle, 0, poolSize)
@@ -88,16 +89,17 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
             }
         }
 
-        if (allComplete) {
+        if (allComplete && --completeCnt == 0) {
             for (i in 0 until nextQuery) {
                 querySlots[i].onComplete?.invoke()
             }
             vkCmdResetQueryPool(commandBuffer, vkQueryPool.handle, 0, poolSize)
             nextQuery = 0
+            completeCnt = 2
         }
     }
 
-    inner class QuerySlot {
+    inner class QuerySlot(val index: Int) {
         var isComplete = false
             private set
         var timestamp = 0L

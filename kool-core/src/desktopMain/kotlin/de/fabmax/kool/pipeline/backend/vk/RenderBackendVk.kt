@@ -102,6 +102,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 passEncoderState.beginFrame(this)
                 frameTimer.begin(passEncoderState.commandBuffer)
 
+                preparePipelines(passEncoderState, ctx)
+
                 ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
                 if (ctx.scenes.isEmpty()) {
                     screenRenderPass.renderScene(ctx.backgroundScene.mainRenderPass, passEncoderState)
@@ -138,6 +140,26 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 windowResized = false
                 recreateSwapchain()
             }
+        }
+    }
+
+    private fun preparePipelines(passEncoderState: RenderPassEncoderState, ctx: KoolContext) {
+        for (i in ctx.backgroundScene.sortedOffscreenPasses.indices) {
+            preparePipelines(ctx.backgroundScene.sortedOffscreenPasses[i], passEncoderState)
+        }
+        for (i in ctx.scenes.indices) {
+            val scene = ctx.scenes[i]
+            for (j in scene.sortedOffscreenPasses.indices) {
+                preparePipelines(scene.sortedOffscreenPasses[j], passEncoderState)
+            }
+            preparePipelines(scene.mainRenderPass, passEncoderState)
+        }
+    }
+
+    private fun preparePipelines(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
+        for (i in renderPass.views.indices) {
+            val queue = renderPass.views[i].drawQueue
+            queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
         }
     }
 
