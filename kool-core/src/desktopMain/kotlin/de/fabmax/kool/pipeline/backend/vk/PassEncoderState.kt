@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.RenderPass
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
@@ -9,7 +10,6 @@ interface PassEncoderState {
     val frameIndex: Int
     val renderPass: RenderPass
     val stack: MemoryStack
-    fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipelineLayout: VkPipelineLayout)
 }
 
 class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
@@ -32,7 +32,8 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
     var layer = 0
         private set
     private var activePipeline: VkGraphicsPipeline = VkGraphicsPipeline(0L)
-    private val bindGroups = Array<BindGroupDataVk?>(4) { null }
+
+    private val descriptorSets = MemoryUtil.memAllocLong(3)
 
     fun beginFrame(stack: MemoryStack) {
         _stack = stack
@@ -65,7 +66,6 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
         gpuRenderPass: RenderPassVk,
         mipLevel: Int,
         layer: Int = 0,
-        //timestampWrites: GPURenderPassTimestampWrites? = null,
         forceLoad: Boolean = false
     ) {
         if (isPassActive) {
@@ -74,9 +74,6 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
                 if (renderPass.clearDepth || renderPass.clearColor != null) {
                     backend.clearHelper.clear(this)
                     activePipeline = VkGraphicsPipeline(0L)
-                    for (i in bindGroups.indices) {
-                        bindGroups[i] = null
-                    }
                 }
                 return
             }
@@ -101,9 +98,6 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
             mipLevel = 0
             layer = 0
             activePipeline = VkGraphicsPipeline(0L)
-            for (i in bindGroups.indices) {
-                bindGroups[i] = null
-            }
         }
     }
 
@@ -114,18 +108,43 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
         }
     }
 
-    override fun setBindGroup(group: Int, bindGroupData: BindGroupDataVk, pipelineLayout: VkPipelineLayout) {
-        val bindGroup = bindGroupData.bindGroup
-        if (bindGroups[group] !== bindGroupData && bindGroup != null) {
-            bindGroups[group] = bindGroupData
-            vkCmdBindDescriptorSets(
-                commandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout.handle,
-                group,
-                stack.longs(bindGroup.getDescriptorSet(frameIndex).handle),
-                null
-            )
-        }
+    fun setBindGroups(
+        viewGroup: BindGroupDataVk,
+        pipelineGroup: BindGroupDataVk,
+        meshGroup: BindGroupDataVk,
+        pipelineLayout: VkPipelineLayout
+    ) {
+        val viewIdx = viewGroup.data.layout.group
+        val pipelineIdx = pipelineGroup.data.layout.group
+        val meshIdx = meshGroup.data.layout.group
+
+        descriptorSets.limit(3)
+        viewGroup.bindGroup?.let { descriptorSets.put(viewIdx, it.getDescriptorSet(frameIndex).handle) }
+        pipelineGroup.bindGroup?.let { descriptorSets.put(pipelineIdx, it.getDescriptorSet(frameIndex).handle) }
+        meshGroup.bindGroup?.let { descriptorSets.put(meshIdx, it.getDescriptorSet(frameIndex).handle) }
+        vkCmdBindDescriptorSets(
+            commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout.handle,
+            0,
+            descriptorSets,
+            null
+        )
+    }
+
+    fun setBindGroup(
+        bindGroup: BindGroupDataVk,
+        pipelineLayout: VkPipelineLayout
+    ) {
+        descriptorSets.limit(1)
+        bindGroup.bindGroup?.let { descriptorSets.put(0, it.getDescriptorSet(frameIndex).handle) }
+        vkCmdBindDescriptorSets(
+            commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout.handle,
+            bindGroup.data.layout.group,
+            descriptorSets,
+            null
+        )
     }
 }

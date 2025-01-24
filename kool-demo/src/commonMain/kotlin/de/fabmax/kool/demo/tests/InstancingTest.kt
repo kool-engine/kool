@@ -18,7 +18,7 @@ import de.fabmax.kool.util.Time
 
 class InstancingTest : DemoScene("Instancing") {
 
-    private val numObjects = mutableStateOf(5000)
+    private val numObjects = mutableStateOf(1000)
     private val drawInstanced = mutableStateOf(false)
     private val updateInstances = mutableStateOf(false)
     private val numInstancesPerMesh = mutableStateOf(10)
@@ -91,7 +91,7 @@ class InstancingTest : DemoScene("Instancing") {
             Text("${profilingScene.updateTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
         MenuRow {
-            Text("Draw scene:") { labelStyle(Grow.Std) }
+            Text("Scene recording:") { labelStyle(Grow.Std) }
             Text("${profilingScene.drawTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
     }
@@ -176,7 +176,7 @@ class InstancingTest : DemoScene("Instancing") {
             super.renderScene(ctx)
             val p = (Time.precisionTime - t)
             updateT = updateT * 0.9 + p * 1000.0 * 0.1
-            drawT = drawT * 0.9 + sceneDrawTime * 1000.0 * 0.1
+            drawT = drawT * 0.9 + sceneRecordTime.inWholeMilliseconds * 0.1
 
             if (Time.frameCount % 5 == 0) {
                 updateTstate.set(updateT)

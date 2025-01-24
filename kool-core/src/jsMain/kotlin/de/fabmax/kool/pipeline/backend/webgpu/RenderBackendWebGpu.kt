@@ -23,6 +23,7 @@ import org.khronos.webgl.*
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 
 class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
     override val name: String = "WebGPU Backend"
@@ -119,10 +120,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-                val t = Time.precisionTime
-                scene.renderOffscreenPasses(passEncoderState)
-                sceneRenderer.renderScene(scene.mainRenderPass, passEncoderState)
-                scene.sceneDrawTime = Time.precisionTime - t
+                scene.sceneRecordTime = measureTime {
+                    scene.renderOffscreenPasses(passEncoderState)
+                    sceneRenderer.renderScene(scene.mainRenderPass, passEncoderState)
+                }
             }
         }
 

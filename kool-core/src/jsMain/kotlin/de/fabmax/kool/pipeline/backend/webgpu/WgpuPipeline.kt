@@ -108,27 +108,20 @@ sealed class WgpuPipeline(
     }
 
     protected fun BindGroupData.checkBindings(): Boolean {
-        return checkStorageBuffers() && checkTextures()
-    }
-
-    private fun BindGroupData.checkStorageBuffers(): Boolean {
-        return bindings
-            .filterIsInstance<BindGroupData.StorageBufferBindingData<*>>()
-            .all { it.storageBuffer != null }
-    }
-
-    private fun BindGroupData.checkTextures(): Boolean {
-        var isComplete = true
-        bindings
-            .filterIsInstance<BindGroupData.TextureBindingData<*>>()
-            .map { it.texture }
-            .filter { it?.loadingState != Texture.LoadingState.LOADED }
-            .forEach {
-                if (it == null || !it.checkLoadingState()) {
-                    isComplete = false
+        for (i in bindings.indices) {
+            val binding = bindings[i]
+            when (binding) {
+                is BindGroupData.StorageBufferBindingData<*> if binding.storageBuffer != null -> return false
+                is BindGroupData.TextureBindingData<*> -> {
+                    val tex = binding.texture
+                    if (tex == null || (tex.loadingState != Texture.LoadingState.LOADED && !tex.checkLoadingState())) {
+                        return false
+                    }
                 }
+                else -> { }
             }
-        return isComplete
+        }
+        return true
     }
 
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
@@ -140,8 +133,8 @@ sealed class WgpuPipeline(
     }
 
     protected fun BindGroupData.getOrCreateWgpuData(): WgpuBindGroupData {
-        val group = if (this@WgpuPipeline is WgpuComputePipeline) 0 else layout.group
         if (gpuData == null) {
+            val group = if (this@WgpuPipeline is WgpuComputePipeline) 0 else layout.group
             gpuData = WgpuBindGroupData(this, bindGroupLayouts[group], locations, backend)
         }
         return gpuData as WgpuBindGroupData

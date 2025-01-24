@@ -148,13 +148,14 @@ class OffscreenPass2dVk(
                 mipLevels = parentPass.numTextureMipLevels,
                 samples = numSamples,
                 usage = usage,
+                label = texture.name
             )
             val tex = ImageVk(backend, descriptor, name)
             return descriptor to tex
         }
 
         private fun createViews() {
-            mipViews.forEach { backend.device.destroyImageView(it, 2) }
+            mipViews.forEach { backend.device.destroyImageView(it) }
             mipViews.clear()
             for (i in 0 until parentPass.numRenderMipLevels) {
                 mipViews += backend.device.createImageView(
@@ -187,6 +188,8 @@ class OffscreenPass2dVk(
 
         override fun release() {
             super.release()
+            gpuTexture.release()
+            texture.gpuTexture = null
             mipViews.forEach { backend.device.destroyImageView(it) }
         }
     }
@@ -325,7 +328,7 @@ class OffscreenPass2dVk(
         }
 
         fun recreateFramebuffers() {
-            framebuffers.forEach { device.destroyFramebuffer(it, 2) }
+            framebuffers.forEach { device.destroyFramebuffer(it) }
             framebuffers = createFramebuffers()
         }
 

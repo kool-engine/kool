@@ -26,6 +26,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     val maxSamples: Int
     val maxAnisotropy: Float
     val wideLines: Boolean
+    val cubeMapArrays: Boolean
     val minLineWidth: Float
     val maxLineWidth: Float
 
@@ -69,6 +70,8 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 minLineWidth = 1f
                 maxLineWidth = 1f
             }
+
+            cubeMapArrays = deviceFeatures.imageCubeArray()
 
             maxSamples = getMaxUsableSampleCount()
             maxAnisotropy = if (!deviceFeatures.samplerAnisotropy()) 1f else {

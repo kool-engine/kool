@@ -75,7 +75,8 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                     arrayLayers = 1,
                     mipLevels = 1,
                     samples = VK_SAMPLE_COUNT_1_BIT,
-                    usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT /*or VK_IMAGE_USAGE_TRANSFER_SRC_BIT*/ or VK_IMAGE_USAGE_SAMPLED_BIT
+                    usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                    label = dst.name
                 )
                 val texResource = ImageVk(backend, imgInfo)
 

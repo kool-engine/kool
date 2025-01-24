@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.NodeId
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkPipelineColorBlendStateCreateInfo
 import org.lwjgl.vulkan.VkPipelineVertexInputStateCreateInfo
@@ -39,9 +40,15 @@ class DrawPipelineVk(
         }
 
         passEncoderState.setPipeline(renderPipeline)
-        viewData.getOrCreateVkData().bind(passEncoderState, pipelineLayout)
-        pipelineData.getOrCreateVkData().bind(passEncoderState, pipelineLayout)
-        meshData.getOrCreateVkData().bind(passEncoderState, pipelineLayout)
+        val viewGroup = viewData.getOrCreateVkData()
+        val pipelineGroup = pipelineData.getOrCreateVkData()
+        val meshGroup = meshData.getOrCreateVkData()
+
+        viewGroup.prepareBind(passEncoderState)
+        pipelineGroup.prepareBind(passEncoderState)
+        meshGroup.prepareBind(passEncoderState)
+        passEncoderState.setBindGroups(viewGroup, pipelineGroup, meshGroup, pipelineLayout)
+
         bindVertexBuffers(passEncoderState, cmd)
         return true
     }
@@ -255,27 +262,27 @@ class DrawPipelineVk(
             cmd.mesh.geometry.gpuGeometry = GeometryVk(cmd.mesh, backend)
         }
         val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk
-        gpuGeom.checkBuffers()
+        gpuGeom.checkBuffers(passEncoderState.commandBuffer)
 
         var numBuffers = 1
         if (cmd.instances != null) numBuffers++
         if (gpuGeom.intBuffer != null) numBuffers++
-        val buffers = passEncoderState.stack.mallocLong(numBuffers)
-        val offsets = passEncoderState.stack.callocLong(numBuffers)
+        bufferHandles.limit(numBuffers)
+        bufferOffsets.limit(numBuffers)
 
         var slot = 0
-        buffers.put(slot++, gpuGeom.floatBuffer.handle)
-        gpuGeom.intBuffer?.let { buffers.put(slot++, it.handle) }
+        bufferHandles.put(slot++, gpuGeom.floatBuffer.handle)
+        gpuGeom.intBuffer?.let { bufferHandles.put(slot++, it.handle) }
         cmd.instances?.let { insts ->
             if (insts.gpuInstances == null) {
                 insts.gpuInstances = InstancesVk(insts, backend, cmd.mesh)
             }
             val gpuInsts = insts.gpuInstances as InstancesVk
-            gpuInsts.checkBuffers()
-            gpuInsts.instanceBuffer?.let { buffers.put(slot++, it.handle) }
+            gpuInsts.checkBuffers(passEncoderState.commandBuffer)
+            gpuInsts.instanceBuffer?.let { bufferHandles.put(slot++, it.handle) }
         }
 
-        vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, buffers, offsets)
+        vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, bufferHandles, bufferOffsets)
         vkCmdBindIndexBuffer(passEncoderState.commandBuffer, gpuGeom.indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32)
     }
 
@@ -305,5 +312,10 @@ class DrawPipelineVk(
         GpuType.INT2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
         GpuType.INT3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
         GpuType.INT4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+    }
+
+    companion object {
+        private val bufferHandles = MemoryUtil.memCallocLong(3)
+        private val bufferOffsets = MemoryUtil.memCallocLong(3)
     }
 }

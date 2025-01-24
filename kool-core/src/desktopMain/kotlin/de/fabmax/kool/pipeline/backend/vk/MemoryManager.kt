@@ -16,8 +16,8 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
     private val impl: MemManager = VmaMemManager(backend)
 
-    private val buffers = mutableSetOf<VkBuffer>()
-    private val images = mutableSetOf<VkImage>()
+    private val buffers = mutableMapOf<VkBuffer, MemoryInfo>()
+    private val images = mutableMapOf<VkImage, ImageInfo>()
 
     init {
         releaseWith(backend.device)
@@ -25,30 +25,31 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
     fun createBuffer(info: MemoryInfo): VkBuffer{
         val buffer = impl.createBuffer(info)
-        buffers += buffer
+        buffers[buffer] = info
         return buffer
     }
 
-    fun freeBuffer(buffer: VkBuffer, deferTicks: Int = 1) {
+    fun freeBuffer(buffer: VkBuffer, deferTicks: Int = 2) {
         check(buffer in buffers) { "buffer was already release" }
         buffers -= buffer
         impl.freeBuffer(deferTicks, buffer)
     }
 
-    inline fun stagingBuffer(size: Long, usage: Int = VK_BUFFER_USAGE_TRANSFER_SRC_BIT, block: (VkBuffer) -> Unit) {
+    inline fun stagingBuffer(size: Long, usage: Int = VK_BUFFER_USAGE_TRANSFER_SRC_BIT, bufferDeleteTicks: Int = 2, block: (VkBuffer) -> Unit) {
         val stagingInfo = MemoryInfo(
             size = size,
             usage = usage,
+            label = "<staging-buffer:$size>",
             createMapped = true
         )
         val stagingBuf = createBuffer(stagingInfo)
         block(stagingBuf)
-        freeBuffer(stagingBuf, 0)
+        freeBuffer(stagingBuf, bufferDeleteTicks)
     }
 
     fun createImage(imageInfo: ImageInfo): VkImage {
         val image = impl.createImage(imageInfo)
-        images += image
+        images[image] = imageInfo
         return image
     }
 
@@ -79,12 +80,18 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
     override fun release() {
         super.release()
         if (buffers.isNotEmpty()) {
-            logW { "Freeing ${buffers.size} leaked buffers" }
-            buffers.toList().forEach { freeBuffer(it) }
+            logW { "Freeing ${buffers.size} leaked buffers:" }
+            buffers.keys.toList().forEach {
+                logW { " * ${buffers[it]?.label}" }
+                freeBuffer(it)
+            }
         }
         if (images.isNotEmpty()) {
-            logW { "Freeing ${images.size} leaked images" }
-            images.toList().forEach { freeImage(it) }
+            logW { "Freeing ${images.size} leaked images:" }
+            images.keys.toList().forEach {
+                logW { " * ${images[it]?.label}" }
+                freeImage(it)
+            }
         }
         impl.freeResources()
     }
@@ -246,6 +253,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 data class MemoryInfo(
     val size: Long,
     val usage: Int,
+    val label: String,
     val allocUsage: Int = VMA_MEMORY_USAGE_AUTO,
     val createMapped: Boolean = false
 )
@@ -260,8 +268,9 @@ data class ImageInfo(
     val mipLevels: Int,
     val samples: Int,
     val usage: Int,
+    val label: String,
     val tiling: Int = VK_IMAGE_TILING_OPTIMAL,
     val sharingMode: Int = VK_SHARING_MODE_EXCLUSIVE,
     val allocUsage: Int = VMA_MEMORY_USAGE_AUTO,
-    val flags: Int = 0
+    val flags: Int = 0,
 )

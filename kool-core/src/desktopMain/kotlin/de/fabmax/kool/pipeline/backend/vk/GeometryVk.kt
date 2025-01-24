@@ -5,6 +5,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
 
 class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(), GpuGeometry {
     val device: Device get() = backend.device
@@ -22,24 +23,36 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
     init {
         val geom = mesh.geometry
 
-        val indexBufInfo = MemoryInfo(4L * geom.numIndices, VK_BUFFER_USAGE_INDEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-        val floatBufInfo = MemoryInfo(geom.byteStrideF * geom.numVertices.toLong(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-        createdIndexBuffer = GrowingBufferVk(backend, indexBufInfo, "${mesh.name} index data")
-        createdFloatBuffer = GrowingBufferVk(backend, floatBufInfo, "${mesh.name} vertex float data")
+        val indexBufInfo = MemoryInfo(
+            size = 4L * geom.numIndices,
+            usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            label = "${mesh.name} index data"
+        )
+        val floatBufInfo = MemoryInfo(
+            size = geom.byteStrideF * geom.numVertices.toLong(),
+            usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            label = "${mesh.name} vertex float data"
+        )
+        createdIndexBuffer = GrowingBufferVk(backend, indexBufInfo)
+        createdFloatBuffer = GrowingBufferVk(backend, floatBufInfo)
         createdIntBuffer = if (geom.byteStrideI == 0) null else {
-            val intBufInfo = MemoryInfo(geom.byteStrideI * geom.numVertices.toLong(), VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT)
-            GrowingBufferVk(backend, intBufInfo, "${mesh.name} vertex int data")
+            val intBufInfo = MemoryInfo(
+                size = geom.byteStrideI * geom.numVertices.toLong(),
+                usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                label = "${mesh.name} vertex int data"
+            )
+            GrowingBufferVk(backend, intBufInfo)
         }
     }
 
-    fun checkBuffers() {
+    fun checkBuffers(commandBuffer: VkCommandBuffer) {
         checkIsNotReleased()
 
         val geometry = mesh.geometry
         if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
-            createdIndexBuffer.writeData(geometry.indices)
-            createdFloatBuffer.writeData(geometry.dataF)
-            createdIntBuffer?.writeData(geometry.dataI)
+            createdIndexBuffer.writeData(geometry.indices, commandBuffer)
+            createdFloatBuffer.writeData(geometry.dataF, commandBuffer)
+            createdIntBuffer?.writeData(geometry.dataI, commandBuffer)
             geometry.hasChanged = false
         }
         isNewlyCreated = false

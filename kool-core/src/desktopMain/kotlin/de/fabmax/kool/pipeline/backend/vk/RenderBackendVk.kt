@@ -12,6 +12,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.util.checkIsNotReleased
 import de.fabmax.kool.util.memStack
 import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.glfw.GLFW
@@ -19,6 +20,7 @@ import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.VkCommandBuffer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val name = "Vulkan backend"
@@ -28,12 +30,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val glfwWindow: GlfwVkWindow
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
-    override val features = BackendFeatures(
-        computeShaders = true,
-        cubeMapArrays = true,
-        reversedDepth = true,
-        depthOnlyShaderColorOutput = null,
-    )
+    override val features: BackendFeatures
 
     val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()
 
@@ -72,6 +69,13 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         apiName = "Vulkan ${physicalDevice.apiVersion}"
         deviceName = physicalDevice.deviceName
 
+        features = BackendFeatures(
+            computeShaders = true,
+            cubeMapArrays = physicalDevice.cubeMapArrays,
+            reversedDepth = true,
+            depthOnlyShaderColorOutput = null,
+        )
+
         memManager = MemoryManager(this)
         commandPool = CommandPool(this, device.graphicsQueue)
         commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
@@ -105,11 +109,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
                 for (i in ctx.scenes.indices) {
                     val scene = ctx.scenes[i]
+                    scene.checkIsNotReleased()
                     if (scene.isVisible) {
-                        //val t = Time.precisionTime
-                        scene.renderOffscreenPasses(passEncoderState)
-                        screenRenderPass.renderScene(scene.mainRenderPass, passEncoderState)
-                        //scene.sceneDrawTime = Time.precisionTime - t
+                        scene.sceneRecordTime = measureTime {
+                            scene.renderOffscreenPasses(passEncoderState)
+                            screenRenderPass.renderScene(scene.mainRenderPass, passEncoderState)
+                        }
                     }
                 }
 
@@ -178,6 +183,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun cleanup(ctx: KoolContext) {
         device.waitForIdle()
+        DeferredRelease.processTasks(true)
         instance.release()
         DeferredRelease.processTasks(true)
     }

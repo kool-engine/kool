@@ -36,6 +36,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
 
             val features = callocVkPhysicalDeviceFeatures {
                 samplerAnisotropy(physicalDevice.deviceFeatures.samplerAnisotropy())
+                imageCubeArray(physicalDevice.cubeMapArrays)
             }
 
             val enableExtensions = backend.setup.requestedDeviceExtensions.filter { it.name in physicalDevice.availableDeviceExtensions }
@@ -288,8 +289,8 @@ internal fun Device.destroyDescriptorSetLayout(descriptorSetLayout: VkDescriptor
     DeferredRelease.defer { vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout.handle, null) }
 }
 
-internal fun Device.destroyFramebuffer(framebuffer: VkFramebuffer, deferTicks: Int = 1) {
-    DeferredRelease.defer(deferTicks) { vkDestroyFramebuffer(vkDevice, framebuffer.handle, null) }
+internal fun Device.destroyFramebuffer(framebuffer: VkFramebuffer) {
+    DeferredRelease.defer { vkDestroyFramebuffer(vkDevice, framebuffer.handle, null) }
 }
 
 internal fun Device.destroyFence(fence: VkFence) {
@@ -300,8 +301,8 @@ internal fun Device.destroyGraphicsPipeline(graphicsPipeline: VkGraphicsPipeline
     DeferredRelease.defer { vkDestroyPipeline(vkDevice, graphicsPipeline.handle, null) }
 }
 
-internal fun Device.destroyImageView(imageView: VkImageView, deferTicks: Int = 1) {
-    DeferredRelease.defer(deferTicks) { vkDestroyImageView(vkDevice, imageView.handle, null) }
+internal fun Device.destroyImageView(imageView: VkImageView) {
+    DeferredRelease.defer { vkDestroyImageView(vkDevice, imageView.handle, null) }
 }
 
 internal fun Device.destroyPipelineLayout(pipelineLayout: VkPipelineLayout) {
@@ -329,7 +330,7 @@ internal fun Device.destroySemaphore(semaphore: VkSemaphore) {
 }
 
 internal fun Device.destroySwapchain(swapchain: VkSwapchain) {
-    DeferredRelease.defer { vkDestroySwapchainKHR(vkDevice, swapchain.handle, null) }
+    vkDestroySwapchainKHR(vkDevice, swapchain.handle, null)
 }
 
 internal fun Device.resetCommandPool(commandPool: VkCommandPool, flags: Int = 0) {

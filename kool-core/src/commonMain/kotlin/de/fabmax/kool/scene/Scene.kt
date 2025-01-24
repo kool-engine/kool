@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * @author fabmax
@@ -47,7 +48,7 @@ open class Scene(name: String? = null) : Node(name) {
     val isEmpty: Boolean
         get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedMutations)
 
-    var sceneDrawTime = 0.0
+    var sceneRecordTime = 0.0.seconds
 
     fun tryEnableInfiniteDepth(): Boolean {
         val ctx = KoolSystem.getContextOrNull() ?: return false

@@ -104,7 +104,8 @@ class ClearHelper(val backend: RenderBackendVk) {
             }
 
             passEncoderState.setPipeline(clearPipeline)
-            bindGroupData.bind(passEncoderState, pipelineLayout)
+            bindGroupData.prepareBind(passEncoderState)
+            passEncoderState.setBindGroup(bindGroupData, pipelineLayout)
             vkCmdDraw(passEncoderState.commandBuffer, 4, 1, 0, 0)
         }
 

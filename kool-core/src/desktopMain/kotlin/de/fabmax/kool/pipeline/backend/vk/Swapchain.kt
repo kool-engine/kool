@@ -167,6 +167,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             samples = numSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            label = "swapchain-color"
         )
         val image = ImageVk(backend, imgInfo)
 
@@ -188,6 +189,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             samples = numSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            label = "swapchain-depth"
         )
         val image = ImageVk(backend, imgInfo)
 

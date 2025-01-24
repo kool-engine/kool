@@ -6,16 +6,13 @@ import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.Std140BufferLayout
 import de.fabmax.kool.pipeline.TextureSampleType
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.logT
-import de.fabmax.kool.util.memStack
-import de.fabmax.kool.util.useRaw
+import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkWriteDescriptorSet
 
 class BindGroupDataVk(
-    private val data: BindGroupData,
+    val data: BindGroupData,
     private val gpuLayout: VkDescriptorSetLayout,
     private val backend: RenderBackendVk
 ) : BaseReleasable(), GpuBindGroupData {
@@ -28,7 +25,12 @@ class BindGroupDataVk(
     var bindGroup: BindGroup? = null
         private set
 
-    fun bind(passEncoderState: PassEncoderState, pipelineLayout: VkPipelineLayout, group: Int = data.layout.group) {
+    private var prepareFrame = -1
+
+    fun prepareBind(passEncoderState: PassEncoderState) {
+        if (prepareFrame == Time.frameCount) return
+        prepareFrame = Time.frameCount
+
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.gpuTexture !== tex.image) {
@@ -52,7 +54,6 @@ class BindGroupDataVk(
                 ubo.binding.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
             }
         }
-        passEncoderState.setBindGroup(group, this, pipelineLayout)
     }
 
     private fun createBindGroup(): BindGroup = memStack {
@@ -184,8 +185,12 @@ class BindGroupDataVk(
         val buffers: List<BufferVk> = List(numSets) {
             BufferVk(
                 backend = backend,
-                bufferInfo = MemoryInfo(layout.size.toLong(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, createMapped = true),
-                label = "bindGroup[${data.layout.scope}]-ubo-${binding.name}"
+                bufferInfo = MemoryInfo(
+                    size = layout.size.toLong(),
+                    usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                    label = "bindGroup[${data.layout.scope}]-ubo-${binding.name}",
+                    createMapped = true
+                ),
             )
         }
 

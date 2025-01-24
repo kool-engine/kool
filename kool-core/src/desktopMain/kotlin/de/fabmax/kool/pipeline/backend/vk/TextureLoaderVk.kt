@@ -25,9 +25,9 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         if (loaded != null && loaded.isReleased) { loadedTextures -= data.id }
 
         loaded = when {
-            tex is Texture1d && data is ImageData1d -> loadTexture1d(data)
+            tex is Texture1d && data is ImageData1d -> loadTexture1d(tex, data)
             tex is Texture2d && data is ImageData2d -> loadTexture2d(tex, data)
-            tex is Texture3d && data is ImageData3d -> loadTexture3d(data)
+            tex is Texture3d && data is ImageData3d -> loadTexture3d(tex, data)
             tex is TextureCube && data is ImageDataCube -> loadTextureCube(tex, data)
             tex is Texture2dArray && data is ImageData3d -> loadTexture2dArray(tex, data)
             tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeArray(tex, data)
@@ -37,13 +37,15 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         tex.loadingState = Texture.LoadingState.LOADED
     }
 
-    private fun loadTexture1d(data: ImageData1d): ImageVk = loadTexture(
+    private fun loadTexture1d(tex: Texture1d, data: ImageData1d): ImageVk = loadTexture(
+        tex = tex,
         type = VK_IMAGE_TYPE_1D,
         data = data,
         width = data.width,
     )
 
     private fun loadTexture2d(tex: Texture2d, data: ImageData2d): ImageVk = loadTexture(
+        tex = tex,
         type = VK_IMAGE_TYPE_2D,
         data = data,
         width = data.width,
@@ -51,7 +53,8 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         mipMaps = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1,
     )
 
-    private fun loadTexture3d(data: ImageData3d): ImageVk = loadTexture(
+    private fun loadTexture3d(tex: Texture3d, data: ImageData3d): ImageVk = loadTexture(
+        tex = tex,
         type = VK_IMAGE_TYPE_3D,
         data = data,
         width = data.width,
@@ -60,6 +63,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
     )
 
     private fun loadTextureCube(tex: TextureCube, data: ImageDataCube): ImageVk = loadTexture(
+        tex = tex,
         type = VK_IMAGE_TYPE_2D,
         data = data,
         width = data.width,
@@ -70,6 +74,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
     )
 
     private fun loadTexture2dArray(tex: Texture2dArray, data: ImageData3d): ImageVk = loadTexture(
+        tex = tex,
         type = VK_IMAGE_TYPE_2D,
         data = data,
         width = data.width,
@@ -79,6 +84,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
     )
 
     private fun loadTextureCubeArray(tex: TextureCubeArray, data: ImageDataCubeArray): ImageVk = loadTexture(
+        tex = tex,
         type = VK_IMAGE_TYPE_2D,
         data = data,
         width = data.width,
@@ -89,6 +95,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
     )
 
     private fun loadTexture(
+        tex: Texture<*>,
         type: Int,
         data: ImageData,
         width: Int,
@@ -110,7 +117,8 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
             mipLevels = mipMaps,
             samples = VK_SAMPLE_COUNT_1_BIT,
             usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT or srcUsage,
-            flags = flags
+            flags = flags,
+            label = tex.name
         )
         val image = ImageVk(backend, imgInfo)
 

@@ -146,7 +146,8 @@ class OffscreenPassCubeVk(
                 mipLevels = parentPass.numTextureMipLevels,
                 samples = numSamples,
                 usage = usage,
-                flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+                flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+                label = texture.name
             )
             val tex = ImageVk(backend, descriptor, name)
             return descriptor to tex
@@ -189,6 +190,8 @@ class OffscreenPassCubeVk(
 
         override fun release() {
             super.release()
+            gpuTexture.release()
+            texture.gpuTexture = null
             mipViews.flatMap { it }.forEach { backend.device.destroyImageView(it) }
         }
     }

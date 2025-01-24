@@ -131,9 +131,12 @@ class ImageVk(
     }
 
     override fun release() {
+        val wasReleased = isReleased
         super.release()
-        backend.memManager.freeImage(vkImage, 2)
-        textureInfo.deleted()
+        if (!wasReleased) {
+            backend.memManager.freeImage(vkImage, 2)
+            textureInfo.deleted()
+        }
     }
 
     fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
