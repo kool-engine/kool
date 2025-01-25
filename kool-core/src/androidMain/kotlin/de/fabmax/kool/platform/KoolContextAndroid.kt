@@ -59,7 +59,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     }
 
     fun onDestroy() {
-        KoolSystem.destroyContext()
+        onShutdown.updated().forEach { it(this) }
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {
