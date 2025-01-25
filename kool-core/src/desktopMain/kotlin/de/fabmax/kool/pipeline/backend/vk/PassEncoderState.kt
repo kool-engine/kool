@@ -32,6 +32,8 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
     var layer = 0
         private set
     private var activePipeline: VkGraphicsPipeline = VkGraphicsPipeline(0L)
+    private var currentViewGroup: BindGroupDataVk? = null
+    private var currentPipelineGroup: BindGroupDataVk? = null
 
     private val descriptorSets = MemoryUtil.memAllocLong(3)
 
@@ -98,6 +100,8 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
             mipLevel = 0
             layer = 0
             activePipeline = VkGraphicsPipeline(0L)
+            currentViewGroup = null
+            currentPipelineGroup = null
         }
     }
 
@@ -114,6 +118,13 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
         meshGroup: BindGroupDataVk,
         pipelineLayout: VkPipelineLayout
     ) {
+        if (viewGroup == currentViewGroup && pipelineGroup == currentPipelineGroup) {
+            setBindGroup(meshGroup, pipelineLayout)
+            return
+        }
+        currentViewGroup = viewGroup
+        currentPipelineGroup = pipelineGroup
+
         val viewIdx = viewGroup.data.layout.group
         val pipelineIdx = pipelineGroup.data.layout.group
         val meshIdx = meshGroup.data.layout.group
@@ -132,10 +143,7 @@ class RenderPassEncoderState(val backend: RenderBackendVk): PassEncoderState {
         )
     }
 
-    fun setBindGroup(
-        bindGroup: BindGroupDataVk,
-        pipelineLayout: VkPipelineLayout
-    ) {
+    fun setBindGroup(bindGroup: BindGroupDataVk, pipelineLayout: VkPipelineLayout) {
         descriptorSets.limit(1)
         bindGroup.bindGroup?.let { descriptorSets.put(0, it.getDescriptorSet(frameIndex).handle) }
         vkCmdBindDescriptorSets(
