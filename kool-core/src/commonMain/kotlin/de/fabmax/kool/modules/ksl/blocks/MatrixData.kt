@@ -92,6 +92,8 @@ class ModelMatrixData(program: KslProgram) : MeshMatrixData(program, "uModelMat"
     override fun onUpdate(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
         val uboData = cmd.mesh.meshPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
+        if (uboData.modCnt == cmd.mesh.modelMatrixData.modCount) return
+        uboData.modCnt = cmd.mesh.modelMatrixData.modCount
 
         if (cmd.queue.isDoublePrecision) {
             cmd.modelMatD.toMutableMat4f(tmpMat4f)

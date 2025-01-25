@@ -24,6 +24,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
     internal var checkFrame = -1
     internal var isCheckOk = false
+    var modCnt = -1
 
     val isComplete: Boolean
         get() = bindings.all { it.isComplete }

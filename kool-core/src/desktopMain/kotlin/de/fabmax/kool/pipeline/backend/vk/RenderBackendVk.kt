@@ -113,7 +113,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     val scene = ctx.scenes[i]
                     scene.checkIsNotReleased()
                     if (scene.isVisible) {
-                        scene.sceneRecordTime = measureTime {
+                        scene.sceneRecordTime += measureTime {
                             scene.renderOffscreenPasses(passEncoderState)
                             screenRenderPass.renderScene(scene.mainRenderPass, passEncoderState)
                         }
@@ -149,10 +149,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
-            for (j in scene.sortedOffscreenPasses.indices) {
-                preparePipelines(scene.sortedOffscreenPasses[j], passEncoderState)
+            scene.sceneRecordTime = measureTime {
+                for (j in scene.sortedOffscreenPasses.indices) {
+                    preparePipelines(scene.sortedOffscreenPasses[j], passEncoderState)
+                }
+                preparePipelines(scene.mainRenderPass, passEncoderState)
             }
-            preparePipelines(scene.mainRenderPass, passEncoderState)
         }
     }
 
