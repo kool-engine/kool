@@ -129,7 +129,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
 
         passEncoderState.beginFrame()
-        preparePipelines(passEncoderState, ctx)
+        preparePipelines(ctx)
         ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
 
         for (i in ctx.scenes.indices) {
@@ -157,25 +157,25 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun preparePipelines(passEncoderState: RenderPassEncoderState, ctx: KoolContext) {
+    private fun preparePipelines(ctx: KoolContext) {
         for (i in ctx.backgroundScene.sortedOffscreenPasses.indices) {
-            preparePipelines(ctx.backgroundScene.sortedOffscreenPasses[i], passEncoderState)
+            preparePipelines(ctx.backgroundScene.sortedOffscreenPasses[i])
         }
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             scene.sceneRecordTime = measureTime {
                 for (j in scene.sortedOffscreenPasses.indices) {
-                    preparePipelines(scene.sortedOffscreenPasses[j], passEncoderState)
+                    preparePipelines(scene.sortedOffscreenPasses[j])
                 }
-                preparePipelines(scene.mainRenderPass, passEncoderState)
+                preparePipelines(scene.mainRenderPass)
             }
         }
     }
 
-    private fun preparePipelines(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
+    private fun preparePipelines(renderPass: RenderPass) {
         for (i in renderPass.views.indices) {
             val queue = renderPass.views[i].drawQueue
-            queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
+            queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
         }
     }
 

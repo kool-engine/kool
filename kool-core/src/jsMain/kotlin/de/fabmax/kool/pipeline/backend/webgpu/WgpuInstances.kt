@@ -10,7 +10,10 @@ class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendW
     private val device: GPUDevice get() = backend.device
 
     private val createdInstanceBuffer: WgpuGrowingBuffer? = if (instances.instanceSizeF == 0) null else {
-        WgpuGrowingBuffer(backend, "${mesh.name} instance data", instances.strideBytesF * instances.maxInstances.toLong())
+        WgpuGrowingBuffer(
+            backend = backend,
+            label = "${mesh.name} instance data", instances.strideBytesF * instances.maxInstances.toLong(),
+        )
     }
     val instanceBuffer: GPUBuffer? get() = createdInstanceBuffer?.buffer?.buffer
 
@@ -27,7 +30,7 @@ class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendW
     }
 
     override fun release() {
-        createdInstanceBuffer?.buffer?.release()
+        createdInstanceBuffer?.release()
         super.release()
     }
 }

@@ -136,7 +136,7 @@ class WgpuDrawPipeline(
         )
     }
 
-    fun updateGeometry(cmd: DrawCommand, passEncoderState: RenderPassEncoderState) {
+    fun updateGeometry(cmd: DrawCommand) {
         if (cmd.geometry.numIndices == 0) return
         users.add(cmd.mesh.id)
 

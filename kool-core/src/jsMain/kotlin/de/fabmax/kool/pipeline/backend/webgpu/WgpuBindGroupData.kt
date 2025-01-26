@@ -285,9 +285,9 @@ class WgpuBindGroupData(
 
     override fun release() {
         super.release()
+        textureBindings.clear()
         bufferBindings.forEach { it.gpuBuffer.release() }
         bufferBindings.clear()
-        storageBufferBindings.forEach { it.gpuBuffer.release() }
         storageBufferBindings.clear()
     }
 

@@ -42,8 +42,8 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
 
     override fun release() {
         super.release()
-        createdIndexBuffer.buffer.release()
-        createdFloatBuffer.buffer.release()
-        createdIntBuffer?.buffer?.release()
+        createdIndexBuffer.release()
+        createdFloatBuffer.release()
+        createdIntBuffer?.release()
     }
 }
