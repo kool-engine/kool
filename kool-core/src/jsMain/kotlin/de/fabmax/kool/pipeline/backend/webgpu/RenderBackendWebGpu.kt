@@ -142,11 +142,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             }
         }
 
+        passEncoderState.ensureRenderPassInactive()
         if (gpuReadbacks.isNotEmpty()) {
             // copy all buffers requested for readback to temporary buffers using the current command encoder
             copyReadbacks(passEncoderState.encoder)
         }
-        passEncoderState.ensureRenderPassInactive()
         timestampQuery.resolve(passEncoderState.encoder)
         passEncoderState.endFrame()
 

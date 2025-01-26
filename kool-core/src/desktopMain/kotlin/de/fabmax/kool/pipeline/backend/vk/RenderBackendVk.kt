@@ -10,15 +10,18 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
+import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.checkIsNotReleased
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
+import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_DST_BIT
+import org.lwjgl.vulkan.VK10.vkQueueWaitIdle
 import org.lwjgl.vulkan.VkCommandBuffer
+import java.nio.ByteBuffer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
@@ -48,12 +51,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val clearHelper: ClearHelper
     val timestampQueryPool: TimestampQueryPool
 
-    private val passEncoderState = PassEncoderState(this)
-    private val frameTimer: Timer
-
-    private var windowResized = false
-
     override var frameGpuTime: Duration = 0.0.seconds
+
+    private val frameTimer: Timer
+    private val passEncoderState = PassEncoderState(this)
+    private var windowResized = false
+    private val gpuReadbacks = mutableListOf<GpuReadback>()
 
     init {
         // tell GLFW to not initialize default OpenGL API before we create the window
@@ -71,7 +74,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = physicalDevice.deviceName
 
         features = BackendFeatures(
-            computeShaders = device.computeQueue != null,
+            computeShaders = device.computeQueue == device.graphicsQueue,
             cubeMapArrays = physicalDevice.cubeMapArrays,
             reversedDepth = true,
             depthOnlyShaderColorOutput = null,
@@ -87,6 +90,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             ),
             maxComputeInvocationsPerWorkgroup = physicalDevice.deviceProperties.limits().maxComputeWorkGroupInvocations(),
         )
+
+        if (device.computeQueue != null && device.computeQueue != device.graphicsQueue) {
+            logW { "Compute queue is available but differs from graphics queue, which is currently not supported. Compute features are disabled." }
+        }
 
         memManager = MemoryManager(this)
         commandPool = CommandPool(this, device.graphicsQueue)
@@ -132,20 +139,20 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     }
                 }
 
-//        if (gpuReadbacks.isNotEmpty()) {
-//            // copy all buffers requested for readback to temporary buffers using the current command encoder
-//            copyReadbacks(encoder)
-//        }
-
                 passEncoderState.ensureRenderPassInactive()
+                if (gpuReadbacks.isNotEmpty()) {
+                    // copy all buffers requested for readback to temporary buffers using the current command encoder
+                    copyReadbacks(passEncoderState)
+                }
                 frameTimer.end(passEncoderState.commandBuffer)
                 timestampQueryPool.pollResults(passEncoderState.commandBuffer, this)
                 passEncoderState.endFrame()
 
-//        if (gpuReadbacks.isNotEmpty()) {
-//            // after encoder is finished and submitted, temp buffers can be mapped for readback
-//            mapReadbacks()
-//        }
+                if (gpuReadbacks.isNotEmpty()) {
+                    // wait until queue is completely processed before reading back the buffers
+                    vkQueueWaitIdle(device.graphicsQueue)
+                    mapReadbacks()
+                }
                 imgOk = swapchain.presentNextImage(this)
             }
             if (!imgOk || windowResized) {
@@ -249,11 +256,93 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
-        TODO("Not yet implemented")
+        gpuReadbacks += ReadbackStorageBuffer(storage, deferred)
     }
 
     override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
-        TODO("Not yet implemented")
+        gpuReadbacks += ReadbackTexture(texture, deferred)
+    }
+
+    private fun copyReadbacks(passEncoderState: PassEncoderState) {
+        gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().forEach { readback ->
+            val gpuBuf = readback.storage.gpuBuffer as BufferVk?
+            if (gpuBuf == null) {
+                readback.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
+            } else {
+                val size = gpuBuf.bufferSize
+                val mapBuffer = BufferVk(
+                    this,
+                    MemoryInfo(
+                        label = "storage-buffer-readback",
+                        size = size,
+                        usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                        isReadback = true
+                    )
+                )
+                mapBuffer.copyFrom(gpuBuf.vkBuffer, passEncoderState.commandBuffer)
+                readback.mapBuffer = mapBuffer
+            }
+        }
+
+        gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
+            val gpuTex = readback.texture.gpuTexture as ImageVk?
+            if (gpuTex == null || readback.texture.props.format.isF16) {
+                readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
+            } else {
+                val format = readback.texture.props.format
+                val size = format.pxSize.toLong() * gpuTex.width * gpuTex.height * gpuTex.depth
+                val mapBuffer = BufferVk(
+                    this,
+                    MemoryInfo(
+                        label = "texture-readback",
+                        size = size,
+                        usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                        isReadback = true
+                    )
+                )
+                gpuTex.copyToBuffer(mapBuffer.vkBuffer, passEncoderState.commandBuffer)
+                readback.mapBuffer = mapBuffer
+            }
+        }
+    }
+
+    private fun mapReadbacks() {
+        gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().filter { it.mapBuffer != null }.forEach { readback ->
+            val mapBuffer = readback.mapBuffer!!
+            val mapped = checkNotNull(mapBuffer.vkBuffer.mapped) { "readback buffer was not created mapped" }
+            readback.storage.buffer.copyFrom(mapped)
+            mapBuffer.release()
+            readback.deferred.complete(Unit)
+        }
+
+        gpuReadbacks.filterIsInstance<ReadbackTexture>().filter { it.mapBuffer != null }.forEach { readback ->
+            val mapBuffer = readback.mapBuffer!!
+            val mapped = checkNotNull(mapBuffer.vkBuffer.mapped) { "readback buffer was not created mapped" }
+            val gpuTex = readback.texture.gpuTexture as ImageVk
+            val format = readback.texture.props.format
+            val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
+            dst.copyFrom(mapped)
+            mapBuffer.release()
+            when (readback.texture) {
+                is Texture1d -> readback.deferred.complete(BufferedImageData1d(dst, gpuTex.width, format))
+                is Texture2d -> readback.deferred.complete(BufferedImageData2d(dst, gpuTex.width, gpuTex.height, format))
+                is Texture3d -> readback.deferred.complete(BufferedImageData3d(dst, gpuTex.width, gpuTex.height, gpuTex.depth, format))
+                else -> readback.deferred.completeExceptionally(IllegalArgumentException("Unsupported texture type"))
+            }
+        }
+
+        gpuReadbacks.clear()
+    }
+
+    private fun Buffer.copyFrom(src: ByteBuffer) {
+        when (this) {
+            is Uint8BufferImpl -> useRaw { it.put(src) }
+            is Uint16BufferImpl -> useRaw { it.put(src.asShortBuffer()) }
+            is Int32BufferImpl -> useRaw { it.put(src.asIntBuffer()) }
+            is Float32BufferImpl -> useRaw { it.put(src.asFloatBuffer()) }
+            is MixedBufferImpl -> useRaw { it.put(src) }
+            else -> logE { "Unexpected buffer type: ${this::class.simpleName}" }
+        }
     }
 
     private fun recreateSwapchain() {
@@ -267,5 +356,15 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         swapchain.release()
         swapchain = Swapchain(this)
         screenRenderPass.onSwapchainRecreated()
+    }
+
+    private interface GpuReadback
+
+    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>) : GpuReadback {
+        var mapBuffer: BufferVk? = null
+    }
+
+    private class ReadbackTexture(val texture: Texture<*>, val deferred: CompletableDeferred<ImageData>) : GpuReadback {
+        var mapBuffer: BufferVk? = null
     }
 }

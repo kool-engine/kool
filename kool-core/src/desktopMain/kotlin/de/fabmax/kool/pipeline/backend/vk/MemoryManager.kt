@@ -162,12 +162,15 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
                     if (info.createMapped) {
                         flags(VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT or VMA_ALLOCATION_CREATE_MAPPED_BIT)
                     }
+                    if (info.isReadback) {
+                        flags(VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT or VMA_ALLOCATION_CREATE_MAPPED_BIT)
+                    }
                 }
                 val allocInfo = VmaAllocationInfo.calloc(this)
                 checkVk(vmaCreateBuffer(allocator, bufferInfo, createInfo, pBuffer, pAllocation, allocInfo)) {
                     "Failed allocating buffer: $it"
                 }
-                val mapped = if (!info.createMapped) null else {
+                val mapped = if (!info.createMapped && !info.isReadback) null else {
                     MemoryUtil.memByteBuffer(allocInfo.pMappedData(), bufferInfo.size().toInt())
                 }
                 VkBuffer(pBuffer[0], pAllocation[0], bufferInfo.size(), mapped)
@@ -255,7 +258,8 @@ data class MemoryInfo(
     val usage: Int,
     val label: String,
     val allocUsage: Int = VMA_MEMORY_USAGE_AUTO,
-    val createMapped: Boolean = false
+    val createMapped: Boolean = false,
+    val isReadback: Boolean = false
 )
 
 data class ImageInfo(

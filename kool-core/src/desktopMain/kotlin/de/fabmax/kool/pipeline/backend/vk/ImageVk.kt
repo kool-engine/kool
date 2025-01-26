@@ -67,6 +67,27 @@ class ImageVk(
         }
     }
 
+    fun copyToBuffer(
+        buffer: VkBuffer,
+        commandBuffer: VkCommandBuffer,
+        stack: MemoryStack? = null
+    ) {
+        memStack(stack) {
+            val prevLayout = layout
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, commandBuffer, stack = this)
+            val region = callocVkBufferImageCopyN(1) {
+                bufferOffset(0)
+                bufferRowLength(0)
+                bufferImageHeight(0)
+                imageSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, arrayLayers)
+                imageOffset().set(0, 0, 0)
+                imageExtent().set(width, height, depth)
+            }
+            vkCmdCopyImageToBuffer(commandBuffer, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer.handle, region)
+            transitionLayout(prevLayout, commandBuffer, stack = this)
+        }
+    }
+
     fun copyFromImage(
         src: ImageVk,
         commandBuffer: VkCommandBuffer,
