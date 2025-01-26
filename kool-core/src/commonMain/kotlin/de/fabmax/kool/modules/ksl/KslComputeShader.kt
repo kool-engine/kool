@@ -2,8 +2,8 @@ package de.fabmax.kool.modules.ksl
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.ComputeRenderPass
 import de.fabmax.kool.pipeline.ComputeShader
 import de.fabmax.kool.util.logW
 
@@ -22,7 +22,7 @@ open class KslComputeShader(name: String) : ComputeShader(name) {
 
     val program = KslProgram(name)
 
-    override fun createPipeline(computePass: ComputeRenderPass): ComputePipeline {
+    override fun createPipeline(computePass: ComputePass): ComputePipeline {
         val computeStage = program.computeStage
         checkNotNull(computeStage) {
             "KslProgram computeStage is missing (a valid KslComputeShader needs a computeStage)"

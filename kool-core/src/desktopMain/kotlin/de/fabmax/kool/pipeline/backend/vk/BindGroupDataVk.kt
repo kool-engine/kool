@@ -1,10 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.pipeline.BindGroupData
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.Std140BufferLayout
-import de.fabmax.kool.pipeline.TextureSampleType
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BindGroupData.BindingData
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
@@ -19,13 +17,19 @@ class BindGroupDataVk(
     private val device: Device get() = backend.device
 
     private val uboBindings = mutableListOf<UboBinding>()
-    //private val storageBufferBindings = mutableListOf<StorageBufferBinding>()
+    private val storageBufferBindings = mutableListOf<StorageBufferBinding>()
     private val textureBindings = mutableListOf<TextureBinding>()
 
     var bindGroup: BindGroup? = null
         private set
 
     private var prepareFrame = -1
+
+    fun updateBuffers(passEncoderState: PassEncoderState) {
+        for (i in storageBufferBindings.indices) {
+            storageBufferBindings[i].updateBuffer(passEncoderState)
+        }
+    }
 
     fun prepareBind(passEncoderState: PassEncoderState) {
         if (prepareFrame == Time.frameCount) return
@@ -62,6 +66,7 @@ class BindGroupDataVk(
         }
         bindGroup?.release()
         uboBindings.clear()
+        storageBufferBindings.clear()
         textureBindings.clear()
 
         val numFrames = Swapchain.MAX_FRAMES_IN_FLIGHT
@@ -77,18 +82,23 @@ class BindGroupDataVk(
                 is BindGroupData.Texture2dArrayBindingData -> textureBindings += Texture2dArrayBinding(binding)
                 is BindGroupData.TextureCubeArrayBindingData -> textureBindings += TextureCubeArrayBinding(binding)
 
-                is BindGroupData.StorageBuffer1dBindingData -> TODO()
-                is BindGroupData.StorageBuffer2dBindingData -> TODO()
-                is BindGroupData.StorageBuffer3dBindingData -> TODO()
+                is BindGroupData.StorageBuffer1dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
+                is BindGroupData.StorageBuffer2dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
+                is BindGroupData.StorageBuffer3dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
             }
         }
 
-        val nPoolSizes = uboBindings.size.coerceAtMost(1) + textureBindings.size.coerceAtMost(1)
+        val nPoolSizes = uboBindings.size.coerceAtMost(1) +
+                storageBufferBindings.size.coerceAtMost(1) +
+                textureBindings.size.coerceAtMost(1)
         val descriptorPool = backend.device.createDescriptorPool(this) {
             val poolSizes = callocVkDescriptorPoolSizeN(nPoolSizes) {
                 var iPoolSize = 0
                 if (uboBindings.isNotEmpty()) {
                     this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uboBindings.size * numFrames)
+                }
+                if (storageBufferBindings.isNotEmpty()) {
+                    this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, storageBufferBindings.size * numFrames)
                 }
                 if (textureBindings.isNotEmpty()) {
                     this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, textureBindings.size * numFrames)
@@ -105,11 +115,15 @@ class BindGroupDataVk(
             descriptorPool(descriptorPool.handle)
         }
 
-        val descriptorWrite = callocVkWriteDescriptorSetN(numFrames * (uboBindings.size + textureBindings.size)) { }
+        val numBindings = uboBindings.size + storageBufferBindings.size + textureBindings.size
+        val descriptorWrite = callocVkWriteDescriptorSetN(numFrames * numBindings) { }
         var descriptorWriteIdx = 0
         descriptorSets.forEachIndexed { setIdx, descriptorSet ->
             uboBindings.forEach { ubo ->
                 ubo.setupDescriptor(descriptorWrite[descriptorWriteIdx++], descriptorSet, setIdx, this)
+            }
+            storageBufferBindings.forEach { storage ->
+                storage.setupDescriptor(descriptorWrite[descriptorWriteIdx++], descriptorSet, this)
             }
             textureBindings.forEach { tex ->
                 tex.setupDescriptor(descriptorWrite[descriptorWriteIdx++], descriptorSet, this)
@@ -117,7 +131,14 @@ class BindGroupDataVk(
         }
         vkUpdateDescriptorSets(backend.device.vkDevice, descriptorWrite, null)
 
-        return@memStack BindGroup(descriptorPool, descriptorSets, uboBindings, textureBindings, backend)
+        return@memStack BindGroup(
+            descriptorPool = descriptorPool,
+            descriptorSets = descriptorSets,
+            uboBindings = uboBindings,
+            storageBufferBindings = storageBufferBindings,
+            textureBindings = textureBindings,
+            backend = backend
+        )
     }
 
     override fun release() {
@@ -132,6 +153,7 @@ class BindGroupDataVk(
         val descriptorPool: VkDescriptorPool,
         val descriptorSets: List<VkDescriptorSet>,
         val uboBindings: List<UboBinding>,
+        val storageBufferBindings: List<StorageBufferBinding>,
         val textureBindings: List<TextureBinding>,
         val backend: RenderBackendVk,
     ) : BaseReleasable() {
@@ -141,6 +163,7 @@ class BindGroupDataVk(
             if (isReleasable) {
                 super.release()
                 uboBindings.forEach { it.release() }
+                storageBufferBindings.forEach { it.release() }
                 textureBindings.forEach { it.release() }
                 backend.device.destroyDescriptorPool(descriptorPool)
             }
@@ -164,7 +187,7 @@ class BindGroupDataVk(
                         descriptorPool(emptyPool.handle)
                         pSetLayouts(longs(emptySetLayout.handle))
                     }
-                    BindGroup(emptyPool, emptySet, emptyList(), emptyList(), backend).also { emptyBg ->
+                    BindGroup(emptyPool, emptySet, emptyList(), emptyList(), emptyList(), backend).also { emptyBg ->
                         emptyBg.isReleasable = false
                         backend.device.onRelease {
                             emptyBg.isReleasable = true
@@ -338,6 +361,66 @@ class BindGroupDataVk(
             super.release()
             backend.device.destroyImageView(view)
             backend.device.destroySampler(sampler)
+        }
+    }
+
+    private fun MemoryStack.StorageBufferBinding(
+        binding: BindGroupData.StorageBufferBindingData<*>
+    ): StorageBufferBinding {
+        val name = (binding as BindingData).name
+        val storage = checkNotNull(binding.storageBuffer)
+        var gpuBuffer = storage.gpuBuffer as BufferVk?
+        if (gpuBuffer == null) {
+            gpuBuffer = BufferVk(
+                backend = backend,
+                bufferInfo = MemoryInfo(
+                    size = storage.buffer.limit * 4L,
+                    usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_SRC_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                    label = "bindGroup[${data.layout.scope}]-storage-${name}",
+                )
+            )
+            storage.gpuBuffer = gpuBuffer
+        }
+        return StorageBufferBinding(binding, storage, gpuBuffer)
+    }
+
+    inner class StorageBufferBinding(
+        val binding: BindGroupData.StorageBufferBindingData<*>,
+        val storageBuffer: StorageBuffer,
+        val gpuBuffer: BufferVk
+    ) : BaseReleasable() {
+
+        fun updateBuffer(passEncoderState: PassEncoderState) {
+            if (binding.getAndClearDirtyFlag()) {
+                backend.memManager.stagingBuffer(gpuBuffer.bufferSize) { stagingBuf ->
+                    when (storageBuffer.buffer) {
+                        is Int32Buffer -> {
+                            storageBuffer.buffer.useRaw { stagingBuf.mapped!!.asIntBuffer().put(it) }
+                        }
+                        is Float32Buffer -> {
+                            storageBuffer.buffer.useRaw { stagingBuf.mapped!!.asFloatBuffer().put(it) }
+                        }
+                    }
+                    gpuBuffer.copyFrom(stagingBuf, passEncoderState.commandBuffer)
+                }
+            }
+        }
+
+        fun setupDescriptor(
+            descriptorWrite: VkWriteDescriptorSet,
+            descriptorSet: VkDescriptorSet,
+            stack: MemoryStack
+        ) {
+            val bufferInfo = stack.callocVkDescriptorBufferInfoN(1) {
+                this[0].set(gpuBuffer.vkBuffer.handle, 0L, gpuBuffer.bufferSize)
+            }
+            descriptorWrite
+                .dstSet(descriptorSet.handle)
+                .dstBinding((binding as BindingData).layout.bindingIndex)
+                .dstArrayElement(0)
+                .descriptorType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER)
+                .descriptorCount(1)
+                .pBufferInfo(bufferInfo)
         }
     }
 }

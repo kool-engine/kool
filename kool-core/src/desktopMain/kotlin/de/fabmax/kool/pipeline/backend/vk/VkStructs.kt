@@ -256,6 +256,11 @@ inline fun MemoryStack.callocVkBufferImageCopyN(n: Int, block: VkBufferImageCopy
 inline fun MemoryStack.callocVkClearValueN(n: Int, block: VkClearValue.Buffer.() -> Unit): VkClearValue.Buffer =
     allocStructBuffer(n, VkClearValue::calloc, block)
 
+inline fun MemoryStack.callocVkComputePipelineCreateInfoN(n: Int, block: VkComputePipelineCreateInfo.Buffer.() -> Unit): VkComputePipelineCreateInfo.Buffer =
+    allocStructBufferItems(n, VkComputePipelineCreateInfo::calloc, block) {
+        get(it).apply { `sType$Default`() }
+    }
+
 inline fun MemoryStack.callocVkDescriptorBufferInfoN(n: Int, block: VkDescriptorBufferInfo.Buffer.() -> Unit): VkDescriptorBufferInfo.Buffer =
     allocStructBuffer(n, VkDescriptorBufferInfo::calloc, block)
 

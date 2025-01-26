@@ -231,11 +231,16 @@ class GpuBees(beeScene: Scene) {
     val beeMeshA = makeBeeMesh(beeInstancesA)
     val beeMeshB = makeBeeMesh(beeInstancesB)
 
-    private val simulationPass = ComputeRenderPass("Bee update pass")
+    private val simulationPass = ComputePass("Bee update pass")
 
     init {
         initBeeBuffer(beeBufferA, Vec3f(BeeConfig.worldSize.x * 0.4f, 0f, 0f))
         initBeeBuffer(beeBufferB, Vec3f(BeeConfig.worldSize.x * -0.4f, 0f, 0f))
+
+        beeScene.onRelease {
+            beeBufferA.release()
+            beeBufferB.release()
+        }
 
         simulationPass.isProfileTimes = true
         beeScene.addOffscreenPass(simulationPass)

@@ -20,7 +20,7 @@ abstract class RenderPassVk(
 
     private val timeQuery = Timer(backend.timestampQueryPool) { }
 
-    protected fun render(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
+    protected fun render(renderPass: RenderPass, passEncoderState: PassEncoderState) {
         if (renderPass.isProfileTimes) {
             if (timeQuery.isComplete) {
                 renderPass.tGpu = timeQuery.latestResult
@@ -65,26 +65,25 @@ abstract class RenderPassVk(
         }
     }
 
-    private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState) {
+    private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: PassEncoderState) {
         setupMipLevel(mipLevel)
 
         if (this is OffscreenRenderPassCube) {
             for (layer in views.indices) {
                 passEncoderState.beginRenderPass(this, this@RenderPassVk, mipLevel, layer)
-                renderView(layer, passEncoderState)
+                renderView(views[layer], passEncoderState)
             }
         } else {
             passEncoderState.beginRenderPass(this, this@RenderPassVk, mipLevel)
             for (viewIndex in views.indices) {
-                renderView(viewIndex, passEncoderState)
+                renderView(views[viewIndex], passEncoderState)
             }
         }
     }
 
-    private fun renderView(viewIndex: Int, passEncoderState: RenderPassEncoderState) = with(passEncoderState.stack) {
+    private fun renderView(view: RenderPass.View, passEncoderState: PassEncoderState) = with(passEncoderState.stack) {
         val mipLevel = passEncoderState.mipLevel
         val layer = passEncoderState.layer
-        val view = passEncoderState.renderPass.views[viewIndex]
         view.setupView()
 
         val renderWidth = (view.viewport.width shr mipLevel).coerceAtLeast(1)
@@ -149,9 +148,9 @@ abstract class RenderPassVk(
         }
     }
 
-    abstract fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass
+    abstract fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean): VkRenderPass
 
-    protected abstract fun generateMipLevels(passEncoderState: RenderPassEncoderState)
+    protected abstract fun generateMipLevels(passEncoderState: PassEncoderState)
 
-    protected abstract fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState)
+    protected abstract fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState)
 }

@@ -55,7 +55,7 @@ class HelloCompute : DemoScene("Hello Compute") {
         }
 
         // compute shaders are executed by ComputeRenderPasses, which are added as a scene offscreen pass
-        addOffscreenPass(ComputeRenderPass(computeShader, storageSizeX, storageSizeY))
+        addOffscreenPass(ComputePass(computeShader, storageSizeX, storageSizeY))
 
         // create and bind the storage texture used as compute shader output
         val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.FLOAT4)

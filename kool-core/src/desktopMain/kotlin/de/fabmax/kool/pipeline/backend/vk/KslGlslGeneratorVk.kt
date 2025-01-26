@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.modules.ksl.lang.KslArray
-import de.fabmax.kool.modules.ksl.lang.KslFragmentStage
-import de.fabmax.kool.modules.ksl.lang.KslShaderStage
-import de.fabmax.kool.modules.ksl.lang.KslVertexStage
+import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.BindGroupScope
 import de.fabmax.kool.pipeline.PipelineBase
@@ -24,6 +21,25 @@ class KslGlslGeneratorVk : GlslGenerator(
                 val set = pipeline.bindGroupLayouts[BindGroupScope.PIPELINE]
                 val desc = pipeline.findBindGroupItemByName(u.name)!!
                 appendLine("layout(set=${set.group}, binding=${desc.bindingIndex}) uniform ${glslTypeName(u.expressionType)} ${getStateName(u.value)};")
+            }
+            appendLine()
+        }
+    }
+
+    override fun StringBuilder.generateStorageBuffers(stage: KslShaderStage, pipeline: PipelineBase) {
+        val storages = stage.getUsedStorage()
+        if (storages.isNotEmpty()) {
+            appendLine("// storage buffers")
+            val readonly = if (stage.type == KslShaderStageType.ComputeShader) "" else "readonly"
+            for (storage in storages) {
+                val set = pipeline.bindGroupLayouts[BindGroupScope.PIPELINE]
+                val desc = pipeline.findBindGroupItemByName(storage.name)!!
+
+                appendLine("""
+                    layout(std430, set=${set.group}, binding=${desc.bindingIndex}) $readonly buffer ssboLayout_${storage.name} {
+                        ${glslTypeName(storage.storageType.elemType)} ${storage.name}[];
+                    };
+                """.trimIndent())
             }
             appendLine()
         }

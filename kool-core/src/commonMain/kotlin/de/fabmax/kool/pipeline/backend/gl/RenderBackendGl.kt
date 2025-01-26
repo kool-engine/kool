@@ -112,7 +112,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         return OffscreenRenderPassCubeGl(parentPass, this)
     }
 
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return ComputeRenderPassGl(parentPass, this)
     }
 
@@ -143,7 +143,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         when (offscreenPass) {
             is OffscreenRenderPass2d -> offscreenPass.impl.draw()
             is OffscreenRenderPassCube -> offscreenPass.impl.draw()
-            is ComputeRenderPass -> offscreenPass.impl.dispatch()
+            is ComputePass -> offscreenPass.impl.dispatch()
             is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }

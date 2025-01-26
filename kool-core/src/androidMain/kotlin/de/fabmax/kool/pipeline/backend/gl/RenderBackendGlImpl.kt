@@ -64,6 +64,9 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
             cubeMapArrays = false,
             reversedDepth = GlImpl.capabilities.hasClipControl,
             depthOnlyShaderColorOutput = Color.BLACK,
+            maxComputeWorkGroupsPerDimension = GlImpl.capabilities.maxWorkGroupCount,
+            maxComputeWorkGroupSize = GlImpl.capabilities.maxWorkGroupSize,
+            maxComputeInvocationsPerWorkgroup = GlImpl.capabilities.maxWorkGroupInvocations
         )
 
         if (GlImpl.capabilities.hasTimestampQuery) {

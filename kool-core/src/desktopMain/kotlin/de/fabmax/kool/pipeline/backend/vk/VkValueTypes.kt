@@ -17,6 +17,9 @@ class VkBuffer(val handle: Long, val allocation: Long, val bufferSize: Long, val
 value class VkCommandPool(val handle: Long)
 
 @JvmInline
+value class VkComputePipeline(val handle: Long)
+
+@JvmInline
 value class VkDescriptorPool(val handle: Long)
 
 @JvmInline

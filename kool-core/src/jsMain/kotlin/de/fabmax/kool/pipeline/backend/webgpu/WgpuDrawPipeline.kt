@@ -15,7 +15,8 @@ class WgpuDrawPipeline(
     private val users = mutableSetOf<NodeId>()
 
     private fun createVertexBufferLayout(): List<GPUVertexBufferLayout> {
-        return drawPipeline.vertexLayout.bindings
+        val bindings = drawPipeline.vertexLayout.bindings.filter { it.vertexAttributes.isNotEmpty() }
+        return bindings
             .sortedBy { it.inputRate.name }     // INSTANCE first, VERTEX second
             .mapNotNull { vertexBinding ->
                 val attributes = vertexBinding.vertexAttributes.flatMap { attr ->

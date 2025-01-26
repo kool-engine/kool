@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.DrawCommand
-import de.fabmax.kool.pipeline.DrawPipeline
-import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 
 class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
@@ -19,13 +16,20 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
         releaseWith(backend.device)
     }
 
-    fun prepareDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState) {
+    fun prepareDrawPipeline(cmd: DrawCommand, passEncoderState: PassEncoderState) {
+        val vkPipeline = cmd.pipeline.getVkPipeline()
         cmd.pipeline.update(cmd)
-        cmd.pipeline.getVkPipeline().updateGeometry(cmd, passEncoderState)
+        vkPipeline.updateGeometry(cmd, passEncoderState)
     }
 
-    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
+    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
         return cmd.pipeline.getVkPipeline().bind(cmd, passEncoderState)
+    }
+
+    fun bindComputePipeline(task: ComputePass.Task, passEncoderState: PassEncoderState): Boolean {
+        val gpuPipeline = task.pipeline.getVkPipeline()
+        task.pipeline.update(task.pass)
+        return gpuPipeline.bind(task, passEncoderState)
     }
 
     private fun DrawPipeline.getVkPipeline(): DrawPipelineVk {
@@ -36,6 +40,16 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
         val pipeline = DrawPipelineVk(this, vertexShader, fragmentShader, backend)
         pipelineBackend = pipeline
         drawPipelines += pipeline
+        return pipeline
+    }
+
+    private fun ComputePipeline.getVkPipeline(): ComputePipelineVk {
+        (pipelineBackend as ComputePipelineVk?)?.let { return it }
+
+        val computeShader = getOrCreateComputeShaderModule(this)
+        val pipeline = ComputePipelineVk(this, computeShader, backend)
+        pipelineBackend = pipeline
+        computePipelines += pipeline
         return pipeline
     }
 
@@ -54,7 +68,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
     private fun getOrCreateComputeShaderModule(pipeline: ComputePipeline): VkShaderModule {
         val shaderCode = pipeline.shaderCode as ShaderCodeVk
         val stage = checkNotNull(shaderCode.computeStage) { "Compute pipeline has no compute stage!" }
-        return getOrCreateShaderModule(pipeline, stage, fragmentShaderModules)
+        return getOrCreateShaderModule(pipeline, stage, computeShaderModules)
     }
 
     private fun getOrCreateShaderModule(

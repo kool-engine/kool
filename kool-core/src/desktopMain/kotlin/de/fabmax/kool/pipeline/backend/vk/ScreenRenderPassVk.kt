@@ -34,19 +34,19 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         vkRenderPasses.forEach { it?.recreateFramebuffers() }
     }
 
-    override fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass {
+    override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean): VkRenderPass {
         val rp = getOrCreateRenderPass(forceLoad)
         rp.begin(passEncoderState)
         return rp.vkRenderPass
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: RenderPassEncoderState) {
+    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: PassEncoderState) {
         render(scenePass, passEncoderState)
     }
 
-    override fun generateMipLevels(passEncoderState: RenderPassEncoderState) { }
+    override fun generateMipLevels(passEncoderState: PassEncoderState) { }
 
-    override fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState) {
+    override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
         val colorDst = frameCopy.colorCopy2d
 
         val swapchain = backend.swapchain
@@ -193,7 +193,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
             logD { "Created screen render pass (loading = $forceLoad)" }
         }
 
-        fun begin(passEncoderState: RenderPassEncoderState) = with(passEncoderState.stack) {
+        fun begin(passEncoderState: PassEncoderState) = with(passEncoderState.stack) {
             val beginInfo = callocVkRenderPassBeginInfo {
                 renderPass(vkRenderPass.handle)
 

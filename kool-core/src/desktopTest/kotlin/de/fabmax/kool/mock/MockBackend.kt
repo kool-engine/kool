@@ -1,6 +1,7 @@
 package de.fabmax.kool.mock
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
@@ -26,6 +27,9 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         cubeMapArrays = false,
         reversedDepth = false,
         depthOnlyShaderColorOutput = null,
+        maxComputeWorkGroupsPerDimension = Vec3i.ZERO,
+        maxComputeWorkGroupSize = Vec3i.ZERO,
+        maxComputeInvocationsPerWorkgroup = 0
     )
 
     override var frameGpuTime: Duration = 0.0.seconds
@@ -52,7 +56,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         TODO("Not yet implemented")
     }
 
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         TODO("Not yet implemented")
     }
 

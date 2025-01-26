@@ -120,6 +120,18 @@ internal inline fun Device.createCommandPool(stack: MemoryStack? = null, block: 
     }
 }
 
+internal fun Device.createComputePipeline(stack: MemoryStack? = null, block: VkComputePipelineCreateInfo.() -> Unit): VkComputePipeline {
+    logT { "create compute pipeline" }
+    memStack(stack) {
+        val createInfo = callocVkComputePipelineCreateInfoN(1) {
+            this[0].block()
+        }
+        val handle = mallocLong(1)
+        checkVk(vkCreateComputePipelines(vkDevice, VK_NULL_HANDLE, createInfo, null, handle)) { "Failed creating compute pipeline: $it" }
+        return VkComputePipeline(handle[0])
+    }
+}
+
 internal inline fun Device.createDescriptorPool(stack: MemoryStack? = null, block: VkDescriptorPoolCreateInfo.() -> Unit): VkDescriptorPool {
     logT { "create descriptor pool" }
     memStack(stack) {
@@ -167,7 +179,7 @@ internal fun Device.createGraphicsPipeline(stack: MemoryStack? = null, block: Vk
             this[0].block()
         }
         val handle = mallocLong(1)
-        checkVk(vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, createInfo, null, handle)) { "Failed creating graphicsPipeline: $it" }
+        checkVk(vkCreateGraphicsPipelines(vkDevice, VK_NULL_HANDLE, createInfo, null, handle)) { "Failed creating graphics pipeline: $it" }
         return VkGraphicsPipeline(handle[0])
     }
 }
@@ -279,6 +291,10 @@ internal fun Device.createSwapchain(stack: MemoryStack? = null, block: VkSwapcha
 
 internal fun Device.destroyCommandPool(commandPool: VkCommandPool) {
     DeferredRelease.defer { vkDestroyCommandPool(vkDevice, commandPool.handle, null) }
+}
+
+internal fun Device.destroyComputePipeline(computePipeline: VkComputePipeline) {
+    DeferredRelease.defer { vkDestroyPipeline(vkDevice, computePipeline.handle, null) }
 }
 
 internal fun Device.destroyDescriptorPool(descriptorPool: VkDescriptorPool) {

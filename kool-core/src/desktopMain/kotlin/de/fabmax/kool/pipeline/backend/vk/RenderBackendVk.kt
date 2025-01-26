@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -47,7 +48,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val clearHelper: ClearHelper
     val timestampQueryPool: TimestampQueryPool
 
-    private val passEncoderState = RenderPassEncoderState(this)
+    private val passEncoderState = PassEncoderState(this)
     private val frameTimer: Timer
 
     private var windowResized = false
@@ -70,10 +71,21 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         deviceName = physicalDevice.deviceName
 
         features = BackendFeatures(
-            computeShaders = true,
+            computeShaders = device.computeQueue != null,
             cubeMapArrays = physicalDevice.cubeMapArrays,
             reversedDepth = true,
             depthOnlyShaderColorOutput = null,
+            maxComputeWorkGroupsPerDimension = Vec3i(
+                physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(0),
+                physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(1),
+                physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(2),
+            ),
+            maxComputeWorkGroupSize = Vec3i(
+                physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(0),
+                physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(1),
+                physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(2),
+            ),
+            maxComputeInvocationsPerWorkgroup = physicalDevice.deviceProperties.limits().maxComputeWorkGroupInvocations(),
         )
 
         memManager = MemoryManager(this)
@@ -143,7 +155,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun preparePipelines(passEncoderState: RenderPassEncoderState, ctx: KoolContext) {
+    private fun preparePipelines(passEncoderState: PassEncoderState, ctx: KoolContext) {
         for (i in ctx.backgroundScene.sortedOffscreenPasses.indices) {
             preparePipelines(ctx.backgroundScene.sortedOffscreenPasses[i], passEncoderState)
         }
@@ -158,14 +170,14 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun preparePipelines(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
+    private fun preparePipelines(renderPass: RenderPass, passEncoderState: PassEncoderState) {
         for (i in renderPass.views.indices) {
             val queue = renderPass.views[i].drawQueue
             queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
         }
     }
 
-    private fun Scene.renderOffscreenPasses(passEncoderState: RenderPassEncoderState) {
+    private fun Scene.renderOffscreenPasses(passEncoderState: PassEncoderState) {
         for (i in sortedOffscreenPasses.indices) {
             val pass = sortedOffscreenPasses[i]
             if (pass.isEnabled) {
@@ -174,17 +186,17 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun OffscreenRenderPass.render(passEncoderState: RenderPassEncoderState) {
+    private fun OffscreenRenderPass.render(passEncoderState: PassEncoderState) {
         when (this) {
             is OffscreenRenderPass2d -> draw(passEncoderState)
             is OffscreenRenderPassCube -> draw(passEncoderState)
             is OffscreenRenderPass2dPingPong -> draw(passEncoderState)
-            is ComputeRenderPass -> dispatch(passEncoderState)
+            is ComputePass -> dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
 
-    private fun OffscreenRenderPass2dPingPong.draw(passEncoderState: RenderPassEncoderState) {
+    private fun OffscreenRenderPass2dPingPong.draw(passEncoderState: PassEncoderState) {
         for (i in 0 until pingPongPasses) {
             onDrawPing?.invoke(i)
             ping.draw(passEncoderState)
@@ -193,16 +205,16 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState) {
+    private fun OffscreenRenderPass2d.draw(passEncoderState: PassEncoderState) {
         (impl as OffscreenPass2dVk).draw(passEncoderState)
     }
 
-    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) {
+    private fun OffscreenRenderPassCube.draw(passEncoderState: PassEncoderState) {
         (impl as OffscreenPassCubeVk).draw(passEncoderState)
     }
 
-    private fun ComputeRenderPass.dispatch(passEncoderState: RenderPassEncoderState) {
-        TODO()
+    private fun ComputePass.dispatch(passEncoderState: PassEncoderState) {
+        (impl as ComputePassVk).dispatch(passEncoderState)
     }
 
     override fun cleanup(ctx: KoolContext) {
@@ -230,8 +242,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return OffscreenPassCubeVk(parentPass, 1, this)
     }
 
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
-        TODO("Not yet implemented")
+    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
+        return ComputePassVk(parentPass, this)
     }
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)

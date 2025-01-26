@@ -101,6 +101,7 @@ val VertexLayout.VertexAttribute.locationSize: Int get() = when(attribute.type) 
 
 fun VertexLayout.getAttribLocations() = buildMap {
     bindings
+        .filter { it.vertexAttributes.isNotEmpty() }
         .flatMap { it.vertexAttributes }
         .sortedBy { it.index }
         .fold(0) { pos, attr ->

@@ -65,7 +65,9 @@ sealed class PipelineVk(
         for (i in bindings.indices) {
             val binding = bindings[i]
             when (binding) {
-                is BindGroupData.StorageBufferBindingData<*> if binding.storageBuffer != null -> isCheckOk = false
+                is BindGroupData.StorageBufferBindingData<*> -> {
+                    isCheckOk = isCheckOk && binding.storageBuffer != null
+                }
                 is BindGroupData.TextureBindingData<*> -> {
                     val tex = binding.texture
                     if (tex == null || (tex.loadingState != Texture.LoadingState.LOADED && !tex.checkLoadingState())) {
@@ -98,10 +100,6 @@ sealed class PipelineVk(
         super.release()
         if (!pipeline.isReleased) {
             pipeline.release()
-        }
-        when (this) {
-            is DrawPipelineVk -> backend.pipelineManager.removeDrawPipeline(this)
-            is ComputePipelineVk -> backend.pipelineManager.removeComputePipeline(this)
         }
         bindGroupLayouts.forEach { backend.device.destroyDescriptorSetLayout(it) }
         backend.device.destroyPipelineLayout(pipelineLayout)

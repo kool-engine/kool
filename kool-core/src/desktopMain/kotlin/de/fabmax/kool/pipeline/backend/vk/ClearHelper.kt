@@ -25,7 +25,7 @@ class ClearHelper(val backend: RenderBackendVk) {
         }
     }
 
-    fun clear(passEncoderState: RenderPassEncoderState) {
+    fun clear(passEncoderState: PassEncoderState) {
         val clearPipeline = clearPipelines.getOrPut(passEncoderState.vkRenderPass) {
             ClearPipeline(passEncoderState.gpuRenderPass, passEncoderState.vkRenderPass)
         }
@@ -83,7 +83,7 @@ class ClearHelper(val backend: RenderBackendVk) {
             device.destroyDescriptorSetLayout(descriptorSetLayout)
         }
 
-        fun clear(passEncoderState: RenderPassEncoderState) {
+        fun clear(passEncoderState: PassEncoderState) {
             val rp = passEncoderState.renderPass
             val clearColor = rp.clearColor
             val clearDepth = if (rp.isReverseDepth) 0f else 1f
@@ -105,7 +105,7 @@ class ClearHelper(val backend: RenderBackendVk) {
 
             passEncoderState.setPipeline(clearPipeline)
             bindGroupData.prepareBind(passEncoderState)
-            passEncoderState.setBindGroup(bindGroupData, pipelineLayout)
+            passEncoderState.setBindGroup(bindGroupData, pipelineLayout, BindPoint.Graphics)
             vkCmdDraw(passEncoderState.commandBuffer, 4, 1, 0, 0)
         }
 

@@ -61,7 +61,7 @@ class OffscreenPassCubeVk(
         return rp
     }
 
-    fun draw(passEncoderState: RenderPassEncoderState) {
+    fun draw(passEncoderState: PassEncoderState) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
         val isCopyDst = parentPass.mipMode == RenderPass.MipMode.Generate
         if ((isCopySrc && copySrcFlag == 0) || (isCopyDst && copyDstFlag == 0)) {
@@ -75,17 +75,17 @@ class OffscreenPassCubeVk(
         render(parentPass, passEncoderState)
     }
 
-    override fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass {
+    override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean): VkRenderPass {
         val rp = getOrCreateRenderPass(forceLoad)
         rp.begin(passEncoderState)
         return rp.vkRenderPass
     }
 
-    override fun generateMipLevels(passEncoderState: RenderPassEncoderState) {
+    override fun generateMipLevels(passEncoderState: PassEncoderState) {
         TODO("Not yet implemented")
     }
 
-    override fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState) {
+    override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
                 colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as TextureCube, passEncoderState)
@@ -171,7 +171,7 @@ class OffscreenPassCubeVk(
             }
         }
 
-        fun copyToTexture(target: TextureCube, passEncoderState: RenderPassEncoderState) {
+        fun copyToTexture(target: TextureCube, passEncoderState: PassEncoderState) {
             var copyDst = (target.gpuTexture as ImageVk?)
             if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
                 copyDst?.release()
@@ -288,7 +288,7 @@ class OffscreenPassCubeVk(
             logD { "Created off-screen cube pass ${parentPass.name} (loading = $forceLoad)" }
         }
 
-        fun begin(passEncoderState: RenderPassEncoderState) = with(passEncoderState.stack) {
+        fun begin(passEncoderState: PassEncoderState) = with(passEncoderState.stack) {
             val renderPass = passEncoderState.renderPass
             val mipLevel = passEncoderState.mipLevel
             val face = passEncoderState.layer

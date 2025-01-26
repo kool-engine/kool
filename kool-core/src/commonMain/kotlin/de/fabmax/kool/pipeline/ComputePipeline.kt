@@ -16,25 +16,25 @@ class ComputePipeline(
     override val pipelineHash: LongHash
 
     override val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
-    val onUpdate: BufferedList<(ComputeRenderPass) -> Unit> = BufferedList()
+    val onUpdate: BufferedList<(ComputePass) -> Unit> = BufferedList()
 
     init {
         pipelineHashBuilder += shaderCode.hash
         pipelineHash = pipelineHashBuilder.build()
     }
 
-    fun update(computePass: ComputeRenderPass) {
+    fun update(computePass: ComputePass) {
         onUpdate.update()
         for (i in onUpdate.indices) {
             onUpdate[i].invoke(computePass)
         }
     }
 
-    fun onUpdate(block: (ComputeRenderPass) -> Unit) {
+    fun onUpdate(block: (ComputePass) -> Unit) {
         onUpdate += block
     }
 
-    fun removeUser(task: ComputeRenderPass.Task) {
+    fun removeUser(task: ComputePass.Task) {
         pipelineBackend?.removeUser(task)
     }
 }

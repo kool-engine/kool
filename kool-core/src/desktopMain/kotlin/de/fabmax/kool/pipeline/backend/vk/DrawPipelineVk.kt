@@ -24,7 +24,7 @@ class DrawPipelineVk(
     private val pipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
     private val users = mutableSetOf<NodeId>()
 
-    fun updateGeometry(cmd: DrawCommand, passEncoderState: RenderPassEncoderState) {
+    fun updateGeometry(cmd: DrawCommand, passEncoderState: PassEncoderState) {
         if (cmd.geometry.numIndices == 0) return
         users.add(cmd.mesh.id)
 
@@ -41,9 +41,11 @@ class DrawPipelineVk(
             val gpuInsts = insts.gpuInstances as InstancesVk
             gpuInsts.checkBuffers(passEncoderState.commandBuffer)
         }
+
+        drawPipeline.pipelineData.getOrCreateVkData().updateBuffers(passEncoderState)
     }
 
-    fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
+    fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
         val pipelineData = drawPipeline.pipelineData
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
         val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
@@ -65,12 +67,12 @@ class DrawPipelineVk(
         pipelineGroup.prepareBind(passEncoderState)
         viewGroup.prepareBind(passEncoderState)
         meshGroup.prepareBind(passEncoderState)
-        passEncoderState.setBindGroups(viewGroup, pipelineGroup, meshGroup, pipelineLayout)
+        passEncoderState.setBindGroups(viewGroup, pipelineGroup, meshGroup, pipelineLayout, BindPoint.Graphics)
 
         return bindVertexBuffers(cmd, passEncoderState)
     }
 
-    private fun bindVertexBuffers(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
+    private fun bindVertexBuffers(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
         val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk? ?: return false
         val gpuInsts = cmd.instances?.gpuInstances as InstancesVk?
 
@@ -90,7 +92,7 @@ class DrawPipelineVk(
         return true
     }
 
-    private fun createPipeline(passEncoderState: RenderPassEncoderState): VkGraphicsPipeline = memStack {
+    private fun createPipeline(passEncoderState: PassEncoderState): VkGraphicsPipeline = memStack {
         val renderPass = passEncoderState.renderPass
         val renderPassVk = passEncoderState.gpuRenderPass
 
@@ -194,13 +196,13 @@ class DrawPipelineVk(
     }
 
     private fun MemoryStack.createVertexBufferLayout(): VkPipelineVertexInputStateCreateInfo {
-        val nVertexBindings = drawPipeline.vertexLayout.bindings.size
+        val bindings = drawPipeline.vertexLayout.bindings.filter { it.vertexAttributes.isNotEmpty() }
+        val nVertexBindings = bindings.size
         val bindingDescription = callocVkVertexInputBindingDescriptionN(nVertexBindings) {
-            var iBinding = 0
-            drawPipeline.vertexLayout.bindings
+            bindings
                 .sortedBy { it.inputRate.name }     // INSTANCE first, VERTEX second
-                .forEach { binding ->
-                    this[iBinding++].apply {
+                .forEachIndexed { i, binding ->
+                    this[i].apply {
                         binding(binding.binding)
                         stride(binding.strideBytes)
                         when (binding.inputRate) {
@@ -212,12 +214,12 @@ class DrawPipelineVk(
         }
 
         val locations = drawPipeline.vertexLayout.getAttribLocations()
-        val nVertexAttributes = drawPipeline.vertexLayout.bindings.sumOf { binding ->
+        val nVertexAttributes = bindings.sumOf { binding ->
             binding.vertexAttributes.sumOf { it.locationSize }
         }
         val attributeDescriptions = callocVkVertexInputAttributeDescriptionN(nVertexAttributes) {
             var iAttrib = 0
-            drawPipeline.vertexLayout.bindings.forEach { binding ->
+            bindings.forEach { binding ->
                 binding.vertexAttributes.forEach { attrib ->
                     for (i in 0 until attrib.locationSize) {
                         val (slotOffset, slotType) = attrib.attribute.vkProps()
@@ -238,7 +240,7 @@ class DrawPipelineVk(
         }
     }
 
-    private fun MemoryStack.blendInfo(passEncoderState: RenderPassEncoderState): VkPipelineColorBlendStateCreateInfo? {
+    private fun MemoryStack.blendInfo(passEncoderState: PassEncoderState): VkPipelineColorBlendStateCreateInfo? {
         val renderPass = passEncoderState.renderPass
         val renderPassVk = passEncoderState.gpuRenderPass
         if (renderPassVk.numColorAttachments == 0) {
@@ -303,6 +305,7 @@ class DrawPipelineVk(
 
     override fun release() {
         super.release()
+        backend.pipelineManager.removeDrawPipeline(this)
         pipelines.values.forEach { backend.device.destroyGraphicsPipeline(it) }
     }
 

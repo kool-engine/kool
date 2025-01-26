@@ -36,7 +36,7 @@ interface RenderBackend {
 
     fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl
     fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
-    fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl
+    fun createComputePass(parentPass: ComputePass): ComputePassImpl
 
     fun <T: ImageData> uploadTextureData(tex: Texture<T>)
     fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>)

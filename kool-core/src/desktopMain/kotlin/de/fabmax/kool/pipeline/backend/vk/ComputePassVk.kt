@@ -1,40 +1,31 @@
-package de.fabmax.kool.pipeline.backend.webgpu
+package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.ComputePassImpl
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.releaseWith
-import kotlin.time.Duration.Companion.nanoseconds
+import org.lwjgl.vulkan.VK10.vkCmdDispatch
 
-class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWebGpu) :
+class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
     BaseReleasable(),
     ComputePassImpl
 {
-    private val computePassEncoderState = ComputePassEncoderState()
+    private val timeQuery = Timer(backend.timestampQueryPool) { }
 
-    private var beginTimestamp: WgpuTimestamps.QuerySlot? = null
-    private var endTimestamp: WgpuTimestamps.QuerySlot? = null
-
-    fun dispatch(encoder: GPUCommandEncoder) {
+    fun dispatch(passEncoderState: PassEncoderState) {
         val maxNumGroups = backend.features.maxComputeWorkGroupsPerDimension
         val maxWorkGroupSz = backend.features.maxComputeWorkGroupSize
         val maxInvocations = backend.features.maxComputeInvocationsPerWorkgroup
 
-        var timestampWrites: GPUComputePassTimestampWrites? = null
         if (parentPass.isProfileTimes) {
-            createTimestampQueries()
-            val begin = beginTimestamp
-            val end = endTimestamp
-            if (begin != null && end != null && begin.isReady && end.isReady) {
-                parentPass.tGpu = (end.latestResult - begin.latestResult).nanoseconds
-                timestampWrites = GPUComputePassTimestampWrites(backend.timestampQuery.querySet, begin.index, end.index)
+            if (timeQuery.isComplete) {
+                parentPass.tGpu = timeQuery.latestResult
             }
+            timeQuery.begin(passEncoderState.commandBuffer)
         }
-        val desc = GPUComputePassDescriptor(parentPass.name, timestampWrites)
 
         val tasks = parentPass.tasks
-        computePassEncoderState.setup(encoder, encoder.beginComputePass(desc), parentPass)
+        passEncoderState.ensureRenderPassInactive()
         for (i in tasks.indices) {
             val task = tasks[i]
             if (task.isEnabled) {
@@ -58,22 +49,12 @@ class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWeb
 
                 if (isInLimits) {
                     task.beforeDispatch()
-                    if (backend.pipelineManager.bindComputePipeline(task, computePassEncoderState)) {
-                        computePassEncoderState.passEncoder.dispatchWorkgroups(task.numGroups.x, task.numGroups.y, task.numGroups.z)
+                    if (backend.pipelineManager.bindComputePipeline(task, passEncoderState)) {
+                        vkCmdDispatch(passEncoderState.commandBuffer, task.numGroups.x, task.numGroups.y, task.numGroups.z)
                         task.afterDispatch()
                     }
                 }
             }
-        }
-        computePassEncoderState.end()
-    }
-
-    private fun createTimestampQueries() {
-        if (beginTimestamp == null) {
-            beginTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
-        }
-        if (endTimestamp == null) {
-            endTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
         }
     }
 }

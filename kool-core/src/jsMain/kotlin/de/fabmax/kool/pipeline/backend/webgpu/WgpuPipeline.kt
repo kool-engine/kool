@@ -116,7 +116,9 @@ sealed class WgpuPipeline(
         for (i in bindings.indices) {
             val binding = bindings[i]
             when (binding) {
-                is BindGroupData.StorageBufferBindingData<*> if binding.storageBuffer != null -> isCheckOk = false
+                is BindGroupData.StorageBufferBindingData<*> -> {
+                    isCheckOk = isCheckOk && binding.storageBuffer != null
+                }
                 is BindGroupData.TextureBindingData<*> -> {
                     val tex = binding.texture
                     if (tex == null || (tex.loadingState != Texture.LoadingState.LOADED && !tex.checkLoadingState())) {

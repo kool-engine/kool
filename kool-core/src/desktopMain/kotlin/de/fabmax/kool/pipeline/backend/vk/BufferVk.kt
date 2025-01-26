@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.backend.GpuBuffer
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
@@ -12,7 +13,7 @@ import org.lwjgl.vulkan.VkCommandBuffer
 class BufferVk(
     val backend: RenderBackendVk,
     bufferInfo: MemoryInfo
-) : BaseReleasable() {
+) : BaseReleasable(), GpuBuffer {
 
     val vkBuffer: VkBuffer = backend.memManager.createBuffer(bufferInfo)
     val bufferSize: Long get() = vkBuffer.bufferSize

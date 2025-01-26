@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.ComputeRenderPass
+import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.RenderPass
 
 interface PassEncoderState {
@@ -10,18 +10,18 @@ interface PassEncoderState {
 
 class ComputePassEncoderState: PassEncoderState {
     private var isPassActive = false
-    private var _renderPass: ComputeRenderPass? = null
+    private var _renderPass: ComputePass? = null
     private var _encoder: GPUCommandEncoder? = null
     private var _passEncoder: GPUComputePassEncoder? = null
 
     val encoder: GPUCommandEncoder get() = _encoder!!
     val passEncoder: GPUComputePassEncoder get() = _passEncoder!!
-    override val renderPass: ComputeRenderPass get() = _renderPass!!
+    override val renderPass: ComputePass get() = _renderPass!!
 
     private var computePipeline: GPUComputePipeline? = null
     private val bindGroups = Array<WgpuBindGroupData?>(4) { null }
 
-    fun setup(encoder: GPUCommandEncoder, passEncoder: GPUComputePassEncoder, renderPass: ComputeRenderPass) {
+    fun setup(encoder: GPUCommandEncoder, passEncoder: GPUComputePassEncoder, renderPass: ComputePass) {
         check(!isPassActive)
         _encoder = encoder
         _passEncoder = passEncoder

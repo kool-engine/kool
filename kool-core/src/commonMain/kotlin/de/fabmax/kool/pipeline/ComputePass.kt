@@ -6,16 +6,14 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.util.Releasable
 import kotlin.math.ceil
 
-fun ComputeRenderPass(computeShader: ComputeShader, numInvocationsX: Int, numInvocationsY: Int = 1, numInvocationsZ: Int = 1): ComputeRenderPass {
-    val pass = ComputeRenderPass(computeShader.name)
+fun ComputePass(computeShader: ComputeShader, numInvocationsX: Int, numInvocationsY: Int = 1, numInvocationsZ: Int = 1): ComputePass {
+    val pass = ComputePass(computeShader.name)
     val task = pass.addTask(computeShader, Vec3i.ZERO)
     task.setNumGroupsByInvocations(numInvocationsX, numInvocationsY, numInvocationsZ)
     return pass
 }
 
-class ComputeRenderPass(name: String) :
-    OffscreenRenderPass(renderPassAttachmentConfig, Vec3i.ZERO, name)
-{
+class ComputePass(name: String) : OffscreenRenderPass(renderPassAttachmentConfig, Vec3i.ZERO, name) {
     override val views: List<View> = emptyList()
 
     private val _tasks = mutableListOf<Task>()
@@ -43,10 +41,10 @@ class ComputeRenderPass(name: String) :
     }
 
     inner class Task(val shader: ComputeShader, numGroups: Vec3i) {
-        val pass: ComputeRenderPass get() = this@ComputeRenderPass
+        val pass: ComputePass get() = this@ComputePass
         val numGroups = MutableVec3i(numGroups)
         var isEnabled = true
-        val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputeRenderPass)
+        val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputePass)
 
         private val beforeDispatch = mutableListOf<() -> Unit>()
         private val afterDispatch = mutableListOf<() -> Unit>()

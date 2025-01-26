@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -30,12 +31,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
-    override val features = BackendFeatures(
-        computeShaders = true,
-        cubeMapArrays = true,
-        reversedDepth = true,
-        depthOnlyShaderColorOutput = Color.BLACK,
-    )
+    override lateinit var features: BackendFeatures; private set
 
     lateinit var adapter: GPUAdapter
         private set
@@ -94,6 +90,24 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
         device = adapter.requestDevice(deviceDesc).await()
+
+        features = BackendFeatures(
+            computeShaders = true,
+            cubeMapArrays = true,
+            reversedDepth = true,
+            depthOnlyShaderColorOutput = Color.BLACK,
+            maxComputeWorkGroupsPerDimension = Vec3i(
+                device.limits.maxComputeWorkgroupsPerDimension,
+                device.limits.maxComputeWorkgroupsPerDimension,
+                device.limits.maxComputeWorkgroupsPerDimension,
+            ),
+            maxComputeWorkGroupSize = Vec3i(
+                device.limits.maxComputeWorkgroupSizeX,
+                device.limits.maxComputeWorkgroupSizeY,
+                device.limits.maxComputeWorkgroupSizeZ,
+            ),
+            maxComputeInvocationsPerWorkgroup = device.limits.maxComputeInvocationsPerWorkgroup,
+        )
 
         canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
@@ -179,7 +193,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             is OffscreenRenderPass2d -> draw(passEncoderState)
             is OffscreenRenderPassCube -> draw(passEncoderState)
             is OffscreenRenderPass2dPingPong -> draw(passEncoderState)
-            is ComputeRenderPass -> dispatch(passEncoderState.encoder)
+            is ComputePass -> dispatch(passEncoderState.encoder)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
@@ -201,7 +215,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         (impl as WgpuOffscreenPassCube).draw(passEncoderState)
     }
 
-    private fun ComputeRenderPass.dispatch(encoder: GPUCommandEncoder) {
+    private fun ComputePass.dispatch(encoder: GPUCommandEncoder) {
         (impl as WgpuComputePass).dispatch(encoder)
     }
 
@@ -235,7 +249,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuOffscreenPassCube(parentPass, 1, this)
     }
 
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return WgpuComputePass(parentPass, this)
     }
 

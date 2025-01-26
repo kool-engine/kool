@@ -345,22 +345,20 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     protected open fun StringBuilder.generateStorageBuffers(stage: KslShaderStage, pipeline: PipelineBase) {
         val storage = stage.getUsedStorage()
         if (storage.isNotEmpty()) {
-            appendLine("// image storage")
+            appendLine("// storage buffers")
+            val readonly = if (stage.type == KslShaderStageType.ComputeShader) "" else "readonly"
             storage.forEachIndexed { i, it ->
-                val arrayDim = when (it) {
-                    // choosing array dimension based on storage dimension would also work, but seems to have issues
-                    // with some glsl compilers
-                    //is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
-                    //is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
-                    //is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeX}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
-
-                    // always use a 1d array and compute array index dynamically based on buffer size
-                    is KslStorage1d<*> -> "[]"
-                    is KslStorage2d<*> -> "[]"
-                    is KslStorage3d<*> -> "[]"
-                }
+                // always use a 1d array and compute array index dynamically based on buffer size
+                val arrayDim = "[]"
+                // choosing array dimension based on storage dimension would also work, but seems to have issues
+                // with some glsl compilers
+                // val arrayDim = when (it) {
+                //     is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
+                //     is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
+                //     is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeX}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
+                // }
                 appendLine("""
-                    layout(std430, binding=$i) buffer ssboLayout_$i {
+                    layout(std430, binding=$i) $readonly buffer ssboLayout_$i {
                         ${glslTypeName(it.storageType.elemType)} ${it.name}$arrayDim;
                     };
                 """.trimIndent())

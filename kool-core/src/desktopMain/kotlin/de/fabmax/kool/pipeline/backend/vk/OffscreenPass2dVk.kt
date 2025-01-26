@@ -61,7 +61,7 @@ class OffscreenPass2dVk(
         return rp
     }
 
-    fun draw(passEncoderState: RenderPassEncoderState) {
+    fun draw(passEncoderState: PassEncoderState) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
         val isCopyDst = parentPass.mipMode == RenderPass.MipMode.Generate
         if ((isCopySrc && copySrcFlag == 0) || (isCopyDst && copyDstFlag == 0)) {
@@ -75,19 +75,19 @@ class OffscreenPass2dVk(
         render(parentPass, passEncoderState)
     }
 
-    override fun beginRenderPass(passEncoderState: RenderPassEncoderState, forceLoad: Boolean): VkRenderPass {
+    override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean): VkRenderPass {
         val rp = getOrCreateRenderPass(forceLoad)
         rp.begin(passEncoderState)
         return rp.vkRenderPass
     }
 
-    override fun generateMipLevels(passEncoderState: RenderPassEncoderState) {
+    override fun generateMipLevels(passEncoderState: PassEncoderState) {
         colorAttachments.forEach {
             it.gpuTexture.generateMipmaps(passEncoderState.stack, passEncoderState.commandBuffer)
         }
     }
 
-    override fun copy(frameCopy: FrameCopy, passEncoderState: RenderPassEncoderState) {
+    override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
                 colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as Texture2d, passEncoderState)
@@ -169,7 +169,7 @@ class OffscreenPass2dVk(
             }
         }
 
-        fun copyToTexture(target: Texture2d, passEncoderState: RenderPassEncoderState) {
+        fun copyToTexture(target: Texture2d, passEncoderState: PassEncoderState) {
             var copyDst = (target.gpuTexture as ImageVk?)
             if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
                 copyDst?.release()
@@ -286,7 +286,7 @@ class OffscreenPass2dVk(
             logD { "Created off-screen 2d pass ${parentPass.name} (loading = $forceLoad)" }
         }
 
-        fun begin(passEncoderState: RenderPassEncoderState) = with(passEncoderState.stack) {
+        fun begin(passEncoderState: PassEncoderState) = with(passEncoderState.stack) {
             val renderPass = passEncoderState.renderPass
             val mipLevel = passEncoderState.mipLevel
 
