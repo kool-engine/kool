@@ -23,6 +23,8 @@ class VkSetup(
      * Enables the Vulkan validation layer.
      */
     val isValidation: Boolean = false,
+
+    val preferredColorSpace: ColorSpace = ColorSpace.sRGB
 ) {
     val requestedLayers = mutableSetOf<RequestedFeature>()
 
@@ -46,6 +48,9 @@ class VkSetup(
         if (vkApiVersion < VK_API_VERSION_1_1) {
             requestedDeviceExtensions.add(vmaHelperDedicatedAllocation)
             requestedDeviceExtensions.add(vmaHelperBindMemory2)
+        }
+        if (preferredColorSpace != ColorSpace.sRGB) {
+            requestedInstanceExtensions.add(RequestedFeature("VK_EXT_swapchain_colorspace", false))
         }
     }
 
@@ -76,4 +81,10 @@ class VkSetup(
             RequestedFeature("VK_KHR_external_memory_win32", false),
         )
     }
+}
+
+enum class ColorSpace {
+    sRGB,
+    AdobeRGB,
+    DCI_P3,
 }

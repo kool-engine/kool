@@ -6,6 +6,8 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
+import org.lwjgl.vulkan.EXTSwapchainColorspace.VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT
+import org.lwjgl.vulkan.EXTSwapchainColorspace.VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT
 import org.lwjgl.vulkan.KHRSurface.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VK11.vkGetPhysicalDeviceFeatures2
@@ -286,19 +288,45 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    class SwapChainSupportDetails(
+    inner class SwapChainSupportDetails(
         val capabilities: VkSurfaceCapabilitiesKHR,
         val formats: List<VkSurfaceFormatKHR>,
         val presentModes: List<Int>
     ) {
         val isValid: Boolean get() = formats.isNotEmpty() && presentModes.isNotEmpty()
 
+        private var selectedSurfaceFmt: VkSurfaceFormatKHR? = null
+
         fun chooseSurfaceFormat(): VkSurfaceFormatKHR {
+            if (selectedSurfaceFmt != null) {
+                return selectedSurfaceFmt!!
+            }
+
             // other possible color spaces: e.g. VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT
-            return formats
-                .find {
-                    it.format() == VK_FORMAT_B8G8R8A8_UNORM && it.colorSpace() == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
-                } ?: formats[0]
+            val preferredColorSpace = when (backend.setup.preferredColorSpace) {
+                ColorSpace.sRGB -> VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+                ColorSpace.AdobeRGB -> VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT
+                ColorSpace.DCI_P3 -> VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT
+            }
+            formats.find {
+                it.format() == VK_FORMAT_B8G8R8A8_UNORM && it.colorSpace() == preferredColorSpace
+            }?.let {
+                selectedSurfaceFmt = it
+                logI("PhysicalDevice") { "Selected surface format with preferred color space ${backend.setup.preferredColorSpace}" }
+                return it
+            }
+
+            formats.find {
+                it.format() == VK_FORMAT_B8G8R8A8_UNORM && it.colorSpace() == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+            }?.let {
+                selectedSurfaceFmt = it
+                logW("PhysicalDevice") { "Preferred color space ${backend.setup.preferredColorSpace} not available, using sRGB" }
+                return it
+            }
+
+            selectedSurfaceFmt = formats[0]
+            logW("PhysicalDevice") { "8-bit RGBA sRGB surface format not available, using first one (${selectedSurfaceFmt!!.format()})" }
+            return formats[0]
         }
 
         fun choosePresentationMode(): Int {
