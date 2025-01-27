@@ -8,35 +8,36 @@ import org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1
 import org.lwjgl.vulkan.VK12.VK_API_VERSION_1_2
 
 class VkSetup(
+    /**
+     * Required Vulkan version. Defaults to Vulkan 1.2
+     */
     val vkApiVersion: Int = VK_API_VERSION_1_2,
-    isPortability: Boolean = true,
-    isValidation: Boolean = false
+
+    /**
+     * Enables portability feature, which is required for running Vulkan with MoltenVK
+     * on Metal / macOS.
+     */
+    val isPortability: Boolean = true,
+
+    /**
+     * Enables the Vulkan validation layer.
+     */
+    val isValidation: Boolean = false,
 ) {
     val requestedLayers = mutableSetOf<RequestedFeature>()
 
     val requestedInstanceExtensions = mutableSetOf<RequestedFeature>()
     val requestedDeviceExtensions = mutableSetOf(deviceExtensionSwapchain)
 
-    var isValidation: Boolean = false
-        set(value) {
-            field = value
-            requestedLayers.addOrRemove(RequestedFeature("VK_LAYER_KHRONOS_validation", false), value)
-            requestedInstanceExtensions.addOrRemove(
-                RequestedFeature(EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false),
-                value
-            )
-        }
-
-    var isPortability: Boolean = false
-        set(value) {
-            field = value
-            requestedInstanceExtensions.addOrRemove(instanceExtensionPortability, value)
-            requestedDeviceExtensions.addOrRemove(deviceExtensionPortability, value)
-        }
-
     init {
-        this.isValidation = isValidation
-        this.isPortability = isPortability
+        requestedLayers.addOrRemove(RequestedFeature("VK_LAYER_KHRONOS_validation", false), isValidation)
+        requestedInstanceExtensions.addOrRemove(
+            RequestedFeature(EXTDebugUtils.VK_EXT_DEBUG_UTILS_EXTENSION_NAME, false),
+            isValidation
+        )
+
+        requestedInstanceExtensions.addOrRemove(instanceExtensionPortability, isPortability)
+        requestedDeviceExtensions.addOrRemove(deviceExtensionPortability, isPortability)
 
         requestedDeviceExtensions += vmaHelperExtensions
         if (vkApiVersion < VK_API_VERSION_1_2) {

@@ -31,7 +31,6 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
     var isAutoRemove = true
 
     init {
-        clearColor = null
         drawNode.apply {
             addTextureMesh {
                 generateFullscreenQuad()

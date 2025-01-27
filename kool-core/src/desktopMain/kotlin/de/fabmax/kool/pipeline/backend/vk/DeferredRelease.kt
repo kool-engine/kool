@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline.backend.vk
 internal object DeferredRelease {
     private val deferredTasks = mutableListOf<DeferredTask>()
 
-    fun defer(ticks: Int = 2, task: () -> Unit) {
+    fun defer(ticks: Int = Swapchain.MAX_FRAMES_IN_FLIGHT, task: () -> Unit) {
         deferredTasks += DeferredTask(ticks, task)
     }
 

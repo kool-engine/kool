@@ -123,8 +123,9 @@ class ImageVk(
 
         memStack(stack) {
             val oldLayout = layout
+            val hasStencilComponent = format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT
             val aspectMask = when (newLayout) {
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL if (hasStencilComponent()) -> VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT
+                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL if (hasStencilComponent) -> VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT
                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_IMAGE_ASPECT_DEPTH_BIT
                 else -> VK_IMAGE_ASPECT_COLOR_BIT
             }
@@ -147,15 +148,11 @@ class ImageVk(
         }
     }
 
-    private fun hasStencilComponent(): Boolean {
-        return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT
-    }
-
     override fun release() {
         val wasReleased = isReleased
         super.release()
         if (!wasReleased) {
-            backend.memManager.freeImage(vkImage, 2)
+            backend.memManager.freeImage(vkImage)
             textureInfo.deleted()
         }
     }

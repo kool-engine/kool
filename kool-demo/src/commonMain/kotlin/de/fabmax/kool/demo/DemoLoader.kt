@@ -42,6 +42,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     init {
         Settings.loadSettings()
 
+        ctx.scenes += loadingScreen
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += menu.ui
         ctx.onRender += this::onRender
@@ -114,6 +115,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                 demo.menuUi?.release()
                 demo.onRelease(ctx)
             }
+            ctx.scenes -= loadingScreen
             ctx.scenes.stageAdd(loadingScreen, 0)
 
             // set new demo

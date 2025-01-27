@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Releasable
 
 /**
  * Copies the color and / or depth texture outputs of a render pass. [drawGroupId] can be used to capture
@@ -90,9 +91,12 @@ class FrameCopy(
         }
     }
 
+    internal var gpuFrameCopy: Releasable? = null
+
     override fun release() {
         super.release()
         colorCopy.forEach { it.release() }
         depthCopy?.release()
+        gpuFrameCopy?.release()
     }
 }
