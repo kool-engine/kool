@@ -78,16 +78,16 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             reversedDepth = true,
             depthOnlyShaderColorOutput = null,
             maxComputeWorkGroupsPerDimension = Vec3i(
-                physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(0),
-                physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(1),
-                physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(2),
+                clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(0)),
+                clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(1)),
+                clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(2)),
             ),
             maxComputeWorkGroupSize = Vec3i(
-                physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(0),
-                physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(1),
-                physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(2),
+                clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(0)),
+                clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(1)),
+                clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupSize(2)),
             ),
-            maxComputeInvocationsPerWorkgroup = physicalDevice.deviceProperties.limits().maxComputeWorkGroupInvocations(),
+            maxComputeInvocationsPerWorkgroup = clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupInvocations()),
         )
 
         if (device.computeQueue != null && device.computeQueue != device.graphicsQueue) {
@@ -107,6 +107,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
 
         frameTimer = Timer(timestampQueryPool) { delta -> frameGpuTime = delta }
+    }
+
+    private fun clampUint(unsignedCnt: Int): Int {
+        return if (unsignedCnt < 0) Int.MAX_VALUE else unsignedCnt
     }
 
     override fun renderFrame(ctx: KoolContext) {
