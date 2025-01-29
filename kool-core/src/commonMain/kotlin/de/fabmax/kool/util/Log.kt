@@ -1,20 +1,22 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.util.Log.Level
+
 /**
  * Super primitive debug logging facility.
  */
 object Log {
 
-    val DEFAULT_PRINTER: (lvl: Level, tag: String?, message: String) -> Unit = { lvl, tag, message ->
+    val DEFAULT_PRINTER = LogPrinter { lvl, tag, message ->
         println("${lvl.indicator}/$tag: $message")
     }
 
     var level = Level.DEBUG
-    var printer: (lvl: Level, tag: String?, message: String) -> Unit = DEFAULT_PRINTER
+    var printer: LogPrinter = DEFAULT_PRINTER
 
     inline fun log(level: Level, tag: String?, message: () -> String) {
         if (level.level >= this.level.level) {
-            printer(level, tag, message())
+            printer.print(level, tag, message())
         }
     }
 
@@ -26,6 +28,10 @@ object Log {
         ERROR(4, 'E'),
         OFF(5, 'x')
     }
+}
+
+fun interface LogPrinter {
+    fun print(lvl: Level, tag: String?, message: String)
 }
 
 inline fun Any.logT(message: () -> String) = logT(this::class.simpleName, message)

@@ -42,32 +42,7 @@ internal object DesktopImpl {
 
     init {
         if (Log.printer == Log.DEFAULT_PRINTER) {
-            val dateFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
-            Log.printer = { lvl, tag, message ->
-                synchronized(dateFmt) {
-                    val timestamp = coloredText(dateFmt.format(System.currentTimeMillis()), MdColor.BROWN tone 300)
-                    val frame = coloredText("f:${Time.frameCount}", MdColor.PURPLE tone 300)
-
-                    val (tagColor, bold) = when (lvl) {
-                        Log.Level.TRACE -> MdColor.INDIGO tone 200 to false
-                        Log.Level.DEBUG -> MdColor.CYAN tone 300 to false
-                        Log.Level.INFO -> MdColor.LIGHT_GREEN to true
-                        Log.Level.WARN -> MdColor.AMBER to true
-                        Log.Level.ERROR -> MdColor.RED to true
-                        Log.Level.OFF -> MdColor.PURPLE to true
-                    }
-                    val tagStr = coloredText("${lvl.indicator}/$tag", tagColor, bold)
-
-                    val txt = message.replace("\n", "\n  ")
-                    val messageStr = when (lvl) {
-                        Log.Level.WARN -> coloredText(txt, MdColor.AMBER tone 200)
-                        Log.Level.ERROR -> coloredText(txt, MdColor.RED tone 200)
-                        else -> txt
-                    }
-
-                    println("$timestamp|$frame  $tagStr: $messageStr")
-                }
-            }
+            Log.printer = DesktopLogPrinter
         }
 
         // setup an error callback
@@ -89,14 +64,6 @@ internal object DesktopImpl {
         primaryMonitor = primMon
     }
 
-    private fun coloredText(text: String, color: Color, bold: Boolean = false): String {
-        val r = (color.r.clamp() * 255).toInt()
-        val g = (color.g.clamp() * 255).toInt()
-        val b = (color.b.clamp() * 255).toInt()
-        val weight = if (bold) "\u001b[1m" else ""
-        return "\u001b[38;2;$r;$g;${b}m$weight$text\u001b[0m"
-    }
-
     fun createContext(): Lwjgl3Context {
         synchronized(this) {
             if (ctx == null) {
@@ -104,5 +71,69 @@ internal object DesktopImpl {
             }
         }
         return ctx!!
+    }
+}
+
+private object DesktopLogPrinter : LogPrinter {
+    val dateFmt = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
+
+    val numberRegex = """[0-9a-fA-F]+""".toRegex()
+
+    var sameMsgCnt = 0
+    var prevMsg: String? = null
+
+    override fun print(lvl: Log.Level, tag: String?, message: String) {
+        synchronized(dateFmt) {
+            val timestamp = coloredText(dateFmt.format(System.currentTimeMillis()), MdColor.BROWN tone 300)
+            val frame = coloredText("f:${Time.frameCount}", MdColor.PURPLE tone 300)
+
+            val (tagColor, bold) = when (lvl) {
+                Log.Level.TRACE -> MdColor.INDIGO tone 200 to false
+                Log.Level.DEBUG -> MdColor.CYAN tone 300 to false
+                Log.Level.INFO -> MdColor.LIGHT_GREEN to true
+                Log.Level.WARN -> MdColor.AMBER to true
+                Log.Level.ERROR -> MdColor.RED to true
+                Log.Level.OFF -> MdColor.PURPLE to true
+            }
+            val tagStr = coloredText("${lvl.indicator}/$tag", tagColor, bold = bold)
+
+            val txt = message.replace("\n", "\n  ")
+            val messageStr = when (lvl) {
+                Log.Level.WARN -> coloredText(txt, MdColor.AMBER tone 200)
+                Log.Level.ERROR -> coloredText(txt, MdColor.RED tone 200)
+                else -> txt
+            }
+
+            val printMsg = "$tagStr: $messageStr"
+            val checkMsg = printMsg.replace(numberRegex) { "" }
+            if (checkMsg == prevMsg) {
+                sameMsgCnt++
+                val colored = coloredText("[Similar message: $sameMsgCnt times]", MdColor.GREY tone 900, MdColor.GREY tone 500)
+                print("\b\r  $colored")
+            } else {
+                if (sameMsgCnt > 0) {
+                    println()
+                }
+                sameMsgCnt = 0
+                prevMsg = checkMsg
+                println("$timestamp|$frame  $printMsg")
+            }
+        }
+    }
+
+    private fun coloredText(text: String, fgColor: Color, bgColor: Color? = null, bold: Boolean = false): String {
+        val bg = if (bgColor == null) "" else {
+            val r = (bgColor.r.clamp() * 255).toInt()
+            val g = (bgColor.g.clamp() * 255).toInt()
+            val b = (bgColor.b.clamp() * 255).toInt()
+            "\u001b[48;2;$r;$g;${b}m"
+        }
+
+        val r = (fgColor.r.clamp() * 255).toInt()
+        val g = (fgColor.g.clamp() * 255).toInt()
+        val b = (fgColor.b.clamp() * 255).toInt()
+
+        val weight = if (bold) "\u001b[1m" else ""
+        return "\u001b[38;2;$r;$g;${b}m$weight$bg$text\u001b[0m"
     }
 }
