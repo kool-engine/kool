@@ -11,7 +11,6 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
-import de.fabmax.kool.util.releaseWith
 
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
     OffscreenRenderPassCube(
@@ -40,18 +39,8 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
             }
         }
 
-        val bindGroups = mutableMapOf<Int, BindGroupData>()
         onSetupMipLevel { mipLevel ->
-            // use individual bind groups for each mip-level to avoid changing uniform buffer contents while
-            // previous mip-levels are not yet drawn
-            val pipeline = reflectionMapShader.createdPipeline!!
-            pipeline.pipelineData = bindGroups.getOrPut(mipLevel) {
-                // previous pipelineData won't be auto-released with the pipeline itself (because it is replaced by
-                // the new one) -> release it with the render pass instead
-                pipeline.pipelineData.releaseWith(this)
-                pipeline.pipelineData.copy()
-            }
-            // after mip-level bind group is set we can safely set the mip-level specific uniform values
+            reflectionMapShader.createdPipeline?.swapPipelineData(mipLevel)
             reflectionMapShader.uRoughness = mipLevel.toFloat() / (numRenderMipLevels - 1) * 0.55f
         }
 

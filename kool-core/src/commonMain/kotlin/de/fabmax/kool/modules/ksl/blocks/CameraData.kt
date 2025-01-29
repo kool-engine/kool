@@ -99,7 +99,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         val cam = q.view.camera
         val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
         
-        ubo.isBufferDirty = true
+        ubo.markDirty()
         ubo.buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
         ubo.buffer.positioned(bufferPosDirection!!.byteIndex) { cam.globalLookDir.putTo(it) }
         ubo.buffer.positioned(bufferPosClip!!.byteIndex) { it.putFloat32(cam.clipNear); it.putFloat32(cam.clipFar) }

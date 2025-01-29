@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.ComputeRenderPass
 
 class WgpuComputePipeline(
     val computePipeline: ComputePipeline,
@@ -10,38 +10,37 @@ class WgpuComputePipeline(
 ): WgpuPipeline(computePipeline, backend) {
 
     private val gpuComputePipeline = createComputePipeline()
-    private val users = mutableSetOf<ComputeRenderPass.Task>()
+    private val users = mutableSetOf<ComputePass.Task>()
 
     override fun removeUser(user: Any) {
-        (user as? ComputeRenderPass.Task)?.let { users.remove(it) }
+        (user as? ComputePass.Task)?.let { users.remove(it) }
         if (users.isEmpty()) {
             release()
         }
     }
 
     private fun createComputePipeline(): GPUComputePipeline {
-        val compute = GPUProgrammableStage(
-            module = computeShaderModule,
-            entryPoint = "computeMain"
-        )
         return device.createComputePipeline(
             label = "${computePipeline.name}-layout",
             layout = pipelineLayout,
-            compute = compute
+            compute = GPUProgrammableStage(
+                module = computeShaderModule,
+                entryPoint = "computeMain"
+            )
         )
     }
 
-    fun bind(task: ComputeRenderPass.Task, passEncoderState: ComputePassEncoderState): Boolean {
+    fun bind(task: ComputePass.Task, passEncoderState: ComputePassEncoderState): Boolean {
         users += task
         computePipeline.update(task.pass)
 
         val pipelineData = computePipeline.pipelineData
-        if (!pipelineData.checkBindings(backend)) {
+        if (!pipelineData.checkBindings()) {
             return false
         }
 
         passEncoderState.setPipeline(gpuComputePipeline)
-        pipelineData.getOrCreateWgpuData().bind(passEncoderState, task.pass, 0)
+        pipelineData.getOrCreateWgpuData().bind(passEncoderState, 0)
         return true
     }
 }

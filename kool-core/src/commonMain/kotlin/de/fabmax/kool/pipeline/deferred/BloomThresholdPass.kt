@@ -51,6 +51,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
     }
 
     fun setLightingInput(newPass: PbrLightingPass) {
+        outputShader.createdPipeline?.swapPipelineData(newPass)
         outputShader.inputTexture = newPass.colorTexture
     }
 

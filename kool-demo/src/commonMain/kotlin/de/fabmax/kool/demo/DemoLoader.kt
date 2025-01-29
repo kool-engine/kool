@@ -42,9 +42,15 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     init {
         Settings.loadSettings()
 
+        ctx.scenes += loadingScreen
         ctx.scenes += dbgOverlay.ui
         ctx.scenes += menu.ui
         ctx.onRender += this::onRender
+        ctx.onShutdown += {
+            if (!loadingScreen.isReleased) {
+                loadingScreen.release()
+            }
+        }
 
         val loadScene = startScene ?: Settings.selectedDemo.value
 
@@ -102,18 +108,13 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
             logI { "Loaded demo ${newDemo.title}" }
             Settings.selectedDemo.set(newDemo.id)
 
-            // release old demo
             currentDemo?.second?.let { demo ->
-                demo.scenes.forEach {
-                    ctx.scenes -= it
-                    it.release()
-                }
-                demo.menuUi?.let {
-                    menu.ui -= it
-                    it.release()
-                }
-                demo.onRelease(ctx)
+                demo.scenes.forEach { ctx.scenes -= it }
+                demo.menuUi?.let { menu.ui -= it }
+                demo.scenes.forEach { it.release() }
+                demo.menuUi?.release()
             }
+            ctx.scenes -= loadingScreen
             ctx.scenes.stageAdd(loadingScreen, 0)
 
             // set new demo

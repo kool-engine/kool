@@ -22,6 +22,10 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
     var isDirty = true
 
+    internal var checkFrame = -1
+    internal var isCheckOk = false
+    var modCnt = -1
+
     val isComplete: Boolean
         get() = bindings.all { it.isComplete }
 
@@ -71,15 +75,14 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
 
     inner class UniformBufferBindingData(override val layout: UniformBufferLayout) : BindingData {
-        var isBufferDirty = true
+        var modCount = 0
+            private set
         val buffer: MixedBuffer = MixedBuffer(layout.layout.size)
 
         override val isComplete = true
 
-        fun getAndClearDirtyFlag(): Boolean {
-            val isDirty = isBufferDirty
-            isBufferDirty = false
-            return isDirty
+        fun markDirty() {
+            modCount++
         }
 
         fun copyTo(other: UniformBufferBindingData) {
@@ -87,23 +90,24 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             for (i in 0 until buffer.capacity) {
                 other.buffer.setInt8(i, buffer.getInt8(i))
             }
-            other.isBufferDirty = true
+            other.markDirty()
         }
     }
 
     abstract inner class TextureBindingData<T: Texture<*>> {
+        abstract val layout: TextureLayout
         val isComplete get() = texture?.loadingState == Texture.LoadingState.LOADED
 
         var texture: T? = null
             set(value) {
+                isDirty = field !== value
                 field = value
-                isDirty = true
             }
 
         var sampler: SamplerSettings? = null
             set(value) {
+                isDirty = field !== value
                 field = value
-                isDirty = true
             }
 
         fun copyTo(other: TextureBindingData<T>) {

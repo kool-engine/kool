@@ -3,6 +3,8 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.util.BaseReleasable
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 
 class TimeQuery(private val gl: GlApi) : BaseReleasable() {
     private val beginTime = gl.createQuery()
@@ -18,11 +20,11 @@ class TimeQuery(private val gl: GlApi) : BaseReleasable() {
                 gl.getQueryParameter(beginTime, gl.QUERY_RESULT_AVAILABLE) == gl.TRUE &&
                 gl.getQueryParameter(endTime, gl.QUERY_RESULT_AVAILABLE) == gl.TRUE
 
-    fun getQueryResultMillis(): Double {
+    fun getQueryResult(): Duration {
         val begin = gl.getQueryParameterU64(beginTime, gl.QUERY_RESULT)
         val end = gl.getQueryParameterU64(endTime, gl.QUERY_RESULT)
         isInFlight = false
-        return (end - begin) / 1e6
+        return (end - begin).nanoseconds
     }
 
     fun begin() {

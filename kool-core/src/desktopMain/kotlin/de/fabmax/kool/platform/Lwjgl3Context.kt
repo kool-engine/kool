@@ -8,8 +8,9 @@ import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.awt.image.BufferedImage
@@ -38,10 +39,11 @@ class Lwjgl3Context : KoolContext() {
     private val sysInfo = SysInfo()
 
     init {
-        if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
-            logE { "Vulkan support is currently disabled, falling back to OpenGL" }
+        backend = when (KoolSystem.configJvm.renderBackend) {
+            KoolConfigJvm.Backend.VULKAN -> RenderBackendVk(this)
+            KoolConfigJvm.Backend.OPEN_GL -> RenderBackendGlImpl(this)
         }
-        backend = RenderBackendGlImpl(this)
+
         isWindowFocused = backend.glfwWindow.isFocused
         backend.glfwWindow.onFocusChanged += {
             isWindowFocused = it
@@ -72,6 +74,10 @@ class Lwjgl3Context : KoolContext() {
                 Thread.sleep(10)
             }
         }
+        logI { "Exiting..." }
+        scenes.forEach { it.release() }
+        backgroundScene.release()
+        onShutdown.updated().forEach { it(this) }
         backend.cleanup(this)
     }
 

@@ -231,11 +231,16 @@ class GpuBees(beeScene: Scene) {
     val beeMeshA = makeBeeMesh(beeInstancesA)
     val beeMeshB = makeBeeMesh(beeInstancesB)
 
-    private val simulationPass = ComputeRenderPass("Bee update pass")
+    private val simulationPass = ComputePass("Bee update pass")
 
     init {
         initBeeBuffer(beeBufferA, Vec3f(BeeConfig.worldSize.x * 0.4f, 0f, 0f))
         initBeeBuffer(beeBufferB, Vec3f(BeeConfig.worldSize.x * -0.4f, 0f, 0f))
+
+        beeScene.onRelease {
+            beeBufferA.release()
+            beeBufferB.release()
+        }
 
         simulationPass.isProfileTimes = true
         beeScene.addOffscreenPass(simulationPass)
@@ -259,11 +264,11 @@ class GpuBees(beeScene: Scene) {
         val bindGroupA: BindGroupData = taskA.pipeline.pipelineData
         val bindGroupB: BindGroupData = taskB.pipeline.pipelineDataLayout.createData()
 
-        taskA.pipeline.pipelineData = bindGroupA
+        taskA.pipeline.swapPipelineData("a")
         spawnPos = Vec3f(BeeConfig.worldSize.x * -0.4f, 0f, 0f)
         beeBuffer = beeBufferA
         enemyBeeBuffer = beeBufferB
-        taskB.pipeline.pipelineData = bindGroupB
+        taskB.pipeline.swapPipelineData("b")
         spawnPos = Vec3f(BeeConfig.worldSize.x * 0.4f, 0f, 0f)
         beeBuffer = beeBufferB
         enemyBeeBuffer = beeBufferA
@@ -287,11 +292,11 @@ class GpuBees(beeScene: Scene) {
             } else {
                 numSimulatedBees = currentInstances
             }
-            beeUpdateTime.set(simulationPass.tGpu)
+            beeUpdateTime.set(simulationPass.tGpu.inWholeMicroseconds / 1000.0)
         }
 
         taskA.onBeforeDispatch {
-            taskA.pipeline.pipelineData = bindGroupA
+            taskA.pipeline.swapPipelineData("a")
             deltaT = min(0.02f, Time.deltaT)
             randomSeed = 1000f + (Time.gameTime % 1000.0).toFloat()
             numBees = BeeConfig.beesPerTeam.value
@@ -307,7 +312,7 @@ class GpuBees(beeScene: Scene) {
         }
 
         taskB.onBeforeDispatch {
-            taskB.pipeline.pipelineData = bindGroupB
+            taskB.pipeline.swapPipelineData("b")
             deltaT = min(0.02f, Time.deltaT)
             randomSeed = -1000f - (Time.gameTime % 1000.0).toFloat()
             numBees = BeeConfig.beesPerTeam.value

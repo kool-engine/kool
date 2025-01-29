@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.menu
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
@@ -121,5 +122,13 @@ class DemoMenu(val demoLoader: DemoLoader) {
         val titleBgMesh = TitleBgRenderer.BgMesh()
 
         val titleTextGlowColor = Color.BLACK.withAlpha(0.5f)
+
+        init {
+            KoolSystem.getContextOrNull()?.onShutdown += {
+                if (!titleBgMesh.isReleased) {
+                    titleBgMesh.release()
+                }
+            }
+        }
     }
 }

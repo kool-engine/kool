@@ -3,14 +3,16 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.math.getNumMipLevels
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
-abstract class RenderPass(var name: String) : BaseReleasable() {
+abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasable() {
 
     /**
      * Dimension of the output (window / screen or framebuffer / texture). Notice, that the part
@@ -21,8 +23,6 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     val height: Int get() = size.y
     val depth: Int get() = size.z
 
-    var mipMode: MipMode = MipMode.None
-        protected set
     val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
     val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
 
@@ -41,23 +41,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
      */
     val frameCopies = mutableListOf<FrameCopy>()
 
-    /**
-     * Determines whether individual [views] are rendered in a single render pass or one separate pass per view.
-     *
-     * If [ViewRenderMode.SINGLE_RENDER_PASS], each view is rendered with its individual viewport but without applying
-     * clear values or changing any attached frame buffer textures. This mode can be used, e.g., to put multiple
-     * camera perspectives on a single tiled texture.
-     *
-     * If [ViewRenderMode.MULTI_RENDER_PASS], each view is rendered in a separate render pass. For each pass
-     * clear values are applied as configured and the render attachments can change (depending on the render pass
-     * implementation). This is the default mode for [OffscreenRenderPassCube], where each cube face is rendered to
-     * the corresponding cube face of the attached cube map texture.
-     */
-    var viewRenderMode = ViewRenderMode.SINGLE_RENDER_PASS
-
     var lighting: Lighting? = null
-
-    private var updateEvent: UpdateEvent? = null
 
     var isDoublePrecision = false
     open var isReverseDepth = false
@@ -68,14 +52,12 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
     val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
     var isProfileTimes = false
-    var tUpdate = 0.0
-    var tCollect = 0.0
-    var tGpu = 0.0
+    var tUpdate: Duration = 0.0.seconds
+    var tCollect: Duration = 0.0.seconds
+    var tGpu: Duration = 0.0.seconds
 
     var isMirrorY = false
         protected set
-
-    protected var complainedAboutReversedDepth = false
 
     protected fun mirrorIfInvertedClipY() {
         isMirrorY = KoolSystem.requireContext().backend.isInvertedNdcY
@@ -87,7 +69,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         for (i in views.indices) {
             views[i].update(ctx)
         }
-        tUpdate = if (isProfileTimes) Time.precisionTime - t else 0.0
+        tUpdate = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
     }
 
     open fun collectDrawCommands(ctx: KoolContext) {
@@ -95,7 +77,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         for (i in views.indices) {
             views[i].collectDrawCommands(ctx)
         }
-        tCollect = if (isProfileTimes) Time.precisionTime - t else 0.0
+        tCollect = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
     }
 
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
@@ -156,7 +138,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         }
 
         data object Generate : MipMode(true) {
-            override fun getTextureMipLevels(size: Vec3i) = getNumMipLevels(size.x, size.y)
+            override fun getTextureMipLevels(size: Vec3i) = numMipLevels(size.x, size.y)
             override fun getRenderMipLevels(size: Vec3i) = 1
         }
 
@@ -164,7 +146,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
             val numMipLevels: Int,
             val renderOrder: MipMapRenderOrder = MipMapRenderOrder.HigherResolutionFirst
         ) : MipMode(true) {
-            override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) getNumMipLevels(size.x, size.y) else numMipLevels
+            override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) numMipLevels(size.x, size.y) else numMipLevels
             override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)
         }
 
@@ -224,6 +206,7 @@ abstract class RenderPass(var name: String) : BaseReleasable() {
         fun copyOutput(isCopyColor: Boolean, isCopyDepth: Boolean, drawGroupId: Int = 0, isSingleShot: Boolean = false): FrameCopy {
             val copy = FrameCopy(this@RenderPass, isCopyColor, isCopyDepth, drawGroupId, isSingleShot)
             frameCopies += copy
+            frameCopies.sortBy { it.drawGroupId }
             return copy
         }
 

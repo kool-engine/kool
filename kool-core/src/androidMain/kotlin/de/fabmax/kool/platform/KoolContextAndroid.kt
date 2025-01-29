@@ -9,10 +9,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.util.Log
-import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import java.util.*
 import kotlin.math.max
 
@@ -59,7 +56,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     }
 
     fun onDestroy() {
-        KoolSystem.destroyContext()
+        onShutdown.updated().forEach { it(this) }
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {
@@ -91,7 +88,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     companion object {
         init {
             if (Log.printer == Log.DEFAULT_PRINTER) {
-                Log.printer = { lvl, tag, message ->
+                Log.printer = LogPrinter { lvl, tag, message ->
                     val ctx = KoolSystem.getContextOrNull()
                     val frmTxt = ctx?.let { "f:${Time.frameCount}  " } ?: ""
                     val txt = "$frmTxt$message"

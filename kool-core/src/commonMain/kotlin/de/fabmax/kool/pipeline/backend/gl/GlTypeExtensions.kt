@@ -3,31 +3,25 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 
-@Suppress("DEPRECATION")
 fun TexFormat.glInternalFormat(gl: GlApi): Int = when(this) {
     TexFormat.R -> gl.R8
     TexFormat.RG -> gl.RG8
-    TexFormat.RGB -> gl.RGB8
     TexFormat.RGBA -> gl.RGBA8
 
     TexFormat.R_F16 -> gl.R16F
     TexFormat.RG_F16 -> gl.RG16F
-    TexFormat.RGB_F16 -> gl.RGB16F
     TexFormat.RGBA_F16 -> gl.RGBA16F
 
     TexFormat.R_F32 -> gl.R32F
     TexFormat.RG_F32 -> gl.RG32F
-    TexFormat.RGB_F32 -> gl.RGB32F
     TexFormat.RGBA_F32 -> gl.RGBA32F
 
     TexFormat.R_I32 -> gl.R32I
     TexFormat.RG_I32 -> gl.RG32I
-    TexFormat.RGB_I32 -> gl.RGB32I
     TexFormat.RGBA_I32 -> gl.RGBA32I
 
     TexFormat.R_U32 -> gl.R32UI
     TexFormat.RG_U32 -> gl.RG32UI
-    TexFormat.RGB_U32 -> gl.RGB32UI
     TexFormat.RGBA_U32 -> gl.RGBA32UI
 }
 
@@ -107,6 +101,7 @@ val VertexLayout.VertexAttribute.locationSize: Int get() = when(attribute.type) 
 
 fun VertexLayout.getAttribLocations() = buildMap {
     bindings
+        .filter { it.vertexAttributes.isNotEmpty() }
         .flatMap { it.vertexAttributes }
         .sortedBy { it.index }
         .fold(0) { pos, attr ->

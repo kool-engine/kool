@@ -8,9 +8,9 @@ import de.fabmax.kool.util.checkIsNotReleased
 class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
     private val device: GPUDevice get() = backend.device
 
-    private val createdIndexBuffer: WgpuVertexBuffer
-    private val createdFloatBuffer: WgpuVertexBuffer
-    private val createdIntBuffer: WgpuVertexBuffer?
+    private val createdIndexBuffer: WgpuGrowingBuffer
+    private val createdFloatBuffer: WgpuGrowingBuffer
+    private val createdIntBuffer: WgpuGrowingBuffer?
 
     val indexBuffer: GPUBuffer get() = createdIndexBuffer.buffer.buffer
     val floatBuffer: GPUBuffer get() = createdFloatBuffer.buffer.buffer
@@ -20,10 +20,10 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
 
     init {
         val geom = mesh.geometry
-        createdIndexBuffer = WgpuVertexBuffer(backend, "${mesh.name} index data", 4 * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
-        createdFloatBuffer = WgpuVertexBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices)
+        createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
+        createdFloatBuffer = WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices.toLong())
         createdIntBuffer = if (geom.byteStrideI == 0) null else {
-            WgpuVertexBuffer(backend, "${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices)
+            WgpuGrowingBuffer(backend, "${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices.toLong())
         }
     }
 
@@ -42,8 +42,8 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
 
     override fun release() {
         super.release()
-        createdIndexBuffer.buffer.release()
-        createdFloatBuffer.buffer.release()
-        createdIntBuffer?.buffer?.release()
+        createdIndexBuffer.release()
+        createdFloatBuffer.release()
+        createdIntBuffer?.release()
     }
 }

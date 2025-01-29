@@ -8,7 +8,7 @@ object TextureLoaderGl {
     private val loadedTextures = mutableMapOf<String, LoadedTextureGl>()
 
     init {
-        KoolSystem.onDestroyContext += { loadedTextures.clear() }
+        KoolSystem.getContextOrNull()?.onShutdown += { loadedTextures.clear() }
     }
 
     fun loadTexture(tex: Texture<*>, backend: RenderBackendGl): LoadedTextureGl {

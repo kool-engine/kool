@@ -7,12 +7,15 @@ import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.Color
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.glEnable
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
 import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class RenderBackendGlImpl(ctx: KoolContext) :
     RenderBackendGl(KoolSystem.configJvm.msaaSamples, GlImpl, ctx), RenderBackendJvm
@@ -23,7 +26,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
     override val glslGeneratorHints: GlslGenerator.Hints
 
     private val timer: TimeQuery
-    override var frameGpuTime: Double = 0.0
+    override var frameGpuTime: Duration = 0.0.seconds
 
     init {
         glfwWindow = createWindow()
@@ -46,7 +49,11 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         features = BackendFeatures(
             computeShaders = true,
             cubeMapArrays = true,
-            reversedDepth = GlImpl.capabilities.hasClipControl
+            reversedDepth = GlImpl.capabilities.hasClipControl,
+            depthOnlyShaderColorOutput = Color.BLACK,
+            maxComputeWorkGroupsPerDimension = GlImpl.capabilities.maxWorkGroupCount,
+            maxComputeWorkGroupSize = GlImpl.capabilities.maxWorkGroupSize,
+            maxComputeInvocationsPerWorkgroup = GlImpl.capabilities.maxWorkGroupInvocations
         )
 
         timer = TimeQuery(gl)
@@ -54,7 +61,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
 
     override fun renderFrame(ctx: KoolContext) {
         if (timer.isAvailable) {
-            frameGpuTime = timer.getQueryResultMillis()
+            frameGpuTime = timer.getQueryResult()
         }
 
         timer.timedScope {

@@ -2,6 +2,7 @@ package de.fabmax.kool.demo
 
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.menu.TitleBgRenderer
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
@@ -11,14 +12,12 @@ import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 
-abstract class DemoScene(val name: String) {
+abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
     var demoEntry: Demos.Entry? = null
     var demoState = State.NEW
 
     protected val resources = ResourceGroup()
 
-    var mainScene = Scene(name)
-        protected set
     var menuUi: UiSurface? = null
     val scenes = mutableListOf(mainScene)
 
@@ -48,6 +47,7 @@ abstract class DemoScene(val name: String) {
         resources.loadInfoCallback = {
             loadingScreen?.loadingText2?.set("${it.name}...")
         }
+        mainScene.onRelease { onRelease(KoolSystem.requireContext()) }
     }
 
     suspend fun showLoadText(text: String, delayFrames: Int = 1) {

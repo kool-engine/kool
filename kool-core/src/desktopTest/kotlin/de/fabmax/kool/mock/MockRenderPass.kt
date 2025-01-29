@@ -8,7 +8,7 @@ import de.fabmax.kool.util.Color
 
 class MockRenderPass(
     override val size: Vec3i = Vec3i(Mock.testCtx.windowWidth, Mock.testCtx.windowHeight, 1)
-) : RenderPass("mock-render-pass") {
+) : RenderPass("mock-render-pass", MipMode.None) {
 
     val mockView = View("mock-view", Node(), PerspectiveCamera())
     override val clearColors: Array<Color?> = arrayOf(Color.BLACK)

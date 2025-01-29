@@ -12,9 +12,11 @@ interface MappedUniform {
 
 class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData, val gpuBuffer: BufferResource, val backend: RenderBackendGl) : MappedUniform {
     val gl: GlApi get() = backend.gl
+    private var modCount = -1
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        if (ubo.getAndClearDirtyFlag()) {
+        if (modCount != ubo.modCount) {
+            modCount = ubo.modCount
             gpuBuffer.setData(ubo.buffer, gl.DYNAMIC_DRAW)
         }
         gl.bindBufferBase(gl.UNIFORM_BUFFER, bindCtx.location(ubo.layout.bindingIndex), gpuBuffer.buffer)

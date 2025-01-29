@@ -28,7 +28,6 @@ class OpticalDepthLutPass :
     var densityFalloff by lutShader::densityFalloff
 
     init {
-        clearColor = null
         drawNode.apply {
             addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()

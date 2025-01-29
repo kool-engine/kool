@@ -156,12 +156,6 @@ val TexFormat.wgpu: GPUTextureFormat
         TexFormat.R_U32 -> GPUTextureFormat.r32uint
         TexFormat.RG_U32 -> GPUTextureFormat.rg32uint
         TexFormat.RGBA_U32 -> GPUTextureFormat.rgba32uint
-
-        TexFormat.RGB -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
-        TexFormat.RGB_F16 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
-        TexFormat.RGB_F32 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
-        TexFormat.RGB_I32 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
-        TexFormat.RGB_U32 -> error("3-channel textures are not supported by WebGPU, use an rgba format instead")
     }
 
 val TextureSampleType.wgpu: GPUTextureSampleType

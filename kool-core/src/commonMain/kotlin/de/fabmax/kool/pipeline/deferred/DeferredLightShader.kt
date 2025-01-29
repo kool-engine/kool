@@ -31,6 +31,7 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
     var emissiveAo by texture2d("emissiveAo")
 
     fun setMaterialInput(materialPass: MaterialPass) {
+        createdPipeline?.swapPipelineData(materialPass)
         positionFlags = materialPass.positionFlags
         normalRoughness = materialPass.normalRoughness
         colorMetallic = materialPass.albedoMetal

@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.OffscreenRenderPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * @author fabmax
@@ -47,7 +48,7 @@ open class Scene(name: String? = null) : Node(name) {
     val isEmpty: Boolean
         get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedMutations)
 
-    var sceneDrawTime = 0.0
+    var sceneRecordTime = 0.0.seconds
 
     fun tryEnableInfiniteDepth(): Boolean {
         val ctx = KoolSystem.getContextOrNull() ?: return false
@@ -81,6 +82,9 @@ open class Scene(name: String? = null) : Node(name) {
             // offscreen passes have changed, re-sort them to maintain correct dependency order
             sortedOffscreenPasses.clear()
             sortedOffscreenPasses.addAll(offscreenPasses)
+            if (sortedOffscreenPasses.distinct().size != sortedOffscreenPasses.size) {
+                logW { "Multiple occurrences of offscreen passes: $sortedOffscreenPasses" }
+            }
             OffscreenRenderPass.sortByDependencies(sortedOffscreenPasses)
         }
 
@@ -139,7 +143,7 @@ open class Scene(name: String? = null) : Node(name) {
         AfterRender
     }
 
-    inner class SceneRenderPass : RenderPass("${name}:OnScreenRenderPass") {
+    inner class SceneRenderPass : RenderPass("${name}:OnScreenRenderPass", MipMode.None) {
         val screenView = View("screen", this@Scene, PerspectiveCamera())
         var camera: Camera by screenView::camera
         val viewport: Viewport by screenView::viewport

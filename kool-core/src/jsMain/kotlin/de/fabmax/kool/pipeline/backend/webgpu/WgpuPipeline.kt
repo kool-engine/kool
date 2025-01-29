@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.checkIsNotReleased
 
 sealed class WgpuPipeline(
@@ -16,11 +17,15 @@ sealed class WgpuPipeline(
     protected val device: GPUDevice get() = backend.device
 
     protected val locations = WgslLocations(pipeline.bindGroupLayouts, (pipeline as? DrawPipeline)?.vertexLayout)
-    private val bindGroupLayouts: List<GPUBindGroupLayout> = createBindGroupLayouts(pipeline)
-    protected val pipelineLayout: GPUPipelineLayout = pipeline.createPipelineLayout()
+    private val bindGroupLayouts: List<GPUBindGroupLayout> = createBindGroupLayouts()
+    protected val pipelineLayout: GPUPipelineLayout = createPipelineLayout()
 
-    private fun createBindGroupLayouts(pipeline: PipelineBase): List<GPUBindGroupLayout> {
-        val layouts = if (this is WgpuComputePipeline) listOf(pipeline.bindGroupLayouts.pipelineScope) else pipeline.bindGroupLayouts.asList
+    private fun createBindGroupLayouts(): List<GPUBindGroupLayout> {
+        val layouts = if (this is WgpuComputePipeline) {
+            listOf(pipeline.bindGroupLayouts.pipelineScope)
+        } else {
+            pipeline.bindGroupLayouts.asList
+        }
 
         return layouts.map { group ->
             val layoutEntries = buildList {
@@ -62,10 +67,10 @@ sealed class WgpuPipeline(
         }
     }
 
-    private fun PipelineBase.createPipelineLayout(): GPUPipelineLayout {
+    private fun createPipelineLayout(): GPUPipelineLayout {
         return device.createPipelineLayout(GPUPipelineLayoutDescriptor(
-            label = "${name}-bindGroupLayout",
-            bindGroupLayouts = this@WgpuPipeline.bindGroupLayouts.toTypedArray()
+            label = "${pipeline.name}-bindGroupLayout",
+            bindGroupLayouts = bindGroupLayouts.toTypedArray()
         ))
     }
 
@@ -103,31 +108,30 @@ sealed class WgpuPipeline(
         )
     }
 
-    protected fun BindGroupData.checkBindings(backend: RenderBackendWebGpu): Boolean {
-        return checkStorageBuffers() && checkTextures(backend)
-    }
+    protected fun BindGroupData.checkBindings(): Boolean {
+        if (Time.frameCount == checkFrame) return isCheckOk
+        checkFrame = Time.frameCount
+        isCheckOk = true
 
-    protected fun BindGroupData.checkStorageBuffers(): Boolean {
-        return bindings
-            .filterIsInstance<BindGroupData.StorageBufferBindingData<*>>()
-            .all { it.storageBuffer != null }
-    }
-
-    protected fun BindGroupData.checkTextures(backend: RenderBackendWebGpu): Boolean {
-        var isComplete = true
-        bindings
-            .filterIsInstance<BindGroupData.TextureBindingData<*>>()
-            .map { it.texture }
-            .filter { it?.loadingState != Texture.LoadingState.LOADED }
-            .forEach {
-                if (it == null || !it.checkLoadingState(backend)) {
-                    isComplete = false
+        for (i in bindings.indices) {
+            val binding = bindings[i]
+            when (binding) {
+                is BindGroupData.StorageBufferBindingData<*> -> {
+                    isCheckOk = isCheckOk && binding.storageBuffer != null
                 }
+                is BindGroupData.TextureBindingData<*> -> {
+                    val tex = binding.texture
+                    if (tex == null || (tex.loadingState != Texture.LoadingState.LOADED && !tex.checkLoadingState())) {
+                        isCheckOk = false
+                    }
+                }
+                else -> { }
             }
-        return isComplete
+        }
+        return isCheckOk
     }
 
-    private fun <T: ImageData> Texture<T>.checkLoadingState(backend: RenderBackendWebGpu): Boolean {
+    private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
         checkIsNotReleased()
         if (loadingState == Texture.LoadingState.NOT_LOADED) {
             uploadData?.let { backend.textureLoader.loadTexture(this) }
@@ -136,8 +140,8 @@ sealed class WgpuPipeline(
     }
 
     protected fun BindGroupData.getOrCreateWgpuData(): WgpuBindGroupData {
-        val group = if (this@WgpuPipeline is WgpuComputePipeline) 0 else layout.group
         if (gpuData == null) {
+            val group = if (this@WgpuPipeline is WgpuComputePipeline) 0 else layout.group
             gpuData = WgpuBindGroupData(this, bindGroupLayouts[group], locations, backend)
         }
         return gpuData as WgpuBindGroupData

@@ -159,6 +159,9 @@ abstract class AoPipeline : BaseReleasable() {
         }
 
         override fun onSwap(previousPasses: DeferredPasses, currentPasses: DeferredPasses) {
+            aoPass.aoPassShader.createdPipeline?.swapPipelineData(currentPasses)
+            denoisePass.denoiseShader.createdPipeline?.swapPipelineData(currentPasses)
+
             aoPass.sceneCam = currentPasses.materialPass.mainView.camera
             aoPass.deferredPosition = currentPasses.materialPass.positionFlags
             aoPass.deferredNormal = currentPasses.materialPass.normalRoughness

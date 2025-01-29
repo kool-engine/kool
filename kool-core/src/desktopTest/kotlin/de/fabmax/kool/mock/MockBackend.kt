@@ -1,6 +1,7 @@
 package de.fabmax.kool.mock
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
@@ -12,6 +13,8 @@ import de.fabmax.kool.pipeline.backend.gl.ComputeShaderCodeGl
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 import de.fabmax.kool.pipeline.backend.gl.ShaderCodeGl
 import kotlinx.coroutines.CompletableDeferred
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hints("#version 330 core"))) : RenderBackend {
 
@@ -22,10 +25,14 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     override val features = BackendFeatures(
         computeShaders = false,
         cubeMapArrays = false,
-        reversedDepth = false
+        reversedDepth = false,
+        depthOnlyShaderColorOutput = null,
+        maxComputeWorkGroupsPerDimension = Vec3i.ZERO,
+        maxComputeWorkGroupSize = Vec3i.ZERO,
+        maxComputeInvocationsPerWorkgroup = 0
     )
 
-    override var frameGpuTime: Double = 0.0
+    override var frameGpuTime: Duration = 0.0.seconds
 
     override fun renderFrame(ctx: KoolContext) { }
 
@@ -49,7 +56,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         TODO("Not yet implemented")
     }
 
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         TODO("Not yet implemented")
     }
 

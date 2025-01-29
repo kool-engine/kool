@@ -27,7 +27,7 @@ object Demos {
 
     private val AllPlatforms = PlatformFilter { true }
     private val NeedsComputeShaders = PlatformFilter { KoolSystem.features.computeShaders }
-    private val NonJavascript = PlatformFilter { KoolSystem.platform != Platform.JAVASCRIPT }
+    private val NonJavascript = PlatformFilter { KoolSystem.platform != Platform.Javascript }
     private val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
     private val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
 

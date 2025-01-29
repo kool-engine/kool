@@ -8,8 +8,12 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 import kotlinx.coroutines.CompletableDeferred
+import kotlin.time.measureTime
 
 abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
     override val name = "Common GL Backend"
@@ -50,10 +54,10 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-                val t = Time.precisionTime
-                doOffscreenPasses(scene)
-                sceneRenderer.draw(scene)
-                scene.sceneDrawTime = Time.precisionTime - t
+                scene.sceneRecordTime = measureTime {
+                    doOffscreenPasses(scene)
+                    sceneRenderer.draw(scene)
+                }
             }
         }
 
@@ -108,15 +112,12 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         return OffscreenRenderPassCubeGl(parentPass, this)
     }
 
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return ComputeRenderPassGl(parentPass, this)
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {
         val src = GlslGenerator(glslGeneratorHints).generateProgram(shader.program, pipeline)
-        if (shader.program.dumpCode) {
-            src.dump()
-        }
         return ShaderCodeGl(src.vertexSrc, src.fragmentSrc)
     }
 
@@ -125,9 +126,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             logW { "Compute shaders require OpenGL 4.3 or higher" }
         }
         val src = GlslGenerator(glslGeneratorHints).generateComputeProgram(shader.program, pipeline)
-        if (shader.program.dumpCode) {
-            src.dump()
-        }
         return ComputeShaderCodeGl(src.computeSrc)
     }
 
@@ -145,7 +143,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         when (offscreenPass) {
             is OffscreenRenderPass2d -> offscreenPass.impl.draw()
             is OffscreenRenderPassCube -> offscreenPass.impl.draw()
-            is ComputeRenderPass -> offscreenPass.impl.dispatch()
+            is ComputePass -> offscreenPass.impl.dispatch()
             is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
         }

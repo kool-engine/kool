@@ -1,55 +1,46 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.releaseWith
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkQueue
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
-class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
+class CommandPool(val backendVk: RenderBackendVk, val queue: VkQueue) : BaseReleasable() {
 
-    val vkCommandPool: Long
+    val physicalDevice: PhysicalDevice get() = backendVk.physicalDevice
+    val device: Device get() = backendVk.device
+
+    val vkCommandPool: VkCommandPool
     val queueIndex = when {
-        queue === sys.device.graphicsQueue -> sys.physicalDevice.queueFamiliyIndices.graphicsFamily!!
-        queue === sys.device.transferQueue -> sys.physicalDevice.queueFamiliyIndices.transferFamily!!
+        queue === device.graphicsQueue -> physicalDevice.queueFamiliyIndices.graphicsFamily!!
+        queue === device.transferQueue -> physicalDevice.queueFamiliyIndices.transferFamily!!
         else -> throw IllegalArgumentException("Invalid queue (neither graphics nor transfer)")
     }
 
     init {
-        memStack {
-            val poolInfo = callocVkCommandPoolCreateInfo {
-                sType(VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO)
-                queueFamilyIndex(queueIndex)
-            }
-            vkCommandPool = checkCreatePointer { vkCreateCommandPool(sys.device.vkDevice, poolInfo, null, it) }
+        vkCommandPool = device.createCommandPool {
+            flags(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT)
+            queueFamilyIndex(queueIndex)
         }
-
-        sys.device.addDependingResource(this)
+        releaseWith(device)
         logD { "Created command pool (queue index: $queueIndex)" }
     }
 
     fun reset() {
-        vkResetCommandPool(sys.device.vkDevice, vkCommandPool, 0)
+        device.resetCommandPool(vkCommandPool)
     }
 
-    fun createCommandBuffers(nBuffers: Int): CommandBuffers = CommandBuffers(this, nBuffers)
-
-    inline fun singleTimeCommands(block: MemoryStack.(VkCommandBuffer) -> Unit) {
+    inline fun singleShotCommands(block: MemoryStack.(VkCommandBuffer) -> Unit) {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         memStack {
-            val allocInfo = callocVkCommandBufferAllocateInfo {
-                sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO)
-                commandPool(vkCommandPool)
-                level(VK_COMMAND_BUFFER_LEVEL_PRIMARY)
-                commandBufferCount(1)
-            }
-
-            val pCommandBuffer = mallocPointer(1)
-            checkVk(vkAllocateCommandBuffers(sys.device.vkDevice, allocInfo, pCommandBuffer))
-            val commandBuffer = VkCommandBuffer(pCommandBuffer[0], sys.device.vkDevice)
-
+            val commandBuffer = allocateCommandBuffers(1, stack = this).first()
             val beginInfo = callocVkCommandBufferBeginInfo {
-                sType(VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO)
                 flags(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT)
             }
             vkBeginCommandBuffer(commandBuffer, beginInfo)
@@ -57,17 +48,39 @@ class CommandPool(val sys: VkSystem, val queue: VkQueue) : VkResource() {
             vkEndCommandBuffer(commandBuffer)
 
             val submitInfo = callocVkSubmitInfoN(1) {
-                sType(VK_STRUCTURE_TYPE_SUBMIT_INFO)
-                pCommandBuffers(pCommandBuffer)
+                pCommandBuffers(pointers(commandBuffer))
             }
             vkQueueSubmit(queue, submitInfo, VK_NULL_HANDLE)
             vkQueueWaitIdle(queue)
-            vkFreeCommandBuffers(sys.device.vkDevice, vkCommandPool, pCommandBuffer)
+            vkFreeCommandBuffers(device.vkDevice, vkCommandPool.handle, commandBuffer)
         }
     }
 
-    override fun freeResources() {
-        vkDestroyCommandPool(sys.device.vkDevice, vkCommandPool, null)
+    override fun release() {
+        super.release()
+        device.destroyCommandPool(vkCommandPool)
         logD { "Destroyed command pool" }
     }
+
+    fun allocateCommandBuffers(
+        numBuffers: Int,
+        level: Int = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        stack: MemoryStack? = null
+    ): List<VkCommandBuffer> {
+        memStack(stack) {
+            val allocateInfo = callocVkCommandBufferAllocateInfo {
+                commandPool(vkCommandPool.handle)
+                level(level)
+                commandBufferCount(numBuffers)
+            }
+            val handles = mallocPointer(numBuffers)
+            vkCheck(vkAllocateCommandBuffers(device.vkDevice, allocateInfo, handles)) { "Failed creating command buffers" }
+            return buildList {
+                for (i in 0 until numBuffers) {
+                    add(VkCommandBuffer(handles[i], device.vkDevice))
+                }
+            }
+        }
+    }
+
 }

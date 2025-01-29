@@ -340,6 +340,8 @@ object GlImpl : GlApi {
     fun initWebGl(glCtx: WebGL2RenderingContext) {
         gl = glCtx
 
+        logD { "Supported WebGL extensions:\n${gl.getSupportedExtensions()?.joinToString("\n")}" }
+
         // by getting the extension, it is automatically enabled, i.e. float formats become usable as texture formats
         if (gl.getExtension("EXT_color_buffer_float") == null) {
             js("alert(\"WebGL 2 implementation lacks support for float textures (EXT_color_buffer_float)\")")

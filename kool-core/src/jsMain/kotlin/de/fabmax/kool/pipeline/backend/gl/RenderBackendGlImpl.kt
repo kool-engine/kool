@@ -6,8 +6,11 @@ import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.Color
 import kotlinx.browser.window
 import org.w3c.dom.HTMLCanvasElement
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
     RenderBackendGl(KoolSystem.configJs.numSamples, GlImpl, ctx), RenderBackendJs
@@ -19,7 +22,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         glslVersionStr = "#version 300 es",
     )
 
-    override var frameGpuTime: Double = 0.0
+    override var frameGpuTime: Duration = 0.0.seconds
 
     init {
         val options = js("({})")
@@ -39,7 +42,11 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         features = BackendFeatures(
             computeShaders = false,
             cubeMapArrays = false,
-            reversedDepth = GlImpl.capabilities.hasClipControl
+            reversedDepth = GlImpl.capabilities.hasClipControl,
+            depthOnlyShaderColorOutput = Color.BLACK,
+            maxComputeWorkGroupsPerDimension = GlImpl.capabilities.maxWorkGroupCount,
+            maxComputeWorkGroupSize = GlImpl.capabilities.maxWorkGroupSize,
+            maxComputeInvocationsPerWorkgroup = GlImpl.capabilities.maxWorkGroupInvocations
         )
 
         sceneRenderer.resolveDirect = false

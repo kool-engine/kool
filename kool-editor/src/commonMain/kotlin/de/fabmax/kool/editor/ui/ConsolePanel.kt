@@ -108,7 +108,7 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", Icons.medium.console, 
     }
 
     init {
-        Log.printer = { lvl: Log.Level, tag: String?, message: String ->
+        Log.printer = LogPrinter { lvl: Log.Level, tag: String?, message: String ->
             synchronized(logLock) {
                 val msg = LogMessage(lvl, tag, message, Clock.System.now(), Time.frameCount)
                 logMessages += msg

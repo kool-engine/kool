@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 
 class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
-    WgpuRenderPass<Scene.SceneRenderPass>(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
+    WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
 {
     private val canvasContext: GPUCanvasContext
         get() = backend.canvasContext
@@ -26,11 +26,11 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width, height)
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, encoder: GPUCommandEncoder) {
+    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.canvas.width, backend.canvas.height)
         }
-        render(scenePass, encoder)
+        render(scenePass, passEncoderState)
     }
 
     override fun generateMipLevels(encoder: GPUCommandEncoder) { }
@@ -43,11 +43,11 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         val width = colorSrc.width
         val height = colorSrc.height
 
-        var colorDstWgpu: WgpuLoadedTexture? = null
-        var depthDstWgpu: WgpuLoadedTexture? = null
+        var colorDstWgpu: WgpuTextureResource? = null
+        var depthDstWgpu: WgpuTextureResource? = null
 
         colorDst?.let { dst ->
-            var copyDstC = (dst.gpuTexture as WgpuLoadedTexture?)
+            var copyDstC = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstC == null || copyDstC.width != width || copyDstC.height != height) {
                 copyDstC?.let {
                     launchDelayed(1) { it.release() }
@@ -60,7 +60,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
                 val texResource = backend.createTexture(descriptor, dst)
-                copyDstC = WgpuLoadedTexture(texResource)
+                copyDstC = texResource
                 dst.gpuTexture = copyDstC
                 dst.loadingState = Texture.LoadingState.LOADED
             }
@@ -68,7 +68,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         }
 
         depthDst?.let { dst ->
-            var copyDstD = (dst.gpuTexture as WgpuLoadedTexture?)
+            var copyDstD = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstD == null || copyDstD.width != width || copyDstD.height != height) {
                 copyDstD?.let {
                     launchDelayed(1) { it.release() }
@@ -81,7 +81,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
                 val texResource = backend.createTexture(descriptor, dst)
-                copyDstD = WgpuLoadedTexture(texResource)
+                copyDstD = texResource
                 dst.gpuTexture = copyDstD
                 dst.loadingState = Texture.LoadingState.LOADED
             }
@@ -93,22 +93,27 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
             val passEncoder = encoder.beginRenderPass(
                 colorAttachments = arrayOf(GPURenderPassColorAttachment(
                     view = colorTextureView!!,
-                    resolveTarget = colorDstWgpu!!.texture.gpuTexture.createView(),
+                    resolveTarget = colorDstWgpu.gpuTexture.createView(),
                 )),
             )
             passEncoder.end()
 
         } else {
             colorDstWgpu?.let { copyDst ->
-                backend.textureLoader.copyTexture2d(colorSrc, copyDst.texture.gpuTexture, 1, encoder)
+                backend.textureLoader.copyTexture2d(colorSrc, copyDst.gpuTexture, 1, encoder)
             }
         }
         depthDstWgpu?.let { copyDst ->
-            backend.textureLoader.resolveMultiSampledDepthTexture(depthAttachment!!, copyDst.texture.gpuTexture, encoder)
+            backend.textureLoader.resolveMultiSampledDepthTexture(depthAttachment!!, copyDst.gpuTexture, encoder)
         }
     }
 
-    override fun getRenderAttachments(renderPass: Scene.SceneRenderPass, viewIndex: Int, mipLevel: Int, forceLoad: Boolean): RenderAttachments {
+    override fun beginRenderPass(
+        passEncoderState: RenderPassEncoderState,
+        forceLoad: Boolean,
+        timestampWrites: GPURenderPassTimestampWrites?
+    ): GPURenderPassEncoder {
+        val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
             renderPass.clearColor == null -> GPULoadOp.load
@@ -136,7 +141,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
             depthStoreOp = GPUStoreOp.store,
             depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
         )
-        return RenderAttachments(colors, depth)
+        return passEncoderState.encoder.beginRenderPass(colors, depth, timestampWrites, renderPass.name)
     }
 
     private fun updateRenderTextures(width: Int, height: Int) {

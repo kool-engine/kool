@@ -9,7 +9,7 @@ import de.fabmax.kool.pipeline.DrawPipeline
 
 abstract class KslGenerator {
 
-    abstract fun KslState.name(): String
+    abstract fun getStateName(stae: KslState): String
 
     open fun constBoolExpression(value: Boolean) = "$value"
     open fun constIntExpression(value: Int) = "$value"
@@ -29,7 +29,7 @@ abstract class KslGenerator {
     abstract fun constBoolVecExpression(vararg values: KslExpression<KslBool1>): String
     abstract fun constMatExpression(vararg columns: KslVectorExpression<*, KslFloat1>): String
 
-    open fun valueExpression(value: KslValue<*>): String = value.name()
+    open fun valueExpression(value: KslValue<*>): String = getStateName(value)
     open fun arrayValueExpression(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
     open fun matrixColExpression(matrixAccessor: KslMatrixAccessor<*>): String =
@@ -73,7 +73,7 @@ abstract class KslGenerator {
     abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
     abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
 
-    open fun varAssignable(assignable: KslVar<*>): String = assignable.name()
+    open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
     open fun matrixColAssignable(matrixAccessor: KslMatrixAccessor<*>): String =

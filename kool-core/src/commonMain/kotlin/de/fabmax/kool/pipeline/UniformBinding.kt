@@ -51,7 +51,7 @@ sealed class UniformBinding<T, C: T>(
         val uboData = groupData.bindings[bindingIndex] as BindGroupData.UniformBufferBindingData
         uboData.buffer.position = pos.byteIndex
         if (setDirty) {
-            uboData.isBufferDirty = true
+            uboData.markDirty()
         }
         return uboData.buffer
     }
@@ -119,7 +119,7 @@ sealed class UniformArrayBinding<T, C: T>(
         val uboData = groupData.bindings[bindingIndex] as BindGroupData.UniformBufferBindingData
         uboData.buffer.position = pos.byteIndex + pos.arrayStrideBytes * index
         if (setDirty) {
-            uboData.isBufferDirty = true
+            uboData.markDirty()
         }
         return uboData.buffer
     }

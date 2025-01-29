@@ -69,31 +69,31 @@ open class Node(name: String? = null) : BaseReleasable() {
      */
     var transform: Transform = TrsTransformF()
 
-    private val modelMatrix = SyncedMatrixFd()
+    val modelMatrixData = SyncedMatrixFd()
     private val tmpVec = MutableVec3f()
 
     /**
      * This node's single-precision model matrix. Updated on each frame based on this node's transform and the model
      * matrix of the parent node.
      */
-    val modelMatF: Mat4f by modelMatrix::matF
+    val modelMatF: Mat4f by modelMatrixData::matF
 
     /**
      * This node's double-precision model matrix. Actual double-precision is only achieved, if this node also uses a
      * double precision [transform]. Updated on each frame based on this node's transform and the model
      * matrix of the parent node.
      */
-    val modelMatD: Mat4d by modelMatrix::matD
+    val modelMatD: Mat4d by modelMatrixData::matD
 
     /**
      * Inverse of this node's model matrix (single-precision).
      */
-    val invModelMatF: Mat4f get() = modelMatrix.invF
+    val invModelMatF: Mat4f get() = modelMatrixData.invF
 
     /**
      * Inverse of this node's model matrix (double-precision).
      */
-    val invModelMatD: Mat4d get() = modelMatrix.invD
+    val invModelMatD: Mat4d get() = modelMatrixData.invD
 
     /**
      * Parent node is set when this node is added to another [Node] as a child.
@@ -193,7 +193,7 @@ open class Node(name: String? = null) : BaseReleasable() {
 
     protected open fun addContentToBoundingBox(localBounds: BoundingBoxF) { }
 
-    fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMatrix, modelMatrix)
+    fun updateModelMat(): Boolean = transform.applyToModelMat(parent?.modelMatrixData, modelMatrixData)
 
     fun updateModelMatRecursive() {
         updateModelMat()
@@ -401,6 +401,7 @@ open class Node(name: String? = null) : BaseReleasable() {
     }
 }
 
+// intentionally not a value class to avoid continuous boxing when used as a map key
 data class NodeId(val value: Long = UniqueId.nextId())
 
 fun Node.addGroup(name: String? = null, block: Node.() -> Unit): Node {

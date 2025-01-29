@@ -43,6 +43,10 @@ class DrawPipeline(
         pipelineHash = pipelineHashBuilder.build()
     }
 
+    override fun toString(): String {
+        return "DrawPipeline:\"$name\""
+    }
+
     fun update(cmd: DrawCommand) {
         onUpdate.update()
         for (i in onUpdate.indices) {

@@ -24,7 +24,16 @@ interface Releasable {
  * [baseReleasable] is released.
  */
 fun <T: Releasable> T.releaseWith(baseReleasable: BaseReleasable): T {
-    baseReleasable.onRelease { release() }
+    baseReleasable.addDependingReleasable(this)
+    return this
+}
+
+/**
+ * Removes this [Releasable] from the given [baseReleasable], so that it is no longer automatically released when
+ * [baseReleasable] is released.
+ */
+fun <T: Releasable> T.cancelReleaseWith(baseReleasable: BaseReleasable): T {
+    baseReleasable.removeDependingReleasable(this)
     return this
 }
 
@@ -41,15 +50,25 @@ abstract class BaseReleasable : Releasable {
         private set
 
     private val onReleaseCallbacks: MutableList<() -> Unit> = mutableListOf()
+    private val dependingReleasables = linkedSetOf<Releasable>()
 
     fun onRelease(block: () -> Unit) {
         onReleaseCallbacks += block
+    }
+
+    fun addDependingReleasable(releasable: Releasable) {
+        dependingReleasables += releasable
+    }
+
+    fun removeDependingReleasable(releasable: Releasable) {
+        dependingReleasables -= releasable
     }
 
     override fun release() {
         if (isReleased) {
             logW { "release() called on an already released object ($this)" }
         } else {
+            dependingReleasables.reversed().forEach { it.release() }
             onReleaseCallbacks.forEach { it() }
             isReleased = true
         }

@@ -24,14 +24,22 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return GlslGeneratorOutput.shaderOutput(
             generateVertexSrc(vertexStage, pipeline),
             generateFragmentSrc(fragmentStage, pipeline)
-        )
+        ).also {
+            if (program.dumpCode) {
+                it.dump()
+            }
+        }
     }
 
     override fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GlslGeneratorOutput {
         val computeStage = checkNotNull(program.computeStage) {
             "KslProgram computeStage is missing"
         }
-        return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline))
+        return GlslGeneratorOutput.computeOutput(generateComputeSrc(computeStage, pipeline)).also {
+            if (program.dumpCode) {
+                it.dump()
+            }
+        }
     }
 
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
@@ -170,7 +178,10 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
         val sampler = sampleTexture.sampler.generateExpression(this)
-        val coord = if (sampleTexture.sampler.expressionType is KslSampler1dType && sampleTexture.coord.expressionType is KslFloat1) {
+        val isCompatSampler = hints.compat1dSampler &&
+                sampleTexture.sampler.expressionType is KslSampler1dType &&
+                sampleTexture.coord.expressionType is KslFloat1
+        val coord = if (isCompatSampler) {
             // for better OpenGL ES compatibility 1d textures actually are 2d textures...
             "vec2(${sampleTexture.coord.generateExpression(this)}, 0.5)"
         } else {
@@ -186,7 +197,10 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     override fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String {
         val sampler = sampleTextureGrad.sampler.generateExpression(this)
-        val coord = if (sampleTextureGrad.sampler.expressionType is KslSampler1dType && sampleTextureGrad.coord.expressionType is KslFloat1) {
+        val isCompatSampler = hints.compat1dSampler &&
+                sampleTextureGrad.sampler.expressionType is KslSampler1dType &&
+                sampleTextureGrad.coord.expressionType is KslFloat1
+        val coord = if (isCompatSampler) {
             // for better OpenGL ES compatibility 1d textures actually are 2d textures...
             "vec2(${sampleTextureGrad.coord.generateExpression(this)}, 0.5)"
         } else {
@@ -322,7 +336,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
             for (u in samplers) {
-                appendLine("uniform ${glslTypeName(u.expressionType)} ${u.value.name()};")
+                appendLine("uniform ${glslTypeName(u.expressionType)} ${getStateName(u.value)};")
             }
             appendLine()
         }
@@ -331,22 +345,20 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     protected open fun StringBuilder.generateStorageBuffers(stage: KslShaderStage, pipeline: PipelineBase) {
         val storage = stage.getUsedStorage()
         if (storage.isNotEmpty()) {
-            appendLine("// image storage")
+            appendLine("// storage buffers")
+            val readonly = if (stage.type == KslShaderStageType.ComputeShader) "" else "readonly"
             storage.forEachIndexed { i, it ->
-                val arrayDim = when (it) {
-                    // choosing array dimension based on storage dimension would also work, but seems to have issues
-                    // with some glsl compilers
-                    //is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
-                    //is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
-                    //is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeX}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
-
-                    // always use a 1d array and compute array index dynamically based on buffer size
-                    is KslStorage1d<*> -> "[]"
-                    is KslStorage2d<*> -> "[]"
-                    is KslStorage3d<*> -> "[]"
-                }
+                // always use a 1d array and compute array index dynamically based on buffer size
+                val arrayDim = "[]"
+                // choosing array dimension based on storage dimension would also work, but seems to have issues
+                // with some glsl compilers
+                // val arrayDim = when (it) {
+                //     is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
+                //     is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
+                //     is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeX}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
+                // }
                 appendLine("""
-                    layout(std430, binding=$i) buffer ssboLayout_$i {
+                    layout(std430, binding=$i) $readonly buffer ssboLayout_$i {
                         ${glslTypeName(it.storageType.elemType)} ${it.name}$arrayDim;
                     };
                 """.trimIndent())
@@ -365,7 +377,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
                     ubo.uniforms.values
                         .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
                         .forEach {
-                            appendLine("    uniform highp ${glslTypeName(it.expressionType)} ${it.value.name()};")
+                            appendLine("    uniform highp ${glslTypeName(it.expressionType)} ${getStateName(it.value)};")
                         }
 
                 } else {
@@ -373,7 +385,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
                     ubo.uniforms.values
                         .filter { it.expressionType !is KslArrayType<*> || it.arraySize > 0 }
                         .forEach {
-                            appendLine("    highp ${glslTypeName(it.expressionType)} ${it.value.name()};")
+                            appendLine("    highp ${glslTypeName(it.expressionType)} ${getStateName(it.value)};")
                         }
                     appendLine("};")
                 }
@@ -388,7 +400,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             appendLine("// $info")
             attribs.forEach { a ->
                 val attr = pipeline.vertexLayout.bindings.flatMap { it.vertexAttributes }.first { it.name == a.name }
-                appendLine("layout(location=${mappedLocs[attr]!!}) in ${glslTypeName(a.expressionType)} ${a.value.name()};")
+                appendLine("layout(location=${mappedLocs[attr]!!}) in ${glslTypeName(a.expressionType)} ${getStateName(a.value)};")
             }
             appendLine()
         }
@@ -399,7 +411,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             appendLine("// custom vertex stage outputs")
             vertexStage.interStageVars.forEach { interStage ->
                 val value = interStage.input
-                appendLine("${interStage.interpolation.glsl()} out ${glslTypeName(value.expressionType)} ${value.name()};")
+                appendLine("${interStage.interpolation.glsl()} out ${glslTypeName(value.expressionType)} ${getStateName(value)};")
             }
             appendLine()
         }
@@ -410,7 +422,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             appendLine("// custom fragment stage inputs")
             fragmentStage.interStageVars.forEach { interStage ->
                 val value = interStage.output
-                appendLine("${interStage.interpolation.glsl()} in ${glslTypeName(value.expressionType)} ${value.name()};")
+                appendLine("${interStage.interpolation.glsl()} in ${glslTypeName(value.expressionType)} ${getStateName(value)};")
             }
             appendLine()
         }
@@ -421,7 +433,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             appendLine("// stage outputs")
             outputs.forEach { output ->
                 val loc = if (output.location >= 0) "layout(location=${output.location}) " else ""
-                appendLine("${loc}out ${glslTypeName(output.expressionType)} ${output.value.name()};")
+                appendLine("${loc}out ${glslTypeName(output.expressionType)} ${getStateName(output.value)};")
             }
             appendLine()
         }
@@ -443,7 +455,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     override fun opDeclareVar(op: KslDeclareVar): String {
         val initExpr = op.initExpression?.let { " = ${it.generateExpression(this)}" } ?: ""
         val state = op.declareVar
-        return "${glslTypeName(state.expressionType)} ${state.name()}${initExpr};"
+        return "${glslTypeName(state.expressionType)} ${getStateName(state)}${initExpr};"
     }
 
     override fun opDeclareArray(op: KslDeclareArray): String {
@@ -451,10 +463,10 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         val typeName = glslTypeName(array.expressionType)
 
         return if (op.elements.size == 1 && op.elements[0].expressionType == array.expressionType) {
-            "$typeName ${array.name()} = ${op.elements[0].generateExpression(this)};"
+            "$typeName ${getStateName(array)} = ${op.elements[0].generateExpression(this)};"
         } else {
             val initExpr = op.elements.joinToString { it.generateExpression(this) }
-            "$typeName ${array.name()} = ${typeName}(${initExpr});"
+            "$typeName ${getStateName(array)} = ${typeName}(${initExpr});"
         }
     }
 
@@ -611,8 +623,8 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         }
     }
 
-    override fun KslState.name(): String {
-        return when (stateName) {
+    override fun getStateName(state: KslState): String {
+        return when (state.stateName) {
             KslVertexStage.NAME_IN_VERTEX_INDEX -> "gl_VertexID"
             KslVertexStage.NAME_IN_INSTANCE_INDEX -> "gl_InstanceID"
             KslVertexStage.NAME_OUT_POSITION -> "gl_Position"
@@ -628,7 +640,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             KslComputeStage.NAME_IN_NUM_WORK_GROUPS -> "gl_NumWorkGroups"
             KslComputeStage.NAME_IN_WORK_GROUP_SIZE -> "gl_WorkGroupSize"
 
-            else -> stateName
+            else -> state.stateName
         }
     }
 
@@ -655,7 +667,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             KslMat3 -> "mat3"
             KslMat4 -> "mat4"
 
-            KslColorSampler1d -> "sampler2D"    // in WebGL2, 1d textures are not supported, simply use 2d instead (with height = 1px)
+            KslColorSampler1d -> if (hints.compat1dSampler) "sampler2D" else "sampler1D"
             KslColorSampler2d -> "sampler2D"
             KslColorSampler3d -> "sampler3D"
             KslColorSamplerCube -> "samplerCube"
@@ -690,6 +702,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
     data class Hints(
         val glslVersionStr: String,
+        val compat1dSampler: Boolean = true,
         val replaceUbosByPlainUniforms: Boolean = false
     )
 

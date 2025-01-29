@@ -65,7 +65,7 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
                 ubo.buffer.positioned(bufferPosColors!!.byteIndex + 16 * i) { light.encodedColor.putTo(it) }
             }
         }
-        ubo.isBufferDirty = true
+        ubo.markDirty()
     }
 
     companion object {

@@ -13,10 +13,10 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.Time
 
-class InstancingTest : DemoScene("Instancing") {
+class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
 
     private val numObjects = mutableStateOf(5000)
     private val drawInstanced = mutableStateOf(false)
@@ -38,13 +38,7 @@ class InstancingTest : DemoScene("Instancing") {
         colorSpaceConversion = ColorSpaceConversion.AsIs
     }
 
-    private val profilingScene = ProfilingScene()
-
-    init {
-        mainScene = profilingScene
-        scenes.clear()
-        scenes.add(mainScene)
-    }
+    private val profilingScene = mainScene as ProfilingScene
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(0f)
@@ -91,7 +85,7 @@ class InstancingTest : DemoScene("Instancing") {
             Text("${profilingScene.updateTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
         MenuRow {
-            Text("Draw scene:") { labelStyle(Grow.Std) }
+            Text("Scene recording:") { labelStyle(Grow.Std) }
             Text("${profilingScene.drawTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
     }
@@ -118,13 +112,11 @@ class InstancingTest : DemoScene("Instancing") {
             objects += mainScene.addColorMesh {
                 isFrustumChecked = false
                 generate {
-                    color = MdColor.RED
-                    cube {
-                        origin.set(x.toFloat(), -30f, z.toFloat())
-                        size.set(0.3f, 0.3f, 0.3f)
-                    }
+                    color = ColorGradient.JET_MD.getColor(i / numObjects.value.toFloat())
+                    cube { size.set(0.3f, 0.3f, 0.3f) }
                 }
                 shader = directShader
+                transform.translate(x.toFloat(), -30f, z.toFloat())
             }
         }
     }
@@ -176,7 +168,7 @@ class InstancingTest : DemoScene("Instancing") {
             super.renderScene(ctx)
             val p = (Time.precisionTime - t)
             updateT = updateT * 0.9 + p * 1000.0 * 0.1
-            drawT = drawT * 0.9 + sceneDrawTime * 1000.0 * 0.1
+            drawT = drawT * 0.9 + sceneRecordTime.inWholeMicroseconds / 1000.0 * 0.1
 
             if (Time.frameCount % 5 == 0) {
                 updateTstate.set(updateT)

@@ -19,13 +19,11 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     abstract val shaderCode: ShaderCode
 
     val pipelineDataLayout = bindGroupLayouts[BindGroupScope.PIPELINE]
-    var pipelineData = pipelineDataLayout.createData()
-        set(value) {
-            check(value.layout == pipelineDataLayout) {
-                "Given BindGroupData does not match this pipeline's data bind group layout"
-            }
-            field = value
-        }
+    private val defaultPipelineData: BindGroupData = pipelineDataLayout.createData()
+    private val pipelineSwapData = mutableMapOf<Any?, BindGroupData>(null to defaultPipelineData)
+
+    var pipelineData = defaultPipelineData
+        private set
 
     internal var pipelineBackend: PipelineBackend? = null
 
@@ -35,12 +33,16 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
         pipelineHashBuilder += bindGroupLayouts.meshScope.hash
     }
 
+    fun swapPipelineData(key: Any?) {
+        pipelineData = pipelineSwapData.getOrPut(key) { pipelineData.copy() }
+    }
+
     override fun release() {
         super.release()
         if (pipelineBackend?.isReleased == false) {
             pipelineBackend?.release()
         }
-        pipelineData.release()
+        pipelineSwapData.values.forEach { it.release() }
     }
 
     inline fun <reified T: BindingLayout> findBindingLayout(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {

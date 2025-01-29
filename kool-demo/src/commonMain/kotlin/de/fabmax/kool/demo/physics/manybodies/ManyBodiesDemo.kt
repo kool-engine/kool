@@ -65,7 +65,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
     }
 
     private fun spawnPhysicsBoxes() {
-        val ny = if (KoolSystem.platform == Platform.JAVASCRIPT) 10 else 50
+        val ny = if (KoolSystem.platform == Platform.Javascript) 10 else 50
 
         for (y in 0..ny) {
             for (x in -12..12) {

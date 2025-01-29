@@ -4,14 +4,16 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.releaseWith
 import org.lwjgl.glfw.GLFW.glfwDestroyWindow
 import org.lwjgl.glfw.GLFW.glfwTerminate
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.KHRSurface
 
-class GlfwVkWindow(val sys: VkSystem, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
+class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
 
     val onResize = mutableListOf<OnWindowResizeListener>()
 
@@ -28,7 +30,7 @@ class GlfwVkWindow(val sys: VkSystem, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
     override fun onFramebufferSizeChanged(width: Int, height: Int) {
         super.onFramebufferSizeChanged(width, height)
         for (listener in onResize) {
-            listener.onResize(this, width, height)
+            listener.onResize(width, height)
         }
     }
 
@@ -36,31 +38,34 @@ class GlfwVkWindow(val sys: VkSystem, ctx: Lwjgl3Context) : GlfwWindow(ctx) {
         surface = Surface()
     }
 
-    interface OnWindowResizeListener {
-        fun onResize(window: GlfwVkWindow, newWidth: Int, newHeight: Int)
+    fun interface OnWindowResizeListener {
+        fun onResize(newWidth: Int, newHeight: Int)
     }
 
-    inner class Surface : VkResource() {
+    inner class Surface : BaseReleasable() {
         var surfaceHandle = 0L
             private set
 
         init {
             memStack {
                 val lp = mallocLong(1)
-                checkVk(GLFWVulkan.glfwCreateWindowSurface(sys.instance.vkInstance, windowPtr, null, lp))
+                vkCheck(GLFWVulkan.glfwCreateWindowSurface(backend.instance.vkInstance, windowPtr, null, lp))
                 surfaceHandle = lp[0]
             }
-            sys.instance.addDependingResource(this)
+            releaseWith(backend.instance)
             logD { "Created surface" }
         }
 
-        override fun freeResources() {
-            KHRSurface.vkDestroySurfaceKHR(sys.instance.vkInstance, surfaceHandle, null)
-            logD { "Destroyed surface" }
+        override fun release() {
+            super.release()
+            DeferredRelease.defer {
+                KHRSurface.vkDestroySurfaceKHR(backend.instance.vkInstance, surfaceHandle, null)
+                logD { "Destroyed surface" }
 
-            glfwDestroyWindow(windowPtr)
-            glfwTerminate()
-            logD { "Destroyed GLFW window" }
+                glfwDestroyWindow(windowPtr)
+                glfwTerminate()
+                logD { "Destroyed GLFW window" }
+            }
         }
     }
 }

@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -21,17 +22,16 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.*
 import org.w3c.dom.HTMLCanvasElement
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.measureTime
 
 class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
     override val name: String = "WebGPU Backend"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
-    override val features = BackendFeatures(
-        computeShaders = true,
-        cubeMapArrays = true,
-        reversedDepth = true
-    )
+    override lateinit var features: BackendFeatures; private set
 
     lateinit var adapter: GPUAdapter
         private set
@@ -57,8 +57,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
 
-    // right now, we can only query individual render pass times, not the entire frame time
-    override val frameGpuTime: Double = 0.0
+    override val frameGpuTime: Duration = 0.0.seconds
+
+    val clearHelper: ClearHelper by lazy { ClearHelper(this) }
+    private val passEncoderState = RenderPassEncoderState(this)
 
     init {
         check(isSupported()) {
@@ -89,6 +91,24 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
         device = adapter.requestDevice(deviceDesc).await()
 
+        features = BackendFeatures(
+            computeShaders = true,
+            cubeMapArrays = true,
+            reversedDepth = true,
+            depthOnlyShaderColorOutput = Color.BLACK,
+            maxComputeWorkGroupsPerDimension = Vec3i(
+                device.limits.maxComputeWorkgroupsPerDimension,
+                device.limits.maxComputeWorkgroupsPerDimension,
+                device.limits.maxComputeWorkgroupsPerDimension,
+            ),
+            maxComputeWorkGroupSize = Vec3i(
+                device.limits.maxComputeWorkgroupSizeX,
+                device.limits.maxComputeWorkgroupSizeY,
+                device.limits.maxComputeWorkgroupSizeZ,
+            ),
+            maxComputeInvocationsPerWorkgroup = device.limits.maxComputeInvocationsPerWorkgroup,
+        )
+
         canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
         canvasContext.configure(
@@ -108,26 +128,27 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             sceneRenderer.applySize(canvas.width, canvas.height)
         }
 
-        val encoder = device.createCommandEncoder()
-
-        ctx.backgroundScene.renderOffscreenPasses(encoder)
+        passEncoderState.beginFrame()
+        preparePipelines(ctx)
+        ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-                val t = Time.precisionTime
-                scene.renderOffscreenPasses(encoder)
-                sceneRenderer.renderScene(scene.mainRenderPass, encoder)
-                scene.sceneDrawTime = Time.precisionTime - t
+                scene.sceneRecordTime += measureTime {
+                    scene.renderOffscreenPasses(passEncoderState)
+                    sceneRenderer.renderScene(scene.mainRenderPass, passEncoderState)
+                }
             }
         }
 
+        passEncoderState.ensureRenderPassInactive()
         if (gpuReadbacks.isNotEmpty()) {
             // copy all buffers requested for readback to temporary buffers using the current command encoder
-            copyReadbacks(encoder)
+            copyReadbacks(passEncoderState.encoder)
         }
-        timestampQuery.resolve(encoder)
-        device.queue.submit(arrayOf(encoder.finish()))
+        timestampQuery.resolve(passEncoderState.encoder)
+        passEncoderState.endFrame()
 
         timestampQuery.readTimestamps()
         if (gpuReadbacks.isNotEmpty()) {
@@ -136,39 +157,67 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun Scene.renderOffscreenPasses(encoder: GPUCommandEncoder) {
-        for (i in sortedOffscreenPasses.indices) {
-            val pass = sortedOffscreenPasses[i]
-            if (pass.isEnabled) {
-                pass.render(encoder)
+    private fun preparePipelines(ctx: KoolContext) {
+        for (i in ctx.backgroundScene.sortedOffscreenPasses.indices) {
+            preparePipelines(ctx.backgroundScene.sortedOffscreenPasses[i])
+        }
+        for (i in ctx.scenes.indices) {
+            val scene = ctx.scenes[i]
+            scene.sceneRecordTime = measureTime {
+                for (j in scene.sortedOffscreenPasses.indices) {
+                    preparePipelines(scene.sortedOffscreenPasses[j])
+                }
+                preparePipelines(scene.mainRenderPass)
             }
         }
     }
 
-    private fun OffscreenRenderPass.render(encoder: GPUCommandEncoder) {
+    private fun preparePipelines(renderPass: RenderPass) {
+        for (i in renderPass.views.indices) {
+            val queue = renderPass.views[i].drawQueue
+            queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
+        }
+    }
+
+    private fun Scene.renderOffscreenPasses(passEncoderState: RenderPassEncoderState) {
+        for (i in sortedOffscreenPasses.indices) {
+            val pass = sortedOffscreenPasses[i]
+            if (pass.isEnabled) {
+                pass.render(passEncoderState)
+            }
+        }
+    }
+
+    private fun OffscreenRenderPass.render(passEncoderState: RenderPassEncoderState) {
         when (this) {
-            is OffscreenRenderPass2d -> draw(encoder)
-            is OffscreenRenderPassCube -> draw(encoder)
-            is OffscreenRenderPass2dPingPong -> draw(encoder)
-            is ComputeRenderPass -> dispatch(encoder)
+            is OffscreenRenderPass2d -> draw(passEncoderState)
+            is OffscreenRenderPassCube -> draw(passEncoderState)
+            is OffscreenRenderPass2dPingPong -> draw(passEncoderState)
+            is ComputePass -> dispatch(passEncoderState.encoder)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
 
-    private fun OffscreenRenderPass2dPingPong.draw(encoder: GPUCommandEncoder) {
+    private fun OffscreenRenderPass2dPingPong.draw(passEncoderState: RenderPassEncoderState) {
         for (i in 0 until pingPongPasses) {
             onDrawPing?.invoke(i)
-            ping.draw(encoder)
+            ping.draw(passEncoderState)
             onDrawPong?.invoke(i)
-            pong.draw(encoder)
+            pong.draw(passEncoderState)
         }
     }
 
-    private fun OffscreenRenderPass2d.draw(encoder: GPUCommandEncoder) = (impl as WgpuOffscreenRenderPass2d).draw(encoder)
+    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState) {
+        (impl as WgpuOffscreenPass2d).draw(passEncoderState)
+    }
 
-    private fun OffscreenRenderPassCube.draw(encoder: GPUCommandEncoder) = (impl as WgpuOffscreenRenderPassCube).draw(encoder)
+    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) {
+        (impl as WgpuOffscreenPassCube).draw(passEncoderState)
+    }
 
-    private fun ComputeRenderPass.dispatch(encoder: GPUCommandEncoder) = (impl as WgpuComputePass).dispatch(encoder)
+    private fun ComputePass.dispatch(encoder: GPUCommandEncoder) {
+        (impl as WgpuComputePass).dispatch(encoder)
+    }
 
     override fun cleanup(ctx: KoolContext) {
         // do nothing for now
@@ -176,9 +225,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
         val output = WgslGenerator().generateProgram(shader.program, pipeline)
-        if (shader.program.dumpCode) {
-            output.dump()
-        }
         return WebGpuShaderCode(
             vertexSrc = output.vertexSrc,
             vertexEntryPoint = output.vertexEntryPoint,
@@ -189,9 +235,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
         val output = WgslGenerator().generateComputeProgram(shader.program, pipeline)
-        if (shader.program.dumpCode) {
-            output.dump()
-        }
         return WebGpuComputeShaderCode(
             computeSrc = output.computeSrc,
             computeEntryPoint = output.computeEntryPoint
@@ -199,14 +242,14 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
-        return WgpuOffscreenRenderPass2d(parentPass, 1, this)
+        return WgpuOffscreenPass2d(parentPass, 1, this)
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-        return WgpuOffscreenRenderPassCube(parentPass, 1, this)
+        return WgpuOffscreenPassCube(parentPass, 1, this)
     }
 
-    override fun createComputePass(parentPass: ComputeRenderPass): ComputePassImpl {
+    override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return WgpuComputePass(parentPass, this)
     }
 
@@ -240,7 +283,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
 
         gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
-            val gpuTex = readback.texture.gpuTexture as WgpuLoadedTexture?
+            val gpuTex = readback.texture.gpuTexture as WgpuTextureResource?
             if (gpuTex == null || readback.texture.props.format.isF16) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
             } else {
@@ -254,7 +297,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
                     )
                 )
                 encoder.copyTextureToBuffer(
-                    source = GPUImageCopyTexture(gpuTex.texture.gpuTexture),
+                    source = GPUImageCopyTexture(gpuTex.gpuTexture),
                     destination = GPUImageCopyBuffer(
                         buffer = mapBuffer,
                         bytesPerRow = format.pxSize * gpuTex.width,
@@ -281,7 +324,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         gpuReadbacks.filterIsInstance<ReadbackTexture>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
             mapBuffer.mapAsync(GPUMapMode.READ).then {
-                val gpuTex = readback.texture.gpuTexture as WgpuLoadedTexture
+                val gpuTex = readback.texture.gpuTexture as WgpuTextureResource
                 val format = readback.texture.props.format
                 val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
                 dst.copyFrom(mapBuffer.getMappedRange())

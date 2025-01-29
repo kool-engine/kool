@@ -3,7 +3,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/de.fabmax.kool/kool-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22de.fabmax.kool%22%20AND%20a:%22kool-core%22)
 ![Build](https://github.com/kool-engine/kool/workflows/Build/badge.svg)
 
-A multi-platform OpenGL / WebGPU / ~~Vulkan~~ game engine that works on Desktop Java, Android and browsers.
+A multi-platform Vulkan / WebGPU / OpenGL game engine that works on Desktop Java, Android and browsers.
 
 ### Get In Touch
 Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
@@ -81,10 +81,15 @@ Give it a try (it's free)!
 | Platform    | Backend     | Implementation Status                                   |
 |-------------|-------------|---------------------------------------------------------|
 | Desktop JVM | OpenGL      | :white_check_mark: Fully working                        |
-| Desktop JVM | Vulkan      | :x: Not working (under construction)                    |
+| Desktop JVM | Vulkan      | :white_check_mark: Fully working                        |
 | Browser     | WebGL 2     | :white_check_mark: Fully working                        |
 | Browser     | WebGPU      | :white_check_mark: Fully working                        |
 | Android     | OpenGL ES 3 | :sparkles: kool-core fully working (but no physics yet) |
+
+**Supported desktop platforms are:**
+- Windows (x64): Vulkan and OpenGL
+- Linux (x64): Vulkan and OpenGL
+- macOS (ARM + x64): Vulkan only
 
 ### Android Support
 

@@ -75,7 +75,11 @@ open class DepthMapPass(
 
     override fun release() {
         super.release()
-        shadowPipelines.values.filterNotNull().distinct().forEach { it.release() }
+        shadowPipelines.values
+            .filterNotNull()
+            .distinct()
+            .filter { !it.isReleased }
+            .forEach { it.release() }
     }
 
     protected data class DepthShaderKey(

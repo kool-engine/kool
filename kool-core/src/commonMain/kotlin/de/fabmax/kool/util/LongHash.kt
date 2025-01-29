@@ -40,4 +40,5 @@ class LongHashBuilder {
 
 inline fun LongHash(block: LongHashBuilder.() -> Unit): LongHash = LongHashBuilder().apply(block).build()
 
+// intentionally not a value class to avoid continuous boxing when used as a map key
 data class LongHash(val hash: Long)

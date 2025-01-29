@@ -14,9 +14,14 @@ fun String.toByteBuffer(): ByteBuffer {
     return buffer
 }
 
-inline fun <R> memStack(block: (MemoryStack.() -> R)): R {
+inline fun <R> memStack(parent: MemoryStack? = null, block: (MemoryStack.() -> R)): R {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return MemoryStack.stackPush().use { stack ->
-        stack.block()
+    val stack = parent ?: MemoryStack.stackPush()
+    try {
+        return stack.block()
+    } finally {
+        if (parent == null) {
+            stack.close()
+        }
     }
 }

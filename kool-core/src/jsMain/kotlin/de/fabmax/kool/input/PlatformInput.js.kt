@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
 import de.fabmax.kool.platform.*
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -17,7 +18,7 @@ internal actual fun PlatformInput(): PlatformInput = PlatformInputJs
 
 internal object PlatformInputJs : PlatformInput {
 
-    val excludedKeyCodes = mutableSetOf("F5", "F11", "F12")
+    val excludedKeyCodes = mutableSetOf("F5", "F11", "F12", "MetaLeft", "MetaRight")
 
     private val pixelRatio: Double
         get() = (KoolSystem.getContextOrNull() as JsContext?)?.pixelRatio ?: 1.0
@@ -174,10 +175,12 @@ internal object PlatformInputJs : PlatformInput {
             val gamepad = (ev as GamepadEvent).gamepad
             ControllerInput.removeController(gamepad.index)
         })
-        println("installed gamepad listeners")
+        logD { "installed gamepad listeners" }
     }
 
     private fun handleKeyDown(ev: KeyboardEvent) {
+        if (ev.metaKey && "MetaLeft" in excludedKeyCodes) return
+
         val keyCode = ev.toKeyCode()
         val localKeyCode = ev.toLocalKeyCode()
         var mods = 0
@@ -199,12 +202,14 @@ internal object PlatformInputJs : PlatformInput {
             KeyboardInput.handleCharTyped(ev.key[0])
         }
 
-        if (!excludedKeyCodes.contains(ev.code)) {
+        if (ev.code !in excludedKeyCodes) {
             ev.preventDefault()
         }
     }
 
     private fun handleKeyUp(ev: KeyboardEvent) {
+        if (ev.metaKey && "MetaLeft" in excludedKeyCodes) return
+
         val keyCode = ev.toKeyCode()
         val localKeyCode = ev.toLocalKeyCode()
         if (keyCode.code != 0 || localKeyCode.code != 0) {
@@ -216,7 +221,7 @@ internal object PlatformInputJs : PlatformInput {
             KeyboardInput.handleKeyEvent(KeyEvent(keyCode, localKeyCode, KeyboardInput.KEY_EV_UP, mods))
         }
 
-        if (!excludedKeyCodes.contains(ev.code)) {
+        if (ev.code !in excludedKeyCodes) {
             ev.preventDefault()
         }
     }

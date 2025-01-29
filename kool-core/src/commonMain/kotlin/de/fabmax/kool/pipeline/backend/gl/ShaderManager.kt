@@ -30,7 +30,7 @@ class ShaderManager(val backend: RenderBackendGl) {
         return shader.bindMesh(cmd)
     }
 
-    fun bindComputeShader(pipeline: ComputePipeline, task: ComputeRenderPass.Task): Boolean {
+    fun bindComputeShader(pipeline: ComputePipeline, task: ComputePass.Task): Boolean {
         val sz = pipeline.workGroupSize
         val maxSz = backend.gl.capabilities.maxWorkGroupSize
         if (sz.x > maxSz.x || sz.y > maxSz.y || sz.z > maxSz.z) {

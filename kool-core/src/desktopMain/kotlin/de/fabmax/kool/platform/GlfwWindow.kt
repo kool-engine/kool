@@ -216,7 +216,6 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
     protected open fun onFileDrop(numFiles: Int, pathPtr: Long) {
         val files = mutableListOf<LoadableFile>()
         val pathPtrs = PointerBuffer.create(pathPtr, numFiles)
@@ -239,6 +238,14 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     fun setWindowIcon(icon: List<BufferedImage>) {
+        if (KoolSystem.isMacOs) {
+            // macOS has no window icons, only the icon in the dock. We could set the dock icon via the
+            // following line if AWT wouldn't run in headless mode. However, headless mode is required because
+            // otherwise AWT and GLFW event threads clash
+            //Taskbar.getTaskbar().iconImage = icon.first()
+            return
+        }
+
         MemoryStack.stackPush().use { stack ->
             val images = GLFWImage.malloc(icon.size, stack)
             icon.forEachIndexed { i, img ->

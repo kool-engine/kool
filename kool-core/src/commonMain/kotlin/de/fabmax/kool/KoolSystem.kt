@@ -9,8 +9,6 @@ object KoolSystem {
     private var defaultContext: KoolContext? = null
     private val properties: PlatformProperties = PlatformProperties()
 
-    internal val onDestroyContext = mutableListOf<() -> Unit>()
-
     val platform: Platform
         get() = properties.platform
 
@@ -34,16 +32,15 @@ object KoolSystem {
         isInitialized = true
     }
 
-    internal fun destroyContext() {
-        initConfig = null
-        defaultContext = null
-        isInitialized = false
-        BackendStats.onDestroy()
-        onDestroyContext.forEach { it() }
-    }
-
     internal fun onContextCreated(ctx: KoolContext) {
         defaultContext = ctx
+
+        ctx.onShutdown += {
+            initConfig = null
+            defaultContext = null
+            isInitialized = false
+            BackendStats.onDestroy()
+        }
     }
 
     fun requireContext(): KoolContext {
@@ -59,10 +56,17 @@ object KoolSystem {
 
 internal expect fun PlatformProperties(): KoolSystem.PlatformProperties
 
-enum class Platform {
-    JVM_DESKTOP,
-    JVM_ANDROID,
-    JAVASCRIPT
+sealed interface Platform {
+    data class Desktop(val os: String) : Platform {
+        val isWindows: Boolean get() = "windows" in os.lowercase()
+        val isLinux: Boolean get() = "linux" in os.lowercase()
+        val isMacOs: Boolean get() {
+            val osLowercase = os.lowercase()
+            return "mac os" in osLowercase || "darwin" in osLowercase || "osx" in osLowercase
+        }
+    }
+    data object Android : Platform
+    data object Javascript : Platform
 }
 
 interface KoolConfig {

@@ -34,13 +34,16 @@ object PlatformAssetsImpl : PlatformAssets {
     private const val MAX_GENERATED_TEX_WIDTH = 2048
     private const val MAX_GENERATED_TEX_HEIGHT = 2048
 
-    private val fontGenerator = FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT)
+    private val fontGenerator: FontMapGenerator by lazy {
+        FontMapGenerator(MAX_GENERATED_TEX_WIDTH, MAX_GENERATED_TEX_HEIGHT).apply {
+            loadCustomFonts(KoolSystem.configJvm.customTtfFonts)
+        }
+    }
     private var saveFileChooserPath = System.getProperty("user.home")
     private var loadFileChooserPath = System.getProperty("user.home")
 
     init {
         HttpCache.initCache(File(KoolSystem.configJvm.httpCacheDir))
-        fontGenerator.loadCustomFonts(KoolSystem.configJvm.customTtfFonts)
     }
 
     override suspend fun waitForFonts() {

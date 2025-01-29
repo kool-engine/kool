@@ -1,0 +1,131 @@
+package de.fabmax.kool.pipeline.backend.vk
+
+import org.lwjgl.PointerBuffer
+import org.lwjgl.system.MemoryStack
+import org.lwjgl.vulkan.EXTDebugReport.VK_ERROR_VALIDATION_FAILED_EXT
+import org.lwjgl.vulkan.EXTFullScreenExclusive.VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT
+import org.lwjgl.vulkan.EXTImageCompressionControl.VK_ERROR_COMPRESSION_EXHAUSTED_EXT
+import org.lwjgl.vulkan.EXTImageDrmFormatModifier.VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT
+import org.lwjgl.vulkan.EXTShaderObject.VK_INCOMPATIBLE_SHADER_BINARY_EXT
+import org.lwjgl.vulkan.KHRDeferredHostOperations.*
+import org.lwjgl.vulkan.KHRDisplaySwapchain.VK_ERROR_INCOMPATIBLE_DISPLAY_KHR
+import org.lwjgl.vulkan.KHRPipelineBinary.VK_ERROR_NOT_ENOUGH_SPACE_KHR
+import org.lwjgl.vulkan.KHRPipelineBinary.VK_PIPELINE_BINARY_MISSING_KHR
+import org.lwjgl.vulkan.KHRSurface.VK_ERROR_NATIVE_WINDOW_IN_USE_KHR
+import org.lwjgl.vulkan.KHRSurface.VK_ERROR_SURFACE_LOST_KHR
+import org.lwjgl.vulkan.KHRSwapchain.VK_ERROR_OUT_OF_DATE_KHR
+import org.lwjgl.vulkan.KHRSwapchain.VK_SUBOPTIMAL_KHR
+import org.lwjgl.vulkan.KHRVideoEncodeQueue.VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR
+import org.lwjgl.vulkan.KHRVideoQueue.*
+import org.lwjgl.vulkan.NVGLSLShader.VK_ERROR_INVALID_SHADER_NV
+import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK11.VK_ERROR_INVALID_EXTERNAL_HANDLE
+import org.lwjgl.vulkan.VK11.VK_ERROR_OUT_OF_POOL_MEMORY
+import org.lwjgl.vulkan.VK12.VK_ERROR_FRAGMENTATION
+import org.lwjgl.vulkan.VK12.VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS
+import org.lwjgl.vulkan.VK13.VK_PIPELINE_COMPILE_REQUIRED
+import org.lwjgl.vulkan.VK14.VK_ERROR_NOT_PERMITTED
+import java.nio.LongBuffer
+
+@PublishedApi
+internal fun vkCheck(code: Int, msg: (String) -> String = { "Vulkan operation failed (error: $code)" }) {
+    check(code == VK_SUCCESS) { msg("${VK_ERROR_CODES[code] ?: "unknown"} ($code)") }
+}
+
+internal inline fun MemoryStack.checkCreateLongPtr(block: MemoryStack.(LongBuffer) -> Int): Long {
+    val lp = mallocLong(1)
+    vkCheck(block(lp))
+    return lp[0]
+}
+
+internal inline fun MemoryStack.checkCreatePointer(block: MemoryStack.(PointerBuffer) -> Int): Long {
+    val lp = mallocPointer(1)
+    vkCheck(block(lp))
+    return lp[0]
+}
+
+internal val VK_ERROR_CODES = mapOf(
+    VK_SUCCESS to "VK_SUCCESS",
+    VK_NOT_READY to "VK_NOT_READY",
+    VK_TIMEOUT to "VK_TIMEOUT",
+    VK_EVENT_SET to "VK_EVENT_SET",
+    VK_EVENT_RESET to "VK_EVENT_RESET",
+    VK_INCOMPLETE to "VK_INCOMPLETE",
+    VK_ERROR_OUT_OF_HOST_MEMORY to "VK_ERROR_OUT_OF_HOST_MEMORY",
+    VK_ERROR_OUT_OF_DEVICE_MEMORY to "VK_ERROR_OUT_OF_DEVICE_MEMORY",
+    VK_ERROR_INITIALIZATION_FAILED to "VK_ERROR_INITIALIZATION_FAILED",
+    VK_ERROR_DEVICE_LOST to "VK_ERROR_DEVICE_LOST",
+    VK_ERROR_MEMORY_MAP_FAILED to "VK_ERROR_MEMORY_MAP_FAILED",
+    VK_ERROR_LAYER_NOT_PRESENT to "VK_ERROR_LAYER_NOT_PRESENT",
+    VK_ERROR_EXTENSION_NOT_PRESENT to "VK_ERROR_EXTENSION_NOT_PRESENT",
+    VK_ERROR_FEATURE_NOT_PRESENT to "VK_ERROR_FEATURE_NOT_PRESENT",
+    VK_ERROR_INCOMPATIBLE_DRIVER to "VK_ERROR_INCOMPATIBLE_DRIVER",
+    VK_ERROR_TOO_MANY_OBJECTS to "VK_ERROR_TOO_MANY_OBJECTS",
+    VK_ERROR_FORMAT_NOT_SUPPORTED to "VK_ERROR_FORMAT_NOT_SUPPORTED",
+    VK_ERROR_FRAGMENTED_POOL to "VK_ERROR_FRAGMENTED_POOL",
+    VK_ERROR_UNKNOWN to "VK_ERROR_UNKNOWN",
+
+    // Provided by VK_VERSION_1_1
+    VK_ERROR_OUT_OF_POOL_MEMORY to "VK_ERROR_OUT_OF_POOL_MEMORY",
+    VK_ERROR_INVALID_EXTERNAL_HANDLE to "VK_ERROR_INVALID_EXTERNAL_HANDLE",
+
+    // Provided by VK_VERSION_1_2
+    VK_ERROR_FRAGMENTATION to "VK_ERROR_FRAGMENTATION",
+    VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS to "VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS",
+
+    // Provided by VK_VERSION_1_3
+    VK_PIPELINE_COMPILE_REQUIRED to "VK_PIPELINE_COMPILE_REQUIRED",
+
+    // Provided by VK_VERSION_1_4
+    VK_ERROR_NOT_PERMITTED to "VK_ERROR_NOT_PERMITTED",
+
+    // Provided by VK_KHR_surface
+    VK_ERROR_SURFACE_LOST_KHR to "VK_ERROR_SURFACE_LOST_KHR",
+    VK_ERROR_NATIVE_WINDOW_IN_USE_KHR to "VK_ERROR_NATIVE_WINDOW_IN_USE_KHR",
+
+    // Provided by VK_KHR_swapchain
+    VK_SUBOPTIMAL_KHR to "VK_SUBOPTIMAL_KHR",
+    VK_ERROR_OUT_OF_DATE_KHR to "VK_ERROR_OUT_OF_DATE_KHR",
+
+    // Provided by VK_KHR_display_swapchain
+    VK_ERROR_INCOMPATIBLE_DISPLAY_KHR to "VK_ERROR_INCOMPATIBLE_DISPLAY_KHR",
+
+    // Provided by VK_EXT_debug_report
+    VK_ERROR_VALIDATION_FAILED_EXT to "VK_ERROR_VALIDATION_FAILED_EXT",
+
+    // Provided by VK_NV_glsl_shader
+    VK_ERROR_INVALID_SHADER_NV to "VK_ERROR_INVALID_SHADER_NV",
+
+    // Provided by VK_KHR_video_queue
+    VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR to "VK_ERROR_IMAGE_USAGE_NOT_SUPPORTED_KHR",
+    VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR to "VK_ERROR_VIDEO_PICTURE_LAYOUT_NOT_SUPPORTED_KHR",
+    VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR to "VK_ERROR_VIDEO_PROFILE_OPERATION_NOT_SUPPORTED_KHR",
+    VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR to "VK_ERROR_VIDEO_PROFILE_FORMAT_NOT_SUPPORTED_KHR",
+    VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR to "VK_ERROR_VIDEO_PROFILE_CODEC_NOT_SUPPORTED_KHR",
+    VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR to "VK_ERROR_VIDEO_STD_VERSION_NOT_SUPPORTED_KHR",
+
+    // Provided by VK_EXT_image_drm_format_modifier
+    VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT to "VK_ERROR_INVALID_DRM_FORMAT_MODIFIER_PLANE_LAYOUT_EXT",
+
+    // Provided by VK_EXT_full_screen_exclusive
+    VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT to "VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT",
+
+    // Provided by VK_KHR_deferred_host_operations
+    VK_THREAD_IDLE_KHR to "VK_THREAD_IDLE_KHR",
+    VK_THREAD_DONE_KHR to "VK_THREAD_DONE_KHR",
+    VK_OPERATION_DEFERRED_KHR to "VK_OPERATION_DEFERRED_KHR",
+    VK_OPERATION_NOT_DEFERRED_KHR to "VK_OPERATION_NOT_DEFERRED_KHR",
+
+    // Provided by VK_KHR_video_encode_queue
+    VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR to "VK_ERROR_INVALID_VIDEO_STD_PARAMETERS_KHR",
+
+    // Provided by VK_EXT_image_compression_control
+    VK_ERROR_COMPRESSION_EXHAUSTED_EXT to "VK_ERROR_COMPRESSION_EXHAUSTED_EXT",
+
+    // Provided by VK_EXT_shader_object
+    VK_INCOMPATIBLE_SHADER_BINARY_EXT to "VK_INCOMPATIBLE_SHADER_BINARY_EXT",
+
+    // Provided by VK_KHR_pipeline_binary
+    VK_PIPELINE_BINARY_MISSING_KHR to "VK_PIPELINE_BINARY_MISSING_KHR",
+    VK_ERROR_NOT_ENOUGH_SPACE_KHR to "VK_ERROR_NOT_ENOUGH_SPACE_KHR",
+)

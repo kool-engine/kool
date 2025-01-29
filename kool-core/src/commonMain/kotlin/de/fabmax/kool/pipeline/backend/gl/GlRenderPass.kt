@@ -17,7 +17,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         val q = if (renderPass.isProfileTimes) timeQuery else null
         q?.let {
             if (it.isAvailable) {
-                renderPass.tGpu = it.getQueryResultMillis()
+                renderPass.tGpu = it.getQueryResult()
             }
             it.begin()
         }
@@ -53,25 +53,21 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
     private fun RenderPass.renderMipLevel(mipLevel: Int) {
         setupMipLevel(mipLevel)
 
-        when (viewRenderMode) {
-            RenderPass.ViewRenderMode.SINGLE_RENDER_PASS -> {
-                setupFramebuffer(0, mipLevel)
+        if (this is OffscreenRenderPassCube) {
+            for (viewIndex in views.indices) {
+                setupFramebuffer(mipLevel, viewIndex)
                 clear(this)
-                for (viewIndex in views.indices) {
-                    val view = views[viewIndex]
-                    view.setupView()
-                    renderView(view, viewIndex, mipLevel)
-                }
+                val view = views[viewIndex]
+                view.setupView()
+                renderView(view, viewIndex, mipLevel)
             }
-
-            RenderPass.ViewRenderMode.MULTI_RENDER_PASS -> {
-                for (viewIndex in views.indices) {
-                    setupFramebuffer(viewIndex, mipLevel)
-                    clear(this)
-                    val view = views[viewIndex]
-                    view.setupView()
-                    renderView(view, viewIndex, mipLevel)
-                }
+        } else {
+            setupFramebuffer(mipLevel, 0)
+            clear(this)
+            for (viewIndex in views.indices) {
+                val view = views[viewIndex]
+                view.setupView()
+                renderView(view, viewIndex, mipLevel)
             }
         }
     }
@@ -100,7 +96,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                     anySingleShots = anySingleShots || frameCopy.isSingleShot
                     nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
                     // copy messes up the currently bound frame buffer, restore the correct one
-                    setupFramebuffer(viewIndex, mipLevel)
+                    setupFramebuffer(mipLevel, viewIndex)
                 }
             }
 
@@ -131,7 +127,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         }
     }
 
-    protected abstract fun setupFramebuffer(viewIndex: Int, mipLevel: Int)
+    protected abstract fun setupFramebuffer(mipLevel: Int, layer: Int)
 
     protected abstract fun copy(frameCopy: FrameCopy)
 

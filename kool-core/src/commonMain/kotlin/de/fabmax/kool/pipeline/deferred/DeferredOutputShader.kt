@@ -39,6 +39,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     }
 
     fun setDeferredInput(current: DeferredPasses) {
+        createdPipeline?.swapPipelineData(current)
         currentLighting = current.lightingPass.colorTexture
         depthTex = current.materialPass.depthTexture
     }

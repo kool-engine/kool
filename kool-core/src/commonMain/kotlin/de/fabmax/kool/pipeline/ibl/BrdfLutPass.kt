@@ -29,7 +29,6 @@ class BrdfLutPass(parentScene: Scene) :
     var isAutoRemove = true
 
     init {
-        clearColor = null
         drawNode.apply {
             addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "brdf-lut-mesh") {
                 generateFullscreenQuad()

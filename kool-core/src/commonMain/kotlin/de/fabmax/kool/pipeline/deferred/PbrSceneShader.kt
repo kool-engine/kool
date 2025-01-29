@@ -86,6 +86,7 @@ open class PbrSceneShader(cfg: DeferredPbrConfig, model: Model = Model(cfg)) :
     }
 
     fun setMaterialInput(materialPass: MaterialPass) {
+        createdPipeline?.swapPipelineData(materialPass)
         depth = materialPass.depthTexture
         positionFlags = materialPass.positionFlags
         normalRoughness = materialPass.normalRoughness

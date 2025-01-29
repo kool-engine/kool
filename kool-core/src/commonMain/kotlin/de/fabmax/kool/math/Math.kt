@@ -34,22 +34,31 @@ inline fun isFuzzyEqual(a: Double, b: Double, eps: Double = FUZZY_EQ_D) = (a - b
 inline fun Float.isFuzzyZero(eps: Float = FUZZY_EQ_F) = abs(this) <= eps
 inline fun Double.isFuzzyZero(eps: Double = FUZZY_EQ_D) = abs(this) <= eps
 
-inline fun Int.clamp(min: Int, max: Int): Int = when {
-    this < min -> min
-    this > max -> max
-    else -> this
+inline fun Int.clamp(min: Int, max: Int): Int {
+    require(max >= min) { "max ($max) is smaller than min ($min) " }
+    return when {
+        this < min -> min
+        this > max -> max
+        else -> this
+    }
 }
 
-inline fun Float.clamp(min: Float = 0f, max: Float = 1f): Float = when {
-    this < min -> min
-    this > max -> max
-    else -> this
+inline fun Float.clamp(min: Float = 0f, max: Float = 1f): Float {
+    require(max >= min) { "max ($max) is smaller than min ($min) " }
+    return when {
+        this < min -> min
+        this > max -> max
+        else -> this
+    }
 }
 
-inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double = when {
-    this < min -> min
-    this > max -> max
-    else -> this
+inline fun Double.clamp(min: Double = 0.0, max: Double = 1.0): Double {
+    require(max >= min) { "max ($max) is smaller than min ($min) " }
+    return when {
+        this < min -> min
+        this > max -> max
+        else -> this
+    }
 }
 
 fun Float.expDecay(target: Float, decay: Float, deltaT: Float = Time.deltaT): Float {
@@ -151,10 +160,6 @@ fun Double.wrap(low: Double, high: Double): Double {
     return t + low
 }
 
-fun getNumMipLevels(texWidth: Int, texHeight: Int): Int {
-    return floor(log2(max(texWidth, texHeight).toDouble())).toInt() + 1
-}
-
 fun smoothStep(low: Float, high: Float, x: Float): Float {
     val nx = ((x - low) / (high - low)).clamp()
     return nx * nx * (3 - 2 * nx)
@@ -205,4 +210,18 @@ fun barycentricWeights(pt: Vec3f, va: Vec3f, vb: Vec3f, vc: Vec3f, result: Mutab
     return result
 }
 
-fun numMipLevels(width: Int, height: Int): Int = log2(max(width, height).toDouble()).roundToInt() + 1
+fun numMipLevels(width: Int, height: Int): Int = floor(log2(max(width, height).toDouble())).toInt() + 1
+
+internal inline fun float32ToFloat16(f32: Float, block: (high: Byte, low: Byte) -> Unit) {
+    // from: https://stackoverflow.com/questions/3026441/float32-to-float16
+    val f32bits = f32.toBits()
+    var f16bits = (f32bits shr 31) shl 5
+    var tmp = (f32bits shr 23) and 0xff
+    tmp = (tmp - 0x70) and ((((0x70 - tmp) shr 4) shr 27) and 0x1f)
+    f16bits = (f16bits or tmp) shl 10
+    f16bits = f16bits or ((f32bits shr 13) and 0x3ff)
+
+    val high = (f16bits shr 8).toByte()
+    val low = (f16bits and 0xff).toByte()
+    block(high, low)
+}
