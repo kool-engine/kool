@@ -30,7 +30,9 @@ class Model(name: String? = null) : Node(name) {
     }
 
     fun applyAnimation(deltaT: Float) {
-        animations.forEach(Animation::reset)
+        for (i in animations.indices) {
+            animations[i].reset()
+        }
 
         var firstActive = true
         for (i in animations.indices) {

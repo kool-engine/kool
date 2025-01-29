@@ -9,9 +9,10 @@ class AnimationController(val model: Model) {
     private var currentState = initialState
 
     fun update(deltaTime: Float) {
-        states.forEach { state ->
+        for (i in states.indices) {
+            val state = states[i]
             val newState = state.update(deltaTime, state.name == currentState)
-            if(newState != currentState) {
+            if (newState != currentState) {
                 currentState = newState
                 state.onExit()
                 states.find { it.name == newState }?.onEnter?.invoke()
@@ -20,16 +21,17 @@ class AnimationController(val model: Model) {
         model.applyAnimation(deltaTime)
     }
 
-    fun state(stateName: String, body: AnimationState.() -> Unit) = AnimationState(model)
-        .apply(body).apply { name = stateName; states.add(this) }
+    fun state(stateName: String, body: AnimationState.() -> Unit) = AnimationState(model, stateName).apply {
+        body()
+        states.add(this)
+    }
 }
 
-class AnimationState(val model: Model) {
+class AnimationState(val model: Model, var name: String) {
     private val animations = mutableListOf<Animation>()
     private val transitions = mutableListOf<Transition>()
     private var weight = 0f
 
-    var name = ""
     var blendTransition = 0.2f
     var onEnter: () -> Unit = {}
     var onExit: () -> Unit = {}
@@ -38,7 +40,9 @@ class AnimationState(val model: Model) {
     fun update(deltaTime: Float, isActiveState: Boolean): String {
         updateWeight(deltaTime, isActiveState)
         onUpdate(deltaTime)
-        animations.forEach { it.update(deltaTime, weight) }
+        for (i in animations.indices) {
+            animations[i].update(deltaTime, weight)
+        }
         return transitions.firstOrNull { it.predicate() }?.nextState ?: name
     }
 

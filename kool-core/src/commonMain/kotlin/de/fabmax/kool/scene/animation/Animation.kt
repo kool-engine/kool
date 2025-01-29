@@ -1,7 +1,6 @@
 package de.fabmax.kool.scene.animation
 
 import de.fabmax.kool.math.*
-import de.fabmax.kool.scene.MatrixTransformF
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TrsTransformF
@@ -22,7 +21,7 @@ class Animation(val name: String?) {
     private val animationNodes = mutableListOf<AnimationNode>()
 
     fun prepareAnimation() {
-        duration = channels.map { it.lastKeyTime }.maxOrNull() ?: 0f
+        duration = channels.maxOfOrNull { it.lastKeyTime } ?: 0f
         channels.forEach { it.duration = duration }
         animationNodes += channels.map { it.animationNode }.distinct()
     }
@@ -117,8 +116,9 @@ class AnimatedTransformGroup(val target: Node) : AnimationNode {
     private val animRotation = MutableQuatF()
     private val animScale = MutableVec3f(1f, 1f, 1f)
 
-    private val baseRotation = MutableQuatF()
-    private val baseScale = MutableVec3f(Vec3f.ONES)
+    private val blendTranslation = MutableVec3f()
+    private val blendRotation = MutableQuatF()
+    private val blendScale = MutableVec3f()
 
     init {
         val vec4 = MutableVec4f()
@@ -151,11 +151,9 @@ class AnimatedTransformGroup(val target: Node) : AnimationNode {
             target.transform = t
         }
 
-        t.translate(animTranslation.mul(weight))
-        t.rotate(baseRotation.mix(animRotation, weight))
-        t.scale(baseScale.mix(animScale, weight))
-
-        t.markDirty()
+        t.translate(animTranslation.mul(weight, blendTranslation))
+        t.rotate(QuatF.IDENTITY.mix(animRotation, weight, blendRotation))
+        t.scale(Vec3f.ONES.mix(animScale, weight, blendScale))
     }
 
     override fun setTranslation(translation: Vec3f) {
