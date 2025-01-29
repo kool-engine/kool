@@ -9,7 +9,7 @@ import de.fabmax.kool.math.Vec2i
  */
 fun main() = KoolApplication(
     config = KoolConfigJvm(
-        renderBackend = KoolConfigJvm.Backend.OPEN_GL,
+        renderBackend = KoolConfigJvm.Backend.VULKAN,
         windowTitle = "Kool Demo",
         windowSize = Vec2i(1600, 900)
     )
