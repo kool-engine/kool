@@ -50,9 +50,10 @@ class GrowingBufferVk(
     var buffer: BufferVk = makeBuffer(bufferInfo)
 
     fun writeData(data: Float32Buffer, commandBuffer: VkCommandBuffer) {
+        if (data.limit == 0) return
+
         val bufSize = data.limit * 4L
         checkSize(bufSize)
-
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
             data.useRaw { stagingBuf.mapped!!.asFloatBuffer().put(it) }
             buffer.copyFrom(stagingBuf, commandBuffer)
@@ -60,9 +61,10 @@ class GrowingBufferVk(
     }
 
     fun writeData(data: Int32Buffer, commandBuffer: VkCommandBuffer) {
+        if (data.limit == 0) return
+
         val bufSize = data.limit * 4L
         checkSize(bufSize)
-
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
             data.useRaw { stagingBuf.mapped!!.asIntBuffer().put(it) }
             buffer.copyFrom(stagingBuf, commandBuffer)

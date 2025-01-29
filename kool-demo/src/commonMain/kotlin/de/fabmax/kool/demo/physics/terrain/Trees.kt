@@ -44,7 +44,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
         val treeGenerator = LowPolyTree(0x1deadb0b)
 
         // generate 20 different tree models
-        for (i in 0 until 20) {
+        repeat(20) {
             val root = treeGenerator.generateNodes(MutableMat4f())
 
             val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Wind.WIND_SENSITIVITY)

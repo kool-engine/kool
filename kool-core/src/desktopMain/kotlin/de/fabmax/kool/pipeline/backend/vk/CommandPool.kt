@@ -74,7 +74,7 @@ class CommandPool(val backendVk: RenderBackendVk, val queue: VkQueue) : BaseRele
                 commandBufferCount(numBuffers)
             }
             val handles = mallocPointer(numBuffers)
-            checkVk(vkAllocateCommandBuffers(device.vkDevice, allocateInfo, handles)) { "Failed creating command buffers" }
+            vkCheck(vkAllocateCommandBuffers(device.vkDevice, allocateInfo, handles)) { "Failed creating command buffers" }
             return buildList {
                 for (i in 0 until numBuffers) {
                     add(VkCommandBuffer(handles[i], device.vkDevice))

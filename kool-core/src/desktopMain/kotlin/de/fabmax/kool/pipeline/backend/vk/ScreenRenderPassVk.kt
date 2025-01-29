@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
@@ -65,57 +67,17 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
     override fun generateMipLevels(passEncoderState: PassEncoderState) { }
 
     override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
-        if (frameCopy.isCopyColor) {
-            copyColor(frameCopy, passEncoderState)
+        var screenCopy = frameCopy.gpuFrameCopy as ScreenCopy?
+        if (screenCopy == null) {
+            screenCopy = ScreenCopy(frameCopy)
+            frameCopy.gpuFrameCopy = screenCopy
         }
+        screenCopy.copy(passEncoderState)
     }
 
-    private fun copyColor(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
-        val width = backend.swapchain.colorImage.width
-        val height = backend.swapchain.colorImage.height
-        val colorDst = frameCopy.colorCopy2d
-        var colorDstVk = colorDst.gpuTexture as ImageVk?
-
-        if (colorDstVk == null || colorDstVk.width != width || colorDstVk.height != height) {
-            colorDstVk?.release()
-
-            val imgInfo = ImageInfo(
-                imageType = VK_IMAGE_TYPE_2D,
-                format = backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format(),
-                width = width,
-                height = height,
-                depth = 1,
-                arrayLayers = 1,
-                mipLevels = 1,
-                samples = VK_SAMPLE_COUNT_1_BIT,
-                usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
-                label = colorDst.name
-            )
-            colorDstVk = ImageVk(backend, imgInfo)
-            colorDst.gpuTexture = colorDstVk
-            colorDst.loadingState = Texture.LoadingState.LOADED
-        }
-
-        var copyPass = frameCopy.gpuFrameCopy as RenderPassWrapper?
-        if (copyPass == null) {
-            copyPass = RenderPassWrapper(
-                isLoad = true,
-                isStore = true,
-                resolveViews = listOf(ImageVk.imageView2d(backend.device, colorDstVk, VK_IMAGE_ASPECT_COLOR_BIT)),
-                finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                destoryResolveViews = true
-            )
-            frameCopy.gpuFrameCopy = copyPass
-        }
-
-        if (copyPass.framebuffers.isEmpty() || copyPass.framebufferWidth != width ||copyPass.framebufferHeight != height) {
-            copyPass.recreateFramebuffers(listOf(ImageVk.imageView2d(backend.device, colorDstVk, VK_IMAGE_ASPECT_COLOR_BIT)))
-        }
-
-        // launch an empty render pass, this resolves the multi-sampled color texture into the resolve target
-        passEncoderState.ensureRenderPassInactive()
-        copyPass.begin(passEncoderState, 0)
-        vkCmdEndRenderPass(passEncoderState.commandBuffer)
+    override fun release() {
+        super.release()
+        vkRenderPasses.filterNotNull().forEach { it.release() }
     }
 
     private inner class RenderPassWrapper(
@@ -207,8 +169,6 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
 
                 framebuffers = createFramebuffers(resolveViews)
             }
-
-            releaseWith(this@ScreenRenderPassVk)
             logD("ScreenRenderPassVk") { "Created screen render pass (isLoad: $isLoad)" }
         }
 
@@ -261,6 +221,91 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
                     resolveViews.forEach { device.destroyImageView(it) }
                 }
             }
+        }
+    }
+
+    private inner class ScreenCopy(val frameCopy: FrameCopy) : BaseReleasable() {
+        var colorCopy: RenderPassWrapper? = null
+        var depthCopy: MultiSampledTexCopyPass? = null
+
+        fun copy(passEncoderState: PassEncoderState) {
+            if (frameCopy.isCopyColor) {
+                copyColor(passEncoderState)
+            }
+            if (frameCopy.isCopyDepth) {
+                copyDepth(passEncoderState)
+            }
+        }
+
+        private fun copyColor(passEncoderState: PassEncoderState) {
+            val width = backend.swapchain.colorImage.width
+            val height = backend.swapchain.colorImage.height
+            val colorDst = frameCopy.colorCopy2d
+            var colorDstVk = colorDst.gpuTexture as ImageVk?
+
+            if (colorDstVk == null || colorDstVk.width != width || colorDstVk.height != height) {
+                colorDstVk?.release()
+
+                val imgInfo = ImageInfo(
+                    imageType = VK_IMAGE_TYPE_2D,
+                    format = backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format(),
+                    width = width,
+                    height = height,
+                    depth = 1,
+                    arrayLayers = 1,
+                    mipLevels = 1,
+                    samples = VK_SAMPLE_COUNT_1_BIT,
+                    usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                    aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    label = colorDst.name
+                )
+                colorDstVk = ImageVk(backend, imgInfo)
+                colorDst.gpuTexture = colorDstVk
+                colorDst.loadingState = Texture.LoadingState.LOADED
+            }
+
+            if (colorCopy == null) {
+                colorCopy = RenderPassWrapper(
+                    isLoad = true,
+                    isStore = true,
+                    resolveViews = listOf(ImageVk.imageView2d(backend.device, colorDstVk)),
+                    finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    destoryResolveViews = true
+                )
+            }
+            val copyPass = colorCopy!!
+
+            if (copyPass.framebuffers.isEmpty() || copyPass.framebufferWidth != width ||copyPass.framebufferHeight != height) {
+                copyPass.recreateFramebuffers(listOf(ImageVk.imageView2d(backend.device, colorDstVk)))
+            }
+
+            // launch an empty render pass, this resolves the multi-sampled color texture into the resolve target
+            passEncoderState.ensureRenderPassInactive()
+            copyPass.begin(passEncoderState, 0)
+            vkCmdEndRenderPass(passEncoderState.commandBuffer)
+        }
+
+        private fun copyDepth(passEncoderState: PassEncoderState) {
+            if (depthCopy == null) {
+                depthCopy = MultiSampledTexCopyPass(backend, TexFormat.R_F32, FilterMethod.NEAREST)
+            }
+
+            backend.swapchain.depthImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer)
+            depthCopy!!.doCopyPass(backend.swapchain.depthImage, passEncoderState)
+            backend.swapchain.depthImage.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, passEncoderState.commandBuffer)
+
+            val copiedTex = depthCopy!!.colorTexture!!.gpuTexture
+            frameCopy.depthCopy2d.gpuTexture = copiedTex
+            frameCopy.depthCopy2d.loadingState = Texture.LoadingState.LOADED
+        }
+
+        override fun release() {
+            super.release()
+            colorCopy?.release()
+            depthCopy?.release()
+            // set depth copy gpuTexture to null to avoid double free when frame copy is released
+            // not needed for color copy, which is correctly handled by OffscreenPass2d
+            frameCopy.depthCopy?.let { it.gpuTexture = null }
         }
     }
 

@@ -16,7 +16,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.Time
 
-class InstancingTest : DemoScene("Instancing") {
+class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
 
     private val numObjects = mutableStateOf(5000)
     private val drawInstanced = mutableStateOf(false)
@@ -38,13 +38,7 @@ class InstancingTest : DemoScene("Instancing") {
         colorSpaceConversion = ColorSpaceConversion.AsIs
     }
 
-    private val profilingScene = ProfilingScene()
-
-    init {
-        mainScene = profilingScene
-        scenes.clear()
-        scenes.add(mainScene)
-    }
+    private val profilingScene = mainScene as ProfilingScene
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(0f)

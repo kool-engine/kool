@@ -113,7 +113,6 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
                 demo.menuUi?.let { menu.ui -= it }
                 demo.scenes.forEach { it.release() }
                 demo.menuUi?.release()
-                demo.onRelease(ctx)
             }
             ctx.scenes -= loadingScreen
             ctx.scenes.stageAdd(loadingScreen, 0)

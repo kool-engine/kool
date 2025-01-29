@@ -118,12 +118,13 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
             samples = VK_SAMPLE_COUNT_1_BIT,
             usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT or srcUsage,
             flags = flags,
+            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             label = tex.name
         )
         val image = ImageVk(backend, imgInfo)
 
         val bufSize = width * height * depth * layers * data.format.vkBytesPerPx.toLong()
-        backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
+        backend.memManager.stagingBuffer(bufSize, bufferDeleteTicks = 0) { stagingBuf ->
             copyTextureData(data, stagingBuf, data.format)
 
             backend.commandPool.singleShotCommands { commandBuffer ->

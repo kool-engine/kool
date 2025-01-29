@@ -172,8 +172,8 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
                     }
                 }
                 val allocInfo = VmaAllocationInfo.calloc(this)
-                checkVk(vmaCreateBuffer(allocator, bufferInfo, createInfo, pBuffer, pAllocation, allocInfo)) {
-                    "Failed allocating buffer: $it"
+                vkCheck(vmaCreateBuffer(allocator, bufferInfo, createInfo, pBuffer, pAllocation, allocInfo)) {
+                    "Failed allocating buffer ${info.label} (${info.size} bytes): $it"
                 }
                 val mapped = if (!info.createMapped && !info.isReadback) null else {
                     MemoryUtil.memByteBuffer(allocInfo.pMappedData(), bufferInfo.size().toInt())
@@ -210,8 +210,8 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
                     flags(info.flags)
                 }
                 val createInfo = VmaAllocationCreateInfo.calloc(this).apply { usage(info.allocUsage) }
-                checkVk(vmaCreateImage(allocator, imageInfo, createInfo, pImage, pAllocation, null)) {
-                    "Failed allocating image: $it"
+                vkCheck(vmaCreateImage(allocator, imageInfo, createInfo, pImage, pAllocation, null)) {
+                    "Failed allocating image ${info.label} (${info.width} x ${info.height} x ${info.depth}, ${info.arrayLayers} layers, ${info.mipLevels} levels): $it"
                 }
                 VkImage(pImage[0], pAllocation[0])
             }
@@ -278,6 +278,7 @@ data class ImageInfo(
     val samples: Int,
     val usage: Int,
     val label: String,
+    val aspectMask: Int,
     val tiling: Int = VK_IMAGE_TILING_OPTIMAL,
     val sharingMode: Int = VK_SHARING_MODE_EXCLUSIVE,
     val allocUsage: Int = VMA_MEMORY_USAGE_AUTO,

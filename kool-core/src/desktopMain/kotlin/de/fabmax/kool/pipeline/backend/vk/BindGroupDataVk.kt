@@ -296,8 +296,8 @@ class BindGroupDataVk(
         val compare = if (isDepthTex) samplerSettings.compareOp.vk else VK_COMPARE_OP_ALWAYS
 
         val sampler = backend.device.createSampler {
-            magFilter(samplerSettings.magFilter.vk)
-            minFilter(samplerSettings.minFilter.vk)
+            magFilter(if (isUnfilterable) VK_FILTER_NEAREST else samplerSettings.magFilter.vk)
+            minFilter(if (isUnfilterable) VK_FILTER_NEAREST else samplerSettings.minFilter.vk)
             addressModeU(samplerSettings.addressModeU.vk)
             addressModeV(samplerSettings.addressModeV.vk)
             addressModeW(samplerSettings.addressModeW.vk)
@@ -319,7 +319,7 @@ class BindGroupDataVk(
             image = image.vkImage,
             viewType = viewType,
             format = image.format,
-            aspectMask = if (isDepthTex || isUnfilterable) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT,
+            aspectMask = image.imageInfo.aspectMask,
             levelCount = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else image.mipLevels,
             layerCount = image.arrayLayers,
             baseMipLevel = samplerSettings.baseMipLevel,

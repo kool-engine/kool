@@ -45,7 +45,7 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
 
             if (dbgMessengerInfo != null) {
                 val lp = mallocLong(1)
-                checkVk(EXTDebugUtils.vkCreateDebugUtilsMessengerEXT(vkInstance, dbgMessengerInfo, null, lp))
+                vkCheck(EXTDebugUtils.vkCreateDebugUtilsMessengerEXT(vkInstance, dbgMessengerInfo, null, lp))
                 debugMessenger = lp.get()
             }
         }

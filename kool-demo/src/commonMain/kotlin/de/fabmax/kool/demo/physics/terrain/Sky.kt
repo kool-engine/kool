@@ -13,7 +13,6 @@ import de.fabmax.kool.pipeline.ibl.SkyCubeIblSystem
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
 import de.fabmax.kool.util.Color.Hsv
-import kotlin.collections.set
 import kotlin.math.abs
 import kotlin.math.acos
 import kotlin.math.atan2
@@ -158,6 +157,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
         launchDelayed(1) {
             parentScene.removeOffscreenPass(skyLut)
+            sky.removeOffscreenPasses()
             sky.releaseOffscreenPasses()
             skyLut.release()
         }

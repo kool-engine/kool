@@ -144,6 +144,8 @@ class OffscreenPass2dVk(
             usage: Int,
             texture: Texture<*> = this.texture
         ): Pair<ImageInfo, ImageVk> {
+            val aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT
+
             val descriptor = ImageInfo(
                 imageType = VK_IMAGE_TYPE_2D,
                 format = if (isDepth) backend.physicalDevice.depthFormat else texture.props.format.vk,
@@ -154,6 +156,7 @@ class OffscreenPass2dVk(
                 mipLevels = parentPass.numTextureMipLevels,
                 samples = numSamples,
                 usage = usage,
+                aspectMask = aspectMask,
                 label = texture.name
             )
             val tex = ImageVk(backend, descriptor, name)
@@ -182,7 +185,7 @@ class OffscreenPass2dVk(
                 val (_, gpuTex) = createTexture(
                     width = parentPass.width,
                     height = parentPass.height,
-                    usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                    usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
                     texture = target
                 )
                 copyDst = gpuTex
@@ -295,7 +298,6 @@ class OffscreenPass2dVk(
         }
 
         fun begin(passEncoderState: PassEncoderState)  {
-            val renderPass = passEncoderState.renderPass
             val mipLevel = passEncoderState.mipLevel
 
             val beginInfo = renderPassBeginInfo.apply {
@@ -309,11 +311,11 @@ class OffscreenPass2dVk(
                 val numAttachments = colorAttachments.size + if (depthAttachment != null) 1 else 0
                 clearValues.limit(numAttachments)
                 for (i in 0 until numColorAttachments) {
-                    clearValues[i].setColor(renderPass.clearColors[i] ?: Color.BLACK)
+                    clearValues[i].setColor(parentPass.clearColors[i] ?: Color.BLACK)
                 }
                 if (depthAttachment != null) {
                     clearValues[numAttachments - 1].depthStencil {
-                        it.depth(if (renderPass.isReverseDepth) 0f else 1f)
+                        it.depth(if (parentPass.isReverseDepth) 0f else 1f)
                         it.stencil(0)
                     }
                 }

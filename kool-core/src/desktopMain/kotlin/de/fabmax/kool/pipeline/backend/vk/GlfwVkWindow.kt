@@ -49,7 +49,7 @@ class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindo
         init {
             memStack {
                 val lp = mallocLong(1)
-                checkVk(GLFWVulkan.glfwCreateWindowSurface(backend.instance.vkInstance, windowPtr, null, lp))
+                vkCheck(GLFWVulkan.glfwCreateWindowSurface(backend.instance.vkInstance, windowPtr, null, lp))
                 surfaceHandle = lp[0]
             }
             releaseWith(backend.instance)

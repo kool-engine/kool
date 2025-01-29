@@ -95,8 +95,8 @@ class FrameCopy(
 
     override fun release() {
         super.release()
+        gpuFrameCopy?.release()
         colorCopy.forEach { it.release() }
         depthCopy?.release()
-        gpuFrameCopy?.release()
     }
 }

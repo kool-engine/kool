@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.util.Color
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
@@ -104,19 +103,19 @@ fun VkClearValue.setColor(color: Color) {
 }
 
 fun VkCommandBuffer.reset(flags: Int = 0) {
-    checkVk(vkResetCommandBuffer(this, flags)) { "Failed resetting command buffer: $it" }
+    vkCheck(vkResetCommandBuffer(this, flags)) { "Failed resetting command buffer: $it" }
 }
 
 inline fun VkCommandBuffer.begin(stack: MemoryStack, block: VkCommandBufferBeginInfo.() -> Unit) {
     val beginInfo = stack.callocVkCommandBufferBeginInfo(block)
-    checkVk(vkBeginCommandBuffer(this, beginInfo)) { "Failed beginning command buffer: $it" }
+    vkCheck(vkBeginCommandBuffer(this, beginInfo)) { "Failed beginning command buffer: $it" }
 }
 
 fun VkCommandBuffer.end() {
-    checkVk(vkEndCommandBuffer(this)) { "Failed ending command buffer: $it" }
+    vkCheck(vkEndCommandBuffer(this)) { "Failed ending command buffer: $it" }
 }
 
 inline fun VkQueue.submit(fence: VkFence, stack: MemoryStack, block: VkSubmitInfo.() -> Unit) {
     val submitInfo = stack.callocVkSubmitInfo(block)
-    checkVk(vkQueueSubmit(this, submitInfo, fence.handle)) { "Failed submitting queue: $it" }
+    vkCheck(vkQueueSubmit(this, submitInfo, fence.handle)) { "Failed submitting queue: $it" }
 }

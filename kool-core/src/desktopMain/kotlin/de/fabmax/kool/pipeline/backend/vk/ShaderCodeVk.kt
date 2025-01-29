@@ -6,26 +6,26 @@ import de.fabmax.kool.util.LongHash
 import de.fabmax.kool.util.logE
 import org.lwjgl.vulkan.VK10.*
 
-class ShaderCodeVk(val stages: List<ShaderStage>): ShaderCode, ComputeShaderCode {
+class ShaderCodeVk(val stages: List<ShaderStageVk>): ShaderCode, ComputeShaderCode {
 
-    val vertexStage: ShaderStage? = stages.find { it.stage == VK_SHADER_STAGE_VERTEX_BIT }
-    val fragmentStage: ShaderStage? = stages.find { it.stage == VK_SHADER_STAGE_FRAGMENT_BIT }
-    val computeStage: ShaderStage? = stages.find { it.stage == VK_SHADER_STAGE_COMPUTE_BIT }
+    val vertexStage: ShaderStageVk? = stages.find { it.stage == VK_SHADER_STAGE_VERTEX_BIT }
+    val fragmentStage: ShaderStageVk? = stages.find { it.stage == VK_SHADER_STAGE_FRAGMENT_BIT }
+    val computeStage: ShaderStageVk? = stages.find { it.stage == VK_SHADER_STAGE_COMPUTE_BIT }
 
     override val hash: LongHash = LongHash {
         stages.forEach { this += it.hash }
     }
 
     companion object {
-        private val shaderCache = mutableMapOf<ShaderKey, ShaderStage>()
+        private val shaderCache = mutableMapOf<ShaderKey, ShaderStageVk>()
 
         fun drawShaderCode(vertShaderSrc: String, fragShaderSrc: String): ShaderCodeVk {
             try {
                 val vertexStage = shaderCache.getOrPut(ShaderKey(vertShaderSrc, VK_SHADER_STAGE_VERTEX_BIT)) {
-                    ShaderStage.fromSource("vertShader", vertShaderSrc, VK_SHADER_STAGE_VERTEX_BIT)
+                    ShaderStageVk.fromSource("vertShader", vertShaderSrc, VK_SHADER_STAGE_VERTEX_BIT)
                 }
                 val fragmentStage = shaderCache.getOrPut(ShaderKey(fragShaderSrc, VK_SHADER_STAGE_FRAGMENT_BIT)) {
-                    ShaderStage.fromSource("fragShader", fragShaderSrc, VK_SHADER_STAGE_FRAGMENT_BIT)
+                    ShaderStageVk.fromSource("fragShader", fragShaderSrc, VK_SHADER_STAGE_FRAGMENT_BIT)
                 }
                 return ShaderCodeVk(listOf(vertexStage, fragmentStage))
             } catch (e: Exception) {
@@ -38,7 +38,7 @@ class ShaderCodeVk(val stages: List<ShaderStage>): ShaderCode, ComputeShaderCode
         fun computeShaderCode(computeShaderSrc: String): ShaderCodeVk {
             try {
                 val computeStage = shaderCache.getOrPut(ShaderKey(computeShaderSrc, VK_SHADER_STAGE_COMPUTE_BIT)) {
-                    ShaderStage.fromSource("computeShader", computeShaderSrc, VK_SHADER_STAGE_COMPUTE_BIT)
+                    ShaderStageVk.fromSource("computeShader", computeShaderSrc, VK_SHADER_STAGE_COMPUTE_BIT)
                 }
                 return ShaderCodeVk(listOf(computeStage))
             } catch (e: Exception) {

@@ -123,7 +123,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         releaseWith(backend.device)
-        logD { "Created swap chain" }
+        logT { "Created swap chain" }
     }
 
     fun acquireNextImage(): Boolean {
@@ -167,11 +167,12 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             samples = numSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
             usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
             label = "swapchain-color"
         )
         val image = ImageVk(backend, imgInfo)
 
-        val imageView = ImageVk.imageView2d(device, image, VK_IMAGE_ASPECT_COLOR_BIT)
+        val imageView = ImageVk.imageView2d(device, image)
         image.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, commandBuffer)
         image.onRelease { device.destroyImageView(imageView) }
         return image to imageView
@@ -188,12 +189,13 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             mipLevels = 1,
             samples = numSamples,
             tiling = VK_IMAGE_TILING_OPTIMAL,
-            usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+            aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
             label = "swapchain-depth"
         )
         val image = ImageVk(backend, imgInfo)
 
-        val imageView = ImageVk.imageView2d(device, image, VK_IMAGE_ASPECT_DEPTH_BIT)
+        val imageView = ImageVk.imageView2d(device, image)
         image.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandBuffer)
         image.onRelease { device.destroyImageView(imageView) }
         return image to imageView
@@ -211,7 +213,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         renderFinishedSemas.forEach { device.destroySemaphore(it) }
         inFlightFences.forEach { device.destroyFence(it) }
 
-        logD { "Destroyed swap chain" }
+        logT { "Destroyed swap chain" }
     }
 
     companion object {

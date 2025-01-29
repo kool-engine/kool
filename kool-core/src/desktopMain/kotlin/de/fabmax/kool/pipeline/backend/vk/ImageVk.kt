@@ -46,6 +46,10 @@ class ImageVk(
         }
     }
 
+    override fun toString(): String {
+        return "ImageVK:\"${imageInfo.label}\""
+    }
+
     fun copyFromBuffer(
         buffer: VkBuffer,
         commandBuffer: VkCommandBuffer,
@@ -58,7 +62,7 @@ class ImageVk(
                 bufferOffset(0)
                 bufferRowLength(0)
                 bufferImageHeight(0)
-                imageSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, arrayLayers)
+                imageSubresource().set(imageInfo.aspectMask, 0, 0, arrayLayers)
                 imageOffset().set(0, 0, 0)
                 imageExtent().set(width, height, depth)
             }
@@ -79,7 +83,7 @@ class ImageVk(
                 bufferOffset(0)
                 bufferRowLength(0)
                 bufferImageHeight(0)
-                imageSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, arrayLayers)
+                imageSubresource().set(imageInfo.aspectMask, 0, 0, arrayLayers)
                 imageOffset().set(0, 0, 0)
                 imageExtent().set(width, height, depth)
             }
@@ -100,9 +104,9 @@ class ImageVk(
             val region = callocVkImageCopyN(1) { }
             for (level in 0 until src.mipLevels) {
                 region[0].apply {
-                    srcSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, level, 0, arrayLayers)
+                    srcSubresource().set(src.imageInfo.aspectMask, level, 0, arrayLayers)
                     srcOffset().set(0, 0, 0)
-                    dstSubresource().set(VK_IMAGE_ASPECT_COLOR_BIT, level, 0, arrayLayers)
+                    dstSubresource().set(imageInfo.aspectMask, level, 0, arrayLayers)
                     dstOffset().set(0, 0, 0)
                     extent().set(
                         (width shr level).coerceAtLeast(1),
@@ -123,13 +127,6 @@ class ImageVk(
 
         memStack(stack) {
             val oldLayout = layout
-            val hasStencilComponent = format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT
-            val aspectMask = when (newLayout) {
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL if (hasStencilComponent) -> VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_IMAGE_ASPECT_DEPTH_BIT
-                else -> VK_IMAGE_ASPECT_COLOR_BIT
-            }
-
             val barrier = callocVkImageMemoryBarrierN(1) {
                 oldLayout(oldLayout)
                 newLayout(newLayout)
@@ -138,7 +135,7 @@ class ImageVk(
                 srcAccessMask(srcAccessMaskForLayout(oldLayout))
                 dstAccessMask(dstAccessMaskForLayout(newLayout))
                 image(vkImage.handle)
-                subresourceRange().set(aspectMask, 0, mipLevels, 0, arrayLayers)
+                subresourceRange().set(imageInfo.aspectMask, 0, mipLevels, 0, arrayLayers)
             }
 
             val srcStage = srcStageForLayout(oldLayout)
@@ -179,7 +176,7 @@ class ImageVk(
             srcAccessMask(srcAccessMaskForLayout(VK_IMAGE_LAYOUT_UNDEFINED))
             dstAccessMask(dstAccessMaskForLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL))
             subresourceRange {
-                it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                it.aspectMask(imageInfo.aspectMask)
                 it.baseArrayLayer(0)
                 it.layerCount(arrayLayers)
                 it.baseMipLevel(1)
@@ -215,7 +212,7 @@ class ImageVk(
                 srcOffsets(0).set(0, 0, 0)
                 srcOffsets(1).set(mipWidth, mipHeight, 1)
                 srcSubresource {
-                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.aspectMask(imageInfo.aspectMask)
                     it.mipLevel(i - 1)
                     it.baseArrayLayer(0)
                     it.layerCount(arrayLayers)
@@ -223,7 +220,7 @@ class ImageVk(
                 dstOffsets(0).set(0, 0, 0)
                 dstOffsets(1).set((mipWidth shr 1).coerceAtLeast(1), (mipHeight shr 1).coerceAtLeast(1), 1)
                 dstSubresource {
-                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.aspectMask(imageInfo.aspectMask)
                     it.mipLevel(i)
                     it.baseArrayLayer(0)
                     it.layerCount(arrayLayers)
@@ -259,13 +256,13 @@ class ImageVk(
     }
 
     companion object {
-        fun imageView2d(device: Device, image: ImageVk, aspectMask: Int): VkImageView {
+        fun imageView2d(device: Device, image: ImageVk): VkImageView {
             require(image.depth == 1)
             return device.createImageView(
                 image = image.vkImage,
                 viewType = VK_IMAGE_VIEW_TYPE_2D,
                 format = image.format,
-                aspectMask = aspectMask,
+                aspectMask = image.imageInfo.aspectMask,
                 levelCount = image.mipLevels,
                 layerCount = 1
             )
@@ -275,6 +272,7 @@ class ImageVk(
             VK_IMAGE_LAYOUT_UNDEFINED -> 0
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_ACCESS_TRANSFER_WRITE_BIT
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL -> VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT
             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_ACCESS_TRANSFER_READ_BIT
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_ACCESS_SHADER_READ_BIT
             else -> error("Layout not supported / implemented: $layout")

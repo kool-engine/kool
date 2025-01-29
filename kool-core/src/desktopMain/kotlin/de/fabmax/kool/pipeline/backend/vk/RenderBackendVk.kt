@@ -18,8 +18,7 @@ import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
-import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_DST_BIT
-import org.lwjgl.vulkan.VK10.vkQueueWaitIdle
+import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import java.nio.ByteBuffer
 import kotlin.time.Duration
@@ -260,6 +259,15 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
+        val gpuTex = texture.gpuTexture as ImageVk?
+        if (gpuTex == null) {
+            deferred.completeExceptionally(IllegalArgumentException("Texture is not loaded"))
+            return
+        }
+        if (gpuTex.imageInfo.usage and VK_IMAGE_USAGE_TRANSFER_SRC_BIT == 0) {
+            deferred.completeExceptionally(IllegalArgumentException("Texture is not copyable (misses VK_IMAGE_USAGE_TRANSFER_SRC_BIT usage flag)"))
+            return
+        }
         gpuReadbacks += ReadbackTexture(texture, deferred)
     }
 

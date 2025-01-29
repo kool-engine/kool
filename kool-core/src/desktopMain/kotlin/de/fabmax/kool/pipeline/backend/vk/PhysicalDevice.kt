@@ -355,7 +355,7 @@ internal inline fun PhysicalDevice.createDevice(stack: MemoryStack? = null, bloc
     memStack(stack) {
         val createInfo = callocVkDeviceCreateInfo(block)
         val handle = pointers(0)
-        checkVk(vkCreateDevice(vkPhysicalDevice, createInfo, null, handle)) { "Failed creating device: $it" }
+        vkCheck(vkCreateDevice(vkPhysicalDevice, createInfo, null, handle)) { "Failed creating device: $it" }
         return VkDevice(handle[0], vkPhysicalDevice, createInfo)
     }
 }

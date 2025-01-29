@@ -73,7 +73,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
 
     private fun getOrCreateShaderModule(
         pipeline: PipelineBase,
-        stage: ShaderStage,
+        stage: ShaderStageVk,
         cache: MutableMap<LongHash, UsedShaderModule>
     ): VkShaderModule {
         val usedModule = cache.getOrPut(stage.hash) {
