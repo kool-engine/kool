@@ -89,8 +89,12 @@ tasks["clean"].doLast {
 }
 
 tasks.register<JavaExec>("run") {
+    dependsOn("cacheRuntimeLibs")
     group = "application"
     mainClass.set("de.fabmax.kool.demo.MainKt")
+    if (OperatingSystem.current().isMacOsX) {
+        jvmArgs = listOf("-XstartOnFirstThread")
+    }
 
     kotlin {
         val main = targets["desktop"].compilations["main"]
