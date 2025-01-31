@@ -112,8 +112,8 @@ class WgpuDrawPipeline(
             else -> drawPipeline.pipelineConfig.depthTest
         }
 
-        val hasDepthAttachment = renderPass !is OffscreenRenderPass ||
-                renderPass.depthAttachment != OffscreenRenderPass.DepthAttachmentNone
+        val hasDepthAttachment = renderPass !is OffscreenPass ||
+                renderPass.depthAttachment != OffscreenPass.DepthAttachmentNone
 
         val depthStencil = if (!hasDepthAttachment) null else {
             gpuRenderPass.depthFormat?.let { depthFormat ->

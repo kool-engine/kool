@@ -7,7 +7,9 @@ import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.RayD
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.ComputePass
+import de.fabmax.kool.pipeline.GpuPass
+import de.fabmax.kool.pipeline.OffscreenPass
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
@@ -26,7 +28,7 @@ open class Scene(name: String? = null) : Node(name) {
     val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
     val lighting = Lighting()
-    val mainRenderPass: SceneRenderPass = SceneRenderPass()
+    val mainRenderPass: ScreenPass = ScreenPass()
 
     var clearColor: Color?
         get() = mainRenderPass.clearColor
@@ -42,11 +44,11 @@ open class Scene(name: String? = null) : Node(name) {
         get() = mainRenderPass.camera
         set(value) { mainRenderPass.camera = value }
 
-    val offscreenPasses: BufferedList<OffscreenRenderPass> = BufferedList()
-    internal val sortedOffscreenPasses = mutableListOf<OffscreenRenderPass>()
+    val extraPasses: BufferedList<GpuPass> = BufferedList()
+    internal val sortedPasses = mutableListOf<GpuPass>(mainRenderPass)
 
     val isEmpty: Boolean
-        get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedMutations)
+        get() = children.isEmpty() && (extraPasses.isEmpty() && !extraPasses.hasStagedMutations)
 
     var sceneRecordTime = 0.0.seconds
 
@@ -62,12 +64,20 @@ open class Scene(name: String? = null) : Node(name) {
         }
     }
 
-    fun addOffscreenPass(pass: OffscreenRenderPass) {
-        offscreenPasses += pass
+    fun addComputePass(pass: ComputePass) {
+        extraPasses += pass
     }
 
-    fun removeOffscreenPass(pass: OffscreenRenderPass) {
-        offscreenPasses -= pass
+    fun removeComputePass(pass: ComputePass) {
+        extraPasses -= pass
+    }
+
+    fun addOffscreenPass(pass: OffscreenPass) {
+        extraPasses += pass
+    }
+
+    fun removeOffscreenPass(pass: OffscreenPass) {
+        extraPasses -= pass
     }
 
     open fun renderScene(ctx: KoolContext) {
@@ -76,27 +86,29 @@ open class Scene(name: String? = null) : Node(name) {
             onRenderScene[i](ctx)
         }
 
+        // make sure mainRenderPass is updated first, so that scene info (e.g. camera) is updated
+        // before offscreen passes are updated
         mainRenderPass.update(ctx)
 
-        if (offscreenPasses.update()) {
-            // offscreen passes have changed, re-sort them to maintain correct dependency order
-            sortedOffscreenPasses.clear()
-            sortedOffscreenPasses.addAll(offscreenPasses)
-            if (sortedOffscreenPasses.distinct().size != sortedOffscreenPasses.size) {
-                logW { "Multiple occurrences of offscreen passes: $sortedOffscreenPasses" }
+        if (extraPasses.update()) {
+            // offscreen / compute passes have changed, re-sort them to maintain correct dependency order
+            sortedPasses.clear()
+            sortedPasses.addAll(extraPasses)
+            if (sortedPasses.distinct().size != sortedPasses.size) {
+                logW { "Multiple occurrences of offscreen passes: $sortedPasses" }
             }
-            OffscreenRenderPass.sortByDependencies(sortedOffscreenPasses)
+            GpuPass.sortByDependencies(sortedPasses)
+            // main render pass is always executed last
+            sortedPasses.add(mainRenderPass)
         }
 
-        for (i in offscreenPasses.indices) {
-            val pass = offscreenPasses[i]
+        for (i in extraPasses.indices) {
+            val pass = extraPasses[i]
             pass.parentScene = this
             if (pass.isEnabled) {
                 pass.update(ctx)
-                pass.collectDrawCommands(ctx)
             }
         }
-        mainRenderPass.collectDrawCommands(ctx)
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
@@ -116,11 +128,8 @@ open class Scene(name: String? = null) : Node(name) {
         super.release()
 
         mainRenderPass.release()
-        offscreenPasses.update()
-        for (i in offscreenPasses.indices) {
-            offscreenPasses[i].release()
-        }
-        offscreenPasses.clear()
+        extraPasses.updated().forEach { it.release() }
+        extraPasses.clear()
 
         logD { "Released scene \"$name\"" }
     }
@@ -143,7 +152,7 @@ open class Scene(name: String? = null) : Node(name) {
         AfterRender
     }
 
-    inner class SceneRenderPass : RenderPass("${name}:OnScreenRenderPass", MipMode.None) {
+    inner class ScreenPass : RenderPass("${name}:ScreenPass", MipMode.None) {
         val screenView = View("screen", this@Scene, PerspectiveCamera())
         var camera: Camera by screenView::camera
         val viewport: Viewport by screenView::viewport

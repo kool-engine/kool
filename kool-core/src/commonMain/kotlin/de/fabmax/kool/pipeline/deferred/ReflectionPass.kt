@@ -17,7 +17,7 @@ import de.fabmax.kool.util.releaseWith
 import kotlin.random.Random
 
 class ReflectionPass(val baseReflectionStep: Float) :
-    OffscreenRenderPass2d(
+    OffscreenPass2d(
         Node(),
         colorAttachmentNoDepth(TexFormat.RGBA),
         Vec2i(128),

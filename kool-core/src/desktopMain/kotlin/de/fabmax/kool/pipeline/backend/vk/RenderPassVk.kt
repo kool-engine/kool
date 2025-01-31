@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.OffscreenRenderPassCube
+import de.fabmax.kool.pipeline.OffscreenPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
@@ -58,7 +58,7 @@ abstract class RenderPassVk(
         if (anySingleShots) {
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
-        renderPass.afterDraw()
+        renderPass.afterPass()
 
         if (renderPass.isProfileTimes) {
             timeQuery.end(passEncoderState.commandBuffer)
@@ -68,7 +68,7 @@ abstract class RenderPassVk(
     private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: PassEncoderState) {
         setupMipLevel(mipLevel)
 
-        if (this is OffscreenRenderPassCube) {
+        if (this is OffscreenPassCube) {
             for (layer in views.indices) {
                 passEncoderState.beginRenderPass(this, this@RenderPassVk, mipLevel, layer)
                 renderView(views[layer], passEncoderState)
@@ -124,7 +124,8 @@ abstract class RenderPassVk(
             }
 
             val isCmdValid = cmd.isActive && cmd.geometry.numIndices > 0
-            if (isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)) {
+            val bindSuccessful = backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)
+            if (isCmdValid && bindSuccessful) {
                 val insts = cmd.instances
                 if (insts == null) {
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)

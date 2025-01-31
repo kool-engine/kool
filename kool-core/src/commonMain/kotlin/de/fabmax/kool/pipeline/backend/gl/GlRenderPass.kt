@@ -53,7 +53,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
     private fun RenderPass.renderMipLevel(mipLevel: Int) {
         setupMipLevel(mipLevel)
 
-        if (this is OffscreenRenderPassCube) {
+        if (this is OffscreenPassCube) {
             for (viewIndex in views.indices) {
                 setupFramebuffer(mipLevel, viewIndex)
                 clear(this)
@@ -180,7 +180,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         }
     }
 
-    protected fun createAndAttachDepthRenderBuffer(pass: OffscreenRenderPass, mipLevel: Int): GlRenderbuffer {
+    protected fun createAndAttachDepthRenderBuffer(pass: OffscreenPass, mipLevel: Int): GlRenderbuffer {
         val rbo = gl.createRenderbuffer()
         val mipWidth = pass.width shr mipLevel
         val mipHeight = pass.height shr mipLevel

@@ -48,11 +48,11 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         return ComputeShaderCodeGl(output.computeSrc)
     }
 
-    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
+    override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
         TODO("Not yet implemented")
     }
 
-    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
+    override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
         TODO("Not yet implemented")
     }
 

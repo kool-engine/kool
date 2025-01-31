@@ -221,8 +221,8 @@ sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl)
         if (gpuBuffer == null) {
             val bufferCreationInfo = BufferCreationInfo(
                 bufferName = storage.name,
-                renderPassName = bindCtx.renderPass.name,
-                sceneName = bindCtx.renderPass.parentScene?.name ?: "scene:<null>"
+                renderPassName = bindCtx.pass.name,
+                sceneName = bindCtx.pass.parentScene?.name ?: "scene:<null>"
             )
             gpuBuffer = BufferResource(backend.gl.SHADER_STORAGE_BUFFER, backend, bufferCreationInfo)
             storage.gpuBuffer = gpuBuffer

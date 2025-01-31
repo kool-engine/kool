@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.BaseReleasable
 
 class WgpuOffscreenPass2d(
-    val parentPass: OffscreenRenderPass2d,
+    val parentPass: OffscreenPass2d,
     numSamples: Int,
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPass2dImpl {
@@ -20,7 +20,7 @@ class WgpuOffscreenPass2d(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            OffscreenRenderPass.DepthAttachmentRender -> Texture2d(
+            OffscreenPass.DepthAttachmentRender -> Texture2d(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}:render-depth"
             )

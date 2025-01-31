@@ -11,8 +11,8 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
 
-class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
-    OffscreenRenderPass2d(
+class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
+    OffscreenPass2d(
         Node(),
         colorAttachmentNoDepth(TexFormat.RGBA),
         reflectionPass.size.xy,

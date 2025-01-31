@@ -8,10 +8,9 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.Viewport
-import de.fabmax.kool.util.launchDelayed
 
-open class OffscreenRenderPass2d(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
-    OffscreenRenderPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 1), name)
+open class OffscreenPass2d(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
+    OffscreenPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 1), name)
 {
     override val views = mutableListOf(
         View("default", drawNode, PerspectiveCamera()).apply {
@@ -49,24 +48,21 @@ open class OffscreenRenderPass2d(drawNode: Node, attachmentConfig: AttachmentCon
         return copy.colorCopy2d
     }
 
-    override fun setSize(width: Int, height: Int, depth: Int) {
+    fun setSize(width: Int, height: Int) {
         super.setSize(width, height, 1)
+    }
+
+    override fun applySize(width: Int, height: Int, depth: Int) {
+        require(depth == 1) { "OffscreenPass2d depth must be == 1" }
+        super.applySize(width, height, depth)
+        impl.applySize(width, height)
     }
 
     override fun release() {
         super.release()
         impl.release()
-
-        launchDelayed(3) {
-            depthTexture?.release()
-            colorTextures.forEach { it.release() }
-        }
-    }
-
-    override fun applySize(width: Int, height: Int, depth: Int) {
-        check(depth == 1) { "OffscreenRenderPass2d depth must be == 1" }
-        super.applySize(width, height, depth)
-        impl.applySize(width, height)
+        depthTexture?.release()
+        colorTextures.forEach { it.release() }
     }
 
     private fun makeColorAttachments(): List<Texture2d> {

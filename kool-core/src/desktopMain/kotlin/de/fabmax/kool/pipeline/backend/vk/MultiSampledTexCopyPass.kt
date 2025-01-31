@@ -17,7 +17,7 @@ class MultiSampledTexCopyPass(
     val backend: RenderBackendVk,
     texFormat: TexFormat,
     filterMethod: FilterMethod
-) : OffscreenRenderPass2d(
+) : OffscreenPass2d(
     drawNode = Node(),
     attachmentConfig = AttachmentConfig(
         colorAttachments = ColorAttachmentTextures(listOf(
@@ -52,7 +52,7 @@ class MultiSampledTexCopyPass(
         }
         copyShader.texture2d("copySrc", copySource)
 
-        collectDrawCommands(KoolSystem.requireContext())
+        update(KoolSystem.requireContext())
         drawCmd = mainView.drawQueue.orderedQueues.first().commands.first()
     }
 

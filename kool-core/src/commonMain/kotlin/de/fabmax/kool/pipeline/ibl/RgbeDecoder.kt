@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Node
@@ -17,7 +17,7 @@ import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
 
 class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float = 1f) :
-    OffscreenRenderPass2d(
+    OffscreenPass2d(
         Node(),
         AttachmentConfig(
             ColorAttachmentTextures(listOf(TextureAttachmentConfig(TexFormat.RGBA_F16))),
@@ -39,7 +39,7 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += {
+        onAfterPass {
             logT { "Converted RGBe to linear: ${hdriTexture.name}" }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)

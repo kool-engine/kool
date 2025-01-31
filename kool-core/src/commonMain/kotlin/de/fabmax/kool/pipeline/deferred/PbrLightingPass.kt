@@ -1,11 +1,11 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Color
 
 class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPass: MaterialPass) :
-    OffscreenRenderPass2d(
+    OffscreenPass2d(
         pipeline.lightingPassContent,
         colorAttachmentDefaultDepth(TexFormat.RGBA_F16),
         materialPass.size.xy,

@@ -189,7 +189,6 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
         fun RenderPass.printTimes() {
             println("  $name")
             println("    update:  ${(tUpdate.inWholeMicroseconds / 1000.0).toString(2)} ms, " +
-                    "collect: ${(tCollect.inWholeMicroseconds / 1000.0).toString(2)} ms, " +
                     "draw: ${(tGpu.inWholeMicroseconds / 1000.0).toString(2)} ms")
         }
 

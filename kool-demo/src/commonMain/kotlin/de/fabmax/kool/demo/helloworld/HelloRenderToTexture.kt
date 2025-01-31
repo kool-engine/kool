@@ -7,8 +7,8 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenPass
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -32,9 +32,9 @@ class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
         backgroundGroup.releaseWith(this)
 
         // setup offscreen pass
-        val off = OffscreenRenderPass2d(
+        val off = OffscreenPass2d(
             backgroundGroup,
-            OffscreenRenderPass.colorAttachmentDefaultDepth(TexFormat.RGBA),
+            OffscreenPass.colorAttachmentDefaultDepth(TexFormat.RGBA),
             Vec2i(512, 512),
             name = "render-to-texture"
         ).apply {

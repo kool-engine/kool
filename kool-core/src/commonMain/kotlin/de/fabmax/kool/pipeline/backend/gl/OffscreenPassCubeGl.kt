@@ -3,10 +3,11 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 
-class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: RenderBackendGl) :
-    GlRenderPass(backend),
-    OffscreenPassCubeImpl
-{
+class OffscreenPassCubeGl(
+    val parent: OffscreenPassCube,
+    backend: RenderBackendGl
+) : GlRenderPass(backend), OffscreenPassCubeImpl {
+
     private val fbos = mutableListOf<GlFramebuffer>()
     private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
@@ -120,12 +121,12 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
     }
 
     private fun createBuffers() {
-        if (parent.colorAttachments is OffscreenRenderPass.ColorAttachmentTextures) {
+        if (parent.colorAttachments is OffscreenPass.ColorAttachmentTextures) {
             parent.colorTextures.forEachIndexed { i, tex ->
                 colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_CUBE_MAP)
             }
         }
-        if (parent.depthAttachment is OffscreenRenderPass.DepthAttachmentTexture) {
+        if (parent.depthAttachment is OffscreenPass.DepthAttachmentTexture) {
             depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, parent.depthTexture!!, gl.TEXTURE_CUBE_MAP)
         }
 
@@ -135,14 +136,14 @@ class OffscreenRenderPassCubeGl(val parent: OffscreenRenderPassCube, backend: Re
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
             when (parent.colorAttachments) {
-                OffscreenRenderPass.ColorAttachmentNone -> { }
-                is OffscreenRenderPass.ColorAttachmentTextures -> attachColorTextures(mipLevel, 0)
+                OffscreenPass.ColorAttachmentNone -> { }
+                is OffscreenPass.ColorAttachmentTextures -> attachColorTextures(mipLevel, 0)
             }
 
             when (parent.depthAttachment) {
-                OffscreenRenderPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
-                OffscreenRenderPass.DepthAttachmentNone -> { }
-                is OffscreenRenderPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel, 0)
+                OffscreenPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
+                OffscreenPass.DepthAttachmentNone -> { }
+                is OffscreenPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel, 0)
             }
 
             check(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {

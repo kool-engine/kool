@@ -1,8 +1,7 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
@@ -12,7 +11,7 @@ import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.util.Color
 
 class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
-    OffscreenRenderPass2d(
+    OffscreenPass2d(
         pipeline.sceneContent,
         AttachmentConfig(
             ColorAttachmentTextures(FORMATS_DEFERRED_EMISSIVE),
@@ -62,12 +61,8 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         clearColors[3] = Color(0f, 0f, 0f, 0f)
     }
 
-    override fun collectDrawCommands(ctx: KoolContext) {
-        alphaMeshes.clear()
-        super.collectDrawCommands(ctx)
-    }
-
     override fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
+        alphaMeshes.clear()
         val it = mainView.drawQueue.iterator()
         while (it.hasNext()) {
             val cmd = it.next()

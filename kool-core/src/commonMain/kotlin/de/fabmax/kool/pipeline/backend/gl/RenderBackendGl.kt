@@ -31,7 +31,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     internal val shaderMgr = ShaderManager(this)
 
     private val windowViewport = Viewport(0, 0, 0, 0)
-    protected val sceneRenderer = SceneRenderPassGl(numSamples, this)
+    protected val sceneRenderer = ScreenPassGl(numSamples, this)
 
     private val awaitedStorageBuffers = mutableListOf<Pair<StorageBuffer, CompletableDeferred<Unit>>>()
 
@@ -48,15 +48,13 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
 
         getWindowViewport(windowViewport)
         sceneRenderer.applySize(windowViewport.width, windowViewport.height)
-
-        doOffscreenPasses(ctx.backgroundScene)
+        ctx.backgroundScene.executePasses()
 
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
                 scene.sceneRecordTime = measureTime {
-                    doOffscreenPasses(scene)
-                    sceneRenderer.draw(scene)
+                    scene.executePasses()
                 }
             }
         }
@@ -104,16 +102,16 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
-        return OffscreenRenderPass2dGl(parentPass, this)
+    override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
+        return OffscreenPass2dGl(parentPass, this)
     }
 
-    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-        return OffscreenRenderPassCubeGl(parentPass, this)
+    override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
+        return OffscreenPassCubeGl(parentPass, this)
     }
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
-        return ComputeRenderPassGl(parentPass, this)
+        return ComputePassGl(parentPass, this)
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {
@@ -129,38 +127,39 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         return ComputeShaderCodeGl(src.computeSrc)
     }
 
-    private fun doOffscreenPasses(scene: Scene) {
-        for (i in scene.sortedOffscreenPasses.indices) {
-            val pass = scene.sortedOffscreenPasses[i]
+    private fun Scene.executePasses() {
+        for (i in sortedPasses.indices) {
+            val pass = sortedPasses[i]
             if (pass.isEnabled) {
-                drawOffscreen(pass)
-                pass.afterDraw()
+                pass.execute()
+                pass.afterPass()
             }
         }
     }
 
-    private fun drawOffscreen(offscreenPass: OffscreenRenderPass) {
-        when (offscreenPass) {
-            is OffscreenRenderPass2d -> offscreenPass.impl.draw()
-            is OffscreenRenderPassCube -> offscreenPass.impl.draw()
-            is ComputePass -> offscreenPass.impl.dispatch()
-            is OffscreenRenderPass2dPingPong -> drawOffscreenPingPong(offscreenPass)
-            else -> throw IllegalArgumentException("Offscreen pass type not implemented: $offscreenPass")
+    private fun GpuPass.execute() {
+        when (this) {
+            is Scene.ScreenPass -> sceneRenderer.draw(this)
+            is OffscreenPass2d -> impl.draw()
+            is OffscreenPassCube -> impl.draw()
+            is ComputePass -> impl.dispatch()
+            is OffscreenPass2dPingPong -> draw()
+            else -> error("Gpu pass type not implemented: $this")
         }
     }
 
-    private fun drawOffscreenPingPong(offscreenPass: OffscreenRenderPass2dPingPong) {
-        for (i in 0 until offscreenPass.pingPongPasses) {
-            offscreenPass.onDrawPing?.invoke(i)
-            offscreenPass.ping.impl.draw()
-            offscreenPass.onDrawPong?.invoke(i)
-            offscreenPass.pong.impl.draw()
+    private fun OffscreenPass2dPingPong.draw() {
+        for (i in 0 until pingPongPasses) {
+            onDrawPing?.invoke(i)
+            ping.impl.draw()
+            onDrawPong?.invoke(i)
+            pong.impl.draw()
         }
     }
 
-    protected fun OffscreenPass2dImpl.draw() = (this as OffscreenRenderPass2dGl).draw()
-    protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenRenderPassCubeGl).draw()
-    protected fun ComputePassImpl.dispatch() = (this as ComputeRenderPassGl).dispatch()
+    protected fun OffscreenPass2dImpl.draw() = (this as OffscreenPass2dGl).draw()
+    protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenPassCubeGl).draw()
+    protected fun ComputePassImpl.dispatch() = (this as ComputePassGl).dispatch()
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
         awaitedStorageBuffers += storage to deferred

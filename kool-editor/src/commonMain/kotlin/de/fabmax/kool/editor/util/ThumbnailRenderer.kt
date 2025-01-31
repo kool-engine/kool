@@ -24,14 +24,13 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
-import kotlin.collections.set
 import kotlin.math.min
 
 class ThumbnailRenderer(
     name: String,
     val numTiles: Vec2i = Vec2i(24, 24),
     tileSize: Vec2i = Vec2i(80 ,80)
-) : OffscreenRenderPass2d(
+) : OffscreenPass2d(
     drawNode = Node(),
     attachmentConfig = colorAttachmentNoDepth(TexFormat.RGBA),
     initialSize = numTiles * tileSize,
@@ -55,7 +54,7 @@ class ThumbnailRenderer(
             }
         }
 
-        onAfterDraw {
+        onAfterPass {
             val releasables = renderQueue.map { it.first.drawNode }
             launchDelayed(1) {
                 releasables.forEach { it.release() }

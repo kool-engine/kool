@@ -7,17 +7,10 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasable() {
-
-    /**
-     * Dimension of the output (window / screen or framebuffer / texture). Notice, that the part
-     * of that output space actually used as output can be smaller and is set via [View.viewport].
-     */
+abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
     abstract val size: Vec3i
     val width: Int get() = size.x
     val height: Int get() = size.y
@@ -25,8 +18,6 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
 
     val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
     val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
-
-    var parentScene: Scene? = null
 
     abstract val clearColors: Array<Color?>
     var clearColor: Color?
@@ -48,13 +39,7 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
 
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
-    val onAfterDraw = BufferedList<(() -> Unit)>()
     val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
-
-    var isProfileTimes = false
-    var tUpdate: Duration = 0.0.seconds
-    var tCollect: Duration = 0.0.seconds
-    var tGpu: Duration = 0.0.seconds
 
     var isMirrorY = false
         protected set
@@ -63,31 +48,20 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
         isMirrorY = KoolSystem.requireContext().backend.isInvertedNdcY
     }
 
-    open fun update(ctx: KoolContext) {
-        checkIsNotReleased()
+    override fun update(ctx: KoolContext) {
         val t = if (isProfileTimes) Time.precisionTime else 0.0
+        super.update(ctx)
         for (i in views.indices) {
             views[i].update(ctx)
         }
         tUpdate = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
     }
 
-    open fun collectDrawCommands(ctx: KoolContext) {
-        val t = if (isProfileTimes) Time.precisionTime else 0.0
-        for (i in views.indices) {
-            views[i].collectDrawCommands(ctx)
-        }
-        tCollect = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
-    }
-
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
-        updateEvent.view.drawQueue.reset(isDoublePrecision)
         onBeforeCollectDrawCommands.update()
         for (i in onBeforeCollectDrawCommands.indices) {
             onBeforeCollectDrawCommands[i](updateEvent)
         }
-        updateEvent.view.camera.updateCamera(updateEvent)
-        updateEvent.view.drawQueue.setupCamera(updateEvent.view.camera)
     }
 
     protected open fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
@@ -95,17 +69,6 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
         for (i in onAfterCollectDrawCommands.indices) {
             onAfterCollectDrawCommands[i](updateEvent)
         }
-    }
-
-    open fun afterDraw() {
-        onAfterDraw.update()
-        for (i in onAfterDraw.indices) {
-            onAfterDraw[i]()
-        }
-    }
-
-    fun onAfterDraw(block: () -> Unit) {
-        onAfterDraw += block
     }
 
     /**
@@ -125,10 +88,6 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
         for (i in onSetupMipLevel.indices) {
             onSetupMipLevel[i](mipLevel)
         }
-    }
-
-    override fun toString(): String {
-        return "${this::class.simpleName}:$name"
     }
 
     sealed class MipMode(val hasMipLevels: Boolean) {
@@ -242,18 +201,19 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
                 // camera is not attached to any node, make sure it gets updated anyway
                 camera.update(updateEvent)
             }
+            collectDrawCommands(ctx)
         }
 
         internal fun collectDrawCommands(ctx: KoolContext) {
             val updateEvent = makeUpdateEvent(ctx)
+
+            drawQueue.reset(isDoublePrecision)
             beforeCollectDrawCommands(updateEvent)
+            camera.updateCamera(updateEvent)
+            drawQueue.setupCamera(camera)
+
             drawNode.collectDrawCommands(updateEvent)
             afterCollectDrawCommands(updateEvent)
         }
-    }
-
-    enum class ViewRenderMode {
-        SINGLE_RENDER_PASS,
-        MULTI_RENDER_PASS,
     }
 }

@@ -166,8 +166,8 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 
     fun createDefaultOutputQuad(): Mesh {
         val outputShader = DeferredOutputShader(cfg, bloom?.bloomMap)
-        passes[0].lightingPass.onAfterDraw += { outputShader.setDeferredInput(passes[0]) }
-        passes[1].lightingPass.onAfterDraw += { outputShader.setDeferredInput(passes[1]) }
+        passes[0].lightingPass.onAfterPass { outputShader.setDeferredInput(passes[0]) }
+        passes[1].lightingPass.onAfterPass { outputShader.setDeferredInput(passes[1]) }
 
         onConfigChange += {
             outputShader.bloomMap = if (isBloomEnabled) bloom?.bloomMap else noBloomMap

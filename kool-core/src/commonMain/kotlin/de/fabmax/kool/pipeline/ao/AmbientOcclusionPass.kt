@@ -16,7 +16,7 @@ import de.fabmax.kool.util.releaseWith
 import kotlin.math.*
 
 class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
-    OffscreenRenderPass2d(
+    OffscreenPass2d(
         Node(),
         colorAttachmentNoDepth(TexFormat.R),
         Vec2i(width, height),

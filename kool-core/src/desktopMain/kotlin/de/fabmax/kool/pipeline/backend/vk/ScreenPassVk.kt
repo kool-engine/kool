@@ -12,12 +12,8 @@ import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkRenderPassBeginInfo
 
-class ScreenRenderPassVk(backend: RenderBackendVk) :
-    RenderPassVk(
-        backend.physicalDevice.depthFormat,
-        backend.swapchain.numSamples,
-        backend
-    )
+class ScreenPassVk(backend: RenderBackendVk) :
+    RenderPassVk(backend.physicalDevice.depthFormat, backend.swapchain.numSamples, backend)
 {
     override val colorTargetFormats: List<Int> = listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format())
     private val vkRenderPasses = Array<RenderPassWrapper?>(4) { null }
@@ -60,7 +56,7 @@ class ScreenRenderPassVk(backend: RenderBackendVk) :
         return rp.vkRenderPass
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: PassEncoderState) {
+    fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: PassEncoderState) {
         render(scenePass, passEncoderState)
     }
 

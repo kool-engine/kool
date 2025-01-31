@@ -6,10 +6,11 @@ import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.releaseWith
 
-class ComputeRenderPassGl(val parent: ComputePass, private val backend: RenderBackendGl) :
-    BaseReleasable(),
-    ComputePassImpl
-{
+class ComputePassGl(
+    val parent: ComputePass,
+    private val backend: RenderBackendGl
+) : BaseReleasable(), ComputePassImpl {
+
     private val gl: GlApi
         get() = backend.gl
 

@@ -16,7 +16,7 @@ open class DepthMapPass(
     initialSize: Vec2i = Vec2i(128, 128),
     name: String = UniqueId.nextId("depth-map-pass")
 ) :
-    OffscreenRenderPass2d(drawNode, attachmentConfig, initialSize, name)
+    OffscreenPass2d(drawNode, attachmentConfig, initialSize, name)
 {
     protected val shadowPipelines = mutableMapOf<NodeId, DrawPipeline?>()
     protected val depthShaders = mutableMapOf<DepthShaderKey, DepthShader>()

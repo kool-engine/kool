@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 
-class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
+class WgpuScreenPass(backend: RenderBackendWebGpu) :
     WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
 {
     private val canvasContext: GPUCanvasContext
@@ -26,7 +26,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width, height)
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: RenderPassEncoderState) {
+    fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.canvas.width, backend.canvas.height)
         }

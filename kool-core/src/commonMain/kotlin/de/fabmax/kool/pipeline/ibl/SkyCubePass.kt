@@ -25,7 +25,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
-    OffscreenRenderPassCube(
+    OffscreenPassCube(
         Node(),
         colorAttachmentNoDepth(TexFormat.RGBA_F16),
         Vec2i(size),
@@ -115,7 +115,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             skyShader.sunColor = MutableColor(sunLight.color).apply { a /= 3f }
         }
 
-        onAfterDraw += {
+        onAfterPass {
             isEnabled = false
         }
     }
@@ -209,7 +209,7 @@ class SkyCubeIblSystem(val parentScene: Scene, opticalDepthLut: Texture2d) {
         irradianceMapPass.isAutoRemove = false
         reflectionMapPass.isAutoRemove = false
 
-        skyPass.onAfterDraw += {
+        skyPass.onAfterPass {
             if (isAutoUpdateIblMaps) {
                 updateIblMaps()
             }

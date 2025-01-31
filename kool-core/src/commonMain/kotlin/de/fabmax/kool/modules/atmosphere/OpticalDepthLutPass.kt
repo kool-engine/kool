@@ -7,14 +7,14 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FullscreenShaderUtil
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.logI
 
 class OpticalDepthLutPass :
-    OffscreenRenderPass2d(
+    OffscreenPass2d(
         Node(),
         attachmentConfig = colorAttachmentNoDepth(TexFormat.RG_F16),
         initialSize = Vec2i(LUT_SIZE),
@@ -40,7 +40,7 @@ class OpticalDepthLutPass :
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += {
+        onAfterPass {
             isEnabled = false
         }
     }

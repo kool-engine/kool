@@ -8,10 +8,9 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Releasable
-import de.fabmax.kool.util.launchDelayed
 
-open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
-    OffscreenRenderPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 6), name)
+open class OffscreenPassCube(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
+    OffscreenPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 6), name)
 {
     override val views: List<View> = ViewDirection.entries.mapIndexed { i, dir ->
         val cam = PerspectiveCamera()
@@ -56,22 +55,19 @@ open class OffscreenRenderPassCube(drawNode: Node, attachmentConfig: AttachmentC
         return copy.colorCopyCube
     }
 
-    override fun setSize(width: Int, height: Int, depth: Int) {
+    fun setSize(width: Int, height: Int) {
         super.setSize(width, height, 6)
     }
 
     override fun release() {
         super.release()
         impl.release()
-
-        launchDelayed(3) {
-            depthTexture?.release()
-            colorTextures.forEach { it.release() }
-        }
+        depthTexture?.release()
+        colorTextures.forEach { it.release() }
     }
 
     override fun applySize(width: Int, height: Int, depth: Int) {
-        check(depth == 6) { "OffscreenRenderPassCube depth must be == 6" }
+        require(depth == 6) { "OffscreenRenderPassCube depth must be == 6" }
         super.applySize(width, height, depth)
         impl.applySize(width, height)
     }

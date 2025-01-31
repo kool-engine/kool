@@ -3,10 +3,9 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 
-abstract class OffscreenRenderPass(
+abstract class OffscreenPass(
     attachmentConfig: AttachmentConfig,
     initialSize: Vec3i,
     name: String
@@ -22,13 +21,6 @@ abstract class OffscreenRenderPass(
         get() = if (colorAttachments is ColorAttachmentTextures) colorAttachments.attachments.size else 1
 
     override val clearColors: Array<Color?> = Array(numColorAttachments) { Color.BLACK }
-
-    val dependencies = mutableListOf<RenderPass>()
-    var isEnabled = true
-
-    fun dependsOn(renderPass: RenderPass) {
-        dependencies += renderPass
-    }
 
     fun createColorTextureProps(attachment: Int = 0): TextureProps {
         check(colorAttachments is ColorAttachmentTextures)
@@ -46,7 +38,7 @@ abstract class OffscreenRenderPass(
         viewport.set(0, 0, width, height)
     }
 
-    open fun setSize(width: Int, height: Int, depth: Int = 1) {
+    protected fun setSize(width: Int, height: Int, depth: Int) {
         if (width != this.width || height != this.height || depth != this.depth) {
             logT { "OffscreenPass $name resized to $width x $height x $depth" }
             applySize(width, height, depth)
@@ -73,46 +65,6 @@ abstract class OffscreenRenderPass(
     }
 
     companion object {
-        fun sortByDependencies(renderPasses: MutableList<OffscreenRenderPass>) {
-            val open = mutableSetOf<OffscreenRenderPass>()
-            val closed = mutableSetOf<OffscreenRenderPass>()
-
-            renderPasses.forEach {
-                open += it
-            }
-            renderPasses.clear()
-
-            while (open.isNotEmpty()) {
-                var anyClosed = false
-                val openIt = open.iterator()
-                while (openIt.hasNext()) {
-                    val pass = openIt.next()
-                    var close = true
-                    for (j in pass.dependencies.indices) {
-                        val dep = pass.dependencies[j]
-                        if (dep !in closed) {
-                            close = false
-                            break
-                        }
-                    }
-                    if (close) {
-                        anyClosed = true
-                        openIt.remove()
-                        closed += pass
-                        renderPasses += pass
-                    }
-                }
-                if (!anyClosed) {
-                    logE { "Failed to sort offscreen passes, remaining:" }
-                    open.forEach { p ->
-                        val missingPasses = p.dependencies.filter { it !in closed }.map { it.name }
-                        logE { "  ${p.name}, missing dependencies: $missingPasses" }
-                    }
-                    break
-                }
-            }
-        }
-
         fun ColorAttachmentTextures(vararg textureFormats: TexFormat) =
             ColorAttachmentTextures(textureFormats.map { TextureAttachmentConfig(it) })
 

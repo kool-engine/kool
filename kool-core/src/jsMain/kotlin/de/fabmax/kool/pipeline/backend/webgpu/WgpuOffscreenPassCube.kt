@@ -4,7 +4,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.BaseReleasable
 
 class WgpuOffscreenPassCube(
-    val parentPass: OffscreenRenderPassCube,
+    val parentPass: OffscreenPassCube,
     numSamples: Int,
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPassCubeImpl {
@@ -20,7 +20,7 @@ class WgpuOffscreenPassCube(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            OffscreenRenderPass.DepthAttachmentRender -> TextureCube(
+            OffscreenPass.DepthAttachmentRender -> TextureCube(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}:render-depth"
             )

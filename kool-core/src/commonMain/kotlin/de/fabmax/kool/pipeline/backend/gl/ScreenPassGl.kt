@@ -8,7 +8,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 
-class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
+class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
     private val renderFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
     private val renderColor: GlRenderbuffer by lazy { gl.createRenderbuffer() }
     private val renderDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
@@ -44,10 +44,9 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
         }
     }
 
-    fun draw(scene: Scene) {
-        val scenePass = scene.mainRenderPass
-        renderViews(scenePass)
-        scenePass.afterDraw()
+    fun draw(screenPass: Scene.ScreenPass) {
+        renderViews(screenPass)
+        screenPass.afterPass()
     }
 
     override fun copy(frameCopy: FrameCopy) {
@@ -83,7 +82,6 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
             blitScene.mainRenderPass.update(backend.ctx)
-            blitScene.mainRenderPass.collectDrawCommands(backend.ctx)
             renderView(blitScene.mainRenderPass.screenView, 0, 0)
         }
     }

@@ -13,7 +13,7 @@ import de.fabmax.kool.util.Color
 import kotlin.math.sqrt
 
 class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
-    OffscreenRenderPass2dPingPong(
+    OffscreenPass2dPingPong(
         colorAttachmentNoDepth(TexFormat.RGBA_F16),
         initialSize = Vec2i(128, 128),
         name = "bloom-blur"
@@ -66,6 +66,7 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         super.update(ctx)
 
         if (blurDirDirty) {
+            blurDirDirty = false
             val sqrt2 = sqrt(2f)
             val dx = 1f / width * bloomScale * sqrt2
             val dy = 1f / height * bloomScale * sqrt2
@@ -75,14 +76,14 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         }
     }
 
-    override fun setSize(width: Int, height: Int, depth: Int) {
-        super.setSize(width, height, depth)
+    override fun applySize(width: Int, height: Int, depth: Int) {
+        super.applySize(width, height, depth)
         blurDirDirty = true
     }
 
     private fun Node.fullScreenQuad(quadShader: DrawShader) {
         isFrustumChecked = false
-        addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+        addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "bloom-blur-mesh") {
             generateFullscreenQuad()
             shader = quadShader
         }

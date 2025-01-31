@@ -7,7 +7,7 @@ import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkRenderPassBeginInfo
 
 class OffscreenPass2dVk(
-    val parentPass: OffscreenRenderPass2d,
+    val parentPass: OffscreenPass2d,
     numSamples: Int,
     backend: RenderBackendVk
 ) : RenderPassVk(0, numSamples, backend), OffscreenPass2dImpl {
@@ -25,7 +25,7 @@ class OffscreenPass2dVk(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            OffscreenRenderPass.DepthAttachmentRender -> Texture2d(
+            OffscreenPass.DepthAttachmentRender -> Texture2d(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}:render-depth"
             )

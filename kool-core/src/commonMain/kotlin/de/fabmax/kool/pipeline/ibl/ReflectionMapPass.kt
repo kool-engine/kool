@@ -13,7 +13,7 @@ import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
 
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
-    OffscreenRenderPassCube(
+    OffscreenPassCube(
         Node(),
         AttachmentConfig(
             ColorAttachmentTextures(TexFormat.RGBA_F16),
@@ -45,7 +45,7 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += {
+        onAfterPass {
             if (hdriMap != null) {
                 logT { "Generated reflection map from HDRI: ${hdriMap.name}, size: $size x $size" }
             } else {

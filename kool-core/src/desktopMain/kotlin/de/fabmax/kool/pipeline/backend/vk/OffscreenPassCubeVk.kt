@@ -7,7 +7,7 @@ import org.lwjgl.vulkan.VkClearValue
 import org.lwjgl.vulkan.VkRenderPassBeginInfo
 
 class OffscreenPassCubeVk(
-    val parentPass: OffscreenRenderPassCube,
+    val parentPass: OffscreenPassCube,
     numSamples: Int,
     backend: RenderBackendVk
 ) : RenderPassVk(0, numSamples, backend), OffscreenPassCubeImpl {
@@ -25,7 +25,7 @@ class OffscreenPassCubeVk(
 
     init {
         val depthTex = when (parentPass.depthAttachment) {
-            OffscreenRenderPass.DepthAttachmentRender -> TextureCube(
+            OffscreenPass.DepthAttachmentRender -> TextureCube(
                 TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
                 "${parentPass.name}:render-depth"
             )

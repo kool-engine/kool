@@ -4,10 +4,11 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 import de.fabmax.kool.util.logE
 
-class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: RenderBackendGl) :
-    GlRenderPass(backend),
-    OffscreenPass2dImpl
-{
+class OffscreenPass2dGl(
+    val parent: OffscreenPass2d,
+    backend: RenderBackendGl
+) : GlRenderPass(backend), OffscreenPass2dImpl {
+
     private val fbos = mutableListOf<GlFramebuffer>()
     private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
@@ -110,12 +111,12 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
     }
 
     private fun createBuffers() {
-        if (parent.colorAttachments is OffscreenRenderPass.ColorAttachmentTextures) {
+        if (parent.colorAttachments is OffscreenPass.ColorAttachmentTextures) {
             parent.colorTextures.forEachIndexed { i, tex ->
                 colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
             }
         }
-        if (parent.depthAttachment is OffscreenRenderPass.DepthAttachmentTexture) {
+        if (parent.depthAttachment is OffscreenPass.DepthAttachmentTexture) {
             depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, parent.depthTexture!!, gl.TEXTURE_2D)
         }
 
@@ -125,14 +126,14 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
             when (parent.colorAttachments) {
-                OffscreenRenderPass.ColorAttachmentNone -> { }
-                is OffscreenRenderPass.ColorAttachmentTextures -> attachColorTextures(mipLevel)
+                OffscreenPass.ColorAttachmentNone -> { }
+                is OffscreenPass.ColorAttachmentTextures -> attachColorTextures(mipLevel)
             }
 
             when (parent.depthAttachment) {
-                OffscreenRenderPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
-                OffscreenRenderPass.DepthAttachmentNone -> { }
-                is OffscreenRenderPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel)
+                OffscreenPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
+                OffscreenPass.DepthAttachmentNone -> { }
+                is OffscreenPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel)
             }
 
             if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
@@ -166,7 +167,7 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         level = mipLevel
     )
 
-    private fun Texture2d.createCopyTexColor(pass: OffscreenRenderPass2d, backend: RenderBackendGl) {
+    private fun Texture2d.createCopyTexColor(pass: OffscreenPass2d, backend: RenderBackendGl) {
         val gl = backend.gl
         val intFormat = props.format.glInternalFormat(gl)
         val width = pass.width

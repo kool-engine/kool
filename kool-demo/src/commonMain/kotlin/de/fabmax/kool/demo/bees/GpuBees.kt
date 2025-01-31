@@ -243,7 +243,7 @@ class GpuBees(beeScene: Scene) {
         }
 
         simulationPass.isProfileTimes = true
-        beeScene.addOffscreenPass(simulationPass)
+        beeScene.addComputePass(simulationPass)
 
         var deltaT by beeUpdateShader.uniform1f("deltaT")
         var randomSeed by beeUpdateShader.uniform1f("randomSeed")

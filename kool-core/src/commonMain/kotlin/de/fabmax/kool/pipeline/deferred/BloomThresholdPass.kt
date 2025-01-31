@@ -10,7 +10,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FullscreenShaderUtil
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -19,7 +19,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.releaseWith
 
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
-    OffscreenRenderPass2d(
+    OffscreenPass2d(
         Node(),
         colorAttachmentNoDepth(TexFormat.RGBA_F16),
         initialSize = Vec2i(128),

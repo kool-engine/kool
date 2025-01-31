@@ -160,7 +160,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
         }
     }
 
-    inner class SelectionPass : OffscreenRenderPass2d(
+    inner class SelectionPass : OffscreenPass2d(
         Node(),  // drawNode will be replaced by content scene, once it is loaded
         colorAttachmentDefaultDepth(TexFormat.RG),
         Vec2i(128),

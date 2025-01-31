@@ -53,10 +53,10 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
             return renderPassEnvironment(rgbeDecoder)
         }
 
-        private fun renderPassEnvironment(renderPass: OffscreenRenderPass): EnvironmentMap {
+        private fun renderPassEnvironment(renderPass: OffscreenPass): EnvironmentMap {
             val tex = when (renderPass) {
-                is OffscreenRenderPassCube -> renderPass.colorTexture!!
-                is OffscreenRenderPass2d -> renderPass.colorTexture!!
+                is OffscreenPassCube -> renderPass.colorTexture!!
+                is OffscreenPass2d -> renderPass.colorTexture!!
                 else -> throw IllegalArgumentException("Supplied OffscreenRenderPass must be OffscreenRenderPassCube or OffscreenRenderPass2d")
             }
             val scene = KoolSystem.requireContext().backgroundScene

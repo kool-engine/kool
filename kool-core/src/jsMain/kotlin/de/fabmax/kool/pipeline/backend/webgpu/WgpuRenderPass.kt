@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.OffscreenRenderPassCube
+import de.fabmax.kool.pipeline.OffscreenPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
@@ -64,13 +64,13 @@ abstract class WgpuRenderPass(
         if (anySingleShots) {
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
-        renderPass.afterDraw()
+        renderPass.afterPass()
     }
 
     private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState, timestampWrites: GPURenderPassTimestampWrites?) {
         setupMipLevel(mipLevel)
 
-        if (this is OffscreenRenderPassCube) {
+        if (this is OffscreenPassCube) {
             for (layer in views.indices) {
                 passEncoderState.beginRenderPass(this, this@WgpuRenderPass, mipLevel, layer, timestampWrites)
                 renderView(layer, passEncoderState)

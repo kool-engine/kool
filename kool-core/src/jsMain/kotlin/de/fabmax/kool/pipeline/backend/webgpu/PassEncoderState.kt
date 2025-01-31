@@ -1,10 +1,11 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.ComputePass
+import de.fabmax.kool.pipeline.GpuPass
 import de.fabmax.kool.pipeline.RenderPass
 
 interface PassEncoderState {
-    val renderPass: RenderPass
+    val renderPass: GpuPass
     fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData)
 }
 
