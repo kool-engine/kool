@@ -1,11 +1,13 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import org.lwjgl.vulkan.EXTDebugUtils
+import org.lwjgl.vulkan.KHRDynamicRendering.VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRPortabilityEnumeration.VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRPortabilitySubset.VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 import org.lwjgl.vulkan.KHRSwapchain.VK_KHR_SWAPCHAIN_EXTENSION_NAME
 import org.lwjgl.vulkan.VK11.VK_API_VERSION_1_1
 import org.lwjgl.vulkan.VK12.VK_API_VERSION_1_2
+import org.lwjgl.vulkan.VK13.VK_API_VERSION_1_3
 
 class VkSetup(
     /**
@@ -42,6 +44,9 @@ class VkSetup(
         requestedDeviceExtensions.addOrRemove(deviceExtensionPortability, isPortability)
 
         requestedDeviceExtensions += vmaHelperExtensions
+        if (vkApiVersion < VK_API_VERSION_1_3) {
+            requestedDeviceExtensions.add(dynamicRendering)
+        }
         if (vkApiVersion < VK_API_VERSION_1_2) {
             requestedDeviceExtensions.add(vmaHelperBufferDeviceAddress)
         }
@@ -68,6 +73,8 @@ class VkSetup(
         val instanceExtensionPortability = RequestedFeature(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, false)
         val deviceExtensionPortability = RequestedFeature(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME, false)
         val deviceExtensionSwapchain = RequestedFeature(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true)
+
+        val dynamicRendering = RequestedFeature(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, true)
 
         val vmaHelperBufferDeviceAddress = RequestedFeature("VK_KHR_buffer_device_address", false)
         val vmaHelperDedicatedAllocation = RequestedFeature("VK_KHR_dedicated_allocation", false)

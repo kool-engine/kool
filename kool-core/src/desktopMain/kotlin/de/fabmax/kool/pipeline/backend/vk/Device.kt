@@ -34,11 +34,6 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 }
             }
 
-            val features = callocVkPhysicalDeviceFeatures {
-                samplerAnisotropy(physicalDevice.deviceFeatures.samplerAnisotropy())
-                imageCubeArray(physicalDevice.cubeMapArrays)
-            }
-
             val enableExtensions = backend.setup.requestedDeviceExtensions.filter { it.name in physicalDevice.availableDeviceExtensions }
             val extNames = mallocPointer(enableExtensions.size)
             logD("Device") { "Enabling device extensions:" }
@@ -47,10 +42,22 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 extNames.put(i, ASCII(extension.name))
             }
 
+            val features = callocVkPhysicalDeviceFeatures {
+                samplerAnisotropy(physicalDevice.deviceFeatures.samplerAnisotropy())
+                imageCubeArray(physicalDevice.cubeMapArrays)
+                wideLines(physicalDevice.wideLines)
+            }
+            val dynamicRenderingFeatures = VkPhysicalDeviceDynamicRenderingFeaturesKHR.calloc(this).apply {
+                `sType$Default`()
+                dynamicRendering(true)
+            }
+
             vkDevice = physicalDevice.createDevice {
                 pQueueCreateInfos(queueCreateInfo)
-                pEnabledFeatures(features)
                 ppEnabledExtensionNames(extNames)
+
+                pEnabledFeatures(features)
+                pNext(dynamicRenderingFeatures)
                 if (physicalDevice.isPortabilityDevice) {
                     // this enables all available portability features for the device, e.g.
                     // mutableComparisonSamplers which is needed to create samplers for shadow maps

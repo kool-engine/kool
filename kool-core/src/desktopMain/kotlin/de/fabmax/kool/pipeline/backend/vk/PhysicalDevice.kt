@@ -19,9 +19,9 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     val queueFamiliyIndices: QueueFamilyIndices
     val swapChainSupport: SwapChainSupportDetails
     val deviceProperties = VkPhysicalDeviceProperties.calloc()
-    val vkDeviceFeatures2 = VkPhysicalDeviceFeatures2.calloc()
+    val vkDeviceFeatures2 = VkPhysicalDeviceFeatures2.calloc().apply { `sType$Default`() }
     val deviceFeatures: VkPhysicalDeviceFeatures get() = vkDeviceFeatures2.features()
-    val portabilityFeatures = VkPhysicalDevicePortabilitySubsetFeaturesKHR.calloc()
+    val portabilityFeatures = VkPhysicalDevicePortabilitySubsetFeaturesKHR.calloc().apply { `sType$Default`() }
     val availableDeviceExtensions: Set<String>
 
     val isPortabilityDevice: Boolean
@@ -57,12 +57,16 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             queueFamiliyIndices = selectedDevice.queueFamiliyIndices
             vkGetPhysicalDeviceProperties(vkPhysicalDevice, deviceProperties)
 
-            vkDeviceFeatures2.`sType$Default`()
-            portabilityFeatures.`sType$Default`()
+            val dynamicRenderingFeatures = VkPhysicalDeviceDynamicRenderingFeaturesKHR.calloc(this).apply { `sType$Default`() }
+            vkDeviceFeatures2.pNext(dynamicRenderingFeatures)
+
             if (isPortabilityDevice) {
                 vkDeviceFeatures2.pNext(portabilityFeatures)
             }
+
             vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkDeviceFeatures2)
+
+            check(dynamicRenderingFeatures.dynamicRendering()) { "Dynamic rendering feature is required but not supported" }
 
             wideLines = deviceFeatures.wideLines()
             if (wideLines) {
