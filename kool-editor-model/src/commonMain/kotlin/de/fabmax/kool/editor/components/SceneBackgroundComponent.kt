@@ -6,6 +6,8 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.SceneBackgroundComponentData
 import de.fabmax.kool.editor.data.SceneBackgroundData
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
+import de.fabmax.kool.pipeline.ClearColorDontCare
+import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.util.Color
@@ -80,7 +82,7 @@ class SceneBackgroundComponent(
                 is SceneBackgroundData.SingleColor -> {
                     scene.shaderData.environmentMap = null
                     scene.shaderData.ambientColorLinear = bgData.color.toColorLinear()
-                    scene.scene.clearColor = bgData.color.toColorSrgb()
+                    scene.scene.clearColor = ClearColorFill(bgData.color.toColorSrgb())
                     skybox?.isVisible = false
                 }
             }
@@ -90,7 +92,7 @@ class SceneBackgroundComponent(
 
     private fun updateSkybox(hdriBg: SceneBackgroundData.Hdri, sceneShaderData: SceneShaderData) {
         val scene = sceneComponent.sceneNode
-        scene.clearColor = null
+        scene.clearColor = ClearColorDontCare
         val ibl = sceneShaderData.environmentMap!!
 
         skybox?.let { skybox ->

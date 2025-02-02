@@ -6,7 +6,6 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.NodeId
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.UniqueId
 
 
@@ -105,9 +104,6 @@ class NormalLinearDepthMapPass(
 
     init {
         mirrorIfInvertedClipY()
-        onAfterCollectDrawCommands += {
-            clearColor = Color.GREEN
-        }
     }
 
     override fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): DrawPipeline? {

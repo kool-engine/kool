@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.ClearColorLoad
+import de.fabmax.kool.pipeline.ClearDepthFill
 import de.fabmax.kool.pipeline.RenderPass
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
@@ -66,7 +68,7 @@ class PassEncoderState(val backend: RenderBackendVk) {
         if (isPassActive) {
             if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.clearColors.size == 1) {
                 _renderPass = renderPass
-                if (renderPass.clearDepth || renderPass.clearColor != null) {
+                if (renderPass.clearDepth == ClearDepthFill || renderPass.clearColors[0] is ClearColorLoad) {
                     backend.clearHelper.clear(this)
                     activePipeline = 0L
                 }

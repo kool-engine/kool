@@ -1,12 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.OffscreenPassCube
-import de.fabmax.kool.pipeline.RenderPass
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Color
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdEndRenderingKHR
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VK12.*
@@ -170,16 +166,16 @@ abstract class RenderPassVk(
     fun setupRenderingInfo(
         width: Int,
         height: Int,
+        forceLoad: Boolean = false,
 
         colorImageViews: List<VkImageView> = emptyList(),
-        clearColors: List<Color> = emptyList(),
-        colorLoadOp: Int = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        colorClearModes: List<ClearColor> = emptyList(),
         colorStoreOp: Int = VK_ATTACHMENT_STORE_OP_DONT_CARE,
         resolveColorViews: List<VkImageView> = emptyList(),
 
         depthImageView: VkImageView? = null,
         isReverseDepth: Boolean = false,
-        depthLoadOp: Int = colorLoadOp,
+        depthClearMode: ClearDepth = ClearDepthDontCare,
         depthStoreOp: Int = colorStoreOp,
         resolveDepthView: VkImageView? = null
     ): VkRenderingInfo {
@@ -189,11 +185,21 @@ abstract class RenderPassVk(
             colorAttachmentInfo[i].apply {
                 imageView(colorImageViews[i].handle)
                 imageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                loadOp(colorLoadOp)
                 storeOp(colorStoreOp)
-                if (colorLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR) {
-                    clearValue { it.setColor(clearColors.getOrNull(i) ?: Color.BLACK) }
+
+                if (forceLoad) {
+                    loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                } else {
+                    when (val load = colorClearModes[i]) {
+                        is ClearColorFill -> {
+                            loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+                            clearValue { it.setColor(load.clearColor) }
+                        }
+                        ClearColorDontCare -> loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        ClearColorLoad -> loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                    }
                 }
+
                 val resolveView = resolveColorViews.getOrNull(i)
                 if (resolveView != null) {
                     resolveMode(VK_RESOLVE_MODE_AVERAGE_BIT)
@@ -212,11 +218,21 @@ abstract class RenderPassVk(
                 imageView(depthImageView.handle)
                 imageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
                 resolveMode(VK_RESOLVE_MODE_NONE)
-                loadOp(depthLoadOp)
                 storeOp(depthStoreOp)
-                if (depthLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR) {
-                    clearValue { cv -> cv.depthStencil { it.depth(if (isReverseDepth) 0f else 1f) } }
+
+                if (forceLoad) {
+                    loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                } else {
+                    when (depthClearMode) {
+                        ClearDepthFill -> {
+                            loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
+                            clearValue { cv -> cv.depthStencil { it.depth(if (isReverseDepth) 0f else 1f) } }
+                        }
+                        ClearDepthDontCare -> loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+                        ClearDepthLoad -> loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                    }
                 }
+
                 if (resolveDepthView != null) {
                     resolveMode(VK_RESOLVE_MODE_SAMPLE_ZERO_BIT)
                     resolveImageView(resolveDepthView.handle)

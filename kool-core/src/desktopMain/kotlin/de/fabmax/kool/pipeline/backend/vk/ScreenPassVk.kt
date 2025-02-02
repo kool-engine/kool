@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.ClearColorLoad
+import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
@@ -53,8 +55,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
     }
 
     override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {
-        val isLoad = forceLoad || passEncoderState.renderPass.clearColor == null
-        val loadOp = if (isLoad) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
+        val isLoad = forceLoad || passEncoderState.renderPass.clearColors[0] == ClearColorLoad
         val storeOp = if (isStore) VK_ATTACHMENT_STORE_OP_STORE else VK_ATTACHMENT_STORE_OP_DONT_CARE
 
         val srcLayout = if (isLoad) resolveImage.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
@@ -68,12 +69,13 @@ class ScreenPassVk(backend: RenderBackendVk) :
         val renderingInfo = setupRenderingInfo(
             width = colorImage.width,
             height = colorImage.height,
+            forceLoad = forceLoad,
             colorImageViews = colorImageViews,
-            colorLoadOp = loadOp,
+            colorClearModes = passEncoderState.renderPass.clearColors,
             colorStoreOp = storeOp,
-            clearColors = passEncoderState.renderPass.clearColors.mapNotNull { it },
             resolveColorViews = resolveImageViews,
             depthImageView = depthImageView,
+            depthClearMode = passEncoderState.renderPass.clearDepth,
             isReverseDepth = passEncoderState.renderPass.isReverseDepth
         )
         vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
@@ -279,10 +281,11 @@ class ScreenPassVk(backend: RenderBackendVk) :
                 width = colorImage.width,
                 height = colorImage.height,
                 colorImageViews = colorSrc,
-                colorLoadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+                colorClearModes = listOf(ClearColorLoad),
                 colorStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
                 resolveColorViews = colorCopyView?.let { listOf(it) } ?: emptyList(),
                 depthImageView = depthSrc,
+                depthClearMode = ClearDepthLoad,
                 resolveDepthView = depthCopyView
             )
             vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)

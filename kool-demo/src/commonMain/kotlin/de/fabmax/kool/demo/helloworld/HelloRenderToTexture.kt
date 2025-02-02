@@ -6,10 +6,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.OffscreenPass
-import de.fabmax.kool.pipeline.OffscreenPass2d
-import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
@@ -38,7 +35,7 @@ class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
             Vec2i(512, 512),
             name = "render-to-texture"
         ).apply {
-            clearColor = Color.BLACK
+            clearColor = ClearColorFill(Color.BLACK)
             camera.position.set(0f, 1f, 2f)
         }
 

@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.ComputePass
-import de.fabmax.kool.pipeline.GpuPass
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.*
 
 interface PassEncoderState {
     val renderPass: GpuPass
@@ -101,7 +99,7 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
         if (isPassActive) {
             if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.clearColors.size == 1) {
                 _renderPass = renderPass
-                if (renderPass.clearDepth || renderPass.clearColor != null) {
+                if (renderPass.clearDepth == ClearDepthFill || renderPass.clearColors[0] is ClearColorLoad) {
                     backend.clearHelper.clear(this)
                     activePipeline = null
                     for (i in bindGroups.indices) {

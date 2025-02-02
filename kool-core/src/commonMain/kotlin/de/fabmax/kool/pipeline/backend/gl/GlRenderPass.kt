@@ -167,13 +167,14 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
     fun clear(renderPass: RenderPass) {
         for (i in renderPass.clearColors.indices) {
-            renderPass.clearColors[i]?.let { color ->
+            val clearMode = renderPass.clearColors[i]
+            if (clearMode is ClearColorFill) {
                 colorBufferClearVal.clear()
-                color.putTo(colorBufferClearVal)
+                clearMode.clearColor.putTo(colorBufferClearVal)
                 gl.clearBufferfv(gl.COLOR, i, colorBufferClearVal)
             }
         }
-        if (renderPass.clearDepth) {
+        if (renderPass.clearDepth == ClearDepthFill) {
             GlState.setWriteDepth(true, gl)
             gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
             gl.clear(gl.DEPTH_BUFFER_BIT)

@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
+import de.fabmax.kool.pipeline.ClearColorFill
+import de.fabmax.kool.pipeline.ClearDepthFill
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Float32BufferImpl
@@ -49,7 +51,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
 
         fun clear(passEncoderState: RenderPassEncoderState) {
             val rp = passEncoderState.renderPass
-            val clearColor = rp.clearColor
+            val clearColor = (rp.clearColors[0] as? ClearColorFill)?.clearColor
             val clearDepth = if (rp.isReverseDepth) 0f else 1f
 
             if (clearColor != prevColor || clearDepth != prevDepth) {
@@ -63,7 +65,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
 
             val clearPipeline = when {
                 clearColor == null -> clearDepthOnly
-                !rp.clearDepth -> clearColorOnly
+                rp.clearDepth != ClearDepthFill -> clearColorOnly
                 else -> clearColorAndDepth
             }
 

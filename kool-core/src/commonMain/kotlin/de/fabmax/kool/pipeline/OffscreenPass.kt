@@ -21,7 +21,8 @@ abstract class OffscreenPass(
     val numColorAttachments: Int
         get() = if (colorAttachments is ColorAttachmentTextures) colorAttachments.attachments.size else 1
 
-    override val clearColors: Array<Color?> = Array(numColorAttachments) { Color.BLACK }
+    override val clearColors = MutableList<ClearColor>(numColorAttachments) { ClearColorFill(Color.BLACK) }
+    override var clearDepth: ClearDepth = ClearDepthFill
 
     fun createColorTextureProps(attachment: Int = 0): TextureProps {
         check(colorAttachments is ColorAttachmentTextures)

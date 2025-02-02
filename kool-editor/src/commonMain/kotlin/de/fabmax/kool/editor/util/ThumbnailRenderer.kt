@@ -46,7 +46,7 @@ class ThumbnailRenderer(
 
     init {
         views.clear()
-        clearColor = null
+        clearColors[0] = ClearColorLoad
 
         for (y in 0 until numTiles.y) {
             for (x in 0 until numTiles.x) {

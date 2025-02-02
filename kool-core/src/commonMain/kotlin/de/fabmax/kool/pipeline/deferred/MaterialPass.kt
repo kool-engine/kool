@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.pipeline.OffscreenPass2d
-import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
@@ -55,10 +52,10 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
 
         // encoded position is in view space -> z value of valid position is always negative, use a positive z value
         // in clear color to encode clear areas
-        clearColors[0] = Color(0f, 0f, 1f, 0f)
-        clearColors[1] = Color(0f, 0f, 0f, 0f)
-        clearColors[2] = Color(0f, 0f, 0f, 0f)
-        clearColors[3] = Color(0f, 0f, 0f, 0f)
+        clearColors[0] = ClearColorFill(Color(0f, 0f, 1f, 0f))
+        clearColors[1] = ClearColorFill(Color(0f, 0f, 0f, 0f))
+        clearColors[2] = ClearColorFill(Color(0f, 0f, 0f, 0f))
+        clearColors[3] = ClearColorFill(Color(0f, 0f, 0f, 0f))
     }
 
     override fun afterCollectDrawCommands(updateEvent: UpdateEvent) {

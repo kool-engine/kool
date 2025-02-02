@@ -20,11 +20,8 @@ abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
     val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
     val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
 
-    abstract val clearColors: Array<Color?>
-    var clearColor: Color?
-        get() = clearColors.getOrNull(0)
-        set(value) { clearColors[0] = value }
-    var clearDepth = true
+    abstract val clearColors: List<ClearColor>
+    abstract val clearDepth: ClearDepth
 
     abstract val views: List<View>
 
@@ -218,3 +215,13 @@ abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
         }
     }
 }
+
+sealed interface ClearColor
+data object ClearColorLoad : ClearColor
+data object ClearColorDontCare : ClearColor
+data class ClearColorFill(val clearColor: Color) : ClearColor
+
+sealed interface ClearDepth
+data object ClearDepthLoad : ClearDepth
+data object ClearDepthDontCare : ClearDepth
+data object ClearDepthFill : ClearDepth

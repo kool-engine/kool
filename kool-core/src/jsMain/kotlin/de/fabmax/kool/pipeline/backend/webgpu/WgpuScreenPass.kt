@@ -2,8 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
-import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 
@@ -116,14 +115,16 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearColor == null -> GPULoadOp.load
+            renderPass.clearColors[0] is ClearColorLoad -> GPULoadOp.load
             else -> GPULoadOp.clear
         }
-        val clearColor = if (colorLoadOp == GPULoadOp.load) null else renderPass.clearColor?.let { GPUColorDict(it) }
+        val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
+            (renderPass.clearColors[0] as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+        }
 
         val depthLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearDepth -> GPULoadOp.clear
+            renderPass.clearDepth == ClearDepthFill -> GPULoadOp.clear
             else -> GPULoadOp.load
         }
 

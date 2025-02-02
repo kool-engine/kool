@@ -9,6 +9,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.Dock
 import de.fabmax.kool.modules.ui2.docking.UiDockable
+import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.Scene.Companion.DEFAULT_CLEAR_COLOR
 import de.fabmax.kool.util.Color
@@ -29,7 +30,7 @@ class UiDemo : DemoScene("UI Demo") {
     val dndContext = DragAndDropContext<DragAndDropWindow.DndItem>()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        setupUiScene(DEFAULT_CLEAR_COLOR)
+        setupUiScene(ClearColorFill(DEFAULT_CLEAR_COLOR))
 
         dock.dockingSurface.colors = selectedColors.value
         dock.dockingPaneComposable = Composable {

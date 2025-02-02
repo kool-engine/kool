@@ -170,7 +170,6 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
 
         init {
             camera = editor.editorCam
-            clearColor = Color.BLACK
             isUpdateDrawNode = false
             isEnabled = true
             mainView.drawFilter = { it !is Mesh || it.id in selectedMeshes }

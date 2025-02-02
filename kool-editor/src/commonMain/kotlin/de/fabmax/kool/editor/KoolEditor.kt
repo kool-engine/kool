@@ -23,6 +23,8 @@ import de.fabmax.kool.modules.filesystem.toZip
 import de.fabmax.kool.modules.filesystem.writeText
 import de.fabmax.kool.modules.ui2.docking.DockLayout
 import de.fabmax.kool.modules.ui2.mutableStateOf
+import de.fabmax.kool.pipeline.ClearColorFill
+import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
@@ -32,7 +34,6 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.time.measureTime
 
@@ -89,9 +90,9 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         tryEnableInfiniteDepth()
         addNode(editorCamParent)
         editorCamParent.addNode(editorCameraTransform)
-        clearColor = Color.BLACK
+        clearColor = ClearColorFill(Color.BLACK)
         camera = editorCam
-        clearDepth = false
+        this.clearDepth = ClearDepthLoad
     }
 
     val appLoader = AppLoader(this)

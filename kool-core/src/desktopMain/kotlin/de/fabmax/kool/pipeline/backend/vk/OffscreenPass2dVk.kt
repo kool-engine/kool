@@ -3,7 +3,7 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logT
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
-import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE
 
 class OffscreenPass2dVk(
     val parentPass: OffscreenPass2d,
@@ -78,25 +78,28 @@ class OffscreenPass2dVk(
     }
 
     override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {
-        val isLoadColor = forceLoad || parentPass.clearColor == null
-        val isLoadDepth = forceLoad || !parentPass.clearDepth
-
         val mipLevel = passEncoderState.mipLevel
         val width = (parentPass.width shr mipLevel).coerceAtLeast(1)
         val height = (parentPass.height shr mipLevel).coerceAtLeast(1)
-        val colorLoadOp = if (isLoadColor) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
-        val depthLoadOp = if (isLoadDepth) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
+
+        val isLoadDepth = forceLoad || parentPass.clearDepth == ClearDepthLoad
+        var isLoadColor = forceLoad
+        for (i in parentPass.clearColors.indices) {
+            if (parentPass.clearColors[i] == ClearColorLoad) {
+                isLoadColor = true
+            }
+        }
 
         attachments.transitionToAttachmentLayout(isLoadColor, isLoadDepth, passEncoderState)
         val renderingInfo = setupRenderingInfo(
             width = width,
             height = height,
+            forceLoad = forceLoad,
             colorImageViews = attachments.getColorViews(mipLevel),
-            colorLoadOp = colorLoadOp,
+            colorClearModes = parentPass.clearColors,
             colorStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
-            clearColors = parentPass.clearColors.mapNotNull { it },
             depthImageView = attachments.getDepthView(mipLevel),
-            depthLoadOp = depthLoadOp,
+            depthClearMode = parentPass.clearDepth,
             isReverseDepth = parentPass.isReverseDepth,
         )
         vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)

@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.util.Color
 
 class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPass: MaterialPass) :
     OffscreenPass2d(
@@ -17,7 +16,6 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
         mirrorIfInvertedClipY()
         val scene = pipeline.scene
         lighting = scene.lighting
-        clearColor = Color(0f, 0f, 0f, 0f)
         camera = materialPass.camera
         isUpdateDrawNode = false
 

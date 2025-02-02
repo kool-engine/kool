@@ -9,7 +9,6 @@ import de.fabmax.kool.pipeline.shading.BlurShader
 import de.fabmax.kool.pipeline.shading.BlurShaderConfig
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.util.Color
 import kotlin.math.sqrt
 
 class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
@@ -54,8 +53,6 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
 
         pingContent.fullScreenQuad(pingShader)
         pongContent.fullScreenQuad(pongShader)
-        ping.clearColor = Color(0f, 0f, 0f, 0f)
-        pong.clearColor = Color(0f, 0f, 0f, 0f)
 
         bloomStrength = 1f
 

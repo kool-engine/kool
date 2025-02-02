@@ -15,7 +15,6 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.releaseWith
 
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
@@ -35,8 +34,6 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
     private val quad: Mesh
 
     init {
-        clearColor = Color.BLACK
-
         drawNode.apply {
             isFrustumChecked = false
             quad = addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {

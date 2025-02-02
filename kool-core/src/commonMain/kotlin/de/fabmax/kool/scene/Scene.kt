@@ -7,10 +7,7 @@ import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.RayD
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.pipeline.ComputePass
-import de.fabmax.kool.pipeline.GpuPass
-import de.fabmax.kool.pipeline.OffscreenPass
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
 import kotlin.time.Duration.Companion.seconds
@@ -30,10 +27,10 @@ open class Scene(name: String? = null) : Node(name) {
     val lighting = Lighting()
     val mainRenderPass: ScreenPass = ScreenPass()
 
-    var clearColor: Color?
+    var clearColor: ClearColor
         get() = mainRenderPass.clearColor
         set(value) { mainRenderPass.clearColor = value }
-    var clearDepth: Boolean
+    var clearDepth: ClearDepth
         get() = mainRenderPass.clearDepth
         set(value) { mainRenderPass.clearDepth = value }
 
@@ -146,12 +143,6 @@ open class Scene(name: String? = null) : Node(name) {
         val DEFAULT_CLEAR_COLOR = Color(0.15f, 0.15f, 0.15f, 1f)
     }
 
-    enum class FramebufferCaptureMode {
-        Disabled,
-        BeforeRender,
-        AfterRender
-    }
-
     inner class ScreenPass : RenderPass("${name}:ScreenPass", MipMode.None) {
         val screenView = View("screen", this@Scene, PerspectiveCamera())
         var camera: Camera by screenView::camera
@@ -159,7 +150,14 @@ open class Scene(name: String? = null) : Node(name) {
         var useWindowViewport = true
 
         override val numSamples: Int get() = KoolSystem.config.numSamples
-        override val clearColors: Array<Color?> = arrayOf(DEFAULT_CLEAR_COLOR)
+
+        private val _clearColors = mutableListOf<ClearColor>(ClearColorFill(DEFAULT_CLEAR_COLOR))
+        override val clearColors: List<ClearColor> get() = _clearColors
+        override var clearDepth: ClearDepth = ClearDepthFill
+
+        var clearColor: ClearColor
+            get() = clearColors[0]
+            set(value) { _clearColors.set(0, value) }
 
         private val _views = mutableListOf(screenView)
         override val views: List<View>

@@ -79,10 +79,12 @@ class WgpuOffscreenPassCube(
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load
-                renderPass.clearColor == null -> GPULoadOp.load
+                renderPass.clearColors[i] is ClearColorLoad -> GPULoadOp.load
                 else -> GPULoadOp.clear
             }
-            val clearColor = if (colorLoadOp == GPULoadOp.load) null else parentPass.clearColors[i]?.let { GPUColorDict(it) }
+            val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
+                (parentPass.clearColors[i] as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+            }
 
             GPURenderPassColorAttachment(
                 view = colorTex.getView(layer, mipLevel),
@@ -93,7 +95,7 @@ class WgpuOffscreenPassCube(
 
         val depthLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearDepth -> GPULoadOp.clear
+            renderPass.clearDepth == ClearDepthFill -> GPULoadOp.clear
             else -> GPULoadOp.load
         }
         val depth = depthAttachment?.let {

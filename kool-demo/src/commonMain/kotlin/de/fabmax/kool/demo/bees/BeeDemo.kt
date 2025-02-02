@@ -50,7 +50,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
             zoom = 200.0
         }
 
-        clearColor = bgColor
+        clearColor = ClearColorFill(bgColor)
         mainRenderPass.isProfileTimes = true
 
         val beeMeshA = cpuBeesA.beeMesh
