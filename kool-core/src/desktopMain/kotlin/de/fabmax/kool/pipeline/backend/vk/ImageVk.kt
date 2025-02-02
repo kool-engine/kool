@@ -31,7 +31,7 @@ class ImageVk(
 
     val vkImage: VkImage
 
-    var layout = VK_IMAGE_LAYOUT_UNDEFINED
+    var lastKnownLayout = VK_IMAGE_LAYOUT_UNDEFINED
 
     private val textureInfo = TextureInfo(
         texture = null,
@@ -64,7 +64,12 @@ class ImageVk(
         stack: MemoryStack? = null
     ) {
         memStack(stack) {
-            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer, stack = this)
+            transitionLayout(
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                commandBuffer,
+                stack = this
+            )
             val region = callocVkBufferImageCopyN(1) {
                 bufferOffset(0)
                 bufferRowLength(0)
@@ -74,7 +79,7 @@ class ImageVk(
                 imageExtent().set(width, height, depth)
             }
             vkCmdCopyBufferToImage(commandBuffer, buffer.handle, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
-            transitionLayout(dstLayout, commandBuffer, stack = this)
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstLayout, commandBuffer, stack = this)
         }
     }
 
@@ -84,8 +89,13 @@ class ImageVk(
         stack: MemoryStack? = null
     ) {
         memStack(stack) {
-            val prevLayout = layout
-            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, commandBuffer, stack = this)
+            val prevLayout = lastKnownLayout
+            transitionLayout(
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                commandBuffer,
+                stack = this
+            )
             val region = callocVkBufferImageCopyN(1) {
                 bufferOffset(0)
                 bufferRowLength(0)
@@ -95,7 +105,7 @@ class ImageVk(
                 imageExtent().set(width, height, depth)
             }
             vkCmdCopyImageToBuffer(commandBuffer, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, buffer.handle, region)
-            transitionLayout(prevLayout, commandBuffer, stack = this)
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, prevLayout, commandBuffer, stack = this)
         }
     }
 
@@ -106,8 +116,14 @@ class ImageVk(
         stack: MemoryStack? = null
     ) {
         memStack(stack) {
-            src.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, commandBuffer, stack = this)
-            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, commandBuffer, stack = this)
+            val srcLayout = src.lastKnownLayout
+            src.transitionLayout(srcLayout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, commandBuffer, stack = this)
+            transitionLayout(
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                commandBuffer,
+                stack = this
+            )
             val region = callocVkImageCopyN(1) { }
             for (level in 0 until src.mipLevels) {
                 region[0].apply {
@@ -123,14 +139,15 @@ class ImageVk(
                 }
                 vkCmdCopyImage(commandBuffer, src.vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, vkImage.handle, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region)
             }
-            transitionLayout(dstLayout, commandBuffer, stack = this)
+            src.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src.lastKnownLayout, commandBuffer, stack = this)
+            transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dstLayout, commandBuffer, stack = this)
         }
     }
 
-    fun transitionLayout(newLayout: Int, commandBuffer: VkCommandBuffer, stack: MemoryStack? = null) {
-        if (layout == newLayout) return
-        vkImage.transitionLayout(layout, newLayout, imageInfo.aspectMask, mipLevels, arrayLayers, commandBuffer, stack)
-        layout = newLayout
+    fun transitionLayout(oldLayout: Int, newLayout: Int, commandBuffer: VkCommandBuffer, stack: MemoryStack? = null) {
+        if (newLayout == oldLayout) return
+        vkImage.transitionLayout(oldLayout, newLayout, imageInfo.aspectMask, mipLevels, arrayLayers, commandBuffer, stack)
+        lastKnownLayout = newLayout
     }
 
     override fun release() {
@@ -145,12 +162,12 @@ class ImageVk(
     fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         if (mipLevels <= 1) {
             // not much to generate...
-            transitionLayout(dstLayout, commandBuffer)
+            transitionLayout(lastKnownLayout, dstLayout, commandBuffer)
             return
         }
         if (!backend.physicalDevice.isImageFormatSupportingBlitting(format)) {
             logE { "Unable to generate mip maps: Texture image format does not support linear blitting!" }
-            transitionLayout(dstLayout, commandBuffer)
+            transitionLayout(lastKnownLayout, dstLayout, commandBuffer)
             return
         }
 
@@ -174,7 +191,7 @@ class ImageVk(
         var mipWidth = width
         var mipHeight = height
         for (i in 1 until mipLevels) {
-            val srcLayout = if (i == 1) layout else VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+            val srcLayout = if (i == 1) lastKnownLayout else VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 
             // transition previous mip level to TRANSFER_SRC layout
             barrier
@@ -242,7 +259,7 @@ class ImageVk(
             .dstAccessMask(dstAccessMaskForLayout(dstLayout))
 
         vkCmdPipelineBarrier2KHR(commandBuffer, barrierDep)
-        layout = dstLayout
+        lastKnownLayout = dstLayout
     }
 
     fun imageView2d(device: Device): VkImageView {

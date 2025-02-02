@@ -2,12 +2,9 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logT
-import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VK12.VK_RESOLVE_MODE_NONE
 
 class OffscreenPass2dVk(
     val parentPass: OffscreenPass2d,
@@ -83,50 +80,55 @@ class OffscreenPass2dVk(
         val colorLoadOp = if (isLoadColor) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
         val depthLoadOp = if (isLoadDepth) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
 
-        memStack {
-            val colorAttachmentInfo = if (colorTargetFormats.isEmpty()) null else callocVkRenderingAttachmentInfoN(colorTargetFormats.size) {
-                for (i in colorTargetFormats.indices) {
-                    colorAttachments[i].gpuTexture.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
-                    this[i].apply {
-                        imageView(colorAttachments[i].mipViews[mipLevel].handle)
-                        imageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                        resolveMode(VK_RESOLVE_MODE_NONE)
-                        loadOp(colorLoadOp)
-                        storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                        clearValue { it.setColor(passEncoderState.renderPass.clearColor ?: Color.BLACK) }
-                    }
-                }
-            }
-            val depthAttachmentInfo = depthAttachment?.let { depth ->
-                depth.gpuTexture.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
-                callocVkRenderingAttachmentInfo {
-                    imageView(depth.mipViews[mipLevel].handle)
-                    imageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-                    resolveMode(VK_RESOLVE_MODE_NONE)
-                    loadOp(depthLoadOp)
-                    storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                    clearValue { cv -> cv.depthStencil { it.depth(if (passEncoderState.renderPass.isReverseDepth) 0f else 1f) } }
-                }
-            }
-            val renderingInfo = callocVkRenderingInfo {
-                renderArea { ra ->
-                    ra.offset { it.set(0, 0) }
-                    ra.extent { it.set(width, height) }
-                }
-                layerCount(1)
-                pColorAttachments(colorAttachmentInfo)
-                pDepthAttachment(depthAttachmentInfo)
-            }
-            vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
+        for (i in colorTargetFormats.indices) {
+            val srcLayout = if (isLoadColor) colorAttachments[i].gpuTexture.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
+            colorAttachments[i].gpuTexture.transitionLayout(
+                oldLayout = srcLayout,
+                newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                commandBuffer = passEncoderState.commandBuffer,
+                stack = passEncoderState.stack
+            )
         }
+        depthAttachment?.let { depth ->
+            val srcLayout = if (isLoadColor) depth.gpuTexture.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
+            depth.gpuTexture.transitionLayout(
+                oldLayout = srcLayout,
+                newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                commandBuffer = passEncoderState.commandBuffer,
+                stack = passEncoderState.stack
+            )
+        }
+
+        val renderingInfo = setupRenderingInfo(
+            width = width,
+            height = height,
+            colorImageViews = colorAttachments.map { it.mipViews[mipLevel] },
+            colorLoadOp = colorLoadOp,
+            colorStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
+            clearColors = parentPass.clearColors.mapNotNull { it },
+            depthImageView = depthAttachment?.mipViews[mipLevel],
+            depthLoadOp = depthLoadOp,
+            isReverseDepth = parentPass.isReverseDepth,
+        )
+        vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
     }
 
     override fun endRenderPass(passEncoderState: PassEncoderState) {
         super.endRenderPass(passEncoderState)
         for (i in colorAttachments.indices) {
-            colorAttachments[i].gpuTexture.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
+            colorAttachments[i].gpuTexture.transitionLayout(
+                oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                commandBuffer = passEncoderState.commandBuffer,
+                stack = passEncoderState.stack
+            )
         }
-        depthAttachment?.gpuTexture?.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
+        depthAttachment?.gpuTexture?.transitionLayout(
+            oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            commandBuffer = passEncoderState.commandBuffer,
+            stack = passEncoderState.stack
+        )
     }
 
     override fun generateMipLevels(passEncoderState: PassEncoderState) {

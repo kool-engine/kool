@@ -5,8 +5,12 @@ import de.fabmax.kool.pipeline.OffscreenPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Color
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdEndRenderingKHR
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VK12.*
+import org.lwjgl.vulkan.VkRenderingAttachmentInfo
+import org.lwjgl.vulkan.VkRenderingInfo
 
 abstract class RenderPassVk(
     val hasDepth: Boolean,
@@ -161,4 +165,84 @@ abstract class RenderPassVk(
     protected abstract fun generateMipLevels(passEncoderState: PassEncoderState)
 
     protected abstract fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState)
+
+    fun setupRenderingInfo(
+        width: Int,
+        height: Int,
+
+        colorImageViews: List<VkImageView> = emptyList(),
+        clearColors: List<Color> = emptyList(),
+        colorLoadOp: Int = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        colorStoreOp: Int = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        resolveColorViews: List<VkImageView> = emptyList(),
+
+        depthImageView: VkImageView? = null,
+        isReverseDepth: Boolean = false,
+        depthLoadOp: Int = colorLoadOp,
+        depthStoreOp: Int = colorStoreOp,
+        resolveDepthView: VkImageView? = null
+    ): VkRenderingInfo {
+        val colorInfo = if (colorImageViews.isEmpty()) null else colorAttachmentInfo
+        colorAttachmentInfo.limit(colorImageViews.size)
+        for (i in colorImageViews.indices) {
+            colorAttachmentInfo[i].apply {
+                imageView(colorImageViews[i].handle)
+                imageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                loadOp(colorLoadOp)
+                storeOp(colorStoreOp)
+                if (colorLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR) {
+                    clearValue { it.setColor(clearColors.getOrNull(i) ?: Color.BLACK) }
+                }
+                val resolveView = resolveColorViews.getOrNull(i)
+                if (resolveView != null) {
+                    resolveMode(VK_RESOLVE_MODE_AVERAGE_BIT)
+                    resolveImageView(resolveView.handle)
+                    resolveImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                } else {
+                    resolveMode(VK_RESOLVE_MODE_NONE)
+                    resolveImageView(0L)
+                    resolveImageLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                }
+            }
+        }
+
+        val depthInfo = depthImageView?.let {
+            depthAttachmentInfo.apply {
+                imageView(depthImageView.handle)
+                imageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                resolveMode(VK_RESOLVE_MODE_NONE)
+                loadOp(depthLoadOp)
+                storeOp(depthStoreOp)
+                if (depthLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR) {
+                    clearValue { cv -> cv.depthStencil { it.depth(if (isReverseDepth) 0f else 1f) } }
+                }
+                if (resolveDepthView != null) {
+                    resolveMode(VK_RESOLVE_MODE_SAMPLE_ZERO_BIT)
+                    resolveImageView(resolveDepthView.handle)
+                    resolveImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                } else {
+                    resolveMode(VK_RESOLVE_MODE_NONE)
+                    resolveImageView(0L)
+                    resolveImageLayout(VK_IMAGE_LAYOUT_UNDEFINED)
+                }
+            }
+        }
+        return renderingInfo.apply {
+            renderArea { ra ->
+                ra.offset { it.set(0, 0) }
+                ra.extent { it.set(width, height) }
+            }
+            layerCount(1)
+            pColorAttachments(colorInfo)
+            pDepthAttachment(depthInfo)
+        }
+    }
+
+    companion object {
+        private val colorAttachmentInfo = VkRenderingAttachmentInfo.calloc(16).also {
+            repeat(16) { i -> it[i].`sType$Default`() }
+        }
+        private val depthAttachmentInfo = VkRenderingAttachmentInfo.calloc().apply { `sType$Default`() }
+        private val renderingInfo = VkRenderingInfo.calloc().apply { `sType$Default`() }
+    }
 }
