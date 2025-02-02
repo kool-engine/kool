@@ -171,6 +171,13 @@ class ImageVk(
             return
         }
 
+        if (imageInfo.usage and VK_IMAGE_USAGE_TRANSFER_SRC_BIT == 0) {
+            logE("ImageVk#generateMipMaps") { "Image ${imageInfo.label} misses transfer src usage flag" }
+        }
+        if (imageInfo.usage and VK_IMAGE_USAGE_TRANSFER_DST_BIT == 0) {
+            logE("ImageVk#generateMipMaps") { "Image ${imageInfo.label} misses transfer dst usage flag" }
+        }
+
         val barrier = stack.callocVkImageMemoryBarrier2N(1) {
             srcStageMask(srcStageMaskForLayout(VK_IMAGE_LAYOUT_UNDEFINED))
             srcAccessMask(srcAccessMaskForLayout(VK_IMAGE_LAYOUT_UNDEFINED))

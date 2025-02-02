@@ -17,6 +17,7 @@ abstract class OffscreenPass(
     val colorAttachments: ColorAttachment = attachmentConfig.colorAttachments
     val depthAttachment: DepthAttachment = attachmentConfig.depthAttachment
 
+    override val numSamples: Int = 1
     val numColorAttachments: Int
         get() = if (colorAttachments is ColorAttachmentTextures) colorAttachments.attachments.size else 1
 

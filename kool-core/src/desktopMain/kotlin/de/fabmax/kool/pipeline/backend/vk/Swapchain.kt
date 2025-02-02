@@ -25,7 +25,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     val extent: VkExtent2D = VkExtent2D.malloc()
     val images: List<VkImage>
     val imageViews: List<VkImageView>
-    val numSamples = backend.physicalDevice.maxSamples.coerceAtMost(KoolSystem.configJvm.msaaSamples)
+    val numSamples = backend.physicalDevice.maxSamples.coerceAtMost(KoolSystem.configJvm.numSamples)
 
     val width: Int get() = extent.width()
     val height: Int get() = extent.height()

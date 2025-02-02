@@ -16,6 +16,7 @@ abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
     val height: Int get() = size.y
     val depth: Int get() = size.z
 
+    abstract val numSamples: Int
     val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
     val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
 

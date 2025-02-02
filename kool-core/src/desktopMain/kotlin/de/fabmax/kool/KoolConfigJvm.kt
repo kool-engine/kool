@@ -20,6 +20,8 @@ data class KoolConfigJvm(
      */
     override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
+    override val numSamples: Int = 4,
+
     /**
      * Alternative base path used by [Assets] to look for assets using the classloader. This can be used to place
      * assets into the resources directory under /src/commonMain/resources/[classloaderAssetPath]. The classloader
@@ -48,10 +50,9 @@ data class KoolConfigJvm(
     val isVsync: Boolean = true,
     val maxFrameRate: Int = 0,
     val windowNotFocusedFrameRate: Int = 0,
-    val msaaSamples: Int = 4,
     val customTtfFonts: Map<String, String> = emptyMap(),
-
 ) : KoolConfig {
+
     companion object {
         init {
             // on macOS, AWT clashes with GLFW, because GLFW also has to run on the first thread enabling AWT

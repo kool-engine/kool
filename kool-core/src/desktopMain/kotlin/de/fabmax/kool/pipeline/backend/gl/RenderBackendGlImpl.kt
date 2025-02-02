@@ -18,7 +18,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class RenderBackendGlImpl(ctx: KoolContext) :
-    RenderBackendGl(KoolSystem.configJvm.msaaSamples, GlImpl, ctx), RenderBackendJvm
+    RenderBackendGl(KoolSystem.configJvm.numSamples, GlImpl, ctx), RenderBackendJvm
 {
     override val features: BackendFeatures
 
@@ -73,7 +73,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
     private fun createWindow(): GlfwWindow {
         // do basic GLFW configuration before we create the window
         GLFW.glfwDefaultWindowHints()
-        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, KoolSystem.configJvm.msaaSamples)
+        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, KoolSystem.configJvm.numSamples)
 
         // create window
         val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)

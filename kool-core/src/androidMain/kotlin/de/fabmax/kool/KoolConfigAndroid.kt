@@ -19,6 +19,8 @@ data class KoolConfigAndroid(
      */
     override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
+    override val numSamples: Int = 1,
+
     val forceFloatDepthBuffer: Boolean = false,
 
     /**

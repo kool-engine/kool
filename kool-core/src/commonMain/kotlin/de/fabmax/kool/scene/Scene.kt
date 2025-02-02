@@ -158,6 +158,7 @@ open class Scene(name: String? = null) : Node(name) {
         val viewport: Viewport by screenView::viewport
         var useWindowViewport = true
 
+        override val numSamples: Int get() = KoolSystem.config.numSamples
         override val clearColors: Array<Color?> = arrayOf(DEFAULT_CLEAR_COLOR)
 
         private val _views = mutableListOf(screenView)

@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logT
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
 import org.lwjgl.vulkan.VK10.*
@@ -17,38 +16,48 @@ class OffscreenPass2dVk(
 ), OffscreenPass2dImpl {
 
     override val colorTargetFormats: List<Int> = parentPass.colorTextures.map { it.props.format.vk }
+    private var attachments = createAttachments(false, false)
 
-    private val colorAttachments = List(parentPass.colorTextures.size) {
-        RenderAttachment(parentPass.colorTextures[it], false, "${parentPass.name}.color[$it]")
-    }
-    private val depthAttachment: RenderAttachment?
-
-    private var copySrcFlag = 0
-    private var copyDstFlag = 0
-
-    init {
-        val depthTex = when (parentPass.depthAttachment) {
-            OffscreenPass.DepthAttachmentRender -> Texture2d(
-                TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
-                "${parentPass.name}:render-depth"
-            )
-            else -> parentPass.depthTexture
+    private fun createAttachments(isCopySrc: Boolean, isCopyDst: Boolean): Attachments {
+        val attachments = Attachments(
+            colorFormats = colorTargetFormats,
+            depthFormat = if (hasDepth) backend.physicalDevice.depthFormat else null,
+            layers = 1,
+            isCopySrc = isCopySrc,
+            isCopyDst = isCopyDst,
+            parentPass = parentPass,
+            backend = backend
+        )
+        parentPass.colorTextures.forEachIndexed { i, tex ->
+            tex.gpuTexture = attachments.colorImages[i]
+            tex.loadingState = Texture.LoadingState.LOADED
         }
-        depthAttachment = depthTex?.let { RenderAttachment(it, true,  it.name) }
+        parentPass.depthTexture?.let { tex ->
+            tex.gpuTexture = attachments.depthImage
+            tex.loadingState = Texture.LoadingState.LOADED
+        }
+        return attachments
     }
 
     override fun applySize(width: Int, height: Int) {
         logT { "Resize offscreen 2d pass ${parentPass.name} to $width x $height" }
-        colorAttachments.forEach { it.recreate(width, height) }
-        depthAttachment?.recreate(width, height)
+        attachments.release()
+        attachments = createAttachments(attachments.isCopySrc, attachments.isCopyDst)
     }
 
     override fun release() {
         val alreadyReleased = isReleased
         super.release()
         if (!alreadyReleased) {
-            colorAttachments.forEach { it.release() }
-            depthAttachment?.release()
+            attachments.release()
+            parentPass.colorTextures.forEach {
+                it.gpuTexture = null
+                it.loadingState = Texture.LoadingState.NOT_LOADED
+            }
+            parentPass.depthTexture?.let {
+                it.gpuTexture = null
+                it.loadingState = Texture.LoadingState.NOT_LOADED
+            }
         }
     }
 
@@ -57,15 +66,13 @@ class OffscreenPass2dVk(
     }
 
     fun draw(passEncoderState: PassEncoderState) {
-        val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
-        val isCopyDst = parentPass.mipMode == RenderPass.MipMode.Generate
-        if ((isCopySrc && copySrcFlag == 0) || (isCopyDst && copyDstFlag == 0)) {
-            copySrcFlag = VK_IMAGE_USAGE_TRANSFER_SRC_BIT
-            if (isCopyDst) {
-                copyDstFlag = VK_IMAGE_USAGE_TRANSFER_DST_BIT
-            }
-            colorAttachments.forEach { it.recreate(parentPass.width, parentPass.height) }
-            depthAttachment?.recreate(parentPass.width, parentPass.height)
+        val isCopy = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
+        val isGenMipMaps = parentPass.mipMode == RenderPass.MipMode.Generate
+        val isCopySrc = isCopy || isGenMipMaps
+        val isCopyDst = isGenMipMaps
+        if (isCopySrc != attachments.isCopySrc || isCopyDst != attachments.isCopyDst) {
+            attachments.release()
+            attachments = createAttachments(isCopySrc, isCopyDst)
         }
         render(parentPass, passEncoderState)
     }
@@ -80,33 +87,15 @@ class OffscreenPass2dVk(
         val colorLoadOp = if (isLoadColor) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
         val depthLoadOp = if (isLoadDepth) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
 
-        for (i in colorTargetFormats.indices) {
-            val srcLayout = if (isLoadColor) colorAttachments[i].gpuTexture.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
-            colorAttachments[i].gpuTexture.transitionLayout(
-                oldLayout = srcLayout,
-                newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                commandBuffer = passEncoderState.commandBuffer,
-                stack = passEncoderState.stack
-            )
-        }
-        depthAttachment?.let { depth ->
-            val srcLayout = if (isLoadColor) depth.gpuTexture.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
-            depth.gpuTexture.transitionLayout(
-                oldLayout = srcLayout,
-                newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-                commandBuffer = passEncoderState.commandBuffer,
-                stack = passEncoderState.stack
-            )
-        }
-
+        attachments.transitionToAttachmentLayout(isLoadColor, isLoadDepth, passEncoderState)
         val renderingInfo = setupRenderingInfo(
             width = width,
             height = height,
-            colorImageViews = colorAttachments.map { it.mipViews[mipLevel] },
+            colorImageViews = attachments.getColorViews(mipLevel),
             colorLoadOp = colorLoadOp,
             colorStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
             clearColors = parentPass.clearColors.mapNotNull { it },
-            depthImageView = depthAttachment?.mipViews[mipLevel],
+            depthImageView = attachments.getDepthView(mipLevel),
             depthLoadOp = depthLoadOp,
             isReverseDepth = parentPass.isReverseDepth,
         )
@@ -115,135 +104,24 @@ class OffscreenPass2dVk(
 
     override fun endRenderPass(passEncoderState: PassEncoderState) {
         super.endRenderPass(passEncoderState)
-        for (i in colorAttachments.indices) {
-            colorAttachments[i].gpuTexture.transitionLayout(
-                oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                commandBuffer = passEncoderState.commandBuffer,
-                stack = passEncoderState.stack
-            )
-        }
-        depthAttachment?.gpuTexture?.transitionLayout(
-            oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            commandBuffer = passEncoderState.commandBuffer,
-            stack = passEncoderState.stack
-        )
+        attachments.transitionToShaderRead(passEncoderState)
     }
 
     override fun generateMipLevels(passEncoderState: PassEncoderState) {
-        colorAttachments.forEach {
-            it.gpuTexture.generateMipmaps(passEncoderState.stack, passEncoderState.commandBuffer)
+        for (i in attachments.colorImages.indices) {
+            attachments.colorImages[i].generateMipmaps(passEncoderState.stack, passEncoderState.commandBuffer)
         }
+        //attachments.depthImage?.generateMipmaps(passEncoderState.stack, passEncoderState.commandBuffer)
     }
 
     override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
-                colorAttachments[i].copyToTexture(frameCopy.colorCopy[i] as Texture2d, passEncoderState)
+                attachments.copyColorToTexture(0, frameCopy.colorCopy[i], passEncoderState)
             }
         }
         if (frameCopy.isCopyDepth) {
-            depthAttachment?.copyToTexture(frameCopy.depthCopy2d, passEncoderState)
-        }
-    }
-
-    private inner class RenderAttachment(val texture: Texture2d, val isDepth: Boolean, val name: String) : BaseReleasable() {
-        var descriptor: ImageInfo
-        var gpuTexture: ImageVk
-        val mipViews = mutableListOf<VkImageView>()
-
-        init {
-            val attachmentUsage = if (isDepth) VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT else VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-            val (desc, tex) = createTexture(
-                width = parentPass.width,
-                height = parentPass.height,
-                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag or copyDstFlag
-            )
-            descriptor = desc
-            gpuTexture = tex
-
-            texture.gpuTexture = gpuTexture
-            texture.loadingState = Texture.LoadingState.LOADED
-            createViews()
-        }
-
-        fun recreate(width: Int, height: Int) {
-            val attachmentUsage = if (isDepth) VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT else VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
-            val (desc, tex) = createTexture(
-                width = width,
-                height = height,
-                usage = VK_IMAGE_USAGE_SAMPLED_BIT or attachmentUsage or copySrcFlag or copyDstFlag
-            )
-            descriptor = desc
-            gpuTexture.release()
-            gpuTexture = tex
-            texture.gpuTexture = gpuTexture
-            createViews()
-        }
-
-        private fun createTexture(
-            width: Int,
-            height: Int,
-            usage: Int,
-            texture: Texture<*> = this.texture
-        ): Pair<ImageInfo, ImageVk> {
-            val aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT
-
-            val descriptor = ImageInfo(
-                imageType = VK_IMAGE_TYPE_2D,
-                format = if (isDepth) backend.physicalDevice.depthFormat else texture.props.format.vk,
-                width = width,
-                height = height,
-                depth = 1,
-                arrayLayers = 1,
-                mipLevels = parentPass.numTextureMipLevels,
-                samples = numSamples,
-                usage = usage,
-                aspectMask = aspectMask,
-                label = texture.name
-            )
-            val tex = ImageVk(backend, descriptor, name)
-            return descriptor to tex
-        }
-
-        private fun createViews() {
-            mipViews.forEach { backend.device.destroyImageView(it) }
-            mipViews.clear()
-            for (i in 0 until parentPass.numRenderMipLevels) {
-                mipViews += backend.device.createImageView(
-                    image = gpuTexture.vkImage,
-                    viewType = VK_IMAGE_VIEW_TYPE_2D,
-                    format = gpuTexture.format,
-                    aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT,
-                    levelCount = 1,
-                    baseMipLevel = i
-                )
-            }
-        }
-
-        fun copyToTexture(target: Texture2d, passEncoderState: PassEncoderState) {
-            var copyDst = (target.gpuTexture as ImageVk?)
-            if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
-                copyDst?.release()
-                val (_, gpuTex) = createTexture(
-                    width = parentPass.width,
-                    height = parentPass.height,
-                    usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
-                    texture = target
-                )
-                copyDst = gpuTex
-                target.gpuTexture = copyDst
-                target.loadingState = Texture.LoadingState.LOADED
-            }
-            copyDst.copyFromImage(gpuTexture, passEncoderState.commandBuffer)
-        }
-
-        override fun release() {
-            super.release()
-            gpuTexture.release()
-            texture.gpuTexture = null
-            mipViews.forEach { backend.device.destroyImageView(it) }
+            attachments.copyDepthToTexture(frameCopy.depthCopy2d, passEncoderState)
         }
     }
 }

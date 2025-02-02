@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.OffscreenPassCube
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Color
@@ -235,6 +236,157 @@ abstract class RenderPassVk(
             layerCount(1)
             pColorAttachments(colorInfo)
             pDepthAttachment(depthInfo)
+        }
+    }
+
+    class Attachments(
+        val colorFormats: List<Int>,
+        val depthFormat: Int?,
+        val layers: Int,
+        val isCopySrc: Boolean,
+        val isCopyDst: Boolean,
+        val parentPass: RenderPass,
+        val backend: RenderBackendVk
+    ) : BaseReleasable() {
+
+        val colorImages = colorFormats.map { format -> createImage(parentPass.width, parentPass.height, format, false) }
+        val depthImage = depthFormat?.let { format -> createImage(parentPass.width, parentPass.height, format, true) }
+
+        val colorMipViews = colorImages.map { it.createMipViews() }
+        val depthMipViews = depthImage?.createMipViews() ?: emptyList()
+
+        val colorViewsByLayerAndMip = (0..<layers).map { layer ->
+            (0..<parentPass.numRenderMipLevels).map { mipLevel ->
+                (0..<colorImages.size).map { attachment ->
+                    getColorView(attachment, mipLevel, layer)
+                }
+            }
+        }
+
+        private fun createImage(width: Int, height: Int, format: Int, isDepth: Boolean): ImageVk {
+            val typeUsage = if (isDepth) VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT else VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+            val copySrcUsage = if (isCopySrc) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else 0
+            val copyDstUsage = if (isCopyDst) VK_IMAGE_USAGE_TRANSFER_DST_BIT else 0
+            val usage = VK_IMAGE_USAGE_SAMPLED_BIT or typeUsage or copySrcUsage or copyDstUsage
+
+            return createImageWithUsage(width, height, format, isDepth, usage)
+        }
+
+        private fun createImageWithUsage(width: Int, height: Int, format: Int, isDepth: Boolean, usage: Int): ImageVk {
+            val aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT
+            val flags = if (parentPass is OffscreenPassCube) VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT else 0
+
+            val imageInfo = ImageInfo(
+                imageType = VK_IMAGE_TYPE_2D,
+                format = format,
+                width = width,
+                height = height,
+                depth = 1,
+                arrayLayers = layers,
+                mipLevels = parentPass.numTextureMipLevels,
+                samples = parentPass.numSamples,
+                usage = usage,
+                flags = flags,
+                aspectMask = aspectMask,
+                label = parentPass.name
+            )
+            return ImageVk(backend, imageInfo, parentPass.name)
+        }
+
+        private fun ImageVk.createMipViews() = List<List<VkImageView>>(parentPass.numRenderMipLevels) { mipLevel ->
+            List<VkImageView>(layers) { layer ->
+                backend.device.createImageView(
+                    image = vkImage,
+                    viewType = VK_IMAGE_VIEW_TYPE_2D,
+                    format = format,
+                    aspectMask = imageInfo.aspectMask,
+                    levelCount = 1,
+                    baseArrayLayer = layer,
+                    baseMipLevel = mipLevel
+                )
+            }
+        }
+
+        fun getColorView(attachment: Int, mipLevel: Int, layer: Int = 0): VkImageView {
+            return colorMipViews[attachment][mipLevel][layer]
+        }
+
+        fun getColorViews(mipLevel: Int, layer: Int = 0): List<VkImageView> {
+            return colorViewsByLayerAndMip[layer][mipLevel]
+        }
+
+        fun getDepthView(mipLevel: Int, layer: Int = 0): VkImageView? {
+            return depthMipViews.getOrNull(mipLevel)?.get(layer)
+        }
+
+        fun transitionToAttachmentLayout(isLoadColor: Boolean, isLoadDepth: Boolean, passEncoderState: PassEncoderState) {
+            for (i in colorImages.indices) {
+                val image = colorImages[i]
+                val srcLayout = if (isLoadColor) image.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
+                image.transitionLayout(
+                    oldLayout = srcLayout,
+                    newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    commandBuffer = passEncoderState.commandBuffer,
+                    stack = passEncoderState.stack
+                )
+            }
+            depthImage?.let { depth ->
+                val srcLayout = if (isLoadDepth) depth.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
+                depth.transitionLayout(
+                    oldLayout = srcLayout,
+                    newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                    commandBuffer = passEncoderState.commandBuffer,
+                    stack = passEncoderState.stack
+                )
+            }
+        }
+
+        fun transitionToShaderRead(passEncoderState: PassEncoderState) {
+            for (i in colorImages.indices) {
+                colorImages[i].transitionLayout(
+                    oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                    commandBuffer = passEncoderState.commandBuffer,
+                    stack = passEncoderState.stack
+                )
+            }
+            depthImage?.transitionLayout(
+                oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                commandBuffer = passEncoderState.commandBuffer,
+                stack = passEncoderState.stack
+            )
+        }
+
+        fun copyColorToTexture(attachment: Int, target: Texture<*>, passEncoderState: PassEncoderState) =
+            copyToTexture(target, colorImages[attachment], colorFormats[attachment], passEncoderState)
+
+        fun copyDepthToTexture(target: Texture<*>, passEncoderState: PassEncoderState) =
+            copyToTexture(target, depthImage!!, depthFormat!!, passEncoderState)
+
+        private fun copyToTexture(target: Texture<*>, src: ImageVk, format: Int, passEncoderState: PassEncoderState) {
+            var copyDst = (target.gpuTexture as ImageVk?)
+            if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
+                copyDst?.release()
+                copyDst = createImageWithUsage(
+                    width = parentPass.width,
+                    height = parentPass.height,
+                    format = format,
+                    isDepth = false,
+                    usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                )
+                target.gpuTexture = copyDst
+                target.loadingState = Texture.LoadingState.LOADED
+            }
+            copyDst.copyFromImage(src, passEncoderState.commandBuffer, stack = passEncoderState.stack)
+        }
+
+        override fun release() {
+            super.release()
+            colorImages.forEach { it.release() }
+            depthImage?.release()
+            colorMipViews.flatMap { it }.flatMap { it }.forEach { backend.device.destroyImageView(it) }
+            depthMipViews.flatMap { it }.forEach { backend.device.destroyImageView(it) }
         }
     }
 
