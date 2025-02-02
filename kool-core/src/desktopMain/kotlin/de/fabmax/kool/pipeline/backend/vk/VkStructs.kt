@@ -39,6 +39,12 @@ inline fun MemoryStack.callocVkApplicationInfo(block: VkApplicationInfo.() -> Un
         block()
     }
 
+inline fun MemoryStack.callocVkBlitImageInfo2(block: VkBlitImageInfo2.() -> Unit): VkBlitImageInfo2 =
+    allocStruct(VkBlitImageInfo2::calloc) {
+        `sType$Default`()
+        block()
+    }
+
 inline fun MemoryStack.callocVkBufferCreateInfo(block: VkBufferCreateInfo.() -> Unit): VkBufferCreateInfo =
     allocStruct(VkBufferCreateInfo::calloc) {
         `sType$Default`()
@@ -65,6 +71,12 @@ inline fun MemoryStack.callocVkCommandPoolCreateInfo(block: VkCommandPoolCreateI
 
 inline fun MemoryStack.callocVkDebugUtilsMessengerCreateInfoEXT(block: VkDebugUtilsMessengerCreateInfoEXT.() -> Unit): VkDebugUtilsMessengerCreateInfoEXT =
     allocStruct(VkDebugUtilsMessengerCreateInfoEXT::calloc) {
+        `sType$Default`()
+        block()
+    }
+
+inline fun MemoryStack.callocVkDependencyInfo(block: VkDependencyInfo.() -> Unit): VkDependencyInfo =
+    allocStruct(VkDependencyInfo::calloc) {
         `sType$Default`()
         block()
     }
@@ -174,6 +186,12 @@ inline fun MemoryStack.callocVkPipelineRasterizationStateCreateInfo(block: VkPip
         block()
     }
 
+inline fun MemoryStack.callocVkPipelineRenderingCreateInfo(block: VkPipelineRenderingCreateInfo.() -> Unit): VkPipelineRenderingCreateInfo =
+    allocStruct(VkPipelineRenderingCreateInfo::calloc) {
+        `sType$Default`()
+        block()
+    }
+
 inline fun MemoryStack.callocVkPipelineVertexInputStateCreateInfo(block: VkPipelineVertexInputStateCreateInfo.() -> Unit): VkPipelineVertexInputStateCreateInfo =
     allocStruct(VkPipelineVertexInputStateCreateInfo::calloc) {
         `sType$Default`()
@@ -194,6 +212,18 @@ inline fun MemoryStack.callocVkPresentInfoKHR(block: VkPresentInfoKHR.() -> Unit
 
 inline fun MemoryStack.callocVkQueryPoolCreateInfo(block: VkQueryPoolCreateInfo.() -> Unit): VkQueryPoolCreateInfo =
     allocStruct(VkQueryPoolCreateInfo::calloc) {
+        `sType$Default`()
+        block()
+    }
+
+inline fun MemoryStack.callocVkRenderingAttachmentInfo(block: VkRenderingAttachmentInfo.() -> Unit): VkRenderingAttachmentInfo =
+    allocStruct(VkRenderingAttachmentInfo::calloc) {
+        `sType$Default`()
+        block()
+    }
+
+inline fun MemoryStack.callocVkRenderingInfo(block: VkRenderingInfo.() -> Unit): VkRenderingInfo =
+    allocStruct(VkRenderingInfo::calloc) {
         `sType$Default`()
         block()
     }
@@ -258,7 +288,7 @@ inline fun MemoryStack.callocVkClearValueN(n: Int, block: VkClearValue.Buffer.()
 
 inline fun MemoryStack.callocVkComputePipelineCreateInfoN(n: Int, block: VkComputePipelineCreateInfo.Buffer.() -> Unit): VkComputePipelineCreateInfo.Buffer =
     allocStructBufferItems(n, VkComputePipelineCreateInfo::calloc, block) {
-        get(it).apply { `sType$Default`() }
+        get(it).`sType$Default`()
     }
 
 inline fun MemoryStack.callocVkDescriptorBufferInfoN(n: Int, block: VkDescriptorBufferInfo.Buffer.() -> Unit): VkDescriptorBufferInfo.Buffer =
@@ -275,23 +305,33 @@ inline fun MemoryStack.callocVkDescriptorSetLayoutBindingN(n: Int, block: VkDesc
 
 inline fun MemoryStack.callocVkDeviceQueueCreateInfoN(n: Int, block: VkDeviceQueueCreateInfo.Buffer.() -> Unit): VkDeviceQueueCreateInfo.Buffer =
     allocStructBufferItems(n, VkDeviceQueueCreateInfo::calloc, block) {
-        get(it).apply { `sType$Default`() }
+        get(it).`sType$Default`()
     }
 
 inline fun MemoryStack.callocVkGraphicsPipelineCreateInfoN(n: Int, block: VkGraphicsPipelineCreateInfo.Buffer.() -> Unit): VkGraphicsPipelineCreateInfo.Buffer =
     allocStructBufferItems(n, VkGraphicsPipelineCreateInfo::calloc, block) {
-        get(it).apply { `sType$Default`() }
+        get(it).`sType$Default`()
     }
 
 inline fun MemoryStack.callocVkImageBlitN(n: Int, block: VkImageBlit.Buffer.() -> Unit): VkImageBlit.Buffer =
     allocStructBuffer(n, VkImageBlit::calloc, block)
+
+inline fun MemoryStack.callocVkImageBlit2N(n: Int, block: VkImageBlit2.Buffer.() -> Unit): VkImageBlit2.Buffer =
+    allocStructBufferItems(n, VkImageBlit2::calloc, block) {
+        get(it).`sType$Default`()
+    }
 
 inline fun MemoryStack.callocVkImageCopyN(n: Int, block: VkImageCopy.Buffer.() -> Unit): VkImageCopy.Buffer =
     allocStructBuffer(n, VkImageCopy::calloc, block)
 
 inline fun MemoryStack.callocVkImageMemoryBarrierN(n: Int, block: VkImageMemoryBarrier.Buffer.() -> Unit): VkImageMemoryBarrier.Buffer =
     allocStructBufferItems(n, VkImageMemoryBarrier::calloc, block) {
-        get(it).apply { `sType$Default`() }
+        get(it).`sType$Default`()
+    }
+
+inline fun MemoryStack.callocVkImageMemoryBarrier2N(n: Int, block: VkImageMemoryBarrier2.Buffer.() -> Unit): VkImageMemoryBarrier2.Buffer =
+    allocStructBufferItems(n, VkImageMemoryBarrier2::calloc, block) {
+        get(it).`sType$Default`()
     }
 
 inline fun MemoryStack.callocVkPipelineColorBlendAttachmentStateN(n: Int, block: VkPipelineColorBlendAttachmentState.Buffer.() -> Unit): VkPipelineColorBlendAttachmentState.Buffer =
@@ -299,7 +339,7 @@ inline fun MemoryStack.callocVkPipelineColorBlendAttachmentStateN(n: Int, block:
 
 inline fun MemoryStack.callocVkPipelineShaderStageCreateInfoN(n: Int, block: VkPipelineShaderStageCreateInfo.Buffer.() -> Unit): VkPipelineShaderStageCreateInfo.Buffer =
     allocStructBufferItems(n, VkPipelineShaderStageCreateInfo::calloc, block) {
-        get(it).apply { `sType$Default`() }
+        get(it).`sType$Default`()
     }
 
 inline fun MemoryStack.callocVkPushConstantRangeN(n: Int, block: VkPushConstantRange.Buffer.() -> Unit): VkPushConstantRange.Buffer =
@@ -308,9 +348,14 @@ inline fun MemoryStack.callocVkPushConstantRangeN(n: Int, block: VkPushConstantR
 inline fun MemoryStack.callocVkRect2DN(n: Int, block: VkRect2D.Buffer.() -> Unit): VkRect2D.Buffer =
     allocStructBuffer(n, VkRect2D::calloc, block)
 
+inline fun MemoryStack.callocVkRenderingAttachmentInfoN(n: Int, block: VkRenderingAttachmentInfo.Buffer.() -> Unit): VkRenderingAttachmentInfo.Buffer =
+    allocStructBufferItems(n, VkRenderingAttachmentInfo::calloc, block) {
+        get(it).`sType$Default`()
+    }
+
 inline fun MemoryStack.callocVkSubmitInfoN(n: Int, block: VkSubmitInfo.Buffer.() -> Unit): VkSubmitInfo.Buffer =
     allocStructBufferItems(n, VkSubmitInfo::calloc, block) {
-        get(it).apply { `sType$Default`() }
+        get(it).`sType$Default`()
     }
 
 inline fun MemoryStack.callocVkSubpassDependencyN(n: Int, block: VkSubpassDependency.Buffer.() -> Unit): VkSubpassDependency.Buffer =
@@ -330,7 +375,7 @@ inline fun MemoryStack.callocVkViewportN(n: Int, block: VkViewport.Buffer.() -> 
 
 inline fun MemoryStack.callocVkWriteDescriptorSetN(n: Int, block: VkWriteDescriptorSet.Buffer.() -> Unit): VkWriteDescriptorSet.Buffer =
     allocStructBufferItems(n, VkWriteDescriptorSet::calloc, block) {
-        get(it).apply { `sType$Default`() }
+        get(it).`sType$Default`()
     }
 
 inline fun <T> MemoryStack.enumerateBuffer(createBuffer: (Int) -> T, block: (IntBuffer, T?) -> Unit): T {

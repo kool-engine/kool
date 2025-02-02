@@ -1,19 +1,21 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.memStack
+import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkClearValue
-import org.lwjgl.vulkan.VkRenderPassBeginInfo
+import org.lwjgl.vulkan.VK12.VK_RESOLVE_MODE_NONE
 
 class OffscreenPassCubeVk(
     val parentPass: OffscreenPassCube,
     numSamples: Int,
     backend: RenderBackendVk
-) : RenderPassVk(0, numSamples, backend), OffscreenPassCubeImpl {
+) : RenderPassVk(false, numSamples, backend), OffscreenPassCubeImpl {
 
     override val colorTargetFormats: List<Int> = parentPass.colorTextures.map { it.props.format.vk }
-    private val vkRenderPasses = Array<RenderPassWrapper?>(4) { null }
 
     private val colorAttachments = List(parentPass.colorTextures.size) {
         RenderAttachment(parentPass.colorTextures[it], false, "${parentPass.name}.color[$it]")
@@ -38,7 +40,6 @@ class OffscreenPassCubeVk(
         logT { "Resize offscreen cube pass ${parentPass.name} to $width x $height" }
         colorAttachments.forEach { it.recreate(width, height) }
         depthAttachment?.recreate(width, height)
-        vkRenderPasses.filterNotNull().forEach { it.recreateFramebuffers() }
     }
 
     override fun release() {
@@ -68,23 +69,61 @@ class OffscreenPassCubeVk(
         render(parentPass, passEncoderState)
     }
 
-    private fun getOrCreateRenderPass(isLoadColor: Boolean, isLoadDepth: Boolean): RenderPassWrapper {
-        var idx = 0
-        if (isLoadColor) idx = idx or 1
-        if (isLoadDepth) idx = idx or 2
-        vkRenderPasses[idx]?.let { return it }
-
-        val rp = RenderPassWrapper(isLoadColor, isLoadDepth)
-        vkRenderPasses[idx] = rp
-        return rp
-    }
-
-    override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean): VkRenderPass {
+    override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {
         val isLoadColor = forceLoad || parentPass.clearColor == null
         val isLoadDepth = forceLoad || !parentPass.clearDepth
-        val rp = getOrCreateRenderPass(isLoadColor, isLoadDepth)
-        rp.begin(passEncoderState)
-        return rp.vkRenderPass
+
+        val mipLevel = passEncoderState.mipLevel
+        val layer = passEncoderState.layer
+        val width = (parentPass.width shr mipLevel).coerceAtLeast(1)
+        val height = (parentPass.height shr mipLevel).coerceAtLeast(1)
+        val colorLoadOp = if (isLoadColor) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
+        val depthLoadOp = if (isLoadDepth) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
+
+        memStack {
+            val colorAttachmentInfo = if (colorTargetFormats.isEmpty()) null else callocVkRenderingAttachmentInfoN(colorTargetFormats.size) {
+                for (i in colorTargetFormats.indices) {
+                    colorAttachments[i].gpuTexture.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
+                    this[i].apply {
+                        imageView(colorAttachments[i].mipViews[mipLevel][layer].handle)
+                        imageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                        resolveMode(VK_RESOLVE_MODE_NONE)
+                        loadOp(colorLoadOp)
+                        storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                        clearValue { it.setColor(passEncoderState.renderPass.clearColor ?: Color.BLACK) }
+                    }
+                }
+            }
+            val depthAttachmentInfo = depthAttachment?.let { depth ->
+                depth.gpuTexture.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
+                callocVkRenderingAttachmentInfo {
+                    imageView(depth.mipViews[mipLevel][layer].handle)
+                    imageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                    resolveMode(VK_RESOLVE_MODE_NONE)
+                    loadOp(depthLoadOp)
+                    storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
+                    clearValue { cv -> cv.depthStencil { it.depth(if (passEncoderState.renderPass.isReverseDepth) 0f else 1f) } }
+                }
+            }
+            val renderingInfo = callocVkRenderingInfo {
+                renderArea { ra ->
+                    ra.offset { it.set(0, 0) }
+                    ra.extent { it.set(width, height) }
+                }
+                layerCount(1)
+                pColorAttachments(colorAttachmentInfo)
+                pDepthAttachment(depthAttachmentInfo)
+            }
+            vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
+        }
+    }
+
+    override fun endRenderPass(passEncoderState: PassEncoderState) {
+        super.endRenderPass(passEncoderState)
+        for (i in colorAttachments.indices) {
+            colorAttachments[i].gpuTexture.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
+        }
+        depthAttachment?.gpuTexture?.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
     }
 
     override fun generateMipLevels(passEncoderState: PassEncoderState) {
@@ -143,7 +182,6 @@ class OffscreenPassCubeVk(
             texture: Texture<*> = this.texture
         ): Pair<ImageInfo, ImageVk> {
             val aspectMask = if (isDepth) VK_IMAGE_ASPECT_DEPTH_BIT else VK_IMAGE_ASPECT_COLOR_BIT
-
             val descriptor = ImageInfo(
                 imageType = VK_IMAGE_TYPE_2D,
                 format = if (isDepth) backend.physicalDevice.depthFormat else texture.props.format.vk,
@@ -203,174 +241,5 @@ class OffscreenPassCubeVk(
             texture.gpuTexture = null
             mipViews.flatMap { it }.forEach { backend.device.destroyImageView(it) }
         }
-    }
-
-    private inner class RenderPassWrapper(
-        isLoadColor: Boolean,
-        isLoadDepth: Boolean
-    ) : BaseReleasable() {
-        val vkRenderPass: VkRenderPass
-        var framebuffers: List<List<VkFramebuffer>>
-
-        init {
-            val colorLoadOp = if (isLoadColor) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
-            val depthLoadOp = if (isLoadDepth) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
-
-            val initialColorLayout = if (isLoadColor) VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL else VK_IMAGE_LAYOUT_UNDEFINED
-            val initialDepthLayout = if (isLoadDepth) VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL else VK_IMAGE_LAYOUT_UNDEFINED
-
-            memStack {
-                val numAttachments = colorAttachments.size + if (depthAttachment != null) 1 else 0
-                val attachments = callocVkAttachmentDescriptionN(numAttachments) {
-                    for (i in colorTargetFormats.indices) {
-                        this[i].apply {
-                            format(colorTargetFormats[i])
-                            samples(numSamples)
-                            loadOp(colorLoadOp)
-                            storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                            stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                            stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                            initialLayout(initialColorLayout)
-                            finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                        }
-                    }
-                    if (depthAttachment != null) {
-                        this[numAttachments - 1].apply {
-                            format(backend.physicalDevice.depthFormat)
-                            samples(numSamples)
-                            loadOp(depthLoadOp)
-                            storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                            stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                            stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                            initialLayout(initialDepthLayout)
-                            finalLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-                        }
-                    }
-                }
-                val colorAttachmentRefs = callocVkAttachmentReferenceN(numColorAttachments) {
-                    for (i in colorTargetFormats.indices) {
-                        this[i].apply {
-                            attachment(i)
-                            layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                        }
-                    }
-                }
-                val subpass = callocVkSubpassDescriptionN(1) {
-                    pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
-                    colorAttachmentCount(numColorAttachments)
-                    pColorAttachments(colorAttachmentRefs)
-
-                    if (depthAttachment != null) {
-                        val depthAttachmentRef = callocVkAttachmentReferenceN(1) {
-                            attachment(numAttachments - 1)
-                            layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-                        }
-                        pDepthStencilAttachment(depthAttachmentRef[0])
-                    }
-                }
-                val dependencies = callocVkSubpassDependencyN(2) {
-                    this[0]
-                        .srcSubpass(VK_SUBPASS_EXTERNAL)
-                        .dstSubpass(0)
-                        .srcStageMask(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-                        .srcAccessMask(VK_ACCESS_SHADER_READ_BIT)
-                        .dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                        .dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-                        .dependencyFlags(VK_DEPENDENCY_BY_REGION_BIT)
-                    this[1]
-                        .srcSubpass(0)
-                        .dstSubpass(VK_SUBPASS_EXTERNAL)
-                        .srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                        .srcAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-                        .dstStageMask(VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-                        .dstAccessMask(VK_ACCESS_SHADER_READ_BIT)
-                        .dependencyFlags(VK_DEPENDENCY_BY_REGION_BIT)
-                }
-
-                vkRenderPass = device.createRenderPass {
-                    pAttachments(attachments)
-                    pSubpasses(subpass)
-                    pDependencies(dependencies)
-                }
-            }
-            framebuffers = createFramebuffers()
-
-            releaseWith(this@OffscreenPassCubeVk)
-            logD("OffscreenPassCubeVk") { "Created off-screen cube pass ${parentPass.name} (loadColor: $isLoadColor, loadDepth: $isLoadDepth)" }
-        }
-
-        fun begin(passEncoderState: PassEncoderState) = with(passEncoderState.stack) {
-            val renderPass = passEncoderState.renderPass
-            val mipLevel = passEncoderState.mipLevel
-            val face = passEncoderState.layer
-
-            val beginInfo = renderPassBeginInfo.apply {
-                renderPass(vkRenderPass.handle)
-                framebuffer(framebuffers[mipLevel][face].handle)
-                renderArea().extent().set(
-                    (parentPass.width shr mipLevel).coerceAtLeast(1),
-                    (parentPass.height shr mipLevel).coerceAtLeast(1)
-                )
-
-                val numAttachments = colorAttachments.size + if (depthAttachment != null) 1 else 0
-                clearValues.limit(numAttachments)
-                for (i in 0 until numColorAttachments) {
-                    clearValues[i].setColor(renderPass.clearColors[i] ?: Color.BLACK)
-                }
-                if (depthAttachment != null) {
-                    clearValues[numAttachments - 1].depthStencil {
-                        it.depth(if (renderPass.isReverseDepth) 0f else 1f)
-                        it.stencil(0)
-                    }
-                }
-                pClearValues(clearValues)
-            }
-            vkCmdBeginRenderPass(passEncoderState.commandBuffer, beginInfo, VK_SUBPASS_CONTENTS_INLINE)
-
-            // when the renderpass is done, it transitions all attached textures into shader read only layout
-            for (i in colorAttachments.indices) {
-                colorAttachments[i].gpuTexture.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            }
-            depthAttachment?.gpuTexture?.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-        }
-
-        override fun release() {
-            super.release()
-            device.destroyRenderPass(vkRenderPass)
-            framebuffers.flatMap { it }.forEach { device.destroyFramebuffer(it) }
-        }
-
-        fun recreateFramebuffers() {
-            framebuffers.flatMap { it }.forEach { device.destroyFramebuffer(it) }
-            framebuffers = createFramebuffers()
-        }
-
-        private fun createFramebuffers(): List<List<VkFramebuffer>> = memStack {
-            val numAttachments = colorAttachments.size + if (depthAttachment != null) 1 else 0
-            val attachments = mallocLong(numAttachments)
-
-            List(parentPass.numRenderMipLevels) { level ->
-                List<VkFramebuffer>(6) { face ->
-                    colorAttachments.forEachIndexed { i, colorAttach ->
-                        attachments.put(i, colorAttach.mipViews[level][face].handle)
-                    }
-                    depthAttachment?.let {
-                        attachments.put(numAttachments - 1, it.mipViews[level][face].handle)
-                    }
-                    device.createFramebuffer(this@memStack) {
-                        renderPass(vkRenderPass.handle)
-                        pAttachments(attachments)
-                        width((parentPass.width shr level).coerceAtLeast(1))
-                        height((parentPass.height shr level).coerceAtLeast(1))
-                        layers(1)
-                    }
-                }
-            }
-        }
-    }
-
-    companion object {
-        private val renderPassBeginInfo = VkRenderPassBeginInfo.calloc().apply { `sType$Default`() }
-        private val clearValues = VkClearValue.calloc(16)
     }
 }

@@ -8,7 +8,6 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
 import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkExtent2D
 
 class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
@@ -28,13 +27,8 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
     val imageViews: List<VkImageView>
     val numSamples = backend.physicalDevice.maxSamples.coerceAtMost(KoolSystem.configJvm.msaaSamples)
 
-    val nImages: Int
-        get() = images.size
-
-    val colorImage: ImageVk
-    val colorImageView: VkImageView
-    val depthImage: ImageVk
-    val depthImageView: VkImageView
+    val width: Int get() = extent.width()
+    val height: Int get() = extent.height()
 
     private val imageAvailableSemas: List<VkSemaphore>
     private val renderFinishedSemas: List<VkSemaphore>
@@ -62,7 +56,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
                 imageColorSpace(surfaceFormat.colorSpace())
                 imageExtent(extent)
                 imageArrayLayers(1)
-                imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT)
+                imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT)
                 preTransform(swapChainSupport.capabilities.currentTransform())
                 compositeAlpha(VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR)
                 presentMode(presentMode)
@@ -97,16 +91,6 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
                     levelCount = 1,
                     layerCount = 1
                 )
-            }
-
-            backend.commandPool.singleShotCommands { commandBuffer ->
-                val (cImage, cImageView) = createColorResources(commandBuffer)
-                colorImage = cImage.also { addDependingReleasable(it) }
-                colorImageView = cImageView
-
-                val (dImage, dImageView) = createDepthResources(commandBuffer)
-                depthImage = dImage.also { addDependingReleasable(it) }
-                depthImageView = dImageView
             }
 
             imageAvailableSemas = buildList {
@@ -153,52 +137,6 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
                 else -> error("failed to acquire swap chain image")
             }
         }
-    }
-
-    private fun createColorResources(commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
-        val imgInfo = ImageInfo(
-            imageType = VK_IMAGE_TYPE_2D,
-            format = imageFormat,
-            width = extent.width(),
-            height = extent.height(),
-            depth = 1,
-            arrayLayers = 1,
-            mipLevels = 1,
-            samples = numSamples,
-            tiling = VK_IMAGE_TILING_OPTIMAL,
-            usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT or VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-            label = "swapchain-color"
-        )
-        val image = ImageVk(backend, imgInfo)
-
-        val imageView = ImageVk.imageView2d(device, image)
-        image.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, commandBuffer)
-        image.onRelease { device.destroyImageView(imageView) }
-        return image to imageView
-    }
-
-    private fun createDepthResources(commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
-        val imgInfo = ImageInfo(
-            imageType = VK_IMAGE_TYPE_2D,
-            format = physicalDevice.depthFormat,
-            width = extent.width(),
-            height = extent.height(),
-            depth = 1,
-            arrayLayers = 1,
-            mipLevels = 1,
-            samples = numSamples,
-            tiling = VK_IMAGE_TILING_OPTIMAL,
-            usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
-            aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
-            label = "swapchain-depth"
-        )
-        val image = ImageVk(backend, imgInfo)
-
-        val imageView = ImageVk.imageView2d(device, image)
-        image.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandBuffer)
-        image.onRelease { device.destroyImageView(imageView) }
-        return image to imageView
     }
 
     override fun release() {

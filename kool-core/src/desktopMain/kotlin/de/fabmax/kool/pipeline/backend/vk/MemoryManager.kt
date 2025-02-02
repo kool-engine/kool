@@ -184,7 +184,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
         override fun freeBuffer(deferTicks: Int, buffer: VkBuffer) {
             if (deferTicks > 0) {
-                DeferredRelease.defer(deferTicks) {
+                ReleaseQueue.enqueue(deferTicks) {
                     vmaDestroyBuffer(allocator, buffer.handle, buffer.allocation)
                 }
             } else {
@@ -219,7 +219,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
 
         override fun freeImage(deferTicks: Int, image: VkImage) {
             if (deferTicks > 0) {
-                DeferredRelease.defer(deferTicks) {
+                ReleaseQueue.enqueue(deferTicks) {
                     vmaDestroyImage(allocator, image.handle, image.allocation)
                 }
             } else {
@@ -250,7 +250,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         override fun freeResources() {
-            DeferredRelease.defer {
+            ReleaseQueue.enqueue {
                 vmaDestroyAllocator(allocator)
                 logD { "Destroyed VMA memory allocator" }
             }

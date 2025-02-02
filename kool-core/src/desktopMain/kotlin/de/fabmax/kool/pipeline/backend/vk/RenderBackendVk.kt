@@ -121,7 +121,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         memStack {
             var imgOk = swapchain.acquireNextImage()
             if (imgOk) {
-                DeferredRelease.processTasks()
+                ReleaseQueue.processQueue()
 
                 passEncoderState.beginFrame(this)
                 frameTimer.begin(passEncoderState.commandBuffer)
@@ -139,6 +139,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                     // copy all buffers requested for readback to temporary buffers using the current command encoder
                     copyReadbacks(passEncoderState)
                 }
+                screenPass.blitOutputImage(passEncoderState)
                 frameTimer.end(passEncoderState.commandBuffer)
                 timestampQueryPool.pollResults(passEncoderState.commandBuffer, this)
                 passEncoderState.endFrame()
@@ -248,9 +249,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun cleanup(ctx: KoolContext) {
         device.waitForIdle()
-        DeferredRelease.processTasks(true)
+        ReleaseQueue.processQueue(true)
         instance.release()
-        DeferredRelease.processTasks(true)
+        ReleaseQueue.processQueue(true)
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {

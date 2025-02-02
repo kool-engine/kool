@@ -5,16 +5,19 @@ import de.fabmax.kool.pipeline.OffscreenPassCube
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
+import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdEndRenderingKHR
 import org.lwjgl.vulkan.VK10.*
 
 abstract class RenderPassVk(
-    val depthFormat: Int,
+    val hasDepth: Boolean,
     val numSamples: Int,
     val backend: RenderBackendVk
 ) : BaseReleasable() {
 
     abstract val colorTargetFormats: List<Int>
     val numColorAttachments: Int get() = colorTargetFormats.size
+
+    val hasColor: Boolean get() = colorTargetFormats.isNotEmpty()
 
     protected val device: Device get() = backend.device
 
@@ -149,7 +152,11 @@ abstract class RenderPassVk(
         }
     }
 
-    abstract fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean): VkRenderPass
+    abstract fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean)
+
+    open fun endRenderPass(passEncoderState: PassEncoderState) {
+        vkCmdEndRenderingKHR(passEncoderState.commandBuffer)
+    }
 
     protected abstract fun generateMipLevels(passEncoderState: PassEncoderState)
 

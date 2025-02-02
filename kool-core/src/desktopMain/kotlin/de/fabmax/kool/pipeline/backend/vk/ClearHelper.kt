@@ -1,13 +1,12 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 
 class ClearHelper(val backend: RenderBackendVk) {
     private val device: Device get() = backend.device
-    private val clearPipelines = mutableMapOf<VkRenderPass, ClearPipeline>()
+    private val clearPipelines = mutableMapOf<RenderPassVk, ClearPipeline>()
 
     private val vertexModule: VkShaderModule = device.createShaderModule {
         val spirv = checkNotNull(Shaderc.compileVertexShader(VERT_SRC, "clear-shader.vert", "main").spirvData)
@@ -26,13 +25,13 @@ class ClearHelper(val backend: RenderBackendVk) {
     }
 
     fun clear(passEncoderState: PassEncoderState) {
-        val clearPipeline = clearPipelines.getOrPut(passEncoderState.vkRenderPass) {
-            ClearPipeline(passEncoderState.gpuRenderPass, passEncoderState.vkRenderPass)
+        val clearPipeline = clearPipelines.getOrPut(passEncoderState.gpuRenderPass) {
+            ClearPipeline(passEncoderState.gpuRenderPass)
         }
         clearPipeline.clear(passEncoderState)
     }
 
-    private inner class ClearPipeline(val gpuRenderPass: RenderPassVk, val vkRenderPass: VkRenderPass) : BaseReleasable() {
+    private inner class ClearPipeline(val gpuRenderPass: RenderPassVk) : BaseReleasable() {
         val descriptorSetLayout: VkDescriptorSetLayout
         val pipelineLayout: VkPipelineLayout
         val bindGroupData: BindGroupDataVk
@@ -155,6 +154,16 @@ class ClearHelper(val backend: RenderBackendVk) {
                 pAttachments(blendAttachments)
             }
 
+            val pipelineRenderingCreateInfo = callocVkPipelineRenderingCreateInfo {
+                colorAttachmentCount(gpuRenderPass.numColorAttachments)
+                val colorFormats = mallocInt(gpuRenderPass.numColorAttachments)
+                for (i in 0 until gpuRenderPass.numColorAttachments) {
+                    colorFormats.put(i, gpuRenderPass.colorTargetFormats[i])
+                }
+                pColorAttachmentFormats(colorFormats)
+                depthAttachmentFormat(backend.physicalDevice.depthFormat)
+            }
+
             device.createGraphicsPipeline {
                 pStages(shaderStageInfos)
                 pVertexInputState(vertexInfo)
@@ -166,10 +175,11 @@ class ClearHelper(val backend: RenderBackendVk) {
                 pDepthStencilState(depthStencil)
                 pColorBlendState(blendInfo)
                 layout(pipelineLayout.handle)
-                renderPass(vkRenderPass.handle)
+                renderPass(0L)
                 subpass(0)
                 basePipelineHandle(VK_NULL_HANDLE)
                 basePipelineIndex(-1)
+                pNext(pipelineRenderingCreateInfo)
             }.also { onRelease { device.destroyGraphicsPipeline(it) } }
         }
     }

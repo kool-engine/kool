@@ -57,8 +57,10 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             queueFamiliyIndices = selectedDevice.queueFamiliyIndices
             vkGetPhysicalDeviceProperties(vkPhysicalDevice, deviceProperties)
 
-            val dynamicRenderingFeatures = VkPhysicalDeviceDynamicRenderingFeaturesKHR.calloc(this).apply { `sType$Default`() }
+            val dynamicRenderingFeatures = VkPhysicalDeviceDynamicRenderingFeatures.calloc(this).apply { `sType$Default`() }
             vkDeviceFeatures2.pNext(dynamicRenderingFeatures)
+            val synchronization2Features = VkPhysicalDeviceSynchronization2Features.calloc(this).apply { `sType$Default`() }
+            vkDeviceFeatures2.pNext(synchronization2Features)
 
             if (isPortabilityDevice) {
                 vkDeviceFeatures2.pNext(portabilityFeatures)
@@ -67,6 +69,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkDeviceFeatures2)
 
             check(dynamicRenderingFeatures.dynamicRendering()) { "Dynamic rendering feature is required but not supported" }
+            check(synchronization2Features.synchronization2()) { "Synchronization2 feature is required but not supported" }
 
             wideLines = deviceFeatures.wideLines()
             if (wideLines) {

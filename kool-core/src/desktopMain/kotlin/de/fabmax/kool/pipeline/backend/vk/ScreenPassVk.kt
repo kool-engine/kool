@@ -1,59 +1,122 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
-import org.lwjgl.system.MemoryStack
+import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
+import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
+import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdEndRenderingKHR
 import org.lwjgl.vulkan.KHRSwapchain.VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkClearValue
-import org.lwjgl.vulkan.VkRenderPassBeginInfo
+import org.lwjgl.vulkan.VK12.*
+import org.lwjgl.vulkan.VkCommandBuffer
 
 class ScreenPassVk(backend: RenderBackendVk) :
-    RenderPassVk(backend.physicalDevice.depthFormat, backend.swapchain.numSamples, backend)
+    RenderPassVk(true, backend.swapchain.numSamples, backend)
 {
     override val colorTargetFormats: List<Int> = listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format())
-    private val vkRenderPasses = Array<RenderPassWrapper?>(4) { null }
     private var isStore = false
+
+    private lateinit var colorImage: ImageVk
+    lateinit var depthImage: ImageVk
+    private lateinit var resolveImage: ImageVk
+    private var colorImageView: VkImageView = VkImageView(0)
+    private var depthImageView: VkImageView = VkImageView(0)
+    private var resolveImageView: VkImageView = VkImageView(0)
 
     init {
         releaseWith(backend.device)
+        onSwapchainRecreated()
     }
 
     fun onSwapchainRecreated() {
-        vkRenderPasses.forEach { it?.recreateFramebuffers(backend.swapchain.imageViews) }
-    }
+        backend.commandPool.singleShotCommands { commandBuffer ->
+            val (cImage, cImageView) = createColorResources(numSamples, commandBuffer)
+            colorImage = cImage.also { it.releaseWith(backend.swapchain) }
+            colorImageView = cImageView
 
-    private fun getOrCreateRenderPass(isLoad: Boolean): RenderPassWrapper {
-        if (isLoad && !isStore) {
-            isStore = true
-            logI { "Screen copy requested. Enabling screen copy feature. First capture might be corrupted." }
+            val (dImage, dImageView) = createDepthResources(commandBuffer)
+            depthImage = dImage.also { it.releaseWith(backend.swapchain) }
+            depthImageView = dImageView
+
+            val (cResolve, cResolveView) = createColorResources(1, commandBuffer)
+            resolveImage = cResolve.also { it.releaseWith(backend.swapchain) }
+            resolveImageView = cResolveView
         }
-
-        var idx = 0
-        if (isLoad) idx = idx or 1
-        if (isStore) idx = idx or 2
-        vkRenderPasses[idx]?.let { return it }
-
-        val rp = RenderPassWrapper(
-            isLoad = isLoad,
-            isStore = isStore,
-            resolveViews = backend.swapchain.imageViews,
-            finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            destoryResolveViews = false
-        )
-        vkRenderPasses[idx] = rp
-        return rp
     }
 
-    override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean): VkRenderPass {
+    override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {
         val isLoad = forceLoad || passEncoderState.renderPass.clearColor == null
-        val rp = getOrCreateRenderPass(isLoad)
-        rp.begin(passEncoderState, backend.swapchain.nextSwapImage)
-        return rp.vkRenderPass
+        val loadOp = if (isLoad) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
+        val storeOp = if (isStore) VK_ATTACHMENT_STORE_OP_STORE else VK_ATTACHMENT_STORE_OP_DONT_CARE
+
+        resolveImage.layout = VK_IMAGE_LAYOUT_UNDEFINED
+        resolveImage.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
+
+        memStack {
+            val colorAttachmentInfo = callocVkRenderingAttachmentInfoN(1) {
+                imageView(colorImageView.handle)
+                imageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                resolveMode(VK_RESOLVE_MODE_AVERAGE_BIT)
+                resolveImageView(resolveImageView.handle)
+                resolveImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                loadOp(loadOp)
+                storeOp(storeOp)
+                clearValue { it.setColor(passEncoderState.renderPass.clearColor ?: Color.BLACK) }
+            }
+            val depthAttachmentInfo = callocVkRenderingAttachmentInfo {
+                imageView(depthImageView.handle)
+                imageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                resolveMode(VK_RESOLVE_MODE_NONE)
+                loadOp(loadOp)
+                storeOp(storeOp)
+                clearValue { cv -> cv.depthStencil { it.depth(if (passEncoderState.renderPass.isReverseDepth) 0f else 1f) } }
+            }
+            val renderingInfo = callocVkRenderingInfo {
+                renderArea { ra ->
+                    ra.offset { it.set(0, 0) }
+                    ra.extent { it.set(colorImage.width, colorImage.height) }
+                }
+                layerCount(1)
+                pColorAttachments(colorAttachmentInfo)
+                pDepthAttachment(depthAttachmentInfo)
+            }
+            vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
+        }
+    }
+
+    fun blitOutputImage(passEncoderState: PassEncoderState) {
+        val swapchain = backend.swapchain
+        val dstImage = swapchain.images[backend.swapchain.nextSwapImage]
+
+        resolveImage.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+        resolveImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, passEncoderState.commandBuffer, passEncoderState.stack)
+        dstImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, passEncoderState.commandBuffer, passEncoderState.stack)
+
+        val blit = passEncoderState.stack.callocVkBlitImageInfo2 {
+            val region = passEncoderState.stack.callocVkImageBlit2N(1) {
+                srcOffsets(1).set(resolveImage.width, resolveImage.height, 1)
+                dstOffsets(1).set(swapchain.width, swapchain.height, 1)
+                srcSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.layerCount(1)
+                }
+                dstSubresource {
+                    it.aspectMask(VK_IMAGE_ASPECT_COLOR_BIT)
+                    it.layerCount(1)
+                }
+            }
+            srcImage(resolveImage.vkImage.handle)
+            srcImageLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+            dstImage(dstImage.handle)
+            dstImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+            filter(VK_FILTER_LINEAR)
+            pRegions(region)
+        }
+        vkCmdBlitImage2KHR(passEncoderState.commandBuffer, blit)
+
+        dstImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, passEncoderState.commandBuffer, passEncoderState.stack)
     }
 
     fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: PassEncoderState) {
@@ -63,6 +126,11 @@ class ScreenPassVk(backend: RenderBackendVk) :
     override fun generateMipLevels(passEncoderState: PassEncoderState) { }
 
     override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {
+        if (!isStore) {
+            isStore = true
+            logI { "Screen copy requested. Enabling screen copy feature. First capture might be corrupted." }
+        }
+
         var screenCopy = frameCopy.gpuFrameCopy as ScreenCopy?
         if (screenCopy == null) {
             screenCopy = ScreenCopy(frameCopy)
@@ -71,242 +139,166 @@ class ScreenPassVk(backend: RenderBackendVk) :
         screenCopy.copy(passEncoderState)
     }
 
-    override fun release() {
-        super.release()
-        vkRenderPasses.filterNotNull().forEach { it.release() }
+    private fun createColorResources(samples: Int, commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
+        val imgInfo = ImageInfo(
+            imageType = VK_IMAGE_TYPE_2D,
+            format = backend.swapchain.imageFormat,
+            width = backend.swapchain.width,
+            height = backend.swapchain.height,
+            depth = 1,
+            arrayLayers = 1,
+            mipLevels = 1,
+            samples = samples,
+            tiling = VK_IMAGE_TILING_OPTIMAL,
+            usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            label = "screen-color"
+        )
+        val image = ImageVk(backend, imgInfo)
+        val imageView = image.imageView2d(device)
+        image.transitionLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, commandBuffer)
+        image.onRelease { device.destroyImageView(imageView) }
+        return image to imageView
     }
 
-    private inner class RenderPassWrapper(
-        val isLoad: Boolean,
-        isStore: Boolean,
-        resolveViews: List<VkImageView>,
-        finalLayout: Int,
-        val destoryResolveViews: Boolean
-    ) : BaseReleasable() {
-        val vkRenderPass: VkRenderPass
-        var framebuffers: List<VkFramebuffer>
-        var framebufferWidth = 0; private set
-        var framebufferHeight = 0; private set
-
-        init {
-            val loadOp = if (isLoad) VK_ATTACHMENT_LOAD_OP_LOAD else VK_ATTACHMENT_LOAD_OP_CLEAR
-            val storeOp = if (isStore) VK_ATTACHMENT_STORE_OP_STORE else VK_ATTACHMENT_STORE_OP_DONT_CARE
-
-            val initialColorLayout = if (isLoad) VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL else VK_IMAGE_LAYOUT_UNDEFINED
-            val initialDepthLayout = if (isLoad) VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL else VK_IMAGE_LAYOUT_UNDEFINED
-
-            memStack {
-                val imageFormat = colorTargetFormats[0]
-                val attachments = callocVkAttachmentDescriptionN(3) {
-                    this[0]
-                        .format(imageFormat)
-                        .samples(numSamples)
-                        .loadOp(loadOp)
-                        .storeOp(storeOp)
-                        .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                        .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                        .initialLayout(initialColorLayout)
-                        .finalLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                    this[1]
-                        .format(depthFormat)
-                        .samples(numSamples)
-                        .loadOp(loadOp)
-                        .storeOp(storeOp)
-                        .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                        .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                        .initialLayout(initialDepthLayout)
-                        .finalLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-                    this[2]
-                        .format(imageFormat)
-                        .samples(VK_SAMPLE_COUNT_1_BIT)
-                        .loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                        .storeOp(VK_ATTACHMENT_STORE_OP_STORE)
-                        .stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
-                        .stencilStoreOp(VK_ATTACHMENT_STORE_OP_DONT_CARE)
-                        .initialLayout(VK_IMAGE_LAYOUT_UNDEFINED)
-                        .finalLayout(finalLayout)
-                }
-
-                val colorAttachmentRef = callocVkAttachmentReferenceN(1) {
-                    attachment(0)
-                    layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                }
-                val depthAttachmentRef = callocVkAttachmentReferenceN(1) {
-                    attachment(1)
-                    layout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-                }
-                val colorAttachmentResolveRef  = callocVkAttachmentReferenceN(1) {
-                    attachment(2)
-                    layout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-                }
-
-                val subpass = callocVkSubpassDescriptionN(1) {
-                    pipelineBindPoint(VK_PIPELINE_BIND_POINT_GRAPHICS)
-                    colorAttachmentCount(1)
-                    pColorAttachments(colorAttachmentRef)
-                    pDepthStencilAttachment(depthAttachmentRef[0])
-                    pResolveAttachments(colorAttachmentResolveRef)
-                }
-
-                val dependency = callocVkSubpassDependencyN(1) {
-                    srcSubpass(VK_SUBPASS_EXTERNAL)
-                    dstSubpass(0)
-                    srcStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                    srcAccessMask(0)
-                    dstStageMask(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT)
-                    dstAccessMask(VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT)
-                }
-
-                vkRenderPass = device.createRenderPass {
-                    pAttachments(attachments)
-                    pSubpasses(subpass)
-                    pDependencies(dependency)
-                }
-
-                framebuffers = createFramebuffers(resolveViews)
-            }
-            logD("ScreenRenderPassVk") { "Created screen render pass (isLoad: $isLoad)" }
-        }
-
-        fun begin(passEncoderState: PassEncoderState, viewIndex: Int) {
-            renderPassBeginInfo.apply {
-                renderPass(vkRenderPass.handle)
-                framebuffer(framebuffers[viewIndex].handle)
-                renderArea().extent(backend.swapchain.extent)
-
-                val rp = if (passEncoderState.isPassActive) passEncoderState.renderPass else null
-                clearValues[0].setColor(rp?.clearColor ?: Color.BLACK)
-                clearValues[1].depthStencil {
-                    it.depth(if (rp?.isReverseDepth == true) 0f else 1f)
-                    it.stencil(0)
-                }
-                pClearValues(clearValues)
-            }
-            vkCmdBeginRenderPass(passEncoderState.commandBuffer, renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE)
-        }
-
-        override fun release() {
-            super.release()
-            device.destroyRenderPass(vkRenderPass)
-        }
-
-        fun recreateFramebuffers(resolveViews: List<VkImageView>) {
-            memStack {
-                framebuffers = createFramebuffers(resolveViews)
-            }
-        }
-
-        private fun MemoryStack.createFramebuffers(resolveViews: List<VkImageView>): List<VkFramebuffer> = buildList {
-            val swapchain = backend.swapchain
-            framebufferWidth = swapchain.extent.width()
-            framebufferHeight = swapchain.extent.height()
-            resolveViews.forEach { imgView ->
-                val fb = device.createFramebuffer(this@createFramebuffers) {
-                    renderPass(vkRenderPass.handle)
-                    pAttachments(longs(swapchain.colorImageView.handle, swapchain.depthImageView.handle, imgView.handle))
-                    width(framebufferWidth)
-                    height(framebufferHeight)
-                    layers(1)
-                }
-                add(fb)
-            }
-            swapchain.onRelease {
-                framebuffers.forEach { device.destroyFramebuffer(it) }
-                framebuffers = emptyList()
-                if (destoryResolveViews) {
-                    resolveViews.forEach { device.destroyImageView(it) }
-                }
-            }
-        }
+    private fun createDepthResources(commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
+        val imgInfo = ImageInfo(
+            imageType = VK_IMAGE_TYPE_2D,
+            format = backend.physicalDevice.depthFormat,
+            width = backend.swapchain.width,
+            height = backend.swapchain.height,
+            depth = 1,
+            arrayLayers = 1,
+            mipLevels = 1,
+            samples = numSamples,
+            tiling = VK_IMAGE_TILING_OPTIMAL,
+            usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+            aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+            label = "screen-depth"
+        )
+        val image = ImageVk(backend, imgInfo)
+        val imageView = image.imageView2d(device)
+        image.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, commandBuffer)
+        image.onRelease { device.destroyImageView(imageView) }
+        return image to imageView
     }
 
     private inner class ScreenCopy(val frameCopy: FrameCopy) : BaseReleasable() {
-        var colorCopy: RenderPassWrapper? = null
-        var depthCopy: MultiSampledTexCopyPass? = null
+        var colorCopyView: VkImageView = VkImageView(0L)
+        var depthCopyView: VkImageView = VkImageView(0L)
 
-        fun copy(passEncoderState: PassEncoderState) {
-            if (frameCopy.isCopyColor) {
-                copyColor(passEncoderState)
-            }
-            if (frameCopy.isCopyDepth) {
-                copyDepth(passEncoderState)
-            }
-        }
+        fun getOrCreateColorCopy(): ImageVk? {
+            if (!frameCopy.isCopyColor) return null
 
-        private fun copyColor(passEncoderState: PassEncoderState) {
-            val width = backend.swapchain.colorImage.width
-            val height = backend.swapchain.colorImage.height
             val colorDst = frameCopy.colorCopy2d
             var colorDstVk = colorDst.gpuTexture as ImageVk?
-
-            if (colorDstVk == null || colorDstVk.width != width || colorDstVk.height != height) {
+            if (colorDstVk == null || colorDstVk.width != colorImage.width || colorDstVk.height != colorImage.height) {
+                if (colorCopyView.handle != 0L) {
+                    backend.device.destroyImageView(colorCopyView)
+                }
                 colorDstVk?.release()
 
                 val imgInfo = ImageInfo(
                     imageType = VK_IMAGE_TYPE_2D,
                     format = backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format(),
-                    width = width,
-                    height = height,
+                    width = colorImage.width,
+                    height = colorImage.height,
                     depth = 1,
                     arrayLayers = 1,
                     mipLevels = 1,
                     samples = VK_SAMPLE_COUNT_1_BIT,
-                    usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                    usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
                     aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                     label = colorDst.name
                 )
                 colorDstVk = ImageVk(backend, imgInfo)
+                colorCopyView = colorDstVk.imageView2d(backend.device)
                 colorDst.gpuTexture = colorDstVk
                 colorDst.loadingState = Texture.LoadingState.LOADED
             }
+            return colorDstVk
+        }
 
-            if (colorCopy == null) {
-                colorCopy = RenderPassWrapper(
-                    isLoad = true,
-                    isStore = true,
-                    resolveViews = listOf(ImageVk.imageView2d(backend.device, colorDstVk)),
-                    finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                    destoryResolveViews = true
+        fun getOrCreateDepthCopy(): ImageVk? {
+            if (!frameCopy.isCopyDepth) return null
+
+            val depthDst = frameCopy.depthCopy2d
+            var depthDstVk = depthDst.gpuTexture as ImageVk?
+            if (depthDstVk == null || depthDstVk.width != colorImage.width || depthDstVk.height != colorImage.height) {
+                depthDstVk?.release()
+
+                val imgInfo = ImageInfo(
+                    imageType = VK_IMAGE_TYPE_2D,
+                    format = backend.physicalDevice.depthFormat,
+                    width = colorImage.width,
+                    height = colorImage.height,
+                    depth = 1,
+                    arrayLayers = 1,
+                    mipLevels = 1,
+                    samples = VK_SAMPLE_COUNT_1_BIT,
+                    usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
+                    aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+                    label = depthDst.name
                 )
+                depthDstVk = ImageVk(backend, imgInfo)
+                depthCopyView = depthDstVk.imageView2d(backend.device)
+                depthDst.gpuTexture = depthDstVk
+                depthDst.loadingState = Texture.LoadingState.LOADED
             }
-            val copyPass = colorCopy!!
+            return depthDstVk
+        }
 
-            if (copyPass.framebuffers.isEmpty() || copyPass.framebufferWidth != width ||copyPass.framebufferHeight != height) {
-                copyPass.recreateFramebuffers(listOf(ImageVk.imageView2d(backend.device, colorDstVk)))
-            }
+        fun copy(passEncoderState: PassEncoderState) {
+            val colorCopyImg = getOrCreateColorCopy()
+            val depthCopyImg = getOrCreateDepthCopy()
 
             // launch an empty render pass, this resolves the multi-sampled color texture into the resolve target
             passEncoderState.ensureRenderPassInactive()
-            copyPass.begin(passEncoderState, 0)
-            vkCmdEndRenderPass(passEncoderState.commandBuffer)
-        }
+            memStack(passEncoderState.stack) {
+                val colorAttachmentInfo = if (!frameCopy.isCopyColor) null else callocVkRenderingAttachmentInfoN(1) {
+                    imageView(colorImageView.handle)
+                    imageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                    resolveMode(VK_RESOLVE_MODE_AVERAGE_BIT)
+                    resolveImageView(colorCopyView.handle)
+                    resolveImageLayout(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+                    loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                    storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                }
+                val depthAttachmentInfo = if (!frameCopy.isCopyDepth) null else callocVkRenderingAttachmentInfo {
+                    imageView(depthImageView.handle)
+                    imageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                    resolveMode(VK_RESOLVE_MODE_SAMPLE_ZERO_BIT)
+                    resolveImageView(depthCopyView.handle)
+                    resolveImageLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+                    loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                    storeOp(VK_ATTACHMENT_STORE_OP_STORE)
+                }
+                val renderingInfo = callocVkRenderingInfo {
+                    renderArea { ra ->
+                        ra.offset { it.set(0, 0) }
+                        ra.extent { it.set(colorImage.width, colorImage.height) }
+                    }
+                    layerCount(1)
+                    pColorAttachments(colorAttachmentInfo)
+                    pDepthAttachment(depthAttachmentInfo)
+                }
 
-        private fun copyDepth(passEncoderState: PassEncoderState) {
-            if (depthCopy == null) {
-                depthCopy = MultiSampledTexCopyPass(backend, TexFormat.R_F32, FilterMethod.NEAREST)
+                vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
+                vkCmdEndRenderingKHR(passEncoderState.commandBuffer)
+
+                colorCopyImg?.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer, this)
+                depthCopyImg?.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer, this)
             }
-
-            backend.swapchain.depthImage.transitionLayout(VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, passEncoderState.commandBuffer)
-            depthCopy!!.doCopyPass(backend.swapchain.depthImage, passEncoderState)
-            backend.swapchain.depthImage.transitionLayout(VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, passEncoderState.commandBuffer)
-
-            val copiedTex = depthCopy!!.colorTexture!!.gpuTexture
-            frameCopy.depthCopy2d.gpuTexture = copiedTex
-            frameCopy.depthCopy2d.loadingState = Texture.LoadingState.LOADED
         }
 
         override fun release() {
             super.release()
-            colorCopy?.release()
-            depthCopy?.release()
-            // set depth copy gpuTexture to null to avoid double free when frame copy is released
-            // not needed for color copy, which is correctly handled by OffscreenPass2d
-            frameCopy.depthCopy?.let { it.gpuTexture = null }
+            if (colorCopyView.handle != 0L) {
+                backend.device.destroyImageView(colorCopyView)
+            }
+            if (depthCopyView.handle != 0L) {
+                backend.device.destroyImageView(depthCopyView)
+            }
         }
-    }
-
-    companion object {
-        private val renderPassBeginInfo = VkRenderPassBeginInfo.calloc().apply { `sType$Default`() }
-        private val clearValues = VkClearValue.calloc(2)
     }
 }

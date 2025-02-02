@@ -14,7 +14,6 @@ class PassEncoderState(val backend: RenderBackendVk) {
 
     val commandBuffer: VkCommandBuffer get() = _commandBuffer!!
     val gpuRenderPass: RenderPassVk get() = _gpuRenderPass!!
-    var vkRenderPass: VkRenderPass = VkRenderPass(0); private set
     val renderPass: RenderPass get() = _renderPass!!
     val stack: MemoryStack get() = _stack!!
     val frameIndex: Int get() = backend.swapchain.currentFrameIndex
@@ -81,13 +80,12 @@ class PassEncoderState(val backend: RenderBackendVk) {
         this.layer = layer
         _gpuRenderPass = gpuRenderPass
         _renderPass = renderPass
-        vkRenderPass = gpuRenderPass.beginRenderPass(this, forceLoad)
+        gpuRenderPass.beginRenderPass(this, forceLoad)
     }
 
     fun ensureRenderPassInactive() {
         if (isPassActive) {
-            vkCmdEndRenderPass(commandBuffer)
-            vkRenderPass = VkRenderPass(0L)
+            gpuRenderPass.endRenderPass(this)
             isPassActive = false
             _gpuRenderPass = null
             _renderPass = null

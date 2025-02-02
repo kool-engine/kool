@@ -47,9 +47,13 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
                 imageCubeArray(physicalDevice.cubeMapArrays)
                 wideLines(physicalDevice.wideLines)
             }
-            val dynamicRenderingFeatures = VkPhysicalDeviceDynamicRenderingFeaturesKHR.calloc(this).apply {
+            val dynamicRenderingFeatures = VkPhysicalDeviceDynamicRenderingFeatures.calloc(this).apply {
                 `sType$Default`()
                 dynamicRendering(true)
+            }
+            val synchronization2Features = VkPhysicalDeviceSynchronization2Features.calloc(this).apply {
+                `sType$Default`()
+                synchronization2(true)
             }
 
             vkDevice = physicalDevice.createDevice {
@@ -58,6 +62,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
 
                 pEnabledFeatures(features)
                 pNext(dynamicRenderingFeatures)
+                pNext(synchronization2Features)
                 if (physicalDevice.isPortabilityDevice) {
                     // this enables all available portability features for the device, e.g.
                     // mutableComparisonSamplers which is needed to create samplers for shadow maps
@@ -94,7 +99,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
 
     override fun release() {
         super.release()
-        DeferredRelease.defer {
+        ReleaseQueue.enqueue {
             vkDestroyDevice(vkDevice, null)
             logD { "Destroyed logical device" }
         }
@@ -297,59 +302,59 @@ internal fun Device.createSwapchain(stack: MemoryStack? = null, block: VkSwapcha
 }
 
 internal fun Device.destroyCommandPool(commandPool: VkCommandPool) {
-    DeferredRelease.defer { vkDestroyCommandPool(vkDevice, commandPool.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyCommandPool(vkDevice, commandPool.handle, null) }
 }
 
 internal fun Device.destroyComputePipeline(computePipeline: VkComputePipeline) {
-    DeferredRelease.defer { vkDestroyPipeline(vkDevice, computePipeline.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyPipeline(vkDevice, computePipeline.handle, null) }
 }
 
 internal fun Device.destroyDescriptorPool(descriptorPool: VkDescriptorPool) {
-    DeferredRelease.defer { vkDestroyDescriptorPool(vkDevice, descriptorPool.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyDescriptorPool(vkDevice, descriptorPool.handle, null) }
 }
 
 internal fun Device.destroyDescriptorSetLayout(descriptorSetLayout: VkDescriptorSetLayout) {
-    DeferredRelease.defer { vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyDescriptorSetLayout(vkDevice, descriptorSetLayout.handle, null) }
 }
 
 internal fun Device.destroyFramebuffer(framebuffer: VkFramebuffer) {
-    DeferredRelease.defer { vkDestroyFramebuffer(vkDevice, framebuffer.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyFramebuffer(vkDevice, framebuffer.handle, null) }
 }
 
 internal fun Device.destroyFence(fence: VkFence) {
-    DeferredRelease.defer { vkDestroyFence(vkDevice, fence.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyFence(vkDevice, fence.handle, null) }
 }
 
 internal fun Device.destroyGraphicsPipeline(graphicsPipeline: VkGraphicsPipeline) {
-    DeferredRelease.defer { vkDestroyPipeline(vkDevice, graphicsPipeline.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyPipeline(vkDevice, graphicsPipeline.handle, null) }
 }
 
 internal fun Device.destroyImageView(imageView: VkImageView) {
-    DeferredRelease.defer { vkDestroyImageView(vkDevice, imageView.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyImageView(vkDevice, imageView.handle, null) }
 }
 
 internal fun Device.destroyPipelineLayout(pipelineLayout: VkPipelineLayout) {
-    DeferredRelease.defer { vkDestroyPipelineLayout(vkDevice, pipelineLayout.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyPipelineLayout(vkDevice, pipelineLayout.handle, null) }
 }
 
 internal fun Device.destroyQueryPool(queryPool: VkQueryPool) {
-    DeferredRelease.defer { vkDestroyQueryPool(vkDevice, queryPool.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyQueryPool(vkDevice, queryPool.handle, null) }
 }
 
 internal fun Device.destroyRenderPass(renderPass: VkRenderPass) {
-    DeferredRelease.defer { vkDestroyRenderPass(vkDevice, renderPass.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyRenderPass(vkDevice, renderPass.handle, null) }
 }
 
 internal fun Device.destroyShaderModule(shaderModule: VkShaderModule) {
-    DeferredRelease.defer { vkDestroyShaderModule(vkDevice, shaderModule.handle, null) }
+    ReleaseQueue.enqueue { vkDestroyShaderModule(vkDevice, shaderModule.handle, null) }
 }
 
 internal fun Device.destroySampler(sampler: VkSampler) {
-    DeferredRelease.defer { vkDestroySampler(vkDevice, sampler.handle, null) }
+    ReleaseQueue.enqueue { vkDestroySampler(vkDevice, sampler.handle, null) }
 }
 
 internal fun Device.destroySemaphore(semaphore: VkSemaphore) {
-    DeferredRelease.defer { vkDestroySemaphore(vkDevice, semaphore.handle, null) }
+    ReleaseQueue.enqueue { vkDestroySemaphore(vkDevice, semaphore.handle, null) }
 }
 
 internal fun Device.destroySwapchain(swapchain: VkSwapchain) {

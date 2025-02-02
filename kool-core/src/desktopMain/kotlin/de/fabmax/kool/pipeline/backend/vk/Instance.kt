@@ -55,7 +55,7 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
 
     override fun release() {
         super.release()
-        DeferredRelease.defer {
+        ReleaseQueue.enqueue {
             if (debugMessenger != 0L) {
                 EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, null)
             }

@@ -16,8 +16,9 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
     OffscreenPassCube(
         Node(),
         AttachmentConfig(
-            ColorAttachmentTextures(TexFormat.RGBA_F16),
-            mipLevels = MipMode.Render(REFLECTION_MIP_LEVELS)
+            colorAttachments = ColorAttachmentTextures(TexFormat.RGBA_F16),
+            mipLevels = MipMode.Render(REFLECTION_MIP_LEVELS),
+            depthAttachment = DepthAttachmentNone
         ),
         Vec2i(size),
         name = "reflection-map"

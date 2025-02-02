@@ -179,6 +179,18 @@ class DrawPipelineVk(
             pDynamicStates(ints(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
         }
 
+        val pipelineRenderingCreateInfo = callocVkPipelineRenderingCreateInfo {
+            colorAttachmentCount(renderPassVk.numColorAttachments)
+            val colorFormats = mallocInt(renderPassVk.numColorAttachments)
+            for (i in 0 until renderPassVk.numColorAttachments) {
+                colorFormats.put(i, renderPassVk.colorTargetFormats[i])
+            }
+            pColorAttachmentFormats(colorFormats)
+            if (passEncoderState.gpuRenderPass.hasDepth) {
+                depthAttachmentFormat(backend.physicalDevice.depthFormat)
+            }
+        }
+
         return device.createGraphicsPipeline {
             pStages(shaderStageInfos)
             pVertexInputState(createVertexBufferLayout())
@@ -190,10 +202,11 @@ class DrawPipelineVk(
             pDepthStencilState(depthStencil)
             pColorBlendState(blendInfo(passEncoderState))
             layout(pipelineLayout.handle)
-            renderPass(passEncoderState.vkRenderPass.handle)
+            renderPass(0L)
             subpass(0)
             basePipelineHandle(VK_NULL_HANDLE)
             basePipelineIndex(-1)
+            pNext(pipelineRenderingCreateInfo)
         }
     }
 
