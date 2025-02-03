@@ -158,7 +158,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     }
 
     fun pollEvents() {
-        renderOnResizeFlag = true
+        renderOnResizeFlag = KoolSystem.configJvm.updateOnWindowResize
         glfwPollEvents()
         renderOnResizeFlag = false
     }
@@ -184,6 +184,10 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         // during window resizing
         if (renderOnResizeFlag) {
             ctx.renderFrame()
+            if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
+                // Vulkan needs two renders for swapchain update
+                ctx.renderFrame()
+            }
         }
     }
 

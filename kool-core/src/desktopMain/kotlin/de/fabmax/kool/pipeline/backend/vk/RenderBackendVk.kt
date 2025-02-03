@@ -124,6 +124,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 ReleaseQueue.processQueue()
 
                 passEncoderState.beginFrame(this)
+                timestampQueryPool.onBeginFrame()
                 frameTimer.begin(passEncoderState.commandBuffer)
 
                 ctx.preparePipelines(passEncoderState)

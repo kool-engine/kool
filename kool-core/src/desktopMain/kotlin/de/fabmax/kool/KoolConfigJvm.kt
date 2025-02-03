@@ -39,6 +39,7 @@ data class KoolConfigJvm(
     val windowSize: Vec2i = Vec2i(1600, 900),
     val isFullscreen: Boolean = false,
     val showWindowOnStart: Boolean = true,
+    val updateOnWindowResize: Boolean = true,
     val monitor: Int = -1,
     val windowIcon: List<BufferedImage> = DEFAULT_ICON?.let { listOf(it) } ?: emptyList(),
 

@@ -127,14 +127,14 @@ abstract class RenderPassVk(
                 }
             }
 
-            val isCmdValid = cmd.isActive && cmd.geometry.numIndices > 0
-            val bindSuccessful = backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)
-            if (isCmdValid && bindSuccessful) {
-                val insts = cmd.instances
+            val insts = cmd.instances
+            val isCmdValid = cmd.isActive && cmd.geometry.numIndices > 0 && (insts == null || insts.numInstances > 0)
+            val bindSuccessful = isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)
+            if (bindSuccessful) {
                 if (insts == null) {
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
                     vkCmdDrawIndexed(passEncoderState.commandBuffer, cmd.geometry.numIndices, 1, 0, 0, 0)
-                } else if (insts.numInstances > 0) {
+                } else {
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
                     vkCmdDrawIndexed(passEncoderState.commandBuffer, cmd.geometry.numIndices, insts.numInstances, 0, 0, 0)
                 }

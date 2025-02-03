@@ -2,13 +2,13 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.util.*
 import org.lwjgl.BufferUtils
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRSurface.VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR
 import org.lwjgl.vulkan.KHRSwapchain.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkExtent2D
 
 class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
 
@@ -22,13 +22,13 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
 
     val vkSwapchain: VkSwapchain
     val imageFormat: Int
-    val extent: VkExtent2D = VkExtent2D.malloc()
     val images: List<VkImage>
     val imageViews: List<VkImageView>
     val numSamples = backend.physicalDevice.maxSamples.coerceAtMost(KoolSystem.configJvm.numSamples)
 
-    val width: Int get() = extent.width()
-    val height: Int get() = extent.height()
+    val extent: Vec2i
+    val width: Int get() = extent.x
+    val height: Int get() = extent.y
 
     private val imageAvailableSemas: List<VkSemaphore>
     private val renderFinishedSemas: List<VkSemaphore>
@@ -40,10 +40,10 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
 
     init {
         memStack {
-            val swapChainSupport = physicalDevice.swapChainSupport
+            val swapChainSupport = physicalDevice.querySwapchainSupport(this)
             val surfaceFormat = swapChainSupport.chooseSurfaceFormat()
             val presentMode = swapChainSupport.choosePresentationMode()
-            val extent = swapChainSupport.chooseSwapExtent(backend.glfwWindow, this)
+            extent = swapChainSupport.chooseSwapExtent(backend.glfwWindow)
             var imageCount = swapChainSupport.capabilities.minImageCount() + 1
             if (swapChainSupport.capabilities.maxImageCount() > 0) {
                 imageCount = imageCount.coerceAtMost(swapChainSupport.capabilities.maxImageCount())
@@ -54,7 +54,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
                 minImageCount(imageCount)
                 imageFormat(surfaceFormat.format())
                 imageColorSpace(surfaceFormat.colorSpace())
-                imageExtent(extent)
+                imageExtent { it.set(extent.x, extent.y) }
                 imageArrayLayers(1)
                 imageUsage(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT)
                 preTransform(swapChainSupport.capabilities.currentTransform())
@@ -72,7 +72,6 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             }
 
             imageFormat = surfaceFormat.format()
-            this@Swapchain.extent.set(extent)
 
             val imgs = enumerateLongs { cnt, imgs ->
                 vkGetSwapchainImagesKHR(device.vkDevice, vkSwapchain.handle, cnt, imgs)
@@ -143,7 +142,6 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         super.release()
         cancelReleaseWith(backend.device)
         device.destroySwapchain(vkSwapchain)
-        extent.free()
 
         imageViews.forEach { device.destroyImageView(it) }
 

@@ -86,7 +86,7 @@ class TitleBgRenderer(
         var bgColor by uniformColor("uBgColor", UiColors.titleBg)
         var fadeProps by uniform4f("uFadeProps")
 
-        private class Model : KslProgram("Demo category shader") {
+        private class Model : KslProgram("title bg shader") {
             init {
                 val screenPos = interStageFloat2()
                 val localPos = interStageFloat2()
@@ -158,7 +158,11 @@ class TitleBgRenderer(
             val ATTRIB_DIMENS = Attribute("aDimens", GpuType.FLOAT4)
             val ATTRIB_CLIP_CORNERS = Attribute("aClipCorners", GpuType.FLOAT2)
 
-            val pipelineConfig = PipelineConfig(blendMode = BlendMode.DISABLED, cullMethod = CullMethod.NO_CULLING)
+            val pipelineConfig = PipelineConfig(
+                blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
+                cullMethod = CullMethod.NO_CULLING,
+                depthTest = DepthCompareOp.ALWAYS
+            )
         }
     }
 

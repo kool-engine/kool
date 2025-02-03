@@ -6,7 +6,7 @@ import org.lwjgl.vulkan.VK10.*
 
 class ClearHelper(val backend: RenderBackendVk) {
     private val device: Device get() = backend.device
-    private val clearPipelines = mutableMapOf<RenderPassVk, ClearPipeline>()
+    private val clearPipelines = mutableMapOf<RenderPass, ClearPipeline>()
 
     private val vertexModule: VkShaderModule = device.createShaderModule {
         val spirv = checkNotNull(Shaderc.compileVertexShader(VERT_SRC, "clear-shader.vert", "main").spirvData)
@@ -25,13 +25,13 @@ class ClearHelper(val backend: RenderBackendVk) {
     }
 
     fun clear(passEncoderState: PassEncoderState) {
-        val clearPipeline = clearPipelines.getOrPut(passEncoderState.gpuRenderPass) {
-            ClearPipeline(passEncoderState.gpuRenderPass)
+        val clearPipeline = clearPipelines.getOrPut(passEncoderState.renderPass) {
+            ClearPipeline(passEncoderState.renderPass, passEncoderState.gpuRenderPass)
         }
         clearPipeline.clear(passEncoderState)
     }
 
-    private inner class ClearPipeline(val gpuRenderPass: RenderPassVk) : BaseReleasable() {
+    private inner class ClearPipeline(val renderPass: RenderPass, val gpuRenderPass: RenderPassVk) : BaseReleasable() {
         val descriptorSetLayout: VkDescriptorSetLayout
         val pipelineLayout: VkPipelineLayout
         val bindGroupData: BindGroupDataVk
@@ -40,9 +40,8 @@ class ClearHelper(val backend: RenderBackendVk) {
         var prevColor: Color? = null
         var prevDepth = 0f
 
-        val clearColorOnly: VkGraphicsPipeline by lazy { makeClearPipeline(true, false) }
-        val clearDepthOnly: VkGraphicsPipeline by lazy { makeClearPipeline(false, true) }
-        val clearColorAndDepth: VkGraphicsPipeline by lazy { makeClearPipeline(true, true) }
+        val clearColorOnly: VkGraphicsPipeline by lazy { makeClearPipeline(false) }
+        val clearColorAndDepth: VkGraphicsPipeline by lazy { makeClearPipeline(true) }
 
         init {
             val bindGrpLayout = BindGroupLayout.Builder(0, BindGroupScope.VIEW).apply {
@@ -71,12 +70,12 @@ class ClearHelper(val backend: RenderBackendVk) {
                 bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend)
             }
 
-            releaseWith(gpuRenderPass)
+            releaseWith(renderPass)
         }
 
         override fun release() {
             super.release()
-            cancelReleaseWith(gpuRenderPass)
+            cancelReleaseWith(renderPass)
             bindGroupData.release()
             device.destroyPipelineLayout(pipelineLayout)
             device.destroyDescriptorSetLayout(descriptorSetLayout)
@@ -84,20 +83,38 @@ class ClearHelper(val backend: RenderBackendVk) {
 
         fun clear(passEncoderState: PassEncoderState) {
             val rp = passEncoderState.renderPass
-            val clearColor = (rp.clearColors[0] as? ClearColorFill)?.clearColor
+            val clearColor = (rp.clearColors[0] as? ClearColorFill)?.clearColor ?: CLEAR_COLOR_EMPTY
             val clearDepth = if (rp.isReverseDepth) 0f else 1f
+
+            with(passEncoderState.stack) {
+                val view = rp.views.first()
+                val viewport = callocVkViewportN(1) {
+                    x(view.viewport.x.toFloat())
+                    y(view.viewport.y.toFloat())
+                    width(view.viewport.width.toFloat())
+                    height(view.viewport.height.toFloat())
+                    minDepth(0f)
+                    maxDepth(1f)
+                }
+                vkCmdSetViewport(passEncoderState.commandBuffer, 0, viewport)
+
+                val scissor = callocVkRect2DN(1) {
+                    offset { it.set(view.viewport.x, view.viewport.y) }
+                    extent { it.set(view.viewport.width, view.viewport.height) }
+                }
+                vkCmdSetScissor(passEncoderState.commandBuffer, 0, scissor)
+            }
 
             if (clearColor != prevColor || clearDepth != prevDepth) {
                 prevColor = clearColor
                 prevDepth = clearDepth
                 clearValues.buffer.clear()
-                clearColor?.putTo(clearValues.buffer)
+                clearColor.putTo(clearValues.buffer)
                 clearValues.buffer.putFloat32(clearDepth)
                 clearValues.markDirty()
             }
 
             val clearPipeline = when {
-                clearColor == null -> clearDepthOnly
                 rp.clearDepth != ClearDepthFill -> clearColorOnly
                 else -> clearColorAndDepth
             }
@@ -108,7 +125,7 @@ class ClearHelper(val backend: RenderBackendVk) {
             vkCmdDraw(passEncoderState.commandBuffer, 4, 1, 0, 0)
         }
 
-        private fun makeClearPipeline(isClearColor: Boolean, isClearDepth: Boolean): VkGraphicsPipeline = memStack {
+        private fun makeClearPipeline(isClearDepth: Boolean): VkGraphicsPipeline = memStack {
             val shaderStageInfos = callocVkPipelineShaderStageCreateInfoN(2) {
                 this[0]
                     .stage(VK_SHADER_STAGE_VERTEX_BIT)
@@ -130,6 +147,7 @@ class ClearHelper(val backend: RenderBackendVk) {
                 cullMode(CullMethod.NO_CULLING.vk)
             }
             val depthStencil = callocVkPipelineDepthStencilStateCreateInfo {
+                depthTestEnable(true)
                 depthWriteEnable(isClearDepth)
                 depthCompareOp(DepthCompareOp.ALWAYS.vk)
             }
@@ -145,10 +163,14 @@ class ClearHelper(val backend: RenderBackendVk) {
                 pDynamicStates(ints(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
             }
             val blendAttachments = callocVkPipelineColorBlendAttachmentStateN(1) {
-                if (isClearColor) {
-                    colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
-                }
-                blendEnable(false)
+                colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
+                blendEnable(true)
+                srcColorBlendFactor(VK_BLEND_FACTOR_ZERO)
+                dstColorBlendFactor(VK_BLEND_FACTOR_ONE)
+                colorBlendOp(VK_BLEND_OP_ADD)
+                srcAlphaBlendFactor(VK_BLEND_FACTOR_ZERO)
+                dstAlphaBlendFactor(VK_BLEND_FACTOR_ONE)
+                alphaBlendOp(VK_BLEND_OP_ADD)
             }
             val blendInfo = callocVkPipelineColorBlendStateCreateInfo {
                 pAttachments(blendAttachments)
@@ -161,7 +183,9 @@ class ClearHelper(val backend: RenderBackendVk) {
                     colorFormats.put(i, gpuRenderPass.colorTargetFormats[i])
                 }
                 pColorAttachmentFormats(colorFormats)
-                depthAttachmentFormat(backend.physicalDevice.depthFormat)
+                if (gpuRenderPass.hasDepth) {
+                    depthAttachmentFormat(backend.physicalDevice.depthFormat)
+                }
             }
 
             device.createGraphicsPipeline {
@@ -185,6 +209,7 @@ class ClearHelper(val backend: RenderBackendVk) {
     }
 
     companion object {
+        private val CLEAR_COLOR_EMPTY = Color.BLACK.withAlpha(0f)
         private val VERT_SRC = """
             #version 450
 

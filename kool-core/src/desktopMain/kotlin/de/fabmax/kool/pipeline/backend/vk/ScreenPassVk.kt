@@ -18,7 +18,8 @@ import org.lwjgl.vulkan.VkCommandBuffer
 class ScreenPassVk(backend: RenderBackendVk) :
     RenderPassVk(true, backend.swapchain.numSamples, backend)
 {
-    override val colorTargetFormats: List<Int> = listOf(backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format())
+    private val _colorTargetFormats = mutableListOf(backend.physicalDevice.querySurfaceFormat().format())
+    override val colorTargetFormats: List<Int> get() = _colorTargetFormats
     private var isStore = false
 
     private lateinit var colorImage: ImageVk
@@ -37,6 +38,8 @@ class ScreenPassVk(backend: RenderBackendVk) :
     }
 
     fun onSwapchainRecreated() {
+        // todo: if this would really change, draw pipelines would also need to be recreated...
+        _colorTargetFormats[0] = backend.physicalDevice.querySurfaceFormat().format()
         backend.commandPool.singleShotCommands { commandBuffer ->
             val (cImage, cImageView) = createColorResources(numSamples, commandBuffer)
             colorImage = cImage.also { it.releaseWith(backend.swapchain) }
@@ -205,7 +208,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
 
                 val imgInfo = ImageInfo(
                     imageType = VK_IMAGE_TYPE_2D,
-                    format = backend.physicalDevice.swapChainSupport.chooseSurfaceFormat().format(),
+                    format = backend.physicalDevice.querySurfaceFormat().format(),
                     width = colorImage.width,
                     height = colorImage.height,
                     depth = 1,
