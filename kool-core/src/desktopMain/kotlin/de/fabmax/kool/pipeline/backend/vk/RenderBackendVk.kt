@@ -43,6 +43,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val memManager: MemoryManager
     val commandPool: CommandPool
     val commandBuffers: List<VkCommandBuffer>
+    val descriptorPools: DescriptorPoolManager
     var swapchain: Swapchain; private set
     val textureLoader: TextureLoaderVk
     val pipelineManager: PipelineManager
@@ -99,6 +100,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         memManager = MemoryManager(this)
         commandPool = CommandPool(this, device.graphicsQueue)
         commandBuffers = commandPool.allocateCommandBuffers(Swapchain.MAX_FRAMES_IN_FLIGHT)
+        descriptorPools = DescriptorPoolManager(this)
         swapchain = Swapchain(this)
         timestampQueryPool = TimestampQueryPool(this)
         textureLoader = TextureLoaderVk(this)

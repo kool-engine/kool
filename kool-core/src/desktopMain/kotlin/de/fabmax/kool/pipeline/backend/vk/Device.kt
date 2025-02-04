@@ -112,13 +112,15 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
     }
 }
 
-internal inline fun Device.allocateDescriptorSets(stack: MemoryStack? = null, block: VkDescriptorSetAllocateInfo.() -> Unit): List<VkDescriptorSet> {
+internal inline fun Device.allocateDescriptorSets(stack: MemoryStack? = null, block: VkDescriptorSetAllocateInfo.() -> Unit): List<VkDescriptorSet>? {
     logT { "allocate descriptor sets" }
     memStack(stack) {
         val allocInfo = callocVkDescriptorSetAllocateInfo(block)
         val handles = mallocLong(allocInfo.descriptorSetCount())
-        vkCheck(vkAllocateDescriptorSets(vkDevice, allocInfo, handles)) { "Failed allocating descriptor sets: $it" }
-        return buildList { repeat(allocInfo.descriptorSetCount()) { add(VkDescriptorSet(handles[it])) } }
+        val result = vkAllocateDescriptorSets(vkDevice, allocInfo, handles)
+        return if (result != VK_SUCCESS) null else {
+            buildList { repeat(allocInfo.descriptorSetCount()) { add(VkDescriptorSet(handles[it])) } }
+        }
     }
 }
 
@@ -363,4 +365,8 @@ internal fun Device.destroySwapchain(swapchain: VkSwapchain) {
 
 internal fun Device.resetCommandPool(commandPool: VkCommandPool, flags: Int = 0) {
     vkResetCommandPool(vkDevice, commandPool.handle, flags)
+}
+
+internal fun Device.resetDescriptorPool(descriptorPool: VkDescriptorPool) {
+    vkResetDescriptorPool(vkDevice, descriptorPool.handle, 0)
 }

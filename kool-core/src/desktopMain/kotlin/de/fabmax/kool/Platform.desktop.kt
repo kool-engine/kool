@@ -85,17 +85,12 @@ private object DesktopLogPrinter : LogPrinter {
     override fun print(lvl: Log.Level, tag: String?, message: String) {
         synchronized(dateFmt) {
             val timestamp = coloredText(dateFmt.format(System.currentTimeMillis()), MdColor.BROWN tone 300)
-            val frame = coloredText("f:${Time.frameCount}", MdColor.PURPLE tone 300)
+            val frameFmt = if (Time.frameCount > 999) "…%03d".format(Time.frameCount % 1000) else "%4d".format(Time.frameCount)
+            val frame = coloredText("f:$frameFmt", MdColor.PURPLE tone 300)
 
-            val (tagColor, bold) = when (lvl) {
-                Log.Level.TRACE -> MdColor.INDIGO tone 200 to false
-                Log.Level.DEBUG -> MdColor.CYAN tone 300 to false
-                Log.Level.INFO -> MdColor.LIGHT_GREEN to true
-                Log.Level.WARN -> MdColor.AMBER to true
-                Log.Level.ERROR -> MdColor.RED to true
-                Log.Level.OFF -> MdColor.PURPLE to true
-            }
-            val tagStr = coloredText("${lvl.indicator}/$tag", tagColor, bold = bold)
+            val style = styles[lvl.level]
+            val tagStr = coloredText(" ${lvl.indicator} ", Color.WHITE, bgColor = style.bgColor, bold = true) +
+                    (tag?.let { coloredText(" $it:", style.fgColor, bold = style.bold) } ?: " ")
 
             val txt = message.replace("\n", "\n  ")
             val messageStr = when (lvl) {
@@ -104,11 +99,12 @@ private object DesktopLogPrinter : LogPrinter {
                 else -> txt
             }
 
-            val printMsg = "$tagStr: $messageStr"
-            val checkMsg = printMsg.replace(numberRegex) { "" }
+            val isVkMsg = "VkValidation" in (tag ?: "")
+            val printMsg = "$tagStr $messageStr"
+            val checkMsg = if (isVkMsg) printMsg.replace(numberRegex) { "" } else printMsg
             if (checkMsg == prevMsg) {
                 sameMsgCnt++
-                val colored = coloredText("[Similar message: $sameMsgCnt times]", MdColor.GREY tone 900, MdColor.GREY tone 500)
+                val colored = coloredText("<Repeated message: $sameMsgCnt times>", MdColor.GREY tone 400)
                 print("\b\r  $colored")
             } else {
                 if (sameMsgCnt > 0) {
@@ -116,7 +112,7 @@ private object DesktopLogPrinter : LogPrinter {
                 }
                 sameMsgCnt = 0
                 prevMsg = checkMsg
-                println("$timestamp|$frame  $printMsg")
+                println("$timestamp|$frame $printMsg")
             }
         }
     }
@@ -136,4 +132,15 @@ private object DesktopLogPrinter : LogPrinter {
         val weight = if (bold) "\u001b[1m" else ""
         return "\u001b[38;2;$r;$g;${b}m$weight$bg$text\u001b[0m"
     }
+
+    private data class LevelStyle(val fgColor: Color, val bgColor: Color, val bold: Boolean)
+
+    private val styles = listOf(
+        LevelStyle(MdColor.INDIGO tone 200, MdColor.INDIGO, false),
+        LevelStyle(MdColor.CYAN tone 300, MdColor.CYAN tone 700, false),
+        LevelStyle(MdColor.LIGHT_GREEN, MdColor.LIGHT_GREEN, true),
+        LevelStyle(MdColor.AMBER, MdColor.AMBER, true),
+        LevelStyle(MdColor.RED, MdColor.RED, true),
+        LevelStyle(MdColor.PURPLE, MdColor.PURPLE, true),
+    )
 }
