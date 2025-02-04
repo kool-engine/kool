@@ -115,6 +115,7 @@ class BindGroupDataVk(
                 return
             }
 
+            backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
             descriptorSets = backend.descriptorPools.allocateSets(poolLayout, gpuLayout, this)
             val numBindings = uboBindings.size + storageBufferBindings.size + textureBindings.size
             val descriptorWrite = callocVkWriteDescriptorSetN(Swapchain.MAX_FRAMES_IN_FLIGHT * numBindings) { }

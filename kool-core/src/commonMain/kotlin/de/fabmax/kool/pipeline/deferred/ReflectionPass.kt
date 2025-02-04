@@ -48,6 +48,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
     }
 
     fun setInput(lightingPass: PbrLightingPass, materialPass: MaterialPass) {
+        ssrShader.createdPipeline?.swapPipelineData(materialPass)
         ssrShader.positionFlags = materialPass.positionFlags
         ssrShader.normalRoughness = materialPass.normalRoughness
         ssrShader.lightingPass = lightingPass.colorTexture

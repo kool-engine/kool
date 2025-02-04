@@ -58,8 +58,17 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
                 sets = pool.allocateSets(layout, numSets, stack)
                 if (sets == null) {
                     openPools -= pool
-                    exceededPools += pool
+
                     logD { "Descriptor pool exceeded" }
+                    if (pool.allocatedSets.isEmpty()) {
+                        ReleaseQueue.enqueue {
+                            pool.resetPool()
+                            openPools += pool
+                        }
+                    } else {
+                        exceededPools += pool
+                    }
+
                 } else {
                     sets.forEach { allocatedSets[it] = pool }
                 }
@@ -121,6 +130,7 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         fun resetPool() {
+            logD { "Reset descriptor pool" }
             backend.device.resetDescriptorPool(descriptorPool)
             allocatedSets.clear()
             isExceeded = false

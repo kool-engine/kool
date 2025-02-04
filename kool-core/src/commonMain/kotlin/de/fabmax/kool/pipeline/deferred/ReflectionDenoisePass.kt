@@ -35,6 +35,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
     }
 
     fun setPositionInput(materialPass: MaterialPass) {
+        denoiseShader.createdPipeline?.swapPipelineData(materialPass)
         denoiseShader.depthTex = materialPass.positionFlags
     }
 
