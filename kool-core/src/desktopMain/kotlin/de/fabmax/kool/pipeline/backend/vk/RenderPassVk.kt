@@ -85,29 +85,12 @@ abstract class RenderPassVk(
         }
     }
 
-    private fun renderView(view: RenderPass.View, passEncoderState: PassEncoderState) = with(passEncoderState.stack) {
+    private fun renderView(view: RenderPass.View, passEncoderState: PassEncoderState) {
         val mipLevel = passEncoderState.mipLevel
         val layer = passEncoderState.layer
         view.setupView()
 
-        val renderWidth = (view.viewport.width shr mipLevel).coerceAtLeast(1)
-        val renderHeight = (view.viewport.height shr mipLevel).coerceAtLeast(1)
-
-        val viewport = callocVkViewportN(1) {
-            x(view.viewport.x.toFloat())
-            y(renderHeight + view.viewport.y.toFloat())
-            width(renderWidth.toFloat())
-            height(-renderHeight.toFloat())
-            minDepth(0f)
-            maxDepth(1f)
-        }
-        vkCmdSetViewport(passEncoderState.commandBuffer, 0, viewport)
-
-        val scissor = callocVkRect2DN(1) {
-            offset { it.set(view.viewport.x, view.viewport.y) }
-            extent { it.set(renderWidth, renderHeight) }
-        }
-        vkCmdSetScissor(passEncoderState.commandBuffer, 0, scissor)
+        passEncoderState.setViewport(view.viewport, mipLevel)
 
         // only do copy when last mip-level is rendered
         val isLastMipLevel = mipLevel == view.renderPass.numRenderMipLevels - 1

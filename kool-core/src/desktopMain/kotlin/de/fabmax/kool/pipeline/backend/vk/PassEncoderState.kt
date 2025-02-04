@@ -3,10 +3,13 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.pipeline.ClearDepthFill
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.util.Viewport
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import org.lwjgl.vulkan.VkRect2D
+import org.lwjgl.vulkan.VkViewport
 
 class PassEncoderState(val backend: RenderBackendVk) {
     private var _gpuRenderPass: RenderPassVk? = null
@@ -83,6 +86,13 @@ class PassEncoderState(val backend: RenderBackendVk) {
         _gpuRenderPass = gpuRenderPass
         _renderPass = renderPass
         gpuRenderPass.beginRenderPass(this, forceLoad)
+
+        val width = (renderPass.width shr mipLevel).coerceAtLeast(1)
+        val height = (renderPass.height shr mipLevel).coerceAtLeast(1)
+        scissorBuffer[0].apply {
+            extent { it.set(width, height) }
+        }
+        vkCmdSetScissor(commandBuffer, 0, scissorBuffer)
     }
 
     fun ensureRenderPassInactive() {
@@ -97,6 +107,19 @@ class PassEncoderState(val backend: RenderBackendVk) {
             currentViewGroup = null
             currentPipelineGroup = null
         }
+    }
+
+    fun setViewport(viewport: Viewport, mipLevel: Int) {
+        val x = viewport.x shr mipLevel
+        val y = viewport.y shr mipLevel
+        val width = (viewport.width shr mipLevel).coerceAtLeast(1)
+        val height = (viewport.height shr mipLevel).coerceAtLeast(1)
+        setViewport(x, y, width, height)
+    }
+
+    fun setViewport(x: Int, y: Int, width: Int, height: Int) {
+        viewportBuffer[0].set(x.toFloat(), (height + y).toFloat(), width.toFloat(), (-height).toFloat(), 0f, 1f)
+        vkCmdSetViewport(commandBuffer, 0, viewportBuffer)
     }
 
     fun setPipeline(renderPipeline: VkGraphicsPipeline) {
@@ -161,6 +184,11 @@ class PassEncoderState(val backend: RenderBackendVk) {
             descriptorSets,
             null
         )
+    }
+
+    companion object {
+        private val viewportBuffer = VkViewport.calloc(1)
+        private val scissorBuffer = VkRect2D.calloc(1)
     }
 }
 
