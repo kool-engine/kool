@@ -321,12 +321,12 @@ class Track(val world: VehicleWorld) : Node() {
 
     private fun makeTrackShader() {
         val texProps = TextureProps(
-            generateMipMaps = false,
+            isMipMapped = false,
             defaultSamplerSettings = SamplerSettings().nearest()
         )
         val roughnessTexProps = TextureProps(
             format = TexFormat.R,
-            generateMipMaps = false,
+            isMipMapped = false,
             defaultSamplerSettings = SamplerSettings().nearest()
         )
         val rand = Random(1337)

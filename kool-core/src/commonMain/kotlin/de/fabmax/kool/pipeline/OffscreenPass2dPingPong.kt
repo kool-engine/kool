@@ -5,9 +5,15 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.scene.Node
 
-open class OffscreenPass2dPingPong(attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
-    OffscreenPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 1), name)
-{
+@Deprecated("Will be removed")
+open class OffscreenPass2dPingPong(
+    attachmentConfig: AttachmentConfig,
+    initialSize: Vec2i,
+    name: String,
+    numSamples: Int = 1,
+    mipMode: MipMode = MipMode.Single,
+) : OffscreenPass(numSamples, mipMode, Vec3i(initialSize, 1), name) {
+
     var pingPongPasses = 1
 
     val pingContent = Node()
@@ -26,6 +32,8 @@ open class OffscreenPass2dPingPong(attachmentConfig: AttachmentConfig, initialSi
     var onDrawPing: ((Int) -> Unit)? = null
     var onDrawPong: ((Int) -> Unit)? = null
 
+    override val colors: List<RenderPassColorAttachment> = emptyList()
+    override val depth: RenderPassDepthAttachment? = null
     override val views: List<View> = emptyList()
 
     fun setSize(width: Int, height: Int) {

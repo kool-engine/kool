@@ -10,7 +10,6 @@ class OffscreenPass2dGl(
 ) : GlRenderPass(backend), OffscreenPass2dImpl {
 
     private val fbos = mutableListOf<GlFramebuffer>()
-    private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
 
     internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
@@ -79,18 +78,16 @@ class OffscreenPass2dGl(
     private fun deleteBuffers() {
         copyFbo?.let { gl.deleteFramebuffer(it) }
         fbos.forEach { gl.deleteFramebuffer(it) }
-        rbos.forEach { gl.deleteRenderbuffer(it) }
         fbos.clear()
-        rbos.clear()
 
-        parent.colorTextures.forEach { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
+        parent.colors.forEach { tex ->
+            if (tex.texture.loadingState == Texture.LoadingState.LOADED) {
+                tex.texture.dispose()
             }
         }
-        parent.depthTexture?.let { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
+        parent.depth?.let { tex ->
+            if (tex.texture.loadingState == Texture.LoadingState.LOADED) {
+                tex.texture.dispose()
             }
         }
 
@@ -111,13 +108,11 @@ class OffscreenPass2dGl(
     }
 
     private fun createBuffers() {
-        if (parent.colorAttachments is OffscreenPass.ColorAttachmentTextures) {
-            parent.colorTextures.forEachIndexed { i, tex ->
-                colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
-            }
+        parent.colors.forEachIndexed { i, tex ->
+            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex.texture, gl.TEXTURE_2D)
         }
-        if (parent.depthAttachment is OffscreenPass.DepthAttachmentTexture) {
-            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, parent.depthTexture!!, gl.TEXTURE_2D)
+        parent.depth?.let {
+            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it.texture, gl.TEXTURE_2D)
         }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {
@@ -125,15 +120,9 @@ class OffscreenPass2dGl(
             fbos += fbo
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
-            when (parent.colorAttachments) {
-                OffscreenPass.ColorAttachmentNone -> { }
-                is OffscreenPass.ColorAttachmentTextures -> attachColorTextures(mipLevel)
-            }
-
-            when (parent.depthAttachment) {
-                OffscreenPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
-                OffscreenPass.DepthAttachmentNone -> { }
-                is OffscreenPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel)
+            attachColorTextures(mipLevel)
+            if (parent.depth != null) {
+                attachDepthTexture(mipLevel)
             }
 
             if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {

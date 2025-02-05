@@ -4,13 +4,10 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenPass2d
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
@@ -18,10 +15,10 @@ import de.fabmax.kool.util.launchDelayed
 
 class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
     OffscreenPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.R),
-        aoPass.size.xy,
-        "ambient-occlusion-denoise"
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.R),
+        initialSize = aoPass.size.xy,
+        name = "ambient-occlusion-denoise"
     )
 {
     val denoiseShader = DenoiseShader(aoPass, depthComponent)
@@ -80,7 +77,7 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
     inner class DenoiseShader(aoPass: OffscreenPass2d, depthComponent: String) :
         KslShader("Ambient Occlusion Denoise Pass")
     {
-        var noisyAoTex by texture2d("noisyAoTex", aoPass.colorTexture)
+        var noisyAoTex by texture2d("noisyAoTex", aoPass.colors[0].texture)
         var viewSpaceTex by texture2d("viewSpaceTex")
         var uRadius by uniform1f("uRadius", 1f)
 

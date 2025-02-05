@@ -13,7 +13,7 @@ import kotlin.math.sqrt
 
 class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
     OffscreenPass2dPingPong(
-        colorAttachmentNoDepth(TexFormat.RGBA_F16),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA_F16),
         initialSize = Vec2i(128, 128),
         name = "bloom-blur"
     )
@@ -22,8 +22,7 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
     private val pongShader: BlurShader
     private var blurDirDirty = true
 
-    val bloomMap: Texture2d
-        get() = pong.colorTexture!!
+    val bloomMap: Texture2d get() = pong.colorTexture!!
 
     var bloomScale = 1f
         set(value) {
@@ -43,13 +42,13 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
             kernelRadius = kernelSize
         }
         pingShader = BlurShader(pingCfg)
-        pingShader.blurInput = thresholdPass.colorTexture
+        pingShader.blurInput = thresholdPass.colors[0].texture
 
         val pongCfg = BlurShaderConfig().apply {
             kernelRadius = kernelSize
         }
         pongShader = BlurShader(pongCfg)
-        pongShader.blurInput = ping.colorTexture
+        pongShader.blurInput = ping.colors[0].texture
 
         pingContent.fullScreenQuad(pingShader)
         pongContent.fullScreenQuad(pongShader)
@@ -73,8 +72,8 @@ class BloomBlurPass(kernelSize: Int, thresholdPass: BloomThresholdPass) :
         }
     }
 
-    override fun applySize(width: Int, height: Int, depth: Int) {
-        super.applySize(width, height, depth)
+    override fun applySize(width: Int, height: Int, layers: Int) {
+        super.applySize(width, height, layers)
         blurDirDirty = true
     }
 

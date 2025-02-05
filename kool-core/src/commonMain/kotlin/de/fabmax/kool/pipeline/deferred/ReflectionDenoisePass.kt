@@ -12,9 +12,9 @@ import de.fabmax.kool.scene.addMesh
 
 class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
     OffscreenPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA),
-        reflectionPass.size.xy,
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA),
+        initialSize = reflectionPass.size.xy,
         name = "reflection-denoise"
     )
 {

@@ -14,7 +14,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
     private val renderDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
 
     private val resolveFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
-    private val resolvedColor = Texture2d(TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped().nearest()))
+    private val resolvedColor = Texture2d(TextureProps(isMipMapped = false, defaultSamplerSettings = SamplerSettings().clamped().nearest()))
     private val resolveDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
 
     private val copyFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
@@ -82,7 +82,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
             blitScene.mainRenderPass.update(backend.ctx)
-            renderView(blitScene.mainRenderPass.screenView, 0, 0)
+            renderView(blitScene.mainRenderPass.defaultView, 0, 0)
         }
     }
 

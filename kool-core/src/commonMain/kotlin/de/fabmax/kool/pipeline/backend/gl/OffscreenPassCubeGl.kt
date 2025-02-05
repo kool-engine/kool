@@ -9,7 +9,6 @@ class OffscreenPassCubeGl(
 ) : GlRenderPass(backend), OffscreenPassCubeImpl {
 
     private val fbos = mutableListOf<GlFramebuffer>()
-    private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
 
     internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
@@ -89,18 +88,16 @@ class OffscreenPassCubeGl(
     private fun deleteBuffers() {
         copyFbo?.let { gl.deleteFramebuffer(it) }
         fbos.forEach { gl.deleteFramebuffer(it) }
-        rbos.forEach { gl.deleteRenderbuffer(it) }
         fbos.clear()
-        rbos.clear()
 
-        parent.colorTextures.forEach { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
+        parent.colors.forEach { tex ->
+            if (tex.texture.loadingState == Texture.LoadingState.LOADED) {
+                tex.texture.dispose()
             }
         }
-        parent.depthTexture?.let { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
+        parent.depth?.let { tex ->
+            if (tex.texture.loadingState == Texture.LoadingState.LOADED) {
+                tex.texture.dispose()
             }
         }
 
@@ -121,13 +118,11 @@ class OffscreenPassCubeGl(
     }
 
     private fun createBuffers() {
-        if (parent.colorAttachments is OffscreenPass.ColorAttachmentTextures) {
-            parent.colorTextures.forEachIndexed { i, tex ->
-                colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_CUBE_MAP)
-            }
+        parent.colors.forEachIndexed { i, tex ->
+            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex.texture, gl.TEXTURE_CUBE_MAP)
         }
-        if (parent.depthAttachment is OffscreenPass.DepthAttachmentTexture) {
-            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, parent.depthTexture!!, gl.TEXTURE_CUBE_MAP)
+        parent.depth?.let {
+            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it.texture, gl.TEXTURE_CUBE_MAP)
         }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {
@@ -135,15 +130,9 @@ class OffscreenPassCubeGl(
             fbos += fbo
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
-            when (parent.colorAttachments) {
-                OffscreenPass.ColorAttachmentNone -> { }
-                is OffscreenPass.ColorAttachmentTextures -> attachColorTextures(mipLevel, 0)
-            }
-
-            when (parent.depthAttachment) {
-                OffscreenPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
-                OffscreenPass.DepthAttachmentNone -> { }
-                is OffscreenPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel, 0)
+            attachColorTextures(mipLevel, 0)
+            if (parent.depth != null) {
+                attachDepthTexture(mipLevel, 0)
             }
 
             check(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {

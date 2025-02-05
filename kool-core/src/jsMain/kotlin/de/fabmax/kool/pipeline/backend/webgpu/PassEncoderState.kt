@@ -97,9 +97,9 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
         forceLoad: Boolean = false
     ) {
         if (isPassActive) {
-            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.clearColors.size == 1) {
+            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.numColorAttachments == 1) {
                 _renderPass = renderPass
-                if (renderPass.clearDepth == ClearDepthFill || renderPass.clearColors[0] is ClearColorLoad) {
+                if (renderPass.colors[0].clearColor is ClearColorFill || renderPass.depth?.clearDepth == ClearDepthFill) {
                     backend.clearHelper.clear(this)
                     activePipeline = null
                     for (i in bindGroups.indices) {

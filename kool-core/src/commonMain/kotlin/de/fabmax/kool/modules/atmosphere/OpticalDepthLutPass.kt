@@ -3,20 +3,17 @@ package de.fabmax.kool.modules.atmosphere
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.FullscreenShaderUtil
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenPass2d
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.logI
 
 class OpticalDepthLutPass :
     OffscreenPass2d(
-        Node(),
-        attachmentConfig = colorAttachmentNoDepth(TexFormat.RG_F16),
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RG_F16),
         initialSize = Vec2i(LUT_SIZE),
         name = "optical-depth-lut"
     )

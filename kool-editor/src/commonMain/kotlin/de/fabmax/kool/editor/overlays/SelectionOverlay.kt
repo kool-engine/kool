@@ -161,8 +161,8 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
     }
 
     inner class SelectionPass : OffscreenPass2d(
-        Node(),  // drawNode will be replaced by content scene, once it is loaded
-        colorAttachmentDefaultDepth(TexFormat.RG),
+        drawNode = Node(),  // drawNode will be replaced by content scene, once it is loaded
+        attachmentConfig = AttachmentConfig.singleColorDefaultDepth(TexFormat.RG),
         Vec2i(128),
         name = "selection-overlay"
     ) {
@@ -172,7 +172,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
             camera = editor.editorCam
             isUpdateDrawNode = false
             isEnabled = true
-            mainView.drawFilter = { it !is Mesh || it.id in selectedMeshes }
+            defaultView.drawFilter = { it !is Mesh || it.id in selectedMeshes }
 
             onAfterCollectDrawCommands += { ev ->
                 expectedNodeIds.clear()

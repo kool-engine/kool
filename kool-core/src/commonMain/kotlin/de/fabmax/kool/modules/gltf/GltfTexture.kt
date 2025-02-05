@@ -49,7 +49,7 @@ data class GltfTexture(
             val generateMipMaps = samplerSettings.minFilter != FilterMethod.NEAREST
 
             createdTex = Texture2d(
-                TextureProps(generateMipMaps = generateMipMaps, defaultSamplerSettings = samplerSettings),
+                TextureProps(isMipMapped = generateMipMaps, defaultSamplerSettings = samplerSettings),
                 name
             ) {
                 if (uri != null) {

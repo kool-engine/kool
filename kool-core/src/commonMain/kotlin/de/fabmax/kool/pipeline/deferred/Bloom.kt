@@ -19,11 +19,8 @@ class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : D
             blurPass.isEnabled = value
         }
 
-    val thresholdMap: Texture2d
-        get() = thresholdPass.colorTexture!!
-
-    val bloomMap: Texture2d
-        get() = blurPass.bloomMap
+    val thresholdMap: Texture2d get() = thresholdPass.colorTexture!!
+    val bloomMap: Texture2d get() = blurPass.bloomMap
 
     var bloomScale: Float
         get() = blurPass.bloomScale

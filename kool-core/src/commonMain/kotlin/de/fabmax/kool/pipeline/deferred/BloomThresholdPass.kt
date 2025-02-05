@@ -6,12 +6,9 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.FullscreenShaderUtil
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenPass2d
-import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
@@ -19,8 +16,8 @@ import de.fabmax.kool.util.releaseWith
 
 class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) :
     OffscreenPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA_F16),
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA_F16),
         initialSize = Vec2i(128),
         name = "bloom-threshold"
     )
@@ -49,7 +46,7 @@ class BloomThresholdPass(deferredPipeline: DeferredPipeline, cfg: DeferredPipeli
 
     fun setLightingInput(newPass: PbrLightingPass) {
         outputShader.createdPipeline?.swapPipelineData(newPass)
-        outputShader.inputTexture = newPass.colorTexture
+        outputShader.inputTexture = newPass.colors[0].texture
     }
 
     fun setupDownSampling(samples: Int) {

@@ -33,7 +33,7 @@ fun orbitCamera(view: RenderPass.View, name: String? = null, block: OrbitInputTr
 }
 
 fun Scene.orbitCamera(name: String? = null, block: OrbitInputTransform.() -> Unit): OrbitInputTransform {
-    return orbitCamera(mainRenderPass.screenView, name, block)
+    return orbitCamera(mainRenderPass.defaultView, name, block)
 }
 
 fun Scene.defaultOrbitCamera(yaw: Float = 20f, pitch: Float = -30f): OrbitInputTransform {

@@ -53,6 +53,10 @@ class BindGroupDataVk(
         )
     }
 
+    fun getDescriptorSet(frameIndex: Int): VkDescriptorSet {
+        return bindGroup.descriptorSets[frameIndex]
+    }
+
     fun updateBuffers(passEncoderState: PassEncoderState) {
         for (i in storageBufferBindings.indices) {
             storageBufferBindings[i].updateBuffer(passEncoderState)
@@ -105,9 +109,9 @@ class BindGroupDataVk(
         val backend: RenderBackendVk,
     ) : BaseReleasable() {
 
-        var isInitialized = false; private set
         private var isReleasable: Boolean = true
-        private var descriptorSets: List<VkDescriptorSet> = emptyList()
+        var isInitialized = false; private set
+        var descriptorSets: List<VkDescriptorSet> = emptyList(); private set
 
         fun resetBindGroup(): Unit = memStack {
             isInitialized = true
@@ -142,10 +146,6 @@ class BindGroupDataVk(
                 textureBindings.forEach { it.release() }
                 backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
             }
-        }
-
-        fun getDescriptorSet(frameIndex: Int): VkDescriptorSet {
-            return descriptorSets[frameIndex]
         }
 
         companion object {
@@ -299,7 +299,8 @@ class BindGroupDataVk(
             view?.let { backend.device.destroyImageView(it) }
             sampler?.let { backend.device.destroySampler(it) }
 
-            val maxAnisotropy = if (tex.props.generateMipMaps &&
+            val maxAnisotropy = if (
+                tex.props.isMipMapped &&
                 samplerSettings.minFilter == FilterMethod.LINEAR &&
                 samplerSettings.magFilter == FilterMethod.LINEAR
             ) samplerSettings.maxAnisotropy else 1
@@ -315,7 +316,7 @@ class BindGroupDataVk(
                 addressModeV(samplerSettings.addressModeV.vk)
                 addressModeW(samplerSettings.addressModeW.vk)
 
-                mipmapMode(if (tex.props.generateMipMaps) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                mipmapMode(if (tex.props.isMipMapped) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
                 maxLod(VK_LOD_CLAMP_NONE)
 
                 val anisotropy = maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)

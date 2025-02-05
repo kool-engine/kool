@@ -32,7 +32,7 @@ class ThumbnailRenderer(
     tileSize: Vec2i = Vec2i(80 ,80)
 ) : OffscreenPass2d(
     drawNode = Node(),
-    attachmentConfig = colorAttachmentNoDepth(TexFormat.RGBA),
+    attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA, ClearColorLoad),
     initialSize = numTiles * tileSize,
     name = name
 ) {
@@ -46,7 +46,6 @@ class ThumbnailRenderer(
 
     init {
         views.clear()
-        clearColors[0] = ClearColorLoad
 
         for (y in 0 until numTiles.y) {
             for (x in 0 until numTiles.x) {
@@ -222,7 +221,7 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
 fun ThumbnailRenderer.hdriThumbnail(texPath: String): ThumbnailRenderer.Thumbnail = renderThumbnail {
     val texMesh = TextureMesh().apply {
         val assets = KoolEditor.instance.cachedAppAssets
-        val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(generateMipMaps = false)).getOrThrow()
+        val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(isMipMapped = false)).getOrThrow()
         tex.releaseWith(this)
 
         generateThumbnailRoundRect(tex.width.toFloat() / tex.height)

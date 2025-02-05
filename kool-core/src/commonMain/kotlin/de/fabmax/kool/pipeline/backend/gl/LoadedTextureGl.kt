@@ -42,7 +42,7 @@ class LoadedTextureGl(
             return
         }
 
-        val isMipMapped = texture.props.generateMipMaps
+        val isMipMapped = texture.props.isMipMapped
         currentSamplerSettings = settings
 
         gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, settings.minFilter.glMinFilterMethod(isMipMapped))

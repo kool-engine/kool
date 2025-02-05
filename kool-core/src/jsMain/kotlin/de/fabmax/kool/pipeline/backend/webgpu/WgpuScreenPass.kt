@@ -115,17 +115,17 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearColors[0] is ClearColorLoad -> GPULoadOp.load
+            renderPass.colors[0].clearColor is ClearColorLoad -> GPULoadOp.load
             else -> GPULoadOp.clear
         }
         val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
-            (renderPass.clearColors[0] as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+            (renderPass.colors[0].clearColor as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
         }
 
         val depthLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearDepth == ClearDepthFill -> GPULoadOp.clear
-            else -> GPULoadOp.load
+            renderPass.depth?.clearDepth == ClearDepthLoad -> GPULoadOp.load
+            else -> GPULoadOp.clear
         }
 
         val colors = arrayOf(

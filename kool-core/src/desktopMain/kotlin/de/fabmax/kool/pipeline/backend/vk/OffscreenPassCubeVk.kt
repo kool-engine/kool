@@ -11,7 +11,7 @@ class OffscreenPassCubeVk(
     backend: RenderBackendVk
 ) : RenderPassVk(false, numSamples, backend), OffscreenPassCubeImpl {
 
-    override val colorTargetFormats: List<Int> = parentPass.colorTextures.map { it.props.format.vk }
+    override val colorTargetFormats: List<Int> = parentPass.colors.map { it.texture.props.format.vk }
     private var attachments = createAttachments(false, false)
 
     private fun createAttachments(isCopySrc: Boolean, isCopyDst: Boolean): Attachments {
@@ -24,13 +24,13 @@ class OffscreenPassCubeVk(
             parentPass = parentPass,
             backend = backend
         )
-        parentPass.colorTextures.forEachIndexed { i, tex ->
-            tex.gpuTexture = attachments.colorImages[i]
-            tex.loadingState = Texture.LoadingState.LOADED
+        parentPass.colors.forEachIndexed { i, attachment ->
+            attachment.texture.gpuTexture = attachments.colorImages[i]
+            attachment.texture.loadingState = Texture.LoadingState.LOADED
         }
-        parentPass.depthTexture?.let { tex ->
-            tex.gpuTexture = attachments.depthImage
-            tex.loadingState = Texture.LoadingState.LOADED
+        parentPass.depth?.let { attachment ->
+            attachment.texture.gpuTexture = attachments.depthImage
+            attachment.texture.loadingState = Texture.LoadingState.LOADED
         }
         return attachments
     }
@@ -46,13 +46,13 @@ class OffscreenPassCubeVk(
         super.release()
         if (!alreadyReleased) {
             attachments.release()
-            parentPass.colorTextures.forEach {
-                it.gpuTexture = null
-                it.loadingState = Texture.LoadingState.NOT_LOADED
+            parentPass.colors.forEach {
+                it.texture.gpuTexture = null
+                it.texture.loadingState = Texture.LoadingState.NOT_LOADED
             }
-            parentPass.depthTexture?.let {
-                it.gpuTexture = null
-                it.loadingState = Texture.LoadingState.NOT_LOADED
+            parentPass.depth?.let {
+                it.texture.gpuTexture = null
+                it.texture.loadingState = Texture.LoadingState.NOT_LOADED
             }
         }
     }
@@ -79,10 +79,10 @@ class OffscreenPassCubeVk(
         val width = (parentPass.width shr mipLevel).coerceAtLeast(1)
         val height = (parentPass.height shr mipLevel).coerceAtLeast(1)
 
-        val isLoadDepth = forceLoad || parentPass.clearDepth == ClearDepthLoad
+        val isLoadDepth = forceLoad || parentPass.depth?.clearDepth == ClearDepthLoad
         var isLoadColor = forceLoad
-        for (i in parentPass.clearColors.indices) {
-            if (parentPass.clearColors[i] == ClearColorLoad) {
+        for (i in parentPass.colors.indices) {
+            if (parentPass.colors[i].clearColor == ClearColorLoad) {
                 isLoadColor = true
             }
         }
@@ -91,13 +91,11 @@ class OffscreenPassCubeVk(
         val renderingInfo = setupRenderingInfo(
             width = width,
             height = height,
+            renderPass = parentPass,
             forceLoad = forceLoad,
             colorImageViews = attachments.getColorViews(mipLevel, layer),
-            colorClearModes = parentPass.clearColors,
             colorStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
             depthImageView = attachments.getDepthView(mipLevel, layer),
-            depthClearMode = parentPass.clearDepth,
-            isReverseDepth = parentPass.isReverseDepth,
         )
         vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
     }

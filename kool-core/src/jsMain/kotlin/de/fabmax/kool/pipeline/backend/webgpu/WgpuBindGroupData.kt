@@ -160,7 +160,7 @@ class WgpuBindGroupData(
         val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
         val loadedTex = checkNotNull(tex.gpuTexture as WgpuTextureResource?) { "Cannot create texture binding from null texture" }
         val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
-        val maxAnisotropy = if (tex.props.generateMipMaps &&
+        val maxAnisotropy = if (tex.props.isMipMapped &&
             samplerSettings.minFilter == FilterMethod.LINEAR &&
             samplerSettings.magFilter == FilterMethod.LINEAR
         ) samplerSettings.maxAnisotropy else 1
@@ -171,7 +171,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.props.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
             maxAnisotropy = maxAnisotropy,
             compare = compare,
         )
@@ -199,7 +199,7 @@ class WgpuBindGroupData(
             addressModeW = samplerSettings.addressModeW.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.props.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
         )
 
         textureBindings += TextureBinding(this, loadedTex)
@@ -221,7 +221,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.props.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
             compare = compare,
         )
 
@@ -237,7 +237,7 @@ class WgpuBindGroupData(
         val tex = checkNotNull(texture) { "Cannot create texture binding from null texture" }
         val loadedTex = checkNotNull(tex.gpuTexture as WgpuTextureResource?) { "Cannot create texture binding from null texture" }
         val samplerSettings = sampler ?: tex.props.defaultSamplerSettings
-        val maxAnisotropy = if (tex.props.generateMipMaps &&
+        val maxAnisotropy = if (tex.props.isMipMapped &&
             samplerSettings.minFilter == FilterMethod.LINEAR &&
             samplerSettings.magFilter == FilterMethod.LINEAR
         ) samplerSettings.maxAnisotropy else 1
@@ -248,7 +248,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.props.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
             maxAnisotropy = maxAnisotropy,
             compare = compare,
         )
@@ -272,7 +272,7 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.props.generateMipMaps) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.props.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
             compare = compare,
         )
 

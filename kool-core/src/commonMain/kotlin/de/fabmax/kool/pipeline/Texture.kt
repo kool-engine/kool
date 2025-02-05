@@ -238,7 +238,7 @@ fun TextureCubeArray(
 ): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(loader) }
 
 class SingleColorTexture(color: Color) : Texture2d(
-    props = TextureProps(generateMipMaps = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
+    props = TextureProps(isMipMapped = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
     name = "SingleColorTex:${color}"
 ) {
     init {
@@ -268,7 +268,7 @@ class GradientTexture(
 ) : Texture1d(
     props = TextureProps(
         format = TexFormat.RGBA_F16,    // f16 format yields much better results with gradients in linear color space
-        generateMipMaps = false,
+        isMipMapped = false,
         defaultSamplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING
     ),
     name = name

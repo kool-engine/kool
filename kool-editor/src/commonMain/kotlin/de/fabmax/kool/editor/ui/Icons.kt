@@ -16,7 +16,7 @@ object Icons {
     private var windowScale = 1f
     private val iconTexProps = TextureProps(
         format = TexFormat.RGBA,
-        generateMipMaps = false,
+        isMipMapped = false,
         defaultSamplerSettings = SamplerSettings().nearest()
     )
 

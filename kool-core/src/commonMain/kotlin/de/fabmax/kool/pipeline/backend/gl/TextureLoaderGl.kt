@@ -44,7 +44,7 @@ object TextureLoaderGl {
         loadedTex.setSize(img.width, 1, 1)
         loadedTex.bind()
         gl.texImage1d(img)
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             gl.generateMipmap(gl.TEXTURE_2D)
         }
         return loadedTex
@@ -56,7 +56,7 @@ object TextureLoaderGl {
         loadedTex.setSize(img.width, img.height, 1)
         loadedTex.bind()
         gl.texImage2d(gl.TEXTURE_2D, img)
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             gl.generateMipmap(gl.TEXTURE_2D)
         }
         return loadedTex
@@ -68,7 +68,7 @@ object TextureLoaderGl {
         loadedTex.setSize(img.width, img.height, img.depth)
         loadedTex.bind()
         gl.texImage3d(gl.TEXTURE_3D, img)
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             gl.generateMipmap(gl.TEXTURE_3D)
         }
         return loadedTex
@@ -85,7 +85,7 @@ object TextureLoaderGl {
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, img.negY)
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, img.posZ)
         gl.texImage2d(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, img.negZ)
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP)
         }
         return loadedTex
@@ -98,7 +98,7 @@ object TextureLoaderGl {
         loadedTex.bind()
 
         if (img is ImageData2dArray) {
-            val levels = if (tex.props.generateMipMaps) numMipLevels(img.width, img.height) else 1
+            val levels = if (tex.props.isMipMapped) numMipLevels(img.width, img.height) else 1
             gl.texStorage3d(gl.TEXTURE_2D_ARRAY, levels, img.format.glInternalFormat(gl), img.width, img.height, img.images.size)
             for (i in img.images.indices) {
                 gl.texSubImage3d(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), img.images[i])
@@ -107,7 +107,7 @@ object TextureLoaderGl {
             gl.texImage3d(gl.TEXTURE_2D_ARRAY, img)
         }
 
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             gl.generateMipmap(gl.TEXTURE_2D_ARRAY)
         }
         return loadedTex
@@ -118,7 +118,7 @@ object TextureLoaderGl {
         val loadedTex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP_ARRAY, gl.createTexture(), backend, tex, img.estimateTexSize())
         loadedTex.setSize(img.width, img.height, img.slices)
         loadedTex.bind()
-        val levels = if (tex.props.generateMipMaps) numMipLevels(img.width, img.height) else 1
+        val levels = if (tex.props.isMipMapped) numMipLevels(img.width, img.height) else 1
         gl.texStorage3d(gl.TEXTURE_CUBE_MAP_ARRAY, levels, img.format.glInternalFormat(gl), img.width, img.height, 6 * img.slices)
         img.cubes.forEachIndexed { i, cube ->
             gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 0, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.posX)
@@ -128,7 +128,7 @@ object TextureLoaderGl {
             gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 4, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.posZ)
             gl.texSubImage3d(gl.TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, i * 6 + 5, img.width, img.height, 1, img.format.glFormat(gl), img.format.glType(gl), cube.negZ)
         }
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             gl.generateMipmap(gl.TEXTURE_CUBE_MAP_ARRAY)
         }
         return loadedTex

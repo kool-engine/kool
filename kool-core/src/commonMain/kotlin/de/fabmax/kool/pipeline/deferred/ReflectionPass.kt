@@ -17,8 +17,8 @@ import kotlin.random.Random
 
 class ReflectionPass(val baseReflectionStep: Float) :
     OffscreenPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA),
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA),
         Vec2i(128),
         name = "reflection-denoise"
     )
@@ -202,7 +202,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
             val data = BufferedImageData2d(buf, sz, sz, TexFormat.RGBA)
             val texProps = TextureProps(
                 format = TexFormat.RGBA,
-                generateMipMaps = false,
+                isMipMapped = false,
                 defaultSamplerSettings = SamplerSettings().nearest()
             )
             return Texture2d(texProps, "ssr_noise_tex") { data }

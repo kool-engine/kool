@@ -109,7 +109,7 @@ open class Scene(name: String? = null) : Node(name) {
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
-        // update lights not attached
+        // update un-attached lights
         lighting.onUpdate(updateEvent)
         super.update(updateEvent)
     }
@@ -143,40 +143,43 @@ open class Scene(name: String? = null) : Node(name) {
         val DEFAULT_CLEAR_COLOR = Color(0.15f, 0.15f, 0.15f, 1f)
     }
 
-    inner class ScreenPass : RenderPass("${name}:ScreenPass", MipMode.None) {
-        val screenView = View("screen", this@Scene, PerspectiveCamera())
-        var camera: Camera by screenView::camera
-        val viewport: Viewport by screenView::viewport
-        var useWindowViewport = true
+    inner class ScreenPass : RenderPass(
+        numSamples = KoolSystem.config.numSamples,
+        mipMode = MipMode.Single,
+        name = "${name}:ScreenPass"
+    ), RenderPassColorAttachment, RenderPassDepthAttachment {
 
-        override val numSamples: Int get() = KoolSystem.config.numSamples
+        override val colors: List<RenderPassColorAttachment> = listOf(this)
+        override val depth: RenderPassDepthAttachment = this
 
-        private val _clearColors = mutableListOf<ClearColor>(ClearColorFill(DEFAULT_CLEAR_COLOR))
-        override val clearColors: List<ClearColor> get() = _clearColors
+        override var clearColor: ClearColor = ClearColorFill(DEFAULT_CLEAR_COLOR)
         override var clearDepth: ClearDepth = ClearDepthFill
 
-        var clearColor: ClearColor
-            get() = clearColors[0]
-            set(value) { _clearColors.set(0, value) }
+        val defaultView = View("${name}:default-view", this@Scene, PerspectiveCamera())
+        private val _views = mutableListOf(defaultView)
+        override val views: List<View> get() = _views
 
-        private val _views = mutableListOf(screenView)
-        override val views: List<View>
-            get() = _views
+        var camera: Camera by defaultView::camera
+        val viewport: Viewport by defaultView::viewport
+        var useWindowViewport = true
 
-        private val _size: MutableVec3i by lazy {
-            val ctx = KoolSystem.requireContext()
-            MutableVec3i(ctx.windowWidth, ctx.windowHeight, 1)
-        }
-        override val size: Vec3i
-            get() = _size
+        private val _size = MutableVec3i()
+        override val size: Vec3i get() = _size
 
         init {
             parentScene = this@Scene
             lighting = this@Scene.lighting
+
+            val ctx = KoolSystem.getContextOrNull()
+            if (ctx != null) {
+                _size.set(ctx.windowWidth, ctx.windowHeight, 1)
+            } else {
+                _size.set(Vec3i.ONES)
+            }
         }
 
-        fun createView(name: String): View {
-            val view = View(name, this@Scene, PerspectiveCamera())
+        fun createView(name: String, camera: Camera = PerspectiveCamera()): View {
+            val view = View(name, this@Scene, camera)
             view.isUpdateDrawNode = false
             view.isReleaseDrawNode = false
             _views += view
@@ -184,6 +187,7 @@ open class Scene(name: String? = null) : Node(name) {
         }
 
         fun removeView(view: View) {
+            require(view != defaultView)
             _views -= view
         }
 

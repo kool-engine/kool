@@ -223,7 +223,7 @@ class KslShaderTest : DemoScene("KslShader") {
         return Texture2d(
             BufferedImageData2d(noiseTexData, w, h, TexFormat.RGBA),
             TextureProps(
-                generateMipMaps = false,
+                isMipMapped = false,
                 defaultSamplerSettings = SamplerSettings(
                     minFilter = FilterMethod.LINEAR,
                     magFilter = FilterMethod.NEAREST,

@@ -84,7 +84,7 @@ class ClearHelper(val backend: RenderBackendVk) {
 
         fun clear(passEncoderState: PassEncoderState) {
             val rp = passEncoderState.renderPass
-            val clearColor = (rp.clearColors[0] as? ClearColorFill)?.clearColor ?: Color.BLACK
+            val clearColor = (rp.colors[0].clearColor as? ClearColorFill)?.clearColor ?: Color.BLACK
             val clearDepth = if (rp.isReverseDepth) 0f else 1f
 
             passEncoderState.setViewport(0, 0, rp.width, rp.height)
@@ -98,8 +98,8 @@ class ClearHelper(val backend: RenderBackendVk) {
                 clearValues.markDirty()
             }
 
-            val isClearColor = rp.clearColors[0] is ClearColorFill
-            val isClearDepth = rp.clearDepth == ClearDepthFill
+            val isClearColor = rp.colors[0].clearColor is ClearColorFill
+            val isClearDepth = rp.depth?.clearDepth == ClearDepthFill
             val clearPipeline = when {
                 isClearColor && isClearDepth -> clearColorAndDepth
                 isClearColor -> clearColorOnly

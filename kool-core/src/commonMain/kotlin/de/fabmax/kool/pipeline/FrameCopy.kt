@@ -30,7 +30,7 @@ class FrameCopy(
                 val tex = Texture2d(
                     TextureProps(
                         format = TexFormat.RGBA,
-                        generateMipMaps = false,
+                        isMipMapped = false,
                         defaultSamplerSettings = SamplerSettings().nearest().clamped()
                     ),
                     "${renderPass.parentScene}:color-copy"
@@ -38,21 +38,13 @@ class FrameCopy(
                 add(tex)
             }
             is OffscreenPass2d -> {
-                if (renderPass.colorAttachments is OffscreenPass.ColorAttachmentTextures) {
-                    renderPass.colorTextures.forEach {
-                        add(Texture2d(it.props, "${it.name}:copy"))
-                    }
-                } else {
-                    error("Render pass ${renderPass.name} needs a ColorAttachmentTextures to copy from")
+                renderPass.colors.forEach {
+                    add(Texture2d(it.texture.props, "${it.texture.name}:copy"))
                 }
             }
             is OffscreenPassCube -> {
-                if (renderPass.colorAttachments is OffscreenPass.ColorAttachmentTextures) {
-                    renderPass.colorTextures.forEach {
-                        add(TextureCube(it.props, "${it.name}:copy"))
-                    }
-                } else {
-                    error("Render pass ${renderPass.name} needs a ColorAttachmentTextures to copy from")
+                renderPass.colors.forEach {
+                    add(TextureCube(it.texture.props, "${it.texture.name}:copy"))
                 }
             }
             else -> error("Invalid render pass type: $renderPass")
@@ -65,27 +57,17 @@ class FrameCopy(
                 Texture2d(
                     TextureProps(
                         format = TexFormat.R_F32,
-                        generateMipMaps = false,
+                        isMipMapped = false,
                         defaultSamplerSettings = SamplerSettings().nearest().clamped()
                     ),
                     "${renderPass.parentScene}:depth-copy"
                 )
             }
             is OffscreenPass2d -> {
-                if (renderPass.depthAttachment is OffscreenPass.DepthAttachmentTexture) {
-                    val depthTex = renderPass.depthTexture!!
-                    Texture2d(depthTex.props, "${depthTex.name}:copy")
-                } else {
-                    error("Render pass ${renderPass.name} needs a DepthAttachmentTexture to copy from")
-                }
+                renderPass.depth?.let { Texture2d(it.texture.props, "${it.texture.name}:copy") }
             }
             is OffscreenPassCube -> {
-                if (renderPass.depthAttachment is OffscreenPass.DepthAttachmentTexture) {
-                    val depthTex = renderPass.depthTexture!!
-                    TextureCube(depthTex.props, "${depthTex.name}:copy")
-                } else {
-                    error("Render pass ${renderPass.name} needs a DepthAttachmentTexture to copy from")
-                }
+                renderPass.depth?.let { TextureCube(it.texture.props, "${it.texture.name}:copy") }
             }
             else -> error("Invalid render pass type: $renderPass")
         }

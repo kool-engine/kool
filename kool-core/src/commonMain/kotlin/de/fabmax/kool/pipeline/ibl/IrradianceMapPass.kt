@@ -16,9 +16,9 @@ import kotlin.math.PI
 
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
     OffscreenPassCube(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA_F16),
-        Vec2i(size),
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA_F16),
+        initialSize = Vec2i(size),
         name = "irradiance-map"
     )
 {

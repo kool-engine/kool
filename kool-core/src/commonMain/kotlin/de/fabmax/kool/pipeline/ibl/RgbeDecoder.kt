@@ -4,6 +4,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.AttachmentConfig
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
@@ -18,12 +19,10 @@ import de.fabmax.kool.util.logT
 
 class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float = 1f) :
     OffscreenPass2d(
-        Node(),
-        AttachmentConfig(
-            ColorAttachmentTextures(listOf(TextureAttachmentConfig(TexFormat.RGBA_F16))),
-            mipLevels = MipMode.Generate
-        ),
-        Vec2i(hdriTexture.gpuTexture?.width ?: 1024, hdriTexture.gpuTexture?.height ?: 512),
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA_F16),
+        initialSize = Vec2i(hdriTexture.gpuTexture?.width ?: 1024, hdriTexture.gpuTexture?.height ?: 512),
+        mipMode = MipMode.Generate,
         name = "rgbe-decoder"
     )
 {

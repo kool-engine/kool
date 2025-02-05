@@ -9,25 +9,16 @@ class WgpuOffscreenPassCube(
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass(GPUTextureFormat.depth32float, numSamples, backend), OffscreenPassCubeImpl {
 
-    override val colorTargetFormats = parentPass.colorTextures.map { it.props.format.wgpu }
+    override val colorTargetFormats = parentPass.colors.map { it.texture.props.format.wgpu }
 
-    private val colorAttachments = List(parentPass.colorTextures.size) {
-        RenderAttachment(parentPass.colorTextures[it], false, "${parentPass.name}.color[$it]")
+    private val colorAttachments = List(parentPass.colors.size) {
+        RenderAttachment(parentPass.colors[it].texture, false, "${parentPass.name}.color[$it]")
     }
-    private val depthAttachment: RenderAttachment?
+    private val depthAttachment: RenderAttachment? = parentPass.depth?.texture?.let {
+        RenderAttachment(it, true,  it.name)
+    }
 
     private var copySrcFlag = 0
-
-    init {
-        val depthTex = when (parentPass.depthAttachment) {
-            OffscreenPass.DepthAttachmentRender -> TextureCube(
-                TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped()),
-                "${parentPass.name}:render-depth"
-            )
-            else -> parentPass.depthTexture
-        }
-        depthAttachment = depthTex?.let { RenderAttachment(it, true,  it.name) }
-    }
 
     override fun applySize(width: Int, height: Int) {
         colorAttachments.forEach { it.recreate(width, height) }
@@ -79,11 +70,11 @@ class WgpuOffscreenPassCube(
         val colors = colorAttachments.mapIndexed { i, colorTex ->
             val colorLoadOp = when {
                 forceLoad -> GPULoadOp.load
-                renderPass.clearColors[i] is ClearColorLoad -> GPULoadOp.load
+                renderPass.colors[i].clearColor is ClearColorLoad -> GPULoadOp.load
                 else -> GPULoadOp.clear
             }
             val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
-                (parentPass.clearColors[i] as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+                (parentPass.colors[i].clearColor as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
             }
 
             GPURenderPassColorAttachment(
@@ -95,8 +86,8 @@ class WgpuOffscreenPassCube(
 
         val depthLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearDepth == ClearDepthFill -> GPULoadOp.clear
-            else -> GPULoadOp.load
+            renderPass.depth?.clearDepth == ClearDepthLoad -> GPULoadOp.load
+            else -> GPULoadOp.clear
         }
         val depth = depthAttachment?.let {
             GPURenderPassDepthStencilAttachment(

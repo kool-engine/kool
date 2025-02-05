@@ -187,7 +187,7 @@ class TitleBgRenderer(
                     }
                 }
 
-                val noiseProps = TextureProps(generateMipMaps = false)
+                val noiseProps = TextureProps(isMipMapped = false)
                 Texture2d(
                     data = BufferedImageData2d(data, width, height, TexFormat.RGBA),
                     props = noiseProps,

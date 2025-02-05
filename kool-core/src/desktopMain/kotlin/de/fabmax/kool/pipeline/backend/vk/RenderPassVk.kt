@@ -149,16 +149,14 @@ abstract class RenderPassVk(
     fun setupRenderingInfo(
         width: Int,
         height: Int,
+        renderPass: RenderPass,
         forceLoad: Boolean = false,
 
         colorImageViews: List<VkImageView> = emptyList(),
-        colorClearModes: List<ClearColor> = emptyList(),
         colorStoreOp: Int = VK_ATTACHMENT_STORE_OP_DONT_CARE,
         resolveColorViews: List<VkImageView> = emptyList(),
 
         depthImageView: VkImageView? = null,
-        isReverseDepth: Boolean = false,
-        depthClearMode: ClearDepth = ClearDepthDontCare,
         depthStoreOp: Int = colorStoreOp,
         resolveDepthView: VkImageView? = null
     ): VkRenderingInfo {
@@ -173,7 +171,7 @@ abstract class RenderPassVk(
                 if (forceLoad) {
                     loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
                 } else {
-                    when (val load = colorClearModes[i]) {
+                    when (val load = renderPass.colors[i].clearColor) {
                         is ClearColorFill -> {
                             loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
                             clearValue { it.setColor(load.clearColor) }
@@ -206,13 +204,13 @@ abstract class RenderPassVk(
                 if (forceLoad) {
                     loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
                 } else {
-                    when (depthClearMode) {
+                    when (renderPass.depth?.clearDepth) {
                         ClearDepthFill -> {
                             loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                            clearValue { cv -> cv.depthStencil { it.depth(if (isReverseDepth) 0f else 1f) } }
+                            clearValue { cv -> cv.depthStencil { it.depth(if (renderPass.isReverseDepth) 0f else 1f) } }
                         }
-                        ClearDepthDontCare -> loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                         ClearDepthLoad -> loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
+                        else -> loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
                     }
                 }
 

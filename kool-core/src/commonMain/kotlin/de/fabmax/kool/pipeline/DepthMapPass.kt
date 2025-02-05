@@ -11,7 +11,7 @@ import de.fabmax.kool.util.UniqueId
 
 open class DepthMapPass(
     drawNode: Node,
-    attachmentConfig: AttachmentConfig = defaultRenderPassAttachmentConfig,
+    attachmentConfig: AttachmentConfig = AttachmentConfig { setDefaultDepth() },
     initialSize: Vec2i = Vec2i(128, 128),
     name: String = UniqueId.nextId("depth-map-pass")
 ) :
@@ -86,21 +86,16 @@ open class DepthMapPass(
         val instanceLayout: List<Attribute>,
         val shaderCfg: DepthShader.Config
     )
-
-    companion object {
-        val defaultRenderPassAttachmentConfig = AttachmentConfig(
-            ColorAttachmentNone,
-            DepthAttachmentTexture()
-        )
-    }
 }
 
 class NormalLinearDepthMapPass(
     drawNode: Node,
-    attachmentConfig: AttachmentConfig = defaultRenderPassAttachmentConfig,
+    attachmentConfig: AttachmentConfig = AttachmentConfig.singleColorDefaultDepth(TexFormat.RGBA_F16),
     initialSize: Vec2i = Vec2i(128, 128),
     name: String = UniqueId.nextId("normal-linear-depth-map-pass")
 ) : DepthMapPass(drawNode, attachmentConfig, initialSize, name) {
+
+    val normalDepthMap: Texture2d get() = colors[0].texture
 
     init {
         mirrorIfInvertedClipY()
@@ -130,11 +125,5 @@ class NormalLinearDepthMapPass(
             shaderCfg = cfg
         )
         return depthShaders.getOrPut(key) { DepthShader(cfg) }
-    }
-
-    companion object {
-        val defaultRenderPassAttachmentConfig = AttachmentConfig(
-            ColorAttachmentTextures(listOf(TextureAttachmentConfig(textureFormat = TexFormat.RGBA_F16)))
-        )
     }
 }

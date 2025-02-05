@@ -150,10 +150,7 @@ class DrawPipelineVk(
             else -> drawPipeline.pipelineConfig.depthTest
         }
 
-        val hasDepthAttachment = renderPass !is OffscreenPass ||
-                renderPass.depthAttachment != OffscreenPass.DepthAttachmentNone
-
-        val depthStencil = if (!hasDepthAttachment) null else callocVkPipelineDepthStencilStateCreateInfo {
+        val depthStencil = if (!renderPass.hasDepth) null else callocVkPipelineDepthStencilStateCreateInfo {
             depthTestEnable(true)
             depthWriteEnable(drawPipeline.isWriteDepth)
             depthCompareOp(depthOp.vk)
@@ -263,7 +260,7 @@ class DrawPipelineVk(
         }
 
         val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.numColorAttachments) {
-            for (i in 0 until renderPass.clearColors.size) {
+            for (i in 0 until renderPass.colors.size) {
                 this[i].apply {
                     colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
                     when (drawPipeline.blendMode) {

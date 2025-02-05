@@ -140,7 +140,7 @@ class MsdfFont(
         const val CUTOFF_OUTLINED_THICK = 0.15f
         const val CUTOFF_OUTLINED_THIN = 0.1f
 
-        val MSDF_TEX_PROPS = TextureProps(generateMipMaps = false)
+        val MSDF_TEX_PROPS = TextureProps(isMipMapped = false)
 
         val DEFAULT_FONT_DATA: MsdfFontData by lazy {
             val fontInfo = KoolSystem.config.defaultFont

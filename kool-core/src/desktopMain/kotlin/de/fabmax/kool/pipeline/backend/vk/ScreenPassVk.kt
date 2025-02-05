@@ -1,9 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.ClearColorLoad
-import de.fabmax.kool.pipeline.ClearDepthLoad
-import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logI
@@ -58,7 +56,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
     }
 
     override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {
-        val isLoad = forceLoad || passEncoderState.renderPass.clearColors[0] == ClearColorLoad
+        val isLoad = forceLoad || passEncoderState.renderPass.colors[0].clearColor == ClearColorLoad
         val storeOp = if (isStore) VK_ATTACHMENT_STORE_OP_STORE else VK_ATTACHMENT_STORE_OP_DONT_CARE
 
         val srcLayout = if (isLoad) resolveImage.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
@@ -72,14 +70,12 @@ class ScreenPassVk(backend: RenderBackendVk) :
         val renderingInfo = setupRenderingInfo(
             width = colorImage.width,
             height = colorImage.height,
+            renderPass = passEncoderState.renderPass,
             forceLoad = forceLoad,
             colorImageViews = colorImageViews,
-            colorClearModes = passEncoderState.renderPass.clearColors,
             colorStoreOp = storeOp,
             resolveColorViews = resolveImageViews,
             depthImageView = depthImageView,
-            depthClearMode = passEncoderState.renderPass.clearDepth,
-            isReverseDepth = passEncoderState.renderPass.isReverseDepth
         )
         vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)
     }
@@ -197,6 +193,17 @@ class ScreenPassVk(backend: RenderBackendVk) :
         var colorCopyView: VkImageView? = null
         var depthCopyView: VkImageView? = null
 
+        private val copyRenderPass  = object : RenderPass(1, MipMode.Single, "screen-copy-pass") {
+            override val colors: List<RenderPassColorAttachment> = listOf(object : RenderPassColorAttachment {
+                override var clearColor: ClearColor = ClearColorLoad
+            })
+            override val depth: RenderPassDepthAttachment = object : RenderPassDepthAttachment {
+                override var clearDepth: ClearDepth = ClearDepthLoad
+            }
+            override val size: Vec3i = Vec3i.ZERO
+            override val views: List<View> = emptyList()
+        }
+
         fun getOrCreateColorCopy(): ImageVk? {
             if (!frameCopy.isCopyColor) return null
 
@@ -283,12 +290,11 @@ class ScreenPassVk(backend: RenderBackendVk) :
             val renderingInfo = setupRenderingInfo(
                 width = colorImage.width,
                 height = colorImage.height,
+                renderPass = copyRenderPass,
                 colorImageViews = colorSrc,
-                colorClearModes = listOf(ClearColorLoad),
                 colorStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
                 resolveColorViews = colorCopyView?.let { listOf(it) } ?: emptyList(),
                 depthImageView = depthSrc,
-                depthClearMode = ClearDepthLoad,
                 resolveDepthView = depthCopyView
             )
             vkCmdBeginRenderingKHR(passEncoderState.commandBuffer, renderingInfo)

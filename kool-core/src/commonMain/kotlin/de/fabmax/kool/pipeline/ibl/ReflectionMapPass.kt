@@ -14,13 +14,10 @@ import de.fabmax.kool.util.logT
 
 class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
     OffscreenPassCube(
-        Node(),
-        AttachmentConfig(
-            colorAttachments = ColorAttachmentTextures(TexFormat.RGBA_F16),
-            mipLevels = MipMode.Render(REFLECTION_MIP_LEVELS),
-            depthAttachment = DepthAttachmentNone
-        ),
-        Vec2i(size),
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA_F16),
+        initialSize = Vec2i(size),
+        mipMode = MipMode.Render(REFLECTION_MIP_LEVELS),
         name = "reflection-map"
     )
 {

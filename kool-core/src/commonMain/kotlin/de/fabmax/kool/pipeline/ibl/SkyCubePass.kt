@@ -26,9 +26,9 @@ import kotlin.math.sqrt
 
 class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
     OffscreenPassCube(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA_F16),
-        Vec2i(size),
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA_F16),
+        initialSize = Vec2i(size),
         name = "sky-cube"
     )
 {

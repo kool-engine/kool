@@ -106,7 +106,7 @@ class AtlasFont(
 
         val DEFAULT_FONT_TEX_PROPS = TextureProps(
             format = TexFormat.R,
-            generateMipMaps = false
+            isMipMapped = false
         )
 
         init {

@@ -24,7 +24,7 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
         fun fromSingleColor(color: Color): EnvironmentMap {
             val bgColor = BufferedImageData2d.singleColor(color.toLinear())
             val props = TextureProps(
-                generateMipMaps = false,
+                isMipMapped = false,
                 defaultSamplerSettings = SamplerSettings().nearest()
             )
             val cubeData = ImageDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
@@ -78,7 +78,7 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
 fun AssetLoader.hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): Deferred<Result<EnvironmentMap>> {
     return Assets.async {
         val samplerSettings = SamplerSettings().nearest()
-        val hdriTexProps = TextureProps(generateMipMaps = false, defaultSamplerSettings = samplerSettings)
+        val hdriTexProps = TextureProps(isMipMapped = false, defaultSamplerSettings = samplerSettings)
         val hdri = loadTexture2d(hdriPath, hdriTexProps)
         withContext(Dispatchers.RenderLoop) {
             hdri.map { EnvironmentMap.fromHdriTexture(it, brightness) }

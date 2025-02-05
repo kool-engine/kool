@@ -9,16 +9,29 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Releasable
 
-open class OffscreenPassCube(drawNode: Node, attachmentConfig: AttachmentConfig, initialSize: Vec2i, name: String) :
-    OffscreenPass(attachmentConfig, Vec3i(initialSize.x, initialSize.y, 6), name)
-{
+open class OffscreenPassCube(
+    drawNode: Node,
+    attachmentConfig: AttachmentConfig,
+    initialSize: Vec2i,
+    name: String,
+    numSamples: Int = 1,
+    mipMode: MipMode = MipMode.Single,
+) : OffscreenPass(numSamples, mipMode, Vec3i(initialSize, 6), name) {
+
+    override val colors: List<ColorAttachment> = attachmentConfig.colors.mapIndexed { i, cfg -> ColorAttachment(cfg, i) }
+    override val depth: DepthAttachment? = attachmentConfig.depth?.let { DepthAttachment(it) }
+
+    val colorTexture: TextureCube? get() = colors.getOrNull(0)?.texture
+    val depthTexture: TextureCube? get() = depth?.texture
+
     override val views: List<View> = ViewDirection.entries.mapIndexed { i, dir ->
         val cam = PerspectiveCamera()
         cam.fovY = 90f.deg
         cam.clipNear = 0.01f
         cam.clipFar = 10f
         cam.setupCamera(position = Vec3f.ZERO, up = dir.up, lookAt = dir.lookAt)
-        View(dir.toString(), drawNode, cam).apply { setFullscreenViewport() }.apply {
+        View(dir.toString(), drawNode, cam).apply {
+            viewport.set(0, 0, width, height)
             isReleaseDrawNode = i == 0
             isUpdateDrawNode = i == 0
         }
@@ -30,21 +43,7 @@ open class OffscreenPassCube(drawNode: Node, attachmentConfig: AttachmentConfig,
             views.forEach { it.drawNode = value }
         }
 
-    val depthTexture = makeDepthAttachment()
-    val colorTextures = makeColorAttachments()
-    val colorTexture: TextureCube?
-        get() = colorTextures.getOrNull(0)
-
     internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
-
-    init {
-        if (attachmentConfig.depthAttachment is DepthAttachmentTexture) {
-            throw RuntimeException("CubeMapDepthTexture not yet implemented")
-        }
-        if (numColorAttachments > 1) {
-            throw RuntimeException("CubeMap multiple render targets not yet implemented")
-        }
-    }
 
     /**
      * Convenience function: Create a single shot FrameCopy of the color attachment.
@@ -62,30 +61,24 @@ open class OffscreenPassCube(drawNode: Node, attachmentConfig: AttachmentConfig,
     override fun release() {
         super.release()
         impl.release()
-        depthTexture?.release()
-        colorTextures.forEach { it.release() }
+        depth?.texture?.release()
+        colors.forEach { it.texture.release() }
     }
 
-    override fun applySize(width: Int, height: Int, depth: Int) {
-        require(depth == 6) { "OffscreenRenderPassCube depth must be == 6" }
-        super.applySize(width, height, depth)
+    override fun applySize(width: Int, height: Int, layers: Int) {
+        require(layers == 6) { "OffscreenRenderPassCube layers must be == 6" }
+        super.applySize(width, height, layers)
         impl.applySize(width, height)
     }
 
-    private fun makeColorAttachments(): List<TextureCube> {
-        return if (colorAttachments is ColorAttachmentTextures) {
-            (0 until numColorAttachments).map { TextureCube(createColorTextureProps(it), "${name}_color[$it]") }
-        } else {
-            emptyList()
-        }
+    inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<TextureCube> {
+        override val texture: TextureCube = TextureCube(config.createTextureProps(mipMode.hasMipLevels), "${name}:color[$i]")
+        override var clearColor: ClearColor = config.clearColor
     }
 
-    private fun makeDepthAttachment(): TextureCube? {
-        return if (depthAttachment is DepthAttachmentTexture) {
-            TextureCube(createDepthTextureProps(), "${name}_depth")
-        } else {
-            null
-        }
+    inner class DepthAttachment(config: TextureAttachmentConfig) : RenderPassDepthTextureAttachment<TextureCube> {
+        override val texture: TextureCube = TextureCube(config.createTextureProps(mipMode.hasMipLevels), "${name}:depth")
+        override var clearDepth: ClearDepth = config.clearDepth
     }
 
     enum class ViewDirection(val index: Int, val lookAt: Vec3f, val up: Vec3f) {

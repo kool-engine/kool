@@ -30,9 +30,9 @@ class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
 
         // setup offscreen pass
         val off = OffscreenPass2d(
-            backgroundGroup,
-            OffscreenPass.colorAttachmentDefaultDepth(TexFormat.RGBA),
-            Vec2i(512, 512),
+            drawNode = backgroundGroup,
+            attachmentConfig = AttachmentConfig.singleColorDefaultDepth(TexFormat.RGBA),
+            initialSize = Vec2i(512, 512),
             name = "render-to-texture"
         ).apply {
             clearColor = ClearColorFill(Color.BLACK)

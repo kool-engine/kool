@@ -53,7 +53,7 @@ class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBl
     override fun onShaderCreated(shader: ShaderBase<*>) {
         uShadowMapViewProjMats = shader.uniformMat4fv(UNIFORM_NAME_SHADOW_VP_MATS)
         subMaps.forEachIndexed { i, shadowMap ->
-            shader.texture2d(samplerName(i), shadowMap.depthTexture)
+            shader.texture2d(samplerName(i), shadowMap.shadowMap)
         }
     }
 

@@ -18,7 +18,7 @@ class WgpuTextureResource(val gpuTexture: GPUTexture, texture: Texture<*>) : Bas
 
     private val Texture<*>.bytePerPx: Int get() = props.format.pxSize
 
-    private val Texture<*>.mipMapFactor: Double get() = if (props.generateMipMaps) { 1.333 } else 1.0
+    private val Texture<*>.mipMapFactor: Double get() = if (props.isMipMapped) { 1.333 } else 1.0
 
     override fun release() {
         super.release()

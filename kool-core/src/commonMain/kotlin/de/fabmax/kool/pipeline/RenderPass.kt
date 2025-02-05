@@ -10,20 +10,28 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.*
 import kotlin.time.Duration.Companion.seconds
 
-abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
+abstract class RenderPass(
+    val numSamples: Int,
+    val mipMode: MipMode,
+    name: String
+) : GpuPass(name) {
+
+    abstract val colors: List<RenderPassColorAttachment>
+    abstract val depth: RenderPassDepthAttachment?
+
+    val hasColor: Boolean get() = colors.isNotEmpty()
+    val hasDepth: Boolean get() = depth != null
+
     abstract val size: Vec3i
     val width: Int get() = size.x
     val height: Int get() = size.y
-    val depth: Int get() = size.z
-
-    abstract val numSamples: Int
-    val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
-    val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
-
-    abstract val clearColors: List<ClearColor>
-    abstract val clearDepth: ClearDepth
+    val layers: Int get() = size.z
 
     abstract val views: List<View>
+
+    val numColorAttachments: Int get() = colors.size
+    val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
+    val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
 
     /**
      * Frame copies to perform after the entire render pass is done.
@@ -89,7 +97,7 @@ abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
     }
 
     sealed class MipMode(val hasMipLevels: Boolean) {
-        data object None : MipMode(false) {
+        data object Single : MipMode(false) {
             override fun getTextureMipLevels(size: Vec3i) = 1
             override fun getRenderMipLevels(size: Vec3i) = 1
         }
@@ -103,6 +111,7 @@ abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
             val numMipLevels: Int,
             val renderOrder: MipMapRenderOrder = MipMapRenderOrder.HigherResolutionFirst
         ) : MipMode(true) {
+            init { require(numMipLevels >= 0) }
             override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) numMipLevels(size.x, size.y) else numMipLevels
             override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)
         }
@@ -214,6 +223,22 @@ abstract class RenderPass(name: String, val mipMode: MipMode) : GpuPass(name) {
             afterCollectDrawCommands(updateEvent)
         }
     }
+}
+
+interface RenderPassColorAttachment {
+    var clearColor: ClearColor
+}
+
+interface RenderPassColorTextureAttachment<T: Texture<*>> : RenderPassColorAttachment {
+    val texture: T
+}
+
+interface RenderPassDepthAttachment {
+    var clearDepth: ClearDepth
+}
+
+interface RenderPassDepthTextureAttachment<T: Texture<*>> : RenderPassDepthAttachment {
+    val texture: T
 }
 
 sealed interface ClearColor

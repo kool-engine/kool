@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.ClearColorLoad
+import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ClearDepthFill
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.util.Viewport
@@ -69,9 +69,9 @@ class PassEncoderState(val backend: RenderBackendVk) {
         forceLoad: Boolean = false
     ) {
         if (isPassActive) {
-            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.clearColors.size == 1) {
+            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.numColorAttachments == 1) {
                 _renderPass = renderPass
-                if (renderPass.clearDepth == ClearDepthFill || renderPass.clearColors[0] is ClearColorLoad) {
+                if (renderPass.colors[0].clearColor is ClearColorFill || renderPass.depth?.clearDepth == ClearDepthFill) {
                     backend.clearHelper.clear(this)
                     activePipeline = 0L
                 }
@@ -155,9 +155,10 @@ class PassEncoderState(val backend: RenderBackendVk) {
         val meshIdx = meshGroup.data.layout.group
 
         descriptorSets.limit(3)
-        viewGroup.bindGroup?.let { descriptorSets.put(viewIdx, it.getDescriptorSet(frameIndex).handle) }
-        pipelineGroup.bindGroup?.let { descriptorSets.put(pipelineIdx, it.getDescriptorSet(frameIndex).handle) }
-        meshGroup.bindGroup?.let { descriptorSets.put(meshIdx, it.getDescriptorSet(frameIndex).handle) }
+        descriptorSets.put(viewIdx, viewGroup.getDescriptorSet(frameIndex).handle)
+        descriptorSets.put(pipelineIdx, pipelineGroup.getDescriptorSet(frameIndex).handle)
+        descriptorSets.put(meshIdx, meshGroup.getDescriptorSet(frameIndex).handle)
+
         vkCmdBindDescriptorSets(
             commandBuffer,
             bindPoint.vk,
@@ -175,7 +176,7 @@ class PassEncoderState(val backend: RenderBackendVk) {
         groupIndex: Int = bindGroup.data.layout.group
     ) {
         descriptorSets.limit(1)
-        bindGroup.bindGroup?.let { descriptorSets.put(0, it.getDescriptorSet(frameIndex).handle) }
+        descriptorSets.put(0, bindGroup.getDescriptorSet(frameIndex).handle)
         vkCmdBindDescriptorSets(
             commandBuffer,
             bindPoint.vk,
