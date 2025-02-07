@@ -30,11 +30,9 @@ class OffscreenPass2dVk(
         )
         parentPass.colors.forEachIndexed { i, attachment ->
             attachment.texture.gpuTexture = attachments.colorImages[i]
-            attachment.texture.loadingState = Texture.LoadingState.LOADED
         }
         parentPass.depth?.let { attachment ->
             attachment.texture.gpuTexture = attachments.depthImage
-            attachment.texture.loadingState = Texture.LoadingState.LOADED
         }
         return attachments
     }
@@ -52,11 +50,9 @@ class OffscreenPass2dVk(
             attachments.release()
             parentPass.colors.forEach {
                 it.texture.gpuTexture = null
-                it.texture.loadingState = Texture.LoadingState.NOT_LOADED
             }
             parentPass.depth?.let {
                 it.texture.gpuTexture = null
-                it.texture.loadingState = Texture.LoadingState.NOT_LOADED
             }
         }
     }

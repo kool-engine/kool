@@ -229,7 +229,6 @@ class ScreenPassVk(backend: RenderBackendVk) :
                 colorDstVk = ImageVk(backend, imgInfo)
                 colorCopyView = colorDstVk.imageView2d(backend.device)
                 colorDst.gpuTexture = colorDstVk
-                colorDst.loadingState = Texture.LoadingState.LOADED
             }
             return colorDstVk
         }
@@ -259,7 +258,6 @@ class ScreenPassVk(backend: RenderBackendVk) :
                 depthDstVk = ImageVk(backend, imgInfo)
                 depthCopyView = depthDstVk.imageView2d(backend.device)
                 depthDst.gpuTexture = depthDstVk
-                depthDst.loadingState = Texture.LoadingState.LOADED
             }
             return depthDstVk
         }

@@ -114,7 +114,6 @@ class WgpuOffscreenPass2d(
             gpuTexture = tex
 
             texture.gpuTexture = gpuTexture
-            texture.loadingState = Texture.LoadingState.LOADED
             createViews()
         }
 
@@ -169,7 +168,6 @@ class WgpuOffscreenPass2d(
                 )
                 copyDst = gpuTex
                 target.gpuTexture = copyDst
-                target.loadingState = Texture.LoadingState.LOADED
             }
             backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.gpuTexture, parentPass.numTextureMipLevels, encoder)
         }
@@ -179,7 +177,6 @@ class WgpuOffscreenPass2d(
                 super.release()
                 texture.gpuTexture?.release()
                 texture.gpuTexture = null
-                texture.loadingState = Texture.LoadingState.NOT_LOADED
             }
         }
     }

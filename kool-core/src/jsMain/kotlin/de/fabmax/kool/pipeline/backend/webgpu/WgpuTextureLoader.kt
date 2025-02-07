@@ -41,8 +41,8 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeArray(tex, data)
             else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
         }
+        tex.gpuTexture?.release()
         tex.gpuTexture = loaded
-        tex.loadingState = Texture.LoadingState.LOADED
     }
 
     private fun loadTexture1d(tex: Texture1d, data: ImageData1d): WgpuTextureResource {

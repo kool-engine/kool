@@ -373,7 +373,6 @@ abstract class RenderPassVk(
                     usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT or VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT,
                 )
                 target.gpuTexture = copyDst
-                target.loadingState = Texture.LoadingState.LOADED
             }
             copyDst.copyFromImage(src, passEncoderState.commandBuffer, stack = passEncoderState.stack)
         }

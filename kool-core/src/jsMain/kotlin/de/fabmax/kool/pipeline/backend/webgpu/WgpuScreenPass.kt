@@ -2,7 +2,10 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ClearColorFill
+import de.fabmax.kool.pipeline.ClearColorLoad
+import de.fabmax.kool.pipeline.ClearDepthLoad
+import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 
@@ -61,7 +64,6 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                 val texResource = backend.createTexture(descriptor, dst)
                 copyDstC = texResource
                 dst.gpuTexture = copyDstC
-                dst.loadingState = Texture.LoadingState.LOADED
             }
             colorDstWgpu = copyDstC
         }
@@ -82,7 +84,6 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                 val texResource = backend.createTexture(descriptor, dst)
                 copyDstD = texResource
                 dst.gpuTexture = copyDstD
-                dst.loadingState = Texture.LoadingState.LOADED
             }
             depthDstWgpu = copyDstD
         }

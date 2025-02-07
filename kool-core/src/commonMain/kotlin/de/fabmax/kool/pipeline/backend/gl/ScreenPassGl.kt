@@ -112,7 +112,6 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         if (tex.width != width || tex.height != height) {
             tex.setSize(width, height, 1)
             tex.applySamplerSettings(dst.props.defaultSamplerSettings)
-            dst.loadingState = Texture.LoadingState.LOADED
 
             val internalFormat = if (isColor) gl.RGBA8 else gl.DEPTH_COMPONENT32F
             val format = if (isColor) gl.RGBA else gl.DEPTH_COMPONENT
@@ -161,7 +160,6 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         val estSize = Texture.estimatedTexSize(renderSize.x, renderSize.y, 1, 1, 4).toLong()
         loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, resolvedColor, estSize)
         resolvedColor.gpuTexture = loadedTex
-        resolvedColor.loadingState = Texture.LoadingState.LOADED
 
         loadedTex.setSize(width, height, 1)
         loadedTex.bind()

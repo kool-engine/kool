@@ -148,7 +148,7 @@ class MsdfFont(
                 Assets.loadImage2d("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
                     .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
             }
-            KoolSystem.getContextOrNull()?.onShutdown += { msdfMap.dispose() }
+            KoolSystem.getContextOrNull()?.onShutdown += { msdfMap.release() }
             MsdfFontData(msdfMap, fontInfo.fontMeta)
         }
         val DEFAULT_FONT: MsdfFont by lazy { MsdfFont(DEFAULT_FONT_DATA) }

@@ -81,15 +81,9 @@ class OffscreenPass2dGl(
         fbos.clear()
 
         parent.colors.forEach { tex ->
-            if (tex.texture.loadingState == Texture.LoadingState.LOADED) {
-                tex.texture.dispose()
-            }
+            tex.texture.gpuTexture?.release()
         }
-        parent.depth?.let { tex ->
-            if (tex.texture.loadingState == Texture.LoadingState.LOADED) {
-                tex.texture.dispose()
-            }
-        }
+        parent.depth?.texture?.gpuTexture?.release()
 
         for (i in colorTextures.indices) { colorTextures[i] = gl.NULL_TEXTURE }
         depthTexture = gl.NULL_TEXTURE
@@ -170,6 +164,5 @@ class OffscreenPass2dGl(
         tex.applySamplerSettings(props.defaultSamplerSettings)
         gl.texStorage2d(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
         gpuTexture = tex
-        loadingState = Texture.LoadingState.LOADED
     }
 }

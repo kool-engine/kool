@@ -201,7 +201,6 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
         val glColorTexture = tex.glTexture
         colorTexture.gpuTexture = tex
-        colorTexture.loadingState = Texture.LoadingState.LOADED
         return glColorTexture
     }
 
@@ -224,7 +223,6 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
         val glDepthTexture = tex.glTexture
         depthTexture.gpuTexture = tex
-        depthTexture.loadingState = Texture.LoadingState.LOADED
         return glDepthTexture
     }
 

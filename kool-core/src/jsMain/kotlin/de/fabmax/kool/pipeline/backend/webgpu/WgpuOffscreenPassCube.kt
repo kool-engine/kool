@@ -114,7 +114,6 @@ class WgpuOffscreenPassCube(
             gpuTexture = tex
 
             texture.gpuTexture = gpuTexture
-            texture.loadingState = Texture.LoadingState.LOADED
         }
 
         fun recreate(width: Int, height: Int) {
@@ -174,7 +173,6 @@ class WgpuOffscreenPassCube(
                 )
                 copyDst = gpuTex
                 target.gpuTexture = copyDst
-                target.loadingState = Texture.LoadingState.LOADED
             }
             backend.textureLoader.copyTexture2d(gpuTexture.gpuTexture, copyDst.gpuTexture, parentPass.numTextureMipLevels, encoder)
         }
@@ -184,7 +182,6 @@ class WgpuOffscreenPassCube(
                 super.release()
                 texture.gpuTexture?.release()
                 texture.gpuTexture = null
-                texture.loadingState = Texture.LoadingState.NOT_LOADED
             }
         }
     }

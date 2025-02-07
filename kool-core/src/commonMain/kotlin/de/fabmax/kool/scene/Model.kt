@@ -62,7 +62,7 @@ class Model(name: String? = null) : Node(name) {
     }
 
     override fun release() {
-        textures.values.forEach { it.dispose() }
+        textures.values.forEach { it.release() }
         super.release()
     }
 }
