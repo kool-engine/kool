@@ -143,17 +143,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             is OffscreenPass2d -> impl.draw()
             is OffscreenPassCube -> impl.draw()
             is ComputePass -> impl.dispatch()
-            is OffscreenPass2dPingPong -> draw()
             else -> error("Gpu pass type not implemented: $this")
-        }
-    }
-
-    private fun OffscreenPass2dPingPong.draw() {
-        for (i in 0 until pingPongPasses) {
-            onDrawPing?.invoke(i)
-            ping.impl.draw()
-            onDrawPong?.invoke(i)
-            pong.impl.draw()
         }
     }
 

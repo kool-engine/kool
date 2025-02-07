@@ -172,14 +172,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private fun RenderPass.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
         if (isEnabled) {
-            if (this is OffscreenPass2dPingPong) {
-                ping.prepareDrawPipelines(passEncoderState)
-                pong.prepareDrawPipelines(passEncoderState)
-            } else {
-                for (i in views.indices) {
-                    val queue = views[i].drawQueue
-                    queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
-                }
+            for (i in views.indices) {
+                val queue = views[i].drawQueue
+                queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
             }
         }
     }
@@ -210,18 +205,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> draw(passEncoderState)
             is OffscreenPassCube -> draw(passEncoderState)
-            is OffscreenPass2dPingPong -> draw(passEncoderState)
             is ComputePass -> dispatch(passEncoderState.encoder)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
-        }
-    }
-
-    private fun OffscreenPass2dPingPong.draw(passEncoderState: RenderPassEncoderState) {
-        for (i in 0 until pingPongPasses) {
-            onDrawPing?.invoke(i)
-            ping.draw(passEncoderState)
-            onDrawPong?.invoke(i)
-            pong.draw(passEncoderState)
         }
     }
 

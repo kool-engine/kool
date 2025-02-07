@@ -185,14 +185,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private fun RenderPass.prepareDrawPipelines(passEncoderState: PassEncoderState) {
         if (isEnabled) {
-            if (this is OffscreenPass2dPingPong) {
-                ping.prepareDrawPipelines(passEncoderState)
-                pong.prepareDrawPipelines(passEncoderState)
-            } else {
-                for (i in views.indices) {
-                    val queue = views[i].drawQueue
-                    queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
-                }
+            for (i in views.indices) {
+                val queue = views[i].drawQueue
+                queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
             }
         }
     }
@@ -223,18 +218,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> draw(passEncoderState)
             is OffscreenPassCube -> draw(passEncoderState)
-            is OffscreenPass2dPingPong -> draw(passEncoderState)
             is ComputePass -> dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
-        }
-    }
-
-    private fun OffscreenPass2dPingPong.draw(passEncoderState: PassEncoderState) {
-        for (i in 0 until pingPongPasses) {
-            onDrawPing?.invoke(i)
-            ping.draw(passEncoderState)
-            onDrawPong?.invoke(i)
-            pong.draw(passEncoderState)
         }
     }
 

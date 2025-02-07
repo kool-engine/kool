@@ -8,15 +8,16 @@ import kotlin.math.roundToInt
 class Bloom(deferredPipeline: DeferredPipeline, cfg: DeferredPipelineConfig) : DeferredPassSwapListener {
 
     val thresholdPass = BloomThresholdPass(deferredPipeline, cfg)
-    val blurPass = BloomBlurPass(cfg.bloomKernelSize, thresholdPass)
+    val blurPass = BloomBlurPasses(cfg.bloomKernelSize, thresholdPass)
 
     var desiredMapHeight = 400
 
     var isEnabled: Boolean
-        get() = thresholdPass.isEnabled && blurPass.isEnabled
+        get() = thresholdPass.isEnabled && blurPass.blurX.isEnabled
         set(value) {
             thresholdPass.isEnabled = value
-            blurPass.isEnabled = value
+            blurPass.blurX.isEnabled = value
+            blurPass.blurY.isEnabled = value
         }
 
     val thresholdMap: Texture2d get() = thresholdPass.colorTexture!!

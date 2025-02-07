@@ -134,7 +134,8 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         if (cfg.isWithBloom) {
             bloom = Bloom(this, cfg)
             scene.addOffscreenPass(bloom.thresholdPass)
-            scene.addOffscreenPass(bloom.blurPass)
+            scene.addOffscreenPass(bloom.blurPass.blurX)
+            scene.addOffscreenPass(bloom.blurPass.blurY)
             onSwap += bloom
 
         } else {
