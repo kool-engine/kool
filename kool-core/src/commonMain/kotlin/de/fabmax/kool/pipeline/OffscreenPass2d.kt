@@ -18,11 +18,14 @@ open class OffscreenPass2d(
     mipMode: MipMode = MipMode.Single,
 ) : OffscreenPass(numSamples, mipMode, Vec3i(initialSize, 1), name) {
 
-    override val colors: List<ColorAttachment> = attachmentConfig.colors.mapIndexed { i, cfg -> ColorAttachment(cfg, i) }
-    override val depth: DepthAttachment? = attachmentConfig.depth?.let { DepthAttachment(it) }
+    override val colorAttachments: List<ColorAttachment> = attachmentConfig.colors.mapIndexed { i, cfg -> ColorAttachment(cfg, i) }
+    override val depthAttachment: RenderPassDepthAttachment? = attachmentConfig.depth?.let {
+        if (it.isTransient) TransientDepthAttachment(it) else DepthAttachment(it)
+    }
 
-    val colorTexture: Texture2d? get() = colors.getOrNull(0)?.texture
-    val depthTexture: Texture2d? get() = depth?.texture
+    val colorTextures: List<Texture2d> = colorAttachments.map { it.texture }
+    val colorTexture: Texture2d? get() = colorTextures.getOrNull(0)
+    val depthTexture: Texture2d? get() = (depthAttachment as? DepthAttachment)?.texture
 
     val defaultView = View("${name}:default-view", drawNode, PerspectiveCamera())
     override val views = mutableListOf(defaultView)
@@ -34,10 +37,11 @@ open class OffscreenPass2d(
     var isUpdateDrawNode: Boolean by defaultView::isUpdateDrawNode
     var isReleaseDrawNode: Boolean by defaultView::isReleaseDrawNode
 
-    internal val impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
+    internal val impl: OffscreenPass2dImpl
 
     init {
         defaultView.viewport.set(0, 0, width, height)
+        impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
     }
 
     fun createView(name: String, camera: Camera = PerspectiveCamera()): View {
@@ -74,8 +78,6 @@ open class OffscreenPass2d(
     override fun release() {
         super.release()
         impl.release()
-        depth?.texture?.release()
-        colors.forEach { it.texture.release() }
     }
 
     inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<Texture2d> {
@@ -86,6 +88,10 @@ open class OffscreenPass2d(
     inner class DepthAttachment(config: TextureAttachmentConfig) : RenderPassDepthTextureAttachment<Texture2d> {
         override val texture: Texture2d = Texture2d(config.createTextureProps(mipMode.hasMipLevels), "${name}:depth")
         override var clearDepth: ClearDepth = config.clearDepth
+    }
+
+    inner class TransientDepthAttachment(config: TextureAttachmentConfig) : RenderPassDepthAttachment {
+        override val clearDepth: ClearDepth = config.clearDepth
     }
 }
 

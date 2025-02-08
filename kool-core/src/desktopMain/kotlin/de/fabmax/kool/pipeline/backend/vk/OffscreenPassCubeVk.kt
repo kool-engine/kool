@@ -1,20 +1,29 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
 import org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE
 
 class OffscreenPassCubeVk(
     val parentPass: OffscreenPassCube,
-    numSamples: Int,
     backend: RenderBackendVk
-) : RenderPassVk(false, numSamples, backend), OffscreenPassCubeImpl {
+) : RenderPassVk(
+    hasDepth = parentPass.hasDepth,
+    numSamples = parentPass.numSamples,
+    backend = backend
+), OffscreenPassCubeImpl {
 
-    override val colorTargetFormats: List<Int> = parentPass.colors.map { it.texture.props.format.vk }
-    private var attachments = createAttachments(false, false)
+    override val colorTargetFormats: List<Int> = parentPass.colorAttachments.map { it.texture.props.format.vk }
+    private var attachments = createAttachments()
 
-    private fun createAttachments(isCopySrc: Boolean, isCopyDst: Boolean): Attachments {
+    private fun createAttachments(): Attachments {
+        val isCopy = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
+        val isGenMipMaps = parentPass.mipMode == RenderPass.MipMode.Generate
+        val isCopySrc = isCopy || isGenMipMaps
+        val isCopyDst = isGenMipMaps
+
         val attachments = Attachments(
             colorFormats = colorTargetFormats,
             depthFormat = if (hasDepth) backend.physicalDevice.depthFormat else null,
@@ -22,13 +31,21 @@ class OffscreenPassCubeVk(
             isCopySrc = isCopySrc,
             isCopyDst = isCopyDst,
             parentPass = parentPass,
-            backend = backend
+            backend = backend,
         )
-        parentPass.colors.forEachIndexed { i, attachment ->
-            attachment.texture.gpuTexture = attachments.colorImages[i]
+        parentPass.colorTextures.forEachIndexed { i, attachment ->
+            if (parentPass.isMultiSampled) {
+                attachment.gpuTexture = attachments.resolveColorImages[i]
+            } else {
+                attachment.gpuTexture = attachments.colorImages[i]
+            }
         }
-        parentPass.depth?.let { attachment ->
-            attachment.texture.gpuTexture = attachments.depthImage
+        parentPass.depthTexture?.let { attachment ->
+            if (parentPass.isMultiSampled) {
+                attachment.gpuTexture = attachments.resolveDepthImage
+            } else {
+                attachment.gpuTexture = attachments.depthImage
+            }
         }
         return attachments
     }
@@ -36,7 +53,7 @@ class OffscreenPassCubeVk(
     override fun applySize(width: Int, height: Int) {
         logT { "Resize offscreen cube pass ${parentPass.name} to $width x $height" }
         attachments.release()
-        attachments = createAttachments(attachments.isCopySrc, attachments.isCopyDst)
+        attachments = createAttachments()
     }
 
     override fun release() {
@@ -44,11 +61,11 @@ class OffscreenPassCubeVk(
         super.release()
         if (!alreadyReleased) {
             attachments.release()
-            parentPass.colors.forEach {
-                it.texture.gpuTexture = null
+            parentPass.colorTextures.forEach {
+                it.gpuTexture = null
             }
-            parentPass.depth?.let {
-                it.texture.gpuTexture = null
+            parentPass.depthTexture?.let {
+                it.gpuTexture = null
             }
         }
     }
@@ -63,8 +80,9 @@ class OffscreenPassCubeVk(
         val isCopySrc = isCopy || isGenMipMaps
         val isCopyDst = isGenMipMaps
         if (isCopySrc != attachments.isCopySrc || isCopyDst != attachments.isCopyDst) {
+            logD { "Offscreen pass ${parentPass.name} copy requirements changed: copy src: $isCopySrc, copy dst: $isCopyDst" }
             attachments.release()
-            attachments = createAttachments(isCopySrc, isCopyDst)
+            attachments = createAttachments()
         }
         render(parentPass, passEncoderState)
     }
@@ -75,10 +93,10 @@ class OffscreenPassCubeVk(
         val width = (parentPass.width shr mipLevel).coerceAtLeast(1)
         val height = (parentPass.height shr mipLevel).coerceAtLeast(1)
 
-        val isLoadDepth = forceLoad || parentPass.depth?.clearDepth == ClearDepthLoad
+        val isLoadDepth = forceLoad || parentPass.depthAttachment?.clearDepth == ClearDepthLoad
         var isLoadColor = forceLoad
-        for (i in parentPass.colors.indices) {
-            if (parentPass.colors[i].clearColor == ClearColorLoad) {
+        for (i in parentPass.colorAttachments.indices) {
+            if (parentPass.colorAttachments[i].clearColor == ClearColorLoad) {
                 isLoadColor = true
             }
         }
@@ -105,7 +123,6 @@ class OffscreenPassCubeVk(
         for (i in attachments.colorImages.indices) {
             attachments.colorImages[i].generateMipmaps(passEncoderState.stack, passEncoderState.commandBuffer)
         }
-        //attachments.depthImage?.generateMipmaps(passEncoderState.stack, passEncoderState.commandBuffer)
     }
 
     override fun copy(frameCopy: FrameCopy, passEncoderState: PassEncoderState) {

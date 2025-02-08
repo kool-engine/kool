@@ -11,8 +11,8 @@ class MockRenderPass(
     override val size: Vec3i = Vec3i(Mock.testCtx.windowWidth, Mock.testCtx.windowHeight, 1)
 ) : RenderPass(numSamples = 1, mipMode = MipMode.Single, name = "mock-render-pass") {
 
-    override val colors: List<RenderPassColorAttachment> = emptyList()
-    override val depth: RenderPassDepthAttachment? = null
+    override val colorAttachments: List<RenderPassColorAttachment> = emptyList()
+    override val depthAttachment: RenderPassDepthAttachment? = null
 
     val mockView = View("mock-view", Node(), PerspectiveCamera())
     override val views = listOf(mockView)

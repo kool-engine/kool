@@ -11,7 +11,7 @@ import de.fabmax.kool.util.UniqueId
 
 open class DepthMapPass(
     drawNode: Node,
-    attachmentConfig: AttachmentConfig = AttachmentConfig { setDefaultDepth() },
+    attachmentConfig: AttachmentConfig = AttachmentConfig { defaultDepth() },
     initialSize: Vec2i = Vec2i(128, 128),
     name: String = UniqueId.nextId("depth-map-pass")
 ) :
@@ -95,7 +95,7 @@ class NormalLinearDepthMapPass(
     name: String = UniqueId.nextId("normal-linear-depth-map-pass")
 ) : DepthMapPass(drawNode, attachmentConfig, initialSize, name) {
 
-    val normalDepthMap: Texture2d get() = colors[0].texture
+    val normalDepthMap: Texture2d get() = colorTexture!!
 
     init {
         mirrorIfInvertedClipY()

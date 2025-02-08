@@ -69,9 +69,9 @@ class PassEncoderState(val backend: RenderBackendVk) {
         forceLoad: Boolean = false
     ) {
         if (isPassActive) {
-            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.numColorAttachments == 1) {
+            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.colorAttachments.size == 1) {
                 _renderPass = renderPass
-                if (renderPass.colors[0].clearColor is ClearColorFill || renderPass.depth?.clearDepth == ClearDepthFill) {
+                if (renderPass.colorAttachments[0].clearColor is ClearColorFill || renderPass.depthAttachment?.clearDepth == ClearDepthFill) {
                     backend.clearHelper.clear(this)
                     activePipeline = 0L
                 }

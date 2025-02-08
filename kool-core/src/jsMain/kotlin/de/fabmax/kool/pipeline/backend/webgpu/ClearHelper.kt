@@ -51,7 +51,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
 
         fun clear(passEncoderState: RenderPassEncoderState) {
             val rp = passEncoderState.renderPass
-            val clearColor = (rp.colors[0].clearColor as? ClearColorFill)?.clearColor
+            val clearColor = (rp.colorAttachments[0].clearColor as? ClearColorFill)?.clearColor
             val clearDepth = if (rp.isReverseDepth) 0f else 1f
 
             if (clearColor != prevColor || clearDepth != prevDepth) {
@@ -65,7 +65,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
 
             val clearPipeline = when {
                 clearColor == null -> clearDepthOnly
-                rp.depth?.clearDepth != ClearDepthFill -> clearColorOnly
+                rp.depthAttachment?.clearDepth != ClearDepthFill -> clearColorOnly
                 else -> clearColorAndDepth
             }
 

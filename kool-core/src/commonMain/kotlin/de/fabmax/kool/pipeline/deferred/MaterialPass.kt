@@ -12,7 +12,7 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         drawNode = pipeline.sceneContent,
         attachmentConfig = AttachmentConfig {
             colors += FORMATS_DEFERRED_EMISSIVE
-            setDefaultDepth()
+            defaultDepth()
         },
         initialSize = Vec2i(128, 128),
         name = "material-pass-$suffix"
@@ -21,10 +21,10 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
 
     internal val alphaMeshes = mutableListOf<Mesh>()
 
-    val positionFlags: Texture2d get() = colors[0].texture
-    val normalRoughness: Texture2d get() = colors[1].texture
-    val albedoMetal: Texture2d get() = colors[2].texture
-    val emissiveAo: Texture2d get() = colors[3].texture
+    val positionFlags: Texture2d get() = colorTextures[0]
+    val normalRoughness: Texture2d get() = colorTextures[1]
+    val albedoMetal: Texture2d get() = colorTextures[2]
+    val emissiveAo: Texture2d get() = colorTextures[3]
 
     var proxyCamera: PerspectiveProxyCam? = null
         set(value) {

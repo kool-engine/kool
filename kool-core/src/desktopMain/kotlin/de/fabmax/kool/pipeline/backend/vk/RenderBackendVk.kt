@@ -253,11 +253,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
-        return OffscreenPass2dVk(parentPass, 1, this)
+        return OffscreenPass2dVk(parentPass, this)
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
-        return OffscreenPassCubeVk(parentPass, 1, this)
+        return OffscreenPassCubeVk(parentPass, this)
     }
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {

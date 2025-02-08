@@ -18,11 +18,14 @@ open class OffscreenPassCube(
     mipMode: MipMode = MipMode.Single,
 ) : OffscreenPass(numSamples, mipMode, Vec3i(initialSize, 6), name) {
 
-    override val colors: List<ColorAttachment> = attachmentConfig.colors.mapIndexed { i, cfg -> ColorAttachment(cfg, i) }
-    override val depth: DepthAttachment? = attachmentConfig.depth?.let { DepthAttachment(it) }
+    override val colorAttachments: List<ColorAttachment> = attachmentConfig.colors.mapIndexed { i, cfg -> ColorAttachment(cfg, i) }
+    override val depthAttachment: RenderPassDepthAttachment? = attachmentConfig.depth?.let {
+        if (it.isTransient) TransientDepthAttachment(it) else DepthAttachment(it)
+    }
 
-    val colorTexture: TextureCube? get() = colors.getOrNull(0)?.texture
-    val depthTexture: TextureCube? get() = depth?.texture
+    val colorTextures: List<TextureCube> = colorAttachments.map { it.texture }
+    val colorTexture: TextureCube? get() = colorTextures.getOrNull(0)
+    val depthTexture: TextureCube? get() = (depthAttachment as? DepthAttachment)?.texture
 
     override val views: List<View> = ViewDirection.entries.mapIndexed { i, dir ->
         val cam = PerspectiveCamera()
@@ -58,17 +61,15 @@ open class OffscreenPassCube(
         super.setSize(width, height, 6)
     }
 
-    override fun release() {
-        super.release()
-        impl.release()
-        depth?.texture?.release()
-        colors.forEach { it.texture.release() }
-    }
-
     override fun applySize(width: Int, height: Int, layers: Int) {
         require(layers == 6) { "OffscreenRenderPassCube layers must be == 6" }
         super.applySize(width, height, layers)
         impl.applySize(width, height)
+    }
+
+    override fun release() {
+        super.release()
+        impl.release()
     }
 
     inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<TextureCube> {
@@ -79,6 +80,10 @@ open class OffscreenPassCube(
     inner class DepthAttachment(config: TextureAttachmentConfig) : RenderPassDepthTextureAttachment<TextureCube> {
         override val texture: TextureCube = TextureCube(config.createTextureProps(mipMode.hasMipLevels), "${name}:depth")
         override var clearDepth: ClearDepth = config.clearDepth
+    }
+
+    inner class TransientDepthAttachment(config: TextureAttachmentConfig) : RenderPassDepthAttachment {
+        override val clearDepth: ClearDepth = config.clearDepth
     }
 
     enum class ViewDirection(val index: Int, val lookAt: Vec3f, val up: Vec3f) {

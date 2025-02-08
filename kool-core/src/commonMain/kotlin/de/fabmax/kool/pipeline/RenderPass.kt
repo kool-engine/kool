@@ -16,11 +16,12 @@ abstract class RenderPass(
     name: String
 ) : GpuPass(name) {
 
-    abstract val colors: List<RenderPassColorAttachment>
-    abstract val depth: RenderPassDepthAttachment?
+    abstract val colorAttachments: List<RenderPassColorAttachment>
+    abstract val depthAttachment: RenderPassDepthAttachment?
 
-    val hasColor: Boolean get() = colors.isNotEmpty()
-    val hasDepth: Boolean get() = depth != null
+    val hasColor: Boolean get() = colorAttachments.isNotEmpty()
+    val hasDepth: Boolean get() = depthAttachment != null
+    val isMultiSampled: Boolean get() = numSamples > 1
 
     abstract val size: Vec3i
     val width: Int get() = size.x
@@ -29,7 +30,6 @@ abstract class RenderPass(
 
     abstract val views: List<View>
 
-    val numColorAttachments: Int get() = colors.size
     val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
     val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
 
@@ -48,9 +48,8 @@ abstract class RenderPass(
     val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
     var isMirrorY = false
-        protected set
 
-    protected fun mirrorIfInvertedClipY() {
+    fun mirrorIfInvertedClipY() {
         isMirrorY = KoolSystem.requireContext().backend.isInvertedNdcY
     }
 
@@ -226,7 +225,7 @@ abstract class RenderPass(
 }
 
 interface RenderPassColorAttachment {
-    var clearColor: ClearColor
+    val clearColor: ClearColor
 }
 
 interface RenderPassColorTextureAttachment<T: Texture<*>> : RenderPassColorAttachment {
@@ -234,7 +233,7 @@ interface RenderPassColorTextureAttachment<T: Texture<*>> : RenderPassColorAttac
 }
 
 interface RenderPassDepthAttachment {
-    var clearDepth: ClearDepth
+    val clearDepth: ClearDepth
 }
 
 interface RenderPassDepthTextureAttachment<T: Texture<*>> : RenderPassDepthAttachment {

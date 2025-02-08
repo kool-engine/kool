@@ -24,7 +24,7 @@ abstract class AoPipeline : BaseReleasable() {
     // ao map size relative to screen resolution
     var mapSize = 0.7f
 
-    val aoMap: Texture2d get() = denoisePass.colors[0].texture
+    val aoMap: Texture2d get() = denoisePass.colorTexture!!
 
     var radius: Float
         get() = aoPass.radius

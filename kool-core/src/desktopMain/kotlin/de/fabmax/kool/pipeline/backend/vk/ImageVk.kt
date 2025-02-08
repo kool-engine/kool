@@ -35,7 +35,7 @@ class ImageVk(
 
     private val textureInfo = TextureInfo(
         texture = null,
-        size = (width * height * depth * arrayLayers /* texture.bytePerPx * texture.mipMapFactor*/).toLong(),
+        size = (width * height * depth * arrayLayers * imageInfo.bytesPerPx * imageInfo.mipMapFactor).toLong(),
         label
     )
 
@@ -52,6 +52,32 @@ class ImageVk(
             vkImage = backend.memManager.createImage(imageInfo)
         }
     }
+
+    private val ImageInfo.bytesPerPx: Int get() = when(format) {
+        VK_FORMAT_R8_UNORM -> 1
+        VK_FORMAT_R8G8_UNORM -> 2
+        VK_FORMAT_R8G8B8A8_UNORM -> 4
+
+        VK_FORMAT_R16_SFLOAT -> 2
+        VK_FORMAT_R16G16_SFLOAT -> 4
+        VK_FORMAT_R16G16B16A16_SFLOAT -> 8
+
+        VK_FORMAT_R32_SFLOAT -> 4
+        VK_FORMAT_R32G32_SFLOAT -> 8
+        VK_FORMAT_R32G32B32A32_SFLOAT -> 16
+
+        VK_FORMAT_R32_SINT -> 4
+        VK_FORMAT_R32G32_SINT -> 8
+        VK_FORMAT_R32G32B32A32_SINT -> 16
+
+        VK_FORMAT_R32_UINT -> 4
+        VK_FORMAT_R32G32_UINT -> 8
+        VK_FORMAT_R32G32B32A32_UINT -> 16
+
+        else -> 1
+    }
+
+    private val ImageInfo.mipMapFactor: Double get() = if (mipLevels > 1) { 1.333 } else 1.0
 
     override fun toString(): String {
         return "ImageVK:\"${imageInfo.label}\""

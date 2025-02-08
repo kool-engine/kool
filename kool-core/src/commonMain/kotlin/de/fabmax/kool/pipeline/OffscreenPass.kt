@@ -60,7 +60,7 @@ data class AttachmentConfig(
         fun singleColorDefaultDepth(texFormat: TexFormat, clearColor: ClearColor = ClearColorFill(Color.BLACK)): AttachmentConfig {
             return AttachmentConfig {
                 addColor(texFormat)
-                setDefaultDepth()
+                defaultDepth()
             }
         }
     }
@@ -70,7 +70,7 @@ data class AttachmentConfig(
         var depth: TextureAttachmentConfig? = null
 
         init {
-            setDefaultDepth()
+            defaultDepth()
         }
 
         fun addColor(block: TextureAttachmentConfig.Builder.() -> Unit) {
@@ -84,13 +84,18 @@ data class AttachmentConfig(
             }
         }
 
-        fun setDepth(block: TextureAttachmentConfig.Builder.() -> Unit) {
+        fun depth(block: TextureAttachmentConfig.Builder.() -> Unit) {
             depth = TextureAttachmentConfig.Builder().apply(block).build()
         }
 
-        fun setDefaultDepth() = setDepth {
+        fun defaultDepth() = depth {
             textureFormat = TexFormat.R_F32
             defaultSamplerSettings = SamplerSettings().clamped().nearest()
+        }
+
+        fun transientDepth() = depth {
+            textureFormat = TexFormat.R_F32
+            isTransient = true
         }
 
         fun noDepth() {
@@ -111,7 +116,8 @@ data class TextureAttachmentConfig(
     val textureFormat: TexFormat,
     val defaultSamplerSettings: SamplerSettings,
     val clearColor: ClearColor,
-    val clearDepth: ClearDepth
+    val clearDepth: ClearDepth,
+    val isTransient: Boolean
 ) {
     fun createTextureProps(isMipMapped: Boolean) = TextureProps(
         format = textureFormat,
@@ -124,9 +130,10 @@ data class TextureAttachmentConfig(
         var defaultSamplerSettings = SamplerSettings().clamped()
         var clearColor: ClearColor = ClearColorFill(Color.BLACK)
         var clearDepth: ClearDepth = ClearDepthFill
+        var isTransient: Boolean = false
 
         fun build(): TextureAttachmentConfig {
-            return TextureAttachmentConfig(textureFormat, defaultSamplerSettings, clearColor, clearDepth)
+            return TextureAttachmentConfig(textureFormat, defaultSamplerSettings, clearColor, clearDepth, isTransient)
         }
     }
 }

@@ -166,19 +166,29 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
     }
 
     fun clear(renderPass: RenderPass) {
-        for (i in renderPass.colors.indices) {
-            val clearMode = renderPass.colors[i].clearColor
+        for (i in renderPass.colorAttachments.indices) {
+            val clearMode = renderPass.colorAttachments[i].clearColor
             if (clearMode is ClearColorFill) {
                 colorBufferClearVal.clear()
                 clearMode.clearColor.putTo(colorBufferClearVal)
                 gl.clearBufferfv(gl.COLOR, i, colorBufferClearVal)
             }
         }
-        if (renderPass.depth?.clearDepth == ClearDepthFill) {
+        if (renderPass.depthAttachment?.clearDepth == ClearDepthFill) {
             GlState.setWriteDepth(true, gl)
             gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
             gl.clear(gl.DEPTH_BUFFER_BIT)
         }
+    }
+
+    protected fun createAndAttachDepthRenderBuffer(pass: OffscreenPass, mipLevel: Int): GlRenderbuffer {
+        val rbo = gl.createRenderbuffer()
+        val mipWidth = pass.width shr mipLevel
+        val mipHeight = pass.height shr mipLevel
+        gl.bindRenderbuffer(gl.RENDERBUFFER, rbo)
+        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT32F, mipWidth, mipHeight)
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, rbo)
+        return rbo
     }
 
     protected fun createColorAttachmentTexture(

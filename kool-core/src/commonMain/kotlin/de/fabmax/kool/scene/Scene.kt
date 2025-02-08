@@ -149,8 +149,8 @@ open class Scene(name: String? = null) : Node(name) {
         name = "${name}:ScreenPass"
     ), RenderPassColorAttachment, RenderPassDepthAttachment {
 
-        override val colors: List<RenderPassColorAttachment> = listOf(this)
-        override val depth: RenderPassDepthAttachment = this
+        override val colorAttachments: List<RenderPassColorAttachment> = listOf(this)
+        override val depthAttachment: RenderPassDepthAttachment = this
 
         override var clearColor: ClearColor = ClearColorFill(DEFAULT_CLEAR_COLOR)
         override var clearDepth: ClearDepth = ClearDepthFill

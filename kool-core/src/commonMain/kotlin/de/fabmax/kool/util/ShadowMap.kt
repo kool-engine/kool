@@ -27,7 +27,7 @@ class SimpleShadowMap(
     DepthMapPass(
         drawNode = drawNode,
         attachmentConfig = AttachmentConfig {
-            setDepth {
+            depth {
                 textureFormat = TexFormat.R_F32
                 defaultSamplerSettings = SamplerSettings(compareOp = DepthCompareOp.LESS).clamped().linear()
             }
@@ -64,7 +64,6 @@ class SimpleShadowMap(
         set(value) { isEnabled = value }
 
     override val subMaps = listOf(this)
-    val shadowMap: Texture2d = depth!!.texture
 
     init {
         isUpdateDrawNode = false

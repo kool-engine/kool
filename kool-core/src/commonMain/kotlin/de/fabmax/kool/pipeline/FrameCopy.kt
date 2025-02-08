@@ -38,13 +38,13 @@ class FrameCopy(
                 add(tex)
             }
             is OffscreenPass2d -> {
-                renderPass.colors.forEach {
-                    add(Texture2d(it.texture.props, "${it.texture.name}:copy"))
+                renderPass.colorTextures.forEach {
+                    add(Texture2d(it.props, "${it.name}:copy"))
                 }
             }
             is OffscreenPassCube -> {
-                renderPass.colors.forEach {
-                    add(TextureCube(it.texture.props, "${it.texture.name}:copy"))
+                renderPass.colorTextures.forEach {
+                    add(TextureCube(it.props, "${it.name}:copy"))
                 }
             }
             else -> error("Invalid render pass type: $renderPass")
@@ -64,10 +64,10 @@ class FrameCopy(
                 )
             }
             is OffscreenPass2d -> {
-                renderPass.depth?.let { Texture2d(it.texture.props, "${it.texture.name}:copy") }
+                renderPass.depthTexture?.let { Texture2d(it.props, "${it.name}:copy") }
             }
             is OffscreenPassCube -> {
-                renderPass.depth?.let { TextureCube(it.texture.props, "${it.texture.name}:copy") }
+                renderPass.depthTexture?.let { TextureCube(it.props, "${it.name}:copy") }
             }
             else -> error("Invalid render pass type: $renderPass")
         }

@@ -245,11 +245,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
-        return WgpuOffscreenPass2d(parentPass, 1, this)
+        return WgpuOffscreenPass2d(parentPass, this)
     }
 
     override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
-        return WgpuOffscreenPassCube(parentPass, 1, this)
+        return WgpuOffscreenPassCube(parentPass, this)
     }
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
@@ -360,8 +360,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuBufferResource(device.createBuffer(descriptor), descriptor.size, info)
     }
 
-    fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture<*>): WgpuTextureResource {
-        return WgpuTextureResource(device.createTexture(descriptor), texture)
+    fun createTexture(descriptor: GPUTextureDescriptor): WgpuTextureResource {
+        return WgpuTextureResource(descriptor, device.createTexture(descriptor))
     }
 
     private interface GpuReadback

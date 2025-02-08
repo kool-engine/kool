@@ -46,13 +46,13 @@ class BloomBlurPasses(kernelSize: Int, thresholdPass: BloomThresholdPass) {
             kernelRadius = kernelSize
         }
         blurShaderX = BlurShader(pingCfg)
-        blurShaderX.blurInput = thresholdPass.colors[0].texture
+        blurShaderX.blurInput = thresholdPass.colorTexture
 
         val pongCfg = BlurShaderConfig().apply {
             kernelRadius = kernelSize
         }
         blurShaderY = BlurShader(pongCfg)
-        blurShaderY.blurInput = blurX.colors[0].texture
+        blurShaderY.blurInput = blurX.colorTexture
 
         blurX.drawNode.fullScreenQuad(blurShaderX)
         blurY.drawNode.fullScreenQuad(blurShaderY)

@@ -77,7 +77,7 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
     inner class DenoiseShader(aoPass: OffscreenPass2d, depthComponent: String) :
         KslShader("Ambient Occlusion Denoise Pass")
     {
-        var noisyAoTex by texture2d("noisyAoTex", aoPass.colors[0].texture)
+        var noisyAoTex by texture2d("noisyAoTex", aoPass.colorTexture)
         var viewSpaceTex by texture2d("viewSpaceTex")
         var uRadius by uniform1f("uRadius", 1f)
 

@@ -1,6 +1,9 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.OffscreenPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2dImpl
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 import de.fabmax.kool.util.logE
 
@@ -10,14 +13,25 @@ class OffscreenPass2dGl(
 ) : GlRenderPass(backend), OffscreenPass2dImpl {
 
     private val fbos = mutableListOf<GlFramebuffer>()
+    private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
 
-    internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
+    internal val colorTextures = Array(parent.colorAttachments.size) { gl.NULL_TEXTURE }
     internal var depthTexture = gl.NULL_TEXTURE
 
     private var isCreated = false
 
     private val resInfo = OffscreenPassInfo(parent)
+
+    init {
+        if (parent.numSamples > 1) {
+            logE {
+                "OffscreenPass2d ${parent.name} requests a sample count of ${parent.numSamples} but multi-sampling " +
+                        "is not yet implemented in OpenGL backend. Falling back to single-sample. (Use Vulkan or " +
+                        "WebGPU backend if you need multi-sampled offscreen passes)"
+            }
+        }
+    }
 
     override fun setupFramebuffer(mipLevel: Int, layer: Int) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
@@ -78,12 +92,14 @@ class OffscreenPass2dGl(
     private fun deleteBuffers() {
         copyFbo?.let { gl.deleteFramebuffer(it) }
         fbos.forEach { gl.deleteFramebuffer(it) }
+        rbos.forEach { gl.deleteRenderbuffer(it) }
         fbos.clear()
+        rbos.clear()
 
-        parent.colors.forEach { tex ->
-            tex.texture.gpuTexture?.release()
+        parent.colorTextures.forEach { tex ->
+            tex.gpuTexture?.release()
         }
-        parent.depth?.texture?.gpuTexture?.release()
+        parent.depthTexture?.gpuTexture?.release()
 
         for (i in colorTextures.indices) { colorTextures[i] = gl.NULL_TEXTURE }
         depthTexture = gl.NULL_TEXTURE
@@ -102,11 +118,11 @@ class OffscreenPass2dGl(
     }
 
     private fun createBuffers() {
-        parent.colors.forEachIndexed { i, tex ->
-            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex.texture, gl.TEXTURE_2D)
+        parent.colorTextures.forEachIndexed { i, tex ->
+            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
         }
-        parent.depth?.let {
-            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it.texture, gl.TEXTURE_2D)
+        parent.depthTexture?.let {
+            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it, gl.TEXTURE_2D)
         }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {
@@ -115,8 +131,10 @@ class OffscreenPass2dGl(
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
             attachColorTextures(mipLevel)
-            if (parent.depth != null) {
+            if (parent.depthTexture != null) {
                 attachDepthTexture(mipLevel)
+            } else if (parent.depthAttachment is OffscreenPass2d.TransientDepthAttachment) {
+                rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
             }
 
             if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
@@ -149,20 +167,4 @@ class OffscreenPass2dGl(
         texture = depthTexture,
         level = mipLevel
     )
-
-    private fun Texture2d.createCopyTexColor(pass: OffscreenPass2d, backend: RenderBackendGl) {
-        val gl = backend.gl
-        val intFormat = props.format.glInternalFormat(gl)
-        val width = pass.width
-        val height = pass.height
-        val mipLevels = pass.numTextureMipLevels
-
-        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize).toLong()
-        val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, this, estSize)
-        tex.setSize(width, height, 1)
-        tex.bind()
-        tex.applySamplerSettings(props.defaultSamplerSettings)
-        gl.texStorage2d(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
-        gpuTexture = tex
-    }
 }

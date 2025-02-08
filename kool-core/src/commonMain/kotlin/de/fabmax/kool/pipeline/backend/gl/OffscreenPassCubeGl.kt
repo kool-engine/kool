@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
+import de.fabmax.kool.util.logE
 
 class OffscreenPassCubeGl(
     val parent: OffscreenPassCube,
@@ -9,14 +10,25 @@ class OffscreenPassCubeGl(
 ) : GlRenderPass(backend), OffscreenPassCubeImpl {
 
     private val fbos = mutableListOf<GlFramebuffer>()
+    private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
 
-    internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
+    internal val colorTextures = Array(parent.colorAttachments.size) { gl.NULL_TEXTURE }
     internal var depthTexture = gl.NULL_TEXTURE
 
     private var isCreated = false
 
     private val resInfo = OffscreenPassInfo(parent)
+
+    init {
+        if (parent.numSamples > 1) {
+            logE {
+                "OffscreenPassCube ${parent.name} requests a sample count of ${parent.numSamples} but multi-sampling " +
+                        "is not yet implemented in OpenGL backend. Falling back to single-sample. (Use Vulkan or " +
+                        "WebGPU backend if you need multi-sampled offscreen passes)"
+            }
+        }
+    }
 
     override fun setupFramebuffer(mipLevel: Int, layer: Int) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
@@ -88,12 +100,14 @@ class OffscreenPassCubeGl(
     private fun deleteBuffers() {
         copyFbo?.let { gl.deleteFramebuffer(it) }
         fbos.forEach { gl.deleteFramebuffer(it) }
+        rbos.forEach { gl.deleteRenderbuffer(it) }
         fbos.clear()
+        rbos.clear()
 
-        parent.colors.forEach { tex ->
-            tex.texture.gpuTexture?.release()
+        parent.colorTextures.forEach { tex ->
+            tex.gpuTexture?.release()
         }
-        parent.depth?.texture?.gpuTexture?.release()
+        parent.depthTexture?.gpuTexture?.release()
 
         for (i in colorTextures.indices) { colorTextures[i] = gl.NULL_TEXTURE }
         depthTexture = gl.NULL_TEXTURE
@@ -112,11 +126,11 @@ class OffscreenPassCubeGl(
     }
 
     private fun createBuffers() {
-        parent.colors.forEachIndexed { i, tex ->
-            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex.texture, gl.TEXTURE_CUBE_MAP)
+        parent.colorTextures.forEachIndexed { i, tex ->
+            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_CUBE_MAP)
         }
-        parent.depth?.let {
-            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it.texture, gl.TEXTURE_CUBE_MAP)
+        parent.depthTexture?.let {
+            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it, gl.TEXTURE_CUBE_MAP)
         }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {
@@ -125,8 +139,10 @@ class OffscreenPassCubeGl(
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
             attachColorTextures(mipLevel, 0)
-            if (parent.depth != null) {
+            if (parent.depthTexture != null) {
                 attachDepthTexture(mipLevel, 0)
+            } else if (parent.depthAttachment is OffscreenPass2d.TransientDepthAttachment) {
+                rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
             }
 
             check(gl.checkFramebufferStatus(gl.FRAMEBUFFER) == gl.FRAMEBUFFER_COMPLETE) {
@@ -159,19 +175,4 @@ class OffscreenPassCubeGl(
         texture = depthTexture,
         level = mipLevel
     )
-
-    private fun TextureCube.createCopyTexColor() {
-        val intFormat = props.format.glInternalFormat(gl)
-        val width = parent.width
-        val height = parent.height
-        val mipLevels = parent.numTextureMipLevels
-
-        val estSize = Texture.estimatedTexSize(width, height, 6, mipLevels, props.format.pxSize).toLong()
-        val tex = LoadedTextureGl(gl.TEXTURE_CUBE_MAP, gl.createTexture(), backend, this, estSize)
-        tex.setSize(width, height, 1)
-        tex.bind()
-        tex.applySamplerSettings(props.defaultSamplerSettings)
-        gl.texStorage2d(gl.TEXTURE_CUBE_MAP, mipLevels, intFormat, width, height)
-        gpuTexture = tex
-    }
 }

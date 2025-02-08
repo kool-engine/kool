@@ -260,7 +260,7 @@ class DrawPipelineVk(
         }
 
         val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.numColorAttachments) {
-            for (i in 0 until renderPass.colors.size) {
+            for (i in 0 until renderPass.colorAttachments.size) {
                 this[i].apply {
                     colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
                     when (drawPipeline.blendMode) {

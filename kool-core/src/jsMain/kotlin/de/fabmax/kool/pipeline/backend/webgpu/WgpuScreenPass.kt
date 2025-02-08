@@ -61,7 +61,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                     format = backend.canvasFormat,
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
-                val texResource = backend.createTexture(descriptor, dst)
+                val texResource = backend.createTexture(descriptor)
                 copyDstC = texResource
                 dst.gpuTexture = copyDstC
             }
@@ -81,7 +81,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                     format = depthFormat!!,
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
-                val texResource = backend.createTexture(descriptor, dst)
+                val texResource = backend.createTexture(descriptor)
                 copyDstD = texResource
                 dst.gpuTexture = copyDstD
             }
@@ -116,16 +116,16 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.colors[0].clearColor is ClearColorLoad -> GPULoadOp.load
+            renderPass.colorAttachments[0].clearColor is ClearColorLoad -> GPULoadOp.load
             else -> GPULoadOp.clear
         }
         val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
-            (renderPass.colors[0].clearColor as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+            (renderPass.colorAttachments[0].clearColor as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
         }
 
         val depthLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.depth?.clearDepth == ClearDepthLoad -> GPULoadOp.load
+            renderPass.depthAttachment?.clearDepth == ClearDepthLoad -> GPULoadOp.load
             else -> GPULoadOp.clear
         }
 

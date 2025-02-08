@@ -56,7 +56,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
     }
 
     override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {
-        val isLoad = forceLoad || passEncoderState.renderPass.colors[0].clearColor == ClearColorLoad
+        val isLoad = forceLoad || passEncoderState.renderPass.colorAttachments[0].clearColor == ClearColorLoad
         val storeOp = if (isStore) VK_ATTACHMENT_STORE_OP_STORE else VK_ATTACHMENT_STORE_OP_DONT_CARE
 
         val srcLayout = if (isLoad) resolveImage.lastKnownLayout else VK_IMAGE_LAYOUT_UNDEFINED
@@ -194,10 +194,10 @@ class ScreenPassVk(backend: RenderBackendVk) :
         var depthCopyView: VkImageView? = null
 
         private val copyRenderPass  = object : RenderPass(1, MipMode.Single, "screen-copy-pass") {
-            override val colors: List<RenderPassColorAttachment> = listOf(object : RenderPassColorAttachment {
+            override val colorAttachments: List<RenderPassColorAttachment> = listOf(object : RenderPassColorAttachment {
                 override var clearColor: ClearColor = ClearColorLoad
             })
-            override val depth: RenderPassDepthAttachment = object : RenderPassDepthAttachment {
+            override val depthAttachment: RenderPassDepthAttachment = object : RenderPassDepthAttachment {
                 override var clearDepth: ClearDepth = ClearDepthLoad
             }
             override val size: Vec3i = Vec3i.ZERO
