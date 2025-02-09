@@ -1,8 +1,9 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.modules.ui2.setupUiScene
+import de.fabmax.kool.pipeline.ClearColor
+import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.launchDelayed
 
 class KoolApplication(val ctx: KoolContext)
@@ -27,7 +28,7 @@ inline fun KoolApplication.addScene(name: String = "content-scene", block: Scene
  * The provided [block] can be used to set up the scene and add content to it.
  */
 inline fun KoolApplication.addUiScene(
-    clearColor: Color? = null,
+    clearColor: ClearColor = ClearColorLoad,
     name: String = "ui-scene",
     block: Scene.() -> Unit
 ): Scene = addScene(name) {

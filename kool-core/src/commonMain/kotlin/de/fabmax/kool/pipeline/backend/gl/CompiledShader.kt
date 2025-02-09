@@ -53,27 +53,27 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         pipelineInfo.numInstances++
     }
 
-    private fun mapBindGroup(bindGroupData: BindGroupData, renderPass: RenderPass): MappedBindGroup {
-        return MappedBindGroup(bindGroupData, plainUniformUbos, renderPass, backend)
+    private fun mapBindGroup(bindGroupData: BindGroupData, pass: GpuPass): MappedBindGroup {
+        return MappedBindGroup(bindGroupData, plainUniformUbos, pass, backend)
     }
 
-    protected fun bindUniforms(renderPass: RenderPass, viewData: BindGroupData?, meshData: BindGroupData?): Boolean {
+    protected fun bindUniforms(pass: GpuPass, viewData: BindGroupData?, meshData: BindGroupData?): Boolean {
         lastUsed = Time.gameTime
 
         var uniformsOk = true
-        uniformBindCtx.reset(renderPass)
+        uniformBindCtx.reset(pass)
 
         if (viewData != null) {
-            val viewGroup = (viewData.gpuData as MappedBindGroup?) ?: mapBindGroup(viewData, renderPass).also { viewData.gpuData = it }
+            val viewGroup = (viewData.gpuData as MappedBindGroup?) ?: mapBindGroup(viewData, pass).also { viewData.gpuData = it }
             uniformsOk = uniformsOk && viewGroup.bindUniforms(uniformBindCtx) != false
         }
 
         val pipelineData = pipeline.pipelineData
-        val pipelineGroup = (pipelineData.gpuData as MappedBindGroup?) ?: mapBindGroup(pipelineData, renderPass).also { pipelineData.gpuData = it }
+        val pipelineGroup = (pipelineData.gpuData as MappedBindGroup?) ?: mapBindGroup(pipelineData, pass).also { pipelineData.gpuData = it }
         uniformsOk = uniformsOk && pipelineGroup.bindUniforms(uniformBindCtx) != false
 
         if (meshData != null) {
-            val meshGroup = (meshData.gpuData as MappedBindGroup?) ?: mapBindGroup(meshData, renderPass).also { meshData.gpuData = it }
+            val meshGroup = (meshData.gpuData as MappedBindGroup?) ?: mapBindGroup(meshData, pass).also { meshData.gpuData = it }
             uniformsOk = uniformsOk && meshGroup.bindUniforms(uniformBindCtx) != false
         }
         return uniformsOk
@@ -102,14 +102,14 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
     class UniformBindContext(val locations: List<List<IntArray>>) {
         var group: Int = 0
         var nextTexUnit: Int = 0
-        lateinit var renderPass: RenderPass
+        lateinit var pass: GpuPass
             private set
 
         fun location(bindingIndex: Int): Int = locations[group][bindingIndex][0]
         fun locations(bindingIndex: Int): IntArray = locations[group][bindingIndex]
 
-        fun reset(renderPass: RenderPass) {
-            this.renderPass = renderPass
+        fun reset(pass: GpuPass) {
+            this.pass = pass
             group = 0
             nextTexUnit = 0
         }
@@ -118,7 +118,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
     class MappedBindGroup(
         val bindGroupData: BindGroupData,
         private val plainUniformUbos: Set<String>,
-        private val renderPass: RenderPass,
+        private val pass: GpuPass,
         private val backend: RenderBackendGl
     ) : BaseReleasable(), GpuBindGroupData {
         private val gl: GlApi get() = backend.gl
@@ -154,8 +154,8 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         private fun createGpuBuffer(name: String): BufferResource {
             val bufferCreationInfo = BufferCreationInfo(
                 bufferName = name,
-                renderPassName = renderPass.name,
-                sceneName = renderPass.parentScene?.name ?: "scene:<null>"
+                renderPassName = pass.name,
+                sceneName = pass.parentScene?.name ?: "scene:<null>"
             )
             val buffer = BufferResource(backend.gl.UNIFORM_BUFFER, backend, bufferCreationInfo)
             buffer.releaseWith(this)

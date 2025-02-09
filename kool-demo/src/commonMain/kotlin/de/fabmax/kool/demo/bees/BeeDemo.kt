@@ -33,7 +33,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
     private val beeTex: Texture2d by texture2d(
         path = "${DemoLoader.materialPath}/bee.png",
         props = TextureProps(
-            generateMipMaps = false,
+            isMipMapped = false,
             defaultSamplerSettings = SamplerSettings().clamped().nearest()
         )
     )
@@ -50,7 +50,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
             zoom = 200.0
         }
 
-        clearColor = bgColor
+        clearColor = ClearColorFill(bgColor)
         mainRenderPass.isProfileTimes = true
 
         val beeMeshA = cpuBeesA.beeMesh

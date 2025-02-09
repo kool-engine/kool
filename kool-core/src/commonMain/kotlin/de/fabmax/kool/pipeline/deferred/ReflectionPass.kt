@@ -11,15 +11,14 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.releaseWith
 import kotlin.random.Random
 
 class ReflectionPass(val baseReflectionStep: Float) :
-    OffscreenRenderPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA),
+    OffscreenPass2d(
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA),
         Vec2i(128),
         name = "reflection-denoise"
     )
@@ -32,8 +31,6 @@ class ReflectionPass(val baseReflectionStep: Float) :
     var scrSpcReflectionIterations by ssrShader::maxIterations
 
     init {
-        clearColor = Color(0f, 0f, 0f, 0f)
-
         drawNode.apply {
             addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
@@ -51,6 +48,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
     }
 
     fun setInput(lightingPass: PbrLightingPass, materialPass: MaterialPass) {
+        ssrShader.createdPipeline?.swapPipelineData(materialPass)
         ssrShader.positionFlags = materialPass.positionFlags
         ssrShader.normalRoughness = materialPass.normalRoughness
         ssrShader.lightingPass = lightingPass.colorTexture
@@ -204,7 +202,7 @@ class ReflectionPass(val baseReflectionStep: Float) :
             val data = BufferedImageData2d(buf, sz, sz, TexFormat.RGBA)
             val texProps = TextureProps(
                 format = TexFormat.RGBA,
-                generateMipMaps = false,
+                isMipMapped = false,
                 defaultSamplerSettings = SamplerSettings().nearest()
             )
             return Texture2d(texProps, "ssr_noise_tex") { data }

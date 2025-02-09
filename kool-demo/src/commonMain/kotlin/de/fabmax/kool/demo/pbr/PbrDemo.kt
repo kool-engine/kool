@@ -210,7 +210,7 @@ class PbrDemo : DemoScene("PBR Materials") {
     companion object {
         // HDRIs are encoded as RGBE images, use nearest sampling to not mess up the exponent
         private val hdriTexProps = TextureProps(
-            generateMipMaps = false,
+            isMipMapped = false,
             defaultSamplerSettings = SamplerSettings().nearest()
         )
 

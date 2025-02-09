@@ -2,7 +2,9 @@ package de.fabmax.kool
 
 import de.fabmax.kool.input.Input
 import de.fabmax.kool.modules.ui2.UiScale
-import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.ComputePass
+import de.fabmax.kool.pipeline.GpuPass
+import de.fabmax.kool.pipeline.OffscreenPass
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
@@ -60,9 +62,9 @@ abstract class KoolContext {
 
     val scenes: BufferedList<Scene> = BufferedList()
 
-    val backgroundScene = Scene("backgroundScene")
-    val backgroundPasses: BufferedList<OffscreenRenderPass>
-        get() = backgroundScene.offscreenPasses
+    val backgroundScene = Scene("backgroundScene").apply { mainRenderPass.isEnabled = false }
+    val backgroundPasses: BufferedList<GpuPass>
+        get() = backgroundScene.extraPasses
 
     val defaultPbrBrdfLut: Texture2d by lazy {
         BrdfLutPass(backgroundScene)
@@ -87,13 +89,11 @@ abstract class KoolContext {
         backend.getWindowViewport(result)
     }
 
-    fun addBackgroundRenderPass(renderPass: OffscreenRenderPass) {
-        backgroundScene.addOffscreenPass(renderPass)
-    }
+    fun addBackgroundRenderPass(pass: OffscreenPass) = backgroundScene.addOffscreenPass(pass)
+    fun removeBackgroundRenderPass(pass: OffscreenPass) = backgroundScene.removeOffscreenPass(pass)
 
-    fun removeBackgroundRenderPass(renderPass: OffscreenRenderPass) {
-        backgroundScene.removeOffscreenPass(renderPass)
-    }
+    fun addBackgroundComputePass(pass: ComputePass) = backgroundScene.addComputePass(pass)
+    fun removeBackgroundComputePass(pass: ComputePass) = backgroundScene.removeComputePass(pass)
 
     fun addScene(scene: Scene) {
         scenes += scene

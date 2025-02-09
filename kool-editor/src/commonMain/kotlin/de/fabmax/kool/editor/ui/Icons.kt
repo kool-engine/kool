@@ -16,7 +16,7 @@ object Icons {
     private var windowScale = 1f
     private val iconTexProps = TextureProps(
         format = TexFormat.RGBA,
-        generateMipMaps = false,
+        isMipMapped = false,
         defaultSamplerSettings = SamplerSettings().nearest()
     )
 
@@ -58,10 +58,7 @@ object Icons {
         }
 
         fun invalidate() {
-            if (iconTex.loadingState == Texture.LoadingState.LOADED) {
-                iconTex.dispose()
-                iconTex.uploadLazy(iconLoader)
-            }
+            iconTex.uploadLazy(iconLoader)
         }
 
         val cube = IconProvider(this, iconMap.IconImageProvider(0, 0))
@@ -169,10 +166,7 @@ object Icons {
         }
 
         fun invalidate() {
-            if (iconTex.loadingState == Texture.LoadingState.LOADED) {
-                iconTex.dispose()
-                iconTex.uploadLazy(iconLoader)
-            }
+            iconTex.uploadLazy(iconLoader)
         }
 
         val folder = IconProvider(this, iconMap.IconImageProvider(0, 0))

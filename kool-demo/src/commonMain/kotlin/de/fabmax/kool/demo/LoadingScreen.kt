@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.randomF
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addColorMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -18,7 +19,7 @@ class LoadingScreen(val ctx: KoolContext) : Scene("Loading Screen") {
     val loadingText2 = mutableStateOf("")
 
     init {
-        setupUiScene(DEFAULT_CLEAR_COLOR)
+        setupUiScene(ClearColorFill(DEFAULT_CLEAR_COLOR))
 
         addColorMesh {
             shader = KslUnlitShader {

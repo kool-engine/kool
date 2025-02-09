@@ -140,7 +140,7 @@ class MsdfFont(
         const val CUTOFF_OUTLINED_THICK = 0.15f
         const val CUTOFF_OUTLINED_THIN = 0.1f
 
-        val MSDF_TEX_PROPS = TextureProps(generateMipMaps = false)
+        val MSDF_TEX_PROPS = TextureProps(isMipMapped = false)
 
         val DEFAULT_FONT_DATA: MsdfFontData by lazy {
             val fontInfo = KoolSystem.config.defaultFont
@@ -148,7 +148,7 @@ class MsdfFont(
                 Assets.loadImage2d("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
                     .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
             }
-            KoolSystem.getContextOrNull()?.onShutdown += { msdfMap.dispose() }
+            KoolSystem.getContextOrNull()?.onShutdown += { msdfMap.release() }
             MsdfFontData(msdfMap, fontInfo.fontMeta)
         }
         val DEFAULT_FONT: MsdfFont by lazy { MsdfFont(DEFAULT_FONT_DATA) }

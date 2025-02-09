@@ -137,11 +137,8 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
             logE { "Texture is already released: ${texture.name}" }
             return false
         }
-        if (texture.loadingState == Texture.LoadingState.NOT_LOADED) {
-            texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
-        }
-        if (texture.loadingState == Texture.LoadingState.LOADED) {
-            val tex = checkNotNull(texture.gpuTexture) { "texture ${texture.name} is marked loaded but gpuTexture is null" } as LoadedTextureGl
+        texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
+        (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
             gl.activeTexture(gl.TEXTURE0 + texUnit)
             tex.bind()
             tex.applySamplerSettings(null)
@@ -221,8 +218,8 @@ sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl)
         if (gpuBuffer == null) {
             val bufferCreationInfo = BufferCreationInfo(
                 bufferName = storage.name,
-                renderPassName = bindCtx.renderPass.name,
-                sceneName = bindCtx.renderPass.parentScene?.name ?: "scene:<null>"
+                renderPassName = bindCtx.pass.name,
+                sceneName = bindCtx.pass.parentScene?.name ?: "scene:<null>"
             )
             gpuBuffer = BufferResource(backend.gl.SHADER_STORAGE_BUFFER, backend, bufferCreationInfo)
             storage.gpuBuffer = gpuBuffer

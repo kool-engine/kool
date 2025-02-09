@@ -6,17 +6,16 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.NodeId
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.UniqueId
 
 
 open class DepthMapPass(
     drawNode: Node,
-    attachmentConfig: AttachmentConfig = defaultRenderPassAttachmentConfig,
+    attachmentConfig: AttachmentConfig = AttachmentConfig { defaultDepth() },
     initialSize: Vec2i = Vec2i(128, 128),
     name: String = UniqueId.nextId("depth-map-pass")
 ) :
-    OffscreenRenderPass2d(drawNode, attachmentConfig, initialSize, name)
+    OffscreenPass2d(drawNode, attachmentConfig, initialSize, name)
 {
     protected val shadowPipelines = mutableMapOf<NodeId, DrawPipeline?>()
     protected val depthShaders = mutableMapOf<DepthShaderKey, DepthShader>()
@@ -87,27 +86,19 @@ open class DepthMapPass(
         val instanceLayout: List<Attribute>,
         val shaderCfg: DepthShader.Config
     )
-
-    companion object {
-        val defaultRenderPassAttachmentConfig = AttachmentConfig(
-            ColorAttachmentNone,
-            DepthAttachmentTexture()
-        )
-    }
 }
 
 class NormalLinearDepthMapPass(
     drawNode: Node,
-    attachmentConfig: AttachmentConfig = defaultRenderPassAttachmentConfig,
+    attachmentConfig: AttachmentConfig = AttachmentConfig.singleColorDefaultDepth(TexFormat.RGBA_F16),
     initialSize: Vec2i = Vec2i(128, 128),
     name: String = UniqueId.nextId("normal-linear-depth-map-pass")
 ) : DepthMapPass(drawNode, attachmentConfig, initialSize, name) {
 
+    val normalDepthMap: Texture2d get() = colorTexture!!
+
     init {
         mirrorIfInvertedClipY()
-        onAfterCollectDrawCommands += {
-            clearColor = Color.GREEN
-        }
     }
 
     override fun getDepthPipeline(mesh: Mesh, ctx: KoolContext): DrawPipeline? {
@@ -134,11 +125,5 @@ class NormalLinearDepthMapPass(
             shaderCfg = cfg
         )
         return depthShaders.getOrPut(key) { DepthShader(cfg) }
-    }
-
-    companion object {
-        val defaultRenderPassAttachmentConfig = AttachmentConfig(
-            ColorAttachmentTextures(listOf(TextureAttachmentConfig(textureFormat = TexFormat.RGBA_F16)))
-        )
     }
 }

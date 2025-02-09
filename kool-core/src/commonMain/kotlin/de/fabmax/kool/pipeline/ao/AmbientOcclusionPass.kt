@@ -16,11 +16,11 @@ import de.fabmax.kool.util.releaseWith
 import kotlin.math.*
 
 class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
-    OffscreenRenderPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.R),
-        Vec2i(width, height),
-        "ambient-occlusion"
+    OffscreenPass2d(
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.R),
+        initialSize = Vec2i(width, height),
+        name = "ambient-occlusion"
     )
 {
 
@@ -68,7 +68,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
             }
         }
 
-        fwdNormalDepth = aoSetup.linearDepthPass?.colorTexture
+        fwdNormalDepth = aoSetup.linearDepthPass?.normalDepthMap
         generateKernels(16)
     }
 
@@ -241,7 +241,7 @@ class AmbientOcclusionPass(val aoSetup: AoSetup, width: Int, height: Int) :
             val data = BufferedImageData2d(buf, NOISE_TEX_SIZE, NOISE_TEX_SIZE, TexFormat.RGBA)
             val texProps = TextureProps(
                 format = TexFormat.RGBA,
-                generateMipMaps = false,
+                isMipMapped = false,
                 defaultSamplerSettings = SamplerSettings().nearest()
             )
             return Texture2d(texProps, "ao_noise_tex") { data }

@@ -26,6 +26,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         computeShaders = false,
         cubeMapArrays = false,
         reversedDepth = false,
+        maxSamples = 4,
         depthOnlyShaderColorOutput = null,
         maxComputeWorkGroupsPerDimension = Vec3i.ZERO,
         maxComputeWorkGroupSize = Vec3i.ZERO,
@@ -48,11 +49,11 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         return ComputeShaderCodeGl(output.computeSrc)
     }
 
-    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
+    override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
         TODO("Not yet implemented")
     }
 
-    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
+    override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
         TODO("Not yet implemented")
     }
 

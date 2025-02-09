@@ -7,6 +7,8 @@ import de.fabmax.kool.editor.api.scene
 import de.fabmax.kool.editor.sceneOrigin
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.ClearColorLoad
+import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.scene.Scene
 
 class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverlay {
@@ -31,8 +33,8 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
     )
 
     init {
-        clearColor = null
-        clearDepth = false
+        clearColor = ClearColorLoad
+        clearDepth = ClearDepthLoad
         tryEnableInfiniteDepth()
 
         addNode(grid)

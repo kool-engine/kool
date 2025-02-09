@@ -56,5 +56,9 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
                 }
             }
         }
+
+        if (parentPass.isProfileTimes) {
+            timeQuery.end(passEncoderState.commandBuffer)
+        }
     }
 }

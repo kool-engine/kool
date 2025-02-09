@@ -36,8 +36,7 @@ value class VkGraphicsPipeline(val handle: Long)
 
 data class VkImage(val handle: Long, val allocation: Long)
 
-@JvmInline
-value class VkImageView(val handle: Long)
+data class VkImageView(val handle: Long)
 
 @JvmInline
 value class VkFence(val handle: Long)

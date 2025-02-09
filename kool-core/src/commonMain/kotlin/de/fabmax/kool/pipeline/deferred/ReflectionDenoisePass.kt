@@ -9,13 +9,12 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.util.Color
 
-class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
-    OffscreenRenderPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA),
-        reflectionPass.size.xy,
+class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
+    OffscreenPass2d(
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA),
+        initialSize = reflectionPass.size.xy,
         name = "reflection-denoise"
     )
 {
@@ -23,8 +22,6 @@ class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
     private lateinit var denoiseShader: DenoiseShader
 
     init {
-        clearColor = Color(0f, 0f, 0f, 0f)
-
         drawNode.apply {
             addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
                 generateFullscreenQuad()
@@ -38,6 +35,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenRenderPass2d) :
     }
 
     fun setPositionInput(materialPass: MaterialPass) {
+        denoiseShader.createdPipeline?.swapPipelineData(materialPass)
         denoiseShader.depthTex = materialPass.positionFlags
     }
 

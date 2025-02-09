@@ -1,10 +1,9 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.ComputePass
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.*
 
 interface PassEncoderState {
-    val renderPass: RenderPass
+    val renderPass: GpuPass
     fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData)
 }
 
@@ -98,9 +97,9 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
         forceLoad: Boolean = false
     ) {
         if (isPassActive) {
-            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.clearColors.size == 1) {
+            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.colorAttachments.size == 1) {
                 _renderPass = renderPass
-                if (renderPass.clearDepth || renderPass.clearColor != null) {
+                if (renderPass.colorAttachments[0].clearColor is ClearColorFill || renderPass.depthAttachment?.clearDepth == ClearDepthFill) {
                     backend.clearHelper.clear(this)
                     activePipeline = null
                     for (i in bindGroups.indices) {
@@ -122,7 +121,7 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
 
     fun ensureRenderPassInactive() {
         if (isPassActive) {
-            passEncoder.end()
+            gpuRenderPass.endRenderPass(this)
             isPassActive = false
             _gpuRenderPass = null
             _renderPass = null

@@ -70,7 +70,7 @@ sealed class PipelineVk(
                 }
                 is BindGroupData.TextureBindingData<*> -> {
                     val tex = binding.texture
-                    if (tex == null || (tex.loadingState != Texture.LoadingState.LOADED && !tex.checkLoadingState())) {
+                    if (tex == null || !tex.checkLoadingState()) {
                         isCheckOk = false
                     }
                 }
@@ -82,10 +82,8 @@ sealed class PipelineVk(
 
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
         checkIsNotReleased()
-        if (loadingState == Texture.LoadingState.NOT_LOADED) {
-            uploadData?.let { backend.textureLoader.loadTexture(this) }
-        }
-        return loadingState == Texture.LoadingState.LOADED
+        uploadData?.let { backend.textureLoader.loadTexture(this) }
+        return isLoaded
     }
 
     protected fun BindGroupData.getOrCreateVkData(): BindGroupDataVk {

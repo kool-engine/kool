@@ -7,37 +7,34 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Lighting
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasable() {
+abstract class RenderPass(
+    val numSamples: Int,
+    val mipMode: MipMode,
+    name: String
+) : GpuPass(name) {
 
-    /**
-     * Dimension of the output (window / screen or framebuffer / texture). Notice, that the part
-     * of that output space actually used as output can be smaller and is set via [View.viewport].
-     */
+    abstract val colorAttachments: List<RenderPassColorAttachment>
+    abstract val depthAttachment: RenderPassDepthAttachment?
+
+    val hasColor: Boolean get() = colorAttachments.isNotEmpty()
+    val hasDepth: Boolean get() = depthAttachment != null
+
     abstract val size: Vec3i
     val width: Int get() = size.x
     val height: Int get() = size.y
-    val depth: Int get() = size.z
-
-    val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
-    val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
-
-    var parentScene: Scene? = null
-
-    abstract val clearColors: Array<Color?>
-    var clearColor: Color?
-        get() = clearColors.getOrNull(0)
-        set(value) { clearColors[0] = value }
-    var clearDepth = true
+    val layers: Int get() = size.z
 
     abstract val views: List<View>
 
+    val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
+    val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
+
     /**
-     * Frame copies to perform after the entire render pass is done.
+     * Frame copies to perform after the entire render pass is done. The draw group ID of frame copies is ignored.
+     * In order to perform draw group ID aware copies, use [View.frameCopies].
      */
     val frameCopies = mutableListOf<FrameCopy>()
 
@@ -48,46 +45,28 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
 
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
-    val onAfterDraw = BufferedList<(() -> Unit)>()
     val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
-    var isProfileTimes = false
-    var tUpdate: Duration = 0.0.seconds
-    var tCollect: Duration = 0.0.seconds
-    var tGpu: Duration = 0.0.seconds
-
     var isMirrorY = false
-        protected set
 
-    protected fun mirrorIfInvertedClipY() {
+    fun mirrorIfInvertedClipY() {
         isMirrorY = KoolSystem.requireContext().backend.isInvertedNdcY
     }
 
-    open fun update(ctx: KoolContext) {
-        checkIsNotReleased()
+    override fun update(ctx: KoolContext) {
         val t = if (isProfileTimes) Time.precisionTime else 0.0
+        super.update(ctx)
         for (i in views.indices) {
             views[i].update(ctx)
         }
         tUpdate = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
     }
 
-    open fun collectDrawCommands(ctx: KoolContext) {
-        val t = if (isProfileTimes) Time.precisionTime else 0.0
-        for (i in views.indices) {
-            views[i].collectDrawCommands(ctx)
-        }
-        tCollect = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
-    }
-
     protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
-        updateEvent.view.drawQueue.reset(isDoublePrecision)
         onBeforeCollectDrawCommands.update()
         for (i in onBeforeCollectDrawCommands.indices) {
             onBeforeCollectDrawCommands[i](updateEvent)
         }
-        updateEvent.view.camera.updateCamera(updateEvent)
-        updateEvent.view.drawQueue.setupCamera(updateEvent.view.camera)
     }
 
     protected open fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
@@ -95,17 +74,6 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
         for (i in onAfterCollectDrawCommands.indices) {
             onAfterCollectDrawCommands[i](updateEvent)
         }
-    }
-
-    open fun afterDraw() {
-        onAfterDraw.update()
-        for (i in onAfterDraw.indices) {
-            onAfterDraw[i]()
-        }
-    }
-
-    fun onAfterDraw(block: () -> Unit) {
-        onAfterDraw += block
     }
 
     /**
@@ -127,12 +95,8 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
         }
     }
 
-    override fun toString(): String {
-        return "${this::class.simpleName}:$name"
-    }
-
     sealed class MipMode(val hasMipLevels: Boolean) {
-        data object None : MipMode(false) {
+        data object Single : MipMode(false) {
             override fun getTextureMipLevels(size: Vec3i) = 1
             override fun getRenderMipLevels(size: Vec3i) = 1
         }
@@ -146,6 +110,7 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
             val numMipLevels: Int,
             val renderOrder: MipMapRenderOrder = MipMapRenderOrder.HigherResolutionFirst
         ) : MipMode(true) {
+            init { require(numMipLevels >= 0) }
             override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) numMipLevels(size.x, size.y) else numMipLevels
             override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)
         }
@@ -201,9 +166,20 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
         }
 
         /**
-         * Convenience function to add an item to this view's [frameCopies].
+         * Convenience function to add an item to this view's [frameCopies]. Depending on the [drawGroupId], the
+         * copy can be performed during frame render, interrupting the render pass. This way, the framebuffer can be
+         * captured after a certain set of objects is drawn (everything with drawGroupId <= the specified
+         * [drawGroupId]) but before everything else is drawn.
+         * Objects / shaders executed later on in the renderpass can then make use of the copied textures to achieve
+         * various background distortion effects like e.g. frosted glass.
+         * However, to do the copy, the renderpass needs to be interrupted, which is a very expensive operation.
          */
-        fun copyOutput(isCopyColor: Boolean, isCopyDepth: Boolean, drawGroupId: Int = 0, isSingleShot: Boolean = false): FrameCopy {
+        fun copyOutput(
+            isCopyColor: Boolean,
+            isCopyDepth: Boolean,
+            drawGroupId: Int = 0,
+            isSingleShot: Boolean = false
+        ): FrameCopy {
             val copy = FrameCopy(this@RenderPass, isCopyColor, isCopyDepth, drawGroupId, isSingleShot)
             frameCopies += copy
             frameCopies.sortBy { it.drawGroupId }
@@ -242,18 +218,45 @@ abstract class RenderPass(var name: String, val mipMode: MipMode) : BaseReleasab
                 // camera is not attached to any node, make sure it gets updated anyway
                 camera.update(updateEvent)
             }
+            collectDrawCommands(ctx)
         }
 
         internal fun collectDrawCommands(ctx: KoolContext) {
             val updateEvent = makeUpdateEvent(ctx)
+
+            drawQueue.reset(isDoublePrecision)
             beforeCollectDrawCommands(updateEvent)
+            camera.updateCamera(updateEvent)
+            drawQueue.setupCamera(camera)
+
             drawNode.collectDrawCommands(updateEvent)
             afterCollectDrawCommands(updateEvent)
         }
     }
-
-    enum class ViewRenderMode {
-        SINGLE_RENDER_PASS,
-        MULTI_RENDER_PASS,
-    }
 }
+
+interface RenderPassColorAttachment {
+    val clearColor: ClearColor
+}
+
+interface RenderPassColorTextureAttachment<T: Texture<*>> : RenderPassColorAttachment {
+    val texture: T
+}
+
+interface RenderPassDepthAttachment {
+    val clearDepth: ClearDepth
+}
+
+interface RenderPassDepthTextureAttachment<T: Texture<*>> : RenderPassDepthAttachment {
+    val texture: T
+}
+
+sealed interface ClearColor
+data object ClearColorLoad : ClearColor
+data object ClearColorDontCare : ClearColor
+data class ClearColorFill(val clearColor: Color) : ClearColor
+
+sealed interface ClearDepth
+data object ClearDepthLoad : ClearDepth
+data object ClearDepthDontCare : ClearDepth
+data object ClearDepthFill : ClearDepth

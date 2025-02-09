@@ -1,13 +1,13 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.pipeline.OffscreenRenderPass
+import de.fabmax.kool.pipeline.OffscreenPass
 
 class DeferredPasses(val materialPass: MaterialPass, val lightingPass: PbrLightingPass) {
 
     val onActivate = mutableListOf<() -> Unit>()
     val onDeactivate = mutableListOf<() -> Unit>()
 
-    val extraPasses = mutableListOf<OffscreenRenderPass>()
+    val extraPasses = mutableListOf<OffscreenPass>()
 
     var isEnabled: Boolean
         get() = materialPass.isEnabled && lightingPass.isEnabled

@@ -51,7 +51,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     val pipelineManager = WgpuPipelineManager(this)
-    private val sceneRenderer = WgpuScreenRenderPass(this)
+    private val screenPass = WgpuScreenPass(this)
 
     private var renderSize = Vec2i(canvas.width, canvas.height)
 
@@ -95,6 +95,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             computeShaders = true,
             cubeMapArrays = true,
             reversedDepth = true,
+            maxSamples = 4,
             depthOnlyShaderColorOutput = Color.BLACK,
             maxComputeWorkGroupsPerDimension = Vec3i(
                 device.limits.maxComputeWorkgroupsPerDimension,
@@ -125,22 +126,13 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         if (canvas.width != renderSize.x || canvas.height != renderSize.y) {
             renderSize = Vec2i(canvas.width, canvas.height)
-            sceneRenderer.applySize(canvas.width, canvas.height)
+            screenPass.applySize(canvas.width, canvas.height)
         }
 
         passEncoderState.beginFrame()
-        preparePipelines(ctx)
-        ctx.backgroundScene.renderOffscreenPasses(passEncoderState)
 
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
-            if (scene.isVisible) {
-                scene.sceneRecordTime += measureTime {
-                    scene.renderOffscreenPasses(passEncoderState)
-                    sceneRenderer.renderScene(scene.mainRenderPass, passEncoderState)
-                }
-            }
-        }
+        ctx.preparePipelines(passEncoderState)
+        ctx.executePasses(passEncoderState)
 
         passEncoderState.ensureRenderPassInactive()
         if (gpuReadbacks.isNotEmpty()) {
@@ -157,61 +149,73 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun preparePipelines(ctx: KoolContext) {
-        for (i in ctx.backgroundScene.sortedOffscreenPasses.indices) {
-            preparePipelines(ctx.backgroundScene.sortedOffscreenPasses[i])
-        }
+    private fun KoolContext.preparePipelines(passEncoderState: RenderPassEncoderState) {
+        ctx.backgroundScene.prepareDrawPipelines(passEncoderState)
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
-            scene.sceneRecordTime = measureTime {
-                for (j in scene.sortedOffscreenPasses.indices) {
-                    preparePipelines(scene.sortedOffscreenPasses[j])
+            if (scene.isVisible) {
+                scene.prepareDrawPipelines(passEncoderState)
+            }
+        }
+    }
+
+    private fun Scene.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
+        checkIsNotReleased()
+        sceneRecordTime = measureTime {
+            for (i in sortedPasses.indices) {
+                val pass = sortedPasses[i]
+                if (pass.isEnabled && pass is RenderPass) {
+                    pass.prepareDrawPipelines(passEncoderState)
                 }
-                preparePipelines(scene.mainRenderPass)
             }
         }
     }
 
-    private fun preparePipelines(renderPass: RenderPass) {
-        for (i in renderPass.views.indices) {
-            val queue = renderPass.views[i].drawQueue
-            queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
-        }
-    }
-
-    private fun Scene.renderOffscreenPasses(passEncoderState: RenderPassEncoderState) {
-        for (i in sortedOffscreenPasses.indices) {
-            val pass = sortedOffscreenPasses[i]
-            if (pass.isEnabled) {
-                pass.render(passEncoderState)
+    private fun RenderPass.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
+        if (isEnabled) {
+            for (i in views.indices) {
+                val queue = views[i].drawQueue
+                queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
             }
         }
     }
 
-    private fun OffscreenRenderPass.render(passEncoderState: RenderPassEncoderState) {
+    private fun KoolContext.executePasses(passEncoderState: RenderPassEncoderState) {
+        ctx.backgroundScene.executePasses(passEncoderState)
+        for (i in ctx.scenes.indices) {
+            val scene = ctx.scenes[i]
+            if (scene.isVisible) {
+                scene.executePasses(passEncoderState)
+            }
+        }
+    }
+
+    private fun Scene.executePasses(passEncoderState: RenderPassEncoderState) {
+        sceneRecordTime += measureTime {
+            for (i in sortedPasses.indices) {
+                val pass = sortedPasses[i]
+                if (pass.isEnabled) {
+                    pass.execute(passEncoderState)
+                }
+            }
+        }
+    }
+
+    private fun GpuPass.execute(passEncoderState: RenderPassEncoderState) {
         when (this) {
-            is OffscreenRenderPass2d -> draw(passEncoderState)
-            is OffscreenRenderPassCube -> draw(passEncoderState)
-            is OffscreenRenderPass2dPingPong -> draw(passEncoderState)
+            is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
+            is OffscreenPass2d -> draw(passEncoderState)
+            is OffscreenPassCube -> draw(passEncoderState)
             is ComputePass -> dispatch(passEncoderState.encoder)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
 
-    private fun OffscreenRenderPass2dPingPong.draw(passEncoderState: RenderPassEncoderState) {
-        for (i in 0 until pingPongPasses) {
-            onDrawPing?.invoke(i)
-            ping.draw(passEncoderState)
-            onDrawPong?.invoke(i)
-            pong.draw(passEncoderState)
-        }
-    }
-
-    private fun OffscreenRenderPass2d.draw(passEncoderState: RenderPassEncoderState) {
+    private fun OffscreenPass2d.draw(passEncoderState: RenderPassEncoderState) {
         (impl as WgpuOffscreenPass2d).draw(passEncoderState)
     }
 
-    private fun OffscreenRenderPassCube.draw(passEncoderState: RenderPassEncoderState) {
+    private fun OffscreenPassCube.draw(passEncoderState: RenderPassEncoderState) {
         (impl as WgpuOffscreenPassCube).draw(passEncoderState)
     }
 
@@ -241,12 +245,12 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         )
     }
 
-    override fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl {
-        return WgpuOffscreenPass2d(parentPass, 1, this)
+    override fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl {
+        return WgpuOffscreenPass2d(parentPass, this)
     }
 
-    override fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl {
-        return WgpuOffscreenPassCube(parentPass, 1, this)
+    override fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl {
+        return WgpuOffscreenPassCube(parentPass, this)
     }
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
@@ -357,8 +361,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuBufferResource(device.createBuffer(descriptor), descriptor.size, info)
     }
 
-    fun createTexture(descriptor: GPUTextureDescriptor, texture: Texture<*>): WgpuTextureResource {
-        return WgpuTextureResource(device.createTexture(descriptor), texture)
+    fun createTexture(descriptor: GPUTextureDescriptor): WgpuTextureResource {
+        return WgpuTextureResource(descriptor, device.createTexture(descriptor))
     }
 
     private interface GpuReadback

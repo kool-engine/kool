@@ -1,10 +1,15 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.pipeline.ClearColorFill
+import de.fabmax.kool.pipeline.ClearDepthFill
 import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.util.Viewport
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
+import org.lwjgl.vulkan.VkRect2D
+import org.lwjgl.vulkan.VkViewport
 
 class PassEncoderState(val backend: RenderBackendVk) {
     private var _gpuRenderPass: RenderPassVk? = null
@@ -14,7 +19,6 @@ class PassEncoderState(val backend: RenderBackendVk) {
 
     val commandBuffer: VkCommandBuffer get() = _commandBuffer!!
     val gpuRenderPass: RenderPassVk get() = _gpuRenderPass!!
-    var vkRenderPass: VkRenderPass = VkRenderPass(0); private set
     val renderPass: RenderPass get() = _renderPass!!
     val stack: MemoryStack get() = _stack!!
     val frameIndex: Int get() = backend.swapchain.currentFrameIndex
@@ -65,9 +69,9 @@ class PassEncoderState(val backend: RenderBackendVk) {
         forceLoad: Boolean = false
     ) {
         if (isPassActive) {
-            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.clearColors.size == 1) {
+            if (gpuRenderPass === _gpuRenderPass && mipLevel == this.mipLevel && layer == this.layer && renderPass.colorAttachments.size == 1) {
                 _renderPass = renderPass
-                if (renderPass.clearDepth || renderPass.clearColor != null) {
+                if (renderPass.colorAttachments[0].clearColor is ClearColorFill || renderPass.depthAttachment?.clearDepth == ClearDepthFill) {
                     backend.clearHelper.clear(this)
                     activePipeline = 0L
                 }
@@ -81,13 +85,19 @@ class PassEncoderState(val backend: RenderBackendVk) {
         this.layer = layer
         _gpuRenderPass = gpuRenderPass
         _renderPass = renderPass
-        vkRenderPass = gpuRenderPass.beginRenderPass(this, forceLoad)
+        gpuRenderPass.beginRenderPass(this, forceLoad)
+
+        val width = (renderPass.width shr mipLevel).coerceAtLeast(1)
+        val height = (renderPass.height shr mipLevel).coerceAtLeast(1)
+        scissorBuffer[0].apply {
+            extent { it.set(width, height) }
+        }
+        vkCmdSetScissor(commandBuffer, 0, scissorBuffer)
     }
 
     fun ensureRenderPassInactive() {
         if (isPassActive) {
-            vkCmdEndRenderPass(commandBuffer)
-            vkRenderPass = VkRenderPass(0L)
+            gpuRenderPass.endRenderPass(this)
             isPassActive = false
             _gpuRenderPass = null
             _renderPass = null
@@ -97,6 +107,19 @@ class PassEncoderState(val backend: RenderBackendVk) {
             currentViewGroup = null
             currentPipelineGroup = null
         }
+    }
+
+    fun setViewport(viewport: Viewport, mipLevel: Int) {
+        val x = viewport.x shr mipLevel
+        val y = viewport.y shr mipLevel
+        val width = (viewport.width shr mipLevel).coerceAtLeast(1)
+        val height = (viewport.height shr mipLevel).coerceAtLeast(1)
+        setViewport(x, y, width, height)
+    }
+
+    fun setViewport(x: Int, y: Int, width: Int, height: Int) {
+        viewportBuffer[0].set(x.toFloat(), (height + y).toFloat(), width.toFloat(), (-height).toFloat(), 0f, 1f)
+        vkCmdSetViewport(commandBuffer, 0, viewportBuffer)
     }
 
     fun setPipeline(renderPipeline: VkGraphicsPipeline) {
@@ -132,9 +155,10 @@ class PassEncoderState(val backend: RenderBackendVk) {
         val meshIdx = meshGroup.data.layout.group
 
         descriptorSets.limit(3)
-        viewGroup.bindGroup?.let { descriptorSets.put(viewIdx, it.getDescriptorSet(frameIndex).handle) }
-        pipelineGroup.bindGroup?.let { descriptorSets.put(pipelineIdx, it.getDescriptorSet(frameIndex).handle) }
-        meshGroup.bindGroup?.let { descriptorSets.put(meshIdx, it.getDescriptorSet(frameIndex).handle) }
+        descriptorSets.put(viewIdx, viewGroup.getDescriptorSet(frameIndex).handle)
+        descriptorSets.put(pipelineIdx, pipelineGroup.getDescriptorSet(frameIndex).handle)
+        descriptorSets.put(meshIdx, meshGroup.getDescriptorSet(frameIndex).handle)
+
         vkCmdBindDescriptorSets(
             commandBuffer,
             bindPoint.vk,
@@ -152,7 +176,7 @@ class PassEncoderState(val backend: RenderBackendVk) {
         groupIndex: Int = bindGroup.data.layout.group
     ) {
         descriptorSets.limit(1)
-        bindGroup.bindGroup?.let { descriptorSets.put(0, it.getDescriptorSet(frameIndex).handle) }
+        descriptorSets.put(0, bindGroup.getDescriptorSet(frameIndex).handle)
         vkCmdBindDescriptorSets(
             commandBuffer,
             bindPoint.vk,
@@ -161,6 +185,11 @@ class PassEncoderState(val backend: RenderBackendVk) {
             descriptorSets,
             null
         )
+    }
+
+    companion object {
+        private val viewportBuffer = VkViewport.calloc(1)
+        private val scissorBuffer = VkRect2D.calloc(1)
     }
 }
 

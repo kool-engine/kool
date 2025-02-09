@@ -53,7 +53,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
     private fun RenderPass.renderMipLevel(mipLevel: Int) {
         setupMipLevel(mipLevel)
 
-        if (this is OffscreenRenderPassCube) {
+        if (this is OffscreenPassCube) {
             for (viewIndex in views.indices) {
                 setupFramebuffer(mipLevel, viewIndex)
                 clear(this)
@@ -166,21 +166,22 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
     }
 
     fun clear(renderPass: RenderPass) {
-        for (i in renderPass.clearColors.indices) {
-            renderPass.clearColors[i]?.let { color ->
+        for (i in renderPass.colorAttachments.indices) {
+            val clearMode = renderPass.colorAttachments[i].clearColor
+            if (clearMode is ClearColorFill) {
                 colorBufferClearVal.clear()
-                color.putTo(colorBufferClearVal)
+                clearMode.clearColor.putTo(colorBufferClearVal)
                 gl.clearBufferfv(gl.COLOR, i, colorBufferClearVal)
             }
         }
-        if (renderPass.clearDepth) {
+        if (renderPass.depthAttachment?.clearDepth == ClearDepthFill) {
             GlState.setWriteDepth(true, gl)
             gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
             gl.clear(gl.DEPTH_BUFFER_BIT)
         }
     }
 
-    protected fun createAndAttachDepthRenderBuffer(pass: OffscreenRenderPass, mipLevel: Int): GlRenderbuffer {
+    protected fun createAndAttachDepthRenderBuffer(pass: OffscreenPass, mipLevel: Int): GlRenderbuffer {
         val rbo = gl.createRenderbuffer()
         val mipWidth = pass.width shr mipLevel
         val mipHeight = pass.height shr mipLevel
@@ -210,7 +211,6 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
         val glColorTexture = tex.glTexture
         colorTexture.gpuTexture = tex
-        colorTexture.loadingState = Texture.LoadingState.LOADED
         return glColorTexture
     }
 
@@ -233,7 +233,6 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
         val glDepthTexture = tex.glTexture
         depthTexture.gpuTexture = tex
-        depthTexture.loadingState = Texture.LoadingState.LOADED
         return glDepthTexture
     }
 

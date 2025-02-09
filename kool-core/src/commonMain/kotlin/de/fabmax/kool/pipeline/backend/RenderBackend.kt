@@ -34,8 +34,8 @@ interface RenderBackend {
     fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode
     fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode
 
-    fun createOffscreenPass2d(parentPass: OffscreenRenderPass2d): OffscreenPass2dImpl
-    fun createOffscreenPassCube(parentPass: OffscreenRenderPassCube): OffscreenPassCubeImpl
+    fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl
+    fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl
     fun createComputePass(parentPass: ComputePass): ComputePassImpl
 
     fun <T: ImageData> uploadTextureData(tex: Texture<T>)

@@ -1,14 +1,14 @@
 package de.fabmax.kool.pipeline.deferred
 
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.AttachmentConfig
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.util.Color
 
 class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPass: MaterialPass) :
-    OffscreenRenderPass2d(
-        pipeline.lightingPassContent,
-        colorAttachmentDefaultDepth(TexFormat.RGBA_F16),
-        materialPass.size.xy,
+    OffscreenPass2d(
+        drawNode = pipeline.lightingPassContent,
+        attachmentConfig = AttachmentConfig.singleColorDefaultDepth(TexFormat.RGBA_F16),
+        initialSize = materialPass.size.xy,
         name = "pbr-lighting-pass-$suffix"
     )
 {
@@ -17,7 +17,6 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
         mirrorIfInvertedClipY()
         val scene = pipeline.scene
         lighting = scene.lighting
-        clearColor = Color(0f, 0f, 0f, 0f)
         camera = materialPass.camera
         isUpdateDrawNode = false
 
@@ -28,7 +27,7 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
                 for (i in materialPass.alphaMeshes.indices) {
                     val mesh = materialPass.alphaMeshes[i]
                     mesh.getOrCreatePipeline(ev.ctx)?.let { pipeline ->
-                        scene.mainRenderPass.screenView.drawQueue.addMesh(mesh, pipeline)
+                        scene.mainRenderPass.defaultView.drawQueue.addMesh(mesh, pipeline)
                     }
                 }
             }

@@ -58,7 +58,7 @@ class GlfwVkWindow(val backend: RenderBackendVk, ctx: Lwjgl3Context) : GlfwWindo
 
         override fun release() {
             super.release()
-            DeferredRelease.defer {
+            ReleaseQueue.enqueue {
                 KHRSurface.vkDestroySurfaceKHR(backend.instance.vkInstance, surfaceHandle, null)
                 logD { "Destroyed surface" }
 

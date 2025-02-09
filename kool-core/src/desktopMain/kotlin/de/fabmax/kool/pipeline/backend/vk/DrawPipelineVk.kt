@@ -150,10 +150,7 @@ class DrawPipelineVk(
             else -> drawPipeline.pipelineConfig.depthTest
         }
 
-        val hasDepthAttachment = renderPass !is OffscreenRenderPass ||
-                renderPass.depthAttachment != OffscreenRenderPass.DepthAttachmentNone
-
-        val depthStencil = if (!hasDepthAttachment) null else callocVkPipelineDepthStencilStateCreateInfo {
+        val depthStencil = if (!renderPass.hasDepth) null else callocVkPipelineDepthStencilStateCreateInfo {
             depthTestEnable(true)
             depthWriteEnable(drawPipeline.isWriteDepth)
             depthCompareOp(depthOp.vk)
@@ -179,6 +176,18 @@ class DrawPipelineVk(
             pDynamicStates(ints(VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR))
         }
 
+        val pipelineRenderingCreateInfo = callocVkPipelineRenderingCreateInfo {
+            colorAttachmentCount(renderPassVk.numColorAttachments)
+            val colorFormats = mallocInt(renderPassVk.numColorAttachments)
+            for (i in 0 until renderPassVk.numColorAttachments) {
+                colorFormats.put(i, renderPassVk.colorTargetFormats[i])
+            }
+            pColorAttachmentFormats(colorFormats)
+            if (passEncoderState.gpuRenderPass.hasDepth) {
+                depthAttachmentFormat(backend.physicalDevice.depthFormat)
+            }
+        }
+
         return device.createGraphicsPipeline {
             pStages(shaderStageInfos)
             pVertexInputState(createVertexBufferLayout())
@@ -190,10 +199,11 @@ class DrawPipelineVk(
             pDepthStencilState(depthStencil)
             pColorBlendState(blendInfo(passEncoderState))
             layout(pipelineLayout.handle)
-            renderPass(passEncoderState.vkRenderPass.handle)
+            renderPass(0L)
             subpass(0)
             basePipelineHandle(VK_NULL_HANDLE)
             basePipelineIndex(-1)
+            pNext(pipelineRenderingCreateInfo)
         }
     }
 
@@ -250,7 +260,7 @@ class DrawPipelineVk(
         }
 
         val colorBlendAttachment = callocVkPipelineColorBlendAttachmentStateN(renderPassVk.numColorAttachments) {
-            for (i in 0 until renderPass.clearColors.size) {
+            for (i in 0 until renderPass.colorAttachments.size) {
                 this[i].apply {
                     colorWriteMask(VK_COLOR_COMPONENT_R_BIT or VK_COLOR_COMPONENT_G_BIT or VK_COLOR_COMPONENT_B_BIT or VK_COLOR_COMPONENT_A_BIT)
                     when (drawPipeline.blendMode) {

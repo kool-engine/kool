@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
@@ -17,11 +18,10 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 
     val vkPhysicalDevice: VkPhysicalDevice
     val queueFamiliyIndices: QueueFamilyIndices
-    val swapChainSupport: SwapChainSupportDetails
     val deviceProperties = VkPhysicalDeviceProperties.calloc()
-    val vkDeviceFeatures2 = VkPhysicalDeviceFeatures2.calloc()
+    val vkDeviceFeatures2 = VkPhysicalDeviceFeatures2.calloc().apply { `sType$Default`() }
     val deviceFeatures: VkPhysicalDeviceFeatures get() = vkDeviceFeatures2.features()
-    val portabilityFeatures = VkPhysicalDevicePortabilitySubsetFeaturesKHR.calloc()
+    val portabilityFeatures = VkPhysicalDevicePortabilitySubsetFeaturesKHR.calloc().apply { `sType$Default`() }
     val availableDeviceExtensions: Set<String>
 
     val isPortabilityDevice: Boolean
@@ -38,18 +38,14 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
 
     val depthFormat: Int
 
+    private val selectedDevice: PhysicalDeviceWrapper
     private val imgFormatTilingFeatures = mutableMapOf<Int, Int>()
 
     init {
         memStack {
             val devPtrs = enumeratePointers { cnt, ptrs -> vkEnumeratePhysicalDevices(backend.instance.vkInstance, cnt, ptrs) }
             val devices = (0 until devPtrs.capacity()).map { PhysicalDeviceWrapper(devPtrs[it], this) }
-            val selectedDevice = selectPhysicalDevice(devices)
-
-            val stackSwapChain = selectedDevice.querySwapChainSupport(this)
-            swapChainSupport = selectedDevice.querySwapChainSupport(this,
-                VkSurfaceCapabilitiesKHR.malloc(), VkSurfaceFormatKHR.malloc(stackSwapChain.formats.size)
-            )
+            selectedDevice = selectPhysicalDevice(devices)
 
             availableDeviceExtensions = selectedDevice.availableExtensions
             isPortabilityDevice = "VK_KHR_portability_subset" in availableDeviceExtensions
@@ -57,12 +53,19 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             queueFamiliyIndices = selectedDevice.queueFamiliyIndices
             vkGetPhysicalDeviceProperties(vkPhysicalDevice, deviceProperties)
 
-            vkDeviceFeatures2.`sType$Default`()
-            portabilityFeatures.`sType$Default`()
+            val dynamicRenderingFeatures = VkPhysicalDeviceDynamicRenderingFeatures.calloc(this).apply { `sType$Default`() }
+            vkDeviceFeatures2.pNext(dynamicRenderingFeatures)
+            val synchronization2Features = VkPhysicalDeviceSynchronization2Features.calloc(this).apply { `sType$Default`() }
+            vkDeviceFeatures2.pNext(synchronization2Features)
+
             if (isPortabilityDevice) {
                 vkDeviceFeatures2.pNext(portabilityFeatures)
             }
+
             vkGetPhysicalDeviceFeatures2(vkPhysicalDevice, vkDeviceFeatures2)
+
+            check(dynamicRenderingFeatures.dynamicRendering()) { "Dynamic rendering feature is required but not supported" }
+            check(synchronization2Features.synchronization2()) { "Synchronization2 feature is required but not supported" }
 
             wideLines = deviceFeatures.wideLines()
             if (wideLines) {
@@ -102,6 +105,17 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         )
 
         releaseWith(backend.instance)
+    }
+
+    fun querySurfaceFormat(): VkSurfaceFormatKHR {
+        return memStack {
+            val swapChainInfo = selectedDevice.querySwapChainSupport(this)
+            swapChainInfo.chooseSurfaceFormat()
+        }
+    }
+
+    fun querySwapchainSupport(stack: MemoryStack): SwapChainSupportDetails {
+        return selectedDevice.querySwapChainSupport(stack)
     }
 
     private fun MemoryStack.selectPhysicalDevice(devices: List<PhysicalDeviceWrapper>): PhysicalDeviceWrapper {
@@ -312,7 +326,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 it.format() == VK_FORMAT_B8G8R8A8_UNORM && it.colorSpace() == preferredColorSpace
             }?.let {
                 selectedSurfaceFmt = it
-                logI("PhysicalDevice") { "Selected surface format with preferred color space ${backend.setup.preferredColorSpace}" }
+                logT("PhysicalDevice") { "Selected surface format with preferred color space ${backend.setup.preferredColorSpace}" }
                 return it
             }
 
@@ -338,15 +352,15 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
 
-        fun chooseSwapExtent(window: GlfwVkWindow, stack: MemoryStack): VkExtent2D {
+        fun chooseSwapExtent(window: GlfwVkWindow): Vec2i {
             val minWidth = capabilities.minImageExtent().width()
             val maxWidth = capabilities.maxImageExtent().width()
             val minHeight = capabilities.minImageExtent().height()
             val maxHeight = capabilities.maxImageExtent().height()
-
-            return VkExtent2D.malloc(stack)
-                .width(window.framebufferWidth.clamp(minWidth, maxWidth))
-                .height(window.framebufferHeight.clamp(minHeight, maxHeight))
+            return Vec2i(
+                window.framebufferWidth.clamp(minWidth, maxWidth),
+                window.framebufferHeight.clamp(minHeight, maxHeight)
+            )
         }
     }
 }

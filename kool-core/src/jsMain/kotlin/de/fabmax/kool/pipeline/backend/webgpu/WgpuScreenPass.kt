@@ -2,12 +2,14 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
+import de.fabmax.kool.pipeline.ClearColorFill
+import de.fabmax.kool.pipeline.ClearColorLoad
+import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 
-class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
+class WgpuScreenPass(backend: RenderBackendWebGpu) :
     WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
 {
     private val canvasContext: GPUCanvasContext
@@ -26,7 +28,7 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width, height)
     }
 
-    fun renderScene(scenePass: Scene.SceneRenderPass, passEncoderState: RenderPassEncoderState) {
+    fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.canvas.width, backend.canvas.height)
         }
@@ -59,10 +61,9 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
                     format = backend.canvasFormat,
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
-                val texResource = backend.createTexture(descriptor, dst)
+                val texResource = backend.createTexture(descriptor)
                 copyDstC = texResource
                 dst.gpuTexture = copyDstC
-                dst.loadingState = Texture.LoadingState.LOADED
             }
             colorDstWgpu = copyDstC
         }
@@ -80,10 +81,9 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
                     format = depthFormat!!,
                     usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
                 )
-                val texResource = backend.createTexture(descriptor, dst)
+                val texResource = backend.createTexture(descriptor)
                 copyDstD = texResource
                 dst.gpuTexture = copyDstD
-                dst.loadingState = Texture.LoadingState.LOADED
             }
             depthDstWgpu = copyDstD
         }
@@ -116,15 +116,17 @@ class WgpuScreenRenderPass(backend: RenderBackendWebGpu) :
         val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearColor == null -> GPULoadOp.load
+            renderPass.colorAttachments[0].clearColor is ClearColorLoad -> GPULoadOp.load
             else -> GPULoadOp.clear
         }
-        val clearColor = if (colorLoadOp == GPULoadOp.load) null else renderPass.clearColor?.let { GPUColorDict(it) }
+        val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
+            (renderPass.colorAttachments[0].clearColor as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+        }
 
         val depthLoadOp = when {
             forceLoad -> GPULoadOp.load
-            renderPass.clearDepth -> GPULoadOp.clear
-            else -> GPULoadOp.load
+            renderPass.depthAttachment?.clearDepth == ClearDepthLoad -> GPULoadOp.load
+            else -> GPULoadOp.clear
         }
 
         val colors = arrayOf(

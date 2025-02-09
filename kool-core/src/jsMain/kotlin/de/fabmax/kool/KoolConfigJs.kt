@@ -16,6 +16,8 @@ data class KoolConfigJs(
      */
     override val defaultFont: MsdfFontInfo = DEFAULT_MSDF_FONT_INFO,
 
+    override val numSamples: Int = 4,
+
     val canvasName: String = "glCanvas",
     val renderBackend: Backend = Backend.PREFER_WEB_GPU,
     val isGlobalKeyEventGrabbing: Boolean = true,
@@ -23,7 +25,6 @@ data class KoolConfigJs(
     val powerPreference: GPUPowerPreference = GPUPowerPreference.highPerformance,
     val deviceScaleLimit: Double = 3.0,
     val forceFloatDepthBuffer: Boolean = true,
-    val numSamples: Int = 4,
     val loaderTasks: List<suspend () -> Unit> = emptyList(),
 
     val customTtfFonts: Map<String, String> = emptyMap(),

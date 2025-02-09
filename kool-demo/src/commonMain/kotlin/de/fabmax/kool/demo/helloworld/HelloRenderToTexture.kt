@@ -6,12 +6,8 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
-import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.releaseWith
 
@@ -32,24 +28,37 @@ class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
         backgroundGroup.releaseWith(this)
 
         // setup offscreen pass
-        val off = OffscreenRenderPass2d(
-            backgroundGroup,
-            OffscreenRenderPass.colorAttachmentDefaultDepth(TexFormat.RGBA),
-            Vec2i(512, 512),
-            name = "render-to-texture"
+        val off = OffscreenPass2d(
+            drawNode = backgroundGroup,
+            attachmentConfig = AttachmentConfig {
+                addColor {
+                    textureFormat = TexFormat.RGBA
+                    defaultSamplerSettings = SamplerSettings().clamped().nearest()
+                }
+                // the offscreen pass will do depth testing, but the depth buffer won't be used later on.
+                // in contrast, defaultDepth() would provide a depth texture which could be used by additional
+                // render passes later on)
+                transientDepth()
+            },
+            initialSize = Vec2i(512, 512),
+            name = "render-to-texture",
+            numSamples = 4
         ).apply {
-            clearColor = Color.BLACK
             camera.position.set(0f, 1f, 2f)
+            mirrorIfInvertedClipY()
         }
 
         // create main scene and draw offscreen result on a quad
-        defaultOrbitCamera()
+        defaultOrbitCamera(yaw = 0f, pitch = 0f).apply {
+            zoom = 2.0
+        }
         addOffscreenPass(off)
 
         addTextureMesh {
             generate {
                 rect {
                     size.set(2f, 2f)
+                    mirrorTexCoordsY()
                 }
             }
             shader = KslUnlitShader {

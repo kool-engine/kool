@@ -8,13 +8,13 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 
-class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
+class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
     private val renderFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
     private val renderColor: GlRenderbuffer by lazy { gl.createRenderbuffer() }
     private val renderDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
 
     private val resolveFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
-    private val resolvedColor = Texture2d(TextureProps(generateMipMaps = false, defaultSamplerSettings = SamplerSettings().clamped().nearest()))
+    private val resolvedColor = Texture2d(TextureProps(isMipMapped = false, defaultSamplerSettings = SamplerSettings().clamped().nearest()))
     private val resolveDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
 
     private val copyFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
@@ -44,10 +44,9 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
         }
     }
 
-    fun draw(scene: Scene) {
-        val scenePass = scene.mainRenderPass
-        renderViews(scenePass)
-        scenePass.afterDraw()
+    fun draw(screenPass: Scene.ScreenPass) {
+        renderViews(screenPass)
+        screenPass.afterPass()
     }
 
     override fun copy(frameCopy: FrameCopy) {
@@ -83,8 +82,7 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
             blitScene.mainRenderPass.update(backend.ctx)
-            blitScene.mainRenderPass.collectDrawCommands(backend.ctx)
-            renderView(blitScene.mainRenderPass.screenView, 0, 0)
+            renderView(blitScene.mainRenderPass.defaultView, 0, 0)
         }
     }
 
@@ -114,7 +112,6 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
         if (tex.width != width || tex.height != height) {
             tex.setSize(width, height, 1)
             tex.applySamplerSettings(dst.props.defaultSamplerSettings)
-            dst.loadingState = Texture.LoadingState.LOADED
 
             val internalFormat = if (isColor) gl.RGBA8 else gl.DEPTH_COMPONENT32F
             val format = if (isColor) gl.RGBA else gl.DEPTH_COMPONENT
@@ -163,7 +160,6 @@ class SceneRenderPassGl(val numSamples: Int, backend: RenderBackendGl): GlRender
         val estSize = Texture.estimatedTexSize(renderSize.x, renderSize.y, 1, 1, 4).toLong()
         loadedTex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, resolvedColor, estSize)
         resolvedColor.gpuTexture = loadedTex
-        resolvedColor.loadingState = Texture.LoadingState.LOADED
 
         loadedTex.setSize(width, height, 1)
         loadedTex.bind()

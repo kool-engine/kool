@@ -1,23 +1,38 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.FrameCopy
+import de.fabmax.kool.pipeline.OffscreenPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2dImpl
+import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 
-class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: RenderBackendGl) :
-    GlRenderPass(backend),
-    OffscreenPass2dImpl
-{
+class OffscreenPass2dGl(
+    val parent: OffscreenPass2d,
+    backend: RenderBackendGl
+) : GlRenderPass(backend), OffscreenPass2dImpl {
+
     private val fbos = mutableListOf<GlFramebuffer>()
     private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
 
-    internal val colorTextures = Array(parent.numColorAttachments) { gl.NULL_TEXTURE }
+    internal val colorTextures = Array(parent.colorAttachments.size) { gl.NULL_TEXTURE }
     internal var depthTexture = gl.NULL_TEXTURE
 
     private var isCreated = false
 
     private val resInfo = OffscreenPassInfo(parent)
+
+    init {
+        if (parent.numSamples > 1) {
+            logW {
+                "OffscreenPass2d ${parent.name} requests a sample count of ${parent.numSamples} but multi-sampling " +
+                        "is not yet implemented in OpenGL backend. Falling back to single-sample. (Use Vulkan or " +
+                        "WebGPU backend if you need multi-sampled offscreen passes)"
+            }
+        }
+    }
 
     override fun setupFramebuffer(mipLevel: Int, layer: Int) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
@@ -83,15 +98,9 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         rbos.clear()
 
         parent.colorTextures.forEach { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
-            }
+            tex.gpuTexture?.release()
         }
-        parent.depthTexture?.let { tex ->
-            if (tex.loadingState == Texture.LoadingState.LOADED) {
-                tex.dispose()
-            }
-        }
+        parent.depthTexture?.gpuTexture?.release()
 
         for (i in colorTextures.indices) { colorTextures[i] = gl.NULL_TEXTURE }
         depthTexture = gl.NULL_TEXTURE
@@ -110,13 +119,11 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
     }
 
     private fun createBuffers() {
-        if (parent.colorAttachments is OffscreenRenderPass.ColorAttachmentTextures) {
-            parent.colorTextures.forEachIndexed { i, tex ->
-                colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
-            }
+        parent.colorTextures.forEachIndexed { i, tex ->
+            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
         }
-        if (parent.depthAttachment is OffscreenRenderPass.DepthAttachmentTexture) {
-            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, parent.depthTexture!!, gl.TEXTURE_2D)
+        parent.depthTexture?.let {
+            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it, gl.TEXTURE_2D)
         }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {
@@ -124,15 +131,11 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
             fbos += fbo
             gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
 
-            when (parent.colorAttachments) {
-                OffscreenRenderPass.ColorAttachmentNone -> { }
-                is OffscreenRenderPass.ColorAttachmentTextures -> attachColorTextures(mipLevel)
-            }
-
-            when (parent.depthAttachment) {
-                OffscreenRenderPass.DepthAttachmentRender -> rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
-                OffscreenRenderPass.DepthAttachmentNone -> { }
-                is OffscreenRenderPass.DepthAttachmentTexture -> attachDepthTexture(mipLevel)
+            attachColorTextures(mipLevel)
+            if (parent.depthTexture != null) {
+                attachDepthTexture(mipLevel)
+            } else if (parent.depthAttachment is OffscreenPass2d.TransientDepthAttachment) {
+                rbos += createAndAttachDepthRenderBuffer(parent, mipLevel)
             }
 
             if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) != gl.FRAMEBUFFER_COMPLETE) {
@@ -165,21 +168,4 @@ class OffscreenRenderPass2dGl(val parent: OffscreenRenderPass2d, backend: Render
         texture = depthTexture,
         level = mipLevel
     )
-
-    private fun Texture2d.createCopyTexColor(pass: OffscreenRenderPass2d, backend: RenderBackendGl) {
-        val gl = backend.gl
-        val intFormat = props.format.glInternalFormat(gl)
-        val width = pass.width
-        val height = pass.height
-        val mipLevels = pass.numTextureMipLevels
-
-        val estSize = Texture.estimatedTexSize(width, height, 1, mipLevels, props.format.pxSize).toLong()
-        val tex = LoadedTextureGl(gl.TEXTURE_2D, gl.createTexture(), backend, this, estSize)
-        tex.setSize(width, height, 1)
-        tex.bind()
-        tex.applySamplerSettings(props.defaultSamplerSettings)
-        gl.texStorage2d(gl.TEXTURE_2D, mipLevels, intFormat, width, height)
-        gpuTexture = tex
-        loadingState = Texture.LoadingState.LOADED
-    }
 }

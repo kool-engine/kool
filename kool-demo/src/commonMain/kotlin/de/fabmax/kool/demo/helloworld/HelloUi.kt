@@ -3,12 +3,13 @@ package de.fabmax.kool.demo.helloworld
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.MdColor
 
 class HelloUi : DemoScene("Hello UI") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        setupUiScene(Scene.DEFAULT_CLEAR_COLOR)
+        setupUiScene(ClearColorFill(Scene.DEFAULT_CLEAR_COLOR))
 
         addPanelSurface(colors = Colors.singleColorLight(MdColor.LIGHT_GREEN)) {
             modifier

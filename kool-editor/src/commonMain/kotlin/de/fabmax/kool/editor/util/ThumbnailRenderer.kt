@@ -24,16 +24,15 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
-import kotlin.collections.set
 import kotlin.math.min
 
 class ThumbnailRenderer(
     name: String,
     val numTiles: Vec2i = Vec2i(24, 24),
     tileSize: Vec2i = Vec2i(80 ,80)
-) : OffscreenRenderPass2d(
+) : OffscreenPass2d(
     drawNode = Node(),
-    attachmentConfig = colorAttachmentNoDepth(TexFormat.RGBA),
+    attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA, ClearColorLoad),
     initialSize = numTiles * tileSize,
     name = name
 ) {
@@ -47,7 +46,6 @@ class ThumbnailRenderer(
 
     init {
         views.clear()
-        clearColor = null
 
         for (y in 0 until numTiles.y) {
             for (x in 0 until numTiles.x) {
@@ -55,7 +53,7 @@ class ThumbnailRenderer(
             }
         }
 
-        onAfterDraw {
+        onAfterPass {
             val releasables = renderQueue.map { it.first.drawNode }
             launchDelayed(1) {
                 releasables.forEach { it.release() }
@@ -223,7 +221,7 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
 fun ThumbnailRenderer.hdriThumbnail(texPath: String): ThumbnailRenderer.Thumbnail = renderThumbnail {
     val texMesh = TextureMesh().apply {
         val assets = KoolEditor.instance.cachedAppAssets
-        val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(generateMipMaps = false)).getOrThrow()
+        val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(isMipMapped = false)).getOrThrow()
         tex.releaseWith(this)
 
         generateThumbnailRoundRect(tex.width.toFloat() / tex.height)

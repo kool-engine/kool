@@ -7,8 +7,7 @@ import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.RayD
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.pipeline.OffscreenRenderPass
-import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
 import kotlin.time.Duration.Companion.seconds
@@ -26,12 +25,12 @@ open class Scene(name: String? = null) : Node(name) {
     val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
     val lighting = Lighting()
-    val mainRenderPass: SceneRenderPass = SceneRenderPass()
+    val mainRenderPass: ScreenPass = ScreenPass()
 
-    var clearColor: Color?
+    var clearColor: ClearColor
         get() = mainRenderPass.clearColor
         set(value) { mainRenderPass.clearColor = value }
-    var clearDepth: Boolean
+    var clearDepth: ClearDepth
         get() = mainRenderPass.clearDepth
         set(value) { mainRenderPass.clearDepth = value }
 
@@ -42,11 +41,11 @@ open class Scene(name: String? = null) : Node(name) {
         get() = mainRenderPass.camera
         set(value) { mainRenderPass.camera = value }
 
-    val offscreenPasses: BufferedList<OffscreenRenderPass> = BufferedList()
-    internal val sortedOffscreenPasses = mutableListOf<OffscreenRenderPass>()
+    val extraPasses: BufferedList<GpuPass> = BufferedList()
+    internal val sortedPasses = mutableListOf<GpuPass>(mainRenderPass)
 
     val isEmpty: Boolean
-        get() = children.isEmpty() && (offscreenPasses.isEmpty() && !offscreenPasses.hasStagedMutations)
+        get() = children.isEmpty() && (extraPasses.isEmpty() && !extraPasses.hasStagedMutations)
 
     var sceneRecordTime = 0.0.seconds
 
@@ -62,12 +61,20 @@ open class Scene(name: String? = null) : Node(name) {
         }
     }
 
-    fun addOffscreenPass(pass: OffscreenRenderPass) {
-        offscreenPasses += pass
+    fun addComputePass(pass: ComputePass) {
+        extraPasses += pass
     }
 
-    fun removeOffscreenPass(pass: OffscreenRenderPass) {
-        offscreenPasses -= pass
+    fun removeComputePass(pass: ComputePass) {
+        extraPasses -= pass
+    }
+
+    fun addOffscreenPass(pass: OffscreenPass) {
+        extraPasses += pass
+    }
+
+    fun removeOffscreenPass(pass: OffscreenPass) {
+        extraPasses -= pass
     }
 
     open fun renderScene(ctx: KoolContext) {
@@ -76,31 +83,33 @@ open class Scene(name: String? = null) : Node(name) {
             onRenderScene[i](ctx)
         }
 
+        // make sure mainRenderPass is updated first, so that scene info (e.g. camera) is updated
+        // before offscreen passes are updated
         mainRenderPass.update(ctx)
 
-        if (offscreenPasses.update()) {
-            // offscreen passes have changed, re-sort them to maintain correct dependency order
-            sortedOffscreenPasses.clear()
-            sortedOffscreenPasses.addAll(offscreenPasses)
-            if (sortedOffscreenPasses.distinct().size != sortedOffscreenPasses.size) {
-                logW { "Multiple occurrences of offscreen passes: $sortedOffscreenPasses" }
+        if (extraPasses.update()) {
+            // offscreen / compute passes have changed, re-sort them to maintain correct dependency order
+            sortedPasses.clear()
+            sortedPasses.addAll(extraPasses)
+            if (sortedPasses.distinct().size != sortedPasses.size) {
+                logW { "Multiple occurrences of offscreen passes: $sortedPasses" }
             }
-            OffscreenRenderPass.sortByDependencies(sortedOffscreenPasses)
+            GpuPass.sortByDependencies(sortedPasses)
+            // main render pass is always executed last
+            sortedPasses.add(mainRenderPass)
         }
 
-        for (i in offscreenPasses.indices) {
-            val pass = offscreenPasses[i]
+        for (i in extraPasses.indices) {
+            val pass = extraPasses[i]
             pass.parentScene = this
             if (pass.isEnabled) {
                 pass.update(ctx)
-                pass.collectDrawCommands(ctx)
             }
         }
-        mainRenderPass.collectDrawCommands(ctx)
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
-        // update lights not attached
+        // update un-attached lights
         lighting.onUpdate(updateEvent)
         super.update(updateEvent)
     }
@@ -116,11 +125,8 @@ open class Scene(name: String? = null) : Node(name) {
         super.release()
 
         mainRenderPass.release()
-        offscreenPasses.update()
-        for (i in offscreenPasses.indices) {
-            offscreenPasses[i].release()
-        }
-        offscreenPasses.clear()
+        extraPasses.updated().forEach { it.release() }
+        extraPasses.clear()
 
         logD { "Released scene \"$name\"" }
     }
@@ -137,38 +143,43 @@ open class Scene(name: String? = null) : Node(name) {
         val DEFAULT_CLEAR_COLOR = Color(0.15f, 0.15f, 0.15f, 1f)
     }
 
-    enum class FramebufferCaptureMode {
-        Disabled,
-        BeforeRender,
-        AfterRender
-    }
+    inner class ScreenPass : RenderPass(
+        numSamples = KoolSystem.config.numSamples,
+        mipMode = MipMode.Single,
+        name = "${name}:ScreenPass"
+    ), RenderPassColorAttachment, RenderPassDepthAttachment {
 
-    inner class SceneRenderPass : RenderPass("${name}:OnScreenRenderPass", MipMode.None) {
-        val screenView = View("screen", this@Scene, PerspectiveCamera())
-        var camera: Camera by screenView::camera
-        val viewport: Viewport by screenView::viewport
+        override val colorAttachments: List<RenderPassColorAttachment> = listOf(this)
+        override val depthAttachment: RenderPassDepthAttachment = this
+
+        override var clearColor: ClearColor = ClearColorFill(DEFAULT_CLEAR_COLOR)
+        override var clearDepth: ClearDepth = ClearDepthFill
+
+        val defaultView = View("${name}:default-view", this@Scene, PerspectiveCamera())
+        private val _views = mutableListOf(defaultView)
+        override val views: List<View> get() = _views
+
+        var camera: Camera by defaultView::camera
+        val viewport: Viewport by defaultView::viewport
         var useWindowViewport = true
 
-        override val clearColors: Array<Color?> = arrayOf(DEFAULT_CLEAR_COLOR)
-
-        private val _views = mutableListOf(screenView)
-        override val views: List<View>
-            get() = _views
-
-        private val _size: MutableVec3i by lazy {
-            val ctx = KoolSystem.requireContext()
-            MutableVec3i(ctx.windowWidth, ctx.windowHeight, 1)
-        }
-        override val size: Vec3i
-            get() = _size
+        private val _size = MutableVec3i()
+        override val size: Vec3i get() = _size
 
         init {
             parentScene = this@Scene
             lighting = this@Scene.lighting
+
+            val ctx = KoolSystem.getContextOrNull()
+            if (ctx != null) {
+                _size.set(ctx.windowWidth, ctx.windowHeight, 1)
+            } else {
+                _size.set(Vec3i.ONES)
+            }
         }
 
-        fun createView(name: String): View {
-            val view = View(name, this@Scene, PerspectiveCamera())
+        fun createView(name: String, camera: Camera = PerspectiveCamera()): View {
+            val view = View(name, this@Scene, camera)
             view.isUpdateDrawNode = false
             view.isReleaseDrawNode = false
             _views += view
@@ -176,6 +187,7 @@ open class Scene(name: String? = null) : Node(name) {
         }
 
         fun removeView(view: View) {
+            require(view != defaultView)
             _views -= view
         }
 

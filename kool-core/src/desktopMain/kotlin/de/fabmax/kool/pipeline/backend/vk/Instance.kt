@@ -55,7 +55,7 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
 
     override fun release() {
         super.release()
-        DeferredRelease.defer {
+        ReleaseQueue.enqueue {
             if (debugMessenger != 0L) {
                 EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, null)
             }
@@ -145,7 +145,7 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
         )
         pfnUserCallback { messageSeverity, messageTypes, pCallbackData, _ ->
             val arg = VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData)
-            val tag = "[VkValidation/${getMessageTypeName(messageTypes)}]"
+            val tag = "VkValidation/${getMessageTypeName(messageTypes)}"
             val logStr = arg.pMessage()?.let { MemoryUtil.memUTF8(it) } ?: "<null>"
             val msgSplit = logStr.replace(" | ", "\n")
 

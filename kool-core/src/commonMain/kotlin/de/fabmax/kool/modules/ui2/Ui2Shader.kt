@@ -60,7 +60,7 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
         )
 
         init {
-            KoolSystem.getContextOrNull()?.onShutdown += { noFontTex.dispose() }
+            KoolSystem.getContextOrNull()?.onShutdown += { noFontTex.release() }
         }
     }
 }

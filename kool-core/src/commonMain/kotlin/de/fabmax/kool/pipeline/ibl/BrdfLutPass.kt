@@ -4,11 +4,12 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.pipeline.AttachmentConfig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenShaderPipelineCfg
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
-import de.fabmax.kool.pipeline.OffscreenRenderPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -18,10 +19,10 @@ import de.fabmax.kool.util.logT
 
 
 class BrdfLutPass(parentScene: Scene) :
-    OffscreenRenderPass2d(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RG_F16),
-        Vec2i(512),
+    OffscreenPass2d(
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RG_F16),
+        initialSize = Vec2i(512),
         name = "brdf-lut"
     )
 {
@@ -37,7 +38,7 @@ class BrdfLutPass(parentScene: Scene) :
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += {
+        onAfterPass {
             logT { "Generated BRDF look-up table" }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)

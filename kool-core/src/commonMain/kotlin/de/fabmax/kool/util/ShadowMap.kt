@@ -26,15 +26,12 @@ class SimpleShadowMap(
 ) :
     DepthMapPass(
         drawNode = drawNode,
-        attachmentConfig = AttachmentConfig(
-            colorAttachments = ColorAttachmentNone,
-            depthAttachment = DepthAttachmentTexture(
-                TextureAttachmentConfig(
-                    textureFormat = TexFormat.R_F32,
-                    defaultSamplerSettings = SamplerSettings(compareOp = DepthCompareOp.LESS).clamped().linear()
-                )
-            )
-        ),
+        attachmentConfig = AttachmentConfig {
+            depth {
+                textureFormat = TexFormat.R_F32
+                defaultSamplerSettings = SamplerSettings(compareOp = DepthCompareOp.LESS).clamped().linear()
+            }
+        },
         initialSize = Vec2i(mapSize),
         name = name
     ),
@@ -72,7 +69,7 @@ class SimpleShadowMap(
         isUpdateDrawNode = false
         isReleaseDrawNode = false
 
-        mainView.drawFilter = {
+        defaultView.drawFilter = {
             it !is Mesh || it.isCastingShadow(shadowMapLevel)
         }
 

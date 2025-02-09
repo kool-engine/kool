@@ -7,6 +7,7 @@ data class BackendFeatures(
     val computeShaders: Boolean,
     val cubeMapArrays: Boolean,
     val reversedDepth: Boolean,
+    val maxSamples: Int,
 
     /**
      * Color value to output from a shader that only produces depth values. If null, no color output is needed.

@@ -25,7 +25,7 @@ abstract class Texture<T: ImageData>(
             value?.let { checkFormat(it.format) }
         }
 
-    var loadingState = LoadingState.NOT_LOADED
+    val isLoaded: Boolean get() = gpuTexture != null
 
     val width: Int
         get() = gpuTexture?.width ?: 0
@@ -35,38 +35,16 @@ abstract class Texture<T: ImageData>(
         get() = gpuTexture?.depth ?: 0
 
     /**
-     * Disposes the underlying texture memory and resets the [loadingState] to [LoadingState.NOT_LOADED]. In contrast
-     * to [release], the texture can still be used after disposing it - the texture will be reloaded. Disposing
-     * textures is useful to update changed texture data.
-     *
-     * @see release
-     */
-    open fun dispose() {
-        gpuTexture?.release()
-        gpuTexture = null
-        loadingState = LoadingState.NOT_LOADED
-    }
-
-    /**
-     * Releases this texture, making it unusable. Use [dispose] instead if you only want to free the underlying
-     * texture memory and reload new texture data.
-     *
-     * @see dispose
+     * Releases this texture, making it unusable.
      */
     override fun release() {
         super.release()
-        dispose()
+        gpuTexture?.release()
+        gpuTexture = null
     }
 
     override fun toString(): String {
         return "${this::class.simpleName}:$name"
-    }
-
-    enum class LoadingState {
-        NOT_LOADED,
-        LOADING,
-        LOADED,
-        LOADING_FAILED
     }
 
     suspend fun upload(imageData: T) {
@@ -238,7 +216,7 @@ fun TextureCubeArray(
 ): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(loader) }
 
 class SingleColorTexture(color: Color) : Texture2d(
-    props = TextureProps(generateMipMaps = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
+    props = TextureProps(isMipMapped = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
     name = "SingleColorTex:${color}"
 ) {
     init {
@@ -268,7 +246,7 @@ class GradientTexture(
 ) : Texture1d(
     props = TextureProps(
         format = TexFormat.RGBA_F16,    // f16 format yields much better results with gradients in linear color space
-        generateMipMaps = false,
+        isMipMapped = false,
         defaultSamplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING
     ),
     name = name

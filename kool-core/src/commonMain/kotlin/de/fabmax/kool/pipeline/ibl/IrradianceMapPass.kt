@@ -15,10 +15,10 @@ import de.fabmax.kool.util.logT
 import kotlin.math.PI
 
 class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture2d?, cubeMap: TextureCube?, size: Int) :
-    OffscreenRenderPassCube(
-        Node(),
-        colorAttachmentNoDepth(TexFormat.RGBA_F16),
-        Vec2i(size),
+    OffscreenPassCube(
+        drawNode = Node(),
+        attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA_F16),
+        initialSize = Vec2i(size),
         name = "irradiance-map"
     )
 {
@@ -36,7 +36,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterDraw += {
+        onAfterPass {
             if (hdriMap != null) {
                 logT { "Generated irradiance map from HDRI: ${hdriMap.name}" }
             } else {

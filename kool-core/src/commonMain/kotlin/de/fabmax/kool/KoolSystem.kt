@@ -76,4 +76,6 @@ interface KoolConfig {
     val defaultAssetLoader: AssetLoader
 
     val defaultFont: MsdfFontInfo
+
+    val numSamples: Int
 }

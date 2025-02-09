@@ -41,14 +41,14 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             tex is TextureCubeArray && data is ImageDataCubeArray -> loadTextureCubeArray(tex, data)
             else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
         }
+        tex.gpuTexture?.release()
         tex.gpuTexture = loaded
-        tex.loadingState = Texture.LoadingState.LOADED
     }
 
     private fun loadTexture1d(tex: Texture1d, data: ImageData1d): WgpuTextureResource {
         val size = intArrayOf(data.width)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             logW { "generateMipMaps requested for Texture1d ${tex.name}: not supported on WebGPU" }
         }
 
@@ -59,7 +59,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             usage = usage
         )
 
-        val gpuTex = backend.createTexture(texDesc, tex)
+        val gpuTex = backend.createTexture(texDesc)
         copyTextureData(data, gpuTex.gpuTexture, size)
         return gpuTex
     }
@@ -67,7 +67,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     private fun loadTexture2d(tex: Texture2d, data: ImageData2d): WgpuTextureResource {
         val size = intArrayOf(data.width, data.height)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
-        val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
+        val levels = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1
         val texDesc = GPUTextureDescriptor(
             size = size,
             format = data.format.wgpu,
@@ -75,9 +75,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             mipLevelCount = levels
         )
 
-        val gpuTex = backend.createTexture(texDesc, tex)
+        val gpuTex = backend.createTexture(texDesc)
         copyTextureData(data, gpuTex.gpuTexture, size)
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
         return gpuTex
@@ -86,7 +86,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     private fun loadTexture3d(tex: Texture3d, data: ImageData3d): WgpuTextureResource {
         val size = intArrayOf(data.width, data.height, data.depth)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             logW { "generateMipMaps requested for Texture3d ${tex.name}: not yet implemented on WebGPU" }
         }
 
@@ -97,14 +97,14 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             dimension = GPUTextureDimension.texture3d,
         )
 
-        val gpuTex = backend.createTexture(texDesc, tex)
+        val gpuTex = backend.createTexture(texDesc)
         copyTextureData(data, gpuTex.gpuTexture, size)
         return gpuTex
     }
 
     private fun loadTextureCube(tex: TextureCube, data: ImageDataCube): WgpuTextureResource {
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
-        val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
+        val levels = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1
         val texDesc = GPUTextureDescriptor(
             size = intArrayOf(data.width, data.height, 6),
             format = data.format.wgpu,
@@ -112,9 +112,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             mipLevelCount = levels
         )
 
-        val gpuTex = backend.createTexture(texDesc, tex)
+        val gpuTex = backend.createTexture(texDesc)
         copyTextureData(data, gpuTex.gpuTexture, intArrayOf(data.width, data.height))
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
         return gpuTex
@@ -123,7 +123,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     private fun loadTexture2dArray(tex: Texture2dArray, data: ImageData3d): WgpuTextureResource {
         val size = intArrayOf(data.width, data.height, data.depth)
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
-        val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
+        val levels = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1
         val texDesc = GPUTextureDescriptor(
             size = size,
             format = data.format.wgpu,
@@ -131,9 +131,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             mipLevelCount = levels
         )
 
-        val gpuTex = backend.createTexture(texDesc, tex)
+        val gpuTex = backend.createTexture(texDesc)
         copyTextureData(data, gpuTex.gpuTexture, size)
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
         return gpuTex
@@ -141,7 +141,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     private fun loadTextureCubeArray(tex: TextureCubeArray, data: ImageDataCubeArray): WgpuTextureResource {
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
-        val levels = if (tex.props.generateMipMaps) numMipLevels(data.width, data.height) else 1
+        val levels = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1
         val texDesc = GPUTextureDescriptor(
             size = intArrayOf(data.width, data.height, 6 * data.slices),
             format = data.format.wgpu,
@@ -149,9 +149,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             mipLevelCount = levels
         )
 
-        val gpuTex = backend.createTexture(texDesc, tex)
+        val gpuTex = backend.createTexture(texDesc)
         copyTextureData(data, gpuTex.gpuTexture, intArrayOf(data.width, data.height))
-        if (tex.props.generateMipMaps) {
+        if (tex.props.isMipMapped) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
         return gpuTex
@@ -171,8 +171,8 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         }
     }
 
-    fun resolveMultiSampledDepthTexture(src: GPUTexture, dst: GPUTexture, encoder: GPUCommandEncoder) {
-        multiSampledDepthTextureCopy.copyTexture(src, dst, encoder)
+    fun resolveMultiSampledDepthTexture(src: GPUTexture, dst: GPUTexture, encoder: GPUCommandEncoder, mipLevel: Int = 0, layer: Int = 0) {
+        multiSampledDepthTextureCopy.copyTexture(src, dst, encoder, mipLevel, layer)
     }
 
     private fun copyTextureData(src: ImageData, dst: GPUTexture, size: IntArray) {
@@ -429,11 +429,11 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             )
         }
 
-        fun copyTexture(src: GPUTexture, dst: GPUTexture, cmdEncoder: GPUCommandEncoder) {
+        fun copyTexture(src: GPUTexture, dst: GPUTexture, cmdEncoder: GPUCommandEncoder, mipLevel: Int, layer: Int) {
             val pipeline = getRenderPipeline(src.format)
 
-            val srcView = src.createView()
-            val dstView = dst.createView()
+            val srcView = src.createView(baseMipLevel = mipLevel, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
+            val dstView = dst.createView(baseMipLevel = mipLevel, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
             val passEncoder = cmdEncoder.beginRenderPass(
                 colorAttachments = emptyArray(),
                 depthStencilAttachment = GPURenderPassDepthStencilAttachment(

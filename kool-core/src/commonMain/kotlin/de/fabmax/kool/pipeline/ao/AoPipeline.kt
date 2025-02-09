@@ -24,8 +24,7 @@ abstract class AoPipeline : BaseReleasable() {
     // ao map size relative to screen resolution
     var mapSize = 0.7f
 
-    val aoMap: Texture2d
-        get() = denoisePass.colorTexture!!
+    val aoMap: Texture2d get() = denoisePass.colorTexture!!
 
     var radius: Float
         get() = aoPass.radius
@@ -101,7 +100,7 @@ abstract class AoPipeline : BaseReleasable() {
             aoPass.sceneCam = proxyCamera
             aoPass.dependsOn(depthPass)
             denoisePass = AoDenoisePass(aoPass, "a")
-            denoisePass.linearDepth = depthPass.colorTexture
+            denoisePass.linearDepth = depthPass.normalDepthMap
             denoisePass.dependsOn(aoPass)
 
             scene.addOffscreenPass(depthPass)
@@ -162,7 +161,7 @@ abstract class AoPipeline : BaseReleasable() {
             aoPass.aoPassShader.createdPipeline?.swapPipelineData(currentPasses)
             denoisePass.denoiseShader.createdPipeline?.swapPipelineData(currentPasses)
 
-            aoPass.sceneCam = currentPasses.materialPass.mainView.camera
+            aoPass.sceneCam = currentPasses.materialPass.camera
             aoPass.deferredPosition = currentPasses.materialPass.positionFlags
             aoPass.deferredNormal = currentPasses.materialPass.normalRoughness
             denoisePass.linearDepth = currentPasses.materialPass.positionFlags

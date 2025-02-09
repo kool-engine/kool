@@ -8,7 +8,7 @@ data class TextureProps(
     /**
      * If true, mip-levels are generated for the given texture on load.
      */
-    val generateMipMaps: Boolean = true,
+    val isMipMapped: Boolean = true,
 
     /**
      * If non-null, the loader implementation will try to scale the loaded texture image to the given size in pixels.

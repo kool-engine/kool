@@ -13,9 +13,7 @@ fun ComputePass(computeShader: ComputeShader, numInvocationsX: Int, numInvocatio
     return pass
 }
 
-class ComputePass(name: String) : OffscreenRenderPass(renderPassAttachmentConfig, Vec3i.ZERO, name) {
-    override val views: List<View> = emptyList()
-
+class ComputePass(name: String) : GpuPass(name) {
     private val _tasks = mutableListOf<Task>()
     val tasks: List<Task> get() = _tasks
 
@@ -34,10 +32,6 @@ class ComputePass(name: String) : OffscreenRenderPass(renderPassAttachmentConfig
             .distinct()
             .filter { !it.isReleased }
             .forEach { it.release() }
-    }
-
-    companion object {
-        private val renderPassAttachmentConfig = AttachmentConfig(ColorAttachmentNone, DepthAttachmentNone)
     }
 
     inner class Task(val shader: ComputeShader, numGroups: Vec3i) {

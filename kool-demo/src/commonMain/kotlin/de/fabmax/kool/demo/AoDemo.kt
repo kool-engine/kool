@@ -14,6 +14,7 @@ import de.fabmax.kool.modules.ksl.lang.g
 import de.fabmax.kool.modules.ksl.lang.getFloat4Port
 import de.fabmax.kool.modules.ksl.lang.r
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.ClearColorDontCare
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
@@ -56,6 +57,8 @@ class AoDemo : DemoScene("Ambient Occlusion") {
     private lateinit var orbitCam: OrbitInputTransform
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
+        clearColor = ClearColorDontCare
+
         updateLighting(isSpotLight.value)
 
         orbitCam = orbitCamera {

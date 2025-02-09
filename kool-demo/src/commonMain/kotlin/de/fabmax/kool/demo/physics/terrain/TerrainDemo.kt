@@ -46,7 +46,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         toLinear = true)
     ).also { it.releaseWith(mainScene) }
 
-    private val oceanFloorCopy = mainScene.mainRenderPass.screenView.copyOutput(isCopyColor = true, isCopyDepth = true, OCEAN_FLOOW_DRAW_GROUP)
+    private val oceanFloorCopy = mainScene.mainRenderPass.defaultView.copyOutput(isCopyColor = true, isCopyDepth = true, OCEAN_FLOOW_DRAW_GROUP)
 
     private lateinit var shadowMap: ShadowMap
     private lateinit var ssao: AoPipeline.ForwardAoPipeline
