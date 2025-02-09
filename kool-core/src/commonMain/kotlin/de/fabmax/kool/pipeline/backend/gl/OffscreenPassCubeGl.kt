@@ -2,7 +2,7 @@ package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 
 class OffscreenPassCubeGl(
     val parent: OffscreenPassCube,
@@ -22,7 +22,7 @@ class OffscreenPassCubeGl(
 
     init {
         if (parent.numSamples > 1) {
-            logE {
+            logW {
                 "OffscreenPassCube ${parent.name} requests a sample count of ${parent.numSamples} but multi-sampling " +
                         "is not yet implemented in OpenGL backend. Falling back to single-sample. (Use Vulkan or " +
                         "WebGPU backend if you need multi-sampled offscreen passes)"

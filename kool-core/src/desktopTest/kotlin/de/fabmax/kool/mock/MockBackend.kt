@@ -26,6 +26,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         computeShaders = false,
         cubeMapArrays = false,
         reversedDepth = false,
+        maxSamples = 4,
         depthOnlyShaderColorOutput = null,
         maxComputeWorkGroupsPerDimension = Vec3i.ZERO,
         maxComputeWorkGroupSize = Vec3i.ZERO,

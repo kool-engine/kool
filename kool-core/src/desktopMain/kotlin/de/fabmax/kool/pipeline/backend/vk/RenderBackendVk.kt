@@ -79,6 +79,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             computeShaders = device.computeQueue == device.graphicsQueue,
             cubeMapArrays = physicalDevice.cubeMapArrays,
             reversedDepth = true,
+            maxSamples = physicalDevice.maxSamples,
             depthOnlyShaderColorOutput = null,
             maxComputeWorkGroupsPerDimension = Vec3i(
                 clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(0)),

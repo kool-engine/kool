@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.vk
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.releaseWith
 import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
@@ -29,6 +28,8 @@ class ScreenPassVk(backend: RenderBackendVk) :
 
     private var colorImageViews: List<VkImageView> = emptyList()
     private var resolveImageViews: List<VkImageView> = emptyList()
+
+    private val frameCopyPasses = mutableMapOf<FrameCopy, ScreenCopy>()
 
     init {
         releaseWith(backend.device)
@@ -137,12 +138,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
             logI { "Screen copy requested. Enabling screen copy feature. First capture might be corrupted." }
         }
 
-        var screenCopy = frameCopy.gpuFrameCopy as ScreenCopy?
-        if (screenCopy == null) {
-            screenCopy = ScreenCopy(frameCopy)
-            frameCopy.gpuFrameCopy = screenCopy
-        }
-        screenCopy.copy(passEncoderState)
+        frameCopyPasses.getOrPut(frameCopy) { ScreenCopy(frameCopy) }.copy(passEncoderState)
     }
 
     private fun createColorResources(samples: Int, commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
@@ -189,7 +185,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
         return image to imageView
     }
 
-    private inner class ScreenCopy(val frameCopy: FrameCopy) : BaseReleasable() {
+    private inner class ScreenCopy(val frameCopy: FrameCopy) {
         var colorCopyView: VkImageView? = null
         var depthCopyView: VkImageView? = null
 
@@ -227,7 +223,9 @@ class ScreenPassVk(backend: RenderBackendVk) :
                     label = colorDst.name
                 )
                 colorDstVk = ImageVk(backend, imgInfo)
-                colorCopyView = colorDstVk.imageView2d(backend.device)
+                colorCopyView = colorDstVk.imageView2d(backend.device).also { view ->
+                    colorDstVk.onRelease { backend.device.destroyImageView(view) }
+                }
                 colorDst.gpuTexture = colorDstVk
             }
             return colorDstVk
@@ -256,7 +254,9 @@ class ScreenPassVk(backend: RenderBackendVk) :
                     label = depthDst.name
                 )
                 depthDstVk = ImageVk(backend, imgInfo)
-                depthCopyView = depthDstVk.imageView2d(backend.device)
+                depthCopyView = depthDstVk.imageView2d(backend.device).also { view ->
+                    depthDstVk.onRelease { backend.device.destroyImageView(view) }
+                }
                 depthDst.gpuTexture = depthDstVk
             }
             return depthDstVk
@@ -310,12 +310,6 @@ class ScreenPassVk(backend: RenderBackendVk) :
                 commandBuffer = passEncoderState.commandBuffer,
                 stack = passEncoderState.stack
             )
-        }
-
-        override fun release() {
-            super.release()
-            colorCopyView?.let { backend.device.destroyImageView(it) }
-            depthCopyView?.let { backend.device.destroyImageView(it) }
         }
     }
 }

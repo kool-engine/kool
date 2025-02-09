@@ -57,7 +57,9 @@ open class OffscreenPass2d(
     }
 
     /**
-     * Convenience function: Create a single shot FrameCopy of the color attachment.
+     * Convenience function: Creates a single shot FrameCopy of the color attachment. This way, the renderpass can
+     * be released while keeping its color output in a separate texture (useful for single-shot renderpasses which
+     * generate lookup-tables, etc.)
      */
     fun copyColor(): Texture2d {
         val copy = FrameCopy(this, isCopyColor = true, isCopyDepth = false, isSingleShot = true)

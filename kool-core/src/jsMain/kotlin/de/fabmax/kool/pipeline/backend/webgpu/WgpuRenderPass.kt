@@ -8,10 +8,11 @@ import kotlin.time.Duration.Companion.nanoseconds
 
 abstract class WgpuRenderPass(
     val depthFormat: GPUTextureFormat?,
-    val numSamples: Int,
+    numSamples: Int,
     val backend: RenderBackendWebGpu
 ) : BaseReleasable() {
 
+    val numSamples = numSamples.coerceAtMost(4)
     val isMultiSampled: Boolean get() = numSamples > 1
 
     private var beginTimestamp: WgpuTimestamps.QuerySlot? = null
@@ -163,21 +164,18 @@ abstract class WgpuRenderPass(
 
     protected abstract fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder)
 
-    class Attachments(
+    inner class Attachments(
         val colorFormats: List<GPUTextureFormat>,
         val depthFormat: GPUTextureFormat?,
         val layers: Int,
         val isCopySrc: Boolean,
         val parentPass: RenderPass,
-        val backend: RenderBackendWebGpu
     ) : BaseReleasable() {
-        val isMultiSampled get() = parentPass.isMultiSampled
-
         val colorImages = colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, parentPass.numSamples, format)
+            createImage(parentPass.width, parentPass.height, numSamples, format)
         }
         val depthImage = depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, parentPass.numSamples, format)
+            createImage(parentPass.width, parentPass.height, numSamples, format)
         }
 
         val resolveColorImages = if (!isMultiSampled) emptyList() else colorFormats.map { format ->

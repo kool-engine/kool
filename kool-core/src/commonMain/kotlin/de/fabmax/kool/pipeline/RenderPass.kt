@@ -21,7 +21,6 @@ abstract class RenderPass(
 
     val hasColor: Boolean get() = colorAttachments.isNotEmpty()
     val hasDepth: Boolean get() = depthAttachment != null
-    val isMultiSampled: Boolean get() = numSamples > 1
 
     abstract val size: Vec3i
     val width: Int get() = size.x
@@ -34,7 +33,8 @@ abstract class RenderPass(
     val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
 
     /**
-     * Frame copies to perform after the entire render pass is done.
+     * Frame copies to perform after the entire render pass is done. The draw group ID of frame copies is ignored.
+     * In order to perform draw group ID aware copies, use [View.frameCopies].
      */
     val frameCopies = mutableListOf<FrameCopy>()
 
@@ -166,9 +166,20 @@ abstract class RenderPass(
         }
 
         /**
-         * Convenience function to add an item to this view's [frameCopies].
+         * Convenience function to add an item to this view's [frameCopies]. Depending on the [drawGroupId], the
+         * copy can be performed during frame render, interrupting the render pass. This way, the framebuffer can be
+         * captured after a certain set of objects is drawn (everything with drawGroupId <= the specified
+         * [drawGroupId]) but before everything else is drawn.
+         * Objects / shaders executed later on in the renderpass can then make use of the copied textures to achieve
+         * various background distortion effects like e.g. frosted glass.
+         * However, to do the copy, the renderpass needs to be interrupted, which is a very expensive operation.
          */
-        fun copyOutput(isCopyColor: Boolean, isCopyDepth: Boolean, drawGroupId: Int = 0, isSingleShot: Boolean = false): FrameCopy {
+        fun copyOutput(
+            isCopyColor: Boolean,
+            isCopyDepth: Boolean,
+            drawGroupId: Int = 0,
+            isSingleShot: Boolean = false
+        ): FrameCopy {
             val copy = FrameCopy(this@RenderPass, isCopyColor, isCopyDepth, drawGroupId, isSingleShot)
             frameCopies += copy
             frameCopies.sortBy { it.drawGroupId }

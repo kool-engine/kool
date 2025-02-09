@@ -30,17 +30,16 @@ class OffscreenPass2dVk(
             isCopySrc = isCopySrc,
             isCopyDst = isCopyDst,
             parentPass = parentPass,
-            backend = backend,
         )
         parentPass.colorTextures.forEachIndexed { i, attachment ->
-            if (parentPass.isMultiSampled) {
+            if (isMultiSampled) {
                 attachment.gpuTexture = attachments.resolveColorImages[i]
             } else {
                 attachment.gpuTexture = attachments.colorImages[i]
             }
         }
         parentPass.depthTexture?.let { attachment ->
-            if (parentPass.isMultiSampled) {
+            if (isMultiSampled) {
                 attachment.gpuTexture = attachments.resolveDepthImage
             } else {
                 attachment.gpuTexture = attachments.depthImage

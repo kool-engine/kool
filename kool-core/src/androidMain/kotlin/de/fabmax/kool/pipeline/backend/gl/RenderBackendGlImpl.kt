@@ -63,6 +63,7 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
             computeShaders = false,
             cubeMapArrays = false,
             reversedDepth = GlImpl.capabilities.hasClipControl,
+            maxSamples = 4,
             depthOnlyShaderColorOutput = Color.BLACK,
             maxComputeWorkGroupsPerDimension = GlImpl.capabilities.maxWorkGroupCount,
             maxComputeWorkGroupSize = GlImpl.capabilities.maxWorkGroupSize,

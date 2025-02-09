@@ -11,9 +11,12 @@ import org.lwjgl.vulkan.VkRenderingInfo
 
 abstract class RenderPassVk(
     val hasDepth: Boolean,
-    val numSamples: Int,
+    numSamples: Int,
     val backend: RenderBackendVk
 ) : BaseReleasable() {
+
+    val numSamples = numSamples.coerceAtMost(backend.features.maxSamples)
+    val isMultiSampled: Boolean get() = numSamples > 1
 
     abstract val colorTargetFormats: List<Int>
     val numColorAttachments: Int get() = colorTargetFormats.size
@@ -233,22 +236,19 @@ abstract class RenderPassVk(
         }
     }
 
-    class Attachments(
+    inner class Attachments(
         val colorFormats: List<Int>,
         val depthFormat: Int?,
         val layers: Int,
         val isCopySrc: Boolean,
         val isCopyDst: Boolean,
-        val parentPass: RenderPass,
-        val backend: RenderBackendVk
+        val parentPass: RenderPass
     ) : BaseReleasable() {
-        val isMultiSampled get() = parentPass.isMultiSampled
-
         val colorImages = colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, parentPass.numSamples, format, false)
+            createImage(parentPass.width, parentPass.height, numSamples, format, false)
         }
         val depthImage = depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, parentPass.numSamples, format, true)
+            createImage(parentPass.width, parentPass.height, numSamples, format, true)
         }
 
         val resolveColorImages = if (!isMultiSampled) emptyList() else colorFormats.map { format ->

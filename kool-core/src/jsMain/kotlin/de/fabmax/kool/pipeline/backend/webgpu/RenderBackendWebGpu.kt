@@ -95,6 +95,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             computeShaders = true,
             cubeMapArrays = true,
             reversedDepth = true,
+            maxSamples = 4,
             depthOnlyShaderColorOutput = Color.BLACK,
             maxComputeWorkGroupsPerDimension = Vec3i(
                 device.limits.maxComputeWorkgroupsPerDimension,
