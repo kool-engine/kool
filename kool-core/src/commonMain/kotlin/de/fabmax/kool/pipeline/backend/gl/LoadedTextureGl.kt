@@ -49,6 +49,12 @@ class LoadedTextureGl(
         gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, settings.magFilter.glMagFilterMethod())
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, settings.addressModeU.glAddressMode())
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, settings.addressModeV.glAddressMode())
+        gl.texParameteri(target, gl.TEXTURE_BASE_LEVEL, settings.baseMipLevel)
+        if (settings.numMipLevels > 0) {
+            gl.texParameteri(target, gl.TEXTURE_MAX_LEVEL, settings.baseMipLevel + settings.numMipLevels - 1)
+        } else {
+            gl.texParameteri(target, gl.TEXTURE_MAX_LEVEL, settings.baseMipLevel + 1000)
+        }
         if (target == gl.TEXTURE_3D) {
             gl.texParameteri(target, gl.TEXTURE_WRAP_R, settings.addressModeW.glAddressMode())
         }

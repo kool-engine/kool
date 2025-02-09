@@ -77,10 +77,17 @@ data class AttachmentConfig(
             colors += TextureAttachmentConfig.Builder().apply(block).build()
         }
 
-        fun addColor(texFormat: TexFormat, clearColor: ClearColor = ClearColorFill(Color.BLACK)) {
+        fun addColor(
+            texFormat: TexFormat,
+            clearColor: ClearColor = ClearColorFill(Color.BLACK),
+            filterMethod: FilterMethod = FilterMethod.LINEAR
+        ) {
             addColor {
                 this.textureFormat = texFormat
                 this.clearColor = clearColor
+                this.defaultSamplerSettings = SamplerSettings()
+                    .clamped()
+                    .copy(minFilter = filterMethod, magFilter = filterMethod)
             }
         }
 

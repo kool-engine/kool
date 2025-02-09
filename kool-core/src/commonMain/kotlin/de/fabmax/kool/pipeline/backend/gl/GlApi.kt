@@ -77,6 +77,7 @@ interface GlApi {
     val TEXTURE_2D: Int
     val TEXTURE_2D_ARRAY: Int
     val TEXTURE_3D: Int
+    val TEXTURE_BASE_LEVEL: Int
     val TEXTURE_COMPARE_MODE: Int
     val TEXTURE_COMPARE_FUNC: Int
     val TEXTURE_CUBE_MAP: Int
@@ -88,6 +89,7 @@ interface GlApi {
     val TEXTURE_CUBE_MAP_POSITIVE_Z: Int
     val TEXTURE_CUBE_MAP_NEGATIVE_Z: Int
     val TEXTURE_MAG_FILTER: Int
+    val TEXTURE_MAX_LEVEL: Int
     val TEXTURE_MIN_FILTER: Int
     val TEXTURE_WRAP_R: Int
     val TEXTURE_WRAP_S: Int

@@ -106,7 +106,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
         var sampler: SamplerSettings? = null
             set(value) {
-                isDirty = field !== value
+                isDirty = field != value
                 field = value
             }
 

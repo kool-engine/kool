@@ -48,6 +48,8 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val DEPTH_COMPONENT32F: Int
         val TEXTURE_2D_ARRAY: Int
         val TEXTURE_3D: Int
+        val TEXTURE_BASE_LEVEL: Int
+        val TEXTURE_MAX_LEVEL: Int
         val TEXTURE_WRAP_R: Int
         val TEXTURE_COMPARE_MODE: Int
         val COMPARE_REF_TO_TEXTURE: Int

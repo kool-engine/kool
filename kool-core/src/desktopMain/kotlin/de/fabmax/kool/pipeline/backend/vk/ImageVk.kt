@@ -170,9 +170,18 @@ class ImageVk(
         }
     }
 
-    fun transitionLayout(oldLayout: Int, newLayout: Int, commandBuffer: VkCommandBuffer, stack: MemoryStack? = null) {
+    fun transitionLayout(
+        oldLayout: Int,
+        newLayout: Int,
+        commandBuffer: VkCommandBuffer,
+        baseMipLevel: Int = 0,
+        mipLevels: Int = this.mipLevels,
+        baseArrayLayer: Int = 0,
+        arrayLayers: Int = this.arrayLayers,
+        stack: MemoryStack? = null
+    ) {
         if (newLayout == oldLayout) return
-        vkImage.transitionLayout(oldLayout, newLayout, imageInfo.aspectMask, mipLevels, arrayLayers, commandBuffer, stack)
+        vkImage.transitionLayout(oldLayout, newLayout, imageInfo.aspectMask, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, commandBuffer, stack)
         lastKnownLayout = newLayout
     }
 
@@ -352,7 +361,9 @@ fun VkImage.transitionLayout(
     oldLayout: Int,
     newLayout: Int,
     aspectMask: Int,
+    baseMipLevel: Int,
     mipLevels: Int,
+    baseArrayLayer: Int,
     arrayLayers: Int,
     commandBuffer: VkCommandBuffer,
     stack: MemoryStack? = null
@@ -367,7 +378,7 @@ fun VkImage.transitionLayout(
             oldLayout(oldLayout)
             newLayout(newLayout)
 
-            subresourceRange().set(aspectMask, 0, mipLevels, 0, arrayLayers)
+            subresourceRange().set(aspectMask, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers)
 
             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
