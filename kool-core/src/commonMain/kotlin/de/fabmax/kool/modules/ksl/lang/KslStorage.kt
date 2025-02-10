@@ -18,22 +18,19 @@ sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(
 class KslStorage1d<T: KslStorage1dType<*>>(name: String, storage: T, val sizeX: Int?) :
     KslStorage<T, KslInt1>(name, storage)
 {
-    override val expressionType: T
-        get() = storageType
+    override val expressionType: T get() = storageType
 }
 
 class KslStorage2d<T: KslStorage2dType<*>>(name: String, storage: T, val sizeX: Int, val sizeY: Int?) :
     KslStorage<T, KslInt2>(name, storage)
 {
-    override val expressionType: T
-        get() = storageType
+    override val expressionType: T get() = storageType
 }
 
 class KslStorage3d<T: KslStorage3dType<*>>(name: String, storage: T, val sizeX: Int, val sizeY: Int, val sizeZ: Int?) :
     KslStorage<T, KslInt3>(name, storage)
 {
-    override val expressionType: T
-        get() = storageType
+    override val expressionType: T get() = storageType
 }
 
 class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(

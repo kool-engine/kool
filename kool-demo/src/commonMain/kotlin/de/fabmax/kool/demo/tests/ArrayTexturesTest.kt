@@ -24,7 +24,7 @@ import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.releaseWith
 
-class ArrayTexturesText : DemoScene("Array Textures Test") {
+class ArrayTexturesTest : DemoScene("Array Textures Test") {
 
     private lateinit var pbrArrayTex: Texture2dArray
 

@@ -19,6 +19,7 @@ class WgpuBindGroupData(
     private val bufferBindings = mutableListOf<BufferBinding>()
     private val storageBufferBindings = mutableListOf<StorageBufferBinding>()
     private val textureBindings = mutableListOf<TextureBinding>()
+    private val storageTextureBindings = mutableListOf<StorageTextureBinding>()
 
     var bindGroup: GPUBindGroup? = null
         private set
@@ -27,6 +28,13 @@ class WgpuBindGroupData(
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.gpuTexture !== tex.loadedTex) {
+                // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
+                data.isDirty = true
+            }
+        }
+        for (i in storageTextureBindings.indices) {
+            val tex = storageTextureBindings[i]
+            if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 data.isDirty = true
             }
@@ -71,11 +79,17 @@ class WgpuBindGroupData(
         bufferBindings.forEach { it.gpuBuffer.release() }
         bufferBindings.clear()
         textureBindings.clear()
+        storageTextureBindings.clear()
 
         val bindGroupEntries: List<GPUBindGroupEntry> = buildList {
             data.bindings.map { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData -> add(binding.makeEntry(pass))
+
+                    is BindGroupData.StorageBuffer1dBindingData -> add(binding.makeEntry(pass))
+                    is BindGroupData.StorageBuffer2dBindingData -> add(binding.makeEntry(pass))
+                    is BindGroupData.StorageBuffer3dBindingData -> add(binding.makeEntry(pass))
+
                     is BindGroupData.Texture1dBindingData -> addAll(binding.makeTexture1dEntry())
                     is BindGroupData.Texture2dBindingData -> addAll(binding.makeTexture2dEntry())
                     is BindGroupData.Texture3dBindingData -> addAll(binding.makeTexture3dEntry())
@@ -83,9 +97,9 @@ class WgpuBindGroupData(
                     is BindGroupData.Texture2dArrayBindingData -> addAll(binding.makeTexture2dArrayEntry())
                     is BindGroupData.TextureCubeArrayBindingData -> addAll(binding.makeTextureCubeArrayEntry())
 
-                    is BindGroupData.StorageBuffer1dBindingData -> add(binding.makeEntry(pass))
-                    is BindGroupData.StorageBuffer2dBindingData -> add(binding.makeEntry(pass))
-                    is BindGroupData.StorageBuffer3dBindingData -> add(binding.makeEntry(pass))
+                    is BindGroupData.StorageTexture1dBindingData -> add(binding.makeStorageTextureEntry())
+                    is BindGroupData.StorageTexture2dBindingData -> add(binding.makeStorageTextureEntry())
+                    is BindGroupData.StorageTexture3dBindingData -> add(binding.makeStorageTextureEntry())
                 }
             }
         }
@@ -283,12 +297,26 @@ class WgpuBindGroupData(
         )
     }
 
+    private fun BindGroupData.StorageTextureBindingData<*>.makeStorageTextureEntry(): GPUBindGroupEntry {
+        val location = locations[layout]
+        val storageTex = checkNotNull(storageTexture) { "Cannot create storage texture binding from null texture" }
+        val loadedTex = checkNotNull(storageTex.asTexture.gpuTexture as WgpuTextureResource?) { "Cannot create storage texture binding from null texture" }
+
+        storageTextureBindings += StorageTextureBinding(this, loadedTex)
+        val texView = loadedTex.gpuTexture.createView(
+            baseMipLevel = mipLevel,
+            mipLevelCount = 1
+        )
+        return GPUBindGroupEntry(location.binding, texView)
+    }
+
     override fun release() {
         super.release()
         textureBindings.clear()
         bufferBindings.forEach { it.gpuBuffer.release() }
         bufferBindings.clear()
         storageBufferBindings.clear()
+        storageTextureBindings.clear()
     }
 
     private data class BufferBinding(
@@ -305,6 +333,11 @@ class WgpuBindGroupData(
 
     private data class TextureBinding(
         val binding: BindGroupData.TextureBindingData<*>,
+        val loadedTex: WgpuTextureResource
+    )
+
+    private data class StorageTextureBinding(
+        val binding: BindGroupData.StorageTextureBindingData<*>,
         val loadedTex: WgpuTextureResource
     )
 }

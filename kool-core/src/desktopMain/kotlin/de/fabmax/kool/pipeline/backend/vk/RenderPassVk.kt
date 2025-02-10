@@ -308,7 +308,7 @@ abstract class RenderPassVk(
                 aspectMask = aspectMask,
                 label = parentPass.name
             )
-            return ImageVk(backend, imageInfo, parentPass.name)
+            return ImageVk(backend, imageInfo)
         }
 
         private fun ImageVk.createMipViews() = List<List<VkImageView>>(parentPass.numRenderMipLevels) { mipLevel ->

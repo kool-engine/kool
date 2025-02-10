@@ -73,6 +73,8 @@ abstract class KslGenerator {
     abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
     abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
 
+    abstract fun storageTextureRead(storageTextureRead: KslStorageTextureRead<*, *, *>): String
+
     open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
@@ -105,6 +107,7 @@ abstract class KslGenerator {
             is KslBlock -> opBlock(op)
             is KslInlineCode -> opInlineCode(op)
             is KslStorageWrite<*, *, *> -> opStorageWrite(op)
+            is KslStorageTextureWrite<*, *, *> -> opStorageTextureWrite(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
         }
     }
@@ -124,6 +127,7 @@ abstract class KslGenerator {
     abstract fun opBlock(op: KslBlock): String
     abstract fun opInlineCode(op: KslInlineCode): String
     abstract fun opStorageWrite(op: KslStorageWrite<*, *, *>): String
+    abstract fun opStorageTextureWrite(op: KslStorageTextureWrite<*, *, *>): String
 
     abstract fun invokeFunction(func: KslInvokeFunction<*>): String
 

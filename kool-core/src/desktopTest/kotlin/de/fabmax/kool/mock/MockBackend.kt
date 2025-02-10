@@ -61,6 +61,10 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         TODO("Not yet implemented")
     }
 
+    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
+        TODO("Not yet implemented")
+    }
+
     override fun <T: ImageData> uploadTextureData(tex: Texture<T>) {
         tex.uploadData = null
     }

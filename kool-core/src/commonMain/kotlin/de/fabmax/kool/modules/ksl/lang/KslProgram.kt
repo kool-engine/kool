@@ -24,6 +24,7 @@ open class KslProgram(val name: String) {
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
     val storageBuffers = mutableMapOf<String, KslStorage<*,*>>()
+    val storageTextures = mutableMapOf<String, KslStorageTexture<*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
 
     var vertexStage: KslVertexStage? = null
@@ -88,10 +89,19 @@ open class KslProgram(val name: String) {
         }
     }
 
-    @PublishedApi internal fun registerStorage(storage: KslStorage<*,*>) {
+    @PublishedApi
+    internal fun registerStorage(storage: KslStorage<*,*>) {
         storageBuffers[storage.name] = storage
         stages.forEach {
             it.globalScope.definedStates += storage
+        }
+    }
+
+    @PublishedApi
+    internal fun registerStorageTexture(storageTexture: KslStorageTexture<*,*>) {
+        storageTextures[storageTexture.name] = storageTexture
+        stages.forEach {
+            it.globalScope.definedStates += storageTexture
         }
     }
 
@@ -217,6 +227,68 @@ open class KslProgram(val name: String) {
         }
         @Suppress("UNCHECKED_CAST")
         return storage as KslStorage3d<KslStorage3dType<T>>
+    }
+
+    inline fun <reified T: KslNumericType> storageTexture1d(
+        name: String,
+        texFormat: TexFormat
+    ): KslStorageTexture1d<KslStorageTexture1dType<T>> {
+        val type = numericTypeForT<T>()
+        val storage: KslStorageTexture<*,*> = storageTextures[name]
+            ?: KslStorageTexture1d(name, KslStorageTexture1dType(type), texFormat).also { registerStorageTexture(it) }
+
+        checkStorageTexType<KslStorageTexture1d<*>>(storage, type, texFormat)
+        @Suppress("UNCHECKED_CAST")
+        return storage as KslStorageTexture1d<KslStorageTexture1dType<T>>
+    }
+
+    inline fun <reified T: KslNumericType> storageTexture2d(
+        name: String,
+        texFormat: TexFormat
+    ): KslStorageTexture2d<KslStorageTexture2dType<T>> {
+        val type = numericTypeForT<T>()
+        val storage: KslStorageTexture<*,*> = storageTextures[name]
+            ?: KslStorageTexture2d(name, KslStorageTexture2dType(type), texFormat).also { registerStorageTexture(it) }
+
+        checkStorageTexType<KslStorageTexture2d<*>>(storage, type, texFormat)
+        @Suppress("UNCHECKED_CAST")
+        return storage as KslStorageTexture2d<KslStorageTexture2dType<T>>
+    }
+
+    inline fun <reified T: KslNumericType> storageTexture3d(
+        name: String,
+        texFormat: TexFormat
+    ): KslStorageTexture3d<KslStorageTexture3dType<T>> {
+        val type = numericTypeForT<T>()
+        val storage: KslStorageTexture<*,*> = storageTextures[name]
+            ?: KslStorageTexture3d(name, KslStorageTexture3dType(type), texFormat).also { registerStorageTexture(it) }
+
+        checkStorageTexType<KslStorageTexture3d<*>>(storage, type, texFormat)
+        @Suppress("UNCHECKED_CAST")
+        return storage as KslStorageTexture3d<KslStorageTexture3dType<T>>
+    }
+
+    @PublishedApi
+    internal inline fun <reified T: KslStorageTexture<*,*>> checkStorageTexType(
+        storage: KslStorageTexture<*,*>,
+        type: KslNumericType,
+        texFormat: TexFormat
+    ) {
+        check(storage is T && type == storage.storageType.elemType) {
+            "Existing storage texture with name \"$name\" has not the expected type"
+        }
+        check(
+            (type is KslScalar && texFormat.channels == 1) ||
+                    (type is KslVector<*> && texFormat.channels == type.dimens)
+        ) {
+            "Ksl type $type does not match dimensionality of texture format $texFormat"
+        }
+        check(
+            ((texFormat.isI32 || texFormat.isU32) && type is KslIntType) ||
+                    ((texFormat.isF16 || texFormat.isF32 || texFormat.isByte) && type is KslFloatType)
+        ) {
+            "Ksl type $type does not match channel type of texture format $texFormat"
+        }
     }
 
     private fun registerInterStageVar(interStageVar: KslInterStageVar<*>) {

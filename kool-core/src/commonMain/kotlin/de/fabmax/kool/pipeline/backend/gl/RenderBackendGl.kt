@@ -114,6 +114,10 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         return ComputePassGl(parentPass, this)
     }
 
+    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
+        TODO("Not yet implemented")
+    }
+
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {
         val src = GlslGenerator(glslGeneratorHints).generateProgram(shader.program, pipeline)
         return ShaderCodeGl(src.vertexSrc, src.fragmentSrc)

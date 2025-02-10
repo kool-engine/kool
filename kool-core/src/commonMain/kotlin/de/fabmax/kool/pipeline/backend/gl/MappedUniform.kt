@@ -129,88 +129,10 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
     }
 }
 
-sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : MappedUniform {
-    protected val gl = backend.gl
-
-    private fun <T: ImageData> checkLoadingState(texture: Texture<T>, texUnit: Int): Boolean {
-        if (texture.isReleased) {
-            logE { "Texture is already released: ${texture.name}" }
-            return false
-        }
-        texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
-        (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
-            gl.activeTexture(gl.TEXTURE0 + texUnit)
-            tex.bind()
-            tex.applySamplerSettings(null)
-            return true
-        }
-        return false
-    }
-
-    protected fun setTexture(texture: Texture<*>?, bindingIndex: Int, bindCtx: CompiledShader.UniformBindContext): Boolean {
-        val texUnit = bindCtx.nextTexUnit++
-        if (texture != null && checkLoadingState(texture, texUnit)) {
-            gl.uniform1i(bindCtx.locations(bindingIndex)[0], texUnit)
-            return true
-        }
-        return false
-    }
-}
-
-class MappedUniformTex1d(private val sampler: BindGroupData.Texture1dBindingData, backend: RenderBackendGl) :
-    MappedUniformTex(backend.gl.TEXTURE_2D, backend)
-{
-    // 1d texture internally uses a 2d texture to be compatible with glsl version 300 es
-    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
-    }
-}
-
-class MappedUniformTex2d(private val sampler: BindGroupData.Texture2dBindingData, backend: RenderBackendGl) :
-    MappedUniformTex(backend.gl.TEXTURE_2D, backend)
-{
-    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
-    }
-}
-
-class MappedUniformTex3d(private val sampler: BindGroupData.Texture3dBindingData, backend: RenderBackendGl) :
-    MappedUniformTex(backend.gl.TEXTURE_3D, backend)
-{
-    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
-    }
-}
-
-class MappedUniformTexCube(private val sampler: BindGroupData.TextureCubeBindingData, backend: RenderBackendGl) :
-    MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP, backend)
-{
-    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
-    }
-}
-
-class MappedUniformTex2dArray(private val sampler: BindGroupData.Texture2dArrayBindingData, backend: RenderBackendGl) :
-    MappedUniformTex(backend.gl.TEXTURE_2D_ARRAY, backend)
-{
-    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
-    }
-}
-
-class MappedUniformTexCubeArray(private val sampler: BindGroupData.TextureCubeArrayBindingData, backend: RenderBackendGl) :
-    MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP_ARRAY, backend)
-{
-    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        return setTexture(sampler.texture, sampler.layout.bindingIndex, bindCtx)
-    }
-}
-
 sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl) : MappedUniform {
     val gl = backend.gl
 
     protected abstract val ssbo: BindGroupData.StorageBufferBindingData<T>
-    protected abstract val bindingIndex: Int
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val storage = ssbo.storageBuffer ?: return false
@@ -234,28 +156,115 @@ sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl)
                 }
             }
         }
-        gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, bindCtx.location(bindingIndex), gpuBuffer.buffer)
+        gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, bindCtx.location(ssbo.layout.bindingIndex), gpuBuffer.buffer)
         return true
     }
 }
 
 class MappedStorageBuffer1d(override val ssbo: BindGroupData.StorageBuffer1dBindingData, backend: RenderBackendGl) :
     MappedStorageBuffer<StorageBuffer1d>(backend)
-{
-    override val bindingIndex: Int
-        get() = ssbo.layout.bindingIndex
-}
 
 class MappedStorageBuffer2d(override val ssbo: BindGroupData.StorageBuffer2dBindingData, backend: RenderBackendGl) :
     MappedStorageBuffer<StorageBuffer2d>(backend)
-{
-    override val bindingIndex: Int
-        get() = ssbo.layout.bindingIndex
-}
 
 class MappedStorageBuffer3d(override val ssbo: BindGroupData.StorageBuffer3dBindingData, backend: RenderBackendGl) :
     MappedStorageBuffer<StorageBuffer3d>(backend)
-{
-    override val bindingIndex: Int
-        get() = ssbo.layout.bindingIndex
+
+sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : MappedUniform {
+    protected val gl = backend.gl
+
+    protected abstract val sampler: BindGroupData.TextureBindingData<*>
+
+    private fun <T: ImageData> checkLoadingState(texture: Texture<T>, texUnit: Int): Boolean {
+        if (texture.isReleased) {
+            logE { "Texture is already released: ${texture.name}" }
+            return false
+        }
+        texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
+        (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
+            gl.activeTexture(gl.TEXTURE0 + texUnit)
+            tex.bind()
+            tex.applySamplerSettings(null)
+            return true
+        }
+        return false
+    }
+
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        val texture = sampler.texture
+        val texUnit = bindCtx.nextTexUnit++
+        if (texture != null && checkLoadingState(texture, texUnit)) {
+            gl.uniform1i(bindCtx.locations(sampler.layout.bindingIndex)[0], texUnit)
+            return true
+        }
+        return false
+    }
 }
+
+class MappedUniformTex1d(override val sampler: BindGroupData.Texture1dBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_2D, backend) // 1d texture internally uses a 2d texture to be compatible with OpenGL ES
+
+class MappedUniformTex2d(override val sampler: BindGroupData.Texture2dBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_2D, backend)
+
+class MappedUniformTex3d(override val sampler: BindGroupData.Texture3dBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_3D, backend)
+
+class MappedUniformTexCube(override val sampler: BindGroupData.TextureCubeBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP, backend)
+
+class MappedUniformTex2dArray(override val sampler: BindGroupData.Texture2dArrayBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_2D_ARRAY, backend)
+
+class MappedUniformTexCubeArray(override val sampler: BindGroupData.TextureCubeArrayBindingData, backend: RenderBackendGl) :
+    MappedUniformTex(backend.gl.TEXTURE_CUBE_MAP_ARRAY, backend)
+
+sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBackendGl) : MappedUniform {
+    val gl = backend.gl
+
+    protected abstract val storageTex: BindGroupData.StorageTextureBindingData<*>
+
+    override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
+        val texUnit = bindCtx.nextTexUnit++
+        val texture = storageTex.storageTexture?.asTexture
+        if (texture != null && checkLoadingState(texture, texUnit)) {
+            val glTex = texture.gpuTexture as LoadedTextureGl
+            gl.bindImageTexture(
+                unit = storageTex.layout.bindingIndex,
+                texture = glTex.glTexture,
+                level = storageTex.mipLevel,
+                layered = false,
+                layer = 0,
+                access = storageTex.layout.accessType.glAccessType(gl),
+                format = texture.props.format.glFormat(gl)
+            )
+            gl.uniform1i(bindCtx.locations(storageTex.layout.bindingIndex)[0], texUnit)
+            return true
+        }
+        return false
+    }
+
+    private fun checkLoadingState(texture: Texture<*>, texUnit: Int): Boolean {
+        if (texture.isReleased) {
+            logE { "Storage texture is already released: ${texture.name}" }
+            return false
+        }
+        texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
+        (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
+            gl.activeTexture(gl.TEXTURE0 + texUnit)
+            tex.bind()
+            tex.applySamplerSettings(null)
+            return true
+        }
+        return false
+    }
+}
+
+class MappedStorageTexture1d(override val storageTex: BindGroupData.StorageTexture1dBindingData, backend: RenderBackendGl) :
+    MappedStorageTexture<Texture1d>(backend)
+
+class MappedStorageTexture2d(override val storageTex: BindGroupData.StorageTexture2dBindingData, backend: RenderBackendGl) :
+    MappedStorageTexture<Texture2d>(backend)
+
+class MappedStorageTexture3d(override val storageTex: BindGroupData.StorageTexture3dBindingData, backend: RenderBackendGl) :
+    MappedStorageTexture<Texture3d>(backend)

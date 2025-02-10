@@ -210,7 +210,7 @@ fun barycentricWeights(pt: Vec3f, va: Vec3f, vb: Vec3f, vc: Vec3f, result: Mutab
     return result
 }
 
-fun numMipLevels(width: Int, height: Int): Int = floor(log2(max(width, height).toDouble())).toInt() + 1
+fun numMipLevels(width: Int, height: Int, depth: Int = 1): Int = floor(log2(maxOf(width, height, depth).toDouble())).toInt() + 1
 
 internal inline fun float32ToFloat16(f32: Float, block: (high: Byte, low: Byte) -> Unit) {
     // from: https://stackoverflow.com/questions/3026441/float32-to-float16

@@ -3,7 +3,6 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
-import de.fabmax.kool.demo.Demos.PlatformFilter
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
 import de.fabmax.kool.demo.helloworld.*
@@ -88,7 +87,7 @@ object Demos {
         entry("gizmo-test", "Gizmo Test") { GizmoTest() }
         entry("inf-depth-test", "Clip Space Test") { InifiniteDepthTest() }
         entry("instancing-test", "Instancing Test") { InstancingTest() }
-        entry("tex-array-test", "Array Textures Test") { ArrayTexturesText() }
+        entry("tex-array-test", "Array Textures Test") { ArrayTexturesTest() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)

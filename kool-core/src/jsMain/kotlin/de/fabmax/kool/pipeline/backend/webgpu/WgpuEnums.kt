@@ -247,6 +247,15 @@ value class GPUTextureSampleType private constructor(val enumValue: String) {
     }
 }
 
+value class GPUStorageTextureAccess private constructor(val enumValue: String) {
+    override fun toString() = enumValue
+    companion object {
+        val writeOnly = GPUStorageTextureAccess("write-only")
+        val readOnly = GPUStorageTextureAccess("read-only")
+        val readWrite = GPUStorageTextureAccess("read-write")
+    }
+}
+
 value class GPUTextureViewDimension private constructor(val enumValue: String) {
     override fun toString() = enumValue
     companion object {

@@ -70,6 +70,7 @@ class WgslGenerator : KslGenerator() {
         vertexOutput.generateStruct(src)
         src.generateTextureSamplers(vertexStage, pipeline)
         src.generateStorageBuffers(vertexStage, pipeline)
+        src.generateStorageTextures(vertexStage, pipeline)
         src.generateFunctions(vertexStage)
 
         src.appendLine("@vertex")
@@ -102,6 +103,7 @@ class WgslGenerator : KslGenerator() {
         fragmentOutput.generateStruct(src)
         src.generateTextureSamplers(fragmentStage, pipeline)
         src.generateStorageBuffers(fragmentStage, pipeline)
+        src.generateStorageTextures(fragmentStage, pipeline)
         src.generateFunctions(fragmentStage)
 
         val mainParam = if (fragmentInput.isNotEmpty()) "fragmentInput: FragmentInput" else ""
@@ -131,6 +133,7 @@ class WgslGenerator : KslGenerator() {
         computeInput.generateStruct(src)
         src.generateTextureSamplers(computeStage, pipeline)
         src.generateStorageBuffers(computeStage, pipeline)
+        src.generateStorageTextures(computeStage, pipeline)
         src.generateFunctions(computeStage)
 
         src.appendLine("@compute")
@@ -300,10 +303,17 @@ class WgslGenerator : KslGenerator() {
         val coord = op.coord.generateExpression(this)
         val arrayIndex = op.storage.getIndexString(coord)
         return if (op.storage.isAccessedAtomically) {
-            "atomicStore(&${storage}${arrayIndex}, $expr)"
+            "atomicStore(&${storage}${arrayIndex}, $expr);"
         } else {
             "${storage}${arrayIndex} = $expr;"
         }
+    }
+
+    override fun opStorageTextureWrite(op: KslStorageTextureWrite<*, *, *>): String {
+        val storage = op.storage.generateExpression(this)
+        val expr = op.data.generateExpression(this)
+        val coord = op.coord.generateExpression(this)
+        return "textureStore(${storage}, $coord, $expr);"
     }
 
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
@@ -330,6 +340,12 @@ class WgslGenerator : KslGenerator() {
         val coord = atomicCompSwap.coord.generateExpression(this)
         val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
         return "atomicCompareExchangeWeak(&$storage${arrayIndex}, ${comp}, ${expr}).old_value"
+    }
+
+    override fun storageTextureRead(storageTextureRead: KslStorageTextureRead<*, *, *>): String {
+        val storage = storageTextureRead.storage.generateExpression(this)
+        val coord = storageTextureRead.coord.generateExpression(this)
+        return "textureLoad($storage, $coord)"
     }
 
     private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
@@ -604,6 +620,15 @@ class WgslGenerator : KslGenerator() {
             return samplerExpression
         }
 
+        fun KslType.wgslStorageTextureTypeName(): String {
+            return when (this) {
+                is KslStorageTexture1dType<*> -> "texture_storage_1d"
+                is KslStorageTexture2dType<*> -> "texture_storage_2d"
+                is KslStorageTexture3dType<*> -> "texture_storage_3d"
+                else -> error("$this is not a storage texture type")
+            }
+        }
+
         fun KslType.wgslSamplerAndTextureTypeName(): Pair<String, String> {
             return when (this) {
                 KslColorSampler1d -> "sampler" to "texture_1d<f32>"
@@ -652,11 +677,36 @@ class WgslGenerator : KslGenerator() {
             }
         }
 
+        fun StorageAccessType.wgslStorageTextureAccessType(): String {
+            return when (this) {
+                StorageAccessType.READ_ONLY -> "read"
+                StorageAccessType.WRITE_ONLY -> "write"
+                StorageAccessType.READ_WRITE -> "read_write"
+            }
+        }
+
         fun StorageAccessType.wgslAccessType(): String {
             return when (this) {
                 StorageAccessType.READ_ONLY -> "read"
-                StorageAccessType.WRITE_ONLY -> "read_write"        // wgsl storage access type must be either "read" or "read_write"
+                StorageAccessType.WRITE_ONLY -> "read_write"    // in wgsl, access mode 'write' is not valid for the 'storage' address space
                 StorageAccessType.READ_WRITE -> "read_write"
+            }
+        }
+
+        fun storageTextureFormatQualifier(texFormat: TexFormat): String {
+            return when (texFormat) {
+                TexFormat.RGBA -> "rgba8unorm"
+                TexFormat.RGBA_F16 -> "rgba16float"
+                TexFormat.R_F32 -> "r32float"
+                TexFormat.RG_F32 -> "rg32float"
+                TexFormat.RGBA_F32 -> "rgba32float"
+                TexFormat.R_I32 -> "r32sint"
+                TexFormat.RG_I32 -> "rg32sint"
+                TexFormat.RGBA_I32 -> "rgba32sint"
+                TexFormat.R_U32 -> "r32uint"
+                TexFormat.RG_U32 -> "rg32uint"
+                TexFormat.RGBA_U32 -> "rgba32uint"
+                else -> error("unsupported storage texture format: $texFormat")
             }
         }
     }
@@ -880,6 +930,24 @@ class WgslGenerator : KslGenerator() {
                     val typeName = kslStorage.expressionType.elemType.wgslTypeName()
                     val elementType = if (kslStorage.isAccessedAtomically) "atomic<$typeName>" else typeName
                     appendLine("@group(${location.group}) @binding(${location.binding}) var <storage, ${accessType}> ${storageLayout.name}: array<$elementType>;")
+                }
+        }
+        appendLine()
+    }
+
+    private fun StringBuilder.generateStorageTextures(stage: KslShaderStage, pipeline: PipelineBase) {
+        pipeline.bindGroupLayouts.asList.forEach { layout ->
+            layout.bindings
+                .filterIsInstance<StorageTextureLayout>().filter { storageLayout ->
+                    stage.type.pipelineStageType in storageLayout.stages
+                }
+                .forEach { storageLayout ->
+                    val location = generatorState.locations[storageLayout]
+                    val kslStorage = stage.getUsedStorageTextures().first { it.name == storageLayout.name }
+                    val format = storageTextureFormatQualifier(kslStorage.texFormat)
+                    val accessType = storageLayout.accessType.wgslStorageTextureAccessType()
+                    val typeName = kslStorage.expressionType.wgslStorageTextureTypeName()
+                    appendLine("@group(${location.group}) @binding(${location.binding}) var ${storageLayout.name}: $typeName<$format, $accessType>;")
                 }
         }
         appendLine()

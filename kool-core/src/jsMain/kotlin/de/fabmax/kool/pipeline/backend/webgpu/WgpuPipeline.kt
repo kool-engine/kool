@@ -41,21 +41,19 @@ sealed class WgpuPipeline(
                     val location = locations[binding]
 
                     when (binding) {
-                        is UniformBufferLayout -> add(makeLayoutEntryBuffer(location, visibility, GPUBufferBindingType.uniform))
+                        is UniformBufferLayout -> add(makeLayoutEntryBuffer(location, visibility))
+                        is StorageBufferLayout -> add(makeLayoutEntryStorageBuffer(location, visibility, binding))
+
                         is Texture1dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view1d))
                         is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2d))
                         is Texture3dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view3d))
                         is TextureCubeLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCube))
                         is Texture2dArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2dArray))
                         is TextureCubeArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCubeArray))
-                        is StorageBufferLayout -> {
-                            val bufferType = if (binding.accessType == StorageAccessType.READ_ONLY) {
-                                GPUBufferBindingType.readOnlyStorage
-                            } else {
-                                GPUBufferBindingType.storage
-                            }
-                            add(makeLayoutEntryBuffer(location, visibility, bufferType))
-                        }
+
+                        is StorageTexture1dLayout -> add(makeLayoutStorageTexture(binding, location, visibility))
+                        is StorageTexture2dLayout -> add(makeLayoutStorageTexture(binding, location, visibility))
+                        is StorageTexture3dLayout -> add(makeLayoutStorageTexture(binding, location, visibility))
                     }
                 }
             }
@@ -74,11 +72,24 @@ sealed class WgpuPipeline(
         ))
     }
 
-    private fun makeLayoutEntryBuffer(location: WgslLocations.Location, visibility: Int, type: GPUBufferBindingType) = GPUBindGroupLayoutEntryBuffer(
+    private fun makeLayoutEntryBuffer(location: WgslLocations.Location, visibility: Int) = GPUBindGroupLayoutEntryBuffer(
         binding = location.binding,
         visibility = visibility,
-        buffer = GPUBufferBindingLayout(type = type)
+        buffer = GPUBufferBindingLayout(type = GPUBufferBindingType.uniform)
     )
+
+    private fun makeLayoutEntryStorageBuffer(location: WgslLocations.Location, visibility: Int, binding: StorageBufferLayout): GPUBindGroupLayoutEntryBuffer {
+        val type = if (binding.accessType == StorageAccessType.READ_ONLY) {
+            GPUBufferBindingType.readOnlyStorage
+        } else {
+            GPUBufferBindingType.storage
+        }
+        return GPUBindGroupLayoutEntryBuffer(
+            binding = location.binding,
+            visibility = visibility,
+            buffer = GPUBufferBindingLayout(type = type)
+        )
+    }
 
     private fun makeLayoutEntriesTexture(
         binding: TextureLayout,
@@ -105,6 +116,28 @@ sealed class WgpuPipeline(
                 visibility,
                 GPUTextureBindingLayout(viewDimension = dimension, sampleType = texSampleType)
             )
+        )
+    }
+
+    private fun makeLayoutStorageTexture(
+        binding: StorageTextureLayout,
+        location: WgslLocations.Location,
+        visibility: Int
+    ): GPUBindGroupLayoutEntryStorageTexture {
+        val dimension = when (binding) {
+            is StorageTexture1dLayout -> GPUTextureViewDimension.view1d
+            is StorageTexture2dLayout -> GPUTextureViewDimension.view2d
+            is StorageTexture3dLayout -> GPUTextureViewDimension.view3d
+        }
+        val access = when (binding.accessType) {
+            StorageAccessType.READ_ONLY -> GPUStorageTextureAccess.readOnly
+            StorageAccessType.WRITE_ONLY -> GPUStorageTextureAccess.writeOnly
+            StorageAccessType.READ_WRITE -> GPUStorageTextureAccess.readWrite
+        }
+        return GPUBindGroupLayoutEntryStorageTexture(
+            location.binding,
+            visibility,
+            GPUStorageTextureBindingLayout(access, binding.texFormat.wgpu, dimension)
         )
     }
 

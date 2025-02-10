@@ -6,7 +6,10 @@ import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.dstAccessMaskForLayo
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.dstStageMaskForLayout
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.srcAccessMaskForLayout
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.srcStageMaskForLayout
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
 import org.lwjgl.vulkan.KHRSynchronization2.vkCmdPipelineBarrier2KHR
@@ -17,8 +20,7 @@ import kotlin.math.max
 
 class ImageVk(
     val backend: RenderBackendVk,
-    val imageInfo: ImageInfo,
-    label: String = UniqueId.nextId("Image")
+    val imageInfo: ImageInfo
 ) : BaseReleasable(), GpuTexture {
 
     override val width: Int get() = imageInfo.width
@@ -36,7 +38,7 @@ class ImageVk(
     private val textureInfo = TextureInfo(
         texture = null,
         size = (width * height * depth * arrayLayers * imageInfo.bytesPerPx * imageInfo.mipMapFactor).toLong(),
-        label
+        name = imageInfo.label
     )
 
     init {

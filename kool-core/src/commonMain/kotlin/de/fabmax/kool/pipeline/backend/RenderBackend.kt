@@ -38,6 +38,8 @@ interface RenderBackend {
     fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl
     fun createComputePass(parentPass: ComputePass): ComputePassImpl
 
+    fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int)
+
     fun <T: ImageData> uploadTextureData(tex: Texture<T>)
     fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>)
     fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>)

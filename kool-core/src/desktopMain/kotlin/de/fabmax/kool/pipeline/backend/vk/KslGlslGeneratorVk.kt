@@ -2,8 +2,9 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
-import de.fabmax.kool.pipeline.BindGroupScope
 import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.StorageAccessType
+import de.fabmax.kool.pipeline.StorageTextureLayout
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 
 class KslGlslGeneratorVk : GlslGenerator(
@@ -18,8 +19,7 @@ class KslGlslGeneratorVk : GlslGenerator(
         if (samplers.isNotEmpty()) {
             appendLine("// texture samplers")
             for (u in samplers) {
-                val set = pipeline.bindGroupLayouts[BindGroupScope.PIPELINE]
-                val desc = pipeline.findBindGroupItemByName(u.name)!!
+                val (set, desc) = pipeline.findBindGroupItemByName(u.name)!!
                 appendLine("layout(set=${set.group}, binding=${desc.bindingIndex}) uniform ${glslTypeName(u.expressionType)} ${getStateName(u.value)};")
             }
             appendLine()
@@ -32,9 +32,7 @@ class KslGlslGeneratorVk : GlslGenerator(
             appendLine("// storage buffers")
             val readonly = if (stage.type == KslShaderStageType.ComputeShader) "" else "readonly"
             for (storage in storages) {
-                val set = pipeline.bindGroupLayouts[BindGroupScope.PIPELINE]
-                val desc = pipeline.findBindGroupItemByName(storage.name)!!
-
+                val (set, desc) = pipeline.findBindGroupItemByName(storage.name)!!
                 appendLine("""
                     layout(std430, set=${set.group}, binding=${desc.bindingIndex}) $readonly buffer ssboLayout_${storage.name} {
                         ${glslTypeName(storage.storageType.elemType)} ${storage.name}[];
@@ -45,13 +43,30 @@ class KslGlslGeneratorVk : GlslGenerator(
         }
     }
 
+    override fun StringBuilder.generateStorageTextures(stage: KslShaderStage, pipeline: PipelineBase) {
+        val storages = stage.getUsedStorageTextures()
+        if (storages.isNotEmpty()) {
+            appendLine("// storage textures")
+            for (storage in storages) {
+                val (set, desc) = pipeline.findBindGroupItemByName(storage.name)!!
+                val layout = "${storageTextureFormatQualifier(storage.texFormat)}, set=${set.group}, binding=${desc.bindingIndex}"
+                val access = when ((desc as StorageTextureLayout).accessType) {
+                    StorageAccessType.READ_ONLY -> "readonly"
+                    StorageAccessType.WRITE_ONLY -> "writeonly"
+                    StorageAccessType.READ_WRITE -> ""
+                }
+                appendLine("layout($layout) uniform restrict $access ${glslTypeName(storage.expressionType)} ${storage.name};")
+            }
+            appendLine()
+        }
+    }
+
     override fun StringBuilder.generateUbos(stage: KslShaderStage, pipeline: PipelineBase) {
         val ubos = stage.getUsedUbos()
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
-                val set = pipeline.bindGroupLayouts[ubo.scope]
-                val desc = pipeline.findBindGroupItemByName(ubo.name)!!
+                val (set, desc) = pipeline.findBindGroupItemByName(ubo.name)!!
                 appendLine("layout(std140, set=${set.group}, binding=${desc.bindingIndex}) uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
                     appendLine("    highp ${glslTypeName(u.expressionType)} ${getStateName(u.value)};")

@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -255,6 +256,35 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return WgpuComputePass(parentPass, this)
+    }
+
+    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
+        val tex = storageTexture.asTexture
+        val usage = GPUTextureUsage.STORAGE_BINDING or
+                GPUTextureUsage.COPY_SRC or
+                GPUTextureUsage.COPY_DST or
+                GPUTextureUsage.TEXTURE_BINDING
+        val dimension = when (storageTexture) {
+            is StorageTexture1d -> GPUTextureDimension.texture1d
+            is StorageTexture2d -> GPUTextureDimension.texture2d
+            is StorageTexture3d -> GPUTextureDimension.texture3d
+        }
+        val size = when (storageTexture) {
+            is StorageTexture1d -> intArrayOf(width)
+            is StorageTexture2d -> intArrayOf(width, height)
+            is StorageTexture3d -> intArrayOf(width, height, depth)
+        }
+        val levels = if (tex.props.isMipMapped) numMipLevels(width, height, depth) else 1
+
+        val texDesc = GPUTextureDescriptor(
+            size = size,
+            format = tex.props.format.wgpu,
+            dimension = dimension,
+            usage = usage,
+            mipLevelCount = levels,
+            label = storageTexture.name
+        )
+        tex.gpuTexture = createTexture(texDesc)
     }
 
     override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)

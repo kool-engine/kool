@@ -194,6 +194,7 @@ private fun KslProgram.makeBindGroupLayout(group: Int, scope: BindGroupScope): B
     setupBindGroupLayoutUbos(bindGrpBuilder)
     setupBindGroupLayoutTextures(bindGrpBuilder)
     setupBindGroupLayoutStorage(bindGrpBuilder)
+    setupBindGroupLayoutStorageTextures(bindGrpBuilder)
     return bindGrpBuilder.create()
 }
 
@@ -310,6 +311,33 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
             is KslStorage1d<*> -> StorageBuffer1dLayout(name, format, storage.sizeX, accessType, storageStages)
             is KslStorage2d<*> -> StorageBuffer2dLayout(name, format, storage.sizeX, storage.sizeY, accessType, storageStages)
             is KslStorage3d<*> -> StorageBuffer3dLayout(name, format, storage.sizeX, storage.sizeY, storage.sizeZ, accessType, storageStages)
+        }
+    }
+}
+
+private fun KslProgram.setupBindGroupLayoutStorageTextures(bindGrpBuilder: BindGroupLayout.Builder) {
+    if (bindGrpBuilder.scope != BindGroupScope.PIPELINE) {
+        // todo: add bind group scope to ksl textures -> for now we use pipeline scope for all of them
+        return
+    }
+
+    storageTextures.values.forEach { storage ->
+        val storageStages = stages
+            .filter { it.dependsOn(storage) }
+            .map { it.type.pipelineStageType }
+            .toSet()
+
+        val accessType = when {
+            storage.isRead && storage.isWritten -> StorageAccessType.READ_WRITE
+            storage.isRead -> StorageAccessType.READ_ONLY
+            else -> StorageAccessType.WRITE_ONLY
+        }
+
+        val name = storage.name
+        bindGrpBuilder.storageTextures += when (storage) {
+            is KslStorageTexture1d<*> -> StorageTexture1dLayout(name, accessType, storage.texFormat, storageStages)
+            is KslStorageTexture2d<*> -> StorageTexture2dLayout(name, accessType, storage.texFormat, storageStages)
+            is KslStorageTexture3d<*> -> StorageTexture3dLayout(name, accessType, storage.texFormat, storageStages)
         }
     }
 }
