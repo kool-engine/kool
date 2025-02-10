@@ -184,7 +184,7 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
         (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
             gl.activeTexture(gl.TEXTURE0 + texUnit)
             tex.bind()
-            tex.applySamplerSettings(null)
+            tex.applySamplerSettings(sampler.sampler)
             return true
         }
         return false
@@ -230,13 +230,13 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
         if (texture != null && checkLoadingState(texture, texUnit)) {
             val glTex = texture.gpuTexture as LoadedTextureGl
             gl.bindImageTexture(
-                unit = storageTex.layout.bindingIndex,
+                unit = texUnit,
                 texture = glTex.glTexture,
                 level = storageTex.mipLevel,
                 layered = false,
                 layer = 0,
                 access = storageTex.layout.accessType.glAccessType(gl),
-                format = texture.props.format.glFormat(gl)
+                format = texture.props.format.glInternalFormat(gl)
             )
             gl.uniform1i(bindCtx.locations(storageTex.layout.bindingIndex)[0], texUnit)
             return true

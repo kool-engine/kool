@@ -105,6 +105,7 @@ class HelloCompute : DemoScene("Hello Compute") {
         }
 
         storageBuffer.releaseWith(this)
+        storageTex.releaseWith(this)
 
         var counter = 0
         onUpdate {
