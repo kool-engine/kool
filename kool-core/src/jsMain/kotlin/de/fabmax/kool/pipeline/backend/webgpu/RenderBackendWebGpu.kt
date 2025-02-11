@@ -207,7 +207,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> draw(passEncoderState)
             is OffscreenPassCube -> draw(passEncoderState)
-            is ComputePass -> dispatch(passEncoderState.encoder)
+            is ComputePass -> dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
@@ -220,8 +220,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         (impl as WgpuOffscreenPassCube).draw(passEncoderState)
     }
 
-    private fun ComputePass.dispatch(encoder: GPUCommandEncoder) {
-        (impl as WgpuComputePass).dispatch(encoder)
+    private fun ComputePass.dispatch(passEncoderState: RenderPassEncoderState) {
+        passEncoderState.ensureRenderPassInactive()
+        (impl as WgpuComputePass).dispatch(passEncoderState.encoder)
     }
 
     override fun cleanup(ctx: KoolContext) {

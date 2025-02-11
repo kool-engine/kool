@@ -1,6 +1,8 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.util.Color.Companion.GAMMA_LINEAR_TO_sRGB
+import de.fabmax.kool.util.Color.Companion.GAMMA_sRGB_TO_LINEAR
 import kotlin.math.*
 
 /**
@@ -16,10 +18,14 @@ open class Color(open val r: Float, open val g: Float, open val b: Float, open v
         get() = Vec3f(r, g, b)
 
     /**
-     * This color's perceived brightness (r * 0.299f + g * 0.587f + b * 0.114f).
+     * This color's perceived brightness (assuming sRGB color space): r * 0.299f + g * 0.587f + b * 0.114f.
      */
-    val brightness: Float
-        get() = r * 0.299f + g * 0.587f + b * 0.114f
+    val brightness: Float get() = r * 0.299f + g * 0.587f + b * 0.114f
+
+    /**
+     * This color's perceived brightness (assuming linear color space): r * 0.2126f + g * 0.7152f + b * 0.0722f.
+     */
+    val luminanceLinear: Float get() = r * 0.2126f + g * 0.7152f + b * 0.0722f
 
     constructor(other: Color) : this(other.r, other.g, other.b, other.a)
     constructor(rgb: Vec3f, a: Float) : this(rgb.x, rgb.y, rgb.z, a)
