@@ -4,7 +4,10 @@ import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.ComputePassImpl
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
+import org.lwjgl.vulkan.KHRSynchronization2.vkCmdPipelineBarrier2KHR
 import org.lwjgl.vulkan.VK10.vkCmdDispatch
+import org.lwjgl.vulkan.VK13.*
+import org.lwjgl.vulkan.VkMemoryBarrier2
 
 class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
     BaseReleasable(),
@@ -51,6 +54,25 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
                     task.beforeDispatch()
                     if (backend.pipelineManager.bindComputePipeline(task, passEncoderState)) {
                         vkCmdDispatch(passEncoderState.commandBuffer, task.numGroups.x, task.numGroups.y, task.numGroups.z)
+
+                        with(passEncoderState.stack) {
+                            val dependecy = callocVkDependencyInfo {
+                                val barrier = VkMemoryBarrier2.calloc(1)
+                                barrier.`sType$Default`()
+                                barrier.srcAccessMask(VK_ACCESS_2_MEMORY_WRITE_BIT)
+                                barrier.srcStageMask(VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT)
+                                barrier.dstAccessMask(VK_ACCESS_2_MEMORY_READ_BIT)
+                                barrier.dstStageMask(
+                                    VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT or
+                                    VK_PIPELINE_STAGE_2_PRE_RASTERIZATION_SHADERS_BIT or
+                                    VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT or
+                                    VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT
+                                )
+                                pMemoryBarriers(barrier)
+                            }
+                            vkCmdPipelineBarrier2KHR(passEncoderState.commandBuffer, dependecy)
+                        }
+
                         task.afterDispatch()
                     }
                 }
