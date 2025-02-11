@@ -38,7 +38,7 @@ class ComputePassGl(
                         logE { "Maximum compute shader workgroup count exceeded: max count = $maxCnt, requested count: (${task.numGroups.x}, ${task.numGroups.y}, ${task.numGroups.z})" }
                     }
                     gl.dispatchCompute(task.numGroups.x, task.numGroups.y, task.numGroups.z)
-                    gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT)
+                    gl.memoryBarrier(gl.SHADER_IMAGE_ACCESS_BARRIER_BIT or gl.SHADER_STORAGE_BARRIER_BIT)
 
                     task.afterDispatch()
                 }

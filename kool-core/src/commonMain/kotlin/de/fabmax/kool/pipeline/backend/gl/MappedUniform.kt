@@ -194,7 +194,7 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
         val texture = sampler.texture
         val texUnit = bindCtx.nextTexUnit++
         if (texture != null && checkLoadingState(texture, texUnit)) {
-            gl.uniform1i(bindCtx.locations(sampler.layout.bindingIndex)[0], texUnit)
+            gl.uniform1i(bindCtx.location(sampler.layout.bindingIndex), texUnit)
             return true
         }
         return false
@@ -227,7 +227,7 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val texUnit = bindCtx.nextTexUnit++
         val texture = storageTex.storageTexture?.asTexture
-        if (texture != null && checkLoadingState(texture, texUnit)) {
+        if (texture != null && checkLoadingState(texture)) {
             val glTex = texture.gpuTexture as LoadedTextureGl
             gl.bindImageTexture(
                 unit = texUnit,
@@ -238,25 +238,19 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
                 access = storageTex.layout.accessType.glAccessType(gl),
                 format = texture.props.format.glInternalFormat(gl)
             )
-            gl.uniform1i(bindCtx.locations(storageTex.layout.bindingIndex)[0], texUnit)
+            gl.uniform1i(bindCtx.location(storageTex.layout.bindingIndex), texUnit)
             return true
         }
         return false
     }
 
-    private fun checkLoadingState(texture: Texture<*>, texUnit: Int): Boolean {
+    private fun checkLoadingState(texture: Texture<*>): Boolean {
         if (texture.isReleased) {
             logE { "Storage texture is already released: ${texture.name}" }
             return false
         }
         texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
-        (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
-            gl.activeTexture(gl.TEXTURE0 + texUnit)
-            tex.bind()
-            tex.applySamplerSettings(null)
-            return true
-        }
-        return false
+        return true
     }
 }
 
