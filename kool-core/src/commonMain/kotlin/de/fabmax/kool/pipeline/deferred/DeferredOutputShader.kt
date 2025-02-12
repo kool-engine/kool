@@ -7,8 +7,9 @@ import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
+import de.fabmax.kool.util.Color
 
-class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
+class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: DeferredPipeline) :
     KslShader(
         Model(cfg),
         PipelineConfig(
@@ -18,7 +19,10 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
         )
     )
 {
-    var bloomMap by texture2d("bloom", bloom)
+    private val noBloomMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
+
+    var bloomMap by texture2d("bloom", noBloomMap)
+    var isBloomEnabled = true
 
     private var currentLighting by texture2d("currentLighting")
     private var depthTex by texture2d("currentDepth")
@@ -34,6 +38,10 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
     var chromaticAberrationStrength by uniform3f("uChromaticAberration", Vec3f(-0.001f, 0.0f, 0.001f))
     var chromaticAberrationStrengthBloom by uniform3f("uChromaticAberration", Vec3f(-0.003f, 0.0f, 0.003f))
 
+    init {
+        deferredPipeline.scene.onRelease { noBloomMap.release() }
+    }
+
     fun setupVignette(strength: Float = vignetteStrength, innerRadius: Float = vignetteInnerRadius, outerRadius: Float = vignetteOuterRadius) {
         vignetteCfg = Vec3f(innerRadius, outerRadius, strength)
     }
@@ -42,6 +50,11 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, bloom: Texture2d?) :
         createdPipeline?.swapPipelineData(current)
         currentLighting = current.lightingPass.colorTexture
         depthTex = current.materialPass.depthTexture
+        if (isBloomEnabled) {
+            bloomMap = current.bloomPass?.bloomMap ?: noBloomMap
+        } else {
+            bloomMap = noBloomMap
+        }
     }
 
     class Model(cfg: DeferredPipelineConfig) : KslProgram("Deferred output shader") {

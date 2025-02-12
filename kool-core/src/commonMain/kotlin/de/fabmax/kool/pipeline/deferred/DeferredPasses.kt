@@ -1,8 +1,12 @@
 package de.fabmax.kool.pipeline.deferred
 
+import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.OffscreenPass
 
 class DeferredPasses(val materialPass: MaterialPass, val lightingPass: PbrLightingPass) {
+
+    var bloomPass: BloomPass? = null
+        internal set
 
     val onActivate = mutableListOf<() -> Unit>()
     val onDeactivate = mutableListOf<() -> Unit>()
@@ -14,6 +18,7 @@ class DeferredPasses(val materialPass: MaterialPass, val lightingPass: PbrLighti
         set(value) {
             materialPass.isEnabled = value
             lightingPass.isEnabled = value
+            bloomPass?.isEnabled = value
             if (extraPasses.isNotEmpty()) {
                 for (i in extraPasses.indices) {
                     extraPasses[i].isEnabled = value
