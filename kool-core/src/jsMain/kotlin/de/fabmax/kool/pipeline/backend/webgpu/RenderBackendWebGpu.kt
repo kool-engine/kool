@@ -97,6 +97,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             cubeMapArrays = true,
             reversedDepth = true,
             maxSamples = 4,
+            readWriteStorageTextures = false,
             depthOnlyShaderColorOutput = Color.BLACK,
             maxComputeWorkGroupsPerDimension = Vec3i(
                 device.limits.maxComputeWorkgroupsPerDimension,
@@ -196,7 +197,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             for (i in sortedPasses.indices) {
                 val pass = sortedPasses[i]
                 if (pass.isEnabled) {
+                    pass.beforePass()
                     pass.execute(passEncoderState)
+                    pass.afterPass()
                 }
             }
         }
@@ -260,7 +263,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val tex = storageTexture.asTexture
         val usage = GPUTextureUsage.STORAGE_BINDING or
                 GPUTextureUsage.COPY_SRC or
                 GPUTextureUsage.COPY_DST or
@@ -275,17 +277,18 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             is StorageTexture2d -> intArrayOf(width, height)
             is StorageTexture3d -> intArrayOf(width, height, depth)
         }
-        val levels = if (tex.props.isMipMapped) numMipLevels(width, height, depth) else 1
+        val levels = if (storageTexture.props.isMipMapped) numMipLevels(width, height, depth) else 1
 
         val texDesc = GPUTextureDescriptor(
             size = size,
-            format = tex.props.format.wgpu,
+            format = storageTexture.props.format.wgpu,
             dimension = dimension,
             usage = usage,
             mipLevelCount = levels,
             label = storageTexture.name
         )
-        tex.gpuTexture = createTexture(texDesc)
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = createTexture(texDesc)
     }
 
     override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)

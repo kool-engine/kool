@@ -81,6 +81,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             cubeMapArrays = physicalDevice.cubeMapArrays,
             reversedDepth = true,
             maxSamples = physicalDevice.maxSamples,
+            readWriteStorageTextures = true,
             depthOnlyShaderColorOutput = null,
             maxComputeWorkGroupsPerDimension = Vec3i(
                 clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(0)),
@@ -209,7 +210,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             for (i in sortedPasses.indices) {
                 val pass = sortedPasses[i]
                 if (pass.isEnabled) {
+                    pass.beforePass()
                     pass.execute(passEncoderState)
+                    pass.afterPass()
                 }
             }
         }
@@ -267,7 +270,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val tex = storageTexture.asTexture
         val usage = VK_IMAGE_USAGE_STORAGE_BIT or
                 VK_IMAGE_USAGE_TRANSFER_SRC_BIT or
                 VK_IMAGE_USAGE_TRANSFER_DST_BIT or
@@ -277,10 +279,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             is StorageTexture2d -> VK_IMAGE_TYPE_2D
             is StorageTexture3d -> VK_IMAGE_TYPE_3D
         }
-        val levels = if (tex.props.isMipMapped) numMipLevels(width, height, depth) else 1
+        val levels = if (storageTexture.props.isMipMapped) numMipLevels(width, height, depth) else 1
         val imageInfo = ImageInfo(
             imageType = imageType,
-            format = tex.props.format.vk,
+            format = storageTexture.props.format.vk,
             width = width,
             height = height,
             depth = depth,
@@ -288,14 +290,15 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             mipLevels = levels,
             samples = 1,
             usage = usage,
-            label = tex.name,
+            label = storageTexture.name,
             aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
         )
         val storageImage = ImageVk(this, imageInfo)
         commandPool.singleShotCommands { commandBuffer ->
             storageImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
         }
-        tex.gpuTexture = storageImage
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = storageImage
     }
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)

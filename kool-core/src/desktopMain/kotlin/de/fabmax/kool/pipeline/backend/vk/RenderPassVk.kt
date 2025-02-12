@@ -62,7 +62,6 @@ abstract class RenderPassVk(
         if (anySingleShots) {
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
-        renderPass.afterPass()
 
         if (renderPass.isProfileTimes) {
             timeQuery.end(passEncoderState.commandBuffer)

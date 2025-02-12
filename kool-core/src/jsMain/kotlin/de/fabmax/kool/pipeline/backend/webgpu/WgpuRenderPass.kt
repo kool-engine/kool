@@ -65,7 +65,6 @@ abstract class WgpuRenderPass(
         if (anySingleShots) {
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
-        renderPass.afterPass()
     }
 
     private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState, timestampWrites: GPURenderPassTimestampWrites?) {

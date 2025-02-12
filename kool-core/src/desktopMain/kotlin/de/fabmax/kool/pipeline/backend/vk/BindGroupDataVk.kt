@@ -81,7 +81,7 @@ class BindGroupDataVk(
                 logT { "$this outdated texture binding: ${tex.binding.texture?.name}, pass: ${passEncoderState.renderPass.name}" }
             }
         }
-        for (i in storageBufferBindings.indices) {
+        for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.boundImage) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated

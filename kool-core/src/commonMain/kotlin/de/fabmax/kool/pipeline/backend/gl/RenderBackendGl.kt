@@ -54,9 +54,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
             if (scene.isVisible) {
-                scene.sceneRecordTime = measureTime {
-                    scene.executePasses()
-                }
+                scene.executePasses()
             }
         }
 
@@ -134,6 +132,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         } else {
             gl.texStorage2d(gl.TEXTURE_2D, levels, format, width, height)
         }
+        storageTexture.gpuTexture?.release()
         storageTexture.gpuTexture = gpuTexture
     }
 
@@ -151,11 +150,14 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     }
 
     private fun Scene.executePasses() {
-        for (i in sortedPasses.indices) {
-            val pass = sortedPasses[i]
-            if (pass.isEnabled) {
-                pass.execute()
-                pass.afterPass()
+        sceneRecordTime += measureTime {
+            for (i in sortedPasses.indices) {
+                val pass = sortedPasses[i]
+                if (pass.isEnabled) {
+                    pass.beforePass()
+                    pass.execute()
+                    pass.afterPass()
+                }
             }
         }
     }

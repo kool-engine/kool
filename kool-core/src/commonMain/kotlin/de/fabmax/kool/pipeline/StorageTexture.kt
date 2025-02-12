@@ -32,12 +32,16 @@ fun StorageTexture3d(
 class StorageTexture1d(
     width: Int,
     props: TextureProps,
-    backend: RenderBackend,
+    private val backend: RenderBackend,
     name: String = UniqueId.nextId("StorageTexture1d")
 ) : Texture1d(props, name), StorageTexture {
     override val asTexture: Texture1d get() = this
 
     init {
+        backend.initStorageTexture(this, width, 1, 1)
+    }
+
+    fun resize(width: Int) {
         backend.initStorageTexture(this, width, 1, 1)
     }
 }
@@ -46,12 +50,16 @@ class StorageTexture2d(
     width: Int,
     height: Int,
     props: TextureProps,
-    backend: RenderBackend,
+    private val backend: RenderBackend,
     name: String
 ) : Texture2d(props, name), StorageTexture {
     override val asTexture: Texture2d get() = this
 
     init {
+        backend.initStorageTexture(this, width, height, 1)
+    }
+
+    fun resize(width: Int, height: Int) {
         backend.initStorageTexture(this, width, height, 1)
     }
 }
@@ -61,12 +69,16 @@ class StorageTexture3d(
     height: Int,
     depth: Int,
     props: TextureProps,
-    backend: RenderBackend,
+    private val backend: RenderBackend,
     name: String
 ) : Texture3d(props, name), StorageTexture {
     override val asTexture: Texture3d get() = this
 
     init {
+        backend.initStorageTexture(this, width, height, depth)
+    }
+
+    fun resize(width: Int, height: Int, depth: Int) {
         backend.initStorageTexture(this, width, height, depth)
     }
 }

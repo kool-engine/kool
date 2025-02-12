@@ -15,6 +15,8 @@ abstract class GpuPass(var name: String) : BaseReleasable() {
 
     var parentScene: Scene? = null
 
+    val onUpdate = BufferedList<(() -> Unit)>()
+    val onBeforePass = BufferedList<(() -> Unit)>()
     val onAfterPass = BufferedList<(() -> Unit)>()
 
     var isEnabled = true
@@ -27,12 +29,31 @@ abstract class GpuPass(var name: String) : BaseReleasable() {
         dependencies += pass
     }
 
+    fun onUpdate(block: () -> Unit) {
+        onUpdate += block
+    }
+
+    fun onBeforePass(block: () -> Unit) {
+        onBeforePass += block
+    }
+
     fun onAfterPass(block: () -> Unit) {
         onAfterPass += block
     }
 
     open fun update(ctx: KoolContext) {
         checkIsNotReleased()
+        onUpdate.update()
+        for (i in onUpdate.indices) {
+            onUpdate[i]()
+        }
+    }
+
+    open fun beforePass() {
+        onBeforePass.update()
+        for (i in onBeforePass.indices) {
+            onBeforePass[i]()
+        }
     }
 
     open fun afterPass() {

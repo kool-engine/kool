@@ -44,10 +44,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         }
     }
 
-    fun draw(screenPass: Scene.ScreenPass) {
-        renderViews(screenPass)
-        screenPass.afterPass()
-    }
+    fun draw(screenPass: Scene.ScreenPass) = renderViews(screenPass)
 
     override fun copy(frameCopy: FrameCopy) {
         val width = renderSize.x
