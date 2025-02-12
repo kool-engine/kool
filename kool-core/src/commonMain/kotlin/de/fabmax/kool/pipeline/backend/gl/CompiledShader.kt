@@ -20,7 +20,6 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
     init {
         var uboIndex = 0
         var storageIndex = 0
-        var storageTexIndex = 0
         val uniformLocations = pipeline.bindGroupLayouts.asList
             .filter { it.group >= 0 }
             .map { groupLayout ->
@@ -50,9 +49,9 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                         is Texture2dArrayLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
                         is TextureCubeArrayLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
 
-                        is StorageTexture1dLayout -> intArrayOf(storageTexIndex++)
-                        is StorageTexture2dLayout -> intArrayOf(storageTexIndex++)
-                        is StorageTexture3dLayout -> intArrayOf(storageTexIndex++)
+                        is StorageTexture1dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is StorageTexture2dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
+                        is StorageTexture3dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
                     }
                 }
         }

@@ -90,7 +90,9 @@ interface GlApi {
     val TEXTURE_CUBE_MAP_NEGATIVE_Z: Int
     val TEXTURE_MAG_FILTER: Int
     val TEXTURE_MAX_LEVEL: Int
+    val TEXTURE_MAX_LOD: Int
     val TEXTURE_MIN_FILTER: Int
+    val TEXTURE_MIN_LOD: Int
     val TEXTURE_WRAP_R: Int
     val TEXTURE_WRAP_S: Int
     val TEXTURE_WRAP_T: Int

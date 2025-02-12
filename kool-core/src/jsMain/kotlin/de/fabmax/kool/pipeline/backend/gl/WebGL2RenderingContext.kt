@@ -50,6 +50,8 @@ abstract external class WebGL2RenderingContext : WebGLRenderingContext {
         val TEXTURE_3D: Int
         val TEXTURE_BASE_LEVEL: Int
         val TEXTURE_MAX_LEVEL: Int
+        val TEXTURE_MAX_LOD: Int
+        val TEXTURE_MIN_LOD: Int
         val TEXTURE_WRAP_R: Int
         val TEXTURE_COMPARE_MODE: Int
         val COMPARE_REF_TO_TEXTURE: Int

@@ -76,8 +76,10 @@ object GlImpl : GlApi {
     override val TEXTURE_CUBE_MAP_POSITIVE_Z = WebGLRenderingContext.TEXTURE_CUBE_MAP_POSITIVE_Z
     override val TEXTURE_CUBE_MAP_NEGATIVE_Z = WebGLRenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_Z
     override val TEXTURE_MAG_FILTER = WebGLRenderingContext.TEXTURE_MAG_FILTER
+    override val TEXTURE_MAX_LOD = WebGL2RenderingContext.TEXTURE_MAX_LOD
     override val TEXTURE_MAX_LEVEL = WebGL2RenderingContext.TEXTURE_MAX_LEVEL
     override val TEXTURE_MIN_FILTER = WebGLRenderingContext.TEXTURE_MIN_FILTER
+    override val TEXTURE_MIN_LOD = WebGL2RenderingContext.TEXTURE_MIN_LOD
     override val TEXTURE_WRAP_R = WebGL2RenderingContext.TEXTURE_WRAP_R
     override val TEXTURE_WRAP_S = WebGLRenderingContext.TEXTURE_WRAP_S
     override val TEXTURE_WRAP_T = WebGLRenderingContext.TEXTURE_WRAP_T
