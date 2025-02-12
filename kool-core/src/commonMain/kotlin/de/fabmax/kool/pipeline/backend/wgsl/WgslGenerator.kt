@@ -706,6 +706,7 @@ class WgslGenerator : KslGenerator() {
                 TexFormat.R_U32 -> "r32uint"
                 TexFormat.RG_U32 -> "rg32uint"
                 TexFormat.RGBA_U32 -> "rgba32uint"
+                TexFormat.RG11B10_F -> "rgba16float"        // wgsl does not support rg11b10 as storage texture format -> use f16 as fallback
                 else -> error("unsupported storage texture format: $texFormat")
             }
         }

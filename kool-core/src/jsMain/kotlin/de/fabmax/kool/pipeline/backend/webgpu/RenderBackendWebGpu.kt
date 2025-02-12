@@ -88,6 +88,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             logI { "Enabling WebGPU timestamp-query feature" }
             requiredFeatures.add("timestamp-query")
         }
+        if ("rg11b10ufloat-renderable" in availableFeatures) {
+            logI { "Enabling rg11b10ufloat-renderable feature" }
+            requiredFeatures.add("rg11b10ufloat-renderable")
+        }
 
         val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
         device = adapter.requestDevice(deviceDesc).await()
@@ -279,9 +283,12 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
         val levels = if (storageTexture.props.isMipMapped) numMipLevels(width, height, depth) else 1
 
+        if (storageTexture.props.format == TexFormat.RG11B10_F) {
+            logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
+        }
         val texDesc = GPUTextureDescriptor(
             size = size,
-            format = storageTexture.props.format.wgpu,
+            format = storageTexture.props.format.wgpuStorage,
             dimension = dimension,
             usage = usage,
             mipLevelCount = levels,

@@ -22,10 +22,18 @@ enum class TexFormat(val channels: Int) {
     R_U32(1),
     RG_U32(2),
     RGBA_U32(4),
+
+    RG11B10_F(3)
 }
 
 val TexFormat.isByte: Boolean get() {
     return this == TexFormat.R || this == TexFormat.RG || this == TexFormat.RGBA
+}
+
+val TexFormat.isFloat: Boolean get() {
+    return this == TexFormat.R_F16 || this == TexFormat.RG_F16 || this == TexFormat.RGBA_F16 ||
+            this == TexFormat.R_F32 || this == TexFormat.RG_F32 || this == TexFormat.RGBA_F32 ||
+            this == TexFormat.RG11B10_F
 }
 
 val TexFormat.isF16: Boolean get() {

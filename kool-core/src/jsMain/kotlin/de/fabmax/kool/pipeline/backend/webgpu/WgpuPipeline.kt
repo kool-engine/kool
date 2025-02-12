@@ -137,7 +137,7 @@ sealed class WgpuPipeline(
         return GPUBindGroupLayoutEntryStorageTexture(
             location.binding,
             visibility,
-            GPUStorageTextureBindingLayout(access, binding.texFormat.wgpu, dimension)
+            GPUStorageTextureBindingLayout(access, binding.texFormat.wgpuStorage, dimension)
         )
     }
 

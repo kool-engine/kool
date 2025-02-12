@@ -144,6 +144,7 @@ interface GlApi {
     val RG32UI: Int
     val RGB32UI: Int
     val RGBA32UI: Int
+    val R11F_G11F_B10F: Int
 
     val ALWAYS: Int
     val NEVER: Int

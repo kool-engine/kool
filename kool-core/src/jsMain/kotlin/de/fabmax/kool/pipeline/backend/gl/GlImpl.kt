@@ -129,6 +129,7 @@ object GlImpl : GlApi {
     override val RG32UI = WebGL2RenderingContext.RG32UI
     override val RGB32UI = WebGL2RenderingContext.RGB32UI
     override val RGBA32UI = WebGL2RenderingContext.RGBA32UI
+    override val R11F_G11F_B10F = WebGL2RenderingContext.R11F_G11F_B10F
 
     override val ALWAYS = WebGLRenderingContext.ALWAYS
     override val NEVER = WebGLRenderingContext.NEVER

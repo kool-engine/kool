@@ -840,20 +840,20 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         KslStorageAtomicCompareSwap(storage, coord, data, compare, storage.storageType.elemType)
 
     // builtin storage texture functions
-    operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T,*>.get(coord: KslExpression<C>): KslExpression<R> =
-        KslStorageTextureRead(this, coord, expressionType.elemType)
+    operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T,*>.get(coord: KslExpression<C>): KslExprFloat4 =
+        KslStorageTextureRead(this, coord)
 
     @JvmName("getTex2d")
-    operator fun <T: KslStorageTexture2dType<R>, R: KslNumericType> KslStorageTexture<T,*>.get(x: KslExprInt1, y: KslExprInt1): KslExpression<R> =
-        KslStorageTextureRead(this, int2Value(x, y), expressionType.elemType)
+    operator fun <T: KslStorageTexture2dType<R>, R: KslNumericType> KslStorageTexture<T,*>.get(x: KslExprInt1, y: KslExprInt1): KslExprFloat4 =
+        KslStorageTextureRead(this, int2Value(x, y))
 
     @JvmName("getTex3d")
-    operator fun <T: KslStorageTexture3dType<R>, R: KslNumericType> KslStorageTexture<T,*>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExpression<R> =
-        KslStorageTextureRead(this, int3Value(x, y, z), expressionType.elemType)
+    operator fun <T: KslStorageTexture3dType<R>, R: KslNumericType> KslStorageTexture<T,*>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExprFloat4 =
+        KslStorageTextureRead(this, int3Value(x, y, z))
 
     operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, C>.set(
         coord: KslExpression<C>,
-        data: KslExpression<R>
+        data: KslExprFloat4
     ) {
         ops += KslStorageTextureWrite(this, coord, data, this@KslScopeBuilder)
     }
@@ -862,7 +862,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     operator fun <T: KslStorageTexture2dType<R>, R: KslNumericType> KslStorageTexture2d<T>.set(
         x: KslExprInt1,
         y: KslExprInt1,
-        data: KslExpression<R>
+        data: KslExprFloat4
     ) {
         ops += KslStorageTextureWrite(this, int2Value(x, y), data, this@KslScopeBuilder)
     }
@@ -872,7 +872,7 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         x: KslExprInt1,
         y: KslExprInt1,
         z: KslExprInt1,
-        data: KslExpression<R>
+        data: KslExprFloat4
     ) {
         ops += KslStorageTextureWrite(this, int3Value(x, y, z), data, this@KslScopeBuilder)
     }
@@ -880,12 +880,12 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
     fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> storageTextureRead(
         storage: KslStorageTexture<T,*>,
         coord: KslExpression<C>
-    ): KslExpression<R> = KslStorageTextureRead(storage, coord, storage.expressionType.elemType)
+    ): KslExprFloat4 = KslStorageTextureRead(storage, coord)
 
     fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> storageTextureWrite(
         storage: KslStorageTexture<T, C>,
         coord: KslExpression<C>,
-        data: KslExpression<R>
+        data: KslExprFloat4
     ) {
         ops += KslStorageTextureWrite(storage, coord, data, this)
     }

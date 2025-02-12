@@ -285,7 +285,7 @@ open class KslProgram(val name: String) {
         }
         check(
             ((texFormat.isI32 || texFormat.isU32) && type is KslIntType) ||
-                    ((texFormat.isF16 || texFormat.isF32 || texFormat.isByte) && type is KslFloatType)
+                    ((texFormat.isFloat || texFormat.isByte) && type is KslFloatType)
         ) {
             "Ksl type $type does not match channel type of texture format $texFormat"
         }

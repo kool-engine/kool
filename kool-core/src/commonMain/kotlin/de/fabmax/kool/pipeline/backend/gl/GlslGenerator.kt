@@ -413,6 +413,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             TexFormat.R_U32 -> "r32ui"
             TexFormat.RG_U32 -> "rg32ui"
             TexFormat.RGBA_U32 -> "rgba32ui"
+            TexFormat.RG11B10_F -> "r11f_g11f_b10f"
         }
     }
 

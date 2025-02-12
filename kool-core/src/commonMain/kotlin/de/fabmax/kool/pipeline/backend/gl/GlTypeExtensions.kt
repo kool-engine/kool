@@ -23,6 +23,8 @@ fun TexFormat.glInternalFormat(gl: GlApi): Int = when(this) {
     TexFormat.R_U32 -> gl.R32UI
     TexFormat.RG_U32 -> gl.RG32UI
     TexFormat.RGBA_U32 -> gl.RGBA32UI
+
+    TexFormat.RG11B10_F -> gl.R11F_G11F_B10F
 }
 
 fun TexFormat.glType(gl: GlApi): Int = when {

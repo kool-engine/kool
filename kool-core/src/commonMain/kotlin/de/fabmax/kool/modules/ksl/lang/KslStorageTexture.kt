@@ -36,9 +36,9 @@ class KslStorageTexture3d<T: KslStorageTexture3dType<*>>(name: String, storage: 
 
 class KslStorageTextureRead<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
     val storage: KslStorageTexture<T, *>,
-    val coord: KslExpression<C>,
-    override val expressionType: R
-) : KslExpression<R> {
+    val coord: KslExpression<C>
+) : KslExprFloat4 {
+    override val expressionType = KslFloat4
 
     init {
         storage.isRead = true
@@ -54,7 +54,7 @@ class KslStorageTextureRead<T: KslStorageTextureType<R, C>, R: KslNumericType, C
 open class KslStorageTextureWrite<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
     val storage: KslStorageTexture<T, *>,
     val coord: KslExpression<C>,
-    val data: KslExpression<R>,
+    val data: KslExprFloat4,
     scopeBuilder: KslScopeBuilder
 ) : KslStatement("store", scopeBuilder) {
 

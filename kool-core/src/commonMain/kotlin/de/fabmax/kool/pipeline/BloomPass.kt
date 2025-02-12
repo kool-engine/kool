@@ -21,11 +21,11 @@ class BloomPass(
     var radius = 2f
     var strength = 1f
 
-    val bloomMap = StorageTexture2d(inputTexture.width / 2, inputTexture.height / 2, TextureProps(TexFormat.RGBA_F16, isMipMapped = true))
+    val bloomMap = StorageTexture2d(inputTexture.width / 2, inputTexture.height / 2, TextureProps(TexFormat.RG11B10_F, isMipMapped = true))
     val downSampleTex = if (inPlace) bloomMap else StorageTexture2d(
         width,
         height,
-        TextureProps(TexFormat.RGBA_F16, isMipMapped = true)
+        TextureProps(TexFormat.RG11B10_F, isMipMapped = true)
     )
 
     private val downSampleShader = downSamplingShader()
@@ -120,7 +120,7 @@ class BloomPass(
     private fun downSamplingShader() = KslComputeShader("down-sample-shader") {
         computeStage(8, 8) {
             val sampleInput = texture2d("sampleInput")
-            val downSampled = storageTexture2d<KslFloat4>("downSampled", TexFormat.RGBA_F16)
+            val downSampled = storageTexture2d<KslFloat3>("downSampled", TexFormat.RG11B10_F)
             val threshold = uniformFloat4("threshold")
             val inputTexelSize = uniformFloat2("inputTexelSize")
 
@@ -163,7 +163,7 @@ class BloomPass(
                     weightedAvg set weightedAvg * luminance
                 }
 
-                storageTextureWrite(downSampled, texelCoord, float4Value(weightedAvg, 1f.const))
+                storageTextureWrite(downSampled, texelCoord, float4Value(weightedAvg, 0f.const))
             }
         }
     }
@@ -171,8 +171,8 @@ class BloomPass(
     fun upSamplingShader() = KslComputeShader("up-sample-shader") {
         computeStage(8, 8) {
             val sampleInput = texture2d("sampleInput")
-            val upSampled = storageTexture2d<KslFloat4>("upSampled", TexFormat.RGBA_F16)
-            val downSampled = if (inPlace) upSampled else storageTexture2d<KslFloat4>("downSampled", TexFormat.RGBA_F16)
+            val upSampled = storageTexture2d<KslFloat3>("upSampled", TexFormat.RG11B10_F)
+            val downSampled = if (inPlace) upSampled else storageTexture2d<KslFloat3>("downSampled", TexFormat.RG11B10_F)
             val inputTexelSize = uniformFloat2("inputTexelSize")
             val outputScale = uniformFloat1("outputScale")
             val radius = uniformFloat1("radius")
@@ -202,7 +202,7 @@ class BloomPass(
                 filtered += e * (4f / 16f).const
                 filtered += (b + d + f + h) * (2f / 16f).const
                 filtered += (a + c + g + i) * (1f / 16f).const
-                storageTextureWrite(upSampled, texelCoord, float4Value(filtered * outputScale, 1f.const))
+                storageTextureWrite(upSampled, texelCoord, float4Value(filtered * outputScale, 0f.const))
             }
         }
     }

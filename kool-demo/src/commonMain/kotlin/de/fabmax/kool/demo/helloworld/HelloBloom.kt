@@ -45,7 +45,7 @@ class HelloBloom : DemoScene("Bloom") {
         val hdrPass = OffscreenPass2d(
             drawNode = Node(),
             attachmentConfig = AttachmentConfig {
-                addColor(TexFormat.RGBA_F16, filterMethod = FilterMethod.NEAREST)
+                addColor(TexFormat.RG11B10_F, filterMethod = FilterMethod.NEAREST)
                 transientDepth()
             },
             initialSize = Vec2i(ctx.windowWidth, ctx.windowHeight),
