@@ -20,8 +20,6 @@ class OffscreenPass2dGl(
     internal val colorTextures = Array(parent.colorAttachments.size) { gl.NULL_TEXTURE }
     internal var depthTexture = gl.NULL_TEXTURE
 
-    private var isCreated = false
-
     private val resInfo = OffscreenPassInfo(parent)
 
     init {
@@ -32,6 +30,7 @@ class OffscreenPass2dGl(
                         "WebGPU backend if you need multi-sampled offscreen passes)"
             }
         }
+        createBuffers()
     }
 
     override fun setupFramebuffer(mipLevel: Int, layer: Int) {
@@ -40,9 +39,6 @@ class OffscreenPass2dGl(
 
     fun draw() {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
-        if (!isCreated) {
-            createBuffers()
-        }
 
         renderViews(parent)
 
@@ -104,7 +100,6 @@ class OffscreenPass2dGl(
 
         for (i in colorTextures.indices) { colorTextures[i] = gl.NULL_TEXTURE }
         depthTexture = gl.NULL_TEXTURE
-        isCreated = false
     }
 
     override fun release() {
@@ -142,7 +137,6 @@ class OffscreenPass2dGl(
                 logE { "OffscreenRenderPass2dGl: Framebuffer incomplete: ${parent.name}, level: $mipLevel" }
             }
         }
-        isCreated = true
     }
 
     private fun attachColorTextures(mipLevel: Int) {
