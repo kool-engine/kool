@@ -50,7 +50,7 @@ object Demos {
 
     val physicsDemos = Category("Physics", false, 0f, 0.2f).apply {
         entry("phys-terrain", "Island") { TerrainDemo() }
-        entry("phys-vehicle", "Vehicle") { VehicleDemo() }
+        entry("phys-vehicle", "Vehicle", NeedsComputeShaders) { VehicleDemo() }
         entry("phys-ragdoll", "Ragdolls") { RagdollDemo() }
         entry("phys-joints", "Joints") { JointsDemo() }
         entry("physics", "Collision") { CollisionDemo() }
@@ -61,8 +61,8 @@ object Demos {
         entry("shell", "Shell Shading / Fur") { ShellShadingDemo() }
         entry("gltf", "glTF Models") { GltfDemo() }
         entry("ssr", "Reflections") { ReflectionDemo() }
-        entry("deferred", "Deferred Shading") { DeferredDemo() }
-        entry("procedural", "Procedural Roses") { ProceduralDemo() }
+        entry("deferred", "Deferred Shading", NeedsComputeShaders) { DeferredDemo() }
+        entry("procedural", "Procedural Roses", NeedsComputeShaders) { ProceduralDemo() }
         entry("pbr", "PBR Materials") { PbrDemo() }
     }
 
@@ -72,6 +72,7 @@ object Demos {
         entry("bees", "Fighting Bees") { BeeDemo() }
         entry("simplification", "Simplification") { SimplificationDemo() }
         entry("ui", "User Interface") { UiDemo() }
+        entry("bloom", "Bloom", NeedsComputeShaders) { HelloBloom() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
