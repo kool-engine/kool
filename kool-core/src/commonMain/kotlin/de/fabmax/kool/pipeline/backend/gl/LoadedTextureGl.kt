@@ -37,12 +37,12 @@ class LoadedTextureGl(
     }
 
     fun applySamplerSettings(samplerSettings: SamplerSettings?) {
-        val settings = samplerSettings ?: texture.props.defaultSamplerSettings
+        val settings = samplerSettings ?: texture.samplerSettings
         if (settings == currentSamplerSettings) {
             return
         }
 
-        val isMipMapped = texture.props.isMipMapped
+        val isMipMapped = texture.mipMapping.isMipMapped
         currentSamplerSettings = settings
 
         gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, settings.minFilter.glMinFilterMethod(isMipMapped))

@@ -3,10 +3,13 @@ package de.fabmax.kool.util
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
 import de.fabmax.kool.loadTexture2d
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.gltf.loadGltfModel
+import de.fabmax.kool.pipeline.MipMapping
+import de.fabmax.kool.pipeline.SamplerSettings
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.pipeline.ibl.hdriEnvironment
 import de.fabmax.kool.scene.Model
@@ -61,8 +64,14 @@ class ResourceGroup(val assetLoader: AssetLoader = Assets.defaultLoader) : BaseR
         return GltfModel(path, config).also { loadables += it }
     }
 
-    fun texture2d(path: String, props: TextureProps = TextureProps()): Tex2d {
-        return Tex2d(path, props).also { loadables += it }
+    fun texture2d(
+        path: String,
+        format: TexFormat = TexFormat.RGBA,
+        mipMapping: MipMapping = MipMapping.Full,
+        samplerSettings: SamplerSettings = SamplerSettings(),
+        resolveSize: Vec2i? = null
+    ): Tex2d {
+        return Tex2d(path, format, mipMapping, samplerSettings, resolveSize).also { loadables += it }
     }
 
     abstract class Loadable<T: Releasable>(val name: String) {
@@ -96,7 +105,13 @@ class ResourceGroup(val assetLoader: AssetLoader = Assets.defaultLoader) : BaseR
         override suspend fun load() = loader().onSuccess { loaded = it }
     }
 
-    inner class Tex2d(name: String, private val props: TextureProps) : Loadable<Texture2d>(name) {
-        override suspend fun load() = Assets.loadTexture2d(name, props).onSuccess { loaded = it }
+    inner class Tex2d(
+        name: String,
+        private val format: TexFormat,
+        private val mipMapping: MipMapping,
+        private val samplerSettings: SamplerSettings,
+        private val resolveSize: Vec2i?
+    ) : Loadable<Texture2d>(name) {
+        override suspend fun load() = Assets.loadTexture2d(name, format, mipMapping, samplerSettings, resolveSize).onSuccess { loaded = it }
     }
 }

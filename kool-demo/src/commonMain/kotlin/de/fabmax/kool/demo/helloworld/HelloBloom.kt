@@ -49,7 +49,8 @@ class HelloBloom : DemoScene("Bloom") {
                 transientDepth()
             },
             initialSize = Vec2i(ctx.windowWidth, ctx.windowHeight),
-            name = "forward-hdr"
+            name = "forward-hdr",
+            numSamples = 4
         )
 
         hdrPass.onUpdate { hdrPass.setSize(ctx.windowWidth, ctx.windowHeight) }

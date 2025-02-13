@@ -14,7 +14,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
     private val renderDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
 
     private val resolveFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
-    private val resolvedColor = Texture2d(TextureProps(isMipMapped = false, defaultSamplerSettings = SamplerSettings().clamped().nearest()))
+    private val resolvedColor = Texture2d(TexFormat.RGBA, mipMapping = MipMapping.Off, SamplerSettings().clamped().nearest())
     private val resolveDepth: GlRenderbuffer by lazy { gl.createRenderbuffer() }
 
     private val copyFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
@@ -108,7 +108,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
 
         if (tex.width != width || tex.height != height) {
             tex.setSize(width, height, 1)
-            tex.applySamplerSettings(dst.props.defaultSamplerSettings)
+            tex.applySamplerSettings(dst.samplerSettings)
 
             val internalFormat = if (isColor) gl.RGBA8 else gl.DEPTH_COMPONENT32F
             val format = if (isColor) gl.RGBA else gl.DEPTH_COMPONENT
@@ -161,7 +161,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         loadedTex.setSize(width, height, 1)
         loadedTex.bind()
         gl.texStorage2d(gl.TEXTURE_2D, 1, TexFormat.RGBA.glInternalFormat(gl), renderSize.x, renderSize.y)
-        loadedTex.applySamplerSettings(resolvedColor.props.defaultSamplerSettings)
+        loadedTex.applySamplerSettings(resolvedColor.samplerSettings)
 
         gl.bindRenderbuffer(gl.RENDERBUFFER, resolveDepth)
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT32F, width, height)

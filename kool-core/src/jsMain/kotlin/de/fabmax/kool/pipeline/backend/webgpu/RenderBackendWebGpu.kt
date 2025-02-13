@@ -281,14 +281,14 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             is StorageTexture2d -> intArrayOf(width, height)
             is StorageTexture3d -> intArrayOf(width, height, depth)
         }
-        val levels = if (storageTexture.props.isMipMapped) numMipLevels(width, height, depth) else 1
+        val levels = if (storageTexture.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
 
-        if (storageTexture.props.format == TexFormat.RG11B10_F) {
+        if (storageTexture.format == TexFormat.RG11B10_F) {
             logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
         }
         val texDesc = GPUTextureDescriptor(
             size = size,
-            format = storageTexture.props.format.wgpuStorage,
+            format = storageTexture.format.wgpuStorage,
             dimension = dimension,
             usage = usage,
             mipLevelCount = levels,
@@ -329,10 +329,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
             val gpuTex = readback.texture.gpuTexture as WgpuTextureResource?
-            if (gpuTex == null || readback.texture.props.format.isF16) {
+            if (gpuTex == null || readback.texture.format.isF16) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
             } else {
-                val format = readback.texture.props.format
+                val format = readback.texture.format
                 val size = format.pxSize.toLong() * gpuTex.width * gpuTex.height * gpuTex.depth
                 val mapBuffer = device.createBuffer(
                     GPUBufferDescriptor(
@@ -370,7 +370,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             val mapBuffer = readback.mapBuffer!!
             mapBuffer.mapAsync(GPUMapMode.READ).then {
                 val gpuTex = readback.texture.gpuTexture as WgpuTextureResource
-                val format = readback.texture.props.format
+                val format = readback.texture.format
                 val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
                 dst.copyFrom(mapBuffer.getMappedRange())
                 mapBuffer.unmap()

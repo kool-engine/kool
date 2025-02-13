@@ -17,8 +17,8 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         val data = checkNotNull(tex.uploadData)
         tex.uploadData = null
 
-        check(tex.props.format == data.format) {
-            "Image data format doesn't match texture format: ${data.format} != ${tex.props.format}"
+        check(tex.format == data.format) {
+            "Image data format doesn't match texture format: ${data.format} != ${tex.format}"
         }
 
         var loaded = loadedTextures[data.id]
@@ -50,7 +50,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         data = data,
         width = data.width,
         height = data.height,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMaps = if (tex.mipMapping.isMipMapped) numMipLevels(data.width, data.height) else 1,
     )
 
     private fun loadTexture3d(tex: Texture3d, data: ImageData3d): ImageVk = loadTexture(
@@ -69,7 +69,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         width = data.width,
         height = data.height,
         layers = 6,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMaps = if (tex.mipMapping.isMipMapped) numMipLevels(data.width, data.height) else 1,
         flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
     )
 
@@ -80,7 +80,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         width = data.width,
         height = data.height,
         layers = data.depth,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMaps = if (tex.mipMapping.isMipMapped) numMipLevels(data.width, data.height) else 1,
     )
 
     private fun loadTextureCubeArray(tex: TextureCubeArray, data: ImageDataCubeArray): ImageVk = loadTexture(
@@ -90,7 +90,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         width = data.width,
         height = data.height,
         layers = 6 * data.slices,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMaps = if (tex.mipMapping.isMipMapped) numMipLevels(data.width, data.height) else 1,
         flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
     )
 

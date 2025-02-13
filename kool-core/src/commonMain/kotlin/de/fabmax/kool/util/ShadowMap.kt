@@ -29,7 +29,7 @@ class SimpleShadowMap(
         attachmentConfig = AttachmentConfig {
             depth {
                 textureFormat = TexFormat.R_F32
-                defaultSamplerSettings = SamplerSettings(compareOp = DepthCompareOp.LESS).clamped().linear()
+                samplerSettings = SamplerSettings(compareOp = DepthCompareOp.LESS).clamped().linear()
             }
         },
         initialSize = Vec2i(mapSize),

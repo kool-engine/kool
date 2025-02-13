@@ -10,31 +10,39 @@ sealed interface StorageTexture {
 
 fun StorageTexture1d(
     width: Int,
-    props: TextureProps,
+    format: TexFormat,
+    mipMapping: MipMapping = MipMapping.Off,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("StorageTexture1d")
-): StorageTexture1d = StorageTexture1d(width, props, KoolSystem.requireContext().backend, name)
+): StorageTexture1d = StorageTexture1d(width, format, mipMapping, samplerSettings, KoolSystem.requireContext().backend, name)
 
 fun StorageTexture2d(
     width: Int,
     height: Int,
-    props: TextureProps,
+    format: TexFormat,
+    mipMapping: MipMapping = MipMapping.Off,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("StorageTexture2d")
-): StorageTexture2d = StorageTexture2d(width, height, props, KoolSystem.requireContext().backend, name)
+): StorageTexture2d = StorageTexture2d(width, height, format, mipMapping, samplerSettings, KoolSystem.requireContext().backend, name)
 
 fun StorageTexture3d(
     width: Int,
     height: Int,
     depth: Int,
-    props: TextureProps,
+    format: TexFormat,
+    mipMapping: MipMapping = MipMapping.Off,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("StorageTexture3d")
-):  StorageTexture3d = StorageTexture3d(width, height, depth, props, KoolSystem.requireContext().backend, name)
+):  StorageTexture3d = StorageTexture3d(width, height, depth, format, mipMapping, samplerSettings, KoolSystem.requireContext().backend, name)
 
 class StorageTexture1d(
     width: Int,
-    props: TextureProps,
+    format: TexFormat,
+    mipMapping: MipMapping,
+    samplerSettings: SamplerSettings,
     private val backend: RenderBackend,
     name: String = UniqueId.nextId("StorageTexture1d")
-) : Texture1d(props, name), StorageTexture {
+) : Texture1d(format, mipMapping, samplerSettings, name), StorageTexture {
     override val asTexture: Texture1d get() = this
 
     init {
@@ -49,10 +57,12 @@ class StorageTexture1d(
 class StorageTexture2d(
     width: Int,
     height: Int,
-    props: TextureProps,
+    format: TexFormat,
+    mipMapping: MipMapping,
+    samplerSettings: SamplerSettings,
     private val backend: RenderBackend,
     name: String
-) : Texture2d(props, name), StorageTexture {
+) : Texture2d(format, mipMapping, samplerSettings, name), StorageTexture {
     override val asTexture: Texture2d get() = this
 
     init {
@@ -68,10 +78,12 @@ class StorageTexture3d(
     width: Int,
     height: Int,
     depth: Int,
-    props: TextureProps,
+    format: TexFormat,
+    mipMapping: MipMapping,
+    samplerSettings: SamplerSettings,
     private val backend: RenderBackend,
     name: String
-) : Texture3d(props, name), StorageTexture {
+) : Texture3d(format, mipMapping, samplerSettings, name), StorageTexture {
     override val asTexture: Texture3d get() = this
 
     init {

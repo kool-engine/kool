@@ -64,7 +64,7 @@ class HelloCompute : DemoScene("Hello Compute") {
         val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.FLOAT4)
         computeShader.storage2d("pixelStorage", storageBuffer)
 
-        val storageTex = StorageTexture2d(storageSizeX, storageSizeY, TextureProps(TexFormat.RGBA_F16))
+        val storageTex = StorageTexture2d(storageSizeX, storageSizeY, TexFormat.RGBA_F16)
         computeShader.storageTexture2d("storageTex", storageTex, 2)
 
         // animate offset position to change the colors over time

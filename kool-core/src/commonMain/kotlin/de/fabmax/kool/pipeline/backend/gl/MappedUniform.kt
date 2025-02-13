@@ -236,7 +236,7 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
                 layered = false,
                 layer = 0,
                 access = storageTex.layout.accessType.glAccessType(gl),
-                format = texture.props.format.glInternalFormat(gl)
+                format = texture.format.glInternalFormat(gl)
             )
             gl.uniform1i(bindCtx.location(storageTex.layout.bindingIndex), texUnit)
             return true

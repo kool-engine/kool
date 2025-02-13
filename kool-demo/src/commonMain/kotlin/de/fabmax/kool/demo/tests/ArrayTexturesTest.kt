@@ -80,9 +80,7 @@ class ArrayTexturesTest : DemoScene("Array Textures Test") {
             }
         }
         val arrayData = ImageData2dArray(bufs.map { BufferedImageData2d(it, W, H, TexFormat.RGBA) })
-        val arrayTex = Texture2dArray(
-            TextureProps(defaultSamplerSettings = SamplerSettings(addressModeU = AddressMode.CLAMP_TO_EDGE, addressModeV = AddressMode.CLAMP_TO_EDGE))
-        ).apply { uploadLazy(arrayData) }
+        val arrayTex = Texture2dArray(samplerSettings = SamplerSettings().clamped()).apply { uploadLazy(arrayData) }
         arrayTex.releaseWith(this)
 
         addTextureMesh {
@@ -128,20 +126,20 @@ class ArrayTexturesTest : DemoScene("Array Textures Test") {
         }
 
         val cubeA = ImageDataCube(
-            BufferedImageData2d(bufs[0], 16, 16, TexFormat.RGBA),
-            BufferedImageData2d(bufs[1], 16, 16, TexFormat.RGBA),
             BufferedImageData2d(bufs[2], 16, 16, TexFormat.RGBA),
             BufferedImageData2d(bufs[3], 16, 16, TexFormat.RGBA),
-            BufferedImageData2d(bufs[4], 16, 16, TexFormat.RGBA),
             BufferedImageData2d(bufs[5], 16, 16, TexFormat.RGBA),
+            BufferedImageData2d(bufs[4], 16, 16, TexFormat.RGBA),
+            BufferedImageData2d(bufs[0], 16, 16, TexFormat.RGBA),
+            BufferedImageData2d(bufs[1], 16, 16, TexFormat.RGBA),
         )
         val cubeB = ImageDataCube(
-            BufferedImageData2d(bufs[3], 16, 16, TexFormat.RGBA),
-            BufferedImageData2d(bufs[4], 16, 16, TexFormat.RGBA),
             BufferedImageData2d(bufs[5], 16, 16, TexFormat.RGBA),
             BufferedImageData2d(bufs[0], 16, 16, TexFormat.RGBA),
-            BufferedImageData2d(bufs[1], 16, 16, TexFormat.RGBA),
             BufferedImageData2d(bufs[2], 16, 16, TexFormat.RGBA),
+            BufferedImageData2d(bufs[1], 16, 16, TexFormat.RGBA),
+            BufferedImageData2d(bufs[3], 16, 16, TexFormat.RGBA),
+            BufferedImageData2d(bufs[4], 16, 16, TexFormat.RGBA),
         )
         val cubeArray = ImageDataCubeArray(listOf(cubeA, cubeB))
         val cubeArrayTex = TextureCubeArray().apply { uploadLazy(cubeArray) }

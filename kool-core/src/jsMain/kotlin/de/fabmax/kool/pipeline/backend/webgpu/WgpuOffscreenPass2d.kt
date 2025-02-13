@@ -9,7 +9,7 @@ class WgpuOffscreenPass2d(
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass(GPUTextureFormat.depth32float, parentPass.numSamples, backend), OffscreenPass2dImpl {
 
-    override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.props.format.wgpu }
+    override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }
     private var attachments = createAttachments()
 
     private fun createAttachments(): Attachments {

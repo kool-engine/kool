@@ -1,10 +1,11 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.ImageData2d
 import de.fabmax.kool.pipeline.ImageData3d
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.util.Uint8Buffer
 
 sealed class LoadedAsset<T: Any>(val result: Result<T>, val ref: AssetRef) {
@@ -25,19 +26,22 @@ sealed class AssetRef(path: String) {
 
     data class Image2d(
         override val path: String,
-        val props: TextureProps?
+        val format: TexFormat,
+        val resolveSize: Vec2i?
     ) : AssetRef(path)
 
     data class BufferedImage2d(
         override val path: String,
-        val props: TextureProps?
+        val format: TexFormat,
+        val resolveSize: Vec2i?
     ) : AssetRef(path)
 
     data class ImageAtlas(
         override val path: String,
-        val props: TextureProps?,
-        val tilesX: Int = 1,
-        val tilesY: Int = 1
+        val format: TexFormat,
+        val resolveSize: Vec2i?,
+        val tilesX: Int,
+        val tilesY: Int
     ) : AssetRef(path)
 
     data class Audio(

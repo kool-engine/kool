@@ -285,7 +285,7 @@ class BindGroupDataVk(
         private fun checkViewAndSampler(stack: MemoryStack) {
             val tex = checkNotNull(binding.texture) { "Cannot create texture binding from null texture" }
             val image = checkNotNull(tex.gpuTexture as ImageVk?) { "Cannot create texture binding from null texture" }
-            val samplerSettings = binding.sampler ?: tex.props.defaultSamplerSettings
+            val samplerSettings = binding.sampler ?: tex.samplerSettings
 
             if (boundImage == image && boundSamplerSettings == samplerSettings) {
                 return
@@ -297,7 +297,7 @@ class BindGroupDataVk(
             sampler?.let { backend.device.destroySampler(it) }
 
             val maxAnisotropy = if (
-                tex.props.isMipMapped &&
+                tex.mipMapping.isMipMapped &&
                 samplerSettings.minFilter == FilterMethod.LINEAR &&
                 samplerSettings.magFilter == FilterMethod.LINEAR
             ) samplerSettings.maxAnisotropy else 1
@@ -313,7 +313,7 @@ class BindGroupDataVk(
                 addressModeV(samplerSettings.addressModeV.vk)
                 addressModeW(samplerSettings.addressModeW.vk)
 
-                mipmapMode(if (tex.props.isMipMapped) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                mipmapMode(if (tex.mipMapping.isMipMapped) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
                 maxLod(VK_LOD_CLAMP_NONE)
 
                 val anisotropy = maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)

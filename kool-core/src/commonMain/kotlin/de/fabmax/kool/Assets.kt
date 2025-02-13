@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.*
@@ -60,7 +61,7 @@ object Assets : CoroutineScope {
         val texData = createAtlasFontMapData(font, fontScale, metrics)
 
         if (map == null) {
-            val tex = Texture2d(texData, font.fontMapProps, font.toString())
+            val tex = Texture2d(texData, font.mipMapping, font.samplerSettings, font.toString())
             map = FontMap(font, tex, metrics)
             font.scale = fontScale
             font.map = map
@@ -123,16 +124,20 @@ object Assets : CoroutineScope {
     suspend fun loadImageFromBuffer(
         texData: Uint8Buffer,
         mimeType: String,
-        props: TextureProps? = null
-    ): ImageData2d = platformAssets.loadImageFromBuffer(texData, mimeType, props)
+        format: TexFormat = TexFormat.RGBA,
+        resolveSize: Vec2i? = null
+    ): ImageData2d = platformAssets.loadImageFromBuffer(texData, mimeType, format, resolveSize)
 
     /**
      * Asynchronously loads the texture data from the given byte buffer using the image type specified in [mimeType]
      * to decode the image (e.g. 'image/png') and returns the image as [ImageData].
      */
-    fun loadImageFromBufferAsync(texData: Uint8Buffer, mimeType: String, props: TextureProps? = null): Deferred<ImageData2d> = async {
-        loadImageFromBuffer(texData, mimeType, props)
-    }
+    fun loadImageFromBufferAsync(
+        texData: Uint8Buffer,
+        mimeType: String,
+        format: TexFormat = TexFormat.RGBA,
+        resolveSize: Vec2i? = null
+    ): Deferred<ImageData2d> = async { loadImageFromBuffer(texData, mimeType, format, resolveSize) }
 }
 
 expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader
@@ -144,7 +149,7 @@ data class FileFilterItem(val name: String, val mimeType: String, val fileExtens
 internal expect fun PlatformAssets(): PlatformAssets
 
 internal interface PlatformAssets {
-    suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): ImageData2d
+    suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, format: TexFormat, resolveSize: Vec2i?): ImageData2d
 
     suspend fun waitForFonts()
 

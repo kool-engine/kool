@@ -75,12 +75,12 @@ open class OffscreenPassCube(
     }
 
     inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<TextureCube> {
-        override val texture: TextureCube = TextureCube(config.createTextureProps(mipMode.hasMipLevels), "${name}:color[$i]")
+        override val texture: TextureCube = TextureCube(config.textureFormat, mipMode.mipMapping, config.samplerSettings, "${name}:color[$i]")
         override var clearColor: ClearColor = config.clearColor
     }
 
     inner class DepthAttachment(config: TextureAttachmentConfig) : RenderPassDepthTextureAttachment<TextureCube> {
-        override val texture: TextureCube = TextureCube(config.createTextureProps(mipMode.hasMipLevels), "${name}:depth")
+        override val texture: TextureCube = TextureCube(config.textureFormat, mipMode.mipMapping, config.samplerSettings, "${name}:depth")
         override var clearDepth: ClearDepth = config.clearDepth
     }
 

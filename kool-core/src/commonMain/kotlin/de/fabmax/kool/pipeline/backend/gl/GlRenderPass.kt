@@ -144,7 +144,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                     loaded = dst.gpuTexture as LoadedTextureGl
                     loaded.bind()
                     loaded.setSize(width, height, layers)
-                    loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
+                    loaded.applySamplerSettings(dst.samplerSettings)
                     dst.gpuTexture = loaded
                 }
             }
@@ -159,7 +159,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                 loaded = dst.gpuTexture as LoadedTextureGl
                 loaded.bind()
                 loaded.setSize(width, height, layers)
-                loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
+                loaded.applySamplerSettings(dst.samplerSettings)
                 dst.gpuTexture = loaded
             }
         }
@@ -198,7 +198,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         colorTexture: Texture<*>,
         texTarget: Int
     ): GlTexture {
-        val format = colorTexture.props.format
+        val format = colorTexture.format
         val intFormat = format.glInternalFormat(gl)
         val layers = if (texTarget == gl.TEXTURE_CUBE_MAP) 6 else 1
 
@@ -206,7 +206,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         val tex = LoadedTextureGl(texTarget, gl.createTexture(), backend, colorTexture, estSize)
         tex.setSize(width, height, layers)
         tex.bind()
-        tex.applySamplerSettings(colorTexture.props.defaultSamplerSettings)
+        tex.applySamplerSettings(colorTexture.samplerSettings)
         gl.texStorage2d(texTarget, mipLevels, intFormat, width, height)
 
         val glColorTexture = tex.glTexture
@@ -228,7 +228,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         val tex = LoadedTextureGl(texTarget, gl.createTexture(), backend, depthTexture, estSize)
         tex.setSize(width, height, layers)
         tex.bind()
-        tex.applySamplerSettings(depthTexture.props.defaultSamplerSettings)
+        tex.applySamplerSettings(depthTexture.samplerSettings)
         gl.texStorage2d(texTarget, mipLevels, intFormat, width, height)
 
         val glDepthTexture = tex.glTexture

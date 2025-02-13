@@ -295,11 +295,8 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                 }
             }
         }
-
         logD { "Generated 3d noise in ${pt.takeSecs().toString(3)} s, tex saturation: min = $min, max = $max" }
-
-        val props = TextureProps(format = TexFormat.RGBA_F16, isMipMapped = false)
-        return Texture3d(props) { BufferedImageData3d(buf, sz, sz, sz, TexFormat.RGBA_F16) }
+        return Texture3d(TexFormat.RGBA_F16, MipMapping.Off) { BufferedImageData3d(buf, sz, sz, sz, TexFormat.RGBA_F16) }
     }
 
     private fun ColorGradient.toLinear(): ColorGradient {

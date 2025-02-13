@@ -221,7 +221,7 @@ fun ThumbnailRenderer.textureThumbnail(texPath: String): ThumbnailRenderer.Thumb
 fun ThumbnailRenderer.hdriThumbnail(texPath: String): ThumbnailRenderer.Thumbnail = renderThumbnail {
     val texMesh = TextureMesh().apply {
         val assets = KoolEditor.instance.cachedAppAssets
-        val tex = assets.assetLoader.loadTexture2d(texPath, TextureProps(isMipMapped = false)).getOrThrow()
+        val tex = assets.assetLoader.loadTexture2d(texPath, mipMapping = MipMapping.Off).getOrThrow()
         tex.releaseWith(this)
 
         generateThumbnailRoundRect(tex.width.toFloat() / tex.height)

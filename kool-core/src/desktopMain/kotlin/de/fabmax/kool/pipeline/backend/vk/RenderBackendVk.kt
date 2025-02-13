@@ -279,10 +279,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             is StorageTexture2d -> VK_IMAGE_TYPE_2D
             is StorageTexture3d -> VK_IMAGE_TYPE_3D
         }
-        val levels = if (storageTexture.props.isMipMapped) numMipLevels(width, height, depth) else 1
+        val levels = if (storageTexture.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
         val imageInfo = ImageInfo(
             imageType = imageType,
-            format = storageTexture.props.format.vk,
+            format = storageTexture.format.vk,
             width = width,
             height = height,
             depth = depth,
@@ -343,10 +343,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
             val gpuTex = readback.texture.gpuTexture as ImageVk?
-            if (gpuTex == null || readback.texture.props.format.isF16) {
+            if (gpuTex == null || readback.texture.format.isF16) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
             } else {
-                val format = readback.texture.props.format
+                val format = readback.texture.format
                 val size = format.pxSize.toLong() * gpuTex.width * gpuTex.height * gpuTex.depth
                 val mapBuffer = BufferVk(
                     this,
@@ -376,7 +376,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             val mapBuffer = readback.mapBuffer!!
             val mapped = checkNotNull(mapBuffer.vkBuffer.mapped) { "readback buffer was not created mapped" }
             val gpuTex = readback.texture.gpuTexture as ImageVk
-            val format = readback.texture.props.format
+            val format = readback.texture.format
             val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
             dst.copyFrom(mapped)
             mapBuffer.release()

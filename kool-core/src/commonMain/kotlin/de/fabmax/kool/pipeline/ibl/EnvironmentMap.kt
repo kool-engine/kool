@@ -23,12 +23,8 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
     companion object {
         fun fromSingleColor(color: Color): EnvironmentMap {
             val bgColor = BufferedImageData2d.singleColor(color.toLinear())
-            val props = TextureProps(
-                isMipMapped = false,
-                defaultSamplerSettings = SamplerSettings().nearest()
-            )
             val cubeData = ImageDataCube(bgColor, bgColor, bgColor, bgColor, bgColor, bgColor)
-            val cubeTex = TextureCube(cubeData, props, "singleColorEnv-$color")
+            val cubeTex = TextureCube(cubeData, MipMapping.Off, SamplerSettings().nearest(), "singleColorEnv-$color")
             return EnvironmentMap(cubeTex, cubeTex)
         }
 
@@ -78,8 +74,7 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
 fun AssetLoader.hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): Deferred<Result<EnvironmentMap>> {
     return Assets.async {
         val samplerSettings = SamplerSettings().nearest()
-        val hdriTexProps = TextureProps(isMipMapped = false, defaultSamplerSettings = samplerSettings)
-        val hdri = loadTexture2d(hdriPath, hdriTexProps)
+        val hdri = loadTexture2d(hdriPath, TexFormat.RGBA, MipMapping.Off, samplerSettings)
         withContext(Dispatchers.RenderLoop) {
             hdri.map { EnvironmentMap.fromHdriTexture(it, brightness) }
         }

@@ -5,10 +5,13 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.demo.menu.TitleBgRenderer
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.MipMapping
+import de.fabmax.kool.pipeline.SamplerSettings
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 
@@ -98,7 +101,13 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
     protected fun hdriImage(path: String, brightness: Float = 1f) = resources.hdriImage(path, brightness)
     protected fun hdriSingleColor(color: Color) = resources.hdriSingleColor(color)
     protected fun model(path: String, config: GltfLoadConfig) = resources.model(path, config)
-    protected fun texture2d(path: String, props: TextureProps = TextureProps()) = resources.texture2d(path, props)
+    protected fun texture2d(
+        path: String,
+        format: TexFormat = TexFormat.RGBA,
+        mipMapping: MipMapping = MipMapping.Full,
+        samplerSettings: SamplerSettings = SamplerSettings(),
+        resolveSize: Vec2i? = null
+    ) = resources.texture2d(path, format, mipMapping, samplerSettings, resolveSize)
 
     protected fun menuSurface(title: String? = null, block: ColumnScope.() -> Unit): UiSurface {
         val accent = demoEntry?.color ?: MdColor.PINK

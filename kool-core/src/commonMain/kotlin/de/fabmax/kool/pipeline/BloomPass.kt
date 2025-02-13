@@ -16,16 +16,21 @@ class BloomPass(
     val inPlace: Boolean = KoolSystem.requireContext().backend.features.readWriteStorageTextures
 ) : ComputePass("Bloom Pass") {
 
+    private val idealWidth: Int get() = inputTexture.width / 2
+    private val idealHeight: Int get() = inputTexture.width / 2
+    private var levels: Int = levelsForSize(idealWidth, idealHeight)
+
     var threshold = 1f
     var thresholdLuminanceFactors = defaultThresholdLuminanceFactors
     var radius = 2f
     var strength = 1f
 
-    val bloomMap = StorageTexture2d(inputTexture.width / 2, inputTexture.height / 2, TextureProps(TexFormat.RG11B10_F, isMipMapped = true))
+    val bloomMap = StorageTexture2d(idealWidth, idealHeight, TexFormat.RG11B10_F, MipMapping.Limited(levels))
     val downSampleTex = if (inPlace) bloomMap else StorageTexture2d(
-        width,
-        height,
-        TextureProps(TexFormat.RG11B10_F, isMipMapped = true)
+        width = idealWidth,
+        height = idealHeight,
+        format = TexFormat.RG11B10_F,
+        mipMapping = MipMapping.Limited(levels)
     )
 
     private val downSampleShader = downSamplingShader()
@@ -33,7 +38,6 @@ class BloomPass(
 
     val width: Int get() = bloomMap.width
     val height: Int get() = bloomMap.height
-    private var levels: Int = levelsForSize(width, height)
 
     init {
         logD { "Using $levels bloom levels, in place: $inPlace" }

@@ -5,7 +5,10 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.loadImage2d
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ImageData2d
+import de.fabmax.kool.pipeline.MipMapping
+import de.fabmax.kool.pipeline.SamplerSettings
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logT
 import kotlinx.coroutines.CoroutineScope
@@ -14,11 +17,6 @@ import kotlin.math.roundToInt
 object Icons {
 
     private var windowScale = 1f
-    private val iconTexProps = TextureProps(
-        format = TexFormat.RGBA,
-        isMipMapped = false,
-        defaultSamplerSettings = SamplerSettings().nearest()
-    )
 
     val small = EditorIconMap(Dp(18f))
     val medium = EditorIconMap(Dp(24f))
@@ -45,12 +43,11 @@ object Icons {
             val s = iconSize.value / 24f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
-            val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
             logT { "Render small-icons map: $width x $height (${iconSize.value} dp)" }
-            Assets.loadImage2d("assets/icons/small-icons.svg", loadProps).getOrThrow()
+            Assets.loadImage2d("assets/icons/small-icons.svg", resolveSize = Vec2i(width, height)).getOrThrow()
         }
 
-        private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)
+        private val iconTex = Texture2d(mipMapping = MipMapping.Off, samplerSettings = SamplerSettings().nearest(), name = "icon-map", loader = iconLoader)
         private val iconMap = ImageIconMap(20)
 
         init {
@@ -153,12 +150,11 @@ object Icons {
             val s = iconSize.value / 80f * windowScale
             val width = (iconMapSize.x * s).roundToInt()
             val height = (iconMapSize.y * s).roundToInt()
-            val loadProps = iconTexProps.copy(resolveSize = Vec2i(width, height))
             logT { "Render file-icons map: $width x $height (${iconSize.value} dp)" }
-            Assets.loadImage2d("assets/icons/file-icons.svg", loadProps).getOrThrow()
+            Assets.loadImage2d("assets/icons/file-icons.svg", resolveSize = Vec2i(width, height)).getOrThrow()
         }
 
-        private val iconTex = Texture2d(iconTexProps, "icon-map", iconLoader)
+        private val iconTex = Texture2d(mipMapping = MipMapping.Off, samplerSettings = SamplerSettings().nearest(), name = "icon-map", loader = iconLoader)
         private val iconMap = ImageIconMap(8)
 
         init {

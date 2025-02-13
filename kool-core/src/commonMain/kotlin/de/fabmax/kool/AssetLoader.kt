@@ -1,5 +1,6 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
@@ -78,8 +79,12 @@ abstract class AssetLoader {
     /**
      * Asynchronously loads the image data at the given path and returns it as [ImageData].
      */
-    suspend fun loadImage2d(assetPath: String, props: TextureProps? = null): Result<ImageData2d> {
-        val ref = AssetRef.Image2d(assetPath, props)
+    suspend fun loadImage2d(
+        assetPath: String,
+        format: TexFormat = TexFormat.RGBA,
+        resolveSize: Vec2i? = null
+    ): Result<ImageData2d> {
+        val ref = AssetRef.Image2d(assetPath, format, resolveSize)
         val awaitedAsset = AwaitedAsset(ref)
         val (loaded, time) = measureTimedValue {
             awaitedAssetsChannel.send(awaitedAsset)
@@ -102,8 +107,12 @@ abstract class AssetLoader {
      * instead of [loadImage2d]. However, loading textures from the non-buffered [ImageData2d] returned by
      * [loadImage2d] can be faster on some platforms (especially on JS).
      */
-    suspend fun loadBufferedImage2d(assetPath: String, props: TextureProps? = null): Result<BufferedImageData2d> {
-        val ref = AssetRef.BufferedImage2d(assetPath, props)
+    suspend fun loadBufferedImage2d(
+        assetPath: String,
+        format: TexFormat = TexFormat.RGBA,
+        resolveSize: Vec2i? = null
+    ): Result<BufferedImageData2d> {
+        val ref = AssetRef.BufferedImage2d(assetPath, format, resolveSize)
         val awaitedAsset = AwaitedAsset(ref)
         val (loaded, time) = measureTimedValue {
             awaitedAssetsChannel.send(awaitedAsset)
@@ -126,9 +135,10 @@ abstract class AssetLoader {
         assetPath: String,
         tilesX: Int,
         tilesY: Int,
-        props: TextureProps? = null
+        format: TexFormat = TexFormat.RGBA,
+        resolveSize: Vec2i? = null
     ): Result<ImageData3d> {
-        val ref = AssetRef.ImageAtlas(assetPath, props, tilesX, tilesY)
+        val ref = AssetRef.ImageAtlas(assetPath, format, resolveSize, tilesX, tilesY)
         val awaitedAsset = AwaitedAsset(ref)
         val (loaded, time) = measureTimedValue {
             awaitedAssetsChannel.send(awaitedAsset)
@@ -147,21 +157,23 @@ abstract class AssetLoader {
      * Asynchronously loads a cube map from the given image paths (one for each side).
      */
     suspend fun loadImageCube(
-        pathFront: String,
-        pathBack: String,
-        pathLeft: String,
-        pathRight: String,
-        pathUp: String,
-        pathDown: String
+        negX: String,
+        posX: String,
+        negY: String,
+        posY: String,
+        negZ: String,
+        posZ: String,
+        format: TexFormat = TexFormat.RGBA,
+        resolveSize: Vec2i? = null
     ): Result<ImageDataCube> {
         return try {
-            val ftd = loadImage2d(pathFront).getOrThrow()
-            val bkd = loadImage2d(pathBack).getOrThrow()
-            val ltd = loadImage2d(pathLeft).getOrThrow()
-            val rtd = loadImage2d(pathRight).getOrThrow()
-            val upd = loadImage2d(pathUp).getOrThrow()
-            val dnd = loadImage2d(pathDown).getOrThrow()
-            Result.success(ImageDataCube(ftd, bkd, ltd, rtd, upd, dnd))
+            val nx = loadImage2d(negX, format, resolveSize).getOrThrow()
+            val px = loadImage2d(posX, format, resolveSize).getOrThrow()
+            val nz = loadImage2d(negZ, format, resolveSize).getOrThrow()
+            val pz = loadImage2d(posZ, format, resolveSize).getOrThrow()
+            val ny = loadImage2d(negY, format, resolveSize).getOrThrow()
+            val py = loadImage2d(posY, format, resolveSize).getOrThrow()
+            Result.success(ImageDataCube(nx, px, ny, py, nz, pz))
         } catch (t: Throwable) {
             Result.failure(t)
         }

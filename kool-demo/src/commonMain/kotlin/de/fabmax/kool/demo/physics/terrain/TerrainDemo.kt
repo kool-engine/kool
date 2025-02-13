@@ -20,7 +20,6 @@ import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.*
@@ -33,9 +32,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private val normalMap by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
     private val oceanBump by texture2d("${DemoLoader.materialPath}/ocean-bump-1k.jpg")
     private val moonTex by texture2d("${DemoLoader.materialPath}/moon-blueish.png")
-    private val grassColor by texture2d("${DemoLoader.materialPath}/grass_64.png",
-        TextureProps(defaultSamplerSettings = SamplerSettings().clamped())
-    )
+    private val grassColor by texture2d("${DemoLoader.materialPath}/grass_64.png", samplerSettings = SamplerSettings().clamped())
 
     val oceanColor = GradientTexture(ColorGradient(
         0.0f to MdColor.CYAN,

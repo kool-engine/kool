@@ -15,7 +15,7 @@ class OffscreenPassCubeVk(
     backend = backend
 ), OffscreenPassCubeImpl {
 
-    override val colorTargetFormats: List<Int> = parentPass.colorAttachments.map { it.texture.props.format.vk }
+    override val colorTargetFormats: List<Int> = parentPass.colorAttachments.map { it.texture.format.vk }
     private var attachments = createAttachments()
 
     private fun createAttachments(): Attachments {

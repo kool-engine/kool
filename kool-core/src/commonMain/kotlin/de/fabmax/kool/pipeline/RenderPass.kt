@@ -95,13 +95,13 @@ abstract class RenderPass(
         }
     }
 
-    sealed class MipMode(val hasMipLevels: Boolean) {
-        data object Single : MipMode(false) {
+    sealed class MipMode(val mipMapping: MipMapping) {
+        data object Single : MipMode(MipMapping.Off) {
             override fun getTextureMipLevels(size: Vec3i) = 1
             override fun getRenderMipLevels(size: Vec3i) = 1
         }
 
-        data object Generate : MipMode(true) {
+        data object Generate : MipMode(MipMapping.Full) {
             override fun getTextureMipLevels(size: Vec3i) = numMipLevels(size.x, size.y)
             override fun getRenderMipLevels(size: Vec3i) = 1
         }
@@ -109,7 +109,7 @@ abstract class RenderPass(
         data class Render(
             val numMipLevels: Int,
             val renderOrder: MipMapRenderOrder = MipMapRenderOrder.HigherResolutionFirst
-        ) : MipMode(true) {
+        ) : MipMode(MipMapping.Limited(numMipLevels)) {
             init { require(numMipLevels >= 0) }
             override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) numMipLevels(size.x, size.y) else numMipLevels
             override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)

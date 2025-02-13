@@ -82,7 +82,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             return
         }
 
-        val format = texture.props.format
+        val format = texture.format
         val buffer = ImageData.createBuffer(format, glTex.width, glTex.height, glTex.depth)
         val targetData = when (texture) {
             is Texture1d -> BufferedImageData1d(buffer, glTex.width, format)
@@ -120,8 +120,8 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             is StorageTexture2d -> gl.TEXTURE_2D
             is StorageTexture3d -> gl.TEXTURE_3D
         }
-        val levels = if (tex.props.isMipMapped) numMipLevels(width, height, depth) else 1
-        val format = tex.props.format.glInternalFormat(gl)
+        val levels = if (tex.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
+        val format = tex.format.glInternalFormat(gl)
 
         val somePxSize = 16L
         val gpuTexture = LoadedTextureGl(imageType, gl.createTexture(), this, tex, width * height * depth * somePxSize)

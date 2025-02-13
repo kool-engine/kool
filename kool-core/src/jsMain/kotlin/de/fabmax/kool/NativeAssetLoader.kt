@@ -3,8 +3,6 @@ package de.fabmax.kool
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClipImpl
 import de.fabmax.kool.pipeline.BufferedImageData2d
-import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.Uint8BufferImpl
@@ -24,31 +22,30 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
     }
 
     override suspend fun loadImage2d(ref: AssetRef.Image2d): LoadedAsset.Image2d {
-        val resolveSz = ref.props?.resolveSize
+        val resolveSz = ref.resolveSize
         val result = loadImageBitmap(ref.path, ref.isHttp, resolveSz).map {
-            ImageTextureData(it, trimAssetPath(ref.path), ref.props?.format ?: TexFormat.RGBA)
+            ImageTextureData(it, trimAssetPath(ref.path), ref.format)
         }
         return LoadedAsset.Image2d(ref, result)
     }
 
     override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.ImageAtlas {
-        val resolveSz = ref.props?.resolveSize
+        val resolveSz = ref.resolveSize
         val result = loadImageBitmap(ref.path, ref.isHttp, resolveSz).map {
-            ImageAtlasTextureData(it, ref.tilesX, ref.tilesY, trimAssetPath(ref.path), ref.props?.format ?: TexFormat.RGBA)
+            ImageAtlasTextureData(it, ref.tilesX, ref.tilesY, trimAssetPath(ref.path), ref.format)
         }
         return LoadedAsset.ImageAtlas(ref, result)
     }
 
     override suspend fun loadBufferedImage2d(ref: AssetRef.BufferedImage2d): LoadedAsset.BufferedImage2d {
-        val props = ref.props ?: TextureProps()
-        val texRef = AssetRef.Image2d(ref.path, props)
+        val texRef = AssetRef.Image2d(ref.path, ref.format, ref.resolveSize)
         val result = loadImage2d(texRef).result.mapCatching {
             val texData = it as ImageTextureData
             BufferedImageData2d(
-                ImageTextureData.imageBitmapToBuffer(texData.data, props),
+                ImageTextureData.imageBitmapToBuffer(texData.data, ref.format, ref.resolveSize),
                 texData.width,
                 texData.height,
-                props.format,
+                ref.format,
                 trimAssetPath(ref.path)
             )
         }
