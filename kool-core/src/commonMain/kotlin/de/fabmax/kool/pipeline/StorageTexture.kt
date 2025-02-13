@@ -44,13 +44,17 @@ class StorageTexture1d(
     name: String = UniqueId.nextId("StorageTexture1d")
 ) : Texture1d(format, mipMapping, samplerSettings, name), StorageTexture {
     override val asTexture: Texture1d get() = this
+    override var mipMapping: MipMapping = mipMapping; private set
 
     init {
         backend.initStorageTexture(this, width, 1, 1)
     }
 
-    fun resize(width: Int) {
-        backend.initStorageTexture(this, width, 1, 1)
+    fun resize(width: Int, mipMapping: MipMapping = this.mipMapping) {
+        if (width != this.width || mipMapping != this.mipMapping) {
+            this.mipMapping = mipMapping
+            backend.initStorageTexture(this, width, 1, 1)
+        }
     }
 }
 
@@ -64,13 +68,17 @@ class StorageTexture2d(
     name: String
 ) : Texture2d(format, mipMapping, samplerSettings, name), StorageTexture {
     override val asTexture: Texture2d get() = this
+    override var mipMapping: MipMapping = mipMapping; private set
 
     init {
         backend.initStorageTexture(this, width, height, 1)
     }
 
-    fun resize(width: Int, height: Int) {
-        backend.initStorageTexture(this, width, height, 1)
+    fun resize(width: Int, height: Int, mipMapping: MipMapping = this.mipMapping) {
+        if (width != this.width || height != this.height || mipMapping != this.mipMapping) {
+            this.mipMapping = mipMapping
+            backend.initStorageTexture(this, width, height, 1)
+        }
     }
 }
 
@@ -85,12 +93,16 @@ class StorageTexture3d(
     name: String
 ) : Texture3d(format, mipMapping, samplerSettings, name), StorageTexture {
     override val asTexture: Texture3d get() = this
+    override var mipMapping: MipMapping = mipMapping; private set
 
     init {
         backend.initStorageTexture(this, width, height, depth)
     }
 
-    fun resize(width: Int, height: Int, depth: Int) {
-        backend.initStorageTexture(this, width, height, depth)
+    fun resize(width: Int, height: Int, depth: Int, mipMapping: MipMapping = this.mipMapping) {
+        if (width != this.width || height != this.height || depth != this.depth || mipMapping != this.mipMapping) {
+            this.mipMapping = mipMapping
+            backend.initStorageTexture(this, width, height, depth)
+        }
     }
 }

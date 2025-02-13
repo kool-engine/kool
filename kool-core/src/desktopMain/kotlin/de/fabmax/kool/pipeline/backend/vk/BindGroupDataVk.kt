@@ -326,13 +326,17 @@ class BindGroupDataVk(
                 compareOp(compare)
             }
 
+            val baseLevel = samplerSettings.baseMipLevel.coerceAtMost(image.imageInfo.mipLevels - 1)
+            val numLevels = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else image.mipLevels
+            val numLevelsSafe = numLevels.coerceAtMost(image.imageInfo.mipLevels - baseLevel)
+
             view = backend.device.createImageView(
                 image = image.vkImage,
                 viewType = viewType,
                 format = image.format,
                 aspectMask = image.imageInfo.aspectMask,
-                baseMipLevel = samplerSettings.baseMipLevel,
-                levelCount = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else image.mipLevels,
+                baseMipLevel = baseLevel,
+                levelCount = numLevelsSafe,
                 baseArrayLayer = 0,
                 layerCount = image.arrayLayers,
                 stack = stack
@@ -382,13 +386,18 @@ class BindGroupDataVk(
             }
             boundImage = image
 
+            val baseLevel = binding.mipLevel.coerceAtMost(image.imageInfo.mipLevels - 1)
+            if (binding.mipLevel != baseLevel) {
+                logE { "$image: binding miplevel: ${binding.mipLevel} > image mip levels: ${image.imageInfo.mipLevels}" }
+            }
+
             view?.let { backend.device.destroyImageView(it) }
             view = backend.device.createImageView(
                 image = image.vkImage,
                 viewType = viewType,
                 format = image.format,
                 aspectMask = image.imageInfo.aspectMask,
-                baseMipLevel = binding.mipLevel,
+                baseMipLevel = baseLevel,
                 levelCount = 1,
                 baseArrayLayer = 0,
                 layerCount = image.arrayLayers,

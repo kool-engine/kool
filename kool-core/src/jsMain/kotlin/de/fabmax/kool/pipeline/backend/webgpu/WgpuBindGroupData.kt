@@ -191,10 +191,12 @@ class WgpuBindGroupData(
         )
 
         textureBindings += TextureBinding(this, loadedTex)
-        val texView = loadedTex.gpuTexture.createView(
-            baseMipLevel = samplerSettings.baseMipLevel,
-            mipLevelCount = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else null
-        )
+
+        val baseLevel = samplerSettings.baseMipLevel.coerceAtMost(loadedTex.imageInfo.mipLevelCount - 1)
+        val numLevels = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else loadedTex.imageInfo.mipLevelCount
+        val numLevelsSafe = numLevels.coerceAtMost(loadedTex.imageInfo.mipLevelCount - baseLevel)
+
+        val texView = loadedTex.gpuTexture.createView(baseMipLevel = baseLevel, mipLevelCount = numLevelsSafe)
         return listOf(
             GPUBindGroupEntry(location.binding, sampler),
             GPUBindGroupEntry(location.binding + 1, texView)
@@ -304,7 +306,7 @@ class WgpuBindGroupData(
 
         storageTextureBindings += StorageTextureBinding(this, loadedTex)
         val texView = loadedTex.gpuTexture.createView(
-            baseMipLevel = mipLevel,
+            baseMipLevel = mipLevel.coerceAtMost(loadedTex.imageInfo.mipLevelCount - 1),
             mipLevelCount = 1
         )
         return GPUBindGroupEntry(location.binding, texView)

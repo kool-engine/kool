@@ -82,7 +82,7 @@ class ImageVk(
     private val ImageInfo.mipMapFactor: Double get() = if (mipLevels > 1) { 1.333 } else 1.0
 
     override fun toString(): String {
-        return "ImageVK:\"${imageInfo.label}\""
+        return "ImageVK[${vkImage.handle.toHexString()}]:\"${imageInfo.label}\""
     }
 
     fun copyFromBuffer(

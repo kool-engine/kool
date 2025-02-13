@@ -279,7 +279,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             is StorageTexture2d -> VK_IMAGE_TYPE_2D
             is StorageTexture3d -> VK_IMAGE_TYPE_3D
         }
-        val levels = if (storageTexture.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
+        val levels = when (val mipMapping = storageTexture.mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
         val imageInfo = ImageInfo(
             imageType = imageType,
             format = storageTexture.format.vk,

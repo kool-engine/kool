@@ -158,7 +158,7 @@ class HelloBloom : DemoScene("Bloom") {
         MenuRow {
             val lumi = bloomLuminance.use()
             Text("Luminance weights:") { labelStyle(Grow.Companion.Std) }
-            Text("${lumi.x.toString(2)}, ${lumi.y.toString(2)}, ${lumi.z.toString(2)}") {}
+            Text("${lumi.x.toString(2)}, ${lumi.y.toString(2)}, ${lumi.z.toString(2)}") { labelStyle() }
         }
         MenuRow(vGap = 4.dp) {
             Slider(bloomLuminance.use().x, 0f, 1f) {
@@ -196,7 +196,7 @@ class HelloBloom : DemoScene("Bloom") {
 
         MenuRow {
             Text("Bloom pass:") { labelStyle(Grow.Companion.Std) }
-            Text("${(bloomGpuTime.use().inWholeMicroseconds / 1000.0).toString(2)} ms") {  }
+            Text("${(bloomGpuTime.use().inWholeMicroseconds / 1000.0).toString(2)} ms") { labelStyle() }
         }
     }
 }

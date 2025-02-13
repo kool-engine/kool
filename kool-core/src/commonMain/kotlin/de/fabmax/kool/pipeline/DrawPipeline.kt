@@ -15,9 +15,7 @@ class DrawPipeline(
     val vertexLayout: VertexLayout,
     bindGroupLayouts: BindGroupLayouts,
     shaderCodeGenerator: (DrawPipeline) -> ShaderCode
-) :
-    PipelineBase(name, bindGroupLayouts)
-{
+) : PipelineBase(name, bindGroupLayouts) {
     override val pipelineHash: LongHash
 
     val cullMethod: CullMethod get() = pipelineConfig.cullMethod

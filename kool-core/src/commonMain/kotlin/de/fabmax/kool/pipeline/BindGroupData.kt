@@ -215,6 +215,10 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
                 field = value
             }
         var mipLevel: Int = 0
+            set(value) {
+                isDirty = field != value
+                field = value
+            }
 
         fun copyTo(other: StorageTextureBindingData<T>) {
             other.storageTexture = storageTexture

@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
  */
 abstract class Texture<T: ImageData>(
     val format: TexFormat,
-    val mipMapping: MipMapping,
+    open val mipMapping: MipMapping,
     val samplerSettings: SamplerSettings,
     val name: String,
 ): BaseReleasable() {

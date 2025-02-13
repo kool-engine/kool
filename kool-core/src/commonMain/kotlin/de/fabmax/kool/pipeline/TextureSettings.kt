@@ -45,15 +45,14 @@ data class SamplerSettings(
     val compareOp: DepthCompareOp = DepthCompareOp.ALWAYS,
 
     /**
-     * Set the base mip level of the bound texture to the given level. Currently only used in WebGPU implementation.
+     * Set the base mip level of the bound texture to the given level.
      *
      * **Notice**: This is not really a sampler setting but a texture view setting.
      */
     val baseMipLevel: Int = 0,
 
     /**
-     * Limit the accessible number of mip levels of the bound texture to the given level. Currently only used in
-     * WebGPU implementation.
+     * Limit the accessible number of mip levels of the bound texture to the given level.
      *
      * **Notice**: This is not really a sampler setting but a texture view setting.
      */

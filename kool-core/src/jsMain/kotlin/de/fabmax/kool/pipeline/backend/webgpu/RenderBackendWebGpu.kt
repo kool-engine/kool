@@ -281,7 +281,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             is StorageTexture2d -> intArrayOf(width, height)
             is StorageTexture3d -> intArrayOf(width, height, depth)
         }
-        val levels = if (storageTexture.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
+        val levels = when (val mipMapping = storageTexture.mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
 
         if (storageTexture.format == TexFormat.RG11B10_F) {
             logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
