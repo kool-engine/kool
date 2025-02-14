@@ -169,7 +169,7 @@ class BloomPass(
                     weightedAvg set weightedAvg * luminance
                 }
 
-                storageTextureWrite(downSampled, texelCoord, float4Value(weightedAvg, 0f.const))
+                downSampled[texelCoord] = float4Value(weightedAvg, 0f.const)
             }
         }
     }
@@ -204,11 +204,11 @@ class BloomPass(
                 val h = float3Var(sampleTexture(sampleInput, float2Value(u, v - ry), 0f.const).rgb)
                 val i = float3Var(sampleTexture(sampleInput, float2Value(u + rx, v - ry), 0f.const).rgb)
 
-                var filtered = float3Var(storageTextureRead(downSampled, texelCoord).rgb)
+                var filtered = float3Var(downSampled[texelCoord].rgb)
                 filtered += e * (4f / 16f).const
                 filtered += (b + d + f + h) * (2f / 16f).const
                 filtered += (a + c + g + i) * (1f / 16f).const
-                storageTextureWrite(upSampled, texelCoord, float4Value(filtered * outputScale, 0f.const))
+                upSampled[texelCoord] = float4Value(filtered * outputScale, 0f.const)
             }
         }
     }

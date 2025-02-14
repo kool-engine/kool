@@ -69,6 +69,10 @@ typealias KslExprMat2Array = KslMatrixArrayExpression<KslMat2, KslFloat2>
 typealias KslExprMat3Array = KslMatrixArrayExpression<KslMat3, KslFloat3>
 typealias KslExprMat4Array = KslMatrixArrayExpression<KslMat4, KslFloat4>
 
+typealias KslExprStorageTex1d = KslExpression<KslStorageTexture1dType<*>>
+typealias KslExprStorageTex2d = KslExpression<KslStorageTexture2dType<*>>
+typealias KslExprStorageTex3d = KslExpression<KslStorageTexture3dType<*>>
+
 typealias KslVarFloat1 = KslVarScalar<KslFloat1>
 typealias KslVarFloat2 = KslVarVector<KslFloat2, KslFloat1>
 typealias KslVarFloat3 = KslVarVector<KslFloat3, KslFloat1>

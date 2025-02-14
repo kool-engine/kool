@@ -52,7 +52,7 @@ class HelloCompute : DemoScene("Hello Compute") {
 
                     // storage textures can be randomly read and written
                     pixelStorage[texelCoord] = rgba
-                    storageTextureWrite(storageTex, texelCoord, rgba)
+                    storageTex[texelCoord] = rgba
                 }
             }
         }

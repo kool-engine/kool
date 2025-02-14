@@ -272,7 +272,11 @@ class WgslGenerator : KslGenerator() {
         return "textureDimensions(${textureName}, $level)"
     }
 
-    override fun texelFetch(expression: KslTexelFetch<*>): String {
+    override fun textureSize(textureSize: KslStorageTextureSize<*, *>): String {
+        return "textureDimensions(${textureSize.storageTex.generateExpression(this)})"
+    }
+
+    override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
         val textureName = expression.sampler.generateExpression(this)
         val coord = expression.coord.generateExpression(this)
         val level = expression.lod?.generateExpression(this) ?: "0"
@@ -309,7 +313,7 @@ class WgslGenerator : KslGenerator() {
         }
     }
 
-    override fun opStorageTextureWrite(op: KslStorageTextureWrite<*, *, *>): String {
+    override fun opStorageTextureWrite(op: KslStorageTextureStore<*, *>): String {
         val storage = op.storage.generateExpression(this)
         val expr = op.data.generateExpression(this)
         val coord = op.coord.generateExpression(this)
@@ -342,7 +346,7 @@ class WgslGenerator : KslGenerator() {
         return "atomicCompareExchangeWeak(&$storage${arrayIndex}, ${comp}, ${expr}).old_value"
     }
 
-    override fun storageTextureRead(storageTextureRead: KslStorageTextureRead<*, *, *>): String {
+    override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *>): String {
         val storage = storageTextureRead.storage.generateExpression(this)
         val coord = storageTextureRead.coord.generateExpression(this)
         return "textureLoad($storage, $coord)"

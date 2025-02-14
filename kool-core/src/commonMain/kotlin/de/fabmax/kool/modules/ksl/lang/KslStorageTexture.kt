@@ -34,7 +34,7 @@ class KslStorageTexture3d<T: KslStorageTexture3dType<*>>(name: String, storage: 
     override val expressionType: T get() = storageType
 }
 
-class KslStorageTextureRead<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
+class KslStorageTextureLoad<T: KslStorageTextureType<*, C>, C: KslIntType>(
     val storage: KslStorageTexture<T, *>,
     val coord: KslExpression<C>
 ) : KslExprFloat4 {
@@ -48,10 +48,10 @@ class KslStorageTextureRead<T: KslStorageTextureType<R, C>, R: KslNumericType, C
         return storage.collectStateDependencies() + coord.collectStateDependencies()
     }
     override fun generateExpression(generator: KslGenerator): String = generator.storageTextureRead(this)
-    override fun toPseudoCode(): String = "storageTextureRead(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
+    override fun toPseudoCode(): String = "textureLoad(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
 
-open class KslStorageTextureWrite<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
+open class KslStorageTextureStore<T: KslStorageTextureType<*, C>, C: KslIntType>(
     val storage: KslStorageTexture<T, *>,
     val coord: KslExpression<C>,
     val data: KslExprFloat4,
@@ -68,6 +68,23 @@ open class KslStorageTextureWrite<T: KslStorageTextureType<R, C>, R: KslNumericT
     }
 
     override fun toPseudoCode(): String {
-        return annotatePseudoCode("storageTextureWrite(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${data.toPseudoCode()})")
+        return annotatePseudoCode("textureStore(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${data.toPseudoCode()})")
     }
+}
+
+class KslImageTextureLoad<T: KslSamplerType<KslFloat4>>(
+    val sampler: KslExpression<T>,
+    val coord: KslExpression<*>,
+    val lod: KslScalarExpression<KslInt1>?
+) : KslExprFloat4 {
+
+    override val expressionType = KslFloat4
+
+    override fun collectStateDependencies(): Set<KslMutatedState> {
+        val deps = sampler.collectStateDependencies() + coord.collectStateDependencies()
+        return lod?.let { deps + it.collectStateDependencies() } ?: deps
+    }
+
+    override fun generateExpression(generator: KslGenerator): String = generator.imageTextureRead(this)
+    override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.textureLoad(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }
