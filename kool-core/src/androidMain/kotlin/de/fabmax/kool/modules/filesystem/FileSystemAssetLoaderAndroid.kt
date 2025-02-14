@@ -7,7 +7,7 @@ import java.io.ByteArrayInputStream
 
 class FileSystemAssetLoaderAndroid(baseDir: FileSystemDirectory): FileSystemAssetLoader(baseDir) {
     override suspend fun loadImageAtlas(ref: AssetRef.ImageAtlas): LoadedAsset.ImageAtlas {
-        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.props)
+        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.format, ref.resolveSize)
         val result = loadBufferedImage2d(refCopy).result.mapCatching {
             imageAtlasTextureData(it, ref.tilesX, ref.tilesY)
         }
@@ -18,7 +18,7 @@ class FileSystemAssetLoaderAndroid(baseDir: FileSystemDirectory): FileSystemAsse
         val tex = loadData(ref.path)
         val result = tex.mapCatching { buf ->
             ByteArrayInputStream(buf.toArray()).use {
-                PlatformAssetsImpl.readImageData(it, MimeType.forFileName(ref.path), ref.props)
+                PlatformAssetsImpl.readImageData(it, MimeType.forFileName(ref.path), ref.format, ref.resolveSize)
             }
         }
         return LoadedAsset.BufferedImage2d(ref, result)
