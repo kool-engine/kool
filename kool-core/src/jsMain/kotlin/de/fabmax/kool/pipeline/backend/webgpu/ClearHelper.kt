@@ -52,7 +52,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
         fun clear(passEncoderState: RenderPassEncoderState) {
             val rp = passEncoderState.renderPass
             val clearColor = (rp.colorAttachments[0].clearColor as? ClearColorFill)?.clearColor
-            val clearDepth = if (rp.isReverseDepth) 0f else 1f
+            val clearDepth = rp.depthMode.far
 
             if (clearColor != prevColor || clearDepth != prevDepth) {
                 prevColor = clearColor

@@ -34,14 +34,14 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     private val sunOrientation = MutableMat3f()
     private val nightOrientation = MutableMat3f()
 
-    private val skybox = Skybox.Cube(texLod = 1f, isInfiniteDepth = mainScene.isInfiniteDepth)
-    private val sunShader = SkyObjectShader(mainScene.isInfiniteDepth) {
+    private val skybox = Skybox.Cube(texLod = 1f, depthMode = mainScene.depthMode)
+    private val sunShader = SkyObjectShader(mainScene.depthMode) {
         uniformColor(Color.WHITE.mix(MdColor.YELLOW, 0.15f).toLinear())
     }
-    private val moonShader = SkyObjectShader(mainScene.isInfiniteDepth) {
+    private val moonShader = SkyObjectShader(mainScene.depthMode) {
         textureColor(moonTex)
     }
-    private val starShader = StarShader(mainScene.isInfiniteDepth)
+    private val starShader = StarShader(mainScene.depthMode)
 
     private val sunMesh = ColorMesh().apply {
         isFrustumChecked = false
@@ -213,15 +213,15 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     }
 
     private class SkyObjectShader(
-        isReverseDepth: Boolean,
+        depthMode: DepthMode,
         colorBlock: ColorBlockConfig.Builder.() -> Unit
-    ) : KslUnlitShader(config(isReverseDepth, colorBlock)) {
+    ) : KslUnlitShader(config(depthMode, colorBlock)) {
 
         var orientation: Mat3f by uniformMat3f("uOrientation")
         var alpha: Float by uniform1f("uAlpha", 1f)
 
         companion object {
-            fun config(isReverseDepth: Boolean, colorBlock: ColorBlockConfig.Builder.() -> Unit) = UnlitShaderConfig {
+            fun config(depthMode: DepthMode, colorBlock: ColorBlockConfig.Builder.() -> Unit) = UnlitShaderConfig {
                 color {
                     colorBlock()
                 }
@@ -236,7 +236,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
                             val mvpMat = mvpMatrix().matrix
                             val localPos = vertexAttribFloat3(Attribute.POSITIONS.name)
                             val orientation = uniformMat3("uOrientation")
-                            if (isReverseDepth) {
+                            if (depthMode == DepthMode.Reversed) {
                                 outPosition set (mvpMat * float4Value(orientation * localPos * 1e9f.const, 1f)).float4("xyzw")
                             } else {
                                 outPosition set (mvpMat * float4Value(orientation * localPos, 0f)).float4("xyww")
@@ -256,7 +256,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         }
     }
 
-    private class StarShader(isReverseDepth: Boolean) : KslShader("triangulated-star-shader") {
+    private class StarShader(depthMode: DepthMode) : KslShader("triangulated-star-shader") {
         var orientation: Mat3f by uniformMat3f("uOrientation")
         var alpha: Float by uniform1f("uAlpha", 1f)
 
@@ -275,7 +275,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
 
                         val mvpMat = mat4Var(camData.viewProjMat * modelMat.matrix)
                         val orientation = uniformMat3("uOrientation")
-                        if (isReverseDepth) {
+                        if (depthMode == DepthMode.Reversed) {
                             outPosition set (mvpMat * float4Value(orientation * pointPos * 1e9f.const, 1f)).float4("xyzw")
                         } else {
                             outPosition set (mvpMat * float4Value(orientation * pointPos, 0f)).float4("xyww")

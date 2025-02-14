@@ -206,7 +206,7 @@ abstract class RenderPassVk(
                     when (renderPass.depthAttachment?.clearDepth) {
                         ClearDepthFill -> {
                             loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                            clearValue { cv -> cv.depthStencil { it.depth(if (renderPass.isReverseDepth) 0f else 1f) } }
+                            clearValue { cv -> cv.depthStencil { it.depth(renderPass.depthMode.far) } }
                         }
                         ClearDepthLoad -> loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
                         else -> loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)

@@ -690,8 +690,8 @@ open class Mat4f(
             return MutableMat4f().lookAt(eyePosition, lookAt, up)
         }
 
-        fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float, depthRange: DepthRange): Mat4f {
-            return MutableMat4f().orthographic(left, right, bottom, top, near, far, depthRange)
+        fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float, depthRange: DepthRange, reversedDepth: Boolean): Mat4f {
+            return MutableMat4f().orthographic(left, right, bottom, top, near, far, depthRange, reversedDepth)
         }
 
         fun perspective(fovy: AngleF, aspect: Float, near: Float, far: Float, depthRange: DepthRange): Mat4f {
@@ -1171,20 +1171,23 @@ open class MutableMat4f(
     /**
      * Inplace operation: Applies an orthographic projection transform to this matrix.
      */
-    fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float, depthRange: DepthRange): MutableMat4f {
+    fun orthographic(left: Float, right: Float, bottom: Float, top: Float, near: Float, far: Float, depthRange: DepthRange, reversedDepth: Boolean): MutableMat4f {
+        val farD = if (reversedDepth) near else far
+        val nearD = if (reversedDepth) far else near
+
         if (left == right) {
             throw IllegalArgumentException("left == right")
         }
         if (bottom == top) {
             throw IllegalArgumentException("bottom == top")
         }
-        if (near == far) {
+        if (nearD == farD) {
             throw IllegalArgumentException("near == far")
         }
 
         val w = 1.0f / (right - left)
         val h = 1.0f / (top - bottom)
-        val d = 1.0f / (far - near)
+        val d = 1.0f / (farD - nearD)
 
         val x = (right + left) * w
         val y = (top + bottom) * h
@@ -1193,11 +1196,11 @@ open class MutableMat4f(
         val zd: Float
         when (depthRange) {
             DepthRange.NEGATIVE_ONE_TO_ONE -> {
-                z = (far + near) * d
+                z = (farD + nearD) * d
                 zd = -2 * d
             }
             DepthRange.ZERO_TO_ONE -> {
-                z = near * d
+                z = nearD * d
                 zd = -1 * d
             }
         }
@@ -1977,8 +1980,8 @@ open class Mat4d(
             return MutableMat4d().lookAt(eyePosition, lookAt, up)
         }
 
-        fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double, depthRange: DepthRange): Mat4d {
-            return MutableMat4d().orthographic(left, right, bottom, top, near, far, depthRange)
+        fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double, depthRange: DepthRange, reversedDepth: Boolean): Mat4d {
+            return MutableMat4d().orthographic(left, right, bottom, top, near, far, depthRange, reversedDepth)
         }
 
         fun perspective(fovy: AngleD, aspect: Double, near: Double, far: Double, depthRange: DepthRange): Mat4d {
@@ -2458,20 +2461,23 @@ open class MutableMat4d(
     /**
      * Inplace operation: Applies an orthographic projection transform to this matrix.
      */
-    fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double, depthRange: DepthRange): MutableMat4d {
+    fun orthographic(left: Double, right: Double, bottom: Double, top: Double, near: Double, far: Double, depthRange: DepthRange, reversedDepth: Boolean): MutableMat4d {
+        val farD = if (reversedDepth) near else far
+        val nearD = if (reversedDepth) far else near
+
         if (left == right) {
             throw IllegalArgumentException("left == right")
         }
         if (bottom == top) {
             throw IllegalArgumentException("bottom == top")
         }
-        if (near == far) {
+        if (nearD == farD) {
             throw IllegalArgumentException("near == far")
         }
 
         val w = 1.0 / (right - left)
         val h = 1.0 / (top - bottom)
-        val d = 1.0 / (far - near)
+        val d = 1.0 / (farD - nearD)
 
         val x = (right + left) * w
         val y = (top + bottom) * h
@@ -2480,11 +2486,11 @@ open class MutableMat4d(
         val zd: Double
         when (depthRange) {
             DepthRange.NEGATIVE_ONE_TO_ONE -> {
-                z = (far + near) * d
+                z = (farD + nearD) * d
                 zd = -2 * d
             }
             DepthRange.ZERO_TO_ONE -> {
-                z = near * d
+                z = nearD * d
                 zd = -1 * d
             }
         }

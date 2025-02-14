@@ -87,7 +87,6 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val editorCameraTransform = EditorCamTransform(this)
     private val editorCamParent = Node()
     private val editorBackgroundScene = scene("editor-background") {
-        tryEnableInfiniteDepth()
         addNode(editorCamParent)
         editorCamParent.addNode(editorCameraTransform)
         clearColor = ClearColorFill(Color.BLACK)
@@ -298,10 +297,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
                 selectionOverlay.selectionPass.drawNode = scene
 
                 // replace original scene cam with editor cam
-                if (overlayScene.isInfiniteDepth) {
-                    editorCam.setClipRange(0.01f, 1e15f)
-                    editorCameraTransform.maxZoom = 1e15
-                }
+                editorCam.setClipRange(0.01f, 1e15f)
+                editorCameraTransform.maxZoom = 1e15
                 editorScene.sceneComponent.setCamera(editorCam)
                 ui.sceneView.applyViewportTo(scene)
             }

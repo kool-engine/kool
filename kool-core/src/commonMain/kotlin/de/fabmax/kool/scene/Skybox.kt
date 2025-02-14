@@ -7,10 +7,7 @@ import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.convertColorSpace
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.CullMethod
-import de.fabmax.kool.pipeline.PipelineConfig
-import de.fabmax.kool.pipeline.TextureCube
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.UniqueId
@@ -24,16 +21,16 @@ object Skybox {
         environmentMap: TextureCube,
         texLod: Float = 0f,
         colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(),
-        isInfiniteDepth: Boolean = false
+        depthMode: DepthMode = DepthMode.Reversed
     ): Cube {
-        return Cube(environmentMap, texLod, colorSpaceConversion, isInfiniteDepth)
+        return Cube(environmentMap, texLod, colorSpaceConversion, depthMode)
     }
 
     class Cube(
         skyTex: TextureCube? = null,
         texLod: Float = 0f,
         colorSpaceConversion: ColorSpaceConversion = ColorSpaceConversion.LinearToSrgbHdr(),
-        isInfiniteDepth: Boolean = false
+        depthMode: DepthMode = DepthMode.Reversed
     ) : Mesh(IndexedVertexList(Attribute.POSITIONS), name = UniqueId.nextId("Skybox.Cube")) {
 
         val skyboxShader: KslSkyCubeShader
@@ -45,7 +42,7 @@ object Skybox {
             isFrustumChecked = false
             isCastingShadow = false
             rayTest = MeshRayTest.nopTest()
-            skyboxShader = KslSkyCubeShader(colorSpaceConversion, isInfiniteDepth).apply {
+            skyboxShader = KslSkyCubeShader(colorSpaceConversion, depthMode).apply {
                 setSingleSky(skyTex)
                 lod = texLod
             }
@@ -53,9 +50,9 @@ object Skybox {
         }
     }
 
-    class KslSkyCubeShader(val colorSpaceConversion: ColorSpaceConversion, val isInfiniteDepth: Boolean) :
+    class KslSkyCubeShader(val colorSpaceConversion: ColorSpaceConversion, val depthMode: DepthMode) :
         KslShader(
-            Model(colorSpaceConversion, isInfiniteDepth),
+            Model(colorSpaceConversion, depthMode),
             PipelineConfig(cullMethod = CullMethod.CULL_FRONT_FACES, isWriteDepth = false)
         )
     {
@@ -73,7 +70,7 @@ object Skybox {
             skyWeights = Vec2f(weightA, weightB)
         }
 
-        class Model(colorSpaceConversion: ColorSpaceConversion, isInfiniteDepth: Boolean) : KslProgram("skycube-shader") {
+        class Model(colorSpaceConversion: ColorSpaceConversion, depthMode: DepthMode) : KslProgram("skycube-shader") {
             init {
                 val orientedPos = interStageFloat3()
                 vertexStage {
@@ -107,7 +104,7 @@ object Skybox {
                             color += sampleTexture(skies[1], orientedPos.output, texLod).rgb * skyWeights.y
                         }
                         colorOutput(convertColorSpace(color, colorSpaceConversion), 1f.const)
-                        outDepth set if (isInfiniteDepth) 0f.const else 1f.const
+                        outDepth set depthMode.far.const
                     }
                 }
             }

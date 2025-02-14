@@ -27,6 +27,7 @@ open class DepthMapPass(
 
     init {
         mirrorIfInvertedClipY()
+        depthMode = DepthMode.Legacy
         onAfterCollectDrawCommands += { ev ->
             // replace regular object shaders by cheaper shadow versions
             val q = ev.view.drawQueue
@@ -98,6 +99,7 @@ class NormalLinearDepthMapPass(
     val normalDepthMap: Texture2d get() = colorTexture!!
 
     init {
+        depthMode = DepthMode.Legacy
         mirrorIfInvertedClipY()
     }
 

@@ -330,7 +330,7 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(Attribute.POSI
     }
 
     companion object {
-        val viewProj = Mat4f.orthographic(-1f, 1f, -1f, 1f, -1f, 1f, DepthRange.ZERO_TO_ONE)
+        val viewProj = Mat4f.orthographic(-1f, 1f, -1f, 1f, -1f, 1f, DepthRange.ZERO_TO_ONE, true)
     }
 }
 

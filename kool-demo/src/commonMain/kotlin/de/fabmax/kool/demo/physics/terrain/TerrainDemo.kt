@@ -99,10 +99,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        // enable infinite depth early, skybox creation needs to know if it was successful
-        // infinite depth isn't really needed for this demo, but it's a nice test
-        mainScene.tryEnableInfiniteDepth()
-
         showLoadText("Loading height map...")
         val heightData = loadBlob("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
         val heightMap = Heightmap.fromRawData(heightData, 200f, heightOffset = -50f)
@@ -295,11 +291,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private fun Scene.setupCamera() {
         camRig = CharacterTrackingCamRig(false).apply {
-            if (isInfiniteDepth) {
-                camera.setClipRange(0.1f, 1e9f)
-            } else {
-                camera.setClipRange(0.5f, 5000f)
-            }
+            camera.setClipRange(0.1f, 1e9f)
             trackedPose = physicsObjects.playerController.controller.actor.transform
             minZoom = 0.75f
             maxZoom = 100f
@@ -342,7 +334,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updateOceanShader(isGroundPbr: Boolean) {
-        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorCopy, shadowMap, wind.density, oceanBump, oceanColor, isGroundPbr, mainScene.isInfiniteDepth)
+        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorCopy, shadowMap, wind.density, oceanBump, oceanColor, isGroundPbr, mainScene.depthMode)
     }
 
     private fun updateTreeShader(isVegetationPbr: Boolean) {

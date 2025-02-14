@@ -41,7 +41,7 @@ abstract class RenderPass(
     var lighting: Lighting? = null
 
     var isDoublePrecision = false
-    open var isReverseDepth = false
+    var depthMode = DepthMode.Reversed
 
     val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
     val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
@@ -260,3 +260,8 @@ sealed interface ClearDepth
 data object ClearDepthLoad : ClearDepth
 data object ClearDepthDontCare : ClearDepth
 data object ClearDepthFill : ClearDepth
+
+enum class DepthMode(val far: Float) {
+    Reversed(0f),
+    Legacy(1f),
+}

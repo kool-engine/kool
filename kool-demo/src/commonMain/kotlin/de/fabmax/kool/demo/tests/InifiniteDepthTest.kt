@@ -18,7 +18,6 @@ import de.fabmax.kool.util.MdColor
 class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        tryEnableInfiniteDepth()
         camera.setup()
 
         addMesh(Attribute.POSITIONS, Attribute.COLORS) {

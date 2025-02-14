@@ -3,6 +3,7 @@ package de.fabmax.kool.scene
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
+import de.fabmax.kool.pipeline.DepthMode
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.LazyMat4d
@@ -93,7 +94,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     }
 
     open fun updateCamera(updateEvent: RenderPass.UpdateEvent) {
-        isReverseDepthProjection = updateEvent.renderPass.isReverseDepth
+        isReverseDepthProjection = updateEvent.renderPass.depthMode == DepthMode.Reversed
         if (useViewportAspectRatio) {
             aspectRatio = updateEvent.view.viewport.aspectRatio
         }
@@ -394,16 +395,12 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
     }
 
     override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
-        check(!isReverseDepthProjection) {
-            "Reverse depth is not yet implemented for orthographic cameras"
-        }
-
         if (left != right && bottom != top && clipNear != clipFar) {
             proj.setIdentity()
             if (updateEvent.renderPass.isMirrorY) {
                 proj.m11 *= -1f
             }
-            proj.orthographic(left, right, bottom, top, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
+            proj.orthographic(left, right, bottom, top, clipNear, clipFar, updateEvent.ctx.backend.depthRange, isReverseDepthProjection)
         }
 
         viewParams.set(0f, 0f, (right - left) / 2f, (top - bottom) / 2f)
@@ -556,7 +553,7 @@ open class PerspectiveProxyCam(var trackedCam: PerspectiveCamera) : PerspectiveC
         clipNear = trackedCam.clipNear
         clipFar = trackedCam.clipFar
 
-        if (!updateEvent.renderPass.isReverseDepth && trackedCam.isReverseDepthProjection) {
+        if (updateEvent.renderPass.depthMode == DepthMode.Legacy && trackedCam.isReverseDepthProjection) {
             // limit far plane distance if this render pass is not reversed depth but the tracked camera is
             clipFar = min(clipFar, clipNear * 10_000f)
         }

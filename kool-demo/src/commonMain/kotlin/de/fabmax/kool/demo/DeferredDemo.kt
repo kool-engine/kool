@@ -36,7 +36,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private val rand = Random(1337)
 
     private val isShowMaps = mutableStateOf(false)
-    private val isAutoRotate = mutableStateOf(false)
+    private val isAutoRotate = mutableStateOf(true)
     private val lightCount = mutableStateOf(2000)
     private val lightPower = mutableStateOf(1f)
     private val lightRadius = mutableStateOf(1f)

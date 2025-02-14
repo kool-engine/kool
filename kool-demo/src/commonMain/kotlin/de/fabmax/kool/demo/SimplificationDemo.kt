@@ -33,7 +33,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         shader = TriangulatedLineMesh.Shader {
             color { vertexColor() }
             colorSpaceConversion = ColorSpaceConversion.AsIs
-            depthFactor = 0.9999f
+            depthFactor = 1.0001f
         }
     }
 

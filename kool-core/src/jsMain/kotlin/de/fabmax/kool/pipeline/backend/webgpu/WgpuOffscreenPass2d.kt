@@ -125,7 +125,7 @@ class WgpuOffscreenPass2d(
                 view = depthView,
                 depthLoadOp = depthLoadOp,
                 depthStoreOp = GPUStoreOp.store,
-                depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
+                depthClearValue = renderPass.depthMode.far
             )
         }
         return passEncoderState.encoder.beginRenderPass(colors, depth, timestampWrites, renderPass.name)
