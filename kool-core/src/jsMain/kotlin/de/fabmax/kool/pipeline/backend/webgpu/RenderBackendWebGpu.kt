@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJs
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.numMipLevels
@@ -72,11 +74,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override suspend fun startRenderLoop() {
-        adapter = checkNotNull(
-            navigator.gpu.requestAdapter(GPURequestAdapterOptions(GPUPowerPreference.highPerformance)).await()
-        ) {
-            "No appropriate GPUAdapter found."
-        }
+        val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(KoolSystem.configJs.powerPreference)).await()
+            ?: navigator.gpu.requestAdapter().await()
+        adapter = checkNotNull(selectedAdapter) { "No appropriate GPUAdapter found." }
 
         val availableFeatures = mutableSetOf<String>()
         adapter.features.forEach { s: String -> availableFeatures.add(s) }

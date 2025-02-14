@@ -193,7 +193,7 @@ class JsContext internal constructor() : KoolContext() {
                     //  of stuff by now, so recreating the backend at this point seems risky but there isn't much we
                     //  can do about that.
 
-                    logW { "Failed initializing WebGPU context, falling back to WebGL" }
+                    logW { "Failed initializing WebGPU context, falling back to WebGL: $e" }
                     backend = RenderBackendGlImpl(this@JsContext, canvas)
                     backend.startRenderLoop()
                 } else {
