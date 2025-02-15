@@ -55,7 +55,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return storage in main.dependencies || functions.values.any { f -> storage in f.body.dependencies }
     }
 
-    fun dependsOn(storage: KslStorageTexture<*, *>): Boolean {
+    fun dependsOn(storage: KslStorageTexture<*, *, *>): Boolean {
         return storage in main.dependencies || functions.values.any { f -> storage in f.body.dependencies }
     }
 
@@ -67,7 +67,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return program.storageBuffers.values.filter { dependsOn(it) }
     }
 
-    fun getUsedStorageTextures(): List<KslStorageTexture<*, *>> {
+    fun getUsedStorageTextures(): List<KslStorageTexture<*, *, *>> {
         return program.storageTextures.values.filter { dependsOn(it) }
     }
 
@@ -225,6 +225,11 @@ class KslComputeStage(program: KslProgram, val workGroupSize: Vec3i) : KslShader
         globalScope.definedStates += inWorkGroupId.value
         globalScope.definedStates += inNumWorkGroups.value
         globalScope.definedStates += inWorkGroupSize.value
+    }
+
+    fun KslScopeBuilder.`return`() {
+        check (parentStage is KslComputeStage) { "return is only available in compute stage" }
+        ops += KslReturn(this, KslValueVoid)
     }
 
     companion object {

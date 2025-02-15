@@ -67,9 +67,9 @@ abstract class KslGenerator {
     abstract fun sampleColorTextureArrayGrad(sampleTextureGrad: KslSampleColorTextureArrayGrad<*>): String
     abstract fun sampleDepthTextureArray(sampleTexture: KslSampleDepthTextureArray<*>): String
     abstract fun textureSize(textureSize: KslTextureSize<*, *>): String
-    abstract fun textureSize(textureSize: KslStorageTextureSize<*, *>): String
+    abstract fun textureSize(textureSize: KslStorageTextureSize<*, *, *>): String
 
-    abstract fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *>): String
+    abstract fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String
     abstract fun imageTextureRead(expression: KslImageTextureLoad<*>): String
 
     abstract fun storageRead(storageRead: KslStorageRead<*, *, *>): String
@@ -108,7 +108,7 @@ abstract class KslGenerator {
             is KslBlock -> opBlock(op)
             is KslInlineCode -> opInlineCode(op)
             is KslStorageWrite<*, *, *> -> opStorageWrite(op)
-            is KslStorageTextureStore<*, *> -> opStorageTextureWrite(op)
+            is KslStorageTextureStore<*, *, *> -> opStorageTextureWrite(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
         }
     }
@@ -128,7 +128,7 @@ abstract class KslGenerator {
     abstract fun opBlock(op: KslBlock): String
     abstract fun opInlineCode(op: KslInlineCode): String
     abstract fun opStorageWrite(op: KslStorageWrite<*, *, *>): String
-    abstract fun opStorageTextureWrite(op: KslStorageTextureStore<*, *>): String
+    abstract fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String
 
     abstract fun invokeFunction(func: KslInvokeFunction<*>): String
 

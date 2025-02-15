@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import de.fabmax.kool.pipeline.TexFormat
 
-sealed class KslStorageTexture<T: KslStorageTextureType<*, C>, C: KslIntType>(
+sealed class KslStorageTexture<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
     name: String,
     val storageType: T,
     val texFormat: TexFormat
@@ -16,26 +16,26 @@ sealed class KslStorageTexture<T: KslStorageTextureType<*, C>, C: KslIntType>(
     internal var isWritten = false
 }
 
-class KslStorageTexture1d<T: KslStorageTexture1dType<*>>(name: String, storage: T, texFormat: TexFormat) :
-    KslStorageTexture<T, KslInt1>(name, storage, texFormat)
+class KslStorageTexture1d<T: KslStorageTexture1dType<R>, R: KslNumericType>(name: String, storage: T, texFormat: TexFormat) :
+    KslStorageTexture<T, R, KslInt1>(name, storage, texFormat)
 {
     override val expressionType: T get() = storageType
 }
 
-class KslStorageTexture2d<T: KslStorageTexture2dType<*>>(name: String, storage: T, texFormat: TexFormat) :
-    KslStorageTexture<T, KslInt2>(name, storage, texFormat)
+class KslStorageTexture2d<T: KslStorageTexture2dType<R>, R: KslNumericType>(name: String, storage: T, texFormat: TexFormat) :
+    KslStorageTexture<T, R, KslInt2>(name, storage, texFormat)
 {
     override val expressionType: T get() = storageType
 }
 
-class KslStorageTexture3d<T: KslStorageTexture3dType<*>>(name: String, storage: T, texFormat: TexFormat) :
-    KslStorageTexture<T, KslInt3>(name, storage, texFormat)
+class KslStorageTexture3d<T: KslStorageTexture3dType<R>, R: KslNumericType>(name: String, storage: T, texFormat: TexFormat) :
+    KslStorageTexture<T, R, KslInt3>(name, storage, texFormat)
 {
     override val expressionType: T get() = storageType
 }
 
-class KslStorageTextureLoad<T: KslStorageTextureType<*, C>, C: KslIntType>(
-    val storage: KslStorageTexture<T, *>,
+class KslStorageTextureLoad<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
+    val storage: KslStorageTexture<T, R, C>,
     val coord: KslExpression<C>
 ) : KslExprFloat4 {
     override val expressionType = KslFloat4
@@ -51,8 +51,8 @@ class KslStorageTextureLoad<T: KslStorageTextureType<*, C>, C: KslIntType>(
     override fun toPseudoCode(): String = "textureLoad(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
 
-open class KslStorageTextureStore<T: KslStorageTextureType<*, C>, C: KslIntType>(
-    val storage: KslStorageTexture<T, *>,
+open class KslStorageTextureStore<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
+    val storage: KslStorageTexture<T, R, C>,
     val coord: KslExpression<C>,
     val data: KslExprFloat4,
     scopeBuilder: KslScopeBuilder

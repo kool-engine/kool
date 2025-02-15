@@ -335,9 +335,9 @@ private fun KslProgram.setupBindGroupLayoutStorageTextures(bindGrpBuilder: BindG
 
         val name = storage.name
         bindGrpBuilder.storageTextures += when (storage) {
-            is KslStorageTexture1d<*> -> StorageTexture1dLayout(name, accessType, storage.texFormat, storageStages)
-            is KslStorageTexture2d<*> -> StorageTexture2dLayout(name, accessType, storage.texFormat, storageStages)
-            is KslStorageTexture3d<*> -> StorageTexture3dLayout(name, accessType, storage.texFormat, storageStages)
+            is KslStorageTexture1d<*, *> -> StorageTexture1dLayout(name, accessType, storage.texFormat, storageStages)
+            is KslStorageTexture2d<*, *> -> StorageTexture2dLayout(name, accessType, storage.texFormat, storageStages)
+            is KslStorageTexture3d<*, *> -> StorageTexture3dLayout(name, accessType, storage.texFormat, storageStages)
         }
     }
 }

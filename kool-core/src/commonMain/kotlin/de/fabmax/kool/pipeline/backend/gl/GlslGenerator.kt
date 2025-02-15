@@ -274,7 +274,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return "textureSize(${textureSize.sampler.generateExpression(this)}, ${textureSize.lod.generateExpression(this)})"
     }
 
-    override fun textureSize(textureSize: KslStorageTextureSize<*, *>): String {
+    override fun textureSize(textureSize: KslStorageTextureSize<*, *, *>): String {
         return "imageSize(${textureSize.storageTex.generateExpression(this)})"
     }
 
@@ -313,7 +313,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return "${storage}${arrayIndex} = $expr;"
     }
 
-    override fun opStorageTextureWrite(op: KslStorageTextureStore<*, *>): String {
+    override fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String {
         val storage = op.storage.generateExpression(this)
         val expr = op.data.generateExpression(this)
         val coord = op.coord.generateExpression(this)
@@ -346,7 +346,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return "atomicCompSwap($storage${arrayIndex}, ${comp}, ${expr})"
     }
 
-    override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *>): String {
+    override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String {
         val storage = storageTextureRead.storage.generateExpression(this)
         val coord = storageTextureRead.coord.generateExpression(this)
         return "imageLoad($storage, $coord)"

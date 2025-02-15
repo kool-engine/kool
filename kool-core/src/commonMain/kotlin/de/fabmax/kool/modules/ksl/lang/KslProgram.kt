@@ -24,7 +24,7 @@ open class KslProgram(val name: String) {
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
     val storageBuffers = mutableMapOf<String, KslStorage<*,*>>()
-    val storageTextures = mutableMapOf<String, KslStorageTexture<*,*>>()
+    val storageTextures = mutableMapOf<String, KslStorageTexture<*,*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
 
     var vertexStage: KslVertexStage? = null
@@ -98,7 +98,7 @@ open class KslProgram(val name: String) {
     }
 
     @PublishedApi
-    internal fun registerStorageTexture(storageTexture: KslStorageTexture<*,*>) {
+    internal fun registerStorageTexture(storageTexture: KslStorageTexture<*,*,*>) {
         storageTextures[storageTexture.name] = storageTexture
         stages.forEach {
             it.globalScope.definedStates += storageTexture
@@ -232,45 +232,45 @@ open class KslProgram(val name: String) {
     inline fun <reified T: KslNumericType> storageTexture1d(
         name: String,
         texFormat: TexFormat
-    ): KslStorageTexture1d<KslStorageTexture1dType<T>> {
+    ): KslStorageTexture1d<KslStorageTexture1dType<T>, T> {
         val type = numericTypeForT<T>()
-        val storage: KslStorageTexture<*,*> = storageTextures[name]
+        val storage: KslStorageTexture<*,*,*> = storageTextures[name]
             ?: KslStorageTexture1d(name, KslStorageTexture1dType(type), texFormat).also { registerStorageTexture(it) }
 
-        checkStorageTexType<KslStorageTexture1d<*>>(storage, type, texFormat)
+        checkStorageTexType<KslStorageTexture1d<KslStorageTexture1dType<T>, T>>(storage, type, texFormat)
         @Suppress("UNCHECKED_CAST")
-        return storage as KslStorageTexture1d<KslStorageTexture1dType<T>>
+        return storage as KslStorageTexture1d<KslStorageTexture1dType<T>, T>
     }
 
     inline fun <reified T: KslNumericType> storageTexture2d(
         name: String,
         texFormat: TexFormat
-    ): KslStorageTexture2d<KslStorageTexture2dType<T>> {
+    ): KslStorageTexture2d<KslStorageTexture2dType<T>, T> {
         val type = numericTypeForT<T>()
-        val storage: KslStorageTexture<*,*> = storageTextures[name]
+        val storage: KslStorageTexture<*,*,*> = storageTextures[name]
             ?: KslStorageTexture2d(name, KslStorageTexture2dType(type), texFormat).also { registerStorageTexture(it) }
 
-        checkStorageTexType<KslStorageTexture2d<*>>(storage, type, texFormat)
+        checkStorageTexType<KslStorageTexture2d<KslStorageTexture2dType<T>, T>>(storage, type, texFormat)
         @Suppress("UNCHECKED_CAST")
-        return storage as KslStorageTexture2d<KslStorageTexture2dType<T>>
+        return storage as KslStorageTexture2d<KslStorageTexture2dType<T>, T>
     }
 
     inline fun <reified T: KslNumericType> storageTexture3d(
         name: String,
         texFormat: TexFormat
-    ): KslStorageTexture3d<KslStorageTexture3dType<T>> {
+    ): KslStorageTexture3d<KslStorageTexture3dType<T>, T> {
         val type = numericTypeForT<T>()
-        val storage: KslStorageTexture<*,*> = storageTextures[name]
+        val storage: KslStorageTexture<*,*,*> = storageTextures[name]
             ?: KslStorageTexture3d(name, KslStorageTexture3dType(type), texFormat).also { registerStorageTexture(it) }
 
-        checkStorageTexType<KslStorageTexture3d<*>>(storage, type, texFormat)
+        checkStorageTexType<KslStorageTexture3d<KslStorageTexture3dType<T>, T>>(storage, type, texFormat)
         @Suppress("UNCHECKED_CAST")
-        return storage as KslStorageTexture3d<KslStorageTexture3dType<T>>
+        return storage as KslStorageTexture3d<KslStorageTexture3dType<T>, T>
     }
 
     @PublishedApi
-    internal inline fun <reified T: KslStorageTexture<*,*>> checkStorageTexType(
-        storage: KslStorageTexture<*,*>,
+    internal inline fun <reified T: KslStorageTexture<*,*,*>> checkStorageTexType(
+        storage: KslStorageTexture<*,*,*>,
         type: KslNumericType,
         texFormat: TexFormat
     ) {
