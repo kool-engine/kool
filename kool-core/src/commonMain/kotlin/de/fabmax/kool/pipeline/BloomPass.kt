@@ -132,7 +132,7 @@ class BloomPass(
 
             main {
                 val texelCoord = int2Var(inGlobalInvocationId.xy.toInt2())
-                `if`(any(texelCoord ge textureSize2d(downSampled))) {
+                `if`(any(texelCoord ge downSampled.size())) {
                     `return`()
                 }
 
@@ -144,22 +144,22 @@ class BloomPass(
                 val rx2 = float1Var(inputTexelSize.x * 2f.const)
                 val ry2 = float1Var(inputTexelSize.y * 2f.const)
 
-                val a = float3Var(sampleTexture(sampleInput, float2Value(u - rx2, v + ry2), 0f.const).rgb)
-                val b = float3Var(sampleTexture(sampleInput, float2Value(u, v + ry2), 0f.const).rgb)
-                val c = float3Var(sampleTexture(sampleInput, float2Value(u + rx2, v + ry2), 0f.const).rgb)
+                val a = float3Var(sampleInput.sample(float2Value(u - rx2, v + ry2), 0f.const).rgb)
+                val b = float3Var(sampleInput.sample(float2Value(u, v + ry2), 0f.const).rgb)
+                val c = float3Var(sampleInput.sample(float2Value(u + rx2, v + ry2), 0f.const).rgb)
 
-                val d = float3Var(sampleTexture(sampleInput, float2Value(u - rx2, v), 0f.const).rgb)
-                val e = float3Var(sampleTexture(sampleInput, float2Value(u, v), 0f.const).rgb)
-                val f = float3Var(sampleTexture(sampleInput, float2Value(u + rx2, v), 0f.const).rgb)
+                val d = float3Var(sampleInput.sample(float2Value(u - rx2, v), 0f.const).rgb)
+                val e = float3Var(sampleInput.sample(float2Value(u, v), 0f.const).rgb)
+                val f = float3Var(sampleInput.sample(float2Value(u + rx2, v), 0f.const).rgb)
 
-                val g = float3Var(sampleTexture(sampleInput, float2Value(u - rx2, v - ry2), 0f.const).rgb)
-                val h = float3Var(sampleTexture(sampleInput, float2Value(u, v - ry2), 0f.const).rgb)
-                val i = float3Var(sampleTexture(sampleInput, float2Value(u + rx2, v - ry2), 0f.const).rgb)
+                val g = float3Var(sampleInput.sample(float2Value(u - rx2, v - ry2), 0f.const).rgb)
+                val h = float3Var(sampleInput.sample(float2Value(u, v - ry2), 0f.const).rgb)
+                val i = float3Var(sampleInput.sample(float2Value(u + rx2, v - ry2), 0f.const).rgb)
 
-                val j = float3Var(sampleTexture(sampleInput, float2Value(u - rx, v + ry), 0f.const).rgb)
-                val k = float3Var(sampleTexture(sampleInput, float2Value(u + rx, v + ry), 0f.const).rgb)
-                val l = float3Var(sampleTexture(sampleInput, float2Value(u - rx, v - ry), 0f.const).rgb)
-                val m = float3Var(sampleTexture(sampleInput, float2Value(u + rx, v - ry), 0f.const).rgb)
+                val j = float3Var(sampleInput.sample(float2Value(u - rx, v + ry), 0f.const).rgb)
+                val k = float3Var(sampleInput.sample(float2Value(u + rx, v + ry), 0f.const).rgb)
+                val l = float3Var(sampleInput.sample(float2Value(u - rx, v - ry), 0f.const).rgb)
+                val m = float3Var(sampleInput.sample(float2Value(u + rx, v - ry), 0f.const).rgb)
 
                 val weightedAvg = float3Var(e * 0.125f.const)
                 weightedAvg += (j + k + l + m) * 0.125.const
@@ -188,7 +188,7 @@ class BloomPass(
 
             main {
                 val texelCoord = int2Var(inGlobalInvocationId.xy.toInt2())
-                `if`(any(texelCoord ge textureSize2d(downSampled))) {
+                `if`(any(texelCoord ge downSampled.size())) {
                     `return`()
                 }
 
@@ -198,17 +198,17 @@ class BloomPass(
                 val u = sampleUv.x
                 val v = sampleUv.y
 
-                val a = float3Var(sampleTexture(sampleInput, float2Value(u - rx, v + ry), 0f.const).rgb)
-                val b = float3Var(sampleTexture(sampleInput, float2Value(u, v + ry), 0f.const).rgb)
-                val c = float3Var(sampleTexture(sampleInput, float2Value(u + rx, v + ry), 0f.const).rgb)
+                val a = float3Var(sampleInput.sample(float2Value(u - rx, v + ry), 0f.const).rgb)
+                val b = float3Var(sampleInput.sample(float2Value(u, v + ry), 0f.const).rgb)
+                val c = float3Var(sampleInput.sample(float2Value(u + rx, v + ry), 0f.const).rgb)
 
-                val d = float3Var(sampleTexture(sampleInput, float2Value(u - rx, v), 0f.const).rgb)
-                val e = float3Var(sampleTexture(sampleInput, float2Value(u, v), 0f.const).rgb)
-                val f = float3Var(sampleTexture(sampleInput, float2Value(u + rx, v), 0f.const).rgb)
+                val d = float3Var(sampleInput.sample(float2Value(u - rx, v), 0f.const).rgb)
+                val e = float3Var(sampleInput.sample(float2Value(u, v), 0f.const).rgb)
+                val f = float3Var(sampleInput.sample(float2Value(u + rx, v), 0f.const).rgb)
 
-                val g = float3Var(sampleTexture(sampleInput, float2Value(u - rx, v - ry), 0f.const).rgb)
-                val h = float3Var(sampleTexture(sampleInput, float2Value(u, v - ry), 0f.const).rgb)
-                val i = float3Var(sampleTexture(sampleInput, float2Value(u + rx, v - ry), 0f.const).rgb)
+                val g = float3Var(sampleInput.sample(float2Value(u - rx, v - ry), 0f.const).rgb)
+                val h = float3Var(sampleInput.sample(float2Value(u, v - ry), 0f.const).rgb)
+                val i = float3Var(sampleInput.sample(float2Value(u + rx, v - ry), 0f.const).rgb)
 
                 var filtered = float3Var(downSampled[texelCoord].rgb)
                 filtered += e * (4f / 16f).const
