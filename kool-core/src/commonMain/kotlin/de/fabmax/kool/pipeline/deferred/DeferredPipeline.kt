@@ -147,9 +147,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
                 bloom.dependsOn(pass.lightingPass)
                 pass.bloomPass = bloom
             }
-//            bloomPass = BloomPass(passes[0].lightingPass.colorTexture!!)
-//            bloomPass.dependsOn(passes[0].lightingPass)
-//            bloomPass.dependsOn(passes[1].lightingPass)
         }
 
         // make sure scene content is updated from scene.onUpdate, although sceneContent group is not a direct child of scene

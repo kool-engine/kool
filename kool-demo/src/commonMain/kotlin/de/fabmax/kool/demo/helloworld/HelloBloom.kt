@@ -196,7 +196,7 @@ class HelloBloom : DemoScene("Bloom") {
 
         MenuRow {
             Text("Bloom pass:") { labelStyle(Grow.Companion.Std) }
-            Text("${(bloomGpuTime.use().inWholeMicroseconds / 1000.0).toString(2)} ms") { labelStyle() }
+            Text("${(bloomGpuTime.use().inWholeMicroseconds / 1000.0).toString(3)} ms") { labelStyle() }
         }
     }
 }

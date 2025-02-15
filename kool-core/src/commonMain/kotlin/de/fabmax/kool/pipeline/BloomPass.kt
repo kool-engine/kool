@@ -132,9 +132,6 @@ class BloomPass(
 
             main {
                 val texelCoord = int2Var(inGlobalInvocationId.xy.toInt2())
-                `if`(any(texelCoord ge downSampled.size())) {
-                    `return`()
-                }
 
                 val sampleUv = float2Var((texelCoord.toFloat2() + 0.5f.const) * inputTexelSize * 2f.const)
                 val u = sampleUv.x
@@ -172,7 +169,9 @@ class BloomPass(
                     weightedAvg set weightedAvg * luminance
                 }
 
-                downSampled[texelCoord] = float4Value(weightedAvg, 0f.const)
+                `if` (none(isNan(weightedAvg))) {
+                    downSampled[texelCoord] = float4Value(weightedAvg, 0f.const)
+                }
             }
         }
     }
@@ -188,9 +187,6 @@ class BloomPass(
 
             main {
                 val texelCoord = int2Var(inGlobalInvocationId.xy.toInt2())
-                `if`(any(texelCoord ge downSampled.size())) {
-                    `return`()
-                }
 
                 val sampleUv = float2Var((texelCoord.toFloat2() + 0.5f.const) * inputTexelSize * 0.5f.const)
                 val rx = float1Var(inputTexelSize.x * radius)

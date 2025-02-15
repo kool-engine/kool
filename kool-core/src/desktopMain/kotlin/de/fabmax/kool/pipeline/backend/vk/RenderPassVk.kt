@@ -358,6 +358,8 @@ abstract class RenderPassVk(
                     commandBuffer = passEncoderState.commandBuffer,
                     baseMipLevel = passEncoderState.mipLevel,
                     mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }
@@ -369,6 +371,8 @@ abstract class RenderPassVk(
                     commandBuffer = passEncoderState.commandBuffer,
                     baseMipLevel = passEncoderState.mipLevel,
                     mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }
@@ -381,6 +385,8 @@ abstract class RenderPassVk(
                         commandBuffer = passEncoderState.commandBuffer,
                         baseMipLevel = passEncoderState.mipLevel,
                         mipLevels = 1,
+                        baseArrayLayer = passEncoderState.layer,
+                        arrayLayers = 1,
                         stack = passEncoderState.stack
                     )
                 }
@@ -390,6 +396,8 @@ abstract class RenderPassVk(
                     commandBuffer = passEncoderState.commandBuffer,
                     baseMipLevel = passEncoderState.mipLevel,
                     mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }
@@ -404,6 +412,8 @@ abstract class RenderPassVk(
                         commandBuffer = passEncoderState.commandBuffer,
                         baseMipLevel = passEncoderState.mipLevel,
                         mipLevels = 1,
+                        baseArrayLayer = passEncoderState.layer,
+                        arrayLayers = 1,
                         stack = passEncoderState.stack
                     )
                 }
@@ -413,6 +423,8 @@ abstract class RenderPassVk(
                     commandBuffer = passEncoderState.commandBuffer,
                     baseMipLevel = passEncoderState.mipLevel,
                     mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
 
@@ -424,6 +436,8 @@ abstract class RenderPassVk(
                         commandBuffer = passEncoderState.commandBuffer,
                         baseMipLevel = passEncoderState.mipLevel,
                         mipLevels = 1,
+                        baseArrayLayer = passEncoderState.layer,
+                        arrayLayers = 1,
                         stack = passEncoderState.stack
                     )
                 }
@@ -433,6 +447,8 @@ abstract class RenderPassVk(
                     commandBuffer = passEncoderState.commandBuffer,
                     baseMipLevel = passEncoderState.mipLevel,
                     mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }

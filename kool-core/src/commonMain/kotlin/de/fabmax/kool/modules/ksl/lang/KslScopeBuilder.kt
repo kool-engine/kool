@@ -460,6 +460,8 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         KslBoolVectorExpr(boolVec, KslBoolVecOperator.Any)
     fun <T> all(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
         KslBoolVectorExpr(boolVec, KslBoolVecOperator.All)
+    fun <T> none(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
+        KslBoolVectorExpr(boolVec, KslBoolVecOperator.None)
 
     operator fun <T: KslType> KslAssignable<T>.plusAssign(expr: KslExpression<T>) {
         ops += KslAugmentedAssign(this, KslMathOperator.Plus, expr, this@KslScopeBuilder)

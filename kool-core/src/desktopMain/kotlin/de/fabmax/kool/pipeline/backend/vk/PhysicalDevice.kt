@@ -119,6 +119,16 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     private fun MemoryStack.selectPhysicalDevice(devices: List<PhysicalDeviceWrapper>): PhysicalDeviceWrapper {
+        backend.setup.forceDeviceName?.let { name ->
+            val forced = devices.find { it.properties.deviceNameString() == name }
+            if (forced != null) {
+                logI("PhysicalDevice") { "Forced device selection to device \"$name\"" }
+                return forced
+            } else {
+                logW("PhysicalDevice") { "Setup wanted to force device with name \"$name\", but it was not found" }
+            }
+        }
+
         val suitableDevices = devices.filter {
             it.queueFamiliyIndices.isComplete &&
                     it.isSupportingExtensions(backend.setup.requestedDeviceExtensions) &&
@@ -131,8 +141,8 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         }
 
         if (suitableDevices.size > 1) {
-            logD { "Multiple Vulkan capable GPUs found:" }
-            suitableDevices.forEach { dev -> logI { "  ${dev.properties.deviceNameString()}" } }
+            logI("PhysicalDevice") { "Multiple Vulkan capable GPUs found:" }
+            suitableDevices.forEach { dev -> logI("PhysicalDevice") { "  ${dev.properties.deviceNameString()}" } }
         }
         return suitableDevices.find { it.properties.deviceType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU } ?: devices.first()
     }
