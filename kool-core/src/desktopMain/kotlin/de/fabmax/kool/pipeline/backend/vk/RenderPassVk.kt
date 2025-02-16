@@ -62,7 +62,6 @@ abstract class RenderPassVk(
         if (anySingleShots) {
             renderPass.frameCopies.removeAll { it.isSingleShot }
         }
-        renderPass.afterPass()
 
         if (renderPass.isProfileTimes) {
             timeQuery.end(passEncoderState.commandBuffer)
@@ -207,7 +206,7 @@ abstract class RenderPassVk(
                     when (renderPass.depthAttachment?.clearDepth) {
                         ClearDepthFill -> {
                             loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR)
-                            clearValue { cv -> cv.depthStencil { it.depth(if (renderPass.isReverseDepth) 0f else 1f) } }
+                            clearValue { cv -> cv.depthStencil { it.depth(renderPass.depthMode.far) } }
                         }
                         ClearDepthLoad -> loadOp(VK_ATTACHMENT_LOAD_OP_LOAD)
                         else -> loadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE)
@@ -308,7 +307,7 @@ abstract class RenderPassVk(
                 aspectMask = aspectMask,
                 label = parentPass.name
             )
-            return ImageVk(backend, imageInfo, parentPass.name)
+            return ImageVk(backend, imageInfo)
         }
 
         private fun ImageVk.createMipViews() = List<List<VkImageView>>(parentPass.numRenderMipLevels) { mipLevel ->
@@ -357,6 +356,10 @@ abstract class RenderPassVk(
                     oldLayout = srcLayout,
                     newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     commandBuffer = passEncoderState.commandBuffer,
+                    baseMipLevel = passEncoderState.mipLevel,
+                    mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }
@@ -366,6 +369,10 @@ abstract class RenderPassVk(
                     oldLayout = srcLayout,
                     newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     commandBuffer = passEncoderState.commandBuffer,
+                    baseMipLevel = passEncoderState.mipLevel,
+                    mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }
@@ -376,6 +383,10 @@ abstract class RenderPassVk(
                         oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                         newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         commandBuffer = passEncoderState.commandBuffer,
+                        baseMipLevel = passEncoderState.mipLevel,
+                        mipLevels = 1,
+                        baseArrayLayer = passEncoderState.layer,
+                        arrayLayers = 1,
                         stack = passEncoderState.stack
                     )
                 }
@@ -383,6 +394,10 @@ abstract class RenderPassVk(
                     oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
                     newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     commandBuffer = passEncoderState.commandBuffer,
+                    baseMipLevel = passEncoderState.mipLevel,
+                    mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }
@@ -395,6 +410,10 @@ abstract class RenderPassVk(
                         oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                         commandBuffer = passEncoderState.commandBuffer,
+                        baseMipLevel = passEncoderState.mipLevel,
+                        mipLevels = 1,
+                        baseArrayLayer = passEncoderState.layer,
+                        arrayLayers = 1,
                         stack = passEncoderState.stack
                     )
                 }
@@ -402,6 +421,10 @@ abstract class RenderPassVk(
                     oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                     commandBuffer = passEncoderState.commandBuffer,
+                    baseMipLevel = passEncoderState.mipLevel,
+                    mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
 
@@ -411,6 +434,10 @@ abstract class RenderPassVk(
                         oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                         newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                         commandBuffer = passEncoderState.commandBuffer,
+                        baseMipLevel = passEncoderState.mipLevel,
+                        mipLevels = 1,
+                        baseArrayLayer = passEncoderState.layer,
+                        arrayLayers = 1,
                         stack = passEncoderState.stack
                     )
                 }
@@ -418,6 +445,10 @@ abstract class RenderPassVk(
                     oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
                     newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                     commandBuffer = passEncoderState.commandBuffer,
+                    baseMipLevel = passEncoderState.mipLevel,
+                    mipLevels = 1,
+                    baseArrayLayer = passEncoderState.layer,
+                    arrayLayers = 1,
                     stack = passEncoderState.stack
                 )
             }

@@ -3,9 +3,10 @@ package de.fabmax.kool.util
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.pipeline.MipMapping
+import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
 import kotlin.math.max
 import kotlin.math.round
 
@@ -17,7 +18,9 @@ class AtlasFont(
     val descentEm: Float = 0.35f,
     val heightEm: Float = 1.4f,
     val chars: String = STD_CHARS,
-    val fontMapProps: TextureProps = DEFAULT_FONT_TEX_PROPS,
+    val format: TexFormat = TexFormat.R,
+    val mipMapping: MipMapping = MipMapping.Off,
+    val samplerSettings: SamplerSettings = SamplerSettings(),
     val isExternalMap: Boolean = false
 ) : Font(sizePts) {
 
@@ -52,7 +55,7 @@ class AtlasFont(
         }
     }
 
-    override fun derive(sizePts: Float) = AtlasFont(family, sizePts, style, ascentEm, descentEm, heightEm, chars, fontMapProps, isExternalMap)
+    override fun derive(sizePts: Float) = AtlasFont(family, sizePts, style, ascentEm, descentEm, heightEm, chars, format, mipMapping, samplerSettings, isExternalMap)
 
     override fun toString(): String {
         return "AtlasFont { family: $family, size: $sizePts, style: $style, isExternalMap: $isExternalMap }"
@@ -103,11 +106,6 @@ class AtlasFont(
         const val SYSTEM_FONT = "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", sans-serif"
         val STD_CHARS: String
         val DEFAULT_FONT: AtlasFont
-
-        val DEFAULT_FONT_TEX_PROPS = TextureProps(
-            format = TexFormat.R,
-            isMipMapped = false
-        )
 
         init {
             var str = ""

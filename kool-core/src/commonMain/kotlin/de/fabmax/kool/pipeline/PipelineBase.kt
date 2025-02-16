@@ -54,8 +54,9 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
         return null
     }
 
-    fun findBindGroupItemByName(name: String): BindingLayout? {
-        return bindGroupLayouts.asList.firstNotNullOfOrNull { grp -> grp.bindings.find { it.name == name } }
+    fun findBindGroupItemByName(name: String): Pair<BindGroupLayout, BindingLayout>? {
+        val group = bindGroupLayouts.asList.find { grp -> grp.bindings.any { it.name == name } }
+        return group?.let { grp -> grp to grp.bindings.first { it.name == name } }
     }
 }
 

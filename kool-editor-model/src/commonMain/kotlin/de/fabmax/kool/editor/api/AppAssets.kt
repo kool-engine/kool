@@ -5,7 +5,10 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.loadGltfFile
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ImageData2d
+import de.fabmax.kool.pipeline.ImageData2dArray
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.Heightmap
 import de.fabmax.kool.util.Uint8Buffer
@@ -92,23 +95,21 @@ open class DefaultLoader(val pathPrefix: String) : AppAssetsLoader {
 
     override suspend fun loadTexture2d(ref: AssetReference.Texture): Result<Texture2d> {
         val prefixed = "${pathPrefix}${ref.path}"
-        val props = TextureProps(ref.texFormat)
         val image: Result<ImageData2d> = cache[ref]?.let { it.mapCatching { r -> r as ImageData2d } }
-            ?: assetLoader.loadImage2d(prefixed, props).also { cache[ref] = it }
-        return image.mapCatching { Texture2d(it, props, prefixed) }
+            ?: assetLoader.loadImage2d(prefixed, ref.texFormat).also { cache[ref] = it }
+        return image.mapCatching { Texture2d(it, name = prefixed) }
     }
 
     override suspend fun loadTexture2dArray(ref: AssetReference.TextureArray): Result<Texture2dArray> {
-        val props = TextureProps(ref.texFormat)
         val images: List<Result<ImageData2d>> = ref.paths.map { path ->
             val prefixed = "$pathPrefix$path"
             val texRef = AssetReference.Texture(prefixed, ref.texFormat)
             cache[texRef]?.let { it.mapCatching { r -> r as ImageData2d } }
-                ?: assetLoader.loadImage2d(prefixed, props).also { cache[texRef] = it }
+                ?: assetLoader.loadImage2d(prefixed, ref.texFormat).also { cache[texRef] = it }
         }
         return try {
             val data = ImageData2dArray(images.map { it.getOrThrow() })
-            Result.success(Texture2dArray(data, props, "Texture2dArray[${data.id}]"))
+            Result.success(Texture2dArray(data, name = "Texture2dArray[${data.id}]"))
         } catch (t: Throwable) {
             Result.failure(t)
         }

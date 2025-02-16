@@ -15,7 +15,8 @@ class KslBoolVectorExpr<T>(val boolVec: KslVectorExpression<T, KslBool1>, val op
 
 enum class KslBoolVecOperator(val opString: String) {
     Any("any"),
-    All("all")
+    All("all"),
+    None("!any")
 }
 
 class KslBoolScalarExpr(val left: KslScalarExpression<KslBool1>, val right: KslScalarExpression<KslBool1>, val op: KslBoolScalarOperator) :

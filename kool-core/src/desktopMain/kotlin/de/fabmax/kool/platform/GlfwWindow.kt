@@ -2,7 +2,6 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
@@ -253,7 +252,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         MemoryStack.stackPush().use { stack ->
             val images = GLFWImage.malloc(icon.size, stack)
             icon.forEachIndexed { i, img ->
-                val buffer = ImageDecoder.loadBufferedImage(img, TextureProps(TexFormat.RGBA)).data as Uint8BufferImpl
+                val buffer = ImageDecoder.loadBufferedImage(img, TexFormat.RGBA).data as Uint8BufferImpl
                 images.get(i).apply {
                     width(img.width)
                     height(img.height)

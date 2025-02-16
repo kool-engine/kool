@@ -9,7 +9,7 @@ class WgpuOffscreenPassCube(
     backend: RenderBackendWebGpu
 ) : WgpuRenderPass(GPUTextureFormat.depth32float, parentPass.numSamples, backend), OffscreenPassCubeImpl {
 
-    override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.props.format.wgpu }
+    override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }
     private var attachments = createAttachments()
 
     private fun createAttachments(): Attachments {
@@ -126,7 +126,7 @@ class WgpuOffscreenPassCube(
                 view = depthView,
                 depthLoadOp = depthLoadOp,
                 depthStoreOp = GPUStoreOp.store,
-                depthClearValue = if (renderPass.isReverseDepth) 0f else 1f
+                depthClearValue = renderPass.depthMode.far
             )
         }
         return passEncoderState.encoder.beginRenderPass(colors, depth, timestampWrites, renderPass.name)

@@ -95,7 +95,9 @@ class ScreenPassVk(backend: RenderBackendVk) :
             oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
             newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            baseMipLevel = 0,
             mipLevels = 1,
+            baseArrayLayer = 0,
             arrayLayers = 1,
             commandBuffer = passEncoderState.commandBuffer,
             stack = passEncoderState.stack
@@ -123,7 +125,16 @@ class ScreenPassVk(backend: RenderBackendVk) :
         }
         vkCmdBlitImage2KHR(passEncoderState.commandBuffer, blit)
 
-        dstImage.transitionLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, passEncoderState.commandBuffer, passEncoderState.stack)
+        dstImage.transitionLayout(
+            oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            baseMipLevel = 0,
+            mipLevels = 1,
+            baseArrayLayer = 0,
+            arrayLayers = 1,
+            commandBuffer = passEncoderState.commandBuffer,
+            stack = passEncoderState.stack)
     }
 
     fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: PassEncoderState) {

@@ -5,18 +5,19 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.util.Base64
 import com.caverock.androidsvg.SVG
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderAndroid
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.ImageData2d
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.util.AtlasFont
 import de.fabmax.kool.util.CharMetrics
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.Uint8BufferImpl
+import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayInputStream
@@ -34,31 +35,41 @@ object PlatformAssetsImpl : PlatformAssets {
         HttpCache.initCache(File(KoolSystem.configAndroid.appContext.cacheDir, "httpCache"))
     }
 
-    override suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): BufferedImageData2d {
+    override suspend fun loadImageFromBuffer(
+        texData: Uint8Buffer,
+        mimeType: String,
+        format: TexFormat,
+        resolveSize: Vec2i?
+    ): BufferedImageData2d {
         return withContext(Dispatchers.IO) {
-            readImageData(ByteArrayInputStream(texData.toArray()), mimeType, props)
+            readImageData(ByteArrayInputStream(texData.toArray()), mimeType, format, resolveSize)
         }
     }
 
-    fun readImageData(inStream: InputStream, mimeType: String, props: TextureProps?): BufferedImageData2d {
+    fun readImageData(
+        inStream: InputStream,
+        mimeType: String,
+        format: TexFormat,
+        resolveSize: Vec2i?
+    ): BufferedImageData2d {
         return inStream.use {
             when (mimeType) {
-                MimeType.IMAGE_SVG -> renderSvg(inStream, props)
+                MimeType.IMAGE_SVG -> renderSvg(inStream, format, resolveSize)
                 else -> {
                     var bmp = BitmapFactory.decodeStream(inStream)
-                    if (props?.resolveSize != null) {
-                        bmp = Bitmap.createScaledBitmap(bmp, props.resolveSize.x, props.resolveSize.y, true)
+                    if (resolveSize != null) {
+                        bmp = Bitmap.createScaledBitmap(bmp, resolveSize.x, resolveSize.y, true)
                     }
-                    bmp.toImageData2d().also { bmp.recycle() }
+                    bmp.toImageData2d(format).also { bmp.recycle() }
                 }
             }
         }
     }
 
-    private fun renderSvg(inStream: InputStream, props: TextureProps?): BufferedImageData2d {
+    private fun renderSvg(inStream: InputStream, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
         val svg = SVG.getFromInputStream(inStream)
-        var width = props?.resolveSize?.x ?: ceil(svg.documentViewBox.width()).toInt()
-        var height = props?.resolveSize?.y ?: ceil(svg.documentViewBox.height()).toInt()
+        var width = resolveSize?.x ?: ceil(svg.documentViewBox.width()).toInt()
+        var height = resolveSize?.y ?: ceil(svg.documentViewBox.height()).toInt()
         if (width <= 0) {
             width = 100
         }
@@ -69,12 +80,16 @@ object PlatformAssetsImpl : PlatformAssets {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         svg.renderToCanvas(canvas)
-        return bitmap.toImageData2d().also { bitmap.recycle() }
+        return bitmap.toImageData2d(format).also { bitmap.recycle() }
     }
 
-    private fun Bitmap.toImageData2d(): BufferedImageData2d {
+    private fun Bitmap.toImageData2d(format: TexFormat): BufferedImageData2d {
         val pixels = IntArray(width * height)
         getPixels(pixels, 0, width, 0, 0, width, height)
+
+        if (format != TexFormat.RGBA) {
+            logE("PlatformAssetsImpl") { "Currently, only TexFormat.RGBA can be loaded as texture" }
+        }
 
         val buffer = Uint8Buffer(width * height * 4)
         for (y in 0 until height) {

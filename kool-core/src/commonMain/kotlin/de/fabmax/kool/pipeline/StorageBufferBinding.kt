@@ -48,42 +48,42 @@ sealed class StorageBufferBinding<T: StorageBuffer?>(
 
 class StorageBuffer1dBinding(
     textureName: String,
-    defaultTexture: StorageBuffer1d?,
+    defaultBuffer: StorageBuffer1d?,
     shader: ShaderBase<*>
-) : StorageBufferBinding<StorageBuffer1d?>(textureName, defaultTexture, shader) {
+) : StorageBufferBinding<StorageBuffer1d?>(textureName, defaultBuffer, shader) {
     override fun BindGroupData.getFromData(): StorageBuffer1d? {
-        return storageTexture1dBindingData(bindingIndex).storageBuffer
+        return storageBuffer1dBindingData(bindingIndex).storageBuffer
     }
 
     override fun BindGroupData.setInData(buffer: StorageBuffer1d?) {
-        storageTexture1dBindingData(bindingIndex).storageBuffer = buffer
+        storageBuffer1dBindingData(bindingIndex).storageBuffer = buffer
     }
 }
 
 class StorageBuffer2dBinding(
     textureName: String,
-    defaultTexture: StorageBuffer2d?,
+    defaultBuffer: StorageBuffer2d?,
     shader: ShaderBase<*>
-) : StorageBufferBinding<StorageBuffer2d?>(textureName, defaultTexture, shader) {
+) : StorageBufferBinding<StorageBuffer2d?>(textureName, defaultBuffer, shader) {
     override fun BindGroupData.getFromData(): StorageBuffer2d? {
-        return storageTexture2dBindingData(bindingIndex).storageBuffer
+        return storageBuffer2dBindingData(bindingIndex).storageBuffer
     }
 
     override fun BindGroupData.setInData(buffer: StorageBuffer2d?) {
-        storageTexture2dBindingData(bindingIndex).storageBuffer = buffer
+        storageBuffer2dBindingData(bindingIndex).storageBuffer = buffer
     }
 }
 
 class StorageBuffer3dBinding(
     textureName: String,
-    defaultTexture: StorageBuffer3d?,
+    defaultBuffer: StorageBuffer3d?,
     shader: ShaderBase<*>
-) : StorageBufferBinding<StorageBuffer3d?>(textureName, defaultTexture, shader) {
+) : StorageBufferBinding<StorageBuffer3d?>(textureName, defaultBuffer, shader) {
     override fun BindGroupData.getFromData(): StorageBuffer3d? {
-        return storageTexture3dBindingData(bindingIndex).storageBuffer
+        return storageBuffer3dBindingData(bindingIndex).storageBuffer
     }
 
     override fun BindGroupData.setInData(buffer: StorageBuffer3d?) {
-        storageTexture3dBindingData(bindingIndex).storageBuffer = buffer
+        storageBuffer3dBindingData(bindingIndex).storageBuffer = buffer
     }
 }

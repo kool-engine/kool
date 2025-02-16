@@ -134,7 +134,7 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
     }
 
     private suspend fun Texture2d.reloadTexture(texPath: String) {
-        assetLoader.loadImage2d(texPath, props).getOrNull()?.let {
+        assetLoader.loadImage2d(texPath, format).getOrNull()?.let {
             withContext(Dispatchers.RenderLoop) {
                 upload(it)
             }

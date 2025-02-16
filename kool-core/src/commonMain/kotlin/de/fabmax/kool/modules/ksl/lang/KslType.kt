@@ -12,6 +12,7 @@ sealed class KslIntType(typeName: String) : KslNumericType(typeName)
 sealed class KslBoolType(typeName: String) : KslType(typeName)
 sealed class KslSamplerType<R: KslNumericType>(typeName: String) : KslType(typeName)
 sealed class KslStorageType<R: KslNumericType, C: KslIntType>(typeName: String, val elemType: R, val coordType: C) : KslType(typeName)
+sealed class KslStorageTextureType<R: KslNumericType, C: KslIntType>(typeName: String, val elemType: R, val coordType: C) : KslType(typeName)
 
 interface KslScalar
 
@@ -145,9 +146,34 @@ class KslStorage3dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslIn
     }
 }
 
+class KslStorageTexture1dType<R: KslNumericType>(elemType: R) : KslStorageTextureType<R, KslInt1>("KslStorageTexture1dType<${elemType.typeName}>", elemType, KslInt1) {
+    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is KslStorageTexture1dType<*>) return false
+        return elemType == other.elemType
+    }
+}
+
+class KslStorageTexture2dType<R: KslNumericType>(elemType: R) : KslStorageTextureType<R, KslInt2>("KslStorageTexture2dType<${elemType.typeName}>", elemType, KslInt2) {
+    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is KslStorageTexture2dType<*>) return false
+        return elemType == other.elemType
+    }
+}
+
+class KslStorageTexture3dType<R: KslNumericType>(elemType: R) : KslStorageTextureType<R, KslInt3>("KslStorageTexture3dType<${elemType.typeName}>", elemType, KslInt3) {
+    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is KslStorageTexture3dType<*>) return false
+        return elemType == other.elemType
+    }
+}
+
 inline fun <reified T: KslNumericType> numericTypeForT(): T {
-    // cast is needed if K2 compiler is used
-    @Suppress("USELESS_CAST")
     return when {
         KslFloat1 is T -> KslFloat1
         KslFloat2 is T -> KslFloat2
@@ -164,5 +190,5 @@ inline fun <reified T: KslNumericType> numericTypeForT(): T {
         KslUint3 is T  -> KslUint3
         KslUint4 is T  -> KslUint4
         else -> error("Unsupported storage type")
-    } as T
+    }
 }

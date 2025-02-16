@@ -17,8 +17,8 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         val data = checkNotNull(tex.uploadData)
         tex.uploadData = null
 
-        check(tex.props.format == data.format) {
-            "Image data format doesn't match texture format: ${data.format} != ${tex.props.format}"
+        check(tex.format == data.format) {
+            "Image data format doesn't match texture format: ${data.format} != ${tex.format}"
         }
 
         var loaded = loadedTextures[data.id]
@@ -50,7 +50,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         data = data,
         width = data.width,
         height = data.height,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMapping = tex.mipMapping,
     )
 
     private fun loadTexture3d(tex: Texture3d, data: ImageData3d): ImageVk = loadTexture(
@@ -69,7 +69,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         width = data.width,
         height = data.height,
         layers = 6,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMapping = tex.mipMapping,
         flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
     )
 
@@ -80,7 +80,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         width = data.width,
         height = data.height,
         layers = data.depth,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMapping = tex.mipMapping,
     )
 
     private fun loadTextureCubeArray(tex: TextureCubeArray, data: ImageDataCubeArray): ImageVk = loadTexture(
@@ -90,7 +90,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         width = data.width,
         height = data.height,
         layers = 6 * data.slices,
-        mipMaps = if (tex.props.isMipMapped) numMipLevels(data.width, data.height) else 1,
+        mipMapping = tex.mipMapping,
         flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
     )
 
@@ -102,11 +102,18 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
         height: Int = 1,
         depth: Int = 1,
         layers: Int = 1,
-        mipMaps: Int = 1,
+        mipMapping: MipMapping = MipMapping.Off,
         flags: Int = 0
     ): ImageVk {
-        val isMipMap = mipMaps > 1
-        val srcUsage = if (isMipMap) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else 0
+        if (mipMapping != tex.mipMapping) {
+            logW { "Texture ${tex.name} requests mip-mapping ${tex.mipMapping} but is forced to $mipMapping due to texture format" }
+        }
+        val srcUsage = if (mipMapping.isMipMapped) VK_IMAGE_USAGE_TRANSFER_SRC_BIT else 0
+        val levels = when (mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
         val imgInfo = ImageInfo(
             imageType = type,
             format = data.format.vk,
@@ -114,7 +121,7 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
             height = height,
             depth = depth,
             arrayLayers = layers,
-            mipLevels = mipMaps,
+            mipLevels = levels,
             samples = VK_SAMPLE_COUNT_1_BIT,
             usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT or VK_IMAGE_USAGE_SAMPLED_BIT or srcUsage,
             flags = flags,
@@ -129,11 +136,11 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
 
             backend.commandPool.singleShotCommands { commandBuffer ->
                 val dstLayout = when {
-                    isMipMap -> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+                    mipMapping.isMipMapped -> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
                     else -> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
                 }
                 image.copyFromBuffer(stagingBuf, commandBuffer, dstLayout)
-                if (isMipMap) {
+                if (mipMapping.isMipMapped) {
                     memStack { image.generateMipmaps(this, commandBuffer) }
                 }
             }

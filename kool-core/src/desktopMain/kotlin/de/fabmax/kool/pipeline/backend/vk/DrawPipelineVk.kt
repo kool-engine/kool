@@ -138,7 +138,7 @@ class DrawPipelineVk(
         }
 
         val depthOp = when {
-            renderPass.isReverseDepth && drawPipeline.autoReverseDepthFunc -> {
+            renderPass.depthMode == DepthMode.Reversed && drawPipeline.autoReverseDepthFunc -> {
                 when (drawPipeline.pipelineConfig.depthTest) {
                     DepthCompareOp.LESS -> DepthCompareOp.GREATER
                     DepthCompareOp.LESS_EQUAL -> DepthCompareOp.GREATER_EQUAL

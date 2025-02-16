@@ -33,7 +33,7 @@ data class KoolConfigJvm(
     val storageDir: String = "./.storage",
     val httpCacheDir: String = "./.httpCache",
 
-    val renderBackend: Backend = Backend.OPEN_GL,
+    val renderBackend: Backend = Backend.VULKAN,
     val vkSetup: VkSetup? = null,
     val windowTitle: String = "Kool App",
     val windowSize: Vec2i = Vec2i(1600, 900),

@@ -1,7 +1,10 @@
 package de.fabmax.kool.platform
 
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BufferedImageData2d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.isF16
+import de.fabmax.kool.pipeline.isF32
 import de.fabmax.kool.util.*
 import org.lwjgl.stb.STBImage.*
 import org.lwjgl.stb.STBImageResize
@@ -19,20 +22,20 @@ import java.nio.IntBuffer
 import kotlin.math.roundToInt
 
 object ImageDecoder {
-    fun loadImage(inputStream: InputStream, props: TextureProps?): BufferedImageData2d {
-        return loadImageStb(inputStream, props)
+    fun loadImage(inputStream: InputStream, format: TexFormat, resolveSize: Vec2i? = null): BufferedImageData2d {
+        return loadImageStb(inputStream, format, resolveSize)
     }
 
-    private fun loadImageStb(inputStream: InputStream, props: TextureProps?): BufferedImageData2d {
+    private fun loadImageStb(inputStream: InputStream, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
         val imageData = inputStream.readAllBytes().toBuffer()
 
         return memStack {
             val w: IntBuffer = mallocInt(1)
             val h: IntBuffer = mallocInt(1)
             val channels: IntBuffer = mallocInt(1)
-            val desiredChannels = props?.format?.channels ?: 4
+            val desiredChannels = format.channels
 
-            val rawBuffer = if (props?.format?.isF16 == true || props?.format?.isF32 == true) {
+            val rawBuffer = if (format.isF16 == true || format.isF32 == true) {
                 imageData.useRaw { raw ->
                     stbi_loadf_from_memory(raw, w, h, channels, desiredChannels)
                 }
@@ -43,8 +46,8 @@ object ImageDecoder {
             }
             checkNotNull(rawBuffer) { "Failed to load image: ${stbi_failure_reason()}" }
 
-            val outW = props?.resolveSize?.x ?: w[0]
-            val outH = props?.resolveSize?.y ?: h[0]
+            val outW = resolveSize?.x ?: w[0]
+            val outH = resolveSize?.y ?: h[0]
 
             val managedBuffer = when (rawBuffer) {
                 is ByteBuffer -> {
@@ -75,7 +78,7 @@ object ImageDecoder {
                 }
                 else -> error("unreachable")
             }
-            BufferedImageData2d(managedBuffer, outW, outH, props?.format ?: TexFormat.RGBA)
+            BufferedImageData2d(managedBuffer, outW, outH, format)
         }
     }
 
@@ -111,13 +114,13 @@ object ImageDecoder {
         )
     }
 
-    fun loadBufferedImage(image: BufferedImage, props: TextureProps?): BufferedImageData2d {
-        val img = if (props?.resolveSize != null && props.resolveSize != Vec2i(image.width, image.height)) {
-            resizeImage(image, props.resolveSize)
+    fun loadBufferedImage(image: BufferedImage, format: TexFormat, resolveSize: Vec2i? = null): BufferedImageData2d {
+        val img = if (resolveSize != null && resolveSize != Vec2i(image.width, image.height)) {
+            resizeImage(image, resolveSize)
         } else {
             image
         }
-        return BufferedImageData2d(img.toBuffer(props?.format), img.width, img.height, props?.format ?: img.preferredFormat)
+        return BufferedImageData2d(img.toBuffer(format), img.width, img.height, format)
     }
 
     private fun resizeImage(img: BufferedImage, size: Vec2i): BufferedImage {

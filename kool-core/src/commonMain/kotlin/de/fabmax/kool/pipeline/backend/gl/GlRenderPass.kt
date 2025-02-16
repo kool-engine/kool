@@ -104,7 +104,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                 val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
                 val isValid = drawInfo.isValid && drawInfo.numIndices > 0
                 if (isValid) {
-                    GlState.setupPipelineAttribs(cmd.pipeline, view.renderPass.isReverseDepth, gl)
+                    GlState.setupPipelineAttribs(cmd.pipeline, view.renderPass.depthMode, gl)
 
                     val insts = cmd.instances
                     if (insts == null) {
@@ -144,7 +144,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                     loaded = dst.gpuTexture as LoadedTextureGl
                     loaded.bind()
                     loaded.setSize(width, height, layers)
-                    loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
+                    loaded.applySamplerSettings(dst.samplerSettings)
                     dst.gpuTexture = loaded
                 }
             }
@@ -159,7 +159,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                 loaded = dst.gpuTexture as LoadedTextureGl
                 loaded.bind()
                 loaded.setSize(width, height, layers)
-                loaded.applySamplerSettings(dst.props.defaultSamplerSettings)
+                loaded.applySamplerSettings(dst.samplerSettings)
                 dst.gpuTexture = loaded
             }
         }
@@ -176,7 +176,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         }
         if (renderPass.depthAttachment?.clearDepth == ClearDepthFill) {
             GlState.setWriteDepth(true, gl)
-            gl.clearDepth(if (renderPass.isReverseDepth) 0f else 1f)
+            gl.clearDepth(renderPass.depthMode.far)
             gl.clear(gl.DEPTH_BUFFER_BIT)
         }
     }
@@ -198,7 +198,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         colorTexture: Texture<*>,
         texTarget: Int
     ): GlTexture {
-        val format = colorTexture.props.format
+        val format = colorTexture.format
         val intFormat = format.glInternalFormat(gl)
         val layers = if (texTarget == gl.TEXTURE_CUBE_MAP) 6 else 1
 
@@ -206,7 +206,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         val tex = LoadedTextureGl(texTarget, gl.createTexture(), backend, colorTexture, estSize)
         tex.setSize(width, height, layers)
         tex.bind()
-        tex.applySamplerSettings(colorTexture.props.defaultSamplerSettings)
+        tex.applySamplerSettings(colorTexture.samplerSettings)
         gl.texStorage2d(texTarget, mipLevels, intFormat, width, height)
 
         val glColorTexture = tex.glTexture
@@ -228,7 +228,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         val tex = LoadedTextureGl(texTarget, gl.createTexture(), backend, depthTexture, estSize)
         tex.setSize(width, height, layers)
         tex.bind()
-        tex.applySamplerSettings(depthTexture.props.defaultSamplerSettings)
+        tex.applySamplerSettings(depthTexture.samplerSettings)
         gl.texStorage2d(texTarget, mipLevels, intFormat, width, height)
 
         val glDepthTexture = tex.glTexture
@@ -242,9 +242,9 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
         var actCullMethod: CullMethod? = null
         var lineWidth = 0f
 
-        fun setupPipelineAttribs(pipeline: DrawPipeline, isReversedDepth: Boolean, gl: GlApi) {
+        fun setupPipelineAttribs(pipeline: DrawPipeline, depthMode: DepthMode, gl: GlApi) {
             setBlendMode(pipeline.blendMode, gl)
-            setDepthTest(pipeline, isReversedDepth, gl)
+            setDepthTest(pipeline, depthMode, gl)
             setWriteDepth(pipeline.isWriteDepth, gl)
             setCullMethod(pipeline.cullMethod, gl)
             if (lineWidth != pipeline.lineWidth) {
@@ -277,8 +277,8 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
             }
         }
 
-        private fun setDepthTest(pipeline: DrawPipeline, isReversedDepth: Boolean, gl: GlApi) {
-            val depthCompareOp = if (isReversedDepth && pipeline.autoReverseDepthFunc) {
+        private fun setDepthTest(pipeline: DrawPipeline, depthMode: DepthMode, gl: GlApi) {
+            val depthCompareOp = if (depthMode == DepthMode.Reversed && pipeline.autoReverseDepthFunc) {
                 when (pipeline.depthCompareOp) {
                     DepthCompareOp.LESS -> DepthCompareOp.GREATER
                     DepthCompareOp.LESS_EQUAL -> DepthCompareOp.GREATER_EQUAL

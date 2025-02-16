@@ -11,14 +11,16 @@ import kotlin.math.roundToInt
  * Describes a texture by its properties and a loader function which is called once the texture is used.
  */
 abstract class Texture<T: ImageData>(
-    val props: TextureProps,
+    val format: TexFormat,
+    open val mipMapping: MipMapping,
+    val samplerSettings: SamplerSettings,
     val name: String,
 ): BaseReleasable() {
     /**
      * Contains the platform specific handle to the loaded texture. It is available after the loader function was
      * called.
      */
-    var gpuTexture: GpuTexture? = null
+    internal var gpuTexture: GpuTexture? = null
     internal var uploadData: T? = null
         set(value) {
             field = value
@@ -64,8 +66,8 @@ abstract class Texture<T: ImageData>(
     }
 
     private fun checkFormat(format: TexFormat) {
-        check(format == props.format) {
-            "Given image format doesn't match this texture ($name): $format != ${props.format}"
+        check(format == this.format) {
+            "Given image format doesn't match this texture ($name): $format != ${this.format}"
         }
     }
 
@@ -84,9 +86,11 @@ abstract class Texture<T: ImageData>(
 
 
 open class Texture1d(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture1d")
-) : Texture<ImageData1d>(props, name) {
+) : Texture<ImageData1d>(format, mipMapping, samplerSettings, name) {
 
     suspend fun download(): BufferedImageData1d {
         val deferred = CompletableDeferred<ImageData>()
@@ -99,21 +103,26 @@ open class Texture1d(
 
 fun Texture1d(
     data: ImageData1d,
-    props: TextureProps = TextureProps(),
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture1d")
-): Texture1d = Texture1d(props, name).apply { uploadLazy(data) }
+): Texture1d = Texture1d(data.format, mipMapping, samplerSettings, name).apply { uploadLazy(data) }
 
 fun Texture1d(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture1d"),
     loader: (suspend CoroutineScope.() -> ImageData1d)
-): Texture1d = Texture1d(props, name).apply { uploadLazy(loader) }
+): Texture1d = Texture1d(format, mipMapping, samplerSettings, name).apply { uploadLazy(loader) }
 
 
 open class Texture2d(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture2d"),
-) : Texture<ImageData2d>(props, name) {
+) : Texture<ImageData2d>(format, mipMapping, samplerSettings, name) {
 
     suspend fun download(): BufferedImageData2d {
         val deferred = CompletableDeferred<ImageData>()
@@ -126,21 +135,26 @@ open class Texture2d(
 
 fun Texture2d(
     data: ImageData2d,
-    props: TextureProps = TextureProps(),
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture2d")
-): Texture2d = Texture2d(props, name).apply { uploadLazy(data) }
+): Texture2d = Texture2d(data.format, mipMapping, samplerSettings, name).apply { uploadLazy(data) }
 
 fun Texture2d(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture2d"),
     loader: (suspend CoroutineScope.() -> ImageData2d)
-): Texture2d = Texture2d(props, name).apply { uploadLazy(loader) }
+): Texture2d = Texture2d(format, mipMapping, samplerSettings, name).apply { uploadLazy(loader) }
 
 
 open class Texture3d(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture3d")
-) : Texture<ImageData3d>(props, name) {
+) : Texture<ImageData3d>(format, mipMapping, samplerSettings, name) {
 
     suspend fun download(): BufferedImageData3d {
         val deferred = CompletableDeferred<ImageData>()
@@ -153,70 +167,90 @@ open class Texture3d(
 
 fun Texture3d(
     data: ImageData3d,
-    props: TextureProps = TextureProps(),
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture3d")
-): Texture3d = Texture3d(props, name).apply { uploadLazy(data) }
+): Texture3d = Texture3d(data.format, mipMapping, samplerSettings, name).apply { uploadLazy(data) }
 
 fun Texture3d(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture3d"),
     loader: (suspend CoroutineScope.() -> ImageData3d)
-): Texture3d = Texture3d(props, name).apply { uploadLazy(loader) }
+): Texture3d = Texture3d(format, mipMapping, samplerSettings, name).apply { uploadLazy(loader) }
 
 
 open class TextureCube(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("TextureCube")
-) : Texture<ImageDataCube>(props, name)
+) : Texture<ImageDataCube>(format, mipMapping, samplerSettings, name)
 
 fun TextureCube(
     data: ImageDataCube,
-    props: TextureProps = TextureProps(),
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("TextureCube")
-): TextureCube = TextureCube(props, name).apply { uploadLazy(data) }
+): TextureCube = TextureCube(data.format, mipMapping, samplerSettings, name).apply { uploadLazy(data) }
 
 fun TextureCube(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("TextureCube"),
     loader: (suspend CoroutineScope.() -> ImageDataCube)
-): TextureCube = TextureCube(props, name).apply { uploadLazy(loader) }
+): TextureCube = TextureCube(format, mipMapping, samplerSettings, name).apply { uploadLazy(loader) }
 
 open class Texture2dArray(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture2dArray"),
-) : Texture<ImageData3d>(props, name)
+) : Texture<ImageData3d>(format, mipMapping, samplerSettings, name)
 
 fun Texture2dArray(
     data: ImageData3d,
-    props: TextureProps = TextureProps(),
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture2dArray")
-): Texture2dArray = Texture2dArray(props, name).apply { uploadLazy(data) }
+): Texture2dArray = Texture2dArray(data.format, mipMapping, samplerSettings, name).apply { uploadLazy(data) }
 
 fun Texture2dArray(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("Texture2dArray"),
     loader: (suspend CoroutineScope.() -> ImageData3d)
-): Texture2dArray = Texture2dArray(props, name).apply { uploadLazy(loader) }
+): Texture2dArray = Texture2dArray(format, mipMapping, samplerSettings, name).apply { uploadLazy(loader) }
 
 open class TextureCubeArray(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("TextureCubeArray"),
-) : Texture<ImageDataCubeArray>(props, name)
+) : Texture<ImageDataCubeArray>(format, mipMapping, samplerSettings, name)
 
 fun TextureCubeArray(
     data: ImageDataCubeArray,
-    props: TextureProps = TextureProps(),
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("TextureCubeArray")
-): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(data) }
+): TextureCubeArray = TextureCubeArray(data.format, mipMapping, samplerSettings, name).apply { uploadLazy(data) }
 
 fun TextureCubeArray(
-    props: TextureProps = TextureProps(),
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
     name: String = UniqueId.nextId("TextureCubeArray"),
     loader: (suspend CoroutineScope.() -> ImageDataCubeArray)
-): TextureCubeArray = TextureCubeArray(props, name).apply { uploadLazy(loader) }
+): TextureCubeArray = TextureCubeArray(format, mipMapping, samplerSettings, name).apply { uploadLazy(loader) }
 
 class SingleColorTexture(color: Color) : Texture2d(
-    props = TextureProps(isMipMapped = false, defaultSamplerSettings = DEFAULT_SAMPLER_SETTINGS),
+    format = TexFormat.RGBA,
+    mipMapping = MipMapping.Off,
+    samplerSettings = DEFAULT_SAMPLER_SETTINGS,
     name = "SingleColorTex:${color}"
 ) {
     init {
@@ -244,11 +278,9 @@ class GradientTexture(
     isClamped: Boolean = true,
     name: String = "gradientTex-$size"
 ) : Texture1d(
-    props = TextureProps(
-        format = TexFormat.RGBA_F16,    // f16 format yields much better results with gradients in linear color space
-        isMipMapped = false,
-        defaultSamplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING
-    ),
+    format = TexFormat.RGBA_F16,    // f16 format yields much better results with gradients in linear color space
+    mipMapping = MipMapping.Off,
+    samplerSettings = if (isClamped) DEFAULT_SAMPLER_SETTINGS_CLAMPED else DEFAULT_SAMPLER_SETTINGS_REPEATING,
     name = name
 ) {
     init {

@@ -100,6 +100,13 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun storage3d(storageName: String, defaultVal: StorageBuffer3d? = null): StorageBuffer3dBinding =
         getOrCreateBinding(storageName) { StorageBuffer3dBinding(storageName, defaultVal, this) } as StorageBuffer3dBinding
 
+    fun storageTexture1d(storageTextureName: String, defaultVal: StorageTexture1d? = null, defaultMipLevel: Int = 0): StorageTexture1dBinding =
+        getOrCreateBinding(storageTextureName) { StorageTexture1dBinding(storageTextureName, defaultVal, defaultMipLevel, this) } as StorageTexture1dBinding
+    fun storageTexture2d(storageTextureName: String, defaultVal: StorageTexture2d? = null, defaultMipLevel: Int = 0): StorageTexture2dBinding =
+        getOrCreateBinding(storageTextureName) { StorageTexture2dBinding(storageTextureName, defaultVal, defaultMipLevel, this) } as StorageTexture2dBinding
+    fun storageTexture3d(storageTextureName: String, defaultVal: StorageTexture3d? = null, defaultMipLevel: Int = 0): StorageTexture3dBinding =
+        getOrCreateBinding(storageTextureName) { StorageTexture3dBinding(storageTextureName, defaultVal, defaultMipLevel, this) } as StorageTexture3dBinding
+
     fun colorUniform(cfg: ColorBlockConfig): UniformBindingColor =
         uniformColor(cfg.primaryUniform?.uniformName ?: UniqueId.nextId("_"), cfg.primaryUniform?.defaultColor ?: Color.BLACK)
     fun colorTexture(cfg: ColorBlockConfig): Texture2dBinding =

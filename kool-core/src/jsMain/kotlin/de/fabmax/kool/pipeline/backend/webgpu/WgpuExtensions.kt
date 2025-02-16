@@ -138,7 +138,6 @@ val PrimitiveType.wgpu: GPUPrimitiveTopology
         PrimitiveType.TRIANGLE_STRIP -> GPUPrimitiveTopology.triangleStrip
     }
 
-@Suppress("DEPRECATION")
 val TexFormat.wgpu: GPUTextureFormat
     get() = when (this) {
         TexFormat.R -> GPUTextureFormat.r8unorm
@@ -156,6 +155,27 @@ val TexFormat.wgpu: GPUTextureFormat
         TexFormat.R_U32 -> GPUTextureFormat.r32uint
         TexFormat.RG_U32 -> GPUTextureFormat.rg32uint
         TexFormat.RGBA_U32 -> GPUTextureFormat.rgba32uint
+        TexFormat.RG11B10_F -> GPUTextureFormat.rg11b10ufloat
+    }
+
+val TexFormat.wgpuStorage: GPUTextureFormat
+    get() = when (this) {
+        TexFormat.R -> GPUTextureFormat.r8unorm
+        TexFormat.RG -> GPUTextureFormat.rg8unorm
+        TexFormat.RGBA -> GPUTextureFormat.rgba8unorm
+        TexFormat.R_F16 -> GPUTextureFormat.r16float
+        TexFormat.RG_F16 -> GPUTextureFormat.rg16float
+        TexFormat.RGBA_F16 -> GPUTextureFormat.rgba16float
+        TexFormat.R_F32 -> GPUTextureFormat.r32float
+        TexFormat.RG_F32 -> GPUTextureFormat.rg32float
+        TexFormat.RGBA_F32 -> GPUTextureFormat.rgba32float
+        TexFormat.R_I32 -> GPUTextureFormat.r32sint
+        TexFormat.RG_I32 -> GPUTextureFormat.rg32sint
+        TexFormat.RGBA_I32 -> GPUTextureFormat.rgba32sint
+        TexFormat.R_U32 -> GPUTextureFormat.r32uint
+        TexFormat.RG_U32 -> GPUTextureFormat.rg32uint
+        TexFormat.RGBA_U32 -> GPUTextureFormat.rgba32uint
+        TexFormat.RG11B10_F -> GPUTextureFormat.rgba16float
     }
 
 val TextureSampleType.wgpu: GPUTextureSampleType

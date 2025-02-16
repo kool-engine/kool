@@ -8,7 +8,6 @@ import de.fabmax.kool.math.RayD
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -27,19 +26,11 @@ open class Scene(name: String? = null) : Node(name) {
     val lighting = Lighting()
     val mainRenderPass: ScreenPass = ScreenPass()
 
-    var clearColor: ClearColor
-        get() = mainRenderPass.clearColor
-        set(value) { mainRenderPass.clearColor = value }
-    var clearDepth: ClearDepth
-        get() = mainRenderPass.clearDepth
-        set(value) { mainRenderPass.clearDepth = value }
+    var depthMode by mainRenderPass::depthMode
+    var clearColor by mainRenderPass::clearColor
+    var clearDepth by mainRenderPass::clearDepth
 
-    val isInfiniteDepth: Boolean
-        get() = mainRenderPass.isReverseDepth
-
-    var camera: Camera
-        get() = mainRenderPass.camera
-        set(value) { mainRenderPass.camera = value }
+    var camera: Camera by mainRenderPass::camera
 
     val extraPasses: BufferedList<GpuPass> = BufferedList()
     internal val sortedPasses = mutableListOf<GpuPass>(mainRenderPass)
@@ -48,18 +39,6 @@ open class Scene(name: String? = null) : Node(name) {
         get() = children.isEmpty() && (extraPasses.isEmpty() && !extraPasses.hasStagedMutations)
 
     var sceneRecordTime = 0.0.seconds
-
-    fun tryEnableInfiniteDepth(): Boolean {
-        val ctx = KoolSystem.getContextOrNull() ?: return false
-        if (ctx.backend.depthRange == DepthRange.ZERO_TO_ONE) {
-            mainRenderPass.isReverseDepth = true
-            logD { "Enabled infinite depth mode" }
-            return true
-        } else {
-            logW { "Failed to enable infinite depth mode: Incompatible clip depth range" }
-            return false
-        }
-    }
 
     fun addComputePass(pass: ComputePass) {
         extraPasses += pass

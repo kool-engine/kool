@@ -35,7 +35,6 @@ class OverlayScene(val editor: KoolEditor) : Scene("Overlay scene"), EditorOverl
     init {
         clearColor = ClearColorLoad
         clearDepth = ClearDepthLoad
-        tryEnableInfiniteDepth()
 
         addNode(grid)
         addNode(sceneObjects)

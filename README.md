@@ -22,15 +22,18 @@ changes made in the editor) or you can clone the editor template project (see [u
 More editor related documentation is available in [the editor docs](https://kool-engine.github.io/docs/editor).
 
 ## Web-Demos
-The following demos run directly in the browser. Chrome is recommended but other browsers might work as well.
+The following demos run directly in the browser. Chrome is highly recommended because it's still the only browser
+with WebGPU support. Other browsers should work as well but use the WebGL backend, which doesn't support all
+features / demos.
 All demos are implemented in code-only fashion (i.e. without using the editor). The code for all demos is available in
 the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject.
 
+- [Bloom](https://kool-engine.github.io/live/demos/?demo=bloom): Decent looking bloom for (very) bright objects. **WebGPU only**
 - [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
 - [Physics - Ragdoll](https://kool-engine.github.io/live/demos/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://kool-engine.github.io/live/demos/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
-  cursor keys, R to reset) based on the Nvidia PhysX vehicles SDK.
+  cursor keys, R to reset) based on the Nvidia PhysX vehicles SDK. **WebGPU only**
 - [Physics - Joints](https://kool-engine.github.io/live/demos/?demo=phys-joints): Physics demo consisting of a chain
   running over two gears. Uses a lot of multi shapes and revolute joints.
 - [Physics - Collision](https://kool-engine.github.io/live/demos/?demo=physics): The obligatory collision physics demo with
@@ -38,7 +41,7 @@ the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject.
 - [Embedded UI](https://kool-engine.github.io/live/demos/?demo=ui): Integrated UI framework implemented completely within
   the engine. Fast, highly customizable and easy-to-use.
 - [Particles](https://kool-engine.github.io/live/demos/?demo=bees): Two teams of bees fighting against each other.
-  Simulation can be toggled between CPU and compute-shader (if available, i.e. on WebGPU).
+  Simulation can be toggled between CPU and compute-shader (if available, i.e. on **WebGPU**).
 - [Fluffy Bunny](https://kool-engine.github.io/live/demos/?demo=shell): Shell-shading based rendering of animated fur
   (based on this [video](https://www.youtube.com/watch?v=9dr-tRQzij4)).
 - [Creative Coding](https://kool-engine.github.io/live/demos/?demo=creative-coding): A few relatively simple demos
@@ -46,7 +49,7 @@ the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject.
 - [Procedural Geometry](https://kool-engine.github.io/live/demos/?demo=procedural): Small test-case for
   procedural geometry; all geometry is generated in code (even the roses! Textures are regular images though). Also,
   some glass shading (shaft of the wine glass, the wine itself looks quite odd when shaded with refractions and is
-  therefore opaque).
+  therefore opaque). **WebGPU only**
 - [glTF Models](https://kool-engine.github.io/live/demos/?demo=gltf): Various demo models loaded from glTF / glb format
   - Flight Helmet from [glTF sample models](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/FlightHelmet)
   - Polly from [Blender](https://github.com/KhronosGroup/glTF-Blender-Exporter/tree/master/polly)
@@ -54,7 +57,7 @@ the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject.
   - Camera Model also from [Poly Haven](https://polyhaven.com/a/CoffeeCart_01)
   - A few feature test models also from the [glTF sample model repository](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0)
 - [Deferred Shading](https://kool-engine.github.io/live/demos/?demo=deferred): Thousands of dynamic
-  light sources, bloom and ambient occlusion.
+  light sources, bloom and ambient occlusion. **WebGPU only**
 - [Screen-space Ambient Occlusion](https://kool-engine.github.io/live/demos/?demo=ao): Roughly based on
   [this](http://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html) article by John
   Chapman with slightly optimized sampling (also shamelessly recreated his demo scene).
@@ -141,6 +144,7 @@ the libs are resolved and added to the IntelliJ module classpath.
   - Khronos PBR Neutral
   - Uncharted 2
   - Modified Reinhard
+- Decent looking Bloom
 - Screen-space ambient occlusion
 - Normal, roughness, metallic, ambient occlusion
 - Vertex and parallax occlusion displacement mapping

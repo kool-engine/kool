@@ -19,6 +19,7 @@ class BindGroupDataVk(
     private val uboBindings = mutableListOf<UboBinding>()
     private val storageBufferBindings = mutableListOf<StorageBufferBinding>()
     private val textureBindings = mutableListOf<TextureBinding>()
+    private val storageTextureBindings = mutableListOf<StorageTextureBinding>()
 
     val bindGroup: BindGroup
 
@@ -29,26 +30,31 @@ class BindGroupDataVk(
             when (binding) {
                 is BindGroupData.UniformBufferBindingData -> uboBindings += UboBinding(binding, Swapchain.MAX_FRAMES_IN_FLIGHT)
 
-                is BindGroupData.Texture1dBindingData -> textureBindings += Texture1dBinding(binding)
-                is BindGroupData.Texture2dBindingData -> textureBindings += Texture2dBinding(binding)
-                is BindGroupData.Texture3dBindingData -> textureBindings += Texture3dBinding(binding)
-                is BindGroupData.TextureCubeBindingData -> textureBindings += TextureCubeBinding(binding)
-                is BindGroupData.Texture2dArrayBindingData -> textureBindings += Texture2dArrayBinding(binding)
-                is BindGroupData.TextureCubeArrayBindingData -> textureBindings += TextureCubeArrayBinding(binding)
-
                 is BindGroupData.StorageBuffer1dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
                 is BindGroupData.StorageBuffer2dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
                 is BindGroupData.StorageBuffer3dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
+
+                is BindGroupData.Texture1dBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_1D)
+                is BindGroupData.Texture2dBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_2D)
+                is BindGroupData.Texture3dBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_3D)
+                is BindGroupData.TextureCubeBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_CUBE)
+                is BindGroupData.Texture2dArrayBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_2D_ARRAY)
+                is BindGroupData.TextureCubeArrayBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_CUBE_ARRAY)
+
+                is BindGroupData.StorageTexture1dBindingData -> storageTextureBindings += StorageTextureBinding(binding, VK_IMAGE_VIEW_TYPE_1D)
+                is BindGroupData.StorageTexture2dBindingData -> storageTextureBindings += StorageTextureBinding(binding, VK_IMAGE_VIEW_TYPE_2D)
+                is BindGroupData.StorageTexture3dBindingData -> storageTextureBindings += StorageTextureBinding(binding, VK_IMAGE_VIEW_TYPE_3D)
             }
         }
 
-        val poolLayout = PoolLayout(uboBindings.size, textureBindings.size, storageBufferBindings.size)
+        val poolLayout = PoolLayout(uboBindings.size, textureBindings.size, storageBufferBindings.size, storageTextureBindings.size)
         bindGroup = if (data.bindings.isEmpty()) BindGroup.emptyBindGroup else BindGroup(
             poolLayout = poolLayout,
             gpuLayout = gpuLayout,
             uboBindings = uboBindings,
             storageBufferBindings = storageBufferBindings,
             textureBindings = textureBindings,
+            storageTextureBindings = storageTextureBindings,
             backend = backend
         )
     }
@@ -72,7 +78,15 @@ class BindGroupDataVk(
             if (tex.binding.texture?.gpuTexture !== tex.boundImage) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 data.isDirty = true
-                logT { "$this outdated texture binding: ${tex.binding.texture?.name}, ${passEncoderState.renderPass.name}" }
+                logT { "$this outdated texture binding: ${tex.binding.texture?.name}, pass: ${passEncoderState.renderPass.name}" }
+            }
+        }
+        for (i in storageTextureBindings.indices) {
+            val tex = storageTextureBindings[i]
+            if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.boundImage) {
+                // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
+                data.isDirty = true
+                logT { "$this outdated storage texture binding: ${tex.binding.storageTexture?.asTexture?.name}, pass: ${passEncoderState.renderPass.name}" }
             }
         }
 
@@ -106,6 +120,7 @@ class BindGroupDataVk(
         val uboBindings: List<UboBinding>,
         val storageBufferBindings: List<StorageBufferBinding>,
         val textureBindings: List<TextureBinding>,
+        val storageTextureBindings: List<StorageTextureBinding>,
         val backend: RenderBackendVk,
     ) : BaseReleasable() {
 
@@ -121,7 +136,7 @@ class BindGroupDataVk(
 
             backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
             descriptorSets = backend.descriptorPools.allocateSets(poolLayout, gpuLayout, this)
-            val numBindings = uboBindings.size + storageBufferBindings.size + textureBindings.size
+            val numBindings = uboBindings.size + storageBufferBindings.size + textureBindings.size + storageTextureBindings.size
             val descriptorWrite = callocVkWriteDescriptorSetN(Swapchain.MAX_FRAMES_IN_FLIGHT * numBindings) { }
             var descriptorWriteIdx = 0
             descriptorSets.forEachIndexed { setIdx, descriptorSet ->
@@ -134,6 +149,9 @@ class BindGroupDataVk(
                 textureBindings.forEach { tex ->
                     tex.setupDescriptor(descriptorWrite[descriptorWriteIdx++], descriptorSet, this)
                 }
+                storageTextureBindings.forEach { tex ->
+                    tex.setupDescriptor(descriptorWrite[descriptorWriteIdx++], descriptorSet, this)
+                }
             }
             vkUpdateDescriptorSets(backend.device.vkDevice, descriptorWrite, null)
         }
@@ -144,6 +162,7 @@ class BindGroupDataVk(
                 uboBindings.forEach { it.release() }
                 storageBufferBindings.forEach { it.release() }
                 textureBindings.forEach { it.release() }
+                storageTextureBindings.forEach { it.release() }
                 backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
             }
         }
@@ -152,14 +171,14 @@ class BindGroupDataVk(
             val emptyBindGroup by lazy {
                 memStack {
                     val backend = KoolSystem.requireContext().backend as RenderBackendVk
-                    val emptyLayout = PoolLayout(0, 0, 0)
+                    val emptyLayout = PoolLayout(0, 0, 0, 0)
                     val emptyPool = backend.device.createDescriptorPool(this) { maxSets(Swapchain.MAX_FRAMES_IN_FLIGHT) }
                     val emptySetLayout = backend.device.createDescriptorSetLayout { }
                     val emptySet = backend.device.allocateDescriptorSets {
                         descriptorPool(emptyPool.handle)
                         pSetLayouts(longs(emptySetLayout.handle, emptySetLayout.handle))
                     }!!
-                    BindGroup(emptyLayout, emptySetLayout, emptyList(), emptyList(), emptyList(), backend).also { emptyBg ->
+                    BindGroup(emptyLayout, emptySetLayout, emptyList(), emptyList(), emptyList(), emptyList(), backend).also { emptyBg ->
                         emptyBg.descriptorSets = emptySet
                         emptyBg.isReleasable = false
                         backend.device.onRelease {
@@ -228,30 +247,6 @@ class BindGroupDataVk(
         }
     }
 
-    private fun Texture1dBinding(binding: BindGroupData.Texture1dBindingData): TextureBinding {
-        return TextureBinding(binding, VK_IMAGE_VIEW_TYPE_1D)
-    }
-
-    private fun Texture2dBinding(binding: BindGroupData.Texture2dBindingData): TextureBinding {
-        return TextureBinding(binding, VK_IMAGE_VIEW_TYPE_2D)
-    }
-
-    private fun Texture3dBinding(binding: BindGroupData.Texture3dBindingData): TextureBinding {
-        return TextureBinding(binding, VK_IMAGE_VIEW_TYPE_3D)
-    }
-
-    private fun TextureCubeBinding(binding: BindGroupData.TextureCubeBindingData): TextureBinding {
-        return TextureBinding(binding, VK_IMAGE_VIEW_TYPE_CUBE)
-    }
-
-    private fun Texture2dArrayBinding(binding: BindGroupData.Texture2dArrayBindingData): TextureBinding {
-        return TextureBinding(binding, VK_IMAGE_VIEW_TYPE_2D_ARRAY)
-    }
-
-    private fun TextureCubeArrayBinding(binding: BindGroupData.TextureCubeArrayBindingData): TextureBinding {
-        return TextureBinding(binding, VK_IMAGE_VIEW_TYPE_CUBE_ARRAY)
-    }
-
     inner class TextureBinding(
         val binding: BindGroupData.TextureBindingData<*>,
         val viewType: Int
@@ -269,12 +264,14 @@ class BindGroupDataVk(
             stack: MemoryStack
         ) {
             checkViewAndSampler(stack)
+            val layout = if (binding.texture is StorageTexture) {
+                VK_IMAGE_LAYOUT_GENERAL
+            } else {
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            }
+
             val imgInfo = stack.callocVkDescriptorImageInfoN(1) {
-                this[0].set(
-                    sampler!!.handle,
-                    view!!.handle,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-                )
+                this[0].set(sampler!!.handle, view!!.handle, layout)
             }
             descriptorWrite
                 .dstSet(descriptorSet.handle)
@@ -288,7 +285,7 @@ class BindGroupDataVk(
         private fun checkViewAndSampler(stack: MemoryStack) {
             val tex = checkNotNull(binding.texture) { "Cannot create texture binding from null texture" }
             val image = checkNotNull(tex.gpuTexture as ImageVk?) { "Cannot create texture binding from null texture" }
-            val samplerSettings = binding.sampler ?: tex.props.defaultSamplerSettings
+            val samplerSettings = binding.sampler ?: tex.samplerSettings
 
             if (boundImage == image && boundSamplerSettings == samplerSettings) {
                 return
@@ -300,7 +297,7 @@ class BindGroupDataVk(
             sampler?.let { backend.device.destroySampler(it) }
 
             val maxAnisotropy = if (
-                tex.props.isMipMapped &&
+                tex.mipMapping.isMipMapped &&
                 samplerSettings.minFilter == FilterMethod.LINEAR &&
                 samplerSettings.magFilter == FilterMethod.LINEAR
             ) samplerSettings.maxAnisotropy else 1
@@ -316,7 +313,7 @@ class BindGroupDataVk(
                 addressModeV(samplerSettings.addressModeV.vk)
                 addressModeW(samplerSettings.addressModeW.vk)
 
-                mipmapMode(if (tex.props.isMipMapped) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
+                mipmapMode(if (tex.mipMapping.isMipMapped) VK_SAMPLER_MIPMAP_MODE_LINEAR else VK_SAMPLER_MIPMAP_MODE_NEAREST)
                 maxLod(VK_LOD_CLAMP_NONE)
 
                 val anisotropy = maxAnisotropy.toFloat().coerceAtMost(backend.physicalDevice.maxAnisotropy)
@@ -329,15 +326,19 @@ class BindGroupDataVk(
                 compareOp(compare)
             }
 
+            val baseLevel = samplerSettings.baseMipLevel.coerceAtMost(image.imageInfo.mipLevels - 1)
+            val numLevels = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else image.mipLevels
+            val numLevelsSafe = numLevels.coerceAtMost(image.imageInfo.mipLevels - baseLevel)
+
             view = backend.device.createImageView(
                 image = image.vkImage,
                 viewType = viewType,
                 format = image.format,
                 aspectMask = image.imageInfo.aspectMask,
-                levelCount = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else image.mipLevels,
-                layerCount = image.arrayLayers,
-                baseMipLevel = samplerSettings.baseMipLevel,
+                baseMipLevel = baseLevel,
+                levelCount = numLevelsSafe,
                 baseArrayLayer = 0,
+                layerCount = image.arrayLayers,
                 stack = stack
             )
         }
@@ -346,6 +347,67 @@ class BindGroupDataVk(
             super.release()
             view?.let { backend.device.destroyImageView(it) }
             sampler?.let { backend.device.destroySampler(it) }
+        }
+    }
+
+    inner class StorageTextureBinding(
+        val binding: BindGroupData.StorageTextureBindingData<*>,
+        val viewType: Int
+    ) : BaseReleasable() {
+
+        var boundImage: ImageVk? = null
+
+        private var view: VkImageView? = null
+
+        fun setupDescriptor(
+            descriptorWrite: VkWriteDescriptorSet,
+            descriptorSet: VkDescriptorSet,
+            stack: MemoryStack
+        ) {
+            checkView(stack)
+            val imgInfo = stack.callocVkDescriptorImageInfoN(1) {
+                this[0].set(0L, view!!.handle, VK_IMAGE_LAYOUT_GENERAL)
+            }
+            descriptorWrite
+                .dstSet(descriptorSet.handle)
+                .dstBinding(binding.layout.bindingIndex)
+                .dstArrayElement(0)
+                .descriptorType(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE)
+                .descriptorCount(1)
+                .pImageInfo(imgInfo)
+        }
+
+        private fun checkView(stack: MemoryStack) {
+            val tex = checkNotNull(binding.storageTexture) { "Cannot create storage texture binding from null texture" }
+            val image = checkNotNull(tex.asTexture.gpuTexture as ImageVk?) { "Cannot create storage texture binding from null texture" }
+
+            if (boundImage == image) {
+                return
+            }
+            boundImage = image
+
+            val baseLevel = binding.mipLevel.coerceAtMost(image.imageInfo.mipLevels - 1)
+            if (binding.mipLevel != baseLevel) {
+                logE { "$image: binding miplevel: ${binding.mipLevel} > image mip levels: ${image.imageInfo.mipLevels}" }
+            }
+
+            view?.let { backend.device.destroyImageView(it) }
+            view = backend.device.createImageView(
+                image = image.vkImage,
+                viewType = viewType,
+                format = image.format,
+                aspectMask = image.imageInfo.aspectMask,
+                baseMipLevel = baseLevel,
+                levelCount = 1,
+                baseArrayLayer = 0,
+                layerCount = image.arrayLayers,
+                stack = stack
+            )
+        }
+
+        override fun release() {
+            super.release()
+            view?.let { backend.device.destroyImageView(it) }
         }
     }
 

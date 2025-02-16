@@ -39,6 +39,8 @@ val TexFormat.vk: Int
         TexFormat.R_U32 -> VK_FORMAT_R32_UINT
         TexFormat.RG_U32 -> VK_FORMAT_R32G32_UINT
         TexFormat.RGBA_U32 -> VK_FORMAT_R32G32B32A32_UINT
+
+        TexFormat.RG11B10_F -> VK_FORMAT_B10G11R11_UFLOAT_PACK32
     }
 
 @Suppress("DEPRECATION")
@@ -63,6 +65,8 @@ val TexFormat.vkBytesPerPx: Int
         TexFormat.R_U32 -> 4
         TexFormat.RG_U32 -> 8
         TexFormat.RGBA_U32 -> 16
+
+        TexFormat.RG11B10_F -> 4
     }
 
 val CullMethod.vk: Int get() = when (this) {

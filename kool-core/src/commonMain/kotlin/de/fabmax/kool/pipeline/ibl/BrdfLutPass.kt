@@ -22,7 +22,7 @@ class BrdfLutPass(parentScene: Scene) :
     OffscreenPass2d(
         drawNode = Node(),
         attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RG_F16),
-        initialSize = Vec2i(512),
+        initialSize = Vec2i(256),
         name = "brdf-lut"
     )
 {

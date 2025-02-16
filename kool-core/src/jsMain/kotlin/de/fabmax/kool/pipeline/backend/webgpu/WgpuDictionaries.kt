@@ -80,7 +80,14 @@ class GPUTextureBindingLayout(
     val multisampled: Boolean = false
 )
 
-class GPUStorageTextureBindingLayout
+class GPUStorageTextureBindingLayout(
+    @JsName("access")
+    val access: GPUStorageTextureAccess,
+    @JsName("format")
+    val format: GPUTextureFormat,
+    @JsName("viewDimension")
+    val viewDimension: GPUTextureViewDimension,
+)
 
 class GPUExternalTextureBindingLayout
 

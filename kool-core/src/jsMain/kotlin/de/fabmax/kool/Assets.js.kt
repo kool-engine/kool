@@ -4,7 +4,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.*
 import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.ImageData
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.AtlasFont
@@ -96,10 +96,15 @@ object PlatformAssetsImpl : PlatformAssets {
         return file.getFile().await().name
     }
 
-    override suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): ImageTextureData {
+    override suspend fun loadImageFromBuffer(
+        texData: Uint8Buffer,
+        mimeType: String,
+        format: TexFormat,
+        resolveSize: Vec2i?
+    ): ImageTextureData {
         val array = (texData as Uint8BufferImpl).buffer
         val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType))
-        val imgBitmap = createImageBitmap(imgBlob, ImageBitmapOptions(props?.resolveSize)).await()
+        val imgBitmap = createImageBitmap(imgBlob, ImageBitmapOptions(resolveSize)).await()
         return ImageTextureData(imgBitmap, ImageData.idForImageData("ImageTextureData", texData))
     }
 }

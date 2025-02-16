@@ -83,12 +83,12 @@ open class OffscreenPass2d(
     }
 
     inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<Texture2d> {
-        override val texture: Texture2d = Texture2d(config.createTextureProps(mipMode.hasMipLevels), "${name}:color[$i]")
+        override val texture: Texture2d = Texture2d(config.textureFormat, mipMode.mipMapping, config.samplerSettings, "${name}:color[$i]")
         override var clearColor: ClearColor = config.clearColor
     }
 
     inner class DepthAttachment(config: TextureAttachmentConfig) : RenderPassDepthTextureAttachment<Texture2d> {
-        override val texture: Texture2d = Texture2d(config.createTextureProps(mipMode.hasMipLevels), "${name}:depth")
+        override val texture: Texture2d = Texture2d(config.textureFormat, mipMode.mipMapping, config.samplerSettings, "${name}:depth")
         override var clearDepth: ClearDepth = config.clearDepth
     }
 

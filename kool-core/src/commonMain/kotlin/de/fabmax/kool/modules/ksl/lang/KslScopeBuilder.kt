@@ -460,6 +460,8 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         KslBoolVectorExpr(boolVec, KslBoolVecOperator.Any)
     fun <T> all(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
         KslBoolVectorExpr(boolVec, KslBoolVecOperator.All)
+    fun <T> none(boolVec: KslVectorExpression<T, KslBool1>) where T: KslBoolType, T: KslVector<KslBool1> =
+        KslBoolVectorExpr(boolVec, KslBoolVecOperator.None)
 
     operator fun <T: KslType> KslAssignable<T>.plusAssign(expr: KslExpression<T>) {
         ops += KslAugmentedAssign(this, KslMathOperator.Plus, expr, this@KslScopeBuilder)
@@ -706,17 +708,34 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         ddy: KslExpression<C>,
     )  where T: KslColorSampler<C>, T: KslSamplerArrayType = KslSampleColorTextureArrayGrad(sampler, arrayIndex, coord, ddx, ddy)
 
+    fun <T: KslColorSampler<C>, C: KslFloatType> KslExpression<T>.sample(coord: KslExpression<C>, lod: KslScalarExpression<KslFloat1>? = null) =
+        KslSampleColorTexture(this, coord, lod)
+    fun <T: KslColorSampler<C>, C: KslFloatType> KslExpression<T>.sample(coord: KslExpression<C>, ddx: KslExpression<C>, ddy: KslExpression<C>,) =
+        KslSampleColorTextureGrad(this, coord, ddx, ddy)
+    fun <T: KslDepthSampler<C>, C: KslFloatType> KslExpression<T>.sample(coord: KslExpression<C>, depthRef: KslExprFloat1) =
+        KslSampleDepthTexture(this, coord, depthRef)
+    fun <T, C: KslFloatType> KslExpression<T>.sample(arrayIndex: KslExprInt1, coord: KslExpression<C>, lod: KslExprFloat1? = null)
+        where T: KslColorSampler<C>, T: KslSamplerArrayType = KslSampleColorTextureArray(this, arrayIndex, coord, lod)
+    fun <T, C: KslFloatType> KslExpression<T>.sample(arrayIndex: KslExprInt1, coord: KslExpression<C>, ddx: KslExpression<C>, ddy: KslExpression<C>)
+        where T: KslColorSampler<C>, T: KslSamplerArrayType = KslSampleColorTextureArrayGrad(this, arrayIndex, coord, ddx, ddy)
+
     /**
      * texelFetch — perform a lookup of a single texel within a texture
      * @param sampler Specifies the sampler to which the texture from which texels will be retrieved is bound.
      * @param coord Specifies the integer texture coordinates at which texture will be sampled.
      * @param lod If present, specifies the level-of-detail within the texture from which the texel will be fetched.
      */
+    @Deprecated("use texture.load instead")
     fun <T: KslColorSampler<R>, R : KslFloatType> texelFetch(
         sampler: KslExpression<T>,
         coord: KslExpression<*>,
         lod: KslScalarExpression<KslInt1>? = null
-    ) = KslTexelFetch(sampler, coord, lod)
+    ) = KslImageTextureLoad(sampler, coord, lod)
+
+    fun <T: KslColorSampler<R>, R : KslFloatType> KslExpression<T>.load(
+        coord: KslExpression<*>,
+        lod: KslScalarExpression<KslInt1>? = null
+    ) = KslImageTextureLoad(this, coord, lod)
 
     fun <T> textureSize1d(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
         where T: KslSamplerType<*>, T: KslSampler1dType = KslTextureSize1d(sampler, lod)
@@ -730,6 +749,30 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         where T: KslSamplerType<*>, T: KslSampler2dType, T: KslSamplerArrayType = KslTextureSize2dArray(sampler, lod)
     fun <T> textureSizeCubeArray(sampler: KslExpression<T>, lod: KslScalarExpression<KslInt1> = 0.const)
         where T: KslSamplerType<*>, T: KslSamplerCubeType, T: KslSamplerArrayType = KslTextureSizeCubeArray(sampler, lod)
+
+    fun <T> KslExpression<T>.size(lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSampler1dType = KslTextureSize1d(this, lod)
+    fun <T> KslExpression<T>.size(lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSampler2dType = KslTextureSize2d(this, lod)
+    fun <T> KslExpression<T>.size(lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSampler3dType = KslTextureSize3d(this, lod)
+    fun <T> KslExpression<T>.size(lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSamplerCubeType = KslTextureSizeCube(this, lod)
+    fun <T> KslExpression<T>.size(lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSampler2dType, T: KslSamplerArrayType = KslTextureSize2dArray(this, lod)
+    fun <T> KslExpression<T>.size(lod: KslScalarExpression<KslInt1> = 0.const)
+            where T: KslSamplerType<*>, T: KslSamplerCubeType, T: KslSamplerArrayType = KslTextureSizeCubeArray(this, lod)
+
+    @JvmName("storageTexSize1d")
+    fun <T: KslNumericType> textureSize1d(storageTex: KslStorageTexture1d<KslStorageTexture1dType<T>, T>) = KslStorageTextureSize1d(storageTex)
+    @JvmName("storageTexSize2d")
+    fun <T: KslNumericType> textureSize2d(storageTex: KslStorageTexture2d<KslStorageTexture2dType<T>, T>) = KslStorageTextureSize2d(storageTex)
+    @JvmName("storageTexSize3d")
+    fun <T: KslNumericType> textureSize3d(storageTex: KslStorageTexture3d<KslStorageTexture3dType<T>, T>) = KslStorageTextureSize3d(storageTex)
+
+    fun <R: KslNumericType> KslStorageTexture1d<KslStorageTexture1dType<R>, R>.size(): KslExprInt1 = textureSize1d(this)
+    fun <R: KslNumericType> KslStorageTexture2d<KslStorageTexture2dType<R>, R>.size(): KslExprInt2 = textureSize2d(this)
+    fun <R: KslNumericType> KslStorageTexture3d<KslStorageTexture3dType<R>, R>.size(): KslExprInt3 = textureSize3d(this)
 
     // builtin storage functions
     operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslStorage<T,*>.get(coord: KslExpression<C>): KslExpression<R> =
@@ -838,4 +881,54 @@ class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, val p
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
         KslStorageAtomicCompareSwap(storage, coord, data, compare, storage.storageType.elemType)
+
+    // builtin storage texture functions
+    operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.get(coord: KslExpression<C>): KslExprFloat4 =
+        KslStorageTextureLoad(this, coord)
+
+    @JvmName("getTex2d")
+    operator fun <T: KslStorageTexture2dType<R>, R: KslNumericType> KslStorageTexture2d<T, R>.get(x: KslExprInt1, y: KslExprInt1): KslExprFloat4 =
+        KslStorageTextureLoad(this, int2Value(x, y))
+
+    @JvmName("getTex3d")
+    operator fun <T: KslStorageTexture3dType<R>, R: KslNumericType> KslStorageTexture3d<T, R>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExprFloat4 =
+        KslStorageTextureLoad(this, int3Value(x, y, z))
+
+    operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.set(
+        coord: KslExpression<C>,
+        data: KslExprFloat4
+    ) {
+        ops += KslStorageTextureStore(this, coord, data, this@KslScopeBuilder)
+    }
+
+    @JvmName("setTex2d")
+    operator fun <T: KslStorageTexture2dType<R>, R: KslNumericType> KslStorageTexture2d<T, R>.set(
+        x: KslExprInt1,
+        y: KslExprInt1,
+        data: KslExprFloat4
+    ) {
+        ops += KslStorageTextureStore(this, int2Value(x, y), data, this@KslScopeBuilder)
+    }
+
+    @JvmName("setTex3d")
+    operator fun <T: KslStorageTexture3dType<R>, R: KslNumericType> KslStorageTexture3d<T, R>.set(
+        x: KslExprInt1,
+        y: KslExprInt1,
+        z: KslExprInt1,
+        data: KslExprFloat4
+    ) {
+        ops += KslStorageTextureStore(this, int3Value(x, y, z), data, this@KslScopeBuilder)
+    }
+
+    fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.load(
+        coord: KslExpression<C>
+    ): KslExprFloat4 = KslStorageTextureLoad(this, coord)
+
+    fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.store(
+        coord: KslExpression<C>,
+        data: KslExprFloat4
+    ) {
+        ops += KslStorageTextureStore(this, coord, data, this@KslScopeBuilder)
+    }
+
 }

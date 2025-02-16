@@ -1,9 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.*
-import de.fabmax.kool.pipeline.SingleColorTexture
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.math.max
@@ -140,12 +138,10 @@ class MsdfFont(
         const val CUTOFF_OUTLINED_THICK = 0.15f
         const val CUTOFF_OUTLINED_THIN = 0.1f
 
-        val MSDF_TEX_PROPS = TextureProps(isMipMapped = false)
-
         val DEFAULT_FONT_DATA: MsdfFontData by lazy {
             val fontInfo = KoolSystem.config.defaultFont
-            val msdfMap = Texture2d(MSDF_TEX_PROPS, "MsdfFont:${fontInfo.fontMeta.name}") {
-                Assets.loadImage2d("fonts/font-roboto-regular.png", MSDF_TEX_PROPS)
+            val msdfMap = Texture2d(TexFormat.RGBA, MipMapping.Off, SamplerSettings(), "MsdfFont:${fontInfo.fontMeta.name}") {
+                Assets.loadImage2d("fonts/font-roboto-regular.png")
                     .getOrDefault(SingleColorTexture.getColorTextureData(Color.BLACK))
             }
             KoolSystem.getContextOrNull()?.onShutdown += { msdfMap.release() }
@@ -166,7 +162,7 @@ suspend fun MsdfFont(metaPath: String, texturePath: String): Result<MsdfFont> {
 }
 
 suspend fun MsdfFont(fontInfo: MsdfFontInfo): Result<MsdfFont> {
-    return Assets.loadTexture2d(fontInfo.texturePath, MsdfFont.MSDF_TEX_PROPS).mapCatching {
+    return Assets.loadTexture2d(fontInfo.texturePath, mipMapping = MipMapping.Off).mapCatching {
         val fontData = MsdfFontData(it, fontInfo.fontMeta)
         MsdfFont(fontData)
     }

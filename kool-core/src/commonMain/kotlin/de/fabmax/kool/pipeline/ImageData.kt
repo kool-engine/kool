@@ -185,41 +185,34 @@ class BufferedImageData3d(
 }
 
 class ImageDataCube(
-    val front: ImageData2d,
-    val back: ImageData2d,
-    val left: ImageData2d,
-    val right: ImageData2d,
-    val up: ImageData2d,
-    val down: ImageData2d,
-    override val id: String = "ImageDataCube[x+:${right.id},x-:${left.id},y+:${up.id},y-:${down.id},z+:${back.id},z-:${front.id}]"
+    val negX: ImageData2d,
+    val posX: ImageData2d,
+    val negY: ImageData2d,
+    val posY: ImageData2d,
+    val negZ: ImageData2d,
+    val posZ: ImageData2d,
+    override val id: String = "ImageDataCube[x+:${posX.id},x-:${negX.id},y+:${posY.id},y-:${negY.id},z+:${posZ.id},z-:${negZ.id}]"
 ) : ImageData {
 
-    val posX: ImageData2d get() = right
-    val negX: ImageData2d get() = left
-    val posY: ImageData2d get() = up
-    val negY: ImageData2d get() = down
-    val posZ: ImageData2d get() = back
-    val negZ: ImageData2d get() = front
-
-    val width = front.width
-    val height = front.height
+    val width = negZ.width
+    val height = negZ.height
     val size: Vec2i get() = Vec2i(width, height)
-    override val format = front.format
+    override val format = negZ.format
 
     init {
         check(
-            front.size == back.size &&
-            front.size == left.size &&
-            front.size == right.size &&
-            front.size == up.size &&
-            front.size == down.size
+            negZ.size == posZ.size &&
+            negZ.size == negX.size &&
+            negZ.size == posX.size &&
+            negZ.size == posY.size &&
+            negZ.size == negY.size
         )
         check(
-            front.format == back.format &&
-            front.format == left.format &&
-            front.format == right.format &&
-            front.format == up.format &&
-            front.format == down.format
+            negZ.format == posZ.format &&
+            negZ.format == negX.format &&
+            negZ.format == posX.format &&
+            negZ.format == posY.format &&
+            negZ.format == negY.format
         )
     }
 }
@@ -265,27 +258,51 @@ class ImageDataCubeArray(
 }
 
 
-fun ImageData1d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture1d")) =
-    Texture1d(this, props, name)
+fun ImageData1d.toLazyTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("Texture1d")
+) = Texture1d(this, mipMapping, samplerSettings, name)
 
-fun ImageData2d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture2d")) =
-    Texture2d(this, props, name)
+fun ImageData2d.toLazyTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("Texture2d")
+) = Texture2d(this, mipMapping, samplerSettings, name)
 
-fun ImageData3d.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture3d")) =
-    Texture3d(this, props, name)
+fun ImageData3d.toLazyTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("Texture3d")
+) = Texture3d(this, mipMapping, samplerSettings, name)
 
-fun ImageDataCube.toLazyTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("TextureCube")) =
-    TextureCube(this, props, name)
+fun ImageDataCube.toLazyTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("TextureCube")
+) = TextureCube(this, mipMapping, samplerSettings, name)
 
 
-suspend fun ImageData1d.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture1d")) =
-    Texture1d(props, name).apply { upload(this@toTexture) }
+suspend fun ImageData1d.toTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("Texture1d")
+) = Texture1d(format, mipMapping, samplerSettings, name).apply { upload(this@toTexture) }
 
-suspend fun ImageData2d.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture2d")) =
-    Texture2d(props, name).apply { upload(this@toTexture) }
+suspend fun ImageData2d.toTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("Texture2d")
+) = Texture2d(format, mipMapping, samplerSettings, name).apply { upload(this@toTexture) }
 
-suspend fun ImageData3d.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("Texture3d")) =
-    Texture3d(props, name).apply { upload(this@toTexture) }
+suspend fun ImageData3d.toTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("Texture3d")
+) = Texture3d(format, mipMapping, samplerSettings, name).apply { upload(this@toTexture) }
 
-suspend fun ImageDataCube.toTexture(props: TextureProps = TextureProps(), name: String = UniqueId.nextId("TextureCube")) =
-    TextureCube(props, name).apply { upload(this@toTexture) }
+suspend fun ImageDataCube.toTexture(
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    name: String = UniqueId.nextId("TextureCube")
+) = TextureCube(format, mipMapping, samplerSettings, name).apply { upload(this@toTexture) }

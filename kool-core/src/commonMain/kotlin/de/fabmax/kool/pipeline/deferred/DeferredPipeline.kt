@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.pipeline.SingleColorTexture
@@ -37,7 +38,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
     val lightingPassShader: PbrSceneShader
     val aoPipeline: AoPipeline.DeferredAoPipeline?
     val reflections: Reflections?
-    val bloom: Bloom?
+    //val bloomPass: BloomPass?
     val shadowMaps: List<ShadowMap>
 
     val sceneContent = Node()
@@ -50,7 +51,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
     private val mutSpotLights = mutableListOf<DeferredSpotLights>()
 
     val noSsrMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
-    val noBloomMap = SingleColorTexture(Color(0f, 0f, 0f, 0f))
 
     private val maxGlobalLights = cfg.maxGlobalLights
     private val isAoAvailable = cfg.isWithAmbientOcclusion
@@ -86,14 +86,23 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             updateEnabled()
         }
     var bloomStrength: Float
-        get() = bloom?.bloomStrength ?: 0f
-        set(value) { bloom?.bloomStrength = value }
-    var bloomScale: Float
-        get() = bloom?.bloomScale ?: 0f
-        set(value) { bloom?.bloomScale = value }
-    var bloomMapSize: Int
-        get() = bloom?.desiredMapHeight ?: 0
-        set(value) { bloom?.desiredMapHeight = value }
+        get() = passes[0].bloomPass?.strength ?: 0f
+        set(value) {
+            passes[0].bloomPass?.strength = value
+            passes[1].bloomPass?.strength = value
+        }
+    var bloomRadius: Float
+        get() = passes[0].bloomPass?.radius ?: 0f
+        set(value) {
+            passes[0].bloomPass?.radius = value
+            passes[1].bloomPass?.radius = value
+        }
+    var bloomThreshold: Float
+        get() = passes[0].bloomPass?.threshold ?: 0f
+        set(value) {
+            passes[0].bloomPass?.threshold = value
+            passes[1].bloomPass?.threshold = value
+        }
 
     init {
         passes = createPasses()
@@ -132,14 +141,12 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         }
 
         if (cfg.isWithBloom) {
-            bloom = Bloom(this, cfg)
-            scene.addOffscreenPass(bloom.thresholdPass)
-            scene.addOffscreenPass(bloom.blurPass.blurX)
-            scene.addOffscreenPass(bloom.blurPass.blurY)
-            onSwap += bloom
-
-        } else {
-            bloom = null
+            passes.forEach { pass ->
+                val bloom = BloomPass(pass.lightingPass.colorTexture!!)
+                scene.addComputePass(bloom)
+                bloom.dependsOn(pass.lightingPass)
+                pass.bloomPass = bloom
+            }
         }
 
         // make sure scene content is updated from scene.onUpdate, although sceneContent group is not a direct child of scene
@@ -150,8 +157,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         scene.onRenderScene += { onRenderScene() }
         scene.onRelease {
             noSsrMap.release()
-            noBloomMap.release()
-
             passes.forEach { pass ->
                 scene.removeOffscreenPass(pass.materialPass)
                 scene.removeOffscreenPass(pass.lightingPass)
@@ -166,12 +171,12 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
     }
 
     fun createDefaultOutputQuad(): Mesh {
-        val outputShader = DeferredOutputShader(cfg, bloom?.bloomMap)
+        val outputShader = DeferredOutputShader(cfg, this)
         passes[0].lightingPass.onAfterPass { outputShader.setDeferredInput(passes[0]) }
         passes[1].lightingPass.onAfterPass { outputShader.setDeferredInput(passes[1]) }
 
         onConfigChange += {
-            outputShader.bloomMap = if (isBloomEnabled) bloom?.bloomMap else noBloomMap
+            outputShader.isBloomEnabled = isBloomEnabled
         }
 
         return Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS).apply {
@@ -216,7 +221,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             activePass.checkSize(vpW, vpH)
             reflections?.checkSize(vpW, vpH)
             aoPipeline?.checkSize(vpW, vpH)
-            bloom?.checkSize(vpW, vpH)
         }
     }
 
@@ -240,11 +244,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         }
     }
 
-    fun setBloomBrightnessThresholds(lower: Float, upper: Float) {
-        bloom?.lowerThreshold = lower
-        bloom?.upperThreshold = upper
-    }
-
     fun createSpotLights(maxSpotAngle: AngleF): DeferredSpotLights {
         val lights = DeferredSpotLights(maxSpotAngle)
         lightingPassContent += lights.mesh
@@ -258,7 +257,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         passes.forEach { it.isEnabled = isEnabled }
         reflections?.isEnabled = isEnabled && isSsrEnabled
         lightingPassShader.scrSpcReflectionMap = if (isSsrEnabled) reflections?.reflectionMap else noSsrMap
-        bloom?.isEnabled = isEnabled && isBloomEnabled
 
         onConfigChange.forEach { it(this) }
     }

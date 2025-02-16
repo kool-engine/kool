@@ -27,6 +27,7 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
         cubeMapArrays = false,
         reversedDepth = false,
         maxSamples = 4,
+        readWriteStorageTextures = false,
         depthOnlyShaderColorOutput = null,
         maxComputeWorkGroupsPerDimension = Vec3i.ZERO,
         maxComputeWorkGroupSize = Vec3i.ZERO,
@@ -58,6 +59,10 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
     }
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
+        TODO("Not yet implemented")
+    }
+
+    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
         TODO("Not yet implemented")
     }
 

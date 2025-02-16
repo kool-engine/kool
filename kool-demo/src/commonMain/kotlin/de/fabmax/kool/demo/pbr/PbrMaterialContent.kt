@@ -12,7 +12,6 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
@@ -199,13 +198,12 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
             aoPath: String?,
             displacementPath: String?,
         ): MaterialMaps {
-            val singleChProps = TextureProps(format = TexFormat.R)
             val albedo = Assets.loadTexture2dAsync(albedoPath)
             val normal = Assets.loadTexture2dAsync(normalPath)
-            val roughness = Assets.loadTexture2dAsync(roughnessPath, props = singleChProps)
-            val metallic = metallicPath?.let { Assets.loadTexture2dAsync(it, props = singleChProps) }
-            val ao = aoPath?.let { Assets.loadTexture2dAsync(it, props = singleChProps) }
-            val displacement = displacementPath?.let { Assets.loadTexture2dAsync(it, props = singleChProps) }
+            val roughness = Assets.loadTexture2dAsync(roughnessPath, TexFormat.R)
+            val metallic = metallicPath?.let { Assets.loadTexture2dAsync(it, TexFormat.R) }
+            val ao = aoPath?.let { Assets.loadTexture2dAsync(it, TexFormat.R) }
+            val displacement = displacementPath?.let { Assets.loadTexture2dAsync(it, TexFormat.R) }
             return MaterialMaps(
                 albedo.await().getOrThrow(),
                 normal.await().getOrThrow(),

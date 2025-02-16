@@ -23,6 +23,7 @@ sealed class TextureBinding<T: Texture<*>?>(
 
     fun set(value: T, samplerSettings: SamplerSettings? = cachedSamplerSettings) {
         cache = value
+        cachedSamplerSettings = samplerSettings
         if (isValid) {
             bindGroupData?.setInData(value, samplerSettings)
         }
@@ -33,11 +34,7 @@ sealed class TextureBinding<T: Texture<*>?>(
 
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
-
         pipeline.findBindingLayout<TextureLayout> { it.name == bindingName }?.let { (group, tex) ->
-            check(group.scope == BindGroupScope.PIPELINE) {
-                "TextureBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but texture $bindingName has scope ${group.scope}."
-            }
             bindGroup = group.group
             bindingIndex = tex.bindingIndex
             pipeline.pipelineData.setInData(cache, cachedSamplerSettings)

@@ -8,8 +8,9 @@ import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.MipMapping
 import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -137,7 +138,12 @@ class PbrDemo : DemoScene("PBR Materials") {
             return loaded
         }
 
-        val rgbe = Assets.loadTexture2d(hdriTextures[idx].hdriPath, hdriTexProps).getOrThrow()
+        val rgbe = Assets.loadTexture2d(
+            assetPath = hdriTextures[idx].hdriPath,
+            format = TexFormat.RGBA,
+            mipMapping = MipMapping.Off,
+            samplerSettings = SamplerSettings().nearest()
+        ).getOrThrow()
         val maps = EnvironmentMap.fromHdriTexture(rgbe)
         loadedHdris[idx] = maps
         return maps
@@ -208,12 +214,6 @@ class PbrDemo : DemoScene("PBR Materials") {
     }
 
     companion object {
-        // HDRIs are encoded as RGBE images, use nearest sampling to not mess up the exponent
-        private val hdriTexProps = TextureProps(
-            isMipMapped = false,
-            defaultSamplerSettings = SamplerSettings().nearest()
-        )
-
         private val hdriTextures = listOf(
             Hdri("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", "South Africa"),
             Hdri("${DemoLoader.hdriPath}/circus_arena_1k.rgbe.png", "Circus"),

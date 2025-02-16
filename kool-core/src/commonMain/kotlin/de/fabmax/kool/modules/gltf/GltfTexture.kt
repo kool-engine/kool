@@ -46,10 +46,11 @@ data class GltfTexture(
                 minFilter = sampler.minFilterKool,
                 magFilter = sampler.magFilterKool,
             )
-            val generateMipMaps = samplerSettings.minFilter != FilterMethod.NEAREST
-
+            val mipMapping = if (samplerSettings.minFilter != FilterMethod.NEAREST) MipMapping.Full else MipMapping.Off
             createdTex = Texture2d(
-                TextureProps(isMipMapped = generateMipMaps, defaultSamplerSettings = samplerSettings),
+                format = TexFormat.RGBA,
+                mipMapping = mipMapping,
+                samplerSettings = samplerSettings,
                 name
             ) {
                 if (uri != null) {

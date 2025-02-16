@@ -37,18 +37,25 @@ class LoadedTextureGl(
     }
 
     fun applySamplerSettings(samplerSettings: SamplerSettings?) {
-        val settings = samplerSettings ?: texture.props.defaultSamplerSettings
+        val settings = samplerSettings ?: texture.samplerSettings
         if (settings == currentSamplerSettings) {
             return
         }
 
-        val isMipMapped = texture.props.isMipMapped
+        val isMipMapped = texture.mipMapping.isMipMapped
         currentSamplerSettings = settings
 
         gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, settings.minFilter.glMinFilterMethod(isMipMapped))
         gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, settings.magFilter.glMagFilterMethod())
         gl.texParameteri(target, gl.TEXTURE_WRAP_S, settings.addressModeU.glAddressMode())
         gl.texParameteri(target, gl.TEXTURE_WRAP_T, settings.addressModeV.glAddressMode())
+        gl.texParameteri(target, gl.TEXTURE_MIN_LOD, settings.baseMipLevel)
+
+        if (settings.numMipLevels > 0) {
+            gl.texParameteri(target, gl.TEXTURE_MAX_LOD, settings.baseMipLevel + settings.numMipLevels - 1)
+        } else {
+            gl.texParameteri(target, gl.TEXTURE_MAX_LOD, settings.baseMipLevel + 1000)
+        }
         if (target == gl.TEXTURE_3D) {
             gl.texParameteri(target, gl.TEXTURE_WRAP_R, settings.addressModeW.glAddressMode())
         }
@@ -74,21 +81,21 @@ class LoadedTextureGl(
         }
     }
 
-    private fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {
+    fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {
         return when(this) {
             FilterMethod.NEAREST -> if (mipMapping) gl.NEAREST_MIPMAP_NEAREST else gl.NEAREST
             FilterMethod.LINEAR -> if (mipMapping) gl.LINEAR_MIPMAP_LINEAR else gl.LINEAR
         }
     }
 
-    private fun FilterMethod.glMagFilterMethod(): Int {
+    fun FilterMethod.glMagFilterMethod(): Int {
         return when (this) {
             FilterMethod.NEAREST -> gl.NEAREST
             FilterMethod.LINEAR -> gl.LINEAR
         }
     }
 
-    private fun AddressMode.glAddressMode(): Int {
+    fun AddressMode.glAddressMode(): Int {
         return when(this) {
             AddressMode.CLAMP_TO_EDGE -> gl.CLAMP_TO_EDGE
             AddressMode.MIRRORED_REPEAT -> gl.MIRRORED_REPEAT

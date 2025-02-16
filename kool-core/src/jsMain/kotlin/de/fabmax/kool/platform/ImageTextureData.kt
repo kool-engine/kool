@@ -1,6 +1,10 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.pipeline.ImageData2d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.isF16
+import de.fabmax.kool.pipeline.isF32
 import de.fabmax.kool.util.Buffer
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Uint8Buffer
@@ -19,10 +23,9 @@ class ImageTextureData(
     override val height: Int get() = data.height
 
     companion object {
-        fun imageBitmapToBuffer(image: ImageBitmap, texProps: TextureProps): Buffer {
-            val prefSize = texProps.resolveSize
-            val w = prefSize?.x ?: image.width
-            val h = prefSize?.y ?: image.height
+        fun imageBitmapToBuffer(image: ImageBitmap, format: TexFormat, resolveSize: Vec2i?): Buffer {
+            val w = resolveSize?.x ?: image.width
+            val h = resolveSize?.y ?: image.height
 
             // in order to get the pixel data, we must draw the image into a canvas and read the pixels
             val canvas = document.createElement("canvas") as HTMLCanvasElement
@@ -32,10 +35,10 @@ class ImageTextureData(
             canvasCtx.drawImage(image, 0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble())
             val imageData = canvasCtx.getImageData(0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble())
 
-            val c = texProps.format.channels
+            val c = format.channels
             val buffer: Buffer
 
-            if (texProps.format.isF16 || texProps.format.isF32) {
+            if (format.isF16 || format.isF32) {
                 buffer = Float32Buffer(w * h * c)
                 for (i in 0 until w * h) {
                     buffer[i * c + 0] = (imageData.data[i * 4 + 0].toInt() and 0xff) / 255f

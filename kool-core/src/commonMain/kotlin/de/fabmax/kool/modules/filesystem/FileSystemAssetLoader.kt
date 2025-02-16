@@ -1,11 +1,10 @@
 package de.fabmax.kool.modules.filesystem
 
 import de.fabmax.kool.*
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.gltf.GltfFile
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
-import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.pipeline.TextureProps
-import de.fabmax.kool.pipeline.toTexture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Model
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.logW
@@ -17,7 +16,7 @@ abstract class FileSystemAssetLoader(val baseDir: FileSystemDirectory) : AssetLo
     }
 
     override suspend fun loadImage2d(ref: AssetRef.Image2d): LoadedAsset.Image2d {
-        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.props)
+        val refCopy = AssetRef.BufferedImage2d(ref.path, ref.format, ref.resolveSize)
         return LoadedAsset.Image2d(ref, loadBufferedImage2d(refCopy).result)
     }
 
@@ -34,13 +33,18 @@ abstract class FileSystemAssetLoader(val baseDir: FileSystemDirectory) : AssetLo
     }
 }
 
-suspend fun FileSystemFile.loadTexture2d(props: TextureProps = TextureProps()): Result<Texture2d> {
+suspend fun FileSystemFile.loadTexture2d(
+    format: TexFormat = TexFormat.RGBA,
+    mipMapping: MipMapping = MipMapping.Full,
+    samplerSettings: SamplerSettings = SamplerSettings(),
+    resolveSize: Vec2i? = null
+): Result<Texture2d> {
     return try {
         val mimeType = this.mimeType
         if (mimeType == MimeType.BINARY_DATA) {
             logW { "file $name seems to be no image type" }
         }
-        Result.success(Assets.loadImageFromBuffer(read(), mimeType, props).toTexture(props, name))
+        Result.success(Assets.loadImageFromBuffer(read(), mimeType, format, resolveSize).toTexture(mipMapping, samplerSettings, name))
     } catch (t: Throwable) {
         Result.failure(t)
     }

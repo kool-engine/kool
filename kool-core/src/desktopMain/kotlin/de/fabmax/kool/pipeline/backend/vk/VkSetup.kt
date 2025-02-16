@@ -37,7 +37,9 @@ class VkSetup(
      */
     val isValidation: Boolean = false,
 
-    val preferredColorSpace: ColorSpace = ColorSpace.sRGB
+    val preferredColorSpace: ColorSpace = ColorSpace.sRGB,
+
+    val forceDeviceName: String? = null,
 ) {
     val requestedLayers = mutableSetOf<RequestedFeature>()
 

@@ -90,13 +90,13 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
             spotAngle = 30f.deg
             coreRatio = 0.5f
             radius = 0f
-            intensity = 500f
+            intensity = 1000f
         }
         headLightRt = DeferredSpotLights.SpotLight().apply {
             spotAngle = 30f.deg
             coreRatio = 0.5f
             radius = 0f
-            intensity = 500f
+            intensity = 1000f
         }
         val headLights = world.deferredPipeline.createSpotLights(30f.deg)
         headLights.addSpotLight(headLightLt)
@@ -155,12 +155,12 @@ class DemoVehicle(val demo: VehicleDemo, private val vehicleModel: Model, ctx: K
         rearLightRt.color.set(lightColor)
 
         if (vehicle.brakeInput > 0f) {
-            brakeLightShader.emission = Color(25f, 0.25f, 0.125f)
+            brakeLightShader.emission = Color(40f, 0.25f, 0.125f)
         } else {
             brakeLightShader.emission = Color.BLACK
         }
         if (vehicle.isReverse) {
-            reverseLightShader.emission = Color(25f, 25f, 25f)
+            reverseLightShader.emission = Color(20f, 20f, 20f)
         } else {
             reverseLightShader.emission = Color.BLACK
         }

@@ -13,6 +13,10 @@ class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: Verte
                 when (binding) {
                     is UniformBufferLayout -> nextBinding++
 
+                    is StorageBuffer1dLayout -> nextBinding++
+                    is StorageBuffer2dLayout -> nextBinding++
+                    is StorageBuffer3dLayout -> nextBinding++
+
                     // textures require two binding slots (1st: sampler, 2nd: texture)
                     is Texture1dLayout -> nextBinding += 2
                     is Texture2dLayout -> nextBinding += 2
@@ -21,9 +25,9 @@ class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: Verte
                     is Texture2dArrayLayout -> nextBinding += 2
                     is TextureCubeArrayLayout -> nextBinding += 2
 
-                    is StorageBuffer1dLayout -> nextBinding++
-                    is StorageBuffer2dLayout -> nextBinding++
-                    is StorageBuffer3dLayout -> nextBinding++
+                    is StorageTexture1dLayout -> nextBinding++
+                    is StorageTexture2dLayout -> nextBinding++
+                    is StorageTexture3dLayout -> nextBinding++
                 }
             }
         }

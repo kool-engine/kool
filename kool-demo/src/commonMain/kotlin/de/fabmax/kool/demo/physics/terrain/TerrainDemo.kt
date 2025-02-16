@@ -20,7 +20,6 @@ import de.fabmax.kool.physics.util.CharacterTrackingCamRig
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.SamplerSettings
-import de.fabmax.kool.pipeline.TextureProps
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.*
@@ -33,9 +32,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     private val normalMap by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
     private val oceanBump by texture2d("${DemoLoader.materialPath}/ocean-bump-1k.jpg")
     private val moonTex by texture2d("${DemoLoader.materialPath}/moon-blueish.png")
-    private val grassColor by texture2d("${DemoLoader.materialPath}/grass_64.png",
-        TextureProps(defaultSamplerSettings = SamplerSettings().clamped())
-    )
+    private val grassColor by texture2d("${DemoLoader.materialPath}/grass_64.png", samplerSettings = SamplerSettings().clamped())
 
     val oceanColor = GradientTexture(ColorGradient(
         0.0f to MdColor.CYAN,
@@ -102,10 +99,6 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     override suspend fun Assets.loadResources(ctx: KoolContext) {
-        // enable infinite depth early, skybox creation needs to know if it was successful
-        // infinite depth isn't really needed for this demo, but it's a nice test
-        mainScene.tryEnableInfiniteDepth()
-
         showLoadText("Loading height map...")
         val heightData = loadBlob("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
         val heightMap = Heightmap.fromRawData(heightData, 200f, heightOffset = -50f)
@@ -298,11 +291,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private fun Scene.setupCamera() {
         camRig = CharacterTrackingCamRig(false).apply {
-            if (isInfiniteDepth) {
-                camera.setClipRange(0.1f, 1e9f)
-            } else {
-                camera.setClipRange(0.5f, 5000f)
-            }
+            camera.setClipRange(0.1f, 1e9f)
             trackedPose = physicsObjects.playerController.controller.actor.transform
             minZoom = 0.75f
             maxZoom = 100f
@@ -345,7 +334,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
     }
 
     private fun updateOceanShader(isGroundPbr: Boolean) {
-        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorCopy, shadowMap, wind.density, oceanBump, oceanColor, isGroundPbr, mainScene.isInfiniteDepth)
+        ocean.oceanShader = OceanShader.makeOceanShader(oceanFloorCopy, shadowMap, wind.density, oceanBump, oceanColor, isGroundPbr, mainScene.depthMode)
     }
 
     private fun updateTreeShader(isVegetationPbr: Boolean) {

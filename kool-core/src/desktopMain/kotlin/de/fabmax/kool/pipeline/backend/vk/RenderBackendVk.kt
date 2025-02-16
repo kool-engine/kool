@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -80,6 +81,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             cubeMapArrays = physicalDevice.cubeMapArrays,
             reversedDepth = true,
             maxSamples = physicalDevice.maxSamples,
+            readWriteStorageTextures = true,
             depthOnlyShaderColorOutput = null,
             maxComputeWorkGroupsPerDimension = Vec3i(
                 clampUint(physicalDevice.deviceProperties.limits().maxComputeWorkGroupCount(0)),
@@ -208,7 +210,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             for (i in sortedPasses.indices) {
                 val pass = sortedPasses[i]
                 if (pass.isEnabled) {
+                    pass.beforePass()
                     pass.execute(passEncoderState)
+                    pass.afterPass()
                 }
             }
         }
@@ -265,6 +269,42 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return ComputePassVk(parentPass, this)
     }
 
+    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
+        val usage = VK_IMAGE_USAGE_STORAGE_BIT or
+                VK_IMAGE_USAGE_TRANSFER_SRC_BIT or
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT or
+                VK_IMAGE_USAGE_SAMPLED_BIT
+        val imageType = when (storageTexture) {
+            is StorageTexture1d -> VK_IMAGE_TYPE_1D
+            is StorageTexture2d -> VK_IMAGE_TYPE_2D
+            is StorageTexture3d -> VK_IMAGE_TYPE_3D
+        }
+        val levels = when (val mipMapping = storageTexture.mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
+        val imageInfo = ImageInfo(
+            imageType = imageType,
+            format = storageTexture.format.vk,
+            width = width,
+            height = height,
+            depth = depth,
+            arrayLayers = 1,
+            mipLevels = levels,
+            samples = 1,
+            usage = usage,
+            label = storageTexture.name,
+            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+        )
+        val storageImage = ImageVk(this, imageInfo)
+        commandPool.singleShotCommands { commandBuffer ->
+            storageImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
+        }
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = storageImage
+    }
+
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
@@ -307,10 +347,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
             val gpuTex = readback.texture.gpuTexture as ImageVk?
-            if (gpuTex == null || readback.texture.props.format.isF16) {
+            if (gpuTex == null || readback.texture.format.isF16) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
             } else {
-                val format = readback.texture.props.format
+                val format = readback.texture.format
                 val size = format.pxSize.toLong() * gpuTex.width * gpuTex.height * gpuTex.depth
                 val mapBuffer = BufferVk(
                     this,
@@ -340,7 +380,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             val mapBuffer = readback.mapBuffer!!
             val mapped = checkNotNull(mapBuffer.vkBuffer.mapped) { "readback buffer was not created mapped" }
             val gpuTex = readback.texture.gpuTexture as ImageVk
-            val format = readback.texture.props.format
+            val format = readback.texture.format
             val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
             dst.copyFrom(mapped)
             mapBuffer.release()

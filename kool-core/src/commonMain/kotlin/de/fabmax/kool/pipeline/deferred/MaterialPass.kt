@@ -62,28 +62,28 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
     }
 
     companion object {
-        private val samplerSettings = SamplerSettings().clamped().nearest()
+        private val defaultSamplerSettings = SamplerSettings().clamped().nearest()
 
         val FMT_POSITION_FLAGS = TextureAttachmentConfig {
             textureFormat = TexFormat.RGBA_F16
-            defaultSamplerSettings = samplerSettings
+            samplerSettings = defaultSamplerSettings
             // encoded position is in view space -> z value of valid position is always negative, use a
             // positive z value in clear color to encode clear areas
             clearColor = ClearColorFill(Color(0f, 0f, 1f, 0f))
         }
         val FMT_NORMAL_ROUGH = TextureAttachmentConfig {
             textureFormat = TexFormat.RGBA_F16
-            defaultSamplerSettings = samplerSettings
+            samplerSettings = defaultSamplerSettings
             clearColor = ClearColorFill(Color(0f, 0f, 0f, 0f))
         }
         val FMT_ALBEDO_METAL = TextureAttachmentConfig {
             textureFormat = TexFormat.RGBA
-            defaultSamplerSettings = samplerSettings
+            samplerSettings = defaultSamplerSettings
             clearColor = ClearColorFill(Color(0f, 0f, 0f, 0f))
         }
         val FMT_EMISSIVE_AO = TextureAttachmentConfig {
             textureFormat = TexFormat.RGBA_F16
-            defaultSamplerSettings = samplerSettings
+            samplerSettings = defaultSamplerSettings
             clearColor = ClearColorFill(Color(0f, 0f, 0f, 0f))
         }
 

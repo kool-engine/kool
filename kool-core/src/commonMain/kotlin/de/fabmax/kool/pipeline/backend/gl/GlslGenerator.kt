@@ -6,6 +6,7 @@ import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.ComputePipeline
 import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.PipelineBase
+import de.fabmax.kool.pipeline.TexFormat
 
 /**
  * Default GLSL shader code generator.
@@ -57,6 +58,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateStorageBuffers(vertexStage, pipeline)
         src.generateUbos(vertexStage, pipeline)
         src.generateUniformSamplers(vertexStage, pipeline)
+        src.generateStorageTextures(vertexStage, pipeline)
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, pipeline, "instance attributes")
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, pipeline, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
@@ -86,6 +88,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateStorageBuffers(fragmentStage, pipeline)
         src.generateUbos(fragmentStage, pipeline)
         src.generateUniformSamplers(fragmentStage, pipeline)
+        src.generateStorageTextures(fragmentStage, pipeline)
         src.generateInterStageInputs(fragmentStage)
         src.generateOutputs(fragmentStage.outColors)
         src.generateFunctions(fragmentStage)
@@ -112,6 +115,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateStorageBuffers(computeStage, pipeline)
         src.generateUbos(computeStage, pipeline)
         src.generateUniformSamplers(computeStage, pipeline)
+        src.generateStorageTextures(computeStage, pipeline)
         src.generateFunctions(computeStage)
 
         src.appendLine("void main() {")
@@ -270,7 +274,11 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return "textureSize(${textureSize.sampler.generateExpression(this)}, ${textureSize.lod.generateExpression(this)})"
     }
 
-    override fun texelFetch(expression: KslTexelFetch<*>): String {
+    override fun textureSize(textureSize: KslStorageTextureSize<*, *, *>): String {
+        return "imageSize(${textureSize.storageTex.generateExpression(this)})"
+    }
+
+    override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
         val sampler = expression.sampler.generateExpression(this)
         val coords = expression.coord.generateExpression(this)
         val lod = expression.lod?.generateExpression(this)
@@ -305,6 +313,13 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         return "${storage}${arrayIndex} = $expr;"
     }
 
+    override fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String {
+        val storage = op.storage.generateExpression(this)
+        val expr = op.data.generateExpression(this)
+        val coord = op.coord.generateExpression(this)
+        return "imageStore(${storage}, $coord, $expr);"
+    }
+
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
         val storage = atomicOp.storage.generateExpression(this)
         val expr = atomicOp.data.generateExpression(this)
@@ -329,6 +344,12 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         val coord = atomicCompSwap.coord.generateExpression(this)
         val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
         return "atomicCompSwap($storage${arrayIndex}, ${comp}, ${expr})"
+    }
+
+    override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String {
+        val storage = storageTextureRead.storage.generateExpression(this)
+        val coord = storageTextureRead.coord.generateExpression(this)
+        return "imageLoad($storage, $coord)"
     }
 
     protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
@@ -364,6 +385,39 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
                 """.trimIndent())
             }
             appendLine()
+        }
+    }
+
+    protected open fun StringBuilder.generateStorageTextures(stage: KslShaderStage, pipeline: PipelineBase) {
+        val storage = stage.getUsedStorageTextures()
+        if (storage.isNotEmpty()) {
+            appendLine("// storage textures")
+            storage.forEachIndexed { i, it ->
+                val formatQualifier = storageTextureFormatQualifier(it.texFormat)
+                appendLine("layout($formatQualifier, binding=$i) uniform ${glslTypeName(it.expressionType)} ${it.name};")
+            }
+            appendLine()
+        }
+    }
+
+    protected fun storageTextureFormatQualifier(texFormat: TexFormat): String {
+        return when (texFormat) {
+            TexFormat.R -> "r8"
+            TexFormat.RG -> "rg8"
+            TexFormat.RGBA -> "rgba8"
+            TexFormat.R_F16 -> "r16f"
+            TexFormat.RG_F16 -> "rg16f"
+            TexFormat.RGBA_F16 -> "rgba16f"
+            TexFormat.R_F32 -> "r32f"
+            TexFormat.RG_F32 -> "rg32f"
+            TexFormat.RGBA_F32 -> "rgba32f"
+            TexFormat.R_I32 -> "r32i"
+            TexFormat.RG_I32 -> "rg32i"
+            TexFormat.RGBA_I32 -> "rgba32i"
+            TexFormat.R_U32 -> "r32ui"
+            TexFormat.RG_U32 -> "rg32ui"
+            TexFormat.RGBA_U32 -> "rgba32ui"
+            TexFormat.RG11B10_F -> "r11f_g11f_b10f"
         }
     }
 
@@ -681,13 +735,17 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
             is KslArrayType<*> -> "${glslTypeName(type.elemType)}[${type.arraySize}]"
 
-            is KslStorage1dType<*> -> "${type.typePrefix}image1D"
-            is KslStorage2dType<*> -> "${type.typePrefix}image2D"
-            is KslStorage3dType<*> -> "${type.typePrefix}image3D"
+            is KslStorageTexture1dType<*> -> "${type.typePrefix}image1D"
+            is KslStorageTexture2dType<*> -> "${type.typePrefix}image2D"
+            is KslStorageTexture3dType<*> -> "${type.typePrefix}image3D"
+
+            is KslStorage1dType<*> -> error("KslStorage1dType has no glsl type name")
+            is KslStorage2dType<*> -> error("KslStorage2dType has no glsl type name")
+            is KslStorage3dType<*> -> error("KslStorage3dType has no glsl type name")
         }
     }
 
-    private val KslStorageType<*, *>.typePrefix: String
+    private val KslStorageTextureType<*, *>.typePrefix: String
         get() = when (elemType) {
             is KslFloatType -> ""
             is KslInt1 -> "i"

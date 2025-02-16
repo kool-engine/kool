@@ -44,12 +44,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private val isLightBodies = mutableStateOf(true).onChange { _, new -> lightPositionMesh.isVisible = new }
     private val isLightVolumes = mutableStateOf(false).onChange { _, new -> lightVolumeMesh.isVisible = new }
     private val roughness = mutableStateOf(0.15f).onChange { _, new -> objectShader.roughness = new }
-    private val bloomStrength = mutableStateOf(0.75f).onChange { _, new -> deferredPipeline.bloomStrength = new }
-    private val bloomRadius = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.bloomScale = new }
-    private val bloomThreshold = mutableStateOf(0.5f).onChange { _, new ->
-        deferredPipeline.bloom?.lowerThreshold = new
-        deferredPipeline.bloom?.upperThreshold = new + 0.5f
-    }
+    private val bloomStrength = mutableStateOf(1f).onChange { _, new -> deferredPipeline.bloomStrength = new }
+    private val bloomRadius = mutableStateOf(1f).onChange { _, new -> deferredPipeline.bloomRadius = new }
+    private val bloomThreshold = mutableStateOf(0.5f).onChange { _, new -> deferredPipeline.bloomThreshold = new }
 
     private val ibl by hdriSingleColor(Color(0.22f, 0.22f, 0.22f))
     private val groundColor by texture2d("${DemoLoader.materialPath}/futuristic-panels1/futuristic-panels1-albedo1.jpg")
@@ -109,9 +106,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         }
         deferredPipeline = DeferredPipeline(this, defCfg)
         deferredPipeline.apply {
-            bloomScale = this@DeferredDemo.bloomRadius.value
+            bloomRadius = this@DeferredDemo.bloomRadius.value
             bloomStrength = this@DeferredDemo.bloomStrength.value
-            setBloomBrightnessThresholds(bloomThreshold.value, bloomThreshold.value + 0.5f)
+            bloomThreshold =  this@DeferredDemo.bloomThreshold.value
 
             lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
         }
@@ -225,7 +222,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 vertices { isInstanced = true }
                 emission {
                     instanceColor(Attribute.COLORS)
-                    constColor(Color(2f, 2f, 2f), blendMode = ColorBlockConfig.BlendMode.Multiply)
+                    constColor(Color(6f, 6f, 6f), blendMode = ColorBlockConfig.BlendMode.Multiply)
                 }
             }
         }
@@ -340,11 +337,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
         Text("Bloom") { sectionTitleStyle() }
         MenuRow {
             Text("Strength") { labelStyle(lblSize) }
-            MenuSlider(bloomStrength.use(), 0f, 2f, txtWidth = txtSize) { bloomStrength.set(it) }
+            MenuSlider(bloomStrength.use(), 0f, 5f, txtWidth = txtSize) { bloomStrength.set(it) }
         }
         MenuRow {
             Text("Radius") { labelStyle(lblSize) }
-            MenuSlider(bloomRadius.use(), 0f, 2f, txtWidth = txtSize) { bloomRadius.set(it) }
+            MenuSlider(bloomRadius.use(), 0f, 2.5f, txtWidth = txtSize) { bloomRadius.set(it) }
         }
         MenuRow {
             Text("Threshold") { labelStyle(lblSize) }
@@ -369,7 +366,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 val albedoMetal = deferredPipeline.activePass.materialPass.albedoMetal
                 val normalRough = deferredPipeline.activePass.materialPass.normalRoughness
                 val positionFlags = deferredPipeline.activePass.materialPass.positionFlags
-                val bloom = deferredPipeline.bloom?.bloomMap
+                val bloom = deferredPipeline.activePass.bloomPass?.bloomMap
                 val ao = deferredPipeline.aoPipeline?.aoMap
 
                 Row {
@@ -426,7 +423,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                     }
                     Image(bloom) {
                         modifier
-                            .imageSize(ImageSize.FixedScale(0.3f * ((positionFlags.height) / deferredPipeline.bloomMapSize)))
+                            .imageSize(ImageSize.FixedScale(0.6f * ((positionFlags.height) / bloom!!.width)))
                             .imageProvider(FlatImageProvider(bloom, true).mirrorY())
                             .margin(horizontal = sizes.gap)
                             .customShader(bloomMapShader.apply { colorMap = bloom })

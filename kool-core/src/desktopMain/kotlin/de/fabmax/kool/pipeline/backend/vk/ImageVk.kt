@@ -6,7 +6,10 @@ import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.dstAccessMaskForLayo
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.dstStageMaskForLayout
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.srcAccessMaskForLayout
 import de.fabmax.kool.pipeline.backend.vk.ImageVk.Companion.srcStageMaskForLayout
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
 import org.lwjgl.vulkan.KHRSynchronization2.vkCmdPipelineBarrier2KHR
@@ -17,8 +20,7 @@ import kotlin.math.max
 
 class ImageVk(
     val backend: RenderBackendVk,
-    val imageInfo: ImageInfo,
-    label: String = UniqueId.nextId("Image")
+    val imageInfo: ImageInfo
 ) : BaseReleasable(), GpuTexture {
 
     override val width: Int get() = imageInfo.width
@@ -36,7 +38,7 @@ class ImageVk(
     private val textureInfo = TextureInfo(
         texture = null,
         size = (width * height * depth * arrayLayers * imageInfo.bytesPerPx * imageInfo.mipMapFactor).toLong(),
-        label
+        name = imageInfo.label
     )
 
     init {
@@ -80,7 +82,7 @@ class ImageVk(
     private val ImageInfo.mipMapFactor: Double get() = if (mipLevels > 1) { 1.333 } else 1.0
 
     override fun toString(): String {
-        return "ImageVK:\"${imageInfo.label}\""
+        return "ImageVK[${vkImage.handle.toHexString()}]:\"${imageInfo.label}\""
     }
 
     fun copyFromBuffer(
@@ -170,9 +172,18 @@ class ImageVk(
         }
     }
 
-    fun transitionLayout(oldLayout: Int, newLayout: Int, commandBuffer: VkCommandBuffer, stack: MemoryStack? = null) {
+    fun transitionLayout(
+        oldLayout: Int,
+        newLayout: Int,
+        commandBuffer: VkCommandBuffer,
+        baseMipLevel: Int = 0,
+        mipLevels: Int = this.mipLevels,
+        baseArrayLayer: Int = 0,
+        arrayLayers: Int = this.arrayLayers,
+        stack: MemoryStack? = null
+    ) {
         if (newLayout == oldLayout) return
-        vkImage.transitionLayout(oldLayout, newLayout, imageInfo.aspectMask, mipLevels, arrayLayers, commandBuffer, stack)
+        vkImage.transitionLayout(oldLayout, newLayout, imageInfo.aspectMask, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers, commandBuffer, stack)
         lastKnownLayout = newLayout
     }
 
@@ -352,7 +363,9 @@ fun VkImage.transitionLayout(
     oldLayout: Int,
     newLayout: Int,
     aspectMask: Int,
+    baseMipLevel: Int,
     mipLevels: Int,
+    baseArrayLayer: Int,
     arrayLayers: Int,
     commandBuffer: VkCommandBuffer,
     stack: MemoryStack? = null
@@ -367,7 +380,7 @@ fun VkImage.transitionLayout(
             oldLayout(oldLayout)
             newLayout(newLayout)
 
-            subresourceRange().set(aspectMask, 0, mipLevels, 0, arrayLayers)
+            subresourceRange().set(aspectMask, baseMipLevel, mipLevels, baseArrayLayer, arrayLayers)
 
             srcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
             dstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)

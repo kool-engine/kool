@@ -6,9 +6,7 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
-abstract class KslValueExpression<T: KslType>(override val expressionType: T) : KslExpression<T> {
-    //override fun collectStateDependencies() = emptySet<KslMutatedState>()
-}
+abstract class KslValueExpression<T: KslType>(override val expressionType: T) : KslExpression<T>
 
 class KslValueFloat1(val value: Float) : KslValueExpression<KslFloat1>(KslFloat1), KslScalarExpression<KslFloat1> {
     override fun collectStateDependencies() = emptySet<KslMutatedState>()
@@ -161,4 +159,10 @@ class KslValueMat4(
     override fun collectStateDependencies() = listOf(col0, col1, col2, col3).flatMap { it.collectStateDependencies() }.toSet()
     override fun generateExpression(generator: KslGenerator) = generator.constMatExpression(col0, col1, col2, col3)
     override fun toPseudoCode() = "mat4(${col0.toPseudoCode()}, ${col1.toPseudoCode()}, ${col2.toPseudoCode()}, ${col3.toPseudoCode()})"
+}
+
+object KslValueVoid : KslValueExpression<KslTypeVoid>(KslTypeVoid) {
+    override fun collectStateDependencies(): Set<KslMutatedState> = emptySet()
+    override fun generateExpression(generator: KslGenerator): String = ""
+    override fun toPseudoCode(): String = ""
 }

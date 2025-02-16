@@ -2,11 +2,12 @@ package de.fabmax.kool
 
 import com.github.weisj.jsvg.parser.LoaderContext
 import com.github.weisj.jsvg.parser.SVGLoader
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderDesktop
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.BufferedImageData2d
-import de.fabmax.kool.pipeline.TextureProps
+import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.platform.FontMapGenerator
 import de.fabmax.kool.platform.HttpCache
 import de.fabmax.kool.platform.ImageDecoder
@@ -151,26 +152,31 @@ object PlatformAssetsImpl : PlatformAssets {
         }
     }
 
-    override suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, props: TextureProps?): BufferedImageData2d {
+    override suspend fun loadImageFromBuffer(
+        texData: Uint8Buffer,
+        mimeType: String,
+        format: TexFormat,
+        resolveSize: Vec2i?
+    ): BufferedImageData2d {
         return withContext(Dispatchers.IO) {
-            readImageData(ByteArrayInputStream(texData.toArray()), mimeType, props)
+            readImageData(ByteArrayInputStream(texData.toArray()), mimeType, format, resolveSize)
         }
     }
 
-    fun readImageData(inStream: InputStream, mimeType: String, props: TextureProps?): BufferedImageData2d {
+    fun readImageData(inStream: InputStream, mimeType: String, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
         return inStream.use {
             when (mimeType) {
-                MimeType.IMAGE_SVG -> renderSvg(inStream, props)
-                else -> ImageDecoder.loadImage(inStream, props)
+                MimeType.IMAGE_SVG -> renderSvg(inStream, format, resolveSize)
+                else -> ImageDecoder.loadImage(inStream, format, resolveSize)
             }
         }
     }
 
-    private fun renderSvg(inStream: InputStream, props: TextureProps?): BufferedImageData2d {
+    private fun renderSvg(inStream: InputStream, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
         val svgDoc = SVGLoader().load(inStream, null, LoaderContext.createDefault()) ?: error("Failed loading SVG image")
         val size = svgDoc.size()
-        val scaleX = if (props?.resolveSize != null) props.resolveSize.x / size.width else 1f
-        val scaleY = if (props?.resolveSize != null) props.resolveSize.y / size.height else 1f
+        val scaleX = if (resolveSize != null) resolveSize.x / size.width else 1f
+        val scaleY = if (resolveSize != null) resolveSize.y / size.height else 1f
 
         val img = BufferedImage((size.width * scaleX).roundToInt(), (size.height * scaleY).roundToInt(), BufferedImage.TYPE_4BYTE_ABGR)
         val g = img.createGraphics()
@@ -180,7 +186,7 @@ object PlatformAssetsImpl : PlatformAssets {
         svgDoc.render(null, g)
         g.dispose()
 
-        return ImageDecoder.loadBufferedImage(img, props)
+        return ImageDecoder.loadBufferedImage(img, format, resolveSize)
     }
 }
 

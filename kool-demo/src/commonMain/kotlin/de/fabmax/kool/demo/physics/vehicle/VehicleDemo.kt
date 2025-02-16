@@ -29,7 +29,7 @@ import de.fabmax.kool.util.MdColor
 
 class VehicleDemo : DemoScene("Vehicle Demo") {
 
-    private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png", brightness = 0.7f)
     private val groundAlbedo by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine.png")
     private val groundNormal by texture2d("${DemoLoader.materialPath}/tile_flat/tiles_flat_fine_normal.png")
     private val vehicleModel by model(
@@ -79,10 +79,6 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
         deferredPipeline = DeferredPipeline(mainScene, defCfg).apply {
             aoPipeline?.mapSize = 0.75f
             lightingPassShader.ambientShadowFactor = 0.3f
-            bloomStrength = 0.25f
-            bloomScale = 1f
-            setBloomBrightnessThresholds(1f, 2f)
-
             lightingPassContent += Skybox.cube(ibl.reflectionMap, 1f, colorSpaceConversion = ColorSpaceConversion.AsIs)
         }
         mainScene += deferredPipeline.createDefaultOutputQuad()

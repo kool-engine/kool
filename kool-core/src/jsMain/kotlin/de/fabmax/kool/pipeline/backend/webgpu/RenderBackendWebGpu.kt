@@ -1,8 +1,11 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJs
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -71,11 +74,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override suspend fun startRenderLoop() {
-        adapter = checkNotNull(
-            navigator.gpu.requestAdapter(GPURequestAdapterOptions(GPUPowerPreference.highPerformance)).await()
-        ) {
-            "No appropriate GPUAdapter found."
-        }
+        val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(KoolSystem.configJs.powerPreference)).await()
+            ?: navigator.gpu.requestAdapter().await()
+        adapter = checkNotNull(selectedAdapter) { "No appropriate GPUAdapter found." }
 
         val availableFeatures = mutableSetOf<String>()
         adapter.features.forEach { s: String -> availableFeatures.add(s) }
@@ -87,6 +88,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             logI { "Enabling WebGPU timestamp-query feature" }
             requiredFeatures.add("timestamp-query")
         }
+        if ("rg11b10ufloat-renderable" in availableFeatures) {
+            logI { "Enabling rg11b10ufloat-renderable feature" }
+            requiredFeatures.add("rg11b10ufloat-renderable")
+        }
 
         val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
         device = adapter.requestDevice(deviceDesc).await()
@@ -96,6 +101,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             cubeMapArrays = true,
             reversedDepth = true,
             maxSamples = 4,
+            readWriteStorageTextures = false,
             depthOnlyShaderColorOutput = Color.BLACK,
             maxComputeWorkGroupsPerDimension = Vec3i(
                 device.limits.maxComputeWorkgroupsPerDimension,
@@ -195,7 +201,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             for (i in sortedPasses.indices) {
                 val pass = sortedPasses[i]
                 if (pass.isEnabled) {
+                    pass.beforePass()
                     pass.execute(passEncoderState)
+                    pass.afterPass()
                 }
             }
         }
@@ -206,7 +214,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> draw(passEncoderState)
             is OffscreenPassCube -> draw(passEncoderState)
-            is ComputePass -> dispatch(passEncoderState.encoder)
+            is ComputePass -> dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
     }
@@ -219,8 +227,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         (impl as WgpuOffscreenPassCube).draw(passEncoderState)
     }
 
-    private fun ComputePass.dispatch(encoder: GPUCommandEncoder) {
-        (impl as WgpuComputePass).dispatch(encoder)
+    private fun ComputePass.dispatch(passEncoderState: RenderPassEncoderState) {
+        passEncoderState.ensureRenderPassInactive()
+        (impl as WgpuComputePass).dispatch(passEncoderState.encoder)
     }
 
     override fun cleanup(ctx: KoolContext) {
@@ -257,6 +266,42 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         return WgpuComputePass(parentPass, this)
     }
 
+    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
+        val usage = GPUTextureUsage.STORAGE_BINDING or
+                GPUTextureUsage.COPY_SRC or
+                GPUTextureUsage.COPY_DST or
+                GPUTextureUsage.TEXTURE_BINDING
+        val dimension = when (storageTexture) {
+            is StorageTexture1d -> GPUTextureDimension.texture1d
+            is StorageTexture2d -> GPUTextureDimension.texture2d
+            is StorageTexture3d -> GPUTextureDimension.texture3d
+        }
+        val size = when (storageTexture) {
+            is StorageTexture1d -> intArrayOf(width)
+            is StorageTexture2d -> intArrayOf(width, height)
+            is StorageTexture3d -> intArrayOf(width, height, depth)
+        }
+        val levels = when (val mipMapping = storageTexture.mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
+
+        if (storageTexture.format == TexFormat.RG11B10_F) {
+            logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
+        }
+        val texDesc = GPUTextureDescriptor(
+            size = size,
+            format = storageTexture.format.wgpuStorage,
+            dimension = dimension,
+            usage = usage,
+            mipLevelCount = levels,
+            label = storageTexture.name
+        )
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = createTexture(texDesc)
+    }
+
     override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
     override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
@@ -288,10 +333,10 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
         gpuReadbacks.filterIsInstance<ReadbackTexture>().forEach { readback ->
             val gpuTex = readback.texture.gpuTexture as WgpuTextureResource?
-            if (gpuTex == null || readback.texture.props.format.isF16) {
+            if (gpuTex == null || readback.texture.format.isF16) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading texture"))
             } else {
-                val format = readback.texture.props.format
+                val format = readback.texture.format
                 val size = format.pxSize.toLong() * gpuTex.width * gpuTex.height * gpuTex.depth
                 val mapBuffer = device.createBuffer(
                     GPUBufferDescriptor(
@@ -329,7 +374,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             val mapBuffer = readback.mapBuffer!!
             mapBuffer.mapAsync(GPUMapMode.READ).then {
                 val gpuTex = readback.texture.gpuTexture as WgpuTextureResource
-                val format = readback.texture.props.format
+                val format = readback.texture.format
                 val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
                 dst.copyFrom(mapBuffer.getMappedRange())
                 mapBuffer.unmap()

@@ -44,6 +44,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
             cubeMapArrays = false,
             reversedDepth = GlImpl.capabilities.hasClipControl,
             maxSamples = 4,
+            readWriteStorageTextures = false,
             depthOnlyShaderColorOutput = Color.BLACK,
             maxComputeWorkGroupsPerDimension = GlImpl.capabilities.maxWorkGroupCount,
             maxComputeWorkGroupSize = GlImpl.capabilities.maxWorkGroupSize,

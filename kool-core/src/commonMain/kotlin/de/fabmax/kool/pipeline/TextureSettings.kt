@@ -1,27 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.math.Vec2i
-
-data class TextureProps(
-    val format: TexFormat = TexFormat.RGBA,
-
-    /**
-     * If true, mip-levels are generated for the given texture on load.
-     */
-    val isMipMapped: Boolean = true,
-
-    /**
-     * If non-null, the loader implementation will try to scale the loaded texture image to the given size in pixels.
-     * This is particular useful to scale vector (SVG) images to a desired resolution on load.
-     */
-    val resolveSize: Vec2i? = null,
-
-    /**
-     * Preferred / default sampler settings to be used with this texture.
-     */
-    val defaultSamplerSettings: SamplerSettings = SamplerSettings()
-)
-
 data class SamplerSettings(
     /**
      * Clamp or (mirror-) repeat the texture in U (i.e. X) direction.
@@ -67,15 +45,14 @@ data class SamplerSettings(
     val compareOp: DepthCompareOp = DepthCompareOp.ALWAYS,
 
     /**
-     * Set the base mip level of the bound texture to the given level. Currently only used in WebGPU implementation.
+     * Set the base mip level of the bound texture to the given level.
      *
      * **Notice**: This is not really a sampler setting but a texture view setting.
      */
     val baseMipLevel: Int = 0,
 
     /**
-     * Limit the accessible number of mip levels of the bound texture to the given level. Currently only used in
-     * WebGPU implementation.
+     * Limit the accessible number of mip levels of the bound texture to the given level.
      *
      * **Notice**: This is not really a sampler setting but a texture view setting.
      */
@@ -133,4 +110,10 @@ enum class AddressMode {
     CLAMP_TO_EDGE,
     MIRRORED_REPEAT,
     REPEAT
+}
+
+sealed class MipMapping(val isMipMapped: Boolean) {
+    data object Off : MipMapping(false)
+    data object Full : MipMapping(true)
+    data class Limited(val numLevels: Int) : MipMapping(numLevels > 1)
 }

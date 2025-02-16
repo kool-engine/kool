@@ -14,7 +14,6 @@ class SceneComponent(
     GameEntityDataComponent<SceneComponentData>(gameEntity, componentInfo)
 {
     val sceneNode: Scene = Scene(gameEntity.name).apply {
-        tryEnableInfiniteDepth()
         lighting.clear()
         mainRenderPass.isDoublePrecision = data.isFloatingOrigin
     }

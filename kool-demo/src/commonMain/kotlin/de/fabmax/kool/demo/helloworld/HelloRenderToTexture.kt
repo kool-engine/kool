@@ -33,7 +33,7 @@ class HelloRenderToTexture : DemoScene("Hello RenderToTexture") {
             attachmentConfig = AttachmentConfig {
                 addColor {
                     textureFormat = TexFormat.RGBA
-                    defaultSamplerSettings = SamplerSettings().clamped().nearest()
+                    samplerSettings = SamplerSettings().clamped().nearest()
                 }
                 // the offscreen pass will do depth testing, but the depth buffer won't be used later on.
                 // in contrast, defaultDepth() would provide a depth texture which could be used by additional

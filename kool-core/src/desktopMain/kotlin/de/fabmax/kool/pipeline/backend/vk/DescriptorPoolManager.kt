@@ -107,7 +107,8 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
 
             val numBindingTypes = poolLayout.numUbos.coerceAtMost(1) +
                     poolLayout.numTextures.coerceAtMost(1) +
-                    poolLayout.numStorageBuffers.coerceAtMost(1)
+                    poolLayout.numStorageBuffers.coerceAtMost(1) +
+                    poolLayout.numStorageTextures.coerceAtMost(1)
 
             memStack {
                 descriptorPool = backend.device.createDescriptorPool(this) {
@@ -121,6 +122,9 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
                         }
                         if (poolLayout.numTextures > 0) {
                             this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, poolLayout.numTextures * maxSets)
+                        }
+                        if (poolLayout.numStorageTextures > 0) {
+                            this[iPoolSize++].set(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, poolLayout.numStorageTextures * maxSets)
                         }
                     }
                     pPoolSizes(poolSizes)
@@ -158,4 +162,4 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
     }
 }
 
-data class PoolLayout(val numUbos: Int, val numTextures: Int, val numStorageBuffers: Int)
+data class PoolLayout(val numUbos: Int, val numTextures: Int, val numStorageBuffers: Int, val numStorageTextures: Int)

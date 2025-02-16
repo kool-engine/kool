@@ -32,10 +32,8 @@ class BeeDemo : DemoScene("Fighting Bees") {
 
     private val beeTex: Texture2d by texture2d(
         path = "${DemoLoader.materialPath}/bee.png",
-        props = TextureProps(
-            isMipMapped = false,
-            defaultSamplerSettings = SamplerSettings().clamped().nearest()
-        )
+        mipMapping = MipMapping.Off,
+        samplerSettings = SamplerSettings().clamped().nearest()
     )
 
     init {

@@ -16,8 +16,8 @@ interface ImageProvider {
     fun getTexture(imgWidthPx: Float, imgHeightPx: Float): Texture2d?
 
     val isDynamicSize: Boolean
-    fun getImageWidth(): Float = getTexture(0f, 0f)?.gpuTexture?.width?.toFloat() ?: 1f
-    fun getImageHeight(): Float = getTexture(0f, 0f)?.gpuTexture?.height?.toFloat() ?: 1f
+    fun getImageWidth(): Float = getTexture(0f, 0f)?.width?.toFloat() ?: 1f
+    fun getImageHeight(): Float = getTexture(0f, 0f)?.height?.toFloat() ?: 1f
 
     fun getImageAspectRatio(): Float {
         val uvWidth = abs(uvBottomRight.x - uvBottomLeft.x)

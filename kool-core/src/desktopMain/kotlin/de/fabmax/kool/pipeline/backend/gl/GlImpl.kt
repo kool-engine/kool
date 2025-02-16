@@ -65,6 +65,7 @@ object GlImpl : GlApi {
     override val TEXTURE_2D = GL_TEXTURE_2D
     override val TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY
     override val TEXTURE_3D = GL_TEXTURE_3D
+    override val TEXTURE_BASE_LEVEL = GL_TEXTURE_BASE_LEVEL
     override val TEXTURE_COMPARE_MODE = GL_TEXTURE_COMPARE_MODE
     override val TEXTURE_COMPARE_FUNC = GL_TEXTURE_COMPARE_FUNC
     override val TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP
@@ -76,7 +77,10 @@ object GlImpl : GlApi {
     override val TEXTURE_CUBE_MAP_POSITIVE_Z = GL_TEXTURE_CUBE_MAP_POSITIVE_Z
     override val TEXTURE_CUBE_MAP_NEGATIVE_Z = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
     override val TEXTURE_MAG_FILTER = GL_TEXTURE_MAG_FILTER
+    override val TEXTURE_MAX_LEVEL = GL_TEXTURE_MAX_LEVEL
+    override val TEXTURE_MAX_LOD = GL_TEXTURE_MAX_LOD
     override val TEXTURE_MIN_FILTER = GL_TEXTURE_MIN_FILTER
+    override val TEXTURE_MIN_LOD = GL_TEXTURE_MIN_LOD
     override val TEXTURE_WRAP_R = GL_TEXTURE_WRAP_R
     override val TEXTURE_WRAP_S = GL_TEXTURE_WRAP_S
     override val TEXTURE_WRAP_T = GL_TEXTURE_WRAP_T
@@ -128,6 +132,7 @@ object GlImpl : GlApi {
     override val RG32UI = GL_RG32UI
     override val RGB32UI = GL_RGB32UI
     override val RGBA32UI = GL_RGBA32UI
+    override val R11F_G11F_B10F = GL_R11F_G11F_B10F
 
     override val ALWAYS = GL_ALWAYS
     override val NEVER = GL_NEVER
