@@ -1,16 +1,13 @@
-name: Build
+name: Publish kool snapshot
 
 on:
-  push:
-    paths-ignore:
-      - '*.md'
-      - '*.yml'
-      - '.github/workflows/**'
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build kool
+    name: Publish snapshot
     runs-on: ubuntu-latest
+    environment: publish-snapshot
 
     steps:
       - name: Checkout Repository
@@ -26,3 +23,8 @@ jobs:
         run: ./gradlew enableAndroidPlatform
       - name: Build everything
         run: ./gradlew build
+      - name: Publish snapshot
+        run: ./gradlew publish
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
