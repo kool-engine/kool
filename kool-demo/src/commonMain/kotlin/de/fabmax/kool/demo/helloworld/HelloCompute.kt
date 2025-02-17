@@ -22,11 +22,9 @@ class HelloCompute : DemoScene("Hello Compute") {
         val computeShader = KslComputeShader("Compute shader test") {
             // a compute shader always has a single compute stage
             computeStage(16, 16, 1) {
-                val storageTex = storageTexture2d<KslFloat4>("storageTex", TexFormat.RGBA_F16)
-
                 // storage maps to a 1d / 2d / 3d array of 1d / 2d / 4d float or (u)int vectors
-                // here we use a 2d array of 4d floats
-                val pixelStorage = storage2d<KslFloat4>("pixelStorage", storageSizeX, storageSizeY)
+                // here we use a 2d array of 4d ints
+                val pixelStorage = storage2d<KslInt4>("pixelStorage", storageSizeX, storageSizeY)
 
                 // regular uniforms...
                 val offsetPos = uniformFloat2("uOffset")
@@ -50,9 +48,7 @@ class HelloCompute : DemoScene("Hello Compute") {
                         rgba.b set 1f.const - rgba.b
                     }
 
-                    // storage textures can be randomly read and written
-                    pixelStorage[texelCoord] = rgba
-                    storageTex[texelCoord] = rgba
+                    pixelStorage[texelCoord] = (rgba * 255f.const).toInt4()
                 }
             }
         }
@@ -61,11 +57,8 @@ class HelloCompute : DemoScene("Hello Compute") {
         addComputePass(ComputePass(computeShader, storageSizeX, storageSizeY))
 
         // create and bind the storage texture used as compute shader output
-        val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.FLOAT4)
+        val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.INT4)
         computeShader.storage2d("pixelStorage", storageBuffer)
-
-        val storageTex = StorageTexture2d(storageSizeX, storageSizeY, TexFormat.RGBA_F16)
-        computeShader.storageTexture2d("storageTex", storageTex, 2)
 
         // animate offset position to change the colors over time
         var offsetPos by computeShader.uniform2f("uOffset")
@@ -91,21 +84,17 @@ class HelloCompute : DemoScene("Hello Compute") {
                 }
                 fragmentStage {
                     main {
-                        val tex = texture2d("storageTex")
-                        //val storage = storage2d<KslFloat4>("pixelStorage", storageSizeX, storageSizeY)
-                        //val color = float4Var(storage[(Vec2f(256f).const * uv.output).toInt2()])
-                        val color = sampleTexture(tex, uv.output)
-                        colorOutput(color.rgb, 1f.const)
+                        val storage = storage2d<KslInt4>("pixelStorage", storageSizeX, storageSizeY)
+                        val color = int4Var(storage[(Vec2f(256f).const * uv.output).toInt2()])
+                        colorOutput(color.rgb.toFloat3() / 255f.const, 1f.const)
                     }
                 }
             }.apply {
                 storage2d("pixelStorage", storageBuffer)
-                texture2d("storageTex", storageTex, SamplerSettings(baseMipLevel = 2, numMipLevels = 1).nearest())
             }
         }
 
         storageBuffer.releaseWith(this)
-        storageTex.releaseWith(this)
 
         var counter = 0
         onUpdate {
@@ -117,7 +106,7 @@ class HelloCompute : DemoScene("Hello Compute") {
                     // buffer readback is an asynchronous operation and will take some time to complete (which is why
                     // it is a suspending function)
                     storageBuffer.readbackBuffer()
-                    val color = storageBuffer.getF4(0)
+                    val color = storageBuffer.getI4(0)
                     logI { "${Time.frameCount}: Got buffer, rgba[0] = ${color.x}, ${color.y}, ${color.z}, ${color.w}" }
                 }
             }
