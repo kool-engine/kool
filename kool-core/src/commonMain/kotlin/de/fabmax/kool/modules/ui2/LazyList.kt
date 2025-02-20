@@ -243,7 +243,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         val scrollAmount = if (isVertical) state.computeSmoothScrollAmountDpY() else state.computeSmoothScrollAmountDpX()
 
         val minScroll = -(state.itemsFrom.value + 0.5f) * state.avgItemSizeDp * 0.75f
-        val maxScroll = (state.numTotalItems - (state.itemsTo) - 0.5f) * state.avgItemSizeDp * 0.75f
+        val maxScroll = max(minScroll, (state.numTotalItems - (state.itemsTo) - 0.5f) * state.avgItemSizeDp * 0.75f)
         val clamped = scrollAmount.clamp(minScroll, maxScroll)
         if (clamped != scrollAmount) {
             if (isVertical) {
