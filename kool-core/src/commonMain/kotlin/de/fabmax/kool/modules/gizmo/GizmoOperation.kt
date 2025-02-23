@@ -72,7 +72,7 @@ abstract class GizmoOperationBase : GizmoOperation {
 
 data class DragContext(
     val gizmo: GizmoNode,
-    val virtualPointerPos: Vec2d,
+    val virtualPointerPos: Vec2f,
     val globalRay: RayD,
     val localRay: RayD,
     val globalToLocal: Mat4d,

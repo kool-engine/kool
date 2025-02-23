@@ -50,7 +50,7 @@ object PointerInput {
         return null
     }
 
-    internal fun handleTouchStart(pointerId: Int, x: Double, y: Double) {
+    internal fun handleTouchStart(pointerId: Int, x: Float, y: Float) {
         val inPtr = getFreeInputPointer() ?: return
         inPtr.startPointer(pointerId, x, y)
 
@@ -77,7 +77,7 @@ object PointerInput {
         findInputPointer(pointerId)?.cancelPointer()
     }
 
-    internal fun handleTouchMove(pointerId: Int, x: Double, y: Double) {
+    internal fun handleTouchMove(pointerId: Int, x: Float, y: Float) {
         findInputPointer(pointerId)?.movePointer(x, y)
     }
 
@@ -85,7 +85,7 @@ object PointerInput {
     // mouse handler functions to be called by platform code
     //
 
-    internal fun handleMouseMove(x: Double, y: Double) {
+    internal fun handleMouseMove(x: Float, y: Float) {
         val mousePtr = findInputPointer(MOUSE_POINTER_ID)
         if (mousePtr == null) {
             val startPtr = getFreeInputPointer() ?: return
@@ -105,10 +105,10 @@ object PointerInput {
         ptr.enqueueButtonEvent(button, down)
     }
 
-    internal fun handleMouseScroll(xTicks: Double, yTicks: Double) {
+    internal fun handleMouseScroll(xTicks: Float, yTicks: Float) {
         val ptr = findInputPointer(MOUSE_POINTER_ID) ?: return
-        ptr.deltaScrollX += xTicks
-        ptr.deltaScrollY += yTicks
+        ptr._scroll.x += xTicks
+        ptr._scroll.y += yTicks
     }
 
     internal fun handleMouseExit() {

@@ -93,9 +93,9 @@ inline fun UiScope.ComboBox(
         .hoverListener(comboBox)
         .onClick(comboBox)
         .onWheelY {
-            if (it.pointer.deltaScrollY > 0 && comboBox.modifier.selectedIndex > 0) {
+            if (it.pointer.scroll.y > 0.0 && comboBox.modifier.selectedIndex > 0) {
                 comboBox.modifier.onItemSelected?.invoke(comboBox.modifier.selectedIndex - 1)
-            } else if (it.pointer.deltaScrollY < 0 && comboBox.modifier.selectedIndex < comboBox.modifier.items.lastIndex) {
+            } else if (it.pointer.scroll.y < 0.0 && comboBox.modifier.selectedIndex < comboBox.modifier.items.lastIndex) {
                 comboBox.modifier.onItemSelected?.invoke(comboBox.modifier.selectedIndex + 1)
             }
         }

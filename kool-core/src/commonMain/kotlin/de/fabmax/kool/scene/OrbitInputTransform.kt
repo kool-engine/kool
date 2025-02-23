@@ -83,11 +83,11 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private var dragMethod = DragMethod.NONE
     private var prevDragMethod = DragMethod.NONE
     private var dragStart = false
-    private val deltaPos = MutableVec2d()
-    private var deltaScroll = 0.0
+    private val deltaPos = MutableVec2f()
+    private var deltaScroll = 0f
     private val panStartTranslation = MutableVec3d()
 
-    private val ptrPos = MutableVec2d()
+    private val ptrPos = MutableVec2f()
     private val panPlane = PlaneD()
     private val pointerHitStart = MutableVec3d()
     private val pointerHit = MutableVec3d()
@@ -179,7 +179,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
         if (!deltaScroll.isFuzzyZero()) {
             zoom *= 1f - deltaScroll / 10f
-            deltaScroll = 0.0
+            deltaScroll = 0f
         }
 
         if (dragMethod == DragMethod.ROTATE) {
@@ -241,7 +241,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         val dragPtr = pointerState.primaryPointer
         if (dragPtr.isConsumed()) {
             deltaPos.set(Vec2d.ZERO)
-            deltaScroll = 0.0
+            deltaScroll = 0f
             return
         }
 
@@ -265,9 +265,9 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
         }
 
         prevButtonMask = dragPtr.buttonMask
-        ptrPos.set(dragPtr.x, dragPtr.y)
-        deltaPos.set(dragPtr.deltaX, dragPtr.deltaY)
-        deltaScroll = dragPtr.deltaScroll
+        ptrPos.set(dragPtr.pos)
+        deltaPos.set(dragPtr.delta)
+        deltaScroll = dragPtr.scroll.y
         if (isConsumingPtr) {
             dragPtr.consume()
         }
@@ -294,19 +294,19 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 abstract class PanBase {
     private val tmpVec3d = MutableVec3d()
 
-    private val startPtrPos = MutableVec2d()
+    private val startPtrPos = MutableVec2f()
     private val startPanPos = MutableVec3d()
     private val panPos = MutableVec3d()
     private val pan = MutableVec3d()
 
     var panDecay = 50.0
 
-    open fun startPan(view: RenderPass.View, ptrPos: Vec2d) {
+    open fun startPan(view: RenderPass.View, ptrPos: Vec2f) {
         startPtrPos.set(ptrPos)
         pan.set(Vec3f.ZERO)
     }
 
-    open fun computePan(view: RenderPass.View, ptrPos: Vec2d): Vec3d {
+    open fun computePan(view: RenderPass.View, ptrPos: Vec2f): Vec3d {
         if (computePanPoint(view, startPtrPos, startPanPos) && computePanPoint(view, ptrPos, panPos)) {
             tmpVec3d.set(startPanPos).subtract(panPos)
             pan.expDecay(tmpVec3d, panDecay)
@@ -314,17 +314,17 @@ abstract class PanBase {
         return pan
     }
 
-    abstract fun computePanPoint(view: RenderPass.View, ptrPos: Vec2d, result: MutableVec3d): Boolean
+    abstract fun computePanPoint(view: RenderPass.View, ptrPos: Vec2f, result: MutableVec3d): Boolean
 }
 
 class CameraOrthogonalPan : PanBase() {
     private val panPlane = PlaneD()
     private val pointerRay = RayD()
 
-    override fun computePanPoint(view: RenderPass.View, ptrPos: Vec2d, result: MutableVec3d): Boolean {
+    override fun computePanPoint(view: RenderPass.View, ptrPos: Vec2f, result: MutableVec3d): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
         panPlane.n.set(view.camera.globalLookDir)
-        val ok = view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport)
+        val ok = view.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, view.viewport)
         return ok && panPlane.intersectionPoint(pointerRay, result)
     }
 }
@@ -341,21 +341,21 @@ class FixedPlanePan(planeNormal: Vec3f) : PanBase() {
         panPlane.n.set(planeNormal)
     }
 
-    override fun startPan(view: RenderPass.View, ptrPos: Vec2d) {
+    override fun startPan(view: RenderPass.View, ptrPos: Vec2f) {
         super.startPan(view, ptrPos)
         prevPan.set(Vec3f.ZERO)
     }
 
-    override fun computePanPoint(view: RenderPass.View, ptrPos: Vec2d, result: MutableVec3d): Boolean {
+    override fun computePanPoint(view: RenderPass.View, ptrPos: Vec2f, result: MutableVec3d): Boolean {
         panPlane.p.set(view.camera.globalLookAt)
-        val ok = view.camera.computePickRay(pointerRay, ptrPos.x.toFloat(), ptrPos.y.toFloat(), view.viewport)
+        val ok = view.camera.computePickRay(pointerRay, ptrPos.x, ptrPos.y, view.viewport)
         if (!ok || abs(pointerRay.direction dot panPlane.n) < 0.01) {
             return false
         }
         return panPlane.intersectionPoint(pointerRay, result)
     }
 
-    override fun computePan(view: RenderPass.View, ptrPos: Vec2d): Vec3d {
+    override fun computePan(view: RenderPass.View, ptrPos: Vec2f): Vec3d {
         panLimited.set(super.computePan(view, ptrPos))
         deltaPan.set(panLimited).subtract(prevPan)
 

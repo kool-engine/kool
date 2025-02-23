@@ -14,8 +14,8 @@ class TooltipState(val delay: Double = 1.0) : MutableStateValue<Boolean>(false),
 
     override fun onHover(ev: PointerEvent) {
         if (Time.gameTime - enterTime > delay) {
-            pointerX.set(ev.pointer.x.toFloat())
-            pointerY.set(ev.pointer.y.toFloat())
+            pointerX.set(ev.pointer.pos.x)
+            pointerY.set(ev.pointer.pos.y)
             set(true)
         }
     }

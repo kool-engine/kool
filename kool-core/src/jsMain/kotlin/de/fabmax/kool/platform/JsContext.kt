@@ -242,8 +242,8 @@ external class Touch {
     val force: Double
 }
 
-val Touch.elementX: Double
-    get() = clientX - ((target as? HTMLCanvasElement)?.clientLeft?.toDouble() ?: 0.0)
+val Touch.elementX: Float
+    get() = clientX.toFloat() - ((target as? HTMLCanvasElement)?.clientLeft?.toFloat() ?: 0f)
 
-val Touch.elementY: Double
-    get() = clientY - ((target as? HTMLCanvasElement)?.clientTop?.toDouble() ?: 0.0)
+val Touch.elementY: Float
+    get() = clientY.toFloat() - ((target as? HTMLCanvasElement)?.clientTop?.toFloat() ?: 0f)

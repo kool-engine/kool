@@ -52,7 +52,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         modifier
             .onHover {  PointerInput.cursorShape = CursorShape.RESIZE_EW }
             .onDragStart { startDragWidth = treePanelSize.value }
-            .onDrag { treePanelSize.set(startDragWidth + Dp.fromPx(it.pointer.dragDeltaX.toFloat())) }
+            .onDrag { treePanelSize.set(startDragWidth + Dp.fromPx(it.pointer.dragMovement.x)) }
             .onDragEnd { KeyValueStore.setFloat("editor.ui.[$name].treeSize", treePanelSize.value.value) }
 
         Box(width = sizes.smallGap, height = Grow.Std) {

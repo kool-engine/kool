@@ -50,7 +50,7 @@ object PlatformInputAndroid : PlatformInput, View.OnTouchListener, View.OnKeyLis
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
                 event.getPointerCoords(0, tmpCoords)
-                PointerInput.handleTouchStart(pointerId, tmpCoords.x.toDouble(), tmpCoords.y.toDouble())
+                PointerInput.handleTouchStart(pointerId, tmpCoords.x, tmpCoords.y)
             }
             MotionEvent.ACTION_UP -> {
                 event.getPointerCoords(0, tmpCoords)
@@ -59,7 +59,7 @@ object PlatformInputAndroid : PlatformInput, View.OnTouchListener, View.OnKeyLis
 
             MotionEvent.ACTION_POINTER_DOWN -> {
                 event.getPointerCoords(event.actionIndex, tmpCoords)
-                PointerInput.handleTouchStart(pointerId, tmpCoords.x.toDouble(), tmpCoords.y.toDouble())
+                PointerInput.handleTouchStart(pointerId, tmpCoords.x, tmpCoords.y)
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 PointerInput.handleTouchEnd(pointerId)
@@ -69,7 +69,7 @@ object PlatformInputAndroid : PlatformInput, View.OnTouchListener, View.OnKeyLis
                 for (i in 0 until event.pointerCount) {
                     event.getPointerCoords(i, tmpCoords)
                     val ptrId = event.getPointerId(i)
-                    PointerInput.handleTouchMove(ptrId, tmpCoords.x.toDouble(), tmpCoords.y.toDouble())
+                    PointerInput.handleTouchMove(ptrId, tmpCoords.x, tmpCoords.y)
                 }
             }
 

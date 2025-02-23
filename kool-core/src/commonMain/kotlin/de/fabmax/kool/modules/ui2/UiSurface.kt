@@ -99,8 +99,7 @@ open class UiSurface(
                     focused?.let { focusedNd ->
                         val ptr = PointerInput.primaryPointer
                         if (ptr.isAnyButtonPressed) {
-                            val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
-                            if (!focusedNd.isInBounds(ptrPos)) {
+                            if (!focusedNd.isInBounds(ptr.pos)) {
                                 requestFocus(null)
                             }
                         }
@@ -365,12 +364,11 @@ open class UiSurface(
             val ptr = PointerInput.primaryPointer
             var isPointerOnSurface = false
             if (ptr.isValid) {
-                val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
-                isPointerOnSurface = dragNode != null || viewport.children.any { it.modifier.isBlocking && it.isInBounds(ptrPos) }
+                isPointerOnSurface = dragNode != null || viewport.children.any { it.modifier.isBlocking && it.isInBounds(ptr.pos) }
 
                 if (dragNode == null && inputMode == InputCaptureMode.CaptureOverBackground) {
                     nodeResult.clear()
-                    viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult) {
+                    viewport.collectNodesAt(ptr.pos.x, ptr.pos.y, nodeResult) {
                         hasPointerListener(it) || it.modifier.background != null
                     }
                     isPointerOnSurface = nodeResult.isNotEmpty()
@@ -407,7 +405,7 @@ open class UiSurface(
             val ptr = pointerState.primaryPointer
             nodeResult.clear()
             if (PointerInput.cursorMode != CursorMode.LOCKED) {
-                viewport.collectNodesAt(ptr.x.toFloat(), ptr.y.toFloat(), nodeResult, hasPointerListener)
+                viewport.collectNodesAt(ptr.pos.x, ptr.pos.y, nodeResult, hasPointerListener)
             }
             if (hoveredNode == null && dragNode == null && nodeResult.isEmpty()) {
                 return
@@ -481,8 +479,8 @@ open class UiSurface(
         fun handlePointerEvents(relevantNodes: List<UiNode>, ptrEv: PointerEvent) {
             val ptr = ptrEv.pointer
 
-            var isWheelX = ptr.deltaScrollX != 0.0
-            var isWheelY = ptr.deltaScrollY != 0.0
+            var isWheelX = ptr.scroll.x != 0f
+            var isWheelY = ptr.scroll.y != 0f
             val isDragStart = !wasDrag && ptr.isDrag
             var isAnyClick = ptr.isLeftButtonClicked ||
                     ptr.isRightButtonClicked ||

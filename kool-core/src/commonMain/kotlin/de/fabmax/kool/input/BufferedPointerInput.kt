@@ -2,7 +2,6 @@ package de.fabmax.kool.input
 
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logW
-import kotlin.math.abs
 
 internal class BufferedPointerInput : Pointer() {
     private var updateState = UpdateState.INVALID
@@ -10,8 +9,6 @@ internal class BufferedPointerInput : Pointer() {
 
     private val buttonEventQueue = List<MutableList<Boolean>>(8) { mutableListOf() }
     private var gotPointerEvents = false
-
-    var lastUpdate = 0.0
 
     fun enqueueButtonEvent(button: Int, down: Boolean) {
         if (button !in buttonEventQueue.indices) {
@@ -50,42 +47,29 @@ internal class BufferedPointerInput : Pointer() {
                 }
             }
             buttonMask = updateMask
-
-            // reset drag tracker if left / mid / right button has been pressed
-            if (isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed) {
-                dragDeltaX = 0.0
-                dragDeltaY = 0.0
-                dragMovement = 0.0
-            }
             updateClickStates()
         }
     }
 
-    fun startPointer(pointerId: Int, x: Double, y: Double) {
+    fun startPointer(pointerId: Int, x: Float, y: Float) {
         movePointer(x, y)
         id = pointerId
-        deltaX = 0.0
-        deltaY = 0.0
-        dragDeltaX = 0.0
-        dragDeltaY = 0.0
-        dragMovement = 0.0
-        deltaScrollX = 0.0
-        deltaScrollY = 0.0
+        _delta.set(0f, 0f)
+        _scroll.set(0f, 0f)
+        _dragMovement.set(0f, 0f)
         updateState = UpdateState.STARTED
         isValid = true
     }
 
-    fun movePointer(x: Double, y: Double, accumulateDeltas: Boolean = true) {
-        val wasDrag = dragMovement != 0.0
+    fun movePointer(x: Float, y: Float, accumulateDeltas: Boolean = true) {
+        val wasDrag = isDrag
 
         if (accumulateDeltas) {
+            _delta.x += x - pos.x
+            _delta.y += y - pos.y
             if (isAnyButtonDown) {
-                dragDeltaX += x - this.x
-                dragDeltaY += y - this.y
-                dragMovement += abs(x - this.x) + abs(y - this.y)
+                _dragMovement.add(_delta)
             }
-            deltaX += x - this.x
-            deltaY += y - this.y
         }
 
         // Do not update the position if a drag has just started - this way drag start events are guaranteed
@@ -93,8 +77,7 @@ internal class BufferedPointerInput : Pointer() {
         // by the correct receiver if the first movement is too large and / or the hover / drag target is very
         // small (e.g. resizing of a window border)
         if (!isDrag || isDrag == wasDrag) {
-            this.x = x
-            this.y = y
+            _pos.set(x, y)
         }
     }
 
@@ -109,13 +92,9 @@ internal class BufferedPointerInput : Pointer() {
     fun cancelPointer() {
         buttonMask = 0
         buttonEventMask = 0
-        deltaX = 0.0
-        deltaY = 0.0
-        deltaScrollX = 0.0
-        deltaScrollY = 0.0
-        dragDeltaX = 0.0
-        dragDeltaY = 0.0
-        dragMovement = 0.0
+        _delta.set(0f, 0f)
+        _scroll.set(0f, 0f)
+        _dragMovement.set(0f, 0f)
         updateState = UpdateState.INVALID
         isValid = false
     }
@@ -124,15 +103,10 @@ internal class BufferedPointerInput : Pointer() {
         processPointerEvents()
 
         target.id = id
-        target.deltaX = deltaX
-        target.deltaY = deltaY
-        target.dragDeltaX = dragDeltaX
-        target.dragDeltaY = dragDeltaY
-        target.dragMovement = dragMovement
-        target.deltaScrollX = deltaScrollX
-        target.deltaScrollY = deltaScrollY
-        target.x = x
-        target.y = y
+        target._pos.set(_pos)
+        target._delta.set(_delta)
+        target._dragMovement.set(_dragMovement)
+        target._scroll.set(_scroll)
         target.isValid = true
         target.consumptionMask = 0
         target.buttonEventMask = 0
@@ -160,12 +134,9 @@ internal class BufferedPointerInput : Pointer() {
             }
         }
 
-        deltaX = 0.0
-        deltaY = 0.0
-        deltaScrollX = 0.0
-        deltaScrollY = 0.0
+        _delta.set(0f, 0f)
+        _scroll.set(0f, 0f)
         buttonEventMask = 0
-
         processedState = updateState
         updateState = updateState.next()
     }
@@ -179,17 +150,17 @@ internal class BufferedPointerInput : Pointer() {
     }
 
     private fun updateClickStates() {
-        isLeftButtonClicked = isClick(isLeftButtonReleased, 0, dragMovement)
-        isRightButtonClicked = isClick(isRightButtonReleased, 1, dragMovement)
-        isMiddleButtonClicked = isClick(isMiddleButtonReleased, 2, dragMovement)
-        isBackButtonClicked = isClick(isBackButtonReleased, 3, dragMovement)
-        isForwardButtonClicked = isClick(isForwardButtonReleased, 4, dragMovement)
+        isLeftButtonClicked = isClick(isLeftButtonReleased, 0)
+        isRightButtonClicked = isClick(isRightButtonReleased, 1)
+        isMiddleButtonClicked = isClick(isMiddleButtonReleased, 2)
+        isBackButtonClicked = isClick(isBackButtonReleased, 3)
+        isForwardButtonClicked = isClick(isForwardButtonReleased, 4)
 
         leftButtonRepeatedClickCount = updateRepeatedClickCount(isLeftButtonClicked, 0, leftButtonRepeatedClickCount)
-        rightButtonRepeatedClickCount = updateRepeatedClickCount(isRightButtonClicked, 0, rightButtonRepeatedClickCount)
-        middleButtonRepeatedClickCount = updateRepeatedClickCount(isMiddleButtonClicked, 0, middleButtonRepeatedClickCount)
-        backButtonRepeatedClickCount = updateRepeatedClickCount(isBackButtonClicked, 0, backButtonRepeatedClickCount)
-        forwardButtonRepeatedClickCount = updateRepeatedClickCount(isForwardButtonClicked, 0, forwardButtonRepeatedClickCount)
+        rightButtonRepeatedClickCount = updateRepeatedClickCount(isRightButtonClicked, 1, rightButtonRepeatedClickCount)
+        middleButtonRepeatedClickCount = updateRepeatedClickCount(isMiddleButtonClicked, 2, middleButtonRepeatedClickCount)
+        backButtonRepeatedClickCount = updateRepeatedClickCount(isBackButtonClicked, 3, backButtonRepeatedClickCount)
+        forwardButtonRepeatedClickCount = updateRepeatedClickCount(isForwardButtonClicked, 4, forwardButtonRepeatedClickCount)
 
         if (isLeftButtonClicked) {
             buttonClickTimes[0] = Time.precisionTime
@@ -211,12 +182,19 @@ internal class BufferedPointerInput : Pointer() {
             buttonClickTimes[4] = Time.precisionTime
             buttonClickFrames[4] = Time.frameCount
         }
+
+        if (isLeftButtonPressed || isRightButtonPressed || isMiddleButtonPressed) {
+            // reset drag tracker if left / mid / right button has been pressed
+            _dragMovement.set(0f, 0f)
+        } else if (!isAnyButtonDown) {
+            _dragMovement.set(0f, 0f)
+        }
     }
 
-    private fun isClick(isReleased: Boolean, buttonI: Int, dragMovement: Double): Boolean {
+    private fun isClick(isReleased: Boolean, buttonI: Int): Boolean {
         val pressedTime = buttonDownTimes[buttonI]
         val pressedFrame = buttonDownFrames[buttonI]
-        return isReleased && dragMovement < PointerInput.MAX_CLICK_MOVE_PX
+        return isReleased && dragMovement.length() < PointerInput.MAX_CLICK_MOVE_PX
                 && (Time.precisionTime - pressedTime < PointerInput.MAX_CLICK_TIME_SECS || Time.frameCount - pressedFrame == 1)
     }
 

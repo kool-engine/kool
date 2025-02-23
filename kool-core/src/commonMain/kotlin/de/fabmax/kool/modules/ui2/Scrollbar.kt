@@ -199,7 +199,7 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
 
         val uiPrimitives = getUiPrimitives()
         if (trackColor != null) {
-            uiPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, radius, trackColor!!)
+            uiPrimitives.localRoundRect(0f, 0f, widthPx, heightPx, radius, trackColor)
         }
         uiPrimitives.localRoundRect(origin.x, origin.y, size.x, size.y, radius, barColor)
     }
@@ -288,9 +288,9 @@ open class ScrollbarNode(parent: UiNode?, surface: UiSurface)
 
         fun updateScrollPos(dragPointer: Pointer) {
             val dragPos = if (isVertical) {
-                dragPointer.dragDeltaY.toFloat()
+                dragPointer.dragMovement.y
             } else {
-                dragPointer.dragDeltaX.toFloat()
+                dragPointer.dragMovement.x
             }
 
             val barPos = (barStartPx + dragPos).clamp(0f, trackLenPx - barLenPx)

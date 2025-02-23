@@ -92,7 +92,7 @@ internal object PlatformInputJs : PlatformInput {
                 virtualPointerPos.x = (ev.clientX * pixelRatio - bounds.left)
                 virtualPointerPos.y = (ev.clientY * pixelRatio - bounds.top)
             }
-            PointerInput.handleMouseMove(virtualPointerPos.x, virtualPointerPos.y)
+            PointerInput.handleMouseMove(virtualPointerPos.x.toFloat(), virtualPointerPos.y.toFloat())
         }
         canvas.onmousedown = { ev ->
             PointerLockState.checkLockState()
@@ -116,12 +116,12 @@ internal object PlatformInputJs : PlatformInput {
         canvas.onmouseleave = { PointerInput.handleMouseExit() }
         canvas.onwheel = { ev ->
             // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll wheel tick
-            var yTicks = -ev.deltaY.toFloat() / 3.0
-            var xTicks = -ev.deltaX.toFloat() / 3.0
+            var yTicks = -ev.deltaY.toFloat() / 3f
+            var xTicks = -ev.deltaX.toFloat() / 3f
             if (ev.deltaMode == 0) {
                 // scroll delta is specified in pixels...
-                yTicks /= 30.0
-                xTicks /= 30.0
+                yTicks /= 30f
+                xTicks /= 30f
             }
             PointerInput.handleMouseScroll(xTicks, yTicks)
             ev.preventDefault()

@@ -80,7 +80,7 @@ open class AutoPopup(
                     // somewhat hacky way to close popup menu on any button event outside popup menu
                     surface.onEachFrame {
                         val ptr = PointerInput.primaryPointer
-                        if (ptr.isAnyButtonReleased && !uiNode.isInBounds(Vec2f(ptr.x.toFloat(), ptr.y.toFloat()))) {
+                        if (ptr.isAnyButtonReleased && !uiNode.isInBounds(ptr.pos)) {
                             // hide AutoPopup with 1 frame delay to give outside click handlers the chance to hide
                             // the menu explicitly, also do not hide the popup if show was called in between (e.g.
                             // because the popup should reappear at another location)

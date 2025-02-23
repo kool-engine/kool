@@ -1,6 +1,8 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Viewport
 
@@ -8,27 +10,30 @@ open class Pointer {
     var id = 0
         internal set
 
-    var x = 0.0
-        internal set
-    var y = 0.0
-        internal set
+    internal val _pos = MutableVec2f()
+    internal val _delta = MutableVec2f()
+    internal val _dragMovement = MutableVec2f()
+    internal val _scroll = MutableVec2f()
 
-    var deltaX = 0.0
-        internal set
-    var deltaY = 0.0
-        internal set
-    var dragDeltaX = 0.0
-        internal set
-    var dragDeltaY = 0.0
-        internal set
+    /**
+     * Pointer position in screen coordinates (origin: top-left).
+     */
+    val pos: Vec2f get() = _pos
 
-    var deltaScrollY = 0.0
-        internal set
-    var deltaScrollX = 0.0
-        internal set
+    /**
+     * Movement / change of pointer position since last frame.
+     */
+    val delta: Vec2f get() = _delta
 
-    val deltaScroll: Double
-        get() = deltaScrollY
+    /**
+     * Total movement of pointer since a drag operation started. Only valid if [isDrag] is true.
+     */
+    val dragMovement: Vec2f get() = _dragMovement
+
+    /**
+     * Scroll amount in x and y direction since last frame.
+     */
+    val scroll: Vec2f get() = _scroll
 
     var buttonMask = 0
         internal set(value) {
@@ -49,7 +54,8 @@ open class Pointer {
     protected val buttonDownFrames = IntArray(5)
 
     internal var consumptionMask = 0
-    internal var dragMovement = 0.0
+
+    val isDrag: Boolean get() = isAnyButtonDown && _dragMovement != Vec2f.ZERO
 
     val isAnyButtonDown: Boolean get() = buttonMask != 0
     val isLeftButtonDown: Boolean get() = (buttonMask and PointerInput.LEFT_BUTTON_MASK) != 0
@@ -117,8 +123,6 @@ open class Pointer {
     var forwardButtonRepeatedClickCount = 0
         internal set
 
-    val isDrag: Boolean get() = isAnyButtonDown && (dragDeltaX != 0.0 || dragDeltaY != 0.0)
-
     fun consume(mask: Int = PointerInput.CONSUMED_ALL) {
         consumptionMask = consumptionMask or mask
     }
@@ -132,12 +136,12 @@ open class Pointer {
      */
     fun isInViewport(viewport: Viewport, ctx: KoolContext): Boolean {
         // y-axis of viewport is inverted to window coordinates
-        val ptrY = ctx.windowHeight - y
-        return (isValid) && viewport.isInViewport(x.toFloat(), ptrY.toFloat())
+        val ptrY = ctx.windowHeight - pos.y
+        return (isValid) && viewport.isInViewport(pos.x, ptrY)
     }
 
     override fun toString(): String {
-        return "{ id: $id, x: $x, y: $y }"
+        return "{ id: $id, x: ${pos.x}, y: ${pos.y} }"
     }
 
     private fun updateButtonDownTimes() {

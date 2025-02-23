@@ -259,7 +259,7 @@ class PointerEvent(val pointer: Pointer, val ctx: KoolContext) {
     /**
      * Pointer position in screen coordinates: (0, 0) = upper left screen corner.
      */
-    val screenPosition = Vec2f(pointer.x.toFloat(), pointer.y.toFloat())
+    val screenPosition: Vec2f get() = pointer.pos
 
     /**
      * Can be set to false by listeners to reject the event. Rejected events will be passed on to potential other

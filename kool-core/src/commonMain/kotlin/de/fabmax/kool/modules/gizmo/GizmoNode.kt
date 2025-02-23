@@ -32,7 +32,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
     private val rayTest = RayTest()
     private val pickRay = RayD()
-    private val virtualPointerPos = MutableVec2d()
+    private val virtualPointerPos = MutableVec2f()
     private var dragMode = DragMode.NO_DRAG
     private var isDrag = false
     private var hoverHandle: GizmoHandle? = null
@@ -50,7 +50,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     val latestManipulatorValue = mutableStateOf<ManipulatorValue?>(null)
     val overwriteManipulatorValue = mutableStateOf<Double?>(null)
 
-    val dragSpeedModifier = mutableStateOf(1.0)
+    val dragSpeedModifier = mutableStateOf(1.0f)
     val translationTick = mutableStateOf(0.0)
     val rotationTick = mutableStateOf(0.0)
     val scaleTick = mutableStateOf(0.0)
@@ -214,7 +214,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
                 hoverHandle?.onHoverExit(this)
             }
             hoverHandle = newHandle
-            virtualPointerPos.set(ptr.x, ptr.y)
+            virtualPointerPos.set(ptr.pos)
         }
 
         if (dragMode == DragMode.NO_DRAG && ptr.isLeftButtonDown) {

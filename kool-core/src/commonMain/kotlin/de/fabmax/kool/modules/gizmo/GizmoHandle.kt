@@ -18,9 +18,9 @@ interface GizmoHandle {
     fun onDrag(dragCtx: DragContext) = gizmoOperation.onDrag(dragCtx)
     fun onDragEnd(dragCtx: DragContext) = gizmoOperation.onDragEnd(dragCtx)
 
-    fun moveVirtualPointer(pos: MutableVec2d, ptr: Pointer, speedMod: Double) {
-        pos.x += ptr.deltaX * speedMod
-        pos.y += ptr.deltaY * speedMod
+    fun moveVirtualPointer(pos: MutableVec2f, ptr: Pointer, speedMod: Float) {
+        pos.x += ptr.delta.x * speedMod
+        pos.y += ptr.delta.y * speedMod
     }
 
     enum class Axis(val axis: Vec3d, val orientation: QuatD) {

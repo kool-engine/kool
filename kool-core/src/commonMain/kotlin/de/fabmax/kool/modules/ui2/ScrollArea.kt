@@ -26,12 +26,12 @@ fun UiScope.ScrollArea(
             .backgroundColor(colors.backgroundVariant)
             .onWheelX {
                 if (isScrollableHorizontal) {
-                    state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f)
+                    state.scrollDpX(it.pointer.scroll.x * -20f)
                 }
             }
             .onWheelY {
                 if (isScrollableVertical) {
-                    state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f)
+                    state.scrollDpY(it.pointer.scroll.y * -50f)
                 }
             }
 

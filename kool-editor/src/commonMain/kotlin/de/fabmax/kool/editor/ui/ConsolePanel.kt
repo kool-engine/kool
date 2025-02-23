@@ -156,9 +156,9 @@ class ConsolePanel(ui: EditorUi) : EditorPanel("Console", Icons.medium.console, 
                 .lastLineBottomPadding(sizes.largeGap)
                 .backgroundColor(null)
                 .onWheelY { ev ->
-                    if (ev.pointer.deltaScrollY > 0.0) {
+                    if (ev.pointer.scroll.y > 0.0) {
                         isScrollLock.set(false)
-                    } else if (ev.pointer.deltaScrollY < 0.0 && listState.itemsTo == listState.numTotalItems - 1) {
+                    } else if (ev.pointer.scroll.y < 0.0 && listState.itemsTo == listState.numTotalItems - 1) {
                         isScrollLock.set(true)
                     }
                 }
