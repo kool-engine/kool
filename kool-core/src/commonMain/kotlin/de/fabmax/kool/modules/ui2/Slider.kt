@@ -158,12 +158,12 @@ class SliderNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, surface),
         val kD = knobDiameter.px
         return if (modifier.orientation == SliderOrientation.Horizontal) {
             val innerW = innerWidthPx - kD
-            val dragKnobPos = dragStart.x + ev.pointer.dragDeltaX.toFloat() - paddingStartPx - kD * 0.5f
+            val dragKnobPos = dragStart.x + ev.pointer.dragMovement.x - paddingStartPx - kD * 0.5f
             val f = (dragKnobPos / innerW).clamp()
             f * (modifier.maxValue - modifier.minValue) + modifier.minValue
         } else {
             val innerH = innerHeightPx - kD
-            val dragKnobPos = dragStart.y + ev.pointer.dragDeltaY.toFloat() - paddingTopPx - kD * 0.5f
+            val dragKnobPos = dragStart.y + ev.pointer.dragMovement.y - paddingTopPx - kD * 0.5f
             val f = 1f - (dragKnobPos / innerH).clamp()
             f * (modifier.maxValue - modifier.minValue) + modifier.minValue
         }

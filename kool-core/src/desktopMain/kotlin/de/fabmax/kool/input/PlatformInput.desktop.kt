@@ -119,8 +119,8 @@ object PlatformInputJvm : PlatformInput {
             PointerInput.handleMouseButtonEvent(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            val scale = if (isMacOs) ctx.windowScale.toDouble() else 1.0
-            PointerInput.handleMouseMove(x * scale, y * scale)
+            val scale = if (isMacOs) ctx.windowScale else 1f
+            PointerInput.handleMouseMove(x.toFloat() * scale, y.toFloat() * scale)
         }
         glfwSetCursorEnterCallback(windowHandle) { _, entered ->
             if (!entered) {
@@ -131,7 +131,7 @@ object PlatformInputJvm : PlatformInput {
             }
         }
         glfwSetScrollCallback(windowHandle) { _, xOff, yOff ->
-            PointerInput.handleMouseScroll(xOff, yOff)
+            PointerInput.handleMouseScroll(xOff.toFloat(), yOff.toFloat())
         }
 
         // install keyboard callbacks

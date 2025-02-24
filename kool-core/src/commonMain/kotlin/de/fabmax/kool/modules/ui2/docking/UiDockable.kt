@@ -86,8 +86,8 @@ class UiDockable(
                 }
             }
             .onDrag {
-                floatingX.set(Dp.fromPx(dragStartItemBounds.x + it.pointer.dragDeltaX.toFloat()))
-                floatingY.set(Dp.fromPx(dragStartItemBounds.y + it.pointer.dragDeltaY.toFloat()))
+                floatingX.set(floatingX.value + Dp.fromPx(it.pointer.delta.x))
+                floatingY.set(floatingY.value + Dp.fromPx(it.pointer.delta.y))
                 floatingAlignmentX.set(AlignmentX.Start)
                 floatingAlignmentY.set(AlignmentY.Top)
                 dock?.dndContext?.drag(it)

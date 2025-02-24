@@ -118,8 +118,8 @@ class TransformGizmoOverlay(val overlay: OverlayScene) : Node("Transform gizmo")
     }
 
     companion object {
-        const val SPEED_MOD_NORMAL = 1.0
-        const val SPEED_MOD_ACCURATE = 0.1
+        const val SPEED_MOD_NORMAL = 1.0f
+        const val SPEED_MOD_ACCURATE = 0.1f
 
         const val TICK_NO_TICK = 0.0
 

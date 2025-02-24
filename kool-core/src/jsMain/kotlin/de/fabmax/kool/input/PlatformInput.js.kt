@@ -4,7 +4,10 @@ import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.Touch
+import de.fabmax.kool.platform.TouchEvent
+import de.fabmax.kool.platform.navigator
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import kotlinx.browser.document
@@ -92,7 +95,7 @@ internal object PlatformInputJs : PlatformInput {
                 virtualPointerPos.x = (ev.clientX * pixelRatio - bounds.left)
                 virtualPointerPos.y = (ev.clientY * pixelRatio - bounds.top)
             }
-            PointerInput.handleMouseMove(virtualPointerPos.x, virtualPointerPos.y)
+            PointerInput.handleMouseMove(virtualPointerPos.x.toFloat(), virtualPointerPos.y.toFloat())
         }
         canvas.onmousedown = { ev ->
             PointerLockState.checkLockState()
@@ -116,12 +119,12 @@ internal object PlatformInputJs : PlatformInput {
         canvas.onmouseleave = { PointerInput.handleMouseExit() }
         canvas.onwheel = { ev ->
             // scroll amount is browser dependent, try to norm it to roughly 1.0 ticks per mouse scroll wheel tick
-            var yTicks = -ev.deltaY.toFloat() / 3.0
-            var xTicks = -ev.deltaX.toFloat() / 3.0
+            var yTicks = -ev.deltaY.toFloat() / 3f
+            var xTicks = -ev.deltaX.toFloat() / 3f
             if (ev.deltaMode == 0) {
                 // scroll delta is specified in pixels...
-                yTicks /= 30.0
-                xTicks /= 30.0
+                yTicks /= 30f
+                xTicks /= 30f
             }
             PointerInput.handleMouseScroll(xTicks, yTicks)
             ev.preventDefault()
@@ -244,6 +247,12 @@ internal object PlatformInputJs : PlatformInput {
             else -> UniversalKeyCode(0)
         }
     }
+
+    private val Touch.elementX: Float
+        get() = (clientX * pixelRatio - ((target as? HTMLCanvasElement)?.clientLeft?.toDouble() ?: 0.0)).toFloat()
+
+    private val Touch.elementY: Float
+        get() = (clientY * pixelRatio - ((target as? HTMLCanvasElement)?.clientTop?.toDouble() ?: 0.0)).toFloat()
 
     val KEY_CODE_MAP: Map<String, UniversalKeyCode> = mutableMapOf(
         "ControlLeft" to KeyboardInput.KEY_CTRL_LEFT,

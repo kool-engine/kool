@@ -62,8 +62,8 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
                 val w = it.viewport.width.toFloat()
                 val h = it.viewport.height.toFloat()
                 val ptr = PointerInput.primaryPointer
-                val x = ptr.x.toFloat()
-                val y = ptr.y.toFloat()
+                val x = ptr.pos.x
+                val y = ptr.pos.y
                 trs.translation.set(((x % w) + w) % w, -((y % h) + h) % h, 0f)
                 trs.markDirty()
             }

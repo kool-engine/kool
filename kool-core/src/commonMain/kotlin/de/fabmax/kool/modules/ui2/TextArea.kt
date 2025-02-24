@@ -11,6 +11,8 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MsdfFont
 import de.fabmax.kool.util.TextCaretNavigation
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.min
 
@@ -95,14 +97,14 @@ fun UiScope.TextArea(
     scopeName: String? = null,
     block: TextAreaScope.() -> Unit
 ) {
-    //contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     val textArea = uiNode.createChild(scopeName, TextAreaNode::class, TextAreaNode.factory)
     textArea.listState = state
     textArea.modifier
         .size(width, height)
-        .onWheelX { state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f) }
-        .onWheelY { state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f) }
+        .onWheelX { state.scrollDpX(it.pointer.scroll.x * -20f) }
+        .onWheelY { state.scrollDpY(it.pointer.scroll.y * -50f) }
 
     textArea.setupContent(
         lineProvider,
@@ -136,6 +138,8 @@ open class TextAreaNode(parent: UiNode?, surface: UiSurface) : BoxNode(parent, s
         hScrollbarModifier: ((ScrollbarModifier) -> Unit)?,
         block: TextAreaScope.() -> Unit
     ) {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+
         this.lineProvider = lineProvider
 
         ScrollPane(listState) {

@@ -156,9 +156,7 @@ inline fun UiScope.ScrollPane(
     scopeName: String? = null,
     block: ScrollPaneScope.() -> Unit
 ): ScrollPaneScope {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     val scrollPane = uiNode.createChild(scopeName, ScrollPaneNode::class, ScrollPaneNode.factory)
     scrollPane.state = state

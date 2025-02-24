@@ -2,10 +2,11 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.MutableVec2f
-import de.fabmax.kool.math.Vec2d
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.logE
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.round
@@ -79,7 +80,7 @@ fun UiScope.LazyList(
     scopeName: String? = null,
     block: LazyListScope.() -> Unit
 ) {
-    //contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
 
     Box {
         modifier
@@ -88,33 +89,25 @@ fun UiScope.LazyList(
             .backgroundColor(colors.backgroundVariant)
             .onWheelX {
                 if (isScrollableHorizontal) {
-                    state.scrollDpX(it.pointer.deltaScrollX.toFloat() * -20f)
+                    state.scrollDpX(it.pointer.scroll.x * -20f)
                 }
             }
             .onWheelY {
                 if (isScrollableVertical) {
-                    state.scrollDpY(it.pointer.deltaScrollY.toFloat() * -50f)
+                    state.scrollDpY(it.pointer.scroll.y * -50f)
                 }
             }
 
         if (isScrollByDrag) {
-            var lastTouchDrag by remember(Vec2d.ZERO)
-            modifier
-                .onDragStart {
-                    lastTouchDrag = Vec2d(it.pointer.dragDeltaX,it.pointer.dragDeltaY)
+            modifier.onDrag {
+                val delta = it.pointer.delta
+                if (isScrollableHorizontal && delta.x != 0f) {
+                    state.scrollDpX(Dp.fromPx(delta.x).value)
                 }
-                .onDrag {
-                    val drag = Vec2d(it.pointer.dragDeltaX, it.pointer.dragDeltaY)
-                    val delta = lastTouchDrag - drag
-                    lastTouchDrag = drag
-
-                    if (isScrollableHorizontal && delta.x != 0.0) {
-                        state.scrollDpX(Dp.fromPx(delta.x.toFloat()).value)
-                    }
-                    if (isScrollableVertical && delta.y != 0.0) {
-                        state.scrollDpY(Dp.fromPx(delta.y.toFloat()).value)
-                    }
+                if (isScrollableVertical && delta.y != 0f) {
+                    state.scrollDpY(Dp.fromPx(-delta.y).value)
                 }
+            }
         }
 
         containerModifier?.invoke(modifier)
