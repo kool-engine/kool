@@ -4,7 +4,10 @@ import de.fabmax.kool.JsImpl
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.MutableVec2d
-import de.fabmax.kool.platform.*
+import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.platform.Touch
+import de.fabmax.kool.platform.TouchEvent
+import de.fabmax.kool.platform.navigator
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
 import kotlinx.browser.document
@@ -244,6 +247,12 @@ internal object PlatformInputJs : PlatformInput {
             else -> UniversalKeyCode(0)
         }
     }
+
+    private val Touch.elementX: Float
+        get() = (clientX * pixelRatio - ((target as? HTMLCanvasElement)?.clientLeft?.toDouble() ?: 0.0)).toFloat()
+
+    private val Touch.elementY: Float
+        get() = (clientY * pixelRatio - ((target as? HTMLCanvasElement)?.clientTop?.toDouble() ?: 0.0)).toFloat()
 
     val KEY_CODE_MAP: Map<String, UniversalKeyCode> = mutableMapOf(
         "ControlLeft" to KeyboardInput.KEY_CTRL_LEFT,

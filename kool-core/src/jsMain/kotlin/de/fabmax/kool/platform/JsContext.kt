@@ -241,9 +241,3 @@ external class Touch {
     val rotationAngle: Double
     val force: Double
 }
-
-val Touch.elementX: Float
-    get() = clientX.toFloat() - ((target as? HTMLCanvasElement)?.clientLeft?.toFloat() ?: 0f)
-
-val Touch.elementY: Float
-    get() = clientY.toFloat() - ((target as? HTMLCanvasElement)?.clientTop?.toFloat() ?: 0f)
