@@ -1,6 +1,7 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.util.Time
@@ -34,6 +35,11 @@ open class Pointer {
      * Scroll amount in x and y direction since last frame.
      */
     val scroll: Vec2f get() = _scroll
+
+    /**
+     * Window-scale of the parent window.
+     */
+    val windowScale: Float get() = KoolSystem.requireContext().windowScale
 
     var buttonMask = 0
         internal set(value) {

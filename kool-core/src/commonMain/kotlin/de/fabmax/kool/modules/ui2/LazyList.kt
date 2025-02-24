@@ -102,10 +102,10 @@ fun UiScope.LazyList(
             modifier.onDrag {
                 val delta = it.pointer.delta
                 if (isScrollableHorizontal && delta.x != 0f) {
-                    state.scrollDpX(delta.x)
+                    state.scrollDpX(Dp.fromPx(delta.x).value)
                 }
                 if (isScrollableVertical && delta.y != 0f) {
-                    state.scrollDpY(-delta.y)
+                    state.scrollDpY(Dp.fromPx(-delta.y).value)
                 }
             }
         }

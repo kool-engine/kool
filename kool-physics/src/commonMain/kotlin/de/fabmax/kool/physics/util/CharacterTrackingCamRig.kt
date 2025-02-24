@@ -85,8 +85,8 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     private fun handlePointerInput() {
         applyLookDirection()
 
-        val div = 1000f / sensitivity
         val ptr = PointerInput.primaryPointer
+        val div = 500f / sensitivity * ptr.windowScale
 
         lookPhi -= ptr.delta.x / div
         lookTheta = (lookTheta - ptr.delta.y / div).clamp(0.0001f, PI.toFloat() - 0.0001f)

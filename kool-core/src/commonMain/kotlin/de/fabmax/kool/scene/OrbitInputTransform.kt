@@ -266,7 +266,7 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
 
         prevButtonMask = dragPtr.buttonMask
         ptrPos.set(dragPtr.pos)
-        deltaPos.set(dragPtr.delta)
+        deltaPos.set(dragPtr.delta).mul(1f / dragPtr.windowScale)
         deltaScroll = dragPtr.scroll.y
         if (isConsumingPtr) {
             dragPtr.consume()
