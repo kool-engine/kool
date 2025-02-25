@@ -163,7 +163,7 @@ abstract class KslInvokeFunction<T: KslType>(val function: KslFunction<T>, paren
     }
 
     override val expressionType: T = returnType
-    override fun collectStateDependencies() = args.flatMap { it.collectStateDependencies() }.toSet()
+    override fun collectSubExpressions(): List<KslExpression<*>> = args.flatMap { it.collectSubExpressions() } + this
     override fun toPseudoCode() = "${function.name}(${args.joinToString { it.toPseudoCode() }})"
     override fun generateExpression(generator: KslGenerator) = generator.invokeFunction(this)
 }

@@ -6,7 +6,7 @@ abstract class KslPort<T: KslType>(name: String, parentScope: KslScopeBuilder) :
     abstract val output: KslValue<T>
 
     override val expressionType get() = output.expressionType
-    override fun collectStateDependencies() = output.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = output.collectSubExpressions() + this
     override fun generateExpression(generator: KslGenerator) = output.generateExpression(generator)
     override fun toPseudoCode() = output.toPseudoCode()
 }

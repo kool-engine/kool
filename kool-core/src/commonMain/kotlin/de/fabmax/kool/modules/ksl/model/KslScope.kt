@@ -29,12 +29,12 @@ open class KslScope(val parentOp: KslOp?) {
         val endStates = mutableMapOf<KslState, Int>()
 
         parentOp?.let { parent ->
-            parent.dependencies.values.forEach { startStates[it.state] = it.mutation }
+            parent.stateDependencies.values.forEach { startStates[it.state] = it.mutation }
             parent.mutations.values.forEach { endStates[it.state] = it.toMutation }
         }
 
         ops.forEach { op ->
-            op.dependencies.values.filter { it.state !in definedStates }.forEach { extDep ->
+            op.stateDependencies.values.filter { it.state !in definedStates }.forEach { extDep ->
                 val start = min(startStates.getOrElse(extDep.state) { extDep.mutation }, extDep.mutation)
                 startStates[extDep.state] = start
             }
@@ -53,7 +53,7 @@ open class KslScope(val parentOp: KslOp?) {
                 mutations[state] = KslStateMutation(state, startMutation, endMutation)
             }
             parentOp?.let { parent ->
-                parent.dependencies[state] = KslMutatedState(state, startMutation)
+                parent.addDependency(KslMutatedState(state, startMutation))
                 if (startMutation != endMutation) {
                     parent.mutations[state] = KslStateMutation(state, startMutation, endMutation)
                 }

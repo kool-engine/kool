@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import de.fabmax.kool.util.logE
 
 class KslSampleDepthTexture<T: KslDepthSampler<*>>(
@@ -18,8 +17,8 @@ class KslSampleDepthTexture<T: KslDepthSampler<*>>(
         }
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        sampler.collectStateDependencies() + coord.collectStateDependencies() + depthRef.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> =
+        sampler.collectSubExpressions() + coord.collectSubExpressions() + depthRef.collectSubExpressions() + this
 
     override fun generateExpression(generator: KslGenerator): String = generator.sampleDepthTexture(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sampleDepth(${coord.toPseudoCode()})"
@@ -34,11 +33,12 @@ class KslSampleDepthTextureArray<T>(
 
     override val expressionType = KslFloat1
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        sampler.collectStateDependencies() +
-        coord.collectStateDependencies() +
-        arrayIndex.collectStateDependencies() +
-        depthRef.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> =
+        sampler.collectSubExpressions() +
+        coord.collectSubExpressions() +
+        arrayIndex.collectSubExpressions() +
+        depthRef.collectSubExpressions() +
+        this
 
     override fun generateExpression(generator: KslGenerator): String = generator.sampleDepthTextureArray(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}[${arrayIndex.toPseudoCode()}].sampleDepth(${coord.toPseudoCode()})"

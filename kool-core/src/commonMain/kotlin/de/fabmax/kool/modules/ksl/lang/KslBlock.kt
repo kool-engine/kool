@@ -108,14 +108,14 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
 
     private fun updateDependencies(input: BlockInput<*, *>, newExpression: KslExpression<*>?) {
         // collect dependencies of new input expression
-        inputDependencies[input] = newExpression?.collectStateDependencies() ?: emptySet()
+        inputDependencies[input] = newExpression?.let {
+            it.collectSubExpressions().distinct().filterIsInstance<KslValue<*>>().map { it.depend() }.toSet()
+        } ?: emptySet()
 
         // update dependencies of block
-        dependencies.clear()
+        stateDependencies.clear()
         inputDependencies.values.forEach { deps ->
-            deps.forEach {
-                dependencies[it.state] = it
-            }
+            deps.forEach { addDependency(it) }
         }
     }
 
@@ -148,7 +148,7 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
         }
 
         // return empty dependencies here - actual dependencies to input expression are managed by outer block statement
-        override fun collectStateDependencies(): Set<KslMutatedState> = emptySet()
+        override fun collectSubExpressions(): List<KslExpression<*>> = emptyList()
 
         override fun generateExpression(generator: KslGenerator): String {
             return input?.generateExpression(generator)

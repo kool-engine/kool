@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import de.fabmax.kool.util.logE
 
 class KslSampleColorTexture<T: KslSamplerType<KslFloat4>>(
@@ -18,9 +17,9 @@ class KslSampleColorTexture<T: KslSamplerType<KslFloat4>>(
         }
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> {
-        val deps = sampler.collectStateDependencies() + coord.collectStateDependencies()
-        return lod?.let { deps + it.collectStateDependencies() } ?: deps
+    override fun collectSubExpressions(): List<KslExpression<*>> {
+        val deps = sampler.collectSubExpressions() + coord.collectSubExpressions() + this
+        return lod?.let { deps + it.collectSubExpressions() } ?: deps
     }
 
     override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTexture(this)
@@ -42,11 +41,12 @@ class KslSampleColorTextureGrad<T: KslSamplerType<KslFloat4>>(
         }
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> {
-        return sampler.collectStateDependencies() +
-                coord.collectStateDependencies() +
-                ddx.collectStateDependencies() +
-                ddy.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> {
+        return sampler.collectSubExpressions() +
+                coord.collectSubExpressions() +
+                ddx.collectSubExpressions() +
+                ddy.collectSubExpressions() +
+                this
     }
 
     override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTextureGrad(this)
@@ -62,9 +62,9 @@ class KslSampleColorTextureArray<T>(
 
     override val expressionType = KslFloat4
 
-    override fun collectStateDependencies(): Set<KslMutatedState> {
-        val deps = sampler.collectStateDependencies() + arrayIndex.collectStateDependencies() + coord.collectStateDependencies()
-        return lod?.let { deps + it.collectStateDependencies() } ?: deps
+    override fun collectSubExpressions(): List<KslExpression<*>> {
+        val deps = sampler.collectSubExpressions() + arrayIndex.collectSubExpressions() + coord.collectSubExpressions() + this
+        return lod?.let { deps + it.collectSubExpressions() } ?: deps
     }
 
     override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTextureArray(this)
@@ -81,12 +81,13 @@ class KslSampleColorTextureArrayGrad<T>(
 
     override val expressionType = KslFloat4
 
-    override fun collectStateDependencies(): Set<KslMutatedState> {
-        return sampler.collectStateDependencies() +
-                arrayIndex.collectStateDependencies() +
-                coord.collectStateDependencies() +
-                ddx.collectStateDependencies() +
-                ddy.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> {
+        return sampler.collectSubExpressions() +
+                arrayIndex.collectSubExpressions() +
+                coord.collectSubExpressions() +
+                ddx.collectSubExpressions() +
+                ddy.collectSubExpressions() +
+                this
     }
 
     override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTextureArrayGrad(this)

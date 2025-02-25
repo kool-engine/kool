@@ -12,7 +12,7 @@ class KslProcessor {
 
     private fun processScope(scope: KslScope) {
         processorState.enterScope(scope)
-        val openOps = mutableSetOf<KslOp>().also { it += scope.ops }
+        val openOps = scope.ops.toMutableSet()
         scope.ops.clear()
 
         while (openOps.isNotEmpty()) {
@@ -51,7 +51,7 @@ class KslProcessor {
             val states = processorState.statesInScope.values.toSet()
             logE {
                 "${op.opName} \n" +
-                        "        depends on: ${op.dependencies.values.joinToString { it.toString() + if (it !in states) " [missing]" else "" }}\n" +
+                        "        depends on: ${op.stateDependencies.values.joinToString { it.toString() + if (it !in states) " [missing]" else "" }}\n" +
                         "        mutates:    ${op.mutations.values.joinToString { it.toString() }}\n" +
                         "        prevents:   ${findPreventingOp(op, remainingOps) ?: "none"}"
             }

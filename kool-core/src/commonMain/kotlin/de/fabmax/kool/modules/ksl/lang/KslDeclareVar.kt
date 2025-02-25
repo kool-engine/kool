@@ -20,7 +20,7 @@ class KslDeclareVar(val declareVar: KslVar<*>, initExpression: KslExpression<*>?
     }
 
     fun changeInitExpression(newInitExpression: KslExpression<*>?) {
-        dependencies.clear()
+        stateDependencies.clear()
         val mut = mutations[declareVar]!!
         addDependency(KslMutatedState(mut.state, mut.fromMutation))
         initExpression = newInitExpression

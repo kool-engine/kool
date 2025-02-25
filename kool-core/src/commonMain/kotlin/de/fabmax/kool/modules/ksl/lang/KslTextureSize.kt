@@ -1,14 +1,13 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
 abstract class KslTextureSize<T: KslSamplerType<*>, R: KslType>(
     val sampler: KslExpression<T>,
     val lod: KslScalarExpression<KslInt1>,
     override val expressionType: R
 ) : KslExpression<R> {
-    override fun collectStateDependencies(): Set<KslMutatedState> = sampler.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = sampler.collectSubExpressions() + this
     override fun generateExpression(generator: KslGenerator): String = generator.textureSize(this)
     override fun toPseudoCode(): String = "textureSize(${sampler.toPseudoCode()})"
 }
@@ -41,7 +40,7 @@ abstract class KslStorageTextureSize<T: KslStorageTextureType<E,*>, E: KslNumeri
     val storageTex: KslExpression<T>,
     override val expressionType: R
 ) : KslExpression<R> {
-    override fun collectStateDependencies(): Set<KslMutatedState> = storageTex.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = storageTex.collectSubExpressions() + this
     override fun generateExpression(generator: KslGenerator): String = generator.textureSize(this)
     override fun toPseudoCode(): String = "textureSize(${storageTex.toPseudoCode()})"
 }

@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
 sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(
     name: String,
@@ -43,8 +42,8 @@ class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
         storage.isRead = true
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> {
-        return storage.collectStateDependencies() + coord.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> {
+        return storage.collectSubExpressions() + coord.collectSubExpressions() + this
     }
     override fun generateExpression(generator: KslGenerator): String = generator.storageRead(this)
     override fun toPseudoCode(): String = "storageRead(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"

@@ -6,7 +6,7 @@ abstract class KslBuiltinFunction<T: KslType>(returnType: T, vararg args: KslExp
     val args = listOf(*args)
     abstract val name: String
     override val expressionType: T = returnType
-    override fun collectStateDependencies() = args.flatMap { it.collectStateDependencies() }.toSet()
+    override fun collectSubExpressions(): List<KslExpression<*>> = args.flatMap { it.collectSubExpressions() } + this
     override fun toPseudoCode() = "${name}(${args.joinToString { it.toPseudoCode() }})"
 }
 

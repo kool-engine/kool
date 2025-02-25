@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
 open class KslArrayAccessor<T: KslType>(
     val array: KslExpression<KslArrayType<T>>,
@@ -17,8 +16,8 @@ open class KslArrayAccessor<T: KslType>(
     override val mutatingState: KslValue<*>?
         get() = array as? KslValue<*>
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        array.collectStateDependencies() + index.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> =
+        array.collectSubExpressions() + index.collectSubExpressions() + this
 
     override fun generateAssignable(generator: KslGenerator) = generator.arrayValueAssignable(this)
     override fun generateExpression(generator: KslGenerator) = generator.arrayValueExpression(this)

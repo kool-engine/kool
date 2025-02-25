@@ -1,21 +1,24 @@
 package de.fabmax.kool.modules.ksl.model
 
+import de.fabmax.kool.modules.ksl.lang.KslExpression
+
 open class KslOp(val opName: String, val parentScope: KslScope) {
-    val dependencies = mutableMapOf<KslState, KslMutatedState>()
+    val usedExpressions = mutableListOf<KslExpression<*>>()
+    val stateDependencies = mutableMapOf<KslState, KslMutatedState>()
     val mutations = mutableMapOf<KslState, KslStateMutation>()
 
     var childScopes = mutableListOf<KslScope>()
 
     fun areDependenciesMet(processorState: KslProcessorState): Boolean {
-        return dependencies.values.all { processorState.hasState(it) }
+        return stateDependencies.values.all { processorState.hasState(it) }
     }
 
     fun isPreventedByStateMutation(mutation: KslStateMutation): Boolean {
-        return dependencies[mutation.state]?.let { mutation.toMutation > it.mutation } ?: false
+        return stateDependencies[mutation.state]?.let { mutation.toMutation > it.mutation } == true
     }
 
     fun addDependency(dep: KslMutatedState) {
-        dependencies[dep.state] = dep
+        stateDependencies[dep.state] = dep
     }
 
     fun addMutation(mut: KslStateMutation) {
@@ -32,7 +35,7 @@ open class KslOp(val opName: String, val parentScope: KslScope) {
     }
 
     protected fun dependenciesAndMutationsToString(): String {
-        return "depends on: [${if (dependencies.isNotEmpty()) dependencies.values.joinToString { it.toString() } else "none"}]; " +
+        return "depends on: [${if (stateDependencies.isNotEmpty()) stateDependencies.values.joinToString { it.toString() } else "none"}]; " +
                 "mutates: [${if (mutations.isNotEmpty()) mutations.values.joinToString { it.toString() } else "none"}]; "
     }
 
@@ -46,10 +49,10 @@ open class KslOp(val opName: String, val parentScope: KslScope) {
     }
 
     open fun validate() {
-        if (mutations.keys.any { it !in dependencies.keys }) {
+        if (mutations.keys.any { it !in stateDependencies.keys }) {
             throw IllegalStateException("Op $opName mutates state it does not depend on: ${toPseudoCode()} // ${dependenciesAndMutationsToString()}")
         }
-        mutations.values.find { mut -> dependencies[mut.state]?.let { it.mutation != mut.fromMutation } == true }?.let {
+        mutations.values.find { mut -> stateDependencies[mut.state]?.let { it.mutation != mut.fromMutation } == true }?.let {
             throw IllegalStateException("Op $opName mutation and dependency states do not match: ${toPseudoCode()} // ${dependenciesAndMutationsToString()}")
         }
     }
