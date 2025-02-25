@@ -113,7 +113,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         val camRig = ActorTrackingCamRig().apply {
             trackedActor = vehicle.vehicle
-            camera.setClipRange(1f, 1000f)
+            camera.setClipRange(1f, 1e9f)
             camera.setupCamera(Vec3f(0f, 2.75f, 6f), lookAt = Vec3f(0f, 1.75f, 0f))
             addNode(camera)
         }

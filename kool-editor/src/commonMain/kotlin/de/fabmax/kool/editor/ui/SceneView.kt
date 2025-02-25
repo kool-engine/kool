@@ -84,7 +84,7 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", Icons.medium.camera, u
     }
 
     fun showSceneContextMenu(pointer: Pointer) {
-        contextMenuPos.set(Vec2f(pointer.x.toFloat(), pointer.y.toFloat()))
+        contextMenuPos.set(pointer.pos)
     }
 
     private fun makeContextMenu() = SubMenuItem {

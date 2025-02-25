@@ -85,8 +85,8 @@ class AxisRotationHandle(
         }
     }
 
-    override fun moveVirtualPointer(pos: MutableVec2d, ptr: Pointer, speedMod: Double) {
-        pos.set(ptr.x, ptr.y)
+    override fun moveVirtualPointer(pos: MutableVec2f, ptr: Pointer, speedMod: Float) {
+        pos.set(ptr.pos)
     }
 
     private fun updateColors() {

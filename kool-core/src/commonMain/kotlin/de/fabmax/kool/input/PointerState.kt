@@ -36,22 +36,22 @@ class PointerState {
                 TouchGestureEvaluator.PINCH -> {
                     // set primary pointer deltaScroll for compatibility with mouse input
                     primaryPointer.consumptionMask = 0
-                    primaryPointer.deltaScrollY = compatGestureEvaluator.currentGesture.dPinchAmount / 20.0
-                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
-                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
-                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
-                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                    primaryPointer._scroll.y = compatGestureEvaluator.currentGesture.dPinchAmount / 20.0f
+                    primaryPointer._pos.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                    primaryPointer._pos.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                    primaryPointer._delta.x = compatGestureEvaluator.currentGesture.dCenter.x
+                    primaryPointer._delta.y = compatGestureEvaluator.currentGesture.dCenter.y
                 }
                 TouchGestureEvaluator.TWO_FINGER_DRAG -> {
                     // set primary pointer right button down for compatibility with mouse input
                     primaryPointer.consumptionMask = 0
-                    primaryPointer.x = compatGestureEvaluator.currentGesture.centerCurrent.x
-                    primaryPointer.y = compatGestureEvaluator.currentGesture.centerCurrent.y
-                    primaryPointer.deltaX = compatGestureEvaluator.currentGesture.dCenter.x
-                    primaryPointer.deltaY = compatGestureEvaluator.currentGesture.dCenter.y
+                    primaryPointer._pos.x = compatGestureEvaluator.currentGesture.centerCurrent.x
+                    primaryPointer._pos.y = compatGestureEvaluator.currentGesture.centerCurrent.y
+                    primaryPointer._delta.x = compatGestureEvaluator.currentGesture.dCenter.x
+                    primaryPointer._delta.y = compatGestureEvaluator.currentGesture.dCenter.y
                     if (primaryPointer.buttonMask == PointerInput.LEFT_BUTTON_MASK) {
                         primaryPointer.buttonMask = PointerInput.RIGHT_BUTTON_MASK
-                        if (compatGestureEvaluator.currentGesture.numUpdates > 1){
+                        if (compatGestureEvaluator.currentGesture.numUpdates > 1) {
                             primaryPointer.buttonEventMask = 0
                         }
                     }

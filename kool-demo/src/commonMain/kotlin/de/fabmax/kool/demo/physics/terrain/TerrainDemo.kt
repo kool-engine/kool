@@ -313,9 +313,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
                 if (gun.tractorState == TractorGun.TractorState.TRACTOR) {
                     ptr.consume(PointerInput.CONSUMED_SCROLL_Y)
                     if (KeyboardInput.isShiftDown) {
-                        gun.tractorDistance += ptr.deltaScroll.toFloat() * 0.25f
+                        gun.tractorDistance += ptr.scroll.y * 0.25f
                     } else {
-                        gun.rotationTorque += ptr.deltaScroll.toFloat()
+                        gun.rotationTorque += ptr.scroll.y
                     }
                 }
 

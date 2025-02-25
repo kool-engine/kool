@@ -32,7 +32,7 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
 
     private val globalRay = RayD()
     private val localRay = RayD()
-    private val virtualPointerPos = MutableVec2d()
+    private val virtualPointerPos = MutableVec2f()
 
     private val globalToDragLocal = MutableMat4d()
     private val dragLocalToGlobal = MutableMat4d()
@@ -166,9 +166,9 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
         }
     }
 
-    fun start(mode: EditorEditMode.Mode): Boolean {
+    fun start(mode: EditorEditMode.Mode) {
         if (isActive) {
-            return true
+            return
         }
 
         activeOp = when (mode) {
@@ -188,7 +188,6 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
             PointerInput.cursorMode = CursorMode.LOCKED
         }
         editor.ui.sceneView.addLabel(gizmoLabel)
-        return true
     }
 
     fun finish(isCanceled: Boolean) {
@@ -266,17 +265,17 @@ class ImmediateTransformEditMode(val editor: KoolEditor) : InputStack.PointerLis
 
         val ptr = pointerState.primaryPointer
         if (!gizmo.isManipulating || mode.value == EditorEditMode.Mode.ROTATE_IMMEDIATE) {
-            virtualPointerPos.set(ptr.x, ptr.y)
+            virtualPointerPos.set(ptr.pos)
         } else {
             val speedMod = if (KeyboardInput.isShiftDown) SPEED_MOD_ACCURATE else SPEED_MOD_NORMAL
-            virtualPointerPos.x += ptr.deltaX * speedMod
-            virtualPointerPos.y += ptr.deltaY * speedMod
+            virtualPointerPos.x += ptr.delta.x * speedMod
+            virtualPointerPos.y += ptr.delta.y * speedMod
         }
         gizmo.applySpeedAndTickRate()
 
         val scene = editor.overlayScene
-        val ptrX = virtualPointerPos.x.toFloat()
-        val ptrY = virtualPointerPos.y.toFloat()
+        val ptrX = virtualPointerPos.x
+        val ptrY = virtualPointerPos.y
         if (!scene.camera.computePickRay(globalRay, ptrX, ptrY, scene.mainRenderPass.viewport)) {
             return
         }

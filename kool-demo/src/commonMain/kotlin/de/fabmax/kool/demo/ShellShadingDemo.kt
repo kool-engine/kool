@@ -227,7 +227,10 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
 
         themes += ColorTheme("Viridis", GradientTexture(ColorGradient.VIRIDIS.toLinear()))
-        themes += ColorTheme("Plasma", GradientTexture(ColorGradient.PLASMA.toLinear()))
+        themes += ColorTheme("Cividis", GradientTexture(ColorGradient.CIVIDIS.toLinear()))
+        themes += ColorTheme("Magma", GradientTexture(ColorGradient.MAGMA.toLinear()))
+        themes += ColorTheme("Mako", GradientTexture(ColorGradient.MAKO.toLinear()))
+        themes += ColorTheme("Rocket", GradientTexture(ColorGradient.ROCKET.toLinear()))
         furShaderSphere.theme.set(themes[0])
         furShaderBunny.theme.set(themes[1])
 
@@ -297,11 +300,6 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
         logD { "Generated 3d noise in ${pt.takeSecs().toString(3)} s, tex saturation: min = $min, max = $max" }
         return Texture3d(TexFormat.RGBA_F16, MipMapping.Off) { BufferedImageData3d(buf, sz, sz, sz, TexFormat.RGBA_F16) }
-    }
-
-    private fun ColorGradient.toLinear(): ColorGradient {
-        val colors = Array(32) { getColor(it / 31f).toLinear() }
-        return ColorGradient(*colors)
     }
 
     data class ColorTheme(val name: String, val texture: GradientTexture) {

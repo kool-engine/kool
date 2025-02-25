@@ -162,7 +162,7 @@ fun UiScope.doubleTextField(
             }
             .onDrag {
                 val dragSpeed = if (KeyboardInput.isShiftDown) 0.1f else 1f
-                val dragVal = dragStartValue + dragChangeSpeed * dragSpeed * Dp.fromPx(it.pointer.dragDeltaX.toFloat()).value
+                val dragVal = dragStartValue + dragChangeSpeed * dragSpeed * Dp.fromPx(it.pointer.dragMovement.x).value
                 editHandler.onEdit(dragVal.clamp(minValue, maxValue))
             }
             .onDragEnd {
@@ -240,7 +240,7 @@ fun UiScope.intTextField(
                 editHandler.onEditStart(dragStartValue)
             }
             .onDrag {
-                val dragVal = (dragStartValue + dragChangeSpeed * Dp.fromPx(it.pointer.dragDeltaX.toFloat()).value).roundToInt()
+                val dragVal = (dragStartValue + dragChangeSpeed * Dp.fromPx(it.pointer.dragMovement.x).value).roundToInt()
                 editHandler.onEdit(dragVal.clamp(minValue, maxValue))
             }
             .onDragEnd {

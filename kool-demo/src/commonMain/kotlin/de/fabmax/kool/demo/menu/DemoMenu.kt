@@ -6,7 +6,6 @@ import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.UiSizes
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.math.Easing
-import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -52,8 +51,7 @@ class DemoMenu(val demoLoader: DemoLoader) {
                 surface.onEachFrame {
                     val ptr = PointerInput.primaryPointer
                     if (ptr.isAnyButtonEvent) {
-                        val ptrPos = Vec2f(ptr.x.toFloat(), ptr.y.toFloat())
-                        if (!uiNode.isInBounds(ptrPos)) {
+                        if (!uiNode.isInBounds(ptr.pos)) {
                             isExpanded = false
                         }
                     }

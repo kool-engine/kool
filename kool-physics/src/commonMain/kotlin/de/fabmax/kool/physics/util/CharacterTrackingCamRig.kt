@@ -85,18 +85,18 @@ class CharacterTrackingCamRig(enableCursorLock: Boolean = true) :
     private fun handlePointerInput() {
         applyLookDirection()
 
-        val div = 1000f / sensitivity
         val ptr = PointerInput.primaryPointer
+        val div = 500f / sensitivity * ptr.windowScale
 
-        lookPhi -= ptr.deltaX.toFloat() / div
-        lookTheta = (lookTheta - ptr.deltaY.toFloat() / div).clamp(0.0001f, PI.toFloat() - 0.0001f)
+        lookPhi -= ptr.delta.x / div
+        lookTheta = (lookTheta - ptr.delta.y / div).clamp(0.0001f, PI.toFloat() - 0.0001f)
 
         lookDirection.x = sin(lookTheta) * cos(lookPhi)
         lookDirection.z = sin(lookTheta) * sin(lookPhi)
         lookDirection.y = cos(lookTheta)
 
         if (isZoomEnabled && !ptr.isConsumed(PointerInput.CONSUMED_SCROLL_Y)) {
-            zoom *= 1f - PointerInput.primaryPointer.deltaScroll.toFloat() / 10f
+            zoom *= 1f - PointerInput.primaryPointer.scroll.y / 10f
             zoom = zoom.clamp(minZoom, maxZoom)
         }
     }
