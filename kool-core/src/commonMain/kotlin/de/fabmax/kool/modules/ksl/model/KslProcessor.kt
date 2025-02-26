@@ -7,9 +7,9 @@ import de.fabmax.kool.util.logE
 class KslProcessor {
     private val processorState = KslProcessorState()
 
-    fun process(hierarchy: KslHierarchy) {
-        hierarchy.globalScope.updateModel()
-        hierarchy.globalScope.transform(null, null)
+    fun process(scope: KslScope) {
+        scope.updateModel()
+        scope.transform(null, null)
 
 //        if (hierarchy.globalScope.parentStage is KslFragmentStage) {
 //            println(hierarchy.printHierarchy())

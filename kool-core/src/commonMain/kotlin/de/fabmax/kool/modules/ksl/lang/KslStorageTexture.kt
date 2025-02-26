@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.pipeline.TexFormat
 
@@ -47,7 +46,7 @@ class KslStorageTextureLoad<T: KslStorageTextureType<R, C>, R: KslNumericType, C
     override fun collectSubExpressions(): List<KslExpression<*>> {
         return storage.collectSubExpressions() + coord.collectSubExpressions() + this
     }
-    override fun generateExpression(generator: KslGenerator): String = generator.storageTextureRead(this)
+
     override fun toPseudoCode(): String = "textureLoad(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
 
@@ -89,6 +88,5 @@ class KslImageTextureLoad<T: KslSamplerType<KslFloat4>>(
         return lod?.let { deps + it.collectSubExpressions() } ?: deps
     }
 
-    override fun generateExpression(generator: KslGenerator): String = generator.imageTextureRead(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.textureLoad(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }

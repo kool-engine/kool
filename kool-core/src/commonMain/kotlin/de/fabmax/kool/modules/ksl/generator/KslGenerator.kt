@@ -9,81 +9,6 @@ import de.fabmax.kool.pipeline.DrawPipeline
 
 abstract class KslGenerator {
 
-    abstract fun getStateName(stae: KslState): String
-
-    open fun constBoolExpression(value: Boolean) = "$value"
-    open fun constIntExpression(value: Int) = "$value"
-    open fun constUintExpression(value: UInt) = "${value}u"
-    open fun constFloatExpression(value: Float): String {
-        var str = "$value"
-        if (!str.contains('.')) {
-            // make sure string is a proper floating point value (not always the case with javascript)
-            str += ".0"
-        }
-        return str
-    }
-
-    abstract fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>): String
-    abstract fun constIntVecExpression(vararg values: KslExpression<KslInt1>): String
-    abstract fun constUintVecExpression(vararg values: KslExpression<KslUint1>): String
-    abstract fun constBoolVecExpression(vararg values: KslExpression<KslBool1>): String
-    abstract fun constMatExpression(vararg columns: KslVectorExpression<*, KslFloat1>): String
-
-    open fun valueExpression(value: KslValue<*>): String = getStateName(value)
-    open fun arrayValueExpression(arrayAccessor: KslArrayAccessor<*>): String =
-        "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
-    open fun matrixColExpression(matrixAccessor: KslMatrixAccessor<*>): String =
-        "${matrixAccessor.matrix.generateExpression(this)}[${matrixAccessor.colIndex.generateExpression(this)}]"
-    open fun vectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression(this)}.${swizzleExpr.components}"
-
-    abstract fun castExpression(castExpr: KslExpressionCast<*>): String
-
-    open fun <T: KslNumericType> mathExpression(expression: KslExpressionMath<T>): String =
-        "(${expression.left.generateExpression(this)} ${expression.operator.opChar} ${expression.right.generateExpression(this)})"
-    open fun <T: KslNumericType> bitExpression(expression: KslExpressionBit<T>): String =
-        "(${expression.left.generateExpression(this)} ${expression.operator.opString} ${expression.right.generateExpression(this)})"
-    open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =
-        "(${expression.left.generateExpression(this)} ${expression.operator.opString} ${expression.right.generateExpression(this)})"
-    open fun numericUnaryMinusExpression(expression: KslNumericScalarUnaryMinus<*>): String =
-        "-(${expression.expr.generateExpression(this)})"
-    open fun numericUnaryMinusExpression(expression: KslNumericVectorUnaryMinus<*, *>): String =
-        "-(${expression.expr.generateExpression(this)})"
-    open fun intComplementExpression(expression: KslIntScalarComplement<*>): String =
-        "~(${expression.expr.generateExpression(this)})"
-    open fun intComplementExpression(expression: KslIntVectorComplement<*, *>): String =
-        "~(${expression.expr.generateExpression(this)})"
-
-    open fun boolVecExpression(expression: KslBoolVectorExpr<*>): String =
-        "${expression.op.opString}(${expression.boolVec.generateExpression(this)})"
-    open fun boolScalarExpression(expression: KslBoolScalarExpr): String =
-        "(${expression.left.generateExpression(this)} ${expression.op.opString} ${expression.right.generateExpression(this)})"
-    open fun boolNotExpression(expression: KslBoolNotExpr): String =
-        "!(${expression.expr.generateExpression(this)})"
-
-    abstract fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String
-    abstract fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String
-    abstract fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String
-    abstract fun sampleColorTextureArray(sampleTexture: KslSampleColorTextureArray<*>): String
-    abstract fun sampleColorTextureArrayGrad(sampleTextureGrad: KslSampleColorTextureArrayGrad<*>): String
-    abstract fun sampleDepthTextureArray(sampleTexture: KslSampleDepthTextureArray<*>): String
-    abstract fun textureSize(textureSize: KslTextureSize<*, *>): String
-    abstract fun textureSize(textureSize: KslStorageTextureSize<*, *, *>): String
-
-    abstract fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String
-    abstract fun imageTextureRead(expression: KslImageTextureLoad<*>): String
-
-    abstract fun storageRead(storageRead: KslStorageRead<*, *, *>): String
-    abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
-    abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
-
-    open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
-    open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
-        "${arrayAccessor.array.generateExpression(this)}[${arrayAccessor.index.generateExpression(this)}]"
-    open fun matrixColAssignable(matrixAccessor: KslMatrixAccessor<*>): String =
-        "${matrixAccessor.matrix.generateExpression(this)}[${matrixAccessor.colIndex.generateExpression(this)}]"
-    open fun vectorSwizzleAssignable(swizzleAssignable: KslVectorAccessor<*>): String =
-        "${swizzleAssignable.vector.generateExpression(this)}.${swizzleAssignable.components}"
-
     abstract fun generateProgram(program: KslProgram, pipeline: DrawPipeline): GeneratorOutput
     abstract fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GeneratorOutput
 
@@ -132,7 +57,206 @@ abstract class KslGenerator {
     abstract fun opStorageWrite(op: KslStorageWrite<*, *, *>): String
     abstract fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String
 
-    abstract fun invokeFunction(func: KslInvokeFunction<*>): String
+    fun KslExpression<*>.generateExpression(): String {
+        return when (this) {
+            is KslArrayAccessor<*> -> generateArrayValueExpression(this)
+            is KslBlock.BlockInput<*, *> -> (input as KslExpression<*>).generateExpression()
+            is KslBuiltinFunction<*> -> generateBuiltinFunctionExpression(this)
+            is KslExpressionBit<*> -> generateBitExpression(this)
+            is KslExpressionCast<*> -> generateCastExpression(this)
+            is KslExpressionCompare<*> -> compareExpression(this)
+            is KslExpressionMath<*> -> generateMathExpression(this)
+            is KslInvokeFunction<*> -> generateInvokeFunction(this)
+            is KslVectorAccessor -> generateVectorSwizzleExpression(this)
+            is KslMatrixAccessor<*> -> generateMatrixColExpression(this)
+            is KslValue<*> -> generateValueExpression(this)
+            is KslValueExpression<*> -> generateValueExpression(this)
+            is KslUniform<*> -> generateValueExpression(this.value)
+            is KslVertexAttribute<*> -> generateValueExpression(this.value)
+            is KslStageInput<*> -> generateValueExpression(this.value)
+            is KslNumericScalarUnaryMinus<*> -> numericUnaryMinusExpression(this)
+            is KslNumericVectorUnaryMinus<*, *> -> numericUnaryMinusExpression(this)
+            is KslIntScalarComplement -> intComplementExpression(this)
+            is KslIntVectorComplement<*, *> -> intComplementExpression(this)
+            is KslBoolNotExpr -> boolNotExpression(this)
+            is KslBoolScalarExpr -> boolScalarExpression(this)
+            is KslBoolVectorExpr<*> -> boolVecExpression(this)
+            is KslSampleColorTexture<*> -> sampleColorTexture(this)
+            is KslSampleColorTextureGrad<*> -> sampleColorTextureGrad(this)
+            is KslSampleColorTextureArray<*> -> sampleColorTextureArray(this)
+            is KslSampleColorTextureArrayGrad<*> -> sampleColorTextureArrayGrad(this)
+            is KslSampleDepthTexture<*> -> sampleDepthTexture(this)
+            is KslSampleDepthTextureArray<*> -> sampleDepthTextureArray(this)
+            is KslImageTextureLoad<*> -> imageTextureRead(this)
+            is KslStorageTextureLoad<*, *, *> -> storageTextureRead(this)
+            is KslStorageRead<*, *, *> -> generateStorageRead(this)
+            is KslStorageTextureSize<*, *, *> -> generateTextureSize(this)
+            is KslTextureSize<*, *> -> generateTextureSize(this)
+            is KslStorageAtomicOp<*, *, *> -> storageAtomicOp(this)
+            is KslStorageAtomicCompareSwap<*, *, *> -> storageAtomicCompareSwap(this)
+            else -> error("expression type not implemented: $this")
+        }
+    }
+
+    abstract fun getStateName(stae: KslState): String
+
+    open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
+    open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
+        "${arrayAccessor.array.generateExpression()}[${arrayAccessor.index.generateExpression()}]"
+    open fun matrixColAssignable(matrixAccessor: KslMatrixAccessor<*>): String =
+        "${matrixAccessor.matrix.generateExpression()}[${matrixAccessor.colIndex.generateExpression()}]"
+    open fun vectorSwizzleAssignable(swizzleAssignable: KslVectorAccessor<*>): String =
+        "${swizzleAssignable.vector.generateExpression()}.${swizzleAssignable.components}"
+
+    abstract fun generateCastExpression(castExpr: KslExpressionCast<*>): String
+
+    open fun <T: KslNumericType> generateMathExpression(expression: KslExpressionMath<T>): String =
+        "(${expression.left.generateExpression()} ${expression.operator.opChar} ${expression.right.generateExpression()})"
+    open fun <T: KslNumericType> generateBitExpression(expression: KslExpressionBit<T>): String =
+        "(${expression.left.generateExpression()} ${expression.operator.opString} ${expression.right.generateExpression()})"
+
+    open fun generateValueExpression(value: KslValue<*>): String = getStateName(value)
+    open fun generateArrayValueExpression(arrayAccessor: KslArrayAccessor<*>): String =
+        "${arrayAccessor.array.generateExpression()}[${arrayAccessor.index.generateExpression()}]"
+    open fun generateMatrixColExpression(matrixAccessor: KslMatrixAccessor<*>): String =
+        "${matrixAccessor.matrix.generateExpression()}[${matrixAccessor.colIndex.generateExpression()}]"
+    open fun generateVectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression()}.${swizzleExpr.components}"
+
+    open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =
+        "(${expression.left.generateExpression()} ${expression.operator.opString} ${expression.right.generateExpression()})"
+    open fun numericUnaryMinusExpression(expression: KslNumericScalarUnaryMinus<*>): String =
+        "-(${expression.expr.generateExpression()})"
+    open fun numericUnaryMinusExpression(expression: KslNumericVectorUnaryMinus<*, *>): String =
+        "-(${expression.expr.generateExpression()})"
+    open fun intComplementExpression(expression: KslIntScalarComplement<*>): String =
+        "~(${expression.expr.generateExpression()})"
+    open fun intComplementExpression(expression: KslIntVectorComplement<*, *>): String =
+        "~(${expression.expr.generateExpression()})"
+
+    open fun boolVecExpression(expression: KslBoolVectorExpr<*>): String =
+        "${expression.op.opString}(${expression.boolVec.generateExpression()})"
+    open fun boolScalarExpression(expression: KslBoolScalarExpr): String =
+        "(${expression.left.generateExpression()} ${expression.op.opString} ${expression.right.generateExpression()})"
+    open fun boolNotExpression(expression: KslBoolNotExpr): String =
+        "!(${expression.expr.generateExpression()})"
+
+    private fun generateValueExpression(expr: KslValueExpression<*>): String {
+        return when (expr) {
+            is KslValueBool1 -> constBoolExpression(expr.value)
+            is KslValueBool2 -> constBoolVecExpression(expr.x, expr.y)
+            is KslValueBool3 -> constBoolVecExpression(expr.x, expr.y, expr.z)
+            is KslValueBool4 -> constBoolVecExpression(expr.x, expr.y, expr.z, expr.w)
+            is KslValueFloat1 -> constFloatExpression(expr.value)
+            is KslValueFloat2 -> constFloatVecExpression(expr.x, expr.y)
+            is KslValueFloat3 -> constFloatVecExpression(expr.x, expr.y, expr.z)
+            is KslValueFloat4 -> constFloatVecExpression(expr.x, expr.y, expr.z, expr.w)
+            is KslValueInt1 -> constIntExpression(expr.value)
+            is KslValueInt2 -> constIntVecExpression(expr.x, expr.y)
+            is KslValueInt3 -> constIntVecExpression(expr.x, expr.y, expr.z)
+            is KslValueInt4 -> constIntVecExpression(expr.x, expr.y, expr.z, expr.w)
+            is KslValueMat2 -> constMatExpression(expr.col0, expr.col1)
+            is KslValueMat3 -> constMatExpression(expr.col0, expr.col1, expr.col2)
+            is KslValueMat4 -> constMatExpression(expr.col0, expr.col1, expr.col2, expr.col3)
+            is KslValueUint1 -> constUintExpression(expr.value)
+            is KslValueUint2 -> constUintVecExpression(expr.x, expr.y)
+            is KslValueUint3 -> constUintVecExpression(expr.x, expr.y, expr.z)
+            is KslValueUint4 -> constUintVecExpression(expr.x, expr.y, expr.z, expr.w)
+            KslValueVoid -> error("void has no value that could be generated")
+        }
+    }
+
+    open fun constBoolExpression(value: Boolean) = "$value"
+    open fun constIntExpression(value: Int) = "$value"
+    open fun constUintExpression(value: UInt) = "${value}u"
+    open fun constFloatExpression(value: Float): String {
+        var str = "$value"
+        if (!str.contains('.')) {
+            // make sure string is a proper floating point value (not always the case with javascript)
+            str += ".0"
+        }
+        return str
+    }
+
+    abstract fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>): String
+    abstract fun constIntVecExpression(vararg values: KslExpression<KslInt1>): String
+    abstract fun constUintVecExpression(vararg values: KslExpression<KslUint1>): String
+    abstract fun constBoolVecExpression(vararg values: KslExpression<KslBool1>): String
+    abstract fun constMatExpression(vararg columns: KslVectorExpression<*, KslFloat1>): String
+
+    private fun generateBuiltinFunctionExpression(expr: KslBuiltinFunction<*>): String {
+        return when (expr) {
+            is KslBuiltinTranspose<*, *> -> builtinTranspose(expr)
+            is KslBuiltinAbsScalar<*> -> builtinAbs(expr)
+            is KslBuiltinAtan2Scalar -> builtinAtan2(expr)
+            is KslBuiltinCeilScalar -> builtinCeil(expr)
+            is KslBuiltinClampScalar<*> -> builtinClamp(expr)
+            is KslBuiltinDegreesScalar -> builtinDegrees(expr)
+            is KslBuiltinDeterminant<*, *> -> builtinDeterminant(expr)
+            is KslBuiltinDistanceScalar<*> -> builtinDistance(expr)
+            is KslBuiltinDot<*> -> builtinDot(expr)
+            is KslBuiltinDpdxScalar -> builtinDpdx(expr)
+            is KslBuiltinDpdyScalar -> builtinDpdy(expr)
+            is KslBuiltinExp2Scalar -> builtinExp2(expr)
+            is KslBuiltinExpScalar -> builtinExp(expr)
+            is KslBuiltinFloorScalar -> builtinFloor(expr)
+            is KslBuiltinFmaScalar -> builtinFma(expr)
+            is KslBuiltinFractScalar -> builtinFract(expr)
+            is KslBuiltinInverseSqrtScalar -> builtinInverseSqrt(expr)
+            is KslBuiltinIsInfScalar -> builtinIsInf(expr)
+            is KslBuiltinIsNanScalar -> builtinIsNan(expr)
+            is KslBuiltinLength<*> -> builtinLength(expr)
+            is KslBuiltinLog2Scalar -> builtinLog2(expr)
+            is KslBuiltinLogScalar -> builtinLog(expr)
+            is KslBuiltinMaxScalar<*> -> builtinMax(expr)
+            is KslBuiltinMinScalar<*> -> builtinMin(expr)
+            is KslBuiltinMixScalar -> builtinMix(expr)
+            is KslBuiltinPowScalar -> builtinPow(expr)
+            is KslBuiltinRadiansScalar -> builtinRadians(expr)
+            is KslBuiltinRoundScalar -> builtinRound(expr)
+            is KslBuiltinSignScalar<*> -> builtinSign(expr)
+            is KslBuiltinSmoothStepScalar -> builtinSmoothStep(expr)
+            is KslBuiltinSqrtScalar -> builtinSqrt(expr)
+            is KslBuiltinStepScalar -> builtinStep(expr)
+            is KslBuiltinTrigonometryScalar -> builtinTrigonometry(expr)
+            is KslBuiltinTruncScalar -> builtinTrunc(expr)
+            is KslBuiltinAbsVector<*, *> -> builtinAbs(expr)
+            is KslBuiltinAtan2Vector<*> -> builtinAtan2(expr)
+            is KslBuiltinCeilVector<*> -> builtinCeil(expr)
+            is KslBuiltinClampVector<*, *> -> builtinClamp(expr)
+            is KslBuiltinCross -> builtinCross(expr)
+            is KslBuiltinDegreesVector<*> -> builtinDegrees(expr)
+            is KslBuiltinDpdxVector<*> -> builtinDpdx(expr)
+            is KslBuiltinDpdyVector<*> -> builtinDpdy(expr)
+            is KslBuiltinExp2Vector<*> -> builtinExp2(expr)
+            is KslBuiltinExpVector<*> -> builtinExp(expr)
+            is KslBuiltinFaceForward<*> -> builtinFaceForward(expr)
+            is KslBuiltinFloorVector<*> -> builtinFloor(expr)
+            is KslBuiltinFmaVector<*> -> builtinFma(expr)
+            is KslBuiltinFractVector<*> -> builtinFract(expr)
+            is KslBuiltinInverseSqrtVector<*> -> builtinInverseSqrt(expr)
+            is KslBuiltinIsInfVector<*, *> -> builtinIsInf(expr)
+            is KslBuiltinIsNanVector<*, *> -> builtinIsNan(expr)
+            is KslBuiltinLog2Vector<*> -> builtinLog2(expr)
+            is KslBuiltinLogVector<*> -> builtinLog(expr)
+            is KslBuiltinMaxVector<*, *> -> builtinMax(expr)
+            is KslBuiltinMinVector<*, *> -> builtinMin(expr)
+            is KslBuiltinMixVector<*> -> builtinMix(expr)
+            is KslBuiltinNormalize<*> -> builtinNormalize(expr)
+            is KslBuiltinPowVector<*> -> builtinPow(expr)
+            is KslBuiltinRadiansVector<*> -> builtinRadians(expr)
+            is KslBuiltinReflect<*> -> builtinReflect(expr)
+            is KslBuiltinRefract<*> -> builtinRefract(expr)
+            is KslBuiltinRoundVector<*> -> builtinRound(expr)
+            is KslBuiltinSignVector<*, *> -> builtinSign(expr)
+            is KslBuiltinSmoothStepVector<*> -> builtinSmoothStep(expr)
+            is KslBuiltinSqrtVector<*> -> builtinSqrt(expr)
+            is KslBuiltinStepVector<*> -> builtinStep(expr)
+            is KslBuiltinTrigonometryVector<*> -> builtinTrigonometry(expr)
+            is KslBuiltinTruncVector<*> -> builtinTrunc(expr)
+        }
+    }
+
+    abstract fun generateInvokeFunction(func: KslInvokeFunction<*>): String
 
     abstract fun builtinAbs(func: KslBuiltinAbsScalar<*>): String
     abstract fun builtinAbs(func: KslBuiltinAbsVector<*, *>): String
@@ -203,6 +327,22 @@ abstract class KslGenerator {
 
     abstract fun builtinDeterminant(func: KslBuiltinDeterminant<*, *>): String
     abstract fun builtinTranspose(func: KslBuiltinTranspose<*, *>): String
+
+    abstract fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String
+    abstract fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String
+    abstract fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String
+    abstract fun sampleColorTextureArray(sampleTexture: KslSampleColorTextureArray<*>): String
+    abstract fun sampleColorTextureArrayGrad(sampleTextureGrad: KslSampleColorTextureArrayGrad<*>): String
+    abstract fun sampleDepthTextureArray(sampleTexture: KslSampleDepthTextureArray<*>): String
+    abstract fun generateTextureSize(textureSize: KslTextureSize<*, *>): String
+    abstract fun generateTextureSize(textureSize: KslStorageTextureSize<*, *, *>): String
+
+    abstract fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String
+    abstract fun imageTextureRead(expression: KslImageTextureLoad<*>): String
+
+    abstract fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String
+    abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
+    abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
 
     protected fun sortFunctions(functions: MutableList<KslFunction<*>>) {
         val closed = mutableSetOf<KslFunction<*>>()

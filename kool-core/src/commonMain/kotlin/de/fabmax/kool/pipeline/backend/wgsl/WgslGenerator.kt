@@ -194,29 +194,29 @@ class WgslGenerator : KslGenerator() {
 
     private fun constVecExpression(type: String, values: List<KslExpression<*>>): String {
         check (values.size in 2..4) { "invalid vec dimension: ${values.size} (must be between 2 and 4)" }
-        return "vec${values.size}<$type>(${values.joinToString { it.generateExpression(this) }})"
+        return "vec${values.size}<$type>(${values.joinToString { it.generateExpression() }})"
     }
 
     override fun constMatExpression(vararg columns: KslVectorExpression<*, KslFloat1>): String {
         val d = columns.size
         check (d in 2..4) { "invalid mat dimension: ${d}x$d (must be between 2 and 4)" }
-        return "mat${d}x${d}<f32>(${columns.joinToString { it.generateExpression(this) }})"
+        return "mat${d}x${d}<f32>(${columns.joinToString { it.generateExpression() }})"
     }
 
-    override fun castExpression(castExpr: KslExpressionCast<*>): String {
-        return "${castExpr.expressionType.wgslTypeName()}(${castExpr.value.generateExpression(this)})"
+    override fun generateCastExpression(castExpr: KslExpressionCast<*>): String {
+        return "${castExpr.expressionType.wgslTypeName()}(${castExpr.value.generateExpression()})"
     }
 
     override fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String {
-        val lt = expression.left.generateExpression(this)
-        val rt = expression.right.generateExpression(this)
+        val lt = expression.left.generateExpression()
+        val rt = expression.right.generateExpression()
         return "($lt ${expression.operator.opString} $rt)"
     }
 
     override fun sampleColorTexture(sampleTexture: KslSampleColorTexture<*>): String {
-        val textureName = sampleTexture.sampler.generateExpression(this)
-        val level = sampleTexture.lod?.generateExpression(this)
-        val coord = sampleTexture.coord.generateExpression(this)
+        val textureName = sampleTexture.sampler.generateExpression()
+        val level = sampleTexture.lod?.generateExpression()
+        val coord = sampleTexture.coord.generateExpression()
 
         return if (level != null) {
             "textureSampleLevel(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $level)"
@@ -226,27 +226,27 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun sampleColorTextureGrad(sampleTextureGrad: KslSampleColorTextureGrad<*>): String {
-        val textureName = sampleTextureGrad.sampler.generateExpression(this)
-        val coord = sampleTextureGrad.coord.generateExpression(this)
-        val ddx = sampleTextureGrad.ddx.generateExpression(this)
-        val ddy = sampleTextureGrad.ddy.generateExpression(this)
+        val textureName = sampleTextureGrad.sampler.generateExpression()
+        val coord = sampleTextureGrad.coord.generateExpression()
+        val ddx = sampleTextureGrad.ddx.generateExpression()
+        val ddy = sampleTextureGrad.ddy.generateExpression()
         return "textureSampleGrad(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $ddx, $ddy)"
     }
 
     override fun sampleDepthTexture(sampleTexture: KslSampleDepthTexture<*>): String {
-        val textureName = sampleTexture.sampler.generateExpression(this)
-        val coord = sampleTexture.coord.generateExpression(this)
-        val depthRef = sampleTexture.depthRef.generateExpression(this)
+        val textureName = sampleTexture.sampler.generateExpression()
+        val coord = sampleTexture.coord.generateExpression()
+        val depthRef = sampleTexture.depthRef.generateExpression()
         // use "Level" variant of textureSampleCompare, as our depth maps don't have mip levels -> therefore
         // no derivatives need to be computed and sampling can be invoked from non-uniform control flow
         return "textureSampleCompareLevel(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $depthRef)"
     }
 
     override fun sampleColorTextureArray(sampleTexture: KslSampleColorTextureArray<*>): String {
-        val textureName = sampleTexture.sampler.generateExpression(this)
-        val coord = sampleTexture.coord.generateExpression(this)
-        val index = sampleTexture.arrayIndex.generateExpression(this)
-        val level = sampleTexture.lod?.generateExpression(this)
+        val textureName = sampleTexture.sampler.generateExpression()
+        val coord = sampleTexture.coord.generateExpression()
+        val index = sampleTexture.arrayIndex.generateExpression()
+        val level = sampleTexture.lod?.generateExpression()
         return if (level != null) {
             "textureSampleLevel(${textureName(textureName)}, ${samplerName(textureName)}, ${coord}, $index, $level)"
         } else {
@@ -255,36 +255,36 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun sampleColorTextureArrayGrad(sampleTextureGrad: KslSampleColorTextureArrayGrad<*>): String {
-        val textureName = sampleTextureGrad.sampler.generateExpression(this)
-        val coord = sampleTextureGrad.coord.generateExpression(this)
-        val index = sampleTextureGrad.arrayIndex.generateExpression(this)
-        val ddx = sampleTextureGrad.ddx.generateExpression(this)
-        val ddy = sampleTextureGrad.ddy.generateExpression(this)
+        val textureName = sampleTextureGrad.sampler.generateExpression()
+        val coord = sampleTextureGrad.coord.generateExpression()
+        val index = sampleTextureGrad.arrayIndex.generateExpression()
+        val ddx = sampleTextureGrad.ddx.generateExpression()
+        val ddy = sampleTextureGrad.ddy.generateExpression()
         return "textureSampleGrad(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $index, $ddx, $ddy)"
     }
 
     override fun sampleDepthTextureArray(sampleTexture: KslSampleDepthTextureArray<*>): String {
-        val textureName = sampleTexture.sampler.generateExpression(this)
-        val coord = sampleTexture.coord.generateExpression(this)
-        val index = sampleTexture.arrayIndex.generateExpression(this)
-        val depthRef = sampleTexture.depthRef.generateExpression(this)
+        val textureName = sampleTexture.sampler.generateExpression()
+        val coord = sampleTexture.coord.generateExpression()
+        val index = sampleTexture.arrayIndex.generateExpression()
+        val depthRef = sampleTexture.depthRef.generateExpression()
         return "textureSampleCompareLevel(${textureName(textureName)}, ${samplerName(textureName)}, $coord, $index, $depthRef)"
     }
 
-    override fun textureSize(textureSize: KslTextureSize<*, *>): String {
-        val textureName = textureSize.sampler.generateExpression(this)
-        val level = textureSize.lod.generateExpression(this)
+    override fun generateTextureSize(textureSize: KslTextureSize<*, *>): String {
+        val textureName = textureSize.sampler.generateExpression()
+        val level = textureSize.lod.generateExpression()
         return "vec2i(textureDimensions(${textureName}, $level))"
     }
 
-    override fun textureSize(textureSize: KslStorageTextureSize<*, *, *>): String {
-        return "vec2i(textureDimensions(${textureSize.storageTex.generateExpression(this)}))"
+    override fun generateTextureSize(textureSize: KslStorageTextureSize<*, *, *>): String {
+        return "vec2i(textureDimensions(${textureSize.storageTex.generateExpression()}))"
     }
 
     override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
-        val textureName = expression.sampler.generateExpression(this)
-        val coord = expression.coord.generateExpression(this)
-        val level = expression.lod?.generateExpression(this) ?: "0"
+        val textureName = expression.sampler.generateExpression()
+        val coord = expression.coord.generateExpression()
+        val level = expression.lod?.generateExpression() ?: "0"
         return "textureLoad($textureName, $coord, $level)"
     }
 
@@ -295,9 +295,9 @@ class WgslGenerator : KslGenerator() {
         is KslStorage3d<*> -> "[${coordExpr}.z * ${sizeY * sizeX} + ${coordExpr}.y * $sizeX + ${coordExpr}.x]"
     }
 
-    override fun storageRead(storageRead: KslStorageRead<*, *, *>): String {
-        val storage = storageRead.storage.generateExpression(this)
-        val coord = storageRead.coord.generateExpression(this)
+    override fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String {
+        val storage = storageRead.storage.generateExpression()
+        val coord = storageRead.coord.generateExpression()
         val arrayIndex = storageRead.storage.getIndexString(coord)
         return if (storageRead.storage.isAccessedAtomically) {
             "atomicLoad(&${storage}${arrayIndex})"
@@ -307,9 +307,9 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
-        val storage = op.storage.generateExpression(this)
-        val expr = op.data.generateExpression(this)
-        val coord = op.coord.generateExpression(this)
+        val storage = op.storage.generateExpression()
+        val expr = op.data.generateExpression()
+        val coord = op.coord.generateExpression()
         val arrayIndex = op.storage.getIndexString(coord)
         return if (op.storage.isAccessedAtomically) {
             "atomicStore(&${storage}${arrayIndex}, $expr);"
@@ -319,16 +319,16 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String {
-        val storage = op.storage.generateExpression(this)
-        val expr = op.data.generateExpression(this)
-        val coord = op.coord.generateExpression(this)
+        val storage = op.storage.generateExpression()
+        val expr = op.data.generateExpression()
+        val coord = op.coord.generateExpression()
         return "textureStore(${storage}, $coord, $expr);"
     }
 
     override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
-        val storage = atomicOp.storage.generateExpression(this)
-        val expr = atomicOp.data.generateExpression(this)
-        val coord = atomicOp.coord.generateExpression(this)
+        val storage = atomicOp.storage.generateExpression()
+        val expr = atomicOp.data.generateExpression()
+        val coord = atomicOp.coord.generateExpression()
         val arrayIndex = atomicOp.storage.getIndexString(coord)
         val func = when(atomicOp.op) {
             KslStorageAtomicOp.Op.Swap -> "atomicExchange"
@@ -343,17 +343,17 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
-        val storage = atomicCompSwap.storage.generateExpression(this)
-        val comp = atomicCompSwap.compare.generateExpression(this)
-        val expr = atomicCompSwap.data.generateExpression(this)
-        val coord = atomicCompSwap.coord.generateExpression(this)
+        val storage = atomicCompSwap.storage.generateExpression()
+        val comp = atomicCompSwap.compare.generateExpression()
+        val expr = atomicCompSwap.data.generateExpression()
+        val coord = atomicCompSwap.coord.generateExpression()
         val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
         return "atomicCompareExchangeWeak(&$storage${arrayIndex}, ${comp}, ${expr}).old_value"
     }
 
     override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String {
-        val storage = storageTextureRead.storage.generateExpression(this)
-        val coord = storageTextureRead.coord.generateExpression(this)
+        val storage = storageTextureRead.storage.generateExpression()
+        val coord = storageTextureRead.coord.generateExpression()
         return "textureLoad($storage, $coord)"
     }
 
@@ -368,7 +368,7 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun opDeclareVar(op: KslDeclareVar): String {
-        val initExpr = op.initExpression?.generateExpression(this) ?: ""
+        val initExpr = op.initExpression?.generateExpression() ?: ""
         val state = op.declareVar
         return "var ${getStateName(state)} = ${state.expressionType.wgslTypeName()}(${initExpr});"
     }
@@ -378,9 +378,9 @@ class WgslGenerator : KslGenerator() {
         val typeName = array.expressionType.wgslTypeName()
 
         return if (op.elements.size == 1 && op.elements[0].expressionType == array.expressionType) {
-            "var ${getStateName(array)} = ${op.elements[0].generateExpression(this)};"
+            "var ${getStateName(array)} = ${op.elements[0].generateExpression()};"
         } else {
-            val initExpr = op.elements.joinToString { it.generateExpression(this) }
+            val initExpr = op.elements.joinToString { it.generateExpression() }
             "var ${getStateName(array)} = ${typeName}(${initExpr});"
         }
     }
@@ -389,7 +389,7 @@ class WgslGenerator : KslGenerator() {
         return if (op.assignTarget is KslVectorAccessor<*> && op.assignTarget.components.length > 1) {
             assignSwizzled(op.assignTarget, op.assignExpression) { _, b -> b }
         } else {
-            "${op.assignTarget.generateAssignable(this)} = ${op.assignExpression.generateExpression(this)};"
+            "${op.assignTarget.generateAssignable(this)} = ${op.assignExpression.generateExpression()};"
         }
     }
 
@@ -398,7 +398,7 @@ class WgslGenerator : KslGenerator() {
             val opChar = op.augmentationMode.opChar
             assignSwizzled(op.assignTarget, op.assignExpression) { a, b -> "$a $opChar $b" }
         } else {
-            "${op.assignTarget.generateAssignable(this)} ${op.augmentationMode.opChar}= ${op.assignExpression.generateExpression(this)};"
+            "${op.assignTarget.generateAssignable(this)} ${op.augmentationMode.opChar}= ${op.assignExpression.generateExpression()};"
         }
     }
 
@@ -418,7 +418,7 @@ class WgslGenerator : KslGenerator() {
         val compsXyzw = listOf('x', 'y', 'z', 'w')
         val compsRgba = listOf('r', 'g', 'b', 'a')
 
-        val target = assignTarget.vector.generateExpression(this)
+        val target = assignTarget.vector.generateExpression()
         val tmpVarName = generatorState.nextTempVar()
         val ctorArgs = buildString {
             for (i in 0 until assignDimens) {
@@ -436,7 +436,7 @@ class WgslGenerator : KslGenerator() {
             }
         }
         return """
-            let $tmpVarName = ${assignExpression.generateExpression(this)};
+            let $tmpVarName = ${assignExpression.generateExpression()};
             $target = $assignType($ctorArgs);
         """.trimIndent()
     }
@@ -461,11 +461,11 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun opIf(op: KslIf): String {
-        val txt = StringBuilder("if ${op.condition.generateExpression(this)} {\n")
+        val txt = StringBuilder("if ${op.condition.generateExpression()} {\n")
         txt.appendLine(generateScope(op.body, blockIndent))
         txt.append("}")
         op.elseIfs.forEach { elseIf ->
-            txt.appendLine(" else if ${elseIf.first.generateExpression(this)} {")
+            txt.appendLine(" else if ${elseIf.first.generateExpression()} {")
             txt.appendLine(generateScope(elseIf.second, blockIndent))
             txt.append("}")
         }
@@ -479,8 +479,8 @@ class WgslGenerator : KslGenerator() {
 
     override fun opFor(op: KslLoopFor<*>): String {
         return StringBuilder("for (; ")
-            .append(op.whileExpression.generateExpression(this)).append("; ")
-            .append(op.loopVar.generateAssignable(this)).append(" += ").append(op.incExpr.generateExpression(this))
+            .append(op.whileExpression.generateExpression()).append("; ")
+            .append(op.loopVar.generateAssignable(this)).append(" += ").append(op.incExpr.generateExpression())
             .appendLine(") {")
             .appendLine(generateScope(op.body, blockIndent))
             .append("}")
@@ -488,7 +488,7 @@ class WgslGenerator : KslGenerator() {
     }
 
     override fun opWhile(op: KslLoopWhile): String {
-        return StringBuilder("while (${op.whileExpression.generateExpression(this)}) {\n")
+        return StringBuilder("while (${op.whileExpression.generateExpression()}) {\n")
             .appendLine(generateScope(op.body, blockIndent))
             .append("}")
             .toString()
@@ -497,7 +497,7 @@ class WgslGenerator : KslGenerator() {
     override fun opDoWhile(op: KslLoopDoWhile): String {
         return StringBuilder("loop {\n")
             .appendLine(generateScope(op.body, blockIndent))
-            .appendLine("${blockIndent}break if !(${op.whileExpression.generateExpression(this)})")
+            .appendLine("${blockIndent}break if !(${op.whileExpression.generateExpression()})")
             .append("}")
             .toString()
     }
@@ -508,7 +508,7 @@ class WgslGenerator : KslGenerator() {
 
     override fun opDiscard(op: KslDiscard): String = "discard;"
 
-    override fun opReturn(op: KslReturn): String = "return ${op.returnValue.generateExpression(this)};"
+    override fun opReturn(op: KslReturn): String = "return ${op.returnValue.generateExpression()};"
 
     override fun opBlock(op: KslBlock): String {
         val txt = StringBuilder("{ // block: ${op.opName}\n")
@@ -523,12 +523,12 @@ class WgslGenerator : KslGenerator() {
 
     private fun generateArgs(args: List<KslExpression<*>>, expectedArgs: Int): String {
         check(args.size == expectedArgs)
-        return args.joinToString { it.generateExpression(this) }
+        return args.joinToString { it.generateExpression() }
     }
 
-    override fun invokeFunction(func: KslInvokeFunction<*>): String {
+    override fun generateInvokeFunction(func: KslInvokeFunction<*>): String {
         val args = func.args.joinToString {
-            val expr = it.generateExpression(this)
+            val expr = it.generateExpression()
             if (it.expressionType is KslSamplerType<*>) {
                 "${samplerName(expr)}, ${textureName(expr)}"
             } else {
@@ -607,22 +607,22 @@ class WgslGenerator : KslGenerator() {
     override fun builtinIsInf(func: KslBuiltinIsInfScalar): String {
         logW { "WGSL has no builtin isInfinity check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
         // In floating-point arithmetic Infinity * 0.0 is NaN
-        return "(${func.args[0].generateExpression(this)} * 0.0 != 0.0)"
+        return "(${func.args[0].generateExpression()} * 0.0 != 0.0)"
     }
     override fun builtinIsInf(func: KslBuiltinIsInfVector<*, *>): String {
         logW { "WGSL has no builtin isInfinity check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
         // In floating-point arithmetic Infinity * 0.0 is NaN
-        return "(${func.args[0].generateExpression(this)} * 0.0 != ${func.args[0].generateExpression(this)} * 0.0)"
+        return "(${func.args[0].generateExpression()} * 0.0 != ${func.args[0].generateExpression()} * 0.0)"
     }
     override fun builtinIsNan(func: KslBuiltinIsNanScalar): String {
         logW { "WGSL has no builtin isNaN check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
         // In floating-point arithmetic: NaN != NaN
-        return "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
+        return "(${func.args[0].generateExpression()} != ${func.args[0].generateExpression()})"
     }
     override fun builtinIsNan(func: KslBuiltinIsNanVector<*, *>): String {
         logW { "WGSL has no builtin isNaN check, using fallback method, which might not work as expected: https://github.com/gpuweb/gpuweb/issues/2270" }
         // In floating-point arithmetic: NaN != NaN
-        return "(${func.args[0].generateExpression(this)} != ${func.args[0].generateExpression(this)})"
+        return "(${func.args[0].generateExpression()} != ${func.args[0].generateExpression()})"
     }
 
     override fun getStateName(state: KslState): String = generatorState.getVarName(state.stateName)

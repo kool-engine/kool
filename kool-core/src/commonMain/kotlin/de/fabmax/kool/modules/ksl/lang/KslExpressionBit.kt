@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-
 abstract class KslExpressionBit<T: KslNumericType>(
     val left: KslExpression<*>,
     val right: KslExpression<*>,
@@ -12,7 +10,6 @@ abstract class KslExpressionBit<T: KslNumericType>(
     override fun collectSubExpressions(): List<KslExpression<*>> =
         left.collectSubExpressions() + right.collectSubExpressions() + this
 
-    override fun generateExpression(generator: KslGenerator): String = generator.bitExpression(this)
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opString} ${right.toPseudoCode()})"
 }
 
@@ -130,8 +127,6 @@ class KslIntScalarComplement<S>(val expr: KslScalarExpression<S>) : KslScalarExp
         where S: KslIntType, S: KslScalar {
     override val expressionType = expr.expressionType
     override fun collectSubExpressions(): List<KslExpression<*>> = expr.collectSubExpressions()
-
-    override fun generateExpression(generator: KslGenerator): String = generator.intComplementExpression(this)
     override fun toPseudoCode(): String = "~(${expr.toPseudoCode()})"
 }
 fun <S> KslScalarExpression<S>.inv() where S: KslIntType, S: KslScalar = KslIntScalarComplement(this)
@@ -140,8 +135,6 @@ class KslIntVectorComplement<V, S>(val expr: KslVectorExpression<V, S>) : KslVec
         where V: KslIntType, V: KslVector<S>, S: KslIntType, S: KslScalar {
     override val expressionType = expr.expressionType
     override fun collectSubExpressions(): List<KslExpression<*>> = expr.collectSubExpressions()
-
-    override fun generateExpression(generator: KslGenerator): String = generator.intComplementExpression(this)
     override fun toPseudoCode(): String = "~(${expr.toPseudoCode()})"
 }
 fun <V, S> KslVectorExpression<V, S>.inv() where V: KslIntType, V: KslVector<S>, S: KslIntType, S: KslScalar = KslIntVectorComplement(this)

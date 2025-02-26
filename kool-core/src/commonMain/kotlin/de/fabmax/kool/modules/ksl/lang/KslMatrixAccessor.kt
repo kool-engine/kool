@@ -22,7 +22,6 @@ abstract class KslMatrixAccessor<T>(
         matrix.collectSubExpressions() + colIndex.collectSubExpressions() + this
 
     override fun generateAssignable(generator: KslGenerator) = generator.matrixColAssignable(this)
-    override fun generateExpression(generator: KslGenerator) = generator.matrixColExpression(this)
     override fun toPseudoCode() = "${matrix.toPseudoCode()}[${colIndex.toPseudoCode()}]"
 }
 

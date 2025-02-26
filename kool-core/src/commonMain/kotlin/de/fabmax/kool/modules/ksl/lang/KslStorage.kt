@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslOp
 
 sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(
@@ -46,7 +45,7 @@ class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
     override fun collectSubExpressions(): List<KslExpression<*>> {
         return storage.collectSubExpressions() + coord.collectSubExpressions() + this
     }
-    override fun generateExpression(generator: KslGenerator): String = generator.storageRead(this)
+
     override fun toPseudoCode(): String = "storageRead(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
 

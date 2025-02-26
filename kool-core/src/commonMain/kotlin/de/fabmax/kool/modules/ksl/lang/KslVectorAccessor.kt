@@ -25,7 +25,6 @@ abstract class KslVectorAccessor<T: KslType>(
 
     override fun collectSubExpressions(): List<KslExpression<*>> = vector.collectSubExpressions() + this
     override fun generateAssignable(generator: KslGenerator) = generator.vectorSwizzleAssignable(this)
-    override fun generateExpression(generator: KslGenerator) = generator.vectorSwizzleExpression(this)
     override fun toPseudoCode() = "${vector.toPseudoCode()}.$components"
 
     private fun checkComponents(components: String, inputDim: Int) {

@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-
 abstract class KslExpressionCompare<B: KslBoolType>(
     val left: KslExpression<*>,
     val right: KslExpression<*>,
@@ -12,7 +10,6 @@ abstract class KslExpressionCompare<B: KslBoolType>(
     override fun collectSubExpressions(): List<KslExpression<*>> =
         left.collectSubExpressions() + right.collectSubExpressions() + this
 
-    override fun generateExpression(generator: KslGenerator): String = generator.compareExpression(this)
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opString} ${right.toPseudoCode()})"
 }
 

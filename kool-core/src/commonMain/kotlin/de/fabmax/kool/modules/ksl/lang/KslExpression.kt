@@ -1,12 +1,9 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-
 interface KslExpression<T: KslType> {
     val expressionType: T
 
     fun collectSubExpressions(): List<KslExpression<*>>
-    fun generateExpression(generator: KslGenerator): String
     fun toPseudoCode(): String
 }
 

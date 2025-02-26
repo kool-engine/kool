@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.util.logE
 
 class KslSampleColorTexture<T: KslSamplerType<KslFloat4>>(
@@ -22,7 +21,6 @@ class KslSampleColorTexture<T: KslSamplerType<KslFloat4>>(
         return lod?.let { deps + it.collectSubExpressions() } ?: deps
     }
 
-    override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTexture(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sample(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }
 
@@ -49,7 +47,6 @@ class KslSampleColorTextureGrad<T: KslSamplerType<KslFloat4>>(
                 this
     }
 
-    override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTextureGrad(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sampleGrad(${coord.toPseudoCode()}, ${ddx.toPseudoCode()}, ${ddy.toPseudoCode()})"
 }
 
@@ -67,7 +64,6 @@ class KslSampleColorTextureArray<T>(
         return lod?.let { deps + it.collectSubExpressions() } ?: deps
     }
 
-    override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTextureArray(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}[${arrayIndex.toPseudoCode()}].sample(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }
 
@@ -90,6 +86,5 @@ class KslSampleColorTextureArrayGrad<T>(
                 this
     }
 
-    override fun generateExpression(generator: KslGenerator): String = generator.sampleColorTextureArrayGrad(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}[${arrayIndex.toPseudoCode()}].sampleGrad(${coord.toPseudoCode()}, ${ddx.toPseudoCode()}, ${ddy.toPseudoCode()})"
 }

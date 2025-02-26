@@ -5,10 +5,7 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 open class KslArrayAccessor<T: KslType>(
     val array: KslExpression<KslArrayType<T>>,
     val index: KslExpression<KslInt1>
-) :
-    KslExpression<T>,
-    KslAssignable<T>
-{
+) : KslExpression<T>, KslAssignable<T> {
 
     override val expressionType = array.expressionType.elemType
     override val assignType = array.expressionType.elemType
@@ -20,7 +17,6 @@ open class KslArrayAccessor<T: KslType>(
         array.collectSubExpressions() + index.collectSubExpressions() + this
 
     override fun generateAssignable(generator: KslGenerator) = generator.arrayValueAssignable(this)
-    override fun generateExpression(generator: KslGenerator) = generator.arrayValueExpression(this)
     override fun toPseudoCode() = "${array.toPseudoCode()}[${index.toPseudoCode()}]"
 }
 

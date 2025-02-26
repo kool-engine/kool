@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-
 abstract class KslExpressionMath<T: KslNumericType>(
     val left: KslExpression<*>,
     val right: KslExpression<*>,
@@ -12,7 +10,6 @@ abstract class KslExpressionMath<T: KslNumericType>(
     override fun collectSubExpressions(): List<KslExpression<*>> =
         left.collectSubExpressions() + right.collectSubExpressions() + this
 
-    override fun generateExpression(generator: KslGenerator): String = generator.mathExpression(this)
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opChar} ${right.toPseudoCode()})"
 }
 
@@ -195,8 +192,6 @@ class KslNumericScalarUnaryMinus<S>(val expr: KslScalarExpression<S>) : KslScala
 
     override val expressionType = expr.expressionType
     override fun collectSubExpressions(): List<KslExpression<*>> = expr.collectSubExpressions() + this
-
-    override fun generateExpression(generator: KslGenerator): String = generator.numericUnaryMinusExpression(this)
     override fun toPseudoCode(): String = "-(${expr.toPseudoCode()})"
 }
 
@@ -207,8 +202,6 @@ class KslNumericVectorUnaryMinus<V, S>(val expr: KslVectorExpression<V, S>) : Ks
 
     override val expressionType = expr.expressionType
     override fun collectSubExpressions(): List<KslExpression<*>> = expr.collectSubExpressions() + this
-
-    override fun generateExpression(generator: KslGenerator): String = generator.numericUnaryMinusExpression(this)
     override fun toPseudoCode(): String = "-(${expr.toPseudoCode()})"
 }
 

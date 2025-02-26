@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslHierarchy
 import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslProcessor
 
@@ -10,9 +8,8 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     val parameters = mutableListOf<KslValue<*>>()
     val functionDependencies = mutableSetOf<KslFunction<*>>()
 
-    private val functionScope = KslScopeBuilder(null, parentStage.globalScope, parentStage)
+    val functionScope = KslScopeBuilder(null, parentStage.globalScope, parentStage)
     val functionRoot = FunctionRoot(this)
-    val hierarchy = KslHierarchy(functionScope)
 
     val body = KslScopeBuilder(functionRoot, functionScope, parentStage)
 
@@ -131,8 +128,8 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramMat4Array(arraySize: Int, name: String? = null) = paramMatrixArray(name ?: parentStage.program.nextName("paramM4"), KslMat4, arraySize)
 
     fun prepareGenerate() {
-        hierarchy.globalScope.definedStates += parentStage.globalScope.definedStates
-        KslProcessor().process(hierarchy)
+        functionScope.definedStates += parentStage.globalScope.definedStates
+        KslProcessor().process(functionScope)
     }
 
     fun KslScopeBuilder.`return`(returnValue: KslExpression<*>) {
@@ -173,7 +170,6 @@ abstract class KslInvokeFunction<T: KslType>(val function: KslFunction<T>, paren
     override val expressionType: T = returnType
     override fun collectSubExpressions(): List<KslExpression<*>> = args.flatMap { it.collectSubExpressions() } + this
     override fun toPseudoCode() = "${function.name}(${args.joinToString { it.toPseudoCode() }})"
-    override fun generateExpression(generator: KslGenerator) = generator.invokeFunction(this)
 }
 
 class KslInvokeFunctionScalar<S>(function: KslFunction<S>, parentScope: KslScopeBuilder, returnType: S, vararg args: KslExpression<*>)

@@ -7,7 +7,7 @@ import de.fabmax.kool.pipeline.StorageAccessType
 import de.fabmax.kool.pipeline.StorageTextureLayout
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 
-class KslGlslGeneratorVk : GlslGenerator(
+class GlslGeneratorVk : GlslGenerator(
     Hints(
         glslVersionStr = "#version 450",
         compat1dSampler = false

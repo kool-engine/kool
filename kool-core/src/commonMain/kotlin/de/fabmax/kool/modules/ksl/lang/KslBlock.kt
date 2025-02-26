@@ -1,15 +1,15 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import de.fabmax.kool.modules.ksl.model.KslOp
 
-abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslStatement(blockName, parentScope) {
+abstract class KslBlock(name: String, parentScope: KslScopeBuilder) : KslStatement(name, parentScope) {
 
     private val inputDependencies = mutableMapOf<BlockInput<*, *>, Set<KslMutatedState>>()
     private val outputs = mutableListOf<KslValue<*>>()
 
-    val body = KslScopeBuilder(this, parentScope, parentScope.parentStage).apply { scopeName = blockName }
+    val body = KslScopeBuilder(this, parentScope, parentScope.parentStage).apply { scopeName = name }
+    val name: String get() = body.scopeName
 
     init {
         childScopes += body
@@ -153,11 +153,6 @@ abstract class KslBlock(blockName: String, parentScope: KslScopeBuilder) : KslSt
 
         // return empty dependencies here - actual dependencies to input expression are managed by outer block statement
         override fun collectSubExpressions(): List<KslExpression<*>> = emptyList()
-
-        override fun generateExpression(generator: KslGenerator): String {
-            return input?.generateExpression(generator)
-                ?: throw IllegalStateException("Missing input value for input $name of block $opName")
-        }
 
         override fun toPseudoCode(): String {
             return input?.toPseudoCode()

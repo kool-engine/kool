@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.modules.ksl.model.KslHierarchy
 import de.fabmax.kool.modules.ksl.model.KslProcessor
 import de.fabmax.kool.pipeline.ShaderStage
 import kotlin.contracts.InvocationKind
@@ -10,11 +9,8 @@ import kotlin.contracts.contract
 abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageType) {
 
     val interStageVars = mutableListOf<KslInterStageVar<*>>()
-
-    val globalScope = KslScopeBuilder(null, null, this)
-    val hierarchy = KslHierarchy(globalScope)
-
     val functions = mutableMapOf<String, KslFunction<*>>()
+    val globalScope = KslScopeBuilder(null, null, this)
 
     private val mainFunc = KslFunction<KslTypeVoid>("main", KslTypeVoid, this)
     val main: KslScopeBuilder get() = mainFunc.body
@@ -77,7 +73,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     }
 
     open fun prepareGenerate() {
-        KslProcessor().process(hierarchy)
+        KslProcessor().process(globalScope)
         functions.values.forEach { it.prepareGenerate() }
     }
 }
