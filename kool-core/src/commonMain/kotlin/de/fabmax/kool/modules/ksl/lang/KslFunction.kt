@@ -11,7 +11,7 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     val functionDependencies = mutableSetOf<KslFunction<*>>()
 
     private val functionScope = KslScopeBuilder(null, parentStage.globalScope, parentStage)
-    private val functionRoot = FunctionRoot(this)
+    val functionRoot = FunctionRoot(this)
     val hierarchy = KslHierarchy(functionScope)
 
     val body = KslScopeBuilder(functionRoot, functionScope, parentStage)

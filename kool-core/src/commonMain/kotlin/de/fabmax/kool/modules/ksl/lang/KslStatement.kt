@@ -5,7 +5,6 @@ import de.fabmax.kool.modules.ksl.model.KslOp
 sealed class KslStatement(opName: String, val parentScopeBuilder: KslScopeBuilder) : KslOp(opName, parentScopeBuilder) {
     protected fun addExpressionDependencies(expression: KslExpression<*>) {
         val subExpressions = expression.collectSubExpressions()
-        usedExpressions.clear()
         usedExpressions.addAll(subExpressions)
         subExpressions.distinct().filterIsInstance<KslValue<*>>().forEach {
             addDependency(it.depend())

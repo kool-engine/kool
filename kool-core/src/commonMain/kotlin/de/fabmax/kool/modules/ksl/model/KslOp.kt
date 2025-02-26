@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ksl.model
 
 import de.fabmax.kool.modules.ksl.lang.KslExpression
 
-open class KslOp(val opName: String, val parentScope: KslScope) {
+abstract class KslOp(val opName: String, val parentScope: KslScope) {
     val usedExpressions = mutableListOf<KslExpression<*>>()
     val stateDependencies = mutableMapOf<KslState, KslMutatedState>()
     val mutations = mutableMapOf<KslState, KslStateMutation>()

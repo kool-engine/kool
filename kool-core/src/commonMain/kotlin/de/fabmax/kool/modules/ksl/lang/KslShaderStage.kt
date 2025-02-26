@@ -2,7 +2,6 @@ package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.model.KslHierarchy
-import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.modules.ksl.model.KslProcessor
 import de.fabmax.kool.pipeline.ShaderStage
 import kotlin.contracts.InvocationKind
@@ -13,16 +12,16 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     val interStageVars = mutableListOf<KslInterStageVar<*>>()
 
     val globalScope = KslScopeBuilder(null, null, this)
-    private val mainOp = KslOp("main", globalScope)
-    val main = KslScopeBuilder(mainOp, globalScope, this)
     val hierarchy = KslHierarchy(globalScope)
 
     val functions = mutableMapOf<String, KslFunction<*>>()
 
+    private val mainFunc = KslFunction<KslTypeVoid>("main", KslTypeVoid, this)
+    val main: KslScopeBuilder get() = mainFunc.body
+
     init {
         globalScope.scopeName = "global"
-        globalScope.ops += mainOp
-        mainOp.childScopes += main
+        globalScope.ops += mainFunc.functionRoot
     }
 
     fun main(block: KslScopeBuilder.() -> Unit) {
