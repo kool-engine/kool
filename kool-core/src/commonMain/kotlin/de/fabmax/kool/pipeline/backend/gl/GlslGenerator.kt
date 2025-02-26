@@ -64,9 +64,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateInterStageOutputs(vertexStage)
         src.generateFunctions(vertexStage)
 
-        src.appendLine("void main() {")
-        src.appendLine(generateScope(vertexStage.main, blockIndent))
-        src.appendLine("}")
+        src.appendLine(generateScope(vertexStage.globalScope, blockIndent))
         return src.toString()
     }
 
@@ -93,9 +91,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateOutputs(fragmentStage.outColors)
         src.generateFunctions(fragmentStage)
 
-        src.appendLine("void main() {")
-        src.appendLine(generateScope(fragmentStage.main, blockIndent))
-        src.appendLine("}")
+        src.appendLine(generateScope(fragmentStage.globalScope, blockIndent))
         return src.toString()
     }
 
@@ -118,9 +114,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateStorageTextures(computeStage, pipeline)
         src.generateFunctions(computeStage)
 
-        src.appendLine("void main() {")
-        src.appendLine(generateScope(computeStage.main, blockIndent))
-        src.appendLine("}")
+        src.appendLine(generateScope(computeStage.globalScope, blockIndent))
         return src.toString()
     }
 
@@ -498,11 +492,18 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             val funcList = stage.functions.values.toMutableList()
             sortFunctions(funcList)
             funcList.forEach { func ->
-                appendLine("${glslTypeName(func.returnType)} ${func.name}(${func.parameters.joinToString { p -> "${glslTypeName(p.expressionType)} ${p.stateName}" }}) {")
-                appendLine(generateScope(func.body, blockIndent))
-                appendLine("}")
-                appendLine()
+                append(opFunctionBody(func.functionRoot))
             }
+        }
+    }
+
+    override fun opFunctionBody(op: KslFunction<*>.FunctionRoot): String {
+        val func = op.function
+        return buildString {
+            appendLine("${glslTypeName(func.returnType)} ${func.name}(${func.parameters.joinToString { p -> "${glslTypeName(p.expressionType)} ${p.stateName}" }}) {")
+            appendLine(generateScope(op.childScopes.first(), blockIndent))
+            appendLine("}")
+            appendLine()
         }
     }
 

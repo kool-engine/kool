@@ -13,6 +13,10 @@ sealed class KslStatement(opName: String, val parentScopeBuilder: KslScopeBuilde
 }
 
 class KslInlineCode(val code: String, parentScope: KslScopeBuilder) : KslStatement("inlineCode", parentScope) {
+    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
+        return KslInlineCode(code, transformBuilder)
+    }
+
     override fun toPseudoCode(): String {
         return code
     }

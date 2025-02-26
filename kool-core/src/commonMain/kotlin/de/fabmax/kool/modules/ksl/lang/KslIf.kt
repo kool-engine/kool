@@ -1,11 +1,11 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.modules.ksl.model.KslOp
+
 class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder) : KslStatement("if", parentScope) {
     val body = KslScopeBuilder(this, parentScope, parentScope.parentStage)
     val elseIfs = mutableListOf<Pair<KslExpression<KslBool1>, KslScopeBuilder>>()
     val elseBody = KslScopeBuilder(this, parentScope, parentScope.parentStage).apply { scopeName = "else" }
-
-    private val parentBuilder = parentScope
 
     init {
         addExpressionDependencies(condition)
@@ -13,9 +13,21 @@ class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder
         childScopes += elseBody
     }
 
+    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
+        return KslIf(condition.replaced(replaceExpressions), transformBuilder).also { copy ->
+            copy.body.copyFrom(body)
+            copy.elseIfs.addAll(elseIfs.map { (expr, scope) ->
+                val copyScope = KslScopeBuilder(copy, transformBuilder, transformBuilder.parentStage)
+                copyScope.copyFrom(scope)
+                expr.replaced(replaceExpressions) to copyScope }
+            )
+            copy.elseBody.copyFrom(elseBody)
+        }
+    }
+
     fun elseIf(condition: KslExpression<KslBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
         addExpressionDependencies(condition)
-        val body = KslScopeBuilder(this, parentBuilder, parentBuilder.parentStage).apply {
+        val body = KslScopeBuilder(this, parentScopeBuilder, parentScopeBuilder.parentStage).apply {
             scopeName = "elseif"
             block()
         }

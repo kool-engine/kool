@@ -1,5 +1,7 @@
 package de.fabmax.kool.modules.ksl.model
 
+import de.fabmax.kool.modules.ksl.lang.KslExpression
+import de.fabmax.kool.modules.ksl.lang.KslScopeBuilder
 import de.fabmax.kool.util.logE
 
 class KslProcessor {
@@ -7,38 +9,59 @@ class KslProcessor {
 
     fun process(hierarchy: KslHierarchy) {
         hierarchy.globalScope.updateModel()
-        processScope(hierarchy.globalScope)
+        hierarchy.globalScope.transform(null, null)
+
+//        if (hierarchy.globalScope.parentStage is KslFragmentStage) {
+//            println(hierarchy.printHierarchy())
+//        }
     }
 
-    private fun processScope(scope: KslScope) {
-        processorState.enterScope(scope)
-        val openOps = scope.ops.toMutableSet()
-        scope.ops.clear()
+    private fun KslScope.transform(parentOp: KslOp?, parentBuilder: KslScopeBuilder?) {
+        processorState.enterScope(this)
+
+        val openOps = this.ops.toMutableSet()
+        val sortedOps = mutableListOf<KslOp>()
+        val transformBuilder = KslScopeBuilder(parentOp ?: this.parentOp, parentBuilder, this.parentStage)
+        transformBuilder.dependencies.putAll(dependencies)
+        transformBuilder.mutations.putAll(mutations)
+        transformBuilder.definedStates.addAll(definedStates)
+
+//        val nonTrivialExpressions = openOps.flatMap { it.usedExpressions }.filter {
+//            it !is KslValueExpression<*> &&
+//            it !is KslValue<*> &&
+//            it !is KslArrayAccessor<*> &&
+//            it !is KslMatrixAccessor<*> &&
+//            it !is KslVectorAccessor<*> &&
+//            it !is KslPort<*>
+//        }
+//        val duplicates = nonTrivialExpressions.groupBy { it }.filter { it.value.size > 1 }
+//        if (duplicates.isNotEmpty()) {
+//            println("duplicate expressions: ${duplicates.keys.map { it.toPseudoCode() }}")
+//            usedDuplicateExpressions = true
+//        }
+        val replaceExpressions = emptyMap<KslExpression<*>, KslExpression<*>>()
 
         while (openOps.isNotEmpty()) {
-            val nextOp = selectNextOp(openOps) ?: failScope(scope, openOps)
+            val nextOp = selectNextOp(openOps) ?: failScope(this, openOps)
             openOps -= nextOp
 
-            // reinsert op in correct / safe order
-            scope.ops += nextOp
-            nextOp.childScopes.forEach { childScope ->
-                processScope(childScope)
+            val safeOp = nextOp.transform(transformBuilder, replaceExpressions)
+            sortedOps += safeOp
+            safeOp.childScopes.forEach { childScope ->
+                childScope.transform(safeOp, transformBuilder)
                 processorState.applyScope(childScope)
             }
-            processorState.applyOp(nextOp)
+            processorState.applyOp(safeOp)
         }
 
-        processorState.exitScope(scope)
+        this.ops.clear()
+        this.ops.addAll(sortedOps)
+
+        processorState.exitScope(this)
     }
 
     private fun selectNextOp(ops: Set<KslOp>): KslOp? {
-        val candidates = ops.filter { it.areDependenciesMet(processorState) }
-        for (c in candidates) {
-            if (findPreventingOp(c, ops) == null) {
-                return c
-            }
-        }
-        return null
+        return ops.find { it.areDependenciesMet(processorState) && findPreventingOp(it, ops) == null }
     }
 
     private fun findPreventingOp(op: KslOp, fromOps: Set<KslOp>): KslOp? {

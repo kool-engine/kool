@@ -1,6 +1,8 @@
 package de.fabmax.kool.modules.ksl.model
 
 import de.fabmax.kool.modules.ksl.lang.KslExpression
+import de.fabmax.kool.modules.ksl.lang.KslScopeBuilder
+import de.fabmax.kool.modules.ksl.lang.KslType
 
 abstract class KslOp(val opName: String, val parentScope: KslScope) {
     val usedExpressions = mutableListOf<KslExpression<*>>()
@@ -26,16 +28,34 @@ abstract class KslOp(val opName: String, val parentScope: KslScope) {
         mutations[mut.state] = mut
     }
 
+    protected abstract fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp
+
+    fun transform(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
+        val transformed = copyWithTransformedExpressions(transformBuilder, replaceExpressions)
+        if (transformed !== this) {
+            transformed.stateDependencies.clear()
+            transformed.stateDependencies.putAll(stateDependencies)
+            transformed.mutations.clear()
+            transformed.mutations.putAll(mutations)
+        }
+        return transformed
+    }
+
     open fun toPseudoCode(): String {
         val str = StringBuilder(annotatePseudoCode(opName))
         childScopes.forEach {
-            str.append("\n${it.toPseudoCode()}")
+            str.append("\n<${this::class.simpleName}> ${it.toPseudoCode()}")
         }
         return str.toString()
     }
 
+    @Suppress("UNCHECKED_CAST")
+    protected fun <E: KslExpression<T>, T: KslType> E.replaced(replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): E {
+        return replaceExpressions.getOrElse(this) { this } as E
+    }
+
     protected fun dependenciesAndMutationsToString(): String {
-        return "depends on: [${if (stateDependencies.isNotEmpty()) stateDependencies.values.joinToString { it.toString() } else "none"}]; " +
+        return " <${this::class.simpleName}> depends on: [${if (stateDependencies.isNotEmpty()) stateDependencies.values.joinToString { it.toString() } else "none"}]; " +
                 "mutates: [${if (mutations.isNotEmpty()) mutations.values.joinToString { it.toString() } else "none"}]; "
     }
 

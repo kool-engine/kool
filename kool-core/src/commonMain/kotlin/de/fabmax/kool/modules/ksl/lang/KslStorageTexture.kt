@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
+import de.fabmax.kool.modules.ksl.model.KslOp
 import de.fabmax.kool.pipeline.TexFormat
 
 sealed class KslStorageTexture<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
@@ -64,6 +65,10 @@ open class KslStorageTextureStore<T: KslStorageTextureType<R, C>, R: KslNumericT
         addMutation(storage.mutate())
 
         storage.isWritten = true
+    }
+
+    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
+        return KslStorageTextureStore(storage, coord.replaced(replaceExpressions), data.replaced(replaceExpressions), transformBuilder)
     }
 
     override fun toPseudoCode(): String {

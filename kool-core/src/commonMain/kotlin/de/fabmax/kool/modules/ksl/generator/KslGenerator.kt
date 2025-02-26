@@ -109,10 +109,12 @@ abstract class KslGenerator {
             is KslInlineCode -> opInlineCode(op)
             is KslStorageWrite<*, *, *> -> opStorageWrite(op)
             is KslStorageTextureStore<*, *, *> -> opStorageTextureWrite(op)
+            is KslFunction<*>.FunctionRoot -> opFunctionBody(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
         }
     }
 
+    abstract fun opFunctionBody(op: KslFunction<*>.FunctionRoot): String
     abstract fun opDeclareVar(op: KslDeclareVar): String
     abstract fun opDeclareArray(op: KslDeclareArray): String
     abstract fun opAssign(op: KslAssign<*>): String

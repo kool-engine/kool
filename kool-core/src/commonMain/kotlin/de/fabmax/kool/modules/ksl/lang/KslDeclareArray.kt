@@ -1,5 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.modules.ksl.model.KslOp
+
 class KslDeclareArray(val declareVar: KslArray<*>, val elements: List<KslExpression<*>>, parentScope: KslScopeBuilder)
     : KslStatement("declareArray", parentScope) {
 
@@ -25,6 +27,10 @@ class KslDeclareArray(val declareVar: KslArray<*>, val elements: List<KslExpress
         parentScope.definedStates += declareVar
         elements.forEach { addExpressionDependencies(it) }
         addMutation(declareVar.mutate())
+    }
+
+    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
+        return KslDeclareArray(declareVar, elements.map { it.replaced(replaceExpressions) }, transformBuilder)
     }
 
     override fun toPseudoCode(): String {

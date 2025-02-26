@@ -73,11 +73,13 @@ class WgslGenerator : KslGenerator() {
         src.generateStorageTextures(vertexStage, pipeline)
         src.generateFunctions(vertexStage)
 
+        val transformedMainBody = vertexStage.globalScope.ops.first() as KslFunction<*>.FunctionRoot
+
         src.appendLine("@vertex")
         src.appendLine("fn vertexMain(vertexInput: VertexInput) -> VertexOutput {")
         src.appendLine(vertexInput.reassembleMatrices().prependIndent(blockIndent))
         src.appendLine("  var vertexOutput: VertexOutput;")
-        src.appendLine(generateScope(vertexStage.main, blockIndent))
+        src.appendLine(generateScope(transformedMainBody.childScopes.first(), blockIndent))
         src.appendLine("  return vertexOutput;")
         src.appendLine("}")
         return src.toString()
@@ -107,11 +109,12 @@ class WgslGenerator : KslGenerator() {
         src.generateFunctions(fragmentStage)
 
         val mainParam = if (fragmentInput.isNotEmpty()) "fragmentInput: FragmentInput" else ""
+        val transformedMainBody = fragmentStage.globalScope.ops.first() as KslFunction<*>.FunctionRoot
 
         src.appendLine("@fragment")
         src.appendLine("fn fragmentMain($mainParam) -> FragmentOutput {")
         src.appendLine("  var fragmentOutput: FragmentOutput;")
-        src.appendLine(generateScope(fragmentStage.main, blockIndent))
+        src.appendLine(generateScope(transformedMainBody.childScopes.first(), blockIndent))
         src.appendLine("  return fragmentOutput;")
         src.appendLine("}")
         return src.toString()
@@ -136,11 +139,13 @@ class WgslGenerator : KslGenerator() {
         src.generateStorageTextures(computeStage, pipeline)
         src.generateFunctions(computeStage)
 
+        val transformedMainBody = computeStage.globalScope.ops.first() as KslFunction<*>.FunctionRoot
+
         src.appendLine("@compute")
         src.appendLine("@workgroup_size(${computeStage.workGroupSize.x}, ${computeStage.workGroupSize.y}, ${computeStage.workGroupSize.z})")
         src.appendLine("fn computeMain(computeInput: ComputeInput) {")
         src.appendLine(computeInput.addWorkGroupSizeDef().prependIndent(blockIndent))
-        src.appendLine(generateScope(computeStage.main, blockIndent))
+        src.appendLine(generateScope(transformedMainBody.childScopes.first(), blockIndent))
         src.appendLine("}")
         return src.toString()
     }
@@ -357,19 +362,7 @@ class WgslGenerator : KslGenerator() {
             val funcList = stage.functions.values.toMutableList()
             sortFunctions(funcList)
             funcList.forEach { func ->
-                val returnType = if (func.returnType == KslTypeVoid) "" else " -> ${func.returnType.wgslTypeName()}"
-                val params = func.parameters.joinToString { p ->
-                    if (p.expressionType is KslSamplerType<*>) {
-                        val (samplerType, texType) = p.expressionType.wgslSamplerAndTextureTypeName()
-                        "${samplerName(getStateName(p))}: $samplerType, ${textureName(getStateName(p))}: $texType"
-                    } else {
-                        "${getStateName(p)}: ${p.expressionType.wgslTypeName()}"
-                    }
-                }
-                appendLine("fn ${func.name}($params)$returnType {")
-                appendLine(generateScope(func.body, blockIndent))
-                appendLine("}")
-                appendLine()
+                append(opFunctionBody(func.functionRoot))
             }
         }
     }
@@ -446,6 +439,25 @@ class WgslGenerator : KslGenerator() {
             let $tmpVarName = ${assignExpression.generateExpression(this)};
             $target = $assignType($ctorArgs);
         """.trimIndent()
+    }
+
+    override fun opFunctionBody(op: KslFunction<*>.FunctionRoot): String {
+        val func = op.function
+        return buildString {
+            val returnType = if (func.returnType == KslTypeVoid) "" else " -> ${func.returnType.wgslTypeName()}"
+            val params = func.parameters.joinToString { p ->
+                if (p.expressionType is KslSamplerType<*>) {
+                    val (samplerType, texType) = p.expressionType.wgslSamplerAndTextureTypeName()
+                    "${samplerName(getStateName(p))}: $samplerType, ${textureName(getStateName(p))}: $texType"
+                } else {
+                    "${getStateName(p)}: ${p.expressionType.wgslTypeName()}"
+                }
+            }
+            appendLine("fn ${func.name}($params)$returnType {")
+            appendLine(generateScope(op.childScopes.first(), blockIndent))
+            appendLine("}")
+            appendLine()
+        }
     }
 
     override fun opIf(op: KslIf): String {

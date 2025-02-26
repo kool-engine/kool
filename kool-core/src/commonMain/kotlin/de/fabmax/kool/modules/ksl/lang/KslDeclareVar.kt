@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
+import de.fabmax.kool.modules.ksl.model.KslOp
 
 class KslDeclareVar(val declareVar: KslVar<*>, initExpression: KslExpression<*>?, parentScope: KslScopeBuilder) :
     KslStatement("declareVar", parentScope)
@@ -13,6 +14,10 @@ class KslDeclareVar(val declareVar: KslVar<*>, initExpression: KslExpression<*>?
         parentScope.definedStates += declareVar
         initExpression?.let { addExpressionDependencies(it) }
         addMutation(declareVar.mutate())
+    }
+
+    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
+        return KslDeclareVar(declareVar, initExpression?.replaced(replaceExpressions), transformBuilder)
     }
 
     override fun toPseudoCode(): String {

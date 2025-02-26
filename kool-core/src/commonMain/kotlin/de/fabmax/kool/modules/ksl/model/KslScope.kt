@@ -1,9 +1,10 @@
 package de.fabmax.kool.modules.ksl.model
 
+import de.fabmax.kool.modules.ksl.lang.KslShaderStage
 import kotlin.math.max
 import kotlin.math.min
 
-open class KslScope(val parentOp: KslOp?) {
+abstract class KslScope(val parentOp: KslOp?, val parentStage: KslShaderStage) {
 
     val dependencies = mutableMapOf<KslState, KslMutatedState>()
     val mutations = mutableMapOf<KslState, KslStateMutation>()

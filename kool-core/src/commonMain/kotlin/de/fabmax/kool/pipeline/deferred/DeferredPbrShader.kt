@@ -134,7 +134,7 @@ open class DeferredKslPbrShader(cfg: Config) : KslShader(deferredPbrModel(cfg), 
                     val aoFactor = float1Port("aoFactor", fragmentPropertyBlock(cfg.aoCfg).outProperty)
 
                     colorOutput(positionViewSpace.output, cfg.materialFlags.toFloat().const, location = 0)
-                    colorOutput(normal.output, roughness, location = 1)
+                    colorOutput(normal, roughness, location = 1)
                     colorOutput(baseColorPort.rgb, metallic, location = 2)
                     colorOutput(emissionColorPort.rgb, aoFactor, location = 3)
                 }

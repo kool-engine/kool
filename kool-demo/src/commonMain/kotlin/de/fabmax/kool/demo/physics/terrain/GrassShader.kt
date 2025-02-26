@@ -149,7 +149,7 @@ object GrassShader {
                 val lightData = dataBlocks.first { it is SceneLightData } as SceneLightData
 
                 main {
-                    val worldPos = getFloat3Port("worldPos")
+                    val worldPos = getFloat3Port("worldPos").output
                     val windTex = texture3d("tWindTex")
 
                     // wind based tint (moving darker patches)
