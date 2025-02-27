@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.model
 
 import de.fabmax.kool.modules.ksl.lang.KslExpression
-import de.fabmax.kool.modules.ksl.lang.KslScopeBuilder
 import de.fabmax.kool.modules.ksl.lang.KslType
 
 abstract class KslOp(val opName: String, val parentScope: KslScope) {
@@ -26,19 +25,6 @@ abstract class KslOp(val opName: String, val parentScope: KslScope) {
     fun addMutation(mut: KslStateMutation) {
         addDependency(KslMutatedState(mut.state, mut.fromMutation))
         mutations[mut.state] = mut
-    }
-
-    protected abstract fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp
-
-    fun transform(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
-        val transformed = copyWithTransformedExpressions(transformBuilder, replaceExpressions)
-        if (transformed !== this) {
-            transformed.stateDependencies.clear()
-            transformed.stateDependencies.putAll(stateDependencies)
-            transformed.mutations.clear()
-            transformed.mutations.putAll(mutations)
-        }
-        return transformed
     }
 
     open fun toPseudoCode(): String {

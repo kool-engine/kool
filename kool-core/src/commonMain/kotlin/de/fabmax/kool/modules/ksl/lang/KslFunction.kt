@@ -138,15 +138,7 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
         ops += KslReturn(this, returnValue)
     }
 
-    inner class FunctionRoot(val function: KslFunction<*>) : KslOp("body", functionScope) {
-        override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
-            return FunctionRoot(function).also { copy ->
-                val copyBody = KslScopeBuilder(copy, transformBuilder, transformBuilder.parentStage)
-                copyBody.copyFrom(body)
-                copy.childScopes += copyBody
-            }
-        }
-    }
+    inner class FunctionRoot(val function: KslFunction<*>) : KslOp("body", functionScope)
 }
 
 abstract class KslInvokeFunction<T: KslType>(val function: KslFunction<T>, parentScope: KslScopeBuilder, returnType: T, vararg args: KslExpression<*>) : KslExpression<T> {

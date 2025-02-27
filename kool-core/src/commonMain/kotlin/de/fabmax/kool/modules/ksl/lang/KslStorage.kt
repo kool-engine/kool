@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.model.KslOp
-
 sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(
     name: String,
     val storageType: T
@@ -63,10 +61,6 @@ open class KslStorageWrite<T: KslStorageType<R, C>, R: KslNumericType, C: KslInt
         addMutation(storage.mutate())
 
         storage.isWritten = true
-    }
-
-    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
-        return KslStorageWrite(storage, coord.replaced(replaceExpressions), data.replaced(replaceExpressions), transformBuilder)
     }
 
     override fun toPseudoCode(): String {

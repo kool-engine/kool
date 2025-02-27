@@ -125,13 +125,12 @@ class KslTransformer {
             val nextOp = selectNextOp(openOps) ?: failScope(this, openOps)
             openOps -= nextOp
 
-            val safeOp = nextOp //.transform(transformBuilder, replaceExpressions)
-            sortedOps += safeOp
-            safeOp.childScopes.forEach { childScope ->
-                childScope.transform(safeOp, transformBuilder)
+            sortedOps += nextOp
+            nextOp.childScopes.forEach { childScope ->
+                childScope.transform(nextOp, transformBuilder)
                 transformerState.applyScope(childScope)
             }
-            transformerState.applyOp(safeOp)
+            transformerState.applyOp(nextOp)
         }
 
         this.ops.clear()

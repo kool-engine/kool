@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.model.KslOp
-
 class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder) : KslStatement("if", parentScope) {
     val body = KslScopeBuilder(this, parentScope, parentScope.parentStage)
     val elseIfs = mutableListOf<Pair<KslExpression<KslBool1>, KslScopeBuilder>>()
@@ -11,18 +9,6 @@ class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder
         addExpressionDependencies(condition)
         childScopes += body
         childScopes += elseBody
-    }
-
-    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp {
-        return KslIf(condition.replaced(replaceExpressions), transformBuilder).also { copy ->
-            copy.body.copyFrom(body)
-            copy.elseIfs.addAll(elseIfs.map { (expr, scope) ->
-                val copyScope = KslScopeBuilder(copy, transformBuilder, transformBuilder.parentStage)
-                copyScope.copyFrom(scope)
-                expr.replaced(replaceExpressions) to copyScope }
-            )
-            copy.elseBody.copyFrom(elseBody)
-        }
     }
 
     fun elseIf(condition: KslExpression<KslBool1>, block: KslScopeBuilder.() -> Unit): KslIf {

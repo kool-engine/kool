@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.model.KslMutatedState
-import de.fabmax.kool.modules.ksl.model.KslOp
 
 abstract class KslBlock(name: String, parentScope: KslScopeBuilder) : KslStatement(name, parentScope) {
 
@@ -14,9 +13,6 @@ abstract class KslBlock(name: String, parentScope: KslScopeBuilder) : KslStateme
     init {
         childScopes += body
     }
-
-    // todo: do an actual copy
-    override fun copyWithTransformedExpressions(transformBuilder: KslScopeBuilder, replaceExpressions: Map<KslExpression<*>, KslExpression<*>>): KslOp = this
 
     private fun nextName(suffix: String): String = parentScopeBuilder.parentStage.program.nextName("${opName}_$suffix")
 
