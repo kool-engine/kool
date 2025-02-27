@@ -126,15 +126,13 @@ to build the project first (or manually run the `cacheRuntimeLibs` task) and the
 the libs are resolved and added to the IntelliJ module classpath.
 
 ## Engine Features / Noticeable Stuff:
-- js: Interchangeable WebGL and WebGPU backends
 - Basic [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloCompute.kt) support
 - [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
   depth precision and range (more or less infinite)
-- Physics simulation (based on Nvidia PhysX 5.3, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
+- Physics simulation (based on Nvidia PhysX 5.5, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
 - Kotlin DSL based shader language (translates into GLSL and WGSL)
 - Neat little integrated GUI framework. The API is heavily inspired by [Jetpack Compose](https://github.com/JetBrains/compose-jb) but the implementation is different, as it needs to run within the OpenGL context.
 - [MSDF](https://github.com/Chlumsky/msdf-atlas-gen) Font support for text rendering in arbitrary font sizes
-- ~~Experimental Vulkan rendering backend (on JVM)~~
 - Support for physical based rendering (with metallic workflow) and image-based lighting
 - (Almost) complete support for [glTF 2.0](https://github.com/KhronosGroup/glTF) model format (including animations, morph targets and skins)
 - Skin / armature mesh animation (vertex shader based)
