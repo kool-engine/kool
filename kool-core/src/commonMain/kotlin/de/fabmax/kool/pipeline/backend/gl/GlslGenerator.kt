@@ -13,7 +13,9 @@ import de.fabmax.kool.pipeline.TexFormat
  */
 open class GlslGenerator(val hints: Hints) : KslGenerator() {
 
-    var blockIndent = "  "
+    override var replaceExpressions: Map<KslExpression<*>, KslExpression<*>> = emptyMap()
+
+    private var blockIndent = "    "
 
     override fun generateProgram(program: KslProgram, pipeline: DrawPipeline): GlslGeneratorOutput {
         val vertexStage = checkNotNull(program.vertexStage) {
@@ -44,6 +46,8 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
+        replaceExpressions = vertexStage.transformedExpressions
+
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
@@ -64,11 +68,13 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateInterStageOutputs(vertexStage)
         src.generateFunctions(vertexStage)
 
-        src.appendLine(generateScope(vertexStage.globalScope, blockIndent))
+        src.appendLine(generateScope(vertexStage.globalScope, ""))
         return src.toString()
     }
 
     private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
+        replaceExpressions = fragmentStage.transformedExpressions
+
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
@@ -91,11 +97,13 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateOutputs(fragmentStage.outColors)
         src.generateFunctions(fragmentStage)
 
-        src.appendLine(generateScope(fragmentStage.globalScope, blockIndent))
+        src.appendLine(generateScope(fragmentStage.globalScope, ""))
         return src.toString()
     }
 
     private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
+        replaceExpressions = computeStage.transformedExpressions
+
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
@@ -114,7 +122,7 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateStorageTextures(computeStage, pipeline)
         src.generateFunctions(computeStage)
 
-        src.appendLine(generateScope(computeStage.globalScope, blockIndent))
+        src.appendLine(generateScope(computeStage.globalScope, ""))
         return src.toString()
     }
 

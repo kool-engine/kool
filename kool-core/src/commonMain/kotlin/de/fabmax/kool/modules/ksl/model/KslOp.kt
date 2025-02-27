@@ -11,7 +11,7 @@ abstract class KslOp(val opName: String, val parentScope: KslScope) {
 
     var childScopes = mutableListOf<KslScope>()
 
-    fun areDependenciesMet(processorState: KslProcessorState): Boolean {
+    fun areDependenciesMet(processorState: KslTransformerState): Boolean {
         return stateDependencies.values.all { processorState.hasState(it) }
     }
 

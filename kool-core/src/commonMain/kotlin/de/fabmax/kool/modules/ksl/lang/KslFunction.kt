@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.model.KslOp
-import de.fabmax.kool.modules.ksl.model.KslProcessor
+import de.fabmax.kool.modules.ksl.model.KslTransformer
 
 open class KslFunction<T: KslType>(val name: String, val returnType: T, val parentStage: KslShaderStage) {
 
@@ -127,9 +127,11 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramMat3Array(arraySize: Int, name: String? = null) = paramMatrixArray(name ?: parentStage.program.nextName("paramM3"), KslMat3, arraySize)
     fun paramMat4Array(arraySize: Int, name: String? = null) = paramMatrixArray(name ?: parentStage.program.nextName("paramM4"), KslMat4, arraySize)
 
-    fun prepareGenerate() {
+    fun prepareGenerate(): Map<KslExpression<*>, KslExpression<*>> {
         functionScope.definedStates += parentStage.globalScope.definedStates
-        KslProcessor().process(functionScope)
+        val transformer = KslTransformer()
+        transformer.process(functionScope)
+        return transformer.transformedExpressions
     }
 
     fun KslScopeBuilder.`return`(returnValue: KslExpression<*>) {

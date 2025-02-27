@@ -8,8 +8,8 @@ import de.fabmax.kool.pipeline.backend.NdcYDirection
 import de.fabmax.kool.util.Color
 import kotlin.jvm.JvmName
 
-class KslScopeBuilder(parentOp: KslOp?, val parentScope: KslScopeBuilder?, parentStage: KslShaderStage) :
-    KslScope(parentOp, parentStage)
+class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentStage: KslShaderStage) :
+    KslScope(parentOp, parentScope, parentStage)
 {
 
     inline fun <reified T: Any> findParentOpByType(): T? {

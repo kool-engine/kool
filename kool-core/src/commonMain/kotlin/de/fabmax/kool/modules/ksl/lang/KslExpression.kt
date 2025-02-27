@@ -7,6 +7,8 @@ interface KslExpression<T: KslType> {
     fun toPseudoCode(): String
 }
 
+class KslInjectedExpression<T: KslType>(val expr: KslExpression<T>): KslExpression<T> by expr
+
 interface KslScalarExpression<S> : KslExpression<S> where S: KslType, S: KslScalar
 interface KslVectorExpression<V, S> : KslExpression<V> where V: KslType, V: KslVector<S>, S: KslScalar
 interface KslMatrixExpression<M, V> : KslExpression<M> where M: KslType, M: KslMatrix<V>, V: KslVector<*>

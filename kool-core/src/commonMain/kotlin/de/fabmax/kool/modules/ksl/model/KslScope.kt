@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ksl.lang.KslShaderStage
 import kotlin.math.max
 import kotlin.math.min
 
-abstract class KslScope(val parentOp: KslOp?, val parentStage: KslShaderStage) {
+abstract class KslScope(val parentOp: KslOp?, val parentScope: KslScope?, val parentStage: KslShaderStage) {
 
     val dependencies = mutableMapOf<KslState, KslMutatedState>()
     val mutations = mutableMapOf<KslState, KslStateMutation>()
@@ -23,6 +23,18 @@ abstract class KslScope(val parentOp: KslOp?, val parentStage: KslShaderStage) {
     fun updateModel() {
         ops.forEach { it.updateModel() }
         updateDependenciesAndMutations()
+    }
+
+    fun isAncestorOf(other: KslScope): Boolean {
+        var it = other.parentScope
+        while (it != null && it != this) {
+            it = it.parentScope
+        }
+        return it == this
+    }
+
+    fun addDependency(dep: KslMutatedState) {
+        dependencies[dep.state] = dep
     }
 
     private fun updateDependenciesAndMutations() {
@@ -48,8 +60,8 @@ abstract class KslScope(val parentOp: KslOp?, val parentStage: KslShaderStage) {
         dependencies.clear()
         mutations.clear()
         startStates.forEach { (state, startMutation) ->
+            addDependency(KslMutatedState(state, startMutation))
             val endMutation = endStates[state] ?: startMutation
-            dependencies[state] = KslMutatedState(state, startMutation)
             if (startMutation != endMutation) {
                 mutations[state] = KslStateMutation(state, startMutation, endMutation)
             }

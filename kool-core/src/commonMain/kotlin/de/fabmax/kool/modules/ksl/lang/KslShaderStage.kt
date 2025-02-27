@@ -1,7 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.modules.ksl.model.KslProcessor
+import de.fabmax.kool.modules.ksl.model.KslTransformer
 import de.fabmax.kool.pipeline.ShaderStage
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -14,6 +14,8 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
 
     private val mainFunc = KslFunction<KslTypeVoid>("main", KslTypeVoid, this)
     val main: KslScopeBuilder get() = mainFunc.body
+
+    val transformedExpressions = mutableMapOf<KslExpression<*>, KslExpression<*>>()
 
     init {
         globalScope.scopeName = "global"
@@ -72,9 +74,14 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         }
     }
 
-    open fun prepareGenerate() {
-        KslProcessor().process(globalScope)
-        functions.values.forEach { it.prepareGenerate() }
+    fun prepareGenerate() {
+        KslTransformer().also {
+            it.process(globalScope)
+            transformedExpressions.putAll(it.transformedExpressions)
+        }
+        functions.values.forEach {
+            transformedExpressions.putAll(it.prepareGenerate())
+        }
     }
 }
 
@@ -183,8 +190,7 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslFloat3, KslFloat1>, a: KslScalarExpression<KslFloat1> = 1f.const, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         val outColor = parentStage.colorOutput(location)
-        val cachedRgb = float3Var(rgb)
-        outColor.value set float4Value(cachedRgb, a)
+        outColor.value set float4Value(rgb, a)
     }
 
     fun KslScopeBuilder.colorOutput(value: KslVectorExpression<KslFloat4, KslFloat1>, location: Int = 0) {

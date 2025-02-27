@@ -9,6 +9,8 @@ import de.fabmax.kool.pipeline.DrawPipeline
 
 abstract class KslGenerator {
 
+    protected abstract val replaceExpressions: Map<KslExpression<*>, KslExpression<*>>
+
     abstract fun generateProgram(program: KslProgram, pipeline: DrawPipeline): GeneratorOutput
     abstract fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GeneratorOutput
 
@@ -58,43 +60,45 @@ abstract class KslGenerator {
     abstract fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String
 
     fun KslExpression<*>.generateExpression(): String {
-        return when (this) {
-            is KslArrayAccessor<*> -> generateArrayValueExpression(this)
-            is KslBlock.BlockInput<*, *> -> (input as KslExpression<*>).generateExpression()
-            is KslBuiltinFunction<*> -> generateBuiltinFunctionExpression(this)
-            is KslExpressionBit<*> -> generateBitExpression(this)
-            is KslExpressionCast<*> -> generateCastExpression(this)
-            is KslExpressionCompare<*> -> compareExpression(this)
-            is KslExpressionMath<*> -> generateMathExpression(this)
-            is KslInvokeFunction<*> -> generateInvokeFunction(this)
-            is KslVectorAccessor -> generateVectorSwizzleExpression(this)
-            is KslMatrixAccessor<*> -> generateMatrixColExpression(this)
-            is KslValue<*> -> generateValueExpression(this)
-            is KslValueExpression<*> -> generateValueExpression(this)
-            is KslUniform<*> -> generateValueExpression(this.value)
-            is KslVertexAttribute<*> -> generateValueExpression(this.value)
-            is KslStageInput<*> -> generateValueExpression(this.value)
-            is KslNumericScalarUnaryMinus<*> -> numericUnaryMinusExpression(this)
-            is KslNumericVectorUnaryMinus<*, *> -> numericUnaryMinusExpression(this)
-            is KslIntScalarComplement -> intComplementExpression(this)
-            is KslIntVectorComplement<*, *> -> intComplementExpression(this)
-            is KslBoolNotExpr -> boolNotExpression(this)
-            is KslBoolScalarExpr -> boolScalarExpression(this)
-            is KslBoolVectorExpr<*> -> boolVecExpression(this)
-            is KslSampleColorTexture<*> -> sampleColorTexture(this)
-            is KslSampleColorTextureGrad<*> -> sampleColorTextureGrad(this)
-            is KslSampleColorTextureArray<*> -> sampleColorTextureArray(this)
-            is KslSampleColorTextureArrayGrad<*> -> sampleColorTextureArrayGrad(this)
-            is KslSampleDepthTexture<*> -> sampleDepthTexture(this)
-            is KslSampleDepthTextureArray<*> -> sampleDepthTextureArray(this)
-            is KslImageTextureLoad<*> -> imageTextureRead(this)
-            is KslStorageTextureLoad<*, *, *> -> storageTextureRead(this)
-            is KslStorageRead<*, *, *> -> generateStorageRead(this)
-            is KslStorageTextureSize<*, *, *> -> generateTextureSize(this)
-            is KslTextureSize<*, *> -> generateTextureSize(this)
-            is KslStorageAtomicOp<*, *, *> -> storageAtomicOp(this)
-            is KslStorageAtomicCompareSwap<*, *, *> -> storageAtomicCompareSwap(this)
-            else -> error("expression type not implemented: $this")
+        val expr = (this as? KslInjectedExpression)?.expr ?: replaceExpressions.getOrElse(this) { this }
+        return when (expr) {
+            is KslArrayAccessor<*> -> generateArrayValueExpression(expr)
+            is KslBlock.BlockInput<*, *> -> (expr.input as KslExpression<*>).generateExpression()
+            is KslBuiltinFunction<*> -> generateBuiltinFunctionExpression(expr)
+            is KslExpressionBit<*> -> generateBitExpression(expr)
+            is KslExpressionCast<*> -> generateCastExpression(expr)
+            is KslExpressionCompare<*> -> compareExpression(expr)
+            is KslExpressionMath<*> -> generateMathExpression(expr)
+            is KslInvokeFunction<*> -> generateInvokeFunction(expr)
+            is KslVectorAccessor -> generateVectorSwizzleExpression(expr)
+            is KslMatrixAccessor<*> -> generateMatrixColExpression(expr)
+            is KslValue<*> -> generateValueExpression(expr)
+            is KslValueExpression<*> -> generateValueExpression(expr)
+            is KslUniform<*> -> generateValueExpression(expr.value)
+            is KslVertexAttribute<*> -> generateValueExpression(expr.value)
+            is KslStageInput<*> -> generateValueExpression(expr.value)
+            is KslStageOutput<*> -> generateValueExpression(expr.value)
+            is KslNumericScalarUnaryMinus<*> -> numericUnaryMinusExpression(expr)
+            is KslNumericVectorUnaryMinus<*, *> -> numericUnaryMinusExpression(expr)
+            is KslIntScalarComplement -> intComplementExpression(expr)
+            is KslIntVectorComplement<*, *> -> intComplementExpression(expr)
+            is KslBoolNotExpr -> boolNotExpression(expr)
+            is KslBoolScalarExpr -> boolScalarExpression(expr)
+            is KslBoolVectorExpr<*> -> boolVecExpression(expr)
+            is KslSampleColorTexture<*> -> sampleColorTexture(expr)
+            is KslSampleColorTextureGrad<*> -> sampleColorTextureGrad(expr)
+            is KslSampleColorTextureArray<*> -> sampleColorTextureArray(expr)
+            is KslSampleColorTextureArrayGrad<*> -> sampleColorTextureArrayGrad(expr)
+            is KslSampleDepthTexture<*> -> sampleDepthTexture(expr)
+            is KslSampleDepthTextureArray<*> -> sampleDepthTextureArray(expr)
+            is KslImageTextureLoad<*> -> imageTextureRead(expr)
+            is KslStorageTextureLoad<*, *, *> -> storageTextureRead(expr)
+            is KslStorageRead<*, *, *> -> generateStorageRead(expr)
+            is KslStorageTextureSize<*, *, *> -> generateTextureSize(expr)
+            is KslTextureSize<*, *> -> generateTextureSize(expr)
+            is KslStorageAtomicOp<*, *, *> -> storageAtomicOp(expr)
+            is KslStorageAtomicCompareSwap<*, *, *> -> storageAtomicCompareSwap(expr)
+            else -> error("expression type not implemented: $expr")
         }
     }
 

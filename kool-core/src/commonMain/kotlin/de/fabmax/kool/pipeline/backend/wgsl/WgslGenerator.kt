@@ -7,8 +7,9 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logW
 
 class WgslGenerator : KslGenerator() {
+    override var replaceExpressions: Map<KslExpression<*>, KslExpression<*>> = emptyMap()
 
-    var blockIndent = "  "
+    private var blockIndent = "    "
 
     private var generatorState = GeneratorState(
         BindGroupLayouts(
@@ -51,6 +52,8 @@ class WgslGenerator : KslGenerator() {
     }
 
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
+        replaceExpressions = vertexStage.transformedExpressions
+
         generatorState = GeneratorState(pipeline.bindGroupLayouts, pipeline.vertexLayout)
 
         val src = StringBuilder()
@@ -86,6 +89,8 @@ class WgslGenerator : KslGenerator() {
     }
 
     private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: DrawPipeline): String {
+        replaceExpressions = fragmentStage.transformedExpressions
+
         generatorState = GeneratorState(pipeline.bindGroupLayouts, null)
 
         val src = StringBuilder()
@@ -121,6 +126,8 @@ class WgslGenerator : KslGenerator() {
     }
 
     private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
+        replaceExpressions = computeStage.transformedExpressions
+
         val src = StringBuilder()
         src.appendLine("""
             /*
