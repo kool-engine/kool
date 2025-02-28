@@ -5,7 +5,7 @@ abstract class KslTextureSize<T: KslSamplerType<*>, R: KslType>(
     val lod: KslScalarExpression<KslInt1>,
     override val expressionType: R
 ) : KslExpression<R> {
-    override fun collectSubExpressions(): List<KslExpression<*>> = sampler.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, lod)
     override fun toPseudoCode(): String = "textureSize(${sampler.toPseudoCode()})"
 }
 
@@ -37,7 +37,7 @@ abstract class KslStorageTextureSize<T: KslStorageTextureType<E,*>, E: KslNumeri
     val storageTex: KslExpression<T>,
     override val expressionType: R
 ) : KslExpression<R> {
-    override fun collectSubExpressions(): List<KslExpression<*>> = storageTex.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storageTex)
     override fun toPseudoCode(): String = "textureSize(${storageTex.toPseudoCode()})"
 }
 

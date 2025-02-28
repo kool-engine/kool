@@ -7,8 +7,7 @@ abstract class KslExpressionMath<T: KslNumericType>(
     override val expressionType: T
 ) : KslExpression<T> {
 
-    override fun collectSubExpressions(): List<KslExpression<*>> =
-        left.collectSubExpressions() + right.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(left, right)
 
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opChar} ${right.toPseudoCode()})"
 }
@@ -191,7 +190,7 @@ class KslNumericScalarUnaryMinus<S>(val expr: KslScalarExpression<S>) : KslScala
         where S: KslNumericType, S: KslScalar {
 
     override val expressionType = expr.expressionType
-    override fun collectSubExpressions(): List<KslExpression<*>> = expr.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(expr)
     override fun toPseudoCode(): String = "-(${expr.toPseudoCode()})"
 }
 
@@ -201,7 +200,7 @@ class KslNumericVectorUnaryMinus<V, S>(val expr: KslVectorExpression<V, S>) : Ks
         where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar {
 
     override val expressionType = expr.expressionType
-    override fun collectSubExpressions(): List<KslExpression<*>> = expr.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(expr)
     override fun toPseudoCode(): String = "-(${expr.toPseudoCode()})"
 }
 

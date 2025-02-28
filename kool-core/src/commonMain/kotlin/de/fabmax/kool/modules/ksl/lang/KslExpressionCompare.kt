@@ -4,11 +4,10 @@ abstract class KslExpressionCompare<B: KslBoolType>(
     val left: KslExpression<*>,
     val right: KslExpression<*>,
     val operator: KslCompareOperator,
-    override val expressionType: B)
-    : KslExpression<B> {
+    override val expressionType: B
+) : KslExpression<B> {
 
-    override fun collectSubExpressions(): List<KslExpression<*>> =
-        left.collectSubExpressions() + right.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(left, right)
 
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opString} ${right.toPseudoCode()})"
 }

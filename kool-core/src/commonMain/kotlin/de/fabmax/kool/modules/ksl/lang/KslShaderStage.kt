@@ -15,7 +15,8 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     private val mainFunc = KslFunction<KslTypeVoid>("main", KslTypeVoid, this)
     val main: KslScopeBuilder get() = mainFunc.body
 
-    val transformedExpressions = mutableMapOf<KslExpression<*>, KslExpression<*>>()
+    var generatorExpressions = emptyMap<KslExpression<*>, KslExpression<*>>()
+        private set
 
     init {
         globalScope.scopeName = "global"
@@ -29,15 +30,16 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         main.apply(block)
     }
 
-    fun createFunction(name: String, function: KslFunction<*>) {
+    fun addFunction(name: String, function: KslFunction<*>) {
         if (name in functions.keys) {
-            throw IllegalStateException("Function with name $name is already defined")
+            error("Function with name $name is already defined")
         }
         functions[name] = function
+        globalScope.ops += function.functionRoot
     }
 
     inline fun <reified T: KslFunction<*>> getOrCreateFunction(name: String, createFunc: () -> T): T {
-        return functions.getOrPut(name, createFunc) as T
+        return (functions[name] ?: createFunc().also { addFunction(name, it) }) as T
     }
 
     inline fun <reified T: KslBlock> findBlock(name: String? = null): T? {
@@ -75,13 +77,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     }
 
     fun prepareGenerate() {
-        KslTransformer().also {
-            it.process(globalScope)
-            transformedExpressions.putAll(it.transformedExpressions)
-        }
-        functions.values.forEach {
-            transformedExpressions.putAll(it.prepareGenerate())
-        }
+        generatorExpressions = KslTransformer.transform(this).generatorExpressions
     }
 }
 

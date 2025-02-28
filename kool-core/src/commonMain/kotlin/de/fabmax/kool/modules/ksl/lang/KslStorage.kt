@@ -40,9 +40,7 @@ class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
         storage.isRead = true
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> {
-        return storage.collectSubExpressions() + coord.collectSubExpressions() + this
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord)
 
     override fun toPseudoCode(): String = "storageRead(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }

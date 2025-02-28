@@ -13,8 +13,7 @@ open class KslArrayAccessor<T: KslType>(
     override val mutatingState: KslValue<*>?
         get() = array as? KslValue<*>
 
-    override fun collectSubExpressions(): List<KslExpression<*>> =
-        array.collectSubExpressions() + index.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(array, index)
 
     override fun generateAssignable(generator: KslGenerator) = generator.arrayValueAssignable(this)
     override fun toPseudoCode() = "${array.toPseudoCode()}[${index.toPseudoCode()}]"

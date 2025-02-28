@@ -16,10 +16,7 @@ class KslSampleColorTexture<T: KslSamplerType<KslFloat4>>(
         }
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> {
-        val deps = sampler.collectSubExpressions() + coord.collectSubExpressions() + this
-        return lod?.let { deps + it.collectSubExpressions() } ?: deps
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, coord, lod)
 
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sample(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }
@@ -39,13 +36,7 @@ class KslSampleColorTextureGrad<T: KslSamplerType<KslFloat4>>(
         }
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> {
-        return sampler.collectSubExpressions() +
-                coord.collectSubExpressions() +
-                ddx.collectSubExpressions() +
-                ddy.collectSubExpressions() +
-                this
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, coord, ddx, ddy)
 
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sampleGrad(${coord.toPseudoCode()}, ${ddx.toPseudoCode()}, ${ddy.toPseudoCode()})"
 }
@@ -59,10 +50,7 @@ class KslSampleColorTextureArray<T>(
 
     override val expressionType = KslFloat4
 
-    override fun collectSubExpressions(): List<KslExpression<*>> {
-        val deps = sampler.collectSubExpressions() + arrayIndex.collectSubExpressions() + coord.collectSubExpressions() + this
-        return lod?.let { deps + it.collectSubExpressions() } ?: deps
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, arrayIndex, coord, lod)
 
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}[${arrayIndex.toPseudoCode()}].sample(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }
@@ -77,14 +65,7 @@ class KslSampleColorTextureArrayGrad<T>(
 
     override val expressionType = KslFloat4
 
-    override fun collectSubExpressions(): List<KslExpression<*>> {
-        return sampler.collectSubExpressions() +
-                arrayIndex.collectSubExpressions() +
-                coord.collectSubExpressions() +
-                ddx.collectSubExpressions() +
-                ddy.collectSubExpressions() +
-                this
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, arrayIndex, coord, ddx, ddy)
 
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}[${arrayIndex.toPseudoCode()}].sampleGrad(${coord.toPseudoCode()}, ${ddx.toPseudoCode()}, ${ddy.toPseudoCode()})"
 }

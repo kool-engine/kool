@@ -35,6 +35,7 @@ abstract class KslScope(val parentOp: KslOp?, val parentScope: KslScope?, val pa
 
     fun addDependency(dep: KslMutatedState) {
         dependencies[dep.state] = dep
+        parentOp?.addDependency(dep)
     }
 
     private fun updateDependenciesAndMutations() {
@@ -66,7 +67,6 @@ abstract class KslScope(val parentOp: KslOp?, val parentScope: KslScope?, val pa
                 mutations[state] = KslStateMutation(state, startMutation, endMutation)
             }
             parentOp?.let { parent ->
-                parent.addDependency(KslMutatedState(state, startMutation))
                 if (startMutation != endMutation) {
                     parent.mutations[state] = KslStateMutation(state, startMutation, endMutation)
                 }

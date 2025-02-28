@@ -237,7 +237,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
-        val output = WgslGenerator().generateProgram(shader.program, pipeline)
+        val output = WgslGenerator.generateProgram(shader.program, pipeline)
         return WebGpuShaderCode(
             vertexSrc = output.vertexSrc,
             vertexEntryPoint = output.vertexEntryPoint,
@@ -247,7 +247,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
-        val output = WgslGenerator().generateComputeProgram(shader.program, pipeline)
+        val output = WgslGenerator.generateComputeProgram(shader.program, pipeline)
         return WebGpuComputeShaderCode(
             computeSrc = output.computeSrc,
             computeEntryPoint = output.computeEntryPoint

@@ -16,8 +16,7 @@ class KslSampleDepthTexture<T: KslDepthSampler<*>>(
         }
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> =
-        sampler.collectSubExpressions() + coord.collectSubExpressions() + depthRef.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, coord, depthRef)
 
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.sampleDepth(${coord.toPseudoCode()})"
 }
@@ -31,12 +30,7 @@ class KslSampleDepthTextureArray<T>(
 
     override val expressionType = KslFloat1
 
-    override fun collectSubExpressions(): List<KslExpression<*>> =
-        sampler.collectSubExpressions() +
-        coord.collectSubExpressions() +
-        arrayIndex.collectSubExpressions() +
-        depthRef.collectSubExpressions() +
-        this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, coord, arrayIndex, depthRef)
 
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}[${arrayIndex.toPseudoCode()}].sampleDepth(${coord.toPseudoCode()})"
 }

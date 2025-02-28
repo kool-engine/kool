@@ -18,8 +18,7 @@ abstract class KslMatrixAccessor<T>(
     override val mutatingState: KslValue<*>?
         get() = matrix as? KslValue<*>
 
-    override fun collectSubExpressions(): List<KslExpression<*>> =
-        matrix.collectSubExpressions() + colIndex.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(matrix, colIndex)
 
     override fun generateAssignable(generator: KslGenerator) = generator.matrixColAssignable(this)
     override fun toPseudoCode() = "${matrix.toPseudoCode()}[${colIndex.toPseudoCode()}]"

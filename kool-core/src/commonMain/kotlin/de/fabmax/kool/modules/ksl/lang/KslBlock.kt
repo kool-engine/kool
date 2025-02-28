@@ -148,7 +148,7 @@ abstract class KslBlock(name: String, parentScope: KslScopeBuilder) : KslStateme
         }
 
         // return empty dependencies here - actual dependencies to input expression are managed by outer block statement
-        override fun collectSubExpressions(): List<KslExpression<*>> = emptyList()
+        override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive()
 
         override fun toPseudoCode(): String {
             return input?.toPseudoCode()

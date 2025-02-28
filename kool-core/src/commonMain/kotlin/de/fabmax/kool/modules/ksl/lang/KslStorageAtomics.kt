@@ -13,7 +13,7 @@ class KslStorageAtomicOp<T: KslStorageType<R, C>, C: KslIntType, R>(
         storage.isAccessedAtomically = true
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> = storage.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord, data)
     override fun toPseudoCode(): String = "storageAtomic$op(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${data.toPseudoCode()})"
 
     enum class Op {
@@ -40,6 +40,6 @@ class KslStorageAtomicCompareSwap<T: KslStorageType<R, C>, C: KslIntType, R>(
         storage.isAccessedAtomically = true
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> = storage.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord, compare, data)
     override fun toPseudoCode(): String = "storageAtomicCondSet(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${compare.toPseudoCode()}, ${data.toPseudoCode()})"
 }

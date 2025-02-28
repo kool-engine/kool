@@ -7,18 +7,20 @@ import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.ComputePipeline
 import de.fabmax.kool.pipeline.DrawPipeline
 
-abstract class KslGenerator {
-
-    protected abstract val replaceExpressions: Map<KslExpression<*>, KslExpression<*>>
+abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslExpression<*>>) {
 
     abstract fun generateProgram(program: KslProgram, pipeline: DrawPipeline): GeneratorOutput
     abstract fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GeneratorOutput
 
-    open fun generateScope(scope: KslScope, indent: String): String {
-        return scope.ops.asSequence().map { generateOp(it).prependIndent(indent) }.joinToString("\n")
+    fun generateScope(scope: KslScope, indent: String): String {
+        return generateOps(scope.ops, indent)
     }
 
-    open fun generateOp(op: KslOp): String {
+    fun generateOps(ops: List<KslOp>, indent: String): String {
+        return ops.joinToString("\n") { generateOp(it).prependIndent(indent) }
+    }
+
+    fun generateOp(op: KslOp): String {
         return when (op) {
             is KslDeclareVar -> opDeclareVar(op)
             is KslDeclareArray -> opDeclareArray(op)
@@ -60,7 +62,7 @@ abstract class KslGenerator {
     abstract fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String
 
     fun KslExpression<*>.generateExpression(): String {
-        val expr = (this as? KslInjectedExpression)?.expr ?: replaceExpressions.getOrElse(this) { this }
+        val expr = (this as? KslInjectedExpression)?.expr ?: generatorExpressions.getOrElse(this) { this }
         return when (expr) {
             is KslArrayAccessor<*> -> generateArrayValueExpression(expr)
             is KslBlock.BlockInput<*, *> -> (expr.input as KslExpression<*>).generateExpression()
@@ -347,21 +349,6 @@ abstract class KslGenerator {
     abstract fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String
     abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
     abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
-
-    protected fun sortFunctions(functions: MutableList<KslFunction<*>>) {
-        val closed = mutableSetOf<KslFunction<*>>()
-        val open = mutableSetOf<KslFunction<*>>()
-        open += functions
-        functions.clear()
-
-        while (open.isNotEmpty()) {
-            val next = open.find { it.functionDependencies.all { dep -> dep in closed } }
-                ?: throw IllegalStateException("Unable to sort functions, circular dependencies?")
-            open -= next
-            closed += next
-            functions += next
-        }
-    }
 
     interface GeneratorOutput
 

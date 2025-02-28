@@ -6,9 +6,9 @@ import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logW
 
-class WgslGenerator : KslGenerator() {
-    override var replaceExpressions: Map<KslExpression<*>, KslExpression<*>> = emptyMap()
-
+class WgslGenerator private constructor(
+    generatorExpressions: Map<KslExpression<*>, KslExpression<*>>
+) : KslGenerator(generatorExpressions) {
     private var blockIndent = "    "
 
     private var generatorState = GeneratorState(
@@ -52,8 +52,6 @@ class WgslGenerator : KslGenerator() {
     }
 
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
-        replaceExpressions = vertexStage.transformedExpressions
-
         generatorState = GeneratorState(pipeline.bindGroupLayouts, pipeline.vertexLayout)
 
         val src = StringBuilder()
@@ -74,23 +72,23 @@ class WgslGenerator : KslGenerator() {
         src.generateTextureSamplers(vertexStage, pipeline)
         src.generateStorageBuffers(vertexStage, pipeline)
         src.generateStorageTextures(vertexStage, pipeline)
-        src.generateFunctions(vertexStage)
 
-        val transformedMainBody = vertexStage.globalScope.ops.first() as KslFunction<*>.FunctionRoot
+        val main = vertexStage.globalScope.ops.find {
+            it is KslFunction<*>.FunctionRoot && it.function.name == "main"
+        } as KslFunction<*>.FunctionRoot
+        src.appendLine(generateOps(vertexStage.globalScope.ops.filter { it != main }, ""))
 
         src.appendLine("@vertex")
         src.appendLine("fn vertexMain(vertexInput: VertexInput) -> VertexOutput {")
         src.appendLine(vertexInput.reassembleMatrices().prependIndent(blockIndent))
         src.appendLine("  var vertexOutput: VertexOutput;")
-        src.appendLine(generateScope(transformedMainBody.childScopes.first(), blockIndent))
+        src.appendLine(generateScope(main.childScopes.first(), blockIndent))
         src.appendLine("  return vertexOutput;")
         src.appendLine("}")
         return src.toString()
     }
 
     private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: DrawPipeline): String {
-        replaceExpressions = fragmentStage.transformedExpressions
-
         generatorState = GeneratorState(pipeline.bindGroupLayouts, null)
 
         val src = StringBuilder()
@@ -111,23 +109,23 @@ class WgslGenerator : KslGenerator() {
         src.generateTextureSamplers(fragmentStage, pipeline)
         src.generateStorageBuffers(fragmentStage, pipeline)
         src.generateStorageTextures(fragmentStage, pipeline)
-        src.generateFunctions(fragmentStage)
 
         val mainParam = if (fragmentInput.isNotEmpty()) "fragmentInput: FragmentInput" else ""
-        val transformedMainBody = fragmentStage.globalScope.ops.first() as KslFunction<*>.FunctionRoot
+        val main = fragmentStage.globalScope.ops.find {
+            it is KslFunction<*>.FunctionRoot && it.function.name == "main"
+        } as KslFunction<*>.FunctionRoot
+        src.appendLine(generateOps(fragmentStage.globalScope.ops.filter { it != main }, ""))
 
         src.appendLine("@fragment")
         src.appendLine("fn fragmentMain($mainParam) -> FragmentOutput {")
         src.appendLine("  var fragmentOutput: FragmentOutput;")
-        src.appendLine(generateScope(transformedMainBody.childScopes.first(), blockIndent))
+        src.appendLine(generateScope(main.childScopes.first(), blockIndent))
         src.appendLine("  return fragmentOutput;")
         src.appendLine("}")
         return src.toString()
     }
 
     private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
-        replaceExpressions = computeStage.transformedExpressions
-
         val src = StringBuilder()
         src.appendLine("""
             /*
@@ -144,15 +142,17 @@ class WgslGenerator : KslGenerator() {
         src.generateTextureSamplers(computeStage, pipeline)
         src.generateStorageBuffers(computeStage, pipeline)
         src.generateStorageTextures(computeStage, pipeline)
-        src.generateFunctions(computeStage)
 
-        val transformedMainBody = computeStage.globalScope.ops.first() as KslFunction<*>.FunctionRoot
+        val main = computeStage.globalScope.ops.find {
+            it is KslFunction<*>.FunctionRoot && it.function.name == "main"
+        } as KslFunction<*>.FunctionRoot
+        src.appendLine(generateOps(computeStage.globalScope.ops.filter { it != main }, ""))
 
         src.appendLine("@compute")
         src.appendLine("@workgroup_size(${computeStage.workGroupSize.x}, ${computeStage.workGroupSize.y}, ${computeStage.workGroupSize.z})")
         src.appendLine("fn computeMain(computeInput: ComputeInput) {")
         src.appendLine(computeInput.addWorkGroupSizeDef().prependIndent(blockIndent))
-        src.appendLine(generateScope(transformedMainBody.childScopes.first(), blockIndent))
+        src.appendLine(generateScope(main.childScopes.first(), blockIndent))
         src.appendLine("}")
         return src.toString()
     }
@@ -362,16 +362,6 @@ class WgslGenerator : KslGenerator() {
         val storage = storageTextureRead.storage.generateExpression()
         val coord = storageTextureRead.coord.generateExpression()
         return "textureLoad($storage, $coord)"
-    }
-
-    private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
-        if (stage.functions.isNotEmpty()) {
-            val funcList = stage.functions.values.toMutableList()
-            sortFunctions(funcList)
-            funcList.forEach { func ->
-                append(opFunctionBody(func.functionRoot))
-            }
-        }
     }
 
     override fun opDeclareVar(op: KslDeclareVar): String {
@@ -635,6 +625,26 @@ class WgslGenerator : KslGenerator() {
     override fun getStateName(state: KslState): String = generatorState.getVarName(state.stateName)
 
     companion object {
+        fun generateProgram(program: KslProgram, pipeline: DrawPipeline): WgslGeneratorOutput {
+            val vertexStage = checkNotNull(program.vertexStage) {
+                "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+            }
+            val fragmentStage = checkNotNull(program.fragmentStage) {
+                "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+            }
+            val generatorExpressions = vertexStage.generatorExpressions + fragmentStage.generatorExpressions
+            val generator = WgslGenerator(generatorExpressions)
+            return generator.generateProgram(program, pipeline)
+        }
+
+        fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): WgslGeneratorOutput {
+            val computeStage = checkNotNull(program.computeStage) {
+                "KslProgram computeStage is missing"
+            }
+            val generator = WgslGenerator(computeStage.generatorExpressions)
+            return generator.generateComputeProgram(program, pipeline)
+        }
+
         fun samplerName(samplerExpression: String): String {
             return "${samplerExpression}_sampler"
         }

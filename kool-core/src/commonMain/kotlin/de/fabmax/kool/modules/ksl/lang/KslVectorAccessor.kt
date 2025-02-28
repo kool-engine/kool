@@ -23,7 +23,7 @@ abstract class KslVectorAccessor<T: KslType>(
         checkComponents(components, (vector.expressionType as KslVector<*>).dimens)
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> = vector.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(vector)
     override fun generateAssignable(generator: KslGenerator) = generator.vectorSwizzleAssignable(this)
     override fun toPseudoCode() = "${vector.toPseudoCode()}.$components"
 

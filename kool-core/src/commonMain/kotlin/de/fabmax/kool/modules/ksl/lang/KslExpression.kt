@@ -5,6 +5,10 @@ interface KslExpression<T: KslType> {
 
     fun collectSubExpressions(): List<KslExpression<*>>
     fun toPseudoCode(): String
+
+    fun collectRecursive(vararg exprs: KslExpression<*>?): List<KslExpression<*>> {
+        return exprs.filterNotNull().flatMap { it.collectSubExpressions() } + this
+    }
 }
 
 class KslInjectedExpression<T: KslType>(val expr: KslExpression<T>): KslExpression<T> by expr

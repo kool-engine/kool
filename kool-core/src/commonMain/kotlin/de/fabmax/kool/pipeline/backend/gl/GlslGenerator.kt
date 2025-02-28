@@ -11,9 +11,8 @@ import de.fabmax.kool.pipeline.TexFormat
 /**
  * Default GLSL shader code generator.
  */
-open class GlslGenerator(val hints: Hints) : KslGenerator() {
-
-    override var replaceExpressions: Map<KslExpression<*>, KslExpression<*>> = emptyMap()
+open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpression<*>, KslExpression<*>>, val hints: Hints) :
+    KslGenerator(generatorExpressions) {
 
     private var blockIndent = "    "
 
@@ -46,8 +45,6 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
     }
 
     private fun generateVertexSrc(vertexStage: KslVertexStage, pipeline: DrawPipeline): String {
-        replaceExpressions = vertexStage.transformedExpressions
-
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
@@ -66,15 +63,12 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, pipeline, "instance attributes")
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, pipeline, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
-        src.generateFunctions(vertexStage)
 
         src.appendLine(generateScope(vertexStage.globalScope, ""))
         return src.toString()
     }
 
     private fun generateFragmentSrc(fragmentStage: KslFragmentStage, pipeline: PipelineBase): String {
-        replaceExpressions = fragmentStage.transformedExpressions
-
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
@@ -95,15 +89,12 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateStorageTextures(fragmentStage, pipeline)
         src.generateInterStageInputs(fragmentStage)
         src.generateOutputs(fragmentStage.outColors)
-        src.generateFunctions(fragmentStage)
 
         src.appendLine(generateScope(fragmentStage.globalScope, ""))
         return src.toString()
     }
 
     private fun generateComputeSrc(computeStage: KslComputeStage, pipeline: PipelineBase): String {
-        replaceExpressions = computeStage.transformedExpressions
-
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
@@ -120,7 +111,6 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         src.generateUbos(computeStage, pipeline)
         src.generateUniformSamplers(computeStage, pipeline)
         src.generateStorageTextures(computeStage, pipeline)
-        src.generateFunctions(computeStage)
 
         src.appendLine(generateScope(computeStage.globalScope, ""))
         return src.toString()
@@ -495,16 +485,6 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
         }
     }
 
-    private fun StringBuilder.generateFunctions(stage: KslShaderStage) {
-        if (stage.functions.isNotEmpty()) {
-            val funcList = stage.functions.values.toMutableList()
-            sortFunctions(funcList)
-            funcList.forEach { func ->
-                append(opFunctionBody(func.functionRoot))
-            }
-        }
-    }
-
     override fun opFunctionBody(op: KslFunction<*>.FunctionRoot): String {
         val func = op.function
         return buildString {
@@ -783,6 +763,28 @@ open class GlslGenerator(val hints: Hints) : KslGenerator() {
             fun computeOutput(computeSrc: String) = GlslGeneratorOutput().apply {
                 stages[KslShaderStageType.ComputeShader] = computeSrc
             }
+        }
+    }
+
+    companion object {
+        fun generateProgram(program: KslProgram, pipeline: DrawPipeline, hints: Hints): GlslGeneratorOutput {
+            val vertexStage = checkNotNull(program.vertexStage) {
+                "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+            }
+            val fragmentStage = checkNotNull(program.fragmentStage) {
+                "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+            }
+            val generatorExpressions = vertexStage.generatorExpressions + fragmentStage.generatorExpressions
+            val generator = GlslGenerator(generatorExpressions, hints)
+            return generator.generateProgram(program, pipeline)
+        }
+
+        fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline, hints: Hints): GlslGeneratorOutput {
+            val computeStage = checkNotNull(program.computeStage) {
+                "KslProgram computeStage is missing"
+            }
+            val generator = GlslGenerator(computeStage.generatorExpressions, hints)
+            return generator.generateComputeProgram(program, pipeline)
         }
     }
 }

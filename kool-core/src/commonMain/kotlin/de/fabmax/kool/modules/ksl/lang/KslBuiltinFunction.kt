@@ -4,7 +4,7 @@ sealed class KslBuiltinFunction<T: KslType>(returnType: T, vararg args: KslExpre
     val args = listOf(*args)
     abstract val name: String
     override val expressionType: T = returnType
-    override fun collectSubExpressions(): List<KslExpression<*>> = args.flatMap { it.collectSubExpressions() } + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(*args.toTypedArray())
     override fun toPseudoCode() = "${name}(${args.joinToString { it.toPseudoCode() }})"
 }
 

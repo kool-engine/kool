@@ -248,12 +248,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
-        val src = GlslGeneratorVk().generateProgram(shader.program, pipeline)
+        val src = GlslGeneratorVk.generateProgram(shader.program, pipeline)
         return ShaderCodeVk.drawShaderCode(src.vertexSrc, src.fragmentSrc)
     }
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
-        val src = GlslGeneratorVk().generateComputeProgram(shader.program, pipeline)
+        val src = GlslGeneratorVk.generateComputeProgram(shader.program, pipeline)
         return ShaderCodeVk.computeShaderCode(src.computeSrc)
     }
 

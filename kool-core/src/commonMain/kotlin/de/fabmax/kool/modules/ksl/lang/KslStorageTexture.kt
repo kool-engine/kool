@@ -42,9 +42,7 @@ class KslStorageTextureLoad<T: KslStorageTextureType<R, C>, R: KslNumericType, C
         storage.isRead = true
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> {
-        return storage.collectSubExpressions() + coord.collectSubExpressions() + this
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord)
 
     override fun toPseudoCode(): String = "textureLoad(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
@@ -78,10 +76,7 @@ class KslImageTextureLoad<T: KslSamplerType<KslFloat4>>(
 
     override val expressionType = KslFloat4
 
-    override fun collectSubExpressions(): List<KslExpression<*>> {
-        val deps = sampler.collectSubExpressions() + coord.collectSubExpressions() + this
-        return lod?.let { deps + it.collectSubExpressions() } ?: deps
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, coord, lod)
 
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.textureLoad(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }

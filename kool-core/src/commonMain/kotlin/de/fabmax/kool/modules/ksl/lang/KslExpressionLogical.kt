@@ -5,7 +5,7 @@ class KslBoolVectorExpr<T>(val boolVec: KslVectorExpression<T, KslBool1>, val op
 {
 
     override val expressionType = KslBool1
-    override fun collectSubExpressions(): List<KslExpression<*>> = boolVec.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(boolVec)
     override fun toPseudoCode(): String = "${op.opString}(${boolVec.toPseudoCode()})"
 }
 
@@ -20,7 +20,7 @@ class KslBoolScalarExpr(val left: KslScalarExpression<KslBool1>, val right: KslS
 {
 
     override val expressionType = KslBool1
-    override fun collectSubExpressions(): List<KslExpression<*>> = left.collectSubExpressions() + right.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(left, right)
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${op.opString} ${right.toPseudoCode()})"
 }
 
@@ -38,7 +38,7 @@ infix fun KslScalarExpression<KslBool1>.or(right: KslScalarExpression<KslBool1>)
 
 class KslBoolNotExpr(val expr: KslScalarExpression<KslBool1>) : KslScalarExpression<KslBool1> {
     override val expressionType = KslBool1
-    override fun collectSubExpressions(): List<KslExpression<*>> = expr.collectSubExpressions() + this
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(expr)
     override fun toPseudoCode(): String = "!(${expr.toPseudoCode()})"
 }
 

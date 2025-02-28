@@ -5,19 +5,48 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
 
-class KslTransformer {
+class KslTransformer private constructor(val stage: KslShaderStage) {
     private val transformerState = KslTransformerState()
 
-    val transformedExpressions = mutableMapOf<KslExpression<*>, KslExpression<*>>()
+    private val transformedExpressions = mutableMapOf<KslExpression<*>, KslExpression<*>>()
 
-    fun process(scope: KslScope) {
+    private fun transform() {
         try {
-            scope.updateModel()
-            transformExpressions(scope)
-            scope.transform(null, null)
+            stage.globalScope.updateModel()
+            sortFunctions(stage)
+            transformExpressions(stage.globalScope)
+            stage.globalScope.transform(null, null)
         } catch (e: Exception) {
-            println(scope.toPseudoCode())
+            logE { stage.globalScope.toPseudoCode() }
             throw RuntimeException("Failed transforming ksl scope", e)
+        }
+    }
+
+    private fun sortFunctions(stage: KslShaderStage) {
+        val functionOps = stage.globalScope.ops.filterIsInstance<KslFunction<*>.FunctionRoot>()
+        val closed = mutableSetOf<KslFunction<*>>()
+        val open = functionOps.map { it.function }.toMutableSet()
+        stage.globalScope.ops -= functionOps
+
+        while (open.isNotEmpty()) {
+            val next = open.find { it.functionDependencies.all { dep -> dep in closed } }
+            if (next == null) {
+                logE {
+                    buildString {
+                        appendLine("Unable to sort functions. Circular dependencies?")
+                        appendLine("  Done:")
+                        closed.forEach { appendLine("    ${it.name}") }
+                        appendLine("  Open:")
+                        open.forEach { f ->
+                            appendLine("    ${f.name}, dependencies: ${f.functionDependencies.map { it.name }}")
+                        }
+                    }
+                }
+                error("Unable to sort functions, circular dependencies?")
+            }
+            open -= next
+            closed += next
+            stage.globalScope.ops += next.functionRoot
         }
     }
 
@@ -28,6 +57,7 @@ class KslTransformer {
             ops.forEach { op ->
                 op.usedExpressions
                     .filter { it.isNonTrivial() }
+                    .filterMultiUsages()
                     .forEach { expressionUsers.getOrPut(it) { mutableListOf() }.add(op) }
                 op.childScopes.forEach { it.traverse() }
             }
@@ -38,8 +68,8 @@ class KslTransformer {
         expressionUsers.forEach { (expr, ops) ->
             val commonScope = ops.findGreatestCommonScope() as KslScopeBuilder?
             if (commonScope != null) {
-                logT { "inject cached expression: ${expr.toPseudoCode()}" }
                 commonScope.injectExpression(expr)?.let { replacement ->
+                    logT { "inject cached expression: ${replacement.toPseudoCode()} = ${expr.toPseudoCode()} (used by ${ops.size} ops in ${stage.program.name})" }
                     transformedExpressions[expr] = replacement
                     val dependency = replacement.depend()
                     ops.distinct().forEach {
@@ -51,6 +81,23 @@ class KslTransformer {
                 logW { "null scope for expression ${expr.toPseudoCode()}" }
             }
         }
+    }
+
+    private fun List<KslExpression<*>>.filterMultiUsages(): List<KslExpression<*>> {
+        // check for expressions occurring multiple times, remove multiple occurrences caused by parent expressions
+        // occurring multiple times
+        val multis = groupBy { it }.filter { (_, occs) -> occs.size > 1 }
+        val multiSubTrees = multis.keys.associateWith { it.collectSubExpressions().toSet() - it }
+        val multiWhitelist = mutableSetOf<KslExpression<*>>()
+        multis.forEach { (expr, occs) ->
+            val parentExpressionsContainingExpr = multiSubTrees.keys.filter { multiSubTrees[it]!!.contains(expr) }
+            val expectedFreq = parentExpressionsContainingExpr.sumOf { multis[it]!!.size }
+            if (occs.size <= expectedFreq) {
+                multiWhitelist += expr
+            }
+        }
+        // make whitelisted expressions distinct
+        return (this - multiWhitelist) + multiWhitelist
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -99,7 +146,6 @@ class KslTransformer {
             return
         }
         addDependency(dep)
-        parentOp?.addDependency(dep)
         parentScope?.addDependencyUpTo(dep, term)
     }
 
@@ -108,7 +154,14 @@ class KslTransformer {
                this !is KslValue<*> &&
                this !is KslVectorAccessor<*> &&
                this !is KslArrayAccessor<*> &&
-               this !is KslMatrixAccessor<*>
+               this !is KslMatrixAccessor<*> &&
+               this !is KslVertexAttribute<*> &&
+               this !is KslStageInput<*> &&
+               this !is KslStageOutput<*> &&
+               this !is KslUniform<*> &&
+               this !is KslBlock.BlockInput<*, *> &&
+               this !is KslNumericVectorUnaryMinus<*, *> &&
+               this !is KslNumericScalarUnaryMinus<*>
     }
 
     private fun KslScope.transform(parentOp: KslOp?, parentBuilder: KslScopeBuilder?) {
@@ -162,6 +215,14 @@ class KslTransformer {
         transformerState.logStateE()
         throw IllegalStateException("Unable to complete scope ${scope.scopeName}")
     }
+
+    companion object {
+        fun transform(shaderStage: KslShaderStage): TransformOutput {
+            val transformer = KslTransformer(shaderStage)
+            transformer.transform()
+            return TransformOutput(transformer.transformedExpressions)
+        }
+    }
 }
 
-class TransformedOps
+class TransformOutput(val generatorExpressions: Map<KslExpression<*>, KslExpression<*>>)

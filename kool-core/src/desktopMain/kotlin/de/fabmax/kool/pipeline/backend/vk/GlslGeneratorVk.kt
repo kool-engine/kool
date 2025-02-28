@@ -2,12 +2,11 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
-import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.StorageAccessType
-import de.fabmax.kool.pipeline.StorageTextureLayout
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 
-class GlslGeneratorVk : GlslGenerator(
+class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpression<*>, KslExpression<*>>) : GlslGenerator(
+    generatorExpressions,
     Hints(
         glslVersionStr = "#version 450",
         compat1dSampler = false
@@ -112,6 +111,28 @@ class GlslGeneratorVk : GlslGenerator(
             KslVertexStage.NAME_IN_VERTEX_INDEX -> "gl_VertexIndex"
             KslVertexStage.NAME_IN_INSTANCE_INDEX -> "gl_InstanceIndex"
             else -> super.getStateName(state)
+        }
+    }
+
+    companion object {
+        fun generateProgram(program: KslProgram, pipeline: DrawPipeline): GlslGeneratorOutput {
+            val vertexStage = checkNotNull(program.vertexStage) {
+                "KslProgram vertexStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+            }
+            val fragmentStage = checkNotNull(program.fragmentStage) {
+                "KslProgram fragmentStage is missing (a valid KslShader needs at least a vertexStage and fragmentStage)"
+            }
+            val generatorExpressions = vertexStage.generatorExpressions + fragmentStage.generatorExpressions
+            val generator = GlslGeneratorVk(generatorExpressions)
+            return generator.generateProgram(program, pipeline)
+        }
+
+        fun generateComputeProgram(program: KslProgram, pipeline: ComputePipeline): GlslGeneratorOutput {
+            val computeStage = checkNotNull(program.computeStage) {
+                "KslProgram computeStage is missing"
+            }
+            val generator = GlslGeneratorVk(computeStage.generatorExpressions)
+            return generator.generateComputeProgram(program, pipeline)
         }
     }
 }
