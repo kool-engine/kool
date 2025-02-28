@@ -70,7 +70,11 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
 
     fun checkBufferSize(reqSpace: Int = 1) {
         if (numInstances + reqSpace > maxInstances) {
-            maxInstances = max(maxInstances * 2, numInstances + reqSpace)
+            maxInstances = max(maxInstances * 2, numInstances + reqSpace).coerceAtMost(Int.MAX_VALUE / (strideFloats * 4))
+            check(maxInstances > numInstances + reqSpace) {
+                "Unable to increase instance buffer size to required size of ${numInstances + reqSpace} instances. " +
+                        "Maximum size is ${Int.MAX_VALUE / (strideFloats * 4)} instances / ${Int.MAX_VALUE} bytes."
+            }
             val newBuf = Float32Buffer(strideFloats * maxInstances, true)
             newBuf.put(dataF)
             dataF = newBuf
