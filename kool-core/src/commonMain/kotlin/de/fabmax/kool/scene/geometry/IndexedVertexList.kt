@@ -9,8 +9,6 @@ import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.util.*
 import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.round
 
 fun IndexedVertexList(vararg vertexAttributes: Attribute, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList {
     return IndexedVertexList(vertexAttributes.toList(), primitiveType)
@@ -152,17 +150,26 @@ class IndexedVertexList(
 
     fun checkBufferSizes(reqSpace: Int = 1) {
         if (dataF.remaining < vertexSizeF * reqSpace) {
-            increaseDataSizeF(max(round(dataF.capacity * GROW_FACTOR).toInt(), (numVertices + reqSpace) * vertexSizeF))
+            increaseDataSizeF(increaseSize(dataF.capacity, reqSpace * vertexSizeF))
         }
         if (dataI.remaining < vertexSizeI * reqSpace) {
-            increaseDataSizeI(max(round(dataI.capacity * GROW_FACTOR).toInt(), (numVertices + reqSpace) * vertexSizeI))
+            increaseDataSizeI(increaseSize(dataF.capacity, reqSpace * vertexSizeI))
         }
     }
 
     fun checkIndexSize(reqSpace: Int = 1) {
         if (indices.remaining < reqSpace) {
-            increaseIndicesSize(max(round(indices.capacity * GROW_FACTOR).toInt(), numIndices + reqSpace))
+            increaseIndicesSize(increaseSize(dataF.capacity, reqSpace))
         }
+    }
+
+    private fun increaseSize(currentSize: Int, requiredInc: Int, elemSize: Int = 4): Int {
+        val increased = (currentSize.toLong() * GROW_FACTOR).toLong().coerceAtMost(Int.MAX_VALUE.toLong() / elemSize).toInt()
+        check(increased - currentSize > requiredInc) {
+            "Unable to increase buffer to requested size of ${currentSize + requiredInc} elements. Underlying buffer " +
+                    "size is limited to ${Int.MAX_VALUE.toLong() / elemSize} elements / ${Int.MAX_VALUE} bytes."
+        }
+        return increased
     }
 
     fun hasAttribute(attribute: Attribute): Boolean = vertexAttributes.contains(attribute)
@@ -520,7 +527,7 @@ class IndexedVertexList(
 
     companion object {
         private const val INITIAL_SIZE = 1000
-        private const val GROW_FACTOR = 2.0f
+        private const val GROW_FACTOR = 2.0
     }
 
     private class PointAndIndex(pos: Vec3f, val index: Int) : Vec3f(pos)
