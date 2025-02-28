@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.util.*
 import kotlin.math.abs
+import kotlin.math.max
 
 fun IndexedVertexList(vararg vertexAttributes: Attribute, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList {
     return IndexedVertexList(vertexAttributes.toList(), primitiveType)
@@ -164,8 +165,9 @@ class IndexedVertexList(
     }
 
     private fun increaseSize(currentSize: Int, requiredInc: Int, elemSize: Int = 4): Int {
-        val increased = (currentSize.toLong() * GROW_FACTOR).toLong().coerceAtMost(Int.MAX_VALUE.toLong() / elemSize).toInt()
-        check(increased - currentSize > requiredInc) {
+        val increased = (max(currentSize + requiredInc.toLong(), (currentSize * GROW_FACTOR).toLong()))
+            .coerceAtMost(Int.MAX_VALUE.toLong() / elemSize).toInt()
+        check(increased - currentSize >= requiredInc) {
             "Unable to increase buffer to requested size of ${currentSize + requiredInc} elements. Underlying buffer " +
                     "size is limited to ${Int.MAX_VALUE.toLong() / elemSize} elements / ${Int.MAX_VALUE} bytes."
         }
