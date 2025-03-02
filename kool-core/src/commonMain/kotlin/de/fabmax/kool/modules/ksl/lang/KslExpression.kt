@@ -1,15 +1,17 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
-
 interface KslExpression<T: KslType> {
     val expressionType: T
 
-    fun collectStateDependencies(): Set<KslMutatedState>
-    fun generateExpression(generator: KslGenerator): String
+    fun collectSubExpressions(): List<KslExpression<*>>
     fun toPseudoCode(): String
+
+    fun collectRecursive(vararg exprs: KslExpression<*>?): List<KslExpression<*>> {
+        return exprs.filterNotNull().flatMap { it.collectSubExpressions() } + this
+    }
 }
+
+class KslInjectedExpression<T: KslType>(val expr: KslExpression<T>): KslExpression<T> by expr
 
 interface KslScalarExpression<S> : KslExpression<S> where S: KslType, S: KslScalar
 interface KslVectorExpression<V, S> : KslExpression<V> where V: KslType, V: KslVector<S>, S: KslScalar

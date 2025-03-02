@@ -29,28 +29,24 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
 
     var clearAndDisable = false
 
-    private val denoiseMesh: Mesh
-    private val clearMesh: Mesh
-
-    init {
-        denoiseMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoDenoiseMesh").apply {
-            generateFullscreenQuad()
-            shader = denoiseShader
-        }
-
-        clearMesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoClearMesh").apply {
-            isVisible = false
-            generateFullscreenQuad()
-            shader = KslShader("AO Clear", fullscreenShaderPipelineCfg) {
-                fullscreenQuadVertexStage(null)
-                fragmentStage {
-                    main {
-                        colorOutput(Color.WHITE.const)
-                    }
+    private val denoiseMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoDenoiseMesh").apply {
+        generateFullscreenQuad()
+        shader = denoiseShader
+    }
+    private val clearMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS, name = "AoClearMesh").apply {
+        isVisible = false
+        generateFullscreenQuad()
+        shader = KslShader("AO Clear", fullscreenShaderPipelineCfg) {
+            fullscreenQuadVertexStage(null)
+            fragmentStage {
+                main {
+                    colorOutput(Color.WHITE.const)
                 }
             }
         }
+    }
 
+    init {
         drawNode.apply {
             addNode(denoiseMesh)
             addNode(clearMesh)

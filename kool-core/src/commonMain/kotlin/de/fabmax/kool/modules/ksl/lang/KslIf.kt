@@ -5,8 +5,6 @@ class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder
     val elseIfs = mutableListOf<Pair<KslExpression<KslBool1>, KslScopeBuilder>>()
     val elseBody = KslScopeBuilder(this, parentScope, parentScope.parentStage).apply { scopeName = "else" }
 
-    private val parentBuilder = parentScope
-
     init {
         addExpressionDependencies(condition)
         childScopes += body
@@ -15,7 +13,7 @@ class KslIf(val condition: KslExpression<KslBool1>, parentScope: KslScopeBuilder
 
     fun elseIf(condition: KslExpression<KslBool1>, block: KslScopeBuilder.() -> Unit): KslIf {
         addExpressionDependencies(condition)
-        val body = KslScopeBuilder(this, parentBuilder, parentBuilder.parentStage).apply {
+        val body = KslScopeBuilder(this, parentScopeBuilder, parentScopeBuilder.parentStage).apply {
             scopeName = "elseif"
             block()
         }

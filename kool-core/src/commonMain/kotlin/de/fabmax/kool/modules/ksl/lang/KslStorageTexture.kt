@@ -1,7 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import de.fabmax.kool.pipeline.TexFormat
 
 sealed class KslStorageTexture<T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType>(
@@ -44,10 +42,8 @@ class KslStorageTextureLoad<T: KslStorageTextureType<R, C>, R: KslNumericType, C
         storage.isRead = true
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> {
-        return storage.collectStateDependencies() + coord.collectStateDependencies()
-    }
-    override fun generateExpression(generator: KslGenerator): String = generator.storageTextureRead(this)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord)
+
     override fun toPseudoCode(): String = "textureLoad(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
 }
 
@@ -80,11 +76,7 @@ class KslImageTextureLoad<T: KslSamplerType<KslFloat4>>(
 
     override val expressionType = KslFloat4
 
-    override fun collectStateDependencies(): Set<KslMutatedState> {
-        val deps = sampler.collectStateDependencies() + coord.collectStateDependencies()
-        return lod?.let { deps + it.collectStateDependencies() } ?: deps
-    }
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(sampler, coord, lod)
 
-    override fun generateExpression(generator: KslGenerator): String = generator.imageTextureRead(this)
     override fun toPseudoCode(): String = "${sampler.toPseudoCode()}.textureLoad(${coord.toPseudoCode()}, lod=${lod?.toPseudoCode() ?: "0"})"
 }

@@ -37,29 +37,29 @@ interface KslVector4<S: KslScalar> : KslVector<S> {
 
 interface KslMatrix<V: KslVector<*>>
 
-object KslFloat1 : KslFloatType("float1"), KslScalar
-object KslFloat2 : KslFloatType("float2"), KslVector2<KslFloat1>
-object KslFloat3 : KslFloatType("float3"), KslVector3<KslFloat1>
-object KslFloat4 : KslFloatType("float4"), KslVector4<KslFloat1>
+data object KslFloat1 : KslFloatType("float1"), KslScalar
+data object KslFloat2 : KslFloatType("float2"), KslVector2<KslFloat1>
+data object KslFloat3 : KslFloatType("float3"), KslVector3<KslFloat1>
+data object KslFloat4 : KslFloatType("float4"), KslVector4<KslFloat1>
 
-object KslInt1 : KslIntType("int1"), KslScalar
-object KslInt2 : KslIntType("int2"), KslVector2<KslInt1>
-object KslInt3 : KslIntType("int3"), KslVector3<KslInt1>
-object KslInt4 : KslIntType("int4"), KslVector4<KslInt1>
+data object KslInt1 : KslIntType("int1"), KslScalar
+data object KslInt2 : KslIntType("int2"), KslVector2<KslInt1>
+data object KslInt3 : KslIntType("int3"), KslVector3<KslInt1>
+data object KslInt4 : KslIntType("int4"), KslVector4<KslInt1>
 
-object KslUint1 : KslIntType("uint1"), KslScalar
-object KslUint2 : KslIntType("uint2"), KslVector2<KslUint1>
-object KslUint3 : KslIntType("uint3"), KslVector3<KslUint1>
-object KslUint4 : KslIntType("uint4"), KslVector4<KslUint1>
+data object KslUint1 : KslIntType("uint1"), KslScalar
+data object KslUint2 : KslIntType("uint2"), KslVector2<KslUint1>
+data object KslUint3 : KslIntType("uint3"), KslVector3<KslUint1>
+data object KslUint4 : KslIntType("uint4"), KslVector4<KslUint1>
 
-object KslBool1 : KslBoolType("bool1"), KslScalar
-object KslBool2 : KslBoolType("bool2"), KslVector2<KslBool1>
-object KslBool3 : KslBoolType("bool3"), KslVector3<KslBool1>
-object KslBool4 : KslBoolType("bool4"), KslVector4<KslBool1>
+data object KslBool1 : KslBoolType("bool1"), KslScalar
+data object KslBool2 : KslBoolType("bool2"), KslVector2<KslBool1>
+data object KslBool3 : KslBoolType("bool3"), KslVector3<KslBool1>
+data object KslBool4 : KslBoolType("bool4"), KslVector4<KslBool1>
 
-object KslMat2 : KslFloatType("mat2"), KslMatrix<KslFloat2>
-object KslMat3 : KslFloatType("mat3"), KslMatrix<KslFloat3>
-object KslMat4 : KslFloatType("mat4"), KslMatrix<KslFloat4>
+data object KslMat2 : KslFloatType("mat2"), KslMatrix<KslFloat2>
+data object KslMat3 : KslFloatType("mat3"), KslMatrix<KslFloat3>
+data object KslMat4 : KslFloatType("mat4"), KslMatrix<KslFloat4>
 
 open class KslArrayType<T: KslType>(val elemType: T, val arraySize: Int) : KslType("array<${elemType.typeName}>[$arraySize]") {
     override fun equals(other: Any?): Boolean {
@@ -106,17 +106,17 @@ interface KslSampler3dType
 interface KslSamplerCubeType
 interface KslSamplerArrayType
 
-object KslColorSampler1d : KslColorSampler<KslFloat1>("sampler1d"), KslSampler1dType
-object KslColorSampler2d : KslColorSampler<KslFloat2>("sampler2d"), KslSampler2dType
-object KslColorSampler3d : KslColorSampler<KslFloat3>("sampler3d"), KslSampler3dType
-object KslColorSamplerCube : KslColorSampler<KslFloat3>("samplerCube"), KslSamplerCubeType
-object KslColorSampler2dArray : KslColorSampler<KslFloat2>("sampler2dArray"), KslSampler2dType, KslSamplerArrayType
-object KslColorSamplerCubeArray : KslColorSampler<KslFloat3>("samplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
+data object KslColorSampler1d : KslColorSampler<KslFloat1>("sampler1d"), KslSampler1dType
+data object KslColorSampler2d : KslColorSampler<KslFloat2>("sampler2d"), KslSampler2dType
+data object KslColorSampler3d : KslColorSampler<KslFloat3>("sampler3d"), KslSampler3dType
+data object KslColorSamplerCube : KslColorSampler<KslFloat3>("samplerCube"), KslSamplerCubeType
+data object KslColorSampler2dArray : KslColorSampler<KslFloat2>("sampler2dArray"), KslSampler2dType, KslSamplerArrayType
+data object KslColorSamplerCubeArray : KslColorSampler<KslFloat3>("samplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
-object KslDepthSampler2d : KslDepthSampler<KslFloat2>("depthSampler2d"), KslSampler2dType
-object KslDepthSamplerCube : KslDepthSampler<KslFloat3>("depthSamplerCube"), KslSamplerCubeType
-object KslDepthSampler2dArray : KslDepthSampler<KslFloat2>("depthSampler2dArray"), KslSampler2dType, KslSamplerArrayType
-object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat3>("depthSamplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
+data object KslDepthSampler2d : KslDepthSampler<KslFloat2>("depthSampler2d"), KslSampler2dType
+data object KslDepthSamplerCube : KslDepthSampler<KslFloat3>("depthSamplerCube"), KslSamplerCubeType
+data object KslDepthSampler2dArray : KslDepthSampler<KslFloat2>("depthSampler2dArray"), KslSampler2dType, KslSamplerArrayType
+data object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat3>("depthSamplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
 
 class KslStorage1dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt1>("KslStorage1dType<${elemType.typeName}>", elemType, KslInt1) {

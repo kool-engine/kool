@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
 
 abstract class KslMatrixAccessor<T>(
@@ -19,11 +18,9 @@ abstract class KslMatrixAccessor<T>(
     override val mutatingState: KslValue<*>?
         get() = matrix as? KslValue<*>
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        matrix.collectStateDependencies() + colIndex.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(matrix, colIndex)
 
     override fun generateAssignable(generator: KslGenerator) = generator.matrixColAssignable(this)
-    override fun generateExpression(generator: KslGenerator) = generator.matrixColExpression(this)
     override fun toPseudoCode() = "${matrix.toPseudoCode()}[${colIndex.toPseudoCode()}]"
 }
 

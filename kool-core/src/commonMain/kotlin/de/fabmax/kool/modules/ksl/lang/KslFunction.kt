@@ -1,24 +1,16 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslHierarchy
 import de.fabmax.kool.modules.ksl.model.KslOp
-import de.fabmax.kool.modules.ksl.model.KslProcessor
 
 open class KslFunction<T: KslType>(val name: String, val returnType: T, val parentStage: KslShaderStage) {
 
     val parameters = mutableListOf<KslValue<*>>()
     val functionDependencies = mutableSetOf<KslFunction<*>>()
 
-    private val functionScope = KslScopeBuilder(null, parentStage.globalScope, parentStage)
-    private val functionRoot = FunctionRoot(this)
-    val hierarchy = KslHierarchy(functionScope)
-
-    val body = KslScopeBuilder(functionRoot, functionScope, parentStage)
+    val functionRoot = FunctionRoot(this)
+    val body: KslScopeBuilder get() = functionRoot.body
 
     init {
-        functionScope.scopeName = name
-        functionScope.ops += functionRoot
         functionRoot.childScopes += body
     }
 
@@ -31,43 +23,43 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     private fun <S> paramScalar(name: String, type: S) where S: KslType, S: KslScalar =
         KslVarScalar(name, type, false).also {
             parameters += it
-            functionScope.definedStates += it
+            body.definedStates += it
         }
 
     private fun <V, S> paramVector(name: String, type: V) where V: KslType, V: KslVector<S>, S: KslScalar =
         KslVarVector(name, type, false).also {
             parameters += it
-            functionScope.definedStates += it
+            body.definedStates += it
         }
 
     private fun <M, V> paramMatrix(name: String, type: M) where M: KslType, M: KslMatrix<V>, V: KslVector<*> =
         KslVarMatrix(name, type, false).also {
             parameters += it
-            functionScope.definedStates += it
+            body.definedStates += it
         }
 
     private fun <T: KslType> paramVar(name: String, type: T) =
         KslVar(name, type, false).also {
             parameters += it
-            functionScope.definedStates += it
+            body.definedStates += it
         }
 
     private fun <S> paramScalarArray(name: String, type: S, arraySize: Int) where S: KslType, S: KslScalar =
         KslArrayScalar(name, type, arraySize, false).also {
             parameters += it
-            functionScope.definedStates += it
+            body.definedStates += it
         }
 
     private fun <V, S> paramVectorArray(name: String, type: V, arraySize: Int) where V: KslType, V: KslVector<S>, S: KslScalar =
         KslArrayVector(name, type, arraySize, false).also {
             parameters += it
-            functionScope.definedStates += it
+            body.definedStates += it
         }
 
     private fun <M, V> paramMatrixArray(name: String, type: M, arraySize: Int) where M: KslType, M: KslMatrix<V>, V: KslVector<*> =
         KslArrayMatrix(name, type, arraySize, false).also {
             parameters += it
-            functionScope.definedStates += it
+            body.definedStates += it
         }
 
     fun paramFloat1(name: String? = null) = paramScalar(name ?: parentStage.program.nextName("paramF1"), KslFloat1)
@@ -130,16 +122,13 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramMat3Array(arraySize: Int, name: String? = null) = paramMatrixArray(name ?: parentStage.program.nextName("paramM3"), KslMat3, arraySize)
     fun paramMat4Array(arraySize: Int, name: String? = null) = paramMatrixArray(name ?: parentStage.program.nextName("paramM4"), KslMat4, arraySize)
 
-    fun prepareGenerate() {
-        hierarchy.globalScope.definedStates += parentStage.globalScope.definedStates
-        KslProcessor().process(hierarchy)
-    }
-
     fun KslScopeBuilder.`return`(returnValue: KslExpression<*>) {
         ops += KslReturn(this, returnValue)
     }
 
-    inner class FunctionRoot(val function: KslFunction<*>) : KslOp("body", functionScope)
+    inner class FunctionRoot(val function: KslFunction<*>) : KslOp(function.name, parentStage.globalScope) {
+        val body = KslScopeBuilder(this, parentStage.globalScope, parentStage)
+    }
 }
 
 abstract class KslInvokeFunction<T: KslType>(val function: KslFunction<T>, parentScope: KslScopeBuilder, returnType: T, vararg args: KslExpression<*>) : KslExpression<T> {
@@ -163,9 +152,8 @@ abstract class KslInvokeFunction<T: KslType>(val function: KslFunction<T>, paren
     }
 
     override val expressionType: T = returnType
-    override fun collectStateDependencies() = args.flatMap { it.collectStateDependencies() }.toSet()
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(*args.toTypedArray())
     override fun toPseudoCode() = "${function.name}(${args.joinToString { it.toPseudoCode() }})"
-    override fun generateExpression(generator: KslGenerator) = generator.invokeFunction(this)
 }
 
 class KslInvokeFunctionScalar<S>(function: KslFunction<S>, parentScope: KslScopeBuilder, returnType: S, vararg args: KslExpression<*>)
@@ -229,114 +217,114 @@ class KslFunctionMat4Array(name: String, arraySize: Int, parentStage: KslShaderS
 
 
 fun KslShaderStage.functionFloat1(name: String, block: KslFunctionFloat1.() -> Unit) =
-    KslFunctionFloat1(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat1(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionFloat2(name: String, block: KslFunctionFloat2.() -> Unit) =
-    KslFunctionFloat2(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat2(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionFloat3(name: String, block: KslFunctionFloat3.() -> Unit) =
-    KslFunctionFloat3(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat3(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionFloat4(name: String, block: KslFunctionFloat4.() -> Unit) =
-    KslFunctionFloat4(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat4(name, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionInt1(name: String, block: KslFunctionInt1.() -> Unit) =
-    KslFunctionInt1(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt1(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionInt2(name: String, block: KslFunctionInt2.() -> Unit) =
-    KslFunctionInt2(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt2(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionInt3(name: String, block: KslFunctionInt3.() -> Unit) =
-    KslFunctionInt3(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt3(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionInt4(name: String, block: KslFunctionInt4.() -> Unit) =
-    KslFunctionInt4(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt4(name, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionUint1(name: String, block: KslFunctionUint1.() -> Unit) =
-    KslFunctionUint1(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint1(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionUint2(name: String, block: KslFunctionUint2.() -> Unit) =
-    KslFunctionUint2(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint2(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionUint3(name: String, block: KslFunctionUint3.() -> Unit) =
-    KslFunctionUint3(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint3(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionUint4(name: String, block: KslFunctionUint4.() -> Unit) =
-    KslFunctionUint4(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint4(name, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionBool1(name: String, block: KslFunctionBool1.() -> Unit) =
-    KslFunctionBool1(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool1(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionBool2(name: String, block: KslFunctionBool2.() -> Unit) =
-    KslFunctionBool2(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool2(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionBool3(name: String, block: KslFunctionBool3.() -> Unit) =
-    KslFunctionBool3(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool3(name, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionBool4(name: String, block: KslFunctionBool4.() -> Unit) =
-    KslFunctionBool4(name, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool4(name, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionFloat1Array(name: String, arraySize: Int, block: KslFunctionFloat1Array.() -> Unit) =
-    KslFunctionFloat1Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat1Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionFloat2Array(name: String, arraySize: Int, block: KslFunctionFloat2Array.() -> Unit) =
-    KslFunctionFloat2Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat2Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionFloat3Array(name: String, arraySize: Int, block: KslFunctionFloat3Array.() -> Unit) =
-    KslFunctionFloat3Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat3Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionFloat4Array(name: String, arraySize: Int, block: KslFunctionFloat4Array.() -> Unit) =
-    KslFunctionFloat4Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionFloat4Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionInt1Array(name: String, arraySize: Int, block: KslFunctionInt1Array.() -> Unit) =
-    KslFunctionInt1Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt1Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionInt2Array(name: String, arraySize: Int, block: KslFunctionInt2Array.() -> Unit) =
-    KslFunctionInt2Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt2Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionInt3Array(name: String, arraySize: Int, block: KslFunctionInt3Array.() -> Unit) =
-    KslFunctionInt3Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt3Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionInt4Array(name: String, arraySize: Int, block: KslFunctionInt4Array.() -> Unit) =
-    KslFunctionInt4Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionInt4Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionUint1Array(name: String, arraySize: Int, block: KslFunctionUint1Array.() -> Unit) =
-    KslFunctionUint1Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint1Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionUint2Array(name: String, arraySize: Int, block: KslFunctionUint2Array.() -> Unit) =
-    KslFunctionUint2Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint2Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionUint3Array(name: String, arraySize: Int, block: KslFunctionUint3Array.() -> Unit) =
-    KslFunctionUint3Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint3Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionUint4Array(name: String, arraySize: Int, block: KslFunctionUint4Array.() -> Unit) =
-    KslFunctionUint4Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionUint4Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionBool1Array(name: String, arraySize: Int, block: KslFunctionBool1Array.() -> Unit) =
-    KslFunctionBool1Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool1Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionBool2Array(name: String, arraySize: Int, block: KslFunctionBool2Array.() -> Unit) =
-    KslFunctionBool2Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool2Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionBool3Array(name: String, arraySize: Int, block: KslFunctionBool3Array.() -> Unit) =
-    KslFunctionBool3Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool3Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionBool4Array(name: String, arraySize: Int, block: KslFunctionBool4Array.() -> Unit) =
-    KslFunctionBool4Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionBool4Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 
 fun KslShaderStage.functionMat2Array(name: String, arraySize: Int, block: KslFunctionMat2Array.() -> Unit) =
-    KslFunctionMat2Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionMat2Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionMat3Array(name: String, arraySize: Int, block: KslFunctionMat3Array.() -> Unit) =
-    KslFunctionMat3Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionMat3Array(name, arraySize, this).apply(block).also { addFunction(name, it) }
 
 fun KslShaderStage.functionMat4Array(name: String, arraySize: Int, block: KslFunctionMat4Array.() -> Unit) =
-    KslFunctionMat4Array(name, arraySize, this).apply(block).also { createFunction(name, it) }
+    KslFunctionMat4Array(name, arraySize, this).apply(block).also { addFunction(name, it) }

@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-
 class KslLoopFor<S>(
     val loopVar: KslVarScalar<S>,
     val whileExpression: KslScalarExpression<KslBool1>,

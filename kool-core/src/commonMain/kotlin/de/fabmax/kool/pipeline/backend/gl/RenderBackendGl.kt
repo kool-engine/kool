@@ -137,7 +137,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {
-        val src = GlslGenerator(glslGeneratorHints).generateProgram(shader.program, pipeline)
+        val src = GlslGenerator.generateProgram(shader.program, pipeline, glslGeneratorHints)
         return ShaderCodeGl(src.vertexSrc, src.fragmentSrc)
     }
 
@@ -145,7 +145,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         if (!gl.capabilities.hasComputeShaders) {
             logW { "Compute shaders require OpenGL 4.3 or higher" }
         }
-        val src = GlslGenerator(glslGeneratorHints).generateComputeProgram(shader.program, pipeline)
+        val src = GlslGenerator.generateComputeProgram(shader.program, pipeline, glslGeneratorHints)
         return ComputeShaderCodeGl(src.computeSrc)
     }
 

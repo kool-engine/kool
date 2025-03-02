@@ -1,8 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
-
 abstract class KslExpressionBit<T: KslNumericType>(
     val left: KslExpression<*>,
     val right: KslExpression<*>,
@@ -10,10 +7,8 @@ abstract class KslExpressionBit<T: KslNumericType>(
     override val expressionType: T)
     : KslExpression<T> {
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        left.collectStateDependencies() + right.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(left, right)
 
-    override fun generateExpression(generator: KslGenerator): String = generator.bitExpression(this)
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opString} ${right.toPseudoCode()})"
 }
 
@@ -130,9 +125,7 @@ infix fun <V, S> KslVectorExpression<V, S>.shr(right: KslScalarExpression<S>): K
 class KslIntScalarComplement<S>(val expr: KslScalarExpression<S>) : KslScalarExpression<S>
         where S: KslIntType, S: KslScalar {
     override val expressionType = expr.expressionType
-    override fun collectStateDependencies(): Set<KslMutatedState> = expr.collectStateDependencies()
-
-    override fun generateExpression(generator: KslGenerator): String = generator.intComplementExpression(this)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(expr)
     override fun toPseudoCode(): String = "~(${expr.toPseudoCode()})"
 }
 fun <S> KslScalarExpression<S>.inv() where S: KslIntType, S: KslScalar = KslIntScalarComplement(this)
@@ -140,9 +133,7 @@ fun <S> KslScalarExpression<S>.inv() where S: KslIntType, S: KslScalar = KslIntS
 class KslIntVectorComplement<V, S>(val expr: KslVectorExpression<V, S>) : KslVectorExpression<V, S>
         where V: KslIntType, V: KslVector<S>, S: KslIntType, S: KslScalar {
     override val expressionType = expr.expressionType
-    override fun collectStateDependencies(): Set<KslMutatedState> = expr.collectStateDependencies()
-
-    override fun generateExpression(generator: KslGenerator): String = generator.intComplementExpression(this)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(expr)
     override fun toPseudoCode(): String = "~(${expr.toPseudoCode()})"
 }
 fun <V, S> KslVectorExpression<V, S>.inv() where V: KslIntType, V: KslVector<S>, S: KslIntType, S: KslScalar = KslIntVectorComplement(this)

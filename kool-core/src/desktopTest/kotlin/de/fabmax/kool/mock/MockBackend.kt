@@ -16,7 +16,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hints("#version 330 core"))) : RenderBackend {
+class MockBackend() : RenderBackend {
 
     override val name: String = "Mock backend"
     override val apiName: String = "MockAPI"
@@ -36,17 +36,19 @@ class MockBackend(val shaderGen: KslGenerator = GlslGenerator(GlslGenerator.Hint
 
     override var frameGpuTime: Duration = 0.0.seconds
 
+    val glslHints = GlslGenerator.Hints("#version 330 core")
+
     override fun renderFrame(ctx: KoolContext) { }
 
     override fun cleanup(ctx: KoolContext) { }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode {
-        val output = shaderGen.generateProgram(shader.program, pipeline) as KslGenerator.GeneratedSourceOutput
+        val output = GlslGenerator.generateProgram(shader.program, pipeline, glslHints) as KslGenerator.GeneratedSourceOutput
         return ShaderCodeGl(output.vertexSrc, output.fragmentSrc)
     }
 
     override fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode {
-        val output = shaderGen.generateComputeProgram(shader.program, pipeline) as KslGenerator.GeneratedSourceOutput
+        val output = GlslGenerator.generateComputeProgram(shader.program, pipeline, glslHints) as KslGenerator.GeneratedSourceOutput
         return ComputeShaderCodeGl(output.computeSrc)
     }
 

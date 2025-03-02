@@ -74,9 +74,8 @@ class MsdfUiShader(
                     }.`else` {
                         val msdfVals = float4Var(sampleTexture(fontMap, uv.output, 0f.const))
                         val color = float4Var(fgColor.output)
-                        val pxRange = msdfProps.output.x * uniformFloat1("uPxRange")
+                        val pxRange = float1Var(msdfProps.output.x * uniformFloat1("uPxRange"))
                         val weight = msdfProps.output.y
-                        //val cutoff = msdfProps.output.z
 
                         // sample regular sdf map (stored in texture alpha channel)
                         val dist = float1Var(msdfVals.a - 0.5f.const + weight)

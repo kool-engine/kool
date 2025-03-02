@@ -1,9 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.modules.ksl.model.KslHierarchy
-import de.fabmax.kool.modules.ksl.model.KslOp
-import de.fabmax.kool.modules.ksl.model.KslProcessor
+import de.fabmax.kool.modules.ksl.model.KslTransformer
 import de.fabmax.kool.pipeline.ShaderStage
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -11,18 +9,18 @@ import kotlin.contracts.contract
 abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageType) {
 
     val interStageVars = mutableListOf<KslInterStageVar<*>>()
-
-    val globalScope = KslScopeBuilder(null, null, this)
-    private val mainOp = KslOp("main", globalScope)
-    val main = KslScopeBuilder(mainOp, globalScope, this)
-    val hierarchy = KslHierarchy(globalScope)
-
     val functions = mutableMapOf<String, KslFunction<*>>()
+    val globalScope = KslScopeBuilder(null, null, this)
+
+    private val mainFunc = KslFunction<KslTypeVoid>("main", KslTypeVoid, this)
+    val main: KslScopeBuilder get() = mainFunc.body
+
+    var generatorExpressions = emptyMap<KslExpression<*>, KslExpression<*>>()
+        private set
 
     init {
         globalScope.scopeName = "global"
-        globalScope.ops += mainOp
-        mainOp.childScopes += main
+        globalScope.ops += mainFunc.functionRoot
     }
 
     fun main(block: KslScopeBuilder.() -> Unit) {
@@ -32,15 +30,16 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         main.apply(block)
     }
 
-    fun createFunction(name: String, function: KslFunction<*>) {
+    fun addFunction(name: String, function: KslFunction<*>) {
         if (name in functions.keys) {
-            throw IllegalStateException("Function with name $name is already defined")
+            error("Function with name $name is already defined")
         }
         functions[name] = function
+        globalScope.ops += function.functionRoot
     }
 
     inline fun <reified T: KslFunction<*>> getOrCreateFunction(name: String, createFunc: () -> T): T {
-        return functions.getOrPut(name, createFunc) as T
+        return (functions[name] ?: createFunc().also { addFunction(name, it) }) as T
     }
 
     inline fun <reified T: KslBlock> findBlock(name: String? = null): T? {
@@ -77,9 +76,8 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         }
     }
 
-    open fun prepareGenerate() {
-        KslProcessor().process(hierarchy)
-        functions.values.forEach { it.prepareGenerate() }
+    fun prepareGenerate() {
+        generatorExpressions = KslTransformer.transform(this).generatorExpressions
     }
 }
 
@@ -188,8 +186,7 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     fun KslScopeBuilder.colorOutput(rgb: KslVectorExpression<KslFloat3, KslFloat1>, a: KslScalarExpression<KslFloat1> = 1f.const, location: Int = 0) {
         check (parentStage is KslFragmentStage) { "colorOutput is only available in fragment stage" }
         val outColor = parentStage.colorOutput(location)
-        val cachedRgb = float3Var(rgb)
-        outColor.value set float4Value(cachedRgb, a)
+        outColor.value set float4Value(rgb, a)
     }
 
     fun KslScopeBuilder.colorOutput(value: KslVectorExpression<KslFloat4, KslFloat1>, location: Int = 0) {

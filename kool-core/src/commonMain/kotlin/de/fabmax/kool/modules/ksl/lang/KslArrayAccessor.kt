@@ -1,15 +1,11 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 
 open class KslArrayAccessor<T: KslType>(
     val array: KslExpression<KslArrayType<T>>,
     val index: KslExpression<KslInt1>
-) :
-    KslExpression<T>,
-    KslAssignable<T>
-{
+) : KslExpression<T>, KslAssignable<T> {
 
     override val expressionType = array.expressionType.elemType
     override val assignType = array.expressionType.elemType
@@ -17,11 +13,9 @@ open class KslArrayAccessor<T: KslType>(
     override val mutatingState: KslValue<*>?
         get() = array as? KslValue<*>
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        array.collectStateDependencies() + index.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(array, index)
 
     override fun generateAssignable(generator: KslGenerator) = generator.arrayValueAssignable(this)
-    override fun generateExpression(generator: KslGenerator) = generator.arrayValueExpression(this)
     override fun toPseudoCode() = "${array.toPseudoCode()}[${index.toPseudoCode()}]"
 }
 

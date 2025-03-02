@@ -1,7 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
 import kotlin.math.max
 
 abstract class KslVectorAccessor<T: KslType>(
@@ -24,9 +23,8 @@ abstract class KslVectorAccessor<T: KslType>(
         checkComponents(components, (vector.expressionType as KslVector<*>).dimens)
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> = vector.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(vector)
     override fun generateAssignable(generator: KslGenerator) = generator.vectorSwizzleAssignable(this)
-    override fun generateExpression(generator: KslGenerator) = generator.vectorSwizzleExpression(this)
     override fun toPseudoCode() = "${vector.toPseudoCode()}.$components"
 
     private fun checkComponents(components: String, inputDim: Int) {

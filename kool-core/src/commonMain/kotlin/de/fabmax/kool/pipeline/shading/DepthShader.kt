@@ -10,7 +10,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 
-fun depthShader(cfgBlock: DepthShader.Config.() -> Unit): DepthShader {
+fun DepthShader(cfgBlock: DepthShader.Config.() -> Unit): DepthShader {
     val cfg = DepthShader.Config().apply(cfgBlock)
     return DepthShader(cfg)
 }
@@ -18,8 +18,6 @@ fun depthShader(cfgBlock: DepthShader.Config.() -> Unit): DepthShader {
 open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pipelineCfg) {
 
     var alphaMask by texture2d("tAlphaMask", cfg.alphaMask)
-
-    constructor(block: Config.() -> Unit) : this(Config().apply(block))
 
     companion object {
         private fun depthShaderProg(cfg: Config) = KslProgram("Depth shader").apply {

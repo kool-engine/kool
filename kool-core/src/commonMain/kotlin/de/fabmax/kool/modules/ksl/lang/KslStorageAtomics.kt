@@ -1,8 +1,5 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
-
 class KslStorageAtomicOp<T: KslStorageType<R, C>, C: KslIntType, R>(
     val storage: KslStorage<T, *>,
     val coord: KslExpression<C>,
@@ -16,8 +13,7 @@ class KslStorageAtomicOp<T: KslStorageType<R, C>, C: KslIntType, R>(
         storage.isAccessedAtomically = true
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> = storage.collectStateDependencies()
-    override fun generateExpression(generator: KslGenerator): String = generator.storageAtomicOp(this)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord, data)
     override fun toPseudoCode(): String = "storageAtomic$op(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${data.toPseudoCode()})"
 
     enum class Op {
@@ -44,7 +40,6 @@ class KslStorageAtomicCompareSwap<T: KslStorageType<R, C>, C: KslIntType, R>(
         storage.isAccessedAtomically = true
     }
 
-    override fun collectStateDependencies(): Set<KslMutatedState> = storage.collectStateDependencies()
-    override fun generateExpression(generator: KslGenerator): String = generator.storageAtomicCompareSwap(this)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord, compare, data)
     override fun toPseudoCode(): String = "storageAtomicCondSet(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${compare.toPseudoCode()}, ${data.toPseudoCode()})"
 }

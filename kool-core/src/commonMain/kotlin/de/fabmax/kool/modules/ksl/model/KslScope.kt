@@ -1,9 +1,10 @@
 package de.fabmax.kool.modules.ksl.model
 
+import de.fabmax.kool.modules.ksl.lang.KslShaderStage
 import kotlin.math.max
 import kotlin.math.min
 
-open class KslScope(val parentOp: KslOp?) {
+abstract class KslScope(val parentOp: KslOp?, val parentScope: KslScope?, val parentStage: KslShaderStage) {
 
     val dependencies = mutableMapOf<KslState, KslMutatedState>()
     val mutations = mutableMapOf<KslState, KslStateMutation>()
@@ -24,17 +25,30 @@ open class KslScope(val parentOp: KslOp?) {
         updateDependenciesAndMutations()
     }
 
+    fun isAncestorOf(other: KslScope): Boolean {
+        var it = other.parentScope
+        while (it != null && it != this) {
+            it = it.parentScope
+        }
+        return it == this
+    }
+
+    fun addDependency(dep: KslMutatedState) {
+        dependencies[dep.state] = dep
+        parentOp?.addDependency(dep)
+    }
+
     private fun updateDependenciesAndMutations() {
         val startStates = mutableMapOf<KslState, Int>()
         val endStates = mutableMapOf<KslState, Int>()
 
         parentOp?.let { parent ->
-            parent.dependencies.values.forEach { startStates[it.state] = it.mutation }
+            parent.stateDependencies.values.forEach { startStates[it.state] = it.mutation }
             parent.mutations.values.forEach { endStates[it.state] = it.toMutation }
         }
 
         ops.forEach { op ->
-            op.dependencies.values.filter { it.state !in definedStates }.forEach { extDep ->
+            op.stateDependencies.values.filter { it.state !in definedStates }.forEach { extDep ->
                 val start = min(startStates.getOrElse(extDep.state) { extDep.mutation }, extDep.mutation)
                 startStates[extDep.state] = start
             }
@@ -47,13 +61,12 @@ open class KslScope(val parentOp: KslOp?) {
         dependencies.clear()
         mutations.clear()
         startStates.forEach { (state, startMutation) ->
+            addDependency(KslMutatedState(state, startMutation))
             val endMutation = endStates[state] ?: startMutation
-            dependencies[state] = KslMutatedState(state, startMutation)
             if (startMutation != endMutation) {
                 mutations[state] = KslStateMutation(state, startMutation, endMutation)
             }
             parentOp?.let { parent ->
-                parent.dependencies[state] = KslMutatedState(state, startMutation)
                 if (startMutation != endMutation) {
                     parent.mutations[state] = KslStateMutation(state, startMutation, endMutation)
                 }

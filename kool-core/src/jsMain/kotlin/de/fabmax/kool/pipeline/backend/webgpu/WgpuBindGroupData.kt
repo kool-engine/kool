@@ -3,10 +3,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Float32BufferImpl
-import de.fabmax.kool.util.MixedBufferImpl
-import de.fabmax.kool.util.Uint8BufferImpl
+import de.fabmax.kool.util.*
 
 class WgpuBindGroupData(
     private val data: BindGroupData,
@@ -62,7 +59,10 @@ class WgpuBindGroupData(
             if (storage.binding.getAndClearDirtyFlag() || recreatedBindGroup) {
                 val hostBuffer = when (val buf = checkNotNull(storage.binding.storageBuffer?.buffer)) {
                     is Uint8BufferImpl -> buf.buffer
+                    is Uint16BufferImpl -> buf.buffer
+                    is Int32BufferImpl -> buf.buffer
                     is Float32BufferImpl -> buf.buffer
+                    is MixedBufferImpl -> buf.buffer
                     else -> error("unexpected buffer type: ${buf::class.simpleName}")
                 }
                 device.queue.writeBuffer(

@@ -4,7 +4,6 @@ package de.fabmax.kool.modules.ksl.lang
 class KslLoopDoWhile(val whileExpression: KslScalarExpression<KslBool1>, parentScope: KslScopeBuilder) :
     KslStatement("do-while", parentScope), KslLoop
 {
-
     val body = KslScopeBuilder(this, parentScope, parentScope.parentStage)
 
     init {

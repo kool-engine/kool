@@ -299,7 +299,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
                     }
 
                     x.x *= 1f.const / ar
-                    projPos.xy += (x * lineWidthPort.output / camData.viewport.w) * projPos.w
+                    projPos.xy += (x * lineWidthPort / camData.viewport.w) * projPos.w
                     clipPos.input set projPos
                     outPosition set projPos
                 }

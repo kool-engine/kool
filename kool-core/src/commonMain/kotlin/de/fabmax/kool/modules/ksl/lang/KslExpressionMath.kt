@@ -1,19 +1,14 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
-
 abstract class KslExpressionMath<T: KslNumericType>(
     val left: KslExpression<*>,
     val right: KslExpression<*>,
     val operator: KslMathOperator,
-    override val expressionType: T)
-    : KslExpression<T> {
+    override val expressionType: T
+) : KslExpression<T> {
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        left.collectStateDependencies() + right.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(left, right)
 
-    override fun generateExpression(generator: KslGenerator): String = generator.mathExpression(this)
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opChar} ${right.toPseudoCode()})"
 }
 
@@ -195,9 +190,7 @@ class KslNumericScalarUnaryMinus<S>(val expr: KslScalarExpression<S>) : KslScala
         where S: KslNumericType, S: KslScalar {
 
     override val expressionType = expr.expressionType
-    override fun collectStateDependencies(): Set<KslMutatedState> = expr.collectStateDependencies()
-
-    override fun generateExpression(generator: KslGenerator): String = generator.numericUnaryMinusExpression(this)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(expr)
     override fun toPseudoCode(): String = "-(${expr.toPseudoCode()})"
 }
 
@@ -207,9 +200,7 @@ class KslNumericVectorUnaryMinus<V, S>(val expr: KslVectorExpression<V, S>) : Ks
         where V: KslNumericType, V: KslVector<S>, S: KslNumericType, S: KslScalar {
 
     override val expressionType = expr.expressionType
-    override fun collectStateDependencies(): Set<KslMutatedState> = expr.collectStateDependencies()
-
-    override fun generateExpression(generator: KslGenerator): String = generator.numericUnaryMinusExpression(this)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(expr)
     override fun toPseudoCode(): String = "-(${expr.toPseudoCode()})"
 }
 

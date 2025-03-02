@@ -1,19 +1,14 @@
 package de.fabmax.kool.modules.ksl.lang
 
-import de.fabmax.kool.modules.ksl.generator.KslGenerator
-import de.fabmax.kool.modules.ksl.model.KslMutatedState
-
 abstract class KslExpressionCompare<B: KslBoolType>(
     val left: KslExpression<*>,
     val right: KslExpression<*>,
     val operator: KslCompareOperator,
-    override val expressionType: B)
-    : KslExpression<B> {
+    override val expressionType: B
+) : KslExpression<B> {
 
-    override fun collectStateDependencies(): Set<KslMutatedState> =
-        left.collectStateDependencies() + right.collectStateDependencies()
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(left, right)
 
-    override fun generateExpression(generator: KslGenerator): String = generator.compareExpression(this)
     override fun toPseudoCode(): String = "(${left.toPseudoCode()} ${operator.opString} ${right.toPseudoCode()})"
 }
 

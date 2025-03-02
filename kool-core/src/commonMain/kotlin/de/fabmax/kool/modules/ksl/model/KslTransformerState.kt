@@ -2,7 +2,7 @@ package de.fabmax.kool.modules.ksl.model
 
 import de.fabmax.kool.util.logE
 
-class KslProcessorState {
+class KslTransformerState {
     private val stack = mutableListOf<ScopeState>()
 
     val statesInScope: Map<KslState, KslMutatedState>
@@ -39,8 +39,8 @@ class KslProcessorState {
     private inner class ScopeState(
         val scope: KslScope,
         initialState: Map<KslState, KslMutatedState>,
-        val statesInScope: MutableMap<KslState, KslMutatedState> = mutableMapOf())
-        : Map<KslState, KslMutatedState> by statesInScope {
+        val statesInScope: MutableMap<KslState, KslMutatedState> = mutableMapOf()
+    ) : Map<KslState, KslMutatedState> by statesInScope {
 
         init {
             statesInScope += initialState

@@ -230,8 +230,8 @@ class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Deferr
                         val materialColorPort = getFloat4Port("materialColor")
                         val materialColorInput = float4Var(materialColorPort.input.input)
 
-                        val normal = getFloat3Port("normal")
-                        val worldPos = getFloat3Port("worldPos")
+                        val normal = getFloat3Port("normal").output
+                        val worldPos = getFloat3Port("worldPos").output
                         val viewDir = float3Var(normalize(camData.position - worldPos))
 
                         val refractionIor = 1.4f

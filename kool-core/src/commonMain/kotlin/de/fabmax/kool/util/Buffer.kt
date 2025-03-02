@@ -144,7 +144,7 @@ interface MixedBuffer : Buffer {
     fun setInt16(byteIndex: Int, value: Short): MixedBuffer = setUint16(byteIndex, value.toUShort())
 
     fun putInt32(value: Int): MixedBuffer
-    fun putInt32(data: IntArray) : MixedBuffer= putInt32(data, 0, data.size)
+    fun putInt32(data: IntArray): MixedBuffer = putInt32(data, 0, data.size)
     fun putInt32(data: IntArray, offset: Int, len: Int): MixedBuffer
     fun putInt32(data: Int32Buffer): MixedBuffer
 
