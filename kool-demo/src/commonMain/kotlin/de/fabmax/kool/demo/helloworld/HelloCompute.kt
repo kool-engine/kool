@@ -57,7 +57,7 @@ class HelloCompute : DemoScene("Hello Compute") {
         addComputePass(ComputePass(computeShader, storageSizeX, storageSizeY))
 
         // create and bind the storage texture used as compute shader output
-        val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.INT4)
+        val storageBuffer = StorageBuffer2d(storageSizeX, storageSizeY, GpuType.Int4)
         computeShader.storage2d("pixelStorage", storageBuffer)
 
         // animate offset position to change the colors over time

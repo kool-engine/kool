@@ -221,14 +221,14 @@ class UiPrimitiveMesh(name: String) :
     }
 
     companion object {
-        val ATTRIB_CENTER = Attribute("aCenter", GpuType.FLOAT2)
-        val ATTRIB_OUTER_DIMENS = Attribute("aOuterDimens", GpuType.FLOAT4)
-        val ATTRIB_INNER_DIMENS = Attribute("aInnerDimens", GpuType.FLOAT4)
-        val ATTRIB_OUTER_WEIGHTS = Attribute("aOuterW", GpuType.FLOAT4)
-        val ATTRIB_INNER_WEIGHTS = Attribute("aInnerW", GpuType.FLOAT4)
-        val ATTRIB_COLOR_A = Attribute("aColorA", GpuType.FLOAT4)
-        val ATTRIB_COLOR_B = Attribute("aColorB", GpuType.FLOAT4)
-        val ATTRIB_GRADIENT_CFG = Attribute("aGradientCfg", GpuType.FLOAT4)
+        val ATTRIB_CENTER = Attribute("aCenter", GpuType.Float2)
+        val ATTRIB_OUTER_DIMENS = Attribute("aOuterDimens", GpuType.Float4)
+        val ATTRIB_INNER_DIMENS = Attribute("aInnerDimens", GpuType.Float4)
+        val ATTRIB_OUTER_WEIGHTS = Attribute("aOuterW", GpuType.Float4)
+        val ATTRIB_INNER_WEIGHTS = Attribute("aInnerW", GpuType.Float4)
+        val ATTRIB_COLOR_A = Attribute("aColorA", GpuType.Float4)
+        val ATTRIB_COLOR_B = Attribute("aColorB", GpuType.Float4)
+        val ATTRIB_GRADIENT_CFG = Attribute("aGradientCfg", GpuType.Float4)
     }
 
     private class PrimitiveShader : KslShader(Model(), pipelineConfig) {

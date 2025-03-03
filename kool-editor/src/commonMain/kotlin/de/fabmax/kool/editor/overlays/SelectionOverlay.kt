@@ -262,7 +262,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
 
     companion object {
         private const val DEFAULT_NUM_JOINTS = 64
-        private val meshId = Attribute("attrib_meshid", GpuType.FLOAT4)
+        private val meshId = Attribute("attrib_meshid", GpuType.Float4)
     }
 
     private inner class SelectedMeshes(val nodeId: NodeId) {

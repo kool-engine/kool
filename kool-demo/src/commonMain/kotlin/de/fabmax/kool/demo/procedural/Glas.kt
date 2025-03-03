@@ -265,6 +265,6 @@ class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Deferr
     private class ExtrudeProps(val r: Float, val h: Float, val t: Float)
 
     companion object {
-        private val THICKNESS = Attribute("aMatThickness", GpuType.FLOAT1)
+        private val THICKNESS = Attribute("aMatThickness", GpuType.Float1)
     }
 }

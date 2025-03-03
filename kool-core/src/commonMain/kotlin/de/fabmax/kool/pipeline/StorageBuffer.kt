@@ -168,12 +168,12 @@ abstract class StorageBuffer(
 
     companion object {
         fun makeBuffer(size: Int, type: GpuType): Buffer = when (type) {
-            GpuType.FLOAT1 -> Float32Buffer(size * 1)
-            GpuType.FLOAT2 -> Float32Buffer(size * 2)
-            GpuType.FLOAT4 -> Float32Buffer(size * 4)
-            GpuType.INT1 -> Int32Buffer(size * 1)
-            GpuType.INT2 -> Int32Buffer(size * 2)
-            GpuType.INT4 -> Int32Buffer(size * 4)
+            GpuType.Float1 -> Float32Buffer(size * 1)
+            GpuType.Float2 -> Float32Buffer(size * 2)
+            GpuType.Float4 -> Float32Buffer(size * 4)
+            GpuType.Int1 -> Int32Buffer(size * 1)
+            GpuType.Int2 -> Int32Buffer(size * 2)
+            GpuType.Int4 -> Int32Buffer(size * 4)
             else -> error("Invalid buffer type: $type (only 1, 2, and 4 dimensional float and int types are allowed)")
         }
     }

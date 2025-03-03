@@ -132,8 +132,8 @@ class BeeDemo : DemoScene("Fighting Bees") {
     }
 
     companion object {
-        val ATTR_POSITION = Attribute("aPosition", GpuType.FLOAT4)
-        val ATTR_ROTATION = Attribute("aRotation", GpuType.FLOAT4)
+        val ATTR_POSITION = Attribute("aPosition", GpuType.Float4)
+        val ATTR_ROTATION = Attribute("aRotation", GpuType.Float4)
 
         val bgColor = MdColor.LIGHT_BLUE tone 400
     }

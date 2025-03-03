@@ -97,8 +97,8 @@ class TriangulatedPointMesh(
     }
 
     companion object {
-        val ATTR_POINT_VERTEX = Attribute("aPointVertex", GpuType.FLOAT2)
-        val ATTR_POINT_POS_SZ = Attribute("aPointPos", GpuType.FLOAT4)
-        val ATTR_POINT_COLOR = Attribute("aPointColor", GpuType.FLOAT4)
+        val ATTR_POINT_VERTEX = Attribute("aPointVertex", GpuType.Float2)
+        val ATTR_POINT_POS_SZ = Attribute("aPointPos", GpuType.Float4)
+        val ATTR_POINT_COLOR = Attribute("aPointColor", GpuType.Float4)
     }
 }

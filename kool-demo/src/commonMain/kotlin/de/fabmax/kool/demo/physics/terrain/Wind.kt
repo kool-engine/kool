@@ -73,6 +73,6 @@ class Wind {
     }
 
     companion object {
-        val WIND_SENSITIVITY = Attribute("aWindSense", GpuType.FLOAT1)
+        val WIND_SENSITIVITY = Attribute("aWindSense", GpuType.Float1)
     }
 }

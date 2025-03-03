@@ -34,7 +34,7 @@ class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: Verte
     }
 
     val vertexLocations = buildMap {
-        val matrixCols = mapOf(GpuType.MAT2 to 2, GpuType.MAT3 to 3, GpuType.MAT4 to 4)
+        val matrixCols = mapOf(GpuType.Mat2 to 2, GpuType.Mat3 to 3, GpuType.Mat4 to 4)
         var vLoc = 0
 
         vertexLayout?.let { layout ->

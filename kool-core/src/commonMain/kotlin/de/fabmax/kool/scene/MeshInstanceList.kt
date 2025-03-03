@@ -2,6 +2,7 @@ package de.fabmax.kool.scene
 
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.backend.GpuInstances
+import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer

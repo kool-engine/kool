@@ -39,14 +39,14 @@ class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
 
         for (offset in data.attributeByteOffsets) {
             when (offset.key.type) {
-                GpuType.FLOAT1 -> attribViews[offset.key] = FloatView(offset.value / 4)
-                GpuType.FLOAT2 -> attribViews[offset.key] = Vec2fView(offset.value / 4)
-                GpuType.FLOAT3 -> attribViews[offset.key] = Vec3fView(offset.value / 4)
-                GpuType.FLOAT4 -> attribViews[offset.key] = Vec4fView(offset.value / 4)
-                GpuType.INT1 -> attribViews[offset.key] = IntView(offset.value / 4)
-                GpuType.INT2 -> attribViews[offset.key] = Vec2iView(offset.value / 4)
-                GpuType.INT3 -> attribViews[offset.key] = Vec3iView(offset.value / 4)
-                GpuType.INT4 -> attribViews[offset.key] = Vec4iView(offset.value / 4)
+                GpuType.Float1 -> attribViews[offset.key] = FloatView(offset.value / 4)
+                GpuType.Float2 -> attribViews[offset.key] = Vec2fView(offset.value / 4)
+                GpuType.Float3 -> attribViews[offset.key] = Vec3fView(offset.value / 4)
+                GpuType.Float4 -> attribViews[offset.key] = Vec4fView(offset.value / 4)
+                GpuType.Int1 -> attribViews[offset.key] = IntView(offset.value / 4)
+                GpuType.Int2 -> attribViews[offset.key] = Vec2iView(offset.value / 4)
+                GpuType.Int3 -> attribViews[offset.key] = Vec3iView(offset.value / 4)
+                GpuType.Int4 -> attribViews[offset.key] = Vec4iView(offset.value / 4)
                 else -> throw IllegalArgumentException("${offset.key.type} is not a valid vertex attribute")
             }
         }

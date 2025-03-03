@@ -374,7 +374,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
     }
 
     companion object {
-        val ATTRIB_SHELL = Attribute("aLayer", GpuType.FLOAT1)
+        val ATTRIB_SHELL = Attribute("aLayer", GpuType.Float1)
     }
 }
 

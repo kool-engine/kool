@@ -52,7 +52,7 @@ object GrassShader {
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) { }
     }
 
-    val DISTANCE_SCALE = Attribute("aDistScale", GpuType.FLOAT1)
+    val DISTANCE_SCALE = Attribute("aDistScale", GpuType.Float1)
 
     fun makeGrassShader(
         grassColor: Texture2d,

@@ -324,17 +324,18 @@ class DrawPipelineVk(
     private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)
 
     private fun Attribute.vkProps() = when (type) {
-        GpuType.FLOAT1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
-        GpuType.FLOAT2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
-        GpuType.FLOAT3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
-        GpuType.FLOAT4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
-        GpuType.MAT2 -> AttributeVkProps(slotOffset = GpuType.FLOAT2.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
-        GpuType.MAT3 -> AttributeVkProps(slotOffset = GpuType.FLOAT3.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
-        GpuType.MAT4 -> AttributeVkProps(slotOffset = GpuType.FLOAT4.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
-        GpuType.INT1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
-        GpuType.INT2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
-        GpuType.INT3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
-        GpuType.INT4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+        GpuType.Float1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
+        GpuType.Float2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
+        GpuType.Float3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+        GpuType.Float4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+        GpuType.Mat2 -> AttributeVkProps(slotOffset = GpuType.Float2.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
+        GpuType.Mat3 -> AttributeVkProps(slotOffset = GpuType.Float3.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+        GpuType.Mat4 -> AttributeVkProps(slotOffset = GpuType.Float4.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+        GpuType.Int1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
+        GpuType.Int2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
+        GpuType.Int3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
+        GpuType.Int4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+        is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
     }
 
     companion object {
