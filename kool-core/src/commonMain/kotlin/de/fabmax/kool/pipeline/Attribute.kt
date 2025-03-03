@@ -23,7 +23,9 @@ sealed interface GpuType {
     data object Mat3 : GpuType { override val byteSize = 36 }
     data object Mat4 : GpuType { override val byteSize = 64 }
 
-    data class Struct(val name: String, override val byteSize: Int) : GpuType
+    data class Struct(val name: String, override val byteSize: Int) : GpuType {
+        override fun toString(): String = "Struct"
+    }
 }
 
 val GpuType.isInt: Boolean get() = this === GpuType.Int1 || this === GpuType.Int2 || this === GpuType.Int3 || this === GpuType.Int4
