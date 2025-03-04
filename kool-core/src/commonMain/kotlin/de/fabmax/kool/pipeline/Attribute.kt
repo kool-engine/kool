@@ -19,8 +19,8 @@ sealed interface GpuType {
     data object Int3 : GpuType { override val byteSize = 12 }
     data object Int4 : GpuType { override val byteSize = 16 }
 
-    data object Mat2 : GpuType { override val byteSize = 16 }
-    data object Mat3 : GpuType { override val byteSize = 36 }
+    data object Mat2 : GpuType { override val byteSize = 32 }
+    data object Mat3 : GpuType { override val byteSize = 48 }
     data object Mat4 : GpuType { override val byteSize = 64 }
 
     data class Struct(val name: String, override val byteSize: Int) : GpuType {
