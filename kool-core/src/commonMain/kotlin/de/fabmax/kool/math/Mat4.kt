@@ -589,11 +589,13 @@ open class Mat4f(
     /**
      * Prints this matrix in a somewhat formatted form to the console.
      */
-    fun print() {
-        println("[${m00.toString(3)}, ${m01.toString(3)}, ${m02.toString(3)}, ${m03.toString(3)}]")
-        println("[${m10.toString(3)}, ${m11.toString(3)}, ${m12.toString(3)}, ${m13.toString(3)}]")
-        println("[${m20.toString(3)}, ${m21.toString(3)}, ${m22.toString(3)}, ${m23.toString(3)}]")
-        println("[${m30.toString(3)}, ${m31.toString(3)}, ${m32.toString(3)}, ${m33.toString(3)}]")
+    fun print(precision: Int = 3, width: Int = 8) = println(toStringFormatted(precision, width))
+
+    fun toStringFormatted(precision: Int = 3, width: Int = 8) = buildString {
+        append("[${m00.toString(precision).padStart(width)}, ${m01.toString(precision).padStart(width)}, ${m02.toString(precision).padStart(width)}, ${m03.toString(precision).padStart(width)}]\n")
+        append("[${m10.toString(precision).padStart(width)}, ${m11.toString(precision).padStart(width)}, ${m12.toString(precision).padStart(width)}, ${m13.toString(precision).padStart(width)}]\n")
+        append("[${m20.toString(precision).padStart(width)}, ${m21.toString(precision).padStart(width)}, ${m22.toString(precision).padStart(width)}, ${m23.toString(precision).padStart(width)}]\n")
+        append("[${m30.toString(precision).padStart(width)}, ${m31.toString(precision).padStart(width)}, ${m32.toString(precision).padStart(width)}, ${m33.toString(precision).padStart(width)}]")
     }
 
     override fun toString(): String {
@@ -1879,11 +1881,13 @@ open class Mat4d(
     /**
      * Prints this matrix in a somewhat formatted form to the console.
      */
-    fun print() {
-        println("[${m00.toString(3)}, ${m01.toString(3)}, ${m02.toString(3)}, ${m03.toString(3)}]")
-        println("[${m10.toString(3)}, ${m11.toString(3)}, ${m12.toString(3)}, ${m13.toString(3)}]")
-        println("[${m20.toString(3)}, ${m21.toString(3)}, ${m22.toString(3)}, ${m23.toString(3)}]")
-        println("[${m30.toString(3)}, ${m31.toString(3)}, ${m32.toString(3)}, ${m33.toString(3)}]")
+    fun print(precision: Int = 3, width: Int = 8) = println(toStringFormatted(precision, width))
+
+    fun toStringFormatted(precision: Int = 3, width: Int = 8) = buildString {
+        append("[${m00.toString(precision).padStart(width)}, ${m01.toString(precision).padStart(width)}, ${m02.toString(precision).padStart(width)}, ${m03.toString(precision).padStart(width)}]\n")
+        append("[${m10.toString(precision).padStart(width)}, ${m11.toString(precision).padStart(width)}, ${m12.toString(precision).padStart(width)}, ${m13.toString(precision).padStart(width)}]\n")
+        append("[${m20.toString(precision).padStart(width)}, ${m21.toString(precision).padStart(width)}, ${m22.toString(precision).padStart(width)}, ${m23.toString(precision).padStart(width)}]\n")
+        append("[${m30.toString(precision).padStart(width)}, ${m31.toString(precision).padStart(width)}, ${m32.toString(precision).padStart(width)}, ${m33.toString(precision).padStart(width)}]")
     }
 
     override fun toString(): String {
