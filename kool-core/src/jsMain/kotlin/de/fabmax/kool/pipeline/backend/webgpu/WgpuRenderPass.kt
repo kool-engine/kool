@@ -31,7 +31,7 @@ abstract class WgpuRenderPass(
             val end = endTimestamp
             if (begin != null && end != null && begin.isReady && end.isReady) {
                 renderPass.tGpu = (end.latestResult - begin.latestResult).nanoseconds
-                timestampWrites = GPURenderPassTimestampWrites(backend.timestampQuery.querySet, begin.index, end.index)
+                timestampWrites = backend.timestampQuery.getQuerySet()?.let { GPURenderPassTimestampWrites(it, begin.index, end.index) }
             }
         }
 

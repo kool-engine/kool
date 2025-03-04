@@ -49,9 +49,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     internal lateinit var textureLoader: WgpuTextureLoader
         private set
 
-    internal val timestampQuery: WgpuTimestamps by lazy {
-        WgpuTimestamps(128, this)
-    }
+    var isTimestampQuerySupported = false
+        private set
+    internal val timestampQuery: WgpuTimestamps by lazy { WgpuTimestamps(128, this) }
 
     val pipelineManager = WgpuPipelineManager(this)
     private val screenPass = WgpuScreenPass(this)
@@ -87,6 +87,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         if ("timestamp-query" in availableFeatures) {
             logI { "Enabling WebGPU timestamp-query feature" }
             requiredFeatures.add("timestamp-query")
+            isTimestampQuerySupported = true
         }
         if ("rg11b10ufloat-renderable" in availableFeatures) {
             logI { "Enabling rg11b10ufloat-renderable feature" }

@@ -28,7 +28,7 @@ class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWeb
             val end = endTimestamp
             if (begin != null && end != null && begin.isReady && end.isReady) {
                 parentPass.tGpu = (end.latestResult - begin.latestResult).nanoseconds
-                timestampWrites = GPUComputePassTimestampWrites(backend.timestampQuery.querySet, begin.index, end.index)
+                timestampWrites = backend.timestampQuery.getQuerySet()?.let { GPUComputePassTimestampWrites(it, begin.index, end.index) }
             }
         }
         val desc = GPUComputePassDescriptor(parentPass.name, timestampWrites)

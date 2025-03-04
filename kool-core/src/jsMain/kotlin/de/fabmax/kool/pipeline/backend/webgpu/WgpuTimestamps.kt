@@ -5,9 +5,9 @@ import org.khronos.webgl.Uint32Array
 import org.khronos.webgl.get
 import kotlin.math.max
 
-class WgpuTimestamps(val size: Int, backend: RenderBackendWebGpu) {
+class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
 
-    val querySet: GPUQuerySet = backend.device.createQuerySet(GPUQuerySetDescriptor(GPUQueryType.timestamp, size))
+    private var querySet: GPUQuerySet? = null
     private val resolveBuffer = backend.device.createBuffer(GPUBufferDescriptor(size * 8L, GPUBufferUsage.QUERY_RESOLVE or GPUBufferUsage.COPY_SRC))
     private val readBuffer = backend.device.createBuffer(GPUBufferDescriptor(size * 8L, GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST))
 
@@ -20,7 +20,21 @@ class WgpuTimestamps(val size: Int, backend: RenderBackendWebGpu) {
 
     private var lastActive = -1
 
+    fun getQuerySet(): GPUQuerySet? {
+        if (!backend.isTimestampQuerySupported) {
+            return null
+        }
+        if (querySet == null) {
+            querySet = backend.device.createQuerySet(GPUQuerySetDescriptor(GPUQueryType.timestamp, size))
+        }
+        return querySet
+    }
+
     fun createQuery(): QuerySlot? {
+        if (!backend.isTimestampQuerySupported) {
+            return null
+        }
+
         var slot: QuerySlot? = null
         for (i in slots.indices) {
             if (slots[i] == null) {
@@ -35,6 +49,7 @@ class WgpuTimestamps(val size: Int, backend: RenderBackendWebGpu) {
     }
 
     fun resolve(encoder: GPUCommandEncoder) {
+        val querySet = getQuerySet() ?: return
         if (!isInFlight && activeQueries > 0) {
             isInFlight = true
             encoder.resolveQuerySet(querySet, 0, lastActive + 1, resolveBuffer, 0L)
@@ -53,7 +68,6 @@ class WgpuTimestamps(val size: Int, backend: RenderBackendWebGpu) {
                         val lower = decoded[i*2]
                         val upper = decoded[i*2+1]
                         slot.latestResult = upper.toLong() shl 32 or lower.toLong()
-                        //println("$i: ${slot.latestResult} $upper $lower")
                     }
                 }
                 readBuffer.unmap()
