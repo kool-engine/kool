@@ -36,7 +36,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslReturn -> opReturn(op)
             is KslBlock -> opBlock(op)
             is KslInlineCode -> opInlineCode(op)
-            is KslStorageWrite<*, *, *> -> opStorageWrite(op)
+            is KslStorageWrite<*, *> -> opStorageWrite(op)
             is KslStorageTextureStore<*, *, *> -> opStorageTextureWrite(op)
             is KslFunction<*>.FunctionRoot -> opFunctionBody(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
@@ -58,7 +58,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun opReturn(op: KslReturn): String
     abstract fun opBlock(op: KslBlock): String
     abstract fun opInlineCode(op: KslInlineCode): String
-    abstract fun opStorageWrite(op: KslStorageWrite<*, *, *>): String
+    abstract fun opStorageWrite(op: KslStorageWrite<*, *>): String
     abstract fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String
 
     fun KslExpression<*>.generateExpression(): String {
@@ -95,11 +95,11 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslSampleDepthTextureArray<*> -> sampleDepthTextureArray(expr)
             is KslImageTextureLoad<*> -> imageTextureRead(expr)
             is KslStorageTextureLoad<*, *, *> -> storageTextureRead(expr)
-            is KslStorageRead<*, *, *> -> generateStorageRead(expr)
+            is KslStorageRead<*, *> -> generateStorageRead(expr)
             is KslStorageTextureSize<*, *, *> -> generateTextureSize(expr)
             is KslTextureSize<*, *> -> generateTextureSize(expr)
-            is KslStorageAtomicOp<*, *, *> -> storageAtomicOp(expr)
-            is KslStorageAtomicCompareSwap<*, *, *> -> storageAtomicCompareSwap(expr)
+            is KslStorageAtomicOp<*, *> -> storageAtomicOp(expr)
+            is KslStorageAtomicCompareSwap<*, *> -> storageAtomicCompareSwap(expr)
             else -> error("expression type not implemented: $expr")
         }
     }
@@ -346,9 +346,9 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String
     abstract fun imageTextureRead(expression: KslImageTextureLoad<*>): String
 
-    abstract fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String
-    abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
-    abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
+    abstract fun generateStorageRead(storageRead: KslStorageRead<*, *>): String
+    abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *>): String
+    abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *>): String
 
     interface GeneratorOutput
 

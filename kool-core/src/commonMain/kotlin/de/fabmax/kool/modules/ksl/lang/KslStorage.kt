@@ -1,6 +1,6 @@
 package de.fabmax.kool.modules.ksl.lang
 
-sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(
+sealed class KslStorage<T: KslStorageType<*>>(
     name: String,
     val storageType: T
 ) : KslValue<T>(name, true) {
@@ -12,27 +12,21 @@ sealed class KslStorage<T: KslStorageType<*, C>, C: KslIntType>(
     internal var isAccessedAtomically = false
 }
 
-class KslStorage1d<T: KslStorage1dType<*>>(name: String, storage: T, val sizeX: Int?) :
-    KslStorage<T, KslInt1>(name, storage)
+class KslStructStorage(name: String, type: KslStruct, val sizeX: Int?) :
+    KslStorage<KslStructStorageType>(name, KslStructStorageType(type))
+{
+    override val expressionType: KslStructStorageType get() = storageType
+}
+
+class KslPrimitiveStorage<T: KslPrimitiveStorageType<*>>(name: String, storage: T, val size: Int?) :
+    KslStorage<T>(name, storage)
 {
     override val expressionType: T get() = storageType
 }
 
-class KslStorage2d<T: KslStorage2dType<*>>(name: String, storage: T, val sizeX: Int, val sizeY: Int?) :
-    KslStorage<T, KslInt2>(name, storage)
-{
-    override val expressionType: T get() = storageType
-}
-
-class KslStorage3d<T: KslStorage3dType<*>>(name: String, storage: T, val sizeX: Int, val sizeY: Int, val sizeZ: Int?) :
-    KslStorage<T, KslInt3>(name, storage)
-{
-    override val expressionType: T get() = storageType
-}
-
-class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
-    val storage: KslStorage<T, *>,
-    val coord: KslExpression<C>,
+class KslStorageRead<T: KslStorageType<R>, R: KslNumericType>(
+    val storage: KslStorage<T>,
+    val index: KslExprInt1,
     override val expressionType: R
 ) : KslExpression<R> {
 
@@ -40,21 +34,21 @@ class KslStorageRead<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
         storage.isRead = true
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord)
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, index)
 
-    override fun toPseudoCode(): String = "storageRead(${storage.toPseudoCode()}, ${coord.toPseudoCode()})"
+    override fun toPseudoCode(): String = "storageRead(${storage.toPseudoCode()}, ${index.toPseudoCode()})"
 }
 
-open class KslStorageWrite<T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType>(
-    val storage: KslStorage<T, *>,
-    val coord: KslExpression<C>,
+open class KslStorageWrite<T: KslStorageType<R>, R: KslNumericType>(
+    val storage: KslStorage<T>,
+    val index: KslExprInt1,
     val data: KslExpression<R>,
     scopeBuilder: KslScopeBuilder
 ) : KslStatement("store", scopeBuilder) {
 
     init {
         addExpressionDependencies(storage)
-        addExpressionDependencies(coord)
+        addExpressionDependencies(index)
         addExpressionDependencies(data)
         addMutation(storage.mutate())
 
@@ -62,6 +56,6 @@ open class KslStorageWrite<T: KslStorageType<R, C>, R: KslNumericType, C: KslInt
     }
 
     override fun toPseudoCode(): String {
-        return annotatePseudoCode("storageWrite(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${data.toPseudoCode()})")
+        return annotatePseudoCode("storageWrite(${storage.toPseudoCode()}, ${index.toPseudoCode()}, ${data.toPseudoCode()})")
     }
 }

@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Int32Buffer
-import de.fabmax.kool.util.MixedBuffer
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 
 interface MappedUniform {
     fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean
@@ -131,10 +128,12 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
     }
 }
 
-sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl) : MappedUniform {
-    val gl = backend.gl
+class MappedStorageBuffer(
+    val ssbo: BindGroupData.StorageBufferBindingData,
+    val backend: RenderBackendGl
+) : MappedUniform {
 
-    protected abstract val ssbo: BindGroupData.StorageBufferBindingData<T>
+    val gl = backend.gl
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val storage = ssbo.storageBuffer ?: return false
@@ -151,9 +150,12 @@ sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl)
 
         if (ssbo.getAndClearDirtyFlag()) {
             ssbo.storageBuffer?.let {
-                when (it.buffer) {
-                    is Float32Buffer -> gpuBuffer.setData(it.buffer, gl.DYNAMIC_DRAW)
-                    is Int32Buffer -> gpuBuffer.setData(it.buffer, gl.DYNAMIC_DRAW)
+                when (val buf = it.buffer) {
+                    is Uint8Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
+                    is Uint16Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
+                    is Int32Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
+                    is Float32Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
+                    is MixedBuffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
                     else -> error("Invalid buffer type")
                 }
             }
@@ -162,15 +164,6 @@ sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl)
         return true
     }
 }
-
-class MappedStorageBuffer1d(override val ssbo: BindGroupData.StorageBuffer1dBindingData, backend: RenderBackendGl) :
-    MappedStorageBuffer<StorageBuffer1d>(backend)
-
-class MappedStorageBuffer2d(override val ssbo: BindGroupData.StorageBuffer2dBindingData, backend: RenderBackendGl) :
-    MappedStorageBuffer<StorageBuffer2d>(backend)
-
-class MappedStorageBuffer3d(override val ssbo: BindGroupData.StorageBuffer3dBindingData, backend: RenderBackendGl) :
-    MappedStorageBuffer<StorageBuffer3d>(backend)
 
 sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : MappedUniform {
     protected val gl = backend.gl

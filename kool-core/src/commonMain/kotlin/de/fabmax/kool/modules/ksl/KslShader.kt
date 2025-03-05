@@ -308,9 +308,8 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
 
         val name = storage.name
         bindGrpBuilder.storage += when(storage)  {
-            is KslStorage1d<*> -> StorageBuffer1dLayout(name, format, storage.sizeX, accessType, storageStages)
-            is KslStorage2d<*> -> StorageBuffer2dLayout(name, format, storage.sizeX, storage.sizeY, accessType, storageStages)
-            is KslStorage3d<*> -> StorageBuffer3dLayout(name, format, storage.sizeX, storage.sizeY, storage.sizeZ, accessType, storageStages)
+            is KslStructStorage -> TODO()
+            is KslPrimitiveStorage<*> -> StorageBufferLayout(name, format, storage.size, accessType, storageStages)
         }
     }
 }

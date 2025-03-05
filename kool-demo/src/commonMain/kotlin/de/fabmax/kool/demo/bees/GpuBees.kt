@@ -24,8 +24,8 @@ class GpuBees(beeScene: Scene) {
     private val maxGpuBees: Int get() = BeeConfig.maxBeesPerTeamGpu
 
     // Contains position, rotation and velocities for all bees of one team
-    private val beeBufferA = StorageBuffer1d((maxGpuBees + 64) * 3, GpuType.Float4)
-    private val beeBufferB = StorageBuffer1d((maxGpuBees + 64) * 3, GpuType.Float4)
+    private val beeBufferA = StorageBuffer((maxGpuBees + 64) * 3, GpuType.Float4)
+    private val beeBufferB = StorageBuffer((maxGpuBees + 64) * 3, GpuType.Float4)
 
     val beeUpdateTime = mutableStateOf(0.0)
 
@@ -35,8 +35,8 @@ class GpuBees(beeScene: Scene) {
             val randomSeed = uniformFloat1("randomSeed")
             val numBees = uniformInt1("numBees")
             val spawnPos = uniformFloat3("spawnPos")
-            val beeBuffer = storage1d<KslFloat4>("beeBuffer")
-            val enemyBeeBuffer = storage1d<KslFloat4>("enemyBeeBuffer")
+            val beeBuffer = storage<KslFloat4>("beeBuffer")
+            val enemyBeeBuffer = storage<KslFloat4>("enemyBeeBuffer")
 
             val speedJitter = uniformFloat1("speedJitter")
             val teamAttraction = uniformFloat1("teamAttraction")
@@ -249,8 +249,8 @@ class GpuBees(beeScene: Scene) {
         var randomSeed by beeUpdateShader.uniform1f("randomSeed")
         var numBees by beeUpdateShader.uniform1i("numBees")
         var spawnPos by beeUpdateShader.uniform3f("spawnPos")
-        var beeBuffer by beeUpdateShader.storage1d("beeBuffer")
-        var enemyBeeBuffer by beeUpdateShader.storage1d("enemyBeeBuffer")
+        var beeBuffer by beeUpdateShader.storage("beeBuffer")
+        var enemyBeeBuffer by beeUpdateShader.storage("enemyBeeBuffer")
 
         var speedJitter by beeUpdateShader.uniform1f("speedJitter")
         var teamAttraction by beeUpdateShader.uniform1f("teamAttraction")
@@ -334,7 +334,7 @@ class GpuBees(beeScene: Scene) {
         simulationPass.isEnabled = isEnabled
     }
 
-    private fun initBeeBuffer(beeBuffer: StorageBuffer1d, spawnPos: Vec3f) {
+    private fun initBeeBuffer(beeBuffer: StorageBuffer, spawnPos: Vec3f) {
         for (i in 0 until maxGpuBees) {
             // position and dead / alive state
             beeBuffer[i * 3 + 0] = Vec4f(spawnPos + randomInUnitCube() * 5f, BeeConfig.decayTime)
@@ -348,11 +348,11 @@ class GpuBees(beeScene: Scene) {
     fun setupShaders(beeTexture: Texture2d) {
         beeMeshA.shader = BeeDrawShader(MdColor.BLUE, MdColor.PURPLE).apply {
             colorMap = beeTexture
-            storage1d("beeBuffer", beeBufferA)
+            storage("beeBuffer", beeBufferA)
         }
         beeMeshB.shader = BeeDrawShader(MdColor.AMBER, MdColor.DEEP_ORANGE).apply {
             colorMap = beeTexture
-            storage1d("beeBuffer", beeBufferB)
+            storage("beeBuffer", beeBufferB)
         }
     }
 
@@ -387,7 +387,7 @@ class GpuBees(beeScene: Scene) {
                 val aliveness = interStageFloat1()
                 vertexStage {
                     main {
-                        val beeBuffer = storage1d<KslFloat4>("beeBuffer")
+                        val beeBuffer = storage<KslFloat4>("beeBuffer")
                         val beeOffset = int1Var(inInstanceIndex.toInt1() * 3.const)
 
                         val rotQuat = float4Var(beeBuffer[beeOffset + 1.const])

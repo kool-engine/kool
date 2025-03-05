@@ -50,7 +50,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return uniform.value in main.dependencies || functions.values.any { f -> uniform.value in f.body.dependencies }
     }
 
-    fun dependsOn(storage: KslStorage<*, *>): Boolean {
+    fun dependsOn(storage: KslStorage<*>): Boolean {
         return storage in main.dependencies || functions.values.any { f -> storage in f.body.dependencies }
     }
 
@@ -62,7 +62,11 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return program.uniformSamplers.values.map { it.sampler }.filter { dependsOn(it) }
     }
 
-    fun getUsedStorage(): List<KslStorage<*, *>> {
+    fun getUsedStructs(): List<KslStruct> {
+        return program.structs.values.toList() // todo: .filter { dependsOn(it) }
+    }
+
+    fun getUsedStorage(): List<KslStorage<*>> {
         return program.storageBuffers.values.filter { dependsOn(it) }
     }
 

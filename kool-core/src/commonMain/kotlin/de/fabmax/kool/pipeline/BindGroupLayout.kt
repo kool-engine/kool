@@ -107,13 +107,13 @@ class UniformBufferLayout(
     fun hasUniform(name: String) = uniforms.any { it.name == name }
 }
 
-sealed class StorageBufferLayout(
+class StorageBufferLayout(
     name: String,
     val format: GpuType,
+    val size: Int?,
     val accessType: StorageAccessType,
-    stages: Set<ShaderStage>,
-    type: BindingType,
-) : BindingLayout(name, stages, type) {
+    stages: Set<ShaderStage>
+) : BindingLayout(name, stages, BindingType.STORAGE_BUFFER_1D) {
 
     override val hash: LongHash = LongHash {
         this += name
@@ -124,33 +124,6 @@ sealed class StorageBufferLayout(
         this.hash
     }
 }
-
-class StorageBuffer1dLayout(
-    name: String,
-    format: GpuType,
-    val sizeX: Int?,
-    accessType: StorageAccessType,
-    stages: Set<ShaderStage>,
-) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_1D)
-
-class StorageBuffer2dLayout(
-    name: String,
-    format: GpuType,
-    val sizeX: Int,
-    val sizeY: Int?,
-    accessType: StorageAccessType,
-    stages: Set<ShaderStage>,
-) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_2D)
-
-class StorageBuffer3dLayout(
-    name: String,
-    format: GpuType,
-    val sizeX: Int,
-    val sizeY: Int,
-    val sizeZ: Int?,
-    accessType: StorageAccessType,
-    stages: Set<ShaderStage>,
-) : StorageBufferLayout(name, format, accessType, stages, BindingType.STORAGE_BUFFER_3D)
 
 sealed class TextureLayout(
     name: String,

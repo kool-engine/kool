@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.Struct
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -23,7 +24,8 @@ open class KslProgram(val name: String) {
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.PIPELINE)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
-    val storageBuffers = mutableMapOf<String, KslStorage<*,*>>()
+    val structs = mutableMapOf<String, KslStruct>()
+    val storageBuffers = mutableMapOf<String, KslStorage<*>>()
     val storageTextures = mutableMapOf<String, KslStorageTexture<*,*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
 
@@ -90,7 +92,7 @@ open class KslProgram(val name: String) {
     }
 
     @PublishedApi
-    internal fun registerStorage(storage: KslStorage<*,*>) {
+    internal fun registerStorage(storage: KslStorage<*>) {
         storageBuffers[storage.name] = storage
         stages.forEach {
             it.globalScope.definedStates += storage
@@ -163,70 +165,43 @@ open class KslProgram(val name: String) {
     fun depthTextureCubeArray(name: String) =
         getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
 
-    inline fun <reified T: KslNumericType> storage1d(
+    fun struct(provider: () -> Struct<*>): KslStruct {
+        val a = provider()
+        val struct = structs.getOrPut(a.name) { KslStruct(provider) }
+        val b = struct.provider()
+        check(a::class == b::class) {
+            "Existing struct with name $name has type ${b::class.simpleName} but given struct is ${a::class.simpleName}"
+        }
+        return struct
+    }
+
+    fun storage(
+        name: String,
+        structType: KslStruct,
+        size: Int? = null
+    ): KslStructStorage {
+        TODO()
+    }
+
+    inline fun <reified T: KslNumericType> storage(
         name: String,
         size: Int? = null
-    ): KslStorage1d<KslStorage1dType<T>> {
+    ): KslPrimitiveStorage<KslPrimitiveStorageType<T>> {
         val type = numericTypeForT<T>()
-        val storage: KslStorage<*,*> = storageBuffers[name]
-            ?: KslStorage1d(name, KslStorage1dType(type), size).also { registerStorage(it) }
+        val storage: KslStorage<*> = storageBuffers[name]
+            ?: KslPrimitiveStorage(name, KslPrimitiveStorageType(type), size).also { registerStorage(it) }
 
-        check(storage is KslStorage1d<*> && storage.storageType.elemType == type) {
+        check(storage is KslPrimitiveStorage<*> && storage.storageType.elemType == type) {
             "Existing storage buffer with name \"$name\" has not the expected type"
         }
-        check(storage.sizeX == size) {
-            "Existing storage buffer with name \"$name\" has not the expected dimension: ${storage.sizeX} != $size"
+        check(storage.size == size) {
+            "Existing storage buffer with name \"$name\" has not the expected dimension: ${storage.size} != $size"
         }
         check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
             "3-dimensional storage buffer element types are not supported (use 4 dimensions instead)"
         }
         @Suppress("UNCHECKED_CAST")
-        return storage as KslStorage1d<KslStorage1dType<T>>
-    }
-
-    inline fun <reified T: KslNumericType> storage2d(
-        name: String,
-        sizeX: Int,
-        sizeY: Int? = null
-    ): KslStorage2d<KslStorage2dType<T>> {
-        val type = numericTypeForT<T>()
-        val storage: KslStorage<*,*> = storageBuffers[name]
-            ?: KslStorage2d(name, KslStorage2dType(type), sizeX, sizeY).also { registerStorage(it) }
-
-        check(storage is KslStorage2d<*> && type == storage.storageType.elemType) {
-            "Existing storage buffer with name \"$name\" has not the expected type"
-        }
-        check(storage.sizeX == sizeX && storage.sizeY == sizeY) {
-            "Existing storage buffer with name \"$name\" has not the expected dimension: (${storage.sizeX}, ${storage.sizeY}) != ($sizeX, $sizeY)"
-        }
-        check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
-            "3-dimensional storage buffer element types are not supported (use 4 dimensions instead)"
-        }
-        @Suppress("UNCHECKED_CAST")
-        return storage as KslStorage2d<KslStorage2dType<T>>
-    }
-
-    inline fun <reified T: KslNumericType> storage3d(
-        name: String,
-        sizeX: Int,
-        sizeY: Int,
-        sizeZ: Int? = null,
-    ): KslStorage3d<KslStorage3dType<T>> {
-        val type = numericTypeForT<T>()
-        val storage: KslStorage<*,*> = storageBuffers[name]
-            ?: KslStorage3d(name, KslStorage3dType(type), sizeX, sizeY, sizeZ).also { registerStorage(it) }
-
-        check(storage is KslStorage3d<*> && storage.storageType.elemType == type) {
-            "Existing storage buffer with name \"$name\" has not the expected type"
-        }
-        check(storage.sizeX == sizeX && storage.sizeY == sizeY && storage.sizeZ == sizeZ) {
-            "Existing storage buffer with name \"$name\" has not the expected dimension: (${storage.sizeX}, ${storage.sizeY}, ${storage.sizeZ}) != ($sizeX, $sizeY, $sizeZ)"
-        }
-        check(type != KslFloat3 && type != KslInt3 && type != KslUint3) {
-            "3-dimensional storage buffer element types are not supported (use 4 dimensions instead)"
-        }
-        @Suppress("UNCHECKED_CAST")
-        return storage as KslStorage3d<KslStorage3dType<T>>
+        return storage as KslPrimitiveStorage<KslPrimitiveStorageType<T>>
     }
 
     inline fun <reified T: KslNumericType> storageTexture1d(

@@ -787,112 +787,85 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
     fun <R: KslNumericType> KslStorageTexture3d<KslStorageTexture3dType<R>, R>.size(): KslExprInt3 = textureSize3d(this)
 
     // builtin storage functions
-    operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslStorage<T,*>.get(coord: KslExpression<C>): KslExpression<R> =
-        KslStorageRead(this, coord, expressionType.elemType)
+    operator fun <T: KslPrimitiveStorageType<R>, R: KslNumericType> KslStorage<T>.get(index: KslExprInt1): KslExpression<R> =
+        KslStorageRead(this, index, expressionType.elemType)
 
-    @JvmName("get2d")
-    operator fun <T: KslStorage2dType<R>, R: KslNumericType> KslStorage<T,*>.get(x: KslExprInt1, y: KslExprInt1): KslExpression<R> =
-        KslStorageRead(this, int2Value(x, y), expressionType.elemType)
-
-    @JvmName("get3d")
-    operator fun <T: KslStorage3dType<R>, R: KslNumericType> KslStorage<T,*>.get(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1): KslExpression<R> =
-        KslStorageRead(this, int3Value(x, y, z), expressionType.elemType)
-
-    operator fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> KslStorage<T, C>.set(
-        coord: KslExpression<C>,
+    operator fun <T: KslPrimitiveStorageType<R>, R: KslNumericType> KslStorage<T>.set(
+        index: KslExprInt1,
         data: KslExpression<R>
     ) {
-        ops += KslStorageWrite(this, coord, data, this@KslScopeBuilder)
+        ops += KslStorageWrite(this, index, data, this@KslScopeBuilder)
     }
 
-    @JvmName("set2d")
-    operator fun <T: KslStorage2dType<R>, R: KslNumericType> KslStorage2d<T>.set(
-        x: KslExprInt1,
-        y: KslExprInt1,
+    fun <T: KslStorageType<R>, R: KslNumericType> storageRead(
+        storage: KslStorage<T>,
+        index: KslExprInt1
+    ): KslExpression<R> = KslStorageRead(storage, index, storage.expressionType.elemType)
+
+    fun <T: KslStorageType<R>, R: KslNumericType> storageWrite(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ) {
-        ops += KslStorageWrite(this, int2Value(x, y), data, this@KslScopeBuilder)
+        ops += KslStorageWrite(storage, index, data, this)
     }
 
-    @JvmName("set3d")
-    operator fun <T: KslStorage3dType<R>, R: KslNumericType> KslStorage3d<T>.set(
-        x: KslExprInt1,
-        y: KslExprInt1,
-        z: KslExprInt1,
-        data: KslExpression<R>
-    ) {
-        ops += KslStorageWrite(this, int3Value(x, y, z), data, this@KslScopeBuilder)
-    }
-
-    fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageRead(
-        storage: KslStorage<T,*>,
-        coord: KslExpression<C>
-    ): KslExpression<R> = KslStorageRead(storage, coord, storage.expressionType.elemType)
-
-    fun <T: KslStorageType<R, C>, R: KslNumericType, C: KslIntType> storageWrite(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
-        data: KslExpression<R>
-    ) {
-        ops += KslStorageWrite(storage, coord, data, this)
-    }
-
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicSwap(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicSwap(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Swap, storage.storageType.elemType)
+        KslStorageAtomicOp(storage, index, data, KslStorageAtomicOp.Op.Swap, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicAdd(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicAdd(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Add, storage.storageType.elemType)
+        KslStorageAtomicOp(storage, index, data, KslStorageAtomicOp.Op.Add, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicAnd(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicAnd(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.And, storage.storageType.elemType)
+        KslStorageAtomicOp(storage, index, data, KslStorageAtomicOp.Op.And, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicOr(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicOr(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Or, storage.storageType.elemType)
+        KslStorageAtomicOp(storage, index, data, KslStorageAtomicOp.Op.Or, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicXor(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicXor(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Xor, storage.storageType.elemType)
+        KslStorageAtomicOp(storage, index, data, KslStorageAtomicOp.Op.Xor, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicMin(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicMin(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Min, storage.storageType.elemType)
+        KslStorageAtomicOp(storage, index, data, KslStorageAtomicOp.Op.Min, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicMax(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicMax(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicOp(storage, coord, data, KslStorageAtomicOp.Op.Max, storage.storageType.elemType)
+        KslStorageAtomicOp(storage, index, data, KslStorageAtomicOp.Op.Max, storage.storageType.elemType)
 
-    fun <T: KslStorageType<R, C>, R, C: KslIntType> storageAtomicCompareSwap(
-        storage: KslStorage<T, C>,
-        coord: KslExpression<C>,
+    fun <T: KslStorageType<R>, R> storageAtomicCompareSwap(
+        storage: KslStorage<T>,
+        index: KslExprInt1,
         compare: KslExpression<R>,
         data: KslExpression<R>
     ): KslScalarExpression<R> where R: KslIntType, R: KslScalar =
-        KslStorageAtomicCompareSwap(storage, coord, data, compare, storage.storageType.elemType)
+        KslStorageAtomicCompareSwap(storage, index, data, compare, storage.storageType.elemType)
 
     // builtin storage texture functions
     operator fun <T: KslStorageTextureType<R, C>, R: KslNumericType, C: KslIntType> KslStorageTexture<T, R, C>.get(coord: KslExpression<C>): KslExprFloat4 =

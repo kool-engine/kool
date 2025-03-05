@@ -3,7 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.GpuType
 
-abstract class Struct<T: Struct<T>>(val layout: BufferLayout) {
+abstract class Struct<T: Struct<T>>(val name: String, val layout: BufferLayout) {
     val members = mutableListOf<StructMember>()
 
     private var lastPos = 0
@@ -145,7 +145,7 @@ abstract class Struct<T: Struct<T>>(val layout: BufferLayout) {
 
     protected fun <S: Struct<S>> struct(name: String = "nested_${members.size}", structProvider: () -> S): NestedStructMember<S> {
         val nested = structProvider()
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(name, nested.structSize), 1)
+        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(nested.name, nested.structSize), 1)
         lastPos = offset + size
         return NestedStructMember<S>(name, offset, structProvider).also { members.add(it) }
     }
@@ -222,7 +222,7 @@ abstract class Struct<T: Struct<T>>(val layout: BufferLayout) {
 
     protected fun <S: Struct<S>> structArray(arraySize: Int, name: String = "nestedArr_${members.size}", structProvider: () -> S): NestedStructArrayMember<S> {
         val nested = structProvider()
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(name, nested.structSize), arraySize)
+        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(nested.name, nested.structSize), arraySize)
         lastPos = offset + size
         return NestedStructArrayMember<S>(name, offset, arraySize, structProvider).also { members.add(it) }
     }
@@ -478,7 +478,7 @@ abstract class Struct<T: Struct<T>>(val layout: BufferLayout) {
         private var nestedBufferAccess: StructBufferAccess? = null
         internal val accessor = structProvider()
 
-        override val type = GpuType.Struct(name, accessor.structSize)
+        override val type = GpuType.Struct(accessor.name, accessor.structSize)
         override val arraySize = 1
 
         val buf: S
@@ -798,7 +798,7 @@ abstract class Struct<T: Struct<T>>(val layout: BufferLayout) {
         private var nestedBufferAccess: StructBufferAccessNested? = null
         internal val accessor = structProvider()
 
-        override val type = GpuType.Struct(name, accessor.structSize)
+        override val type = GpuType.Struct(accessor.name, accessor.structSize)
         val arrayStride = layout.arrayStrideOf(type)
 
         init {
@@ -838,4 +838,3 @@ class StructBufferAccessNested(val parent: StructBufferAccess, var byteOffset: I
     override val structBuffer: StructBuffer<*> get() = parent.structBuffer
     override val bufferPosition: Int get() = parent.bufferPosition + byteOffset
 }
-

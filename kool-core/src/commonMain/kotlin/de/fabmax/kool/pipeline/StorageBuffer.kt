@@ -6,28 +6,36 @@ import de.fabmax.kool.pipeline.backend.GpuBuffer
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 
-abstract class StorageBuffer(
+class StorageBuffer(
+    val size: Int,
     val format: GpuType,
-    val name: String,
-    size: Int,
+    val name: String = UniqueId.nextId("StorageBuffer")
 ): BaseReleasable() {
 
     internal var gpuBuffer: GpuBuffer? = null
 
-    internal val buffer = makeBuffer(size, format)
-    internal var isDirty: Boolean = true
+    var buffer = makeBuffer(size, format)
+    var isDirty: Boolean = true
 
     private val bufferF32: Float32Buffer
         get() {
             check(buffer is Float32Buffer) { "Buffer has an int-format ($format), cannot used with float values" }
-            return buffer
+            return buffer as Float32Buffer
         }
 
     private val bufferI32: Int32Buffer
         get() {
             check(buffer is Int32Buffer) { "Buffer has an float-format ($format), cannot used with int values" }
-            return buffer
+            return buffer as Int32Buffer
         }
+
+    operator fun set(index: Int, value: Float) = setF1(index, value)
+    operator fun set(index: Int, value: Vec2f) = setF2(index, value)
+    operator fun set(index: Int, value: Vec4f) = setF4(index, value)
+
+    operator fun set(index: Int, value: Int) = setI1(index, value)
+    operator fun set(index: Int, value: Vec2i) = setI2(index, value)
+    operator fun set(index: Int, value: Vec4i) = setI4(index, value)
 
     protected fun setF1(index: Int, value: Float) {
         bufferF32[index] = value
@@ -177,52 +185,4 @@ abstract class StorageBuffer(
             else -> error("Invalid buffer type: $type (only 1, 2, and 4 dimensional float and int types are allowed)")
         }
     }
-}
-
-class StorageBuffer1d(
-    val sizeX: Int,
-    type: GpuType,
-    name: String = UniqueId.nextId("StorageBuffer1d")
-) : StorageBuffer(type, name, sizeX) {
-
-    operator fun set(index: Int, value: Float) = setF1(index, value)
-    operator fun set(index: Int, value: Vec2f) = setF2(index, value)
-    operator fun set(index: Int, value: Vec4f) = setF4(index, value)
-
-    operator fun set(index: Int, value: Int) = setI1(index, value)
-    operator fun set(index: Int, value: Vec2i) = setI2(index, value)
-    operator fun set(index: Int, value: Vec4i) = setI4(index, value)
-}
-
-class StorageBuffer2d(
-    val sizeX: Int,
-    val sizeY: Int,
-    type: GpuType,
-    name: String = UniqueId.nextId("StorageBuffer2d")
-) : StorageBuffer(type, name, sizeX * sizeY) {
-
-    operator fun set(x: Int, y: Int, value: Float) = setF1(y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, value: Vec2f) = setF2(y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, value: Vec4f) = setF4(y * sizeX + x, value)
-
-    operator fun set(x: Int, y: Int, value: Int) = setI1(y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, value: Vec2i) = setI2(y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, value: Vec4i) = setI4(y * sizeX + x, value)
-}
-
-class StorageBuffer3d(
-    val sizeX: Int,
-    val sizeY: Int,
-    val sizeZ: Int,
-    type: GpuType,
-    name: String = UniqueId.nextId("StorageBuffer3d")
-) : StorageBuffer(type, name, sizeX * sizeY * sizeZ) {
-
-    operator fun set(x: Int, y: Int, z: Int, value: Float) = setF1(z * sizeX * sizeY + y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, z: Int, value: Vec2f) = setF2(z * sizeX * sizeY + y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, z: Int, value: Vec4f) = setF4(z * sizeX * sizeY + y * sizeX + x, value)
-
-    operator fun set(x: Int, y: Int, z: Int, value: Int) = setI1(z * sizeX * sizeY + y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, z: Int, value: Vec2i) = setI2(z * sizeX * sizeY + y * sizeX + x, value)
-    operator fun set(x: Int, y: Int, z: Int, value: Vec4i) = setI4(z * sizeX * sizeY + y * sizeX + x, value)
 }

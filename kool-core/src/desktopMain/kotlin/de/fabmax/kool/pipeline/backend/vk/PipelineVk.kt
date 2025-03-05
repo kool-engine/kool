@@ -64,7 +64,7 @@ sealed class PipelineVk(
         for (i in bindings.indices) {
             val binding = bindings[i]
             when (binding) {
-                is BindGroupData.StorageBufferBindingData<*> -> {
+                is BindGroupData.StorageBufferBindingData -> {
                     isCheckOk = isCheckOk && binding.storageBuffer != null
                 }
                 is BindGroupData.TextureBindingData<*> -> {

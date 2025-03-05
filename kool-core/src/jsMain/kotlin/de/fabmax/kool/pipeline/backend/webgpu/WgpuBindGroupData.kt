@@ -85,10 +85,7 @@ class WgpuBindGroupData(
             data.bindings.map { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData -> add(binding.makeEntry(pass))
-
-                    is BindGroupData.StorageBuffer1dBindingData -> add(binding.makeEntry(pass))
-                    is BindGroupData.StorageBuffer2dBindingData -> add(binding.makeEntry(pass))
-                    is BindGroupData.StorageBuffer3dBindingData -> add(binding.makeEntry(pass))
+                    is BindGroupData.StorageBufferBindingData -> add(binding.makeEntry(pass))
 
                     is BindGroupData.Texture1dBindingData -> addAll(binding.makeTexture1dEntry())
                     is BindGroupData.Texture2dBindingData -> addAll(binding.makeTexture2dEntry())
@@ -125,14 +122,8 @@ class WgpuBindGroupData(
         return GPUBindGroupEntry(location.binding, GPUBufferBinding(gpuBuffer.buffer))
     }
 
-    private fun BindGroupData.StorageBufferBindingData<*>.makeEntry(pass: GpuPass): GPUBindGroupEntry {
-        val (name, location) = when (this) {
-            is BindGroupData.StorageBuffer1dBindingData -> name to locations[layout]
-            is BindGroupData.StorageBuffer2dBindingData -> name to locations[layout]
-            is BindGroupData.StorageBuffer3dBindingData -> name to locations[layout]
-            else -> error("unreachable")
-        }
-
+    private fun BindGroupData.StorageBufferBindingData.makeEntry(pass: GpuPass): GPUBindGroupEntry {
+        val location = locations[layout]
         val storage = checkNotNull(storageBuffer) { "Cannot create storage buffer binding from null buffer" }
         var gpuBuffer = storage.gpuBuffer as WgpuBufferResource?
         if (gpuBuffer == null) {
@@ -329,7 +320,7 @@ class WgpuBindGroupData(
     }
 
     private data class StorageBufferBinding(
-        val binding: BindGroupData.StorageBufferBindingData<*>,
+        val binding: BindGroupData.StorageBufferBindingData,
         val gpuBuffer: WgpuBufferResource
     )
 

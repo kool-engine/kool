@@ -295,33 +295,24 @@ class WgslGenerator private constructor(
         return "textureLoad($textureName, $coord, $level)"
     }
 
-    private fun KslStorage<*,*>.getIndexString(coordExpr: String) = when (this) {
-        // always use a 1d array and compute array index dynamically based on buffer size
-        is KslStorage1d<*> -> "[${coordExpr}]"
-        is KslStorage2d<*> -> "[${coordExpr}.y * $sizeX + ${coordExpr}.x]"
-        is KslStorage3d<*> -> "[${coordExpr}.z * ${sizeY * sizeX} + ${coordExpr}.y * $sizeX + ${coordExpr}.x]"
-    }
-
-    override fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String {
+    override fun generateStorageRead(storageRead: KslStorageRead<*, *>): String {
         val storage = storageRead.storage.generateExpression()
-        val coord = storageRead.coord.generateExpression()
-        val arrayIndex = storageRead.storage.getIndexString(coord)
+        val index = storageRead.index.generateExpression()
         return if (storageRead.storage.isAccessedAtomically) {
-            "atomicLoad(&${storage}${arrayIndex})"
+            "atomicLoad(&${storage}[${index}])"
         } else {
-            "${storage}${arrayIndex}"
+            "${storage}[${index}]"
         }
     }
 
-    override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
+    override fun opStorageWrite(op: KslStorageWrite<*, *>): String {
         val storage = op.storage.generateExpression()
         val expr = op.data.generateExpression()
-        val coord = op.coord.generateExpression()
-        val arrayIndex = op.storage.getIndexString(coord)
+        val index = op.index.generateExpression()
         return if (op.storage.isAccessedAtomically) {
-            "atomicStore(&${storage}${arrayIndex}, $expr);"
+            "atomicStore(&${storage}[${index}], $expr);"
         } else {
-            "${storage}${arrayIndex} = $expr;"
+            "${storage}[${index}] = $expr;"
         }
     }
 
@@ -332,11 +323,10 @@ class WgslGenerator private constructor(
         return "textureStore(${storage}, $coord, $expr);"
     }
 
-    override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
+    override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *>): String {
         val storage = atomicOp.storage.generateExpression()
         val expr = atomicOp.data.generateExpression()
-        val coord = atomicOp.coord.generateExpression()
-        val arrayIndex = atomicOp.storage.getIndexString(coord)
+        val index = atomicOp.index.generateExpression()
         val func = when(atomicOp.op) {
             KslStorageAtomicOp.Op.Swap -> "atomicExchange"
             KslStorageAtomicOp.Op.Add -> "atomicAdd"
@@ -346,16 +336,15 @@ class WgslGenerator private constructor(
             KslStorageAtomicOp.Op.Min -> "atomicMin"
             KslStorageAtomicOp.Op.Max -> "atomicMax"
         }
-        return "$func(&${storage}${arrayIndex}, ${expr})"
+        return "$func(&${storage}[${index}], ${expr})"
     }
 
-    override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
+    override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *>): String {
         val storage = atomicCompSwap.storage.generateExpression()
         val comp = atomicCompSwap.compare.generateExpression()
         val expr = atomicCompSwap.data.generateExpression()
-        val coord = atomicCompSwap.coord.generateExpression()
-        val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
-        return "atomicCompareExchangeWeak(&$storage${arrayIndex}, ${comp}, ${expr}).old_value"
+        val index = atomicCompSwap.index.generateExpression()
+        return "atomicCompareExchangeWeak(&$storage[${index}], ${comp}, ${expr}).old_value"
     }
 
     override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String {
