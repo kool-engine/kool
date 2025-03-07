@@ -4,6 +4,7 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.BufferLayout
 
 /**
  * Default GLSL shader code generator.
@@ -333,10 +334,10 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             appendLine("// structs")
             for (s in structs) {
                 val struct = s.provider()
-                appendLine("struct ${struct.name} {")
+                appendLine("struct ${struct.structName} {")
                 struct.members.forEach {
                     val arraySuffix = if (it.arraySize > 1) "[${it.arraySize}]" else ""
-                    appendLine("    ${glslTypeName(it.type)} ${it.name}$arraySuffix;")
+                    appendLine("    ${glslTypeName(it.type)} ${it.memberName}$arraySuffix;")
                 }
                 appendLine("};")
             }
@@ -359,20 +360,26 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         val storage = stage.getUsedStorage()
         if (storage.isNotEmpty()) {
             appendLine("// storage buffers")
-            val readonly = if (stage.type == KslShaderStageType.ComputeShader) "" else "readonly"
-            storage.forEachIndexed { i, it ->
-                // always use a 1d array and compute array index dynamically based on buffer size
-                val arrayDim = "[]"
-                // choosing array dimension based on storage dimension would also work, but seems to have issues
-                // with some glsl compilers
-                // val arrayDim = when (it) {
-                //     is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
-                //     is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
-                //     is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeX}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
-                // }
+            storage.forEachIndexed { i, storage ->
+                val (_, desc) = pipeline.findBindGroupItemByName(storage.name)!!
+                val rw = when ((desc as StorageBufferLayout).accessType) {
+                    StorageAccessType.READ_ONLY -> "readonly"
+                    StorageAccessType.WRITE_ONLY -> "writeonly"
+                    StorageAccessType.READ_WRITE -> ""
+                }
+                val arrayDim = storage.size?.let { "[$it]" } ?: "[]"
+
+                val type = storage.storageType.elemType
+                val layout = if (type is KslStruct<*>) {
+                    when (type.struct.layout) {
+                        BufferLayout.Std140 -> "std140"
+                        else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std140 and std430")
+                    }
+                } else "std430"
+
                 appendLine("""
-                    layout(std430, binding=$i) $readonly buffer ssboLayout_$i {
-                        ${glslTypeName(it.storageType.elemType)} ${it.name}$arrayDim;
+                    layout($layout, binding=$i) $rw buffer ssboLayout_$i {
+                        ${glslTypeName(storage.storageType.elemType)} ${storage.name}$arrayDim;
                     };
                 """.trimIndent())
             }
@@ -727,7 +734,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             KslMat3 -> "mat3"
             KslMat4 -> "mat4"
 
-            is KslStruct -> type.name
+            is KslStruct<*> -> type.struct.structName
 
             KslColorSampler1d -> if (hints.compat1dSampler) "sampler2D" else "sampler1D"
             KslColorSampler2d -> "sampler2D"
@@ -747,7 +754,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             is KslStorageTexture2dType<*> -> "${type.typePrefix}image2D"
             is KslStorageTexture3dType<*> -> "${type.typePrefix}image3D"
 
-            is KslStructStorageType -> error("KslStructStorageType has no glsl type name")
+            is KslStructStorageType<*> -> error("KslStructStorageType has no glsl type name")
             is KslPrimitiveStorageType<*> -> error("KslStorage1dType has no glsl type name")
         }
     }

@@ -80,6 +80,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslVertexAttribute<*> -> generateValueExpression(expr.value)
             is KslStageInput<*> -> generateValueExpression(expr.value)
             is KslStageOutput<*> -> generateValueExpression(expr.value)
+            is KslStructMemberExpression -> structMemberExpression(expr)
             is KslNumericScalarUnaryMinus<*> -> numericUnaryMinusExpression(expr)
             is KslNumericVectorUnaryMinus<*, *> -> numericUnaryMinusExpression(expr)
             is KslIntScalarComplement -> intComplementExpression(expr)
@@ -127,6 +128,9 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     open fun generateMatrixColExpression(matrixAccessor: KslMatrixAccessor<*>): String =
         "${matrixAccessor.matrix.generateExpression()}[${matrixAccessor.colIndex.generateExpression()}]"
     open fun generateVectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression()}.${swizzleExpr.components}"
+
+    open fun structMemberExpression(expression: KslStructMemberExpression): String =
+        "${expression.struct.generateExpression()}${expression.member.qualifiedName}"
 
     open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =
         "(${expression.left.generateExpression()} ${expression.operator.opString} ${expression.right.generateExpression()})"

@@ -1,5 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.util.Struct
+
 sealed class KslType(val typeName: String) {
     override fun toString(): String = typeName
 }
@@ -119,7 +121,7 @@ data object KslDepthSampler2dArray : KslDepthSampler<KslFloat2>("depthSampler2dA
 data object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat3>("depthSamplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
 
-class KslStructStorageType(structType: KslStruct) : KslStorageType<KslStruct>("KslStructStorageType<${structType.name}>", structType)
+class KslStructStorageType<T: Struct<T>>(structType: KslStruct<T>) : KslStorageType<KslStruct<T>>("KslStructStorageType<${structType.typeName}>", structType)
 
 class KslPrimitiveStorageType<R: KslNumericType>(elemType: R) : KslStorageType<R>("KslStorage1dType<${elemType.typeName}>", elemType) {
     override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()

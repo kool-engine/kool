@@ -24,7 +24,7 @@ open class KslProgram(val name: String) {
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.PIPELINE)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
-    val structs = mutableMapOf<String, KslStruct>()
+    val structs = mutableMapOf<String, KslStruct<*>>()
     val storageBuffers = mutableMapOf<String, KslStorage<*>>()
     val storageTextures = mutableMapOf<String, KslStorageTexture<*,*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
@@ -82,6 +82,8 @@ open class KslProgram(val name: String) {
             ubo.uniforms.values.forEach { stage.globalScope.definedStates += it.value }
         }
         uniformSamplers.values.forEach { stage.globalScope.definedStates += it.sampler.value }
+        storageBuffers.values.forEach { stage.globalScope.definedStates += it }
+        storageTextures.values.forEach { stage.globalScope.definedStates += it }
     }
 
     private fun registerSampler(sampler : SamplerUniform) {
@@ -165,22 +167,33 @@ open class KslProgram(val name: String) {
     fun depthTextureCubeArray(name: String) =
         getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
 
-    fun struct(provider: () -> Struct<*>): KslStruct {
+    fun <T: Struct<T>> struct(provider: () -> T): KslStruct<T> {
         val a = provider()
-        val struct = structs.getOrPut(a.name) { KslStruct(provider) }
+        val struct = structs.getOrPut(a.structName) { KslStruct(provider) }
         val b = struct.provider()
         check(a::class == b::class) {
             "Existing struct with name $name has type ${b::class.simpleName} but given struct is ${a::class.simpleName}"
         }
-        return struct
+        @Suppress("UNCHECKED_CAST")
+        return struct as KslStruct<T>
     }
 
-    fun storage(
+    fun <T: Struct<T>> storage(
         name: String,
-        structType: KslStruct,
+        structType: KslStruct<T>,
         size: Int? = null
-    ): KslStructStorage {
-        TODO()
+    ): KslStructStorage<T> {
+        val storage: KslStorage<*> = storageBuffers[name]
+            ?: KslStructStorage(name, structType, size).also { registerStorage(it) }
+
+        check(storage is KslStructStorage<*> && storage.storageType.elemType == structType) {
+            "Existing storage buffer with name \"$name\" has not the expected type"
+        }
+        check(storage.size == size) {
+            "Existing storage buffer with name \"$name\" has not the expected dimension: ${storage.size} != $size"
+        }
+        @Suppress("UNCHECKED_CAST")
+        return storage as KslStructStorage<T>
     }
 
     inline fun <reified T: KslNumericType> storage(
