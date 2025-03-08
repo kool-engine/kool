@@ -8,8 +8,7 @@ open class KslVar<T: KslType>(name: String, type: T, isMutable: Boolean)
 
     override val expressionType = type
     override val assignType = type
-    override val mutatingState: KslValue<*>
-        get() = this
+    override val mutatingState: KslValue<*> get() = this
 
     override fun generateAssignable(generator: KslGenerator) = generator.varAssignable(this)
 }

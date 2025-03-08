@@ -108,6 +108,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun getStateName(stae: KslState): String
 
     open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
+    open fun structMemberAssignable(structMember: KslStructMemberExpression<*>): String = structMember.generateExpression()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression()}[${arrayAccessor.index.generateExpression()}]"
     open fun matrixColAssignable(matrixAccessor: KslMatrixAccessor<*>): String =
@@ -129,7 +130,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
         "${matrixAccessor.matrix.generateExpression()}[${matrixAccessor.colIndex.generateExpression()}]"
     open fun generateVectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression()}.${swizzleExpr.components}"
 
-    open fun structMemberExpression(expression: KslStructMemberExpression): String =
+    open fun structMemberExpression(expression: KslStructMemberExpression<*>): String =
         "${expression.struct.generateExpression()}${expression.member.qualifiedName}"
 
     open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =

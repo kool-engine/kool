@@ -824,7 +824,7 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
         return KslStorageReadVector(this, index, expressionType.elemType)
     }
 
-    operator fun <T: KslPrimitiveStorageType<R>, R: KslType> KslStorage<T>.set(index: KslExprInt1, data: KslExpression<R>) {
+    operator fun <T: KslStorageType<R>, R: KslType> KslStorage<T>.set(index: KslExprInt1, data: KslExpression<R>) {
         ops += KslStorageWrite(this, index, data, this@KslScopeBuilder)
     }
 
