@@ -99,6 +99,8 @@ class KslMat2Array(arraySize: Int) : KslArrayType<KslMat2>(KslMat2, arraySize)
 class KslMat3Array(arraySize: Int) : KslArrayType<KslMat3>(KslMat3, arraySize)
 class KslMat4Array(arraySize: Int) : KslArrayType<KslMat4>(KslMat4, arraySize)
 
+class KslStructArray<S: Struct<S>>(struct: KslStruct<S>, arraySize: Int) : KslArrayType<KslStruct<S>>(struct, arraySize)
+
 sealed class KslColorSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat4>(typeName)
 sealed class KslDepthSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat1>(typeName)
 

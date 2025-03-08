@@ -24,7 +24,7 @@ open class KslProgram(val name: String) {
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.PIPELINE)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
-    val structs = mutableMapOf<String, KslStruct<*>>()
+    val structs = mutableMapOf<String, Struct<*>>()
     val storageBuffers = mutableMapOf<String, KslStorage<*>>()
     val storageTextures = mutableMapOf<String, KslStorageTexture<*,*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
@@ -90,6 +90,17 @@ open class KslProgram(val name: String) {
         uniformSamplers[sampler.sampler.name] = sampler
         stages.forEach {
             it.globalScope.definedStates += sampler.sampler.value
+        }
+    }
+
+    @PublishedApi
+    internal fun registerStruct(struct: Struct<*>) {
+        struct.members.filterIsInstance<Struct<*>>().forEach { registerStruct(it) }
+        struct.members.filterIsInstance<Struct<*>.NestedStructArrayMember<*>>().forEach { registerStruct(it.struct) }
+
+        val existing = structs.getOrPut(struct.structName) { struct }
+        check(struct::class == existing::class) {
+            "Existing struct with name $name has type ${existing::class.simpleName} but given struct is ${struct::class.simpleName}"
         }
     }
 
@@ -168,14 +179,8 @@ open class KslProgram(val name: String) {
         getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
 
     fun <T: Struct<T>> struct(provider: () -> T): KslStruct<T> {
-        val a = provider()
-        val struct = structs.getOrPut(a.structName) { KslStruct(provider) }
-        val b = struct.provider()
-        check(a::class == b::class) {
-            "Existing struct with name $name has type ${b::class.simpleName} but given struct is ${a::class.simpleName}"
-        }
-        @Suppress("UNCHECKED_CAST")
-        return struct as KslStruct<T>
+        registerStruct(provider())
+        return KslStruct<T>(provider)
     }
 
     fun <T: Struct<T>> storage(

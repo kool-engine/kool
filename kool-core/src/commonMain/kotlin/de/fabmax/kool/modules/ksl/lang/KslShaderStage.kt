@@ -3,6 +3,7 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.model.KslTransformer
 import de.fabmax.kool.pipeline.ShaderStage
+import de.fabmax.kool.util.Struct
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -62,8 +63,8 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return program.uniformSamplers.values.map { it.sampler }.filter { dependsOn(it) }
     }
 
-    fun getUsedStructs(): List<KslStruct<*>> {
-        return program.structs.values.toList() // todo: .filter { dependsOn(it) }
+    fun getUsedStructs(): List<Struct<*>> {
+        return program.structs.values.toList()  // todo: .filter { dependsOn(it) }
     }
 
     fun getUsedStorage(): List<KslStorage<*>> {

@@ -21,7 +21,7 @@ class StructBuffer<T: Struct<T>>(val initCapacity: Int, /*isResizable: Boolean =
     operator fun get(index: Int) = sharedAccessor.also { bufferAccess.index = index }
 
     inline fun put(block: T.() -> Unit) {
-        check(size < initCapacity)
+        check(size < initCapacity) { "StructBuffer capacity exceeded" }
         bufferAccess.index = size++
         sharedAccessor.block()
     }

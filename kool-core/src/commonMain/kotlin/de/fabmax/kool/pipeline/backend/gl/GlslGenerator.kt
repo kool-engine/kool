@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.BufferLayout
+import de.fabmax.kool.util.MemoryLayout
 
 /**
  * Default GLSL shader code generator.
@@ -332,8 +332,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         val structs = stage.getUsedStructs()
         if (structs.isNotEmpty()) {
             appendLine("// structs")
-            for (s in structs) {
-                val struct = s.provider()
+            for (struct in structs) {
                 appendLine("struct ${struct.structName} {")
                 struct.members.forEach {
                     val arraySuffix = if (it.arraySize > 1) "[${it.arraySize}]" else ""
@@ -372,7 +371,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
                 val type = storage.storageType.elemType
                 val layout = if (type is KslStruct<*>) {
                     when (type.struct.layout) {
-                        BufferLayout.Std140 -> "std140"
+                        MemoryLayout.Std140 -> "std140"
                         else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std140 and std430")
                     }
                 } else "std430"
@@ -707,7 +706,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             GpuType.Mat2 -> "mat2"
             GpuType.Mat3 -> "mat3"
             GpuType.Mat4 -> "mat4"
-            is GpuType.Struct -> type.name
+            is GpuType.Struct -> type.struct.structName
         }
     }
 

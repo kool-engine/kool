@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
-import de.fabmax.kool.util.BufferLayout
+import de.fabmax.kool.util.MemoryLayout
 
 class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpression<*>, KslExpression<*>>) : GlslGenerator(
     generatorExpressions,
@@ -42,8 +42,9 @@ class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpressio
                 val type = storage.storageType.elemType
                 val layout = if (type is KslStruct<*>) {
                     when (type.struct.layout) {
-                        BufferLayout.Std140 -> "std140"
-                        else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std140 and std430")
+                        MemoryLayout.Std140 -> "std140"
+                        MemoryLayout.Std430 -> "std430"
+                        else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std430 and std140")
                     }
                 } else "std430"
 

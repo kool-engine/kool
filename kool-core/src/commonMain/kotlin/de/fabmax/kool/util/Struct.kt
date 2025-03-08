@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.lang.KslExpression
 import de.fabmax.kool.modules.ksl.lang.KslStruct
 import de.fabmax.kool.pipeline.GpuType
 
-abstract class Struct<T: Struct<T>>(val structName: String, val layout: BufferLayout) : StructMember {
+abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLayout) : StructMember {
     private var _memberName: String = ""
     override val memberName: String get() = _memberName
     private var _parent: Struct<*>? = null
@@ -16,9 +16,9 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: BufferLa
     val members = mutableListOf<StructMember>()
 
     private var lastPos = 0
-    val structSize: Int get() = layout.structSize(lastPos)
+    val structSize: Int get() = layout.structSize(this, lastPos)
 
-    override val type: GpuType get() = GpuType.Struct(structName, structSize)
+    override val type: GpuType get() = GpuType.Struct(this)
     override val arraySize = 1
 
     private var _bufferAccess: StructBufferAccess? = null
@@ -262,7 +262,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: BufferLa
 
     protected fun <S: Struct<S>> structArray(arraySize: Int, name: String = "nestedArr_${members.size}", structProvider: () -> S): NestedStructArrayMember<S> {
         val nested = structProvider()
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(nested.memberName, nested.structSize), arraySize)
+        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(nested), arraySize)
         lastPos = offset + size
         return NestedStructArrayMember<S>(name, offset, arraySize, structProvider).also { members.add(it) }
     }
@@ -550,7 +550,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: BufferLa
     ) : StructMember {
 
         override val parent: Struct<T> get() = this@Struct
-        override val type = GpuType.Float4
+        override val type = GpuType.Float3
         val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableVec3f = get(index, MutableVec3f())
@@ -818,19 +818,19 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: BufferLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-        structProvider: () -> S
+        val structProvider: () -> S
     ) : StructMember {
 
         override val parent: Struct<T> get() = this@Struct
         private var nestedBufferAccess: StructBufferAccessNested? = null
-        internal val accessor = structProvider()
+        internal val struct = structProvider()
 
-        override val type = GpuType.Struct(accessor.memberName, accessor.structSize)
+        override val type = GpuType.Struct(struct)
         val arrayStride = layout.arrayStrideOf(type)
 
         init {
-            require(accessor.layout == layout) {
-                "Nested struct must have the same layout as the parent struct (but nested layout is ${accessor.layout} and parent layout is $layout)"
+            require(struct.layout == layout) {
+                "Nested struct must have the same layout as the parent struct (but nested layout is ${struct.layout} and parent layout is $layout)"
             }
         }
 
@@ -839,15 +839,15 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: BufferLa
             if (nestedBufferAccess == null) {
                 val acc = StructBufferAccessNested(bufferAccess, byteOffset)
                 nestedBufferAccess = acc
-                accessor.setupBufferAccess(acc)
+                struct.setupBufferAccess(acc)
             }
             nestedBufferAccess!!.byteOffset = byteOffset + index * arrayStride
 
-            return accessor
+            return struct
         }
 
         override fun layoutInfo(indent: String): String {
-            return super.layoutInfo(indent) + "\n" + accessor.layoutInfo("$indent    ").trimEnd()
+            return super.layoutInfo(indent) + "\n" + struct.layoutInfo("$indent    ").trimEnd()
         }
     }
 }
@@ -861,7 +861,7 @@ sealed interface StructMember {
 
     val qualifiedName: String get() = parent?.let { "${it.qualifiedName}.$memberName" } ?: memberName
 
-    fun layoutInfo(indent: String): String {
+    fun layoutInfo(indent: String = ""): String {
         val name = "$memberName:".padEnd(20)
         val typeName = if (arraySize == 1) type.toString().padEnd(16) else "$type[$arraySize]".padEnd(16)
         return "$indent$name$typeName 0x${byteOffset.toString(16).padStart(4, '0')}"
