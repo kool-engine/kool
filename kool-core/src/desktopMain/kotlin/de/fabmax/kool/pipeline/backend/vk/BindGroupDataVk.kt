@@ -426,7 +426,9 @@ class BindGroupDataVk(
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
                 )
             )
-            vkCmdFillBuffer(commandBuffer, gpuBuffer.vkBuffer.handle, 0L, VK_WHOLE_SIZE, 0)
+            if (storage.uploadData == null) {
+                vkCmdFillBuffer(commandBuffer, gpuBuffer.vkBuffer.handle, 0L, VK_WHOLE_SIZE, 0)
+            }
             storage.gpuBuffer = gpuBuffer
         }
         return StorageBufferBinding(binding, storage, gpuBuffer)

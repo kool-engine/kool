@@ -232,17 +232,17 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         }
         return members.joinToString("\n") { member ->
             when (member) {
-                is Struct<*>.Float1Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Float2Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Float3Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Float4Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int1Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int2Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int3Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int4Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Mat2Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
-                is Struct<*>.Mat3Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
-                is Struct<*>.Mat4Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
+                is Struct<*>.Float1Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Float2Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Float3Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Float4Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Int1Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Int2Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Int3Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Int4Member -> "${member.nameAndType()} = ${member.get()}"
+                is Struct<*>.Mat2Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
+                is Struct<*>.Mat3Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
+                is Struct<*>.Mat4Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
 
                 is Struct<*>.Float1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
                 is Struct<*>.Float2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
@@ -297,8 +297,8 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Float1
         override val arraySize = 1
 
-        operator fun invoke(): Float = buffer.getFloat32(bufferPosition + byteOffset)
-        operator fun invoke(value: Float) { buffer.setFloat32(bufferPosition + byteOffset, value) }
+        fun set(value: Float) { buffer.setFloat32(bufferPosition + byteOffset, value) }
+        fun get(): Float = buffer.getFloat32(bufferPosition + byteOffset)
     }
 
     inner class Float2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
@@ -306,14 +306,13 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Float2
         override val arraySize = 1
 
-        operator fun invoke(): Vec2f = get(MutableVec2f())
-        operator fun invoke(value: Vec2f) {
+        fun set(value: Vec2f) {
             val offset = bufferPosition + byteOffset
             buffer.setFloat32(offset +  0, value.x)
             buffer.setFloat32(offset +  4, value.y)
         }
 
-        fun get(result: MutableVec2f): MutableVec2f {
+        fun get(result: MutableVec2f = MutableVec2f()): MutableVec2f {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getFloat32(offset +  0),
@@ -327,15 +326,14 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Float3
         override val arraySize = 1
 
-        operator fun invoke(): Vec3f = get(MutableVec3f())
-        operator fun invoke(value: Vec3f) {
+        fun set(value: Vec3f) {
             val offset = bufferPosition + byteOffset
             buffer.setFloat32(offset +  0, value.x)
             buffer.setFloat32(offset +  4, value.y)
             buffer.setFloat32(offset +  8, value.z)
         }
 
-        fun get(result: MutableVec3f): MutableVec3f {
+        fun get(result: MutableVec3f = MutableVec3f()): MutableVec3f {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getFloat32(offset +  0),
@@ -350,8 +348,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Float4
         override val arraySize = 1
 
-        operator fun invoke(): Vec4f = get(MutableVec4f())
-        operator fun invoke(value: Vec4f) {
+        fun set(value: Vec4f) {
             val offset = bufferPosition + byteOffset
             buffer.setFloat32(offset +  0, value.x)
             buffer.setFloat32(offset +  4, value.y)
@@ -359,7 +356,23 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
             buffer.setFloat32(offset + 12, value.w)
         }
 
-        fun get(result: MutableVec4f): MutableVec4f {
+        fun set(value: QuatF) {
+            val offset = bufferPosition + byteOffset
+            buffer.setFloat32(offset +  0, value.x)
+            buffer.setFloat32(offset +  4, value.y)
+            buffer.setFloat32(offset +  8, value.z)
+            buffer.setFloat32(offset + 12, value.w)
+        }
+
+        fun set(value: Color) {
+            val offset = bufferPosition + byteOffset
+            buffer.setFloat32(offset +  0, value.r)
+            buffer.setFloat32(offset +  4, value.g)
+            buffer.setFloat32(offset +  8, value.b)
+            buffer.setFloat32(offset + 12, value.a)
+        }
+
+        fun get(result: MutableVec4f = MutableVec4f()): MutableVec4f {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getFloat32(offset +  0),
@@ -375,8 +388,8 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Int1
         override val arraySize = 1
 
-        operator fun invoke(): Int = buffer.getInt32(bufferPosition + byteOffset)
-        operator fun invoke(value: Int) { buffer.setInt32(bufferPosition + byteOffset, value) }
+        fun set(value: Int) { buffer.setInt32(bufferPosition + byteOffset, value) }
+        fun get(): Int = buffer.getInt32(bufferPosition + byteOffset)
     }
 
     inner class Int2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
@@ -384,14 +397,13 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Int2
         override val arraySize = 1
 
-        operator fun invoke(): Vec2i = get(MutableVec2i())
-        operator fun invoke(value: Vec2i) {
+        fun set(value: Vec2i) {
             val offset = bufferPosition + byteOffset
             buffer.setInt32(offset +  0, value.x)
             buffer.setInt32(offset +  4, value.y)
         }
 
-        fun get(result: MutableVec2i): MutableVec2i {
+        fun get(result: MutableVec2i = MutableVec2i()): MutableVec2i {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getInt32(offset +  0),
@@ -405,15 +417,14 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Int3
         override val arraySize = 1
 
-        operator fun invoke(): Vec3i = get(MutableVec3i())
-        operator fun invoke(value: Vec3i) {
+        fun set(value: Vec3i) {
             val offset = bufferPosition + byteOffset
             buffer.setInt32(offset +  0, value.x)
             buffer.setInt32(offset +  4, value.y)
             buffer.setInt32(offset +  8, value.z)
         }
 
-        fun get(result: MutableVec3i): MutableVec3i {
+        fun get(result: MutableVec3i = MutableVec3i()): MutableVec3i {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getInt32(offset +  0),
@@ -428,8 +439,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Int4
         override val arraySize = 1
 
-        operator fun invoke(): Vec4i = get(MutableVec4i())
-        operator fun invoke(value: Vec4i) {
+        fun set(value: Vec4i) {
             val offset = bufferPosition + byteOffset
             buffer.setInt32(offset +  0, value.x)
             buffer.setInt32(offset +  4, value.y)
@@ -437,7 +447,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
             buffer.setInt32(offset + 12, value.w)
         }
 
-        fun get(result: MutableVec4i): MutableVec4i {
+        fun get(result: MutableVec4i = MutableVec4i()): MutableVec4i {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getInt32(offset +  0),
@@ -453,14 +463,13 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Mat2
         override val arraySize = 1
 
-        operator fun invoke(): Mat2f = get(MutableMat2f())
-        operator fun invoke(value: Mat2f) {
+        fun set(value: Mat2f) {
             val offset = bufferPosition + byteOffset
             buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10)
             buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11)
         }
 
-        fun get(result: MutableMat2f): MutableMat2f {
+        fun get(result: MutableMat2f = MutableMat2f()): MutableMat2f {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16),
@@ -474,15 +483,14 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Mat3
         override val arraySize = 1
 
-        operator fun invoke(): Mat3f = get(MutableMat3f())
-        operator fun invoke(value: Mat3f) {
+        fun set(value: Mat3f) {
             val offset = bufferPosition + byteOffset
             buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10); buffer.setFloat32(offset +  8, value.m20)
             buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11); buffer.setFloat32(offset + 24, value.m21)
             buffer.setFloat32(offset + 32, value.m02); buffer.setFloat32(offset + 36, value.m12); buffer.setFloat32(offset + 40, value.m22)
         }
 
-        fun get(result: MutableMat3f): MutableMat3f {
+        fun get(result: MutableMat3f = MutableMat3f()): MutableMat3f {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32),
@@ -497,8 +505,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val type = GpuType.Mat4
         override val arraySize = 1
 
-        operator fun invoke(): Mat4f = get(MutableMat4f())
-        operator fun invoke(value: Mat4f) {
+        fun set(value: Mat4f) {
             val offset = bufferPosition + byteOffset
             buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10); buffer.setFloat32(offset +  8, value.m20); buffer.setFloat32(offset + 12, value.m30)
             buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11); buffer.setFloat32(offset + 24, value.m21); buffer.setFloat32(offset + 28, value.m31)
@@ -506,7 +513,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
             buffer.setFloat32(offset + 48, value.m03); buffer.setFloat32(offset + 52, value.m13); buffer.setFloat32(offset + 56, value.m23); buffer.setFloat32(offset + 60, value.m33)
         }
 
-        fun get(result: MutableMat4f): MutableMat4f {
+        fun get(result: MutableMat4f = MutableMat4f()): MutableMat4f {
             val offset = bufferPosition + byteOffset
             return result.set(
                 buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32), buffer.getFloat32(offset + 48),

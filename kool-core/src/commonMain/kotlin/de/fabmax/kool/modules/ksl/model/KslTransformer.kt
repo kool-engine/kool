@@ -56,7 +56,7 @@ class KslTransformer private constructor(val stage: KslShaderStage) {
         fun KslScope.traverse() {
             ops.forEach { op ->
                 op.usedExpressions
-                    .filter { it.isNonTrivial() }
+                    .filter { it.isCacheable() }
                     .filterMultiUsages()
                     .forEach { expressionUsers.getOrPut(it) { mutableListOf() }.add(op) }
                 op.childScopes.forEach { it.traverse() }
@@ -149,7 +149,7 @@ class KslTransformer private constructor(val stage: KslShaderStage) {
         parentScope?.addDependencyUpTo(dep, term)
     }
 
-    private fun KslExpression<*>.isNonTrivial(): Boolean {
+    private fun KslExpression<*>.isCacheable(): Boolean {
         return this !is KslValueExpression<*> &&
                this !is KslValue<*> &&
                this !is KslVectorAccessor<*> &&
@@ -161,7 +161,8 @@ class KslTransformer private constructor(val stage: KslShaderStage) {
                this !is KslUniform<*> &&
                this !is KslBlock.BlockInput<*, *> &&
                this !is KslNumericVectorUnaryMinus<*, *> &&
-               this !is KslNumericScalarUnaryMinus<*>
+               this !is KslNumericScalarUnaryMinus<*> &&
+               this !is KslStructMemberExpression<*>
     }
 
     private fun KslScope.transform(parentOp: KslOp?, parentBuilder: KslScopeBuilder?) {
