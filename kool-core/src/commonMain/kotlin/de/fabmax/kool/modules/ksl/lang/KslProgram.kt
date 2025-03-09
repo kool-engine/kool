@@ -270,16 +270,10 @@ open class KslProgram(val name: String) {
         check(storage is T && type == storage.storageType.elemType) {
             "Existing storage texture with name \"$name\" has not the expected type"
         }
-        check(
-            (type is KslScalar && texFormat.channels == 1) ||
-                    (type is KslVector<*> && texFormat.channels == type.dimens)
-        ) {
+        check((type is KslScalar && texFormat.channels == 1) || (type is KslVector<*> && texFormat.channels == type.dimens)) {
             "Ksl type $type does not match dimensionality of texture format $texFormat"
         }
-        check(
-            ((texFormat.isI32 || texFormat.isU32) && type is KslIntType) ||
-                    ((texFormat.isFloat || texFormat.isByte) && type is KslFloatType)
-        ) {
+        check(((texFormat.isI32 || texFormat.isU32) && type is KslIntType) || ((texFormat.isFloat || texFormat.isByte) && type is KslFloatType)) {
             "Ksl type $type does not match channel type of texture format $texFormat"
         }
     }

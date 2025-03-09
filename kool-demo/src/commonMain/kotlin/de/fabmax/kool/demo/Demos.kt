@@ -27,8 +27,6 @@ object Demos {
     private val AllPlatforms = PlatformFilter { true }
     private val NeedsComputeShaders = PlatformFilter { KoolSystem.features.computeShaders }
     private val NonJavascript = PlatformFilter { KoolSystem.platform != Platform.Javascript }
-    private val NonVulkan = PlatformFilter { "Vulkan" !in KoolSystem.requireContext().backend.name }
-    private val DesktopOpenGl = PlatformFilter { NonJavascript.applies() && NonVulkan.applies() }
 
     val demoColors = ColorGradient(
         0f to MdColor.AMBER,
@@ -80,7 +78,7 @@ object Demos {
         entry("helloksl", "Hello KSL Shaders") { HelloKsl() }
         entry("hellogltf", "Hello glTF") { HelloGltf() }
         entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTexture() }
-        entry("hellocompute", "Hello Compute", NeedsComputeShaders) { HelloCompute() }
+        entry("hellocompute", "Hello Compute Texture", NeedsComputeShaders) { HelloComputeTexture() }
         entry("helloparticles", "Hello Compute Particles", NeedsComputeShaders) { HelloComputeParticles() }
         entry("hello-ui", "Hello UI") { HelloUi() }
         entry("manybodies", "Many Bodies") { ManyBodiesDemo() }

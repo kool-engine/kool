@@ -105,10 +105,12 @@ project with a minimal kool Android app.
 
 ## Usage
 
-If you are adventurous, you can use kool as a library in your own (multiplatform-) projects. The library is published
+You can use kool as a library in your own (multiplatform-) projects. The library is published
 on maven central, and there is a separate repo containing a minimal template project to get you started:
 
 [https://github.com/kool-engine/kool-templates](https://github.com/kool-engine/kool-templates)
+
+Make sure to use kool version `0.17.0-SNAPSHOT` if you want to use the Vulkan backend.
 
 The demos mentioned above and examples shown below should give you a rough idea on how to do stuff (documentation is
 still a bit of a weak spot).
@@ -126,7 +128,7 @@ to build the project first (or manually run the `cacheRuntimeLibs` task) and the
 the libs are resolved and added to the IntelliJ module classpath.
 
 ## Engine Features / Noticeable Stuff:
-- Basic [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloCompute.kt) support
+- [Compute shader](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo/helloworld/HelloComputeParticles.kt) support
 - [Reversed-depth](https://developer.nvidia.com/content/depth-precision-visualized) rendering for vastly improved
   depth precision and range (more or less infinite)
 - Physics simulation (based on Nvidia PhysX 5.5, using [physx-jni](https://github.com/fabmax/physx-jni) on Java and [physx-js-webidl](https://github.com/fabmax/physx-js-webidl) on javascript)
