@@ -148,7 +148,7 @@ class MappedStorageBuffer(
             storage.gpuBuffer = gpuBuffer
             if (storage.uploadData == null) {
                 val size = storage.size * storage.type.byteSize
-                gpuBuffer.setData(Uint8Buffer(size), gl.STATIC_DRAW)
+                gpuBuffer.setData(size, gl.STATIC_DRAW)
             }
         }
 
