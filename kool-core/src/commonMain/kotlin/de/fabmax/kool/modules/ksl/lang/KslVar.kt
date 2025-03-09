@@ -24,14 +24,3 @@ class KslVarMatrix<M, V>(name: String, type: M, isMutable: Boolean)
 
 class KslVarStruct<T, S>(name: String, type: T, isMutable: Boolean)
     : KslVar<T>(name, type, isMutable), KslExpression<T> where T: KslStruct<S>, S: Struct<S>
-{
-    init {
-        // fixme: This is a nasty hack! Currently we are unable to track the mutations of individual struct fields.
-        //  Instead we could only track / mutate the state of the entire struct which can easily lead to programs
-        //  which cannot be generated because mutations of individual fields prohibit each other.
-        //  To mitigate this, the state-tracking of struct vars is disabled but that is a terrible workaround which can
-        //  also easily break. A better solution would be to introduce state mutation for individual struct fields but
-        //  that doesn't fit in the current way how things work.
-        isTrackingState = false
-    }
-}

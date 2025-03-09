@@ -273,9 +273,17 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
 
     override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
         val sampler = expression.sampler.generateExpression()
-        val coords = expression.coord.generateExpression()
+        val isCompatSampler = hints.compat1dSampler &&
+                expression.sampler.expressionType is KslSampler1dType &&
+                expression.coord.expressionType is KslInt1
+        val coord = if (isCompatSampler) {
+            // for better OpenGL ES compatibility 1d textures actually are 2d textures...
+            "ivec2(${expression.coord.generateExpression()}, 0)"
+        } else {
+            expression.coord.generateExpression()
+        }
         val lod = expression.lod?.generateExpression()
-        return "texelFetch($sampler, $coords, ${lod ?: 0})"
+        return "texelFetch($sampler, $coord, ${lod ?: 0})"
     }
 
     override fun generateStorageRead(storageRead: KslStorageRead<*, *>): String {
@@ -372,6 +380,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
                 val layout = if (type is KslStruct<*>) {
                     when (type.struct.layout) {
                         MemoryLayout.Std140 -> "std140"
+                        MemoryLayout.Std430 -> "std430"
                         else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std140 and std430")
                     }
                 } else "std430"

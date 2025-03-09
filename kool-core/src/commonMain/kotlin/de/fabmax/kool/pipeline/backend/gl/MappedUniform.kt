@@ -146,10 +146,14 @@ class MappedStorageBuffer(
             )
             gpuBuffer = BufferResource(backend.gl.SHADER_STORAGE_BUFFER, backend, bufferCreationInfo)
             storage.gpuBuffer = gpuBuffer
+            if (storage.uploadData == null) {
+                val size = storage.size * storage.type.byteSize
+                gpuBuffer.setData(Uint8Buffer(size), gl.STATIC_DRAW)
+            }
         }
 
-        ssbo.storageBuffer?.uploadData?.let { upload ->
-            ssbo.storageBuffer?.uploadData = null
+        storage.uploadData?.let { upload ->
+            storage.uploadData = null
             when (upload) {
                 is Uint8Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
                 is Uint16Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
