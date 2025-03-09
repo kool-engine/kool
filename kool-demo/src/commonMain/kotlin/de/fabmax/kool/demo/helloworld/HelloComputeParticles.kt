@@ -39,7 +39,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
         val lifeTime = float1()
     }
 
-    private fun particleComputeShader() = KslComputeShader("particle compute shader") {
+    fun particleComputeShader() = KslComputeShader("particle compute shader") {
         // register the struct as a ksl type, so we can use it in the shader
         val particleStruct = struct { Particle() }
         // the particle buffer will hold the actual particle data
@@ -49,14 +49,15 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
         val deltaT = uniformFloat1("deltaT")
         val globalSeed = uniformFloat1("seed")
 
-        computeStage(64) {
+        computeStage(workGroupSizeX = 64) {
             main {
                 val particleIdx = inGlobalInvocationId.x.toInt1()
 
                 // get particle data from the storage buffer
                 // particle attributes can be accessed via particle.struct.[attribute name].ksl (see below)
-                val particle = structVar(particleBuffer[particleIdx])
-                val lifeTime = float1Var(particle.struct.lifeTime.ksl - deltaT)
+                val particleVar = structVar(particleBuffer[particleIdx])
+                val particle = particleVar.struct
+                val lifeTime = float1Var(particle.lifeTime.ksl - deltaT)
 
                 // simulate the particle
                 `if`(lifeTime le 0f.const) {
@@ -65,25 +66,25 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
 
                     val a = float1Var(noise11(seed + 17f.const) * 2f.const)
                     val r = float1Var(1.5f.const + noise11(seed + 1234f.const) * 0.1f.const)
-                    particle.struct.appearance.color.ksl set gradient.load((abs(a - 1f.const) * 255f.const).toInt1(), 0.const)
-                    particle.struct.position.ksl set float3Value(cos(a * PI_F.const), 0f.const, sin(a * PI_F.const)) * r
-                    particle.struct.velocity.ksl set (noise31(seed + 4711f.const) + float3Value(-0.5f, 1f, -0.5f)) * 2f.const
+                    particle.appearance.color.ksl set gradient.load((abs(a - 1f.const) * 255f.const).toInt1(), 0.const)
+                    particle.position.ksl set float3Value(cos(a * PI_F.const), 0f.const, sin(a * PI_F.const)) * r
+                    particle.velocity.ksl set (noise31(seed + 4711f.const) + float3Value(-0.5f, 1f, -0.5f)) * 2f.const
                     lifeTime set 0.75f.const + noise11(seed)
                 }
 
                 // update particle attributes
-                particle.struct.velocity.ksl.y -= 10f.const * deltaT
-                particle.struct.position.ksl += particle.struct.velocity.ksl * deltaT
-                particle.struct.appearance.size.ksl set 5f.const * sqrt(lifeTime)
-                particle.struct.lifeTime.ksl set lifeTime
+                particle.velocity.ksl.y -= 10f.const * deltaT
+                particle.position.ksl += particle.velocity.ksl * deltaT
+                particle.appearance.size.ksl set 5f.const * sqrt(lifeTime)
+                particle.lifeTime.ksl set lifeTime
 
                 // write updated particle data back to storage buffer
-                particleBuffer[particleIdx] = particle
+                particleBuffer[particleIdx] = particleVar
             }
         }
     }
 
-    private fun particleDrawShader() = KslShader("particle draw shader") {
+    fun particleDrawShader() = KslShader("particle draw shader") {
         val particleStruct = struct { Particle() }
         val particleBuffer = storage("particleBuffer", particleStruct)
         val index = interStageInt1()
