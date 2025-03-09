@@ -155,13 +155,13 @@ class IndexedVertexList(
             increaseDataSizeF(increaseSize(dataF.capacity, reqSpace * vertexSizeF))
         }
         if (dataI.remaining < vertexSizeI * reqSpace) {
-            increaseDataSizeI(increaseSize(dataF.capacity, reqSpace * vertexSizeI))
+            increaseDataSizeI(increaseSize(dataI.capacity, reqSpace * vertexSizeI))
         }
     }
 
     fun checkIndexSize(reqSpace: Int = 1) {
         if (indices.remaining < reqSpace) {
-            increaseIndicesSize(increaseSize(dataF.capacity, reqSpace))
+            increaseIndicesSize(increaseSize(indices.capacity, reqSpace))
         }
     }
 

@@ -148,16 +148,15 @@ class MappedStorageBuffer(
             storage.gpuBuffer = gpuBuffer
         }
 
-        if (ssbo.getAndClearDirtyFlag()) {
-            ssbo.storageBuffer?.let {
-                when (val buf = it.buffer) {
-                    is Uint8Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
-                    is Uint16Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
-                    is Int32Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
-                    is Float32Buffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
-                    is MixedBuffer -> gpuBuffer.setData(buf, gl.DYNAMIC_DRAW)
-                    else -> error("Invalid buffer type")
-                }
+        ssbo.storageBuffer?.uploadData?.let { upload ->
+            ssbo.storageBuffer?.uploadData = null
+            when (upload) {
+                is Uint8Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is Uint16Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is Int32Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is Float32Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is MixedBuffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                else -> error("Invalid buffer type")
             }
         }
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, bindCtx.location(ssbo.layout.bindingIndex), gpuBuffer.buffer)

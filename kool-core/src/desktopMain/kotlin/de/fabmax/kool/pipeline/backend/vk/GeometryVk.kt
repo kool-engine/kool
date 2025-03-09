@@ -11,11 +11,11 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
     val device: Device get() = backend.device
 
     private val createdIndexBuffer: GrowingBufferVk
-    private val createdFloatBuffer: GrowingBufferVk
+    private val createdFloatBuffer: GrowingBufferVk?
     private val createdIntBuffer: GrowingBufferVk?
 
     val indexBuffer: VkBuffer get() = createdIndexBuffer.buffer.vkBuffer
-    val floatBuffer: VkBuffer get() = createdFloatBuffer.buffer.vkBuffer
+    val floatBuffer: VkBuffer? get() = createdFloatBuffer?.buffer?.vkBuffer
     val intBuffer: VkBuffer? get() = createdIntBuffer?.buffer?.vkBuffer
 
     private var isNewlyCreated = true
@@ -28,13 +28,15 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
             usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             label = "${mesh.name} index data"
         )
-        val floatBufInfo = MemoryInfo(
-            size = geom.byteStrideF * geom.numVertices.toLong(),
-            usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            label = "${mesh.name} vertex float data"
-        )
         createdIndexBuffer = GrowingBufferVk(backend, indexBufInfo)
-        createdFloatBuffer = GrowingBufferVk(backend, floatBufInfo)
+        createdFloatBuffer = if (geom.byteStrideF == 0) null else {
+            val floatBufInfo = MemoryInfo(
+                size = geom.byteStrideF * geom.numVertices.toLong(),
+                usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                label = "${mesh.name} vertex float data"
+            )
+            GrowingBufferVk(backend, floatBufInfo)
+        }
         createdIntBuffer = if (geom.byteStrideI == 0) null else {
             val intBufInfo = MemoryInfo(
                 size = geom.byteStrideI * geom.numVertices.toLong(),
@@ -51,7 +53,7 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
         val geometry = mesh.geometry
         if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
             createdIndexBuffer.writeData(geometry.indices, commandBuffer)
-            createdFloatBuffer.writeData(geometry.dataF, commandBuffer)
+            createdFloatBuffer?.writeData(geometry.dataF, commandBuffer)
             createdIntBuffer?.writeData(geometry.dataI, commandBuffer)
             geometry.hasChanged = false
         }
@@ -61,7 +63,7 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
     override fun release() {
         super.release()
         createdIndexBuffer.buffer.release()
-        createdFloatBuffer.buffer.release()
+        createdFloatBuffer?.buffer?.release()
         createdIntBuffer?.buffer?.release()
     }
 }

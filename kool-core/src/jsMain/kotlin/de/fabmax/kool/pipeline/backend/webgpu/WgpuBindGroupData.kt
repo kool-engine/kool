@@ -56,14 +56,15 @@ class WgpuBindGroupData(
 
         for (i in storageBufferBindings.indices) {
             val storage = storageBufferBindings[i]
-            if (storage.binding.getAndClearDirtyFlag() || recreatedBindGroup) {
-                val hostBuffer = when (val buf = checkNotNull(storage.binding.storageBuffer?.buffer)) {
-                    is Uint8BufferImpl -> buf.buffer
-                    is Uint16BufferImpl -> buf.buffer
-                    is Int32BufferImpl -> buf.buffer
-                    is Float32BufferImpl -> buf.buffer
-                    is MixedBufferImpl -> buf.buffer
-                    else -> error("unexpected buffer type: ${buf::class.simpleName}")
+            storage.binding.storageBuffer?.uploadData?.let { upload ->
+                storage.binding.storageBuffer?.uploadData = null
+                val hostBuffer = when (upload) {
+                    is Uint8BufferImpl -> upload.buffer
+                    is Uint16BufferImpl -> upload.buffer
+                    is Int32BufferImpl -> upload.buffer
+                    is Float32BufferImpl -> upload.buffer
+                    is MixedBufferImpl -> upload.buffer
+                    else -> error("unexpected buffer type: ${upload::class.simpleName}")
                 }
                 device.queue.writeBuffer(
                     buffer = storage.gpuBuffer.buffer,
@@ -130,7 +131,7 @@ class WgpuBindGroupData(
             gpuBuffer = backend.createBuffer(
                 GPUBufferDescriptor(
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
-                    size = storage.buffer.limit.toLong() * 4,
+                    size = storage.size * storage.type.byteSize.toLong(),
                     usage = GPUBufferUsage.STORAGE or GPUBufferUsage.COPY_SRC or GPUBufferUsage.COPY_DST
                 ),
                 "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"

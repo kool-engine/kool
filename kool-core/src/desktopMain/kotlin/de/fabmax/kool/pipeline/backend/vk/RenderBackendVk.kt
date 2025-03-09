@@ -307,8 +307,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
-        gpuReadbacks += ReadbackStorageBuffer(storage, deferred)
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
+        gpuReadbacks += ReadbackStorageBuffer(storage, deferred, resultBuffer)
     }
 
     override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
@@ -371,7 +371,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
             val mapped = checkNotNull(mapBuffer.vkBuffer.mapped) { "readback buffer was not created mapped" }
-            readback.storage.buffer.copyFrom(mapped)
+            readback.resultBuffer.copyFrom(mapped)
             mapBuffer.release()
             readback.deferred.complete(Unit)
         }
@@ -421,7 +421,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private interface GpuReadback
 
-    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>) : GpuReadback {
+    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer) : GpuReadback {
         var mapBuffer: BufferVk? = null
     }
 

@@ -12,6 +12,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.ComputeShaderCodeGl
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
 import de.fabmax.kool.pipeline.backend.gl.ShaderCodeGl
+import de.fabmax.kool.util.Buffer
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -72,7 +73,7 @@ class MockBackend() : RenderBackend {
         tex.uploadData = null
     }
 
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
         deferred.complete(Unit)
     }
 

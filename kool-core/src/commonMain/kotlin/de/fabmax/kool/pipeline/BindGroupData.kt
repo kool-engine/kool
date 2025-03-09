@@ -120,12 +120,6 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             return layout.size == null || layout.size == storageBuffer.size
         }
 
-        fun getAndClearDirtyFlag(): Boolean {
-            val isDirty = storageBuffer?.isDirty == true
-            storageBuffer?.isDirty = false
-            return isDirty
-        }
-
         fun copyTo(other: StorageBufferBindingData) {
             other.storageBuffer = storageBuffer
         }

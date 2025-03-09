@@ -182,7 +182,7 @@ class WgpuDrawPipeline(
 
         var slot = 0
         gpuInsts?.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
-        passEncoder.setVertexBuffer(slot++, gpuGeom.floatBuffer)
+        gpuGeom.floatBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
         gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
         passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
         return true

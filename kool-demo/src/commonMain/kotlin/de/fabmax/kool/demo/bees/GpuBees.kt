@@ -24,8 +24,8 @@ class GpuBees(beeScene: Scene) {
     private val maxGpuBees: Int get() = BeeConfig.maxBeesPerTeamGpu
 
     // Contains position, rotation and velocities for all bees of one team
-    private val beeBufferA = StorageBuffer((maxGpuBees + 64) * 3, GpuType.Float4)
-    private val beeBufferB = StorageBuffer((maxGpuBees + 64) * 3, GpuType.Float4)
+    private val beeBufferA = StorageBuffer(GpuType.Float4, (maxGpuBees + 64) * 3)
+    private val beeBufferB = StorageBuffer(GpuType.Float4, (maxGpuBees + 64) * 3)
 
     val beeUpdateTime = mutableStateOf(0.0)
 
@@ -335,14 +335,14 @@ class GpuBees(beeScene: Scene) {
     }
 
     private fun initBeeBuffer(beeBuffer: StorageBuffer, spawnPos: Vec3f) {
-        for (i in 0 until maxGpuBees) {
-            // position and dead / alive state
-            beeBuffer[i * 3 + 0] = Vec4f(spawnPos + randomInUnitCube() * 5f, BeeConfig.decayTime)
-            // rotation
-            beeBuffer[i * 3 + 1] = QuatF.IDENTITY.toVec4f()
-            // velocity and enemy index
-            beeBuffer[i * 3 + 2] = Vec4f(0f, 0f, 0f, -1f)
+        val data = StorageBuffer.createFloatBuffer(GpuType.Float4, beeBuffer.size)
+        val velocityAndEnemyIndex = Vec4f(0f, 0f, 0f, -1f)
+        repeat(beeBuffer.size / 3) {
+            Vec4f(spawnPos + randomInUnitCube() * 5f, BeeConfig.decayTime).putTo(data)
+            QuatF.IDENTITY.putTo(data)
+            velocityAndEnemyIndex.putTo(data)
         }
+        beeBuffer.uploadData(data)
     }
 
     fun setupShaders(beeTexture: Texture2d) {

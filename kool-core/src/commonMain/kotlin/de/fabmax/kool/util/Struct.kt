@@ -33,7 +33,13 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         "ksl access only works if Struct is used in an ksl context"
     }
 
-    internal fun setupBufferAccess(access: StructBufferAccess) {
+    fun viewBuffer(buffer: StructBuffer<T>): StructBufferAccessIndexed {
+        val accessor = StructBufferAccessIndexed(buffer)
+        setupBufferAccess(accessor)
+        return accessor
+    }
+
+    private fun setupBufferAccess(access: StructBufferAccess) {
         _bufferAccess = access
         members.filterIsInstance<Struct<*>>().forEach {
             it.setupBufferAccess(StructBufferAccessNested(access, it.byteOffset))
@@ -44,64 +50,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         _kslAccess = access
         members.filterIsInstance<Struct<*>>().forEach {
             it.setupKslAccess(access)
-        }
-    }
-
-    override fun layoutInfo(indent: String): String {
-        val members = buildString {
-            members.forEach { appendLine(it.layoutInfo("$indent  ")) }
-        }
-        return super.layoutInfo(indent) + "\n" + members.trimEnd()
-    }
-
-    fun getBufferContentString(): String {
-        fun StructMember.nameAndArrayType(): String = "$memberName: $type[$arraySize]".padEnd(30)
-        fun StructMember.nameAndType(arrayIdx: Int = 0): String {
-            val name = if (arraySize == 1) "$memberName: " else "$memberName[$arrayIdx]: "
-            return "$name$type".padEnd(30)
-        }
-        return members.joinToString("\n") { member ->
-            when (member) {
-                is Struct<*>.Float1Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Float2Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Float3Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Float4Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int1Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int2Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int3Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Int4Member -> "${member.nameAndType()} = ${member()}"
-                is Struct<*>.Mat2Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
-                is Struct<*>.Mat3Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
-                is Struct<*>.Mat4Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
-
-                is Struct<*>.Float1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Float2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Float3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Float4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Mat2ArrayMember ->
-                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Struct<*>.Mat3ArrayMember ->
-                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Struct<*>.Mat4ArrayMember ->
-                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Struct<*>.NestedStructArrayMember<*> -> buildString {
-                    repeat(member.arraySize) { i ->
-                        append(member.nameAndType(i).trim()).appendLine(" {")
-                        member[i].getBufferContentString().lines().forEach { appendLine("  $it") }
-                        appendLine("}")
-                    }
-                }.trim()
-
-                is Struct<*> -> buildString {
-                    append(member.nameAndType().trim()).appendLine(" {")
-                    member.getBufferContentString().lines().forEach { appendLine("  $it") }
-                    append("}")
-                }
-            }
         }
     }
 
@@ -267,6 +215,82 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         return NestedStructArrayMember<S>(name, offset, arraySize, structProvider).also { members.add(it) }
     }
 
+
+
+    override fun layoutInfo(indent: String): String {
+        val members = buildString {
+            members.forEach { appendLine(it.layoutInfo("$indent  ")) }
+        }
+        return super.layoutInfo(indent) + "\n" + members.trimEnd()
+    }
+
+    fun getBufferContentString(): String {
+        fun StructMember.nameAndArrayType(): String = "$memberName: $type[$arraySize]".padEnd(30)
+        fun StructMember.nameAndType(arrayIdx: Int = 0): String {
+            val name = if (arraySize == 1) "$memberName: " else "$memberName[$arrayIdx]: "
+            return "$name$type".padEnd(30)
+        }
+        return members.joinToString("\n") { member ->
+            when (member) {
+                is Struct<*>.Float1Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Float2Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Float3Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Float4Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Int1Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Int2Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Int3Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Int4Member -> "${member.nameAndType()} = ${member()}"
+                is Struct<*>.Mat2Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
+                is Struct<*>.Mat3Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
+                is Struct<*>.Mat4Member -> "${member.nameAndType().trim()} =\n${member().toStringFormatted().prependIndent("  ")}"
+
+                is Struct<*>.Float1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Float2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Float3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Float4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Int1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Int2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Int3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Int4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Struct<*>.Mat2ArrayMember ->
+                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
+                is Struct<*>.Mat3ArrayMember ->
+                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
+                is Struct<*>.Mat4ArrayMember ->
+                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
+                is Struct<*>.NestedStructArrayMember<*> -> buildString {
+                    repeat(member.arraySize) { i ->
+                        append(member.nameAndType(i).trim()).appendLine(" {")
+                        member[i].getBufferContentString().lines().forEach { appendLine("  $it") }
+                        appendLine("}")
+                    }
+                }.trim()
+
+                is Struct<*> -> buildString {
+                    append(member.nameAndType().trim()).appendLine(" {")
+                    member.getBufferContentString().lines().forEach { appendLine("  $it") }
+                    append("}")
+                }
+            }
+        }
+    }
+
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as Struct<*>
+        if (structName != other.structName) return false
+        if (layout != other.layout) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = structName.hashCode()
+        result = 31 * result + layout.hashCode()
+        return result
+    }
 
     inner class Float1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct

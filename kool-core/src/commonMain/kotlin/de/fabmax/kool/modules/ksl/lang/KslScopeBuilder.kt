@@ -751,8 +751,8 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
         lod: KslScalarExpression<KslInt1>? = null
     ) = KslImageTextureLoad(sampler, coord, lod)
 
-    fun <T: KslColorSampler<R>, R : KslFloatType> KslExpression<T>.load(
-        coord: KslExpression<*>,
+    fun <T: KslColorSampler<R>, R : KslFloatType, C : KslIntType> KslExpression<T>.load(
+        coord: KslExpression<C>,
         lod: KslScalarExpression<KslInt1>? = null
     ) = KslImageTextureLoad(this, coord, lod)
 

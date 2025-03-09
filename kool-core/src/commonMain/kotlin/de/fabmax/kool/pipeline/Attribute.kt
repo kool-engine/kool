@@ -29,7 +29,18 @@ sealed interface GpuType {
     }
 }
 
-val GpuType.isInt: Boolean get() = this === GpuType.Int1 || this === GpuType.Int2 || this === GpuType.Int3 || this === GpuType.Int4
+val GpuType.isFloat: Boolean get() = this == GpuType.Float1 ||
+        this == GpuType.Float2 ||
+        this == GpuType.Float3 ||
+        this == GpuType.Float4 ||
+        this == GpuType.Mat2 ||
+        this == GpuType.Mat3 ||
+        this == GpuType.Mat4
+
+val GpuType.isInt: Boolean get() = this == GpuType.Int1 ||
+        this == GpuType.Int2 ||
+        this == GpuType.Int3 ||
+        this == GpuType.Int4
 
 val KslType.gpuType: GpuType
     get() = when (this) {

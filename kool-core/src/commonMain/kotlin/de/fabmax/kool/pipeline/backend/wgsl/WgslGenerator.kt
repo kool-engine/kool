@@ -66,6 +66,7 @@ class WgslGenerator private constructor(
         val vertexOutput = VertexOutputStruct(vertexStage)
         val ubos = UboStructs(vertexStage, pipeline)
 
+        src.generateStructs(vertexStage, pipeline)
         ubos.generateStructs(src)
         vertexInput.generateStruct(src)
         vertexOutput.generateStruct(src)
@@ -103,6 +104,7 @@ class WgslGenerator private constructor(
         val fragmentOutput = FragmentOutputStruct(fragmentStage)
         val ubos = UboStructs(fragmentStage, pipeline)
 
+        src.generateStructs(fragmentStage, pipeline)
         ubos.generateStructs(src)
         fragmentInput.generateStruct(src)
         fragmentOutput.generateStruct(src)
@@ -137,6 +139,7 @@ class WgslGenerator private constructor(
         val computeInput = ComputeInputStructs(computeStage)
         val ubos = UboStructs(computeStage, pipeline)
 
+        src.generateStructs(computeStage, pipeline)
         ubos.generateStructs(src)
         computeInput.generateStruct(src)
         src.generateTextureSamplers(computeStage, pipeline)
@@ -354,9 +357,9 @@ class WgslGenerator private constructor(
     }
 
     override fun opDeclareVar(op: KslDeclareVar): String {
-        val initExpr = op.initExpression?.generateExpression() ?: ""
         val state = op.declareVar
-        return "var ${getStateName(state)} = ${state.expressionType.wgslTypeName()}(${initExpr});"
+        val initExpr = op.initExpression?.generateExpression() ?: "${state.expressionType.wgslTypeName()}()"
+        return "var ${getStateName(state)} = ${initExpr};"
     }
 
     override fun opDeclareArray(op: KslDeclareArray): String {
@@ -692,10 +695,28 @@ class WgslGenerator private constructor(
                 KslMat2 -> "mat2x2f"
                 KslMat3 -> "mat3x3f"
                 KslMat4 -> "mat4x4f"
+                is KslStruct<*> -> struct.structName
 
                 is KslArrayType<*> -> "array<${elemType.wgslTypeName()},${arraySize}>"
 
                 else -> error("no direct type mapping for type $this")
+            }
+        }
+
+        fun GpuType.wgslTypeName(): String {
+            return when (this) {
+                GpuType.Float1 -> "f32"
+                GpuType.Float2 -> "vec2f"
+                GpuType.Float3 -> "vec3f"
+                GpuType.Float4 -> "vec4f"
+                GpuType.Int1 -> "i32"
+                GpuType.Int2 -> "vec2i"
+                GpuType.Int3 -> "vec3i"
+                GpuType.Int4 -> "vec4i"
+                GpuType.Mat2 -> "mat2x2f"
+                GpuType.Mat3 -> "mat3x3f"
+                GpuType.Mat4 -> "mat4x4f"
+                is GpuType.Struct -> struct.structName
             }
         }
 
@@ -920,6 +941,22 @@ class WgslGenerator private constructor(
             if (stage.isUsingWorkGroupSize) {
                 appendLine("let ${KslComputeStage.NAME_IN_WORK_GROUP_SIZE} = vec3u(${stage.workGroupSize.x}, ${stage.workGroupSize.y}, ${stage.workGroupSize.z});")
             }
+        }
+    }
+
+    private fun StringBuilder.generateStructs(stage: KslShaderStage, pipeline: PipelineBase) {
+        val structs = stage.getUsedStructs()
+        if (structs.isNotEmpty()) {
+            appendLine("// structs")
+            for (struct in structs) {
+                appendLine("struct ${struct.structName} {")
+                struct.members.forEach {
+                    val arraySuffix = if (it.arraySize > 1) "[${it.arraySize}]" else ""
+                    appendLine("    ${it.memberName}: ${it.type.wgslTypeName()}$arraySuffix,")
+                }
+                appendLine("};")
+            }
+            appendLine()
         }
     }
 

@@ -57,7 +57,7 @@ class HelloCompute : DemoScene("Hello Compute") {
         addComputePass(ComputePass(computeShader, storageSizeX, storageSizeY))
 
         // create and bind the storage texture used as compute shader output
-        val storageBuffer = StorageBuffer(storageSizeX * storageSizeY, GpuType.Int4)
+        val storageBuffer = StorageBuffer(GpuType.Int4, storageSizeX * storageSizeY)
         computeShader.storage("pixelStorage", storageBuffer)
 
         // animate offset position to change the colors over time
@@ -104,11 +104,11 @@ class HelloCompute : DemoScene("Hello Compute") {
                 // the first pixel to the console
                 launchOnMainThread {
                     logI { "${Time.frameCount}: Read back storage buffer from GPU memory..." }
-                    // buffer readback is an asynchronous operation and will take some time to complete (which is why
+                    // buffer download is an asynchronous operation and will take some time to complete (which is why
                     // it is a suspending function)
-                    storageBuffer.readbackBuffer()
-                    val color = storageBuffer.getI4(0)
-                    logI { "${Time.frameCount}: Got buffer, rgba[0] = ${color.x}, ${color.y}, ${color.z}, ${color.w}" }
+                    val download = Int32Buffer(storageBuffer.size * 4)
+                    storageBuffer.downloadData(download)
+                    logI { "${Time.frameCount}: Got buffer, rgba[0] = ${download[0]}, ${download[1]}, ${download[2]}, ${download[3]}" }
                 }
             }
         }
