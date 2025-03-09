@@ -35,10 +35,10 @@ class Std140BufferLayout(uniforms: List<Uniform>) : BufferLayout(uniforms) {
     }
 
     private val Uniform.alignment: Int get() = when (type) {
-        GpuType.FLOAT1 -> 4
-        GpuType.INT1 -> 4
-        GpuType.FLOAT2 -> 8
-        GpuType.INT2 -> 8
+        GpuType.Float1 -> 4
+        GpuType.Int1 -> 4
+        GpuType.Float2 -> 8
+        GpuType.Int2 -> 8
         // everything else, including all array and matrix types, has vec4 alignment / 16 bytes
         else -> 16
     }
@@ -46,33 +46,35 @@ class Std140BufferLayout(uniforms: List<Uniform>) : BufferLayout(uniforms) {
     private val Uniform.sizeBytes: Int get() =
         if (isArray) {
             when (type) {
-                GpuType.MAT2 -> 2 * 16 * arraySize
-                GpuType.MAT3 -> 3 * 16 * arraySize
-                GpuType.MAT4 -> 4 * 16 * arraySize
+                GpuType.Mat2 -> 2 * 16 * arraySize
+                GpuType.Mat3 -> 3 * 16 * arraySize
+                GpuType.Mat4 -> 4 * 16 * arraySize
                 else -> 16 * arraySize
             }
         } else {
             when (type) {
-                GpuType.FLOAT1 -> 4
-                GpuType.FLOAT2 -> 8
-                GpuType.FLOAT3 -> 12
-                GpuType.FLOAT4 -> 16
+                GpuType.Float1 -> 4
+                GpuType.Float2 -> 8
+                GpuType.Float3 -> 12
+                GpuType.Float4 -> 16
 
-                GpuType.INT1 -> 4
-                GpuType.INT2 -> 8
-                GpuType.INT3 -> 12
-                GpuType.INT4 -> 16
+                GpuType.Int1 -> 4
+                GpuType.Int2 -> 8
+                GpuType.Int3 -> 12
+                GpuType.Int4 -> 16
 
-                GpuType.MAT2 -> 2 * 16
-                GpuType.MAT3 -> 3 * 16
-                GpuType.MAT4 -> 4 * 16
+                GpuType.Mat2 -> 2 * 16
+                GpuType.Mat3 -> 3 * 16
+                GpuType.Mat4 -> 4 * 16
+
+                is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
             }
         }
 
     private val Uniform.arrayStrideBytes: Int get() = when (type) {
-        GpuType.MAT2 -> 2 * 16
-        GpuType.MAT3 -> 3 * 16
-        GpuType.MAT4 -> 4 * 16
+        GpuType.Mat2 -> 2 * 16
+        GpuType.Mat3 -> 3 * 16
+        GpuType.Mat4 -> 4 * 16
         else -> 16
     }
 }

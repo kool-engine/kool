@@ -26,12 +26,14 @@ class ClearHelper(val backend: RenderBackendVk) {
 
     fun clear(passEncoderState: PassEncoderState) {
         val clearPipeline = clearPipelines.getOrPut(passEncoderState.renderPass) {
-            ClearPipeline(passEncoderState.renderPass, passEncoderState.gpuRenderPass)
+            ClearPipeline(passEncoderState)
         }
         clearPipeline.clear(passEncoderState)
     }
 
-    private inner class ClearPipeline(val renderPass: RenderPass, val gpuRenderPass: RenderPassVk) : BaseReleasable() {
+    private inner class ClearPipeline(passEncoderState: PassEncoderState) : BaseReleasable() {
+        val renderPass: RenderPass = passEncoderState.renderPass
+        val gpuRenderPass: RenderPassVk = passEncoderState.gpuRenderPass
         val descriptorSetLayout: VkDescriptorSetLayout
         val pipelineLayout: VkPipelineLayout
         val bindGroupData: BindGroupDataVk
@@ -68,7 +70,7 @@ class ClearHelper(val backend: RenderBackendVk) {
                 pipelineLayout = device.createPipelineLayout(this) {
                     pSetLayouts(longs(descriptorSetLayout.handle))
                 }
-                bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend)
+                bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend, passEncoderState.commandBuffer)
             }
 
             releaseWith(renderPass)

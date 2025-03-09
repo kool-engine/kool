@@ -66,6 +66,7 @@ class WgslGenerator private constructor(
         val vertexOutput = VertexOutputStruct(vertexStage)
         val ubos = UboStructs(vertexStage, pipeline)
 
+        src.generateStructs(vertexStage, pipeline)
         ubos.generateStructs(src)
         vertexInput.generateStruct(src)
         vertexOutput.generateStruct(src)
@@ -103,6 +104,7 @@ class WgslGenerator private constructor(
         val fragmentOutput = FragmentOutputStruct(fragmentStage)
         val ubos = UboStructs(fragmentStage, pipeline)
 
+        src.generateStructs(fragmentStage, pipeline)
         ubos.generateStructs(src)
         fragmentInput.generateStruct(src)
         fragmentOutput.generateStruct(src)
@@ -137,6 +139,7 @@ class WgslGenerator private constructor(
         val computeInput = ComputeInputStructs(computeStage)
         val ubos = UboStructs(computeStage, pipeline)
 
+        src.generateStructs(computeStage, pipeline)
         ubos.generateStructs(src)
         computeInput.generateStruct(src)
         src.generateTextureSamplers(computeStage, pipeline)
@@ -295,33 +298,24 @@ class WgslGenerator private constructor(
         return "textureLoad($textureName, $coord, $level)"
     }
 
-    private fun KslStorage<*,*>.getIndexString(coordExpr: String) = when (this) {
-        // always use a 1d array and compute array index dynamically based on buffer size
-        is KslStorage1d<*> -> "[${coordExpr}]"
-        is KslStorage2d<*> -> "[${coordExpr}.y * $sizeX + ${coordExpr}.x]"
-        is KslStorage3d<*> -> "[${coordExpr}.z * ${sizeY * sizeX} + ${coordExpr}.y * $sizeX + ${coordExpr}.x]"
-    }
-
-    override fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String {
+    override fun generateStorageRead(storageRead: KslStorageRead<*, *>): String {
         val storage = storageRead.storage.generateExpression()
-        val coord = storageRead.coord.generateExpression()
-        val arrayIndex = storageRead.storage.getIndexString(coord)
+        val index = storageRead.index.generateExpression()
         return if (storageRead.storage.isAccessedAtomically) {
-            "atomicLoad(&${storage}${arrayIndex})"
+            "atomicLoad(&${storage}[${index}])"
         } else {
-            "${storage}${arrayIndex}"
+            "${storage}[${index}]"
         }
     }
 
-    override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
+    override fun opStorageWrite(op: KslStorageWrite<*, *>): String {
         val storage = op.storage.generateExpression()
         val expr = op.data.generateExpression()
-        val coord = op.coord.generateExpression()
-        val arrayIndex = op.storage.getIndexString(coord)
+        val index = op.index.generateExpression()
         return if (op.storage.isAccessedAtomically) {
-            "atomicStore(&${storage}${arrayIndex}, $expr);"
+            "atomicStore(&${storage}[${index}], $expr);"
         } else {
-            "${storage}${arrayIndex} = $expr;"
+            "${storage}[${index}] = $expr;"
         }
     }
 
@@ -332,11 +326,10 @@ class WgslGenerator private constructor(
         return "textureStore(${storage}, $coord, $expr);"
     }
 
-    override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
+    override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *>): String {
         val storage = atomicOp.storage.generateExpression()
         val expr = atomicOp.data.generateExpression()
-        val coord = atomicOp.coord.generateExpression()
-        val arrayIndex = atomicOp.storage.getIndexString(coord)
+        val index = atomicOp.index.generateExpression()
         val func = when(atomicOp.op) {
             KslStorageAtomicOp.Op.Swap -> "atomicExchange"
             KslStorageAtomicOp.Op.Add -> "atomicAdd"
@@ -346,16 +339,15 @@ class WgslGenerator private constructor(
             KslStorageAtomicOp.Op.Min -> "atomicMin"
             KslStorageAtomicOp.Op.Max -> "atomicMax"
         }
-        return "$func(&${storage}${arrayIndex}, ${expr})"
+        return "$func(&${storage}[${index}], ${expr})"
     }
 
-    override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
+    override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *>): String {
         val storage = atomicCompSwap.storage.generateExpression()
         val comp = atomicCompSwap.compare.generateExpression()
         val expr = atomicCompSwap.data.generateExpression()
-        val coord = atomicCompSwap.coord.generateExpression()
-        val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
-        return "atomicCompareExchangeWeak(&$storage${arrayIndex}, ${comp}, ${expr}).old_value"
+        val index = atomicCompSwap.index.generateExpression()
+        return "atomicCompareExchangeWeak(&$storage[${index}], ${comp}, ${expr}).old_value"
     }
 
     override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String {
@@ -365,9 +357,9 @@ class WgslGenerator private constructor(
     }
 
     override fun opDeclareVar(op: KslDeclareVar): String {
-        val initExpr = op.initExpression?.generateExpression() ?: ""
         val state = op.declareVar
-        return "var ${getStateName(state)} = ${state.expressionType.wgslTypeName()}(${initExpr});"
+        val initExpr = op.initExpression?.generateExpression() ?: "${state.expressionType.wgslTypeName()}()"
+        return "var ${getStateName(state)} = ${initExpr};"
     }
 
     override fun opDeclareArray(op: KslDeclareArray): String {
@@ -703,10 +695,28 @@ class WgslGenerator private constructor(
                 KslMat2 -> "mat2x2f"
                 KslMat3 -> "mat3x3f"
                 KslMat4 -> "mat4x4f"
+                is KslStruct<*> -> struct.structName
 
                 is KslArrayType<*> -> "array<${elemType.wgslTypeName()},${arraySize}>"
 
                 else -> error("no direct type mapping for type $this")
+            }
+        }
+
+        fun GpuType.wgslTypeName(): String {
+            return when (this) {
+                GpuType.Float1 -> "f32"
+                GpuType.Float2 -> "vec2f"
+                GpuType.Float3 -> "vec3f"
+                GpuType.Float4 -> "vec4f"
+                GpuType.Int1 -> "i32"
+                GpuType.Int2 -> "vec2i"
+                GpuType.Int3 -> "vec3i"
+                GpuType.Int4 -> "vec4i"
+                GpuType.Mat2 -> "mat2x2f"
+                GpuType.Mat3 -> "mat3x3f"
+                GpuType.Mat4 -> "mat4x4f"
+                is GpuType.Struct -> struct.structName
             }
         }
 
@@ -931,6 +941,22 @@ class WgslGenerator private constructor(
             if (stage.isUsingWorkGroupSize) {
                 appendLine("let ${KslComputeStage.NAME_IN_WORK_GROUP_SIZE} = vec3u(${stage.workGroupSize.x}, ${stage.workGroupSize.y}, ${stage.workGroupSize.z});")
             }
+        }
+    }
+
+    private fun StringBuilder.generateStructs(stage: KslShaderStage, pipeline: PipelineBase) {
+        val structs = stage.getUsedStructs()
+        if (structs.isNotEmpty()) {
+            appendLine("// structs")
+            for (struct in structs) {
+                appendLine("struct ${struct.structName} {")
+                struct.members.forEach {
+                    val arraySuffix = if (it.arraySize > 1) "[${it.arraySize}]" else ""
+                    appendLine("    ${it.memberName}: ${it.type.wgslTypeName()}$arraySuffix,")
+                }
+                appendLine("};")
+            }
+            appendLine()
         }
     }
 

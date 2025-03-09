@@ -254,6 +254,6 @@ class GuardRail {
     }
 
     companion object {
-        private val INSTANCE_EMISSION = Attribute("instEmission", GpuType.FLOAT2)
+        private val INSTANCE_EMISSION = Attribute("instEmission", GpuType.Float2)
     }
 }

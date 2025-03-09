@@ -100,8 +100,8 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     }
 
     companion object {
-        private val ATTRIB_ROUGHNESS = Attribute("aRoughness", GpuType.FLOAT1)
-        private val ATTRIB_METAL = Attribute("aMetal", GpuType.FLOAT1)
+        private val ATTRIB_ROUGHNESS = Attribute("aRoughness", GpuType.Float1)
+        private val ATTRIB_METAL = Attribute("aMetal", GpuType.Float1)
 
         private val matColors = listOf(
             MatColor("Red", MdColor.RED.toLinear()),

@@ -1,8 +1,8 @@
 package de.fabmax.kool.modules.ksl.lang
 
-class KslStorageAtomicOp<T: KslStorageType<R, C>, C: KslIntType, R>(
-    val storage: KslStorage<T, *>,
-    val coord: KslExpression<C>,
+class KslStorageAtomicOp<T: KslStorageType<R>, R>(
+    val storage: KslStorage<T>,
+    val index: KslExprInt1,
     val data: KslExpression<R>,
     val op: Op,
     override val expressionType: R
@@ -13,8 +13,8 @@ class KslStorageAtomicOp<T: KslStorageType<R, C>, C: KslIntType, R>(
         storage.isAccessedAtomically = true
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord, data)
-    override fun toPseudoCode(): String = "storageAtomic$op(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${data.toPseudoCode()})"
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, index, data)
+    override fun toPseudoCode(): String = "storageAtomic$op(${storage.toPseudoCode()}, ${index.toPseudoCode()}, ${data.toPseudoCode()})"
 
     enum class Op {
         Swap,
@@ -27,9 +27,9 @@ class KslStorageAtomicOp<T: KslStorageType<R, C>, C: KslIntType, R>(
     }
 }
 
-class KslStorageAtomicCompareSwap<T: KslStorageType<R, C>, C: KslIntType, R>(
-    val storage: KslStorage<T, *>,
-    val coord: KslExpression<C>,
+class KslStorageAtomicCompareSwap<T: KslStorageType<R>, R>(
+    val storage: KslStorage<T>,
+    val index: KslExprInt1,
     val compare: KslExpression<R>,
     val data: KslExpression<R>,
     override val expressionType: R
@@ -40,6 +40,6 @@ class KslStorageAtomicCompareSwap<T: KslStorageType<R, C>, C: KslIntType, R>(
         storage.isAccessedAtomically = true
     }
 
-    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, coord, compare, data)
-    override fun toPseudoCode(): String = "storageAtomicCondSet(${storage.toPseudoCode()}, ${coord.toPseudoCode()}, ${compare.toPseudoCode()}, ${data.toPseudoCode()})"
+    override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(storage, index, compare, data)
+    override fun toPseudoCode(): String = "storageAtomicCondSet(${storage.toPseudoCode()}, ${index.toPseudoCode()}, ${compare.toPseudoCode()}, ${data.toPseudoCode()})"
 }

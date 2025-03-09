@@ -48,7 +48,7 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
     }
 
     companion object {
-        val ATTRIB_CLIP = Attribute("aClip", GpuType.FLOAT4)
+        val ATTRIB_CLIP = Attribute("aClip", GpuType.Float4)
 
         val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.COLORS, ATTRIB_CLIP, Attribute.TEXTURE_COORDS)
 

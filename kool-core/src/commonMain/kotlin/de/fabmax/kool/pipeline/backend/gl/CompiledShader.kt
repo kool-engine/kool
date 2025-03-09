@@ -37,10 +37,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                                 binding.uniforms.map { gl.getUniformLocation(program, it.name) }.toIntArray()
                             }
                         }
-
-                        is StorageBuffer1dLayout -> intArrayOf(storageIndex++)
-                        is StorageBuffer2dLayout -> intArrayOf(storageIndex++)
-                        is StorageBuffer3dLayout -> intArrayOf(storageIndex++)
+                        is StorageBufferLayout -> intArrayOf(storageIndex++)
 
                         is Texture1dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
                         is Texture2dLayout -> intArrayOf(gl.getUniformLocation(program, binding.name))
@@ -135,10 +132,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             bindGroupData.bindings.forEach { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData -> mapUbo(binding)
-
-                    is BindGroupData.StorageBuffer1dBindingData -> mapStorageBuffer1d(binding)
-                    is BindGroupData.StorageBuffer2dBindingData -> mapStorageBuffer2d(binding)
-                    is BindGroupData.StorageBuffer3dBindingData -> mapStorageBuffer3d(binding)
+                    is BindGroupData.StorageBufferBindingData -> mapStorageBuffer(binding)
 
                     is BindGroupData.Texture1dBindingData -> mapTexture1d(binding)
                     is BindGroupData.Texture2dBindingData -> mapTexture2d(binding)
@@ -208,19 +202,9 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             mappings += MappedUniformTexCubeArray(tex, backend)
         }
 
-        private fun mapStorageBuffer1d(storage: BindGroupData.StorageBuffer1dBindingData) {
+        private fun mapStorageBuffer(storage: BindGroupData.StorageBufferBindingData) {
             checkStorageBufferSupport()
-            mappings += MappedStorageBuffer1d(storage, backend)
-        }
-
-        private fun mapStorageBuffer2d(storage: BindGroupData.StorageBuffer2dBindingData) {
-            checkStorageBufferSupport()
-            mappings += MappedStorageBuffer2d(storage, backend)
-        }
-
-        private fun mapStorageBuffer3d(storage: BindGroupData.StorageBuffer3dBindingData) {
-            checkStorageBufferSupport()
-            mappings += MappedStorageBuffer3d(storage, backend)
+            mappings += MappedStorageBuffer(storage, backend)
         }
 
         private fun mapStorageTexture1d(storage: BindGroupData.StorageTexture1dBindingData) {

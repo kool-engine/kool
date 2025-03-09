@@ -81,6 +81,7 @@ object Demos {
         entry("hellogltf", "Hello glTF") { HelloGltf() }
         entry("hellobuffers", "Hello RenderToTexture") { HelloRenderToTexture() }
         entry("hellocompute", "Hello Compute", NeedsComputeShaders) { HelloCompute() }
+        entry("helloparticles", "Hello Compute Particles", NeedsComputeShaders) { HelloComputeParticles() }
         entry("hello-ui", "Hello UI") { HelloUi() }
         entry("manybodies", "Many Bodies") { ManyBodiesDemo() }
         entry("manyvehicles", "Many Vehicles") { ManyVehiclesDemo() }

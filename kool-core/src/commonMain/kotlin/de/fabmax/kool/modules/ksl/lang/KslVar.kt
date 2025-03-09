@@ -1,14 +1,14 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
+import de.fabmax.kool.util.Struct
 
 open class KslVar<T: KslType>(name: String, type: T, isMutable: Boolean)
     : KslValue<T>(name, isMutable), KslAssignable<T> {
 
     override val expressionType = type
     override val assignType = type
-    override val mutatingState: KslValue<*>
-        get() = this
+    override val mutatingState: KslValue<*> get() = this
 
     override fun generateAssignable(generator: KslGenerator) = generator.varAssignable(this)
 }
@@ -21,3 +21,6 @@ class KslVarVector<V, S>(name: String, type: V, isMutable: Boolean)
 
 class KslVarMatrix<M, V>(name: String, type: M, isMutable: Boolean)
     : KslVar<M>(name, type, isMutable), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslVector<*>
+
+class KslVarStruct<T, S>(name: String, type: T, isMutable: Boolean)
+    : KslVar<T>(name, type, isMutable), KslExpression<T> where T: KslStruct<S>, S: Struct<S>

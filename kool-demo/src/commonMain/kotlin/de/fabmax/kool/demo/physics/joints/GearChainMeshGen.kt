@@ -20,8 +20,8 @@ import de.fabmax.kool.util.ShadowMap
 
 object GearChainMeshGen {
 
-    private val attribRoughness = Attribute("aRoughness", GpuType.FLOAT1)
-    private val attribMetallic = Attribute("aMetallic", GpuType.FLOAT1)
+    private val attribRoughness = Attribute("aRoughness", GpuType.Float1)
+    private val attribMetallic = Attribute("aMetallic", GpuType.Float1)
     private val meshAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, attribRoughness, attribMetallic)
 
     fun makeNiceGearMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(

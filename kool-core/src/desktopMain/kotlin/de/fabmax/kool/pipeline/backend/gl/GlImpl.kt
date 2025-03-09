@@ -186,6 +186,7 @@ object GlImpl : GlApi {
     override fun bindVertexArray(vao: GlVertexArrayObject) = glBindVertexArray(vao.handle)
     override fun blendFunc(sFactor: Int, dFactor: Int) = glBlendFunc(sFactor, dFactor)
     override fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int) = glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter)
+    override fun bufferData(target: Int, size: Int, usage: Int) = nglBufferData(target, size.toLong(), 0L, usage)
     override fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
     override fun bufferData(target: Int, buffer: Uint16Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }
     override fun bufferData(target: Int, buffer: Int32Buffer, usage: Int) = buffer.useRaw { glBufferData(target, it, usage) }

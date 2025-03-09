@@ -384,6 +384,6 @@ class Track(val world: VehicleWorld) : Node() {
     }
 
     companion object {
-        val ATTRIBUTE_ROUGHNESS = Attribute("aRoughness", GpuType.FLOAT1)
+        val ATTRIBUTE_ROUGHNESS = Attribute("aRoughness", GpuType.Float1)
     }
 }

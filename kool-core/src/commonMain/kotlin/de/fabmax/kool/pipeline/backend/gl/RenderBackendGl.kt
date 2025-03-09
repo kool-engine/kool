@@ -9,10 +9,7 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Viewport
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.measureTime
 
@@ -34,7 +31,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     private val windowViewport = Viewport(0, 0, 0, 0)
     protected val sceneRenderer = ScreenPassGl(numSamples, this)
 
-    private val awaitedStorageBuffers = mutableListOf<Pair<StorageBuffer, CompletableDeferred<Unit>>>()
+    private val awaitedStorageBuffers = mutableListOf<ReadbackStorageBuffer>()
 
     protected fun setupGl() {
         if (gl.capabilities.hasClipControl) {
@@ -176,20 +173,22 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenPassCubeGl).draw()
     protected fun ComputePassImpl.dispatch() = (this as ComputePassGl).dispatch()
 
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
-        awaitedStorageBuffers += storage to deferred
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
+        awaitedStorageBuffers += ReadbackStorageBuffer(storage, deferred, resultBuffer)
     }
 
     private fun readbackStorageBuffers() {
         gl.memoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
-        awaitedStorageBuffers.forEach { (storage, deferredBuffer) ->
-            val gpuBuf = storage.gpuBuffer as BufferResource?
-            if (gpuBuf == null || !gl.readBuffer(gpuBuf, storage.buffer)) {
-                deferredBuffer.completeExceptionally(IllegalStateException("Failed reading buffer"))
+        awaitedStorageBuffers.forEach { readback ->
+            val gpuBuf = readback.storage.gpuBuffer as BufferResource?
+            if (gpuBuf == null || !gl.readBuffer(gpuBuf, readback.resultBuffer)) {
+                readback.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
             } else {
-                deferredBuffer.complete(Unit)
+                readback.deferred.complete(Unit)
             }
         }
         awaitedStorageBuffers.clear()
     }
+
+    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer)
 }

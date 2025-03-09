@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.Buffer
 import de.fabmax.kool.util.Viewport
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Duration
@@ -42,7 +43,7 @@ interface RenderBackend {
 
     fun <T: ImageData> uploadTextureData(tex: Texture<T>)
     fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>)
-    fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>)
+    fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer)
 }
 
 class DeviceCoordinates(

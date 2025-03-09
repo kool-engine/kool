@@ -110,7 +110,7 @@ open class Mat3f(
     fun mul(that: Mat3f, result: MutableMat3f): MutableMat3f = result.set(this).mul(that)
 
     /**
-     * Transforms (i.e. multiplies) the given [Vec4f] with this matrix and stores the resulting transformed vector in [result].
+     * Transforms (i.e. multiplies) the given [Vec3f] with this matrix and stores the resulting transformed vector in [result].
      */
     fun transform(that: Vec3f, result: MutableVec3f): MutableVec3f {
         val x = that.x * m00 + that.y * m01 + that.z * m02
@@ -420,10 +420,12 @@ open class Mat3f(
     /**
      * Prints this matrix in a somewhat formatted form to the console.
      */
-    fun print() {
-        println("[${m00.toString(3)}, ${m01.toString(3)}, ${m02.toString(3)}]")
-        println("[${m10.toString(3)}, ${m11.toString(3)}, ${m12.toString(3)}]")
-        println("[${m20.toString(3)}, ${m21.toString(3)}, ${m22.toString(3)}]")
+    fun print(precision: Int = 3, width: Int = 8) = println(toStringFormatted(precision, width))
+
+    fun toStringFormatted(precision: Int = 3, width: Int = 8) = buildString {
+        append("[${m00.toString(precision).padStart(width)}, ${m01.toString(precision).padStart(width)}, ${m02.toString(precision).padStart(width)}]\n")
+        append("[${m10.toString(precision).padStart(width)}, ${m11.toString(precision).padStart(width)}, ${m12.toString(precision).padStart(width)}]\n")
+        append("[${m20.toString(precision).padStart(width)}, ${m21.toString(precision).padStart(width)}, ${m22.toString(precision).padStart(width)}]")
     }
 
     override fun toString(): String {
@@ -867,16 +869,20 @@ open class MutableMat3f(
             return false
         }
 
+        val t00 = m11*m22 - m12*m21
+        val t01 = m02*m21 - m01*m22
+        val t02 = m01*m12 - m02*m11
+        val t10 = m12*m20 - m10*m22
+        val t11 = m00*m22 - m02*m20
+        val t12 = m02*m10 - m00*m12
+        val t20 = m10*m21 - m11*m20
+        val t21 = m01*m20 - m00*m21
+        val t22 = m00*m11 - m01*m10
+
         val s = 1f / det
-        m00 = (m11*m22 - m12*m21) * s
-        m01 = (m02*m21 - m01*m22) * s
-        m02 = (m01*m12 - m02*m11) * s
-        m10 = (m12*m20 - m10*m22) * s
-        m11 = (m00*m22 - m02*m20) * s
-        m12 = (m02*m10 - m00*m12) * s
-        m20 = (m10*m21 - m11*m20) * s
-        m21 = (m01*m20 - m00*m21) * s
-        m22 = (m00*m11 - m01*m10) * s
+        m00 = t00 * s; m01 = t01 * s; m02 = t02 * s
+        m10 = t10 * s; m11 = t11 * s; m12 = t12 * s
+        m20 = t20 * s; m21 = t21 * s; m22 = t22 * s
         return true
     }
 
@@ -1001,7 +1007,7 @@ open class Mat3d(
     fun mul(that: Mat3d, result: MutableMat3d): MutableMat3d = result.set(this).mul(that)
 
     /**
-     * Transforms (i.e. multiplies) the given [Vec4d] with this matrix and stores the resulting transformed vector in [result].
+     * Transforms (i.e. multiplies) the given [Vec3d] with this matrix and stores the resulting transformed vector in [result].
      */
     fun transform(that: Vec3d, result: MutableVec3d): MutableVec3d {
         val x = that.x * m00 + that.y * m01 + that.z * m02
@@ -1311,10 +1317,12 @@ open class Mat3d(
     /**
      * Prints this matrix in a somewhat formatted form to the console.
      */
-    fun print() {
-        println("[${m00.toString(3)}, ${m01.toString(3)}, ${m02.toString(3)}]")
-        println("[${m10.toString(3)}, ${m11.toString(3)}, ${m12.toString(3)}]")
-        println("[${m20.toString(3)}, ${m21.toString(3)}, ${m22.toString(3)}]")
+    fun print(precision: Int = 3, width: Int = 8) = println(toStringFormatted(precision, width))
+
+    fun toStringFormatted(precision: Int = 3, width: Int = 8) = buildString {
+        append("[${m00.toString(precision).padStart(width)}, ${m01.toString(precision).padStart(width)}, ${m02.toString(precision).padStart(width)}]\n")
+        append("[${m10.toString(precision).padStart(width)}, ${m11.toString(precision).padStart(width)}, ${m12.toString(precision).padStart(width)}]\n")
+        append("[${m20.toString(precision).padStart(width)}, ${m21.toString(precision).padStart(width)}, ${m22.toString(precision).padStart(width)}]")
     }
 
     override fun toString(): String {
@@ -1758,16 +1766,20 @@ open class MutableMat3d(
             return false
         }
 
+        val t00 = m11*m22 - m12*m21
+        val t01 = m02*m21 - m01*m22
+        val t02 = m01*m12 - m02*m11
+        val t10 = m12*m20 - m10*m22
+        val t11 = m00*m22 - m02*m20
+        val t12 = m02*m10 - m00*m12
+        val t20 = m10*m21 - m11*m20
+        val t21 = m01*m20 - m00*m21
+        val t22 = m00*m11 - m01*m10
+
         val s = 1.0 / det
-        m00 = (m11*m22 - m12*m21) * s
-        m01 = (m02*m21 - m01*m22) * s
-        m02 = (m01*m12 - m02*m11) * s
-        m10 = (m12*m20 - m10*m22) * s
-        m11 = (m00*m22 - m02*m20) * s
-        m12 = (m02*m10 - m00*m12) * s
-        m20 = (m10*m21 - m11*m20) * s
-        m21 = (m01*m20 - m00*m21) * s
-        m22 = (m00*m11 - m01*m10) * s
+        m00 = t00 * s; m01 = t01 * s; m02 = t02 * s
+        m10 = t10 * s; m11 = t11 * s; m12 = t12 * s
+        m20 = t20 * s; m21 = t21 * s; m22 = t22 * s
         return true
     }
 

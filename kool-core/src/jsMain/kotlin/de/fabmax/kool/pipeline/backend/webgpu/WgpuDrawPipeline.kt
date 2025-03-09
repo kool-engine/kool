@@ -21,19 +21,21 @@ class WgpuDrawPipeline(
             .mapNotNull { vertexBinding ->
                 val attributes = vertexBinding.vertexAttributes.flatMap { attr ->
                     val (format, stride) = when (attr.type) {
-                        GpuType.FLOAT1 -> GPUVertexFormat.float32 to 4
-                        GpuType.FLOAT2 -> GPUVertexFormat.float32x2 to 8
-                        GpuType.FLOAT3 -> GPUVertexFormat.float32x3 to 12
-                        GpuType.FLOAT4 -> GPUVertexFormat.float32x4 to 16
+                        GpuType.Float1 -> GPUVertexFormat.float32 to 4
+                        GpuType.Float2 -> GPUVertexFormat.float32x2 to 8
+                        GpuType.Float3 -> GPUVertexFormat.float32x3 to 12
+                        GpuType.Float4 -> GPUVertexFormat.float32x4 to 16
 
-                        GpuType.INT1 -> GPUVertexFormat.sint32 to 4
-                        GpuType.INT2 -> GPUVertexFormat.sint32x2 to 8
-                        GpuType.INT3 -> GPUVertexFormat.sint32x3 to 12
-                        GpuType.INT4 -> GPUVertexFormat.sint32x4 to 16
+                        GpuType.Int1 -> GPUVertexFormat.sint32 to 4
+                        GpuType.Int2 -> GPUVertexFormat.sint32x2 to 8
+                        GpuType.Int3 -> GPUVertexFormat.sint32x3 to 12
+                        GpuType.Int4 -> GPUVertexFormat.sint32x4 to 16
 
-                        GpuType.MAT2 -> GPUVertexFormat.float32x2 to 8
-                        GpuType.MAT3 -> GPUVertexFormat.float32x3 to 12
-                        GpuType.MAT4 -> GPUVertexFormat.float32x4 to 16
+                        GpuType.Mat2 -> GPUVertexFormat.float32x2 to 8
+                        GpuType.Mat3 -> GPUVertexFormat.float32x3 to 12
+                        GpuType.Mat4 -> GPUVertexFormat.float32x4 to 16
+
+                        is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
                     }
 
                     locations[attr].mapIndexed { i, loc ->
@@ -180,7 +182,7 @@ class WgpuDrawPipeline(
 
         var slot = 0
         gpuInsts?.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
-        passEncoder.setVertexBuffer(slot++, gpuGeom.floatBuffer)
+        gpuGeom.floatBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
         gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
         passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
         return true

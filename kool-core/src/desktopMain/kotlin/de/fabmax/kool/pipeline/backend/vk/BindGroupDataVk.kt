@@ -7,12 +7,14 @@ import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
 import org.lwjgl.vulkan.VkWriteDescriptorSet
 
 class BindGroupDataVk(
     val data: BindGroupData,
     private val gpuLayout: VkDescriptorSetLayout,
-    private val backend: RenderBackendVk
+    private val backend: RenderBackendVk,
+    commandBuffer: VkCommandBuffer
 ) : BaseReleasable(), GpuBindGroupData {
     private val device: Device get() = backend.device
 
@@ -29,10 +31,7 @@ class BindGroupDataVk(
         data.bindings.forEach { binding ->
             when (binding) {
                 is BindGroupData.UniformBufferBindingData -> uboBindings += UboBinding(binding, Swapchain.MAX_FRAMES_IN_FLIGHT)
-
-                is BindGroupData.StorageBuffer1dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
-                is BindGroupData.StorageBuffer2dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
-                is BindGroupData.StorageBuffer3dBindingData -> storageBufferBindings += StorageBufferBinding(binding)
+                is BindGroupData.StorageBufferBindingData -> storageBufferBindings += StorageBufferBinding(binding, commandBuffer)
 
                 is BindGroupData.Texture1dBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_1D)
                 is BindGroupData.Texture2dBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_2D)
@@ -412,7 +411,8 @@ class BindGroupDataVk(
     }
 
     private fun StorageBufferBinding(
-        binding: BindGroupData.StorageBufferBindingData<*>
+        binding: BindGroupData.StorageBufferBindingData,
+        commandBuffer: VkCommandBuffer
     ): StorageBufferBinding {
         val name = (binding as BindingData).name
         val storage = checkNotNull(binding.storageBuffer)
@@ -421,32 +421,35 @@ class BindGroupDataVk(
             gpuBuffer = BufferVk(
                 backend = backend,
                 bufferInfo = MemoryInfo(
-                    size = storage.buffer.limit * 4L,
+                    size = storage.size * storage.type.byteSize.toLong(),
                     usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_SRC_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
                 )
             )
+            if (storage.uploadData == null) {
+                vkCmdFillBuffer(commandBuffer, gpuBuffer.vkBuffer.handle, 0L, VK_WHOLE_SIZE, 0)
+            }
             storage.gpuBuffer = gpuBuffer
         }
         return StorageBufferBinding(binding, storage, gpuBuffer)
     }
 
     inner class StorageBufferBinding(
-        val binding: BindGroupData.StorageBufferBindingData<*>,
+        val binding: BindGroupData.StorageBufferBindingData,
         val storageBuffer: StorageBuffer,
         val gpuBuffer: BufferVk
     ) : BaseReleasable() {
 
         fun updateBuffer(passEncoderState: PassEncoderState) {
-            if (binding.getAndClearDirtyFlag()) {
+            storageBuffer.uploadData?.let { upload ->
+                storageBuffer.uploadData = null
                 backend.memManager.stagingBuffer(gpuBuffer.bufferSize) { stagingBuf ->
-                    when (storageBuffer.buffer) {
-                        is Int32Buffer -> {
-                            storageBuffer.buffer.useRaw { stagingBuf.mapped!!.asIntBuffer().put(it) }
-                        }
-                        is Float32Buffer -> {
-                            storageBuffer.buffer.useRaw { stagingBuf.mapped!!.asFloatBuffer().put(it) }
-                        }
+                    when (upload) {
+                        is Uint8Buffer -> upload.useRaw { stagingBuf.mapped!!.put(it) }
+                        is Uint16Buffer -> upload.useRaw { stagingBuf.mapped!!.asShortBuffer().put(it) }
+                        is Int32Buffer -> upload.useRaw { stagingBuf.mapped!!.asIntBuffer().put(it) }
+                        is Float32Buffer -> upload.useRaw { stagingBuf.mapped!!.asFloatBuffer().put(it) }
+                        is MixedBuffer -> upload.useRaw { stagingBuf.mapped!!.put(it) }
                     }
                     gpuBuffer.copyFrom(stagingBuf, passEncoderState.commandBuffer)
                 }

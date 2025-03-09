@@ -24,24 +24,24 @@ class KslExpressionMathScalar<S>(
     left: KslExpression<*>,
     right: KslExpression<*>,
     operator: KslMathOperator,
-    expressionType: S)
-    : KslExpressionMath<S>(left, right, operator, expressionType), KslScalarExpression<S>
+    expressionType: S
+) : KslExpressionMath<S>(left, right, operator, expressionType), KslScalarExpression<S>
         where S: KslNumericType, S: KslScalar
 
 class KslExpressionMathVector<V, S>(
     left: KslExpression<*>,
     right: KslExpression<*>,
     operator: KslMathOperator,
-    expressionType: V)
-    : KslExpressionMath<V>(left, right, operator, expressionType), KslVectorExpression<V, S>
+    expressionType: V
+) : KslExpressionMath<V>(left, right, operator, expressionType), KslVectorExpression<V, S>
         where V: KslNumericType, V: KslVector<S>, S: KslScalar
 
 class KslExpressionMathMatrix<M, V>(
     left: KslExpression<*>,
     right: KslExpression<*>,
     operator: KslMathOperator,
-    expressionType: M)
-    : KslExpressionMath<M>(left, right, operator, expressionType), KslMatrixExpression<M, V>
+    expressionType: M
+) : KslExpressionMath<M>(left, right, operator, expressionType), KslMatrixExpression<M, V>
         where M: KslFloatType, M: KslMatrix<V>, V: KslVector<*>
 
 

@@ -4,6 +4,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture2dArray
+import de.fabmax.kool.pipeline.backend.gl.channels
 
 fun KslScopeBuilder.vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlockVertexStage {
     val propertyBlock = PropertyBlockVertexStage(cfg, this)

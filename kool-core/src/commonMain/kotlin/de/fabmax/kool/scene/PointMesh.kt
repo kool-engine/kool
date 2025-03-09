@@ -60,6 +60,6 @@ open class PointMesh(
     }
 
     companion object {
-        val ATTRIB_POINT_SIZE = Attribute("aPointSize", GpuType.FLOAT1)
+        val ATTRIB_POINT_SIZE = Attribute("aPointSize", GpuType.Float1)
     }
 }

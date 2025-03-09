@@ -14,6 +14,7 @@ external class GPU {
 
 external class GPUAdapter {
     val features: dynamic
+    val limits: GPUSupportedLimits
     fun requestDevice(descriptor: GPUDeviceDescriptor = definedExternally): Promise<GPUDevice>
 }
 

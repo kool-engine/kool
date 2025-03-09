@@ -56,14 +56,15 @@ class WgpuBindGroupData(
 
         for (i in storageBufferBindings.indices) {
             val storage = storageBufferBindings[i]
-            if (storage.binding.getAndClearDirtyFlag() || recreatedBindGroup) {
-                val hostBuffer = when (val buf = checkNotNull(storage.binding.storageBuffer?.buffer)) {
-                    is Uint8BufferImpl -> buf.buffer
-                    is Uint16BufferImpl -> buf.buffer
-                    is Int32BufferImpl -> buf.buffer
-                    is Float32BufferImpl -> buf.buffer
-                    is MixedBufferImpl -> buf.buffer
-                    else -> error("unexpected buffer type: ${buf::class.simpleName}")
+            storage.binding.storageBuffer?.uploadData?.let { upload ->
+                storage.binding.storageBuffer?.uploadData = null
+                val hostBuffer = when (upload) {
+                    is Uint8BufferImpl -> upload.buffer
+                    is Uint16BufferImpl -> upload.buffer
+                    is Int32BufferImpl -> upload.buffer
+                    is Float32BufferImpl -> upload.buffer
+                    is MixedBufferImpl -> upload.buffer
+                    else -> error("unexpected buffer type: ${upload::class.simpleName}")
                 }
                 device.queue.writeBuffer(
                     buffer = storage.gpuBuffer.buffer,
@@ -85,10 +86,7 @@ class WgpuBindGroupData(
             data.bindings.map { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData -> add(binding.makeEntry(pass))
-
-                    is BindGroupData.StorageBuffer1dBindingData -> add(binding.makeEntry(pass))
-                    is BindGroupData.StorageBuffer2dBindingData -> add(binding.makeEntry(pass))
-                    is BindGroupData.StorageBuffer3dBindingData -> add(binding.makeEntry(pass))
+                    is BindGroupData.StorageBufferBindingData -> add(binding.makeEntry(pass))
 
                     is BindGroupData.Texture1dBindingData -> addAll(binding.makeTexture1dEntry())
                     is BindGroupData.Texture2dBindingData -> addAll(binding.makeTexture2dEntry())
@@ -125,21 +123,15 @@ class WgpuBindGroupData(
         return GPUBindGroupEntry(location.binding, GPUBufferBinding(gpuBuffer.buffer))
     }
 
-    private fun BindGroupData.StorageBufferBindingData<*>.makeEntry(pass: GpuPass): GPUBindGroupEntry {
-        val (name, location) = when (this) {
-            is BindGroupData.StorageBuffer1dBindingData -> name to locations[layout]
-            is BindGroupData.StorageBuffer2dBindingData -> name to locations[layout]
-            is BindGroupData.StorageBuffer3dBindingData -> name to locations[layout]
-            else -> error("unreachable")
-        }
-
+    private fun BindGroupData.StorageBufferBindingData.makeEntry(pass: GpuPass): GPUBindGroupEntry {
+        val location = locations[layout]
         val storage = checkNotNull(storageBuffer) { "Cannot create storage buffer binding from null buffer" }
         var gpuBuffer = storage.gpuBuffer as WgpuBufferResource?
         if (gpuBuffer == null) {
             gpuBuffer = backend.createBuffer(
                 GPUBufferDescriptor(
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
-                    size = storage.buffer.limit.toLong() * 4,
+                    size = storage.size * storage.type.byteSize.toLong(),
                     usage = GPUBufferUsage.STORAGE or GPUBufferUsage.COPY_SRC or GPUBufferUsage.COPY_DST
                 ),
                 "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"
@@ -329,7 +321,7 @@ class WgpuBindGroupData(
     }
 
     private data class StorageBufferBinding(
-        val binding: BindGroupData.StorageBufferBindingData<*>,
+        val binding: BindGroupData.StorageBufferBindingData,
         val gpuBuffer: WgpuBufferResource
     )
 

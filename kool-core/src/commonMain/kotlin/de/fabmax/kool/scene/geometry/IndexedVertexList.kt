@@ -7,6 +7,7 @@ import de.fabmax.kool.math.spatial.pointKdTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.backend.GpuGeometry
+import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -90,7 +91,7 @@ class IndexedVertexList(
 
         val byteOffsets = mutableMapOf<Attribute, Int>()
         for (attrib in vertexAttributes) {
-            if (attrib.type == GpuType.MAT2 || attrib.type == GpuType.MAT3 || attrib.type == GpuType.MAT4) {
+            if (attrib.type == GpuType.Mat2 || attrib.type == GpuType.Mat3 || attrib.type == GpuType.Mat4) {
                 throw IllegalArgumentException("Matrix types are not supported as vertex attributes")
             }
             if (attrib.type.isInt) {
@@ -154,13 +155,13 @@ class IndexedVertexList(
             increaseDataSizeF(increaseSize(dataF.capacity, reqSpace * vertexSizeF))
         }
         if (dataI.remaining < vertexSizeI * reqSpace) {
-            increaseDataSizeI(increaseSize(dataF.capacity, reqSpace * vertexSizeI))
+            increaseDataSizeI(increaseSize(dataI.capacity, reqSpace * vertexSizeI))
         }
     }
 
     fun checkIndexSize(reqSpace: Int = 1) {
         if (indices.remaining < reqSpace) {
-            increaseIndicesSize(increaseSize(dataF.capacity, reqSpace))
+            increaseIndicesSize(increaseSize(indices.capacity, reqSpace))
         }
     }
 

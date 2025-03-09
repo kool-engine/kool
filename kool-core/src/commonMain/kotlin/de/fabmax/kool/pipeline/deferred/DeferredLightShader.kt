@@ -123,7 +123,7 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
     }
 
     companion object {
-        val LIGHT_POS = Attribute("aLightPos", GpuType.FLOAT4)
-        val LIGHT_DIR = Attribute("aLightDir", GpuType.FLOAT4)
+        val LIGHT_POS = Attribute("aLightPos", GpuType.Float4)
+        val LIGHT_DIR = Attribute("aLightDir", GpuType.Float4)
     }
 }

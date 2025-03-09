@@ -305,8 +305,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>) {
-        gpuReadbacks += ReadbackStorageBuffer(storage, deferred)
+    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
+        gpuReadbacks += ReadbackStorageBuffer(storage, deferred, resultBuffer)
     }
 
     override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
@@ -319,7 +319,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             if (gpuBuf == null) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
             } else {
-                val size = readback.storage.buffer.limit.toLong() * 4
+                val size = readback.resultBuffer.limit.toLong() * 4
                 val mapBuffer = device.createBuffer(
                     GPUBufferDescriptor(
                         label = "storage-buffer-readback",
@@ -364,7 +364,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
             mapBuffer.mapAsync(GPUMapMode.READ).then {
-                readback.storage.buffer.copyFrom(mapBuffer.getMappedRange())
+                readback.resultBuffer.copyFrom(mapBuffer.getMappedRange())
                 mapBuffer.unmap()
                 mapBuffer.destroy()
                 readback.deferred.complete(Unit)
@@ -413,7 +413,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private interface GpuReadback
 
-    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>) : GpuReadback {
+    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer) : GpuReadback {
         var mapBuffer: GPUBuffer? = null
     }
 

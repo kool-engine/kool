@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.backend.GpuGeometry
+import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.BaseReleasable

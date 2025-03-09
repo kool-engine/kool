@@ -2,15 +2,15 @@ package de.fabmax.kool.pipeline
 
 import kotlin.reflect.KProperty
 
-sealed class StorageBufferBinding<T: StorageBuffer?>(
+class StorageBufferBinding(
     textureName: String,
-    defaultBuffer: T,
+    defaultBuffer: StorageBuffer?,
     shader: ShaderBase<*>
 ) : PipelineBinding(textureName, shader) {
 
-    private var cache: T = defaultBuffer
+    private var cache: StorageBuffer? = defaultBuffer
 
-    fun get(): T {
+    fun get(): StorageBuffer? {
         if (isValid) {
             bindGroupData?.let {
                 cache = it.getFromData()
@@ -19,15 +19,15 @@ sealed class StorageBufferBinding<T: StorageBuffer?>(
         return cache
     }
 
-    fun set(value: T) {
+    fun set(value: StorageBuffer?) {
         cache = value
         if (isValid) {
             bindGroupData?.setInData(value)
         }
     }
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: T) = set(value)
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageBuffer? = get()
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageBuffer?) = set(value)
 
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
@@ -42,48 +42,11 @@ sealed class StorageBufferBinding<T: StorageBuffer?>(
         }
     }
 
-    protected abstract fun BindGroupData.getFromData(): T
-    protected abstract fun BindGroupData.setInData(buffer: T)
-}
-
-class StorageBuffer1dBinding(
-    textureName: String,
-    defaultBuffer: StorageBuffer1d?,
-    shader: ShaderBase<*>
-) : StorageBufferBinding<StorageBuffer1d?>(textureName, defaultBuffer, shader) {
-    override fun BindGroupData.getFromData(): StorageBuffer1d? {
+    fun BindGroupData.getFromData(): StorageBuffer? {
         return storageBuffer1dBindingData(bindingIndex).storageBuffer
     }
 
-    override fun BindGroupData.setInData(buffer: StorageBuffer1d?) {
+    fun BindGroupData.setInData(buffer: StorageBuffer?) {
         storageBuffer1dBindingData(bindingIndex).storageBuffer = buffer
-    }
-}
-
-class StorageBuffer2dBinding(
-    textureName: String,
-    defaultBuffer: StorageBuffer2d?,
-    shader: ShaderBase<*>
-) : StorageBufferBinding<StorageBuffer2d?>(textureName, defaultBuffer, shader) {
-    override fun BindGroupData.getFromData(): StorageBuffer2d? {
-        return storageBuffer2dBindingData(bindingIndex).storageBuffer
-    }
-
-    override fun BindGroupData.setInData(buffer: StorageBuffer2d?) {
-        storageBuffer2dBindingData(bindingIndex).storageBuffer = buffer
-    }
-}
-
-class StorageBuffer3dBinding(
-    textureName: String,
-    defaultBuffer: StorageBuffer3d?,
-    shader: ShaderBase<*>
-) : StorageBufferBinding<StorageBuffer3d?>(textureName, defaultBuffer, shader) {
-    override fun BindGroupData.getFromData(): StorageBuffer3d? {
-        return storageBuffer3dBindingData(bindingIndex).storageBuffer
-    }
-
-    override fun BindGroupData.setInData(buffer: StorageBuffer3d?) {
-        storageBuffer3dBindingData(bindingIndex).storageBuffer = buffer
     }
 }

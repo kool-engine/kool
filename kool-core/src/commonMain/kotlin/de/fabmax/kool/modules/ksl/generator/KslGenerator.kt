@@ -36,7 +36,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslReturn -> opReturn(op)
             is KslBlock -> opBlock(op)
             is KslInlineCode -> opInlineCode(op)
-            is KslStorageWrite<*, *, *> -> opStorageWrite(op)
+            is KslStorageWrite<*, *> -> opStorageWrite(op)
             is KslStorageTextureStore<*, *, *> -> opStorageTextureWrite(op)
             is KslFunction<*>.FunctionRoot -> opFunctionBody(op)
             else -> throw IllegalArgumentException("Unsupported op: ${op.toPseudoCode()}")
@@ -58,7 +58,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun opReturn(op: KslReturn): String
     abstract fun opBlock(op: KslBlock): String
     abstract fun opInlineCode(op: KslInlineCode): String
-    abstract fun opStorageWrite(op: KslStorageWrite<*, *, *>): String
+    abstract fun opStorageWrite(op: KslStorageWrite<*, *>): String
     abstract fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String
 
     fun KslExpression<*>.generateExpression(): String {
@@ -80,6 +80,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslVertexAttribute<*> -> generateValueExpression(expr.value)
             is KslStageInput<*> -> generateValueExpression(expr.value)
             is KslStageOutput<*> -> generateValueExpression(expr.value)
+            is KslStructMemberExpression -> structMemberExpression(expr)
             is KslNumericScalarUnaryMinus<*> -> numericUnaryMinusExpression(expr)
             is KslNumericVectorUnaryMinus<*, *> -> numericUnaryMinusExpression(expr)
             is KslIntScalarComplement -> intComplementExpression(expr)
@@ -95,11 +96,11 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslSampleDepthTextureArray<*> -> sampleDepthTextureArray(expr)
             is KslImageTextureLoad<*> -> imageTextureRead(expr)
             is KslStorageTextureLoad<*, *, *> -> storageTextureRead(expr)
-            is KslStorageRead<*, *, *> -> generateStorageRead(expr)
+            is KslStorageRead<*, *> -> generateStorageRead(expr)
             is KslStorageTextureSize<*, *, *> -> generateTextureSize(expr)
             is KslTextureSize<*, *> -> generateTextureSize(expr)
-            is KslStorageAtomicOp<*, *, *> -> storageAtomicOp(expr)
-            is KslStorageAtomicCompareSwap<*, *, *> -> storageAtomicCompareSwap(expr)
+            is KslStorageAtomicOp<*, *> -> storageAtomicOp(expr)
+            is KslStorageAtomicCompareSwap<*, *> -> storageAtomicCompareSwap(expr)
             else -> error("expression type not implemented: $expr")
         }
     }
@@ -107,6 +108,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun getStateName(stae: KslState): String
 
     open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
+    open fun structMemberAssignable(structMember: KslStructMemberExpression<*>): String = structMember.generateExpression()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression()}[${arrayAccessor.index.generateExpression()}]"
     open fun matrixColAssignable(matrixAccessor: KslMatrixAccessor<*>): String =
@@ -127,6 +129,9 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     open fun generateMatrixColExpression(matrixAccessor: KslMatrixAccessor<*>): String =
         "${matrixAccessor.matrix.generateExpression()}[${matrixAccessor.colIndex.generateExpression()}]"
     open fun generateVectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression()}.${swizzleExpr.components}"
+
+    open fun structMemberExpression(expression: KslStructMemberExpression<*>): String =
+        "${expression.struct.generateExpression()}${expression.member.qualifiedName}"
 
     open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =
         "(${expression.left.generateExpression()} ${expression.operator.opString} ${expression.right.generateExpression()})"
@@ -346,9 +351,9 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String
     abstract fun imageTextureRead(expression: KslImageTextureLoad<*>): String
 
-    abstract fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String
-    abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String
-    abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String
+    abstract fun generateStorageRead(storageRead: KslStorageRead<*, *>): String
+    abstract fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *>): String
+    abstract fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *>): String
 
     interface GeneratorOutput
 

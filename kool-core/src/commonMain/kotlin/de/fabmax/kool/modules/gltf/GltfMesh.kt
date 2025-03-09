@@ -155,15 +155,15 @@ data class GltfMesh(
             targets.forEachIndexed { index, morphTarget ->
                 val postfix = "_${index + 1}"
                 morphTarget[ATTRIBUTE_NORMAL]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.NORMALS.name}$postfix", GpuType.FLOAT3)
+                    val attrib = Attribute("${Attribute.NORMALS.name}$postfix", GpuType.Float3)
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
                 morphTarget[ATTRIBUTE_POSITION]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.POSITIONS.name}$postfix", GpuType.FLOAT3)
+                    val attrib = Attribute("${Attribute.POSITIONS.name}$postfix", GpuType.Float3)
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
                 morphTarget[ATTRIBUTE_TANGENT]?.let { iAccessor ->
-                    val attrib = Attribute("${Attribute.TANGENTS.name}$postfix", GpuType.FLOAT3)
+                    val attrib = Attribute("${Attribute.TANGENTS.name}$postfix", GpuType.Float3)
                     accessors[attrib] = Vec3fAccessor(gltfAccessors[iAccessor])
                 }
             }

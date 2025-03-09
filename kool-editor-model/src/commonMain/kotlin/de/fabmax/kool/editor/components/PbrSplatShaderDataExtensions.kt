@@ -47,7 +47,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(
                         is ConstColorAttribute -> uniformColor()
                         is ConstValueAttribute -> uniformColor()
                         is MapAttribute -> textureColor(arrayIndex++, arrayTexName)
-                        is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
+                        is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.Float4))
                     }
                 }
                 emission {
@@ -55,7 +55,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(
                         is ConstColorAttribute -> uniformColor()
                         is ConstValueAttribute -> uniformColor()
                         is MapAttribute -> textureColor(arrayIndex++, arrayTexName)
-                        is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
+                        is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.Float4))
                     }
                 }
                 mat.normalMap?.let {
@@ -76,7 +76,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(
                     when (val rough = mat.roughness) {
                         is ConstColorAttribute -> uniformProperty()
                         is ConstValueAttribute -> uniformProperty()
-                        is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.FLOAT1))
+                        is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.Float1))
                         is MapAttribute -> textureProperty(
                             arrayIndex = arrayIndex + armTexNames.roughnessIndex,
                             textureName = arrayTexName,
@@ -88,7 +88,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(
                     when (val metal = mat.metallic) {
                         is ConstColorAttribute -> uniformProperty()
                         is ConstValueAttribute -> uniformProperty()
-                        is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.FLOAT1))
+                        is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.Float1))
                         is MapAttribute -> textureProperty(
                             arrayIndex = arrayIndex + armTexNames.roughnessIndex,
                             textureName = arrayTexName,

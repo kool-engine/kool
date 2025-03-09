@@ -155,8 +155,8 @@ class TitleBgRenderer(
         }
 
         companion object {
-            val ATTRIB_DIMENS = Attribute("aDimens", GpuType.FLOAT4)
-            val ATTRIB_CLIP_CORNERS = Attribute("aClipCorners", GpuType.FLOAT2)
+            val ATTRIB_DIMENS = Attribute("aDimens", GpuType.Float4)
+            val ATTRIB_CLIP_CORNERS = Attribute("aClipCorners", GpuType.Float2)
 
             val pipelineConfig = PipelineConfig(
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,

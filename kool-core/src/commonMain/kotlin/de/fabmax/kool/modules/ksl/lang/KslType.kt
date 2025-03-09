@@ -1,5 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.util.Struct
+
 sealed class KslType(val typeName: String) {
     override fun toString(): String = typeName
 }
@@ -11,7 +13,7 @@ sealed class KslFloatType(typeName: String) : KslNumericType(typeName)
 sealed class KslIntType(typeName: String) : KslNumericType(typeName)
 sealed class KslBoolType(typeName: String) : KslType(typeName)
 sealed class KslSamplerType<R: KslNumericType>(typeName: String) : KslType(typeName)
-sealed class KslStorageType<R: KslNumericType, C: KslIntType>(typeName: String, val elemType: R, val coordType: C) : KslType(typeName)
+sealed class KslStorageType<R: KslType>(typeName: String, val elemType: R) : KslType(typeName)
 sealed class KslStorageTextureType<R: KslNumericType, C: KslIntType>(typeName: String, val elemType: R, val coordType: C) : KslType(typeName)
 
 interface KslScalar
@@ -97,6 +99,8 @@ class KslMat2Array(arraySize: Int) : KslArrayType<KslMat2>(KslMat2, arraySize)
 class KslMat3Array(arraySize: Int) : KslArrayType<KslMat3>(KslMat3, arraySize)
 class KslMat4Array(arraySize: Int) : KslArrayType<KslMat4>(KslMat4, arraySize)
 
+class KslStructArray<S: Struct<S>>(struct: KslStruct<S>, arraySize: Int) : KslArrayType<KslStruct<S>>(struct, arraySize)
+
 sealed class KslColorSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat4>(typeName)
 sealed class KslDepthSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat1>(typeName)
 
@@ -119,29 +123,13 @@ data object KslDepthSampler2dArray : KslDepthSampler<KslFloat2>("depthSampler2dA
 data object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat3>("depthSamplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
 
-class KslStorage1dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt1>("KslStorage1dType<${elemType.typeName}>", elemType, KslInt1) {
-    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || other !is KslStorage1dType<*>) return false
-        return elemType == other.elemType
-    }
-}
+class KslStructStorageType<T: Struct<T>>(structType: KslStruct<T>) : KslStorageType<KslStruct<T>>("KslStructStorageType<${structType.typeName}>", structType)
 
-class KslStorage2dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt2>("KslStorage2dType<${elemType.typeName}>", elemType, KslInt2) {
+class KslPrimitiveStorageType<R: KslNumericType>(elemType: R) : KslStorageType<R>("KslStorage1dType<${elemType.typeName}>", elemType) {
     override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || other !is KslStorage2dType<*>) return false
-        return elemType == other.elemType
-    }
-}
-
-class KslStorage3dType<R: KslNumericType>(elemType: R) : KslStorageType<R, KslInt3>("KslStorage3dType<${elemType.typeName}>", elemType, KslInt3) {
-    override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || other !is KslStorage3dType<*>) return false
+        if (other == null || other !is KslPrimitiveStorageType<*>) return false
         return elemType == other.elemType
     }
 }

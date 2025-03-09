@@ -30,7 +30,7 @@ class ComputePipelineVk(
         }
 
         passEncoderState.setComputePipeline(vkComputePipeline)
-        val computeData = pipelineData.getOrCreateVkData()
+        val computeData = pipelineData.getOrCreateVkData(passEncoderState.commandBuffer)
         computeData.updateBuffers(passEncoderState)
         computeData.prepareBind(passEncoderState)
         passEncoderState.setBindGroup(computeData, pipelineLayout, BindPoint.Compute, groupIndex = 0)

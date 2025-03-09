@@ -79,6 +79,7 @@ tasks.register<GenerateVariantsFromFloatPrototype>("generateDoubleOnlyVariants")
         ?.flatMap {
             listOf(
                 File(it, "de/fabmax/kool/math/Angle.kt"),
+                File(it, "de/fabmax/kool/math/Mat2.kt"),
                 File(it, "de/fabmax/kool/math/Mat3.kt"),
                 File(it, "de/fabmax/kool/math/Mat4.kt"),
                 File(it, "de/fabmax/kool/math/Mat4Stack.kt"),

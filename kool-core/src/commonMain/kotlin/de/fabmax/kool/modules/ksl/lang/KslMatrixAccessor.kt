@@ -14,9 +14,7 @@ abstract class KslMatrixAccessor<T>(
 {
     override val expressionType get() = type
     override val assignType get() = type
-
-    override val mutatingState: KslValue<*>?
-        get() = matrix as? KslValue<*>
+    override val mutatingState: KslValue<*>? get() = matrix.asAssignable()
 
     override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(matrix, colIndex)
 

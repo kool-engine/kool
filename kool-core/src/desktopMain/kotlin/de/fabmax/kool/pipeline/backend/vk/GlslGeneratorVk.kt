@@ -4,6 +4,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.GlslGenerator
+import de.fabmax.kool.util.MemoryLayout
 
 class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpression<*>, KslExpression<*>>) : GlslGenerator(
     generatorExpressions,
@@ -29,12 +30,27 @@ class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpressio
         val storages = stage.getUsedStorage()
         if (storages.isNotEmpty()) {
             appendLine("// storage buffers")
-            val readonly = if (stage.type == KslShaderStageType.ComputeShader) "" else "readonly"
             for (storage in storages) {
                 val (set, desc) = pipeline.findBindGroupItemByName(storage.name)!!
+                val rw = when ((desc as StorageBufferLayout).accessType) {
+                    StorageAccessType.READ_ONLY -> "readonly"
+                    StorageAccessType.WRITE_ONLY -> "writeonly"
+                    StorageAccessType.READ_WRITE -> ""
+                }
+                val arrayDim = storage.size?.let { "[$it]" } ?: "[]"
+
+                val type = storage.storageType.elemType
+                val layout = if (type is KslStruct<*>) {
+                    when (type.struct.layout) {
+                        MemoryLayout.Std140 -> "std140"
+                        MemoryLayout.Std430 -> "std430"
+                        else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std430 and std140")
+                    }
+                } else "std430"
+
                 appendLine("""
-                    layout(std430, set=${set.group}, binding=${desc.bindingIndex}) $readonly buffer ssboLayout_${storage.name} {
-                        ${glslTypeName(storage.storageType.elemType)} ${storage.name}[];
+                    layout($layout, set=${set.group}, binding=${desc.bindingIndex}) $rw buffer ssboLayout_${storage.name} {
+                        ${glslTypeName(storage.storageType.elemType)} ${storage.name}$arrayDim;
                     };
                 """.trimIndent())
             }

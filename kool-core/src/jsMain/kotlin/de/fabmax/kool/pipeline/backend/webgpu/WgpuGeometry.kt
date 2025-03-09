@@ -9,11 +9,11 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     private val device: GPUDevice get() = backend.device
 
     private val createdIndexBuffer: WgpuGrowingBuffer
-    private val createdFloatBuffer: WgpuGrowingBuffer
+    private val createdFloatBuffer: WgpuGrowingBuffer?
     private val createdIntBuffer: WgpuGrowingBuffer?
 
     val indexBuffer: GPUBuffer get() = createdIndexBuffer.buffer.buffer
-    val floatBuffer: GPUBuffer get() = createdFloatBuffer.buffer.buffer
+    val floatBuffer: GPUBuffer? get() = createdFloatBuffer?.buffer?.buffer
     val intBuffer: GPUBuffer? get() = createdIntBuffer?.buffer?.buffer
 
     private var isNewlyCreated = true
@@ -21,7 +21,9 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     init {
         val geom = mesh.geometry
         createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
-        createdFloatBuffer = WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices.toLong())
+        createdFloatBuffer = if (geom.byteStrideF == 0) null else {
+            WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices.toLong())
+        }
         createdIntBuffer = if (geom.byteStrideI == 0) null else {
             WgpuGrowingBuffer(backend, "${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices.toLong())
         }
@@ -33,7 +35,7 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
         val geometry = mesh.geometry
         if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
             createdIndexBuffer.writeData(geometry.indices)
-            createdFloatBuffer.writeData(geometry.dataF)
+            createdFloatBuffer?.writeData(geometry.dataF)
             createdIntBuffer?.writeData(geometry.dataI)
             geometry.hasChanged = false
         }
@@ -43,7 +45,7 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     override fun release() {
         super.release()
         createdIndexBuffer.release()
-        createdFloatBuffer.release()
+        createdFloatBuffer?.release()
         createdIntBuffer?.release()
     }
 }

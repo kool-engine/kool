@@ -9,9 +9,7 @@ open class KslArrayAccessor<T: KslType>(
 
     override val expressionType = array.expressionType.elemType
     override val assignType = array.expressionType.elemType
-
-    override val mutatingState: KslValue<*>?
-        get() = array as? KslValue<*>
+    override val mutatingState: KslValue<*>? get() = array.asAssignable()
 
     override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(array, index)
 

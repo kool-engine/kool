@@ -1,5 +1,7 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.pipeline.GpuType
+
 class LongHashBuilder {
     var hash: Long = 0L
 
@@ -33,6 +35,10 @@ class LongHashBuilder {
 
     operator fun plusAssign(string: String) {
         hash = hash * 31L + string.hashCode()
+    }
+
+    operator fun plusAssign(gpuType: GpuType) {
+        hash = hash * 31L + gpuType.hashCode()
     }
 
     fun build() = LongHash(hash)

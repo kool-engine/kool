@@ -348,9 +348,9 @@ class TriangulatedLineMesh(geometry: IndexedVertexList, name: String = makeNodeN
     }
 
     companion object {
-        val ATTRIB_LINE_ATTRIBS = Attribute("aLineAttribs", GpuType.FLOAT2)
-        val ATTRIB_PREV_DIR = Attribute("aPrevDir", GpuType.FLOAT3)
-        val ATTRIB_NEXT_DIR = Attribute("aNextDir", GpuType.FLOAT3)
+        val ATTRIB_LINE_ATTRIBS = Attribute("aLineAttribs", GpuType.Float2)
+        val ATTRIB_PREV_DIR = Attribute("aPrevDir", GpuType.Float3)
+        val ATTRIB_NEXT_DIR = Attribute("aNextDir", GpuType.Float3)
 
         val lineMeshAttribs = listOf(Attribute.COLORS, ATTRIB_LINE_ATTRIBS, Attribute.POSITIONS, ATTRIB_PREV_DIR, ATTRIB_NEXT_DIR)
     }

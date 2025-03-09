@@ -552,6 +552,6 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     }
 
     companion object {
-        private val ATTRIB_COLOR = Attribute("aInstColor", GpuType.FLOAT4)
+        private val ATTRIB_COLOR = Attribute("aInstColor", GpuType.Float4)
     }
 }

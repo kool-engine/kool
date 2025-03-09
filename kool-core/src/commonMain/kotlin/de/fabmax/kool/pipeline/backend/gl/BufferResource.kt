@@ -20,6 +20,12 @@ class BufferResource(val target: Int, val backend: RenderBackendGl, creationInfo
         gl.bindBuffer(target, buffer)
     }
 
+    fun setData(size: Int, usage: Int) {
+        bind()
+        gl.bufferData(target, size, usage)
+        resInfo.allocated(size.toLong())
+    }
+
     fun setData(data: Uint8Buffer, usage: Int) {
         bind()
         gl.bufferData(target, data, usage)

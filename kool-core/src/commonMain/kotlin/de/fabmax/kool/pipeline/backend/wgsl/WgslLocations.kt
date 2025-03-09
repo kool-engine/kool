@@ -12,10 +12,7 @@ class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: Verte
                 put(binding, Location(group.group, nextBinding))
                 when (binding) {
                     is UniformBufferLayout -> nextBinding++
-
-                    is StorageBuffer1dLayout -> nextBinding++
-                    is StorageBuffer2dLayout -> nextBinding++
-                    is StorageBuffer3dLayout -> nextBinding++
+                    is StorageBufferLayout -> nextBinding++
 
                     // textures require two binding slots (1st: sampler, 2nd: texture)
                     is Texture1dLayout -> nextBinding += 2
@@ -34,7 +31,7 @@ class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: Verte
     }
 
     val vertexLocations = buildMap {
-        val matrixCols = mapOf(GpuType.MAT2 to 2, GpuType.MAT3 to 3, GpuType.MAT4 to 4)
+        val matrixCols = mapOf(GpuType.Mat2 to 2, GpuType.Mat3 to 3, GpuType.Mat4 to 4)
         var vLoc = 0
 
         vertexLayout?.let { layout ->

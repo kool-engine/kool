@@ -193,6 +193,7 @@ interface GlApi {
     fun bindVertexArray(vao: GlVertexArrayObject)
     fun blendFunc(sFactor: Int, dFactor: Int)
     fun blitFramebuffer(srcX0: Int, srcY0: Int, srcX1: Int, srcY1: Int, dstX0: Int, dstY0: Int, dstX1: Int, dstY1: Int, mask: Int, filter: Int)
+    fun bufferData(target: Int, size: Int, usage: Int)
     fun bufferData(target: Int, buffer: Uint8Buffer, usage: Int)
     fun bufferData(target: Int, buffer: Uint16Buffer, usage: Int)
     fun bufferData(target: Int, buffer: Int32Buffer, usage: Int)

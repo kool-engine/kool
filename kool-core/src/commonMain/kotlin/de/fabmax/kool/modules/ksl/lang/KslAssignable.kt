@@ -16,3 +16,10 @@ interface KslAssignable<T: KslType> {
         }
     }
 }
+
+fun KslExpression<*>.asAssignable(): KslValue<*>? = when (this) {
+    is KslValue<*> -> this
+    is KslAssignable<*> -> mutatingState
+    is KslStructMemberExpression<*> -> struct.asAssignable()
+    else -> null
+}

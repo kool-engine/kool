@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Int32Buffer
-import de.fabmax.kool.util.MixedBuffer
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 
 interface MappedUniform {
     fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean
@@ -29,18 +26,18 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
         ubo.layout.uniforms.forEach {
             val bufferSize = if (it.isArray) {
                 when (it.type) {
-                    GpuType.FLOAT1 ->  1 * it.arraySize
-                    GpuType.FLOAT2 ->  2 * it.arraySize
-                    GpuType.FLOAT3 ->  3 * it.arraySize
-                    GpuType.FLOAT4 ->  4 * it.arraySize
-                    GpuType.MAT3   ->  9 * it.arraySize
-                    GpuType.MAT4   -> 16 * it.arraySize
+                    GpuType.Float1 ->  1 * it.arraySize
+                    GpuType.Float2 ->  2 * it.arraySize
+                    GpuType.Float3 ->  3 * it.arraySize
+                    GpuType.Float4 ->  4 * it.arraySize
+                    GpuType.Mat3   ->  9 * it.arraySize
+                    GpuType.Mat4   -> 16 * it.arraySize
                     else           ->  1
                 }
             } else {
                 when (it.type) {
-                    GpuType.MAT3   ->  9
-                    GpuType.MAT4   -> 16
+                    GpuType.Mat3   ->  9
+                    GpuType.Mat4   -> 16
                     else           ->  1
                 }
             }
@@ -52,10 +49,10 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
         ubo.layout.uniforms.forEach {
             val bufferSize = if (it.isArray) {
                 when (it.type) {
-                    GpuType.INT1 -> 1 * it.arraySize
-                    GpuType.INT2 -> 2 * it.arraySize
-                    GpuType.INT3 -> 3 * it.arraySize
-                    GpuType.INT4 -> 4 * it.arraySize
+                    GpuType.Int1 -> 1 * it.arraySize
+                    GpuType.Int2 -> 2 * it.arraySize
+                    GpuType.Int3 -> 3 * it.arraySize
+                    GpuType.Int4 -> 4 * it.arraySize
                     else         -> 1
                 }
             } else { 1 }
@@ -71,31 +68,33 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
 
             if (uniform.isArray) {
                 when (uniform.type) {
-                    GpuType.FLOAT1 -> gl.uniform1fv(loc, floatBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
-                    GpuType.FLOAT2 -> gl.uniform2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
-                    GpuType.FLOAT3 -> gl.uniform3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
-                    GpuType.FLOAT4 -> gl.uniform4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
-                    GpuType.INT1 -> gl.uniform1iv(loc, intBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
-                    GpuType.INT2 -> gl.uniform2iv(loc, intBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
-                    GpuType.INT3 -> gl.uniform3iv(loc, intBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
-                    GpuType.INT4 -> gl.uniform4iv(loc, intBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
-                    GpuType.MAT2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2 * uniform.arraySize))
-                    GpuType.MAT3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3 * uniform.arraySize))
-                    GpuType.MAT4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4 * uniform.arraySize))
+                    GpuType.Float1 -> gl.uniform1fv(loc, floatBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
+                    GpuType.Float2 -> gl.uniform2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
+                    GpuType.Float3 -> gl.uniform3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
+                    GpuType.Float4 -> gl.uniform4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+                    GpuType.Int1 -> gl.uniform1iv(loc, intBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
+                    GpuType.Int2 -> gl.uniform2iv(loc, intBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
+                    GpuType.Int3 -> gl.uniform3iv(loc, intBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
+                    GpuType.Int4 -> gl.uniform4iv(loc, intBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+                    GpuType.Mat2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2 * uniform.arraySize))
+                    GpuType.Mat3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3 * uniform.arraySize))
+                    GpuType.Mat4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4 * uniform.arraySize))
+                    is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
                 }
             } else {
                 when (uniform.type) {
-                    GpuType.FLOAT1 -> gl.uniform1f(loc, buf.getFloat32(pos))
-                    GpuType.FLOAT2 -> gl.uniform2f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4))
-                    GpuType.FLOAT3 -> gl.uniform3f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8))
-                    GpuType.FLOAT4 -> gl.uniform4f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8), buf.getFloat32(pos + 12))
-                    GpuType.INT1 -> gl.uniform1i(loc, buf.getInt32(pos))
-                    GpuType.INT2 -> gl.uniform2i(loc, buf.getInt32(pos), buf.getInt32(pos + 4))
-                    GpuType.INT3 -> gl.uniform3i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8))
-                    GpuType.INT4 -> gl.uniform4i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8), buf.getInt32(pos + 12))
-                    GpuType.MAT2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2))
-                    GpuType.MAT3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3))
-                    GpuType.MAT4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4))
+                    GpuType.Float1 -> gl.uniform1f(loc, buf.getFloat32(pos))
+                    GpuType.Float2 -> gl.uniform2f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4))
+                    GpuType.Float3 -> gl.uniform3f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8))
+                    GpuType.Float4 -> gl.uniform4f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8), buf.getFloat32(pos + 12))
+                    GpuType.Int1 -> gl.uniform1i(loc, buf.getInt32(pos))
+                    GpuType.Int2 -> gl.uniform2i(loc, buf.getInt32(pos), buf.getInt32(pos + 4))
+                    GpuType.Int3 -> gl.uniform3i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8))
+                    GpuType.Int4 -> gl.uniform4i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8), buf.getInt32(pos + 12))
+                    GpuType.Mat2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2))
+                    GpuType.Mat3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3))
+                    GpuType.Mat4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4))
+                    is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
                 }
             }
         }
@@ -129,10 +128,12 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
     }
 }
 
-sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl) : MappedUniform {
-    val gl = backend.gl
+class MappedStorageBuffer(
+    val ssbo: BindGroupData.StorageBufferBindingData,
+    val backend: RenderBackendGl
+) : MappedUniform {
 
-    protected abstract val ssbo: BindGroupData.StorageBufferBindingData<T>
+    val gl = backend.gl
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val storage = ssbo.storageBuffer ?: return false
@@ -145,30 +146,27 @@ sealed class MappedStorageBuffer<T: StorageBuffer>(val backend: RenderBackendGl)
             )
             gpuBuffer = BufferResource(backend.gl.SHADER_STORAGE_BUFFER, backend, bufferCreationInfo)
             storage.gpuBuffer = gpuBuffer
+            if (storage.uploadData == null) {
+                val size = storage.size * storage.type.byteSize
+                gpuBuffer.setData(size, gl.STATIC_DRAW)
+            }
         }
 
-        if (ssbo.getAndClearDirtyFlag()) {
-            ssbo.storageBuffer?.let {
-                when (it.buffer) {
-                    is Float32Buffer -> gpuBuffer.setData(it.buffer, gl.DYNAMIC_DRAW)
-                    is Int32Buffer -> gpuBuffer.setData(it.buffer, gl.DYNAMIC_DRAW)
-                    else -> error("Invalid buffer type")
-                }
+        storage.uploadData?.let { upload ->
+            storage.uploadData = null
+            when (upload) {
+                is Uint8Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is Uint16Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is Int32Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is Float32Buffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                is MixedBuffer -> gpuBuffer.setData(upload, gl.DYNAMIC_DRAW)
+                else -> error("Invalid buffer type")
             }
         }
         gl.bindBufferBase(gl.SHADER_STORAGE_BUFFER, bindCtx.location(ssbo.layout.bindingIndex), gpuBuffer.buffer)
         return true
     }
 }
-
-class MappedStorageBuffer1d(override val ssbo: BindGroupData.StorageBuffer1dBindingData, backend: RenderBackendGl) :
-    MappedStorageBuffer<StorageBuffer1d>(backend)
-
-class MappedStorageBuffer2d(override val ssbo: BindGroupData.StorageBuffer2dBindingData, backend: RenderBackendGl) :
-    MappedStorageBuffer<StorageBuffer2d>(backend)
-
-class MappedStorageBuffer3d(override val ssbo: BindGroupData.StorageBuffer3dBindingData, backend: RenderBackendGl) :
-    MappedStorageBuffer<StorageBuffer3d>(backend)
 
 sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : MappedUniform {
     protected val gl = backend.gl

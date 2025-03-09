@@ -42,7 +42,7 @@ class DrawPipelineVk(
             gpuInsts.checkBuffers(passEncoderState.commandBuffer)
         }
 
-        drawPipeline.pipelineData.getOrCreateVkData().updateBuffers(passEncoderState)
+        drawPipeline.pipelineData.getOrCreateVkData(passEncoderState.commandBuffer).updateBuffers(passEncoderState)
     }
 
     fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
@@ -60,9 +60,9 @@ class DrawPipelineVk(
         val pipeline = pipelines.getOrPut(passEncoderState.gpuRenderPass) { createPipeline(passEncoderState) }
         passEncoderState.setPipeline(pipeline)
 
-        val pipelineGroup = pipelineData.getOrCreateVkData()
-        val viewGroup = viewData.getOrCreateVkData()
-        val meshGroup = meshData.getOrCreateVkData()
+        val pipelineGroup = pipelineData.getOrCreateVkData(passEncoderState.commandBuffer)
+        val viewGroup = viewData.getOrCreateVkData(passEncoderState.commandBuffer)
+        val meshGroup = meshData.getOrCreateVkData(passEncoderState.commandBuffer)
 
         pipelineGroup.prepareBind(passEncoderState)
         viewGroup.prepareBind(passEncoderState)
@@ -73,23 +73,24 @@ class DrawPipelineVk(
     }
 
     private fun bindVertexBuffers(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
-        if (cmd.mesh.geometry.vertexAttributes.isEmpty()) return true
-
         val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk? ?: return false
         val gpuInsts = cmd.instances?.gpuInstances as InstancesVk?
 
-        var numBuffers = 1
+        var numBuffers = 0
         if (gpuInsts?.instanceBuffer != null) numBuffers++
+        if (gpuGeom.floatBuffer != null) numBuffers++
         if (gpuGeom.intBuffer != null) numBuffers++
-        bufferHandles.limit(numBuffers)
-        bufferOffsets.limit(numBuffers)
+        if (numBuffers > 0) {
+            bufferHandles.limit(numBuffers)
+            bufferOffsets.limit(numBuffers)
 
-        var slot = 0
-        bufferHandles.put(slot++, gpuGeom.floatBuffer.handle)
-        gpuGeom.intBuffer?.let { bufferHandles.put(slot++, it.handle) }
-        gpuInsts?.instanceBuffer?.let { bufferHandles.put(slot++, it.handle) }
+            var slot = 0
+            gpuGeom.floatBuffer?.let { bufferHandles.put(slot++, it.handle) }
+            gpuGeom.intBuffer?.let { bufferHandles.put(slot++, it.handle) }
+            gpuInsts?.instanceBuffer?.let { bufferHandles.put(slot++, it.handle) }
 
-        vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, bufferHandles, bufferOffsets)
+            vkCmdBindVertexBuffers(passEncoderState.commandBuffer, 0, bufferHandles, bufferOffsets)
+        }
         vkCmdBindIndexBuffer(passEncoderState.commandBuffer, gpuGeom.indexBuffer.handle, 0, VK_INDEX_TYPE_UINT32)
         return true
     }
@@ -324,17 +325,18 @@ class DrawPipelineVk(
     private data class AttributeVkProps(val slotOffset: Int, val slotType: Int)
 
     private fun Attribute.vkProps() = when (type) {
-        GpuType.FLOAT1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
-        GpuType.FLOAT2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
-        GpuType.FLOAT3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
-        GpuType.FLOAT4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
-        GpuType.MAT2 -> AttributeVkProps(slotOffset = GpuType.FLOAT2.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
-        GpuType.MAT3 -> AttributeVkProps(slotOffset = GpuType.FLOAT3.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
-        GpuType.MAT4 -> AttributeVkProps(slotOffset = GpuType.FLOAT4.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
-        GpuType.INT1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
-        GpuType.INT2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
-        GpuType.INT3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
-        GpuType.INT4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+        GpuType.Float1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SFLOAT)
+        GpuType.Float2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
+        GpuType.Float3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+        GpuType.Float4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+        GpuType.Mat2 -> AttributeVkProps(slotOffset = GpuType.Float2.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
+        GpuType.Mat3 -> AttributeVkProps(slotOffset = GpuType.Float3.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
+        GpuType.Mat4 -> AttributeVkProps(slotOffset = GpuType.Float4.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+        GpuType.Int1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
+        GpuType.Int2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
+        GpuType.Int3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
+        GpuType.Int4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+        is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
     }
 
     companion object {

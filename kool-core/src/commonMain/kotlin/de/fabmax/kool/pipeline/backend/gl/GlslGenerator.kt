@@ -3,10 +3,8 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
-import de.fabmax.kool.pipeline.ComputePipeline
-import de.fabmax.kool.pipeline.DrawPipeline
-import de.fabmax.kool.pipeline.PipelineBase
-import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.MemoryLayout
 
 /**
  * Default GLSL shader code generator.
@@ -56,6 +54,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         """.trimIndent())
         src.appendLine()
 
+        src.generateStructs(vertexStage, pipeline)
         src.generateStorageBuffers(vertexStage, pipeline)
         src.generateUbos(vertexStage, pipeline)
         src.generateUniformSamplers(vertexStage, pipeline)
@@ -83,6 +82,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         """.trimIndent())
         src.appendLine()
 
+        src.generateStructs(fragmentStage, pipeline)
         src.generateStorageBuffers(fragmentStage, pipeline)
         src.generateUbos(fragmentStage, pipeline)
         src.generateUniformSamplers(fragmentStage, pipeline)
@@ -107,6 +107,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         """.trimIndent())
         src.appendLine()
 
+        src.generateStructs(computeStage, pipeline)
         src.generateStorageBuffers(computeStage, pipeline)
         src.generateUbos(computeStage, pipeline)
         src.generateUniformSamplers(computeStage, pipeline)
@@ -272,37 +273,30 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
 
     override fun imageTextureRead(expression: KslImageTextureLoad<*>): String {
         val sampler = expression.sampler.generateExpression()
-        val coords = expression.coord.generateExpression()
+        val isCompatSampler = hints.compat1dSampler &&
+                expression.sampler.expressionType is KslSampler1dType &&
+                expression.coord.expressionType is KslInt1
+        val coord = if (isCompatSampler) {
+            // for better OpenGL ES compatibility 1d textures actually are 2d textures...
+            "ivec2(${expression.coord.generateExpression()}, 0)"
+        } else {
+            expression.coord.generateExpression()
+        }
         val lod = expression.lod?.generateExpression()
-        return "texelFetch($sampler, $coords, ${lod ?: 0})"
+        return "texelFetch($sampler, $coord, ${lod ?: 0})"
     }
 
-    private fun KslStorage<*,*>.getIndexString(coordExpr: String) = when (this) {
-        // choosing array dimension based on storage dimension would also work, but seems to have issues
-        // with some glsl compilers
-        //is KslStorage1dType<*> -> "[${coord}]"
-        //is KslStorage2dType<*> -> "[${coord}.y][${coord}.x]"
-        //is KslStorage3dType<*> -> "[${coord}.z][${coord}.y][${coord}.x]"
-
-        // always use a 1d array and compute array index dynamically based on buffer size
-        is KslStorage1d<*> -> "[${coordExpr}]"
-        is KslStorage2d<*> -> "[${coordExpr}.y * $sizeX + ${coordExpr}.x]"
-        is KslStorage3d<*> -> "[${coordExpr}.z * ${sizeY * sizeX} + ${coordExpr}.y * $sizeX + ${coordExpr}.x]"
-    }
-
-    override fun generateStorageRead(storageRead: KslStorageRead<*, *, *>): String {
+    override fun generateStorageRead(storageRead: KslStorageRead<*, *>): String {
         val storage = storageRead.storage.generateExpression()
-        val coord = storageRead.coord.generateExpression()
-        val arrayIndex = storageRead.storage.getIndexString(coord)
-        return "${storage}${arrayIndex}"
+        val index = storageRead.index.generateExpression()
+        return "${storage}[${index}]"
     }
 
-    override fun opStorageWrite(op: KslStorageWrite<*, *, *>): String {
+    override fun opStorageWrite(op: KslStorageWrite<*, *>): String {
         val storage = op.storage.generateExpression()
         val expr = op.data.generateExpression()
-        val coord = op.coord.generateExpression()
-        val arrayIndex = op.storage.getIndexString(coord)
-        return "${storage}${arrayIndex} = $expr;"
+        val index = op.index.generateExpression()
+        return "${storage}[${index}] = $expr;"
     }
 
     override fun opStorageTextureWrite(op: KslStorageTextureStore<*, *, *>): String {
@@ -312,11 +306,10 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         return "imageStore(${storage}, $coord, $expr);"
     }
 
-    override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *, *>): String {
+    override fun storageAtomicOp(atomicOp: KslStorageAtomicOp<*, *>): String {
         val storage = atomicOp.storage.generateExpression()
         val expr = atomicOp.data.generateExpression()
-        val coord = atomicOp.coord.generateExpression()
-        val arrayIndex = atomicOp.storage.getIndexString(coord)
+        val index = atomicOp.index.generateExpression()
         val func = when(atomicOp.op) {
             KslStorageAtomicOp.Op.Swap -> "atomicExchange"
             KslStorageAtomicOp.Op.Add -> "atomicAdd"
@@ -326,22 +319,37 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             KslStorageAtomicOp.Op.Min -> "atomicMin"
             KslStorageAtomicOp.Op.Max -> "atomicMax"
         }
-        return "$func(${storage}${arrayIndex}, ${expr})"
+        return "$func(${storage}[${index}], ${expr})"
     }
 
-    override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *, *>): String {
+    override fun storageAtomicCompareSwap(atomicCompSwap: KslStorageAtomicCompareSwap<*, *>): String {
         val storage = atomicCompSwap.storage.generateExpression()
         val comp = atomicCompSwap.compare.generateExpression()
         val expr = atomicCompSwap.data.generateExpression()
-        val coord = atomicCompSwap.coord.generateExpression()
-        val arrayIndex = atomicCompSwap.storage.getIndexString(coord)
-        return "atomicCompSwap($storage${arrayIndex}, ${comp}, ${expr})"
+        val index = atomicCompSwap.index.generateExpression()
+        return "atomicCompSwap($storage[${index}], ${comp}, ${expr})"
     }
 
     override fun storageTextureRead(storageTextureRead: KslStorageTextureLoad<*, *, *>): String {
         val storage = storageTextureRead.storage.generateExpression()
         val coord = storageTextureRead.coord.generateExpression()
         return "imageLoad($storage, $coord)"
+    }
+
+    protected open fun StringBuilder.generateStructs(stage: KslShaderStage, pipeline: PipelineBase) {
+        val structs = stage.getUsedStructs()
+        if (structs.isNotEmpty()) {
+            appendLine("// structs")
+            for (struct in structs) {
+                appendLine("struct ${struct.structName} {")
+                struct.members.forEach {
+                    val arraySuffix = if (it.arraySize > 1) "[${it.arraySize}]" else ""
+                    appendLine("    ${glslTypeName(it.type)} ${it.memberName}$arraySuffix;")
+                }
+                appendLine("};")
+            }
+            appendLine()
+        }
     }
 
     protected open fun StringBuilder.generateUniformSamplers(stage: KslShaderStage, pipeline: PipelineBase) {
@@ -359,20 +367,27 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         val storage = stage.getUsedStorage()
         if (storage.isNotEmpty()) {
             appendLine("// storage buffers")
-            val readonly = if (stage.type == KslShaderStageType.ComputeShader) "" else "readonly"
-            storage.forEachIndexed { i, it ->
-                // always use a 1d array and compute array index dynamically based on buffer size
-                val arrayDim = "[]"
-                // choosing array dimension based on storage dimension would also work, but seems to have issues
-                // with some glsl compilers
-                // val arrayDim = when (it) {
-                //     is KslStorage1d<*> -> if (it.sizeX == null) "[]" else "[${it.sizeX}]"
-                //     is KslStorage2d<*> -> if (it.sizeY == null) "[][${it.sizeX}]" else "[${it.sizeY}][${it.sizeX}]"
-                //     is KslStorage3d<*> -> if (it.sizeZ == null) "[][${it.sizeY}][${it.sizeX}]" else "[${it.sizeZ}][${it.sizeY}][${it.sizeX}]"
-                // }
+            storage.forEachIndexed { i, storage ->
+                val (_, desc) = pipeline.findBindGroupItemByName(storage.name)!!
+                val rw = when ((desc as StorageBufferLayout).accessType) {
+                    StorageAccessType.READ_ONLY -> "readonly"
+                    StorageAccessType.WRITE_ONLY -> "writeonly"
+                    StorageAccessType.READ_WRITE -> ""
+                }
+                val arrayDim = storage.size?.let { "[$it]" } ?: "[]"
+
+                val type = storage.storageType.elemType
+                val layout = if (type is KslStruct<*>) {
+                    when (type.struct.layout) {
+                        MemoryLayout.Std140 -> "std140"
+                        MemoryLayout.Std430 -> "std430"
+                        else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std140 and std430")
+                    }
+                } else "std430"
+
                 appendLine("""
-                    layout(std430, binding=$i) $readonly buffer ssboLayout_$i {
-                        ${glslTypeName(it.storageType.elemType)} ${it.name}$arrayDim;
+                    layout($layout, binding=$i) $rw buffer ssboLayout_$i {
+                        ${glslTypeName(storage.storageType.elemType)} ${storage.name}$arrayDim;
                     };
                 """.trimIndent())
             }
@@ -687,6 +702,23 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         }
     }
 
+    protected fun glslTypeName(type: GpuType): String {
+        return when (type) {
+            GpuType.Float1 -> "float"
+            GpuType.Float2 -> "vec2"
+            GpuType.Float3 -> "vec3"
+            GpuType.Float4 -> "vec4"
+            GpuType.Int1 -> "int"
+            GpuType.Int2 -> "ivec2"
+            GpuType.Int3 -> "ivec3"
+            GpuType.Int4 -> "ivec4"
+            GpuType.Mat2 -> "mat2"
+            GpuType.Mat3 -> "mat3"
+            GpuType.Mat4 -> "mat4"
+            is GpuType.Struct -> type.struct.structName
+        }
+    }
+
     protected fun glslTypeName(type: KslType): String {
         return when (type) {
             KslTypeVoid -> "void"
@@ -710,6 +742,8 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             KslMat3 -> "mat3"
             KslMat4 -> "mat4"
 
+            is KslStruct<*> -> type.struct.structName
+
             KslColorSampler1d -> if (hints.compat1dSampler) "sampler2D" else "sampler1D"
             KslColorSampler2d -> "sampler2D"
             KslColorSampler3d -> "sampler3D"
@@ -728,9 +762,8 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             is KslStorageTexture2dType<*> -> "${type.typePrefix}image2D"
             is KslStorageTexture3dType<*> -> "${type.typePrefix}image3D"
 
-            is KslStorage1dType<*> -> error("KslStorage1dType has no glsl type name")
-            is KslStorage2dType<*> -> error("KslStorage2dType has no glsl type name")
-            is KslStorage3dType<*> -> error("KslStorage3dType has no glsl type name")
+            is KslStructStorageType<*> -> error("KslStructStorageType has no glsl type name")
+            is KslPrimitiveStorageType<*> -> error("KslStorage1dType has no glsl type name")
         }
     }
 

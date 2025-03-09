@@ -95,10 +95,25 @@ fun KslNumericType.glFormat(gl: GlApi): Int = when(this) {
 }
 
 val VertexLayout.VertexAttribute.locationSize: Int get() = when(attribute.type) {
-    GpuType.MAT2 -> 2
-    GpuType.MAT3 -> 3
-    GpuType.MAT4 -> 4
+    GpuType.Mat2 -> 2
+    GpuType.Mat3 -> 3
+    GpuType.Mat4 -> 4
     else -> 1
+}
+
+val GpuType.channels: Int get() = when (this) {
+    GpuType.Float1 -> 1
+    GpuType.Float2 -> 2
+    GpuType.Float3 -> 3
+    GpuType.Float4 -> 4
+    GpuType.Int1 -> 1
+    GpuType.Int2 -> 2
+    GpuType.Int3 -> 3
+    GpuType.Int4 -> 4
+    GpuType.Mat2 -> 2
+    GpuType.Mat3 -> 3
+    GpuType.Mat4 -> 4
+    is GpuType.Struct -> 1
 }
 
 fun VertexLayout.getAttribLocations() = buildMap {

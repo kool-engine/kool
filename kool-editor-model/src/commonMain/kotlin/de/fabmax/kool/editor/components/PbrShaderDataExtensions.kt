@@ -33,7 +33,7 @@ suspend fun PbrShaderData.createPbrShader(
                 is ConstColorAttribute -> uniformColor()
                 is ConstValueAttribute -> uniformColor()
                 is MapAttribute -> textureColor()
-                is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
+                is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.Float4))
             }
         }
         emission {
@@ -41,7 +41,7 @@ suspend fun PbrShaderData.createPbrShader(
                 is ConstColorAttribute -> uniformColor()
                 is ConstValueAttribute -> uniformColor()
                 is MapAttribute -> textureColor()
-                is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.FLOAT4))
+                is VertexAttribute -> vertexColor(Attribute(color.attribName, GpuType.Float4))
             }
         }
 
@@ -51,7 +51,7 @@ suspend fun PbrShaderData.createPbrShader(
                 is ConstColorAttribute -> uniformProperty()
                 is ConstValueAttribute -> uniformProperty()
                 is MapAttribute -> textureProperty(channel = rough.singleChannelIndex, textureName = armTexNames.roughness)
-                is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.FLOAT1))
+                is VertexAttribute -> vertexProperty(Attribute(rough.attribName, GpuType.Float1))
             }
         }
         metallic {
@@ -59,7 +59,7 @@ suspend fun PbrShaderData.createPbrShader(
                 is ConstColorAttribute -> uniformProperty()
                 is ConstValueAttribute -> uniformProperty()
                 is MapAttribute -> textureProperty(channel = metal.singleChannelIndex, textureName = armTexNames.metallic)
-                is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.FLOAT1))
+                is VertexAttribute -> vertexProperty(Attribute(metal.attribName, GpuType.Float1))
             }
         }
         aoMap?.let {

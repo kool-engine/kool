@@ -287,17 +287,18 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
             .map { it.type.pipelineStageType }
             .toSet()
 
-        val format = when (storage.storageType.elemType) {
-            KslFloat1 -> GpuType.FLOAT1
-            KslFloat2 -> GpuType.FLOAT2
-            KslFloat4 -> GpuType.FLOAT4
-            KslInt1 -> GpuType.INT1
-            KslInt2 -> GpuType.INT2
-            KslInt4 -> GpuType.INT4
-            KslUint1 -> GpuType.INT1
-            KslUint2 -> GpuType.INT2
-            KslUint4 -> GpuType.INT4
-            else -> error("Invalid storage type: ${storage.storageType.elemType} (only 1, 2, and 4 dimensional float and int types are allowed)")
+        val format = when (val type = storage.storageType.elemType) {
+            KslFloat1 -> GpuType.Float1
+            KslFloat2 -> GpuType.Float2
+            KslFloat4 -> GpuType.Float4
+            KslInt1 -> GpuType.Int1
+            KslInt2 -> GpuType.Int2
+            KslInt4 -> GpuType.Int4
+            KslUint1 -> GpuType.Int1
+            KslUint2 -> GpuType.Int2
+            KslUint4 -> GpuType.Int4
+            is KslStruct<*> -> type.gpuType
+            else -> error("Invalid storage type: ${storage.storageType.elemType} (only structs and 1, 2, and 4 dimensional float and int types are allowed)")
         }
 
         val accessType = when {
@@ -307,11 +308,7 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
         }
 
         val name = storage.name
-        bindGrpBuilder.storage += when(storage)  {
-            is KslStorage1d<*> -> StorageBuffer1dLayout(name, format, storage.sizeX, accessType, storageStages)
-            is KslStorage2d<*> -> StorageBuffer2dLayout(name, format, storage.sizeX, storage.sizeY, accessType, storageStages)
-            is KslStorage3d<*> -> StorageBuffer3dLayout(name, format, storage.sizeX, storage.sizeY, storage.sizeZ, accessType, storageStages)
-        }
+        bindGrpBuilder.storage += StorageBufferLayout(name, format, storage.size, accessType, storageStages)
     }
 }
 

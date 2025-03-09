@@ -7,6 +7,7 @@ import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.checkIsNotReleased
 import de.fabmax.kool.util.memStack
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
 
 sealed class PipelineVk(
     private val pipeline: PipelineBase,
@@ -64,7 +65,7 @@ sealed class PipelineVk(
         for (i in bindings.indices) {
             val binding = bindings[i]
             when (binding) {
-                is BindGroupData.StorageBufferBindingData<*> -> {
+                is BindGroupData.StorageBufferBindingData -> {
                     isCheckOk = isCheckOk && binding.storageBuffer != null
                 }
                 is BindGroupData.TextureBindingData<*> -> {
@@ -85,10 +86,10 @@ sealed class PipelineVk(
         return isLoaded
     }
 
-    protected fun BindGroupData.getOrCreateVkData(): BindGroupDataVk {
+    protected fun BindGroupData.getOrCreateVkData(commandBuffer: VkCommandBuffer): BindGroupDataVk {
         if (gpuData == null) {
             val group = if (this@PipelineVk is ComputePipelineVk) 0 else layout.group
-            gpuData = BindGroupDataVk(this, bindGroupLayouts[group], backend)
+            gpuData = BindGroupDataVk(this, bindGroupLayouts[group], backend, commandBuffer)
         }
         return gpuData as BindGroupDataVk
     }
