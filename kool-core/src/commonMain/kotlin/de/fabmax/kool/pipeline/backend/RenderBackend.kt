@@ -1,12 +1,10 @@
 package de.fabmax.kool.pipeline.backend
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Buffer
-import de.fabmax.kool.util.Viewport
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Duration
 
@@ -26,11 +24,6 @@ interface RenderBackend {
 
     fun renderFrame(ctx: KoolContext)
     fun cleanup(ctx: KoolContext)
-
-    fun getWindowViewport(result: Viewport) {
-        val ctx = KoolSystem.requireContext()
-        result.set(0, 0, ctx.windowWidth, ctx.windowHeight)
-    }
 
     fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode
     fun generateKslComputeShader(shader: KslComputeShader, pipeline: ComputePipeline): ComputeShaderCode

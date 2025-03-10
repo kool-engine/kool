@@ -85,10 +85,6 @@ abstract class KoolContext {
 
     abstract fun getSysInfos(): List<String>
 
-    fun getWindowViewport(result: Viewport) {
-        backend.getWindowViewport(result)
-    }
-
     fun addBackgroundRenderPass(pass: OffscreenPass) = backgroundScene.addOffscreenPass(pass)
     fun removeBackgroundRenderPass(pass: OffscreenPass) = backgroundScene.removeOffscreenPass(pass)
 

@@ -8,6 +8,7 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.Viewport
 
 open class OffscreenPassCube(
     drawNode: Node,
@@ -34,7 +35,7 @@ open class OffscreenPassCube(
         cam.clipFar = 10f
         cam.setupCamera(position = Vec3f.ZERO, up = dir.up, lookAt = dir.lookAt)
         View(dir.toString(), drawNode, cam).apply {
-            viewport.set(0, 0, width, height)
+            viewport = Viewport(0, 0, width, height)
             isReleaseDrawNode = i == 0
             isUpdateDrawNode = i == 0
         }

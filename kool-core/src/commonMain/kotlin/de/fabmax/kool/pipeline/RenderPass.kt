@@ -141,7 +141,7 @@ abstract class RenderPass(
     inner class View(var name: String, var drawNode: Node, var camera: Camera) {
         val renderPass: RenderPass get() = this@RenderPass
 
-        val viewport = Viewport(0, 0, 0, 0)
+        var viewport = Viewport(0, 0, 0, 0)
         val drawQueue = DrawQueue(this@RenderPass, this)
         var drawFilter: (Node) -> Boolean = { true }
 
@@ -156,6 +156,7 @@ abstract class RenderPass(
 
         var isUpdateDrawNode = true
         var isReleaseDrawNode = true
+        var isFillFramebuffer = true
 
         val viewPipelineData = PipelineData(BindGroupScope.VIEW)
 

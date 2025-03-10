@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Viewport
 import de.fabmax.kool.util.logT
 
 abstract class OffscreenPass(
@@ -16,13 +17,17 @@ abstract class OffscreenPass(
     override val size: Vec3i get() = _size
 
     protected fun setSize(width: Int, height: Int, layers: Int) {
-        if (width != this.width || height != this.height || layers != this.layers) {
-            logT { "Resizing OffscreenPass $name to $width x $height x $layers" }
-            applySize(width, height, layers)
+        val safeWidth = width.coerceAtLeast(1)
+        val safeHeight = height.coerceAtLeast(1)
+        val safeLayers = layers.coerceAtLeast(1)
+        if (safeWidth != this.width || safeHeight != this.height || safeLayers != this.layers) {
+            logT { "Resizing OffscreenPass $name to $safeWidth x $safeHeight x $safeLayers" }
+            applySize(safeWidth, safeHeight, safeLayers)
 
-            // fixme: resetting all viewports is probably not always right
             for (v in views) {
-                v.viewport.set(0, 0, width, height)
+                if (v.isFillFramebuffer) {
+                    v.viewport = Viewport(0, 0, safeWidth, safeHeight)
+                }
             }
         }
     }

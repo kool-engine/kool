@@ -1,20 +1,23 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.math.Vec2f
+import de.fabmax.kool.math.Vec2i
+
 /**
  * Viewport is used by scenes and render passes to determine the output rectangle on screen / framebuffer. Similar
  * to regular UI coordinates (but different to traditional OpenGL), Viewport origin is in the upper left corner and
  * the y-axis points downwards.
  */
-data class Viewport(var x: Int, var y: Int, var width: Int, var height: Int) {
-
+data class Viewport(val x: Int, val y: Int, val width: Int, val height: Int) {
     val aspectRatio get() = width.toFloat() / height.toFloat()
 
-    fun isInViewport(x: Float, y: Float) = x >= this.x && x < this.x + width && y >= this.y && y < this.y + height
+    fun isInViewport(p: Vec2i) = isInViewport(p.x, p.y)
+    fun isInViewport(p: Vec2f) = isInViewport(p.x, p.y)
 
-    fun set(x: Int, y: Int, width: Int, height: Int) {
-        this.x = x
-        this.y = y
-        this.width = width
-        this.height = height
+    fun isInViewport(px: Int, py: Int) = px >= x && px < x + width && py >= y && py < y + height
+    fun isInViewport(px: Float, py: Float) = px >= x && px < x + width && py >= y && py < y + height
+
+    fun equals(x: Int, y: Int, width: Int, height: Int): Boolean {
+        return x == this.x && y == this.y && width == this.width && height == this.height
     }
 }

@@ -32,7 +32,7 @@ open class OffscreenPass2d(
 
     var drawNode: Node by defaultView::drawNode
     var camera: Camera by defaultView::camera
-    val viewport: Viewport by defaultView::viewport
+    var viewport: Viewport by defaultView::viewport
 
     var isUpdateDrawNode: Boolean by defaultView::isUpdateDrawNode
     var isReleaseDrawNode: Boolean by defaultView::isReleaseDrawNode
@@ -40,7 +40,7 @@ open class OffscreenPass2d(
     internal val impl: OffscreenPass2dImpl
 
     init {
-        defaultView.viewport.set(0, 0, width, height)
+        viewport = Viewport(0, 0, width, height)
         impl = KoolSystem.requireContext().backend.createOffscreenPass2d(this)
     }
 

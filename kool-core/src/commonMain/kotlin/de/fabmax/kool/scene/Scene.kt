@@ -139,8 +139,8 @@ open class Scene(name: String? = null) : Node(name) {
         override val views: List<View> get() = _views
 
         var camera: Camera by defaultView::camera
-        val viewport: Viewport by defaultView::viewport
-        var useWindowViewport = true
+        var viewport: Viewport by defaultView::viewport
+        var isFillFrame: Boolean by defaultView::isFillFramebuffer
 
         private val _size = MutableVec3i()
         override val size: Vec3i get() = _size
@@ -172,8 +172,8 @@ open class Scene(name: String? = null) : Node(name) {
 
         override fun update(ctx: KoolContext) {
             _size.set(ctx.windowWidth, ctx.windowHeight, 1)
-            if (useWindowViewport) {
-                ctx.getWindowViewport(viewport)
+            if (isFillFrame && !viewport.equals(0, 0, size.x, size.y)) {
+                viewport = Viewport(0, 0, size.x, size.y)
             }
             super.update(ctx)
         }

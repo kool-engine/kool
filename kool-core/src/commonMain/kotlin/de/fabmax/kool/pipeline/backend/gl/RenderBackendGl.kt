@@ -9,7 +9,10 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.Buffer
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.measureTime
 
@@ -28,7 +31,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     var useFloatDepthBuffer = true
     internal val shaderMgr = ShaderManager(this)
 
-    private val windowViewport = Viewport(0, 0, 0, 0)
     protected val sceneRenderer = ScreenPassGl(numSamples, this)
 
     private val awaitedStorageBuffers = mutableListOf<ReadbackStorageBuffer>()
@@ -44,8 +46,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
-        getWindowViewport(windowViewport)
-        sceneRenderer.applySize(windowViewport.width, windowViewport.height)
+        sceneRenderer.applySize(ctx.windowWidth, ctx.windowHeight)
         ctx.backgroundScene.executePasses()
 
         for (i in ctx.scenes.indices) {
