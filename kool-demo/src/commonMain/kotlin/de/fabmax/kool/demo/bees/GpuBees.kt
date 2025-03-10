@@ -28,6 +28,7 @@ class GpuBees(beeScene: Scene) {
     val beeUpdateTime = mutableStateOf(0.0)
 
     private val beeUpdateShader = KslComputeShader("Bee update") {
+        optimizeExpressions = false
         computeStage(64) {
             val beeStruct = struct { BeeData() }
             val deltaT = uniformFloat1("deltaT")

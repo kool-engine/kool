@@ -10,6 +10,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
+import de.fabmax.kool.util.Viewport
 import kotlin.math.roundToInt
 
 class SceneView(ui: EditorUi) : EditorPanel("Scene View", Icons.medium.camera, ui) {
@@ -126,14 +127,16 @@ class SceneView(ui: EditorUi) : EditorPanel("Scene View", Icons.medium.camera, u
     }
 
     fun applyViewportTo(targetScene: Scene) {
-        targetScene.mainRenderPass.useWindowViewport = false
+        targetScene.mainRenderPass.isFillFrame = false
         targetScene.onRenderScene += {
             viewBox?.let { box ->
                 val x = box.leftPx.roundToInt()
                 val w = box.rightPx.roundToInt() - x
                 val y = box.topPx.roundToInt()
                 val h = box.bottomPx.roundToInt() - y
-                targetScene.mainRenderPass.viewport.set(x, y, w, h)
+                if (!targetScene.mainRenderPass.viewport.equals(x, y, w, h)) {
+                    targetScene.mainRenderPass.viewport = Viewport(x, y, w, h)
+                }
             }
         }
     }

@@ -14,6 +14,8 @@ open class KslProgram(val name: String) {
      */
     var dumpCode = false
 
+    var optimizeExpressions = true
+
     var isPrepared = false
         private set
 

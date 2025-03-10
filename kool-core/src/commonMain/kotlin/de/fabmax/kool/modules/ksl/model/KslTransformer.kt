@@ -10,11 +10,13 @@ class KslTransformer private constructor(val stage: KslShaderStage) {
 
     private val transformedExpressions = mutableMapOf<KslExpression<*>, KslExpression<*>>()
 
-    private fun transform() {
+    private fun transform(optimizeExpressions: Boolean) {
         try {
             stage.globalScope.updateModel()
             sortFunctions(stage)
-            transformExpressions(stage.globalScope)
+            if (optimizeExpressions) {
+                transformExpressions(stage.globalScope)
+            }
             stage.globalScope.transform(null, null)
         } catch (e: Exception) {
             logE { stage.globalScope.toPseudoCode() }
@@ -161,8 +163,8 @@ class KslTransformer private constructor(val stage: KslShaderStage) {
                this !is KslUniform<*> &&
                this !is KslBlock.BlockInput<*, *> &&
                this !is KslNumericVectorUnaryMinus<*, *> &&
-               this !is KslNumericScalarUnaryMinus<*> &&
-               this !is KslStructMemberExpression<*>
+               this !is KslNumericScalarUnaryMinus<*> //&&
+               //this !is KslStructMemberExpression<*>
     }
 
     private fun KslScope.transform(parentOp: KslOp?, parentBuilder: KslScopeBuilder?) {
@@ -218,9 +220,9 @@ class KslTransformer private constructor(val stage: KslShaderStage) {
     }
 
     companion object {
-        fun transform(shaderStage: KslShaderStage): TransformOutput {
+        fun transform(shaderStage: KslShaderStage, optimizeExpressions: Boolean): TransformOutput {
             val transformer = KslTransformer(shaderStage)
-            transformer.transform()
+            transformer.transform(optimizeExpressions)
             return TransformOutput(transformer.transformedExpressions)
         }
     }

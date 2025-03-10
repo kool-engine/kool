@@ -102,7 +102,7 @@ class ThumbnailRenderer(
             val view = View("thumbnail-view", Node(), cam).apply {
                 val vpX = thumbNail.tileIndex.x * tileSize.x
                 val vpY = thumbNail.tileIndex.y * tileSize.y
-                viewport.set(vpX, vpY, tileSize.x, tileSize.y)
+                viewport = Viewport(vpX, vpY, tileSize.x, tileSize.y)
             }
 
             val node = thumbNail.contentGenerator(view)

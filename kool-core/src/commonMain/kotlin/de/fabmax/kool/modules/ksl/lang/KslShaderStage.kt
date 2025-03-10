@@ -82,7 +82,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     }
 
     fun prepareGenerate() {
-        generatorExpressions = KslTransformer.transform(this).generatorExpressions
+        generatorExpressions = KslTransformer.transform(this, program.optimizeExpressions).generatorExpressions
     }
 }
 
