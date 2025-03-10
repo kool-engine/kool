@@ -1,4 +1,4 @@
-# kool - An OpenGL / WebGPU graphics engine written in Kotlin
+# kool - A Vulkan / WebGPU / OpenGL graphics engine written in Kotlin
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/kool-engine/kool/blob/master/LICENSE)
 [![Maven Central](https://img.shields.io/maven-central/v/de.fabmax.kool/kool-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22de.fabmax.kool%22%20AND%20a:%22kool-core%22)
 ![Build](https://github.com/kool-engine/kool/workflows/Build/badge.svg)
@@ -26,7 +26,8 @@ The following demos run directly in the browser. Chrome is highly recommended be
 with WebGPU support. Other browsers should work as well but use the WebGL backend, which doesn't support all
 features / demos.
 All demos are implemented in code-only fashion (i.e. without using the editor). The code for all demos is available in
-the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject.
+the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject. You can also run them locally by
+cloning this repo and running `./gradlew :kool-demo:run`
 
 - [Bloom](https://kool-engine.github.io/live/demos/?demo=bloom): Decent looking bloom for (very) bright objects. **WebGPU only**
 - [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based
@@ -84,7 +85,7 @@ Give it a try (it's free)!
 | Platform    | Backend     | Implementation Status                                   |
 |-------------|-------------|---------------------------------------------------------|
 | Desktop JVM | OpenGL      | :white_check_mark: Fully working                        |
-| Desktop JVM | Vulkan      | :white_check_mark: Fully working                        |
+| Desktop JVM | Vulkan      | :white_check_mark: Fully working (v0.17.0-SNAPSHOT)     |
 | Browser     | WebGL 2     | :white_check_mark: Fully working                        |
 | Browser     | WebGPU      | :white_check_mark: Fully working                        |
 | Android     | OpenGL ES 3 | :sparkles: kool-core fully working (but no physics yet) |
