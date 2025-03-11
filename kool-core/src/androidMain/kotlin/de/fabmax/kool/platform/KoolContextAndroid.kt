@@ -18,6 +18,11 @@ typealias AndroidLog = android.util.Log
 class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     val surfaceView: GLSurfaceView = config.surfaceView ?: KoolSurfaceView(config.appContext)
 
+    override var renderScale: Float = 1f
+        set(value) {
+            logE { "Changing render scale is not yet implemented on android" }
+        }
+
     override val backend: RenderBackendGlImpl
 
     override val windowWidth: Int
