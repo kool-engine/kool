@@ -8,6 +8,7 @@ import kotlin.concurrent.thread
 class TestKoolContext(
     override val backend: RenderBackend = MockBackend()
 ) : KoolContext() {
+    override var renderScale: Float = 1f
 
     override val windowWidth: Int = 1600
     override val windowHeight: Int = 900

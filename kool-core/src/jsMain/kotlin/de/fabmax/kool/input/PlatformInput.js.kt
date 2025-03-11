@@ -24,7 +24,7 @@ internal object PlatformInputJs : PlatformInput {
     val excludedKeyCodes = mutableSetOf("F5", "F11", "F12", "MetaLeft", "MetaRight")
 
     private val pixelRatio: Double
-        get() = (KoolSystem.getContextOrNull() as JsContext?)?.pixelRatio ?: 1.0
+        get() = (KoolSystem.getContextOrNull() as JsContext?)?.let { it.pixelRatio * it.renderScale } ?: 1.0
 
     private val virtualPointerPos = MutableVec2d()
     private var currentCursorShape = CursorShape.DEFAULT

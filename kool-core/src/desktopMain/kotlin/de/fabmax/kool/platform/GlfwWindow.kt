@@ -29,6 +29,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
     var windowPosY = 0
         private set
 
+    var windowScale = 1f
     var framebufferWidth = KoolSystem.configJvm.windowSize.x
         private set
     var framebufferHeight = KoolSystem.configJvm.windowSize.y
@@ -139,7 +140,8 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         framebufferWidth = outInt1[0]
         framebufferHeight = outInt2[0]
         glfwGetWindowContentScale(windowPtr, outFloat1, outFloat2)
-        ctx.windowScale = outFloat1[0]
+        windowScale = outFloat1[0]
+        ctx.windowScale = windowScale * ctx.renderScale
         isFocused = glfwGetWindowAttrib(windowPtr, GLFW_FOCUSED) == GLFW_TRUE
 
         glfwSetWindowSizeCallback(windowPtr) { _, w, h -> onWindowSizeChanged(w, h) }
@@ -199,7 +201,8 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         if (xScale != yScale) {
             logW { "Window scale x != y (x: $xScale, y: $yScale)" }
         }
-        ctx.windowScale = (xScale + yScale) / 2f
+        windowScale = (xScale + yScale) / 2f
+        ctx.windowScale = windowScale * ctx.renderScale
     }
 
     protected open fun onWindowPositionChanged(x: Int, y: Int) {

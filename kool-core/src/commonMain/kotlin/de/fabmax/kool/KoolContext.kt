@@ -18,7 +18,7 @@ import kotlin.math.roundToInt
 
 abstract class KoolContext {
     var windowScale = 1f
-        set(value) {
+        internal set(value) {
             val userValue = applicationCallbacks.onWindowScaleChange(value, this)
             if (userValue != field) {
                 logD { "Window scale changed: (${(userValue * 100f).roundToInt()} %)" }
@@ -28,6 +28,8 @@ abstract class KoolContext {
                 onWindowScaleChanged.updated().forEach { it(this) }
             }
         }
+
+    abstract var renderScale: Float
 
     var isWindowFocused = true
         protected set(value) {

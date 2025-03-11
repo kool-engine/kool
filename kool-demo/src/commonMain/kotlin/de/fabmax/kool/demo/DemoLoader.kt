@@ -41,6 +41,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
 
     init {
         Settings.loadSettings()
+        ctx.renderScale = Settings.renderScale.value / 100f
 
         ctx.scenes += loadingScreen
         ctx.scenes += dbgOverlay.ui

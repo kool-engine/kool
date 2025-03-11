@@ -23,6 +23,7 @@ object Settings {
     val showHiddenDemos = MutableStateSettings("koolDemo.showHiddenDemos", false) { it.toBoolean() }
     val showDebugOverlay = MutableStateSettings("koolDemo.showDebugOverlay", true) { it.toBoolean() }
     val showMenuOnStartup = MutableStateSettings("koolDemo.showMenuOnStartup", true) { it.toBoolean() }
+    val renderScale = MutableStateSettings("koolDemo.renderScale", 100) { it.toInt() }
 
     val uiSize = MutableStateSettings("koolDemo.uiSize", defaultUiSize) {
         defaultUiSizes[it] ?: defaultUiSize

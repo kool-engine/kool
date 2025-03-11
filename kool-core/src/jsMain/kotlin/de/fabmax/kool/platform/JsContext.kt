@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
+import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
@@ -29,13 +30,19 @@ class JsContext internal constructor() : KoolContext() {
     override var backend: RenderBackendJs
         private set
 
+    override var renderScale: Float = KoolSystem.configJs.renderScale
+        set(value) {
+            field = value
+            windowScale = pixelRatio.toFloat() * value
+        }
+
     val pixelRatio: Double
         get() = min(KoolSystem.configJs.deviceScaleLimit, window.devicePixelRatio)
 
-    override var windowWidth = 0
-        private set
-    override var windowHeight = 0
-        private set
+    private val canvasSize = MutableVec2i(0, 0)
+    override val windowWidth: Int get() = (canvasSize.x * renderScale).toInt()
+    override val windowHeight: Int get() = (canvasSize.y * renderScale).toInt()
+
     override var isFullscreen
         get() = isFullscreenEnabled
         set(value) {
@@ -128,9 +135,8 @@ class JsContext internal constructor() : KoolContext() {
             e.preventDefault()
         }
 
-        windowScale = pixelRatio.toFloat()
-        windowWidth = canvas.width
-        windowHeight = canvas.height
+        windowScale = pixelRatio.toFloat() * renderScale
+        canvasSize.set(canvas.width, canvas.height)
 
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
@@ -147,19 +153,23 @@ class JsContext internal constructor() : KoolContext() {
         animationMillis = time
 
         // update viewport size according to window scale
-        windowScale = pixelRatio.toFloat()
+        windowScale = pixelRatio.toFloat() * renderScale
         if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
-            windowWidth = (window.innerWidth * pixelRatio).toInt()
-            windowHeight = (window.innerHeight * pixelRatio).toInt()
+            canvasSize.set(
+                (window.innerWidth * pixelRatio).toInt(),
+                (window.innerHeight * pixelRatio).toInt(),
+            )
         } else {
-            windowWidth = (canvasFixedWidth * pixelRatio).toInt()
-            windowHeight = (canvasFixedHeight * pixelRatio).toInt()
+            canvasSize.set(
+                (canvasFixedWidth * pixelRatio).toInt(),
+                (canvasFixedHeight * pixelRatio).toInt(),
+            )
         }
-        if (windowWidth != canvas.width || windowHeight != canvas.height) {
+        if (canvasSize.x != canvas.width || canvasSize.y != canvas.height) {
             // resize canvas to viewport, this only affects the render resolution, actual canvas size is determined
             // by canvas.style.width / canvas.style.height set on init
-            canvas.width = windowWidth
-            canvas.height = windowHeight
+            canvas.width = canvasSize.x
+            canvas.height = canvasSize.y
             onWindowSizeChanged.updated().forEach { it(this) }
         }
 
