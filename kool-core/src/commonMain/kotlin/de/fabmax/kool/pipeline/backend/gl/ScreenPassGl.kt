@@ -1,12 +1,15 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.math.MutableVec2i
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
+import de.fabmax.kool.util.Viewport
+import kotlin.math.roundToInt
 
 class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(backend) {
     private val renderFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
@@ -20,6 +23,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
     private val copyFbo: GlFramebuffer by lazy { gl.createFramebuffer() }
 
     private val renderSize = MutableVec2i()
+    private val outputSize = MutableVec2i()
 
     internal var resolveDirect = true
 
@@ -32,6 +36,14 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
                     color { textureData(resolvedColor) }
                     modelCustomizer = { fullscreenQuadVertexStage(null) }
                 }
+            }
+
+            mainRenderPass.defaultView.isFillFramebuffer = false
+            onUpdate {
+                val ctx = backend.ctx
+                val w = (ctx.windowWidth / ctx.renderScale).roundToInt()
+                val h = (ctx.windowHeight / ctx.renderScale).roundToInt()
+                mainRenderPass.defaultView.viewport = Viewport(0, ctx.windowHeight - h, w, h)
             }
         }
     }
@@ -69,13 +81,13 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
 
     fun resolve(targetFbo: GlFramebuffer, blitMask: Int) {
         if (resolveDirect || targetFbo != gl.DEFAULT_FRAMEBUFFER) {
-            blitFramebuffers(renderFbo, targetFbo, blitMask)
+            blitFramebuffers(renderFbo, targetFbo, blitMask, renderSize, outputSize)
         } else {
             // on WebGL trying to resolve a multi-sampled framebuffer into the default framebuffer fails with
             // "GL_INVALID_OPERATION: Invalid operation on multi-sampled framebuffer". As a work-around we resolve
             // the multi-sampled framebuffer into a non-multi-sampled one, which is then rendered to the default
             // framebuffer (i.e. screen) using a copy shader.
-            blitFramebuffers(renderFbo, resolveFbo, blitMask)
+            blitFramebuffers(renderFbo, resolveFbo, blitMask, renderSize, renderSize)
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
             blitScene.mainRenderPass.update(backend.ctx)
@@ -83,13 +95,14 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         }
     }
 
-    private fun blitFramebuffers(src: GlFramebuffer, dst: GlFramebuffer, blitMask: Int) {
+    private fun blitFramebuffers(src: GlFramebuffer, dst: GlFramebuffer, blitMask: Int, srcSize: Vec2i, dstSize: Vec2i) {
+        println("blit: $renderSize -> $outputSize")
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, src)
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dst)
         gl.blitFramebuffer(
-            0, 0, renderSize.x, renderSize.y,
-            0, 0, renderSize.x, renderSize.y,
-            blitMask, gl.NEAREST
+            0, 0, srcSize.x, srcSize.y,
+            0, 0, dstSize.x, dstSize.y,
+            blitMask, gl.LINEAR
         )
     }
 
@@ -122,6 +135,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
             return
         }
         renderSize.set(width, height)
+        outputSize.set((width / backend.ctx.renderScale).roundToInt(), (height / backend.ctx.renderScale).roundToInt())
 
         val colorFormat = TexFormat.RGBA.glInternalFormat(gl)
         val depthFormat = gl.DEPTH_COMPONENT32F

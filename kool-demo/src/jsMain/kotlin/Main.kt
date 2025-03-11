@@ -3,7 +3,6 @@ import de.fabmax.kool.KoolConfigJs
 import de.fabmax.kool.demo.demo
 import de.fabmax.kool.physics.Physics
 import kotlinx.browser.window
-import kotlin.collections.set
 
 val params = getParams()
 val backend: KoolConfigJs.Backend
@@ -18,7 +17,6 @@ fun main() = KoolApplication(
     KoolConfigJs(
         renderBackend = backend,
         isGlobalKeyEventGrabbing = true,
-        forceFloatDepthBuffer = false,
         deviceScaleLimit = 1.5,
         loaderTasks = listOf { Physics.loadAndAwaitPhysics() }
     )

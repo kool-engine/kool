@@ -406,7 +406,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun recreateSwapchain() {
+    fun recreateSwapchain() {
         // Theoretically it might be possible for the swapchain image format to change (e.g. because the window
         // is moved to another monitor with HDR) in that case the screen render pass would also need to be
         // recreated.

@@ -1,5 +1,6 @@
 package de.fabmax.kool.demo.menu
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.Color
@@ -36,6 +37,20 @@ class SettingsContent(val menu: DemoMenu) : Composable {
                     }
             }
         }
+        MenuRow {
+            Text("Render scale") { labelStyle() }
+            ComboBox {
+                modifier
+                    .width(Grow.Std)
+                    .margin(start = sizes.largeGap)
+                    .items(renderScales.map { "$it %" })
+                    .selectedIndex(renderScales.indexOf(Settings.renderScale.use()))
+                    .onItemSelected {
+                        Settings.renderScale.set(renderScales[it])
+                        KoolSystem.requireContext().renderScale = renderScales[it] / 100f
+                    }
+            }
+        }
         LabeledSwitch("Menu initially expanded", Settings.showMenuOnStartup)
         LabeledSwitch("Debug overlay", Settings.showDebugOverlay)
         LabeledSwitch("Fullscreen", Settings.isFullscreen)
@@ -44,5 +59,14 @@ class SettingsContent(val menu: DemoMenu) : Composable {
         menu.demoLoader.activeDemo?.let {
             LabeledSwitch("Show demo menu", it.isMenu)
         }
+    }
+
+    companion object {
+        val renderScales = listOf(
+            50,
+            67,
+            75,
+            100
+        )
     }
 }

@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
@@ -24,10 +25,19 @@ import kotlin.math.min
 class Lwjgl3Context : KoolContext() {
     override val backend: RenderBackendJvm
 
-    override val windowWidth: Int
-        get() = backend.glfwWindow.framebufferWidth
-    override val windowHeight: Int
-        get() = backend.glfwWindow.framebufferHeight
+    override var renderScale: Float = KoolSystem.configJvm.renderScale
+        set(value) {
+            if (field != value) {
+                field = value
+                windowScale = backend.glfwWindow.windowScale * value
+                if (backend is RenderBackendVk) {
+                    backend.recreateSwapchain()
+                }
+            }
+        }
+
+    override val windowWidth: Int get() = (backend.glfwWindow.framebufferWidth * renderScale).toInt()
+    override val windowHeight: Int get() = (backend.glfwWindow.framebufferHeight * renderScale).toInt()
     override var isFullscreen: Boolean
         get() = backend.glfwWindow.isFullscreen
         set(value) { backend.glfwWindow.isFullscreen = value }
@@ -39,9 +49,19 @@ class Lwjgl3Context : KoolContext() {
     private val sysInfo = SysInfo()
 
     init {
-        backend = when (KoolSystem.configJvm.renderBackend) {
-            KoolConfigJvm.Backend.VULKAN -> RenderBackendVk(this)
-            KoolConfigJvm.Backend.OPEN_GL -> RenderBackendGlImpl(this)
+        backend = if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
+            try {
+                RenderBackendVk(this)
+            } catch (e: Exception) {
+                if (KoolSystem.configJvm.useOpenGlFallback) {
+                    logE { "Failed initializing Vulkan backend ($e) Trying OpenGL..." }
+                    RenderBackendGlImpl(this)
+                } else {
+                    error("Failed initializing Vulkan backend ($e)")
+                }
+            }
+        } else {
+            RenderBackendGlImpl(this)
         }
 
         isWindowFocused = backend.glfwWindow.isFocused
