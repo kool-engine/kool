@@ -119,7 +119,7 @@ object PlatformInputJvm : PlatformInput {
             PointerInput.handleMouseButtonEvent(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            val scale = if (isMacOs) ctx.windowScale else 1f
+            val scale = if (isMacOs) ctx.windowScale else ctx.renderScale
             PointerInput.handleMouseMove(x.toFloat() * scale, y.toFloat() * scale)
         }
         glfwSetCursorEnterCallback(windowHandle) { _, entered ->

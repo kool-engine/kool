@@ -80,7 +80,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
     }
 
     fun resolve(targetFbo: GlFramebuffer, blitMask: Int) {
-        if (resolveDirect || targetFbo != gl.DEFAULT_FRAMEBUFFER) {
+        if ((resolveDirect && backend.ctx.renderScale == 1f) || targetFbo != gl.DEFAULT_FRAMEBUFFER) {
             blitFramebuffers(renderFbo, targetFbo, blitMask, renderSize, outputSize)
         } else {
             // on WebGL trying to resolve a multi-sampled framebuffer into the default framebuffer fails with
@@ -96,7 +96,6 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
     }
 
     private fun blitFramebuffers(src: GlFramebuffer, dst: GlFramebuffer, blitMask: Int, srcSize: Vec2i, dstSize: Vec2i) {
-        println("blit: $renderSize -> $outputSize")
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, src)
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, dst)
         gl.blitFramebuffer(
@@ -159,9 +158,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, renderColor)
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderDepth)
 
-        if (!resolveDirect) {
-            makeResolveFbo(width, height)
-        }
+        makeResolveFbo(width, height)
     }
 
     private fun makeResolveFbo(width: Int, height: Int) {
