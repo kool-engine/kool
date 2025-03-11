@@ -219,19 +219,19 @@ fun main() = KoolApplication {
             }
             shader = KslPbrShader {
                 color { constColor(Color.WHITE) }
-                shadow { addShadowMap(shadowMap) }
+                lighting { addShadowMap(shadowMap) }
                 enableSsao(aoPipeline.aoMap)
             }
         }
 
         // Load a glTF 2.0 model
         launchOnMainThread {
-            val materialCfg = GltfFile.ModelMaterialConfig(
+            val materialCfg = GltfMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
             )
-            val modelCfg = GltfFile.ModelGenerateConfig(materialConfig = materialCfg)
-            val model = Assets.loadGltfModel("path/to/model.glb", modelCfg)
+            val modelCfg = GltfLoadConfig(materialConfig = materialCfg)
+            val model = Assets.loadGltfModel("path/to/model.glb", modelCfg).getOrThrow()
 
             model.transform.translate(0f, 0.5f, 0f)
             if (model.animations.isNotEmpty()) {
@@ -240,7 +240,7 @@ fun main() = KoolApplication {
                     model.applyAnimation(Time.deltaT)
                 }
             }
-            
+
             // Add loaded model to scene
             addNode(model)
         }
