@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.pipeline.backend.GpuBuffer
+import de.fabmax.kool.pipeline.GpuBufferImpl
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
@@ -10,10 +10,10 @@ import org.lwjgl.vulkan.VK10.vkCmdCopyBuffer
 import org.lwjgl.vulkan.VkBufferCopy
 import org.lwjgl.vulkan.VkCommandBuffer
 
-class BufferVk(
+class GpuBufferVk(
     val backend: RenderBackendVk,
     bufferInfo: MemoryInfo
-) : BaseReleasable(), GpuBuffer {
+) : BaseReleasable(), GpuBufferImpl {
 
     val vkBuffer: VkBuffer = backend.memManager.createBuffer(bufferInfo)
     val bufferSize: Long get() = vkBuffer.bufferSize
@@ -47,7 +47,7 @@ class GrowingBufferVk(
     var bufferInfo = bufferInfo
         private set
     val size: Long get() = bufferInfo.size
-    var buffer: BufferVk = makeBuffer(bufferInfo)
+    var buffer: GpuBufferVk = makeBuffer(bufferInfo)
 
     fun writeData(data: Float32Buffer, commandBuffer: VkCommandBuffer) {
         if (data.limit == 0) return
@@ -79,7 +79,7 @@ class GrowingBufferVk(
         }
     }
 
-    private fun makeBuffer(bufferInfo: MemoryInfo) = BufferVk(backend, bufferInfo)
+    private fun makeBuffer(bufferInfo: MemoryInfo) = GpuBufferVk(backend, bufferInfo)
 
     override fun release() {
         super.release()

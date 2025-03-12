@@ -22,7 +22,7 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
         var prevColor: Color? = null
         var prevDepth = 0f
 
-        val clearValuesBuffer: WgpuBufferResource = backend.createBuffer(
+        val clearValuesBuffer: GpuBufferWgpu = backend.createBuffer(
             GPUBufferDescriptor(
                 label = "clearHelper-clearValues",
                 size = 32,

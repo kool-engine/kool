@@ -1,11 +1,11 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.backend.GpuBuffer
+import de.fabmax.kool.pipeline.GpuBufferImpl
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.util.*
 
-class WgpuBufferResource(val buffer: GPUBuffer, size: Long, info: String?) :
-    BaseReleasable(), GpuBuffer
+class GpuBufferWgpu(val buffer: GPUBuffer, size: Long, info: String?) :
+    BaseReleasable(), GpuBufferImpl
 {
 
     private val bufferInfo = BufferInfo(buffer.label, info ?: "<none>").apply {
@@ -29,7 +29,7 @@ internal class WgpuGrowingBuffer(
 
     var size: Long = size
         private set
-    var buffer: WgpuBufferResource = makeBuffer(size)
+    var buffer: GpuBufferWgpu = makeBuffer(size)
         private set
 
     fun writeData(data: Float32Buffer) {

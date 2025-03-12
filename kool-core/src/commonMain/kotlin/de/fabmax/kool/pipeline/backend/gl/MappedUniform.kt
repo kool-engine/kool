@@ -7,7 +7,7 @@ interface MappedUniform {
     fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean
 }
 
-class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData, val gpuBuffer: BufferResource, val backend: RenderBackendGl) : MappedUniform {
+class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData, val gpuBuffer: GpuBufferGl, val backend: RenderBackendGl) : MappedUniform {
     val gl: GlApi get() = backend.gl
     private var modCount = -1
 
@@ -137,14 +137,14 @@ class MappedStorageBuffer(
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val storage = ssbo.storageBuffer ?: return false
-        var gpuBuffer = storage.gpuBuffer as BufferResource?
+        var gpuBuffer = storage.gpuBuffer as GpuBufferGl?
         if (gpuBuffer == null) {
             val bufferCreationInfo = BufferCreationInfo(
                 bufferName = storage.name,
                 renderPassName = bindCtx.pass.name,
                 sceneName = bindCtx.pass.parentScene?.name ?: "scene:<null>"
             )
-            gpuBuffer = BufferResource(backend.gl.SHADER_STORAGE_BUFFER, backend, bufferCreationInfo)
+            gpuBuffer = GpuBufferGl(backend.gl.SHADER_STORAGE_BUFFER, backend, bufferCreationInfo)
             storage.gpuBuffer = gpuBuffer
             if (storage.uploadData == null) {
                 val size = storage.size * storage.type.byteSize

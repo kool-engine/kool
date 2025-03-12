@@ -1,34 +1,39 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.pipeline.backend.GpuBuffer
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 
-class StorageBuffer(
+class GpuBuffer(
     val type: GpuType,
     size: Int,
-    val name: String = UniqueId.nextId("StorageBuffer")
+    val name: String = UniqueId.nextId("GpuBuffer")
 ): BaseReleasable() {
 
     var size = size
         private set
 
-    internal var gpuBuffer: GpuBuffer? = null
+    internal var gpuBuffer: GpuBufferImpl? = null
     internal var uploadData: Buffer? = null
 
     fun uploadData(data: Float32Buffer) {
-        require(type.isFloat)
+        require(type.isFloat) {
+            "Buffer type is $type (not a float type). Cannot upload from a Float32Buffer"
+        }
         uploadData = data
     }
 
     fun uploadData(data: Int32Buffer) {
-        require(type.isInt)
+        require(type.isInt) {
+            "Buffer type is $type (not an int type). Cannot upload from an Int32Buffer"
+        }
         uploadData = data
     }
 
     fun uploadData(data: StructBuffer<*>) {
-        require(type is GpuType.Struct && type.struct == data.struct)
+        require(type is GpuType.Struct && type.struct == data.struct) {
+            "Buffer type is $type but provided data buffer type is ${data.struct.type}"
+        }
         uploadData = data.buffer
     }
 
@@ -40,9 +45,11 @@ class StorageBuffer(
      * per-frame basis.
      */
     suspend fun downloadData(resultData: Float32Buffer) {
-        require(type.isFloat)
+        require(type.isFloat) {
+            "Buffer type is $type (not a float type). Cannot download into a Float32Buffer"
+        }
         val deferred = CompletableDeferred<Unit>()
-        KoolSystem.requireContext().backend.downloadStorageBuffer(this, deferred, resultData)
+        KoolSystem.requireContext().backend.downloadBuffer(this, deferred, resultData)
         deferred.await()
     }
 
@@ -54,9 +61,11 @@ class StorageBuffer(
      * per-frame basis.
      */
     suspend fun downloadData(resultData: Int32Buffer) {
-        require(type.isInt)
+        require(type.isInt) {
+            "Buffer type is $type (not an int type). Cannot download into an Int32Buffer"
+        }
         val deferred = CompletableDeferred<Unit>()
-        KoolSystem.requireContext().backend.downloadStorageBuffer(this, deferred, resultData)
+        KoolSystem.requireContext().backend.downloadBuffer(this, deferred, resultData)
         deferred.await()
     }
 
@@ -69,9 +78,11 @@ class StorageBuffer(
      * per-frame basis.
      */
     suspend fun downloadData(resultData: StructBuffer<*>) {
-        require(type is GpuType.Struct && type.struct == resultData.struct)
+        require(type is GpuType.Struct && type.struct == resultData.struct) {
+            "Buffer type is $type but provided result buffer type is ${resultData.struct.type}"
+        }
         val deferred = CompletableDeferred<Unit>()
-        KoolSystem.requireContext().backend.downloadStorageBuffer(this, deferred, resultData.buffer)
+        KoolSystem.requireContext().backend.downloadBuffer(this, deferred, resultData.buffer)
         deferred.await()
     }
 
@@ -106,3 +117,5 @@ class StorageBuffer(
         }
     }
 }
+
+interface GpuBufferImpl : Releasable

@@ -385,7 +385,7 @@ object GlImpl : GlApi {
         )
     }
 
-    override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean = false
+    override fun readBuffer(gpuBuffer: GpuBufferGl, dstBuffer: Buffer): Boolean = false
 
     override fun readTexturePixels(src: LoadedTextureGl, dst: BufferedImageData): Boolean {
         if (src.target != TEXTURE_2D) {

@@ -104,7 +104,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
 
     inner class StorageBufferBindingData(override val layout: StorageBufferLayout) : BindingData {
-        var storageBuffer: StorageBuffer? = null
+        var storageBuffer: GpuBuffer? = null
             set(value) {
                 value?.let { checkDimensions(it) }
                 field = value
@@ -112,11 +112,11 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             }
         override val isComplete = true
 
-        fun checkDimensions(storageBuffer: StorageBuffer) = check(isMatchingDimensions(storageBuffer)) {
+        fun checkDimensions(storageBuffer: GpuBuffer) = check(isMatchingDimensions(storageBuffer)) {
             "Incorrect buffer dimensions. Layout ${layout.name}: ${layout.size}, provided: ${storageBuffer.size}"
         }
 
-        fun isMatchingDimensions(storageBuffer: StorageBuffer): Boolean {
+        fun isMatchingDimensions(storageBuffer: GpuBuffer): Boolean {
             return layout.size == null || layout.size == storageBuffer.size
         }
 

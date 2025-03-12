@@ -22,8 +22,8 @@ class GpuBees(beeScene: Scene) {
     private val maxGpuBees: Int get() = BeeConfig.maxBeesPerTeamGpu
 
     // Contains position, rotation and velocities for all bees of one team
-    private val beeBufferA = StorageBuffer(BeeData().type, (maxGpuBees + 64))
-    private val beeBufferB = StorageBuffer(BeeData().type, (maxGpuBees + 64))
+    private val beeBufferA = GpuBuffer(BeeData().type, (maxGpuBees + 64))
+    private val beeBufferB = GpuBuffer(BeeData().type, (maxGpuBees + 64))
 
     val beeUpdateTime = mutableStateOf(0.0)
 
@@ -329,7 +329,7 @@ class GpuBees(beeScene: Scene) {
         simulationPass.isEnabled = isEnabled
     }
 
-    private fun initBeeBuffer(beeBuffer: StorageBuffer, spawnPos: Vec3f) {
+    private fun initBeeBuffer(beeBuffer: GpuBuffer, spawnPos: Vec3f) {
         val data = StructBuffer(beeBuffer.size, BeeData())
         repeat(data.size) {
             data.put {

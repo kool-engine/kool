@@ -126,7 +126,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.StorageBufferBindingData.makeEntry(pass: GpuPass): GPUBindGroupEntry {
         val location = locations[layout]
         val storage = checkNotNull(storageBuffer) { "Cannot create storage buffer binding from null buffer" }
-        var gpuBuffer = storage.gpuBuffer as WgpuBufferResource?
+        var gpuBuffer = storage.gpuBuffer as GpuBufferWgpu?
         if (gpuBuffer == null) {
             gpuBuffer = backend.createBuffer(
                 GPUBufferDescriptor(
@@ -315,14 +315,14 @@ class WgpuBindGroupData(
 
     private data class BufferBinding(
         val binding: BindGroupData.UniformBufferBindingData,
-        val gpuBuffer: WgpuBufferResource
+        val gpuBuffer: GpuBufferWgpu
     ) {
         var modCount = -1
     }
 
     private data class StorageBufferBinding(
         val binding: BindGroupData.StorageBufferBindingData,
-        val gpuBuffer: WgpuBufferResource
+        val gpuBuffer: GpuBufferWgpu
     )
 
     private data class TextureBinding(

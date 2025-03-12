@@ -294,7 +294,7 @@ interface GlApi {
     fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, offset: Int)
     fun viewport(x: Int, y: Int, width: Int, height: Int)
 
-    fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean
+    fun readBuffer(gpuBuffer: GpuBufferGl, dstBuffer: Buffer): Boolean
     fun readTexturePixels(src: LoadedTextureGl, dst: BufferedImageData): Boolean
 
     fun checkNoError() = check(getError() == 0)

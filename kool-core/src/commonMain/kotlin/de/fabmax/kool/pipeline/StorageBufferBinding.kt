@@ -4,13 +4,13 @@ import kotlin.reflect.KProperty
 
 class StorageBufferBinding(
     textureName: String,
-    defaultBuffer: StorageBuffer?,
+    defaultBuffer: GpuBuffer?,
     shader: ShaderBase<*>
 ) : PipelineBinding(textureName, shader) {
 
-    private var cache: StorageBuffer? = defaultBuffer
+    private var cache: GpuBuffer? = defaultBuffer
 
-    fun get(): StorageBuffer? {
+    fun get(): GpuBuffer? {
         if (isValid) {
             bindGroupData?.let {
                 cache = it.getFromData()
@@ -19,15 +19,15 @@ class StorageBufferBinding(
         return cache
     }
 
-    fun set(value: StorageBuffer?) {
+    fun set(value: GpuBuffer?) {
         cache = value
         if (isValid) {
             bindGroupData?.setInData(value)
         }
     }
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageBuffer? = get()
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageBuffer?) = set(value)
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): GpuBuffer? = get()
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: GpuBuffer?) = set(value)
 
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
@@ -42,11 +42,11 @@ class StorageBufferBinding(
         }
     }
 
-    fun BindGroupData.getFromData(): StorageBuffer? {
+    fun BindGroupData.getFromData(): GpuBuffer? {
         return storageBuffer1dBindingData(bindingIndex).storageBuffer
     }
 
-    fun BindGroupData.setInData(buffer: StorageBuffer?) {
+    fun BindGroupData.setInData(buffer: GpuBuffer?) {
         storageBuffer1dBindingData(bindingIndex).storageBuffer = buffer
     }
 }

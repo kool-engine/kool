@@ -307,8 +307,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
 
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
-        gpuReadbacks += ReadbackStorageBuffer(storage, deferred, resultBuffer)
+    override fun downloadBuffer(buffer: GpuBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
+        gpuReadbacks += ReadbackStorageBuffer(buffer, deferred, resultBuffer)
     }
 
     override fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>) {
@@ -326,12 +326,12 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private fun copyReadbacks(passEncoderState: PassEncoderState) {
         gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().forEach { readback ->
-            val gpuBuf = readback.storage.gpuBuffer as BufferVk?
+            val gpuBuf = readback.storage.gpuBuffer as GpuBufferVk?
             if (gpuBuf == null) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
             } else {
                 val size = gpuBuf.bufferSize
-                val mapBuffer = BufferVk(
+                val mapBuffer = GpuBufferVk(
                     this,
                     MemoryInfo(
                         label = "storage-buffer-readback",
@@ -352,7 +352,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             } else {
                 val format = readback.texture.format
                 val size = format.pxSize.toLong() * gpuTex.width * gpuTex.height * gpuTex.depth
-                val mapBuffer = BufferVk(
+                val mapBuffer = GpuBufferVk(
                     this,
                     MemoryInfo(
                         label = "texture-readback",
@@ -421,11 +421,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private interface GpuReadback
 
-    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer) : GpuReadback {
-        var mapBuffer: BufferVk? = null
+    private class ReadbackStorageBuffer(val storage: GpuBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer) : GpuReadback {
+        var mapBuffer: GpuBufferVk? = null
     }
 
     private class ReadbackTexture(val texture: Texture<*>, val deferred: CompletableDeferred<ImageData>) : GpuReadback {
-        var mapBuffer: BufferVk? = null
+        var mapBuffer: GpuBufferVk? = null
     }
 }

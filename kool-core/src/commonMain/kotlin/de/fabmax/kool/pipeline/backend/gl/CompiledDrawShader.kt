@@ -174,7 +174,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         val items: List<AttributeBinderItem>,
         val strideBytes: Int,
     ) {
-        fun bindAttributes(buffer: BufferResource) {
+        fun bindAttributes(buffer: GpuBufferGl) {
             buffer.bind()
             for (i in items.indices) {
                 val item = items[i]

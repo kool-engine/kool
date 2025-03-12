@@ -197,8 +197,8 @@ class BindGroupDataVk(
         numSets: Int
     ) : BaseReleasable() {
         val layout: Std140BufferLayout = Std140BufferLayout(binding.layout.uniforms)
-        val buffers: List<BufferVk> = List(numSets) {
-            BufferVk(
+        val buffers: List<GpuBufferVk> = List(numSets) {
+            GpuBufferVk(
                 backend = backend,
                 bufferInfo = MemoryInfo(
                     size = layout.size.toLong(),
@@ -416,9 +416,9 @@ class BindGroupDataVk(
     ): StorageBufferBinding {
         val name = (binding as BindingData).name
         val storage = checkNotNull(binding.storageBuffer)
-        var gpuBuffer = storage.gpuBuffer as BufferVk?
+        var gpuBuffer = storage.gpuBuffer as GpuBufferVk?
         if (gpuBuffer == null) {
-            gpuBuffer = BufferVk(
+            gpuBuffer = GpuBufferVk(
                 backend = backend,
                 bufferInfo = MemoryInfo(
                     size = storage.size * storage.type.byteSize.toLong(),
@@ -436,8 +436,8 @@ class BindGroupDataVk(
 
     inner class StorageBufferBinding(
         val binding: BindGroupData.StorageBufferBindingData,
-        val storageBuffer: StorageBuffer,
-        val gpuBuffer: BufferVk
+        val storageBuffer: GpuBuffer,
+        val gpuBuffer: GpuBufferVk
     ) : BaseReleasable() {
 
         fun updateBuffer(passEncoderState: PassEncoderState) {

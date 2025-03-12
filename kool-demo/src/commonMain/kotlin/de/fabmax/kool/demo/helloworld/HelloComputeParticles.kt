@@ -11,8 +11,8 @@ import de.fabmax.kool.modules.ksl.blocks.noise11
 import de.fabmax.kool.modules.ksl.blocks.noise31
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.ComputePass
+import de.fabmax.kool.pipeline.GpuBuffer
 import de.fabmax.kool.pipeline.GradientTexture
-import de.fabmax.kool.pipeline.StorageBuffer
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
@@ -116,7 +116,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         val particleColor = GradientTexture(ColorGradient.ROCKET)
 
-        val particleBuffer = StorageBuffer(Particle().type, N_PARTICLES)
+        val particleBuffer = GpuBuffer(Particle().type, N_PARTICLES)
 
         val particleComputeShader = particleComputeShader()
         particleComputeShader.storage("particleBuffer", particleBuffer)

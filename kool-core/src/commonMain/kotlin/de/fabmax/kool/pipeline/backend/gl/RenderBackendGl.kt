@@ -174,14 +174,14 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenPassCubeGl).draw()
     protected fun ComputePassImpl.dispatch() = (this as ComputePassGl).dispatch()
 
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
-        awaitedStorageBuffers += ReadbackStorageBuffer(storage, deferred, resultBuffer)
+    override fun downloadBuffer(buffer: GpuBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
+        awaitedStorageBuffers += ReadbackStorageBuffer(buffer, deferred, resultBuffer)
     }
 
     private fun readbackStorageBuffers() {
         gl.memoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
         awaitedStorageBuffers.forEach { readback ->
-            val gpuBuf = readback.storage.gpuBuffer as BufferResource?
+            val gpuBuf = readback.storage.gpuBuffer as GpuBufferGl?
             if (gpuBuf == null || !gl.readBuffer(gpuBuf, readback.resultBuffer)) {
                 readback.deferred.completeExceptionally(IllegalStateException("Failed reading buffer"))
             } else {
@@ -191,5 +191,5 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         awaitedStorageBuffers.clear()
     }
 
-    private class ReadbackStorageBuffer(val storage: StorageBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer)
+    private class ReadbackStorageBuffer(val storage: GpuBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer)
 }

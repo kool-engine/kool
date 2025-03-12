@@ -157,13 +157,13 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             return uniformsValid
         }
 
-        private fun createGpuBuffer(name: String): BufferResource {
+        private fun createGpuBuffer(name: String): GpuBufferGl {
             val bufferCreationInfo = BufferCreationInfo(
                 bufferName = name,
                 renderPassName = pass.name,
                 sceneName = pass.parentScene?.name ?: "scene:<null>"
             )
-            val buffer = BufferResource(backend.gl.UNIFORM_BUFFER, backend, bufferCreationInfo)
+            val buffer = GpuBufferGl(backend.gl.UNIFORM_BUFFER, backend, bufferCreationInfo)
             buffer.releaseWith(this)
             return buffer
         }
