@@ -1,5 +1,6 @@
 package de.fabmax.kool.input
 
+import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logW
 
@@ -9,6 +10,8 @@ internal class BufferedPointerInput : Pointer() {
 
     private val buttonEventQueue = List<MutableList<Boolean>>(8) { mutableListOf() }
     private var gotPointerEvents = false
+
+    private val dragStartPos = MutableVec2f()
 
     fun enqueueButtonEvent(button: Int, down: Boolean) {
         if (button !in buttonEventQueue.indices) {
@@ -67,8 +70,12 @@ internal class BufferedPointerInput : Pointer() {
         if (accumulateDeltas) {
             _delta.x += x - pos.x
             _delta.y += y - pos.y
+
             if (isAnyButtonDown) {
-                _dragMovement.add(_delta)
+                _dragMovement.x = x - dragStartPos.x
+                _dragMovement.y = y - dragStartPos.y
+            } else {
+                dragStartPos.set(x, y)
             }
         }
 
