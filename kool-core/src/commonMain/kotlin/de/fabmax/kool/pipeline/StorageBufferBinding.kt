@@ -10,6 +10,10 @@ class StorageBufferBinding(
 
     private var cache: GpuBuffer? = defaultBuffer
 
+    init {
+        defaultBuffer?.checkIsStorageBuffer()
+    }
+
     fun get(): GpuBuffer? {
         if (isValid) {
             bindGroupData?.let {
@@ -20,6 +24,7 @@ class StorageBufferBinding(
     }
 
     fun set(value: GpuBuffer?) {
+        value?.checkIsStorageBuffer()
         cache = value
         if (isValid) {
             bindGroupData?.setInData(value)
