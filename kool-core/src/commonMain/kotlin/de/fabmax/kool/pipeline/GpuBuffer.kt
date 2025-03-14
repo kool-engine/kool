@@ -199,31 +199,36 @@ class GpuBuffer(
 
 interface GpuBufferImpl : Releasable
 
+/**
+ * Buffer usage flags: Indicate what a buffer can be used for. Usually a buffer has only a single usage, however,
+ * if multiple flags are set, a buffer can be used in multiple ways. E.g. a buffer can be bound as a storage buffer in
+ * a compute shader and as a vertex buffer for a mesh. This way the compute shader can compute geometry which is then
+ * rendered as a mesh.
+ */
 @JvmInline
 value class BufferUsage(val usage: Int) {
     val isStorage: Boolean get() = usage and USAGE_STORAGE_BUFFER != 0
-    val isUniform: Boolean get() = usage and USAGE_UNIFORM_BUFFER != 0
     val isVertex: Boolean get() = usage and USAGE_VERTEX_BUFFER != 0
     val isInstance: Boolean get() = usage and USAGE_INSTANCE_BUFFER != 0
     val isIndex: Boolean get() = usage and USAGE_INDEX_BUFFER != 0
 
     companion object {
         const val USAGE_STORAGE_BUFFER = 1
-        const val USAGE_UNIFORM_BUFFER = 2
-        const val USAGE_VERTEX_BUFFER = 4
-        const val USAGE_INSTANCE_BUFFER = 8
-        const val USAGE_INDEX_BUFFER = 16
+        const val USAGE_VERTEX_BUFFER = 2
+        const val USAGE_INSTANCE_BUFFER = 4
+        const val USAGE_INDEX_BUFFER = 8
 
+        /**
+         * Creates a BufferUsage with the given flags / usages set to true.
+         */
         fun makeUsage(
             storage: Boolean = false,
-            uniform: Boolean = false,
             vertex: Boolean = false,
             instance: Boolean = false,
             index: Boolean = false
         ): BufferUsage {
             var usage = 0
             if (storage) usage = USAGE_STORAGE_BUFFER
-            if (uniform) usage = usage or USAGE_UNIFORM_BUFFER
             if (vertex) usage = usage or USAGE_VERTEX_BUFFER
             if (instance) usage = usage or USAGE_INSTANCE_BUFFER
             if (index) usage = usage or USAGE_INDEX_BUFFER

@@ -1,10 +1,13 @@
 package de.fabmax.kool.modules.ksl.blocks
 
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.positioned
+import de.fabmax.kool.pipeline.BindGroupScope
+import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.ShaderBase
+import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.util.*
 
 fun KslProgram.cameraData(): CameraData {
     return (dataBlocks.find { it is CameraData } as? CameraData) ?: CameraData(this)
@@ -19,7 +22,6 @@ fun KslScopeBuilder.depthToViewSpacePos(linearDepth: KslExprFloat1, clipSpaceXy:
 }
 
 class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
-
     override val name = NAME
 
     val position: KslUniformVector<KslFloat3, KslFloat1>
@@ -57,16 +59,17 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         frameIndex = uniformInt1(UNIFORM_NAME_FRAME_INDEX)
     }
 
-    private var uboLayout: UniformBufferLayout? = null
-    private var bufferPosPosition: BufferPosition? = null
-    private var bufferPosDirection: BufferPosition? = null
-    private var bufferPosClip: BufferPosition? = null
-    private var bufferPosDepthToViewSpace: BufferPosition? = null
-    private var bufferPosViewMat: BufferPosition? = null
-    private var bufferPosProjMat: BufferPosition? = null
-    private var bufferPosViewProjMat: BufferPosition? = null
-    private var bufferPosViewport: BufferPosition? = null
-    private var bufferPosFrameIndex: BufferPosition? = null
+    private var uboLayout: UniformBufferLayout<*>? = null
+    private var positionIndex = -1
+    private var directionIndex = -1
+    private var clipIndex = -1
+    private var viewParamsIndex = -1
+    private var viewMatIndex = -1
+    private var projMatIndex = -1
+    private var viewProjMatIndex = -1
+    private var viewportIndex = -1
+    private var frameIndexIndex = -1
+    private val viewportVec = MutableVec4f()
 
     init {
         program.shaderListeners += this
@@ -75,18 +78,18 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.name == "CameraUniforms" }
+        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout<*>> { it.name == "CameraUniforms" }
         uboLayout = binding?.second
         uboLayout?.let {
-            bufferPosPosition = it.layout.uniformPositions[UNIFORM_NAME_CAM_POSITION]
-            bufferPosDirection = it.layout.uniformPositions[UNIFORM_NAME_CAM_DIRECTION]
-            bufferPosClip = it.layout.uniformPositions[UNIFORM_NAME_CAM_CLIP]
-            bufferPosDepthToViewSpace = it.layout.uniformPositions[UNIFORM_NAME_VIEW_PARAMS]
-            bufferPosViewMat = it.layout.uniformPositions[UNIFORM_NAME_VIEW_MAT]
-            bufferPosProjMat = it.layout.uniformPositions[UNIFORM_NAME_PROJ_MAT]
-            bufferPosViewProjMat = it.layout.uniformPositions[UNIFORM_NAME_VIEW_PROJ_MAT]
-            bufferPosViewport = it.layout.uniformPositions[UNIFORM_NAME_VIEWPORT]
-            bufferPosFrameIndex = it.layout.uniformPositions[UNIFORM_NAME_FRAME_INDEX]
+            positionIndex = it.indexOfMember(UNIFORM_NAME_CAM_POSITION)
+            directionIndex = it.indexOfMember(UNIFORM_NAME_CAM_DIRECTION)
+            clipIndex = it.indexOfMember(UNIFORM_NAME_CAM_CLIP)
+            viewParamsIndex = it.indexOfMember(UNIFORM_NAME_VIEW_PARAMS)
+            viewMatIndex = it.indexOfMember(UNIFORM_NAME_VIEW_MAT)
+            projMatIndex = it.indexOfMember(UNIFORM_NAME_PROJ_MAT)
+            viewProjMatIndex = it.indexOfMember(UNIFORM_NAME_VIEW_PROJ_MAT)
+            viewportIndex = it.indexOfMember(UNIFORM_NAME_VIEWPORT)
+            frameIndexIndex = it.indexOfMember(UNIFORM_NAME_FRAME_INDEX)
         }
     }
 
@@ -98,22 +101,20 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         val vp = q.view.viewport
         val cam = q.view.camera
         val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
-        
+        val struct = ubo.buffer.struct
+
+        viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat())
+
         ubo.markDirty()
-        ubo.buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
-        ubo.buffer.positioned(bufferPosDirection!!.byteIndex) { cam.globalLookDir.putTo(it) }
-        ubo.buffer.positioned(bufferPosClip!!.byteIndex) { it.putFloat32(cam.clipNear); it.putFloat32(cam.clipFar) }
-        ubo.buffer.positioned(bufferPosDepthToViewSpace!!.byteIndex) { cam.viewParams.putTo(it) }
-        ubo.buffer.positioned(bufferPosFrameIndex!!.byteIndex) { it.putInt32(Time.frameCount) }
-        ubo.buffer.positioned(bufferPosViewMat!!.byteIndex) { q.viewMatF.putTo(it) }
-        ubo.buffer.positioned(bufferPosProjMat!!.byteIndex) { q.projMat.putTo(it) }
-        ubo.buffer.positioned(bufferPosViewProjMat!!.byteIndex) { q.viewProjMatF.putTo(it) }
-        ubo.buffer.positioned(bufferPosViewport!!.byteIndex) {
-            it.putFloat32(vp.x.toFloat())
-            it.putFloat32(vp.y.toFloat())
-            it.putFloat32(vp.width.toFloat())
-            it.putFloat32(vp.height.toFloat())
-        }
+        struct.setFloat3(positionIndex, cam.globalPos)
+        struct.setFloat3(directionIndex, cam.globalLookDir)
+        struct.setFloat2(clipIndex, cam.clip)
+        struct.setFloat4(viewParamsIndex, cam.viewParams)
+        struct.setMat4(viewMatIndex, q.viewMatF)
+        struct.setMat4(projMatIndex, q.projMat)
+        struct.setMat4(viewProjMatIndex, q.viewProjMatF)
+        struct.setFloat4(viewportIndex, viewportVec)
+        struct.setInt1(frameIndexIndex, Time.frameCount)
     }
 
     companion object {

@@ -37,7 +37,7 @@ class ClearHelper(val backend: RenderBackendVk) {
         val descriptorSetLayout: VkDescriptorSetLayout
         val pipelineLayout: VkPipelineLayout
         val bindGroupData: BindGroupDataVk
-        val clearValues: BindGroupData.UniformBufferBindingData
+        val clearValues: BindGroupData.UniformBufferBindingData<*>
 
         var prevColor: Color? = null
         var prevDepth = 0f
@@ -50,12 +50,14 @@ class ClearHelper(val backend: RenderBackendVk) {
             val bindGrpLayout = BindGroupLayout.Builder(0, BindGroupScope.VIEW).apply {
                 ubos += UniformBufferLayout(
                     name = "clearValues",
-                    uniforms = listOf(Uniform.float4("color"), Uniform.float1("depth")),
+                    structProvider = {
+                        DynamicStruct.Builder("clearVals", MemoryLayout.Std140).float4("color").float1("depth").build()
+                    },
                     stages = setOf(ShaderStage.VERTEX_SHADER, ShaderStage.FRAGMENT_SHADER)
                 )
             }.create()
             val bindGrpData = BindGroupData(bindGrpLayout)
-            clearValues = bindGrpData.bindings[0] as BindGroupData.UniformBufferBindingData
+            clearValues = bindGrpData.bindings[0] as BindGroupData.UniformBufferBindingData<*>
 
             memStack {
                 val bindings = callocVkDescriptorSetLayoutBindingN(1) {
@@ -95,8 +97,8 @@ class ClearHelper(val backend: RenderBackendVk) {
                 prevColor = clearColor
                 prevDepth = clearDepth
                 clearValues.buffer.clear()
-                clearColor.putTo(clearValues.buffer)
-                clearValues.buffer.putFloat32(clearDepth)
+                clearColor.putTo(clearValues.buffer.buffer)
+                clearValues.buffer.buffer.putFloat32(clearDepth)
                 clearValues.markDirty()
             }
 

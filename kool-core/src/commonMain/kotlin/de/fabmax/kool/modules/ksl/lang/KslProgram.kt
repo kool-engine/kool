@@ -400,8 +400,10 @@ open class KslProgram(val name: String) {
     val UniformBinding3iv.ksl: KslUniformVectorArray<KslInt3, KslInt1> get() = uniformInt3Array(bindingName, arraySize)
     val UniformBinding4iv.ksl: KslUniformVectorArray<KslInt4, KslInt1> get() = uniformInt4Array(bindingName, arraySize)
 
+    val UniformBindingMat2f.ksl: KslUniformMatrix<KslMat2, KslFloat2> get() = uniformMat2(bindingName)
     val UniformBindingMat3f.ksl: KslUniformMatrix<KslMat3, KslFloat3> get() = uniformMat3(bindingName)
     val UniformBindingMat4f.ksl: KslUniformMatrix<KslMat4, KslFloat4> get() = uniformMat4(bindingName)
+    val UniformBindingMat2fv.ksl: KslUniformMatrixArray<KslMat2, KslFloat2> get() = uniformMat2Array(bindingName, arraySize)
     val UniformBindingMat3fv.ksl: KslUniformMatrixArray<KslMat3, KslFloat3> get() = uniformMat3Array(bindingName, arraySize)
     val UniformBindingMat4fv.ksl: KslUniformMatrixArray<KslMat4, KslFloat4> get() = uniformMat4Array(bindingName, arraySize)
 

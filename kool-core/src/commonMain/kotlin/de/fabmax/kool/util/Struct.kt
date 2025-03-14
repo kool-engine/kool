@@ -13,7 +13,8 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     private var _byteOffset = 0
     override val byteOffset: Int get() = _byteOffset
 
-    val members = mutableListOf<StructMember>()
+    private val _members = mutableListOf<StructMember>()
+    val members: List<StructMember> get() = _members
 
     private var lastPos = 0
     val structSize: Int get() = layout.structSize(this, lastPos)
@@ -33,7 +34,23 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         "ksl access only works if Struct is used in an ksl context"
     }
 
+    val hash: LongHash by lazy {
+        LongHash {
+            members.forEach { this += it.type }
+        }
+    }
+    
+    protected fun addMember(member: StructMember) {
+        check(members.none { it.memberName == member.memberName }) {
+            "Duplicate struct member names are not allowed: ${member.memberName}"
+        }
+        _members += member
+    }
+
     fun viewBuffer(buffer: StructBuffer<T>): StructBufferAccessIndexed {
+        check(_bufferAccess == null) {
+            "Buffer access is already configured! A single struct instance can only view a single buffer"
+        }
         val accessor = StructBufferAccessIndexed(buffer)
         setupBufferAccess(accessor)
         return accessor
@@ -57,138 +74,138 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     protected fun float1(name: String = "f1_${members.size}"): Float1Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, 1)
         lastPos = offset + size
-        return Float1Member(name, offset).also { members.add(it) }
+        return Float1Member(name, offset).also { addMember(it) }
     }
 
     protected fun float2(name: String = "f2_${members.size}"): Float2Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, 1)
         lastPos = offset + size
-        return Float2Member(name, offset).also { members.add(it) }
+        return Float2Member(name, offset).also { addMember(it) }
     }
 
     protected fun float3(name: String = "f3_${members.size}"): Float3Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, 1)
         lastPos = offset + size
-        return Float3Member(name, offset).also { members.add(it) }
+        return Float3Member(name, offset).also { addMember(it) }
     }
 
     protected fun float4(name: String = "f4_${members.size}"): Float4Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, 1)
         lastPos = offset + size
-        return Float4Member(name, offset).also { members.add(it) }
+        return Float4Member(name, offset).also { addMember(it) }
     }
 
 
     protected fun int1(name: String = "i1_${members.size}"): Int1Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, 1)
         lastPos = offset + size
-        return Int1Member(name, offset).also { members.add(it) }
+        return Int1Member(name, offset).also { addMember(it) }
     }
 
     protected fun int2(name: String = "i2_${members.size}"): Int2Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, 1)
         lastPos = offset + size
-        return Int2Member(name, offset).also { members.add(it) }
+        return Int2Member(name, offset).also { addMember(it) }
     }
 
     protected fun int3(name: String = "i3_${members.size}"): Int3Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, 1)
         lastPos = offset + size
-        return Int3Member(name, offset).also { members.add(it) }
+        return Int3Member(name, offset).also { addMember(it) }
     }
 
     protected fun int4(name: String = "i4_${members.size}"): Int4Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, 1)
         lastPos = offset + size
-        return Int4Member(name, offset).also { members.add(it) }
+        return Int4Member(name, offset).also { addMember(it) }
     }
 
 
     protected fun mat2(name: String = "m2_${members.size}"): Mat2Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, 1)
         lastPos = offset + size
-        return Mat2Member(name, offset).also { members.add(it) }
+        return Mat2Member(name, offset).also { addMember(it) }
     }
 
     protected fun mat3(name: String = "m3_${members.size}"): Mat3Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, 1)
         lastPos = offset + size
-        return Mat3Member(name, offset).also { members.add(it) }
+        return Mat3Member(name, offset).also { addMember(it) }
     }
 
     protected fun mat4(name: String = "m4_${members.size}"): Mat4Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, 1)
         lastPos = offset + size
-        return Mat4Member(name, offset).also { members.add(it) }
+        return Mat4Member(name, offset).also { addMember(it) }
     }
 
 
     protected fun float1Array(arraySize: Int, name: String = "f1arr_${members.size}"): Float1ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, arraySize)
         lastPos = offset + size
-        return Float1ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Float1ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun float2Array(arraySize: Int, name: String = "f2arr_${members.size}"): Float2ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, arraySize)
         lastPos = offset + size
-        return Float2ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Float2ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun float3Array(arraySize: Int, name: String = "f3arr_${members.size}"): Float3ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, arraySize)
         lastPos = offset + size
-        return Float3ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Float3ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun float4Array(arraySize: Int, name: String = "f4arr_${members.size}"): Float4ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, arraySize)
         lastPos = offset + size
-        return Float4ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Float4ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
 
     protected fun int1Array(arraySize: Int, name: String = "i1arr_${members.size}"): Int1ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, arraySize)
         lastPos = offset + size
-        return Int1ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Int1ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun int2Array(arraySize: Int, name: String = "i2arr_${members.size}"): Int2ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, arraySize)
         lastPos = offset + size
-        return Int2ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Int2ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun int3Array(arraySize: Int, name: String = "i3arr_${members.size}"): Int3ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, arraySize)
         lastPos = offset + size
-        return Int3ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Int3ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun int4Array(arraySize: Int, name: String = "i4arr_${members.size}"): Int4ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, arraySize)
         lastPos = offset + size
-        return Int4ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Int4ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
 
     protected fun mat2Array(arraySize: Int, name: String = "m2arr_${members.size}"): Mat2ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, arraySize)
         lastPos = offset + size
-        return Mat2ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Mat2ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun mat3Array(arraySize: Int, name: String = "m3arr_${members.size}"): Mat3ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, arraySize)
         lastPos = offset + size
-        return Mat3ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Mat3ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
     protected fun mat4Array(arraySize: Int, name: String = "m4arr_${members.size}"): Mat4ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, arraySize)
         lastPos = offset + size
-        return Mat4ArrayMember(name, offset, arraySize).also { members.add(it) }
+        return Mat4ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
 
@@ -204,17 +221,19 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, 1)
         struct._byteOffset = offset
         lastPos = offset + size
-        members.add(struct)
+        addMember(struct)
         return struct
     }
 
     protected fun <S: Struct<S>> structArray(arraySize: Int, name: String = "nestedArr_${members.size}", structProvider: () -> S): NestedStructArrayMember<S> {
         val nested = structProvider()
+        require(nested.layout == layout) {
+            "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${nested::class} has ${nested.layout}"
+        }
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(nested), arraySize)
         lastPos = offset + size
-        return NestedStructArrayMember<S>(name, offset, arraySize, structProvider).also { members.add(it) }
+        return NestedStructArrayMember<S>(name, offset, arraySize, structProvider).also { addMember(it) }
     }
-
 
 
     override fun layoutInfo(indent: String): String {
@@ -278,17 +297,23 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || this::class != other::class) return false
+        if (other == null || other !is Struct<*>) return false
 
-        other as Struct<*>
-        if (structName != other.structName) return false
         if (layout != other.layout) return false
+        if (members.size != other.members.size) return false
+        for (i in 0 until members.size) {
+            if (members[i].type != other.members[i].type) {
+                return false
+            }
+        }
         return true
     }
 
     override fun hashCode(): Int {
-        var result = structName.hashCode()
-        result = 31 * result + layout.hashCode()
+        var result = layout.hashCode()
+        members.forEach {
+            result = 31 * result + it.type.hashCode()
+        }
         return result
     }
 
@@ -532,7 +557,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float1
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): Float {
             require(index >= 0 && index < arraySize)
@@ -553,7 +577,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float2
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableVec2f = get(index, MutableVec2f())
 
@@ -582,7 +605,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float3
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableVec3f = get(index, MutableVec3f())
 
@@ -613,7 +635,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float4
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableVec4f = get(index, MutableVec4f())
 
@@ -646,7 +667,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int1
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): Int {
             require(index >= 0 && index < arraySize)
@@ -667,7 +687,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int2
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableVec2i = get(index, MutableVec2i())
 
@@ -696,7 +715,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int4
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableVec3i = get(index, MutableVec3i())
 
@@ -727,7 +745,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int4
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableVec4i = get(index, MutableVec4i())
 
@@ -760,7 +777,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat2
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableMat2f = get(index, MutableMat2f())
 
@@ -789,7 +805,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat3
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableMat3f = get(index, MutableMat3f())
 
@@ -820,7 +835,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat4
-        val arrayStride = layout.arrayStrideOf(type)
 
         operator fun get(index: Int): MutableMat4f = get(index, MutableMat4f())
 
@@ -857,7 +871,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         internal val struct = structProvider()
 
         override val type = GpuType.Struct(struct)
-        val arrayStride = layout.arrayStrideOf(type)
 
         init {
             require(struct.layout == layout) {
@@ -887,8 +900,12 @@ sealed interface StructMember {
     val parent: Struct<*>?
     val memberName: String
     val type: GpuType
-    val arraySize: Int
     val byteOffset: Int
+    val arraySize: Int
+    val arrayStride: Int get() {
+        val layout = requireNotNull(parent ?: this as Struct<*>).layout
+        return layout.arrayStrideOf(type)
+    }
 
     val qualifiedName: String get() = parent?.let { "${it.qualifiedName}.$memberName" } ?: memberName
 
@@ -911,4 +928,83 @@ class StructBufferAccessIndexed(override val structBuffer: StructBuffer<*>, var 
 class StructBufferAccessNested(val parent: StructBufferAccess, var byteOffset: Int) : StructBufferAccess {
     override val structBuffer: StructBuffer<*> get() = parent.structBuffer
     override val bufferPosition: Int get() = parent.bufferPosition + byteOffset
+}
+
+fun DynamicStruct(name: String, layout: MemoryLayout, block: DynamicStruct.Builder.() -> Unit): DynamicStruct {
+    return DynamicStruct.Builder(name, layout).apply(block).build()
+}
+
+class DynamicStruct private constructor(builder: Builder) : Struct<DynamicStruct>(builder.name, builder.layout) {
+    init {
+        builder.members.forEach {
+            when (it.type) {
+                GpuType.Float1 if (it.isArray) -> float1Array(it.arraySize, it.name)
+                GpuType.Float2 if (it.isArray) -> float2Array(it.arraySize, it.name)
+                GpuType.Float3 if (it.isArray) -> float3Array(it.arraySize, it.name)
+                GpuType.Float4 if (it.isArray) -> float4Array(it.arraySize, it.name)
+                GpuType.Int1 if (it.isArray) -> int1Array(it.arraySize, it.name)
+                GpuType.Int2 if (it.isArray) -> int2Array(it.arraySize, it.name)
+                GpuType.Int3 if (it.isArray) -> int3Array(it.arraySize, it.name)
+                GpuType.Int4 if (it.isArray) -> int4Array(it.arraySize, it.name)
+                GpuType.Mat2 if (it.isArray) -> mat2Array(it.arraySize, it.name)
+                GpuType.Mat3 if (it.isArray) -> mat3Array(it.arraySize, it.name)
+                GpuType.Mat4 if (it.isArray) -> mat4Array(it.arraySize, it.name)
+
+                GpuType.Float1 -> float1(it.name)
+                GpuType.Float2 -> float2(it.name)
+                GpuType.Float3 -> float3(it.name)
+                GpuType.Float4 -> float4(it.name)
+                GpuType.Int1 -> int1(it.name)
+                GpuType.Int2 -> int2(it.name)
+                GpuType.Int3 -> int3(it.name)
+                GpuType.Int4 -> int4(it.name)
+                GpuType.Mat2 -> mat2(it.name)
+                GpuType.Mat3 -> mat3(it.name)
+                GpuType.Mat4 -> mat4(it.name)
+
+                is GpuType.Struct -> error("DynamicStruct does not support nested structs")
+            }
+        }
+    }
+
+    class Builder(val name: String, val layout: MemoryLayout) {
+        internal val members = mutableListOf<MemberBuildInfo>()
+
+        private fun addMember(member: MemberBuildInfo): Builder {
+            members.add(member)
+            return this
+        }
+
+        fun float1(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Float1))
+        fun float2(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Float2))
+        fun float3(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Float3))
+        fun float4(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Float4))
+
+        fun int1(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Int1))
+        fun int2(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Int2))
+        fun int3(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Int3))
+        fun int4(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Int4))
+
+        fun mat2(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Mat2))
+        fun mat3(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Mat3))
+        fun mat4(name: String): Builder = addMember(MemberBuildInfo(name, GpuType.Mat4))
+
+        fun float1Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Float1, true, arraySize))
+        fun float2Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Float2, true, arraySize))
+        fun float3Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Float3, true, arraySize))
+        fun float4Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Float4, true, arraySize))
+
+        fun int1Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Int1, true, arraySize))
+        fun int2Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Int2, true, arraySize))
+        fun int3Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Int3, true, arraySize))
+        fun int4Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Int4, true, arraySize))
+
+        fun mat2Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Mat2, true, arraySize))
+        fun mat3Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Mat3, true, arraySize))
+        fun mat4Array(name: String, arraySize: Int) = addMember(MemberBuildInfo(name, GpuType.Mat4, true, arraySize))
+
+        fun build() = DynamicStruct(this)
+    }
+    
+    internal data class MemberBuildInfo(val name: String, val type: GpuType, val isArray: Boolean = false, val arraySize: Int = 1)
 }

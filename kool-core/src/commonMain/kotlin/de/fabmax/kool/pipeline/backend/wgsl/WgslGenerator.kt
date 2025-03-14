@@ -164,7 +164,7 @@ class WgslGenerator private constructor(
         val structs: List<UboStruct> = buildList {
             pipeline.bindGroupLayouts.asList.forEach { layout ->
                 layout.bindings
-                    .filterIsInstance<UniformBufferLayout>().filter { layoutUbo ->
+                    .filterIsInstance<UniformBufferLayout<*>>().filter { layoutUbo ->
                         stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }
                     }
                     .map { ubo ->
@@ -764,10 +764,10 @@ class WgslGenerator private constructor(
         init {
             groupLayouts.asList.forEach { layout ->
                 layout.bindings
-                    .filterIsInstance<UniformBufferLayout>()
+                    .filterIsInstance<UniformBufferLayout<*>>()
                     .forEach { ubo ->
                         val uboVarName = ubo.name.mapIndexed { i, c -> if (i == 0) c.lowercase() else c }.joinToString("")
-                        ubo.uniforms.forEach { nameMap[it.name] = "${uboVarName}.${it.name}" }
+                        ubo.structProvider().members.forEach { nameMap[it.memberName] = "${uboVarName}.${it.memberName}" }
                     }
             }
         }
@@ -783,7 +783,7 @@ class WgslGenerator private constructor(
         }
     }
 
-    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout)
+    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout<*>)
 
     private inner class VertexInputStructs(val stage: KslVertexStage) : WgslStructHelper {
         val vertexInputs = buildList {

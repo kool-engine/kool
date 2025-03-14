@@ -1,6 +1,9 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.util.LongHash
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.indexOf
 
 class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: List<BindingLayout>) {
 
@@ -24,7 +27,7 @@ class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: L
     override fun hashCode(): Int = hash.hashCode()
 
     class Builder(val group: Int, val scope: BindGroupScope) {
-        val ubos = mutableListOf<UniformBufferLayout>()
+        val ubos = mutableListOf<UniformBufferLayout<*>>()
         val textures = mutableListOf<TextureLayout>()
         val storage = mutableListOf<StorageBufferLayout>()
         val storageTextures = mutableListOf<StorageTextureLayout>()
@@ -84,27 +87,32 @@ sealed class BindingLayout(
     override fun hashCode(): Int = hash.hashCode()
 }
 
-class UniformBufferLayout(
+class UniformBufferLayout<T: Struct<T>>(
     name: String,
-    val uniforms: List<Uniform>,
     stages: Set<ShaderStage>,
-) :
-    BindingLayout(name, stages, BindingType.UNIFORM_BUFFER)
-{
-    val layout: Std140BufferLayout = Std140BufferLayout(uniforms)
+    val structProvider: () -> T,
+) : BindingLayout(name, stages, BindingType.UNIFORM_BUFFER) {
+
+    private val struct = structProvider()
+
+    init {
+        require(struct.layout == MemoryLayout.Std140) {
+            "Uniform buffer / struct layout must be Std140"
+        }
+    }
+
+    fun indexOfMember(memberName: String) = struct.indexOf(memberName)
+
+    inline fun <reified S: Struct<S>> struct() = structProvider() as S
 
     override val hash: LongHash = LongHash {
         this += name
         this += type
+        this += struct.hash
         stages.forEach { s -> this += s }
-        uniforms.forEach { u ->
-            this += u.name
-            this += u.type
-            this += u.arraySize
-        }
     }
 
-    fun hasUniform(name: String) = uniforms.any { it.name == name }
+    fun hasUniform(name: String) = struct.members.any { it.memberName == name }
 }
 
 class StorageBufferLayout(

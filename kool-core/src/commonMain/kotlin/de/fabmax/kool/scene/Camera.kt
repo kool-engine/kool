@@ -41,8 +41,9 @@ abstract class Camera(name: String = "camera") : Node(name) {
     var aspectRatio = 1.0f
     var useViewportAspectRatio = true
 
-    var clipNear = 0.1f
-    var clipFar = 1000f
+    val clip = MutableVec2f(0.1f, 1e9f)
+    var clipNear: Float by clip::x
+    var clipFar: Float by clip::y
 
     /**
      * Projection specific factors to convert linear depth to view space position (primarily used in shaders via

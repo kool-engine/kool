@@ -2,8 +2,12 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.positioned
+import de.fabmax.kool.pipeline.BindGroupScope
+import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.ShaderBase
+import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.util.setFloat4Array
+import de.fabmax.kool.util.setInt1
 import kotlin.math.min
 
 fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
@@ -23,11 +27,11 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
         lightCount = uniformInt1(UNIFORM_NAME_LIGHT_COUNT)
     }
 
-    private var uboLayout: UniformBufferLayout? = null
-    private var bufferPosPositions: BufferPosition? = null
-    private var bufferPosDirections: BufferPosition? = null
-    private var bufferPosColors: BufferPosition? = null
-    private var bufferPosLightCnt: BufferPosition? = null
+    private var uboLayout: UniformBufferLayout<*>? = null
+    private var positionsIndex = -1
+    private var directionsIndex = -1
+    private var colorsIndex = -1
+    private var lightCntIndex = -1
 
     init {
         program.dataBlocks += this
@@ -36,13 +40,13 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.name == "LightUniforms" }
+        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout<*>> { it.name == "LightUniforms" }
         uboLayout = binding?.second
         uboLayout?.let {
-            bufferPosPositions = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_POSITIONS]
-            bufferPosDirections = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_DIRECTIONS]
-            bufferPosColors = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_COLORS]
-            bufferPosLightCnt = it.layout.uniformPositions[UNIFORM_NAME_LIGHT_COUNT]
+            positionsIndex = it.indexOfMember(UNIFORM_NAME_LIGHT_POSITIONS)
+            directionsIndex = it.indexOfMember(UNIFORM_NAME_LIGHT_DIRECTIONS)
+            colorsIndex = it.indexOfMember(UNIFORM_NAME_LIGHT_COLORS)
+            lightCntIndex = it.indexOfMember(UNIFORM_NAME_LIGHT_COUNT)
         }
     }
 
@@ -51,18 +55,19 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
         val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
         val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
         val lighting = cmd.queue.renderPass.lighting
+        val struct = ubo.buffer.struct
 
         if (lighting == null) {
-            ubo.buffer.setInt32(bufferPosLightCnt!!.byteIndex, 0)
+            struct.setInt1(lightCntIndex, 0)
         } else {
             val lightCount = min(lighting.lights.size, maxLightCount)
-            ubo.buffer.setInt32(bufferPosLightCnt!!.byteIndex, lightCount)
+            struct.setInt1(lightCntIndex, lightCount)
             for (i in 0 until lightCount) {
                 val light = lighting.lights[i]
                 light.updateEncodedValues()
-                ubo.buffer.positioned(bufferPosPositions!!.byteIndex + 16 * i) { light.encodedPosition.putTo(it) }
-                ubo.buffer.positioned(bufferPosDirections!!.byteIndex + 16 * i) { light.encodedDirection.putTo(it) }
-                ubo.buffer.positioned(bufferPosColors!!.byteIndex + 16 * i) { light.encodedColor.putTo(it) }
+                struct.setFloat4Array(positionsIndex, i, light.encodedPosition)
+                struct.setFloat4Array(directionsIndex, i, light.encodedDirection)
+                struct.setFloat4Array(colorsIndex, i, light.encodedColor)
             }
         }
         ubo.markDirty()

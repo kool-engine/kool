@@ -7,24 +7,24 @@ interface MappedUniform {
     fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean
 }
 
-class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData, val gpuBuffer: GpuBufferGl, val backend: RenderBackendGl) : MappedUniform {
+class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData<*>, val gpuBuffer: GpuBufferGl, val backend: RenderBackendGl) : MappedUniform {
     val gl: GlApi get() = backend.gl
     private var modCount = -1
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         if (modCount != ubo.modCount) {
             modCount = ubo.modCount
-            gpuBuffer.setData(ubo.buffer, gl.DYNAMIC_DRAW)
+            gpuBuffer.setData(ubo.buffer.buffer, gl.DYNAMIC_DRAW)
         }
         gl.bindBufferBase(gl.UNIFORM_BUFFER, bindCtx.location(ubo.layout.bindingIndex), gpuBuffer.buffer)
         return true
     }
 }
 
-class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: GlApi) : MappedUniform {
+class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData<*>, val gl: GlApi) : MappedUniform {
     private val floatBuffers = buildList {
-        ubo.layout.uniforms.forEach {
-            val bufferSize = if (it.isArray) {
+        ubo.buffer.struct.members.forEach {
+            val bufferSize = if (it.arraySize > 1) {
                 when (it.type) {
                     GpuType.Float1 ->  1 * it.arraySize
                     GpuType.Float2 ->  2 * it.arraySize
@@ -46,8 +46,8 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
     }
 
     private val intBuffers = buildList {
-        ubo.layout.uniforms.forEach {
-            val bufferSize = if (it.isArray) {
+        ubo.buffer.struct.members.forEach {
+            val bufferSize = if (it.arraySize > 1) {
                 when (it.type) {
                     GpuType.Int1 -> 1 * it.arraySize
                     GpuType.Int2 -> 2 * it.arraySize
@@ -61,12 +61,12 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData, val gl: G
     }
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        ubo.layout.uniforms.forEachIndexed { i, uniform ->
+        ubo.buffer.struct.members.forEachIndexed { i, uniform ->
             val loc = bindCtx.locations(ubo.layout.bindingIndex)[i]
-            val buf = ubo.buffer
-            val pos = ubo.layout.layout.uniformPositions[uniform.name]!!.byteIndex
+            val buf = ubo.buffer.buffer
+            val pos = uniform.byteOffset
 
-            if (uniform.isArray) {
+            if (uniform.arraySize > 1) {
                 when (uniform.type) {
                     GpuType.Float1 -> gl.uniform1fv(loc, floatBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
                     GpuType.Float2 -> gl.uniform2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))

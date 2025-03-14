@@ -51,6 +51,8 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun uniform4i(uniformName: String, defaultVal: Vec4i = Vec4i.ZERO): UniformBinding4i =
         getOrCreateBinding(uniformName) { UniformBinding4i(uniformName, defaultVal, this) } as UniformBinding4i
 
+    fun uniformMat2f(uniformName: String, defaultVal: Mat2f = Mat2f.IDENTITY): UniformBindingMat2f =
+        getOrCreateBinding(uniformName) { UniformBindingMat2f(uniformName, defaultVal, this) } as UniformBindingMat2f
     fun uniformMat3f(uniformName: String, defaultVal: Mat3f = Mat3f.IDENTITY): UniformBindingMat3f =
         getOrCreateBinding(uniformName) { UniformBindingMat3f(uniformName, defaultVal, this) } as UniformBindingMat3f
     fun uniformMat4f(uniformName: String, defaultVal: Mat4f = Mat4f.IDENTITY): UniformBindingMat4f =
@@ -74,6 +76,8 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun uniform4iv(uniformName: String, arraySize: Int = 0): UniformBinding4iv =
         getOrCreateBinding(uniformName) { UniformBinding4iv(uniformName, arraySize, this) } as UniformBinding4iv
 
+    fun uniformMat2fv(uniformName: String, arraySize: Int = 0): UniformBindingMat2fv =
+        getOrCreateBinding(uniformName) { UniformBindingMat2fv(uniformName, arraySize, this) } as UniformBindingMat2fv
     fun uniformMat3fv(uniformName: String, arraySize: Int = 0): UniformBindingMat3fv =
         getOrCreateBinding(uniformName) { UniformBindingMat3fv(uniformName, arraySize, this) } as UniformBindingMat3fv
     fun uniformMat4fv(uniformName: String, arraySize: Int = 0): UniformBindingMat4fv =

@@ -25,7 +25,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             .map { groupLayout ->
                 groupLayout.bindings.map { binding ->
                     when (binding) {
-                        is UniformBufferLayout -> {
+                        is UniformBufferLayout<*> -> {
                             val blockIndex = gl.getUniformBlockIndex(program, binding.name)
                             if (blockIndex != gl.INVALID_INDEX) {
                                 val uboBinding = uboIndex++
@@ -34,7 +34,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                             } else {
                                 // binding does not describe an actual UBO but plain old uniforms
                                 plainUniformUbos += binding.name
-                                binding.uniforms.map { gl.getUniformLocation(program, it.name) }.toIntArray()
+                                binding.structProvider().members.map { gl.getUniformLocation(program, it.memberName) }.toIntArray()
                             }
                         }
                         is StorageBufferLayout -> intArrayOf(storageIndex++)
@@ -131,7 +131,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         init {
             bindGroupData.bindings.forEach { binding ->
                 when (binding) {
-                    is BindGroupData.UniformBufferBindingData -> mapUbo(binding)
+                    is BindGroupData.UniformBufferBindingData<*> -> mapUbo(binding)
                     is BindGroupData.StorageBufferBindingData -> mapStorageBuffer(binding)
 
                     is BindGroupData.Texture1dBindingData -> mapTexture1d(binding)
@@ -168,7 +168,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             return buffer
         }
 
-        private fun mapUbo(ubo: BindGroupData.UniformBufferBindingData) {
+        private fun mapUbo(ubo: BindGroupData.UniformBufferBindingData<*>) {
             mappings += if (ubo.name !in plainUniformUbos) {
                 val buffer = createGpuBuffer("bindGroup[${bindGroupData.layout.scope}]-ubo-${ubo.name}")
                 MappedUbo(ubo, buffer, backend)

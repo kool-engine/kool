@@ -1,6 +1,9 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BindGroupData
+import de.fabmax.kool.pipeline.FilterMethod
+import de.fabmax.kool.pipeline.GpuPass
+import de.fabmax.kool.pipeline.TextureSampleType
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.*
@@ -49,7 +52,7 @@ class WgpuBindGroupData(
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
                     bufferOffset = 0L,
-                    data = (ubo.binding.buffer as MixedBufferImpl).buffer
+                    data = (ubo.binding.buffer.buffer as MixedBufferImpl).buffer
                 )
             }
         }
@@ -85,7 +88,7 @@ class WgpuBindGroupData(
         val bindGroupEntries: List<GPUBindGroupEntry> = buildList {
             data.bindings.map { binding ->
                 when (binding) {
-                    is BindGroupData.UniformBufferBindingData -> add(binding.makeEntry(pass))
+                    is BindGroupData.UniformBufferBindingData<*> -> add(binding.makeEntry(pass))
                     is BindGroupData.StorageBufferBindingData -> add(binding.makeEntry(pass))
 
                     is BindGroupData.Texture1dBindingData -> addAll(binding.makeTexture1dEntry())
@@ -108,13 +111,13 @@ class WgpuBindGroupData(
         )
     }
 
-    private fun BindGroupData.UniformBufferBindingData.makeEntry(pass: GpuPass): GPUBindGroupEntry {
+    private fun BindGroupData.UniformBufferBindingData<*>.makeEntry(pass: GpuPass): GPUBindGroupEntry {
         val location = locations[layout]
-        val bufferLayout = Std140BufferLayout(layout.uniforms)
+        val struct = buffer.struct
         val gpuBuffer = backend.createBuffer(
             GPUBufferDescriptor(
                 label = "bindGroup[${data.layout.scope}]-ubo-${name}",
-                size = bufferLayout.size.toLong(),
+                size = struct.structSize.toLong(),
                 usage = GPUBufferUsage.UNIFORM or GPUBufferUsage.COPY_DST
             ),
             "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"
@@ -314,7 +317,7 @@ class WgpuBindGroupData(
     }
 
     private data class BufferBinding(
-        val binding: BindGroupData.UniformBufferBindingData,
+        val binding: BindGroupData.UniformBufferBindingData<*>,
         val gpuBuffer: GpuBufferWgpu
     ) {
         var modCount = -1

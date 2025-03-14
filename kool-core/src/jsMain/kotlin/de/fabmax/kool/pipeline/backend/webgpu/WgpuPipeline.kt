@@ -41,7 +41,7 @@ sealed class WgpuPipeline(
                     val location = locations[binding]
 
                     when (binding) {
-                        is UniformBufferLayout -> add(makeLayoutEntryBuffer(location, visibility))
+                        is UniformBufferLayout<*> -> add(makeLayoutEntryBuffer(location, visibility))
                         is StorageBufferLayout -> add(makeLayoutEntryStorageBuffer(location, visibility, binding))
 
                         is Texture1dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view1d))

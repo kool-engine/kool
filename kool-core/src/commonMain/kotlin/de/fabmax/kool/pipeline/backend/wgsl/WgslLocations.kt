@@ -11,7 +11,7 @@ class WgslLocations(val bindingLayout: BindGroupLayouts, val vertexLayout: Verte
             group.bindings.forEach { binding ->
                 put(binding, Location(group.group, nextBinding))
                 when (binding) {
-                    is UniformBufferLayout -> nextBinding++
+                    is UniformBufferLayout<*> -> nextBinding++
                     is StorageBufferLayout -> nextBinding++
 
                     // textures require two binding slots (1st: sampler, 2nd: texture)
