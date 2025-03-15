@@ -367,7 +367,7 @@ object GlImpl: GlApi {
         return GlApiVersion(major, minor, GlFlavor.OpenGLES, deviceName)
     }
 
-    override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean {
+    override fun readBuffer(gpuBuffer: GpuBufferGl, dstBuffer: Buffer): Boolean {
         gpuBuffer.bind()
         val bytes = glMapBufferRange(gpuBuffer.target, 0, dstBuffer.capacity * 4, GL_READ_ONLY) as ByteBuffer
         when (dstBuffer) {
