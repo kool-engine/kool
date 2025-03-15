@@ -36,6 +36,8 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     var gpuData: GpuBindGroupData? = null
         internal set
 
+    @Suppress("UNCHECKED_CAST")
+    fun <S: Struct<S>> uniformStructBindingData(binding: UniformBufferLayout<S>) = bindings[binding.bindingIndex] as UniformBufferBindingData<S>
     fun uniformBufferBindingData(bindingIndex: Int) = bindings[bindingIndex] as UniformBufferBindingData<*>
     fun storageBuffer1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBufferBindingData
 
@@ -90,6 +92,11 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         val buffer: StructBuffer<T> = StructBuffer(1, layout.structProvider())
 
         override val isComplete = true
+
+        inline fun set(block: T.() -> Unit) {
+            buffer.set(0, block)
+            markDirty()
+        }
 
         fun markDirty() {
             modCount++

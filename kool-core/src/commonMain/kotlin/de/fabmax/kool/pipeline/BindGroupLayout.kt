@@ -93,26 +93,29 @@ class UniformBufferLayout<T: Struct<T>>(
     val structProvider: () -> T,
 ) : BindingLayout(name, stages, BindingType.UNIFORM_BUFFER) {
 
-    private val struct = structProvider()
+    @PublishedApi
+    internal val proto = structProvider()
 
     init {
-        require(struct.layout == MemoryLayout.Std140) {
+        require(proto.layout == MemoryLayout.Std140) {
             "Uniform buffer / struct layout must be Std140"
         }
     }
 
-    fun indexOfMember(memberName: String) = struct.indexOf(memberName)
+    inline fun <reified S: Struct<S>> isStructInstanceOf() = proto is S
+
+    fun indexOfMember(memberName: String) = proto.indexOf(memberName)
 
     inline fun <reified S: Struct<S>> struct() = structProvider() as S
 
     override val hash: LongHash = LongHash {
         this += name
         this += type
-        this += struct.hash
+        this += proto.hash
         stages.forEach { s -> this += s }
     }
 
-    fun hasUniform(name: String) = struct.members.any { it.memberName == name }
+    fun hasUniform(name: String) = proto.members.any { it.memberName == name }
 }
 
 class StorageBufferLayout(

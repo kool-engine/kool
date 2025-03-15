@@ -95,10 +95,9 @@ class BindGroupDataVk(
             bindGroup.resetBindGroup()
         }
 
-        val bg = bindGroup
         val frameIdx = passEncoderState.frameIndex
-        for (i in bg.uboBindings.indices) {
-            val ubo = bg.uboBindings[i]
+        for (i in bindGroup.uboBindings.indices) {
+            val ubo = bindGroup.uboBindings[i]
             if (ubo.isUpdate(frameIdx, ubo.binding.modCount) || resetBindGroup) {
                 ubo.binding.buffer.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
             }

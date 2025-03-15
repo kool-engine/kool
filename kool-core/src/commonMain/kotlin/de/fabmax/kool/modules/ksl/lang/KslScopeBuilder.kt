@@ -252,7 +252,7 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
         }
 
 
-    fun <T: KslStruct<S>, S: Struct<S>> structVar(initValue: KslExpression<T>, name: String? = null) =
+    fun <S: Struct<S>> structVar(initValue: KslExprStruct<S>, name: String? = null) =
         KslVarStruct(name ?: nextName("struct"), initValue.expressionType, true).also {
             ops += KslDeclareVar(it, initValue, this)
         }

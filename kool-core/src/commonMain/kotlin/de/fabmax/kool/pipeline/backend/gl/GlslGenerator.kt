@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.StructArrayMember
 
 /**
  * Default GLSL shader code generator.
@@ -72,6 +73,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         src.appendLine("""
             ${hints.glslVersionStr}
             precision highp float;
+            precision highp int;
             precision highp sampler2DArray;
             precision highp sampler2DShadow;
             precision highp sampler3D;
@@ -343,8 +345,8 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             for (struct in structs) {
                 appendLine("struct ${struct.structName} {")
                 struct.members.forEach {
-                    val arraySuffix = if (it.arraySize > 1) "[${it.arraySize}]" else ""
-                    appendLine("    ${glslTypeName(it.type)} ${it.memberName}$arraySuffix;")
+                    val arraySuffix = if (it is StructArrayMember) "[${it.arraySize}]" else ""
+                    appendLine("    highp ${glslTypeName(it.type)} ${it.memberName}$arraySuffix;")
                 }
                 appendLine("};")
             }
@@ -378,10 +380,10 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
 
                 val type = storage.storageType.elemType
                 val layout = if (type is KslStruct<*>) {
-                    when (type.struct.layout) {
+                    when (type.proto.layout) {
                         MemoryLayout.Std140 -> "std140"
                         MemoryLayout.Std430 -> "std430"
-                        else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std140 and std430")
+                        else -> error("layout of struct ${type.proto.structName} is ${type.proto.layout} but storage buffers only support std140 and std430")
                     }
                 } else "std430"
 
@@ -429,6 +431,19 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
     }
 
     protected open fun StringBuilder.generateUbos(stage: KslShaderStage, pipeline: PipelineBase) {
+        val uboStructs = stage.getUsedUboStructs().sortedBy { it.scope.ordinal }
+        if (uboStructs.isNotEmpty()) {
+            appendLine("// uniform structs")
+            for (ubo in uboStructs) {
+                appendLine("""
+                    layout(std140) uniform ${ubo.name}_ubo {
+                        ${glslTypeName(ubo.expressionType)} ${ubo.name};
+                    };
+                    """.trimIndent()
+                )
+            }
+        }
+
         val ubos = stage.getUsedUbos().sortedBy { it.scope.ordinal }
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
@@ -742,7 +757,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             KslMat3 -> "mat3"
             KslMat4 -> "mat4"
 
-            is KslStruct<*> -> type.struct.structName
+            is KslStruct<*> -> type.proto.structName
 
             KslColorSampler1d -> if (hints.compat1dSampler) "sampler2D" else "sampler1D"
             KslColorSampler2d -> "sampler2D"

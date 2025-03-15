@@ -26,7 +26,12 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                 groupLayout.bindings.map { binding ->
                     when (binding) {
                         is UniformBufferLayout<*> -> {
-                            val blockIndex = gl.getUniformBlockIndex(program, binding.name)
+                            var blockIndex = gl.getUniformBlockIndex(program, binding.name)
+                            if (blockIndex == gl.INVALID_INDEX) {
+                                // struct ubos have a different naming pattern
+                                blockIndex = gl.getUniformBlockIndex(program, "${binding.name}_ubo")
+                            }
+
                             if (blockIndex != gl.INVALID_INDEX) {
                                 val uboBinding = uboIndex++
                                 gl.uniformBlockBinding(program, blockIndex, uboBinding)
@@ -172,7 +177,6 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             mappings += if (ubo.name !in plainUniformUbos) {
                 val buffer = createGpuBuffer("bindGroup[${bindGroupData.layout.scope}]-ubo-${ubo.name}")
                 MappedUbo(ubo, buffer, backend)
-
             } else {
                 MappedUboCompat(ubo, gl)
             }

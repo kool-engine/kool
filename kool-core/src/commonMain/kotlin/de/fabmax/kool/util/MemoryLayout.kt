@@ -75,7 +75,7 @@ sealed interface MemoryLayout {
                 GpuType.Mat3 -> 16
                 GpuType.Mat4 -> 16
 
-                is GpuType.Struct -> type.struct.members.maxOf { alignmentOf(it.type, it.arraySize > 1) }
+                is GpuType.Struct -> type.struct.members.maxOf { alignmentOf(it.type, it is StructArrayMember) }
             }
         }
 

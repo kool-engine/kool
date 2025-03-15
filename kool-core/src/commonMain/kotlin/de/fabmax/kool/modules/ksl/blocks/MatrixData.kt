@@ -38,7 +38,7 @@ abstract class MatrixData(program: KslProgram, val uniformName: String, scope: B
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout<*>> { it.hasUniform(uniformName) }
+        val binding = shader.createdPipeline!!.findBindGroupItem<UniformBufferLayout<*>> { it.hasUniform(uniformName) }
         uboLayout = binding?.second
         uboLayout?.let {
             matIndex = it.indexOfMember(uniformName)
@@ -48,8 +48,9 @@ abstract class MatrixData(program: KslProgram, val uniformName: String, scope: B
     protected fun putMatrixToBuffer(matrix: Mat4f, groupData: BindGroupData) {
         val bindingLayout = uboLayout ?: return
         val uboData = groupData.uniformBufferBindingData(bindingLayout.bindingIndex)
-        uboData.markDirty()
-        uboData.buffer.struct.setMat4(matIndex, matrix)
+        uboData.set {
+            setMat4(matIndex, matrix)
+        }
     }
 }
 

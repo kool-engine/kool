@@ -24,7 +24,7 @@ class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData<*>, val gpuBuffe
 class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData<*>, val gl: GlApi) : MappedUniform {
     private val floatBuffers = buildList {
         ubo.buffer.struct.members.forEach {
-            val bufferSize = if (it.arraySize > 1) {
+            val bufferSize = if (it is StructArrayMember) {
                 when (it.type) {
                     GpuType.Float1 ->  1 * it.arraySize
                     GpuType.Float2 ->  2 * it.arraySize
@@ -47,7 +47,7 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData<*>, val gl
 
     private val intBuffers = buildList {
         ubo.buffer.struct.members.forEach {
-            val bufferSize = if (it.arraySize > 1) {
+            val bufferSize = if (it is StructArrayMember) {
                 when (it.type) {
                     GpuType.Int1 -> 1 * it.arraySize
                     GpuType.Int2 -> 2 * it.arraySize
@@ -66,7 +66,7 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData<*>, val gl
             val buf = ubo.buffer.buffer
             val pos = uniform.byteOffset
 
-            if (uniform.arraySize > 1) {
+            if (uniform is StructArrayMember) {
                 when (uniform.type) {
                     GpuType.Float1 -> gl.uniform1fv(loc, floatBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
                     GpuType.Float2 -> gl.uniform2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))

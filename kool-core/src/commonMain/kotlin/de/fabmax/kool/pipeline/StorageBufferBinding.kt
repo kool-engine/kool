@@ -37,7 +37,7 @@ class StorageBufferBinding(
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
 
-        pipeline.findBindingLayout<StorageBufferLayout> { it.name == bindingName }?.let { (group, tex) ->
+        pipeline.findBindGroupItem<StorageBufferLayout> { it.name == bindingName }?.let { (group, tex) ->
             check(group.scope == BindGroupScope.PIPELINE) {
                 "StorageBufferBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but buffer $bindingName has scope ${group.scope}."
             }

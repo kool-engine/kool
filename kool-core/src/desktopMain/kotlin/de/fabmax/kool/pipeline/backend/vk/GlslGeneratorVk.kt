@@ -41,10 +41,10 @@ class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpressio
 
                 val type = storage.storageType.elemType
                 val layout = if (type is KslStruct<*>) {
-                    when (type.struct.layout) {
+                    when (type.proto.layout) {
                         MemoryLayout.Std140 -> "std140"
                         MemoryLayout.Std430 -> "std430"
-                        else -> error("layout of struct ${type.struct.structName} is ${type.struct.layout} but storage buffers only support std430 and std140")
+                        else -> error("layout of struct ${type.proto.structName} is ${type.proto.layout} but storage buffers only support std430 and std140")
                     }
                 } else "std430"
 
@@ -77,11 +77,25 @@ class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpressio
     }
 
     override fun StringBuilder.generateUbos(stage: KslShaderStage, pipeline: PipelineBase) {
+        val uboStructs = stage.getUsedUboStructs().sortedBy { it.scope.ordinal }
+        if (uboStructs.isNotEmpty()) {
+            appendLine("// uniform structs")
+            for (ubo in uboStructs) {
+                val (set, desc) = pipeline.getBindGroupItemByName(ubo.name)
+                appendLine("""
+                    layout(std140, set=${set.group}, binding=${desc.bindingIndex}) uniform ${ubo.name}_ubo {
+                        ${glslTypeName(ubo.expressionType)} ${ubo.name};
+                    };
+                    """.trimIndent()
+                )
+            }
+        }
+
         val ubos = stage.getUsedUbos()
         if (ubos.isNotEmpty()) {
             appendLine("// uniform buffer objects")
             for (ubo in ubos) {
-                val (set, desc) = pipeline.findBindGroupItemByName(ubo.name)!!
+                val (set, desc) = pipeline.getBindGroupItemByName(ubo.name)
                 appendLine("layout(std140, set=${set.group}, binding=${desc.bindingIndex}) uniform ${ubo.name} {")
                 for (u in ubo.uniforms.values) {
                     appendLine("    highp ${glslTypeName(u.expressionType)} ${getStateName(u.value)};")

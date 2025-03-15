@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.logW
 
 class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
 
@@ -46,7 +48,9 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
                 label = "${pipeline.name} vertex shader",
                 code = pipeline.shaderCode.vertexSrc
             )
-            UsedShaderModule(backend.device.createShaderModule(desc))
+            val module = backend.device.createShaderModule(desc)
+            module.checkErrors("vertex-shader", shaderCode.vertexSrc, pipeline)
+            UsedShaderModule(module)
         }
         usedModule.users += pipeline
         return usedModule.shaderModule
@@ -59,7 +63,9 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
                 label = "${pipeline.name} fragment shader",
                 code = pipeline.shaderCode.fragmentSrc
             )
-            UsedShaderModule(backend.device.createShaderModule(desc))
+            val module = backend.device.createShaderModule(desc)
+            module.checkErrors("fragment-shader", shaderCode.fragmentSrc, pipeline)
+            UsedShaderModule(module)
         }
         usedModule.users += pipeline
         return usedModule.shaderModule
@@ -72,10 +78,31 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
                 label = "${pipeline.name} compute shader",
                 code = pipeline.shaderCode.computeSrc
             )
-            UsedShaderModule(backend.device.createShaderModule(desc))
+            val module = backend.device.createShaderModule(desc)
+            module.checkErrors("compute-shader", shaderCode.computeSrc, pipeline)
+            UsedShaderModule(module)
         }
         usedModule.users += pipeline
         return usedModule.shaderModule
+    }
+
+    private fun GPUShaderModule.checkErrors(stage: String, code: String, pipeline: PipelineBase) {
+        getCompilationInfo().then { info ->
+            val messages = info.messages
+            if (messages.any { it.type == "error" }) {
+                logE { "Errors occurred on compilation of shader ${pipeline.name}:$stage:" }
+                messages.filter { it.type == "error" }.forEach {
+                    logE { it.message }
+                }
+                logE { code }
+            }
+            if (messages.any { it.type == "warning" }) {
+                logW { "Warnings occurred on compilation of fragment shader ${pipeline.name}:" }
+                messages.filter { it.type == "warning" }.forEach {
+                    logW { it.message }
+                }
+            }
+        }
     }
 
     internal fun removeDrawPipeline(pipeline: WgpuDrawPipeline) {

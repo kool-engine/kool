@@ -201,6 +201,14 @@ private fun KslProgram.makeBindGroupLayout(group: Int, scope: BindGroupScope): B
 }
 
 private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder) {
+    uniformStructs.values.filter { it.scope == bindGrpBuilder.scope }.forEach { struct ->
+        val uboStages = stages
+            .filter { it.dependsOn(struct) }
+            .map { it.type.pipelineStageType }
+            .toSet()
+        bindGrpBuilder.ubos += UniformBufferLayout(struct.name, uboStages, struct.provider)
+    }
+
     uniformBuffers.filter { it.uniforms.isNotEmpty() && it.scope == bindGrpBuilder.scope }.forEach { kslUbo ->
         val uboBuilder = DynamicStruct.Builder("", MemoryLayout.Std140).apply {
             kslUbo.uniforms.values.forEach { uniform ->
@@ -247,7 +255,6 @@ private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.
             .filter { kslUbo.uniforms.values.any { u -> it.dependsOn(u) } }
             .map { it.type.pipelineStageType }
             .toSet()
-
         bindGrpBuilder.ubos += UniformBufferLayout(kslUbo.name, uboStages) { uboBuilder.build() }
     }
 }

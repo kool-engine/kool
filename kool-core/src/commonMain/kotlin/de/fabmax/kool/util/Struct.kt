@@ -1,6 +1,7 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.math.*
+import de.fabmax.kool.modules.ksl.lang.KslExprStruct
 import de.fabmax.kool.modules.ksl.lang.KslExpression
 import de.fabmax.kool.modules.ksl.lang.KslStruct
 import de.fabmax.kool.pipeline.GpuType
@@ -20,7 +21,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     val structSize: Int get() = layout.structSize(this, lastPos)
 
     override val type: GpuType get() = GpuType.Struct(this)
-    override val arraySize = 1
 
     private var _bufferAccess: StructBufferAccess? = null
     val bufferAccess: StructBufferAccess get() = checkNotNull(_bufferAccess) {
@@ -63,7 +63,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         }
     }
 
-    internal fun setupKslAccess(access: KslExpression<KslStruct<*>>) {
+    internal fun setupKslAccess(access: KslExprStruct<*>) {
         _kslAccess = access
         members.filterIsInstance<Struct<*>>().forEach {
             it.setupKslAccess(access)
@@ -244,9 +244,9 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     fun getBufferContentString(): String {
-        fun StructMember.nameAndArrayType(): String = "$memberName: $type[$arraySize]".padEnd(30)
+        fun StructArrayMember.nameAndArrayType(): String = "$memberName: $type[$arraySize]".padEnd(30)
         fun StructMember.nameAndType(arrayIdx: Int = 0): String {
-            val name = if (arraySize == 1) "$memberName: " else "$memberName[$arrayIdx]: "
+            val name = if (this is StructArrayMember) "$memberName[$arrayIdx]: " else "$memberName: "
             return "$name$type".padEnd(30)
         }
         return members.joinToString("\n") { member ->
@@ -320,7 +320,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Float1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float1
-        override val arraySize = 1
 
         fun set(value: Float) { buffer.setFloat32(bufferPosition + byteOffset, value) }
         fun get(): Float = buffer.getFloat32(bufferPosition + byteOffset)
@@ -329,7 +328,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Float2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float2
-        override val arraySize = 1
 
         fun set(value: Vec2f) {
             val offset = bufferPosition + byteOffset
@@ -349,7 +347,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Float3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float3
-        override val arraySize = 1
 
         fun set(value: Vec3f) {
             val offset = bufferPosition + byteOffset
@@ -371,7 +368,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Float4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float4
-        override val arraySize = 1
 
         fun set(value: Vec4f) {
             val offset = bufferPosition + byteOffset
@@ -411,7 +407,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Int1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int1
-        override val arraySize = 1
 
         fun set(value: Int) { buffer.setInt32(bufferPosition + byteOffset, value) }
         fun get(): Int = buffer.getInt32(bufferPosition + byteOffset)
@@ -420,7 +415,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Int2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int2
-        override val arraySize = 1
 
         fun set(value: Vec2i) {
             val offset = bufferPosition + byteOffset
@@ -440,7 +434,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Int3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int3
-        override val arraySize = 1
 
         fun set(value: Vec3i) {
             val offset = bufferPosition + byteOffset
@@ -462,7 +455,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Int4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int4
-        override val arraySize = 1
 
         fun set(value: Vec4i) {
             val offset = bufferPosition + byteOffset
@@ -486,7 +478,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Mat2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat2
-        override val arraySize = 1
 
         fun set(value: Mat2f) {
             val offset = bufferPosition + byteOffset
@@ -506,7 +497,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Mat3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat3
-        override val arraySize = 1
 
         fun set(value: Mat3f) {
             val offset = bufferPosition + byteOffset
@@ -528,7 +518,6 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     inner class Mat4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat4
-        override val arraySize = 1
 
         fun set(value: Mat4f) {
             val offset = bufferPosition + byteOffset
@@ -553,7 +542,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float1
@@ -573,12 +562,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float2
 
-        operator fun get(index: Int): MutableVec2f = get(index, MutableVec2f())
+        operator fun get(index: Int): Vec2f = get(index, MutableVec2f())
 
         fun get(index: Int, result: MutableVec2f): MutableVec2f {
             require(index >= 0 && index < arraySize)
@@ -601,12 +590,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float3
 
-        operator fun get(index: Int): MutableVec3f = get(index, MutableVec3f())
+        operator fun get(index: Int): Vec3f = get(index, MutableVec3f())
 
         fun get(index: Int, result: MutableVec3f): MutableVec3f {
             require(index >= 0 && index < arraySize)
@@ -631,12 +620,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Float4
 
-        operator fun get(index: Int): MutableVec4f = get(index, MutableVec4f())
+        operator fun get(index: Int): Vec4f = get(index, MutableVec4f())
 
         fun get(index: Int, result: MutableVec4f): MutableVec4f {
             require(index >= 0 && index < arraySize)
@@ -663,7 +652,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int1
@@ -683,12 +672,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int2
 
-        operator fun get(index: Int): MutableVec2i = get(index, MutableVec2i())
+        operator fun get(index: Int): Vec2i = get(index, MutableVec2i())
 
         fun get(index: Int, result: MutableVec2i): MutableVec2i {
             require(index >= 0 && index < arraySize)
@@ -711,12 +700,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int4
 
-        operator fun get(index: Int): MutableVec3i = get(index, MutableVec3i())
+        operator fun get(index: Int): Vec3i = get(index, MutableVec3i())
 
         fun get(index: Int, result: MutableVec3i): MutableVec3i {
             require(index >= 0 && index < arraySize)
@@ -741,12 +730,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Int4
 
-        operator fun get(index: Int): MutableVec4i = get(index, MutableVec4i())
+        operator fun get(index: Int): Vec4i = get(index, MutableVec4i())
 
         fun get(index: Int, result: MutableVec4i): MutableVec4i {
             require(index >= 0 && index < arraySize)
@@ -773,12 +762,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat2
 
-        operator fun get(index: Int): MutableMat2f = get(index, MutableMat2f())
+        operator fun get(index: Int): Mat2f = get(index, MutableMat2f())
 
         fun get(index: Int, result: MutableMat2f): MutableMat2f {
             require(index >= 0 && index < arraySize)
@@ -801,12 +790,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat3
 
-        operator fun get(index: Int): MutableMat3f = get(index, MutableMat3f())
+        operator fun get(index: Int): Mat3f = get(index, MutableMat3f())
 
         fun get(index: Int, result: MutableMat3f): MutableMat3f {
             require(index >= 0 && index < arraySize)
@@ -831,12 +820,12 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         override val type = GpuType.Mat4
 
-        operator fun get(index: Int): MutableMat4f = get(index, MutableMat4f())
+        operator fun get(index: Int): Mat4f = get(index, MutableMat4f())
 
         fun get(index: Int, result: MutableMat4f): MutableMat4f {
             require(index >= 0 && index < arraySize)
@@ -864,7 +853,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val byteOffset: Int,
         override val arraySize: Int,
         val structProvider: () -> S
-    ) : StructMember {
+    ) : StructArrayMember {
 
         override val parent: Struct<T> get() = this@Struct
         private var nestedBufferAccess: StructBufferAccessNested? = null
@@ -901,17 +890,26 @@ sealed interface StructMember {
     val memberName: String
     val type: GpuType
     val byteOffset: Int
+
+    val qualifiedName: String get() = parent?.let { "${it.qualifiedName}.$memberName" } ?: memberName
+
+    fun layoutInfo(indent: String = ""): String {
+        val name = "$memberName:".padEnd(20)
+        val typeName = type.toString().padEnd(16)
+        return "$indent$name$typeName 0x${byteOffset.toString(16).padStart(4, '0')}"
+    }
+}
+
+sealed interface StructArrayMember : StructMember {
     val arraySize: Int
     val arrayStride: Int get() {
         val layout = requireNotNull(parent ?: this as Struct<*>).layout
         return layout.arrayStrideOf(type)
     }
 
-    val qualifiedName: String get() = parent?.let { "${it.qualifiedName}.$memberName" } ?: memberName
-
-    fun layoutInfo(indent: String = ""): String {
+    override fun layoutInfo(indent: String): String {
         val name = "$memberName:".padEnd(20)
-        val typeName = if (arraySize == 1) type.toString().padEnd(16) else "$type[$arraySize]".padEnd(16)
+        val typeName = "$type[$arraySize]".padEnd(16)
         return "$indent$name$typeName 0x${byteOffset.toString(16).padStart(4, '0')}"
     }
 }
