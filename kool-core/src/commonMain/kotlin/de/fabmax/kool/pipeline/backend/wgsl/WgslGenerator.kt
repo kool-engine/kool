@@ -955,8 +955,12 @@ class WgslGenerator private constructor(
             for (struct in structs) {
                 appendLine("struct ${struct.structName} {")
                 struct.members.forEach {
-                    val arraySuffix = if (it is StructArrayMember) "[${it.arraySize}]" else ""
-                    appendLine("    ${it.memberName}: ${it.type.wgslTypeName()}$arraySuffix,")
+                    val type = if (it is StructArrayMember) {
+                        "array<${it.type.wgslTypeName()},${it.arraySize}>"
+                    } else {
+                        it.type.wgslTypeName()
+                    }
+                    appendLine("    ${it.memberName}: $type,")
                 }
                 appendLine("};")
             }

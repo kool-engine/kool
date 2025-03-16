@@ -257,6 +257,11 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
             ops += KslDeclareVar(it, initValue, this)
         }
 
+    fun <S: Struct<S>> structVar(structType: KslStruct<S>, name: String? = null) =
+        KslVarStruct(name ?: nextName("struct"), structType, true).also {
+            ops += KslDeclareVar(it, null, this)
+        }
+
 
     fun float1Array(arraySize: Int, initExpr: KslExprFloat1, name: String? = null) =
         KslArrayScalar(name ?: nextName("f1Array"), KslFloat1, arraySize, true).also { definedStates += it }.also {
@@ -517,6 +522,9 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
     }
     operator fun <M, V> KslFunction<M>.invoke(vararg args: KslExpression<*>): KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
         return KslInvokeFunctionMatrix(this, this@KslScopeBuilder, returnType, *args)
+    }
+    operator fun <S> KslFunction<KslStruct<S>>.invoke(vararg args: KslExpression<*>): KslExprStruct<S> where S: Struct<S> {
+        return KslInvokeFunctionStruct(this, this@KslScopeBuilder, returnType, *args)
     }
     operator fun <S> KslFunction<KslArrayType<S>>.invoke(vararg args: KslExpression<*>): KslScalarArrayExpression<S> where S: KslType, S: KslScalar {
         return KslInvokeFunctionScalarArray(this, this@KslScopeBuilder, returnType, *args)
