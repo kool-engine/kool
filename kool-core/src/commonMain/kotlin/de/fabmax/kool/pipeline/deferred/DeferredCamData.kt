@@ -1,76 +1,65 @@
+
 package de.fabmax.kool.pipeline.deferred
 
+import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.positioned
+import de.fabmax.kool.pipeline.BindGroupScope
+import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.ShaderBase
+import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 
 fun KslProgram.deferredCameraData(): DeferredCamData {
     return (dataBlocks.find { it is DeferredCamData } as? DeferredCamData) ?: DeferredCamData(this)
 }
 
 class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
-
     override val name = "DeferredCamData"
 
-    val position: KslUniformVector<KslFloat3, KslFloat1>
-    val projMat: KslUniformMatrix<KslMat4, KslFloat4>
-    val invViewMat: KslUniformMatrix<KslMat4, KslFloat4>
-    val viewport: KslUniformVector<KslFloat4, KslFloat1>
+    private val camUniform = program.uniformStruct("uDeferredCameraData", BindGroupScope.VIEW) { DeferredCamDataStruct() }
 
-    private val camUbo = KslUniformBuffer("CameraUniforms", program, BindGroupScope.VIEW).apply {
-        projMat = uniformMat4("uProjMat")
-        invViewMat = uniformMat4("uInvViewMat")
-        viewport = uniformFloat4("uViewport")
-        position = uniformFloat3("uCamPos")
-    }
+    val position: KslExprFloat3 get() = camUniform.struct.position.ksl
+    val projMat: KslExprMat4 get() = camUniform.struct.proj.ksl
+    val invViewMat: KslExprMat4 get() = camUniform.struct.invView.ksl
+    val viewport: KslExprFloat4 get() = camUniform.struct.viewport.ksl
 
-    private var uboLayout: UniformBufferLayout? = null
-    private var bufferPosPosition: BufferPosition? = null
-    private var bufferPosProjMat: BufferPosition? = null
-    private var bufferPosInvViewMat: BufferPosition? = null
-    private var bufferPosViewport: BufferPosition? = null
+    private var structLayout: UniformBufferLayout<DeferredCamDataStruct>? = null
+    private val viewportVec = MutableVec4f()
 
     init {
         program.shaderListeners += this
         program.dataBlocks += this
-        program.uniformBuffers += camUbo
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.name == "CameraUniforms" }
-        uboLayout = binding?.second
-        uboLayout?.let {
-            bufferPosPosition = it.layout.uniformPositions["uCamPos"]
-            bufferPosProjMat = it.layout.uniformPositions["uProjMat"]
-            bufferPosInvViewMat = it.layout.uniformPositions["uInvViewMat"]
-            bufferPosViewport = it.layout.uniformPositions["uViewport"]
+        val (_, binding) = shader.createdPipeline!!.getBindGroupItem<UniformBufferLayout<DeferredCamDataStruct>> {
+            it.isStructInstanceOf<DeferredCamDataStruct>()
         }
+        structLayout = binding
     }
 
     override fun onUpdate(cmd: DrawCommand) {
+        val layout = structLayout ?: return
+        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, layout.bindingIndex) ?: return
+        val binding = viewData.uniformStructBindingData(layout)
         val q = cmd.queue
         val vp = q.view.viewport
         val cam = q.view.camera
-        val bindingLayout = uboLayout
 
-        if (bindingLayout != null) {
-            val uboData = cmd.queue.view.viewPipelineData
-                .getPipelineData(cmd.pipeline)
-                .uniformBufferBindingData(bindingLayout.bindingIndex)
-
-            uboData.markDirty()
-            val buffer = uboData.buffer
-
-            buffer.positioned(bufferPosPosition!!.byteIndex) { cam.globalPos.putTo(it) }
-            buffer.positioned(bufferPosProjMat!!.byteIndex) { q.projMat.putTo(it) }
-            buffer.positioned(bufferPosInvViewMat!!.byteIndex) { q.invViewMatF.putTo(it) }
-            buffer.positioned(bufferPosViewport!!.byteIndex) {
-                it.putFloat32(vp.x.toFloat())
-                it.putFloat32(vp.y.toFloat())
-                it.putFloat32(vp.width.toFloat())
-                it.putFloat32(vp.height.toFloat())
-            }
+        binding.set {
+            proj.set(q.projMat)
+            invView.set(q.invViewMatF)
+            viewport.set(viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
+            position.set(cam.globalPos)
         }
+    }
+
+    class DeferredCamDataStruct : Struct<DeferredCamDataStruct>("DeferredCameraData", MemoryLayout.Std140) {
+        val proj = mat4("projMat")
+        val invView = mat4("invView")
+        val viewport = float4("viewport")
+        val position = float3("position")
     }
 }

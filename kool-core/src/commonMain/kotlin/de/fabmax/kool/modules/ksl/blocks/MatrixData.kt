@@ -7,7 +7,7 @@ import de.fabmax.kool.math.toMutableMat4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.positioned
+import de.fabmax.kool.util.setMat4
 
 fun KslProgram.mvpMatrix(): MvpMatrixData {
     return (dataBlocks.find { it is MvpMatrixData } as? MvpMatrixData) ?: MvpMatrixData(this)
@@ -21,15 +21,15 @@ fun KslProgram.invProjMatrix(): InvProjMatrixData {
     return (dataBlocks.find { it is InvProjMatrixData } as? InvProjMatrixData) ?: InvProjMatrixData(this)
 }
 
-abstract class MeshMatrixData(program: KslProgram, val uniformName: String) : KslDataBlock, KslShaderListener {
+abstract class MatrixData(program: KslProgram, val uniformName: String, scope: BindGroupScope) : KslDataBlock, KslShaderListener {
     val matrix: KslUniformMatrix<KslMat4, KslFloat4>
 
-    private val matrixUbo = KslUniformBuffer("${uniformName}_ubo", program, BindGroupScope.MESH).apply {
+    private val matrixUbo = KslUniformBuffer("${uniformName}_ubo", program, scope).apply {
         matrix = uniformMat4(uniformName)
     }
 
-    protected var uboLayout: UniformBufferLayout? = null
-    private var bufferPos: BufferPosition? = null
+    protected var uboLayout: UniformBufferLayout<*>? = null
+    private var matIndex = -1
 
     init {
         program.shaderListeners += this
@@ -38,23 +38,23 @@ abstract class MeshMatrixData(program: KslProgram, val uniformName: String) : Ks
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.hasUniform(uniformName) }
+        val binding = shader.createdPipeline!!.findBindGroupItem<UniformBufferLayout<*>> { it.hasUniform(uniformName) }
         uboLayout = binding?.second
         uboLayout?.let {
-            bufferPos = it.layout.uniformPositions[uniformName]
+            matIndex = it.indexOfMember(uniformName)
         }
     }
 
     protected fun putMatrixToBuffer(matrix: Mat4f, groupData: BindGroupData) {
         val bindingLayout = uboLayout ?: return
         val uboData = groupData.uniformBufferBindingData(bindingLayout.bindingIndex)
-        uboData.markDirty()
-        uboData.buffer.position = bufferPos!!.byteIndex
-        matrix.putTo(uboData.buffer)
+        uboData.set {
+            setMat4(matIndex, matrix)
+        }
     }
 }
 
-class MvpMatrixData(program: KslProgram) : MeshMatrixData(program, "uMvpMat") {
+class MvpMatrixData(program: KslProgram) : MatrixData(program, "uMvpMat", BindGroupScope.MESH) {
     override val name = NAME
 
     private val tmpMat4d = MutableMat4d()
@@ -84,7 +84,7 @@ class MvpMatrixData(program: KslProgram) : MeshMatrixData(program, "uMvpMat") {
     }
 }
 
-class ModelMatrixData(program: KslProgram) : MeshMatrixData(program, "uModelMat") {
+class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", BindGroupScope.MESH) {
     override val name = NAME
 
     private val tmpMat4f = MutableMat4f()
@@ -109,42 +109,14 @@ class ModelMatrixData(program: KslProgram) : MeshMatrixData(program, "uModelMat"
 }
 
 
-class InvProjMatrixData(program: KslProgram) : KslDataBlock, KslShaderListener {
+class InvProjMatrixData(program: KslProgram) : MatrixData(program, "uInvProjMat", BindGroupScope.VIEW) {
     override val name = NAME
-    val matrix: KslUniformMatrix<KslMat4, KslFloat4>
-
-    private val matrixUbo = KslUniformBuffer("uInvProjMat_ubo", program, BindGroupScope.VIEW).apply {
-        matrix = uniformMat4("uInvProjMat")
-    }
-
-    private var uboLayout: UniformBufferLayout? = null
-    private var bufferPos: BufferPosition? = null
-    private val tmpMat4f = MutableMat4f()
-
-    init {
-        program.shaderListeners += this
-        program.dataBlocks += this
-        program.uniformBuffers += matrixUbo
-    }
-
-    override fun onShaderCreated(shader: ShaderBase<*>) {
-        val binding = shader.createdPipeline!!.findBindingLayout<UniformBufferLayout> { it.hasUniform("uInvProjMat") }
-        uboLayout = binding?.second
-        uboLayout?.let {
-            bufferPos = it.layout.uniformPositions["uInvProjMat"]
-        }
-    }
 
     override fun onUpdate(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
         val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
-
-        val q = cmd.queue
-        val cam = q.view.camera
-        val ubo = viewData.uniformBufferBindingData(bindingLayout.bindingIndex)
-
-        ubo.markDirty()
-        ubo.buffer.positioned(bufferPos!!.byteIndex) { cam.invProj.putTo(it) }
+        val cam = cmd.queue.view.camera
+        putMatrixToBuffer(cam.invProj, viewData)
     }
 
     companion object {

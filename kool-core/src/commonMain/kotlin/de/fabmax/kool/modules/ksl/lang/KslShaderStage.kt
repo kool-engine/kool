@@ -81,6 +81,10 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         }
     }
 
+    fun getUsedUboStructs(): List<KslUniformStruct<*>> {
+        return program.uniformStructs.values.filter { ubo -> dependsOn(ubo) }
+    }
+
     fun prepareGenerate() {
         generatorExpressions = KslTransformer.transform(this, program.optimizeExpressions).generatorExpressions
     }

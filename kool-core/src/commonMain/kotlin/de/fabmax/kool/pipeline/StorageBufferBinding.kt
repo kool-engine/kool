@@ -4,13 +4,17 @@ import kotlin.reflect.KProperty
 
 class StorageBufferBinding(
     textureName: String,
-    defaultBuffer: StorageBuffer?,
+    defaultBuffer: GpuBuffer?,
     shader: ShaderBase<*>
 ) : PipelineBinding(textureName, shader) {
 
-    private var cache: StorageBuffer? = defaultBuffer
+    private var cache: GpuBuffer? = defaultBuffer
 
-    fun get(): StorageBuffer? {
+    init {
+        defaultBuffer?.checkIsStorageBuffer()
+    }
+
+    fun get(): GpuBuffer? {
         if (isValid) {
             bindGroupData?.let {
                 cache = it.getFromData()
@@ -19,20 +23,21 @@ class StorageBufferBinding(
         return cache
     }
 
-    fun set(value: StorageBuffer?) {
+    fun set(value: GpuBuffer?) {
+        value?.checkIsStorageBuffer()
         cache = value
         if (isValid) {
             bindGroupData?.setInData(value)
         }
     }
 
-    operator fun getValue(thisRef: Any?, property: KProperty<*>): StorageBuffer? = get()
-    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: StorageBuffer?) = set(value)
+    operator fun getValue(thisRef: Any?, property: KProperty<*>): GpuBuffer? = get()
+    operator fun setValue(thisRef: Any?, property: KProperty<*>, value: GpuBuffer?) = set(value)
 
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
 
-        pipeline.findBindingLayout<StorageBufferLayout> { it.name == bindingName }?.let { (group, tex) ->
+        pipeline.findBindGroupItem<StorageBufferLayout> { it.name == bindingName }?.let { (group, tex) ->
             check(group.scope == BindGroupScope.PIPELINE) {
                 "StorageBufferBinding only supports binding to BindGroupData of scope ${BindGroupScope.PIPELINE}, but buffer $bindingName has scope ${group.scope}."
             }
@@ -42,11 +47,11 @@ class StorageBufferBinding(
         }
     }
 
-    fun BindGroupData.getFromData(): StorageBuffer? {
+    fun BindGroupData.getFromData(): GpuBuffer? {
         return storageBuffer1dBindingData(bindingIndex).storageBuffer
     }
 
-    fun BindGroupData.setInData(buffer: StorageBuffer?) {
+    fun BindGroupData.setInData(buffer: GpuBuffer?) {
         storageBuffer1dBindingData(bindingIndex).storageBuffer = buffer
     }
 }

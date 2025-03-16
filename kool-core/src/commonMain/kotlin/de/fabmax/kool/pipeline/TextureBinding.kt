@@ -34,7 +34,7 @@ sealed class TextureBinding<T: Texture<*>?>(
 
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
-        pipeline.findBindingLayout<TextureLayout> { it.name == bindingName }?.let { (group, tex) ->
+        pipeline.findBindGroupItem<TextureLayout> { it.name == bindingName }?.let { (group, tex) ->
             bindGroup = group.group
             bindingIndex = tex.bindingIndex
             pipeline.pipelineData.setInData(cache, cachedSamplerSettings)

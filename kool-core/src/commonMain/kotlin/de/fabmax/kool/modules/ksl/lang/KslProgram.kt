@@ -25,6 +25,7 @@ open class KslProgram(val name: String) {
 
     val commonUniformBuffer = KslUniformBuffer("CommonUniforms", this, BindGroupScope.PIPELINE)
     val uniformBuffers = mutableListOf(commonUniformBuffer)
+    val uniformStructs = mutableMapOf<String, KslUniformStruct<*>>()
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
     val structs = mutableMapOf<String, Struct<*>>()
     val storageBuffers = mutableMapOf<String, KslStorage<*>>()
@@ -83,9 +84,19 @@ open class KslProgram(val name: String) {
         uniformBuffers.forEach { ubo ->
             ubo.uniforms.values.forEach { stage.globalScope.definedStates += it.value }
         }
+        uniformStructs.values.forEach { stage.globalScope.definedStates += it.value }
         uniformSamplers.values.forEach { stage.globalScope.definedStates += it.sampler.value }
         storageBuffers.values.forEach { stage.globalScope.definedStates += it }
         storageTextures.values.forEach { stage.globalScope.definedStates += it }
+    }
+
+    @PublishedApi
+    internal fun registerUniformStruct(struct: KslUniformStruct<*>) {
+        uniformStructs[struct.name] = struct
+        registerStruct(struct.value.expressionType.proto)
+        stages.forEach {
+            it.globalScope.definedStates += struct.value
+        }
     }
 
     private fun registerSampler(sampler : SamplerUniform) {
@@ -130,6 +141,21 @@ open class KslProgram(val name: String) {
         return uniform
     }
 
+    @PublishedApi
+    internal inline fun <reified S: Struct<S>> getOrCreateStructUniform(
+        name: String,
+        scope: BindGroupScope = BindGroupScope.PIPELINE,
+        noinline provider: () -> S
+    ): KslUniformStruct<S> {
+        val proto = provider()
+        val uniform = uniformStructs[proto.structName] ?: KslUniformStruct(name, scope, provider).also { registerUniformStruct(it) }
+        check(uniform.proto is S) {
+            "Existing struct uniform with name \"$name\" has not the expected struct type"
+        }
+        @Suppress("UNCHECKED_CAST")
+        return uniform as KslUniformStruct<S>
+    }
+
     fun uniformFloat1(name: String) = commonUniformBuffer.uniformFloat1(name)
     fun uniformFloat2(name: String) = commonUniformBuffer.uniformFloat2(name)
     fun uniformFloat3(name: String) = commonUniformBuffer.uniformFloat3(name)
@@ -157,6 +183,9 @@ open class KslProgram(val name: String) {
     fun uniformMat2Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat2Array(name, arraySize)
     fun uniformMat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat3Array(name, arraySize)
     fun uniformMat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat4Array(name, arraySize)
+
+    inline fun <reified S: Struct<S>> uniformStruct(name: String, scope: BindGroupScope = BindGroupScope.PIPELINE, noinline provider: () -> S): KslUniformStruct<S> =
+        getOrCreateStructUniform(name, scope, provider)
 
     fun texture1d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
         getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler1d, false)) }
@@ -400,8 +429,10 @@ open class KslProgram(val name: String) {
     val UniformBinding3iv.ksl: KslUniformVectorArray<KslInt3, KslInt1> get() = uniformInt3Array(bindingName, arraySize)
     val UniformBinding4iv.ksl: KslUniformVectorArray<KslInt4, KslInt1> get() = uniformInt4Array(bindingName, arraySize)
 
+    val UniformBindingMat2f.ksl: KslUniformMatrix<KslMat2, KslFloat2> get() = uniformMat2(bindingName)
     val UniformBindingMat3f.ksl: KslUniformMatrix<KslMat3, KslFloat3> get() = uniformMat3(bindingName)
     val UniformBindingMat4f.ksl: KslUniformMatrix<KslMat4, KslFloat4> get() = uniformMat4(bindingName)
+    val UniformBindingMat2fv.ksl: KslUniformMatrixArray<KslMat2, KslFloat2> get() = uniformMat2Array(bindingName, arraySize)
     val UniformBindingMat3fv.ksl: KslUniformMatrixArray<KslMat3, KslFloat3> get() = uniformMat3Array(bindingName, arraySize)
     val UniformBindingMat4fv.ksl: KslUniformMatrixArray<KslMat4, KslFloat4> get() = uniformMat4Array(bindingName, arraySize)
 

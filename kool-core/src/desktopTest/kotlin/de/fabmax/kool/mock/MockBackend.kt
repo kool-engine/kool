@@ -73,7 +73,7 @@ class MockBackend() : RenderBackend {
         tex.uploadData = null
     }
 
-    override fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
+    override fun downloadBuffer(buffer: GpuBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {
         deferred.complete(Unit)
     }
 

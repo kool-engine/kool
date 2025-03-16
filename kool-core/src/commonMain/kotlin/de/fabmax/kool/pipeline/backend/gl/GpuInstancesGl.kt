@@ -12,7 +12,7 @@ class GpuInstancesGl(
     creationInfo: BufferCreationInfo
 ) : BaseReleasable(), GpuInstances {
 
-    internal val instanceBuffer: BufferResource
+    internal val instanceBuffer: GpuBufferGl
 
     private val gl = backend.gl
     private var isNewlyCreated =  true
@@ -20,7 +20,7 @@ class GpuInstancesGl(
     init {
         val namePrefix = creationInfo.bufferName
         instanceBuffer =
-            BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.instances"))
+            GpuBufferGl(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.instances"))
     }
 
     fun checkBuffers() {

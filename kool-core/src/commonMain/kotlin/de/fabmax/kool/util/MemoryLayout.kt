@@ -31,12 +31,12 @@ sealed interface MemoryLayout {
             return if (isArray) 16 else when (type) {
                 GpuType.Float1 -> 4
                 GpuType.Float2 -> 8
-                GpuType.Float3 -> 12
+                GpuType.Float3 -> 16
                 GpuType.Float4 -> 16
 
                 GpuType.Int1 -> 4
                 GpuType.Int2 -> 8
-                GpuType.Int3 -> 12
+                GpuType.Int3 -> 16
                 GpuType.Int4 -> 16
 
                 GpuType.Mat2 -> 16
@@ -63,19 +63,19 @@ sealed interface MemoryLayout {
             return when (type) {
                 GpuType.Float1 -> 4
                 GpuType.Float2 -> 8
-                GpuType.Float3 -> 12
+                GpuType.Float3 -> 16
                 GpuType.Float4 -> 16
 
                 GpuType.Int1 -> 4
                 GpuType.Int2 -> 8
-                GpuType.Int3 -> 12
+                GpuType.Int3 -> 16
                 GpuType.Int4 -> 16
 
                 GpuType.Mat2 -> 16
                 GpuType.Mat3 -> 16
                 GpuType.Mat4 -> 16
 
-                is GpuType.Struct -> type.struct.members.maxOf { alignmentOf(it.type, it.arraySize > 1) }
+                is GpuType.Struct -> type.struct.members.maxOf { alignmentOf(it.type, it is StructArrayMember) }
             }
         }
 

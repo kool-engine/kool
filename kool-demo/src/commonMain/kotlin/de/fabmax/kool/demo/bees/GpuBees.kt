@@ -329,7 +329,7 @@ class GpuBees(beeScene: Scene) {
         simulationPass.isEnabled = isEnabled
     }
 
-    private fun initBeeBuffer(beeBuffer: StorageBuffer, spawnPos: Vec3f) {
+    private fun initBeeBuffer(beeBuffer: GpuBuffer, spawnPos: Vec3f) {
         val data = StructBuffer(beeBuffer.size, BeeData())
         repeat(data.size) {
             data.put {
@@ -385,10 +385,12 @@ class GpuBees(beeScene: Scene) {
                 val aliveness = interStageFloat1()
                 vertexStage {
                     main {
-                        val beeBuffer = storage<KslFloat4>("beeBuffer")
-                        val beeOffset = int1Var(inInstanceIndex.toInt1() * 3.const)
+                        val beeStruct = struct { BeeData() }
+                        val beeBuffer = storage("beeBuffer", beeStruct)
+                        val beeOffset = int1Var(inInstanceIndex.toInt1())
 
-                        val rotQuat = float4Var(beeBuffer[beeOffset + 1.const])
+                        val bee = structVar(beeBuffer[beeOffset])
+                        val rotQuat = float4Var(bee.struct.rotation.ksl)
                         val r = rotQuat.w
                         val i = rotQuat.x
                         val j = rotQuat.y
@@ -411,16 +413,17 @@ class GpuBees(beeScene: Scene) {
                             1f.const - 2f.const * (i*i + j*j)
                         )
 
-                        val globalPos = float4Var(beeBuffer[beeOffset])
+                        val globalPos = float3Var(bee.struct.position.ksl)
+                        val decay = float1Var(bee.struct.decay.ksl)
                         val vertexNormal = vertexAttribFloat3(Attribute.NORMALS.name)
                         val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
 
-                        val scale = float1Var(1f.const - clamp(globalPos.w - (BeeConfig.decayTime - 1f).const, 0f.const, 1f.const))
+                        val scale = float1Var(1f.const - clamp(decay - (BeeConfig.decayTime - 1f).const, 0f.const, 1f.const))
 
-                        getFloat3Port("worldPos").input(rotMat * vertexPos * scale + globalPos.xyz)
+                        getFloat3Port("worldPos").input(rotMat * vertexPos * scale + globalPos)
                         getFloat3Port("worldNormal").input(rotMat * vertexNormal)
 
-                        aliveness.input set globalPos.w
+                        aliveness.input set decay
                     }
                 }
                 fragmentStage {

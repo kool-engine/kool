@@ -20,7 +20,7 @@ class KslTransformer private constructor(val stage: KslShaderStage) {
             stage.globalScope.transform(null, null)
         } catch (e: Exception) {
             logE { stage.globalScope.toPseudoCode() }
-            throw RuntimeException("Failed transforming ksl scope", e)
+            throw RuntimeException("Failed transforming ksl scope (${stage.program.name}:${stage.type.pipelineStageType})", e)
         }
     }
 

@@ -336,7 +336,7 @@ object GlImpl : GlApi {
         )
     }
 
-    override fun readBuffer(gpuBuffer: BufferResource, dstBuffer: Buffer): Boolean {
+    override fun readBuffer(gpuBuffer: GpuBufferGl, dstBuffer: Buffer): Boolean {
         var success = false
         gpuBuffer.bind()
 

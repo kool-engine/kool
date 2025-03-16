@@ -5,6 +5,7 @@ import de.fabmax.kool.modules.ksl.blocks.ColorBlockConfig
 import de.fabmax.kool.modules.ksl.blocks.NormalMapConfig
 import de.fabmax.kool.modules.ksl.blocks.PropertyBlockConfig
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.UniqueId
 
 /**
@@ -51,6 +52,8 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun uniform4i(uniformName: String, defaultVal: Vec4i = Vec4i.ZERO): UniformBinding4i =
         getOrCreateBinding(uniformName) { UniformBinding4i(uniformName, defaultVal, this) } as UniformBinding4i
 
+    fun uniformMat2f(uniformName: String, defaultVal: Mat2f = Mat2f.IDENTITY): UniformBindingMat2f =
+        getOrCreateBinding(uniformName) { UniformBindingMat2f(uniformName, defaultVal, this) } as UniformBindingMat2f
     fun uniformMat3f(uniformName: String, defaultVal: Mat3f = Mat3f.IDENTITY): UniformBindingMat3f =
         getOrCreateBinding(uniformName) { UniformBindingMat3f(uniformName, defaultVal, this) } as UniformBindingMat3f
     fun uniformMat4f(uniformName: String, defaultVal: Mat4f = Mat4f.IDENTITY): UniformBindingMat4f =
@@ -74,10 +77,16 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun uniform4iv(uniformName: String, arraySize: Int = 0): UniformBinding4iv =
         getOrCreateBinding(uniformName) { UniformBinding4iv(uniformName, arraySize, this) } as UniformBinding4iv
 
+    fun uniformMat2fv(uniformName: String, arraySize: Int = 0): UniformBindingMat2fv =
+        getOrCreateBinding(uniformName) { UniformBindingMat2fv(uniformName, arraySize, this) } as UniformBindingMat2fv
     fun uniformMat3fv(uniformName: String, arraySize: Int = 0): UniformBindingMat3fv =
         getOrCreateBinding(uniformName) { UniformBindingMat3fv(uniformName, arraySize, this) } as UniformBindingMat3fv
     fun uniformMat4fv(uniformName: String, arraySize: Int = 0): UniformBindingMat4fv =
         getOrCreateBinding(uniformName) { UniformBindingMat4fv(uniformName, arraySize, this) } as UniformBindingMat4fv
+
+    @Suppress("UNCHECKED_CAST")
+    fun <S: Struct<S>> uniformStruct(uniformName: String, provider: () -> S) =
+        getOrCreateBinding(uniformName) { UniformStructBinding<S>(uniformName, this, provider) } as UniformStructBinding<S>
 
     fun texture1d(textureName: String, defaultVal: Texture1d? = null, defaultSampler: SamplerSettings? = null): Texture1dBinding =
         getOrCreateBinding(textureName) { Texture1dBinding(textureName, defaultVal, defaultSampler, this) } as Texture1dBinding
@@ -93,7 +102,7 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
     fun textureCubeArray(textureName: String, defaultVal: TextureCubeArray? = null, defaultSampler: SamplerSettings? = null): TextureCubeArrayBinding =
         getOrCreateBinding(textureName) { TextureCubeArrayBinding(textureName, defaultVal, defaultSampler, this) } as TextureCubeArrayBinding
 
-    fun storage(storageName: String, defaultVal: StorageBuffer? = null): StorageBufferBinding =
+    fun storage(storageName: String, defaultVal: GpuBuffer? = null): StorageBufferBinding =
         getOrCreateBinding(storageName) { StorageBufferBinding(storageName, defaultVal, this) } as StorageBufferBinding
 
     fun storageTexture1d(storageTextureName: String, defaultVal: StorageTexture1d? = null, defaultMipLevel: Int = 0): StorageTexture1dBinding =

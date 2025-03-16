@@ -7,6 +7,8 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.util.DynamicStruct
+import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 
@@ -199,43 +201,53 @@ private fun KslProgram.makeBindGroupLayout(group: Int, scope: BindGroupScope): B
 }
 
 private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.Builder) {
+    uniformStructs.values.filter { it.scope == bindGrpBuilder.scope }.forEach { struct ->
+        val uboStages = stages
+            .filter { it.dependsOn(struct) }
+            .map { it.type.pipelineStageType }
+            .toSet()
+        bindGrpBuilder.ubos += UniformBufferLayout(struct.name, uboStages, struct.provider)
+    }
+
     uniformBuffers.filter { it.uniforms.isNotEmpty() && it.scope == bindGrpBuilder.scope }.forEach { kslUbo ->
-        val uniforms = kslUbo.uniforms.values.map { uniform ->
-            when(val type = uniform.value.expressionType)  {
-                is KslFloat1 -> Uniform.float1(uniform.name)
-                is KslFloat2 -> Uniform.float2(uniform.name)
-                is KslFloat3 -> Uniform.float3(uniform.name)
-                is KslFloat4 -> Uniform.float4(uniform.name)
+        val uboBuilder = DynamicStruct.Builder("", MemoryLayout.Std140).apply {
+            kslUbo.uniforms.values.forEach { uniform ->
+                when (val type = uniform.value.expressionType)  {
+                    is KslFloat1 -> float1(uniform.name)
+                    is KslFloat2 -> float2(uniform.name)
+                    is KslFloat3 -> float3(uniform.name)
+                    is KslFloat4 -> float4(uniform.name)
 
-                is KslInt1 -> Uniform.int1(uniform.name)
-                is KslInt2 -> Uniform.int2(uniform.name)
-                is KslInt3 -> Uniform.int3(uniform.name)
-                is KslInt4 -> Uniform.int4(uniform.name)
+                    is KslInt1 -> int1(uniform.name)
+                    is KslInt2 -> int2(uniform.name)
+                    is KslInt3 -> int3(uniform.name)
+                    is KslInt4 -> int4(uniform.name)
 
-                is KslMat2 -> Uniform.mat2(uniform.name)
-                is KslMat3 -> Uniform.mat3(uniform.name)
-                is KslMat4 -> Uniform.mat4(uniform.name)
+                    is KslMat2 -> mat2(uniform.name)
+                    is KslMat3 -> mat3(uniform.name)
+                    is KslMat4 -> mat4(uniform.name)
 
-                is KslArrayType<*> -> {
-                    when (type.elemType) {
-                        is KslFloat1 -> Uniform.float1Array(uniform.name, uniform.arraySize)
-                        is KslFloat2 -> Uniform.float2Array(uniform.name, uniform.arraySize)
-                        is KslFloat3 -> Uniform.float3Array(uniform.name, uniform.arraySize)
-                        is KslFloat4 -> Uniform.float4Array(uniform.name, uniform.arraySize)
+                    is KslArrayType<*> -> {
+                        when (type.elemType) {
+                            is KslFloat1 -> float1Array(uniform.name, uniform.arraySize)
+                            is KslFloat2 -> float2Array(uniform.name, uniform.arraySize)
+                            is KslFloat3 -> float3Array(uniform.name, uniform.arraySize)
+                            is KslFloat4 -> float4Array(uniform.name, uniform.arraySize)
 
-                        is KslInt1 -> Uniform.int1Array(uniform.name, uniform.arraySize)
-                        is KslInt2 -> Uniform.int2Array(uniform.name, uniform.arraySize)
-                        is KslInt3 -> Uniform.int3Array(uniform.name, uniform.arraySize)
-                        is KslInt4 -> Uniform.int4Array(uniform.name, uniform.arraySize)
+                            is KslInt1 -> int1Array(uniform.name, uniform.arraySize)
+                            is KslInt2 -> int2Array(uniform.name, uniform.arraySize)
+                            is KslInt3 -> int3Array(uniform.name, uniform.arraySize)
+                            is KslInt4 -> int4Array(uniform.name, uniform.arraySize)
 
-                        is KslMat2 -> Uniform.mat2Array(uniform.name, uniform.arraySize)
-                        is KslMat3 -> Uniform.mat3Array(uniform.name, uniform.arraySize)
-                        is KslMat4 -> Uniform.mat4Array(uniform.name, uniform.arraySize)
+                            is KslMat2 -> mat2Array(uniform.name, uniform.arraySize)
+                            is KslMat3 -> mat3Array(uniform.name, uniform.arraySize)
+                            is KslMat4 -> mat4Array(uniform.name, uniform.arraySize)
 
-                        else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
+                            else -> throw IllegalStateException("Unsupported uniform array type: ${type.elemType.typeName}")
+                        }
                     }
+                    else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
                 }
-                else -> throw IllegalStateException("Unsupported uniform type: ${type.typeName}")
             }
         }
 
@@ -243,8 +255,7 @@ private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.
             .filter { kslUbo.uniforms.values.any { u -> it.dependsOn(u) } }
             .map { it.type.pipelineStageType }
             .toSet()
-
-        bindGrpBuilder.ubos += UniformBufferLayout(kslUbo.name, uniforms, uboStages)
+        bindGrpBuilder.ubos += UniformBufferLayout(kslUbo.name, uboStages) { uboBuilder.build() }
     }
 }
 

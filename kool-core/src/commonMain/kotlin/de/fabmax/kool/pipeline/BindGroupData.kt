@@ -2,13 +2,14 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.MixedBuffer
+import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.StructBuffer
 
 class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
     val bindings: List<BindingData> = layout.bindings.map {
         when (it) {
-            is UniformBufferLayout -> UniformBufferBindingData(it)
+            is UniformBufferLayout<*> -> UniformBufferBindingData(it)
             is StorageBufferLayout -> StorageBufferBindingData(it)
 
             is Texture1dLayout -> Texture1dBindingData(it)
@@ -35,7 +36,9 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     var gpuData: GpuBindGroupData? = null
         internal set
 
-    fun uniformBufferBindingData(bindingIndex: Int) = bindings[bindingIndex] as UniformBufferBindingData
+    @Suppress("UNCHECKED_CAST")
+    fun <S: Struct<S>> uniformStructBindingData(binding: UniformBufferLayout<S>) = bindings[binding.bindingIndex] as UniformBufferBindingData<S>
+    fun uniformBufferBindingData(bindingIndex: Int) = bindings[bindingIndex] as UniformBufferBindingData<*>
     fun storageBuffer1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBufferBindingData
 
     fun texture1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as Texture1dBindingData
@@ -53,7 +56,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         val copy = BindGroupData(layout)
         bindings.forEachIndexed { i, bindingData ->
             when (bindingData) {
-                is UniformBufferBindingData -> bindingData.copyTo(copy.bindings[i] as UniformBufferBindingData)
+                is UniformBufferBindingData<*> -> bindingData.copyTo(copy.bindings[i] as UniformBufferBindingData<*>)
                 is StorageBufferBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBufferBindingData)
 
                 is Texture1dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture1dBindingData)
@@ -83,28 +86,33 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         val isComplete: Boolean
     }
 
-    inner class UniformBufferBindingData(override val layout: UniformBufferLayout) : BindingData {
+    inner class UniformBufferBindingData<T: Struct<T>>(override val layout: UniformBufferLayout<T>) : BindingData {
         var modCount = 0
             private set
-        val buffer: MixedBuffer = MixedBuffer(layout.layout.size)
+        val buffer: StructBuffer<T> = StructBuffer(1, layout.structProvider())
 
         override val isComplete = true
+
+        inline fun set(block: T.() -> Unit) {
+            buffer.set(0, block)
+            markDirty()
+        }
 
         fun markDirty() {
             modCount++
         }
 
-        fun copyTo(other: UniformBufferBindingData) {
+        fun copyTo(other: UniformBufferBindingData<*>) {
             check(layout.hash == other.layout.hash)
-            for (i in 0 until buffer.capacity) {
-                other.buffer.setInt8(i, buffer.getInt8(i))
+            for (i in 0 until buffer.buffer.capacity / 4) {
+                other.buffer.buffer.setInt32(i * 4, buffer.buffer.getInt32(i * 4))
             }
             other.markDirty()
         }
     }
 
     inner class StorageBufferBindingData(override val layout: StorageBufferLayout) : BindingData {
-        var storageBuffer: StorageBuffer? = null
+        var storageBuffer: GpuBuffer? = null
             set(value) {
                 value?.let { checkDimensions(it) }
                 field = value
@@ -112,11 +120,11 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             }
         override val isComplete = true
 
-        fun checkDimensions(storageBuffer: StorageBuffer) = check(isMatchingDimensions(storageBuffer)) {
+        fun checkDimensions(storageBuffer: GpuBuffer) = check(isMatchingDimensions(storageBuffer)) {
             "Incorrect buffer dimensions. Layout ${layout.name}: ${layout.size}, provided: ${storageBuffer.size}"
         }
 
-        fun isMatchingDimensions(storageBuffer: StorageBuffer): Boolean {
+        fun isMatchingDimensions(storageBuffer: GpuBuffer): Boolean {
             return layout.size == null || layout.size == storageBuffer.size
         }
 

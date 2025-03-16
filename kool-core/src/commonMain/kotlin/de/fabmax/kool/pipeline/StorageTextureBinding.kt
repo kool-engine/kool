@@ -34,7 +34,7 @@ sealed class StorageTextureBinding<T: StorageTexture?>(
 
     override fun setup(pipeline: PipelineBase) {
         super.setup(pipeline)
-        pipeline.findBindingLayout<StorageTextureLayout> { it.name == bindingName }?.let { (group, tex) ->
+        pipeline.findBindGroupItem<StorageTextureLayout> { it.name == bindingName }?.let { (group, tex) ->
             bindGroup = group.group
             bindingIndex = tex.bindingIndex
             pipeline.pipelineData.setInData(cache, cachedMipLevel)

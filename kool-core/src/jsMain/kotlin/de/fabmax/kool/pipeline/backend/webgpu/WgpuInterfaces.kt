@@ -70,6 +70,15 @@ external class GPUCommandEncoder {
     fun finish(): GPUCommandBuffer
 }
 
+external class GPUCompilationInfo {
+    val messages: Array<GPUCompilationMessage>
+}
+
+external class GPUCompilationMessage {
+    val type: String
+    val message: String
+}
+
 external class GPUDevice {
     val limits: GPUSupportedLimits
     val queue: GPUQueue
@@ -129,7 +138,9 @@ external class GPURenderPipeline {
 
 external class GPUSampler : GPUBindingResource
 
-external class GPUShaderModule
+external class GPUShaderModule {
+    fun getCompilationInfo(): Promise<GPUCompilationInfo>
+}
 
 external object GPUShaderStage {
     val COMPUTE: Int

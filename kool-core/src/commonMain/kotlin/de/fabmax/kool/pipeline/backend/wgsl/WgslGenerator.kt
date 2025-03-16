@@ -4,6 +4,7 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.StructArrayMember
 import de.fabmax.kool.util.logW
 
 class WgslGenerator private constructor(
@@ -67,6 +68,7 @@ class WgslGenerator private constructor(
         val ubos = UboStructs(vertexStage, pipeline)
 
         src.generateStructs(vertexStage, pipeline)
+        src.generateStructUbos(vertexStage, pipeline)
         ubos.generateStructs(src)
         vertexInput.generateStruct(src)
         vertexOutput.generateStruct(src)
@@ -105,6 +107,7 @@ class WgslGenerator private constructor(
         val ubos = UboStructs(fragmentStage, pipeline)
 
         src.generateStructs(fragmentStage, pipeline)
+        src.generateStructUbos(fragmentStage, pipeline)
         ubos.generateStructs(src)
         fragmentInput.generateStruct(src)
         fragmentOutput.generateStruct(src)
@@ -140,6 +143,7 @@ class WgslGenerator private constructor(
         val ubos = UboStructs(computeStage, pipeline)
 
         src.generateStructs(computeStage, pipeline)
+        src.generateStructUbos(computeStage, pipeline)
         ubos.generateStructs(src)
         computeInput.generateStruct(src)
         src.generateTextureSamplers(computeStage, pipeline)
@@ -164,7 +168,7 @@ class WgslGenerator private constructor(
         val structs: List<UboStruct> = buildList {
             pipeline.bindGroupLayouts.asList.forEach { layout ->
                 layout.bindings
-                    .filterIsInstance<UniformBufferLayout>().filter { layoutUbo ->
+                    .filterIsInstance<UniformBufferLayout<*>>().filter { layoutUbo ->
                         stage.getUsedUbos().any { usedUbo -> usedUbo.name == layoutUbo.name }
                     }
                     .map { ubo ->
@@ -695,7 +699,7 @@ class WgslGenerator private constructor(
                 KslMat2 -> "mat2x2f"
                 KslMat3 -> "mat3x3f"
                 KslMat4 -> "mat4x4f"
-                is KslStruct<*> -> struct.structName
+                is KslStruct<*> -> proto.structName
 
                 is KslArrayType<*> -> "array<${elemType.wgslTypeName()},${arraySize}>"
 
@@ -764,10 +768,10 @@ class WgslGenerator private constructor(
         init {
             groupLayouts.asList.forEach { layout ->
                 layout.bindings
-                    .filterIsInstance<UniformBufferLayout>()
+                    .filterIsInstance<UniformBufferLayout<*>>()
                     .forEach { ubo ->
                         val uboVarName = ubo.name.mapIndexed { i, c -> if (i == 0) c.lowercase() else c }.joinToString("")
-                        ubo.uniforms.forEach { nameMap[it.name] = "${uboVarName}.${it.name}" }
+                        ubo.structProvider().members.forEach { nameMap[it.memberName] = "${uboVarName}.${it.memberName}" }
                     }
             }
         }
@@ -783,7 +787,7 @@ class WgslGenerator private constructor(
         }
     }
 
-    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout)
+    private data class UboStruct(val name: String, val typeName: String, val members: List<WgslStructMember>, val binding: UniformBufferLayout<*>)
 
     private inner class VertexInputStructs(val stage: KslVertexStage) : WgslStructHelper {
         val vertexInputs = buildList {
@@ -951,12 +955,28 @@ class WgslGenerator private constructor(
             for (struct in structs) {
                 appendLine("struct ${struct.structName} {")
                 struct.members.forEach {
-                    val arraySuffix = if (it.arraySize > 1) "[${it.arraySize}]" else ""
-                    appendLine("    ${it.memberName}: ${it.type.wgslTypeName()}$arraySuffix,")
+                    val type = if (it is StructArrayMember) {
+                        "array<${it.type.wgslTypeName()},${it.arraySize}>"
+                    } else {
+                        it.type.wgslTypeName()
+                    }
+                    appendLine("    ${it.memberName}: $type,")
                 }
                 appendLine("};")
             }
             appendLine()
+        }
+    }
+
+    private fun StringBuilder.generateStructUbos(stage: KslShaderStage, pipeline: PipelineBase) {
+        val uboStructs = stage.getUsedUboStructs()
+        if (uboStructs.isNotEmpty()) {
+            appendLine("// uniform structs")
+            uboStructs.forEach { ubo ->
+                val (_, desc) = pipeline.getBindGroupItemByName(ubo.name)
+                val location = generatorState.locations[desc]
+                appendLine("@group(${location.group}) @binding(${location.binding}) var<uniform> ${ubo.name}: ${ubo.expressionType.wgslTypeName()};")
+            }
         }
     }
 

@@ -30,7 +30,7 @@ class BindGroupDataVk(
     init {
         data.bindings.forEach { binding ->
             when (binding) {
-                is BindGroupData.UniformBufferBindingData -> uboBindings += UboBinding(binding, Swapchain.MAX_FRAMES_IN_FLIGHT)
+                is BindGroupData.UniformBufferBindingData<*> -> uboBindings += UboBinding(binding, Swapchain.MAX_FRAMES_IN_FLIGHT)
                 is BindGroupData.StorageBufferBindingData -> storageBufferBindings += StorageBufferBinding(binding, commandBuffer)
 
                 is BindGroupData.Texture1dBindingData -> textureBindings += TextureBinding(binding, VK_IMAGE_VIEW_TYPE_1D)
@@ -95,12 +95,11 @@ class BindGroupDataVk(
             bindGroup.resetBindGroup()
         }
 
-        val bg = bindGroup
         val frameIdx = passEncoderState.frameIndex
-        for (i in bg.uboBindings.indices) {
-            val ubo = bg.uboBindings[i]
+        for (i in bindGroup.uboBindings.indices) {
+            val ubo = bindGroup.uboBindings[i]
             if (ubo.isUpdate(frameIdx, ubo.binding.modCount) || resetBindGroup) {
-                ubo.binding.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
+                ubo.binding.buffer.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
             }
         }
     }
@@ -193,15 +192,15 @@ class BindGroupDataVk(
     }
 
     inner class UboBinding(
-        val binding: BindGroupData.UniformBufferBindingData,
+        val binding: BindGroupData.UniformBufferBindingData<*>,
         numSets: Int
     ) : BaseReleasable() {
-        val layout: Std140BufferLayout = Std140BufferLayout(binding.layout.uniforms)
-        val buffers: List<BufferVk> = List(numSets) {
-            BufferVk(
+        val struct = binding.buffer.struct
+        val buffers: List<GpuBufferVk> = List(numSets) {
+            GpuBufferVk(
                 backend = backend,
                 bufferInfo = MemoryInfo(
-                    size = layout.size.toLong(),
+                    size = struct.structSize.toLong(),
                     usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                     label = "bindGroup[${data.layout.scope}]-ubo-${binding.name}",
                     createMapped = true
@@ -221,7 +220,7 @@ class BindGroupDataVk(
             stack: MemoryStack
         ) {
             val bufferInfo = stack.callocVkDescriptorBufferInfoN(1) {
-                this[0].set(buffers[setIdx].vkBuffer.handle, 0L, layout.size.toLong())
+                this[0].set(buffers[setIdx].vkBuffer.handle, 0L, struct.structSize.toLong())
             }
             descriptorWrite
                 .dstSet(descriptorSet.handle)
@@ -416,9 +415,9 @@ class BindGroupDataVk(
     ): StorageBufferBinding {
         val name = (binding as BindingData).name
         val storage = checkNotNull(binding.storageBuffer)
-        var gpuBuffer = storage.gpuBuffer as BufferVk?
+        var gpuBuffer = storage.gpuBuffer as GpuBufferVk?
         if (gpuBuffer == null) {
-            gpuBuffer = BufferVk(
+            gpuBuffer = GpuBufferVk(
                 backend = backend,
                 bufferInfo = MemoryInfo(
                     size = storage.size * storage.type.byteSize.toLong(),
@@ -436,8 +435,8 @@ class BindGroupDataVk(
 
     inner class StorageBufferBinding(
         val binding: BindGroupData.StorageBufferBindingData,
-        val storageBuffer: StorageBuffer,
-        val gpuBuffer: BufferVk
+        val storageBuffer: GpuBuffer,
+        val gpuBuffer: GpuBufferVk
     ) : BaseReleasable() {
 
         fun updateBuffer(passEncoderState: PassEncoderState) {

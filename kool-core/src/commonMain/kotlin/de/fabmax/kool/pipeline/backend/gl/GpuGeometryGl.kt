@@ -13,9 +13,9 @@ class GpuGeometryGl(
     creationInfo: BufferCreationInfo
 ) : BaseReleasable(), GpuGeometry {
 
-    internal val indexBuffer: BufferResource
-    internal val dataBufferF: BufferResource?
-    internal val dataBufferI: BufferResource?
+    internal val indexBuffer: GpuBufferGl
+    internal val dataBufferF: GpuBufferGl?
+    internal val dataBufferI: GpuBufferGl?
 
     private val gl = backend.gl
 
@@ -26,18 +26,18 @@ class GpuGeometryGl(
 
     init {
         val namePrefix = creationInfo.bufferName
-        indexBuffer = BufferResource(gl.ELEMENT_ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.indices"))
+        indexBuffer = GpuBufferGl(gl.ELEMENT_ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.indices"))
 
         val hasFloatAttributes = geometry.vertexAttributes.any { !it.type.isInt }
         dataBufferF = if (hasFloatAttributes) {
-            BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataF"))
+            GpuBufferGl(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataF"))
         } else {
             null
         }
 
         val hasIntAttributes = geometry.vertexAttributes.any { it.type.isInt }
         dataBufferI = if (hasIntAttributes) {
-            BufferResource(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataI"))
+            GpuBufferGl(gl.ARRAY_BUFFER, backend, creationInfo.copy(bufferName = "$namePrefix.${geometry.name}.dataI"))
         } else {
             null
         }

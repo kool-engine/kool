@@ -36,7 +36,7 @@ interface RenderBackend {
 
     fun <T: ImageData> uploadTextureData(tex: Texture<T>)
     fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>)
-    fun downloadStorageBuffer(storage: StorageBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer)
+    fun downloadBuffer(buffer: GpuBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer)
 }
 
 class DeviceCoordinates(

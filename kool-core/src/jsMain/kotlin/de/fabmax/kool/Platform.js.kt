@@ -1,6 +1,8 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.Log
+import de.fabmax.kool.util.LogPrinter
 import de.fabmax.kool.util.launchOnMainThread
 import org.w3c.dom.HTMLCanvasElement
 
@@ -39,9 +41,26 @@ internal object JsImpl {
     val canvas: HTMLCanvasElement
         get() = checkNotNull(ctx?.canvas) { "Platform.createContext() not called" }
 
+    init {
+        if (Log.printer == Log.DEFAULT_PRINTER) {
+            Log.printer = JsLogPrinter
+        }
+    }
+
     fun createContext(): JsContext {
         check(ctx == null) { "Context was already created (multi-context is currently not supported in js" }
         ctx = JsContext()
         return ctx!!
+    }
+}
+
+private object JsLogPrinter : LogPrinter {
+    override fun print(lvl: Log.Level, tag: String?, message: String) {
+        when (lvl) {
+            Log.Level.ERROR -> console.error("${lvl.indicator}/$tag: $message")
+            Log.Level.WARN -> console.warn("${lvl.indicator}/$tag: $message")
+            Log.Level.INFO -> console.info("${lvl.indicator}/$tag: $message")
+            else -> console.log("${lvl.indicator}/$tag: $message")
+        }
     }
 }

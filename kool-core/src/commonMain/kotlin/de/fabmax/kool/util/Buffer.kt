@@ -1,5 +1,7 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.math.*
+
 expect fun Uint8Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint8Buffer
 expect fun Uint16Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint16Buffer
 expect fun Int32Buffer(capacity: Int, isAutoLimit: Boolean = false): Int32Buffer
@@ -11,7 +13,7 @@ fun Uint32Buffer(capacity: Int, isAutoLimit: Boolean = false): Uint32Buffer = In
  * Super class for platform-dependent buffers. In the JVM these buffers directly map to the corresponding NIO buffers.
  * However, not all operations of NIO buffers are supported.
  *
- * Notice that Buffer is not generic, so that concrete types remain primitive.
+ * Notice that Buffer is not generic, so that concrete types remain primitive (instead of getting boxed).
  *
  * @author fabmax
  */
@@ -199,4 +201,152 @@ interface MixedBuffer : Buffer {
         const val SIZEOF_INT = 4
         const val SIZEOF_FLOAT = 4
     }
+}
+
+/**
+ * Returns the buffer content at the given index. The index is based on the buffer size, i.e. calling this method
+ * with [i] = 1 will return a vector with its components set to the two floats at buffer positions 2 and 3.
+ */
+fun Float32Buffer.getVec2f(i: Int, result: MutableVec2f = MutableVec2f()): MutableVec2f {
+    val pos = i * 2
+    result.x = get(pos)
+    result.y = get(pos + 1)
+    return result
+}
+
+/**
+ * Returns the buffer content at the given index. If [withPadding] is true (the default), the vector is padded with an
+ * additional 4th float value, which is typically needed in order to use it on the GPU.
+ * The index is based on the buffer size, i.e. calling this method with [i] = 1 will return a vector with its
+ * components set to the three floats at buffer positions 4, 5, and 6 (if [withPadding] is true) or at buffer
+ * positions 3, 4, and 5 (if it is false).
+ */
+fun Float32Buffer.getVec3f(i: Int, result: MutableVec3f = MutableVec3f(), withPadding: Boolean = true): MutableVec3f {
+    val pos = i * if (withPadding) 4 else 3
+    result.x = get(pos)
+    result.y = get(pos + 1)
+    result.z = get(pos + 2)
+    return result
+}
+
+/**
+ * Returns the buffer content at the given index. The index is based on the buffer size, i.e. calling this method
+ * with [i] = 1 will return a vector with its components set to the four floats at buffer positions 4, 5, 6, and 7.
+ */
+fun Float32Buffer.getVec4f(i: Int, result: MutableVec4f = MutableVec4f()): MutableVec4f {
+    val pos = i * 4
+    result.x = get(pos)
+    result.y = get(pos + 1)
+    result.z = get(pos + 2)
+    result.w = get(pos + 3)
+    return result
+}
+
+/**
+ * Sets the buffer content at the given index to the provided value. The index is based on the buffer size, i.e.
+ * calling this method with [i] = 1 will write to floats at buffer positions 2 and 3.
+ */
+fun Float32Buffer.setVec2f(i: Int, vec: Vec2f) {
+    val pos = i * 2
+    set(pos, vec.x)
+    set(pos + 1, vec.y)
+}
+
+/**
+ * Sets the buffer content at the given index to the provided value. If [withPadding] is true (the default), the
+ * vector is padded with an additional 4th float value, which is typically needed in order to use it on the GPU.
+ * The index is based on the buffer size, i.e. calling this method with [i] = 1 will write to floats at buffer
+ * positions 4, 5, and 6 (if [withPadding] is true) or at buffer positions 3, 4, and 5 (if it is false).
+ */
+fun Float32Buffer.setVec3f(i: Int, vec: Vec3f, withPadding: Boolean = true) {
+    val pos = i * if (withPadding) 4 else 3
+    set(pos, vec.x)
+    set(pos + 1, vec.y)
+    set(pos + 2, vec.z)
+}
+
+/**
+ * Sets the buffer content at the given index to the provided value. The index is based on the buffer size, i.e.
+ * calling this method with [i] = 1 will write to floats at buffer positions 4, 5, 6, and 7.
+ */
+fun Float32Buffer.setVec4f(i: Int, vec: Vec4f) {
+    val pos = i * 4
+    set(pos, vec.x)
+    set(pos + 1, vec.y)
+    set(pos + 2, vec.z)
+    set(pos + 3, vec.w)
+}
+
+/**
+ * Returns the buffer content at the given index. The index is based on the buffer size, i.e. calling this method
+ * with [i] = 1 will return a vector with its components set to the two ints at buffer positions 2 and 3.
+ */
+fun Int32Buffer.getVec2i(i: Int, result: MutableVec2i = MutableVec2i()): MutableVec2i {
+    val pos = i * 2
+    result.x = get(pos)
+    result.y = get(pos + 1)
+    return result
+}
+
+/**
+ * Returns the buffer content at the given index. If [withPadding] is true (the default), the vector is padded with an
+ * additional 4th int value, which is typically needed in order to use it on the GPU.
+ * The index is based on the buffer size, i.e. calling this method with [i] = 1 will return a vector with its
+ * components set to the three ints at buffer positions 4, 5, and 6 (if [withPadding] is true) or at buffer
+ * positions 3, 4, and 5 (if it is false).
+ */
+fun Int32Buffer.getVec3i(i: Int, result: MutableVec3i = MutableVec3i(), withPadding: Boolean = true): MutableVec3i {
+    val pos = i * if (withPadding) 4 else 3
+    result.x = get(pos)
+    result.y = get(pos + 1)
+    result.z = get(pos + 2)
+    return result
+}
+
+/**
+ * Returns the buffer content at the given index. The index is based on the buffer size, i.e. calling this method
+ * with [i] = 1 will return a vector with its components set to the four ints at buffer positions 4, 5, 6, and 7.
+ */
+fun Int32Buffer.getVec4i(i: Int, result: MutableVec4i = MutableVec4i()): MutableVec4i {
+    val pos = i * 4
+    result.x = get(pos)
+    result.y = get(pos + 1)
+    result.z = get(pos + 2)
+    result.w = get(pos + 3)
+    return result
+}
+
+/**
+ * Sets the buffer content at the given index to the provided value. The index is based on the buffer size, i.e.
+ * calling this method with [i] = 1 will write to ints at buffer positions 2 and 3.
+ */
+fun Int32Buffer.setVec2i(i: Int, vec: Vec2i) {
+    val pos = i * 2
+    set(pos, vec.x)
+    set(pos + 1, vec.y)
+}
+
+/**
+ * Sets the buffer content at the given index to the provided value. If [withPadding] is true (the default), the
+ * vector is padded with an additional 4th int value, which is typically needed in order to use it on the GPU.
+ * The index is based on the buffer size, i.e. calling this method with [i] = 1 will write to ints at buffer
+ * positions 4, 5, and 6 (if [withPadding] is true) or at buffer positions 3, 4, and 5 (if it is false).
+ */
+fun Int32Buffer.setVec3i(i: Int, vec: Vec3i, withPadding: Boolean = true) {
+    val pos = i * if (withPadding) 4 else 3
+    set(pos, vec.x)
+    set(pos + 1, vec.y)
+    set(pos + 2, vec.z)
+}
+
+/**
+ * Sets the buffer content at the given index to the provided value. The index is based on the buffer size, i.e.
+ * calling this method with [i] = 1 will write to ints at buffer positions 4, 5, 6, and 7.
+ */
+fun Int32Buffer.setVec4i(i: Int, vec: Vec4i) {
+    val pos = i * 4
+    set(pos, vec.x)
+    set(pos + 1, vec.y)
+    set(pos + 2, vec.z)
+    set(pos + 3, vec.w)
 }

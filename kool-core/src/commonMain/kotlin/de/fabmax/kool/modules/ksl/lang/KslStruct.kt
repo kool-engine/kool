@@ -5,18 +5,18 @@ import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.StructMember
 
 class KslStruct<T: Struct<T>>(val provider: () -> T) : KslType(provider().structName) {
-    val struct: T = provider()
+    val proto: T = provider()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
         other as KslStruct<*>
-        return struct::class == other.struct::class
+        return proto::class == other.proto::class
     }
 
     override fun hashCode(): Int {
-        return struct::class.hashCode()
+        return proto::class.hashCode()
     }
 }
 
@@ -110,9 +110,9 @@ class KslStructMemberExpressionStructArray<S: Struct<S>>(
     override fun toPseudoCode(): String = "${struct.toPseudoCode()}.${member.memberName}"
 }
 
-val <T: KslStruct<S>, S: Struct<S>> KslExpression<T>.struct: S get() = expressionType.provider().also {
+val <S: Struct<S>> KslExprStruct<S>.struct: S get() = expressionType.provider().also {
     @Suppress("UNCHECKED_CAST")
-    it.setupKslAccess(this as KslExpression<KslStruct<*>>)
+    it.setupKslAccess(this as KslExprStruct<*>)
 }
 
 val Struct<*>.Float1Member.ksl: KslStructMemberExpressionScalar<KslFloat1> get() =

@@ -88,6 +88,7 @@ object Demos {
         entry("inf-depth-test", "Clip Space Test") { InifiniteDepthTest() }
         entry("instancing-test", "Instancing Test") { InstancingTest() }
         entry("tex-array-test", "Array Textures Test") { ArrayTexturesTest() }
+        entry("struct-test", "Hello Structs") { HelloStructs() }
     }
 
     val categories = mutableListOf(physicsDemos, graphicsDemos, techDemos, hiddenDemos)

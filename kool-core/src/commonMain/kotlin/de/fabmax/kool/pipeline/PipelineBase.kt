@@ -45,7 +45,7 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
         pipelineSwapData.values.forEach { it.release() }
     }
 
-    inline fun <reified T: BindingLayout> findBindingLayout(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {
+    inline fun <reified T: BindingLayout> findBindGroupItem(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {
         for (group in bindGroupLayouts.asList) {
             group.bindings.filterIsInstance<T>().find(predicate)?.let {
                 return group to it
@@ -57,6 +57,14 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     fun findBindGroupItemByName(name: String): Pair<BindGroupLayout, BindingLayout>? {
         val group = bindGroupLayouts.asList.find { grp -> grp.bindings.any { it.name == name } }
         return group?.let { grp -> grp to grp.bindings.first { it.name == name } }
+    }
+
+    inline fun <reified T: BindingLayout> getBindGroupItem(predicate: (T) -> Boolean): Pair<BindGroupLayout, T> {
+        return requireNotNull(findBindGroupItem(predicate)) { "Bind group item with type ${T::class} not found" }
+    }
+
+    fun getBindGroupItemByName(name: String): Pair<BindGroupLayout, BindingLayout> {
+        return requireNotNull(findBindGroupItemByName(name)) { "Bind group item $name not found" }
     }
 }
 
