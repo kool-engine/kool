@@ -152,6 +152,21 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
     fun int4Value(xyz: KslExprInt3, w: Int) = int4Value(xyz, w.const)
     fun int4Value(xyz: KslExprInt3, w: KslExprInt1) = KslValueInt4(xyz.x, xyz.y, xyz.z, w)
 
+    fun uint2Value(x: UInt, y: UInt) = KslValueUint2(x, y)
+    fun uint2Value(x: KslExprUint1, y: KslExprUint1) = KslValueUint2(x, y)
+
+    fun uint3Value(x: UInt, y: UInt, z: UInt) = KslValueUint3(x, y, z)
+    fun uint3Value(x: KslExprUint1, y: KslExprUint1, z: KslExprUint1) = KslValueUint3(x, y, z)
+    fun uint3Value(xy: KslExprUint2, z: KslExprUint1) = KslValueUint3(xy.x, xy.y, z)
+
+    fun uint4Value(x: UInt, y: UInt, z: UInt, w: UInt) = KslValueUint4(x, y, z, w)
+    fun uint4Value(x: KslExprUint1, y: KslExprUint1, z: KslExprUint1, w: KslExprUint1) = KslValueUint4(x, y, z, w)
+    fun uint4Value(xy: KslExprUint2, z: UInt, w: UInt) = uint4Value(xy, z.const, w.const)
+    fun uint4Value(xy: KslExprUint2, z: KslExprUint1, w: KslExprUint1) = KslValueUint4(xy.x, xy.y, z, w)
+    fun uint4Value(xy: KslExprUint2, zw: KslExprUint2) = KslValueUint4(xy.x, xy.y, zw.x, zw.y)
+    fun uint4Value(xyz: KslExprUint3, w: UInt) = uint4Value(xyz, w.const)
+    fun uint4Value(xyz: KslExprUint3, w: KslExprUint1) = KslValueUint4(xyz.x, xyz.y, xyz.z, w)
+
     fun bool2Value(x: Boolean, y: Boolean) = KslValueBool2(x, y)
     fun bool2Value(x: KslExprBool1, y: KslExprBool1) = KslValueBool2(x, y)
 
