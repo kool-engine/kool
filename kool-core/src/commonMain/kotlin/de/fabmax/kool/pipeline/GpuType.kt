@@ -23,7 +23,7 @@ sealed interface GpuType {
     data object Mat3 : GpuType { override val byteSize = 48 }
     data object Mat4 : GpuType { override val byteSize = 64 }
 
-    class Struct(val struct: de.fabmax.kool.util.Struct<*>) : GpuType {
+    class Struct(val struct: de.fabmax.kool.util.Struct) : GpuType {
         override val byteSize: Int get() = struct.structSize
         override fun toString(): String = "Struct<${struct.structName}>"
 

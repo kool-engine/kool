@@ -27,7 +27,7 @@ open class KslProgram(val name: String) {
     val uniformBuffers = mutableListOf(commonUniformBuffer)
     val uniformStructs = mutableMapOf<String, KslUniformStruct<*>>()
     val uniformSamplers = mutableMapOf<String, SamplerUniform>()
-    val structs = mutableMapOf<String, Struct<*>>()
+    val structs = mutableMapOf<String, Struct>()
     val storageBuffers = mutableMapOf<String, KslStorage<*>>()
     val storageTextures = mutableMapOf<String, KslStorageTexture<*,*,*>>()
     val dataBlocks = mutableListOf<KslDataBlock>()
@@ -107,9 +107,9 @@ open class KslProgram(val name: String) {
     }
 
     @PublishedApi
-    internal fun registerStruct(struct: Struct<*>) {
-        struct.members.filterIsInstance<Struct<*>>().forEach { registerStruct(it) }
-        struct.members.filterIsInstance<Struct<*>.NestedStructArrayMember<*>>().forEach { registerStruct(it.struct) }
+    internal fun registerStruct(struct: Struct) {
+        struct.members.filterIsInstance<Struct>().forEach { registerStruct(it) }
+        struct.members.filterIsInstance<Struct.NestedStructArrayMember<*>>().forEach { registerStruct(it.struct) }
 
         val existing = structs.getOrPut(struct.structName) { struct }
         check(struct::class == existing::class) {
@@ -142,7 +142,7 @@ open class KslProgram(val name: String) {
     }
 
     @PublishedApi
-    internal inline fun <reified S: Struct<S>> getOrCreateStructUniform(
+    internal inline fun <reified S: Struct> getOrCreateStructUniform(
         name: String,
         scope: BindGroupScope = BindGroupScope.PIPELINE,
         noinline provider: () -> S
@@ -184,7 +184,7 @@ open class KslProgram(val name: String) {
     fun uniformMat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat3Array(name, arraySize)
     fun uniformMat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat4Array(name, arraySize)
 
-    inline fun <reified S: Struct<S>> uniformStruct(name: String, scope: BindGroupScope = BindGroupScope.PIPELINE, noinline provider: () -> S): KslUniformStruct<S> =
+    inline fun <reified S: Struct> uniformStruct(name: String, scope: BindGroupScope = BindGroupScope.PIPELINE, noinline provider: () -> S): KslUniformStruct<S> =
         getOrCreateStructUniform(name, scope, provider)
 
     fun texture1d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
@@ -209,12 +209,12 @@ open class KslProgram(val name: String) {
     fun depthTextureCubeArray(name: String) =
         getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
 
-    fun <T: Struct<T>> struct(provider: () -> T): KslStruct<T> {
+    fun <T: Struct> struct(provider: () -> T): KslStruct<T> {
         registerStruct(provider())
         return KslStruct<T>(provider)
     }
 
-    fun <T: Struct<T>> storage(
+    fun <T: Struct> storage(
         name: String,
         structType: KslStruct<T>,
         size: Int? = null

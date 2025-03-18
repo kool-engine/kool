@@ -56,7 +56,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
         }
     }
 
-    class DeferredCamDataStruct : Struct<DeferredCamDataStruct>("DeferredCameraData", MemoryLayout.Std140) {
+    class DeferredCamDataStruct : Struct("DeferredCameraData", MemoryLayout.Std140) {
         val proj = mat4("projMat")
         val invView = mat4("invView")
         val viewport = float4("viewport")

@@ -15,7 +15,7 @@ sealed class KslStorage<T: KslStorageType<*>>(
     internal var isAccessedAtomically = false
 }
 
-class KslStructStorage<T: Struct<T>>(name: String, type: KslStruct<T>, size: Int?) :
+class KslStructStorage<T: Struct>(name: String, type: KslStruct<T>, size: Int?) :
     KslStorage<KslStructStorageType<T>>(name, KslStructStorageType(type), size)
 {
     override val expressionType: KslStructStorageType<T> get() = storageType

@@ -6,11 +6,11 @@ import de.fabmax.kool.modules.ksl.lang.KslExpression
 import de.fabmax.kool.modules.ksl.lang.KslStruct
 import de.fabmax.kool.pipeline.GpuType
 
-abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLayout) : StructMember {
+abstract class Struct(val structName: String, val layout: MemoryLayout) : StructMember {
     private var _memberName: String = ""
     override val memberName: String get() = _memberName
-    private var _parent: Struct<*>? = null
-    override val parent: Struct<*>? get() = _parent
+    private var _parent: Struct? = null
+    override val parent: Struct? get() = _parent
     private var _byteOffset = 0
     override val byteOffset: Int get() = _byteOffset
 
@@ -47,25 +47,19 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         _members += member
     }
 
-    fun viewBuffer(buffer: StructBuffer<T>): StructBufferAccessIndexed {
+    internal fun setupBufferAccess(access: StructBufferAccess) {
         check(_bufferAccess == null) {
             "Buffer access is already configured! A single struct instance can only view a single buffer"
         }
-        val accessor = StructBufferAccessIndexed(buffer)
-        setupBufferAccess(accessor)
-        return accessor
-    }
-
-    private fun setupBufferAccess(access: StructBufferAccess) {
         _bufferAccess = access
-        members.filterIsInstance<Struct<*>>().forEach {
+        members.filterIsInstance<Struct>().forEach {
             it.setupBufferAccess(StructBufferAccessNested(access, it.byteOffset))
         }
     }
 
     internal fun setupKslAccess(access: KslExprStruct<*>) {
         _kslAccess = access
-        members.filterIsInstance<Struct<*>>().forEach {
+        members.filterIsInstance<Struct>().forEach {
             it.setupKslAccess(access)
         }
     }
@@ -209,7 +203,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
 
-    protected fun <S: Struct<S>> struct(struct: S, name: String = "nested_${members.size}"): S {
+    protected fun <S: Struct> struct(struct: S, name: String = "nested_${members.size}"): S {
         require(struct.layout == layout) {
             "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
         }
@@ -225,7 +219,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         return struct
     }
 
-    protected fun <S: Struct<S>> structArray(arraySize: Int, name: String = "nestedArr_${members.size}", structProvider: () -> S): NestedStructArrayMember<S> {
+    protected fun <S: Struct> structArray(arraySize: Int, name: String = "nestedArr_${members.size}", structProvider: () -> S): NestedStructArrayMember<S> {
         val nested = structProvider()
         require(nested.layout == layout) {
             "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${nested::class} has ${nested.layout}"
@@ -251,33 +245,33 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         }
         return members.joinToString("\n") { member ->
             when (member) {
-                is Struct<*>.Float1Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Float2Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Float3Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Float4Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Int1Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Int2Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Int3Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Int4Member -> "${member.nameAndType()} = ${member.get()}"
-                is Struct<*>.Mat2Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
-                is Struct<*>.Mat3Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
-                is Struct<*>.Mat4Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
+                is Float1Member -> "${member.nameAndType()} = ${member.get()}"
+                is Float2Member -> "${member.nameAndType()} = ${member.get()}"
+                is Float3Member -> "${member.nameAndType()} = ${member.get()}"
+                is Float4Member -> "${member.nameAndType()} = ${member.get()}"
+                is Int1Member -> "${member.nameAndType()} = ${member.get()}"
+                is Int2Member -> "${member.nameAndType()} = ${member.get()}"
+                is Int3Member -> "${member.nameAndType()} = ${member.get()}"
+                is Int4Member -> "${member.nameAndType()} = ${member.get()}"
+                is Mat2Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
+                is Mat3Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
+                is Mat4Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
 
-                is Struct<*>.Float1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Float2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Float3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Float4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Int4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Struct<*>.Mat2ArrayMember ->
+                is Float1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Float2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Float3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Float4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Int1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Int2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Int3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Int4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
+                is Mat2ArrayMember ->
                     (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Struct<*>.Mat3ArrayMember ->
+                is Mat3ArrayMember ->
                     (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Struct<*>.Mat4ArrayMember ->
+                is Mat4ArrayMember ->
                     (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Struct<*>.NestedStructArrayMember<*> -> buildString {
+                is NestedStructArrayMember<*> -> buildString {
                     repeat(member.arraySize) { i ->
                         append(member.nameAndType(i).trim()).appendLine(" {")
                         member[i].getBufferContentString().lines().forEach { appendLine("  $it") }
@@ -285,7 +279,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
                     }
                 }.trim()
 
-                is Struct<*> -> buildString {
+                is Struct -> buildString {
                     append(member.nameAndType().trim()).appendLine(" {")
                     member.getBufferContentString().lines().forEach { appendLine("  $it") }
                     append("}")
@@ -297,7 +291,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || other !is Struct<*>) return false
+        if (other == null || other !is Struct) return false
 
         if (layout != other.layout) return false
         if (members.size != other.members.size) return false
@@ -318,7 +312,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Float1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float1
 
         fun set(value: Float) { buffer.setFloat32(bufferPosition + byteOffset, value) }
@@ -326,7 +320,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Float2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float2
 
         fun set(value: Vec2f) {
@@ -345,7 +339,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Float3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float3
 
         fun set(value: Vec3f) {
@@ -366,7 +360,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Float4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float4
 
         fun set(value: Vec4f) {
@@ -405,7 +399,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Int1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int1
 
         fun set(value: Int) { buffer.setInt32(bufferPosition + byteOffset, value) }
@@ -413,7 +407,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Int2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int2
 
         fun set(value: Vec2i) {
@@ -432,7 +426,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Int3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int3
 
         fun set(value: Vec3i) {
@@ -453,7 +447,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Int4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int4
 
         fun set(value: Vec4i) {
@@ -476,7 +470,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Mat2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Mat2
 
         fun set(value: Mat2f) {
@@ -495,7 +489,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Mat3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Mat3
 
         fun set(value: Mat3f) {
@@ -516,7 +510,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
     }
 
     inner class Mat4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Mat4
 
         fun set(value: Mat4f) {
@@ -544,7 +538,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float1
 
         operator fun get(index: Int): Float {
@@ -564,7 +558,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float2
 
         operator fun get(index: Int): Vec2f = get(index, MutableVec2f())
@@ -592,7 +586,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float3
 
         operator fun get(index: Int): Vec3f = get(index, MutableVec3f())
@@ -622,7 +616,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Float4
 
         operator fun get(index: Int): Vec4f = get(index, MutableVec4f())
@@ -654,7 +648,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int1
 
         operator fun get(index: Int): Int {
@@ -674,7 +668,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int2
 
         operator fun get(index: Int): Vec2i = get(index, MutableVec2i())
@@ -702,7 +696,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int4
 
         operator fun get(index: Int): Vec3i = get(index, MutableVec3i())
@@ -732,7 +726,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Int4
 
         operator fun get(index: Int): Vec4i = get(index, MutableVec4i())
@@ -764,7 +758,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Mat2
 
         operator fun get(index: Int): Mat2f = get(index, MutableMat2f())
@@ -792,7 +786,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Mat3
 
         operator fun get(index: Int): Mat3f = get(index, MutableMat3f())
@@ -822,7 +816,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         override val arraySize: Int,
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         override val type = GpuType.Mat4
 
         operator fun get(index: Int): Mat4f = get(index, MutableMat4f())
@@ -848,14 +842,14 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
         }
     }
 
-    inner class NestedStructArrayMember<S: Struct<S>>(
+    inner class NestedStructArrayMember<S: Struct>(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
         val structProvider: () -> S
     ) : StructArrayMember {
 
-        override val parent: Struct<T> get() = this@Struct
+        override val parent: Struct get() = this@Struct
         private var nestedBufferAccess: StructBufferAccessNested? = null
         internal val struct = structProvider()
 
@@ -886,7 +880,7 @@ abstract class Struct<T: Struct<T>>(val structName: String, val layout: MemoryLa
 }
 
 sealed interface StructMember {
-    val parent: Struct<*>?
+    val parent: Struct?
     val memberName: String
     val type: GpuType
     val byteOffset: Int
@@ -903,7 +897,7 @@ sealed interface StructMember {
 sealed interface StructArrayMember : StructMember {
     val arraySize: Int
     val arrayStride: Int get() {
-        val layout = requireNotNull(parent ?: this as Struct<*>).layout
+        val layout = requireNotNull(parent ?: this as Struct).layout
         return layout.arrayStrideOf(type)
     }
 
@@ -932,7 +926,7 @@ fun DynamicStruct(name: String, layout: MemoryLayout, block: DynamicStruct.Build
     return DynamicStruct.Builder(name, layout).apply(block).build()
 }
 
-class DynamicStruct private constructor(builder: Builder) : Struct<DynamicStruct>(builder.name, builder.layout) {
+class DynamicStruct private constructor(builder: Builder) : Struct(builder.name, builder.layout) {
     init {
         builder.members.forEach {
             when (it.type) {

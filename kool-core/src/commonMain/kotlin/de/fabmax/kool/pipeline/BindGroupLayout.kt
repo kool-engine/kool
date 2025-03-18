@@ -87,7 +87,7 @@ sealed class BindingLayout(
     override fun hashCode(): Int = hash.hashCode()
 }
 
-class UniformBufferLayout<T: Struct<T>>(
+class UniformBufferLayout<T: Struct>(
     name: String,
     stages: Set<ShaderStage>,
     val structProvider: () -> T,
@@ -102,11 +102,11 @@ class UniformBufferLayout<T: Struct<T>>(
         }
     }
 
-    inline fun <reified S: Struct<S>> isStructInstanceOf() = proto is S
+    inline fun <reified S: Struct> isStructInstanceOf() = proto is S
 
     fun indexOfMember(memberName: String) = proto.indexOf(memberName)
 
-    inline fun <reified S: Struct<S>> struct() = structProvider() as S
+    inline fun <reified S: Struct> struct() = structProvider() as S
 
     override val hash: LongHash = LongHash {
         this += name

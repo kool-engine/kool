@@ -24,12 +24,12 @@ import de.fabmax.kool.util.Time
 
 class HelloComputeParticles : DemoScene("Hello Compute Particles") {
 
-    class ParticleAppearance : Struct<ParticleAppearance>("particleAppearance", MemoryLayout.Std430) {
+    class ParticleAppearance : Struct("particleAppearance", MemoryLayout.Std430) {
         val color = float4()
         val size = float1()
     }
 
-    class Particle : Struct<Particle>("particleData", MemoryLayout.Std430) {
+    class Particle : Struct("particleData", MemoryLayout.Std430) {
         // particle color and size are stored in a nested struct, we could of course also store these in simple
         // primitive members, the nested struct is only used for an example of using nested structs
         val appearance = struct(ParticleAppearance())

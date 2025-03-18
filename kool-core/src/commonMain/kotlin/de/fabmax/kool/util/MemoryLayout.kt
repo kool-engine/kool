@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.GpuType
 sealed interface MemoryLayout {
     fun alignmentOf(type: GpuType, isArray: Boolean): Int
     fun arrayStrideOf(type: GpuType): Int
-    fun structSize(struct: Struct<*>, lastPosition: Int): Int
+    fun structSize(struct: Struct, lastPosition: Int): Int
     fun sizeOf(type: GpuType): Int = type.byteSize
 
     fun offsetAndSizeOf(prevPosition: Int, type: GpuType, arraySize: Int): Pair<Int, Int> {
@@ -23,7 +23,7 @@ sealed interface MemoryLayout {
     data object TightlyPacked : MemoryLayout {
         override fun alignmentOf(type: GpuType, isArray: Boolean): Int = 4
         override fun arrayStrideOf(type: GpuType): Int = type.byteSize
-        override fun structSize(struct: Struct<*>, lastPosition: Int): Int = lastPosition
+        override fun structSize(struct: Struct, lastPosition: Int): Int = lastPosition
     }
 
     data object Std140 : MemoryLayout {
@@ -55,7 +55,7 @@ sealed interface MemoryLayout {
             else -> 16
         }
 
-        override fun structSize(struct: Struct<*>, lastPosition: Int): Int = alignedOffset(lastPosition, 16)
+        override fun structSize(struct: Struct, lastPosition: Int): Int = alignedOffset(lastPosition, 16)
     }
 
     data object Std430 : MemoryLayout {
@@ -85,7 +85,7 @@ sealed interface MemoryLayout {
             else -> sizeOf(type)
         }
 
-        override fun structSize(struct: Struct<*>, lastPosition: Int): Int {
+        override fun structSize(struct: Struct, lastPosition: Int): Int {
             val maxMemberSize = struct.members.maxOf { sizeOf(it.type) }.coerceAtMost(16)
             return alignedOffset(lastPosition, maxMemberSize)
         }

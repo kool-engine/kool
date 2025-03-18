@@ -59,7 +59,7 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
         }
     }
 
-    class LightDataStruct(maxLightCount: Int) : Struct<LightDataStruct>("LightData", MemoryLayout.Std140) {
+    class LightDataStruct(maxLightCount: Int) : Struct("LightData", MemoryLayout.Std140) {
         val encodedPositions = float4Array(maxLightCount, "encodedPositions")
         val encodedDirections = float4Array(maxLightCount, "encodedDirections")
         val encodedColors = float4Array(maxLightCount, "encodedColors")

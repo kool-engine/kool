@@ -87,7 +87,7 @@ open class KslFunction<T: KslType>(val name: String, val returnType: T, val pare
     fun paramMat3(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM3"), KslMat3)
     fun paramMat4(name: String? = null) = paramMatrix(name ?: parentStage.program.nextName("paramM4"), KslMat4)
 
-    fun <S> paramStruct(type: KslStruct<S>, name: String = parentStage.program.nextName("paramStr")) where S: Struct<S> =
+    fun <S> paramStruct(type: KslStruct<S>, name: String = parentStage.program.nextName("paramStr")) where S: Struct =
         KslVarStruct(name, type, false).also {
             parameters += it
             body.definedStates += it
@@ -170,7 +170,7 @@ class KslInvokeFunctionVector<V, S>(function: KslFunction<V>, parentScope: KslSc
 class KslInvokeFunctionMatrix<M, V>(function: KslFunction<M>, parentScope: KslScopeBuilder, returnType: M, vararg args: KslExpression<*>)
     : KslInvokeFunction<M>(function, parentScope, returnType, *args), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
 class KslInvokeFunctionStruct<S>(function: KslFunction<KslStruct<S>>, parentScope: KslScopeBuilder, returnType: KslStruct<S>, vararg args: KslExpression<*>)
-    : KslInvokeFunction<KslStruct<S>>(function, parentScope, returnType, *args), KslExprStruct<S> where S: Struct<S>
+    : KslInvokeFunction<KslStruct<S>>(function, parentScope, returnType, *args), KslExprStruct<S> where S: Struct
 class KslInvokeFunctionScalarArray<S>(function: KslFunction<KslArrayType<S>>, parentScope: KslScopeBuilder, returnType: KslArrayType<S>, vararg args: KslExpression<*>)
     : KslInvokeFunction<KslArrayType<S>>(function, parentScope, returnType, *args), KslScalarArrayExpression<S> where S: KslType, S: KslScalar
 class KslInvokeFunctionVectorArray<V, S>(function: KslFunction<KslArrayType<V>>, parentScope: KslScopeBuilder, returnType: KslArrayType<V>, vararg args: KslExpression<*>)
@@ -199,7 +199,7 @@ class KslFunctionBool2(name: String, parentStage: KslShaderStage) : KslFunction<
 class KslFunctionBool3(name: String, parentStage: KslShaderStage) : KslFunction<KslBool3>(name, KslBool3, parentStage)
 class KslFunctionBool4(name: String, parentStage: KslShaderStage) : KslFunction<KslBool4>(name, KslBool4, parentStage)
 
-class KslFunctionStruct<S: Struct<S>>(name: String, parentStage: KslShaderStage, struct: KslStruct<S>) : KslFunction<KslStruct<S>>(name, struct, parentStage)
+class KslFunctionStruct<S: Struct>(name: String, parentStage: KslShaderStage, struct: KslStruct<S>) : KslFunction<KslStruct<S>>(name, struct, parentStage)
 
 class KslFunctionFloat1Array(name: String, arraySize: Int, parentStage: KslShaderStage) : KslFunction<KslArrayType<KslFloat1>>(name, KslFloat1Array(arraySize), parentStage)
 class KslFunctionFloat2Array(name: String, arraySize: Int, parentStage: KslShaderStage) : KslFunction<KslArrayType<KslFloat2>>(name, KslFloat2Array(arraySize), parentStage)
@@ -278,7 +278,7 @@ fun KslShaderStage.functionBool4(name: String, block: KslFunctionBool4.() -> Uni
     KslFunctionBool4(name, this).apply(block).also { addFunction(name, it) }
 
 
-fun <S: Struct<S>> KslShaderStage.functionStruct(name: String, struct: KslStruct<S>, block: KslFunctionStruct<S>.() -> Unit) =
+fun <S: Struct> KslShaderStage.functionStruct(name: String, struct: KslStruct<S>, block: KslFunctionStruct<S>.() -> Unit) =
     KslFunctionStruct(name, this, struct).apply(block).also { addFunction(name, it) }
 
 

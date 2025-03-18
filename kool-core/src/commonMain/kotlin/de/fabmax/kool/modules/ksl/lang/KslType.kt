@@ -99,7 +99,7 @@ class KslMat2Array(arraySize: Int) : KslArrayType<KslMat2>(KslMat2, arraySize)
 class KslMat3Array(arraySize: Int) : KslArrayType<KslMat3>(KslMat3, arraySize)
 class KslMat4Array(arraySize: Int) : KslArrayType<KslMat4>(KslMat4, arraySize)
 
-class KslStructArray<S: Struct<S>>(struct: KslStruct<S>, arraySize: Int) : KslArrayType<KslStruct<S>>(struct, arraySize)
+class KslStructArray<S: Struct>(struct: KslStruct<S>, arraySize: Int) : KslArrayType<KslStruct<S>>(struct, arraySize)
 
 sealed class KslColorSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat4>(typeName)
 sealed class KslDepthSampler<C: KslFloatType>(typeName: String) : KslSamplerType<KslFloat1>(typeName)
@@ -123,7 +123,7 @@ data object KslDepthSampler2dArray : KslDepthSampler<KslFloat2>("depthSampler2dA
 data object KslDepthSamplerCubeArray : KslDepthSampler<KslFloat3>("depthSamplerCubeArray"), KslSamplerCubeType, KslSamplerArrayType
 
 
-class KslStructStorageType<T: Struct<T>>(structType: KslStruct<T>) : KslStorageType<KslStruct<T>>("KslStructStorageType<${structType.typeName}>", structType)
+class KslStructStorageType<T: Struct>(structType: KslStruct<T>) : KslStorageType<KslStruct<T>>("KslStructStorageType<${structType.typeName}>", structType)
 
 class KslPrimitiveStorageType<R: KslNumericType>(elemType: R) : KslStorageType<R>("KslStorage1dType<${elemType.typeName}>", elemType) {
     override fun hashCode(): Int = this::class.hashCode() * 31 + elemType.hashCode()

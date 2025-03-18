@@ -23,4 +23,4 @@ class KslVarMatrix<M, V>(name: String, type: M, isMutable: Boolean) :
     KslVar<M>(name, type, isMutable), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslVector<*>
 
 class KslVarStruct<S>(name: String, type: KslStruct<S>, isMutable: Boolean) :
-    KslVar<KslStruct<S>>(name, type, isMutable), KslExprStruct<S> where S: Struct<S>
+    KslVar<KslStruct<S>>(name, type, isMutable), KslExprStruct<S> where S: Struct

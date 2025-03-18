@@ -63,7 +63,7 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
         return program.uniformSamplers.values.map { it.sampler }.filter { dependsOn(it) }
     }
 
-    fun getUsedStructs(): List<Struct<*>> {
+    fun getUsedStructs(): List<Struct> {
         return program.structs.values.toList()  // todo: .filter { dependsOn(it) }
     }
 

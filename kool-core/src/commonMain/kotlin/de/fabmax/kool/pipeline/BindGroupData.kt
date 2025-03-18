@@ -37,7 +37,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         internal set
 
     @Suppress("UNCHECKED_CAST")
-    fun <S: Struct<S>> uniformStructBindingData(binding: UniformBufferLayout<S>) = bindings[binding.bindingIndex] as UniformBufferBindingData<S>
+    fun <S: Struct> uniformStructBindingData(binding: UniformBufferLayout<S>) = bindings[binding.bindingIndex] as UniformBufferBindingData<S>
     fun uniformBufferBindingData(bindingIndex: Int) = bindings[bindingIndex] as UniformBufferBindingData<*>
     fun storageBuffer1dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageBufferBindingData
 
@@ -86,7 +86,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         val isComplete: Boolean
     }
 
-    inner class UniformBufferBindingData<T: Struct<T>>(override val layout: UniformBufferLayout<T>) : BindingData {
+    inner class UniformBufferBindingData<T: Struct>(override val layout: UniformBufferLayout<T>) : BindingData {
         var modCount = 0
             private set
         val buffer: StructBuffer<T> = StructBuffer(1, layout.structProvider())

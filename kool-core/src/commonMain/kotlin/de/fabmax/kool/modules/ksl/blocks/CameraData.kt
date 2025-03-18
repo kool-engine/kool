@@ -85,7 +85,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         }
     }
 
-    class CamDataStruct : Struct<CamDataStruct>("CameraData", MemoryLayout.Std140) {
+    class CamDataStruct : Struct("CameraData", MemoryLayout.Std140) {
         val viewProj = mat4("viewProjMat")
         val view = mat4("viewMat")
         val proj = mat4("projMat")

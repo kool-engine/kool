@@ -29,7 +29,7 @@ class HelloStructs : DemoScene("Hello Structs") {
      * A struct for storing 4 color values as 4 separate members. Std140 memory layout is needed in order
      * to use this struct as a shader uniform.
      */
-    class FlatColorStruct : Struct<FlatColorStruct>("FlatColorStruct", MemoryLayout.Std140) {
+    class FlatColorStruct : Struct("FlatColorStruct", MemoryLayout.Std140) {
         val color1 = float4()
         val color2 = float4()
         val color3 = float4()
@@ -41,7 +41,7 @@ class HelloStructs : DemoScene("Hello Structs") {
      * to the struct defined before. Technically, memory layout does not matter for this struct as it will only be
      * used inside the shader. However, we need to supply a memory layout so we stick to Std140.
      */
-    class ColorArrayStruct : Struct<ColorArrayStruct>("ColorArrayStruct", MemoryLayout.Std140) {
+    class ColorArrayStruct : Struct("ColorArrayStruct", MemoryLayout.Std140) {
         val colors = float4Array(4)
     }
 

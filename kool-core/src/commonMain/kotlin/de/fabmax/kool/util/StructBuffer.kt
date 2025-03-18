@@ -3,7 +3,7 @@ package de.fabmax.kool.util
 import de.fabmax.kool.pipeline.BufferUsage
 import de.fabmax.kool.pipeline.GpuBuffer
 
-class StructBuffer<T: Struct<T>>(val size: Int, val struct: T) {
+class StructBuffer<T: Struct>(val size: Int, val struct: T) {
     @PublishedApi
     internal val bufferAccess: StructBufferAccessIndexed = struct.viewBuffer(this)
 
@@ -38,6 +38,12 @@ class StructBuffer<T: Struct<T>>(val size: Int, val struct: T) {
             struct.block()
         }
     }
+}
+
+fun <T: Struct> T.viewBuffer(buffer: StructBuffer<T>): StructBufferAccessIndexed {
+    val accessor = StructBufferAccessIndexed(buffer)
+    setupBufferAccess(accessor)
+    return accessor
 }
 
 fun StructBuffer<*>.asStorageBuffer(): GpuBuffer = asGpuBuffer(BufferUsage.makeUsage(storage = true))

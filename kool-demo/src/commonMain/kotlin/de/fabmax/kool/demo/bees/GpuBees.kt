@@ -445,7 +445,7 @@ class GpuBees(beeScene: Scene) {
         }
     ) : KslBlinnPhongShader(cfg)
 
-    class BeeData : Struct<BeeData>("BeeData", MemoryLayout.Std430) {
+    class BeeData : Struct("BeeData", MemoryLayout.Std430) {
         val position = float3("position")
         val decay = float1("decay")
         val rotation = float4("rotation")
