@@ -221,6 +221,30 @@ class WgslGenerator private constructor(
         return "${castExpr.expressionType.wgslTypeName()}(${castExpr.value.generateExpression()})"
     }
 
+    override fun generateBitcastExpression(expr: KslExpressionBitcast<*>): String {
+        val dstIsUint = "u" in expr.expressionType.wgslTypeName()
+        val dstIsInt = "i" in expr.expressionType.wgslTypeName()
+        val dstIsFloat = "f" in expr.expressionType.wgslTypeName()
+
+        val type = expr.expressionType
+        if (type is KslVector<*>) {
+            val dims = type.dimens
+            return when {
+                dstIsInt -> "bitcast<vec$dims<i32>>(${expr.value.generateExpression()})"
+                dstIsUint -> "bitcast<vec$dims<u32>>(${expr.value.generateExpression()})"
+                dstIsFloat -> "bitcast<vec$dims<f32>>(${expr.value.generateExpression()})"
+                else -> error("no bitcast conversion possible (${expr.value.expressionType} -> ${expr.expressionType})")
+            }
+        } else {
+            return when {
+                dstIsInt -> "bitcast<i32>(${expr.value.generateExpression()})"
+                dstIsUint -> "bitcast<u32>(${expr.value.generateExpression()})"
+                dstIsFloat -> "bitcast<f32>(${expr.value.generateExpression()})"
+                else -> error("no bitcast conversion possible (${expr.value.expressionType} -> ${expr.expressionType})")
+            }
+        }
+    }
+
     override fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String {
         val lt = expression.left.generateExpression()
         val rt = expression.right.generateExpression()

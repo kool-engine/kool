@@ -101,6 +101,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslTextureSize<*, *> -> generateTextureSize(expr)
             is KslStorageAtomicOp<*, *> -> storageAtomicOp(expr)
             is KslStorageAtomicCompareSwap<*, *> -> storageAtomicCompareSwap(expr)
+            is KslExpressionBitcast -> generateBitcastExpression(expr)
             else -> error("expression type not implemented: $expr")
         }
     }
@@ -117,6 +118,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
         "${swizzleAssignable.vector.generateExpression()}.${swizzleAssignable.components}"
 
     abstract fun generateCastExpression(castExpr: KslExpressionCast<*>): String
+    abstract fun generateBitcastExpression(expr: KslExpressionBitcast<*>): String
 
     open fun <T: KslNumericType> generateMathExpression(expression: KslExpressionMath<T>): String =
         "(${expression.left.generateExpression()} ${expression.operator.opChar} ${expression.right.generateExpression()})"

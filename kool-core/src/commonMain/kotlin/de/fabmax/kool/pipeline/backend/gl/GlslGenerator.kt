@@ -158,6 +158,23 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         return "${glslTypeName(castExpr.expressionType)}(${castExpr.value.generateExpression()})"
     }
 
+    override fun generateBitcastExpression(expr: KslExpressionBitcast<*>): String {
+        val srcIsUint = glslTypeName(expr.value.expressionType).startsWith("u")
+        val srcIsInt = glslTypeName(expr.value.expressionType).startsWith("i")
+        val srcIsFloat = !srcIsUint && !srcIsInt
+
+        val dstIsUint = glslTypeName(expr.expressionType).startsWith("u")
+        val dstIsInt = glslTypeName(expr.expressionType).startsWith("i")
+        val dstIsFloat = !dstIsUint && !dstIsInt
+        return when {
+            srcIsFloat && dstIsInt -> "floatBitsToInt(${expr.value.generateExpression()})"
+            srcIsFloat && dstIsUint -> "floatBitsToUint(${expr.value.generateExpression()})"
+            srcIsInt && dstIsFloat -> "intBitsToFloat(${expr.value.generateExpression()})"
+            srcIsUint && dstIsFloat -> "uintBitsToFloat(${expr.value.generateExpression()})"
+            else -> error("no bitcast conversion possible (${expr.value.expressionType} -> ${expr.expressionType})")
+        }
+    }
+
     override fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String {
         val lt = expression.left.generateExpression()
         val rt = expression.right.generateExpression()
