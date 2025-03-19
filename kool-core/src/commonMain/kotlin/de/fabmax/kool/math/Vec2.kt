@@ -270,7 +270,7 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
     /**
      * Inplace operation: Divides this vector component-wise by the given [Vec2f].
      */
-    operator fun divAssign(that: Vec4f) {
+    operator fun divAssign(that: Vec2f) {
         x /= that.x
         y /= that.y
     }
@@ -608,7 +608,7 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
     /**
      * Inplace operation: Divides this vector component-wise by the given [Vec2d].
      */
-    operator fun divAssign(that: Vec4d) {
+    operator fun divAssign(that: Vec2d) {
         x /= that.x
         y /= that.y
     }
@@ -889,7 +889,7 @@ open class MutableVec2i(override var x: Int, override var y: Int) : Vec2i(x, y) 
     /**
      * Inplace operation: Divides this vector component-wise by the given [Vec2i].
      */
-    operator fun divAssign(that: Vec4i) {
+    operator fun divAssign(that: Vec2i) {
         x /= that.x
         y /= that.y
     }
