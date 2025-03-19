@@ -346,9 +346,9 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
 
             // compute shifted (and rotated) uvs from hashed vertex ids
             val noise = float3Array(3, Vec3f.ZERO.const)
-            noise[0] set noise32(vertex1.toFloat2())
-            noise[1] set noise32(vertex2.toFloat2())
-            noise[2] set noise32(vertex3.toFloat2())
+            noise[0] set noise23(vertex1.toFloat2())
+            noise[1] set noise23(vertex2.toFloat2())
+            noise[2] set noise23(vertex3.toFloat2())
 
             noise[0].z set (noise[0].z - 0.5f.const) * scaleRot.z
             noise[1].z set (noise[1].z - 0.5f.const) * scaleRot.z
@@ -445,7 +445,7 @@ class KslPbrSplatShader(val cfg: Config) : KslShader("KslPbrSplatShader") {
             val sampleUv = float2Var(uv)
             val prevSampleUv = float2Var(uv)
             val prevH = float1Var(0f.const)
-            val hStart = float1Var(noise12(pixelPos) * step)
+            val hStart = float1Var(noise21(pixelPos) * step)
 
             val outBlendInfo = float4Var()
 

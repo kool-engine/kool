@@ -66,7 +66,7 @@ class ParallaxMapBlock(val cfg: ParallaxMapConfig, name: String, parentScope: Ks
         val sampleUv = float2Var(inTexCoords)
         val prevSampleUv = float2Var(inTexCoords)
         val prevH = float1Var(0f.const)
-        val hStart = float1Var(noise12(pixelPos) * step)
+        val hStart = float1Var(noise21(pixelPos) * step)
 
         repeat(inMaxSteps) { i ->
             val hLimit = float1Var(hStart + i.toFloat1() * step)

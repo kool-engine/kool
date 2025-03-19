@@ -5,7 +5,7 @@ import de.fabmax.kool.modules.ksl.KslBlinnPhongShader
 import de.fabmax.kool.modules.ksl.KslBlinnPhongShaderConfig
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.blocks.noise11
-import de.fabmax.kool.modules.ksl.blocks.noise31
+import de.fabmax.kool.modules.ksl.blocks.noise13
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
@@ -91,7 +91,7 @@ class GpuBees(beeScene: Scene) {
                 body {
                     val ang = float1Var(noise11(rand) * PI_F.const)
                     val sin = float1Var(sin(ang))
-                    val axis = float3Var(normalize(noise31(rand)) * sin)
+                    val axis = float3Var(normalize(noise13(rand)) * sin)
                     float4Value(axis, cos(ang))
                 }
             }
@@ -127,7 +127,7 @@ class GpuBees(beeScene: Scene) {
 
                 `if`(decay eq 0f.const) {
                     // bee is alive
-                    val vJitter = float3Var((noise31(rand) - 0.5f.const) * 2f.const * speedJitter * deltaT)
+                    val vJitter = float3Var((noise13(rand) - 0.5f.const) * 2f.const * speedJitter * deltaT)
                     velocity set (velocity + vJitter) * (1f.const - BeeConfig.speedDamping.const * deltaT)
 
                     // swarming
@@ -181,8 +181,8 @@ class GpuBees(beeScene: Scene) {
                         // respawn bee
                         decay set 0f.const
                         rotation set randomRotation(rand + 51f.const)
-                        position set spawnPos + normalize(noise31(rand) - 0.5f.const) * noise11(rand + 1337f.const) * (BeeConfig.worldSize.x * 0.05f).const
-                        velocity set (noise31(rand + 19f.const) - 0.5f.const) * (2f * BeeConfig.maxSpawnSpeed).const
+                        position set spawnPos + normalize(noise13(rand) - 0.5f.const) * noise11(rand + 1337f.const) * (BeeConfig.worldSize.x * 0.05f).const
+                        velocity set (noise13(rand + 19f.const) - 0.5f.const) * (2f * BeeConfig.maxSpawnSpeed).const
                         enemy set randomBeeIndex(53)
                     }
                 }

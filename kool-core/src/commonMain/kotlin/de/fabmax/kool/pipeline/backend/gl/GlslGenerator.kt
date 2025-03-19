@@ -363,7 +363,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
                 appendLine("struct ${struct.structName} {")
                 struct.members.forEach {
                     val arraySuffix = if (it is StructArrayMember) "[${it.arraySize}]" else ""
-                    appendLine("    highp ${glslTypeName(it.type)} ${it.memberName}$arraySuffix;")
+                    appendLine("    ${glslTypeName(it.type)} ${it.memberName}$arraySuffix;")
                 }
                 appendLine("};")
             }

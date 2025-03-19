@@ -476,7 +476,7 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                             }
                         }
                     }
-                    randomHairLen set float1Var(noise12(nearestCell) * 0.5f.const + 0.5f.const)
+                    randomHairLen set float1Var(noise21(nearestCell) * 0.5f.const + 0.5f.const)
 
                 } else {
                     val fragPos = float3Var((basePos.output + 5f.const) * uniformFloat1("uDensity"))
@@ -502,7 +502,7 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                             }
                         }
                     }
-                    randomHairLen set noise13(nearestCell) * 0.5f.const + 0.5f.const
+                    randomHairLen set noise31(nearestCell) * 0.5f.const + 0.5f.const
                 }
 
                 // determine length of selected hair

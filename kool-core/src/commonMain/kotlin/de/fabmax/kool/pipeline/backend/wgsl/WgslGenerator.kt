@@ -245,6 +245,18 @@ class WgslGenerator private constructor(
         }
     }
 
+    override fun <T: KslNumericType> generateBitExpression(expression: KslExpressionBit<T>): String {
+        val isLeftVec = expression.left.expressionType is KslVector<*>
+        val isRightVec = expression.right.expressionType is KslVector<*>
+
+        var rightExpr = expression.right.generateExpression()
+        if (isLeftVec && !isRightVec) {
+            val dims = (expression.left.expressionType as KslVector<*>).dimens
+            rightExpr = "vec$dims<${expression.right.expressionType.wgslTypeName()}>($rightExpr)"
+        }
+        return "(${expression.left.generateExpression()} ${expression.operator.opString} $rightExpr)"
+    }
+
     override fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String {
         val lt = expression.left.generateExpression()
         val rt = expression.right.generateExpression()

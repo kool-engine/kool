@@ -3,437 +3,272 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.lang.*
 
 /*
- The following noise functions are based on:
-
- https://www.shadertoy.com/view/4djSRW#
-
- // Hash without Sine
- // MIT License...
- // Copyright (c)2014 David Hoskins.
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
+ * A couple of noise / hash functions, which provide pseudo random output based on arbitrary input values.
+ *
+ * The hash functions are based on pcg-hash:
+ *   https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
+ *
+ * The noise functions use the hash function to generate pseudo random bits which are then converted to floats
+ * in the range 0..1 for all permutations of input channels 1..4 to output channels 1..4
  */
 
-/**
- * Returns 1d noise for 1d input.
- */
-fun KslScopeBuilder.noise11(p: KslExprFloat1): KslExprFloat1 {
-    val func = parentStage.getOrCreateFunction(Noise11.FUNC_NAME) { Noise11(this) }
-    return func(p)
+fun KslScopeBuilder.hash1(p: KslExprUint1): KslExprUint1 = parentStage.getOrCreateFunction("pcg_hash_1") { Hash1(this) }.invoke(p)
+fun KslScopeBuilder.hash2(p: KslExprUint2): KslExprUint2 = parentStage.getOrCreateFunction("pcg_hash_2") { Hash2(this) }.invoke(p)
+fun KslScopeBuilder.hash3(p: KslExprUint3): KslExprUint3 = parentStage.getOrCreateFunction("pcg_hash_3") { Hash3(this) }.invoke(p)
+fun KslScopeBuilder.hash4(p: KslExprUint4): KslExprUint4 = parentStage.getOrCreateFunction("pcg_hash_4") { Hash4(this) }.invoke(p)
+
+fun KslScopeBuilder.noise11(p: KslExprFloat1): KslExprFloat1 = parentStage.getOrCreateFunction("noise11") { Noise11(this) }.invoke(p)
+fun KslScopeBuilder.noise12(p: KslExprFloat1): KslExprFloat2 = parentStage.getOrCreateFunction("noise12") { Noise12(this) }.invoke(p)
+fun KslScopeBuilder.noise13(p: KslExprFloat1): KslExprFloat3 = parentStage.getOrCreateFunction("noise13") { Noise13(this) }.invoke(p)
+fun KslScopeBuilder.noise14(p: KslExprFloat1): KslExprFloat4 = parentStage.getOrCreateFunction("noise14") { Noise14(this) }.invoke(p)
+
+fun KslScopeBuilder.noise21(p: KslExprFloat2): KslExprFloat1 = parentStage.getOrCreateFunction("noise21") { Noise21(this) }.invoke(p)
+fun KslScopeBuilder.noise22(p: KslExprFloat2): KslExprFloat2 = parentStage.getOrCreateFunction("noise22") { Noise22(this) }.invoke(p)
+fun KslScopeBuilder.noise23(p: KslExprFloat2): KslExprFloat3 = parentStage.getOrCreateFunction("noise23") { Noise23(this) }.invoke(p)
+fun KslScopeBuilder.noise24(p: KslExprFloat2): KslExprFloat4 = parentStage.getOrCreateFunction("noise24") { Noise24(this) }.invoke(p)
+
+fun KslScopeBuilder.noise31(p: KslExprFloat3): KslExprFloat1 = parentStage.getOrCreateFunction("noise31") { Noise31(this) }.invoke(p)
+fun KslScopeBuilder.noise32(p: KslExprFloat3): KslExprFloat2 = parentStage.getOrCreateFunction("noise32") { Noise32(this) }.invoke(p)
+fun KslScopeBuilder.noise33(p: KslExprFloat3): KslExprFloat3 = parentStage.getOrCreateFunction("noise33") { Noise33(this) }.invoke(p)
+fun KslScopeBuilder.noise34(p: KslExprFloat3): KslExprFloat4 = parentStage.getOrCreateFunction("noise34") { Noise34(this) }.invoke(p)
+
+fun KslScopeBuilder.noise41(p: KslExprFloat4): KslExprFloat1 = parentStage.getOrCreateFunction("noise41") { Noise41(this) }.invoke(p)
+fun KslScopeBuilder.noise42(p: KslExprFloat4): KslExprFloat2 = parentStage.getOrCreateFunction("noise42") { Noise42(this) }.invoke(p)
+fun KslScopeBuilder.noise43(p: KslExprFloat4): KslExprFloat3 = parentStage.getOrCreateFunction("noise43") { Noise43(this) }.invoke(p)
+fun KslScopeBuilder.noise44(p: KslExprFloat4): KslExprFloat4 = parentStage.getOrCreateFunction("noise44") { Noise44(this) }.invoke(p)
+
+
+class Hash1(parentScope: KslScopeBuilder) : KslFunction<KslUint1>("pcg_hash_1", KslUint1, parentScope.parentStage) {
+    init {
+        val input = paramUint1()
+        body {
+            val state = uint1Var(input * 747796405u.const + 2891336453u.const)
+            val word = uint1Var(((state shr ((state shr 28u.const) + 4u.const)) xor state) * 277803737u.const)
+            return@body (word shr 22u.const) xor word
+        }
+    }
 }
 
-/**
- * Returns 1d noise for 2d input.
- */
-fun KslScopeBuilder.noise12(p: KslExprFloat2): KslExprFloat1 {
-    val func = parentStage.getOrCreateFunction(Noise12.FUNC_NAME) { Noise12(this) }
-    return func(p)
+class Hash2(parentScope: KslScopeBuilder) : KslFunction<KslUint2>("pcg_hash_2", KslUint2, parentScope.parentStage) {
+    init {
+        val input = paramUint2()
+        body {
+            val state = uint2Var(input * 747796405u.const + 2891336453u.const)
+            val word = uint2Var(((state shr ((state shr 28u.const) + 4u.const)) xor state) * 277803737u.const)
+            return@body (word shr 22u.const) xor word
+        }
+    }
 }
 
-/**
- * Returns 1d noise for 3d input.
- */
-fun KslScopeBuilder.noise13(p: KslExprFloat3): KslExprFloat1 {
-    val func = parentStage.getOrCreateFunction(Noise13.FUNC_NAME) { Noise13(this) }
-    return func(p)
+class Hash3(parentScope: KslScopeBuilder) : KslFunction<KslUint3>("pcg_hash_3", KslUint3, parentScope.parentStage) {
+    init {
+        val input = paramUint3()
+        body {
+            val state = uint3Var(input * 747796405u.const + 2891336453u.const)
+            val word = uint3Var(((state shr ((state shr 28u.const) + 4u.const)) xor state) * 277803737u.const)
+            return@body (word shr 22u.const) xor word
+        }
+    }
 }
 
-/**
- * Returns 1d noise for 4d input.
- */
-fun KslScopeBuilder.noise14(p: KslExprFloat4): KslExprFloat1 {
-    val func = parentStage.getOrCreateFunction(Noise14.FUNC_NAME) { Noise14(this) }
-    return func(p)
+class Hash4(parentScope: KslScopeBuilder) : KslFunction<KslUint4>("pcg_hash_4", KslUint4, parentScope.parentStage) {
+    init {
+        val input = paramUint4()
+        body {
+            val state = uint4Var(input * 747796405u.const + 2891336453u.const)
+            val word = uint4Var(((state shr ((state shr 28u.const) + 4u.const)) xor state) * 277803737u.const)
+            return@body (word shr 22u.const) xor word
+        }
+    }
 }
 
-/**
- * Returns 2d noise for 1d input.
- */
-fun KslScopeBuilder.noise21(p: KslExprFloat1): KslExprFloat2 {
-    val func = parentStage.getOrCreateFunction(Noise21.FUNC_NAME) { Noise21(this) }
-    return func(p)
-}
-
-/**
- * Returns 2d noise for 2d input.
- */
-fun KslScopeBuilder.noise22(p: KslExprFloat2): KslExprFloat2 {
-    val func = parentStage.getOrCreateFunction(Noise22.FUNC_NAME) { Noise22(this) }
-    return func(p)
-}
-
-/**
- * Returns 3d noise for 2d input.
- */
-fun KslScopeBuilder.noise23(p: KslExprFloat3): KslExprFloat2 {
-    val func = parentStage.getOrCreateFunction(Noise23.FUNC_NAME) { Noise23(this) }
-    return func(p)
-}
-
-/**
- * Returns 1d noise for 3d input.
- */
-fun KslScopeBuilder.noise31(p: KslExprFloat1): KslExprFloat3 {
-    val func = parentStage.getOrCreateFunction(Noise31.FUNC_NAME) { Noise31(this) }
-    return func(p)
-}
-
-/**
- * Returns 2d noise for 3d input.
- */
-fun KslScopeBuilder.noise32(p: KslExprFloat2): KslExprFloat3 {
-    val func = parentStage.getOrCreateFunction(Noise32.FUNC_NAME) { Noise32(this) }
-    return func(p)
-}
-
-/**
- * Returns 3d noise for 3d input.
- */
-fun KslScopeBuilder.noise33(p: KslExprFloat3): KslExprFloat3 {
-    val func = parentStage.getOrCreateFunction(Noise33.FUNC_NAME) { Noise33(this) }
-    return func(p)
-}
-
-/**
- * Returns 4d noise for 1d input.
- */
-fun KslScopeBuilder.noise41(p: KslExprFloat1): KslExprFloat4 {
-    val func = parentStage.getOrCreateFunction(Noise41.FUNC_NAME) { Noise41(this) }
-    return func(p)
-}
-
-/**
- * Returns 4d noise for 2d input.
- */
-fun KslScopeBuilder.noise42(p: KslExprFloat2): KslExprFloat4 {
-    val func = parentStage.getOrCreateFunction(Noise42.FUNC_NAME) { Noise42(this) }
-    return func(p)
-}
-
-/**
- * Returns 4d noise for 3d input.
- */
-fun KslScopeBuilder.noise43(p: KslExprFloat3): KslExprFloat4 {
-    val func = parentStage.getOrCreateFunction(Noise43.FUNC_NAME) { Noise43(this) }
-    return func(p)
-}
-
-/**
- * Returns 4d noise for 4d input.
- */
-fun KslScopeBuilder.noise44(p: KslExprFloat4): KslExprFloat4 {
-    val func = parentStage.getOrCreateFunction(Noise44.FUNC_NAME) { Noise44(this) }
-    return func(p)
-}
-
-class Noise11(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
+class Noise11(parentScope: KslScopeBuilder) : KslFunction<KslFloat1>("noise11", KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat1("p")
         body {
-            // float hash11(float p) {
-            //     p = fract(p * .1031);
-            //     p *= p + 33.33;
-            //     p *= p + p;
-            //     return fract(p);
-            // }
-            val x = float1Var(fract(p * 0.1031f.const))
-            x *= x + 33.33f.const
-            x *= x + x
-            return@body fract(x)
+            val pBits = uint1Var(p.toUintBits())
+            val x = uint1Var(hash1(pBits))
+            return@body x.toFloat1() / (UInt.MAX_VALUE.toFloat()).const
         }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise11"
     }
 }
 
-class Noise12(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
+class Noise12(parentScope: KslScopeBuilder) : KslFunction<KslFloat2>("noise12", KslFloat2, parentScope.parentStage) {
+    init {
+        val p = paramFloat1("p")
+        body {
+            val pBits = uint1Var(p.toUintBits())
+            val x = uint2Var(hash2(uint2Value(pBits, pBits * 358711u.const)))
+            return@body x.toFloat2() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+class Noise13(parentScope: KslScopeBuilder) : KslFunction<KslFloat3>("noise13", KslFloat3, parentScope.parentStage) {
+    init {
+        val p = paramFloat1("p")
+        body {
+            val pBits = uint1Var(p.toUintBits())
+            val x = uint3Var(hash3(uint3Value(pBits, pBits * 358711u.const, pBits * 597367u.const)))
+            return@body x.toFloat3() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+class Noise14(parentScope: KslScopeBuilder) : KslFunction<KslFloat4>("noise14", KslFloat4, parentScope.parentStage) {
+    init {
+        val p = paramFloat1("p")
+        body {
+            val pBits = uint1Var(p.toUintBits())
+            val x = uint4Var(hash4(uint4Value(pBits, pBits * 358711u.const, pBits * 597367u.const, pBits * 715109u.const)))
+            return@body x.toFloat4() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+
+class Noise21(parentScope: KslScopeBuilder) : KslFunction<KslFloat1>("noise21", KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat2("p")
         body {
-            // float hash12(vec2 p) {
-            //     vec3 p3  = fract(vec3(p.xyx) * .1031);
-            //     p3 += dot(p3, p3.yzx + 33.33);
-            //     return fract((p3.x + p3.y) * p3.z);
-            // }
-            val x = float3Var(fract(p.float3("xyx") * 0.1031f.const))
-            x set x + dot(x, x.float3("yzx") + 33.33f.const)
-            return@body fract((x.x + x.y) * x.z)
+            val pBits = uint2Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const))
+            val x = uint1Var(hash1(s))
+            return@body x.toFloat1() / (UInt.MAX_VALUE.toFloat()).const
         }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise12"
     }
 }
 
-class Noise13(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
+class Noise22(parentScope: KslScopeBuilder) : KslFunction<KslFloat2>("noise22", KslFloat2, parentScope.parentStage) {
+    init {
+        val p = paramFloat2("p")
+        body {
+            val pBits = uint2Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const))
+            val x = uint2Var(hash2(uint2Value(s, s * 358711u.const)))
+            return@body x.toFloat2() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+class Noise23(parentScope: KslScopeBuilder) : KslFunction<KslFloat3>("noise23", KslFloat3, parentScope.parentStage) {
+    init {
+        val p = paramFloat2("p")
+        body {
+            val pBits = uint2Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const))
+            val x = uint3Var(hash3(uint3Value(s, s * 358711u.const, s * 597367u.const)))
+            return@body x.toFloat3() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+class Noise24(parentScope: KslScopeBuilder) : KslFunction<KslFloat4>("noise24", KslFloat4, parentScope.parentStage) {
+    init {
+        val p = paramFloat2("p")
+        body {
+            val pBits = uint2Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const))
+            val x = uint4Var(hash4(uint4Value(s, s * 358711u.const, s * 597367u.const, s * 715109u.const)))
+            return@body x.toFloat4() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+
+class Noise31(parentScope: KslScopeBuilder) : KslFunction<KslFloat1>("noise31", KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat3("p")
         body {
-            // float hash13(vec3 p3) {
-            //     p3  = fract(p3 * .1031);
-            //     p3 += dot(p3, p3.zyx + 31.32);
-            //     return fract((p3.x + p3.y) * p3.z);
-            // }
-            val x = float3Var(fract(p * 0.1031f.const))
-            x set x + dot(x, x.float3("yzx") + 31.32f.const)
-            return@body fract((x.x + x.y) * x.z)
+            val pBits = uint3Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const))
+            val x = uint1Var(hash1(s))
+            return@body x.toFloat1() / (UInt.MAX_VALUE.toFloat()).const
         }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise13"
     }
 }
 
-class Noise14(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat1>(FUNC_NAME, KslFloat1, parentScope.parentStage) {
+class Noise32(parentScope: KslScopeBuilder) : KslFunction<KslFloat2>("noise32", KslFloat2, parentScope.parentStage) {
+    init {
+        val p = paramFloat3("p")
+        body {
+            val pBits = uint3Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const))
+            val x = uint2Var(hash2(uint2Value(s, s * 358711u.const)))
+            return@body x.toFloat2() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+class Noise33(parentScope: KslScopeBuilder) : KslFunction<KslFloat3>("noise33", KslFloat3, parentScope.parentStage) {
+    init {
+        val p = paramFloat3("p")
+        body {
+            val pBits = uint3Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const))
+            val x = uint3Var(hash3(uint3Value(s, s * 358711u.const, s * 597367u.const)))
+            return@body x.toFloat3() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+class Noise34(parentScope: KslScopeBuilder) : KslFunction<KslFloat4>("noise34", KslFloat4, parentScope.parentStage) {
+    init {
+        val p = paramFloat3("p")
+        body {
+            val pBits = uint3Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const))
+            val x = uint4Var(hash4(uint4Value(s, s * 358711u.const, s * 597367u.const, s * 715109u.const)))
+            return@body x.toFloat4() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+
+class Noise41(parentScope: KslScopeBuilder) : KslFunction<KslFloat1>("noise41", KslFloat1, parentScope.parentStage) {
     init {
         val p = paramFloat4("p")
         body {
-            // float hash14(vec4 p4) {
-            //     p4 = fract(p4  * vec4(.1031, .1030, .0973, .1099));
-            //     p4 += dot(p4, p4.wzxy+33.33);
-            //     return fract((p4.x + p4.y) * (p4.z + p4.w));
-            // }
-            val x = float4Var(fract(p * float4Value(0.1031f, 0.1030f, 0.0973f, 0.1099f)))
-            x set x + dot(x, x.float4("wzxy") + 33.33f.const)
-            return@body fract((x.x + x.y) * (x.z + x.w))
+            val pBits = uint4Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const) xor (pBits.w * 279137u.const))
+            val x = uint1Var(hash1(s))
+            return@body x.toFloat1() / (UInt.MAX_VALUE.toFloat()).const
         }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise14"
     }
 }
 
-class Noise21(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat2>(FUNC_NAME, KslFloat2, parentScope.parentStage) {
-    init {
-        val p = paramFloat1("p")
-        body {
-            // vec2 hash21(float p) {
-            //	   vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973));
-            //	   p3 += dot(p3, p3.yzx + 33.33);
-            //     return fract((p3.xx+p3.yz)*p3.zy);
-            // }
-            val x = float3Var(fract(float3Value(p, p, p) * float3Value(0.1031f, 0.1030f, 0.0973f)))
-            x set x + dot(x, x.float3("yzx") + 33.33f.const)
-            return@body fract((x.float2("xx") + x.yz) * x.float2("zy"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise21"
-    }
-}
-
-class Noise22(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat2>(FUNC_NAME, KslFloat2, parentScope.parentStage) {
-    init {
-        val p = paramFloat2("p")
-        body {
-            // vec2 hash22(vec2 p) {
-            //     vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
-            //     p3 += dot(p3, p3.yzx+33.33);
-            //     return fract((p3.xx+p3.yz)*p3.zy);
-            // }
-            val x = float3Var(fract(p.float3("xyx") * float3Value(0.1031f, 0.1030f, 0.0973f)))
-            x set x + dot(x, x.float3("yzx") + 33.33f.const)
-            return@body fract((x.float2("xx") + x.yz) * x.float2("zy"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise22"
-    }
-}
-
-class Noise23(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat2>(FUNC_NAME, KslFloat2, parentScope.parentStage) {
-    init {
-        val p = paramFloat3("p")
-        body {
-            // vec2 hash23(vec3 p3) {
-            //     p3 = fract(p3 * vec3(.1031, .1030, .0973));
-            //     p3 += dot(p3, p3.yzx+33.33);
-            //     return fract((p3.xx+p3.yz)*p3.zy);
-            // }
-            val x = float3Var(fract(p * float3Value(0.1031f, 0.1030f, 0.0973f)))
-            x set x + dot(x, x.float3("yzx") + 33.33f.const)
-            return@body fract((x.float2("xx") + x.yz) * x.float2("zy"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise23"
-    }
-}
-
-class Noise31(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
-    init {
-        val p = paramFloat1("p")
-        body {
-            // vec3 hash31(float p) {
-            //     vec3 p3 = fract(vec3(p) * vec3(.1031, .1030, .0973));
-            //     p3 += dot(p3, p3.yzx+33.33);
-            //     return fract((p3.xxy+p3.yzz)*p3.zyx);
-            // }
-            val x = float3Var(fract(float3Value(p, p, p) * float3Value(0.1031f, 0.1030f, 0.0973f)))
-            x set x + dot(x, x.float3("yzx") + 33.33f.const)
-            return@body fract((x.float3("xxy") + x.float3("yzz")) * x.float3("zyx"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise31"
-    }
-}
-
-class Noise32(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
-    init {
-        val p = paramFloat2("p")
-        body {
-            // vec3 hash32(vec2 p) {
-            //     vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973));
-            //     p3 += dot(p3, p3.yxz+33.33);
-            //     return fract((p3.xxy+p3.yzz)*p3.zyx);
-            // }
-            val x = float3Var(fract(p.float3("xyx") * float3Value(0.1031f, 0.1030f, 0.0973f)))
-            x set x + dot(x, x.float3("yxz") + 33.33f.const)
-            return@body fract((x.float3("xxy") + x.float3("yzz")) * x.float3("zyx"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise32"
-    }
-}
-
-class Noise33(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat3>(FUNC_NAME, KslFloat3, parentScope.parentStage) {
-    init {
-        val p = paramFloat3("p")
-        body {
-            // vec3 hash33(vec3 p3) {
-            //     p3 = fract(p3 * vec3(.1031, .1030, .0973));
-            //     p3 += dot(p3, p3.yxz+33.33);
-            //     return fract((p3.xxy + p3.yxx)*p3.zyx);
-            // }
-            val x = float3Var(fract(p * float3Value(0.1031f, 0.1030f, 0.0973f)))
-            x set x + dot(x, x.float3("yxz") + 33.33f.const)
-            return@body fract((x.float3("xxy") + x.float3("yxx")) * x.float3("zyx"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise33"
-    }
-}
-
-class Noise41(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
-    init {
-        val p = paramFloat1("p")
-        body {
-            // vec4 hash41(float p) {
-            //     vec4 p4 = fract(vec4(p) * vec4(.1031, .1030, .0973, .1099));
-            //     p4 += dot(p4, p4.wzxy+33.33);
-            //     return fract((p4.xxyz+p4.yzzw)*p4.zywx);
-            // }
-            val x = float4Var(fract(float4Value(p, p, p, p) * float4Value(0.1031f, 0.1030f, 0.0973f, 0.1099f)))
-            x set x + dot(x, x.float4("wzxy") + 33.33f.const)
-            return@body fract((x.float4("xxyz") + x.float4("yzzw")) * x.float4("zywx"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise41"
-    }
-}
-
-class Noise42(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
-    init {
-        val p = paramFloat2("p")
-        body {
-            // vec4 hash41(float p) {
-            //     vec4 p4 = fract(vec4(p) * vec4(.1031, .1030, .0973, .1099));
-            //     p4 += dot(p4, p4.wzxy+33.33);
-            //     return fract((p4.xxyz+p4.yzzw)*p4.zywx);
-            // }
-            val x = float4Var(fract(p.float4("xyxy") * float4Value(0.1031f, 0.1030f, 0.0973f, 0.1099f)))
-            x set x + dot(x, x.float4("wzxy") + 33.33f.const)
-            return@body fract((x.float4("xxyz") + x.float4("yzzw")) * x.float4("zywx"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise42"
-    }
-}
-
-class Noise43(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
-    init {
-        val p = paramFloat3("p")
-        body {
-            // vec4 hash43(vec3 p) {
-            //     vec4 p4 = fract(vec4(p.xyzx)  * vec4(.1031, .1030, .0973, .1099));
-            //     p4 += dot(p4, p4.wzxy+33.33);
-            //     return fract((p4.xxyz+p4.yzzw)*p4.zywx);
-            // }
-            val x = float4Var(fract(p.float4("xyzx") * float4Value(0.1031f, 0.1030f, 0.0973f, 0.1099f)))
-            x set x + dot(x, x.float4("wzxy") + 33.33f.const)
-            return@body fract((x.float4("xxyz") + x.float4("yzzw")) * x.float4("zywx"))
-        }
-    }
-
-    companion object {
-        const val FUNC_NAME = "noise43"
-    }
-}
-
-class Noise44(parentScope: KslScopeBuilder) :
-    KslFunction<KslFloat4>(FUNC_NAME, KslFloat4, parentScope.parentStage) {
+class Noise42(parentScope: KslScopeBuilder) : KslFunction<KslFloat2>("noise42", KslFloat2, parentScope.parentStage) {
     init {
         val p = paramFloat4("p")
         body {
-            // vec4 hash44(vec4 p4) {
-            //     p4 = fract(p4  * vec4(.1031, .1030, .0973, .1099));
-            //     p4 += dot(p4, p4.wzxy+33.33);
-            //     return fract((p4.xxyz+p4.yzzw)*p4.zywx);
-            // }
-            val x = float4Var(fract(p * float4Value(0.1031f, 0.1030f, 0.0973f, 0.1099f)))
-            x set x + dot(x, x.float4("wzxy") + 33.33f.const)
-            return@body fract((x.float4("xxyz") + x.float4("yzzw")) * x.float4("zywx"))
+            val pBits = uint4Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const) xor (pBits.w * 279137u.const))
+            val x = uint2Var(hash2(uint2Value(s, s * 358711u.const)))
+            return@body x.toFloat2() / (UInt.MAX_VALUE.toFloat()).const
         }
     }
+}
 
-    companion object {
-        const val FUNC_NAME = "noise44"
+class Noise43(parentScope: KslScopeBuilder) : KslFunction<KslFloat3>("noise43", KslFloat3, parentScope.parentStage) {
+    init {
+        val p = paramFloat4("p")
+        body {
+            val pBits = uint4Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const) xor (pBits.w * 279137u.const))
+            val x = uint3Var(hash3(uint3Value(s, s * 358711u.const, s * 597367u.const)))
+            return@body x.toFloat3() / (UInt.MAX_VALUE.toFloat()).const
+        }
+    }
+}
+
+class Noise44(parentScope: KslScopeBuilder) : KslFunction<KslFloat4>("noise44", KslFloat4, parentScope.parentStage) {
+    init {
+        val p = paramFloat4("p")
+        body {
+            val pBits = uint4Var(p.toUintBits())
+            val s = uint1Var(pBits.x xor (pBits.y * 599213u.const) xor (pBits.z * 987251u.const) xor (pBits.w * 279137u.const))
+            val x = uint4Var(hash4(uint4Value(s, s * 358711u.const, s * 597367u.const, s * 715109u.const)))
+            return@body x.toFloat4() / (UInt.MAX_VALUE.toFloat()).const
+        }
     }
 }

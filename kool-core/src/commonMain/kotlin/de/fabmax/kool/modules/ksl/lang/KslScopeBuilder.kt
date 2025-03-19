@@ -181,6 +181,64 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
     fun mat4Value(col0: KslExprFloat4, col1: KslExprFloat4, col2: KslExprFloat4, col3: KslExprFloat4) = KslValueMat4(col0, col1, col2, col3)
 
 
+    fun float2Var(x: Float, y: Float) = float2Var(float2Value(x, y))
+    fun float2Var(x: KslExprFloat1, y: KslExprFloat1) = float2Var(float2Value(x, y))
+
+    fun float3Var(x: Float, y: Float, z: Float) = float3Var(float3Value(x, y, z))
+    fun float3Var(x: KslExprFloat1, y: KslExprFloat1, z: KslExprFloat1) = float3Var(float3Value(x, y, z))
+    fun float3Var(xy: KslExprFloat2, z: KslExprFloat1) = float3Var(float3Value(xy.x, xy.y, z))
+
+    fun float4Var(x: Float, y: Float, z: Float, w: Float) = float4Var(float4Value(x, y, z, w))
+    fun float4Var(x: KslExprFloat1, y: KslExprFloat1, z: KslExprFloat1, w: KslExprFloat1) = float4Var(float4Value(x, y, z, w))
+    fun float4Var(xy: KslExprFloat2, z: Float, w: Float) = float4Var(float4Value(xy, z.const, w.const))
+    fun float4Var(xy: KslExprFloat2, z: KslExprFloat1, w: KslExprFloat1) = float4Var(float4Value(xy.x, xy.y, z, w))
+    fun float4Var(xy: KslExprFloat2, zw: KslExprFloat2) = float4Var(float4Value(xy.x, xy.y, zw.x, zw.y))
+    fun float4Var(xyz: KslExprFloat3, w: Float) = float4Var(float4Value(xyz, w.const))
+    fun float4Var(xyz: KslExprFloat3, w: KslExprFloat1) = float4Var(float4Value(xyz.x, xyz.y, xyz.z, w))
+
+    fun int2Var(x: Int, y: Int) = int2Var(int2Value(x, y))
+    fun int2Var(x: KslExprInt1, y: KslExprInt1) = int2Var(int2Value(x, y))
+
+    fun int3Var(x: Int, y: Int, z: Int) = int3Var(int3Value(x, y, z))
+    fun int3Var(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1) = int3Var(int3Value(x, y, z))
+    fun int3Var(xy: KslExprInt2, z: KslExprInt1) = int3Var(int3Value(xy.x, xy.y, z))
+
+    fun int4Var(x: Int, y: Int, z: Int, w: Int) = int4Var(int4Value(x, y, z, w))
+    fun int4Var(x: KslExprInt1, y: KslExprInt1, z: KslExprInt1, w: KslExprInt1) = int4Var(int4Value(x, y, z, w))
+    fun int4Var(xy: KslExprInt2, z: Int, w: Int) = int4Var(int4Value(xy, z.const, w.const))
+    fun int4Var(xy: KslExprInt2, z: KslExprInt1, w: KslExprInt1) = int4Var(int4Value(xy.x, xy.y, z, w))
+    fun int4Var(xy: KslExprInt2, zw: KslExprInt2) = int4Var(int4Value(xy.x, xy.y, zw.x, zw.y))
+    fun int4Var(xyz: KslExprInt3, w: Int) = int4Var(int4Value(xyz, w.const))
+    fun int4Var(xyz: KslExprInt3, w: KslExprInt1) = int4Var(int4Value(xyz.x, xyz.y, xyz.z, w))
+
+    fun uint2Var(x: UInt, y: UInt) = uint2Var(uint2Value(x, y))
+    fun uint2Var(x: KslExprUint1, y: KslExprUint1) = uint2Var(uint2Value(x, y))
+
+    fun uint3Var(x: UInt, y: UInt, z: UInt) = uint3Var(uint3Value(x, y, z))
+    fun uint3Var(x: KslExprUint1, y: KslExprUint1, z: KslExprUint1) = uint3Var(uint3Value(x, y, z))
+    fun uint3Var(xy: KslExprUint2, z: KslExprUint1) = uint3Var(uint3Value(xy.x, xy.y, z))
+
+    fun uint4Var(x: UInt, y: UInt, z: UInt, w: UInt) = uint4Var(uint4Value(x, y, z, w))
+    fun uint4Var(x: KslExprUint1, y: KslExprUint1, z: KslExprUint1, w: KslExprUint1) = uint4Var(uint4Value(x, y, z, w))
+    fun uint4Var(xy: KslExprUint2, z: UInt, w: UInt) = uint4Var(uint4Value(xy, z.const, w.const))
+    fun uint4Var(xy: KslExprUint2, z: KslExprUint1, w: KslExprUint1) = uint4Var(uint4Value(xy.x, xy.y, z, w))
+    fun uint4Var(xy: KslExprUint2, zw: KslExprUint2) = uint4Var(uint4Value(xy.x, xy.y, zw.x, zw.y))
+    fun uint4Var(xyz: KslExprUint3, w: UInt) = uint4Var(uint4Value(xyz, w.const))
+    fun uint4Var(xyz: KslExprUint3, w: KslExprUint1) = uint4Var(uint4Value(xyz.x, xyz.y, xyz.z, w))
+
+    fun bool2Var(x: Boolean, y: Boolean) = bool2Var(bool2Value(x, y))
+    fun bool2Var(x: KslExprBool1, y: KslExprBool1) = bool2Var(bool2Value(x, y))
+
+    fun bool3Var(x: Boolean, y: Boolean, z: Boolean) = bool3Var(bool3Value(x, y, z))
+    fun bool3Var(x: KslExprBool1, y: KslExprBool1, z: KslExprBool1) = bool3Var(bool3Value(x, y, z))
+
+    fun bool4Var(x: Boolean, y: Boolean, z: Boolean, w: Boolean) = bool4Var(bool4Value(x, y, z, w))
+    fun bool4Var(x: KslExprBool1, y: KslExprBool1, z: KslExprBool1, w: KslExprBool1) = bool4Var(bool4Value(x, y, z, w))
+
+    fun mat2Var(col0: KslExprFloat2, col1: KslExprFloat2) = mat2Var(mat2Value(col0, col1))
+    fun mat3Var(col0: KslExprFloat3, col1: KslExprFloat3, col2: KslExprFloat3) = mat3Var(mat3Value(col0, col1, col2))
+    fun mat4Var(col0: KslExprFloat4, col1: KslExprFloat4, col2: KslExprFloat4, col3: KslExprFloat4) = mat4Var(mat4Value(col0, col1, col2, col3))
+
     fun float1Var(initValue: KslExpression<KslFloat1>? = null, name: String? = null) =
         KslVarScalar(name ?: nextName("f1"), KslFloat1, true).also {
             ops += KslDeclareVar(it, initValue, this)
