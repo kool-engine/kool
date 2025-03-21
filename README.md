@@ -27,7 +27,7 @@ with WebGPU support. Other browsers should work as well but use the WebGL backen
 features / demos.
 All demos are implemented in code-only fashion (i.e. without using the editor). The code for all demos is available in
 the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject. You can also run them locally by
-cloning this repo and running `./gradlew :kool-demo:run`
+cloning this repo and running `./gradlew :kool-demo:runDesktop`
 
 - [Bloom](https://kool-engine.github.io/live/demos/?demo=bloom): Decent looking bloom for (very) bright objects. **WebGPU only**
 - [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based

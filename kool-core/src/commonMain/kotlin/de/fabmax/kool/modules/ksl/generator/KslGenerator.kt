@@ -106,7 +106,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
         }
     }
 
-    abstract fun getStateName(stae: KslState): String
+    abstract fun getStateName(state: KslState): String
 
     open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
     open fun structMemberAssignable(structMember: KslStructMemberExpression<*>): String = structMember.generateExpression()

@@ -9,8 +9,17 @@ plugins {
 }
 
 kotlin {
-    jvm("desktop") { }
-    jvmToolchain(11)
+    jvm("desktop") {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        binaries {
+            executable {
+                mainClass.set("de.fabmax.kool.demo.MainKt")
+                if (OperatingSystem.current().isMacOsX) {
+                    applicationDefaultJvmArgs = listOf("-XstartOnFirstThread")
+                }
+            }
+        }
+    }
 
     js {
         binaries.executable()
@@ -86,22 +95,4 @@ task("cacheRuntimeLibs") {
 tasks["clean"].doLast {
     delete("${rootDir}/dist/kool-demo")
     delete("${projectDir}/runtimeLibs")
-}
-
-tasks.register<JavaExec>("run") {
-    dependsOn("cacheRuntimeLibs")
-    group = "application"
-    mainClass.set("de.fabmax.kool.demo.MainKt")
-    if (OperatingSystem.current().isMacOsX) {
-        jvmArgs = listOf("-XstartOnFirstThread")
-    }
-
-    kotlin {
-        val main = targets["desktop"].compilations["main"]
-        dependsOn(main.compileAllTaskName)
-        classpath(
-            { main.output.allOutputs.files },
-            { configurations["desktopRuntimeClasspath"] }
-        )
-    }
 }
