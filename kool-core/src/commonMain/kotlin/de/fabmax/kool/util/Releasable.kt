@@ -68,7 +68,7 @@ abstract class BaseReleasable : Releasable {
         if (isReleased) {
             logW { "release() called on an already released object ($this)" }
         } else {
-            dependingReleasables.reversed().forEach { it.release() }
+            dependingReleasables.reversed().toList().forEach { it.release() }
             onReleaseCallbacks.forEach { it() }
             isReleased = true
         }
