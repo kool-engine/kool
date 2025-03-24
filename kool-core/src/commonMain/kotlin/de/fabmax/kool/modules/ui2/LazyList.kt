@@ -60,6 +60,76 @@ enum class ListOrientation {
     Vertical
 }
 
+fun UiScope.LazyColumn(
+    width: Dimension = Grow.Std,
+    height: Dimension = Grow.Std,
+    withVerticalScrollbar: Boolean = true,
+    withHorizontalScrollbar: Boolean = false,
+    isScrollableVertical: Boolean = true,
+    isScrollableHorizontal: Boolean = true,
+    scrollbarColor: Color? = null,
+    containerModifier: ((UiModifier) -> Unit)? = null,
+    scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
+    vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    isScrollByDrag: Boolean = false,
+    state: LazyListState = rememberListState(),
+    scopeName: String? = null,
+    block: LazyListScope.() -> Unit
+) = LazyList(
+    width = width,
+    height = height,
+    listOrientation = ListOrientation.Vertical,
+    withVerticalScrollbar = withVerticalScrollbar,
+    withHorizontalScrollbar = withHorizontalScrollbar,
+    isScrollableVertical = isScrollableVertical,
+    isScrollableHorizontal = isScrollableHorizontal,
+    scrollbarColor = scrollbarColor,
+    containerModifier = containerModifier,
+    scrollPaneModifier = scrollPaneModifier,
+    vScrollbarModifier = vScrollbarModifier,
+    hScrollbarModifier = hScrollbarModifier,
+    isScrollByDrag = isScrollByDrag,
+    state = state,
+    scopeName = scopeName,
+    block = block,
+)
+
+fun UiScope.LazyRow(
+    width: Dimension = Grow.Std,
+    height: Dimension = Grow.Std,
+    withVerticalScrollbar: Boolean = false,
+    withHorizontalScrollbar: Boolean = true,
+    isScrollableVertical: Boolean = true,
+    isScrollableHorizontal: Boolean = true,
+    scrollbarColor: Color? = null,
+    containerModifier: ((UiModifier) -> Unit)? = null,
+    scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
+    vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    hScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
+    isScrollByDrag: Boolean = false,
+    state: LazyListState = rememberListState(),
+    scopeName: String? = null,
+    block: LazyListScope.() -> Unit
+) = LazyList(
+    width = width,
+    height = height,
+    listOrientation = ListOrientation.Horizontal,
+    withVerticalScrollbar = withVerticalScrollbar,
+    withHorizontalScrollbar = withHorizontalScrollbar,
+    isScrollableVertical = isScrollableVertical,
+    isScrollableHorizontal = isScrollableHorizontal,
+    scrollbarColor = scrollbarColor,
+    containerModifier = containerModifier,
+    scrollPaneModifier = scrollPaneModifier,
+    vScrollbarModifier = vScrollbarModifier,
+    hScrollbarModifier = hScrollbarModifier,
+    isScrollByDrag = isScrollByDrag,
+    state = state,
+    scopeName = scopeName,
+    block = block,
+)
+
 fun UiScope.LazyList(
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,
@@ -69,8 +139,6 @@ fun UiScope.LazyList(
     isScrollableVertical: Boolean = true,
     isScrollableHorizontal: Boolean = true,
     scrollbarColor: Color? = null,
-    isGrowWidth: Boolean = true,
-    isGrowHeight: Boolean = false,
     containerModifier: ((UiModifier) -> Unit)? = null,
     scrollPaneModifier: ((ScrollPaneModifier) -> Unit)? = null,
     vScrollbarModifier: ((ScrollbarModifier) -> Unit)? = null,
@@ -102,7 +170,7 @@ fun UiScope.LazyList(
             modifier.onDrag {
                 val delta = it.pointer.delta
                 if (isScrollableHorizontal && delta.x != 0f) {
-                    state.scrollDpX(Dp.fromPx(delta.x).value)
+                    state.scrollDpX(Dp.fromPx(-delta.x).value)
                 }
                 if (isScrollableVertical && delta.y != 0f) {
                     state.scrollDpY(Dp.fromPx(-delta.y).value)
@@ -113,6 +181,10 @@ fun UiScope.LazyList(
         containerModifier?.invoke(modifier)
 
         ScrollPane(state) {
+            // expand / grow list in cross axis direction
+            val isGrowWidth = listOrientation == ListOrientation.Vertical
+            val isGrowHeight = listOrientation == ListOrientation.Horizontal
+
             if (isGrowWidth) modifier.width(Grow.Std)
             if (isGrowHeight) modifier.height(Grow.Std)
             scrollPaneModifier?.let { it(modifier) }
@@ -187,7 +259,11 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         computeScrollAmount()
 
         val insertBeforeItems = mutableListOf<ListItemBox>()
-        var availableSpace = updateFromAndAvailableSpace(insertBeforeItems, ctx)
+        var availableSpace = if (isVertical) {
+            updateFromAndAvailableSpaceVertical(insertBeforeItems, ctx)
+        } else {
+            updateFromAndAvailableSpaceHorizontal(insertBeforeItems, ctx)
+        }
 
         // add some space after list content to allow scrolling
         scrollSpacerBox()
@@ -221,7 +297,11 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
 
         state.numVisibleItems = itemI - state.itemsFrom.use()
         state.prevRemainingSpace = availableSpace
-        state.avgItemSizeDp = Dp.fromPx(prevItems.sumOf { it.contentHeightPx.toDouble() }.toFloat()).value
+        state.avgItemSizeDp = Dp.fromPx(
+            prevItems.sumOf {
+                if (isVertical) round(it.contentHeightPx.toDouble()) else round(it.contentWidthPx.toDouble())
+            }.toFloat()
+        ).value
         if (prevItems.isNotEmpty()) {
             state.avgItemSizeDp /= prevItems.size
         }
@@ -392,8 +472,8 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         return -1
     }
 
-    private fun updateFromAndAvailableSpace(insertBeforeItems: MutableList<ListItemBox>, ctx: KoolContext): Float {
-        var availableSpace = if (isVertical) state.viewHeightDp.use().dp.px else state.viewWidthDp.use().dp.px
+    private fun updateFromAndAvailableSpaceVertical(insertBeforeItems: MutableList<ListItemBox>, ctx: KoolContext): Float {
+        var availableSpace = state.viewHeightDp.use().dp.px
 
         val firstVisible = computeFirstVisible()
         if (firstVisible < 0) {
@@ -416,7 +496,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             val scrollPx = Dp(scrollAmountDp).px
             val start = toContainer(box.leftPx - scrollPx, box.topPx - scrollPx, MutableVec2f())
 
-            if ((isVertical && start.y > 0.5f) || (isHorizontal && start.x > 0.5f)) {
+            if (start.y > 0.5f) {
                 collectItemsBefore(box.itemIndex, start.y, ctx, insertBeforeItems)
             }
 
@@ -424,7 +504,44 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
                 val removeScrollPosDp = Dp.fromPx(removeScrollPos).value
                 moveScrollViewportDp(-removeScrollPosDp)
             }
-            availableSpace -= if (isVertical) start.y else start.x
+            availableSpace -= start.y
+        }
+        return availableSpace
+    }
+
+    private fun updateFromAndAvailableSpaceHorizontal(insertBeforeItems: MutableList<ListItemBox>, ctx: KoolContext): Float {
+        var availableSpace = state.viewWidthDp.use().dp.px
+
+        val firstVisible = computeFirstVisible()
+        if (firstVisible < 0) {
+            // no previous item still visible
+            if (state.avgItemSizeDp > 0f) {
+                state.itemsFrom.value = (state.itemsFrom.value + (scrollAmountDp / state.avgItemSizeDp).roundToInt())
+                    .clamp(0, state.numTotalItems - state.numVisibleItems)
+            }
+            val removeScrollPosDp = Dp.fromPx(scrollAmountDp).value + state.xScrollDp.value - overscrollSpaceDp
+            moveScrollViewportDp(-removeScrollPosDp)
+
+        } else {
+            // first visible item is present in previous items
+            var removeScrollPos = 0f
+            for (i in 0 until firstVisible) {
+                removeScrollPos += prevItems[i].contentWidthPx
+                state.itemsFrom.value++
+            }
+            val box = prevItems[firstVisible]
+            val scrollPx = Dp(scrollAmountDp).px
+            val start = toContainer(box.leftPx - scrollPx, box.topPx - scrollPx, MutableVec2f())
+
+            if (start.x > 0.5f) {
+                collectItemsBefore(box.itemIndex, start.x, ctx, insertBeforeItems)
+            }
+
+            if (removeScrollPos > 0f) {
+                val removeScrollPosDp = Dp.fromPx(removeScrollPos).value
+                moveScrollViewportDp(-removeScrollPosDp)
+            }
+            availableSpace -= start.x
         }
         return availableSpace
     }
@@ -475,7 +592,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     }
 
     companion object {
-        private const val overscrollSpaceDp = 5000f
+        private const val overscrollSpaceDp = 100f
         val factory: (UiNode, UiSurface) -> LazyListNode = { parent, surface -> LazyListNode(parent, surface) }
     }
 }
