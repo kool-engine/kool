@@ -9,6 +9,8 @@ fun UiScope.Panel(
     backgroundColor: Color? = colors.background,
     layout: Layout = ColumnLayout,
     scopeName: String? = null,
+    width: Dimension = Grow.Std,
+    height: Dimension = Grow.Std,
     block: UiScope.() -> Unit
 ) {
     contract {
@@ -17,6 +19,7 @@ fun UiScope.Panel(
 
     Box(scopeName = scopeName) {
         modifier
+            .size(width, height)
             .layout(layout)
             .backgroundColor(backgroundColor)
         block()
@@ -29,11 +32,13 @@ fun PanelSurface(
     name: String = "Panel",
     backgroundColor: (UiScope.() -> Color?) = { surface.colors.background },
     layout: Layout = ColumnLayout,
+    width: Dimension = Grow.Std,
+    height: Dimension = Grow.Std,
     block: UiScope.() -> Unit
 ): UiSurface {
     val panelSurface = UiSurface(colors, sizes, name)
     panelSurface.content = {
-        Panel(backgroundColor(), layout, name, block)
+        Panel(backgroundColor(), layout, name, width, height, block)
     }
     return panelSurface
 }
@@ -44,9 +49,11 @@ fun Node.addPanelSurface(
     name: String = "Panel",
     backgroundColor: (UiScope.() -> Color?) = { colors.background },
     layout: Layout = ColumnLayout,
+    width: Dimension = Grow.Std,
+    height: Dimension = Grow.Std,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val panelSurface = PanelSurface(colors, sizes, name, backgroundColor, layout, block)
+    val panelSurface = PanelSurface(colors, sizes, name, backgroundColor, layout, width, height, block)
     addNode(panelSurface)
     return panelSurface
 }

@@ -24,7 +24,6 @@ fun debugOverlay(position: DebugOverlay.Position = DebugOverlay.Position.UPPER_R
 }
 
 class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
-
     val ui: Scene
 
     private val fpsText = mutableStateOf("")
@@ -63,7 +62,9 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
             addPanelSurface(
                 name = "statistics",
                 sizes = Sizes.small,
-                colors = Colors.darkColors(primary = Color("b2ff00"), background = Color("10101080"))
+                colors = Colors.darkColors(primary = Color("b2ff00"), background = Color("10101080")),
+                width = FitContent,
+                height = FitContent
             ) {
                 when (position) {
                     Position.UPPER_LEFT -> modifier.align(AlignmentX.Start, AlignmentY.Top)
@@ -82,7 +83,6 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
                     Text(fpsText.use()) {
                         modifier
-                            //.padding(sizes.gap)
                             .width(Grow.Std)
                             .textAlignX(AlignmentX.Center)
                             .font(fpsFont)
