@@ -11,7 +11,7 @@ plugins {
 
 kotlin {
     jvm("desktop") { }
-    jvmToolchain(21)
+    jvmToolchain(11)
     js {
         binaries.library()
         browser()

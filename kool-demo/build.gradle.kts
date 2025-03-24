@@ -10,15 +10,17 @@ plugins {
 
 kotlin {
     jvm("desktop") {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        binaries {
-            executable {
-                mainClass.set("de.fabmax.kool.demo.MainKt")
-                if (OperatingSystem.current().isMacOsX) {
-                    applicationDefaultJvmArgs = listOf("-XstartOnFirstThread")
-                }
-            }
-        }
+//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+//        binaries {
+//            // build fails for duplicate libraries, despite duplicate strategy being EXCLUDE
+//            executable {
+//                mainClass.set("de.fabmax.kool.demo.MainKt")
+//                if (OperatingSystem.current().isMacOsX) {
+//                    applicationDefaultJvmArgs = listOf("-XstartOnFirstThread")
+//                }
+//                applicationDistribution.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//            }
+//        }
     }
 
     js {
@@ -95,4 +97,22 @@ task("cacheRuntimeLibs") {
 tasks["clean"].doLast {
     delete("${rootDir}/dist/kool-demo")
     delete("${projectDir}/runtimeLibs")
+}
+
+tasks.register<JavaExec>("runDesktop") {
+    dependsOn("cacheRuntimeLibs")
+    group = "application"
+    mainClass.set("de.fabmax.kool.demo.MainKt")
+    if (OperatingSystem.current().isMacOsX) {
+        jvmArgs = listOf("-XstartOnFirstThread")
+    }
+
+    kotlin {
+        val main = targets["desktop"].compilations["main"]
+        dependsOn(main.compileAllTaskName)
+        classpath(
+            { main.output.allOutputs.files },
+            { configurations["desktopRuntimeClasspath"] }
+        )
+    }
 }

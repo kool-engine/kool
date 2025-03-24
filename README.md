@@ -118,7 +118,7 @@ still a bit of a weak spot).
 
 ### Running the Demos on JVM
 
-You can launch the desktop demo app directly from a terminal via gradle with `./gradlew :kool-demo:run`. 
+You can launch the desktop demo app directly from a terminal via gradle with `./gradlew :kool-demo:runDesktop`. 
 
 Running the [main()](kool-demo/src/desktopMain/kotlin/de/fabmax/kool/demo/Main.kt) method from within IntelliJ
 requires that the native libraries are located in a local folder and added as file dependencies (seems to be some kind
