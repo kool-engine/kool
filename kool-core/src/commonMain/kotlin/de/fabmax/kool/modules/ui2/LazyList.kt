@@ -595,7 +595,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
     }
 
     companion object {
-        private const val overscrollSpaceDp = 100f
+        private const val overscrollSpaceDp = 1000f
         val factory: (UiNode, UiSurface) -> LazyListNode = { parent, surface -> LazyListNode(parent, surface) }
     }
 }

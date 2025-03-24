@@ -392,13 +392,6 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    @Deprecated("centered rect is the default behavior, use rect { } instead", ReplaceWith("rect { block() }"))
-    inline fun centeredRect(block: RectProps.() -> Unit) {
-        val props = RectProps()
-        props.block()
-        rect(props)
-    }
-
     inline fun rect(block: RectProps.() -> Unit) {
         val props = RectProps()
         props.block()

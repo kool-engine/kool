@@ -85,13 +85,6 @@ fun PxQuat.toQuatF(result: MutableQuatF = MutableQuatF()) = result.set(x, y, z, 
 fun PxQuat.set(q: QuatF): PxQuat { x = q.x; y = q.y; z = q.z; w = q.w; return this }
 fun QuatF.toPxQuat(result: PxQuat) = result.set(this)
 
-@Deprecated("Use QuatF instead", ReplaceWith("toQuatF()"))
-fun PxQuat.toVec4f(result: MutableVec4f = MutableVec4f()) = result.set(x, y, z, w)
-@Deprecated("Use QuatF instead", ReplaceWith("set(MutableQuatF().set(v))"))
-fun PxQuat.set(v: Vec4f): PxQuat { x = v.x; y = v.y; z = v.z; w = v.w; return this }
-@Deprecated("Use QuatF instead", ReplaceWith("toPxQuat(result)"))
-fun Vec4f.toPxQuat(result: PxQuat) = result.set(QuatF(x, y, z, w))
-
 fun PxVec3.toVec3f(result: MutableVec3f = MutableVec3f()) = result.set(x, y, z)
 fun PxVec3.set(v: Vec3f): PxVec3 { x = v.x; y = v.y; z = v.z; return this }
 fun Vec3f.toPxVec3(result: PxVec3) = result.set(this)
