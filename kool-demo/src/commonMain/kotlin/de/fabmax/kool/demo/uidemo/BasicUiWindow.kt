@@ -195,7 +195,7 @@ class BasicUiWindow(uiDemo: UiDemo) : DemoWindow("Demo Window", uiDemo) {
             }
         }
         var hoveredItemIndex by remember(-1)
-        LazyList(
+        LazyColumn(
             vScrollbarModifier = {
                 it.colors(
                     trackColor = colors.secondaryVariantAlpha(0.1f),

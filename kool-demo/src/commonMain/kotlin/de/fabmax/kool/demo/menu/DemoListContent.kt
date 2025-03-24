@@ -40,9 +40,10 @@ class DemoListContent(val menu: DemoMenu) : Composable {
             .height(Grow.Std)
             .width(Grow.Std)
 
-        LazyList(
+        LazyColumn(
             containerModifier = { it.background(null) },
-            vScrollbarModifier = { it.colors(color = colors.onBackgroundAlpha(0.2f), hoverColor = colors.onBackgroundAlpha(0.4f)) }
+            vScrollbarModifier = { it.colors(color = colors.onBackgroundAlpha(0.2f), hoverColor = colors.onBackgroundAlpha(0.4f)) },
+            isScrollByDrag = true
         ) {
             var hoveredIndex by remember(-1)
             val demoItems = (if (Settings.showHiddenDemos.use()) allDemoItems else nonHiddenDemoItems)

@@ -33,7 +33,7 @@ class KeyInfo(val ui: EditorUi) : Composable {
 
             val currentInput = InputStack.handlerStack.lastOrNull { it is EditorKeyListener } as EditorKeyListener?
             currentInput?.let { input ->
-                LazyList(
+                LazyColumn(
                     containerModifier = {
                         it
                             .margin(end = sizes.gap * 1.4f)

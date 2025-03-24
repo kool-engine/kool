@@ -60,6 +60,7 @@ enum class ListOrientation {
     Vertical
 }
 
+@Suppress("DEPRECATION")
 fun UiScope.LazyColumn(
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,
@@ -95,6 +96,7 @@ fun UiScope.LazyColumn(
     block = block,
 )
 
+@Suppress("DEPRECATION")
 fun UiScope.LazyRow(
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,
@@ -130,6 +132,7 @@ fun UiScope.LazyRow(
     block = block,
 )
 
+@Deprecated("use LazyColumn / LazyRow instead")
 fun UiScope.LazyList(
     width: Dimension = Grow.Std,
     height: Dimension = Grow.Std,

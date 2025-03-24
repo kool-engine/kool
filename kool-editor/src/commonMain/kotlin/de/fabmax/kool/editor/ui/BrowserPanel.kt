@@ -109,7 +109,7 @@ abstract class BrowserPanel(name: String, icon: IconProvider, ui: EditorUi) :
         val dirPopupMenu = remember { ContextPopupMenu<BrowserItem>("dir-popup") }
         dirPopupMenu()
 
-        LazyList(
+        LazyColumn(
             containerModifier = { it.backgroundColor(colors.background) },
             vScrollbarModifier = defaultScrollbarModifierV()
         ) {
