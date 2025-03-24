@@ -382,7 +382,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
                 state.yScrollDpDesired.set(state.yScrollDp.value + delta * state.avgItemSizeDp * 0.9f)
             } else {
                 // item is far from visible range, hard-set itemsFrom index
-                state.itemsFrom.set((scrollItem - state.numVisibleItems).clamp(0, state.numTotalItems - state.numVisibleItems))
+                state.itemsFrom.set((scrollItem - state.numVisibleItems).coerceAtMost(state.numTotalItems - state.numVisibleItems).coerceAtLeast(0))
             }
         }
     }
@@ -437,7 +437,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
         var safeItemI = itemI
         if (itemI !in 0 until state.numTotalItems) {
             logE { "Invalid lazy list item index: $itemI" }
-            safeItemI = itemI.clamp(0, state.numTotalItems - 1)
+            safeItemI = itemI.coerceAtMost(state.numTotalItems - 1).coerceAtLeast(0)
         }
 
         itemIndex = safeItemI
@@ -483,7 +483,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             // no previous item still visible
             if (state.avgItemSizeDp > 0f) {
                 state.itemsFrom.value = (state.itemsFrom.value + (scrollAmountDp / state.avgItemSizeDp).roundToInt())
-                    .clamp(0, state.numTotalItems - state.numVisibleItems)
+                    .coerceAtMost(state.numTotalItems - state.numVisibleItems).coerceAtLeast(0)
             }
             val removeScrollPosDp = Dp.fromPx(scrollAmountDp).value + state.yScrollDp.value - overscrollSpaceDp
             moveScrollViewportDp(-removeScrollPosDp)
@@ -520,7 +520,7 @@ open class LazyListNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             // no previous item still visible
             if (state.avgItemSizeDp > 0f) {
                 state.itemsFrom.value = (state.itemsFrom.value + (scrollAmountDp / state.avgItemSizeDp).roundToInt())
-                    .clamp(0, state.numTotalItems - state.numVisibleItems)
+                    .coerceAtMost(state.numTotalItems - state.numVisibleItems).coerceAtLeast(0)
             }
             val removeScrollPosDp = Dp.fromPx(scrollAmountDp).value + state.xScrollDp.value - overscrollSpaceDp
             moveScrollViewportDp(-removeScrollPosDp)

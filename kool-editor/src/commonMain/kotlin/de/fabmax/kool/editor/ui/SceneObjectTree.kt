@@ -65,7 +65,7 @@ class SceneObjectTree(val sceneBrowser: SceneBrowser) : Composable {
             isTreeValid.set(true)
         }
 
-        LazyList(
+        LazyColumn(
             containerModifier = { it.backgroundColor(null) },
             vScrollbarModifier = defaultScrollbarModifierV()
         ) {

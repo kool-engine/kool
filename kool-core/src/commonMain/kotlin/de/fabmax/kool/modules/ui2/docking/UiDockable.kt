@@ -82,6 +82,8 @@ class UiDockable(
                     val itemBounds = uiNode.undockedBounds4f
                     moveUndockBoundsUnderPointer(itemBounds, it)
                     dragStartItemBounds.set(itemBounds)
+                    floatingX.set(Dp.fromPx(dragStartItemBounds.x))
+                    floatingY.set(Dp.fromPx(dragStartItemBounds.y))
                     dock?.dndContext?.startDrag(this@UiDockable, it, null)
                 }
             }

@@ -221,7 +221,7 @@ open class ComboBoxNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, su
             .padding(sizes.smallGap)
             .height((Dp.fromPx(sizes.normalText.lineHeight) + sizes.smallGap) * min(cbModifier.maxNumVisibleItems, cbModifier.items.size) + sizes.gap)
 
-        LazyList(
+        LazyColumn(
             withHorizontalScrollbar = false,
             isScrollableHorizontal = false,
             vScrollbarModifier = { it.zLayer(cbModifier.zLayer + UiSurface.LAYER_POPUP + UiSurface.LAYER_FLOATING) }

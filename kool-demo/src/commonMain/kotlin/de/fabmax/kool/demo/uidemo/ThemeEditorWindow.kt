@@ -176,7 +176,7 @@ class ThemeEditorWindow(uiDemo: UiDemo) : DemoWindow("Theme Editor", uiDemo) {
                 }
             }
 
-            LazyList(
+            LazyColumn(
                 containerModifier = {
                     it
                         .margin(sizes.gap)
