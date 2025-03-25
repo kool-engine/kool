@@ -64,7 +64,7 @@ afterEvaluate {
                 }
             }
         }
-        if (props.isRelease) {
+        if (props.isRelease && !version.toString().endsWith("-SNAPSHOT")) {
             signing {
                 publications.forEach {
                     val privateKey = props["GPG_PRIVATE_KEY"]

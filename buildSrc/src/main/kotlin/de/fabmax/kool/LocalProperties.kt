@@ -3,7 +3,7 @@ import java.io.File
 import java.util.*
 
 class LocalProperties private constructor(file: File) : Properties() {
-    val isRelease: Boolean get() = getProperty("kool.isRelease").toBoolean()
+    val isRelease: Boolean get() = getProperty("kool.isRelease", "true").toBoolean()
 
     init {
         if (file.exists()) {

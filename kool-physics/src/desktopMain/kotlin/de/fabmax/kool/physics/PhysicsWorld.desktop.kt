@@ -10,7 +10,6 @@ import de.fabmax.kool.physics.geometry.CollisionGeometry
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.logW
 import org.lwjgl.system.MemoryStack
 import physx.PxTopLevelFunctions
@@ -18,15 +17,12 @@ import physx.common.PxVec3
 import physx.physics.*
 import physx.support.PxArray_PxContactPairPoint
 import physx.support.SupportFunctions
-import kotlin.collections.set
 
 actual fun PhysicsWorld(scene: Scene?, isContinuousCollisionDetection: Boolean) : PhysicsWorld {
     return PhysicsWorldImpl(scene, isContinuousCollisionDetection)
 }
 
-class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolean, val tryCuda: Boolean) : PhysicsWorld(), Releasable {
-    constructor(scene: Scene?, isContinuousCollisionDetection: Boolean): this(scene, isContinuousCollisionDetection, PhysicsImpl.cudaManager != null)
-
+class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolean) : PhysicsWorld(), Releasable {
     val pxScene: PxScene
 
     private val raycastResult = PxRaycastResult()
@@ -49,10 +45,6 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         PhysicsImpl.checkIsLoaded()
 
         MemoryStack.stackPush().use { mem ->
-            if (tryCuda && PhysicsImpl.cudaManager == null) {
-                logW { "CUDA is not available (either CUDA runtime lib is missing or no CUDA capable device was found). Falling back to regular CPU physics." }
-            }
-
             val sceneDesc = PxSceneDesc.createAt(mem, MemoryStack::nmalloc, PhysicsImpl.physics.tolerancesScale)
             sceneDesc.gravity = bufPxGravity
             sceneDesc.cpuDispatcher = PhysicsImpl.defaultCpuDispatcher
@@ -61,13 +53,6 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
             sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_ACTIVE_ACTORS)
             if (isContinuousCollisionDetection) {
                 sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_CCD)
-            }
-            if (tryCuda && PhysicsImpl.cudaManager != null) {
-                sceneDesc.cudaContextManager = PhysicsImpl.cudaManager
-                sceneDesc.flags.raise(PxSceneFlagEnum.eENABLE_GPU_DYNAMICS)
-                sceneDesc.broadPhaseType = PxBroadPhaseTypeEnum.eGPU
-                sceneDesc.gpuDynamicsConfig.maxRigidPatchCount *= 8
-                logI { "Using CUDA acceleration for PhysX scene" }
             }
             pxScene = PhysicsImpl.physics.createScene(sceneDesc)
         }
