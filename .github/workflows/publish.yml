@@ -5,9 +5,9 @@ on:
 
 jobs:
   build:
-    name: Publish snapshot
+    name: Publish release
     runs-on: ubuntu-latest
-    environment: publish-snapshot
+    environment: publish
 
     steps:
       - name: Checkout Repository
@@ -23,8 +23,10 @@ jobs:
         run: ./gradlew enableAndroidPlatform
       - name: Build everything
         run: ./gradlew build
-      - name: Publish snapshot
+      - name: Publish release
         run: ./gradlew publish
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}

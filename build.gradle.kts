@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.17.0-SNAPSHOT"
+    version = "0.17.0"
 
     repositories {
         mavenLocal()
