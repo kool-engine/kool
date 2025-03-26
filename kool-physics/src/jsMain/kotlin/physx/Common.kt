@@ -1057,7 +1057,7 @@ val PxTransform.inverse
 val PxTransform.normalized
     get() = getNormalized()
 
-external interface PxTypedStridedData_PxU16 {
+external interface PxTypedBoundedData_PxU16 {
     /**
      * Native object address.
      */
@@ -1073,13 +1073,13 @@ external interface PxTypedStridedData_PxU16 {
     var data: PxU16Ptr
 }
 
-fun PxTypedStridedData_PxU16FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedStridedData_PxU16 = js("_module.wrapPointer(ptr, _module.PxTypedStridedData_PxU16)")
+fun PxTypedBoundedData_PxU16FromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedBoundedData_PxU16 = js("_module.wrapPointer(ptr, _module.PxTypedBoundedData_PxU16)")
 
-fun PxTypedStridedData_PxU16.destroy() {
+fun PxTypedBoundedData_PxU16.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxTypedStridedData_PxU16Const {
+external interface PxTypedBoundedData_PxU16Const {
     /**
      * Native object address.
      */
@@ -1095,9 +1095,9 @@ external interface PxTypedStridedData_PxU16Const {
     var data: PxU16ConstPtr
 }
 
-fun PxTypedStridedData_PxU16ConstFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedStridedData_PxU16Const = js("_module.wrapPointer(ptr, _module.PxTypedStridedData_PxU16Const)")
+fun PxTypedBoundedData_PxU16ConstFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxTypedBoundedData_PxU16Const = js("_module.wrapPointer(ptr, _module.PxTypedBoundedData_PxU16Const)")
 
-fun PxTypedStridedData_PxU16Const.destroy() {
+fun PxTypedBoundedData_PxU16Const.destroy() {
     PhysXJsLoader.destroy(this)
 }
 

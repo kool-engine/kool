@@ -1216,9 +1216,9 @@ external interface PxTetrahedronMeshDesc {
     val ptr: Int
 
     /**
-     * WebIDL type: [PxTypedStridedData_PxU16] (Value)
+     * WebIDL type: [PxTypedBoundedData_PxU16] (Value)
      */
-    var materialIndices: PxTypedStridedData_PxU16
+    var materialIndices: PxTypedBoundedData_PxU16
     /**
      * WebIDL type: [PxBoundedData] (Value)
      */

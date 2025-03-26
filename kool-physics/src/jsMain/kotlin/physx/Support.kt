@@ -148,14 +148,6 @@ fun PxMaterialConstPtr.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
-external interface PxVehicleWheelsPtr
-
-fun PxVehicleWheelsPtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxVehicleWheelsPtr = js("_module.wrapPointer(ptr, _module.PxVehicleWheelsPtr)")
-
-fun PxVehicleWheelsPtr.destroy() {
-    PhysXJsLoader.destroy(this)
-}
-
 external interface PxShapePtr
 
 fun PxShapePtrFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxShapePtr = js("_module.wrapPointer(ptr, _module.PxShapePtr)")

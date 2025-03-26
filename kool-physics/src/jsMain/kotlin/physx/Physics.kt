@@ -1707,26 +1707,6 @@ external interface PxArticulationReducedCoordinate : PxBase {
     fun putToSleep()
 
     /**
-     * @param maxLinerVelocity WebIDL type: float
-     */
-    fun setMaxCOMLinearVelocity(maxLinerVelocity: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getMaxCOMLinearVelocity(): Float
-
-    /**
-     * @param maxAngularVelocity WebIDL type: float
-     */
-    fun setMaxCOMAngularVelocity(maxAngularVelocity: Float)
-
-    /**
-     * @return WebIDL type: float
-     */
-    fun getMaxCOMAngularVelocity(): Float
-
-    /**
      * @param parent WebIDL type: [PxArticulationLink] (Nullable)
      * @param pose   WebIDL type: [PxTransform] (Const, Ref)
      * @return WebIDL type: [PxArticulationLink]
@@ -1834,7 +1814,17 @@ external interface PxArticulationReducedCoordinate : PxBase {
     /**
      * @param cache WebIDL type: [PxArticulationCache] (Ref)
      */
+    fun computeGravityCompensation(cache: PxArticulationCache)
+
+    /**
+     * @param cache WebIDL type: [PxArticulationCache] (Ref)
+     */
     fun computeCoriolisAndCentrifugalForce(cache: PxArticulationCache)
+
+    /**
+     * @param cache WebIDL type: [PxArticulationCache] (Ref)
+     */
+    fun computeCoriolisCompensation(cache: PxArticulationCache)
 
     /**
      * @param cache WebIDL type: [PxArticulationCache] (Ref)
@@ -1860,6 +1850,22 @@ external interface PxArticulationReducedCoordinate : PxBase {
      * @param cache WebIDL type: [PxArticulationCache] (Ref)
      */
     fun computeGeneralizedMassMatrix(cache: PxArticulationCache)
+
+    /**
+     * @param cache WebIDL type: [PxArticulationCache] (Ref)
+     */
+    fun computeMassMatrix(cache: PxArticulationCache)
+
+    /**
+     * @param rootFrame WebIDL type: boolean
+     * @return WebIDL type: [PxVec3] (Value)
+     */
+    fun computeArticulationCOM(rootFrame: Boolean): PxVec3
+
+    /**
+     * @param cache WebIDL type: [PxArticulationCache] (Ref)
+     */
+    fun computeCentroidalMomentumMatrix(cache: PxArticulationCache)
 
     /**
      * @param joint WebIDL type: [PxConstraint]
@@ -1938,7 +1944,7 @@ external interface PxArticulationReducedCoordinate : PxBase {
     /**
      * @return WebIDL type: unsigned long
      */
-    fun getGpuArticulationIndex(): Int
+    fun getGPUIndex(): Int
 
     /**
      * @return WebIDL type: [PxArticulationSpatialTendon]
@@ -1991,8 +1997,8 @@ val PxArticulationReducedCoordinate.nbLoopJoints
     get() = getNbLoopJoints()
 val PxArticulationReducedCoordinate.coefficientMatrixSize
     get() = getCoefficientMatrixSize()
-val PxArticulationReducedCoordinate.gpuArticulationIndex
-    get() = getGpuArticulationIndex()
+val PxArticulationReducedCoordinate.gPUIndex
+    get() = getGPUIndex()
 val PxArticulationReducedCoordinate.nbSpatialTendons
     get() = getNbSpatialTendons()
 val PxArticulationReducedCoordinate.nbFixedTendons
@@ -2007,12 +2013,6 @@ var PxArticulationReducedCoordinate.stabilizationThreshold
 var PxArticulationReducedCoordinate.wakeCounter
     get() = getWakeCounter()
     set(value) { setWakeCounter(value) }
-var PxArticulationReducedCoordinate.maxCOMLinearVelocity
-    get() = getMaxCOMLinearVelocity()
-    set(value) { setMaxCOMLinearVelocity(value) }
-var PxArticulationReducedCoordinate.maxCOMAngularVelocity
-    get() = getMaxCOMAngularVelocity()
-    set(value) { setMaxCOMAngularVelocity(value) }
 var PxArticulationReducedCoordinate.name
     get() = getName()
     set(value) { setName(value) }
@@ -5339,8 +5339,6 @@ object PxArticulationCacheFlagEnum {
 object PxArticulationDriveTypeEnum {
     val eFORCE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eFORCE()
     val eACCELERATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eACCELERATION()
-    val eTARGET: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eTARGET()
-    val eVELOCITY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eVELOCITY()
     val eNONE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxArticulationDriveTypeEnum_eNONE()
 }
 
@@ -5376,7 +5374,6 @@ object PxHitFlagEnum {
     val eASSUME_NO_INITIAL_OVERLAP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eASSUME_NO_INITIAL_OVERLAP()
     val eANY_HIT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eANY_HIT()
     val eMESH_MULTIPLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMESH_MULTIPLE()
-    val eMESH_ANY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMESH_ANY()
     val eMESH_BOTH_SIDES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMESH_BOTH_SIDES()
     val ePRECISE_SWEEP: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_ePRECISE_SWEEP()
     val eMTD: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxHitFlagEnum_eMTD()
@@ -5526,15 +5523,13 @@ object PxForceModeEnum {
 
 object PxFrictionTypeEnum {
     val ePATCH: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_ePATCH()
-    val eONE_DIRECTIONAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eONE_DIRECTIONAL()
-    val eTWO_DIRECTIONAL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eTWO_DIRECTIONAL()
     val eFRICTION_COUNT: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxFrictionTypeEnum_eFRICTION_COUNT()
 }
 
 object PxMaterialFlagEnum {
     val eDISABLE_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_FRICTION()
     val eDISABLE_STRONG_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eDISABLE_STRONG_FRICTION()
-    val eIMPROVED_PATCH_FRICTION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eIMPROVED_PATCH_FRICTION()
+    val eCOMPLIANT_ACCELERATION_SPRING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxMaterialFlagEnum_eCOMPLIANT_ACCELERATION_SPRING()
 }
 
 object PxPairFilteringModeEnum {

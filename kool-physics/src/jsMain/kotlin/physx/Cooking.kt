@@ -263,9 +263,9 @@ val PxMidphaseDesc.type
 
 external interface PxTriangleMeshDesc : PxSimpleTriangleMesh {
     /**
-     * WebIDL type: [PxTypedStridedData_PxU16Const] (Const, Value)
+     * WebIDL type: [PxTypedBoundedData_PxU16Const] (Const, Value)
      */
-    var materialIndices: PxTypedStridedData_PxU16Const
+    var materialIndices: PxTypedBoundedData_PxU16Const
 }
 
 fun PxTriangleMeshDesc(_module: dynamic = PhysXJsLoader.physXJs): PxTriangleMeshDesc = js("new _module.PxTriangleMeshDesc()")
@@ -284,7 +284,6 @@ object PxConvexFlagEnum {
     val eDISABLE_MESH_VALIDATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eDISABLE_MESH_VALIDATION()
     val ePLANE_SHIFTING: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_ePLANE_SHIFTING()
     val eFAST_INERTIA_COMPUTATION: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eFAST_INERTIA_COMPUTATION()
-    val eGPU_COMPATIBLE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eGPU_COMPATIBLE()
     val eSHIFT_VERTICES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxConvexFlagEnum_eSHIFT_VERTICES()
 }
 
