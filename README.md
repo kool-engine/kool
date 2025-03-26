@@ -8,24 +8,11 @@ A multi-platform Vulkan / WebGPU / OpenGL game engine that works on Desktop Java
 ### Get In Touch
 Feel free to join the [Discord Server](https://discord.gg/GvsJj2Pk3K)!
 
-## Scene Editor
-Check out the [web editor](https://kool-engine.github.io/live/kool-editor/)! (Chrome recommended).
-
-The engine used to be a code-only engine, but I recently made some progress in implementing a graphical scene editor.
-The editor still is in an early state and lacks several rather essential features, but the basics already work quite
-well. It is fully implemented within the engine itself (including the UI).
-
-To unleash the full potential of the editor, you should run it locally. You can either download the editor
-directly in the web-version by clicking the `Save Project` button in the upper right corner (this also preserves any
-changes made in the editor) or you can clone the editor template project (see [usage](#usage) below).
-
-More editor related documentation is available in [the editor docs](https://kool-engine.github.io/docs/editor).
-
 ## Web-Demos
 The following demos run directly in the browser. Chrome is highly recommended because it's still the only browser
 with WebGPU support. Other browsers should work as well but use the WebGL backend, which doesn't support all
 features / demos.
-All demos are implemented in code-only fashion (i.e. without using the editor). The code for all demos is available in
+The code for all demos is available in
 the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject. You can also run them locally by
 cloning this repo and running `./gradlew :kool-demo:runDesktop`
 
@@ -80,6 +67,19 @@ by appending `&backend=webgpu` or `&backend=webgl` to the URL.
 I also made an actual game with this: [Blocks and Belts](https://fabmaxx.itch.io/blocks-and-belts).
 Give it a try (it's free)!
 
+## Scene Editor
+Check out the [web editor](https://kool-engine.github.io/live/kool-editor/)! (Chrome recommended).
+
+The engine used to be a code-only engine, but I recently made some progress in implementing a graphical scene editor.
+The editor still is in an early state and lacks several rather essential features, but the basics already work quite
+well. It is fully implemented within the engine itself (including the UI).
+
+To unleash the full potential of the editor, you should run it locally. You can either download the editor
+directly in the web-version by clicking the `Save Project` button in the upper right corner (this also preserves any
+changes made in the editor) or you can clone the editor template project (see [usage](#usage) below).
+
+More editor related documentation is available in [the editor docs](https://kool-engine.github.io/docs/editor).
+
 ## Platform Support
 
 | Platform    | Backend     | Implementation Status                                   |
@@ -107,11 +107,23 @@ project with a minimal kool Android app.
 ## Usage
 
 You can use kool as a library in your own (multiplatform-) projects. The library is published
-on maven central, and there is a separate repo containing a minimal template project to get you started:
+on maven central:
+
+```
+repositories {
+    mavenCentral()
+    // only needed in case you want to use a SNAPSHOT version:
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
+}
+dependencies {
+    implementation("de.fabmax.kool:kool-core:0.17.0")
+    implementation("de.fabmax.kool:kool-physics:0.17.0")
+}
+```
+
+There is also a separate repo containing a minimal template project to get you started:
 
 [https://github.com/kool-engine/kool-templates](https://github.com/kool-engine/kool-templates)
-
-Make sure to use kool version `0.17.0-SNAPSHOT` if you want to use the Vulkan backend.
 
 The demos mentioned above and examples shown below should give you a rough idea on how to do stuff (documentation is
 still a bit of a weak spot).
