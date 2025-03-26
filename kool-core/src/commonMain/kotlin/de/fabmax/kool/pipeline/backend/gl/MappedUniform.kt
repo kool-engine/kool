@@ -178,9 +178,9 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
             logE { "Texture is already released: ${texture.name}" }
             return false
         }
+        gl.activeTexture(gl.TEXTURE0 + texUnit)
         texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
         (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
-            gl.activeTexture(gl.TEXTURE0 + texUnit)
             tex.bind()
             tex.applySamplerSettings(sampler.sampler)
             return true
