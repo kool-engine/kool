@@ -82,7 +82,8 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
                 }
                 fragmentStage {
                     main {
-                        val storage = texture2d("pixelStorage")
+                        // TextureSampleType.UNFILTERABLE_FLOAT is needed for WebGPU only
+                        val storage = texture2d("pixelStorage", sampleType = TextureSampleType.UNFILTERABLE_FLOAT)
                         colorOutput(storage.sample(uv.output).rgb, 1f.const)
                     }
                 }
