@@ -1,11 +1,11 @@
-name: Publish kool snapshot
+name: Publish kool
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    name: Publish release
+    name: Publish libraries
     runs-on: ubuntu-latest
     environment: publish
 
@@ -23,7 +23,7 @@ jobs:
         run: ./gradlew enableAndroidPlatform
       - name: Build everything
         run: ./gradlew build
-      - name: Publish release
+      - name: Publish libraries
         run: ./gradlew publish
         env:
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
