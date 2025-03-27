@@ -15,6 +15,7 @@ import de.fabmax.kool.demo.physics.ragdoll.RagdollDemo
 import de.fabmax.kool.demo.physics.terrain.TerrainDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
+import de.fabmax.kool.demo.raytracing.RaytracingDemo
 import de.fabmax.kool.demo.tests.*
 import de.fabmax.kool.demo.uidemo.UiDemo
 import de.fabmax.kool.util.Color
@@ -71,6 +72,7 @@ object Demos {
         entry("simplification", "Simplification") { SimplificationDemo() }
         entry("ui", "User Interface") { UiDemo() }
         entry("bloom", "Bloom", NeedsComputeShaders) { HelloBloom() }
+        entry("raytracing", "Raytracing", NeedsComputeShaders) { RaytracingDemo() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
