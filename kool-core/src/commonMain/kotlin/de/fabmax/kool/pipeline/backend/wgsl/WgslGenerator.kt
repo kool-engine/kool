@@ -537,7 +537,13 @@ class WgslGenerator private constructor(
 
     override fun opDiscard(op: KslDiscard): String = "discard;"
 
-    override fun opReturn(op: KslReturn): String = "return ${op.returnValue.generateExpression()};"
+    override fun opReturn(op: KslReturn): String {
+        return if (op.returnValue.expressionType == KslTypeVoid) {
+            "return;"
+        } else {
+            "return ${op.returnValue.generateExpression()};"
+        }
+    }
 
     override fun opBlock(op: KslBlock): String {
         val txt = StringBuilder("{ // block: ${op.opName}\n")
