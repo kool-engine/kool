@@ -234,8 +234,12 @@ class ExponentialDecayDouble(value: Double) {
     }
 
     fun animate(deltaT: Float): Double {
-        actual = actual.expDecay(desired, decay, deltaT)
-        if (isFuzzyEqual(actual, desired)) {
+        if (decay > 0.0) {
+            actual = actual.expDecay(desired, decay, deltaT)
+            if (isFuzzyEqual(actual, desired)) {
+                actual = desired
+            }
+        } else {
             actual = desired
         }
         return actual

@@ -19,7 +19,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
         minZoom = 1.0
         maxZoom = 10000.0
         zoom = 50.0
-        zoomRotationDecay = 20.0
+        smoothingDecay = 20.0
         setRotation(20f, -30f)
         InputStack.defaultInputHandler.pointerListeners += this
 
@@ -54,7 +54,7 @@ class EditorCamTransform(val editor: KoolEditor) : OrbitInputTransform("Editor c
             panTarget = null
 
         } else {
-            translation.expDecay(target, zoomRotationDecay)
+            translation.expDecay(target, smoothingDecay)
         }
     }
 

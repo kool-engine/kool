@@ -98,18 +98,22 @@ open class OrbitInputTransform(name: String? = null) : Node(name), InputStack.Po
     private val matrixTransform: MatrixTransformD
         get() = transform as MatrixTransformD
 
-    var panSmoothness: Double by panMethod::panDecay
-    var zoomRotationDecay: Double = 0.0
+    /**
+     * Determines how much camera movement is smoothed via exponential decay. Larger numbers mean less smooth
+     * movement (however, a value of 0.0 completely disables smoothing). Default value is 16.0.
+     */
+    var smoothingDecay: Double = 16.0
         set(value) {
             field = value
             vertRotAnimator.decay = value
             horiRotAnimator.decay = value
             zoomAnimator.decay = value
+            panMethod.panDecay = value
         }
 
     init {
         transform = MatrixTransformD()
-        zoomRotationDecay = 16.0
+        smoothingDecay = 16.0
         panPlane.p.set(Vec3f.ZERO)
         panPlane.n.set(Vec3f.Y_AXIS)
 
@@ -309,7 +313,11 @@ abstract class PanBase {
     open fun computePan(view: RenderPass.View, ptrPos: Vec2f): Vec3d {
         if (computePanPoint(view, startPtrPos, startPanPos) && computePanPoint(view, ptrPos, panPos)) {
             tmpVec3d.set(startPanPos).subtract(panPos)
-            pan.expDecay(tmpVec3d, panDecay)
+            if (panDecay > 0.0) {
+                pan.expDecay(tmpVec3d, panDecay)
+            } else {
+                pan.set(tmpVec3d)
+            }
         }
         return pan
     }
