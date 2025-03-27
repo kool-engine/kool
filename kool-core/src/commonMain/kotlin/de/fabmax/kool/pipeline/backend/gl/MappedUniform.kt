@@ -225,7 +225,7 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val texUnit = bindCtx.nextTexUnit++
         val texture = storageTex.storageTexture?.asTexture
-        if (texture != null && checkLoadingState(texture)) {
+        if (texture != null && checkLoadingState(texture, texUnit)) {
             val glTex = texture.gpuTexture as LoadedTextureGl
             gl.bindImageTexture(
                 unit = texUnit,
@@ -242,12 +242,15 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
         return false
     }
 
-    private fun checkLoadingState(texture: Texture<*>): Boolean {
+    private fun checkLoadingState(texture: Texture<*>, texUnit: Int): Boolean {
         if (texture.isReleased) {
             logE { "Storage texture is already released: ${texture.name}" }
             return false
         }
-        texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
+        texture.uploadData?.let {
+            gl.activeTexture(gl.TEXTURE0 + texUnit)
+            TextureLoaderGl.loadTexture(texture, backend)
+        }
         return true
     }
 }
