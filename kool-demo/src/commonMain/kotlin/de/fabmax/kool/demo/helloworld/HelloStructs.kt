@@ -38,10 +38,10 @@ class HelloStructs : DemoScene("Hello Structs") {
 
     /**
      * Another struct for storing 4 color values in an array. This is only for demo purposes as it is kind of duplicate
-     * to the struct defined before. Technically, memory layout does not matter for this struct as it will only be
-     * used inside the shader. However, we need to supply a memory layout so we stick to Std140.
+     * to the struct defined before. Memory layout does not matter for this struct as it will only be used inside
+     * the shader.
      */
-    class ColorArrayStruct : Struct("ColorArrayStruct", MemoryLayout.Std140) {
+    class ColorArrayStruct : Struct("ColorArrayStruct", MemoryLayout.DontCare) {
         val colors = float4Array(4)
     }
 

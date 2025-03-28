@@ -20,6 +20,12 @@ sealed interface MemoryLayout {
         return prevPosition + (alignment - 1) and (alignment - 1).inv()
     }
 
+    data object DontCare : MemoryLayout {
+        override fun alignmentOf(type: GpuType, isArray: Boolean): Int = 0
+        override fun arrayStrideOf(type: GpuType): Int = 0
+        override fun structSize(struct: Struct, lastPosition: Int): Int = 0
+    }
+
     data object TightlyPacked : MemoryLayout {
         override fun alignmentOf(type: GpuType, isArray: Boolean): Int = 4
         override fun arrayStrideOf(type: GpuType): Int = type.byteSize

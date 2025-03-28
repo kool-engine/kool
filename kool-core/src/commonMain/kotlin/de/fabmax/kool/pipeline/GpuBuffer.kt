@@ -67,8 +67,8 @@ class GpuBuffer(
             "Buffer type is $type but provided data buffer type is ${data.struct.type}"
         }
         if (!isResizable) {
-            require(data.size <= size) {
-                "Provided upload source buffer is too large (contains ${data.size} elements but this buffer's capacity is only ${size})"
+            require(data.capacity <= size) {
+                "Provided upload source buffer is too large (contains ${data.capacity} elements but this buffer's capacity is only ${size})"
             }
         }
         uploadData = data.buffer
@@ -120,8 +120,8 @@ class GpuBuffer(
         require(type is GpuType.Struct && type.struct == resultData.struct) {
             "Buffer type is $type but provided result buffer type is ${resultData.struct.type}"
         }
-        require(resultData.size >= size) {
-            "Provided download buffer is too small (capacity: ${resultData.size} elements but this buffer's capacity is $size)"
+        require(resultData.capacity >= size) {
+            "Provided download buffer is too small (capacity: ${resultData.capacity} elements but this buffer's capacity is $size)"
         }
         val deferred = CompletableDeferred<Unit>()
         KoolSystem.requireContext().backend.downloadBuffer(this, deferred, resultData.buffer)
