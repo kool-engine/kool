@@ -1,7 +1,6 @@
 package de.fabmax.kool.demo.pathtracing
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.DemoScene
 import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.Vec2i
@@ -9,8 +8,7 @@ import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
-import de.fabmax.kool.modules.ksl.blocks.noise12
-import de.fabmax.kool.modules.ksl.blocks.raySphereIntersection
+import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
@@ -22,11 +20,9 @@ import de.fabmax.kool.util.*
 
 class PathTracingDemo : DemoScene("Path-tracing") {
 
-    val raytracerOutput = KoolSystem.requireContext().let { ctx ->
-        StorageTexture2d(ctx.windowWidth, ctx.windowHeight, TexFormat.RGBA_F32, samplerSettings = SamplerSettings().nearest())
-    }.also { it.releaseWith(mainScene) }
-
     fun raytracingShader() = KslComputeShader("raytracer") {
+        dumpCode = true
+
         computeStage(8, 8) {
             val sphere = struct { SphereStruct() }
             val ray = struct { KslRay() }
@@ -40,7 +36,25 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             val maxBounces = uniformInt1("maxBounces")
 
             val objects = storage("objects", sphere)
-            val outputTex = storageTexture2d<KslFloat4>("outputTex", TexFormat.RGBA_F32)
+            val outputTex = storage<KslFloat4>("outputTex")
+
+            val fnRandomUnitVector = functionFloat3("randomUnitVec") {
+                body {
+                    val vec = float3Var(Vec3f.ZERO.const)
+                    `while`((dot(vec, vec) lt 1e-10f.const) or (dot(vec, vec) gt 1f.const)) {
+                        vec set noise13(random()) * 2f.const - 1f.const
+                    }
+                    normalize(vec)
+                }
+            }
+
+            val fnRandomUnitVectorHemi = functionFloat3("randomUnitVecHemi") {
+                val normal = paramFloat3()
+                body {
+                    val vec = float3Var(fnRandomUnitVector())
+                    vec * sign(dot(vec, normal))
+                }
+            }
 
             val fnClosestHit = functionStruct("closestHit", hitResult) {
                 val ray = paramStruct(ray)
@@ -94,9 +108,12 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 }
             }
 
-
             main {
-                `if`(frameId gt 10000.const) { `return`() }
+                `if`((frameId gt 10000.const) or (inGlobalInvocationId.x.toInt1() ge imageSize.x) or (inGlobalInvocationId.y.toInt1() ge imageSize.y)) {
+                    `return`()
+                }
+
+                randomSeed(frameId.toUint1() + noise21(inGlobalInvocationId.xy.toFloat2()).toUintBits())
 
                 val pixelCoord = int2Var(inGlobalInvocationId.xy.toInt2())
                 val clipXy = float2Var((pixelCoord.toFloat2() + noise12(frameId.toFloat1())) / imageSize.toFloat2() * 2f.const - 1f.const)
@@ -106,7 +123,6 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 ray.struct.origin.ksl set camPos
                 ray.struct.direction.ksl set lookAt.xyz / lookAt.w - ray.struct.origin.ksl
 
-                val lightDir = float3Var(-normalize(Vec3f.ONES.const))
                 val color = float4Var(Color.BLACK.const)
                 val colorMultiplier = float1Var(1f.const)
 
@@ -114,36 +130,38 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                     val hitResult = structVar(fnTraceRay(ray))
 
                     `if`(hitResult.struct.hitObject.ksl ge 0.const) {
-                        val sphere = structVar(objects[hitResult.struct.hitObject.ksl])
-                        val lightIntensity = float1Var(saturate(dot(-lightDir, hitResult.struct.worldNormal.ksl)))
-                        color += sphere.struct.color.ksl * lightIntensity * colorMultiplier
-
                         ray.struct.origin.ksl set hitResult.struct.worldPosition.ksl + hitResult.struct.worldNormal.ksl * 0.001f.const
-                        ray.struct.direction.ksl set normalize(reflect(ray.struct.direction.ksl, hitResult.struct.worldNormal.ksl))
-                        colorMultiplier *= 0.7f.const
+                        //ray.struct.direction.ksl set fnRandomUnitVectorHemi(hitResult.struct.worldNormal.ksl)
+                        ray.struct.direction.ksl set hitResult.struct.worldNormal.ksl + fnRandomUnitVector()
+                        colorMultiplier *= 0.5f.const
+
                     }.`else` {
+                        val unitDir = float3Var(normalize(ray.struct.direction.ksl))
+                        val a = float1Var((unitDir.y + 1f.const) * 0.5f.const)
+                        val skyColor = float4Var(mix(Color.WHITE.const, Color(0.5f, 0.7f, 1f).toLinear().const, saturate(a)))
+                        color += skyColor * colorMultiplier
+
                         `break`()
                     }
                 }
 
-                val oldColor = float4Var(outputTex[pixelCoord] * frameId.toFloat1())
-                outputTex[pixelCoord] = (oldColor + color) / (frameId.toFloat1() + 1f.const)
+                val bufferCoord = int1Var(pixelCoord.y * imageSize.x + pixelCoord.x)
+                val oldColor = float4Var(outputTex[bufferCoord] * frameId.toFloat1())
+                outputTex[bufferCoord] = (oldColor + color) / (frameId.toFloat1() + 1f.const)
             }
         }
-    }.apply {
-        storageTexture2d("outputTex", raytracerOutput)
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         val spheres = StructBuffer(100, SphereStruct())
         spheres.put {
             center.set(Vec3f.ZERO)
-            radius.set(1.75f)
+            radius.set(0.5f)
             color.set(MdColor.PINK)
         }
         spheres.put {
-            center.set(Vec3f(3f, 0f, 0f))
-            radius.set(1f)
+            center.set(Vec3f(0f, -100.5f, 0f))
+            radius.set(100f)
             color.set(MdColor.LIGHT_BLUE)
         }
         val sphereBuffer = spheres.asStorageBuffer().also { it.releaseWith(this) }
@@ -153,21 +171,61 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         val task = raytracingPass.addTask(raytracingShader, Vec3i.ZERO)
         addComputePass(raytracingPass)
 
-        raytracingShader.storage("objects", sphereBuffer)
-
         var frameId by raytracingShader.uniform1i("frameId")
         var imageSize by raytracingShader.uniform2i("imageSize")
         var camPos by raytracingShader.uniform3f("camPos")
         var camMatrix by raytracingShader.uniformMat4f("camMatrix")
-        var numObjects by raytracingShader.uniform1i("numObjects", spheres.size)
-        var maxBounces by raytracingShader.uniform1i("maxBounces", 2)
+        var outputTex by raytracingShader.storage("outputTex")
+
+        raytracingShader.uniform1i("numObjects", spheres.size)
+        raytracingShader.uniform1i("maxBounces", 5)
+        raytracingShader.storage("objects", sphereBuffer)
+
+        defaultOrbitCamera(yaw = 0f, pitch = -10f).apply {
+            smoothingDecay = 0.0
+            zoom = 1.5
+        }
+
+        val outputShader = KslShader("output shader", PipelineConfig(depthTest = DepthCompareOp.ALWAYS)) {
+            val uv = interStageFloat2()
+            fullscreenQuadVertexStage(uv)
+            fragmentStage {
+                main {
+                    val imageSize = uniformInt2("imageSize")
+                    val imageBuf = storage<KslFloat4>("outputTex")
+                    val coordX = int1Var(clamp((uv.output.x * imageSize.x.toFloat1()).toInt1(), 0.const, imageSize.x))
+                    val coordY = int1Var(clamp((uv.output.y * imageSize.y.toFloat1()).toInt1(), 0.const, imageSize.y))
+                    colorOutput(convertColorSpace(imageBuf[coordY * imageSize.x + coordX].rgb, ColorSpaceConversion.LinearToSrgbHdr(ToneMapping.Aces)))
+                }
+            }
+        }
+        var outImageBuffer by outputShader.storage("outputTex")
+        var outImageSize by outputShader.uniform2i("imageSize")
+
+        addTextureMesh {
+            generateFullscreenQuad(mirrorTexCoordsY = true)
+            shader = outputShader
+        }
 
         val prevCamMatrix = MutableMat4f()
         var frameCnt = 0
         onUpdate {
             val imgW = ctx.windowWidth / 4
             val imgH = ctx.windowHeight / 4
-            raytracerOutput.resize(imgW, imgH)
+
+            val bufferSz = imgW * imgH
+            val outBuffer = outputTex
+            if (outBuffer == null || outBuffer.size != bufferSz) {
+                outBuffer?.release()
+                val gpuBuffer = GpuBuffer(
+                    type = GpuType.Float4,
+                    usage = BufferUsage.makeUsage(storage = true),
+                    size = bufferSz
+                )
+                outputTex = gpuBuffer
+                outImageBuffer = gpuBuffer
+            }
+
             task.numGroups.set(
                 x = (imgW + 7) / 8,
                 y = (imgH + 7) / 8,
@@ -175,6 +233,7 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             )
 
             imageSize = Vec2i(imgW, imgH)
+            outImageSize = Vec2i(imgW, imgH)
             camPos = camera.globalPos
             camMatrix = camera.invViewProj
 
@@ -184,27 +243,10 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             }
             frameId = frameCnt
             frameCnt++
-
         }
 
-        defaultOrbitCamera(yaw = 0f, pitch = 0f).apply {
-            smoothingDecay = 0.0
-        }
-
-        addTextureMesh {
-            generateFullscreenQuad(mirrorTexCoordsY = true)
-            shader = KslShader("output shader", PipelineConfig(depthTest = DepthCompareOp.ALWAYS)) {
-                val uv = interStageFloat2()
-                fullscreenQuadVertexStage(uv)
-                fragmentStage {
-                    main {
-                        val tex = texture2d("outputTex", sampleType = TextureSampleType.UNFILTERABLE_FLOAT)
-                        colorOutput(tex.sample(uv.output).rgb, 1f.const)
-                    }
-                }
-            }.apply {
-                texture2d("outputTex", raytracerOutput)
-            }
+        onRelease {
+            outputTex?.release()
         }
     }
 

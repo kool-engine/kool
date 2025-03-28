@@ -183,7 +183,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     open fun constUintExpression(value: UInt) = "${value}u"
     open fun constFloatExpression(value: Float): String {
         var str = "$value"
-        if (!str.contains('.')) {
+        if (!str.contains('.') && !str.lowercase().contains("e")) {
             // make sure string is a proper floating point value (not always the case with javascript)
             str += ".0"
         }

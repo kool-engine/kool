@@ -55,11 +55,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         """.trimIndent())
         src.appendLine()
 
-        src.generateStructs(vertexStage, pipeline)
-        src.generateStorageBuffers(vertexStage, pipeline)
-        src.generateUbos(vertexStage, pipeline)
-        src.generateUniformSamplers(vertexStage, pipeline)
-        src.generateStorageTextures(vertexStage, pipeline)
+        src.generateGlobals(vertexStage, pipeline)
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }, pipeline, "instance attributes")
         src.generateAttributes(vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Vertex }, pipeline, "vertex attributes")
         src.generateInterStageOutputs(vertexStage)
@@ -84,11 +80,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         """.trimIndent())
         src.appendLine()
 
-        src.generateStructs(fragmentStage, pipeline)
-        src.generateStorageBuffers(fragmentStage, pipeline)
-        src.generateUbos(fragmentStage, pipeline)
-        src.generateUniformSamplers(fragmentStage, pipeline)
-        src.generateStorageTextures(fragmentStage, pipeline)
+        src.generateGlobals(fragmentStage, pipeline)
         src.generateInterStageInputs(fragmentStage)
         src.generateOutputs(fragmentStage.outColors)
 
@@ -108,15 +100,18 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             layout(local_size_x = ${computeStage.workGroupSize.x}, local_size_y = ${computeStage.workGroupSize.y}, local_size_z = ${computeStage.workGroupSize.z}) in;
         """.trimIndent())
         src.appendLine()
-
-        src.generateStructs(computeStage, pipeline)
-        src.generateStorageBuffers(computeStage, pipeline)
-        src.generateUbos(computeStage, pipeline)
-        src.generateUniformSamplers(computeStage, pipeline)
-        src.generateStorageTextures(computeStage, pipeline)
-
+        src.generateGlobals(computeStage, pipeline)
         src.appendLine(generateScope(computeStage.globalScope, ""))
         return src.toString()
+    }
+
+    private fun StringBuilder.generateGlobals(stage: KslShaderStage, pipeline: PipelineBase) {
+        generateStructs(stage, pipeline)
+        generateStorageBuffers(stage, pipeline)
+        generateUbos(stage, pipeline)
+        generateUniformSamplers(stage, pipeline)
+        generateStorageTextures(stage, pipeline)
+        generateGlobalVars(stage)
     }
 
     override fun constFloatVecExpression(vararg values: KslExpression<KslFloat1>): String {
@@ -421,6 +416,17 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             storage.forEachIndexed { i, it ->
                 val formatQualifier = storageTextureFormatQualifier(it.texFormat)
                 appendLine("layout($formatQualifier, binding=$i) uniform ${glslTypeName(it.expressionType)} ${it.name};")
+            }
+            appendLine()
+        }
+    }
+
+    private fun StringBuilder.generateGlobalVars(stage: KslShaderStage) {
+        val globals = stage.globalVars.values
+        if (globals.isNotEmpty()) {
+            appendLine("// global variables")
+            globals.forEachIndexed { i, it ->
+                appendLine("${glslTypeName(it.expressionType)} ${it.stateName};")
             }
             appendLine()
         }

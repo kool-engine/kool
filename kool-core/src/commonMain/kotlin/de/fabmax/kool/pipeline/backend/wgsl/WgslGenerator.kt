@@ -63,18 +63,11 @@ class WgslGenerator private constructor(
         """.trimIndent())
         src.appendLine()
 
+        src.generateGlobals(vertexStage, pipeline)
         val vertexInput = VertexInputStructs(vertexStage)
         val vertexOutput = VertexOutputStruct(vertexStage)
-        val ubos = UboStructs(vertexStage, pipeline)
-
-        src.generateStructs(vertexStage, pipeline)
-        src.generateStructUbos(vertexStage, pipeline)
-        ubos.generateStructs(src)
         vertexInput.generateStruct(src)
         vertexOutput.generateStruct(src)
-        src.generateTextureSamplers(vertexStage, pipeline)
-        src.generateStorageBuffers(vertexStage, pipeline)
-        src.generateStorageTextures(vertexStage, pipeline)
 
         val main = vertexStage.globalScope.ops.find {
             it is KslFunction<*>.FunctionRoot && it.function.name == "main"
@@ -102,18 +95,11 @@ class WgslGenerator private constructor(
         """.trimIndent())
         src.appendLine()
 
+        src.generateGlobals(fragmentStage, pipeline)
         val fragmentInput = FragmentInputStruct(fragmentStage)
         val fragmentOutput = FragmentOutputStruct(fragmentStage)
-        val ubos = UboStructs(fragmentStage, pipeline)
-
-        src.generateStructs(fragmentStage, pipeline)
-        src.generateStructUbos(fragmentStage, pipeline)
-        ubos.generateStructs(src)
         fragmentInput.generateStruct(src)
         fragmentOutput.generateStruct(src)
-        src.generateTextureSamplers(fragmentStage, pipeline)
-        src.generateStorageBuffers(fragmentStage, pipeline)
-        src.generateStorageTextures(fragmentStage, pipeline)
 
         val mainParam = if (fragmentInput.isNotEmpty()) "fragmentInput: FragmentInput" else ""
         val main = fragmentStage.globalScope.ops.find {
@@ -139,16 +125,9 @@ class WgslGenerator private constructor(
         """.trimIndent())
         src.appendLine()
 
+        src.generateGlobals(computeStage, pipeline)
         val computeInput = ComputeInputStructs(computeStage)
-        val ubos = UboStructs(computeStage, pipeline)
-
-        src.generateStructs(computeStage, pipeline)
-        src.generateStructUbos(computeStage, pipeline)
-        ubos.generateStructs(src)
         computeInput.generateStruct(src)
-        src.generateTextureSamplers(computeStage, pipeline)
-        src.generateStorageBuffers(computeStage, pipeline)
-        src.generateStorageTextures(computeStage, pipeline)
 
         val main = computeStage.globalScope.ops.find {
             it is KslFunction<*>.FunctionRoot && it.function.name == "main"
@@ -162,6 +141,17 @@ class WgslGenerator private constructor(
         src.appendLine(generateScope(main.childScopes.first(), blockIndent))
         src.appendLine("}")
         return src.toString()
+    }
+
+    private fun StringBuilder.generateGlobals(stage: KslShaderStage, pipeline: PipelineBase) {
+        val ubos = UboStructs(stage, pipeline)
+        generateStructs(stage, pipeline)
+        generateStructUbos(stage, pipeline)
+        ubos.generateStructs(this)
+        generateTextureSamplers(stage, pipeline)
+        generateStorageBuffers(stage, pipeline)
+        generateStorageTextures(stage, pipeline)
+        generateGlobalVars(stage)
     }
 
     private inner class UboStructs(stage: KslShaderStage, pipeline: PipelineBase) : WgslStructHelper {
@@ -1073,6 +1063,17 @@ class WgslGenerator private constructor(
                 }
         }
         appendLine()
+    }
+
+    private fun StringBuilder.generateGlobalVars(stage: KslShaderStage) {
+        val globals = stage.globalVars.values
+        if (globals.isNotEmpty()) {
+            appendLine("// global variables")
+            globals.forEachIndexed { i, it ->
+                appendLine("var<private> ${it.stateName}: ${it.expressionType.wgslTypeName()};")
+            }
+            appendLine()
+        }
     }
 
     class WgslGeneratorOutput(
