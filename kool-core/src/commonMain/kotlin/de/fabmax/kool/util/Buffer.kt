@@ -169,13 +169,13 @@ interface MixedBuffer : Buffer {
     fun getUint16(byteIndex: Int): UShort
     fun setUint16(byteIndex: Int, value: UShort): MixedBuffer
 
-    fun putUint32(value: Int): MixedBuffer = putInt32(value)
+    fun putUint32(value: UInt): MixedBuffer = putInt32(value.toInt())
     fun putUint32(data: IntArray): MixedBuffer = putInt32(data, 0, data.size)
     fun putUint32(data: IntArray, offset: Int, len: Int): MixedBuffer = putInt32(data, 0, data.size)
     fun putUint32(data: Uint32Buffer): MixedBuffer = putInt32(data)
 
-    fun getUint32(byteIndex: Int): Int = getInt32(byteIndex)
-    fun setUint32(byteIndex: Int, value: Int): MixedBuffer = setInt32(byteIndex, value)
+    fun getUint32(byteIndex: Int): UInt = getInt32(byteIndex).toUInt()
+    fun setUint32(byteIndex: Int, value: UInt): MixedBuffer = setInt32(byteIndex, value.toInt())
 
     fun putFloat32(value: Float): MixedBuffer
     fun putFloat32(data: FloatArray): MixedBuffer = putFloat32(data, 0, data.size)

@@ -53,6 +53,14 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData<*>, val gl
                     GpuType.Int2 -> 2 * it.arraySize
                     GpuType.Int3 -> 3 * it.arraySize
                     GpuType.Int4 -> 4 * it.arraySize
+                    GpuType.Uint1 -> 1 * it.arraySize
+                    GpuType.Uint2 -> 2 * it.arraySize
+                    GpuType.Uint3 -> 3 * it.arraySize
+                    GpuType.Uint4 -> 4 * it.arraySize
+                    GpuType.Bool1 -> 1 * it.arraySize
+                    GpuType.Bool2 -> 2 * it.arraySize
+                    GpuType.Bool3 -> 3 * it.arraySize
+                    GpuType.Bool4 -> 4 * it.arraySize
                     else         -> 1
                 }
             } else { 1 }
@@ -72,10 +80,22 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData<*>, val gl
                     GpuType.Float2 -> gl.uniform2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
                     GpuType.Float3 -> gl.uniform3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
                     GpuType.Float4 -> gl.uniform4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+
                     GpuType.Int1 -> gl.uniform1iv(loc, intBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
                     GpuType.Int2 -> gl.uniform2iv(loc, intBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
                     GpuType.Int3 -> gl.uniform3iv(loc, intBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
                     GpuType.Int4 -> gl.uniform4iv(loc, intBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+
+                    GpuType.Uint1 -> gl.uniform1iv(loc, intBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
+                    GpuType.Uint2 -> gl.uniform2iv(loc, intBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
+                    GpuType.Uint3 -> gl.uniform3iv(loc, intBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
+                    GpuType.Uint4 -> gl.uniform4iv(loc, intBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+
+                    GpuType.Bool1 -> gl.uniform1iv(loc, intBuffers[i].copyPadded(buf, pos, 1, uniform.arraySize))
+                    GpuType.Bool2 -> gl.uniform2iv(loc, intBuffers[i].copyPadded(buf, pos, 2, uniform.arraySize))
+                    GpuType.Bool3 -> gl.uniform3iv(loc, intBuffers[i].copyPadded(buf, pos, 3, uniform.arraySize))
+                    GpuType.Bool4 -> gl.uniform4iv(loc, intBuffers[i].copyPadded(buf, pos, 4, uniform.arraySize))
+
                     GpuType.Mat2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2 * uniform.arraySize))
                     GpuType.Mat3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3 * uniform.arraySize))
                     GpuType.Mat4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4 * uniform.arraySize))
@@ -87,10 +107,22 @@ class MappedUboCompat(val ubo: BindGroupData.UniformBufferBindingData<*>, val gl
                     GpuType.Float2 -> gl.uniform2f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4))
                     GpuType.Float3 -> gl.uniform3f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8))
                     GpuType.Float4 -> gl.uniform4f(loc, buf.getFloat32(pos), buf.getFloat32(pos + 4), buf.getFloat32(pos + 8), buf.getFloat32(pos + 12))
+
                     GpuType.Int1 -> gl.uniform1i(loc, buf.getInt32(pos))
                     GpuType.Int2 -> gl.uniform2i(loc, buf.getInt32(pos), buf.getInt32(pos + 4))
                     GpuType.Int3 -> gl.uniform3i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8))
                     GpuType.Int4 -> gl.uniform4i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8), buf.getInt32(pos + 12))
+
+                    GpuType.Uint1 -> gl.uniform1i(loc, buf.getInt32(pos))
+                    GpuType.Uint2 -> gl.uniform2i(loc, buf.getInt32(pos), buf.getInt32(pos + 4))
+                    GpuType.Uint3 -> gl.uniform3i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8))
+                    GpuType.Uint4 -> gl.uniform4i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8), buf.getInt32(pos + 12))
+
+                    GpuType.Bool1 -> gl.uniform1i(loc, buf.getInt32(pos))
+                    GpuType.Bool2 -> gl.uniform2i(loc, buf.getInt32(pos), buf.getInt32(pos + 4))
+                    GpuType.Bool3 -> gl.uniform3i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8))
+                    GpuType.Bool4 -> gl.uniform4i(loc, buf.getInt32(pos), buf.getInt32(pos + 4), buf.getInt32(pos + 8), buf.getInt32(pos + 12))
+
                     GpuType.Mat2 -> gl.uniformMatrix2fv(loc, floatBuffers[i].copyPadded(buf, pos, 2, 2))
                     GpuType.Mat3 -> gl.uniformMatrix3fv(loc, floatBuffers[i].copyPadded(buf, pos, 3, 3))
                     GpuType.Mat4 -> gl.uniformMatrix4fv(loc, floatBuffers[i].copyPadded(buf, pos, 4, 4))

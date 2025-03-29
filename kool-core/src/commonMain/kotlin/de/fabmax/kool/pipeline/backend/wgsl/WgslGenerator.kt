@@ -745,10 +745,22 @@ class WgslGenerator private constructor(
                 GpuType.Float2 -> "vec2f"
                 GpuType.Float3 -> "vec3f"
                 GpuType.Float4 -> "vec4f"
+
                 GpuType.Int1 -> "i32"
                 GpuType.Int2 -> "vec2i"
                 GpuType.Int3 -> "vec3i"
                 GpuType.Int4 -> "vec4i"
+
+                GpuType.Uint1 -> "u32"
+                GpuType.Uint2 -> "vec2u"
+                GpuType.Uint3 -> "vec3u"
+                GpuType.Uint4 -> "vec4u"
+
+                GpuType.Bool1 -> "bool"
+                GpuType.Bool2 -> "vec2b"
+                GpuType.Bool3 -> "vec3b"
+                GpuType.Bool4 -> "vec4b"
+
                 GpuType.Mat2 -> "mat2x2f"
                 GpuType.Mat3 -> "mat3x3f"
                 GpuType.Mat4 -> "mat4x4f"

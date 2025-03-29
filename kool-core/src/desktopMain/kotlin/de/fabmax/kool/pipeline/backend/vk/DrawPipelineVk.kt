@@ -329,13 +329,26 @@ class DrawPipelineVk(
         GpuType.Float2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SFLOAT)
         GpuType.Float3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SFLOAT)
         GpuType.Float4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+
         GpuType.Mat2 -> AttributeVkProps(slotOffset = GpuType.Float2.byteSize, slotType = VK_FORMAT_R32G32_SFLOAT)
         GpuType.Mat3 -> AttributeVkProps(slotOffset = GpuType.Float3.byteSize, slotType = VK_FORMAT_R32G32B32_SFLOAT)
         GpuType.Mat4 -> AttributeVkProps(slotOffset = GpuType.Float4.byteSize, slotType = VK_FORMAT_R32G32B32A32_SFLOAT)
+
         GpuType.Int1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_SINT)
         GpuType.Int2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_SINT)
         GpuType.Int3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_SINT)
         GpuType.Int4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_SINT)
+
+        GpuType.Uint1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_UINT)
+        GpuType.Uint2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_UINT)
+        GpuType.Uint3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_UINT)
+        GpuType.Uint4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_UINT)
+
+        GpuType.Bool1 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32_UINT)
+        GpuType.Bool2 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32_UINT)
+        GpuType.Bool3 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32_UINT)
+        GpuType.Bool4 -> AttributeVkProps(slotOffset = 0, slotType = VK_FORMAT_R32G32B32A32_UINT)
+
         is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
     }
 

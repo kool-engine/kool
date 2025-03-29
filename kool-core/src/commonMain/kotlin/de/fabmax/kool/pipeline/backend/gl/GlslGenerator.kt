@@ -752,13 +752,26 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             GpuType.Float2 -> "vec2"
             GpuType.Float3 -> "vec3"
             GpuType.Float4 -> "vec4"
+
             GpuType.Int1 -> "int"
             GpuType.Int2 -> "ivec2"
             GpuType.Int3 -> "ivec3"
             GpuType.Int4 -> "ivec4"
+
+            GpuType.Uint1 -> "uint"
+            GpuType.Uint2 -> "uvec2"
+            GpuType.Uint3 -> "uvec3"
+            GpuType.Uint4 -> "uvec4"
+
+            GpuType.Bool1 -> "bool"
+            GpuType.Bool2 -> "bvec2"
+            GpuType.Bool3 -> "bvec3"
+            GpuType.Bool4 -> "bvec4"
+
             GpuType.Mat2 -> "mat2"
             GpuType.Mat3 -> "mat3"
             GpuType.Mat4 -> "mat4"
+
             is GpuType.Struct -> type.struct.structName
         }
     }
