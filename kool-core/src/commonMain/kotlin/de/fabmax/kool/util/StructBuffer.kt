@@ -32,10 +32,12 @@ class StructBuffer<T: Struct>(val capacity: Int, val struct: T) {
         struct.block()
     }
 
-    inline fun put(block: T.() -> Unit) {
+    inline fun put(block: T.() -> Unit): Int {
         check(position < capacity) { "StructBuffer capacity exceeded" }
-        bufferAccess.index = position++
+        val index = position++
+        bufferAccess.index = index
         struct.block()
+        return index
     }
 
     inline fun forEach(block: T.() -> Unit) {

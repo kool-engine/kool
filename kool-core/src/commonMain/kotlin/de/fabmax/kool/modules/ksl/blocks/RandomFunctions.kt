@@ -17,6 +17,7 @@ fun KslScopeBuilder.randomSeed(seed: KslExprUint1) {
     parentStage.globalUint1("rand_seed") set seed
 }
 fun KslScopeBuilder.random(): KslExprUint1 = parentStage.getOrCreateFunction("rand_1") { Random(this) }.invoke()
+fun KslScopeBuilder.randomF(): KslExprFloat1 = noise11(random())
 
 fun KslScopeBuilder.hash1(p: KslExprUint1): KslExprUint1 = parentStage.getOrCreateFunction("pcg_hash_1") { Hash1(this) }.invoke(p)
 fun KslScopeBuilder.hash2(p: KslExprUint2): KslExprUint2 = parentStage.getOrCreateFunction("pcg_hash_2") { Hash2(this) }.invoke(p)

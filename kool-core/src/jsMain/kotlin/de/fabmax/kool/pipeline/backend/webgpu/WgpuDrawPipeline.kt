@@ -31,6 +31,16 @@ class WgpuDrawPipeline(
                         GpuType.Int3 -> GPUVertexFormat.sint32x3 to 12
                         GpuType.Int4 -> GPUVertexFormat.sint32x4 to 16
 
+                        GpuType.Uint1 -> GPUVertexFormat.uint32 to 4
+                        GpuType.Uint2 -> GPUVertexFormat.uint32x2 to 8
+                        GpuType.Uint3 -> GPUVertexFormat.uint32x3 to 12
+                        GpuType.Uint4 -> GPUVertexFormat.uint32x4 to 16
+
+                        GpuType.Bool1 -> GPUVertexFormat.uint32 to 4
+                        GpuType.Bool2 -> GPUVertexFormat.uint32x2 to 8
+                        GpuType.Bool3 -> GPUVertexFormat.uint32x3 to 12
+                        GpuType.Bool4 -> GPUVertexFormat.uint32x4 to 16
+
                         GpuType.Mat2 -> GPUVertexFormat.float32x2 to 8
                         GpuType.Mat3 -> GPUVertexFormat.float32x3 to 12
                         GpuType.Mat4 -> GPUVertexFormat.float32x4 to 16
