@@ -94,7 +94,6 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             val fnReflectance = functionFloat1("reflectance") {
                 val cos = paramFloat1()
                 val ior = paramFloat1()
-
                 body {
                     val r0 = float1Var((1f.const - ior) / (1f.const + ior))
                     r0 set r0 * r0
@@ -199,55 +198,52 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 val pixelCoord = int2Var(inGlobalInvocationId.xy.toInt2())
                 val color = float4Var(Color.BLACK.const)
 
-                val samples = 1.const
-                repeat(samples) {
-                    val clipXy = float2Var((pixelCoord.toFloat2() + noise12(random())) / imageSize.toFloat2() * 2f.const - 1f.const)
-                    val proj = float4Var((camMatrix * float4Value(clipXy, 1f.const, 1f.const)))
-                    val lookAt = float3Var(proj.xyz / proj.w)
-                    val lookDist = float3Var(normalize(lookAt - camPos) * focusDist)
-                    lookAt set camPos + lookDist
+                val clipXy = float2Var((pixelCoord.toFloat2() + noise12(random())) / imageSize.toFloat2() * 2f.const - 1f.const)
+                val proj = float4Var((camMatrix * float4Value(clipXy, 1f.const, 1f.const)))
+                val lookAt = float3Var(proj.xyz / proj.w)
+                val lookDist = float3Var(normalize(lookAt - camPos) * focusDist)
+                lookAt set camPos + lookDist
 
-                    val ray = structVar(ray)
-                    ray.struct.origin.ksl set camPos
+                val ray = structVar(ray)
+                ray.struct.origin.ksl set camPos
 
-                    `if`(defocusAngle gt 0f.const) {
-                        val defocusRadius = float1Var(focusDist * tan(defocusAngle / 2f.const))
-                        val sample = fnRandomVecInUnitDisc()
-                        ray.struct.origin.ksl += camRight * sample.x * defocusRadius
-                        ray.struct.origin.ksl += camUp * sample.y * defocusRadius
-                    }
-                    ray.struct.direction.ksl set lookAt - ray.struct.origin.ksl
+                `if`(defocusAngle gt 0f.const) {
+                    val defocusRadius = float1Var(focusDist * tan(defocusAngle / 2f.const))
+                    val sample = fnRandomVecInUnitDisc()
+                    ray.struct.origin.ksl += camRight * sample.x * defocusRadius
+                    ray.struct.origin.ksl += camUp * sample.y * defocusRadius
+                }
+                ray.struct.direction.ksl set lookAt - ray.struct.origin.ksl
 
-                    val colorAttenuation = float3Var(Vec3f.ONES.const)
-                    repeat(maxBounces) { bounce ->
-                        val hit = structVar(fnTraceRay(ray))
+                val colorAttenuation = float3Var(Vec3f.ONES.const)
+                repeat(maxBounces) { bounce ->
+                    val hit = structVar(fnTraceRay(ray))
 
-                        `if`(hit.struct.hitObject.ksl ge 0.const) {
-                            val hitObject = structVar(objects[hit.struct.hitObject.ksl])
-                            val hitMaterial = structVar(materials[hitObject.struct.material.ksl])
-                            colorAttenuation *= hitMaterial.struct.albedo.ksl.rgb
+                    `if`(hit.struct.hitObject.ksl ge 0.const) {
+                        val hitObject = structVar(objects[hit.struct.hitObject.ksl])
+                        val hitMaterial = structVar(materials[hitObject.struct.material.ksl])
+                        colorAttenuation *= hitMaterial.struct.albedo.ksl.rgb
 
-                            `if`(hitMaterial.struct.materialType.ksl eq MATERIAL_LAMBERTIAN.const) {
-                                ray set fnScatterLambertian(hit)
-                            }.elseIf(hitMaterial.struct.materialType.ksl eq MATERIAL_METAL.const) {
-                                ray set fnScatterMetal(ray, hit, hitMaterial.struct.roughness.ksl)
-                            }.elseIf(hitMaterial.struct.materialType.ksl eq MATERIAL_GLASS.const) {
-                                ray set fnScatterGlas(ray, hit, hitMaterial.struct.refractionIndex.ksl)
-                            }
-
-                        }.`else` {
-                            val unitDir = float3Var(normalize(ray.struct.direction.ksl))
-                            val a = float1Var((unitDir.y + 1f.const) * 0.5f.const)
-                            val skyColor = float4Var(mix(Color.WHITE.const, Color(0.5f, 0.65f, 1f).const, saturate(a)))
-                            color += skyColor * float4Value(colorAttenuation, 1f.const)
-                            `break`()
+                        `if`(hitMaterial.struct.materialType.ksl eq MATERIAL_LAMBERTIAN.const) {
+                            ray set fnScatterLambertian(hit)
+                        }.elseIf(hitMaterial.struct.materialType.ksl eq MATERIAL_METAL.const) {
+                            ray set fnScatterMetal(ray, hit, hitMaterial.struct.roughness.ksl)
+                        }.elseIf(hitMaterial.struct.materialType.ksl eq MATERIAL_GLASS.const) {
+                            ray set fnScatterGlas(ray, hit, hitMaterial.struct.refractionIndex.ksl)
                         }
+
+                    }.`else` {
+                        val unitDir = float3Var(normalize(ray.struct.direction.ksl))
+                        val a = float1Var((unitDir.y + 1f.const) * 0.5f.const)
+                        val skyColor = float4Var(mix(Color.WHITE.const, Color(0.5f, 0.65f, 1f).const, saturate(a)))
+                        color += skyColor * float4Value(colorAttenuation, 1f.const)
+                        `break`()
                     }
                 }
 
                 val bufferCoord = int1Var(pixelCoord.y * imageSize.x + pixelCoord.x)
                 val oldColor = float4Var(outputTex[bufferCoord] * frameId.toFloat1())
-                outputTex[bufferCoord] = (oldColor + color / samples.toFloat1()) / (frameId.toFloat1() + 1f.const)
+                outputTex[bufferCoord] = (oldColor + color) / (frameId.toFloat1() + 1f.const)
             }
         }
     }
@@ -359,33 +355,17 @@ class PathTracingDemo : DemoScene("Path-tracing") {
     }
 
     private fun makeManySpheres(spheres: StructBuffer<SphereStruct>, materials: StructBuffer<MaterialStruct>) {
-        val groundMaterial = materials.put {
-            materialType.set(MATERIAL_LAMBERTIAN)
-            albedo.set(MdColor.GREY toneLin 500)
-        }
+        val groundMaterial = materials.addLambertian(MdColor.GREY toneLin 500)
+        val material1 = materials.addGlas(1.5f)
+        val material2 = materials.addLambertian(Color(0.4f, 0.2f, 0.1f))
+        val material3 = materials.addMetal(Color(0.7f, 0.6f, 0.5f), 0f)
+
         spheres.addSphere(Vec3f(0f, -1000f, 0f), 1000f, groundMaterial)
-
-        val material1 = materials.put {
-            materialType.set(MATERIAL_GLASS)
-            refractionIndex.set(1.5f)
-            albedo.set(Color.WHITE)
-        }
         spheres.addSphere(Vec3f(0f, 1f, 0f), 1f, material1)
-
-        val material2 = materials.put {
-            materialType.set(MATERIAL_LAMBERTIAN)
-            albedo.set(Color(0.4f, 0.2f, 0.1f))
-        }
         spheres.addSphere(Vec3f(-4f, 1f, 0f), 1f, material2)
-
-        val material3 = materials.put {
-            materialType.set(MATERIAL_METAL)
-            albedo.set(Color(0.7f, 0.6f, 0.5f))
-            roughness.set(0f)
-        }
         spheres.addSphere(Vec3f(4f, 1f, 0f), 1f, material3)
 
-        val rand = Random(12345)
+        val rand = Random(17)
         for (y in -7 .. 7) {
             for (x in -11 .. 11) {
                 val mat = rand.randomF()
@@ -394,23 +374,10 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 if (pos.distance(Vec3f(0f, 0.2f, 0f)) > 0.9f &&
                     pos.distance(Vec3f(4f, 0.2f, 0f)) > 0.9f &&
                     pos.distance(Vec3f(-4f, 0.2f, 0f)) > 0.9f) {
-                    val matI = materials.put {
-                        when {
-                            mat < 0.8f -> {
-                                materialType.set(MATERIAL_LAMBERTIAN)
-                                albedo.set(rand.randomColor())
-                            }
-                            mat < 0.93f -> {
-                                materialType.set(MATERIAL_METAL)
-                                roughness.set(rand.randomF(0f, 0.5f))
-                                albedo.set(rand.randomColor())
-                            }
-                            else -> {
-                                materialType.set(MATERIAL_GLASS)
-                                refractionIndex.set(1.5f)
-                                albedo.set(Color.WHITE)
-                            }
-                        }
+                    val matI = when {
+                        mat < 0.75f -> materials.addLambertian(rand.randomColor())
+                        mat < 0.93f -> materials.addMetal(rand.randomColor(), rand.randomF(0f, 0.5f))
+                        else -> materials.addGlas(1.5f)
                     }
                     spheres.addSphere(pos, 0.2f, matI)
                 }
@@ -422,44 +389,27 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         return Color.Hsv(randomF(0f, 360f), randomF(0.3f, 0.9f).pow(2), sqrt(randomF(0.3f, 1f))).toLinearRgb()
     }
 
-    private fun makeTestSpheres(spheres: StructBuffer<SphereStruct>, materials: StructBuffer<MaterialStruct>) {
-        materials.put {
-            materialType.set(MATERIAL_LAMBERTIAN)
-            albedo.set(MdColor.YELLOW toneLin 500)
-        }
-        materials.put {
-            materialType.set(MATERIAL_LAMBERTIAN)
-            albedo.set(MdColor.LIGHT_BLUE toneLin 700)
-        }
-        materials.put {
-            materialType.set(MATERIAL_GLASS)
-            albedo.set(Color.WHITE)
-            refractionIndex.set(1.5f)
-        }
-        materials.put {
-            materialType.set(MATERIAL_METAL)
-            albedo.set(Color(0.8f, 0.6f, 0.2f))
-            roughness.set(1f)
-        }
-        materials.put {
-            materialType.set(MATERIAL_GLASS)
-            albedo.set(Color.WHITE)
-            refractionIndex.set(1f/1.5f)
-        }
-
-        spheres.addSphere(Vec3f(0f, -100.5f, 0f), 100f, 0)
-        spheres.addSphere(Vec3f.ZERO, 0.5f, 1)
-        spheres.addSphere(Vec3f(-1f, 0f, 0.1f), 0.5f, 2)
-        spheres.addSphere(Vec3f(1f, 0f, 0.1f), 0.5f, 3)
-        spheres.addSphere(Vec3f(-1f, 0f, 0.1f), 0.4f, 4)
+    private fun StructBuffer<SphereStruct>.addSphere(center: Vec3f, radius: Float, material: Int) = put {
+        this.center.set(center)
+        this.radius.set(radius)
+        this.material.set(material)
     }
 
-    private fun StructBuffer<SphereStruct>.addSphere(center: Vec3f, radius: Float, material: Int) {
-        put {
-            this.center.set(center)
-            this.radius.set(radius)
-            this.material.set(material)
-        }
+    private fun StructBuffer<MaterialStruct>.addLambertian(color: Color): Int = put {
+        materialType.set(MATERIAL_LAMBERTIAN)
+        albedo.set(color)
+    }
+
+    private fun StructBuffer<MaterialStruct>.addMetal(color: Color, roughness: Float): Int = put {
+        materialType.set(MATERIAL_METAL)
+        albedo.set(color)
+        this.roughness.set(roughness)
+    }
+
+    private fun StructBuffer<MaterialStruct>.addGlas(refractionIndex: Float): Int = put {
+        materialType.set(MATERIAL_GLASS)
+        albedo.set(Color.WHITE)
+        this.refractionIndex.set(refractionIndex)
     }
 
     class MaterialStruct : Struct("Material", MemoryLayout.Std430) {
