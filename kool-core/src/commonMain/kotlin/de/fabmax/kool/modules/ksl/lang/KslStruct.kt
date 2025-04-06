@@ -26,7 +26,7 @@ class KslStructMemberExpressionScalar<S>(
     struct: KslExpression<KslStruct<*>>,
     member: StructMember,
     override val expressionType: S
-) : KslStructMemberExpression<S>(struct, member), KslScalarExpression<S>, KslAssignable<S> where S : KslScalar, S : KslNumericType {
+) : KslStructMemberExpression<S>(struct, member), KslScalarExpression<S>, KslAssignable<S> where S : KslScalar, S : KslType {
     override val assignType: S get() = expressionType
     override val mutatingState: KslValue<*>? = struct.asAssignable()
 
@@ -39,7 +39,7 @@ class KslStructMemberExpressionVector<V, S>(
     struct: KslExpression<KslStruct<*>>,
     member: StructMember,
     override val expressionType: V
-) : KslStructMemberExpression<V>(struct, member), KslVectorExpression<V, S>, KslAssignable<V> where V : KslNumericType, V : KslVector<S>, S : KslScalar {
+) : KslStructMemberExpression<V>(struct, member), KslVectorExpression<V, S>, KslAssignable<V> where V : KslType, V : KslVector<S>, S : KslScalar {
     override val assignType: V get() = expressionType
     override val mutatingState: KslValue<*>? = struct.asAssignable()
 
@@ -65,7 +65,7 @@ class KslStructMemberExpressionScalarArray<S>(
     struct: KslExpression<KslStruct<*>>,
     member: StructMember,
     override val expressionType: KslArrayType<S>
-) : KslStructMemberExpression<KslArrayType<S>>(struct, member), KslScalarArrayExpression<S> where S : KslScalar, S : KslNumericType {
+) : KslStructMemberExpression<KslArrayType<S>>(struct, member), KslScalarArrayExpression<S> where S : KslScalar, S : KslType {
     override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(struct)
     override fun toPseudoCode(): String = "${struct.toPseudoCode()}.${member.memberName}"
 }
@@ -74,7 +74,7 @@ class KslStructMemberExpressionVectorArray<V, S>(
     struct: KslExpression<KslStruct<*>>,
     member: StructMember,
     override val expressionType: KslArrayType<V>
-) : KslStructMemberExpression<KslArrayType<V>>(struct, member), KslVectorArrayExpression<V, S> where V : KslNumericType, V : KslVector<S>, S : KslScalar {
+) : KslStructMemberExpression<KslArrayType<V>>(struct, member), KslVectorArrayExpression<V, S> where V : KslType, V : KslVector<S>, S : KslScalar {
     override fun collectSubExpressions(): List<KslExpression<*>> = collectRecursive(struct)
     override fun toPseudoCode(): String = "${struct.toPseudoCode()}.${member.memberName}"
 }
@@ -133,6 +133,24 @@ val Struct.Int3Member.ksl: KslStructMemberExpressionVector<KslInt3, KslInt1> get
 val Struct.Int4Member.ksl: KslStructMemberExpressionVector<KslInt4, KslInt1> get() =
     KslStructMemberExpressionVector(parent.kslAccess, this, KslInt4)
 
+val Struct.Uint1Member.ksl: KslStructMemberExpressionScalar<KslUint1> get() =
+    KslStructMemberExpressionScalar(parent.kslAccess, this, KslUint1)
+val Struct.Uint2Member.ksl: KslStructMemberExpressionVector<KslUint2, KslUint1> get() =
+    KslStructMemberExpressionVector(parent.kslAccess, this, KslUint2)
+val Struct.Uint3Member.ksl: KslStructMemberExpressionVector<KslUint3, KslUint1> get() =
+    KslStructMemberExpressionVector(parent.kslAccess, this, KslUint3)
+val Struct.Uint4Member.ksl: KslStructMemberExpressionVector<KslUint4, KslUint1> get() =
+    KslStructMemberExpressionVector(parent.kslAccess, this, KslUint4)
+
+val Struct.Bool1Member.ksl: KslStructMemberExpressionScalar<KslBool1> get() =
+    KslStructMemberExpressionScalar(parent.kslAccess, this, KslBool1)
+val Struct.Bool2Member.ksl: KslStructMemberExpressionVector<KslBool2, KslBool1> get() =
+    KslStructMemberExpressionVector(parent.kslAccess, this, KslBool2)
+val Struct.Bool3Member.ksl: KslStructMemberExpressionVector<KslBool3, KslBool1> get() =
+    KslStructMemberExpressionVector(parent.kslAccess, this, KslBool3)
+val Struct.Bool4Member.ksl: KslStructMemberExpressionVector<KslBool4, KslBool1> get() =
+    KslStructMemberExpressionVector(parent.kslAccess, this, KslBool4)
+
 val Struct.Mat2Member.ksl: KslStructMemberExpressionMatrix<KslMat2, KslFloat2> get() =
     KslStructMemberExpressionMatrix(parent.kslAccess, this, KslMat2)
 val Struct.Mat3Member.ksl: KslStructMemberExpressionMatrix<KslMat3, KslFloat3> get() =
@@ -157,6 +175,24 @@ val Struct.Int3ArrayMember.ksl: KslExprInt3Array get() =
     KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslInt3Array(arraySize))
 val Struct.Int4ArrayMember.ksl: KslExprInt4Array get() =
     KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslInt4Array(arraySize))
+
+val Struct.Uint1ArrayMember.ksl: KslExprUint1Array get() =
+    KslStructMemberExpressionScalarArray(parent.kslAccess, this, KslUint1Array(arraySize))
+val Struct.Uint2ArrayMember.ksl: KslExprUint2Array get() =
+    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslUint2Array(arraySize))
+val Struct.Uint3ArrayMember.ksl: KslExprUint3Array get() =
+    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslUint3Array(arraySize))
+val Struct.Uint4ArrayMember.ksl: KslExprUint4Array get() =
+    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslUint4Array(arraySize))
+
+val Struct.Bool1ArrayMember.ksl: KslExprBool1Array get() =
+    KslStructMemberExpressionScalarArray(parent.kslAccess, this, KslBool1Array(arraySize))
+val Struct.Bool2ArrayMember.ksl: KslExprBool2Array get() =
+    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslBool2Array(arraySize))
+val Struct.Bool3ArrayMember.ksl: KslExprBool3Array get() =
+    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslBool3Array(arraySize))
+val Struct.Bool4ArrayMember.ksl: KslExprBool4Array get() =
+    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslBool4Array(arraySize))
 
 val Struct.Mat2ArrayMember.ksl: KslExprMat2Array get() =
     KslStructMemberExpressionMatrixArray(parent.kslAccess, this, KslMat2Array(arraySize))

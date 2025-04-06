@@ -106,10 +106,22 @@ val GpuType.channels: Int get() = when (this) {
     GpuType.Float2 -> 2
     GpuType.Float3 -> 3
     GpuType.Float4 -> 4
+
     GpuType.Int1 -> 1
     GpuType.Int2 -> 2
     GpuType.Int3 -> 3
     GpuType.Int4 -> 4
+
+    GpuType.Uint1 -> 1
+    GpuType.Uint2 -> 2
+    GpuType.Uint3 -> 3
+    GpuType.Uint4 -> 4
+
+    GpuType.Bool1 -> 1
+    GpuType.Bool2 -> 2
+    GpuType.Bool3 -> 3
+    GpuType.Bool4 -> 4
+
     GpuType.Mat2 -> 2
     GpuType.Mat3 -> 3
     GpuType.Mat4 -> 4

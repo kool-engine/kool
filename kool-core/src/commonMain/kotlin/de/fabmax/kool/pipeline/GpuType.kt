@@ -19,6 +19,16 @@ sealed interface GpuType {
     data object Int3 : GpuType { override val byteSize = 12 }
     data object Int4 : GpuType { override val byteSize = 16 }
 
+    data object Uint1 : GpuType { override val byteSize = 4 }
+    data object Uint2 : GpuType { override val byteSize = 8 }
+    data object Uint3 : GpuType { override val byteSize = 12 }
+    data object Uint4 : GpuType { override val byteSize = 16 }
+
+    data object Bool1 : GpuType { override val byteSize = 4 }
+    data object Bool2 : GpuType { override val byteSize = 8 }
+    data object Bool3 : GpuType { override val byteSize = 12 }
+    data object Bool4 : GpuType { override val byteSize = 16 }
+
     data object Mat2 : GpuType { override val byteSize = 32 }
     data object Mat3 : GpuType { override val byteSize = 48 }
     data object Mat4 : GpuType { override val byteSize = 64 }
@@ -52,9 +62,21 @@ val GpuType.isFloat: Boolean
 
 val GpuType.isInt: Boolean
     get() = this == GpuType.Int1 ||
-        this == GpuType.Int2 ||
-        this == GpuType.Int3 ||
-        this == GpuType.Int4
+            this == GpuType.Int2 ||
+            this == GpuType.Int3 ||
+            this == GpuType.Int4
+
+val GpuType.isUint: Boolean
+    get() = this == GpuType.Uint1 ||
+            this == GpuType.Uint2 ||
+            this == GpuType.Uint3 ||
+            this == GpuType.Uint4
+
+val GpuType.isBool: Boolean
+    get() = this == GpuType.Bool1 ||
+            this == GpuType.Bool2 ||
+            this == GpuType.Bool3 ||
+            this == GpuType.Bool4
 
 val KslType.gpuType: GpuType
     get() = when (this) {
@@ -67,6 +89,16 @@ val KslType.gpuType: GpuType
         KslInt2 -> GpuType.Int2
         KslInt3 -> GpuType.Int3
         KslInt4 -> GpuType.Int4
+
+        KslUint1 -> GpuType.Uint1
+        KslUint2 -> GpuType.Uint2
+        KslUint3 -> GpuType.Uint3
+        KslUint4 -> GpuType.Uint4
+
+        KslBool1 -> GpuType.Bool1
+        KslBool2 -> GpuType.Bool2
+        KslBool3 -> GpuType.Bool3
+        KslBool4 -> GpuType.Bool4
 
         KslMat2 -> GpuType.Mat2
         KslMat3 -> GpuType.Mat3

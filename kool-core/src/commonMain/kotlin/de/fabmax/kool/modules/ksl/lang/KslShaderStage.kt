@@ -10,6 +10,7 @@ import kotlin.contracts.contract
 abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageType) {
 
     val interStageVars = mutableListOf<KslInterStageVar<*>>()
+    val globalVars = mutableMapOf<String, KslVar<*>>()
     val functions = mutableMapOf<String, KslFunction<*>>()
     val globalScope = KslScopeBuilder(null, null, this)
 
@@ -88,6 +89,68 @@ abstract class KslShaderStage(val program: KslProgram, val type: KslShaderStageT
     fun prepareGenerate() {
         generatorExpressions = KslTransformer.transform(this, program.optimizeExpressions).generatorExpressions
     }
+
+    private fun <S> getOrCreateGlobalScalar(name: String, type: S): KslVarScalar<S> where S : KslType, S : KslScalar {
+        val kslVar = globalVars.getOrPut(name) {
+            KslVarScalar(name, type, true).also { kslVar -> globalScope.definedStates += kslVar }
+        }
+        check(kslVar.expressionType == type) { "Existing global var with name \"$name\" has not the expected type" }
+        @Suppress("UNCHECKED_CAST")
+        return kslVar as KslVarScalar<S>
+    }
+
+    private fun <V, S> getOrCreateGlobalVector(name: String, type: V): KslVarVector<V, S> where V : KslType, V : KslVector<S>, S : KslScalar {
+        val kslVar = globalVars.getOrPut(name) {
+            KslVarVector(name, type, true).also { kslVar -> globalScope.definedStates += kslVar }
+        }
+        check(kslVar.expressionType == type) { "Existing global var with name \"$name\" has not the expected type" }
+        @Suppress("UNCHECKED_CAST")
+        return kslVar as KslVarVector<V, S>
+    }
+
+    private fun <M, V> getOrCreateGlobalMatrix(name: String, type: M): KslVarMatrix<M, V> where M : KslType, M : KslMatrix<V>, V : KslVector<*> {
+        val kslVar = globalVars.getOrPut(name) {
+            KslVarMatrix(name, type, true).also { kslVar -> globalScope.definedStates += kslVar }
+        }
+        check(kslVar.expressionType == type) { "Existing global var with name \"$name\" has not the expected type" }
+        @Suppress("UNCHECKED_CAST")
+        return kslVar as KslVarMatrix<M, V>
+    }
+
+    private fun <T> getOrCreateGlobalStruct(name: String, type: KslStruct<T>): KslVarStruct<T> where T : Struct {
+        val kslVar = globalVars.getOrPut(name) {
+            KslVarStruct(name, type, true).also { kslVar -> globalScope.definedStates += kslVar }
+        }
+        check(kslVar.expressionType == type) { "Existing global var with name \"$name\" has not the expected type" }
+        @Suppress("UNCHECKED_CAST")
+        return kslVar as KslVarStruct<T>
+    }
+
+    fun globalFloat1(name: String) = getOrCreateGlobalScalar(name, KslFloat1)
+    fun globalFloat2(name: String) = getOrCreateGlobalVector(name, KslFloat2)
+    fun globalFloat3(name: String) = getOrCreateGlobalVector(name, KslFloat3)
+    fun globalFloat4(name: String) = getOrCreateGlobalVector(name, KslFloat4)
+
+    fun globalInt1(name: String) = getOrCreateGlobalScalar(name, KslInt1)
+    fun globalInt2(name: String) = getOrCreateGlobalVector(name, KslInt2)
+    fun globalInt3(name: String) = getOrCreateGlobalVector(name, KslInt3)
+    fun globalInt4(name: String) = getOrCreateGlobalVector(name, KslInt4)
+
+    fun globalUint1(name: String) = getOrCreateGlobalScalar(name, KslUint1)
+    fun globalUint2(name: String) = getOrCreateGlobalVector(name, KslUint2)
+    fun globalUint3(name: String) = getOrCreateGlobalVector(name, KslUint3)
+    fun globalUint4(name: String) = getOrCreateGlobalVector(name, KslUint4)
+
+    fun globalBool1(name: String) = getOrCreateGlobalScalar(name, KslBool1)
+    fun globalBool2(name: String) = getOrCreateGlobalVector(name, KslBool2)
+    fun globalBool3(name: String) = getOrCreateGlobalVector(name, KslBool3)
+    fun globalBool4(name: String) = getOrCreateGlobalVector(name, KslBool4)
+
+    fun globalMat2(name: String) = getOrCreateGlobalMatrix(name, KslMat2)
+    fun globalMat3(name: String) = getOrCreateGlobalMatrix(name, KslMat3)
+    fun globalMat4(name: String) = getOrCreateGlobalMatrix(name, KslMat4)
+
+    fun <T: Struct> globalStruct(name: String, struct: KslStruct<T>) = getOrCreateGlobalStruct(name, struct)
 }
 
 enum class KslShaderStageType(val pipelineStageType: ShaderStage) {

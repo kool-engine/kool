@@ -331,7 +331,7 @@ class GpuBees(beeScene: Scene) {
 
     private fun initBeeBuffer(beeBuffer: GpuBuffer, spawnPos: Vec3f) {
         val data = StructBuffer(beeBuffer.size, BeeData())
-        repeat(data.size) {
+        repeat(data.capacity) {
             data.put {
                 position.set(spawnPos + randomInUnitCube() * 5f)
                 decay.set(BeeConfig.decayTime)

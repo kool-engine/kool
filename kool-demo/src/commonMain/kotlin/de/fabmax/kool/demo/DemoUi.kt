@@ -43,6 +43,36 @@ fun UiScope.MenuSlider(
     }
 }
 
+fun UiScope.MenuSlider1(
+    label: String,
+    value: Float,
+    min: Float,
+    max: Float,
+    txtFormat: (Float) -> String = { it.toString(2) },
+    labelWidth: Dp = 80.dp,
+    valueWidth: Dp = 40.dp,
+    onChange: (Float) -> Unit
+) {
+    MenuRow {
+        Text(label) {
+            labelStyle(Grow.Std)
+            modifier.width(labelWidth)
+        }
+        Slider(value, min, max) {
+            modifier
+                .width(Grow.Std)
+                .alignY(AlignmentY.Center)
+                .onChange(onChange)
+        }
+        Text(txtFormat(value)) {
+            labelStyle()
+            modifier
+                .width(valueWidth)
+                .textAlignX(AlignmentX.End)
+        }
+    }
+}
+
 fun UiScope.MenuSlider2(
     label: String,
     value: Float,

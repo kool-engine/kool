@@ -301,15 +301,26 @@ private fun KslProgram.setupBindGroupLayoutStorage(bindGrpBuilder: BindGroupLayo
         val format = when (val type = storage.storageType.elemType) {
             KslFloat1 -> GpuType.Float1
             KslFloat2 -> GpuType.Float2
+            KslFloat3 -> GpuType.Float3
             KslFloat4 -> GpuType.Float4
+
             KslInt1 -> GpuType.Int1
             KslInt2 -> GpuType.Int2
+            KslInt3 -> GpuType.Int3
             KslInt4 -> GpuType.Int4
-            KslUint1 -> GpuType.Int1
-            KslUint2 -> GpuType.Int2
-            KslUint4 -> GpuType.Int4
+
+            KslUint1 -> GpuType.Uint1
+            KslUint2 -> GpuType.Uint2
+            KslUint3 -> GpuType.Uint3
+            KslUint4 -> GpuType.Uint4
+
+            KslBool1 -> GpuType.Bool1
+            KslBool2 -> GpuType.Bool2
+            KslBool3 -> GpuType.Bool3
+            KslBool4 -> GpuType.Bool4
+
             is KslStruct<*> -> type.gpuType
-            else -> error("Invalid storage type: ${storage.storageType.elemType} (only structs and 1, 2, and 4 dimensional float and int types are allowed)")
+            else -> error("Invalid storage type: ${storage.storageType.elemType}")
         }
 
         val accessType = when {

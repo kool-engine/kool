@@ -6,6 +6,7 @@ import de.fabmax.kool.Platform
 import de.fabmax.kool.demo.bees.BeeDemo
 import de.fabmax.kool.demo.creativecoding.CreativeCodingDemo
 import de.fabmax.kool.demo.helloworld.*
+import de.fabmax.kool.demo.pathtracing.PathTracingDemo
 import de.fabmax.kool.demo.pbr.PbrDemo
 import de.fabmax.kool.demo.physics.collision.CollisionDemo
 import de.fabmax.kool.demo.physics.joints.JointsDemo
@@ -71,6 +72,7 @@ object Demos {
         entry("simplification", "Simplification") { SimplificationDemo() }
         entry("ui", "User Interface") { UiDemo() }
         entry("bloom", "Bloom", NeedsComputeShaders) { HelloBloom() }
+        entry("pathtracing", "Path-tracing", NeedsComputeShaders) { PathTracingDemo() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {

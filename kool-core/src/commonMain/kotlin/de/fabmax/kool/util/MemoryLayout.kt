@@ -20,6 +20,12 @@ sealed interface MemoryLayout {
         return prevPosition + (alignment - 1) and (alignment - 1).inv()
     }
 
+    data object DontCare : MemoryLayout {
+        override fun alignmentOf(type: GpuType, isArray: Boolean): Int = 0
+        override fun arrayStrideOf(type: GpuType): Int = 0
+        override fun structSize(struct: Struct, lastPosition: Int): Int = 0
+    }
+
     data object TightlyPacked : MemoryLayout {
         override fun alignmentOf(type: GpuType, isArray: Boolean): Int = 4
         override fun arrayStrideOf(type: GpuType): Int = type.byteSize
@@ -38,6 +44,16 @@ sealed interface MemoryLayout {
                 GpuType.Int2 -> 8
                 GpuType.Int3 -> 16
                 GpuType.Int4 -> 16
+
+                GpuType.Uint1 -> 4
+                GpuType.Uint2 -> 8
+                GpuType.Uint3 -> 16
+                GpuType.Uint4 -> 16
+
+                GpuType.Bool1 -> 4
+                GpuType.Bool2 -> 8
+                GpuType.Bool3 -> 16
+                GpuType.Bool4 -> 16
 
                 GpuType.Mat2 -> 16
                 GpuType.Mat3 -> 16
@@ -71,6 +87,16 @@ sealed interface MemoryLayout {
                 GpuType.Int3 -> 16
                 GpuType.Int4 -> 16
 
+                GpuType.Uint1 -> 4
+                GpuType.Uint2 -> 8
+                GpuType.Uint3 -> 16
+                GpuType.Uint4 -> 16
+
+                GpuType.Bool1 -> 4
+                GpuType.Bool2 -> 8
+                GpuType.Bool3 -> 16
+                GpuType.Bool4 -> 16
+
                 GpuType.Mat2 -> 16
                 GpuType.Mat3 -> 16
                 GpuType.Mat4 -> 16
@@ -86,8 +112,8 @@ sealed interface MemoryLayout {
         }
 
         override fun structSize(struct: Struct, lastPosition: Int): Int {
-            val maxMemberSize = struct.members.maxOf { sizeOf(it.type) }.coerceAtMost(16)
-            return alignedOffset(lastPosition, maxMemberSize)
+            val maxMemberAlignment = struct.members.maxOf { alignmentOf(it.type, it is StructArrayMember) }
+            return alignedOffset(lastPosition, maxMemberAlignment)
         }
     }
 }

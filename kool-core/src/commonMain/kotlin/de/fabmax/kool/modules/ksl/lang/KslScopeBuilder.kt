@@ -608,6 +608,10 @@ class KslScopeBuilder(parentOp: KslOp?, parentScope: KslScopeBuilder?, parentSta
     operator fun <M, V> KslFunction<KslArrayType<M>>.invoke(vararg args: KslExpression<*>): KslMatrixArrayExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*> {
         return KslInvokeFunctionMatrixArray(this, this@KslScopeBuilder, returnType, *args)
     }
+    @JvmName("invokeVoid")
+    operator fun KslFunction<KslTypeVoid>.invoke(vararg args: KslExpression<*>): KslExpression<KslTypeVoid> {
+        return KslInvokeFunctionVoid(this, this@KslScopeBuilder, *args)
+    }
 
     // builtin general functions
     fun <S> abs(value: KslScalarExpression<S>) where S: KslNumericType, S: KslScalar = KslBuiltinAbsScalar(value)

@@ -177,7 +177,8 @@ class KslInvokeFunctionVectorArray<V, S>(function: KslFunction<KslArrayType<V>>,
     : KslInvokeFunction<KslArrayType<V>>(function, parentScope, returnType, *args), KslVectorArrayExpression<V, S> where V: KslType, V: KslVector<S>, S: KslType, S: KslScalar
 class KslInvokeFunctionMatrixArray<M, V>(function: KslFunction<KslArrayType<M>>, parentScope: KslScopeBuilder, returnType: KslArrayType<M>, vararg args: KslExpression<*>)
     : KslInvokeFunction<KslArrayType<M>>(function, parentScope, returnType, *args), KslMatrixArrayExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslType, V: KslVector<*>
-
+class KslInvokeFunctionVoid(function: KslFunction<KslTypeVoid>, parentScope: KslScopeBuilder, vararg args: KslExpression<*>)
+    : KslInvokeFunction<KslTypeVoid>(function, parentScope, KslTypeVoid, *args), KslExpression<KslTypeVoid>
 
 class KslFunctionFloat1(name: String, parentStage: KslShaderStage) : KslFunction<KslFloat1>(name, KslFloat1, parentStage)
 class KslFunctionFloat2(name: String, parentStage: KslShaderStage) : KslFunction<KslFloat2>(name, KslFloat2, parentStage)
