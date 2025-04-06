@@ -16,6 +16,8 @@ The code for all demos is available in
 the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject. You can also run them locally by
 cloning this repo and running `./gradlew :kool-demo:runDesktop`
 
+- [Pathtracing](https://kool-engine.github.io/live/demos/?demo=pathtracing): Compute shader based implementation of the
+  [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) book. **WebGPU only**
 - [Bloom](https://kool-engine.github.io/live/demos/?demo=bloom): Decent looking bloom for (very) bright objects. **WebGPU only**
 - [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.

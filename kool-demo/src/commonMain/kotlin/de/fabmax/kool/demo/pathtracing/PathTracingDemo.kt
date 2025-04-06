@@ -2,11 +2,15 @@ package de.fabmax.kool.demo.pathtracing
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.demo.MenuRow
+import de.fabmax.kool.demo.MenuSlider1
+import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.*
 import de.fabmax.kool.modules.ksl.lang.*
+import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
@@ -14,12 +18,20 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
+import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 import kotlin.math.pow
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.random.Random
 
 class PathTracingDemo : DemoScene("Path-tracing") {
+
+    private val numSamples = mutableStateOf(0)
+    private val defocusAngle = mutableStateOf(0.6f).onChange { _, _ -> numSamples.set(0) }
+    private val focusDistance = mutableStateOf(10f).onChange { _, _ -> numSamples.set(0) }
+    private val cameraFovy = mutableStateOf(20f).onChange { _, _ -> numSamples.set(0) }
+    private val resolution = mutableStateOf(0.25f).onChange { _, _ -> numSamples.set(0) }
 
     fun raytracingShader() = KslComputeShader("raytracer") {
         computeStage(8, 8) {
@@ -37,6 +49,7 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             val camPos = uniformFloat3("camPos")
             val camUp = uniformFloat3("camUp")
             val camRight = uniformFloat3("camRight")
+            val camFront = uniformFloat3("camFront")
             val defocusAngle = uniformFloat1("defocusAngle")
             val focusDist = uniformFloat1("focusDist")
 
@@ -201,7 +214,8 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 val clipXy = float2Var((pixelCoord.toFloat2() + noise12(random())) / imageSize.toFloat2() * 2f.const - 1f.const)
                 val proj = float4Var((camMatrix * float4Value(clipXy, 1f.const, 1f.const)))
                 val lookAt = float3Var(proj.xyz / proj.w)
-                val lookDist = float3Var(normalize(lookAt - camPos) * focusDist)
+                val lookDir = float3Var(normalize(lookAt - camPos))
+                val lookDist = float3Var(lookDir * focusDist / dot(lookDir, camFront))
                 lookAt set camPos + lookDist
 
                 val ray = structVar(ray)
@@ -266,14 +280,15 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         var camPos by raytracingShader.uniform3f("camPos")
         var camUp by raytracingShader.uniform3f("camUp")
         var camRight by raytracingShader.uniform3f("camRight")
+        var camFront by raytracingShader.uniform3f("camFront")
         var camMatrix by raytracingShader.uniformMat4f("camMatrix")
         var outputTex by raytracingShader.storage("outputTex")
 
-        raytracingShader.uniform1f("defocusAngle", 0.6f.deg.rad)
-        raytracingShader.uniform1f("focusDist", 10f)
+        var defocusAngle by raytracingShader.uniform1f("defocusAngle", defocusAngle.value.deg.rad)
+        var focusDist by raytracingShader.uniform1f("focusDist", focusDistance.value)
 
         raytracingShader.uniform1i("numObjects", spheres.size)
-        raytracingShader.uniform1i("maxBounces", 16)
+        raytracingShader.uniform1i("maxBounces", 10)
         raytracingShader.storage("materials", materialBuffer)
         raytracingShader.storage("objects", sphereBuffer)
 
@@ -281,7 +296,6 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             smoothingDecay = 0.0
             zoom = 13.5
             maxZoom = 1000.0
-            (camera as PerspectiveCamera).fovY = 20f.deg
         }
 
         val outputShader = KslShader("output shader", PipelineConfig(depthTest = DepthCompareOp.ALWAYS)) {
@@ -306,10 +320,9 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         }
 
         val prevCamMatrix = MutableMat4f()
-        var frameCnt = 0
         onUpdate {
-            val imgW = ctx.windowWidth / 4
-            val imgH = ctx.windowHeight / 4
+            val imgW = (ctx.windowWidth * resolution.value).roundToInt()
+            val imgH = (ctx.windowHeight * resolution.value).roundToInt()
 
             val bufferSz = imgW * imgH
             val outBuffer = outputTex
@@ -335,17 +348,21 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             camPos = camera.globalPos
             camUp = camera.globalUp
             camRight = camera.globalRight
+            camFront = camera.globalLookDir
             camMatrix = camera.invViewProj
 
             if (prevCamMatrix != camMatrix) {
                 prevCamMatrix.set(camMatrix)
-                frameCnt = 0
+                numSamples.set(0)
             }
-            frameId = frameCnt
-            frameCnt++
+            frameId = numSamples.value
+            defocusAngle = this@PathTracingDemo.defocusAngle.value.deg.rad
+            focusDist = this@PathTracingDemo.focusDistance.value
+            (camera as PerspectiveCamera).fovY = cameraFovy.value.deg
 
-            if (frameCnt == 10000) {
-                logI { "Finished (10000 iterations reached)" }
+            raytracingPass.isEnabled = numSamples.value < 10000
+            if (raytracingPass.isEnabled) {
+                numSamples.set(numSamples.value + 1)
             }
         }
 
@@ -442,5 +459,16 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         const val MATERIAL_LAMBERTIAN = 1
         const val MATERIAL_METAL = 2
         const val MATERIAL_GLASS = 3    // the raytracing in one weekend book calls this dielectric
+    }
+
+    override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
+        MenuSlider1("Focus:", defocusAngle.use(), 0f, 5f) { defocusAngle.set(it) }
+        MenuSlider1("Distance:", sqrt(focusDistance.use()), 1f, sqrt(1000f), { (it*it).toString(2) }) { focusDistance.set(it * it) }
+        MenuSlider1("Zoom:", cameraFovy.use(), 10f, 60f) { cameraFovy.set(it) }
+        MenuSlider1("Resolution:", resolution.use(), 0.25f, 1f) { resolution.set(it) }
+        MenuRow {
+            Text("Samples:") { modifier.width(Grow.Std).alignY(AlignmentY.Center) }
+            Text("${numSamples.use()}") { modifier.alignY(AlignmentY.Center) }
+        }
     }
 }
