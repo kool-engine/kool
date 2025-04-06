@@ -112,5 +112,5 @@ tasks.register<VersionNameUpdate>("updateVersion") {
     )
 }
 
-tasks["compileKotlinJs"].dependsOn("updateVersion", "generateTypeVariants")
-tasks["compileKotlinDesktop"].dependsOn("updateVersion", "generateTypeVariants")
+tasks["compileKotlinJs"].dependsOn("generateTypeVariants")
+tasks["compileKotlinDesktop"].dependsOn("generateTypeVariants")
