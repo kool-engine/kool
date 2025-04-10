@@ -1110,10 +1110,14 @@ class RectProps {
         if (size.x < 0) {
             origin.x += size.x
             size.x = -size.x
+            texCoordUpperLeft.x = texCoordUpperRight.x.also { texCoordUpperRight.x = texCoordUpperLeft.x }
+            texCoordLowerLeft.x = texCoordLowerRight.x.also { texCoordLowerRight.x = texCoordLowerLeft.x }
         }
         if (size.y < 0) {
             origin.y += size.y
             size.y = -size.y
+            texCoordUpperLeft.y = texCoordLowerLeft.y.also { texCoordLowerLeft.y = texCoordUpperLeft.y }
+            texCoordUpperRight.y = texCoordLowerRight.y.also { texCoordLowerRight.y = texCoordUpperRight.y }
         }
     }
 
