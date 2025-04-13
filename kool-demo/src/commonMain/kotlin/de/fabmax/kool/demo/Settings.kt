@@ -15,7 +15,7 @@ object Settings {
         "Medium" to UiSizeSetting("Medium", Sizes.medium),
         "Large" to UiSizeSetting("Large", Sizes.large),
     )
-    val defaultUiSize = UiSizeSetting("Large", Sizes.large)
+    val defaultUiSize = UiSizeSetting("Medium", Sizes.medium)
 
     private val settings = mutableListOf<MutableStateSettings<*>>()
 
