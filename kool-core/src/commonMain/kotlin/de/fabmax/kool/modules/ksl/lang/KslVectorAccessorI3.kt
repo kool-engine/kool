@@ -12,7 +12,7 @@ val KslExpression<KslInt3>.b get() = int1("b")
 
 val KslExpression<KslInt3>.xy get() = int2("xy")
 val KslExpression<KslInt3>.xz get() = int2("xz")
-val KslExpression<KslInt3>.yz get() = int2("xz")
+val KslExpression<KslInt3>.yz get() = int2("yz")
 
 val KslExpression<KslInt3>.rg get() = int2("rg")
 val KslExpression<KslInt3>.rb get() = int2("rb")

@@ -14,7 +14,7 @@ val KslExpression<KslBool4>.a get() = bool1("a")
 
 val KslExpression<KslBool4>.xy get() = bool2("xy")
 val KslExpression<KslBool4>.xz get() = bool2("xz")
-val KslExpression<KslBool4>.yz get() = bool2("xz")
+val KslExpression<KslBool4>.yz get() = bool2("yz")
 
 val KslExpression<KslBool4>.rg get() = bool2("rg")
 val KslExpression<KslBool4>.rb get() = bool2("rb")
