@@ -12,7 +12,7 @@ val KslExpression<KslBool3>.b get() = bool1("b")
 
 val KslExpression<KslBool3>.xy get() = bool2("xy")
 val KslExpression<KslBool3>.xz get() = bool2("xz")
-val KslExpression<KslBool3>.yz get() = bool2("xz")
+val KslExpression<KslBool3>.yz get() = bool2("yz")
 
 val KslExpression<KslBool3>.rg get() = bool2("rg")
 val KslExpression<KslBool3>.rb get() = bool2("rb")

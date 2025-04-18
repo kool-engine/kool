@@ -14,7 +14,7 @@ val KslExpression<KslInt4>.a get() = int1("a")
 
 val KslExpression<KslInt4>.xy get() = int2("xy")
 val KslExpression<KslInt4>.xz get() = int2("xz")
-val KslExpression<KslInt4>.yz get() = int2("xz")
+val KslExpression<KslInt4>.yz get() = int2("yz")
 
 val KslExpression<KslInt4>.rg get() = int2("rg")
 val KslExpression<KslInt4>.rb get() = int2("rb")
