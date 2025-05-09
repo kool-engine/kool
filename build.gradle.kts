@@ -16,7 +16,7 @@ allprojects {
     }
 }
 
-task("disableAndroidPlatform") {
+tasks.register("disableAndroidPlatform") {
     group = "build config"
     doFirst {
         listOf("kool-core", "kool-editor-model").forEach { subProj ->
@@ -32,7 +32,7 @@ task("disableAndroidPlatform") {
     }
 }
 
-task("enableAndroidPlatform") {
+tasks.register("enableAndroidPlatform") {
     group = "build config"
     doFirst {
         listOf("kool-core", "kool-editor-model").forEach { subProj ->
