@@ -43,7 +43,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override suspend fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         sceneRenderer.applySize(ctx.windowWidth, ctx.windowHeight)
