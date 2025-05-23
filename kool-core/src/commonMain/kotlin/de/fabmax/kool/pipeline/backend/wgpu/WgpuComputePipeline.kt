@@ -2,6 +2,9 @@ package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.ComputePipeline
+import io.ygdrasil.webgpu.GPUComputePipeline
+import io.ygdrasil.webgpu.GPUShaderModule
+import io.ygdrasil.webgpu.ProgrammableStage
 
 class WgpuComputePipeline(
     val computePipeline: ComputePipeline,
@@ -23,7 +26,7 @@ class WgpuComputePipeline(
         return device.createComputePipeline(
             label = "${computePipeline.name}-layout",
             layout = pipelineLayout,
-            compute = GPUProgrammableStage(
+            compute = ProgrammableStage(
                 module = computeShaderModule,
                 entryPoint = "computeMain"
             )

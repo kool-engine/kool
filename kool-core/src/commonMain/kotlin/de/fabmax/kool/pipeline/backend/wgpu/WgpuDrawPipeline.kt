@@ -3,6 +3,25 @@ package de.fabmax.kool.pipeline.backend.wgpu
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.NodeId
+import io.ygdrasil.webgpu.BlendComponent
+import io.ygdrasil.webgpu.BlendState
+import io.ygdrasil.webgpu.ColorTargetState
+import io.ygdrasil.webgpu.DepthStencilState
+import io.ygdrasil.webgpu.FragmentState
+import io.ygdrasil.webgpu.GPUBlendFactor
+import io.ygdrasil.webgpu.GPUFrontFace
+import io.ygdrasil.webgpu.GPUIndexFormat
+import io.ygdrasil.webgpu.GPURenderPassEncoder
+import io.ygdrasil.webgpu.GPURenderPipeline
+import io.ygdrasil.webgpu.GPUShaderModule
+import io.ygdrasil.webgpu.GPUVertexBufferLayout
+import io.ygdrasil.webgpu.GPUVertexFormat
+import io.ygdrasil.webgpu.GPUVertexStepMode
+import io.ygdrasil.webgpu.MultisampleState
+import io.ygdrasil.webgpu.PrimitiveState
+import io.ygdrasil.webgpu.VertexAttribute
+import io.ygdrasil.webgpu.VertexBufferLayout
+import io.ygdrasil.webgpu.VertexState
 
 class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
@@ -21,49 +40,49 @@ class WgpuDrawPipeline(
             .mapNotNull { vertexBinding ->
                 val attributes = vertexBinding.vertexAttributes.flatMap { attr ->
                     val (format, stride) = when (attr.type) {
-                        GpuType.Float1 -> GPUVertexFormat.float32 to 4
-                        GpuType.Float2 -> GPUVertexFormat.float32x2 to 8
-                        GpuType.Float3 -> GPUVertexFormat.float32x3 to 12
-                        GpuType.Float4 -> GPUVertexFormat.float32x4 to 16
+                        GpuType.Float1 -> GPUVertexFormat.Float32 to 4
+                        GpuType.Float2 -> GPUVertexFormat.Float32x2 to 8
+                        GpuType.Float3 -> GPUVertexFormat.Float32x3 to 12
+                        GpuType.Float4 -> GPUVertexFormat.Float32x4 to 16
 
-                        GpuType.Int1 -> GPUVertexFormat.sint32 to 4
-                        GpuType.Int2 -> GPUVertexFormat.sint32x2 to 8
-                        GpuType.Int3 -> GPUVertexFormat.sint32x3 to 12
-                        GpuType.Int4 -> GPUVertexFormat.sint32x4 to 16
+                        GpuType.Int1 -> GPUVertexFormat.Sint32 to 4
+                        GpuType.Int2 -> GPUVertexFormat.Sint32x2 to 8
+                        GpuType.Int3 -> GPUVertexFormat.Sint32x3 to 12
+                        GpuType.Int4 -> GPUVertexFormat.Sint32x4 to 16
 
-                        GpuType.Uint1 -> GPUVertexFormat.uint32 to 4
-                        GpuType.Uint2 -> GPUVertexFormat.uint32x2 to 8
-                        GpuType.Uint3 -> GPUVertexFormat.uint32x3 to 12
-                        GpuType.Uint4 -> GPUVertexFormat.uint32x4 to 16
+                        GpuType.Uint1 -> GPUVertexFormat.Uint32 to 4
+                        GpuType.Uint2 -> GPUVertexFormat.Uint32x2 to 8
+                        GpuType.Uint3 -> GPUVertexFormat.Uint32x3 to 12
+                        GpuType.Uint4 -> GPUVertexFormat.Uint32x4 to 16
 
-                        GpuType.Bool1 -> GPUVertexFormat.uint32 to 4
-                        GpuType.Bool2 -> GPUVertexFormat.uint32x2 to 8
-                        GpuType.Bool3 -> GPUVertexFormat.uint32x3 to 12
-                        GpuType.Bool4 -> GPUVertexFormat.uint32x4 to 16
+                        GpuType.Bool1 -> GPUVertexFormat.Uint32 to 4
+                        GpuType.Bool2 -> GPUVertexFormat.Uint32x2 to 8
+                        GpuType.Bool3 -> GPUVertexFormat.Uint32x3 to 12
+                        GpuType.Bool4 -> GPUVertexFormat.Uint32x4 to 16
 
-                        GpuType.Mat2 -> GPUVertexFormat.float32x2 to 8
-                        GpuType.Mat3 -> GPUVertexFormat.float32x3 to 12
-                        GpuType.Mat4 -> GPUVertexFormat.float32x4 to 16
+                        GpuType.Mat2 -> GPUVertexFormat.Float32x2 to 8
+                        GpuType.Mat3 -> GPUVertexFormat.Float32x3 to 12
+                        GpuType.Mat4 -> GPUVertexFormat.Float32x4 to 16
 
                         is GpuType.Struct -> TODO("GpuType.STRUCT not implemented")
                     }
 
                     locations[attr].mapIndexed { i, loc ->
-                        GPUVertexAttribute(
+                        VertexAttribute(
                             format = format,
-                            offset = attr.bufferOffset.toLong() + stride * i,
-                            shaderLocation = loc.location
+                            offset = (attr.bufferOffset.toLong() + stride * i).toULong(),
+                            shaderLocation = loc.location.toUInt()
                         )
                     }
                 }
 
                 if (vertexBinding.strideBytes == 0) null else {
-                    GPUVertexBufferLayout(
-                        arrayStride = vertexBinding.strideBytes.toLong(),
-                        attributes = attributes.toTypedArray(),
+                    VertexBufferLayout(
+                        arrayStride = vertexBinding.strideBytes.toULong(),
+                        attributes = attributes,
                         stepMode = when (vertexBinding.inputRate) {
-                            InputRate.VERTEX -> GPUVertexStepMode.vertex
-                            InputRate.INSTANCE -> GPUVertexStepMode.instance
+                            InputRate.VERTEX -> GPUVertexStepMode.Vertex
+                            InputRate.INSTANCE -> GPUVertexStepMode.Instance
                         }
                     )
                 }
@@ -75,40 +94,40 @@ class WgpuDrawPipeline(
         val gpuRenderPass = passEncoderState.gpuRenderPass
 
         val shaderCode = drawPipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
-        val vertexState = GPUVertexState(
+        val vertexState = VertexState(
             module = vertexShaderModule,
             entryPoint = shaderCode.vertexEntryPoint,
-            buffers = createVertexBufferLayout().toTypedArray()
+            buffers = createVertexBufferLayout()
         )
 
         val blendMode = when (drawPipeline.pipelineConfig.blendMode) {
             BlendMode.DISABLED -> null
-            BlendMode.BLEND_ADDITIVE -> GPUBlendState(
-                color = GPUBlendComponent(srcFactor = GPUBlendFactor.one, dstFactor = GPUBlendFactor.one),
-                alpha = GPUBlendComponent(),
+            BlendMode.BLEND_ADDITIVE -> BlendState(
+                color = BlendComponent(srcFactor = GPUBlendFactor.One, dstFactor = GPUBlendFactor.One),
+                alpha = BlendComponent(),
             )
-            BlendMode.BLEND_MULTIPLY_ALPHA -> GPUBlendState(
-                color = GPUBlendComponent(srcFactor = GPUBlendFactor.srcAlpha, dstFactor = GPUBlendFactor.oneMinusSrcAlpha),
-                alpha = GPUBlendComponent(),
+            BlendMode.BLEND_MULTIPLY_ALPHA -> BlendState(
+                color = BlendComponent(srcFactor = GPUBlendFactor.SrcAlpha, dstFactor = GPUBlendFactor.OneMinusSrcAlpha),
+                alpha = BlendComponent(),
             )
-            BlendMode.BLEND_PREMULTIPLIED_ALPHA -> GPUBlendState(
-                color = GPUBlendComponent(srcFactor = GPUBlendFactor.one, dstFactor = GPUBlendFactor.oneMinusSrcAlpha),
-                alpha = GPUBlendComponent(),
+            BlendMode.BLEND_PREMULTIPLIED_ALPHA -> BlendState(
+                color = BlendComponent(srcFactor = GPUBlendFactor.One, dstFactor = GPUBlendFactor.OneMinusSrcAlpha),
+                alpha = BlendComponent(),
             )
         }
 
-        val primitiveState = GPUPrimitiveState(
+        val primitiveState = PrimitiveState(
             topology = drawPipeline.vertexLayout.primitiveType.wgpu,
             cullMode = drawPipeline.pipelineConfig.cullMethod.wgpu,
-            frontFace = if (renderPass.isMirrorY) GPUFrontFace.cw else GPUFrontFace.ccw
+            frontFace = if (renderPass.isMirrorY) GPUFrontFace.CW else GPUFrontFace.CCW
         )
 
         // do not set fragmentState null even if there are no color targets
         // we might still need the fragment shader to discard fragments (e.g. for a ShadowMap with alphaMask)
-        val fragmentState = GPUFragmentState(
+        val fragmentState = FragmentState(
             module = fragmentShaderModule,
             entryPoint = shaderCode.fragmentEntryPoint,
-            targets = gpuRenderPass.colorTargetFormats.map { GPUColorTargetState(it, blendMode) }.toTypedArray()
+            targets = gpuRenderPass.colorTargetFormats.map { ColorTargetState(it, blendMode) }
         )
 
         val depthOp = when {
@@ -126,7 +145,7 @@ class WgpuDrawPipeline(
 
         val depthStencil = if (!renderPass.hasDepth) null else {
             gpuRenderPass.depthFormat?.let { depthFormat ->
-                GPUDepthStencilState(
+                DepthStencilState(
                     format = depthFormat,
                     depthWriteEnabled = drawPipeline.isWriteDepth,
                     depthCompare = depthOp.wgpu
@@ -141,7 +160,7 @@ class WgpuDrawPipeline(
             fragment = fragmentState,
             depthStencil = depthStencil,
             primitive = primitiveState,
-            multisample = GPUMultisampleState(gpuRenderPass.numSamples)
+            multisample = MultisampleState(gpuRenderPass.numSamples.toUInt())
         )
     }
 
@@ -190,11 +209,11 @@ class WgpuDrawPipeline(
         val gpuGeom = cmd.mesh.geometry.gpuGeometry as WgpuGeometry? ?: return false
         val gpuInsts = cmd.instances?.gpuInstances as WgpuInstances?
 
-        var slot = 0
+        var slot = 0u
         gpuInsts?.instanceBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
         gpuGeom.floatBuffer?.let { passEncoder.setVertexBuffer(slot++, it) }
         gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
-        passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
+        passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.Uint32)
         return true
     }
 

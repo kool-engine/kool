@@ -5,6 +5,8 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
+import io.ygdrasil.webgpu.GPUBuffer
+import io.ygdrasil.webgpu.GPUDevice
 
 class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendWebGpu, mesh: Mesh) : BaseReleasable(), GpuInstances {
     private val device: GPUDevice get() = backend.device
