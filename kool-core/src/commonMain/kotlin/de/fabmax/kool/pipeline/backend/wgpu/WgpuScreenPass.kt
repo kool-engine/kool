@@ -20,6 +20,7 @@ import io.ygdrasil.webgpu.GPUTextureFormat
 import io.ygdrasil.webgpu.GPUTextureUsage
 import io.ygdrasil.webgpu.GPUTextureView
 import io.ygdrasil.webgpu.RenderPassColorAttachment
+import io.ygdrasil.webgpu.RenderPassDepthStencilAttachment
 import io.ygdrasil.webgpu.TextureDescriptor
 
 class WgpuScreenPass(backend: RenderBackendWebGpu) :
@@ -63,7 +64,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
 
         colorDst?.let { dst ->
             var copyDstC = (dst.gpuTexture as WgpuTextureResource?)
-            if (copyDstC == null || copyDstC.width != width || copyDstC.height != height) {
+            if (copyDstC == null || copyDstC.width.toUInt() != width || copyDstC.height.toUInt() != height) {
                 copyDstC?.let {
                     launchDelayed(1) { it.release() }
                 }
@@ -83,7 +84,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
 
         depthDst?.let { dst ->
             var copyDstD = (dst.gpuTexture as WgpuTextureResource?)
-            if (copyDstD == null || copyDstD.width != width || copyDstD.height != height) {
+            if (copyDstD == null || copyDstD.width.toUInt() != width || copyDstD.height.toUInt() != height) {
                 copyDstD?.let {
                     launchDelayed(1) { it.release() }
                 }
@@ -144,7 +145,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
             else -> GPULoadOp.Clear
         }
 
-        val colors = arrayOf(
+        val colors = listOf(
             RenderPassColorAttachment(
                 view = colorTextureView!!,
                 loadOp = colorLoadOp,
