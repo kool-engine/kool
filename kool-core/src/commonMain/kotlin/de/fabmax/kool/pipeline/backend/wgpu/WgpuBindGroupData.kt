@@ -16,6 +16,7 @@ import io.ygdrasil.webgpu.GPUBufferUsage
 import io.ygdrasil.webgpu.GPUDevice
 import io.ygdrasil.webgpu.GPUMipmapFilterMode
 import io.ygdrasil.webgpu.GPUTextureViewDimension
+import kotlin.toUInt
 
 class WgpuBindGroupData(
     private val data: BindGroupData,
@@ -143,8 +144,8 @@ class WgpuBindGroupData(
             gpuBuffer = backend.createBuffer(
                 BufferDescriptor(
                     label = "bindGroup[${data.layout.scope}]-storage-${name}",
-                    size = storage.size * storage.type.byteSize.toULong(),
-                    usage = GPUBufferUsage.STORAGE or GPUBufferUsage.COPY_SRC or GPUBufferUsage.COPY_DST
+                    size = (storage.size * storage.type.byteSize).toULong(),
+                    usage = setOf(GPUBufferUsage.Storage, GPUBufferUsage.CopySrc, GPUBufferUsage.CopyDst)
                 ),
                 "scene: ${pass.parentScene?.name}, render-pass: ${pass.name}"
             )
@@ -196,14 +197,14 @@ class WgpuBindGroupData(
 
         textureBindings += TextureBinding(this, loadedTex)
 
-        val baseLevel = samplerSettings.baseMipLevel.coerceAtMost(loadedTex.imageInfo.mipLevelCount - 1)
+        val baseLevel = samplerSettings.baseMipLevel.coerceAtMost(loadedTex.imageInfo.mipLevelCount.toInt() - 1)
         val numLevels = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else loadedTex.imageInfo.mipLevelCount
-        val numLevelsSafe = numLevels.coerceAtMost(loadedTex.imageInfo.mipLevelCount - baseLevel)
+        val numLevelsSafe = numLevels.coerceAtMost(loadedTex.imageInfo.mipLevelCount.toInt() - baseLevel)
 
         val texView = loadedTex.gpuTexture.createView(baseMipLevel = baseLevel, mipLevelCount = numLevelsSafe)
         return listOf(
-            GPUBindGroupEntry(location.binding, sampler),
-            GPUBindGroupEntry(location.binding + 1, texView)
+            BindGroupEntry(location.binding.toUInt(), sampler),
+            BindGroupEntry(location.binding.toUInt() + 1u, texView)
         )
     }
 
@@ -241,14 +242,14 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.Linear else GPUMipmapFilterMode.Nearest,
             compare = compare,
         )
 
         textureBindings += TextureBinding(this, loadedTex)
         return listOf(
             GPUBindGroupEntry(location.binding, sampler),
-            GPUBindGroupEntry(location.binding + 1, loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.viewCube))
+            GPUBindGroupEntry(location.binding + 1, loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.Cube))
         )
     }
 
@@ -268,15 +269,15 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.Linear else GPUMipmapFilterMode.Nearest,
             maxAnisotropy = maxAnisotropy,
             compare = compare,
         )
 
         textureBindings += TextureBinding(this, loadedTex)
         return listOf(
-            GPUBindGroupEntry(location.binding, sampler),
-            GPUBindGroupEntry(location.binding + 1, loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.view2dArray))
+            BindGroupEntry(location.binding.toUInt(), sampler),
+            BindGroupEntry(location.binding.toUInt() + 1u, loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.TwoDArray))
         )
     }
 
@@ -292,14 +293,14 @@ class WgpuBindGroupData(
             addressModeV = samplerSettings.addressModeV.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.Linear else GPUMipmapFilterMode.Nearest,
             compare = compare,
         )
 
         textureBindings += TextureBinding(this, loadedTex)
         return listOf(
-            GPUBindGroupEntry(location.binding, sampler),
-            GPUBindGroupEntry(location.binding + 1, loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.viewCubeArray))
+            BindGroupEntry(location.binding.toUInt(), sampler),
+            BindGroupEntry(location.binding.toUInt() + 1u, loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.CubeArray))
         )
     }
 
@@ -310,10 +311,10 @@ class WgpuBindGroupData(
 
         storageTextureBindings += StorageTextureBinding(this, loadedTex)
         val texView = loadedTex.gpuTexture.createView(
-            baseMipLevel = mipLevel.coerceAtMost(loadedTex.imageInfo.mipLevelCount - 1),
+            baseMipLevel = mipLevel.coerceAtMost(loadedTex.imageInfo.mipLevelCount.toInt() - 1),
             mipLevelCount = 1
         )
-        return GPUBindGroupEntry(location.binding, texView)
+        return BindGroupEntry(location.binding.toUInt(), texView)
     }
 
     override fun release() {

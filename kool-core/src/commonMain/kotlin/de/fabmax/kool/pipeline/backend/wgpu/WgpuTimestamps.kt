@@ -1,15 +1,31 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.util.Releasable
+import io.ygdrasil.webgpu.BufferDescriptor
+import io.ygdrasil.webgpu.GPUBufferUsage
+import io.ygdrasil.webgpu.GPUCommandEncoder
+import io.ygdrasil.webgpu.GPUMapMode
+import io.ygdrasil.webgpu.GPUQuerySet
+import io.ygdrasil.webgpu.GPUQueryType
+import io.ygdrasil.webgpu.QuerySetDescriptor
 import org.khronos.webgl.Uint32Array
-import org.khronos.webgl.get
 import kotlin.math.max
 
 class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
 
     private var querySet: GPUQuerySet? = null
-    private val resolveBuffer = backend.device.createBuffer(GPUBufferDescriptor(size * 8L, GPUBufferUsage.QUERY_RESOLVE or GPUBufferUsage.COPY_SRC))
-    private val readBuffer = backend.device.createBuffer(GPUBufferDescriptor(size * 8L, GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST))
+    private val resolveBuffer = backend.device.createBuffer(
+        BufferDescriptor(
+            (size * 8L).toULong(),
+            setOf(GPUBufferUsage.QueryResolve, GPUBufferUsage.CopySrc)
+        )
+    )
+    private val readBuffer = backend.device.createBuffer(
+        BufferDescriptor(
+            (size * 8L).toULong(),
+            setOf(GPUBufferUsage.MapRead,GPUBufferUsage.CopyDst)
+        )
+    )
 
     private var isInFlight = false
     private var isMapping = false
@@ -25,7 +41,7 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
             return null
         }
         if (querySet == null) {
-            querySet = backend.device.createQuerySet(GPUQuerySetDescriptor(GPUQueryType.timestamp, size))
+            querySet = backend.device.createQuerySet(QuerySetDescriptor(GPUQueryType.Timestamp, size.toUInt()))
         }
         return querySet
     }
@@ -52,21 +68,21 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
         val querySet = getQuerySet() ?: return
         if (!isInFlight && activeQueries > 0) {
             isInFlight = true
-            encoder.resolveQuerySet(querySet, 0, lastActive + 1, resolveBuffer, 0L)
-            encoder.copyBufferToBuffer(resolveBuffer, 0L, readBuffer, 0L, size * 8L)
+            encoder.resolveQuerySet(querySet, 0u, (lastActive + 1).toUInt(), resolveBuffer, 0uL)
+            encoder.copyBufferToBuffer(resolveBuffer, 0uL, readBuffer, 0uL, (size * 8L).toULong())
         }
     }
 
-    fun readTimestamps() {
+    suspend fun readTimestamps() {
         if (isInFlight && !isMapping) {
             isMapping = true
-            readBuffer.mapAsync(GPUMapMode.READ).then {
+            readBuffer.mapAsync(setOf(GPUMapMode.Read)).onSuccess {
                 val decoded = Uint32Array(readBuffer.getMappedRange())
                 for (i in 0..lastActive) {
                     val slot = slots[i]
                     if (slot != null) {
-                        val lower = decoded[i*2]
-                        val upper = decoded[i*2+1]
+                        val lower = decoded[i * 2]
+                        val upper = decoded[i * 2 + 1]
                         slot.latestResult = upper.toLong() shl 32 or lower.toLong()
                     }
                 }
@@ -77,7 +93,7 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
         }
     }
 
-    inner class QuerySlot(val index: Int): Releasable {
+    inner class QuerySlot(val index: Int) : Releasable {
         override var isReleased = false
             private set
 

@@ -5,6 +5,9 @@ import de.fabmax.kool.pipeline.ComputePassImpl
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.releaseWith
+import io.ygdrasil.webgpu.ComputePassDescriptor
+import io.ygdrasil.webgpu.GPUCommandEncoder
+import io.ygdrasil.webgpu.GPUComputePassTimestampWrites
 import kotlin.time.Duration.Companion.nanoseconds
 
 class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWebGpu) :
@@ -31,7 +34,7 @@ class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWeb
                 timestampWrites = backend.timestampQuery.getQuerySet()?.let { GPUComputePassTimestampWrites(it, begin.index, end.index) }
             }
         }
-        val desc = GPUComputePassDescriptor(parentPass.name, timestampWrites)
+        val desc = ComputePassDescriptor(parentPass.name, timestampWrites)
 
         val tasks = parentPass.tasks
         computePassEncoderState.setup(encoder, encoder.beginComputePass(desc), parentPass)
