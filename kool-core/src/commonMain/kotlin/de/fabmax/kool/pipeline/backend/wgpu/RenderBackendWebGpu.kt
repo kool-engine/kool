@@ -20,15 +20,25 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.navigator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
+import io.ygdrasil.webgpu.ArrayBuffer
 import io.ygdrasil.webgpu.BufferDescriptor
 import io.ygdrasil.webgpu.DeviceDescriptor
+import io.ygdrasil.webgpu.Extent3D
 import io.ygdrasil.webgpu.GPUAdapter
 import io.ygdrasil.webgpu.GPUBuffer
+import io.ygdrasil.webgpu.GPUBufferDescriptor
 import io.ygdrasil.webgpu.GPUBufferUsage
+import io.ygdrasil.webgpu.GPUCommandEncoder
 import io.ygdrasil.webgpu.GPUDevice
 import io.ygdrasil.webgpu.GPUFeatureName
 import io.ygdrasil.webgpu.GPUMapMode
 import io.ygdrasil.webgpu.GPUTextureDescriptor
+import io.ygdrasil.webgpu.GPUTextureDimension
+import io.ygdrasil.webgpu.GPUTextureUsage
+import io.ygdrasil.webgpu.RequestAdapterOptions
+import io.ygdrasil.webgpu.TexelCopyBufferInfo
+import io.ygdrasil.webgpu.TexelCopyTextureInfo
+import io.ygdrasil.webgpu.TextureDescriptor
 import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
@@ -76,7 +86,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
 
     override suspend fun startRenderLoop() {
-        val selectedAdapter: GPUAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(KoolSystem.configJs.powerPreference)).await()
+        val selectedAdapter: GPUAdapter = navigator.gpu.requestAdapter(RequestAdapterOptions(KoolSystem.configJs.powerPreference)).await()
             ?: navigator.gpu.requestAdapter().await()
         adapter = checkNotNull(selectedAdapter) { "No appropriate GPUAdapter found." }
 
@@ -191,7 +201,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun KoolContext.executePasses(passEncoderState: RenderPassEncoderState) {
+    private suspend fun KoolContext.executePasses(passEncoderState: RenderPassEncoderState) {
         ctx.backgroundScene.executePasses(passEncoderState)
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]
@@ -201,7 +211,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun Scene.executePasses(passEncoderState: RenderPassEncoderState) {
+    private suspend fun Scene.executePasses(passEncoderState: RenderPassEncoderState) {
         sceneRecordTime += measureTime {
             for (i in sortedPasses.indices) {
                 val pass = sortedPasses[i]
@@ -214,7 +224,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun GpuPass.execute(passEncoderState: RenderPassEncoderState) {
+    private suspend fun GpuPass.execute(passEncoderState: RenderPassEncoderState) {
         when (this) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> draw(passEncoderState)
@@ -224,15 +234,15 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun OffscreenPass2d.draw(passEncoderState: RenderPassEncoderState) {
+    private suspend fun OffscreenPass2d.draw(passEncoderState: RenderPassEncoderState) {
         (impl as WgpuOffscreenPass2d).draw(passEncoderState)
     }
 
-    private fun OffscreenPassCube.draw(passEncoderState: RenderPassEncoderState) {
+    private suspend fun OffscreenPassCube.draw(passEncoderState: RenderPassEncoderState) {
         (impl as WgpuOffscreenPassCube).draw(passEncoderState)
     }
 
-    private fun ComputePass.dispatch(passEncoderState: RenderPassEncoderState) {
+    private suspend fun ComputePass.dispatch(passEncoderState: RenderPassEncoderState) {
         passEncoderState.ensureRenderPassInactive()
         (impl as WgpuComputePass).dispatch(passEncoderState.encoder)
     }
@@ -272,19 +282,19 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val usage = GPUTextureUsage.STORAGE_BINDING or
-                GPUTextureUsage.COPY_SRC or
-                GPUTextureUsage.COPY_DST or
-                GPUTextureUsage.TEXTURE_BINDING
+        val usage = setOf(GPUTextureUsage.StorageBinding,
+                GPUTextureUsage.CopySrc,
+                GPUTextureUsage.CopyDst,
+                GPUTextureUsage.TextureBinding)
         val dimension = when (storageTexture) {
-            is StorageTexture1d -> GPUTextureDimension.texture1d
-            is StorageTexture2d -> GPUTextureDimension.texture2d
-            is StorageTexture3d -> GPUTextureDimension.texture3d
+            is StorageTexture1d -> GPUTextureDimension.OneD
+            is StorageTexture2d -> GPUTextureDimension.TwoD
+            is StorageTexture3d -> GPUTextureDimension.ThreeD
         }
         val size = when (storageTexture) {
-            is StorageTexture1d -> intArrayOf(width)
-            is StorageTexture2d -> intArrayOf(width, height)
-            is StorageTexture3d -> intArrayOf(width, height, depth)
+            is StorageTexture1d -> Extent3D(width.toUInt())
+            is StorageTexture2d -> Extent3D(width.toUInt(), height.toUInt())
+            is StorageTexture3d -> Extent3D(width.toUInt(), height.toUInt(), depth.toUInt())
         }
         val levels = when (val mipMapping = storageTexture.mipMapping) {
             MipMapping.Full -> numMipLevels(width, height, depth)
@@ -295,12 +305,12 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         if (storageTexture.format == TexFormat.RG11B10_F) {
             logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
         }
-        val texDesc = GPUTextureDescriptor(
+        val texDesc = TextureDescriptor(
             size = size,
             format = storageTexture.format.wgpuStorage,
             dimension = dimension,
             usage = usage,
-            mipLevelCount = levels,
+            mipLevelCount = levels.toUInt(),
             label = storageTexture.name
         )
         storageTexture.gpuTexture?.release()
@@ -325,13 +335,13 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             } else {
                 val size = readback.resultBuffer.limit.toLong() * 4
                 val mapBuffer = device.createBuffer(
-                    GPUBufferDescriptor(
+                    BufferDescriptor(
                         label = "storage-buffer-readback",
-                        size = size,
-                        usage = GPUBufferUsage.MAP_READ or GPUBufferUsage.COPY_DST
+                        size = size.toULong(),
+                        usage = setOf(GPUBufferUsage.MapRead, GPUBufferUsage.CopyDst)
                     )
                 )
-                encoder.copyBufferToBuffer(gpuBuf.buffer, 0L, mapBuffer, 0L, size)
+                encoder.copyBufferToBuffer(gpuBuf.buffer, 0uL, mapBuffer, 0uL, size.toULong())
                 readback.mapBuffer = mapBuffer
             }
         }
@@ -351,13 +361,13 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
                     )
                 )
                 encoder.copyTextureToBuffer(
-                    source = GPUImageCopyTexture(gpuTex.gpuTexture),
-                    destination = GPUImageCopyBuffer(
+                    source = TexelCopyTextureInfo(gpuTex.gpuTexture),
+                    destination = TexelCopyBufferInfo(
                         buffer = mapBuffer,
-                        bytesPerRow = format.pxSize * gpuTex.width,
-                        rowsPerImage = gpuTex.height
+                        bytesPerRow = (format.pxSize * gpuTex.width).toUInt(),
+                        rowsPerImage = gpuTex.height.toUInt()
                     ),
-                    copySize = intArrayOf(gpuTex.width, gpuTex.height, gpuTex.depth)
+                    copySize = Extent3D(gpuTex.width.toUInt(), gpuTex.height.toUInt(), gpuTex.depth.toUInt())
                 )
                 readback.mapBuffer = mapBuffer
             }
