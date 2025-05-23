@@ -34,6 +34,7 @@ import io.ygdrasil.webgpu.GPUFeatureName
 import io.ygdrasil.webgpu.GPUMapMode
 import io.ygdrasil.webgpu.GPUTextureDescriptor
 import io.ygdrasil.webgpu.GPUTextureDimension
+import io.ygdrasil.webgpu.GPUTextureFormat
 import io.ygdrasil.webgpu.GPUTextureUsage
 import io.ygdrasil.webgpu.RequestAdapterOptions
 import io.ygdrasil.webgpu.TexelCopyBufferInfo
@@ -180,7 +181,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun Scene.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
+    private suspend fun Scene.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
         checkIsNotReleased()
         sceneRecordTime = measureTime {
             for (i in sortedPasses.indices) {
@@ -192,7 +193,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun RenderPass.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
+    private suspend fun RenderPass.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
         if (isEnabled) {
             for (i in views.indices) {
                 val queue = views[i].drawQueue
@@ -408,17 +409,17 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
 
     private fun Buffer.copyFrom(src: ArrayBuffer) {
         when (this) {
-            is Uint8BufferImpl -> this.buffer.set(Uint8Array(src))
-            is Uint16BufferImpl -> this.buffer.set(Uint16Array(src))
-            is Int32BufferImpl -> this.buffer.set(Int32Array(src))
-            is Float32BufferImpl -> this.buffer.set(Float32Array(src))
-            is MixedBufferImpl -> Uint8Array(this.buffer.buffer).set(Uint8Array(src))
+            is Uint8Buffer -> this.buffer.set(Uint8Array(src))
+            is Uint16Buffer -> this.buffer.set(Uint16Array(src))
+            is Int32Buffer -> this.buffer.set(Int32Array(src))
+            is Float32Buffer -> this.buffer.set(Float32Array(src))
+            is MixedBuffer -> Uint8Array(this.buffer.buffer).set(Uint8Array(src))
             else -> logE { "Unexpected buffer type: ${this::class.simpleName}" }
         }
     }
 
     fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): GpuBufferWgpu {
-        return GpuBufferWgpu(device.createBuffer(descriptor), descriptor.size, info)
+        return GpuBufferWgpu(device.createBuffer(descriptor), descriptor.size.toLong(), info)
     }
 
     fun createTexture(descriptor: GPUTextureDescriptor): WgpuTextureResource {
