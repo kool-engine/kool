@@ -13,6 +13,7 @@ kotlin {
             api(libs.kotlin.coroutines)
             implementation(libs.kotlin.serialization.json)
             implementation(libs.kotlin.atomicfu)
+            implementation(libs.bundles.wgpu4k)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
