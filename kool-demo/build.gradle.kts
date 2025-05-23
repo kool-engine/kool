@@ -65,7 +65,7 @@ kotlin {
 }
 
 tasks["build"].dependsOn("cacheRuntimeLibs")
-task("cacheRuntimeLibs") {
+tasks.register("cacheRuntimeLibs") {
     doFirst {
         val os = OperatingSystem.current()
         val platformName = when {
