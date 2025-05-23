@@ -3,19 +3,20 @@ package de.fabmax.kool.pipeline.backend.wgpu
 import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.pipeline.backend.stats.TextureInfo
 import de.fabmax.kool.util.BaseReleasable
+import io.ygdrasil.webgpu.GPUTexture
 import io.ygdrasil.webgpu.GPUTextureDescriptor
 
 class WgpuTextureResource(
     val imageInfo: GPUTextureDescriptor,
     val gpuTexture: GPUTexture
 ) : BaseReleasable(), GpuTexture {
-    override val width: Int get() = gpuTexture.width
-    override val height: Int get() = gpuTexture.height
-    override val depth: Int get() = gpuTexture.depthOrArrayLayers
+    override val width: Int get() = gpuTexture.width.toInt()
+    override val height: Int get() = gpuTexture.height.toInt()
+    override val depth: Int get() = gpuTexture.depthOrArrayLayers.toInt()
 
     private val textureInfo = TextureInfo(
         texture = null,
-        size = (gpuTexture.width * gpuTexture.height * gpuTexture.depthOrArrayLayers * imageInfo.bytesPerPx * imageInfo.mipMapFactor).toLong()
+        size = (gpuTexture.width.toInt() * gpuTexture.height.toInt() * gpuTexture.depthOrArrayLayers.toInt() * imageInfo.bytesPerPx * imageInfo.mipMapFactor).toLong()
     )
 
     private val GPUTextureDescriptor.bytesPerPx: Int get() {
@@ -37,7 +38,7 @@ class WgpuTextureResource(
 
     override fun release() {
         super.release()
-        gpuTexture.destroy()
+        gpuTexture.close()
         textureInfo.deleted()
     }
 }

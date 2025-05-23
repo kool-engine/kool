@@ -3,6 +3,9 @@ package de.fabmax.kool.pipeline.backend.wgpu
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
+import io.ygdrasil.webgpu.GPUCompilationMessageType
+import io.ygdrasil.webgpu.GPUShaderModule
+import io.ygdrasil.webgpu.ShaderModuleDescriptor
 
 class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
 
@@ -10,23 +13,23 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
     private val fragmentShaderModules = mutableMapOf<String, UsedShaderModule>()
     private val computeShaderModules = mutableMapOf<String, UsedShaderModule>()
 
-    fun prepareDrawPipeline(cmd: DrawCommand) {
+    suspend fun prepareDrawPipeline(cmd: DrawCommand) {
         val wgpuPipeline = cmd.pipeline.getWgpuPipeline()
         cmd.pipeline.update(cmd)
         wgpuPipeline.updateGeometry(cmd)
     }
 
-    fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
+    suspend fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
         return cmd.pipeline.getWgpuPipeline().bind(cmd, passEncoderState)
     }
 
-    fun bindComputePipeline(task: ComputePass.Task, passEncoderState: ComputePassEncoderState): Boolean {
+    suspend fun bindComputePipeline(task: ComputePass.Task, passEncoderState: ComputePassEncoderState): Boolean {
         val gpuPipeline = task.pipeline.getWgpuPipeline()
         task.pipeline.update(task.pass)
         return gpuPipeline.bind(task, passEncoderState)
     }
 
-    private fun DrawPipeline.getWgpuPipeline(): WgpuDrawPipeline {
+    private suspend fun DrawPipeline.getWgpuPipeline(): WgpuDrawPipeline {
         (pipelineBackend as WgpuDrawPipeline?)?.let { return it }
 
         val vertexShader = getOrCreateVertexShaderModule(this)
@@ -34,17 +37,17 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
         return WgpuDrawPipeline(this, vertexShader, fragmentShader, backend).also { pipelineBackend = it }
     }
 
-    private fun ComputePipeline.getWgpuPipeline(): WgpuComputePipeline {
+    private suspend fun ComputePipeline.getWgpuPipeline(): WgpuComputePipeline {
         (pipelineBackend as WgpuComputePipeline?)?.let { return it }
 
         val computeShader = getOrCreateComputeShaderModule(this)
         return WgpuComputePipeline(this, computeShader, backend).also { pipelineBackend = it }
     }
 
-    private fun getOrCreateVertexShaderModule(pipeline: DrawPipeline): GPUShaderModule {
+    private suspend fun getOrCreateVertexShaderModule(pipeline: DrawPipeline): GPUShaderModule {
         val shaderCode = pipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
         val usedModule = vertexShaderModules.getOrPut(shaderCode.vertexSrc) {
-            val desc = GPUShaderModuleDescriptor(
+            val desc = ShaderModuleDescriptor(
                 label = "${pipeline.name} vertex shader",
                 code = pipeline.shaderCode.vertexSrc
             )
@@ -56,10 +59,10 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
         return usedModule.shaderModule
     }
 
-    private fun getOrCreateFragmentShaderModule(pipeline: DrawPipeline): GPUShaderModule {
+    private suspend fun getOrCreateFragmentShaderModule(pipeline: DrawPipeline): GPUShaderModule {
         val shaderCode = pipeline.shaderCode as RenderBackendWebGpu.WebGpuShaderCode
         val usedModule = fragmentShaderModules.getOrPut(shaderCode.fragmentSrc) {
-            val desc = GPUShaderModuleDescriptor(
+            val desc = ShaderModuleDescriptor(
                 label = "${pipeline.name} fragment shader",
                 code = pipeline.shaderCode.fragmentSrc
             )
@@ -71,10 +74,10 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
         return usedModule.shaderModule
     }
 
-    private fun getOrCreateComputeShaderModule(pipeline: ComputePipeline): GPUShaderModule {
+    private suspend fun getOrCreateComputeShaderModule(pipeline: ComputePipeline): GPUShaderModule {
         val shaderCode = pipeline.shaderCode as RenderBackendWebGpu.WebGpuComputeShaderCode
         val usedModule = fragmentShaderModules.getOrPut(shaderCode.computeSrc) {
-            val desc = GPUShaderModuleDescriptor(
+            val desc = ShaderModuleDescriptor(
                 label = "${pipeline.name} compute shader",
                 code = pipeline.shaderCode.computeSrc
             )
@@ -86,19 +89,19 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
         return usedModule.shaderModule
     }
 
-    private fun GPUShaderModule.checkErrors(stage: String, code: String, pipeline: PipelineBase) {
-        getCompilationInfo().then { info ->
+    private suspend fun GPUShaderModule.checkErrors(stage: String, code: String, pipeline: PipelineBase) {
+        getCompilationInfo().onSuccess { info ->
             val messages = info.messages
-            if (messages.any { it.type == "error" }) {
+            if (messages.any { it.type == GPUCompilationMessageType.Error }) {
                 logE { "Errors occurred on compilation of shader ${pipeline.name}:$stage:" }
-                messages.filter { it.type == "error" }.forEach {
+                messages.filter { it.type == GPUCompilationMessageType.Error }.forEach {
                     logE { it.message }
                 }
                 logE { code }
             }
-            if (messages.any { it.type == "warning" }) {
+            if (messages.any { it.type == GPUCompilationMessageType.Warning }) {
                 logW { "Warnings occurred on compilation of fragment shader ${pipeline.name}:" }
-                messages.filter { it.type == "warning" }.forEach {
+                messages.filter { it.type == GPUCompilationMessageType.Warning }.forEach {
                     logW { it.message }
                 }
             }
