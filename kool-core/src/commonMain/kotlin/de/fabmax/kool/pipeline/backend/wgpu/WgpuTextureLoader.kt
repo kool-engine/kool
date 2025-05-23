@@ -9,6 +9,35 @@ import de.fabmax.kool.util.Float32BufferImpl
 import de.fabmax.kool.util.Uint16BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logW
+import io.ygdrasil.webgpu.BindGroupEntry
+import io.ygdrasil.webgpu.ColorTargetState
+import io.ygdrasil.webgpu.DepthStencilState
+import io.ygdrasil.webgpu.Extent3D
+import io.ygdrasil.webgpu.FragmentState
+import io.ygdrasil.webgpu.GPUCommandEncoder
+import io.ygdrasil.webgpu.GPUCompareFunction
+import io.ygdrasil.webgpu.GPUDevice
+import io.ygdrasil.webgpu.GPUFilterMode
+import io.ygdrasil.webgpu.GPULoadOp
+import io.ygdrasil.webgpu.GPUPrimitiveTopology
+import io.ygdrasil.webgpu.GPURenderPipeline
+import io.ygdrasil.webgpu.GPUStoreOp
+import io.ygdrasil.webgpu.GPUTexelCopyBufferLayout
+import io.ygdrasil.webgpu.GPUTexelCopyTextureInfo
+import io.ygdrasil.webgpu.GPUTexture
+import io.ygdrasil.webgpu.GPUTextureDescriptor
+import io.ygdrasil.webgpu.GPUTextureDimension
+import io.ygdrasil.webgpu.GPUTextureFormat
+import io.ygdrasil.webgpu.GPUTextureUsage
+import io.ygdrasil.webgpu.GPUTextureViewDimension
+import io.ygdrasil.webgpu.Origin3D
+import io.ygdrasil.webgpu.PrimitiveState
+import io.ygdrasil.webgpu.RenderPassDepthStencilAttachment
+import io.ygdrasil.webgpu.RenderPipelineDescriptor
+import io.ygdrasil.webgpu.TexelCopyBufferLayout
+import io.ygdrasil.webgpu.TexelCopyTextureInfo
+import io.ygdrasil.webgpu.TextureDescriptor
+import io.ygdrasil.webgpu.VertexState
 import org.khronos.webgl.ArrayBufferView
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
@@ -46,16 +75,16 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     }
 
     private fun loadTexture1d(tex: Texture1d, data: ImageData1d): WgpuTextureResource {
-        val size = intArrayOf(data.width)
-        val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
+        val size = Extent3D(data.width.toUInt())
+        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding)
         if (tex.mipMapping.isMipMapped) {
             logW { "generateMipMaps requested for Texture1d ${tex.name}: not supported on WebGPU" }
         }
 
-        val texDesc = GPUTextureDescriptor(
+        val texDesc = TextureDescriptor(
             size = size,
             format = data.format.wgpu,
-            dimension = GPUTextureDimension.texture1d,
+            dimension = GPUTextureDimension.OneD,
             usage = usage
         )
 
@@ -65,10 +94,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     }
 
     private fun loadTexture2d(tex: Texture2d, data: ImageData2d): WgpuTextureResource {
-        val size = intArrayOf(data.width, data.height)
-        val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
+        val size = Extent3D(data.width.toUInt(), data.height.toUInt())
+        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
         val levels = tex.mipMapping.numLevels(data.width, data.height)
-        val texDesc = GPUTextureDescriptor(
+        val texDesc = TextureDescriptor(
             size = size,
             format = data.format.wgpu,
             usage = usage,
@@ -84,17 +113,17 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     }
 
     private fun loadTexture3d(tex: Texture3d, data: ImageData3d): WgpuTextureResource {
-        val size = intArrayOf(data.width, data.height, data.depth)
-        val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING
+        val size = Extent3D(data.width.toUInt(), data.height.toUInt(), data.depth.toUInt())
+        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding)
         if (tex.mipMapping.isMipMapped) {
             logW { "generateMipMaps requested for Texture3d ${tex.name}: not yet implemented on WebGPU" }
         }
 
-        val texDesc = GPUTextureDescriptor(
+        val texDesc = TextureDescriptor(
             size = size,
             format = data.format.wgpu,
             usage = usage,
-            dimension = GPUTextureDimension.texture3d,
+            dimension = GPUTextureDimension.ThreeD,
         )
 
         val gpuTex = backend.createTexture(texDesc)
@@ -103,17 +132,17 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     }
 
     private fun loadTextureCube(tex: TextureCube, data: ImageDataCube): WgpuTextureResource {
-        val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
+        val usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
         val levels = tex.mipMapping.numLevels(data.width, data.height)
-        val texDesc = GPUTextureDescriptor(
-            size = intArrayOf(data.width, data.height, 6),
+        val texDesc = TextureDescriptor(
+            size = Extent3D(data.width.toUInt(), data.height.toUInt(), 6u),
             format = data.format.wgpu,
             usage = usage,
             mipLevelCount = levels
         )
 
         val gpuTex = backend.createTexture(texDesc)
-        copyTextureData(data, gpuTex.gpuTexture, intArrayOf(data.width, data.height))
+        copyTextureData(data, gpuTex.gpuTexture, Extent3D(data.width.toUInt(), data.height.toUInt()))
         if (tex.mipMapping.isMipMapped) {
             mipmapGenerator.generateMipLevels(texDesc, gpuTex.gpuTexture)
         }
@@ -122,9 +151,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     private fun loadTexture2dArray(tex: Texture2dArray, data: ImageData3d): WgpuTextureResource {
         val size = intArrayOf(data.width, data.height, data.depth)
-        val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
+        val usage = setOf(GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT)
         val levels = tex.mipMapping.numLevels(data.width, data.height)
-        val texDesc = GPUTextureDescriptor(
+        val texDesc = TextureDescriptor(
             size = size,
             format = data.format.wgpu,
             usage = usage,
@@ -142,7 +171,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
     private fun loadTextureCubeArray(tex: TextureCubeArray, data: ImageDataCubeArray): WgpuTextureResource {
         val usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT
         val levels = tex.mipMapping.numLevels(data.width, data.height)
-        val texDesc = GPUTextureDescriptor(
+        val texDesc = TextureDescriptor(
             size = intArrayOf(data.width, data.height, 6 * data.slices),
             format = data.format.wgpu,
             usage = usage,
@@ -175,52 +204,53 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         multiSampledDepthTextureCopy.copyTexture(src, dst, encoder, mipLevel, layer)
     }
 
-    private fun MipMapping.numLevels(width: Int, height: Int): Int = when (this) {
-        MipMapping.Full -> numMipLevels(width, height)
-        is MipMapping.Limited -> numLevels
-        MipMapping.Off -> 1
+    private fun MipMapping.numLevels(width: Int, height: Int): UInt = when (this) {
+        MipMapping.Full -> numMipLevels(width, height).toUInt()
+        is MipMapping.Limited -> numLevels.toUInt()
+        MipMapping.Off -> 1u
     }
 
-    private fun copyTextureData(src: ImageData, dst: GPUTexture, size: IntArray) {
+    private fun copyTextureData(src: ImageData, dst: GPUTexture, size: Extent3D) {
         when (src) {
-            is ImageTextureData -> copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
-            is BufferedImageData1d -> copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
-            is BufferedImageData2d -> copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
-            is BufferedImageData3d -> copyTextureData(src, dst, size, intArrayOf(0, 0, 0))
+            is ImageTextureData -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
+            is BufferedImageData1d -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
+            is BufferedImageData2d -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
+            is BufferedImageData3d -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
             is ImageDataCube -> {
-                copyTextureData(src.posX, dst, size, intArrayOf(0, 0, 0))
-                copyTextureData(src.negX, dst, size, intArrayOf(0, 0, 1))
-                copyTextureData(src.posY, dst, size, intArrayOf(0, 0, 2))
-                copyTextureData(src.negY, dst, size, intArrayOf(0, 0, 3))
-                copyTextureData(src.posZ, dst, size, intArrayOf(0, 0, 4))
-                copyTextureData(src.negZ, dst, size, intArrayOf(0, 0, 5))
+                copyTextureData(src.posX, dst, size, Origin3D(0u, 0u, 0u))
+                copyTextureData(src.negX, dst, size, Origin3D(0u, 0u, 1u))
+                copyTextureData(src.posY, dst, size, Origin3D(0u, 0u, 2u))
+                copyTextureData(src.negY, dst, size, Origin3D(0u, 0u, 3u))
+                copyTextureData(src.posZ, dst, size, Origin3D(0u, 0u, 4u))
+                copyTextureData(src.negZ, dst, size, Origin3D(0u, 0u, 5u))
             }
             is ImageDataCubeArray -> {
                 src.cubes.forEachIndexed { i, cube ->
-                    copyTextureData(cube.posX, dst, size, intArrayOf(0, 0, i * 6 + 0))
-                    copyTextureData(cube.negX, dst, size, intArrayOf(0, 0, i * 6 + 1))
-                    copyTextureData(cube.posY, dst, size, intArrayOf(0, 0, i * 6 + 2))
-                    copyTextureData(cube.negY, dst, size, intArrayOf(0, 0, i * 6 + 3))
-                    copyTextureData(cube.posZ, dst, size, intArrayOf(0, 0, i * 6 + 4))
-                    copyTextureData(cube.negZ, dst, size, intArrayOf(0, 0, i * 6 + 5))
+                    val i = i.toUInt()
+                    copyTextureData(cube.posX, dst, size, Origin3D(0u, 0u, i * 6u + 0u))
+                    copyTextureData(cube.negX, dst, size, Origin3D(0u, 0u, i * 6u + 1u))
+                    copyTextureData(cube.posY, dst, size, Origin3D(0u, 0u, i * 6u + 2u))
+                    copyTextureData(cube.negY, dst, size, Origin3D(0u, 0u, i * 6u + 3u))
+                    copyTextureData(cube.posZ, dst, size, Origin3D(0u, 0u, i * 6u + 4u))
+                    copyTextureData(cube.negZ, dst, size, Origin3D(0u, 0u, i * 6u + 5u))
                 }
             }
             is ImageData2dArray -> {
-                val size2d = intArrayOf(size[0], size[1])
+                val size2d = Extent3D(size.width, size.height)
                 for (i in src.images.indices) {
-                    copyTextureData(src.images[i], dst, size2d, intArrayOf(0, 0, i))
+                    copyTextureData(src.images[i], dst, size2d, Origin3D(0u, 0u, i.toUInt()))
                 }
             }
             else -> error("Not implemented: ${src::class.simpleName}")
         }
     }
 
-    private fun copyTextureData(src: ImageData, dst: GPUTexture, size: IntArray, dstOrigin: IntArray) {
+    private fun copyTextureData(src: ImageData, dst: GPUTexture, size: Extent3D, dstOrigin: Origin3D) {
         when (src) {
             is BufferedImageData -> {
                 device.queue.writeTexture(
                     data = src.arrayBufferView,
-                    destination = GPUImageCopyTexture(dst, origin = dstOrigin),
+                    destination = TexelCopyTextureInfo(dst, origin = dstOrigin),
                     dataLayout = src.gpuImageDataLayout,
                     size = size
                 )
@@ -236,7 +266,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         }
     }
 
-    private val ImageData.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val ImageData.gpuImageDataLayout: GPUTexelCopyBufferLayout get() {
         return when (this) {
             is BufferedImageData1d -> gpuImageDataLayout
             is BufferedImageData2d -> gpuImageDataLayout
@@ -245,19 +275,19 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         }
     }
 
-    private val BufferedImageData1d.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val BufferedImageData1d.gpuImageDataLayout: GPUTexelCopyBufferLayout get() {
         val bytesPerRow = format.pxSize * width
-        return GPUImageDataLayout(bytesPerRow = bytesPerRow, rowsPerImage = 1)
+        return TexelCopyBufferLayout(bytesPerRow = bytesPerRow, rowsPerImage = 1)
     }
 
-    private val BufferedImageData2d.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val BufferedImageData2d.gpuImageDataLayout: GPUTexelCopyBufferLayout get() {
         val bytesPerRow = format.pxSize * width
-        return GPUImageDataLayout(bytesPerRow = bytesPerRow, rowsPerImage = height)
+        return TexelCopyBufferLayout(bytesPerRow = bytesPerRow, rowsPerImage = height)
     }
 
-    private val BufferedImageData3d.gpuImageDataLayout: GPUImageDataLayout get() {
+    private val BufferedImageData3d.gpuImageDataLayout: GPUTexelCopyBufferLayout get() {
         val bytesPerRow = format.pxSize * width
-        return GPUImageDataLayout(bytesPerRow = bytesPerRow, rowsPerImage = height)
+        return TexelCopyBufferLayout(bytesPerRow = bytesPerRow, rowsPerImage = height)
     }
 
     private val ImageData.arrayBufferView: ArrayBufferView get() {
@@ -317,23 +347,22 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             }
         """.trimIndent())
 
-        private val sampler = device.createSampler(minFilter = GPUFilterMode.linear)
+        private val sampler = device.createSampler(minFilter = GPUFilterMode.Linear)
         private val pipelines = mutableMapOf<GPUTextureFormat, GPURenderPipeline>()
 
         private fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
             device.createRenderPipeline(
-                GPURenderPipelineDescriptor(
-                    vertex = GPUVertexState(
+                RenderPipelineDescriptor(
+                    vertex = VertexState(
                         module = shaderModule,
                         entryPoint = "vertexMain"
                     ),
-                    fragment = GPUFragmentState(
+                    fragment = FragmentState(
                         module = shaderModule,
                         entryPoint = "fragmentMain",
-                        targets = arrayOf(GPUColorTargetState(format))
+                        targets = listOf(ColorTargetState(format))
                     ),
-                    primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
-                    layout = GPUAutoLayoutMode.auto
+                    primitive = PrimitiveState(topology = GPUPrimitiveTopology.TriangleStrip),
                 )
             )
         }
@@ -341,7 +370,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         fun generateMipLevels(texDesc: GPUTextureDescriptor, texture: GPUTexture) {
             val cmdEncoder = device.createCommandEncoder()
             generateMipLevels(texDesc, texture, cmdEncoder)
-            device.queue.submit(arrayOf(cmdEncoder.finish()))
+            device.queue.submit(listOf(cmdEncoder.finish()))
         }
 
         fun generateMipLevels(texDesc: GPUTextureDescriptor, texture: GPUTexture, cmdEncoder: GPUCommandEncoder) {
@@ -349,31 +378,31 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             val layers = if (texDesc.size.size == 3) texDesc.size[2] else 1
 
             for (layer in 0 until layers) {
-                var srcView = texture.createView(baseMipLevel = 0, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.view2d)
+                var srcView = texture.createView(baseMipLevel = 0, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.ThreeD)
                 for (i in 1 until texDesc.mipLevelCount) {
-                    val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.view2d)
+                    val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.ThreeD)
                     val passEncoder = cmdEncoder.beginRenderPass(
-                        colorAttachments = arrayOf(GPURenderPassColorAttachment(
+                        colorAttachments = listOf(RenderPassColorAttachment(
                             view = dstView,
-                            storeOp = GPUStoreOp.store
+                            storeOp = GPUStoreOp.Store
                         ))
                     )
                     val bindGroup = device.createBindGroup(
-                        layout = pipeline.getBindGroupLayout(0),
-                        entries = arrayOf(
-                            GPUBindGroupEntry(
-                                binding = 0,
+                        layout = pipeline.getBindGroupLayout(0u),
+                        entries = listOf(
+                            BindGroupEntry(
+                                binding = 0u,
                                 resource = sampler
                             ),
-                            GPUBindGroupEntry(
-                                binding = 1,
+                            BindGroupEntry(
+                                binding = 1u,
                                 resource = srcView
                             ),
                         )
                     )
                     passEncoder.setPipeline(pipeline)
-                    passEncoder.setBindGroup(0, bindGroup)
-                    passEncoder.draw(4)
+                    passEncoder.setBindGroup(0u, bindGroup)
+                    passEncoder.draw(4u)
                     passEncoder.end()
                     srcView = dstView
                 }
@@ -414,23 +443,22 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
         private fun getRenderPipeline(format: GPUTextureFormat): GPURenderPipeline = pipelines.getOrPut(format) {
             device.createRenderPipeline(
-                GPURenderPipelineDescriptor(
-                    vertex = GPUVertexState(
+                RenderPipelineDescriptor(
+                    vertex = VertexState(
                         module = shaderModule,
                         entryPoint = "vertexMain"
                     ),
-                    fragment = GPUFragmentState(
+                    fragment = FragmentState(
                         module = shaderModule,
                         entryPoint = "fragmentMain",
-                        targets = arrayOf()
+                        targets = listOf()
                     ),
-                    depthStencil = GPUDepthStencilState(
+                    depthStencil = DepthStencilState(
                         format = format,
                         depthWriteEnabled = true,
-                        depthCompare = GPUCompareFunction.always
+                        depthCompare = GPUCompareFunction.Always
                     ),
-                    primitive = GPUPrimitiveState(topology = GPUPrimitiveTopology.triangleStrip),
-                    layout = GPUAutoLayoutMode.auto
+                    primitive = PrimitiveState(topology = GPUPrimitiveTopology.TriangleStrip)
                 )
             )
         }
@@ -441,25 +469,25 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             val srcView = src.createView(baseMipLevel = mipLevel, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
             val dstView = dst.createView(baseMipLevel = mipLevel, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
             val passEncoder = cmdEncoder.beginRenderPass(
-                colorAttachments = emptyArray(),
-                depthStencilAttachment = GPURenderPassDepthStencilAttachment(
+                colorAttachments = emptyList(),
+                depthStencilAttachment = RenderPassDepthStencilAttachment(
                     view = dstView,
-                    depthLoadOp = GPULoadOp.clear,
-                    depthStoreOp = GPUStoreOp.store
+                    depthLoadOp = GPULoadOp.Clear,
+                    depthStoreOp = GPUStoreOp.Store
                 )
             )
             val bindGroup = device.createBindGroup(
-                layout = pipeline.getBindGroupLayout(0),
-                entries = arrayOf(
-                    GPUBindGroupEntry(
-                        binding = 0,
+                layout = pipeline.getBindGroupLayout(0u),
+                entries = listOf(
+                    BindGroupEntry(
+                        binding = 0u,
                         resource = srcView
                     ),
                 )
             )
             passEncoder.setPipeline(pipeline)
-            passEncoder.setBindGroup(0, bindGroup)
-            passEncoder.draw(4)
+            passEncoder.setBindGroup(0u, bindGroup)
+            passEncoder.draw(4u)
             passEncoder.end()
         }
     }

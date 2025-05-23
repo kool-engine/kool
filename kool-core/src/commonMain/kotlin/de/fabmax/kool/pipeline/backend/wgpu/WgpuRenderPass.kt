@@ -4,8 +4,18 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.releaseWith
+import io.ygdrasil.webgpu.Extent3D
+import io.ygdrasil.webgpu.GPUCommandEncoder
 import io.ygdrasil.webgpu.GPUDevice
+import io.ygdrasil.webgpu.GPURenderPassEncoder
+import io.ygdrasil.webgpu.GPURenderPassTimestampWrites
+import io.ygdrasil.webgpu.GPUTextureDimension
 import io.ygdrasil.webgpu.GPUTextureFormat
+import io.ygdrasil.webgpu.GPUTextureUsage
+import io.ygdrasil.webgpu.GPUTextureUsageFlags
+import io.ygdrasil.webgpu.GPUTextureView
+import io.ygdrasil.webgpu.RenderPassTimestampWrites
+import io.ygdrasil.webgpu.TextureDescriptor
 import kotlin.time.Duration.Companion.nanoseconds
 
 abstract class WgpuRenderPass(
@@ -25,7 +35,7 @@ abstract class WgpuRenderPass(
 
     abstract val colorTargetFormats: List<GPUTextureFormat>
 
-    protected fun render(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
+    protected suspend fun render(renderPass: RenderPass, passEncoderState: RenderPassEncoderState) {
         var timestampWrites: GPURenderPassTimestampWrites? = null
         if (renderPass.isProfileTimes) {
             createTimestampQueries()
@@ -33,7 +43,13 @@ abstract class WgpuRenderPass(
             val end = endTimestamp
             if (begin != null && end != null && begin.isReady && end.isReady) {
                 renderPass.tGpu = (end.latestResult - begin.latestResult).nanoseconds
-                timestampWrites = backend.timestampQuery.getQuerySet()?.let { GPURenderPassTimestampWrites(it, begin.index, end.index) }
+                timestampWrites = backend.timestampQuery.getQuerySet()?.let {
+                    RenderPassTimestampWrites(
+                        it,
+                        begin.index.toUInt(),
+                        end.index.toUInt()
+                    )
+                }
             }
         }
 
@@ -69,7 +85,7 @@ abstract class WgpuRenderPass(
         }
     }
 
-    private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState, timestampWrites: GPURenderPassTimestampWrites?) {
+    private suspend fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: RenderPassEncoderState, timestampWrites: GPURenderPassTimestampWrites?) {
         setupMipLevel(mipLevel)
 
         if (this is OffscreenPassCube) {
@@ -94,7 +110,7 @@ abstract class WgpuRenderPass(
         }
     }
 
-    private fun renderView(viewIndex: Int, passEncoderState: RenderPassEncoderState) {
+    private suspend fun renderView(viewIndex: Int, passEncoderState: RenderPassEncoderState) {
         val mipLevel = passEncoderState.mipLevel
         val layer = passEncoderState.layer
         val view = passEncoderState.renderPass.views[viewIndex]
@@ -130,10 +146,10 @@ abstract class WgpuRenderPass(
             val bindSuccessful = isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)
             if (bindSuccessful) {
                 if (insts == null) {
-                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices)
+                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices.toUInt())
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
                 } else {
-                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
+                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices.toUInt(), insts.numInstances.toUInt())
                     BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
                 }
             }
@@ -210,21 +226,23 @@ abstract class WgpuRenderPass(
         }
 
         private fun createImage(width: Int, height: Int, samples: Int, format: GPUTextureFormat): WgpuTextureResource {
-            val copySrcUsage = if (isCopySrc) GPUTextureUsage.COPY_SRC else 0
-            val usage = GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT or copySrcUsage
+            val usage = when (isCopySrc) {
+                true -> setOf(GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment, GPUTextureUsage.CopySrc)
+                else -> setOf(GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment)
+            }
 
             return createImageWithUsage(width, height, samples, format, usage)
         }
 
-        private fun createImageWithUsage(width: Int, height: Int, samples: Int, format: GPUTextureFormat, usage: Int): WgpuTextureResource {
-            val descriptor = GPUTextureDescriptor(
+        private fun createImageWithUsage(width: Int, height: Int, samples: Int, format: GPUTextureFormat, usage: GPUTextureUsageFlags): WgpuTextureResource {
+            val descriptor = TextureDescriptor(
                 label = parentPass.name,
-                size = intArrayOf(width, height, layers),
+                size = Extent3D(width.toUInt(), height.toUInt(), layers.toUInt()),
                 format = format,
                 usage = usage,
-                dimension = GPUTextureDimension.texture2d,
-                mipLevelCount = parentPass.numTextureMipLevels,
-                sampleCount = samples
+                dimension = GPUTextureDimension.TwoD,
+                mipLevelCount = parentPass.numTextureMipLevels.toUInt(),
+                sampleCount = samples.toUInt()
             )
             return backend.createTexture(descriptor)
         }
@@ -278,7 +296,7 @@ abstract class WgpuRenderPass(
                     height = parentPass.height,
                     samples = 1,
                     format = format,
-                    usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+                    usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment),
                 )
                 target.gpuTexture = copyDst
             }

@@ -8,9 +8,22 @@ import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
+import io.ygdrasil.webgpu.Color
+import io.ygdrasil.webgpu.Extent3D
+import io.ygdrasil.webgpu.GPUCommandEncoder
+import io.ygdrasil.webgpu.GPULoadOp
+import io.ygdrasil.webgpu.GPURenderPassEncoder
+import io.ygdrasil.webgpu.GPURenderPassTimestampWrites
+import io.ygdrasil.webgpu.GPUStoreOp
+import io.ygdrasil.webgpu.GPUTexture
+import io.ygdrasil.webgpu.GPUTextureFormat
+import io.ygdrasil.webgpu.GPUTextureUsage
+import io.ygdrasil.webgpu.GPUTextureView
+import io.ygdrasil.webgpu.RenderPassColorAttachment
+import io.ygdrasil.webgpu.TextureDescriptor
 
 class WgpuScreenPass(backend: RenderBackendWebGpu) :
-    WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
+    WgpuRenderPass(GPUTextureFormat.Depth32Float, KoolSystem.configJs.numSamples, backend)
 {
     private val canvasContext: GPUCanvasContext
         get() = backend.canvasContext
@@ -25,7 +38,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
     private var depthAttachmentView: GPUTextureView? = null
 
     fun applySize(width: Int, height: Int) {
-        updateRenderTextures(width, height)
+        updateRenderTextures(width.toUInt(), height.toUInt())
     }
 
     fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
@@ -55,11 +68,11 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                     launchDelayed(1) { it.release() }
                 }
 
-                val descriptor = GPUTextureDescriptor(
+                val descriptor = TextureDescriptor(
                     label = colorDst.name,
-                    size = intArrayOf(width, height),
+                    size = Extent3D(width, height),
                     format = backend.canvasFormat,
-                    usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+                    usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment),
                 )
                 val texResource = backend.createTexture(descriptor)
                 copyDstC = texResource
@@ -75,11 +88,11 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                     launchDelayed(1) { it.release() }
                 }
 
-                val descriptor = GPUTextureDescriptor(
+                val descriptor = TextureDescriptor(
                     label = dst.name,
-                    size = intArrayOf(width, height),
+                    size = Extent3D(width, height),
                     format = depthFormat!!,
-                    usage = GPUTextureUsage.COPY_DST or GPUTextureUsage.TEXTURE_BINDING or GPUTextureUsage.RENDER_ATTACHMENT,
+                    usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment),
                 )
                 val texResource = backend.createTexture(descriptor)
                 copyDstD = texResource
@@ -91,10 +104,12 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         if (numSamples > 1 && colorDstWgpu != null) {
             // run an empty render pass, which resolves the multi-sampled color texture into the target capture texture
             val passEncoder = encoder.beginRenderPass(
-                colorAttachments = arrayOf(GPURenderPassColorAttachment(
-                    view = colorTextureView!!,
-                    resolveTarget = colorDstWgpu.gpuTexture.createView(),
-                )),
+                colorAttachments = listOf(
+                    RenderPassColorAttachment(
+                        view = colorTextureView!!,
+                        resolveTarget = colorDstWgpu.gpuTexture.createView(),
+                    )
+                ),
             )
             passEncoder.end()
 
@@ -115,56 +130,56 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
     ): GPURenderPassEncoder {
         val renderPass = passEncoderState.renderPass
         val colorLoadOp = when {
-            forceLoad -> GPULoadOp.load
-            renderPass.colorAttachments[0].clearColor is ClearColorLoad -> GPULoadOp.load
-            else -> GPULoadOp.clear
+            forceLoad -> GPULoadOp.Load
+            renderPass.colorAttachments[0].clearColor is ClearColorLoad -> GPULoadOp.Load
+            else -> GPULoadOp.Clear
         }
-        val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
-            (renderPass.colorAttachments[0].clearColor as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+        val clearColor = if (colorLoadOp == GPULoadOp.Load) null else {
+            (renderPass.colorAttachments[0].clearColor as? ClearColorFill)?.let { Color(it.clearColor.r.toDouble(), it.clearColor.g.toDouble(), it.clearColor.b.toDouble(), it.clearColor.a.toDouble()) }
         }
 
         val depthLoadOp = when {
-            forceLoad -> GPULoadOp.load
-            renderPass.depthAttachment?.clearDepth == ClearDepthLoad -> GPULoadOp.load
-            else -> GPULoadOp.clear
+            forceLoad -> GPULoadOp.Load
+            renderPass.depthAttachment?.clearDepth == ClearDepthLoad -> GPULoadOp.Load
+            else -> GPULoadOp.Clear
         }
 
         val colors = arrayOf(
-            GPURenderPassColorAttachment(
+            RenderPassColorAttachment(
                 view = colorTextureView!!,
                 loadOp = colorLoadOp,
                 clearValue = clearColor,
                 resolveTarget = canvasContext.getCurrentTexture().createView()
             )
         )
-        val depth = GPURenderPassDepthStencilAttachment(
+        val depth = RenderPassDepthStencilAttachment(
             view = depthAttachmentView!!,
             depthLoadOp = depthLoadOp,
-            depthStoreOp = GPUStoreOp.store,
+            depthStoreOp = GPUStoreOp.Store,
             depthClearValue = renderPass.depthMode.far
         )
         return passEncoderState.encoder.beginRenderPass(colors, depth, timestampWrites, renderPass.name)
     }
 
-    private fun updateRenderTextures(width: Int, height: Int) {
-        colorTexture?.destroy()
-        depthAttachment?.destroy()
+    private fun updateRenderTextures(width: UInt, height: UInt) {
+        colorTexture?.close()
+        depthAttachment?.close()
 
-        val colorDescriptor = GPUTextureDescriptor(
-            size = intArrayOf(width, height),
+        val colorDescriptor = TextureDescriptor(
+            size = Extent3D(width, height),
             format = backend.canvasFormat,
-            usage = GPUTextureUsage.RENDER_ATTACHMENT or GPUTextureUsage.TEXTURE_BINDING,
-            sampleCount = numSamples
+            usage = setOf(GPUTextureUsage.RenderAttachment, GPUTextureUsage.TextureBinding),
+            sampleCount = numSamples.toUInt()
         )
         colorTexture = device.createTexture(colorDescriptor).also {
             colorTextureView = it.createView()
         }
 
-        val depthDescriptor = GPUTextureDescriptor(
-            size = intArrayOf(width, height),
+        val depthDescriptor = TextureDescriptor(
+            size = Extent3D(width, height),
             format = depthFormat!!,
-            usage = GPUTextureUsage.RENDER_ATTACHMENT or GPUTextureUsage.TEXTURE_BINDING,
-            sampleCount = numSamples
+            usage = setOf(GPUTextureUsage.RenderAttachment, GPUTextureUsage.TextureBinding),
+            sampleCount = numSamples.toUInt()
         )
         depthAttachment = device.createTexture(depthDescriptor).also {
             depthAttachmentView = it.createView()

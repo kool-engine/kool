@@ -6,8 +6,23 @@ import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.checkIsNotReleased
+import io.ygdrasil.webgpu.BindGroupLayoutEntry
+import io.ygdrasil.webgpu.BufferBindingLayout
+import io.ygdrasil.webgpu.GPUBindGroupLayout
 import io.ygdrasil.webgpu.GPUBindGroupLayoutEntry
+import io.ygdrasil.webgpu.GPUBufferBindingType
 import io.ygdrasil.webgpu.GPUDevice
+import io.ygdrasil.webgpu.GPUPipelineLayout
+import io.ygdrasil.webgpu.GPUSamplerBindingType
+import io.ygdrasil.webgpu.GPUShaderStage
+import io.ygdrasil.webgpu.GPUShaderStageFlags
+import io.ygdrasil.webgpu.GPUStorageTextureAccess
+import io.ygdrasil.webgpu.GPUTextureSampleType
+import io.ygdrasil.webgpu.GPUTextureViewDimension
+import io.ygdrasil.webgpu.PipelineLayoutDescriptor
+import io.ygdrasil.webgpu.SamplerBindingLayout
+import io.ygdrasil.webgpu.StorageTextureBindingLayout
+import io.ygdrasil.webgpu.TextureBindingLayout
 
 sealed class WgpuPipeline(
     private val pipeline: PipelineBase,
@@ -32,11 +47,11 @@ sealed class WgpuPipeline(
         return layouts.map { group ->
             val layoutEntries = buildList {
                 group.bindings.forEach { binding ->
-                    val visibility = binding.stages.fold(0) { acc, stage ->
-                        acc or when (stage) {
-                            ShaderStage.VERTEX_SHADER -> GPUShaderStage.VERTEX
-                            ShaderStage.FRAGMENT_SHADER -> GPUShaderStage.FRAGMENT
-                            ShaderStage.COMPUTE_SHADER -> GPUShaderStage.COMPUTE
+                    val visibility = binding.stages.fold(emptySet<GPUShaderStage>()) { acc, stage ->
+                        acc + when (stage) {
+                            ShaderStage.VERTEX_SHADER -> GPUShaderStage.Vertex
+                            ShaderStage.FRAGMENT_SHADER -> GPUShaderStage.Fragment
+                            ShaderStage.COMPUTE_SHADER -> GPUShaderStage.Compute
                             else -> error("unsupported shader stage: $stage")
                         }
                     }
@@ -46,12 +61,12 @@ sealed class WgpuPipeline(
                         is UniformBufferLayout<*> -> add(makeLayoutEntryBuffer(location, visibility))
                         is StorageBufferLayout -> add(makeLayoutEntryStorageBuffer(location, visibility, binding))
 
-                        is Texture1dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view1d))
-                        is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2d))
-                        is Texture3dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view3d))
-                        is TextureCubeLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCube))
-                        is Texture2dArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.view2dArray))
-                        is TextureCubeArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.viewCubeArray))
+                        is Texture1dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.OneD))
+                        is Texture2dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.TwoD))
+                        is Texture3dLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.ThreeD))
+                        is TextureCubeLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.Cube))
+                        is Texture2dArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.TwoDArray))
+                        is TextureCubeArrayLayout -> addAll(makeLayoutEntriesTexture(binding, location, visibility, GPUTextureViewDimension.CubeArray))
 
                         is StorageTexture1dLayout -> add(makeLayoutStorageTexture(binding, location, visibility))
                         is StorageTexture2dLayout -> add(makeLayoutStorageTexture(binding, location, visibility))
@@ -68,55 +83,57 @@ sealed class WgpuPipeline(
     }
 
     private fun createPipelineLayout(): GPUPipelineLayout {
-        return device.createPipelineLayout(GPUPipelineLayoutDescriptor(
-            label = "${pipeline.name}-bindGroupLayout",
-            bindGroupLayouts = bindGroupLayouts.toTypedArray()
-        ))
+        return device.createPipelineLayout(
+            PipelineLayoutDescriptor(
+                label = "${pipeline.name}-bindGroupLayout",
+                bindGroupLayouts = bindGroupLayouts
+            )
+        )
     }
 
-    private fun makeLayoutEntryBuffer(location: WgslLocations.Location, visibility: Int) = GPUBindGroupLayoutEntryBuffer(
-        binding = location.binding,
+    private fun makeLayoutEntryBuffer(location: WgslLocations.Location, visibility: GPUShaderStageFlags) = BindGroupLayoutEntry(
+        binding = location.binding.toUInt(),
         visibility = visibility,
-        buffer = GPUBufferBindingLayout(type = GPUBufferBindingType.uniform)
+        buffer = BufferBindingLayout(type = GPUBufferBindingType.Uniform)
     )
 
-    private fun makeLayoutEntryStorageBuffer(location: WgslLocations.Location, visibility: Int, binding: StorageBufferLayout): GPUBindGroupLayoutEntryBuffer {
+    private fun makeLayoutEntryStorageBuffer(location: WgslLocations.Location, visibility: GPUShaderStageFlags, binding: StorageBufferLayout): GPUBindGroupLayoutEntry {
         val type = if (binding.accessType == StorageAccessType.READ_ONLY) {
-            GPUBufferBindingType.readOnlyStorage
+            GPUBufferBindingType.ReadOnlyStorage
         } else {
-            GPUBufferBindingType.storage
+            GPUBufferBindingType.Storage
         }
-        return GPUBindGroupLayoutEntryBuffer(
-            binding = location.binding,
+        return BindGroupLayoutEntry(
+            binding = location.binding.toUInt(),
             visibility = visibility,
-            buffer = GPUBufferBindingLayout(type = type)
+            buffer = BufferBindingLayout(type = type)
         )
     }
 
     private fun makeLayoutEntriesTexture(
         binding: TextureLayout,
         location: WgslLocations.Location,
-        visibility: Int,
+        visibility: GPUShaderStageFlags,
         dimension: GPUTextureViewDimension
     ): List<GPUBindGroupLayoutEntry> {
         val texSampleType = binding.sampleType.wgpu
         val samplerType = when (texSampleType) {
-            GPUTextureSampleType.float -> GPUSamplerBindingType.filtering
-            GPUTextureSampleType.depth -> GPUSamplerBindingType.comparison
-            GPUTextureSampleType.unfilterableFloat -> GPUSamplerBindingType.nonFiltering
+            GPUTextureSampleType.Float -> GPUSamplerBindingType.Filtering
+            GPUTextureSampleType.Depth -> GPUSamplerBindingType.Comparison
+            GPUTextureSampleType.UnfilterableFloat -> GPUSamplerBindingType.NonFiltering
             else -> error("unexpected: $texSampleType")
         }
 
         return listOf(
-            GPUBindGroupLayoutEntrySampler(
-                location.binding,
+            BindGroupLayoutEntry(
+                location.binding.toUInt(),
                 visibility,
-                GPUSamplerBindingLayout(samplerType)
+                sampler = SamplerBindingLayout(samplerType)
             ),
-            GPUBindGroupLayoutEntryTexture(
-                location.binding + 1,
+            BindGroupLayoutEntry(
+                (location.binding + 1).toUInt(),
                 visibility,
-                GPUTextureBindingLayout(viewDimension = dimension, sampleType = texSampleType)
+                texture = TextureBindingLayout(viewDimension = dimension, sampleType = texSampleType)
             )
         )
     }
@@ -124,22 +141,22 @@ sealed class WgpuPipeline(
     private fun makeLayoutStorageTexture(
         binding: StorageTextureLayout,
         location: WgslLocations.Location,
-        visibility: Int
-    ): GPUBindGroupLayoutEntryStorageTexture {
+        visibility: GPUShaderStageFlags
+    ): GPUBindGroupLayoutEntry {
         val dimension = when (binding) {
-            is StorageTexture1dLayout -> GPUTextureViewDimension.view1d
-            is StorageTexture2dLayout -> GPUTextureViewDimension.view2d
-            is StorageTexture3dLayout -> GPUTextureViewDimension.view3d
+            is StorageTexture1dLayout -> GPUTextureViewDimension.OneD
+            is StorageTexture2dLayout -> GPUTextureViewDimension.TwoD
+            is StorageTexture3dLayout -> GPUTextureViewDimension.ThreeD
         }
         val access = when (binding.accessType) {
-            StorageAccessType.READ_ONLY -> GPUStorageTextureAccess.readOnly
-            StorageAccessType.WRITE_ONLY -> GPUStorageTextureAccess.writeOnly
-            StorageAccessType.READ_WRITE -> GPUStorageTextureAccess.readWrite
+            StorageAccessType.READ_ONLY -> GPUStorageTextureAccess.ReadOnly
+            StorageAccessType.WRITE_ONLY -> GPUStorageTextureAccess.WriteOnly
+            StorageAccessType.READ_WRITE -> GPUStorageTextureAccess.ReadWrite
         }
-        return GPUBindGroupLayoutEntryStorageTexture(
-            location.binding,
+        return BindGroupLayoutEntry(
+            location.binding.toUInt(),
             visibility,
-            GPUStorageTextureBindingLayout(access, binding.texFormat.wgpuStorage, dimension)
+            storageTexture = StorageTextureBindingLayout(binding.texFormat.wgpuStorage, access, dimension)
         )
     }
 
