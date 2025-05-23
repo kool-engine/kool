@@ -8,11 +8,14 @@ import io.ygdrasil.webgpu.GPUCommandEncoder
 import io.ygdrasil.webgpu.GPULoadOp
 import io.ygdrasil.webgpu.GPURenderPassEncoder
 import io.ygdrasil.webgpu.GPURenderPassTimestampWrites
+import io.ygdrasil.webgpu.GPUStoreOp
+import io.ygdrasil.webgpu.GPUTextureFormat
+import io.ygdrasil.webgpu.RenderPassDepthStencilAttachment
 
 class WgpuOffscreenPassCube(
     val parentPass: OffscreenPassCube,
     backend: RenderBackendWebGpu
-) : WgpuRenderPass(GPUTextureFormat.depth32float, parentPass.numSamples, backend), OffscreenPassCubeImpl {
+) : WgpuRenderPass(GPUTextureFormat.Depth32Float, parentPass.numSamples, backend), OffscreenPassCubeImpl {
 
     override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }
     private var attachments = createAttachments()
@@ -24,7 +27,7 @@ class WgpuOffscreenPassCube(
 
         val attachments = Attachments(
             colorFormats = colorTargetFormats,
-            depthFormat = if (parentPass.hasDepth) GPUTextureFormat.depth32float else null,
+            depthFormat = if (parentPass.hasDepth) GPUTextureFormat.Depth32Float else null,
             layers = 6,
             isCopySrc = isCopySrc,
             parentPass = parentPass,
@@ -113,9 +116,10 @@ class WgpuOffscreenPassCube(
                 (parentPass.colorAttachments[i].clearColor as? ClearColorFill)?.let { Color(it.clearColor.r.toDouble(), it.clearColor.g.toDouble(), it.clearColor.b.toDouble(), it.clearColor.a.toDouble()) }
             }
 
-            RenderPassColorAttachment(
+            io.ygdrasil.webgpu.RenderPassColorAttachment(
                 view = colorView,
                 loadOp = colorLoadOp,
+                storeOp = GPUStoreOp.Store,
                 clearValue = clearColor,
                 resolveTarget = if (isMultiSampled) attachments.getResolveColorView(i, mipLevel, layer) else null,
             )
@@ -127,10 +131,10 @@ class WgpuOffscreenPassCube(
             else -> GPULoadOp.Clear
         }
         val depth = attachments.getDepthView(mipLevel)?.let { depthView ->
-            GPURenderPassDepthStencilAttachment(
+            RenderPassDepthStencilAttachment(
                 view = depthView,
                 depthLoadOp = depthLoadOp,
-                depthStoreOp = GPUStoreOp.store,
+                depthStoreOp = GPUStoreOp.Store,
                 depthClearValue = renderPass.depthMode.far
             )
         }

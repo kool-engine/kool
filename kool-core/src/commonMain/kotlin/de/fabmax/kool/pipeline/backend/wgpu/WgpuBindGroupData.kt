@@ -61,7 +61,7 @@ class WgpuBindGroupData(
             if (ubo.modCount != ubo.binding.modCount || recreatedBindGroup) {
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
-                    bufferOffset = 0L,
+                    bufferOffset = 0uL,
                     data = (ubo.binding.buffer.buffer as MixedBufferImpl).buffer
                 )
             }
