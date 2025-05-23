@@ -41,7 +41,7 @@ internal class WgpuGrowingBuffer(
         device.queue.writeBuffer(
             buffer = buffer.buffer,
             bufferOffset = 0uL,
-            data = data.buffer,
+            data = data.asArrayBuffer(),
             dataOffset = 0uL,
             size = data.limit.toULong()
         )
@@ -52,7 +52,7 @@ internal class WgpuGrowingBuffer(
         device.queue.writeBuffer(
             buffer = buffer.buffer,
             bufferOffset = 0uL,
-            data = data.buffer,
+            data = data.asArrayBuffer(),
             dataOffset = 0uL,
             size = data.limit.toULong()
         )

@@ -108,6 +108,8 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                 colorAttachments = listOf(
                     RenderPassColorAttachment(
                         view = colorTextureView!!,
+                        loadOp = GPULoadOp.Load,
+                        storeOp = GPUStoreOp.Store,
                         resolveTarget = colorDstWgpu.gpuTexture.createView(),
                     )
                 ),
@@ -149,6 +151,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
             RenderPassColorAttachment(
                 view = colorTextureView!!,
                 loadOp = colorLoadOp,
+                storeOp = GPUStoreOp.Store,
                 clearValue = clearColor,
                 resolveTarget = canvasContext.getCurrentTexture().createView()
             )

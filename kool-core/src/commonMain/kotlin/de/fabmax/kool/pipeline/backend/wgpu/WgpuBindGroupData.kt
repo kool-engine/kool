@@ -62,7 +62,7 @@ class WgpuBindGroupData(
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
                     bufferOffset = 0uL,
-                    data = (ubo.binding.buffer.buffer as MixedBufferImpl).buffer
+                    data = ubo.binding.buffer.buffer.asArrayBuffer()
                 )
             }
         }
@@ -72,16 +72,16 @@ class WgpuBindGroupData(
             storage.binding.storageBuffer?.uploadData?.let { upload ->
                 storage.binding.storageBuffer?.uploadData = null
                 val hostBuffer = when (upload) {
-                    is Uint8BufferImpl -> upload.buffer
-                    is Uint16BufferImpl -> upload.buffer
-                    is Int32BufferImpl -> upload.buffer
-                    is Float32BufferImpl -> upload.buffer
-                    is MixedBufferImpl -> upload.buffer
+                    is Uint8Buffer -> upload.asArrayBuffer()
+                    is Uint16Buffer -> upload.asArrayBuffer()
+                    is Int32Buffer -> upload.asArrayBuffer()
+                    is Float32Buffer -> upload.asArrayBuffer()
+                    is MixedBuffer -> upload.asArrayBuffer()
                     else -> error("unexpected buffer type: ${upload::class.simpleName}")
                 }
                 device.queue.writeBuffer(
                     buffer = storage.gpuBuffer.buffer,
-                    bufferOffset = 0L,
+                    bufferOffset = 0uL,
                     data = hostBuffer
                 )
             }
@@ -220,13 +220,13 @@ class WgpuBindGroupData(
             addressModeW = samplerSettings.addressModeW.wgpu,
             magFilter = samplerSettings.magFilter.wgpu,
             minFilter = samplerSettings.minFilter.wgpu,
-            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.linear else GPUMipmapFilterMode.nearest,
+            mipmapFilter = if (tex.mipMapping.isMipMapped) GPUMipmapFilterMode.Linear else GPUMipmapFilterMode.Nearest,
         )
 
         textureBindings += TextureBinding(this, loadedTex)
         return listOf(
-            GPUBindGroupEntry(location.binding, sampler),
-            GPUBindGroupEntry(location.binding + 1, loadedTex.gpuTexture.createView())
+            BindGroupEntry(location.binding.toUInt(), sampler),
+            BindGroupEntry((location.binding + 1).toUInt(), loadedTex.gpuTexture.createView())
         )
     }
 
@@ -248,8 +248,8 @@ class WgpuBindGroupData(
 
         textureBindings += TextureBinding(this, loadedTex)
         return listOf(
-            GPUBindGroupEntry(location.binding, sampler),
-            GPUBindGroupEntry(location.binding + 1, loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.Cube))
+            BindGroupEntry(location.binding.toUInt(), sampler),
+            BindGroupEntry((location.binding + 1).toUInt(), loadedTex.gpuTexture.createView(dimension = GPUTextureViewDimension.Cube))
         )
     }
 
