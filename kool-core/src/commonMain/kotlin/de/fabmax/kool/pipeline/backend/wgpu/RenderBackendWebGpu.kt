@@ -49,19 +49,18 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
-class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
+expect suspend fun createWebGpuRenderBackend(ctx: KoolContext): RenderBackendWebGpu
+
+class RenderBackendWebGpu(val ctx: KoolContext, val adapter: GPUAdapter, var renderSize: Vec2i) : RenderBackend {
     override val name: String = "WebGPU Backend"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
     override lateinit var features: BackendFeatures; private set
 
-    lateinit var adapter: GPUAdapter
-        private set
     lateinit var device: GPUDevice
         private set
-    lateinit var canvasContext: GPUCanvasContext
-        private set
+
     private var _canvasFormat: GPUTextureFormat? = null
     val canvasFormat: GPUTextureFormat
         get() = _canvasFormat!!
@@ -74,9 +73,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     internal val timestampQuery: WgpuTimestamps by lazy { WgpuTimestamps(128, this) }
 
     val pipelineManager = WgpuPipelineManager(this)
-    private val screenPass = WgpuScreenPass(this)
-
-    private var renderSize = Vec2i(canvas.width, canvas.height)
+    internal val screenPass = WgpuScreenPass(this)
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
 
@@ -86,11 +83,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     private val passEncoderState = RenderPassEncoderState(this)
 
 
-    override suspend fun startRenderLoop() {
-        val selectedAdapter: GPUAdapter = navigator.gpu.requestAdapter(RequestAdapterOptions(KoolSystem.configJs.powerPreference)).await()
-            ?: navigator.gpu.requestAdapter().await()
-        adapter = checkNotNull(selectedAdapter) { "No appropriate GPUAdapter found." }
-
+    suspend fun startRenderLoop() {
         val availableFeatures = mutableSetOf<GPUFeatureName>()
         adapter.features
             .forEach { feature -> availableFeatures.add(feature) }
@@ -132,24 +125,14 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             maxComputeInvocationsPerWorkgroup = device.limits.maxComputeInvocationsPerWorkgroup.toInt(),
         )
 
-        canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
-        _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
-        canvasContext.configure(
-            GPUCanvasConfiguration(device, canvasFormat)
-        )
+
         textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
 
-        window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
     }
 
     override suspend fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
-
-        if (canvas.width != renderSize.x || canvas.height != renderSize.y) {
-            renderSize = Vec2i(canvas.width, canvas.height)
-            screenPass.applySize(canvas.width, canvas.height)
-        }
 
         passEncoderState.beginFrame()
 
@@ -171,7 +154,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    private fun KoolContext.preparePipelines(passEncoderState: RenderPassEncoderState) {
+    private suspend fun KoolContext.preparePipelines(passEncoderState: RenderPassEncoderState) {
         ctx.backgroundScene.prepareDrawPipelines(passEncoderState)
         for (i in ctx.scenes.indices) {
             val scene = ctx.scenes[i]

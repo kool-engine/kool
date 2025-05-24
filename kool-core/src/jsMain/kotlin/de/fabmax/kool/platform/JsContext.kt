@@ -6,6 +6,7 @@ import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
+import de.fabmax.kool.pipeline.backend.wgpu.createWGPURenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logW
 import kotlinx.browser.document
@@ -84,6 +85,7 @@ class JsContext internal constructor() : KoolContext() {
         backend = when (KoolSystem.configJs.renderBackend) {
             KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this, canvas)
             KoolConfigJs.Backend.WEB_GPU -> RenderBackendWebGpu(this, canvas)
+            KoolConfigJs.Backend.WGPU -> createWGPURenderBackend(this, canvas)
             KoolConfigJs.Backend.PREFER_WEB_GPU -> {
                 if (RenderBackendWebGpu.isSupported()) {
                     RenderBackendWebGpu(this, canvas)
@@ -145,7 +147,7 @@ class JsContext internal constructor() : KoolContext() {
         KoolSystem.onContextCreated(this)
     }
 
-    internal fun renderFrame(time: Double) {
+    internal suspend fun renderFrame(time: Double) {
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         // determine delta time

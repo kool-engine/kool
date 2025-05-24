@@ -44,6 +44,8 @@ data class KoolConfigJs(
     enum class Backend {
         WEB_GL2,
         WEB_GPU,
+        // Multiplatform backend
+        WGPU,
         PREFER_WEB_GPU
     }
 }
