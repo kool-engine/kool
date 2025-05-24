@@ -162,6 +162,11 @@ class RenderBackendWebGpu(
     override suspend fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
+        if (surface.width.toInt() != renderSize.x || surface.height.toInt() != renderSize.y) {
+            renderSize = Vec2i(surface.width.toInt(), surface.height.toInt())
+            screenPass.applySize(surface.width.toInt(), surface.height.toInt())
+        }
+
         passEncoderState.beginFrame()
 
         ctx.preparePipelines(passEncoderState)
