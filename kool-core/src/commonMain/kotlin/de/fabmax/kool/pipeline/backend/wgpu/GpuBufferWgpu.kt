@@ -43,7 +43,7 @@ internal class WgpuGrowingBuffer(
             bufferOffset = 0uL,
             data = data.asArrayBuffer(),
             dataOffset = 0uL,
-            size = data.limit.toULong()
+            size = (data.limit * 4L).toULong()
         )
     }
 
@@ -54,7 +54,7 @@ internal class WgpuGrowingBuffer(
             bufferOffset = 0uL,
             data = data.asArrayBuffer(),
             dataOffset = 0uL,
-            size = data.limit.toULong()
+            size = (data.limit * 4L).toULong()
         )
     }
 
