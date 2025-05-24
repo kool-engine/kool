@@ -12,6 +12,7 @@ expect class WgpuSurface: AutoCloseable {
 
     val supportedFormats: Set<GPUTextureFormat>
     val supportedAlphaMode: Set<CompositeAlphaMode>
+    val format: GPUTextureFormat
 
     fun getCurrentTexture(): SurfaceTexture
 
