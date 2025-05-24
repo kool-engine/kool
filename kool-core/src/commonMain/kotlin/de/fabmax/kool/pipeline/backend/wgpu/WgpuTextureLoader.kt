@@ -341,9 +341,9 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
             val layers = texDesc.size.depthOrArrayLayers.toInt()
 
             for (layer in 0 until layers) {
-                var srcView = texture.createView(baseMipLevel = 0, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.ThreeD)
+                var srcView = texture.createView(baseMipLevel = 0, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.TwoD)
                 for (i in 1 until texDesc.mipLevelCount.toInt()) {
-                    val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.ThreeD)
+                    val dstView = texture.createView(baseMipLevel = i, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1, dimension = GPUTextureViewDimension.TwoD)
                     val passEncoder = cmdEncoder.beginRenderPass(
                         colorAttachments = listOf(io.ygdrasil.webgpu.RenderPassColorAttachment(
                             view = dstView,
