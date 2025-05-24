@@ -437,7 +437,8 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                 depthStencilAttachment = RenderPassDepthStencilAttachment(
                     view = dstView,
                     depthLoadOp = GPULoadOp.Clear,
-                    depthStoreOp = GPUStoreOp.Store
+                    depthStoreOp = GPUStoreOp.Store,
+                    depthClearValue = 1f
                 )
             )
             val bindGroup = device.createBindGroup(
