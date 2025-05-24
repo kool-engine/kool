@@ -8,7 +8,6 @@ import io.ygdrasil.webgpu.GPUMapMode
 import io.ygdrasil.webgpu.GPUQuerySet
 import io.ygdrasil.webgpu.GPUQueryType
 import io.ygdrasil.webgpu.QuerySetDescriptor
-import org.khronos.webgl.Uint32Array
 import kotlin.math.max
 
 class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
@@ -77,7 +76,8 @@ class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
         if (isInFlight && !isMapping) {
             isMapping = true
             readBuffer.mapAsync(setOf(GPUMapMode.Read)).onSuccess {
-                val decoded = Uint32Array(readBuffer.getMappedRange())
+                val decoded = readBuffer.getMappedRange()
+                    .asUInt32Array()
                 for (i in 0..lastActive) {
                     val slot = slots[i]
                     if (slot != null) {
