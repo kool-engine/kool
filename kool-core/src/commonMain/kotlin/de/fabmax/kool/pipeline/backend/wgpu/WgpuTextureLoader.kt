@@ -203,8 +203,6 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
 
     private fun copyTextureData(src: ImageData, dst: GPUTexture, size: Extent3D) {
         when (src) {
-            // Unsupported
-            //is ImageTextureData -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
             is BufferedImageData1d -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
             is BufferedImageData2d -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
             is BufferedImageData3d -> copyTextureData(src, dst, size, Origin3D(0u, 0u, 0u))
@@ -233,7 +231,7 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
                     copyTextureData(src.images[i], dst, size2d, Origin3D(0u, 0u, i.toUInt()))
                 }
             }
-            else -> error("Not implemented: ${src::class.simpleName}")
+            else -> copyNativeTextureData(src, dst, size, device)
         }
     }
 
@@ -458,3 +456,10 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         }
     }
 }
+
+expect internal fun copyNativeTextureData(
+    src: ImageData,
+    dst: GPUTexture,
+    size: Extent3D,
+    device: GPUDevice
+)
