@@ -1,26 +1,53 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJs
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BufferedImageData1d
+import de.fabmax.kool.pipeline.BufferedImageData2d
+import de.fabmax.kool.pipeline.BufferedImageData3d
+import de.fabmax.kool.pipeline.ComputePass
+import de.fabmax.kool.pipeline.ComputePassImpl
+import de.fabmax.kool.pipeline.ComputePipeline
+import de.fabmax.kool.pipeline.ComputeShaderCode
+import de.fabmax.kool.pipeline.DrawPipeline
+import de.fabmax.kool.pipeline.GpuBuffer
+import de.fabmax.kool.pipeline.GpuPass
+import de.fabmax.kool.pipeline.ImageData
+import de.fabmax.kool.pipeline.MipMapping
+import de.fabmax.kool.pipeline.OffscreenPass2d
+import de.fabmax.kool.pipeline.OffscreenPass2dImpl
+import de.fabmax.kool.pipeline.OffscreenPassCube
+import de.fabmax.kool.pipeline.OffscreenPassCubeImpl
+import de.fabmax.kool.pipeline.RenderPass
+import de.fabmax.kool.pipeline.ShaderCode
+import de.fabmax.kool.pipeline.StorageTexture
+import de.fabmax.kool.pipeline.StorageTexture1d
+import de.fabmax.kool.pipeline.StorageTexture2d
+import de.fabmax.kool.pipeline.StorageTexture3d
+import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.Texture
+import de.fabmax.kool.pipeline.Texture1d
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
-import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
-import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.platform.navigator
+import de.fabmax.kool.pipeline.isF16
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
-import io.ygdrasil.webgpu.ArrayBuffer
+import de.fabmax.kool.util.Buffer
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.LongHash
+import de.fabmax.kool.util.checkIsNotReleased
+import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.logW
 import io.ygdrasil.webgpu.BufferDescriptor
 import io.ygdrasil.webgpu.DeviceDescriptor
 import io.ygdrasil.webgpu.Extent3D
@@ -36,27 +63,29 @@ import io.ygdrasil.webgpu.GPUTextureDescriptor
 import io.ygdrasil.webgpu.GPUTextureDimension
 import io.ygdrasil.webgpu.GPUTextureFormat
 import io.ygdrasil.webgpu.GPUTextureUsage
-import io.ygdrasil.webgpu.RequestAdapterOptions
 import io.ygdrasil.webgpu.TexelCopyBufferInfo
 import io.ygdrasil.webgpu.TexelCopyTextureInfo
 import io.ygdrasil.webgpu.TextureDescriptor
-import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.await
-import org.khronos.webgl.*
-import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 expect suspend fun createWebGpuRenderBackend(ctx: KoolContext): RenderBackendWebGpu
 
-class RenderBackendWebGpu(val ctx: KoolContext, val adapter: GPUAdapter, var renderSize: Vec2i) : RenderBackend {
+class RenderBackendWebGpu(
+    val ctx: KoolContext,
+    val adapter: GPUAdapter,
+    val surface: WgpuSurface,
+    numSamples: Int,
+) : RenderBackend {
     override val name: String = "WebGPU Backend"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
     override lateinit var features: BackendFeatures; private set
+
+    var renderSize = Vec2i(surface.width.toInt(), surface.height.toInt())
 
     lateinit var device: GPUDevice
         private set
@@ -73,7 +102,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val adapter: GPUAdapter, var ren
     internal val timestampQuery: WgpuTimestamps by lazy { WgpuTimestamps(128, this) }
 
     val pipelineManager = WgpuPipelineManager(this)
-    internal val screenPass = WgpuScreenPass(this)
+    internal val screenPass = WgpuScreenPass(this, numSamples)
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
 
@@ -362,7 +391,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val adapter: GPUAdapter, var ren
         gpuReadbacks.filterIsInstance<ReadbackStorageBuffer>().filter { it.mapBuffer != null }.forEach { readback ->
             val mapBuffer = readback.mapBuffer!!
             mapBuffer.mapAsync(setOf(GPUMapMode.Read)).onSuccess {
-                readback.resultBuffer.copyFrom(mapBuffer.getMappedRange())
+                mapBuffer.getMappedRange()
+                    .writeInto(readback.resultBuffer)
                 mapBuffer.unmap()
                 mapBuffer.close()
                 readback.deferred.complete(Unit)
@@ -375,7 +405,8 @@ class RenderBackendWebGpu(val ctx: KoolContext, val adapter: GPUAdapter, var ren
                 val gpuTex = readback.texture.gpuTexture as WgpuTextureResource
                 val format = readback.texture.format
                 val dst = ImageData.createBuffer(format, gpuTex.width, gpuTex.height, gpuTex.depth)
-                dst.copyFrom(mapBuffer.getMappedRange())
+                mapBuffer.getMappedRange()
+                    .writeInto(dst)
                 mapBuffer.unmap()
                 mapBuffer.close()
                 when (readback.texture) {
@@ -388,17 +419,6 @@ class RenderBackendWebGpu(val ctx: KoolContext, val adapter: GPUAdapter, var ren
         }
 
         gpuReadbacks.clear()
-    }
-
-    private fun Buffer.copyFrom(src: ArrayBuffer) {
-        when (this) {
-            is Uint8Buffer -> this.buffer.set(Uint8Array(src))
-            is Uint16Buffer -> this.buffer.set(Uint16Array(src))
-            is Int32Buffer -> this.buffer.set(Int32Array(src))
-            is Float32Buffer -> this.buffer.set(Float32Array(src))
-            is MixedBuffer -> Uint8Array(this.buffer.buffer).set(Uint8Array(src))
-            else -> logE { "Unexpected buffer type: ${this::class.simpleName}" }
-        }
     }
 
     fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): GpuBufferWgpu {

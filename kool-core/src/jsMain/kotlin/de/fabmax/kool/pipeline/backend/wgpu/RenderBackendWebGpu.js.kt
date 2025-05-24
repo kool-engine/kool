@@ -15,9 +15,12 @@ import de.fabmax.kool.platform.navigator
 import io.ygdrasil.webgpu.Adapter
 import io.ygdrasil.webgpu.Device
 import io.ygdrasil.webgpu.WGPUAdapter
-import io.ygdrasil.webgpu.WGPUDevice
+import io.ygdrasil.webgpu.getCanvasSurface
 import kotlinx.browser.window
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.await
+import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
 
 actual suspend fun createWebGpuRenderBackend(ctx: KoolContext): RenderBackendWebGpu {
@@ -29,10 +32,16 @@ internal suspend fun createWGPURenderBackend(ctx: KoolContext, canvas: HTMLCanva
         RenderBackendWebGpu(
             ctx,
             getAdapter(),
-            Vec2i(canvas.width, canvas.height)
+            getSurface(canvas),
+            KoolSystem.configJs.numSamples,
         ),
         canvas
     )
+
+private fun getSurface(canvas: HTMLCanvasElement): WgpuSurface {
+    val canvasSurface = canvas.unsafeCast<io.ygdrasil.webgpu.HTMLCanvasElement>().getCanvasSurface()
+    return WgpuSurface(canvasSurface)
+}
 
 private suspend fun getAdapter(): Adapter {
     val selectedAdapter =
@@ -51,6 +60,7 @@ internal class JsRenderBackendWebGpu(private val backend: RenderBackendWebGpu, v
     lateinit var canvasContext: GPUCanvasContext
         private set
 
+    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startRenderLoop() {
         backend.startRenderLoop()
         canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
@@ -60,7 +70,9 @@ internal class JsRenderBackendWebGpu(private val backend: RenderBackendWebGpu, v
         )
 
         window.requestAnimationFrame { t ->
-            (backend.ctx as JsContext).renderFrame(t)
+            GlobalScope.launch {
+                (backend.ctx as JsContext).renderFrame(t)
+            }
         }
     }
 
