@@ -77,10 +77,6 @@ internal class JsRenderBackendWebGpu(private val backend: RenderBackendWebGpu, v
     }
 
     override suspend fun renderFrame(ctx: KoolContext) {
-        if (canvas.width != backend.renderSize.x || canvas.height != backend.renderSize.y) {
-            backend.renderSize = Vec2i(canvas.width, canvas.height)
-            backend.screenPass.applySize(canvas.width, canvas.height)
-        }
         backend.renderFrame(ctx)
     }
 }
