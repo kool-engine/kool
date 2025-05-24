@@ -1,7 +1,5 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.pipeline.ClearDepthLoad
@@ -23,11 +21,11 @@ import io.ygdrasil.webgpu.RenderPassColorAttachment
 import io.ygdrasil.webgpu.RenderPassDepthStencilAttachment
 import io.ygdrasil.webgpu.TextureDescriptor
 
-class WgpuScreenPass(backend: RenderBackendWebGpu) :
-    WgpuRenderPass(GPUTextureFormat.Depth32Float, KoolSystem.configJs.numSamples, backend)
+class WgpuScreenPass(backend: RenderBackendWebGpu, numSamples: Int) :
+    WgpuRenderPass(GPUTextureFormat.Depth32Float, numSamples, backend)
 {
-    private val canvasContext: GPUCanvasContext
-        get() = backend.canvasContext
+    private val surface: WgpuSurface
+        get() = backend.surface
 
     override val colorTargetFormats: List<GPUTextureFormat>
         get() = listOf(backend.canvasFormat)
@@ -42,9 +40,9 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width.toUInt(), height.toUInt())
     }
 
-    fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
+    suspend fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
-            updateRenderTextures(backend.canvas.width, backend.canvas.height)
+            updateRenderTextures(surface.width, surface.height)
         }
         render(scenePass, passEncoderState)
     }
@@ -153,7 +151,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
                 loadOp = colorLoadOp,
                 storeOp = GPUStoreOp.Store,
                 clearValue = clearColor,
-                resolveTarget = canvasContext.getCurrentTexture().createView()
+                resolveTarget = surface.getCurrentTexture().texture.createView()
             )
         )
         val depth = RenderPassDepthStencilAttachment(

@@ -22,7 +22,10 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.await
+import kotlinx.coroutines.launch
 import org.khronos.webgl.*
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
@@ -73,6 +76,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startRenderLoop() {
         val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(KoolSystem.configJs.powerPreference)).await()
             ?: navigator.gpu.requestAdapter().await()
@@ -125,10 +129,14 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
 
-        window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
+        window.requestAnimationFrame { t ->
+            GlobalScope.launch {
+                (ctx as JsContext).renderFrame(t)
+            }
+        }
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override suspend fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         if (canvas.width != renderSize.x || canvas.height != renderSize.y) {

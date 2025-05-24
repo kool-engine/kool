@@ -1,0 +1,40 @@
+package de.fabmax.kool.pipeline.backend.wgpu
+
+import io.ygdrasil.webgpu.CompositeAlphaMode
+import io.ygdrasil.webgpu.GPUTextureFormat
+import io.ygdrasil.webgpu.HTMLCanvasElement
+import io.ygdrasil.webgpu.SurfaceConfiguration
+import io.ygdrasil.webgpu.SurfaceTexture
+import io.ygdrasil.webgpu.SurfaceTextureStatus
+import io.ygdrasil.webgpu.Texture
+import io.ygdrasil.webgpu.WGPUCanvasContext
+import io.ygdrasil.webgpu.asUInt
+import io.ygdrasil.webgpu.castAs
+import io.ygdrasil.webgpu.map
+
+actual class WgpuSurface(private val handler: WGPUCanvasContext) : AutoCloseable {
+    actual val width: UInt
+        get() = handler.canvas.castAs<HTMLCanvasElement>().width.asUInt()
+    actual val height: UInt
+        get() = handler.canvas.castAs<HTMLCanvasElement>().height.asUInt()
+
+    // @see https://gpuweb.github.io/gpuweb/#canvas-configuration
+    actual val supportedFormats: Set<GPUTextureFormat> =
+        setOf(GPUTextureFormat.BGRA8Unorm, GPUTextureFormat.RGBA8Unorm, GPUTextureFormat.RGBA16Float)
+    actual val supportedAlphaMode: Set<CompositeAlphaMode> =
+        setOf(CompositeAlphaMode.Opaque, CompositeAlphaMode.Premultiplied)
+
+    actual fun getCurrentTexture(): SurfaceTexture {
+        return handler.getCurrentTexture()
+            .let { Texture(it, canBeDestroy = false)}
+            .let { SurfaceTexture(it, SurfaceTextureStatus.success) }
+    }
+
+    actual fun present() { /* does not exists on Web */ }
+
+    actual fun configure(surfaceConfiguration: SurfaceConfiguration) {
+        handler.configure(map(surfaceConfiguration))
+    }
+
+    actual override fun close() { /* does not exists on Web */ }
+}

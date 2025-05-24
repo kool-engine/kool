@@ -71,14 +71,7 @@ class WgpuBindGroupData(
             val storage = storageBufferBindings[i]
             storage.binding.storageBuffer?.uploadData?.let { upload ->
                 storage.binding.storageBuffer?.uploadData = null
-                val hostBuffer = when (upload) {
-                    is Uint8Buffer -> upload.asArrayBuffer()
-                    is Uint16Buffer -> upload.asArrayBuffer()
-                    is Int32Buffer -> upload.asArrayBuffer()
-                    is Float32Buffer -> upload.asArrayBuffer()
-                    is MixedBuffer -> upload.asArrayBuffer()
-                    else -> error("unexpected buffer type: ${upload::class.simpleName}")
-                }
+                val hostBuffer = upload.asArrayBuffer()
                 device.queue.writeBuffer(
                     buffer = storage.gpuBuffer.buffer,
                     bufferOffset = 0uL,
@@ -198,7 +191,7 @@ class WgpuBindGroupData(
         textureBindings += TextureBinding(this, loadedTex)
 
         val baseLevel = samplerSettings.baseMipLevel.coerceAtMost(loadedTex.imageInfo.mipLevelCount.toInt() - 1)
-        val numLevels = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else loadedTex.imageInfo.mipLevelCount
+        val numLevels = if (samplerSettings.numMipLevels > 0) samplerSettings.numMipLevels else loadedTex.imageInfo.mipLevelCount.toInt()
         val numLevelsSafe = numLevels.coerceAtMost(loadedTex.imageInfo.mipLevelCount.toInt() - baseLevel)
 
         val texView = loadedTex.gpuTexture.createView(baseMipLevel = baseLevel, mipLevelCount = numLevelsSafe)

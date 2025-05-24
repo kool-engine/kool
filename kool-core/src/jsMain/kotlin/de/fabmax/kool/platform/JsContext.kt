@@ -12,6 +12,8 @@ import de.fabmax.kool.util.logW
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.w3c.dom.Element
@@ -28,7 +30,7 @@ import kotlin.math.roundToInt
  */
 class JsContext internal constructor() : KoolContext() {
 
-    override var backend: RenderBackendJs
+    override lateinit var backend: RenderBackendJs
         private set
 
     override var renderScale: Float = KoolSystem.configJs.renderScale
@@ -82,15 +84,17 @@ class JsContext internal constructor() : KoolContext() {
             canvas.height = (canvasFixedHeight * pixelRatio).roundToInt()
         }
 
-        backend = when (KoolSystem.configJs.renderBackend) {
-            KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this, canvas)
-            KoolConfigJs.Backend.WEB_GPU -> RenderBackendWebGpu(this, canvas)
-            KoolConfigJs.Backend.WGPU -> createWGPURenderBackend(this, canvas)
-            KoolConfigJs.Backend.PREFER_WEB_GPU -> {
-                if (RenderBackendWebGpu.isSupported()) {
-                    RenderBackendWebGpu(this, canvas)
-                } else {
-                    RenderBackendGlImpl(this, canvas)
+        GlobalScope.launch {
+            backend = when (KoolSystem.configJs.renderBackend) {
+                KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this@JsContext, canvas)
+                KoolConfigJs.Backend.WEB_GPU -> RenderBackendWebGpu(this@JsContext, canvas)
+                KoolConfigJs.Backend.WGPU -> createWGPURenderBackend(this@JsContext, canvas)
+                KoolConfigJs.Backend.PREFER_WEB_GPU -> {
+                    if (RenderBackendWebGpu.isSupported()) {
+                        RenderBackendWebGpu(this@JsContext, canvas)
+                    } else {
+                        RenderBackendGlImpl(this@JsContext, canvas)
+                    }
                 }
             }
         }
@@ -147,6 +151,7 @@ class JsContext internal constructor() : KoolContext() {
         KoolSystem.onContextCreated(this)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     internal suspend fun renderFrame(time: Double) {
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
@@ -180,7 +185,11 @@ class JsContext internal constructor() : KoolContext() {
         backend.renderFrame(this)
 
         // request next frame
-        window.requestAnimationFrame { t -> renderFrame(t) }
+        window.requestAnimationFrame { t ->
+            GlobalScope.launch {
+                renderFrame(t)
+            }
+        }
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {
