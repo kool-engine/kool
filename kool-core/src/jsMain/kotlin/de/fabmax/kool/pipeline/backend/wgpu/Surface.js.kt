@@ -32,6 +32,9 @@ actual class WgpuSurface(private val handler: WGPUCanvasContext) : AutoCloseable
     actual val supportedAlphaMode: Set<CompositeAlphaMode> =
         setOf(CompositeAlphaMode.Opaque, CompositeAlphaMode.Premultiplied)
 
+    actual val format: GPUTextureFormat
+        get() = supportedFormats.first()
+
     actual fun getCurrentTexture(): SurfaceTexture {
         return handler.getCurrentTexture()
             .let { Texture(it, canBeDestroy = false)}

@@ -90,9 +90,8 @@ class RenderBackendWebGpu(
     lateinit var device: GPUDevice
         private set
 
-    private var _canvasFormat: GPUTextureFormat? = null
     val canvasFormat: GPUTextureFormat
-        get() = _canvasFormat!!
+        get() = surface.format
 
     internal lateinit var textureLoader: WgpuTextureLoader
         private set
