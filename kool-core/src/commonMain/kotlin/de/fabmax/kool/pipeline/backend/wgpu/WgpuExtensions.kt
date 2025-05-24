@@ -221,7 +221,7 @@ val TexFormat.wgpuStorage: GPUTextureFormat
         TexFormat.R_U32 -> GPUTextureFormat.R32Uint
         TexFormat.RG_U32 -> GPUTextureFormat.RG32Uint
         TexFormat.RGBA_U32 -> GPUTextureFormat.RGBA32Uint
-        TexFormat.RG11B10_F -> GPUTextureFormat.RG11B10Ufloat
+        TexFormat.RG11B10_F -> GPUTextureFormat.RGBA16Float
     }
 
 val TextureSampleType.wgpu: GPUTextureSampleType
