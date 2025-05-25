@@ -14,7 +14,7 @@ object OsInfo {
         os = when {
             "windows" in osName -> OS.WINDOWS
             "linux" in osName -> OS.LINUX
-            "windows" in osName || "darwin" in osName || "osx" in osName -> OS.MACOS_X
+            arrayOf("mac os x", "darwin").any { osName.startsWith(it) } -> OS.MACOS_X
             else -> OS.UNKNOWN
         }
         arch = System.getProperty("os.arch", "unknown")

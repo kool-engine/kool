@@ -109,7 +109,7 @@ class WgpuRenderBackend(
     private val passEncoderState = RenderPassEncoderState(this)
 
 
-    suspend fun startRenderLoop() {
+    internal suspend fun initContext() {
         val availableFeatures = mutableSetOf<GPUFeatureName>()
         adapter.features
             .forEach { feature -> availableFeatures.add(feature) }
