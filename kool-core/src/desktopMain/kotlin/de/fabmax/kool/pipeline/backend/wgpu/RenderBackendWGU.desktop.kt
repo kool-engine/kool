@@ -19,7 +19,6 @@ import io.ygdrasil.webgpu.WGPU
 import io.ygdrasil.webgpu.WGPU.Companion.createInstance
 import org.lwjgl.glfw.GLFW.GLFW_CLIENT_API
 import org.lwjgl.glfw.GLFW.GLFW_NO_API
-import org.lwjgl.glfw.GLFW.glfwCreateWindow
 import org.lwjgl.glfw.GLFW.glfwWindowHint
 import org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow
 import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandDisplay
@@ -27,7 +26,6 @@ import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandWindow
 import org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window
 import org.lwjgl.glfw.GLFWNativeX11.glfwGetX11Display
 import org.lwjgl.glfw.GLFWNativeX11.glfwGetX11Window
-import org.lwjgl.system.MemoryUtil.NULL
 import org.rococoa.ID
 import org.rococoa.Rococoa
 import java.lang.foreign.MemorySegment
@@ -46,6 +44,9 @@ internal suspend fun createWGPURenderBackend(ctx: Lwjgl3Context): DesktopRenderB
 
     val adapter = wgpu.requestAdapter(nativeSurface)
         ?: error("fail to get adapter")
+
+    // Get supported format and opacity on surface
+    nativeSurface.computeSurfaceCapabilities(adapter)
 
     return DesktopRenderBackendWebGpu(
         WgpuRenderBackend(
