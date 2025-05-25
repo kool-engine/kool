@@ -122,7 +122,7 @@ class WgpuDrawPipeline(
             topology = topology,
             cullMode = drawPipeline.pipelineConfig.cullMethod.wgpu,
             frontFace = if (renderPass.isMirrorY) GPUFrontFace.CW else GPUFrontFace.CCW,
-            stripIndexFormat = if (topology == GPUPrimitiveTopology.TriangleStrip || topology == GPUPrimitiveTopology.LineList) GPUIndexFormat.Uint32 else null,
+            stripIndexFormat = if (topology == GPUPrimitiveTopology.TriangleStrip) GPUIndexFormat.Uint32 else null,
         )
 
         // do not set fragmentState null even if there are no color targets
