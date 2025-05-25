@@ -28,6 +28,7 @@ import kotlin.math.roundToInt
 /**
  * @author fabmax
  */
+@OptIn(DelicateCoroutinesApi::class)
 class JsContext internal constructor() : KoolContext() {
 
     override lateinit var backend: RenderBackendJs

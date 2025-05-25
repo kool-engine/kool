@@ -32,7 +32,7 @@ actual class WgpuSurface(private val handler: WGPUCanvasContext) : AutoCloseable
 
     actual val format: GPUTextureFormat
         get() = navigator.gpu.getPreferredCanvasFormat()
-            .let { GPUTextureFormat.of(it.enumValue) ?: throw error("Unsupported surface format: $it") }
+            .let { GPUTextureFormat.of(it.enumValue) ?: error("Unsupported surface format: $it") }
 
     actual fun getCurrentTexture(): SurfaceTexture {
         return handler.getCurrentTexture()

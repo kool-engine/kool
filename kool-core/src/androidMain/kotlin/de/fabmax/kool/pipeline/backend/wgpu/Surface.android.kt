@@ -8,10 +8,12 @@ import io.ygdrasil.webgpu.SurfaceTexture
 
 actual class WgpuSurface(private val handler: NativeSurface, actual val width: UInt, actual val height: UInt) : AutoCloseable {
 
-    actual val supportedFormats: Set<GPUTextureFormat>
+    val supportedFormats: Set<GPUTextureFormat>
         get() = handler.supportedFormats
     actual val supportedAlphaMode: Set<CompositeAlphaMode>
         get() = handler.supportedAlphaMode
+    actual val format: GPUTextureFormat
+        get() = supportedFormats.first()
 
     actual fun getCurrentTexture(): SurfaceTexture = handler.getCurrentTexture()
 
