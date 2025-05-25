@@ -67,6 +67,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
                 code = pipeline.shaderCode.fragmentSrc
             )
             val module = backend.device.createShaderModule(desc)
+            backend.device.pushErrorScope(GPUErrorFilter.Validation)
             module.checkErrors("fragment-shader", shaderCode.fragmentSrc, pipeline)
             UsedShaderModule(module)
         }
@@ -82,6 +83,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
                 code = pipeline.shaderCode.computeSrc
             )
             val module = backend.device.createShaderModule(desc)
+            backend.device.pushErrorScope(GPUErrorFilter.Validation)
             module.checkErrors("compute-shader", shaderCode.computeSrc, pipeline)
             UsedShaderModule(module)
         }
