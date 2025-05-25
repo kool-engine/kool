@@ -11,6 +11,7 @@ import io.ygdrasil.webgpu.FragmentState
 import io.ygdrasil.webgpu.GPUBlendFactor
 import io.ygdrasil.webgpu.GPUFrontFace
 import io.ygdrasil.webgpu.GPUIndexFormat
+import io.ygdrasil.webgpu.GPUPrimitiveTopology
 import io.ygdrasil.webgpu.GPURenderPassEncoder
 import io.ygdrasil.webgpu.GPURenderPipeline
 import io.ygdrasil.webgpu.GPUShaderModule
@@ -116,10 +117,12 @@ class WgpuDrawPipeline(
             )
         }
 
+        val topology = drawPipeline.vertexLayout.primitiveType.wgpu
         val primitiveState = PrimitiveState(
-            topology = drawPipeline.vertexLayout.primitiveType.wgpu,
+            topology = topology,
             cullMode = drawPipeline.pipelineConfig.cullMethod.wgpu,
-            frontFace = if (renderPass.isMirrorY) GPUFrontFace.CW else GPUFrontFace.CCW
+            frontFace = if (renderPass.isMirrorY) GPUFrontFace.CW else GPUFrontFace.CCW,
+            stripIndexFormat = if (topology == GPUPrimitiveTopology.TriangleStrip || topology == GPUPrimitiveTopology.LineList) GPUIndexFormat.Uint32 else null,
         )
 
         // do not set fragmentState null even if there are no color targets

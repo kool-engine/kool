@@ -17,11 +17,10 @@ import io.ygdrasil.webgpu.FragmentState
 import io.ygdrasil.webgpu.GPUBlendFactor
 import io.ygdrasil.webgpu.GPUBufferUsage
 import io.ygdrasil.webgpu.GPUCompareFunction
+import io.ygdrasil.webgpu.GPUIndexFormat
 import io.ygdrasil.webgpu.GPUPrimitiveTopology
 import io.ygdrasil.webgpu.GPURenderPipeline
 import io.ygdrasil.webgpu.GPUShaderStage
-import io.ygdrasil.webgpu.GPUTextureFormat
-import io.ygdrasil.webgpu.GPUVertexState
 import io.ygdrasil.webgpu.MultisampleState
 import io.ygdrasil.webgpu.PipelineLayoutDescriptor
 import io.ygdrasil.webgpu.PrimitiveState
@@ -128,7 +127,10 @@ class ClearHelper(val backend: RenderBackendWebGpu) {
                         )
                     }
                     ,
-                    primitive = PrimitiveState(topology = GPUPrimitiveTopology.TriangleStrip),
+                    primitive = PrimitiveState(
+                        topology = GPUPrimitiveTopology.TriangleStrip,
+                        stripIndexFormat = GPUIndexFormat.Uint32,
+                    ),
                     layout = backend.device.createPipelineLayout(
                         PipelineLayoutDescriptor(
                             label = "clear-pipeline-layout",
