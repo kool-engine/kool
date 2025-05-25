@@ -39,7 +39,7 @@ class MockBackend() : RenderBackend {
 
     val glslHints = GlslGenerator.Hints("#version 330 core")
 
-    override fun renderFrame(ctx: KoolContext) { }
+    override suspend fun renderFrame(ctx: KoolContext) { }
 
     override fun cleanup(ctx: KoolContext) { }
 

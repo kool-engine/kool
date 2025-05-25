@@ -1,6 +1,8 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
@@ -33,6 +35,10 @@ kotlin {
             optIn("kotlin.io.encoding.ExperimentalEncodingApi")
             optIn("kotlin.ExperimentalStdlibApi")
         }
+    }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 }
 

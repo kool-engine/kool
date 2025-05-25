@@ -72,6 +72,7 @@ class WgpuTimestamps(val size: Int, val backend: WgpuRenderBackend) {
         }
     }
 
+    @OptIn(ExperimentalUnsignedTypes::class)
     suspend fun readTimestamps() {
         if (isInFlight && !isMapping) {
             isMapping = true
