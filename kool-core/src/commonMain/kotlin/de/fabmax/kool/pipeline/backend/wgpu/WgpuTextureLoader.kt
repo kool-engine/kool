@@ -238,12 +238,14 @@ internal class WgpuTextureLoader(val backend: WgpuRenderBackend) {
     private fun copyTextureData(src: ImageData, dst: GPUTexture, size: Extent3D, dstOrigin: Origin3D) {
         when (src) {
             is BufferedImageData -> {
-                device.queue.writeTexture(
-                    data = src.data.asArrayBuffer(),
-                    destination = TexelCopyTextureInfo(dst, origin = dstOrigin),
-                    dataLayout = src.gpuImageDataLayout,
-                    size = size
-                )
+                src.data.asArrayBuffer { arrayBuffer ->
+                    device.queue.writeTexture(
+                        data = arrayBuffer,
+                        destination = TexelCopyTextureInfo(dst, origin = dstOrigin),
+                        dataLayout = src.gpuImageDataLayout,
+                        size = size
+                    )
+                }
             }
             // Unsupported
             /*is ImageTextureData -> {

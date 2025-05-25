@@ -81,7 +81,14 @@ class ClearHelper(val backend: WgpuRenderBackend) {
                 clearValues.clear()
                 clearColor?.putTo(clearValues)
                 clearValues[4] = clearDepth
-                backend.device.queue.writeBuffer(clearValuesBuffer.buffer, 0u, clearValues.asArrayBuffer(), 0u)
+                clearValues.asArrayBuffer { arrayBuffer ->
+                    backend.device.queue.writeBuffer(
+                        clearValuesBuffer.buffer,
+                        0u,
+                        arrayBuffer,
+                        0u
+                    )
+                }
             }
 
             val clearPipeline = when {

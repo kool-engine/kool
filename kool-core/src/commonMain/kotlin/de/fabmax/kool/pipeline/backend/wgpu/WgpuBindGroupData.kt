@@ -58,12 +58,14 @@ class WgpuBindGroupData(
 
         for (i in bufferBindings.indices) {
             val ubo = bufferBindings[i]
-            if (ubo.modCount != ubo.binding.modCount || recreatedBindGroup) {
-                device.queue.writeBuffer(
-                    buffer = ubo.gpuBuffer.buffer,
-                    bufferOffset = 0uL,
-                    data = ubo.binding.buffer.buffer.asArrayBuffer()
-                )
+            ubo.binding.buffer.buffer.asArrayBuffer { arrayBuffer ->
+                if (ubo.modCount != ubo.binding.modCount || recreatedBindGroup) {
+                    device.queue.writeBuffer(
+                        buffer = ubo.gpuBuffer.buffer,
+                        bufferOffset = 0uL,
+                        data = arrayBuffer
+                    )
+                }
             }
         }
 
@@ -71,12 +73,13 @@ class WgpuBindGroupData(
             val storage = storageBufferBindings[i]
             storage.binding.storageBuffer?.uploadData?.let { upload ->
                 storage.binding.storageBuffer?.uploadData = null
-                val hostBuffer = upload.asArrayBuffer()
-                device.queue.writeBuffer(
-                    buffer = storage.gpuBuffer.buffer,
-                    bufferOffset = 0uL,
-                    data = hostBuffer
-                )
+                upload.asArrayBuffer { arrayBuffer ->
+                    device.queue.writeBuffer(
+                        buffer = storage.gpuBuffer.buffer,
+                        bufferOffset = 0uL,
+                        data = arrayBuffer
+                    )
+                }
             }
         }
         passEncoderState.setBindGroup(group, this)

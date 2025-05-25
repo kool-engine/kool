@@ -77,7 +77,7 @@ class WgpuTimestamps(val size: Int, val backend: WgpuRenderBackend) {
             isMapping = true
             readBuffer.mapAsync(setOf(GPUMapMode.Read)).onSuccess {
                 val decoded = readBuffer.getMappedRange()
-                    .asUInt32Array()
+                    .asUIntArray()
                 for (i in 0..lastActive) {
                     val slot = slots[i]
                     if (slot != null) {
