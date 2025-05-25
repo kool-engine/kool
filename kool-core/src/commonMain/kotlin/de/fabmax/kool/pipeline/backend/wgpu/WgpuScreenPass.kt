@@ -21,7 +21,7 @@ import io.ygdrasil.webgpu.RenderPassColorAttachment
 import io.ygdrasil.webgpu.RenderPassDepthStencilAttachment
 import io.ygdrasil.webgpu.TextureDescriptor
 
-class WgpuScreenPass(backend: RenderBackendWebGpu, numSamples: Int) :
+class WgpuScreenPass(backend: WgpuRenderBackend, numSamples: Int) :
     WgpuRenderPass(GPUTextureFormat.Depth32Float, numSamples, backend)
 {
     private val surface: WgpuSurface

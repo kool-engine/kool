@@ -10,7 +10,6 @@ expect class WgpuSurface: AutoCloseable {
     val width: UInt
     val height: UInt
 
-    val supportedFormats: Set<GPUTextureFormat>
     val supportedAlphaMode: Set<CompositeAlphaMode>
     val format: GPUTextureFormat
 

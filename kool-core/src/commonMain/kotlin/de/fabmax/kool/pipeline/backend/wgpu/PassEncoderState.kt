@@ -61,7 +61,7 @@ class ComputePassEncoderState: PassEncoderState {
     }
 }
 
-class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState {
+class RenderPassEncoderState(val backend: WgpuRenderBackend): PassEncoderState {
     private var _gpuRenderPass: WgpuRenderPass? = null
     private var _renderPass: RenderPass? = null
     private var _encoder: GPUCommandEncoder? = null

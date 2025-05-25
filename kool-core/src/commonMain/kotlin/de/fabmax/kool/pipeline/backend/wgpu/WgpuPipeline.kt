@@ -26,7 +26,7 @@ import io.ygdrasil.webgpu.TextureBindingLayout
 
 sealed class WgpuPipeline(
     private val pipeline: PipelineBase,
-    protected val backend: RenderBackendWebGpu,
+    protected val backend: WgpuRenderBackend,
 ): BaseReleasable(), PipelineBackend {
 
     private val pipelineInfo = PipelineInfo(pipeline)

@@ -14,7 +14,7 @@ import io.ygdrasil.webgpu.RenderPassDepthStencilAttachment
 
 class WgpuOffscreenPassCube(
     val parentPass: OffscreenPassCube,
-    backend: RenderBackendWebGpu
+    backend: WgpuRenderBackend
 ) : WgpuRenderPass(GPUTextureFormat.Depth32Float, parentPass.numSamples, backend), OffscreenPassCubeImpl {
 
     override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }

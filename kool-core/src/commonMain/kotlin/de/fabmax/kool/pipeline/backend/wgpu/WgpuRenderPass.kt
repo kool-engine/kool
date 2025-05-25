@@ -21,7 +21,7 @@ import kotlin.time.Duration.Companion.nanoseconds
 abstract class WgpuRenderPass(
     val depthFormat: GPUTextureFormat?,
     numSamples: Int,
-    val backend: RenderBackendWebGpu
+    val backend: WgpuRenderBackend
 ) : BaseReleasable() {
 
     val numSamples = numSamples.coerceAtMost(4)
