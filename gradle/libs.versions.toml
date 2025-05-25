@@ -14,7 +14,7 @@ physxjswebidl = "2.6.0-1"
 
 # wgpu backend
 wgpu4k = "0.1.0"
-webgpu-ktypes = "0.0.6"
+webgpu-ktypes = "0.0.7-SNAPSHOT"
 
 [libraries]
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlin-coroutines" }
@@ -42,6 +42,7 @@ physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxj
 # wgpu backend
 wgpu4k = { module = "io.ygdrasil:wgpu4k", version.ref = "wgpu4k" }
 webgpu-descriptors = { module = "io.ygdrasil:webgpu-ktypes-descriptors", version.ref = "webgpu-ktypes" }
+webgpu-ktypes = { module = "io.ygdrasil:webgpu-ktypes", version.ref = "webgpu-ktypes" }
 
 
 # used gradle plugins: usually these would be under [plugins], but instead they are regular dependencies of buidlSrc
@@ -53,4 +54,4 @@ plugindep-android-library = { group = "com.android.library", name = "com.android
 
 [bundles]
 lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb"]
-wgpu4k = ["wgpu4k", "webgpu-descriptors"]
+wgpu4k = ["webgpu-ktypes", "wgpu4k", "webgpu-descriptors"]
