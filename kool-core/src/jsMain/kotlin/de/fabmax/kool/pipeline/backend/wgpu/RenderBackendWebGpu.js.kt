@@ -50,7 +50,7 @@ internal class JsRenderBackendWebGpu(private val backend: WgpuRenderBackend) :
 
     @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startRenderLoop() {
-        backend.startRenderLoop()
+        backend.initContext()
 
         backend.surface.configure(
             SurfaceConfiguration(

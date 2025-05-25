@@ -9,6 +9,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
+import de.fabmax.kool.pipeline.backend.wgpu.createWGPURenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
@@ -23,7 +24,7 @@ import kotlin.math.min
 /**
  * @author fabmax
  */
-class Lwjgl3Context : KoolContext() {
+class Lwjgl3Context() : KoolContext() {
     override val backend: RenderBackendJvm
 
     override var renderScale: Float = KoolSystem.configJvm.renderScale
@@ -50,19 +51,27 @@ class Lwjgl3Context : KoolContext() {
     private val sysInfo = SysInfo()
 
     init {
-        backend = if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
-            try {
-                RenderBackendVk(this)
-            } catch (e: Exception) {
-                if (KoolSystem.configJvm.useOpenGlFallback) {
-                    logE { "Failed initializing Vulkan backend ($e) Trying OpenGL..." }
-                    RenderBackendGlImpl(this)
-                } else {
-                    error("Failed initializing Vulkan backend ($e)")
+        backend = when (KoolSystem.configJvm.renderBackend) {
+            KoolConfigJvm.Backend.VULKAN -> {
+                try {
+                    RenderBackendVk(this)
+                } catch (e: Exception) {
+                    if (KoolSystem.configJvm.useOpenGlFallback) {
+                        logE { "Failed initializing Vulkan backend ($e) Trying OpenGL..." }
+                        RenderBackendGlImpl(this)
+                    } else {
+                        error("Failed initializing Vulkan backend ($e)")
+                    }
                 }
             }
-        } else {
-            RenderBackendGlImpl(this)
+            KoolConfigJvm.Backend.WGPU -> {
+                runBlocking {
+                    createWGPURenderBackend(this@Lwjgl3Context)
+                }
+            }
+            else -> {
+                RenderBackendGlImpl(this)
+            }
         }
 
         isWindowFocused = backend.glfwWindow.isFocused

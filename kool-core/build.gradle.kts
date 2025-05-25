@@ -22,6 +22,7 @@ kotlin {
         desktopMain.dependencies {
             api(libs.bundles.lwjgl)
             implementation(libs.jsvg)
+            implementation(libs.bundles.wgpu4k.surface.utils)
 
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
                 val hasVulkanRuntime = "macos" in platform

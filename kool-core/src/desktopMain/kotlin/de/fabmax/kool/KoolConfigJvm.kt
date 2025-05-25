@@ -87,6 +87,7 @@ data class KoolConfigJvm(
 
     enum class Backend(val displayName: String) {
         VULKAN("Vulkan"),
+        WGPU("WGPU"),
         OPEN_GL("OpenGL")
     }
 }
