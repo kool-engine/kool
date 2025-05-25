@@ -38,6 +38,11 @@ internal suspend fun createWGPURenderBackend(ctx: Lwjgl3Context): DesktopRenderB
     val glfwWindow = GlfwWindow(ctx)
     glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
 
+    // make the window visible
+    if (KoolSystem.configJvm.showWindowOnStart) {
+        glfwWindow.isVisible = true
+    }
+
     val wgpu = createInstance() ?: error("fail to wgpu instance")
     val nativeSurface = wgpu.getNativeSurface(glfwWindow)
     val surface = WgpuSurface(nativeSurface, glfwWindow)
