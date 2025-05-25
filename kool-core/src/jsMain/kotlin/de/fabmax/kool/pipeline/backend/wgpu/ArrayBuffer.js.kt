@@ -13,12 +13,8 @@ import io.ygdrasil.webgpu.ArrayBuffer
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.Int32Array
 import org.khronos.webgl.Uint16Array
-import org.khronos.webgl.Uint32Array
 import org.khronos.webgl.Uint8Array
 
-fun Float32Buffer.asArrayBuffer(): ArrayBuffer = (this as Float32BufferImpl).buffer.buffer
-fun Int32Buffer.asArrayBuffer(): ArrayBuffer = (this as Int32BufferImpl).buffer.buffer
-fun MixedBuffer.asArrayBuffer(): ArrayBuffer = (this as MixedBufferImpl).buffer.buffer
 actual fun ArrayBuffer.writeInto(target: Buffer): Unit = when (target) {
     is Float32BufferImpl -> target.buffer.set(Float32Array(this))
     is Int32BufferImpl -> target.buffer.set(Int32Array(this))
@@ -37,5 +33,5 @@ actual fun Buffer.asArrayBuffer(): ArrayBuffer = when (this) {
     else -> error("Unsupported buffer type ${this::class.simpleName}")
 }
 
-actual fun ArrayBuffer.asUInt32Array(): UIntArray = Uint32Array(this)
-    .unsafeCast<UIntArray>()
+actual fun ArrayBuffer.asUInt32Array(): UIntArray = Int32Array(this)
+    .unsafeCast<IntArray>().asUIntArray()
