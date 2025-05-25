@@ -24,7 +24,7 @@ actual fun ArrayBuffer.writeInto(target: Buffer): Unit = when (target) {
     else -> error("Unsupported buffer type ${target::class.simpleName}")
 }
 
-actual fun Buffer.asArrayBuffer(): ArrayBuffer = when (this) {
+private fun Buffer.asArrayBuffer(): ArrayBuffer = when (this) {
     is Float32BufferImpl -> this.buffer.buffer
     is Int32BufferImpl -> this.buffer.buffer
     is MixedBufferImpl ->  this.buffer.buffer
@@ -33,5 +33,9 @@ actual fun Buffer.asArrayBuffer(): ArrayBuffer = when (this) {
     else -> error("Unsupported buffer type ${this::class.simpleName}")
 }
 
-actual fun ArrayBuffer.asUInt32Array(): UIntArray = Int32Array(this)
+actual fun ArrayBuffer.asUIntArray(): UIntArray = Int32Array(this)
     .unsafeCast<IntArray>().asUIntArray()
+
+actual fun Buffer.asArrayBuffer(block: (ArrayBuffer) -> Unit) {
+    block(asArrayBuffer())
+}

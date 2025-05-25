@@ -38,24 +38,28 @@ internal class WgpuGrowingBuffer(
 
     fun writeData(data: Float32Buffer) {
         checkSize(data.limit * 4L)
-        device.queue.writeBuffer(
-            buffer = buffer.buffer,
-            bufferOffset = 0uL,
-            data = data.asArrayBuffer(),
-            dataOffset = 0uL,
-            size = (data.limit * 4L).toULong()
-        )
+        data.asArrayBuffer { arrayBuffer ->
+            device.queue.writeBuffer(
+                buffer = buffer.buffer,
+                bufferOffset = 0uL,
+                data = arrayBuffer,
+                dataOffset = 0uL,
+                size = (data.limit * 4L).toULong()
+            )
+        }
     }
 
     fun writeData(data: Int32Buffer) {
         checkSize(data.limit * 4L)
-        device.queue.writeBuffer(
-            buffer = buffer.buffer,
-            bufferOffset = 0uL,
-            data = data.asArrayBuffer(),
-            dataOffset = 0uL,
-            size = (data.limit * 4L).toULong()
-        )
+        data.asArrayBuffer { arrayBuffer ->
+            device.queue.writeBuffer(
+                buffer = buffer.buffer,
+                bufferOffset = 0uL,
+                data = arrayBuffer,
+                dataOffset = 0uL,
+                size = (data.limit * 4L).toULong()
+            )
+        }
     }
 
     private fun checkSize(required: Long) {
