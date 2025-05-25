@@ -5,14 +5,11 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
-import de.fabmax.kool.pipeline.backend.webgpu.GPUCanvasConfiguration
-import de.fabmax.kool.pipeline.backend.webgpu.GPUCanvasContext
-import de.fabmax.kool.pipeline.backend.webgpu.GPUDevice
 import de.fabmax.kool.pipeline.backend.webgpu.GPURequestAdapterOptions
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.navigator
 import io.ygdrasil.webgpu.Adapter
-import io.ygdrasil.webgpu.Device
+import io.ygdrasil.webgpu.SurfaceConfiguration
 import io.ygdrasil.webgpu.WGPUAdapter
 import io.ygdrasil.webgpu.getCanvasSurface
 import kotlinx.browser.window
@@ -29,8 +26,7 @@ internal suspend fun createWGPURenderBackend(ctx: KoolContext, canvas: HTMLCanva
             getAdapter(),
             getSurface(canvas),
             KoolSystem.configJs.numSamples,
-        ),
-        canvas
+        )
     )
 
 private fun getSurface(canvas: HTMLCanvasElement): WgpuSurface {
@@ -49,19 +45,19 @@ private suspend fun getAdapter(): Adapter {
     return adapter
 }
 
-internal class JsRenderBackendWebGpu(private val backend: WgpuRenderBackend, val canvas: HTMLCanvasElement) :
+internal class JsRenderBackendWebGpu(private val backend: WgpuRenderBackend) :
     RenderBackend by backend, RenderBackendJs {
-
-    lateinit var canvasContext: GPUCanvasContext
-        private set
 
     @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startRenderLoop() {
         backend.startRenderLoop()
-        canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
-        val canvasFormat = navigator.gpu.getPreferredCanvasFormat()
-        canvasContext.configure(
-            GPUCanvasConfiguration((backend.device as Device).handler.unsafeCast<GPUDevice>(), canvasFormat)
+
+        backend.surface.configure(
+            SurfaceConfiguration(
+                backend.device,
+                backend.surface.format,
+                viewFormats = setOf(backend.surface.format)
+            )
         )
 
         window.requestAnimationFrame { t ->
@@ -71,7 +67,4 @@ internal class JsRenderBackendWebGpu(private val backend: WgpuRenderBackend, val
         }
     }
 
-    override suspend fun renderFrame(ctx: KoolContext) {
-        backend.renderFrame(ctx)
-    }
 }
