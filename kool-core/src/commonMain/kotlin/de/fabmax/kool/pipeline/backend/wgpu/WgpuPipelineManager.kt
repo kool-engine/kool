@@ -2,8 +2,7 @@ package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
-import io.ygdrasil.webgpu.GPUCompilationMessageType
+import io.ygdrasil.webgpu.GPUErrorFilter
 import io.ygdrasil.webgpu.GPUShaderModule
 import io.ygdrasil.webgpu.ShaderModuleDescriptor
 
@@ -51,6 +50,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
                 label = "${pipeline.name} vertex shader",
                 code = pipeline.shaderCode.vertexSrc
             )
+            backend.device.pushErrorScope(GPUErrorFilter.Validation)
             val module = backend.device.createShaderModule(desc)
             module.checkErrors("vertex-shader", shaderCode.vertexSrc, pipeline)
             UsedShaderModule(module)
@@ -90,20 +90,10 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
     }
 
     private suspend fun GPUShaderModule.checkErrors(stage: String, code: String, pipeline: PipelineBase) {
-        getCompilationInfo().onSuccess { info ->
-            val messages = info.messages
-            if (messages.any { it.type == GPUCompilationMessageType.Error }) {
+        backend.device.popErrorScope().onSuccess { info ->
+            info?.message?.let {
                 logE { "Errors occurred on compilation of shader ${pipeline.name}:$stage:" }
-                messages.filter { it.type == GPUCompilationMessageType.Error }.forEach {
-                    logE { it.message }
-                }
-                logE { code }
-            }
-            if (messages.any { it.type == GPUCompilationMessageType.Warning }) {
-                logW { "Warnings occurred on compilation of fragment shader ${pipeline.name}:" }
-                messages.filter { it.type == GPUCompilationMessageType.Warning }.forEach {
-                    logW { it.message }
-                }
+                logE { it }
             }
         }
     }
