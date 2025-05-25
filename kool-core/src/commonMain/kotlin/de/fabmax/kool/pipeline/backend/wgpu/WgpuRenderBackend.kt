@@ -183,6 +183,8 @@ class WgpuRenderBackend(
             // after encoder is finished and submitted, temp buffers can be mapped for readback
             mapReadbacks()
         }
+
+        surface.present()
     }
 
     private suspend fun KoolContext.preparePipelines(passEncoderState: RenderPassEncoderState) {
