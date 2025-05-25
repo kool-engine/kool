@@ -10,7 +10,7 @@ import io.ygdrasil.webgpu.GPUQueryType
 import io.ygdrasil.webgpu.QuerySetDescriptor
 import kotlin.math.max
 
-class WgpuTimestamps(val size: Int, val backend: RenderBackendWebGpu) {
+class WgpuTimestamps(val size: Int, val backend: WgpuRenderBackend) {
 
     private var querySet: GPUQuerySet? = null
     private val resolveBuffer = backend.device.createBuffer(

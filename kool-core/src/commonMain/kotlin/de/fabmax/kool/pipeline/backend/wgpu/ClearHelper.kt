@@ -27,7 +27,7 @@ import io.ygdrasil.webgpu.PrimitiveState
 import io.ygdrasil.webgpu.RenderPipelineDescriptor
 import io.ygdrasil.webgpu.VertexState
 
-class ClearHelper(val backend: RenderBackendWebGpu) {
+class ClearHelper(val backend: WgpuRenderBackend) {
     private val clearPipelines = mutableMapOf<WgpuRenderPass, ClearPipeline>()
     private val shaderModule = backend.device.createShaderModule(SHADER_SRC)
 

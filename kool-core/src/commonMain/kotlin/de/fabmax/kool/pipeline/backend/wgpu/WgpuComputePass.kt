@@ -11,7 +11,7 @@ import io.ygdrasil.webgpu.GPUCommandEncoder
 import io.ygdrasil.webgpu.GPUComputePassTimestampWrites
 import kotlin.time.Duration.Companion.nanoseconds
 
-class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWebGpu) :
+class WgpuComputePass(val parentPass: ComputePass, val backend: WgpuRenderBackend) :
     BaseReleasable(),
     ComputePassImpl
 {

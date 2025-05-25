@@ -71,9 +71,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
-expect suspend fun createWebGpuRenderBackend(ctx: KoolContext): RenderBackendWebGpu
-
-class RenderBackendWebGpu(
+class WgpuRenderBackend(
     val ctx: KoolContext,
     val adapter: GPUAdapter,
     val surface: WgpuSurface,

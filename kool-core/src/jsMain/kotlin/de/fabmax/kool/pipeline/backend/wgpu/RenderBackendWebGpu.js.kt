@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.wgpu
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
-import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.webgpu.GPUCanvasConfiguration
@@ -23,13 +22,9 @@ import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
 
-actual suspend fun createWebGpuRenderBackend(ctx: KoolContext): RenderBackendWebGpu {
-    TODO("Not yet implemented")
-}
-
 internal suspend fun createWGPURenderBackend(ctx: KoolContext, canvas: HTMLCanvasElement): JsRenderBackendWebGpu =
     JsRenderBackendWebGpu(
-        RenderBackendWebGpu(
+        WgpuRenderBackend(
             ctx,
             getAdapter(),
             getSurface(canvas),
@@ -54,7 +49,7 @@ private suspend fun getAdapter(): Adapter {
     return adapter
 }
 
-internal class JsRenderBackendWebGpu(private val backend: RenderBackendWebGpu, val canvas: HTMLCanvasElement) :
+internal class JsRenderBackendWebGpu(private val backend: WgpuRenderBackend, val canvas: HTMLCanvasElement) :
     RenderBackend by backend, RenderBackendJs {
 
     lateinit var canvasContext: GPUCanvasContext

@@ -9,7 +9,7 @@ import io.ygdrasil.webgpu.ProgrammableStage
 class WgpuComputePipeline(
     val computePipeline: ComputePipeline,
     private val computeShaderModule: GPUShaderModule,
-    backend: RenderBackendWebGpu,
+    backend: WgpuRenderBackend,
 ): WgpuPipeline(computePipeline, backend) {
 
     private val gpuComputePipeline = createComputePipeline()

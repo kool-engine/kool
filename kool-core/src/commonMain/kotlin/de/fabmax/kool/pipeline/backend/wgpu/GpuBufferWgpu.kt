@@ -24,7 +24,7 @@ class GpuBufferWgpu(val buffer: GPUBuffer, size: Long, info: String?) :
 }
 
 internal class WgpuGrowingBuffer(
-    val backend: RenderBackendWebGpu,
+    val backend: WgpuRenderBackend,
     val label: String,
     size: Long,
     val usage: Set<GPUBufferUsage> = setOf(GPUBufferUsage.Vertex, GPUBufferUsage.CopyDst)

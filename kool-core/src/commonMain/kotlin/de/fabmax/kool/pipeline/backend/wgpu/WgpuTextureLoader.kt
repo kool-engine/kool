@@ -34,7 +34,7 @@ import io.ygdrasil.webgpu.TextureDescriptor
 import io.ygdrasil.webgpu.VertexState
 
 
-internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
+internal class WgpuTextureLoader(val backend: WgpuRenderBackend) {
     private val loadedTextures = mutableMapOf<String, WgpuTextureResource>()
 
     private val device: GPUDevice get() = backend.device
