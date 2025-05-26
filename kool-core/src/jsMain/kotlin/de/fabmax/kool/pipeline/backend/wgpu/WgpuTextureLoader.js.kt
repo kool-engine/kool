@@ -39,6 +39,7 @@ private fun copyTextureData(
         },
         destination = createJsObject<WGPUCopyExternalImageDestInfo>().apply {
             texture = (dst as Texture).handler.asDynamic()
+            mipLevel = 0.asDynamic()
             origin = createJsObject<WGPUOrigin3D>().apply {
                 x = dstOrigin.x.asDynamic()
                 y = dstOrigin.y.asDynamic()
@@ -48,6 +49,7 @@ private fun copyTextureData(
         copySize = createJsObject<WGPUExtent3D>().apply {
             width = size.width.asDynamic()
             height = size.height.asDynamic()
+            depthOrArrayLayers = size.depthOrArrayLayers.asDynamic()
         }
     )
 }
