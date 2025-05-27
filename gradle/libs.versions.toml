@@ -43,7 +43,6 @@ physxjswebidl = { group = "npm", name = "physx-js-webidl", version.ref = "physxj
 # wgpu backend
 wgpu4k = { module = "io.ygdrasil:wgpu4k", version.ref = "wgpu4k" }
 webgpu-descriptors = { module = "io.ygdrasil:webgpu-ktypes-descriptors", version.ref = "webgpu-ktypes" }
-webgpu-ktypes = { module = "io.ygdrasil:webgpu-ktypes", version.ref = "webgpu-ktypes" }
 rococoa = { module = "io.ygdrasil:rococoa", version.ref = "rococoa" }
 jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
