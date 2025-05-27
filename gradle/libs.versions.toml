@@ -14,7 +14,6 @@ physxjswebidl = "2.6.0-1"
 
 # wgpu backend
 wgpu4k = "0.1.1-SNAPSHOT"
-webgpu-ktypes = "0.0.7-SNAPSHOT"
 rococoa = "0.0.1"
 jna = "5.17.0"
 
@@ -59,5 +58,5 @@ plugindep-android-library = { group = "com.android.library", name = "com.android
 
 [bundles]
 lwjgl = ["lwjgl-core", "lwjgl-glfw", "lwjgl-jemalloc", "lwjgl-opengl", "lwjgl-vulkan", "lwjgl-vma", "lwjgl-shaderc", "lwjgl-nfd", "lwjgl-stb"]
-wgpu4k = ["webgpu-ktypes", "wgpu4k", "webgpu-descriptors"]
+wgpu4k = ["wgpu4k", "webgpu-descriptors"]
 wgpu4k-surface-utils = ["rococoa", "jna", "jna-platform"]
