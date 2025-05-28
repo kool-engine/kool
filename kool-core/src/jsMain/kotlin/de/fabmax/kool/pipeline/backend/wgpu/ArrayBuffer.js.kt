@@ -33,6 +33,7 @@ private fun Buffer.asArrayBuffer(): ArrayBuffer = when (this) {
     else -> error("Unsupported buffer type ${this::class.simpleName}")
 }
 
+@OptIn(ExperimentalUnsignedTypes::class)
 actual fun ArrayBuffer.asUIntArray(): UIntArray = Int32Array(this)
     .unsafeCast<IntArray>().asUIntArray()
 

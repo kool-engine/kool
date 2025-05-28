@@ -76,7 +76,7 @@ class WgpuRenderBackend(
     val adapter: GPUAdapter,
     val surface: WgpuSurface,
     numSamples: Int,
-) : RenderBackend {
+) : RenderBackend, GPUBackend {
     override val name: String = "WebGPU Backend"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
@@ -85,7 +85,7 @@ class WgpuRenderBackend(
 
     var renderSize = Vec2i(surface.width.toInt(), surface.height.toInt())
 
-    lateinit var device: GPUDevice
+    override lateinit var device: GPUDevice
         private set
 
     val canvasFormat: GPUTextureFormat
@@ -425,11 +425,11 @@ class WgpuRenderBackend(
         gpuReadbacks.clear()
     }
 
-    fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): GpuBufferWgpu {
+    override fun createBuffer(descriptor: GPUBufferDescriptor, info: String?): GpuBufferWgpu {
         return GpuBufferWgpu(device.createBuffer(descriptor), descriptor.size.toLong(), info)
     }
 
-    fun createTexture(descriptor: GPUTextureDescriptor): WgpuTextureResource {
+    override fun createTexture(descriptor: GPUTextureDescriptor): WgpuTextureResource {
         return WgpuTextureResource(descriptor, device.createTexture(descriptor))
     }
 

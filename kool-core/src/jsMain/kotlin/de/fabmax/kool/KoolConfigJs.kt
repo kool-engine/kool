@@ -1,8 +1,8 @@
 package de.fabmax.kool
 
-import de.fabmax.kool.pipeline.backend.webgpu.GPUPowerPreference
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
+import io.ygdrasil.webgpu.GPUPowerPreference
 import kotlinx.serialization.json.Json
 
 data class KoolConfigJs(
@@ -22,7 +22,7 @@ data class KoolConfigJs(
     val renderBackend: Backend = Backend.PREFER_WEB_GPU,
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
-    val powerPreference: GPUPowerPreference = GPUPowerPreference.highPerformance,
+    val powerPreference: String = GPUPowerPreference.HighPerformance.value,
     val deviceScaleLimit: Double = 3.0,
     val renderScale: Float = 1f,
     val forceFloatDepthBuffer: Boolean = true,
@@ -44,8 +44,6 @@ data class KoolConfigJs(
     enum class Backend {
         WEB_GL2,
         WEB_GPU,
-        // Multiplatform backend
-        WGPU,
         PREFER_WEB_GPU
     }
 }

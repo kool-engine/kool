@@ -8,6 +8,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.Color
 import kotlinx.browser.window
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
@@ -57,6 +58,7 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         useFloatDepthBuffer = KoolSystem.configJs.forceFloatDepthBuffer
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startRenderLoop() {
         window.requestAnimationFrame { t ->
             GlobalScope.launch {
