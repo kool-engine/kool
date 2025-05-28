@@ -5,7 +5,7 @@ import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
+import de.fabmax.kool.pipeline.backend.wgpu.JsRenderBackendWebGpu
 import de.fabmax.kool.pipeline.backend.wgpu.createWGPURenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logW
@@ -88,11 +88,10 @@ class JsContext internal constructor() : KoolContext() {
         GlobalScope.launch {
             backend = when (KoolSystem.configJs.renderBackend) {
                 KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this@JsContext, canvas)
-                KoolConfigJs.Backend.WEB_GPU -> RenderBackendWebGpu(this@JsContext, canvas)
-                KoolConfigJs.Backend.WGPU -> createWGPURenderBackend(this@JsContext, canvas)
+                KoolConfigJs.Backend.WEB_GPU -> createWGPURenderBackend(this@JsContext, canvas)
                 KoolConfigJs.Backend.PREFER_WEB_GPU -> {
-                    if (RenderBackendWebGpu.isSupported()) {
-                        RenderBackendWebGpu(this@JsContext, canvas)
+                    if (JsRenderBackendWebGpu.isSupported()) {
+                        createWGPURenderBackend(this@JsContext, canvas)
                     } else {
                         RenderBackendGlImpl(this@JsContext, canvas)
                     }
@@ -208,7 +207,7 @@ class JsContext internal constructor() : KoolContext() {
             try {
                 backend.startRenderLoop()
             } catch (e: Exception) {
-                if (backend is RenderBackendWebGpu && KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.PREFER_WEB_GPU) {
+                if (backend is JsRenderBackendWebGpu && KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.PREFER_WEB_GPU) {
                     // WebGPU-context creation failed (although the browser theoretically supports it)
 
                     // fixme: KoolContext.run() is called relatively late and user code might have already done a lot

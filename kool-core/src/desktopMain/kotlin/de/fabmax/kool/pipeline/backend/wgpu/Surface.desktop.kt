@@ -29,7 +29,7 @@ actual class WgpuSurface(private val handler: NativeSurface, internal val glfwWi
     actual val supportedAlphaMode: Set<CompositeAlphaMode>
         get() = handler.supportedAlphaMode
     actual val format: GPUTextureFormat
-        get() = supportedFormats.first()
+        get() = supportedFormats.firstOrNull { it.name.contains("8Unorm") && !it.name.contains("Srgb") } ?: supportedFormats.first()
 
     actual fun getCurrentTexture(): SurfaceTexture = handler.getCurrentTexture()
 

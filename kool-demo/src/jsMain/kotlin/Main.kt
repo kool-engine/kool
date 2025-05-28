@@ -8,7 +8,6 @@ val params = getParams()
 val backend: KoolConfigJs.Backend
     get() = when {
         params["backend"] == "webgpu" -> KoolConfigJs.Backend.WEB_GPU
-        params["backend"] == "wgpu" -> KoolConfigJs.Backend.WGPU
         params["backend"] == "webgl" -> KoolConfigJs.Backend.WEB_GL2
         else -> KoolConfigJs.Backend.PREFER_WEB_GPU
     }

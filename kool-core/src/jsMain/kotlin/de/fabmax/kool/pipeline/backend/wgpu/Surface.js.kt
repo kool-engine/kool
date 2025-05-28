@@ -1,6 +1,6 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
-import de.fabmax.kool.platform.navigator
+import io.ygdrasil.webgpu.navigator
 import io.ygdrasil.webgpu.CompositeAlphaMode
 import io.ygdrasil.webgpu.Device
 import io.ygdrasil.webgpu.GPUCanvasToneMappingMode
@@ -31,8 +31,9 @@ actual class WgpuSurface(private val handler: WGPUCanvasContext) : AutoCloseable
         setOf(CompositeAlphaMode.Opaque, CompositeAlphaMode.Premultiplied)
 
     actual val format: GPUTextureFormat
-        get() = navigator.gpu.getPreferredCanvasFormat()
-            .let { GPUTextureFormat.of(it.enumValue) ?: error("Unsupported surface format: $it") }
+        get() = navigator.gpu?.getPreferredCanvasFormat()
+            ?.let { GPUTextureFormat.of(it) ?: error("Unsupported surface format: $it") }
+            ?: error("WebGPU not supported")
 
     actual fun getCurrentTexture(): SurfaceTexture {
         return handler.getCurrentTexture()
