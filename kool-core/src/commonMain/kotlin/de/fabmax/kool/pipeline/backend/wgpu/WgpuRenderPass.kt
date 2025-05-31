@@ -14,6 +14,7 @@ import io.ygdrasil.webgpu.GPUTextureFormat
 import io.ygdrasil.webgpu.GPUTextureUsage
 import io.ygdrasil.webgpu.GPUTextureUsageFlags
 import io.ygdrasil.webgpu.GPUTextureView
+import io.ygdrasil.webgpu.GPUTextureViewDimension
 import io.ygdrasil.webgpu.RenderPassTimestampWrites
 import io.ygdrasil.webgpu.TextureDescriptor
 import kotlin.time.Duration.Companion.nanoseconds
@@ -247,9 +248,16 @@ abstract class WgpuRenderPass(
             return backend.createTexture(descriptor)
         }
 
-        private fun WgpuTextureResource.createMipViews() = List<List<GPUTextureView>>(parentPass.numRenderMipLevels) { mipLevel ->
-            List<GPUTextureView>(layers) { layer ->
-                gpuTexture.createView(baseMipLevel = mipLevel, mipLevelCount = 1, baseArrayLayer = layer, arrayLayerCount = 1)
+        private fun WgpuTextureResource.createMipViews() = List(parentPass.numRenderMipLevels) { mipLevel ->
+            println("$this ${imageInfo.label}")
+            List(layers) { layer ->
+                gpuTexture.createView(
+                    baseMipLevel = mipLevel,
+                    mipLevelCount = 1,
+                    baseArrayLayer = layer,
+                    arrayLayerCount = 1,
+                    dimension = GPUTextureViewDimension.TwoD
+                )
             }
         }
 
