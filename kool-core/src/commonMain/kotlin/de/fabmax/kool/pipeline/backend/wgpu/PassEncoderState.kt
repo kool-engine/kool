@@ -1,6 +1,12 @@
-package de.fabmax.kool.pipeline.backend.webgpu
+package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.pipeline.*
+import io.ygdrasil.webgpu.GPUCommandEncoder
+import io.ygdrasil.webgpu.GPUComputePassEncoder
+import io.ygdrasil.webgpu.GPUComputePipeline
+import io.ygdrasil.webgpu.GPURenderPassEncoder
+import io.ygdrasil.webgpu.GPURenderPassTimestampWrites
+import io.ygdrasil.webgpu.GPURenderPipeline
 
 interface PassEncoderState {
     val renderPass: GpuPass
@@ -50,12 +56,12 @@ class ComputePassEncoderState: PassEncoderState {
     override fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData) {
         if (bindGroups[group] !== bindGroupData) {
             bindGroups[group] = bindGroupData
-            passEncoder.setBindGroup(group, bindGroupData.bindGroup!!)
+            passEncoder.setBindGroup(group.toUInt(), bindGroupData.bindGroup!!)
         }
     }
 }
 
-class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState {
+class RenderPassEncoderState(val backend: WgpuRenderBackend): PassEncoderState {
     private var _gpuRenderPass: WgpuRenderPass? = null
     private var _renderPass: RenderPass? = null
     private var _encoder: GPUCommandEncoder? = null
@@ -85,7 +91,7 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
         }
         val cmdBuffer = encoder.finish()
         _encoder = null
-        backend.device.queue.submit(arrayOf(cmdBuffer))
+        backend.device.queue.submit(listOf(cmdBuffer))
     }
 
     fun beginRenderPass(
@@ -145,7 +151,7 @@ class RenderPassEncoderState(val backend: RenderBackendWebGpu): PassEncoderState
     override fun setBindGroup(group: Int, bindGroupData: WgpuBindGroupData) {
         if (bindGroups[group] !== bindGroupData) {
             bindGroups[group] = bindGroupData
-            passEncoder.setBindGroup(group, bindGroupData.bindGroup!!)
+            passEncoder.setBindGroup(group.toUInt(), bindGroupData.bindGroup!!)
         }
     }
 }

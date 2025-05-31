@@ -10,10 +10,6 @@ allprojects {
     group = "de.fabmax.kool"
     version = "0.18.0-SNAPSHOT"
 
-    repositories {
-        google()
-        mavenCentral()
-    }
 }
 
 tasks.register("disableAndroidPlatform") {

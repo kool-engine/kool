@@ -1,12 +1,14 @@
-package de.fabmax.kool.pipeline.backend.webgpu
+package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.pipeline.backend.GpuInstances
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
+import io.ygdrasil.webgpu.GPUBuffer
+import io.ygdrasil.webgpu.GPUDevice
 
-class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendWebGpu, mesh: Mesh) : BaseReleasable(), GpuInstances {
+class WgpuInstances(val instances: MeshInstanceList, val backend: WgpuRenderBackend, mesh: Mesh) : BaseReleasable(), GpuInstances {
     private val device: GPUDevice get() = backend.device
 
     private val createdInstanceBuffer: WgpuGrowingBuffer? = if (instances.instanceSizeF == 0) null else {

@@ -120,7 +120,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return if (unsignedCnt < 0) Int.MAX_VALUE else unsignedCnt
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override suspend fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         memStack {
