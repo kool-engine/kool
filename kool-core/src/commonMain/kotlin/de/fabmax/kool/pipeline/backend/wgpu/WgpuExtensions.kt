@@ -140,7 +140,12 @@ fun GPUTexture.createView(
         baseMipLevel = baseMipLevel.toUInt(),
         mipLevelCount = mipLevelCount?.toUInt(),
         baseArrayLayer = baseArrayLayer.toUInt(),
-        arrayLayerCount = arrayLayerCount?.toUInt()
+        arrayLayerCount = arrayLayerCount?.toUInt() ?: dimension.let {
+            when (it) {
+                GPUTextureViewDimension.Cube -> 6u
+                else -> null
+            }
+        }
     )
 )
 
