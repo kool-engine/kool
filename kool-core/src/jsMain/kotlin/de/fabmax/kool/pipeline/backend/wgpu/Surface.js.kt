@@ -5,10 +5,9 @@ import io.ygdrasil.webgpu.CompositeAlphaMode
 import io.ygdrasil.webgpu.Device
 import io.ygdrasil.webgpu.GPUCanvasToneMappingMode
 import io.ygdrasil.webgpu.GPUTextureFormat
+import io.ygdrasil.webgpu.GPUTextureView
 import io.ygdrasil.webgpu.HTMLCanvasElement
 import io.ygdrasil.webgpu.SurfaceConfiguration
-import io.ygdrasil.webgpu.SurfaceTexture
-import io.ygdrasil.webgpu.SurfaceTextureStatus
 import io.ygdrasil.webgpu.Texture
 import io.ygdrasil.webgpu.WGPUCanvasConfiguration
 import io.ygdrasil.webgpu.WGPUCanvasContext
@@ -35,10 +34,10 @@ actual class WgpuSurface(private val handler: WGPUCanvasContext) : AutoCloseable
             ?.let { GPUTextureFormat.of(it) ?: error("Unsupported surface format: $it") }
             ?: error("WebGPU not supported")
 
-    actual fun getCurrentTexture(): SurfaceTexture {
+    actual fun getCurrentTextureView(): GPUTextureView {
         return handler.getCurrentTexture()
             .let { Texture(it, canBeDestroy = false)}
-            .let { SurfaceTexture(it, SurfaceTextureStatus.success) }
+            .createView()
     }
 
     actual fun present() { /* does not exists on Web */ }
