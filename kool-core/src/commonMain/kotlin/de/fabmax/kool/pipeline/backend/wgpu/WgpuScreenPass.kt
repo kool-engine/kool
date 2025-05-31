@@ -151,7 +151,7 @@ class WgpuScreenPass(backend: WgpuRenderBackend, numSamples: Int) :
                 loadOp = colorLoadOp,
                 storeOp = GPUStoreOp.Store,
                 clearValue = clearColor,
-                resolveTarget = surface.getCurrentTexture().texture.createView()
+                resolveTarget = surface.getCurrentTextureView()
             )
         )
         val depth = RenderPassDepthStencilAttachment(
