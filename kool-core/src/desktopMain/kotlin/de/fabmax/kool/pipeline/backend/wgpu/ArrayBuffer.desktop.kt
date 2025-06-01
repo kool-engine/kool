@@ -8,11 +8,12 @@ import de.fabmax.kool.util.Uint16BufferImpl
 import de.fabmax.kool.util.Uint8BufferImpl
 import io.ygdrasil.webgpu.ArrayBuffer
 import java.lang.foreign.MemorySegment
+import java.lang.foreign.ValueLayout
 
 actual fun ArrayBuffer.writeInto(target: Buffer): Unit {
     target.asNioBuffer()
         .let(MemorySegment::ofBuffer)
-        .copyFrom(asMemorySegment())
+        .copyFrom(asArrayBuffer())
 }
 
 actual fun Buffer.asArrayBuffer(block: (ArrayBuffer) -> Unit) {
@@ -21,13 +22,20 @@ actual fun Buffer.asArrayBuffer(block: (ArrayBuffer) -> Unit) {
 }
 
 fun java.nio.Buffer.asArrayBuffer(block: (ArrayBuffer) -> Unit) {
-    this.let(MemorySegment::ofBuffer)
-        .let { ArrayBuffer(it.address().toULong(), it.byteSize().toULong()) }
+    asArrayBuffer()
         .also { block(it) }
 }
 
 @OptIn(ExperimentalUnsignedTypes::class)
-actual fun ArrayBuffer.asUIntArray(): UIntArray = TODO("Not yet implemented")
+actual fun ArrayBuffer.asUIntArray(): UIntArray = asMemorySegment()
+    .toArray(ValueLayout.JAVA_INT)
+    .asUIntArray()
+
+private fun ArrayBuffer.asMemorySegment(): MemorySegment = MemorySegment.ofAddress(rawPointer.toLong())
+    .reinterpret(size.toLong())
+
+private fun java.nio.Buffer.asArrayBuffer(): ArrayBuffer = this.let(MemorySegment::ofBuffer)
+    .let { ArrayBuffer(it.address().toULong(), it.byteSize().toULong()) }
 
 private fun Buffer.asNioBuffer(): java.nio.Buffer = when (this) {
     is Float32BufferImpl -> this.getRawBuffer()
@@ -38,6 +46,6 @@ private fun Buffer.asNioBuffer(): java.nio.Buffer = when (this) {
     else -> error("Unsupported buffer type ${this::class.simpleName}")
 }
 
-private fun ArrayBuffer.asMemorySegment() = MemorySegment
+private fun ArrayBuffer.asArrayBuffer() = MemorySegment
     .ofAddress(rawPointer.toLong())
     .reinterpret(size.toLong())
