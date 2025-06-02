@@ -249,7 +249,6 @@ abstract class WgpuRenderPass(
         }
 
         private fun WgpuTextureResource.createMipViews() = List(parentPass.numRenderMipLevels) { mipLevel ->
-            println("$this ${imageInfo.label}")
             List(layers) { layer ->
                 gpuTexture.createView(
                     baseMipLevel = mipLevel,
