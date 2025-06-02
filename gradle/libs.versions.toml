@@ -13,7 +13,7 @@ physxjni = "2.6.0"
 physxjswebidl = "2.6.0-1"
 
 # wgpu backend
-wgpu4k = "0.1.1-SNAPSHOT"
+wgpu4k = "0.1.1"
 webgpu-ktypes = "0.0.7"
 rococoa = "0.0.1"
 jna = "5.17.0"
