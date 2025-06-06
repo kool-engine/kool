@@ -8,6 +8,9 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.Color
 import kotlinx.browser.window
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -55,15 +58,20 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         useFloatDepthBuffer = KoolSystem.configJs.forceFloatDepthBuffer
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startRenderLoop() {
-        window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
+        window.requestAnimationFrame { t ->
+            GlobalScope.launch {
+                (ctx as JsContext).renderFrame(t)
+            }
+        }
     }
 
     override fun cleanup(ctx: KoolContext) {
         // for now, we leave the cleanup to the system...
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override suspend fun renderFrame(ctx: KoolContext) {
         super.renderFrame(ctx)
         GlImpl.gl.finish()
     }

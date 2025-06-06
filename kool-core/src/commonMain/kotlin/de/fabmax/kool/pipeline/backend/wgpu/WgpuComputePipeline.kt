@@ -1,12 +1,15 @@
-package de.fabmax.kool.pipeline.backend.webgpu
+package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.ComputePipeline
+import io.ygdrasil.webgpu.GPUComputePipeline
+import io.ygdrasil.webgpu.GPUShaderModule
+import io.ygdrasil.webgpu.ProgrammableStage
 
 class WgpuComputePipeline(
     val computePipeline: ComputePipeline,
     private val computeShaderModule: GPUShaderModule,
-    backend: RenderBackendWebGpu,
+    backend: WgpuRenderBackend,
 ): WgpuPipeline(computePipeline, backend) {
 
     private val gpuComputePipeline = createComputePipeline()
@@ -23,7 +26,7 @@ class WgpuComputePipeline(
         return device.createComputePipeline(
             label = "${computePipeline.name}-layout",
             layout = pipelineLayout,
-            compute = GPUProgrammableStage(
+            compute = ProgrammableStage(
                 module = computeShaderModule,
                 entryPoint = "computeMain"
             )

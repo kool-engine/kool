@@ -5,12 +5,15 @@ import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
+import de.fabmax.kool.pipeline.backend.wgpu.JsRenderBackendWebGpu
+import de.fabmax.kool.pipeline.backend.wgpu.createWGPURenderBackend
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logW
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.w3c.dom.Element
@@ -25,9 +28,10 @@ import kotlin.math.roundToInt
 /**
  * @author fabmax
  */
+@OptIn(DelicateCoroutinesApi::class)
 class JsContext internal constructor() : KoolContext() {
 
-    override var backend: RenderBackendJs
+    override lateinit var backend: RenderBackendJs
         private set
 
     override var renderScale: Float = KoolSystem.configJs.renderScale
@@ -81,14 +85,16 @@ class JsContext internal constructor() : KoolContext() {
             canvas.height = (canvasFixedHeight * pixelRatio).roundToInt()
         }
 
-        backend = when (KoolSystem.configJs.renderBackend) {
-            KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this, canvas)
-            KoolConfigJs.Backend.WEB_GPU -> RenderBackendWebGpu(this, canvas)
-            KoolConfigJs.Backend.PREFER_WEB_GPU -> {
-                if (RenderBackendWebGpu.isSupported()) {
-                    RenderBackendWebGpu(this, canvas)
-                } else {
-                    RenderBackendGlImpl(this, canvas)
+        GlobalScope.launch {
+            backend = when (KoolSystem.configJs.renderBackend) {
+                KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this@JsContext, canvas)
+                KoolConfigJs.Backend.WEB_GPU -> createWGPURenderBackend(this@JsContext, canvas)
+                KoolConfigJs.Backend.PREFER_WEB_GPU -> {
+                    if (JsRenderBackendWebGpu.isSupported()) {
+                        createWGPURenderBackend(this@JsContext, canvas)
+                    } else {
+                        RenderBackendGlImpl(this@JsContext, canvas)
+                    }
                 }
             }
         }
@@ -145,7 +151,8 @@ class JsContext internal constructor() : KoolContext() {
         KoolSystem.onContextCreated(this)
     }
 
-    internal fun renderFrame(time: Double) {
+    @OptIn(DelicateCoroutinesApi::class)
+    internal suspend fun renderFrame(time: Double) {
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         // determine delta time
@@ -178,7 +185,11 @@ class JsContext internal constructor() : KoolContext() {
         backend.renderFrame(this)
 
         // request next frame
-        window.requestAnimationFrame { t -> renderFrame(t) }
+        window.requestAnimationFrame { t ->
+            GlobalScope.launch {
+                renderFrame(t)
+            }
+        }
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {
@@ -196,7 +207,7 @@ class JsContext internal constructor() : KoolContext() {
             try {
                 backend.startRenderLoop()
             } catch (e: Exception) {
-                if (backend is RenderBackendWebGpu && KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.PREFER_WEB_GPU) {
+                if (backend is JsRenderBackendWebGpu && KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.PREFER_WEB_GPU) {
                     // WebGPU-context creation failed (although the browser theoretically supports it)
 
                     // fixme: KoolContext.run() is called relatively late and user code might have already done a lot
