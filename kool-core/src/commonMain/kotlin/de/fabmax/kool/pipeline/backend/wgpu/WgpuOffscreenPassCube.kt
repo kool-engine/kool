@@ -1,13 +1,21 @@
-package de.fabmax.kool.pipeline.backend.webgpu
+package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
+import io.ygdrasil.webgpu.Color
+import io.ygdrasil.webgpu.GPUCommandEncoder
+import io.ygdrasil.webgpu.GPULoadOp
+import io.ygdrasil.webgpu.GPURenderPassEncoder
+import io.ygdrasil.webgpu.GPURenderPassTimestampWrites
+import io.ygdrasil.webgpu.GPUStoreOp
+import io.ygdrasil.webgpu.GPUTextureFormat
+import io.ygdrasil.webgpu.RenderPassDepthStencilAttachment
 
-class WgpuOffscreenPass2d(
-    val parentPass: OffscreenPass2d,
-    backend: RenderBackendWebGpu
-) : WgpuRenderPass(GPUTextureFormat.depth32float, parentPass.numSamples, backend), OffscreenPass2dImpl {
+class WgpuOffscreenPassCube(
+    val parentPass: OffscreenPassCube,
+    backend: WgpuRenderBackend
+) : WgpuRenderPass(GPUTextureFormat.Depth32Float, parentPass.numSamples, backend), OffscreenPassCubeImpl {
 
     override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }
     private var attachments = createAttachments()
@@ -19,8 +27,8 @@ class WgpuOffscreenPass2d(
 
         val attachments = Attachments(
             colorFormats = colorTargetFormats,
-            depthFormat = if (parentPass.hasDepth) GPUTextureFormat.depth32float else null,
-            layers = 1,
+            depthFormat = if (parentPass.hasDepth) GPUTextureFormat.Depth32Float else null,
+            layers = 6,
             isCopySrc = isCopySrc,
             parentPass = parentPass,
         )
@@ -61,7 +69,7 @@ class WgpuOffscreenPass2d(
         }
     }
 
-    fun draw(passEncoderState: RenderPassEncoderState) {
+    suspend fun draw(passEncoderState: RenderPassEncoderState) {
         val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
         if (isCopySrc != attachments.isCopySrc) {
             logD { "Offscreen pass ${parentPass.name} copy requirements changed: copy src: $isCopySrc" }
@@ -81,11 +89,11 @@ class WgpuOffscreenPass2d(
     override fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder) {
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
-                attachments.copyColorToTexture(i, frameCopy.colorCopy[i] as Texture2d, encoder)
+                attachments.copyColorToTexture(i, frameCopy.colorCopy[i] as TextureCube, encoder)
             }
         }
         if (frameCopy.isCopyDepth) {
-            attachments.copyDepthToTexture(frameCopy.depthCopy2d, encoder)
+            attachments.copyDepthToTexture(frameCopy.depthCopyCube, encoder)
         }
     }
 
@@ -96,35 +104,37 @@ class WgpuOffscreenPass2d(
     ): GPURenderPassEncoder {
         val renderPass = passEncoderState.renderPass
         val mipLevel = passEncoderState.mipLevel
-        val views = attachments.getColorViews(mipLevel)
+        val layer = passEncoderState.layer
+        val views = attachments.getColorViews(mipLevel, layer)
         val colors = views.mapIndexed { i, colorView ->
             val colorLoadOp = when {
-                forceLoad -> GPULoadOp.load
-                renderPass.colorAttachments[i].clearColor is ClearColorLoad -> GPULoadOp.load
-                else -> GPULoadOp.clear
+                forceLoad -> GPULoadOp.Load
+                renderPass.colorAttachments[i].clearColor is ClearColorLoad -> GPULoadOp.Load
+                else -> GPULoadOp.Clear
             }
-            val clearColor = if (colorLoadOp == GPULoadOp.load) null else {
-                (parentPass.colorAttachments[i].clearColor as? ClearColorFill)?.let { GPUColorDict(it.clearColor) }
+            val clearColor = if (colorLoadOp == GPULoadOp.Load) null else {
+                (parentPass.colorAttachments[i].clearColor as? ClearColorFill)?.let { Color(it.clearColor.r.toDouble(), it.clearColor.g.toDouble(), it.clearColor.b.toDouble(), it.clearColor.a.toDouble()) }
             }
 
-            GPURenderPassColorAttachment(
+            io.ygdrasil.webgpu.RenderPassColorAttachment(
                 view = colorView,
                 loadOp = colorLoadOp,
+                storeOp = GPUStoreOp.Store,
                 clearValue = clearColor,
-                resolveTarget = if (isMultiSampled) attachments.getResolveColorView(i, mipLevel) else null,
+                resolveTarget = if (isMultiSampled) attachments.getResolveColorView(i, mipLevel, layer) else null,
             )
-        }.toTypedArray()
+        }
 
         val depthLoadOp = when {
-            forceLoad -> GPULoadOp.load
-            renderPass.depthAttachment?.clearDepth == ClearDepthLoad -> GPULoadOp.load
-            else -> GPULoadOp.clear
+            forceLoad -> GPULoadOp.Load
+            renderPass.depthAttachment?.clearDepth == ClearDepthLoad -> GPULoadOp.Load
+            else -> GPULoadOp.Clear
         }
         val depth = attachments.getDepthView(mipLevel)?.let { depthView ->
-            GPURenderPassDepthStencilAttachment(
+            RenderPassDepthStencilAttachment(
                 view = depthView,
                 depthLoadOp = depthLoadOp,
-                depthStoreOp = GPUStoreOp.store,
+                depthStoreOp = GPUStoreOp.Store,
                 depthClearValue = renderPass.depthMode.far
             )
         }

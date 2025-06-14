@@ -10,6 +10,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import kotlin.math.max
 
@@ -74,7 +75,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         return sysInfo.lines
     }
 
-    internal fun renderFrame() {
+    internal fun renderFrame() = runBlocking {
         sysInfo.update()
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
@@ -87,7 +88,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         render(dt)
 
         // execute draw queues
-        backend.renderFrame(this)
+        backend.renderFrame(this@KoolContextAndroid)
     }
 
     companion object {

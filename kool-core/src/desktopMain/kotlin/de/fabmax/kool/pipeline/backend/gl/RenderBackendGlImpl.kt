@@ -61,7 +61,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         timer = TimeQuery(gl)
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override suspend fun renderFrame(ctx: KoolContext) {
         if (timer.isAvailable) {
             frameGpuTime = timer.getQueryResult()
         }

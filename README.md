@@ -100,7 +100,7 @@ More editor related documentation is available in [the editor docs](https://kool
 ### Android Support
 
 The Android target is disabled by default (to avoid having the Android SDK as a build requirement). You can
-enable the Android target by running the gradle task `enableAndroidPlatform`.
+enable the Android target by running the gradle task `./gradlew enableAndroidPlatform`.
 
 Moreover, Android support is only available for `kool-core` for now. Therefore, the demos don't work on Android yet
 (because they also require `kool-physics`). However, there's a basic [kool-android-template](https://github.com/kool-engine/kool-templates)
