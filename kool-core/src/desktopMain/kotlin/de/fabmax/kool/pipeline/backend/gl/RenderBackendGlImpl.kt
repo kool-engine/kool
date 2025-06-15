@@ -20,6 +20,7 @@ import kotlin.time.Duration.Companion.seconds
 class RenderBackendGlImpl(ctx: KoolContext) :
     RenderBackendGl(KoolSystem.configJvm.numSamples, GlImpl, ctx), RenderBackendJvm
 {
+    override val name = "OpenGL"
     override val features: BackendFeatures
 
     override val glfwWindow: GlfwWindow
@@ -61,7 +62,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         timer = TimeQuery(gl)
     }
 
-    override suspend fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(ctx: KoolContext) {
         if (timer.isAvailable) {
             frameGpuTime = timer.getQueryResult()
         }

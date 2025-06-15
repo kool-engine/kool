@@ -85,7 +85,7 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
         androidCtx.renderFrame()
     }
 
-    override suspend fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(ctx: KoolContext) {
         val t = timer
         if (t != null) {
             if (t.isAvailable) {

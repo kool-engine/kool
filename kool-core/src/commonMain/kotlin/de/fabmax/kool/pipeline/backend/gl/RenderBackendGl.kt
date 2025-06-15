@@ -17,7 +17,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.measureTime
 
 abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
-    override val name = "Common GL Backend"
     override val apiName: String
         get() = gl.version.versionName
     override val deviceName: String
@@ -43,7 +42,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override suspend fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         sceneRenderer.applySize(ctx.windowWidth, ctx.windowHeight)
