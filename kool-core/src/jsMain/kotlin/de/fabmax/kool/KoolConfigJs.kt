@@ -1,8 +1,9 @@
 package de.fabmax.kool
 
+import de.fabmax.kool.pipeline.backend.BackendProvider
+import de.fabmax.kool.pipeline.backend.webgpu.WgpuBackendProvider
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
-import io.ygdrasil.webgpu.GPUPowerPreference
 import kotlinx.serialization.json.Json
 
 data class KoolConfigJs(
@@ -19,10 +20,10 @@ data class KoolConfigJs(
     override val numSamples: Int = 4,
 
     val canvasName: String = "glCanvas",
-    val renderBackend: Backend = Backend.PREFER_WEB_GPU,
+    val renderBackend: BackendProvider = WgpuBackendProvider,
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
-    val powerPreference: String = GPUPowerPreference.HighPerformance.value,
+    val powerPreference: PowerPreference = PowerPreference.HighPerformance,
     val deviceScaleLimit: Double = 3.0,
     val renderScale: Float = 1f,
     val forceFloatDepthBuffer: Boolean = true,
@@ -40,10 +41,9 @@ data class KoolConfigJs(
             MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
         }
     }
+}
 
-    enum class Backend {
-        WEB_GL2,
-        WEB_GPU,
-        PREFER_WEB_GPU
-    }
+enum class PowerPreference(val value: String) {
+    HighPerformance("high-performance"),
+    LowPower("low-power")
 }

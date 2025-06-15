@@ -8,16 +8,13 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.Color
 import kotlinx.browser.window
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
+class RenderBackendGlImpl(ctx: JsContext) :
     RenderBackendGl(KoolSystem.configJs.numSamples, GlImpl, ctx), RenderBackendJs
 {
+    override val name = "WebGL"
     override val deviceName = "WebGL"
     override val features: BackendFeatures
 
@@ -29,11 +26,11 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
 
     init {
         val options = js("({})")
-        options["powerPreference"] = KoolSystem.configJs.powerPreference
+        options["powerPreference"] = KoolSystem.configJs.powerPreference.value
         options["antialias"] = numSamples > 1
         options["stencil"] = false
 
-        val webGlCtx = (canvas.getContext("webgl2", options) ?: canvas.getContext("experimental-webgl2", options)) as WebGL2RenderingContext?
+        val webGlCtx = (ctx.canvas.getContext("webgl2", options) ?: ctx.canvas.getContext("experimental-webgl2", options)) as WebGL2RenderingContext?
         check(webGlCtx != null) {
             val txt = "Unable to initialize WebGL2 context. Your browser may not support it."
             js("alert(txt)")
@@ -58,20 +55,15 @@ class RenderBackendGlImpl(ctx: KoolContext, canvas: HTMLCanvasElement) :
         useFloatDepthBuffer = KoolSystem.configJs.forceFloatDepthBuffer
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     override suspend fun startRenderLoop() {
-        window.requestAnimationFrame { t ->
-            GlobalScope.launch {
-                (ctx as JsContext).renderFrame(t)
-            }
-        }
+        window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
     }
 
     override fun cleanup(ctx: KoolContext) {
         // for now, we leave the cleanup to the system...
     }
 
-    override suspend fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(ctx: KoolContext) {
         super.renderFrame(ctx)
         GlImpl.gl.finish()
     }

@@ -2,20 +2,25 @@ import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJs
 import de.fabmax.kool.demo.demo
 import de.fabmax.kool.physics.Physics
+import de.fabmax.kool.pipeline.backend.BackendProvider
+import de.fabmax.kool.pipeline.backend.gl.WebGlBackendProvider
+import de.fabmax.kool.pipeline.backend.webgpu.WgpuBackendProvider
+import de.fabmax.kool.pipeline.backend.wgpu.Wgpu4kBackendProvider
 import kotlinx.browser.window
 
 val params = getParams()
-val backend: KoolConfigJs.Backend
+val backendProvider: BackendProvider
     get() = when {
-        params["backend"] == "webgpu" -> KoolConfigJs.Backend.WEB_GPU
-        params["backend"] == "webgl" -> KoolConfigJs.Backend.WEB_GL2
-        else -> KoolConfigJs.Backend.PREFER_WEB_GPU
+        params["backend"] == "wgpu4k" -> Wgpu4kBackendProvider
+        params["backend"] == "webgpu" -> WgpuBackendProvider
+        params["backend"] == "webgl" -> WebGlBackendProvider
+        else -> WgpuBackendProvider
     }
 
 
 fun main() = KoolApplication(
     KoolConfigJs(
-        renderBackend = backend,
+        renderBackend = backendProvider,
         isGlobalKeyEventGrabbing = true,
         deviceScaleLimit = 1.5,
         loaderTasks = listOf { Physics.loadAndAwaitPhysics() }

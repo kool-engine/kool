@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
-    override val name = "Vulkan backend"
+    override val name = "Vulkan"
     override val apiName: String
     override val deviceName: String
 
@@ -120,7 +120,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return if (unsignedCnt < 0) Int.MAX_VALUE else unsignedCnt
     }
 
-    override suspend fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         memStack {
@@ -165,9 +165,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     private fun KoolContext.preparePipelines(passEncoderState: PassEncoderState) {
-        ctx.backgroundScene.prepareDrawPipelines(passEncoderState)
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
+        backgroundScene.prepareDrawPipelines(passEncoderState)
+        for (i in scenes.indices) {
+            val scene = scenes[i]
             if (scene.isVisible) {
                 scene.prepareDrawPipelines(passEncoderState)
             }
@@ -196,9 +196,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     private fun KoolContext.executePasses(passEncoderState: PassEncoderState) {
-        ctx.backgroundScene.executePasses(passEncoderState)
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
+        backgroundScene.executePasses(passEncoderState)
+        for (i in scenes.indices) {
+            val scene = scenes[i]
             if (scene.isVisible) {
                 scene.executePasses(passEncoderState)
             }

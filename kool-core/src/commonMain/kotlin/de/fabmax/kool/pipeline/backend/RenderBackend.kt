@@ -22,7 +22,7 @@ interface RenderBackend {
 
     val frameGpuTime: Duration
 
-    suspend fun renderFrame(ctx: KoolContext)
+    fun renderFrame(ctx: KoolContext)
     fun cleanup(ctx: KoolContext)
 
     fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode
