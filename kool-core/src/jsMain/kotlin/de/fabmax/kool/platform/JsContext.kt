@@ -4,8 +4,8 @@ import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.pipeline.backend.gl.WebGlBackendProvider
 import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logE
@@ -88,7 +88,7 @@ class JsContext internal constructor() : KoolContext() {
             configBackend.getOrThrow() as RenderBackendJs
         } else {
             logE { "Failed creating render backend ${KoolSystem.configJs.renderBackend.displayName}: ${configBackend.exceptionOrNull()}\nFalling back to WebGL2" }
-            WebGlBackendProvider.createBackend(this@JsContext).getOrThrow()
+            RenderBackendGl.createBackend(this@JsContext).getOrThrow() as RenderBackendJs
         }
 
         document.onfullscreenchange = {

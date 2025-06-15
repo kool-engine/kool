@@ -3,14 +3,14 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolApplication
 import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.pipeline.backend.vk.VkBackendProvider
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 
 /**
  * @author fabmax
  */
 fun main() = KoolApplication(
     config = KoolConfigJvm(
-        renderBackend = VkBackendProvider,
+        renderBackend = RenderBackendVk,
         windowTitle = "Kool Demo",
         windowSize = Vec2i(1600, 900)
     )

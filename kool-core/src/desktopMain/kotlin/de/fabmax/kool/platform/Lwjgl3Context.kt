@@ -6,7 +6,7 @@ import de.fabmax.kool.configJvm
 import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
-import de.fabmax.kool.pipeline.backend.gl.GlBackendProvider
+import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logI
@@ -51,7 +51,7 @@ class Lwjgl3Context() : KoolContext() {
         backend = if (configBackend.isSuccess) {
             configBackend.getOrThrow() as RenderBackendJvm
         } else {
-            if (KoolSystem.configJvm.useOpenGlFallback) GlBackendProvider.createBackend(this@Lwjgl3Context).getOrThrow()
+            if (KoolSystem.configJvm.useOpenGlFallback) RenderBackendGl.createBackend(this@Lwjgl3Context).getOrThrow() as RenderBackendJvm
             else error("Failed creating render backend ${KoolSystem.configJvm.renderBackend.displayName}: ${configBackend.exceptionOrNull()}")
         }
 

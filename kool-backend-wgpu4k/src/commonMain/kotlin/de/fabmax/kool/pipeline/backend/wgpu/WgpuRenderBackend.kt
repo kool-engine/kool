@@ -414,5 +414,4 @@ abstract class WgpuRenderBackend(
             this += computeSrc
         }
     }
-
 }

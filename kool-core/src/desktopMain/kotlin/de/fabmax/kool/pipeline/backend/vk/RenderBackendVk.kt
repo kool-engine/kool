@@ -8,9 +8,7 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.BackendFeatures
-import de.fabmax.kool.pipeline.backend.DeviceCoordinates
-import de.fabmax.kool.pipeline.backend.RenderBackendJvm
+import de.fabmax.kool.pipeline.backend.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -427,5 +425,17 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private class ReadbackTexture(val texture: Texture<*>, val deferred: CompletableDeferred<ImageData>) : GpuReadback {
         var mapBuffer: GpuBufferVk? = null
+    }
+
+    companion object : BackendProvider {
+        override val displayName: String = "Vulkan"
+
+        override fun createBackend(ctx: KoolContext): Result<RenderBackend> {
+            return try {
+                Result.success(RenderBackendVk(ctx as Lwjgl3Context))
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
     }
 }

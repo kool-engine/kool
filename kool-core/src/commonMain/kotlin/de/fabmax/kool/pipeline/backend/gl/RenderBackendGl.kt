@@ -5,6 +5,7 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.backend.BackendProvider
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
@@ -15,6 +16,8 @@ import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.measureTime
+
+expect fun createRenderBackendGl(ctx: KoolContext): RenderBackendGl
 
 abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, internal val ctx: KoolContext) : RenderBackend {
     override val apiName: String
@@ -191,4 +194,12 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     }
 
     private class ReadbackStorageBuffer(val storage: GpuBuffer, val deferred: CompletableDeferred<Unit>, val resultBuffer: Buffer)
+
+    companion object : BackendProvider {
+        override val displayName: String = "OpenGL"
+
+        override fun createBackend(ctx: KoolContext): Result<RenderBackendGl> {
+            return Result.success(createRenderBackendGl(ctx))
+        }
+    }
 }

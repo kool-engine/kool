@@ -11,6 +11,8 @@ import kotlinx.browser.window
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+actual fun createRenderBackendGl(ctx: KoolContext): RenderBackendGl = RenderBackendGlImpl(ctx as JsContext)
+
 class RenderBackendGlImpl(ctx: JsContext) :
     RenderBackendGl(KoolSystem.configJs.numSamples, GlImpl, ctx), RenderBackendJs
 {
