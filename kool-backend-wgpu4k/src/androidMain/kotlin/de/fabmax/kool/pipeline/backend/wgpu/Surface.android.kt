@@ -1,11 +1,6 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
-import io.ygdrasil.webgpu.CompositeAlphaMode
-import io.ygdrasil.webgpu.GPUTextureFormat
-import io.ygdrasil.webgpu.GPUTextureView
-import io.ygdrasil.webgpu.NativeSurface
-import io.ygdrasil.webgpu.SurfaceConfiguration
-import io.ygdrasil.webgpu.SurfaceTexture
+import io.ygdrasil.webgpu.*
 
 actual class WgpuSurface(private val handler: NativeSurface, actual val width: UInt, actual val height: UInt) : AutoCloseable {
 
