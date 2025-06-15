@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.TexFormat
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
@@ -185,7 +186,7 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         // during window resizing
         if (renderOnResizeFlag) {
             ctx.renderFrame()
-            if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
+            if (ctx.backend is RenderBackendVk) {
                 // Vulkan needs two renders for swapchain update
                 ctx.renderFrame()
             }

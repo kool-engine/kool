@@ -110,8 +110,9 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
                 }
 
                 if (isExpanded.use()) {
+                    val backend = KoolSystem.requireContext().backend
                     Text("Kool v${KoolContext.KOOL_VERSION}") { debugTextStyle() }
-                    Text(KoolSystem.requireContext().backend.apiName) { debugTextStyle(MdColor.LIGHT_BLUE) }
+                    Text("${backend.name} (${backend.apiName})") { debugTextStyle(MdColor.LIGHT_BLUE) }
                     sysInfos.use().forEach { txt -> Text(txt) { debugTextStyle() } }
                     Text(viewportText.use()) { debugTextStyle() }
                     Text(uptimeText.use()) { debugTextStyle() }

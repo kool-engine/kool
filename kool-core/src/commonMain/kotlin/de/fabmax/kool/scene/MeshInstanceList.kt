@@ -41,12 +41,12 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
 
     private val strideFloats: Int
 
-    internal var maxInstances = initialSize
+    var maxInstances = initialSize
         private set
 
     var hasChanged = true
 
-    internal var gpuInstances: GpuInstances? = null
+    var gpuInstances: GpuInstances? = null
 
     constructor(initialSize: Int, vararg instanceAttributes: Attribute) : this(listOf(*instanceAttributes), initialSize)
 

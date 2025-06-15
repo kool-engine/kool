@@ -47,7 +47,7 @@ open class OffscreenPassCube(
             views.forEach { it.drawNode = value }
         }
 
-    internal val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
+    val impl = KoolSystem.requireContext().backend.createOffscreenPassCube(this)
 
     /**
      * Convenience function: Create a single shot FrameCopy of the color attachment. This way, the renderpass can

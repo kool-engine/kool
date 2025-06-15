@@ -30,7 +30,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
 
     fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
-            updateRenderTextures(backend.canvas.width, backend.canvas.height)
+            updateRenderTextures(backend.ctx.canvas.width, backend.ctx.canvas.height)
         }
         render(scenePass, passEncoderState)
     }

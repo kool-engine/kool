@@ -26,8 +26,8 @@ class GpuBuffer(
     var size = size
         private set
 
-    internal var gpuBuffer: GpuBufferImpl? = null
-    internal var uploadData: Buffer? = null
+    var gpuBuffer: GpuBufferImpl? = null
+    var uploadData: Buffer? = null
 
     /**
      * Uploads the contents of the given float buffer into this buffer. The upload is not performed immediately but

@@ -25,7 +25,7 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     var pipelineData = defaultPipelineData
         private set
 
-    internal var pipelineBackend: PipelineBackend? = null
+    var pipelineBackend: PipelineBackend? = null
 
     init {
         pipelineHashBuilder += bindGroupLayouts.viewScope.hash

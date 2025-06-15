@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PowerPreference
 import de.fabmax.kool.configJs
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
@@ -9,10 +10,7 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.BackendFeatures
-import de.fabmax.kool.pipeline.backend.DeviceCoordinates
-import de.fabmax.kool.pipeline.backend.RenderBackend
-import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.backend.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
@@ -24,13 +22,12 @@ import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.*
-import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
-class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) : RenderBackend, RenderBackendJs {
-    override val name: String = "WebGPU Backend"
+class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend, RenderBackendJs {
+    override val name: String = "WebGPU"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
@@ -56,7 +53,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     val pipelineManager = WgpuPipelineManager(this)
     private val screenPass = WgpuScreenPass(this)
 
-    private var renderSize = Vec2i(canvas.width, canvas.height)
+    private var renderSize = Vec2i(ctx.canvas.width, ctx.canvas.height)
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
 
@@ -74,7 +71,11 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     override suspend fun startRenderLoop() {
-        val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(KoolSystem.configJs.powerPreference)).await()
+        val powerPref = when (KoolSystem.configJs.powerPreference) {
+            PowerPreference.HighPerformance -> GPUPowerPreference.highPerformance
+            PowerPreference.LowPower -> GPUPowerPreference.lowPower
+        }
+        val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(powerPref)).await()
             ?: navigator.gpu.requestAdapter().await()
         adapter = checkNotNull(selectedAdapter) { "No appropriate GPUAdapter found." }
 
@@ -117,7 +118,7 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
             maxComputeInvocationsPerWorkgroup = device.limits.maxComputeInvocationsPerWorkgroup,
         )
 
-        canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
+        canvasContext = ctx.canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
         canvasContext.configure(
             GPUCanvasConfiguration(device, canvasFormat)
@@ -125,15 +126,15 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
 
-        window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
+        window.requestAnimationFrame { t -> ctx.renderFrame(t) }
     }
 
     override fun renderFrame(ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
-        if (canvas.width != renderSize.x || canvas.height != renderSize.y) {
-            renderSize = Vec2i(canvas.width, canvas.height)
-            screenPass.applySize(canvas.width, canvas.height)
+        if (this.ctx.canvas.width != renderSize.x || this.ctx.canvas.height != renderSize.y) {
+            renderSize = Vec2i(this.ctx.canvas.width, this.ctx.canvas.height)
+            screenPass.applySize(this.ctx.canvas.width, this.ctx.canvas.height)
         }
 
         passEncoderState.beginFrame()
@@ -157,9 +158,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     private fun KoolContext.preparePipelines(passEncoderState: RenderPassEncoderState) {
-        ctx.backgroundScene.prepareDrawPipelines(passEncoderState)
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
+        backgroundScene.prepareDrawPipelines(passEncoderState)
+        for (i in scenes.indices) {
+            val scene = scenes[i]
             if (scene.isVisible) {
                 scene.prepareDrawPipelines(passEncoderState)
             }
@@ -188,9 +189,9 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
     }
 
     private fun KoolContext.executePasses(passEncoderState: RenderPassEncoderState) {
-        ctx.backgroundScene.executePasses(passEncoderState)
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
+        backgroundScene.executePasses(passEncoderState)
+        for (i in scenes.indices) {
+            val scene = scenes[i]
             if (scene.isVisible) {
                 scene.executePasses(passEncoderState)
             }
@@ -438,7 +439,17 @@ class RenderBackendWebGpu(val ctx: KoolContext, val canvas: HTMLCanvasElement) :
         }
     }
 
-    companion object {
+    companion object : BackendProvider {
+        override val displayName: String = "WebGPU"
+
+        override fun createBackend(ctx: KoolContext): Result<RenderBackend> {
+            return if (isSupported()) {
+                Result.success(RenderBackendWebGpu(ctx as JsContext))
+            } else {
+                Result.failure(IllegalStateException("WebGPU is not supported by this browser"))
+            }
+        }
+
         fun isSupported(): Boolean {
             return !js("!navigator.gpu") as Boolean
         }

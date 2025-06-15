@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class MockBackend() : RenderBackend {
 
-    override val name: String = "Mock backend"
+    override val name: String = "Mock"
     override val apiName: String = "MockAPI"
     override val deviceName: String = "Mock device"
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.OPEN_GL

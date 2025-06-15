@@ -47,6 +47,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(project(":kool-core"))
+            implementation(project(":kool-backend-wgpu4k"))
             implementation(project(":kool-physics"))
             implementation(libs.kotlin.coroutines)
             implementation(libs.kotlin.serialization.core)
@@ -103,9 +104,16 @@ tasks.register<JavaExec>("runDesktop") {
     dependsOn("cacheRuntimeLibs")
     group = "application"
     mainClass.set("de.fabmax.kool.demo.MainKt")
+
+    var customJvmArgs = listOf(
+        "--add-opens=java.base/java.lang=ALL-UNNAMED",
+        "--enable-native-access=ALL-UNNAMED"
+    )
+
     if (OperatingSystem.current().isMacOsX) {
-        jvmArgs = listOf("-XstartOnFirstThread")
+        customJvmArgs += listOf("-XstartOnFirstThread")
     }
+    jvmArgs = customJvmArgs
 
     kotlin {
         val main = targets["desktop"].compilations["main"]

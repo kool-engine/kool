@@ -12,10 +12,13 @@ import javax.microedition.khronos.opengles.GL10
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+actual fun createRenderBackendGl(ctx: KoolContext): RenderBackendGl = RenderBackendGlImpl(ctx as KoolContextAndroid)
+
 class RenderBackendGlImpl(ctx: KoolContextAndroid) :
     RenderBackendGl(1, GlImpl, ctx),
     GLSurfaceView.Renderer
 {
+    override val name = "OpenGL ES"
     private val androidCtx = ctx
 
     private var _features: BackendFeatures? = null

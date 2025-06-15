@@ -4,9 +4,11 @@ import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logW
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -81,16 +83,12 @@ class JsContext internal constructor() : KoolContext() {
             canvas.height = (canvasFixedHeight * pixelRatio).roundToInt()
         }
 
-        backend = when (KoolSystem.configJs.renderBackend) {
-            KoolConfigJs.Backend.WEB_GL2 -> RenderBackendGlImpl(this, canvas)
-            KoolConfigJs.Backend.WEB_GPU -> RenderBackendWebGpu(this, canvas)
-            KoolConfigJs.Backend.PREFER_WEB_GPU -> {
-                if (RenderBackendWebGpu.isSupported()) {
-                    RenderBackendWebGpu(this, canvas)
-                } else {
-                    RenderBackendGlImpl(this, canvas)
-                }
-            }
+        val configBackend = KoolSystem.configJs.renderBackend.createBackend(this@JsContext)
+        backend = if (configBackend.isSuccess) {
+            configBackend.getOrThrow() as RenderBackendJs
+        } else {
+            logE { "Failed creating render backend ${KoolSystem.configJs.renderBackend.displayName}: ${configBackend.exceptionOrNull()}\nFalling back to WebGL2" }
+            RenderBackendGl.createBackend(this@JsContext).getOrThrow() as RenderBackendJs
         }
 
         document.onfullscreenchange = {
@@ -145,7 +143,7 @@ class JsContext internal constructor() : KoolContext() {
         KoolSystem.onContextCreated(this)
     }
 
-    internal fun renderFrame(time: Double) {
+    fun renderFrame(time: Double) {
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         // determine delta time
@@ -196,7 +194,7 @@ class JsContext internal constructor() : KoolContext() {
             try {
                 backend.startRenderLoop()
             } catch (e: Exception) {
-                if (backend is RenderBackendWebGpu && KoolSystem.configJs.renderBackend == KoolConfigJs.Backend.PREFER_WEB_GPU) {
+                if (backend is RenderBackendWebGpu) {
                     // WebGPU-context creation failed (although the browser theoretically supports it)
 
                     // fixme: KoolContext.run() is called relatively late and user code might have already done a lot
@@ -204,7 +202,7 @@ class JsContext internal constructor() : KoolContext() {
                     //  can do about that.
 
                     logW { "Failed initializing WebGPU context, falling back to WebGL: $e" }
-                    backend = RenderBackendGlImpl(this@JsContext, canvas)
+                    backend = RenderBackendGlImpl(this@JsContext)
                     backend.startRenderLoop()
                 } else {
                     throw RuntimeException(e)

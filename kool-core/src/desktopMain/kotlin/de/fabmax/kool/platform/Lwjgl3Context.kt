@@ -1,16 +1,14 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
-import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
+import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
@@ -22,7 +20,7 @@ import kotlin.math.min
 /**
  * @author fabmax
  */
-class Lwjgl3Context : KoolContext() {
+class Lwjgl3Context() : KoolContext() {
     override val backend: RenderBackendJvm
 
     override var renderScale: Float = KoolSystem.configJvm.renderScale
@@ -49,19 +47,12 @@ class Lwjgl3Context : KoolContext() {
     private val sysInfo = SysInfo()
 
     init {
-        backend = if (KoolSystem.configJvm.renderBackend == KoolConfigJvm.Backend.VULKAN) {
-            try {
-                RenderBackendVk(this)
-            } catch (e: Exception) {
-                if (KoolSystem.configJvm.useOpenGlFallback) {
-                    logE { "Failed initializing Vulkan backend ($e) Trying OpenGL..." }
-                    RenderBackendGlImpl(this)
-                } else {
-                    error("Failed initializing Vulkan backend ($e)")
-                }
-            }
+        val configBackend = KoolSystem.configJvm.renderBackend.createBackend(this@Lwjgl3Context)
+        backend = if (configBackend.isSuccess) {
+            configBackend.getOrThrow() as RenderBackendJvm
         } else {
-            RenderBackendGlImpl(this)
+            if (KoolSystem.configJvm.useOpenGlFallback) RenderBackendGl.createBackend(this@Lwjgl3Context).getOrThrow() as RenderBackendJvm
+            else error("Failed creating render backend ${KoolSystem.configJvm.renderBackend.displayName}: ${configBackend.exceptionOrNull()}")
         }
 
         isWindowFocused = backend.glfwWindow.isFocused
@@ -117,7 +108,7 @@ class Lwjgl3Context : KoolContext() {
         render(dt)
 
         // execute draw queues
-        backend.renderFrame(this)
+        backend.renderFrame(this@Lwjgl3Context)
     }
 
     private fun checkFrameRateLimits(prevTime: Long) {

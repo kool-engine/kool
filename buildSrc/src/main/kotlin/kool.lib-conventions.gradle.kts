@@ -34,6 +34,10 @@ kotlin {
             optIn("kotlin.ExperimentalStdlibApi")
         }
     }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
 }
 
 dokka {

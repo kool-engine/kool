@@ -8,9 +8,7 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.BackendFeatures
-import de.fabmax.kool.pipeline.backend.DeviceCoordinates
-import de.fabmax.kool.pipeline.backend.RenderBackendJvm
+import de.fabmax.kool.pipeline.backend.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -27,7 +25,7 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
-    override val name = "Vulkan backend"
+    override val name = "Vulkan"
     override val apiName: String
     override val deviceName: String
 
@@ -165,9 +163,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     private fun KoolContext.preparePipelines(passEncoderState: PassEncoderState) {
-        ctx.backgroundScene.prepareDrawPipelines(passEncoderState)
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
+        backgroundScene.prepareDrawPipelines(passEncoderState)
+        for (i in scenes.indices) {
+            val scene = scenes[i]
             if (scene.isVisible) {
                 scene.prepareDrawPipelines(passEncoderState)
             }
@@ -196,9 +194,9 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     }
 
     private fun KoolContext.executePasses(passEncoderState: PassEncoderState) {
-        ctx.backgroundScene.executePasses(passEncoderState)
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
+        backgroundScene.executePasses(passEncoderState)
+        for (i in scenes.indices) {
+            val scene = scenes[i]
             if (scene.isVisible) {
                 scene.executePasses(passEncoderState)
             }
@@ -427,5 +425,17 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private class ReadbackTexture(val texture: Texture<*>, val deferred: CompletableDeferred<ImageData>) : GpuReadback {
         var mapBuffer: GpuBufferVk? = null
+    }
+
+    companion object : BackendProvider {
+        override val displayName: String = "Vulkan"
+
+        override fun createBackend(ctx: KoolContext): Result<RenderBackend> {
+            return try {
+                Result.success(RenderBackendVk(ctx as Lwjgl3Context))
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
     }
 }

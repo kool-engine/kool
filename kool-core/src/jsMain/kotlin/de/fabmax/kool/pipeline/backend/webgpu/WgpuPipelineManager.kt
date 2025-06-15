@@ -46,7 +46,7 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
         val usedModule = vertexShaderModules.getOrPut(shaderCode.vertexSrc) {
             val desc = GPUShaderModuleDescriptor(
                 label = "${pipeline.name} vertex shader",
-                code = pipeline.shaderCode.vertexSrc
+                code = shaderCode.vertexSrc
             )
             val module = backend.device.createShaderModule(desc)
             module.checkErrors("vertex-shader", shaderCode.vertexSrc, pipeline)
@@ -61,7 +61,7 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
         val usedModule = fragmentShaderModules.getOrPut(shaderCode.fragmentSrc) {
             val desc = GPUShaderModuleDescriptor(
                 label = "${pipeline.name} fragment shader",
-                code = pipeline.shaderCode.fragmentSrc
+                code = shaderCode.fragmentSrc
             )
             val module = backend.device.createShaderModule(desc)
             module.checkErrors("fragment-shader", shaderCode.fragmentSrc, pipeline)
@@ -76,7 +76,7 @@ class WgpuPipelineManager(val backend: RenderBackendWebGpu) {
         val usedModule = fragmentShaderModules.getOrPut(shaderCode.computeSrc) {
             val desc = GPUShaderModuleDescriptor(
                 label = "${pipeline.name} compute shader",
-                code = pipeline.shaderCode.computeSrc
+                code = shaderCode.computeSrc
             )
             val module = backend.device.createShaderModule(desc)
             module.checkErrors("compute-shader", shaderCode.computeSrc, pipeline)
