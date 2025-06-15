@@ -18,7 +18,7 @@ open class ComputePass(name: String) : GpuPass(name) {
     private val _tasks = mutableListOf<Task>()
     val tasks: List<Task> get() = _tasks
 
-    internal val impl = KoolSystem.requireContext().backend.createComputePass(this)
+    val impl = KoolSystem.requireContext().backend.createComputePass(this)
 
     fun addTask(computeShader: ComputeShader, numGroups: Vec3i): Task {
         val task = Task(computeShader, numGroups)
@@ -61,13 +61,13 @@ open class ComputePass(name: String) : GpuPass(name) {
             afterDispatch += block
         }
 
-        internal fun beforeDispatch() {
+        fun beforeDispatch() {
             for (i in beforeDispatch.indices) {
                 beforeDispatch[i]()
             }
         }
 
-        internal fun afterDispatch() {
+        fun afterDispatch() {
             for (i in afterDispatch.indices) {
                 afterDispatch[i]()
             }

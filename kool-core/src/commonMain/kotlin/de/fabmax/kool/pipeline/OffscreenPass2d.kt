@@ -37,7 +37,7 @@ open class OffscreenPass2d(
     var isUpdateDrawNode: Boolean by defaultView::isUpdateDrawNode
     var isReleaseDrawNode: Boolean by defaultView::isReleaseDrawNode
 
-    internal val impl: OffscreenPass2dImpl
+    val impl: OffscreenPass2dImpl
 
     init {
         viewport = Viewport(0, 0, width, height)

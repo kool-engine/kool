@@ -17,6 +17,7 @@ dependencyResolutionManagement {
 }
 
 include("kool-core")
+include("kool-backend-wgpu4k")
 include("kool-physics")
 include("kool-editor-model")
 include("kool-editor")

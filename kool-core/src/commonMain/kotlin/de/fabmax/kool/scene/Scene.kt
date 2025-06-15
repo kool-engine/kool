@@ -33,7 +33,8 @@ open class Scene(name: String? = null) : Node(name) {
     var camera: Camera by mainRenderPass::camera
 
     val extraPasses: BufferedList<GpuPass> = BufferedList()
-    internal val sortedPasses = mutableListOf<GpuPass>(mainRenderPass)
+    private val _sortedPasses = mutableListOf<GpuPass>(mainRenderPass)
+    val sortedPasses: List<GpuPass> get() = _sortedPasses
 
     val isEmpty: Boolean
         get() = children.isEmpty() && (extraPasses.isEmpty() && !extraPasses.hasStagedMutations)
@@ -68,14 +69,14 @@ open class Scene(name: String? = null) : Node(name) {
 
         if (extraPasses.update()) {
             // offscreen / compute passes have changed, re-sort them to maintain correct dependency order
-            sortedPasses.clear()
-            sortedPasses.addAll(extraPasses)
-            if (sortedPasses.distinct().size != sortedPasses.size) {
-                logW { "Multiple occurrences of offscreen passes: $sortedPasses" }
+            _sortedPasses.clear()
+            _sortedPasses.addAll(extraPasses)
+            if (_sortedPasses.distinct().size != _sortedPasses.size) {
+                logW { "Multiple occurrences of offscreen passes: $_sortedPasses" }
             }
-            GpuPass.sortByDependencies(sortedPasses)
+            GpuPass.sortByDependencies(_sortedPasses)
             // main render pass is always executed last
-            sortedPasses.add(mainRenderPass)
+            _sortedPasses.add(mainRenderPass)
         }
 
         for (i in extraPasses.indices) {
