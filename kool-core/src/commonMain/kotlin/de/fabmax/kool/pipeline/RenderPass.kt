@@ -187,7 +187,7 @@ abstract class RenderPass(
             return copy
         }
 
-        internal fun setupView() {
+        fun setupView() {
             onSetupView.update()
             for (i in onSetupView.indices) {
                 onSetupView[i]()

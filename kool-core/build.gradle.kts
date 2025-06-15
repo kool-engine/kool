@@ -13,7 +13,6 @@ kotlin {
             api(libs.kotlin.coroutines)
             implementation(libs.kotlin.serialization.json)
             implementation(libs.kotlin.atomicfu)
-            implementation(libs.bundles.wgpu4k)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -22,7 +21,6 @@ kotlin {
         desktopMain.dependencies {
             api(libs.bundles.lwjgl)
             implementation(libs.jsvg)
-            implementation(libs.bundles.wgpu4k.surface.utils)
 
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
                 val hasVulkanRuntime = "macos" in platform

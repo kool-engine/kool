@@ -1,8 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
@@ -13,7 +11,7 @@ plugins {
 
 kotlin {
     jvm("desktop") { }
-    jvmToolchain(22)
+    jvmToolchain(11)
     js {
         binaries.library()
         browser()

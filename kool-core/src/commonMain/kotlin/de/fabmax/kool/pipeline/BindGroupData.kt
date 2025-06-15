@@ -26,15 +26,14 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     }
     var isDirty = true
 
-    internal var checkFrame = -1
-    internal var isCheckOk = false
+    var checkFrame = -1
+    var isCheckOk = false
     var modCnt = -1
 
     val isComplete: Boolean
         get() = bindings.all { it.isComplete }
 
     var gpuData: GpuBindGroupData? = null
-        internal set
 
     @Suppress("UNCHECKED_CAST")
     fun <S: Struct> uniformStructBindingData(binding: UniformBufferLayout<S>) = bindings[binding.bindingIndex] as UniformBufferBindingData<S>

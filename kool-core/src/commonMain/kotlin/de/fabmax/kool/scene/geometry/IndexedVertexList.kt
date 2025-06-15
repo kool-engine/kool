@@ -83,7 +83,7 @@ class IndexedVertexList(
     var hasChanged = true
     var isBatchUpdate = false
 
-    internal var gpuGeometry: GpuGeometry? = null
+    var gpuGeometry: GpuGeometry? = null
 
     init {
         var strideF = 0
