@@ -2,7 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.backend.BackendProvider
-import de.fabmax.kool.pipeline.backend.vk.VkBackendProvider
+import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.pipeline.backend.vk.VkSetup
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
@@ -35,7 +35,7 @@ data class KoolConfigJvm(
     val storageDir: String = "./.storage",
     val httpCacheDir: String = "./.httpCache",
 
-    val renderBackend: BackendProvider = VkBackendProvider,
+    val renderBackend: BackendProvider = RenderBackendVk,
     val vkSetup: VkSetup? = null,
     val windowTitle: String = "Kool App",
     val windowSize: Vec2i = Vec2i(1600, 900),

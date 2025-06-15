@@ -1,7 +1,7 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.pipeline.backend.BackendProvider
-import de.fabmax.kool.pipeline.backend.webgpu.WgpuBackendProvider
+import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
 import kotlinx.serialization.json.Json
@@ -20,7 +20,7 @@ data class KoolConfigJs(
     override val numSamples: Int = 4,
 
     val canvasName: String = "glCanvas",
-    val renderBackend: BackendProvider = WgpuBackendProvider,
+    val renderBackend: BackendProvider = RenderBackendWebGpu,
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
     val powerPreference: PowerPreference = PowerPreference.HighPerformance,

@@ -17,6 +17,8 @@ import org.lwjgl.opengl.GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+actual fun createRenderBackendGl(ctx: KoolContext): RenderBackendGl = RenderBackendGlImpl(ctx)
+
 class RenderBackendGlImpl(ctx: KoolContext) :
     RenderBackendGl(KoolSystem.configJvm.numSamples, GlImpl, ctx), RenderBackendJvm
 {

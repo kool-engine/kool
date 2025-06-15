@@ -10,10 +10,7 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.BackendFeatures
-import de.fabmax.kool.pipeline.backend.DeviceCoordinates
-import de.fabmax.kool.pipeline.backend.RenderBackend
-import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.backend.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
@@ -442,7 +439,17 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend, RenderBackendJs {
         }
     }
 
-    companion object {
+    companion object : BackendProvider {
+        override val displayName: String = "WebGPU"
+
+        override fun createBackend(ctx: KoolContext): Result<RenderBackend> {
+            return if (isSupported()) {
+                Result.success(RenderBackendWebGpu(ctx as JsContext))
+            } else {
+                Result.failure(IllegalStateException("WebGPU is not supported by this browser"))
+            }
+        }
+
         fun isSupported(): Boolean {
             return !js("!navigator.gpu") as Boolean
         }
