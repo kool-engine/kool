@@ -3,7 +3,6 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.io.FileInputStream
@@ -16,6 +15,7 @@ import java.util.*
 import java.util.zip.GZIPInputStream
 import java.util.zip.GZIPOutputStream
 import kotlin.concurrent.thread
+import kotlin.io.encoding.Base64
 
 class HttpCache private constructor(private val cacheDir: File) {
 
@@ -197,7 +197,7 @@ class HttpCache private constructor(private val cacheDir: File) {
     }
 
     class BasicAuthCredentials(val forHost: String, user: String, password: String) {
-        val encoded = "Basic " + Base64.getEncoder().encodeToString("$user:$password".toByteArray())
+        val encoded = "Basic " + Base64.encode("$user:$password".toByteArray())
     }
 
     private class CacheEntry(val file: File, var size: Long, lastAccess: Long) : Comparable<CacheEntry> {
