@@ -23,7 +23,7 @@ class Track(val world: VehicleWorld) : Node() {
     private val numSamples = mutableListOf<Int>()
 
     private val trackPoints = mutableListOf<TrackPoint>()
-    private val trackPointsMap = TreeMap<Float, TrackPoint>()
+    private val trackPointsMap = SortedMap<Float, TrackPoint>()
     private var trackPointTree: KdTree<Vec3f>? = null
     private val nearestTrav = NearestTraverser<Vec3f>()
 
@@ -188,13 +188,10 @@ class Track(val world: VehicleWorld) : Node() {
         }
 
         trackSupportMesh.generate {
-            var roughness = 0.3f
-            vertexModFun = {
-                getFloatAttribute(ATTRIBUTE_ROUGHNESS)?.f = roughness
-            }
+            vertexModFun = { getFloatAttribute(ATTRIBUTE_ROUGHNESS)?.f = 0.3f }
             generateCurbs()
 
-            roughness = 0.8f
+            vertexModFun = { getFloatAttribute(ATTRIBUTE_ROUGHNESS)?.f = 0.8f }
             color = VehicleDemo.color(400)
             columnPts.forEach { pt ->
                 val base = MutableVec3f(pt.x, 0f, pt.z)

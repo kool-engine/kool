@@ -185,7 +185,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
 
     private data class EdgeId(val fromId: Int, val toId: Int)
 
-    private class CollapseCandidates : TreeMap<Double, MutableList<CollapseCandidate>>() {
+    private class CollapseCandidates : SortedMap<Double, MutableList<CollapseCandidate>>() {
         val candidateMap = mutableMapOf<EdgeId, CollapseCandidate>()
 
         fun isNotEmpty() = !isEmpty()

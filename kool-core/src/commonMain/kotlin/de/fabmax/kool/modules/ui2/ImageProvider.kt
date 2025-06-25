@@ -4,7 +4,7 @@ import de.fabmax.kool.math.MutableVec2f
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.Texture2d
-import de.fabmax.kool.util.TreeMap
+import de.fabmax.kool.util.SortedMap
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -60,7 +60,7 @@ class FlatImageProvider(
 }
 
 class ImageIconMap(val gridSize: Int) {
-    private val maps = TreeMap<Int, Texture2d>()
+    private val maps = SortedMap<Int, Texture2d>()
     private var maxSize = 0
 
     private val providers = Array(gridSize * gridSize) { IconImageProvider(it % gridSize, it / gridSize) }

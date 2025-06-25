@@ -29,7 +29,7 @@ open class UiSurface(
         content = block
     }
 
-    private val meshLayers = TreeMap<Int, MeshLayer>()
+    private val meshLayers = SortedMap<Int, MeshLayer>()
     private val onEachFrame = mutableListOf<(KoolContext) -> Unit>()
 
     val inputHandler = UiInputHandler()

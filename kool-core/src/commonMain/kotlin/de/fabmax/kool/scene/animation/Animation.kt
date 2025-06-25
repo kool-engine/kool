@@ -4,7 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.TrsTransformF
-import de.fabmax.kool.util.TreeMap
+import de.fabmax.kool.util.SortedMap
 import de.fabmax.kool.util.logE
 import kotlin.math.min
 
@@ -54,7 +54,7 @@ class Animation(val name: String?) {
 }
 
 abstract class AnimationChannel<T : AnimationKey<T>>(val name: String?, val animationNode: AnimationNode) {
-    val keys = TreeMap<Float, T>()
+    val keys = SortedMap<Float, T>()
     val lastKeyTime: Float
         get() = keys.lastKey()
     var duration = 0f

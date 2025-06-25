@@ -1,5 +1,8 @@
 package de.fabmax.kool.util
 
+/**
+ * Simple priority queue implementation based on a min-heap.
+ */
 class PriorityQueue<T>(comparator: Comparator<T>? = null) : MutableCollection<T> {
 
     private val comparator: Comparator<T>
@@ -42,17 +45,9 @@ class PriorityQueue<T>(comparator: Comparator<T>? = null) : MutableCollection<T>
         remove(element)
     }
 
-    fun peek(): T {
-        if (size == 0) {
-            throw NoSuchElementException()
-        }
-        return elements[0]
-    }
+    fun peek(): T = elements.getOrNull(0) ?: throw NoSuchElementException()
 
     fun poll(): T {
-        if (size == 0) {
-            throw NoSuchElementException()
-        }
         val first = peek()
         elements.swap(0, elements.lastIndex)
         elements.removeAt(elements.lastIndex)
@@ -104,7 +99,10 @@ class PriorityQueue<T>(comparator: Comparator<T>? = null) : MutableCollection<T>
         }
 
         override fun remove() {
-            elements.remove(current)
+            val index = elements.indexOf(current)
+            elements.swap(index, elements.lastIndex)
+            elements.removeAt(elements.lastIndex)
+            sink(index)
         }
     }
 

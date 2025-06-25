@@ -27,7 +27,7 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
     val isDay: Boolean
         get() = timeOfDay > 0.25f && timeOfDay < 0.75f
 
-    val skies = TreeMap<Float, EnvironmentMap>()
+    val skies = SortedMap<Float, EnvironmentMap>()
 
     val sunDirection = MutableVec3f()
     val moonDirection = MutableVec3f()
