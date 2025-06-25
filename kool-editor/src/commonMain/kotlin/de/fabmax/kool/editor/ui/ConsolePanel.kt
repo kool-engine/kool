@@ -4,11 +4,13 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 
+@OptIn(ExperimentalTime::class)
 class ConsolePanel(ui: EditorUi) : EditorPanel("Console", Icons.medium.console, ui) {
 
     private val logMessages = RingBuffer<LogMessage>(maxMessages)

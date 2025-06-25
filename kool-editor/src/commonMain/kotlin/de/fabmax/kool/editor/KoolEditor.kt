@@ -30,13 +30,16 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
+@OptIn(ExperimentalTime::class)
 suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor {
     val projDataDir = projectFiles.projectModelDir
     val reader = ProjectReader(projDataDir)
@@ -49,7 +52,7 @@ suspend fun KoolEditor(projectFiles: ProjectFiles, ctx: KoolContext): KoolEditor
         }
         val dateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
         val backupPath = "kool_project_backup_" +
-                "${dateTime.year}${dateTime.monthNumber.toString(2)}${dateTime.dayOfMonth.toString(2)}_" +
+                "${dateTime.year}${dateTime.month.number.toString(2)}${dateTime.day.toString(2)}_" +
                 "${dateTime.hour.toString(2)}${dateTime.minute.toString(2)}${dateTime.second.toString(2)}"
 
         if (reader.parserErrors > 0) {
