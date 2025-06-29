@@ -31,7 +31,16 @@ class PriorityQueue<T>(comparator: Comparator<T>? = null) : MutableCollection<T>
         return true
     }
 
-    override fun remove(element: T) = elements.remove(element)
+    override fun remove(element: T): Boolean {
+        val index = elements.indexOf(element)
+        if (index < 0) {
+            return false
+        }
+        elements.swap(index, elements.lastIndex)
+        elements.removeAt(elements.lastIndex)
+        sink(index)
+        return true
+    }
 
     override fun removeAll(elements: Collection<T>) = this.elements.removeAll(elements)
 
