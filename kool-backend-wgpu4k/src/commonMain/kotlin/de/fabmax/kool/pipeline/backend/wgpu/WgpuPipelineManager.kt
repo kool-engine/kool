@@ -5,7 +5,7 @@ import io.ygdrasil.webgpu.GPUErrorFilter
 import io.ygdrasil.webgpu.GPUShaderModule
 import io.ygdrasil.webgpu.ShaderModuleDescriptor
 
-class WgpuPipelineManager(val backend: WgpuRenderBackend) {
+class WgpuPipelineManager(val backend: RenderBackendWgpu4k) {
 
     private val vertexShaderModules = mutableMapOf<String, UsedShaderModule>()
     private val fragmentShaderModules = mutableMapOf<String, UsedShaderModule>()
@@ -43,7 +43,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
     }
 
     private suspend fun getOrCreateVertexShaderModule(pipeline: DrawPipeline): GPUShaderModule {
-        val shaderCode = pipeline.shaderCode as WgpuRenderBackend.WebGpuShaderCode
+        val shaderCode = pipeline.shaderCode as RenderBackendWgpu4k.WebGpuShaderCode
         val usedModule = vertexShaderModules.getOrPut(shaderCode.vertexSrc) {
             val desc = ShaderModuleDescriptor(
                 label = "${pipeline.name} vertex shader",
@@ -59,7 +59,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
     }
 
     private suspend fun getOrCreateFragmentShaderModule(pipeline: DrawPipeline): GPUShaderModule {
-        val shaderCode = pipeline.shaderCode as WgpuRenderBackend.WebGpuShaderCode
+        val shaderCode = pipeline.shaderCode as RenderBackendWgpu4k.WebGpuShaderCode
         val usedModule = fragmentShaderModules.getOrPut(shaderCode.fragmentSrc) {
             val desc = ShaderModuleDescriptor(
                 label = "${pipeline.name} fragment shader",
@@ -75,7 +75,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
     }
 
     private suspend fun getOrCreateComputeShaderModule(pipeline: ComputePipeline): GPUShaderModule {
-        val shaderCode = pipeline.shaderCode as WgpuRenderBackend.WebGpuComputeShaderCode
+        val shaderCode = pipeline.shaderCode as RenderBackendWgpu4k.WebGpuComputeShaderCode
         val usedModule = fragmentShaderModules.getOrPut(shaderCode.computeSrc) {
             val desc = ShaderModuleDescriptor(
                 label = "${pipeline.name} compute shader",
@@ -102,7 +102,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
 
     internal fun removeDrawPipeline(pipeline: WgpuDrawPipeline) {
         pipeline.drawPipeline.pipelineBackend = null
-        val shaderCode = pipeline.drawPipeline.shaderCode as WgpuRenderBackend.WebGpuShaderCode
+        val shaderCode = pipeline.drawPipeline.shaderCode as RenderBackendWgpu4k.WebGpuShaderCode
 
         vertexShaderModules[shaderCode.vertexSrc]?.let { usedModule ->
             usedModule.users -= pipeline.drawPipeline
@@ -120,7 +120,7 @@ class WgpuPipelineManager(val backend: WgpuRenderBackend) {
 
     internal fun removeComputePipeline(pipeline: WgpuComputePipeline) {
         pipeline.computePipeline.pipelineBackend = null
-        val shaderCode = pipeline.computePipeline.shaderCode as WgpuRenderBackend.WebGpuComputeShaderCode
+        val shaderCode = pipeline.computePipeline.shaderCode as RenderBackendWgpu4k.WebGpuComputeShaderCode
 
         computeShaderModules[shaderCode.computeSrc]?.let { usedModule ->
             usedModule.users -= pipeline.computePipeline

@@ -4,7 +4,7 @@ import de.fabmax.kool.util.Releasable
 import io.ygdrasil.webgpu.*
 import kotlin.math.max
 
-class WgpuTimestamps(val size: Int, val backend: WgpuRenderBackend) {
+class WgpuTimestamps(val size: Int, val backend: RenderBackendWgpu4k) {
 
     private var querySet: GPUQuerySet? = null
     private val resolveBuffer = backend.device.createBuffer(

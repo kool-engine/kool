@@ -12,7 +12,7 @@ import io.ygdrasil.webgpu.*
 
 sealed class WgpuPipeline(
     private val pipeline: PipelineBase,
-    protected val backend: WgpuRenderBackend,
+    protected val backend: RenderBackendWgpu4k,
 ): BaseReleasable(), PipelineBackend {
 
     private val pipelineInfo = PipelineInfo(pipeline)

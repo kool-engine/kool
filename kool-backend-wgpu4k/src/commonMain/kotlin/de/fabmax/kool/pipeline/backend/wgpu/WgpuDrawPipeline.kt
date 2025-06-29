@@ -9,7 +9,7 @@ class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
     private val vertexShaderModule: GPUShaderModule,
     private val fragmentShaderModule: GPUShaderModule,
-    backend: WgpuRenderBackend,
+    backend: RenderBackendWgpu4k,
 ): WgpuPipeline(drawPipeline, backend) {
 
     private val pipelines = mutableMapOf<WgpuRenderPass, GPURenderPipeline>()
@@ -75,7 +75,7 @@ class WgpuDrawPipeline(
         val renderPass = passEncoderState.renderPass
         val gpuRenderPass = passEncoderState.gpuRenderPass
 
-        val shaderCode = drawPipeline.shaderCode as WgpuRenderBackend.WebGpuShaderCode
+        val shaderCode = drawPipeline.shaderCode as RenderBackendWgpu4k.WebGpuShaderCode
         val vertexState = VertexState(
             module = vertexShaderModule,
             entryPoint = shaderCode.vertexEntryPoint,

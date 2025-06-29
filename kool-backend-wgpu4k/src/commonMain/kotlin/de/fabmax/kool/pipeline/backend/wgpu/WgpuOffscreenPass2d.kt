@@ -7,7 +7,7 @@ import io.ygdrasil.webgpu.*
 
 class WgpuOffscreenPass2d(
     val parentPass: OffscreenPass2d,
-    backend: WgpuRenderBackend
+    backend: RenderBackendWgpu4k
 ) : WgpuRenderPass(GPUTextureFormat.Depth32Float, parentPass.numSamples, backend), OffscreenPass2dImpl {
 
     override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }

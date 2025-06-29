@@ -10,6 +10,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.ComputePipeline
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.backend.BackendFeatures
+import de.fabmax.kool.pipeline.backend.BackendProvider
 import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.pxSize
@@ -25,7 +26,11 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
-abstract class WgpuRenderBackend(
+internal expect fun isRenderBackendWgpu4kSupported(): Boolean
+
+internal expect suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderBackendWgpu4k
+
+abstract class RenderBackendWgpu4k(
     val ctx: KoolContext,
     val surface: WgpuSurface,
     numSamples: Int,
@@ -62,8 +67,7 @@ abstract class WgpuRenderBackend(
     val clearHelper: ClearHelper by lazy { ClearHelper(this) }
     private val passEncoderState = RenderPassEncoderState(this)
 
-
-    internal open suspend fun initContext() {
+    internal suspend fun initContext() {
         val adapter = adapterProvider()
         val availableFeatures = mutableSetOf<GPUFeatureName>()
         adapter.features
@@ -106,10 +110,16 @@ abstract class WgpuRenderBackend(
             maxComputeInvocationsPerWorkgroup = device.limits.maxComputeInvocationsPerWorkgroup.toInt(),
         )
 
-
         textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
 
+        surface.configure(
+            SurfaceConfiguration(
+                device,
+                surface.format,
+                viewFormats = setOf(surface.format)
+            )
+        )
     }
 
     protected suspend fun renderFrameSuspending(ctx: KoolContext) {
@@ -412,6 +422,24 @@ abstract class WgpuRenderBackend(
     data class WebGpuComputeShaderCode(val computeSrc: String, val computeEntryPoint: String): ComputeShaderCode {
         override val hash = LongHash {
             this += computeSrc
+        }
+    }
+
+    companion object : BackendProvider {
+        override val displayName: String = "wgpu4k"
+
+        override suspend fun createBackend(ctx: KoolContext): Result<RenderBackend> {
+            return if (isRenderBackendWgpu4kSupported()) {
+                val backend = createRenderBackendWgpu4k(ctx)
+                try {
+                    backend.initContext()
+                    Result.success(backend)
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
+            } else {
+                Result.failure(IllegalStateException("WebGPU is not supported by this browser"))
+            }
         }
     }
 }

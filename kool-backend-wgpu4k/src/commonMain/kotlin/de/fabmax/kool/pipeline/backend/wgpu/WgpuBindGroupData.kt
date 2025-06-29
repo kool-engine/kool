@@ -13,7 +13,7 @@ class WgpuBindGroupData(
     private val data: BindGroupData,
     private val gpuLayout: GPUBindGroupLayout,
     private val locations: WgslLocations,
-    private val backend: WgpuRenderBackend
+    private val backend: RenderBackendWgpu4k
 ) : BaseReleasable(), GpuBindGroupData {
     private val device: GPUDevice get() = backend.device
 

@@ -6,7 +6,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Float32Buffer
 import io.ygdrasil.webgpu.*
 
-class ClearHelper(val backend: WgpuRenderBackend) {
+class ClearHelper(val backend: RenderBackendWgpu4k) {
     private val clearPipelines = mutableMapOf<WgpuRenderPass, ClearPipeline>()
     private val shaderModule = backend.device.createShaderModule(SHADER_SRC)
 

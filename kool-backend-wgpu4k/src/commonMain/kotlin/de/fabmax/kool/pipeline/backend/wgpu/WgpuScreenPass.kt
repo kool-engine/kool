@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 import io.ygdrasil.webgpu.*
 
-class WgpuScreenPass(backend: WgpuRenderBackend, numSamples: Int) :
+class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
     WgpuRenderPass(GPUTextureFormat.Depth32Float, numSamples, backend)
 {
     private val surface: WgpuSurface

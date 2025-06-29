@@ -15,7 +15,6 @@ import ffi.LibraryLoader
 import ffi.NativeAddress
 import io.ygdrasil.webgpu.GPUAdapter
 import io.ygdrasil.webgpu.NativeSurface
-import io.ygdrasil.webgpu.SurfaceConfiguration
 import io.ygdrasil.webgpu.WGPU
 import io.ygdrasil.webgpu.WGPU.Companion.createInstance
 import kotlinx.coroutines.runBlocking
@@ -30,12 +29,14 @@ import org.rococoa.ID
 import org.rococoa.Rococoa
 import java.lang.foreign.MemorySegment
 
-internal fun createWGPURenderBackend(ctx: Lwjgl3Context): DesktopRenderBackendWebGpu {
+internal actual fun isRenderBackendWgpu4kSupported(): Boolean = true
+
+internal actual suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderBackendWgpu4k {
     LibraryLoader.load()
     // Disable context creation, WGPU will manage that
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API)
 
-    val glfwWindow = GlfwWindow(ctx)
+    val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
     glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
 
     // make the window visible
@@ -53,44 +54,29 @@ internal fun createWGPURenderBackend(ctx: Lwjgl3Context): DesktopRenderBackendWe
     // Get supported format and opacity on surface
     nativeSurface.computeSurfaceCapabilities(adapter)
 
-    return runBlocking {
-        DesktopRenderBackendWebGpu(
-            ctx,
-            surface,
-            KoolSystem.configJvm.numSamples,
-            { adapter }
-        ).also { it.initContext() }
-    }
+    val backend = DesktopRenderBackendWgpu4kWebGpu(
+        ctx,
+        surface,
+        KoolSystem.configJvm.numSamples,
+        { adapter }
+    )
+    backend.initContext()
+    return backend
 }
 
-internal class DesktopRenderBackendWebGpu(
+internal class DesktopRenderBackendWgpu4kWebGpu(
     ctx: KoolContext,
     surface: WgpuSurface,
     numSamples: Int,
     adapterProvider: suspend () -> GPUAdapter
-) : WgpuRenderBackend(ctx, surface, numSamples, adapterProvider), RenderBackendJvm {
-
+) : RenderBackendWgpu4k(ctx, surface, numSamples, adapterProvider), RenderBackendJvm {
     override val glfwWindow: GlfwWindow
         get() = surface.glfwWindow
-
-    override suspend fun initContext() {
-        super.initContext()
-
-        surface.configure(
-            SurfaceConfiguration(
-                device,
-                surface.format,
-                viewFormats = setOf(surface.format)
-            )
-        )
-    }
 
     override fun renderFrame(ctx: KoolContext) {
         runBlocking { renderFrameSuspending(ctx) }
     }
 }
-
-
 
 private fun WGPU.getNativeSurface(window: GlfwWindow): NativeSurface = when (OsInfo.os) {
     OsInfo.OS.LINUX -> when {
@@ -126,7 +112,6 @@ private fun WGPU.getNativeSurface(window: GlfwWindow): NativeSurface = when (OsI
 
     OsInfo.OS.UNKNOWN -> error("unsupported OS: ${OsInfo.os}")
 } ?: error("fail to get surface")
-
 
 private fun Long.toPointer(): Pointer = Pointer(this)
 
