@@ -20,7 +20,7 @@ fun FilePickerOptions(defaultFileName: String?, filterList: List<FileFilterItem>
         val type = js("({})")
         type["description"] = it.name
         val accept = js("({})")
-        accept[it.mimeType] = it.fileExtensions.toTypedArray()
+        accept[it.mimeType.value] = it.fileExtensions.toTypedArray()
         type["accept"] = accept
         types.push(type)
         Unit

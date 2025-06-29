@@ -13,6 +13,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlin.coroutines.CoroutineContext
+import kotlin.jvm.JvmInline
 
 object Assets : CoroutineScope {
 
@@ -105,7 +106,7 @@ object Assets : CoroutineScope {
         data: Uint8Buffer,
         defaultFileName: String? = null,
         filterList: List<FileFilterItem> = emptyList(),
-        mimeType: String = "application/octet-stream"
+        mimeType: MimeType = MimeType.BINARY_DATA
     ): String? {
         return platformAssets.saveFileByUser(data, defaultFileName, filterList, mimeType)
     }
@@ -123,7 +124,7 @@ object Assets : CoroutineScope {
      */
     suspend fun loadImageFromBuffer(
         texData: Uint8Buffer,
-        mimeType: String,
+        mimeType: MimeType,
         format: TexFormat = TexFormat.RGBA,
         resolveSize: Vec2i? = null
     ): ImageData2d = platformAssets.loadImageFromBuffer(texData, mimeType, format, resolveSize)
@@ -134,7 +135,7 @@ object Assets : CoroutineScope {
      */
     fun loadImageFromBufferAsync(
         texData: Uint8Buffer,
-        mimeType: String,
+        mimeType: MimeType,
         format: TexFormat = TexFormat.RGBA,
         resolveSize: Vec2i? = null
     ): Deferred<ImageData2d> = async { loadImageFromBuffer(texData, mimeType, format, resolveSize) }
@@ -144,12 +145,12 @@ expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetL
 
 expect suspend fun decodeDataUri(dataUri: String): Uint8Buffer
 
-data class FileFilterItem(val name: String, val mimeType: String, val fileExtensions: List<String>)
+data class FileFilterItem(val name: String, val mimeType: MimeType, val fileExtensions: List<String>)
 
 internal expect fun PlatformAssets(): PlatformAssets
 
 internal interface PlatformAssets {
-    suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: String, format: TexFormat, resolveSize: Vec2i?): ImageData2d
+    suspend fun loadImageFromBuffer(texData: Uint8Buffer, mimeType: MimeType, format: TexFormat, resolveSize: Vec2i?): ImageData2d
 
     suspend fun waitForFonts()
 
@@ -160,24 +161,27 @@ internal interface PlatformAssets {
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,
-        mimeType: String = MimeType.BINARY_DATA
+        mimeType: MimeType = MimeType.BINARY_DATA
     ): String?
 }
 
-object MimeType {
-    const val BINARY_DATA = "application/octet-stream"
-    const val ZIP = "application/x-zip"
-    const val IMAGE_PNG = "image/png"
-    const val IMAGE_JPG = "image/jpeg"
-    const val IMAGE_SVG = "image/svg+xml"
+@JvmInline
+value class MimeType(val value: String) {
+    companion object {
+        val BINARY_DATA = MimeType("application/octet-stream")
+        val ZIP = MimeType("application/x-zip")
+        val IMAGE_PNG = MimeType("image/png")
+        val IMAGE_JPG = MimeType("image/jpeg")
+        val IMAGE_SVG = MimeType("image/svg+xml")
 
-    fun forFileName(fileName: String): String {
-        return when (fileName.substringAfterLast('.').lowercase()) {
-            "png" -> IMAGE_PNG
-            "jpg" -> IMAGE_JPG
-            "jpeg" -> IMAGE_JPG
-            "svg" -> IMAGE_SVG
-            else -> BINARY_DATA
+        fun forFileName(fileName: String): MimeType {
+            return when (fileName.substringAfterLast('.').lowercase()) {
+                "png" -> IMAGE_PNG
+                "jpg" -> IMAGE_JPG
+                "jpeg" -> IMAGE_JPG
+                "svg" -> IMAGE_SVG
+                else -> BINARY_DATA
+            }
         }
     }
 }

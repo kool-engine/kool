@@ -80,7 +80,7 @@ object PlatformAssetsImpl : PlatformAssets {
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,
-        mimeType: String
+        mimeType: MimeType
     ): String? {
         val fileHandle = CompletableDeferred<FileSystemFileHandle?>()
         showSaveFilePicker(FilePickerOptions(defaultFileName, filterList))
@@ -98,7 +98,7 @@ object PlatformAssetsImpl : PlatformAssets {
 
     override suspend fun loadImageFromBuffer(
         texData: Uint8Buffer,
-        mimeType: String,
+        mimeType: MimeType,
         format: TexFormat,
         resolveSize: Vec2i?
     ): ImageTextureData {
@@ -108,7 +108,7 @@ object PlatformAssetsImpl : PlatformAssets {
             loadSvgImageFromUrl(dataUrl, resolveSize).getOrThrow()
         } else {
             val array = (texData as Uint8BufferImpl).buffer
-            val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType))
+            val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType.value))
             createImageBitmap(imgBlob, ImageBitmapOptions(resolveSize)).await()
         }
         return ImageTextureData(imgBitmap, ImageData.idForImageData("ImageTextureData", texData))

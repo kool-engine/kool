@@ -5,7 +5,7 @@ import de.fabmax.kool.util.Uint8Buffer
 interface LoadableFile {
     val name: String
     val size: Long
-    val mimeType: String
+    val mimeType: MimeType
 
     suspend fun read(): Uint8Buffer
 }

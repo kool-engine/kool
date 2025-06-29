@@ -63,7 +63,7 @@ object PlatformAssetsImpl : PlatformAssets {
         data: Uint8Buffer,
         defaultFileName: String?,
         filterList: List<FileFilterItem>,
-        mimeType: String
+        mimeType: MimeType
     ): String? {
         return saveFileChooser(defaultFileName, filterList)?.let { saveFile ->
             saveFile.parentFile?.mkdirs()
@@ -154,7 +154,7 @@ object PlatformAssetsImpl : PlatformAssets {
 
     override suspend fun loadImageFromBuffer(
         texData: Uint8Buffer,
-        mimeType: String,
+        mimeType: MimeType,
         format: TexFormat,
         resolveSize: Vec2i?
     ): BufferedImageData2d {
@@ -163,7 +163,7 @@ object PlatformAssetsImpl : PlatformAssets {
         }
     }
 
-    fun readImageData(inStream: InputStream, mimeType: String, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
+    fun readImageData(inStream: InputStream, mimeType: MimeType, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
         return inStream.use {
             when (mimeType) {
                 MimeType.IMAGE_SVG -> renderSvg(inStream, format, resolveSize)

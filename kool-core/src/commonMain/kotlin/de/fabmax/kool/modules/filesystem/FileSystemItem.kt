@@ -18,7 +18,7 @@ interface FileSystemFile : FileSystemItem {
     override val isDirectory: Boolean
         get() = false
 
-    val mimeType: String
+    val mimeType: MimeType
         get() = MimeType.forFileName(name)
 
     val size: Long

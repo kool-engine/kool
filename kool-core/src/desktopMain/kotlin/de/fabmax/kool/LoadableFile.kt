@@ -14,8 +14,8 @@ class LoadableFileImpl(val file: File, val selectionPath: String = file.name) : 
     override val size: Long
         get() = file.length()
 
-    override val mimeType: String
-        get() = "application/octet-stream"
+    override val mimeType: MimeType
+        get() = MimeType.forFileName(name)
 
     override suspend fun read(): Uint8Buffer {
         return withContext(Dispatchers.IO) {
@@ -24,6 +24,6 @@ class LoadableFileImpl(val file: File, val selectionPath: String = file.name) : 
     }
 
     override fun toString(): String {
-        return "$selectionPath [${(size / (1024.0 * 1024.0)).toString(1)} mb / $mimeType]"
+        return "$selectionPath [${(size / (1024.0 * 1024.0)).toString(1)} mb / ${mimeType.value}]"
     }
 }

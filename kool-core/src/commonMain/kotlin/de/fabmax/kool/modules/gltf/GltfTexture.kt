@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.Assets
+import de.fabmax.kool.MimeType
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.Color
 import kotlinx.serialization.Serializable
@@ -56,7 +57,7 @@ data class GltfTexture(
                 if (uri != null) {
                     assetLoader.loadImage2d(uri).getOrDefault(SingleColorTexture.getColorTextureData(Color.MAGENTA))
                 } else {
-                    Assets.loadImageFromBuffer(imageRef.bufferViewRef!!.getData(), imageRef.mimeType!!)
+                    Assets.loadImageFromBuffer(imageRef.bufferViewRef!!.getData(), MimeType(imageRef.mimeType!!))
                 }
             }
         }

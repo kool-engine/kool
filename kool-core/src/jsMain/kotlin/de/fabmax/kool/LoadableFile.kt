@@ -13,8 +13,8 @@ class LoadableFileImpl(val file: File) : LoadableFile {
         get() = file.name
     override val size: Long
         get() = file.size.toLong()
-    override val mimeType: String
-        get() = file.type
+    override val mimeType: MimeType
+        get() = MimeType(file.type)
 
     override suspend fun read(): Uint8Buffer {
         val data = file.asDynamic().arrayBuffer() as Promise<ArrayBuffer>
@@ -22,6 +22,6 @@ class LoadableFileImpl(val file: File) : LoadableFile {
     }
 
     override fun toString(): String {
-        return "$name [${(size / (1024.0 * 1024.0)).toString(1)} mb / $mimeType]"
+        return "$name [${(size / (1024.0 * 1024.0)).toString(1)} mb / ${mimeType.value}]"
     }
 }

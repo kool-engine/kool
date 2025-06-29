@@ -223,7 +223,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.pi
 
     companion object {
         private val filterListTextures = listOf(
-            FileFilterItem("Images", "image/*", listOf(".jpg", ".png", ".hdr"))
+            FileFilterItem("Images", MimeType("image/*"), listOf(".jpg", ".png", ".hdr"))
         )
 
         private val filterListModels = listOf(

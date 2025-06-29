@@ -37,7 +37,7 @@ object PlatformAssetsImpl : PlatformAssets {
 
     override suspend fun loadImageFromBuffer(
         texData: Uint8Buffer,
-        mimeType: String,
+        mimeType: MimeType,
         format: TexFormat,
         resolveSize: Vec2i?
     ): BufferedImageData2d {
@@ -48,7 +48,7 @@ object PlatformAssetsImpl : PlatformAssets {
 
     fun readImageData(
         inStream: InputStream,
-        mimeType: String,
+        mimeType: MimeType,
         format: TexFormat,
         resolveSize: Vec2i?
     ): BufferedImageData2d {
@@ -120,7 +120,7 @@ object PlatformAssetsImpl : PlatformAssets {
         error("File choosing is not supported on Android")
     }
 
-    override suspend fun saveFileByUser(data: Uint8Buffer, defaultFileName: String?, filterList: List<FileFilterItem>, mimeType: String): String? {
+    override suspend fun saveFileByUser(data: Uint8Buffer, defaultFileName: String?, filterList: List<FileFilterItem>, mimeType: MimeType): String? {
         error("File choosing is not supported on Android")
     }
 }
