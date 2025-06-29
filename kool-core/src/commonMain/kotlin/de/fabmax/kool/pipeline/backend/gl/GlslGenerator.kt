@@ -47,8 +47,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         val src = StringBuilder()
         src.appendLine("""
             ${hints.glslVersionStr}
-            precision highp sampler3D;
-            
+            ${if ("es" in hints.glslVersionStr) "precision highp sampler3D;" else ""}
             /*
              * ${vertexStage.program.name} - generated vertex shader
              */
