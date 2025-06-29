@@ -64,7 +64,7 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             if (oldError != candidate.error) {
                 // this happens if neighboring mesh structure has changed and collapse of this edge is now rejected
                 // new error should be Double.MAX_VALUE, nevertheless we reinsert the candidate just to be safe...
-                candidates += candidate
+                candidates.add(candidate)
                 continue
             }
 
@@ -129,13 +129,14 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
             val q2 = quadrics.getOrPut(edge.to.index) { ErrorQuadric(edge.to).apply { isStickyVertex = edge.to in stickyVertices } }
 
             if ((!q1.isStickyVertex || !q2.isStickyVertex)  && (!keepBorders || (!q1.isBorder && !q2.isBorder))) {
-                candidates += CollapseCandidate(edge, q1, q2)
+                candidates.add(CollapseCandidate(edge, q1, q2))
             }
         }
     }
 
     private inner class CollapseCandidate(val edge: HalfEdgeMesh.HalfEdge, val q1: ErrorQuadric, val q2: ErrorQuadric) {
         var error = 0.0
+        var isDeleted = false
         val collapsePos = MutableVec3f()
         val edgeId = EdgeId(edge.from.index, edge.to.index)
 
@@ -185,50 +186,45 @@ open class MeshSimplifier(val termCrit: TermCriterion, val collapseStrategy: Col
 
     private data class EdgeId(val fromId: Int, val toId: Int)
 
-    private class CollapseCandidates : SortedMap<Double, MutableList<CollapseCandidate>>() {
+    private class CollapseCandidates {
+        val prioCandidates = PriorityQueue<CollapseCandidate> { a, b -> a.error.compareTo(b.error) }
         val candidateMap = mutableMapOf<EdgeId, CollapseCandidate>()
 
+        fun isEmpty() = prioCandidates.isEmpty()
         fun isNotEmpty() = !isEmpty()
 
-        fun peek(): CollapseCandidate = firstValue().first()
+        fun peek(): CollapseCandidate {
+            var c = prioCandidates.peek()
+            while (c.isDeleted) {
+                prioCandidates.poll()
+                c = prioCandidates.peek()
+            }
+            return c
+        }
 
         fun poll(): CollapseCandidate {
-            val v = firstValue()
-            val c = v.removeAt(v.lastIndex)
-            if (v.isEmpty()) {
-                remove(firstKey())
+            var c = prioCandidates.poll()
+            while (c.isDeleted) {
+                c = prioCandidates.poll()
             }
             candidateMap -= c.edgeId
             return c
         }
 
-        override fun clear() {
-            super.clear()
+        fun clear() {
+            prioCandidates.clear()
             candidateMap.clear()
         }
 
         fun removeByVertexIndices(fromId: Int, toId: Int): CollapseCandidate? {
             val c = candidateMap.remove(EdgeId(fromId, toId))
-            if (c != null) {
-                this -= c
-            }
+            c?.isDeleted = true
             return c
         }
 
-        operator fun plusAssign(c: CollapseCandidate) {
-            getOrPut(c.error) { mutableListOf() } += c
+        fun add(c: CollapseCandidate) {
+            prioCandidates.add(c)
             candidateMap[c.edgeId] = c
-        }
-
-        operator fun minusAssign(c: CollapseCandidate) {
-            val v = get(c.error)
-            if (v != null) {
-                v.remove(c)
-                if (v.isEmpty()) {
-                    remove(c.error)
-                }
-            }
-            candidateMap -= c.edgeId
         }
     }
 }
