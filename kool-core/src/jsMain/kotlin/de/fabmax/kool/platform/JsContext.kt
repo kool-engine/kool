@@ -3,43 +3,43 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
-import de.fabmax.kool.pipeline.backend.RenderBackendJs
+import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
-import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
-import de.fabmax.kool.pipeline.backend.webgpu.RenderBackendWebGpu
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.UIEvent
 import org.w3c.files.get
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-/**
- * @author fabmax
- */
-class JsContext internal constructor() : KoolContext() {
+@JsName("createJsContext")
+suspend fun JsContext(): JsContext {
+    val config = KoolSystem.configJs
+    val canvas: HTMLCanvasElement = document.getElementById(config.canvasName) as HTMLCanvasElement? ?:
+            throw IllegalStateException("canvas element not found! Add a canvas with id \"${config.canvasName}\" to your html.")
 
-    override var backend: RenderBackendJs
+    val ctx = JsContext(canvas, config)
+    ctx.createBackend()
+    return ctx
+}
+
+class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolContext() {
+    override lateinit var backend: RenderBackend
         private set
 
-    override var renderScale: Float = KoolSystem.configJs.renderScale
+    override var renderScale: Float = config.renderScale
         set(value) {
             field = value
             windowScale = pixelRatio.toFloat() * value
         }
 
     val pixelRatio: Double
-        get() = min(KoolSystem.configJs.deviceScaleLimit, window.devicePixelRatio)
+        get() = min(config.deviceScaleLimit, window.devicePixelRatio)
 
     private val canvasSize = MutableVec2i(0, 0)
     override val windowWidth: Int get() = (canvasSize.x * renderScale).toInt()
@@ -58,8 +58,6 @@ class JsContext internal constructor() : KoolContext() {
         }
     private var isFullscreenEnabled = false
 
-    val canvas: HTMLCanvasElement = document.getElementById(KoolSystem.configJs.canvasName) as HTMLCanvasElement? ?:
-            throw IllegalStateException("canvas element not found! Add a canvas with id \"${KoolSystem.configJs.canvasName}\" to your html.")
     private val sysInfo = mutableListOf<String>()
 
     private var animationMillis = 0.0
@@ -69,7 +67,7 @@ class JsContext internal constructor() : KoolContext() {
 
     init {
         // set canvas style to desired size so that render resolution can be set according to window scale
-        if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
+        if (config.isJsCanvasToWindowFitting) {
             canvas.style.width = "100%"
             canvas.style.height = "100%"
             canvas.width = (window.innerWidth * pixelRatio).toInt()
@@ -81,14 +79,6 @@ class JsContext internal constructor() : KoolContext() {
             canvas.style.height = "${canvasFixedHeight}px"
             canvas.width = (canvasFixedWidth * pixelRatio).roundToInt()
             canvas.height = (canvasFixedHeight * pixelRatio).roundToInt()
-        }
-
-        val configBackend = KoolSystem.configJs.renderBackend.createBackend(this@JsContext)
-        backend = if (configBackend.isSuccess) {
-            configBackend.getOrThrow() as RenderBackendJs
-        } else {
-            logE { "Failed creating render backend ${KoolSystem.configJs.renderBackend.displayName}: ${configBackend.exceptionOrNull()}\nFalling back to WebGL2" }
-            RenderBackendGl.createBackend(this@JsContext).getOrThrow() as RenderBackendJs
         }
 
         document.onfullscreenchange = {
@@ -138,6 +128,20 @@ class JsContext internal constructor() : KoolContext() {
 
         // suppress context menu
         canvas.oncontextmenu = Event::preventDefault
+    }
+
+    internal suspend fun createBackend() {
+        val backendProvider = config.renderBackend
+        val backendResult = backendProvider.createBackend(this@JsContext)
+
+        backend = when {
+            backendResult.isSuccess -> backendResult.getOrThrow()
+            config.useWebGlFallback && backendProvider != RenderBackendGl -> {
+                logE { "Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}\nFalling back to WebGL2" }
+                RenderBackendGl.createBackend(this@JsContext).getOrThrow()
+            }
+            else -> error("Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}")
+        }
 
         PlatformInputJs.onContextCreated(this)
         KoolSystem.onContextCreated(this)
@@ -188,36 +192,12 @@ class JsContext internal constructor() : KoolContext() {
     }
 
     override fun run() {
-        Loader.launch {
-            KoolSystem.configJs.loaderTasks.forEach { it() }
-
-            try {
-                backend.startRenderLoop()
-            } catch (e: Exception) {
-                if (backend is RenderBackendWebGpu) {
-                    // WebGPU-context creation failed (although the browser theoretically supports it)
-
-                    // fixme: KoolContext.run() is called relatively late and user code might have already done a lot
-                    //  of stuff by now, so recreating the backend at this point seems risky but there isn't much we
-                    //  can do about that.
-
-                    logW { "Failed initializing WebGPU context, falling back to WebGL: $e" }
-                    backend = RenderBackendGlImpl(this@JsContext)
-                    backend.startRenderLoop()
-                } else {
-                    throw RuntimeException(e)
-                }
-            }
-        }
+        window.requestAnimationFrame { t -> renderFrame(t) }
     }
 
     override fun getSysInfos(): List<String> {
         return sysInfo
     }
-}
-
-private object Loader : CoroutineScope {
-    override val coroutineContext: CoroutineContext = Job()
 }
 
 external class TouchEvent: UIEvent {

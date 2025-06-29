@@ -4,6 +4,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
 import java.util.*
@@ -17,15 +18,19 @@ val KoolSystem.isMacOs: Boolean get() = (platform as Platform.Desktop).isMacOs
  * Creates a new [KoolContext] with the given [KoolConfigJvm]. Notice that there can only be one [KoolContext], calling
  * this method multiple times is an error.
  */
-fun createContext(config: KoolConfigJvm = KoolConfigJvm()): Lwjgl3Context {
+suspend fun createContext(config: KoolConfigJvm = KoolConfigJvm()): Lwjgl3Context {
     KoolSystem.initialize(config)
     return DesktopImpl.createContext()
 }
 
-fun KoolApplication(config: KoolConfigJvm, appBlock: suspend KoolApplication.() -> Unit) =
-    KoolApplication(createContext(config), appBlock)
+fun KoolApplication(config: KoolConfigJvm = KoolConfigJvm(), appBlock: suspend KoolApplication.() -> Unit) {
+    runBlocking {
+        val ctx = createContext(config)
+        KoolApplication(ctx, appBlock)
+    }
+}
 
-fun KoolApplication(ctx: Lwjgl3Context = createContext(), appBlock: suspend KoolApplication.() -> Unit) {
+suspend fun KoolApplication(ctx: Lwjgl3Context, appBlock: suspend KoolApplication.() -> Unit) {
     val koolApp = KoolApplication(ctx)
     launchOnMainThread {
         koolApp.appBlock()
@@ -63,12 +68,11 @@ internal object DesktopImpl {
         primaryMonitor = primMon
     }
 
-    fun createContext(): Lwjgl3Context {
+    suspend fun createContext(): Lwjgl3Context {
         synchronized(this) {
-            if (ctx == null) {
-                ctx = Lwjgl3Context()
-            }
+            check(ctx == null) { "Context was already created (multi-context is not yet supported)" }
         }
+        ctx = Lwjgl3Context()
         return ctx!!
     }
 }

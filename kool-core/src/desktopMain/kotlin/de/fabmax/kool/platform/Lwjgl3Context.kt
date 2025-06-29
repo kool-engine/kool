@@ -1,5 +1,6 @@
 package de.fabmax.kool.platform
 
+import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
@@ -9,6 +10,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
@@ -17,20 +19,23 @@ import java.net.URI
 import java.util.*
 import kotlin.math.min
 
-/**
- * @author fabmax
- */
-class Lwjgl3Context() : KoolContext() {
-    override val backend: RenderBackendJvm
+suspend fun Lwjgl3Context(): Lwjgl3Context {
+    val config = KoolSystem.configJvm
+    val ctx = Lwjgl3Context(config)
+    ctx.createBackend()
+    return ctx
+}
 
-    override var renderScale: Float = KoolSystem.configJvm.renderScale
+class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolContext() {
+    override lateinit var backend: RenderBackendJvm
+        private set
+
+    override var renderScale: Float = config.renderScale
         set(value) {
             if (field != value) {
                 field = value
                 windowScale = backend.glfwWindow.windowScale * value
-                if (backend is RenderBackendVk) {
-                    backend.recreateSwapchain()
-                }
+                (backend as? RenderBackendVk)?.recreateSwapchain()
             }
         }
 
@@ -40,20 +45,24 @@ class Lwjgl3Context() : KoolContext() {
         get() = backend.glfwWindow.isFullscreen
         set(value) { backend.glfwWindow.isFullscreen = value }
 
-    var maxFrameRate = KoolSystem.configJvm.maxFrameRate
-    var windowNotFocusedFrameRate = KoolSystem.configJvm.windowNotFocusedFrameRate
+    var maxFrameRate = config.maxFrameRate
+    var windowNotFocusedFrameRate = config.windowNotFocusedFrameRate
 
     private var prevFrameTime = System.nanoTime()
     private val sysInfo = SysInfo()
 
-    init {
-        val configBackend = KoolSystem.configJvm.renderBackend.createBackend(this@Lwjgl3Context)
-        backend = if (configBackend.isSuccess) {
-            configBackend.getOrThrow() as RenderBackendJvm
-        } else {
-            if (KoolSystem.configJvm.useOpenGlFallback) RenderBackendGl.createBackend(this@Lwjgl3Context).getOrThrow() as RenderBackendJvm
-            else error("Failed creating render backend ${KoolSystem.configJvm.renderBackend.displayName}: ${configBackend.exceptionOrNull()}")
-        }
+    internal suspend fun createBackend() {
+        val backendProvider = config.renderBackend
+        val backendResult = config.renderBackend.createBackend(this@Lwjgl3Context)
+
+        backend = when {
+            backendResult.isSuccess -> backendResult.getOrThrow()
+            config.useOpenGlFallback && backendProvider != RenderBackendGl -> {
+                logE { "Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}\nFalling back to WebGL2" }
+                RenderBackendGl.createBackend(this@Lwjgl3Context).getOrThrow()
+            }
+            else -> error("Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}")
+        } as RenderBackendJvm
 
         isWindowFocused = backend.glfwWindow.isFocused
         backend.glfwWindow.onFocusChanged += {

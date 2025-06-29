@@ -4,17 +4,15 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.backend.BackendFeatures
-import de.fabmax.kool.pipeline.backend.RenderBackendJs
 import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.Color
-import kotlinx.browser.window
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 actual fun createRenderBackendGl(ctx: KoolContext): RenderBackendGl = RenderBackendGlImpl(ctx as JsContext)
 
 class RenderBackendGlImpl(ctx: JsContext) :
-    RenderBackendGl(KoolSystem.configJs.numSamples, GlImpl, ctx), RenderBackendJs
+    RenderBackendGl(KoolSystem.configJs.numSamples, GlImpl, ctx)
 {
     override val name = "WebGL"
     override val deviceName = "WebGL"
@@ -55,10 +53,6 @@ class RenderBackendGlImpl(ctx: JsContext) :
 
         sceneRenderer.resolveDirect = false
         useFloatDepthBuffer = KoolSystem.configJs.forceFloatDepthBuffer
-    }
-
-    override suspend fun startRenderLoop() {
-        window.requestAnimationFrame { t -> (ctx as JsContext).renderFrame(t) }
     }
 
     override fun cleanup(ctx: KoolContext) {

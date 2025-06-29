@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolConfig
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.MsdfFontInfo
+import kotlinx.coroutines.runBlocking
 
 object Mock {
 
@@ -30,7 +31,9 @@ object Mock {
     }
 
     init {
-        testCtx.run()
+        runBlocking {
+            testCtx.run()
+        }
     }
 
 }

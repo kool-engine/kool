@@ -10,7 +10,10 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.pipeline.backend.*
+import de.fabmax.kool.pipeline.backend.BackendFeatures
+import de.fabmax.kool.pipeline.backend.BackendProvider
+import de.fabmax.kool.pipeline.backend.DeviceCoordinates
+import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.pipeline.backend.wgsl.WgslGenerator
@@ -18,7 +21,6 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.platform.navigator
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
-import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.*
@@ -26,7 +28,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 
-class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend, RenderBackendJs {
+class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
     override val name: String = "WebGPU"
     override val apiName: String = "WebGPU"
     override val deviceName: String = "WebGPU"
@@ -70,14 +72,18 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend, RenderBackendJs {
         }
     }
 
-    override suspend fun startRenderLoop() {
+    internal suspend fun createWebGpuContext(): Boolean {
         val powerPref = when (KoolSystem.configJs.powerPreference) {
             PowerPreference.HighPerformance -> GPUPowerPreference.highPerformance
             PowerPreference.LowPower -> GPUPowerPreference.lowPower
         }
         val selectedAdapter = navigator.gpu.requestAdapter(GPURequestAdapterOptions(powerPref)).await()
             ?: navigator.gpu.requestAdapter().await()
-        adapter = checkNotNull(selectedAdapter) { "No appropriate GPUAdapter found." }
+        if (selectedAdapter == null) {
+            logE { "No appropriate GPUAdapter found." }
+            return false
+        }
+        adapter = selectedAdapter
 
         val availableFeatures = mutableSetOf<String>()
         adapter.features.forEach { s: String -> availableFeatures.add(s) }
@@ -95,8 +101,13 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend, RenderBackendJs {
             requiredFeatures.add("rg11b10ufloat-renderable")
         }
 
-        val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
-        device = adapter.requestDevice(deviceDesc).await()
+        try {
+            val deviceDesc = GPUDeviceDescriptor(requiredFeatures.toTypedArray())
+            device = adapter.requestDevice(deviceDesc).await()
+        } catch (e: Exception) {
+            logE { "requestDevice() failed: $e" }
+            return false
+        }
 
         features = BackendFeatures(
             computeShaders = true,
@@ -125,8 +136,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend, RenderBackendJs {
         )
         textureLoader = WgpuTextureLoader(this)
         logI { "WebGPU context created" }
-
-        window.requestAnimationFrame { t -> ctx.renderFrame(t) }
+        return true
     }
 
     override fun renderFrame(ctx: KoolContext) {
@@ -442,9 +452,14 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend, RenderBackendJs {
     companion object : BackendProvider {
         override val displayName: String = "WebGPU"
 
-        override fun createBackend(ctx: KoolContext): Result<RenderBackend> {
+        override suspend fun createBackend(ctx: KoolContext): Result<RenderBackend> {
             return if (isSupported()) {
-                Result.success(RenderBackendWebGpu(ctx as JsContext))
+                val backend = RenderBackendWebGpu(ctx as JsContext)
+                if (backend.createWebGpuContext()) {
+                    Result.success(backend)
+                } else {
+                    Result.failure(IllegalStateException("Failed to create WebGPU context"))
+                }
             } else {
                 Result.failure(IllegalStateException("WebGPU is not supported by this browser"))
             }

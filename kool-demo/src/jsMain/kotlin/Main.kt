@@ -23,9 +23,11 @@ fun main() = KoolApplication(
         renderBackend = backend,
         isGlobalKeyEventGrabbing = true,
         deviceScaleLimit = 1.5,
-        loaderTasks = listOf { Physics.loadAndAwaitPhysics() }
     )
 ) {
+    // make sure PhysX is loaded and available before running any demo
+    Physics.loadAndAwaitPhysics()
+
     // uncomment to load assets locally instead of from remote
     //DemoLoader.setProperty("assets.base", ".")
 

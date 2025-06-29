@@ -21,13 +21,13 @@ data class KoolConfigJs(
 
     val canvasName: String = "glCanvas",
     val renderBackend: BackendProvider = RenderBackendWebGpu,
+    val useWebGlFallback: Boolean = true,
     val isGlobalKeyEventGrabbing: Boolean = true,
     val isJsCanvasToWindowFitting: Boolean = true,
     val powerPreference: PowerPreference = PowerPreference.HighPerformance,
     val deviceScaleLimit: Double = 3.0,
     val renderScale: Float = 1f,
     val forceFloatDepthBuffer: Boolean = true,
-    val loaderTasks: List<suspend () -> Unit> = emptyList(),
 
     val customTtfFonts: Map<String, String> = emptyMap(),
 ) : KoolConfig {

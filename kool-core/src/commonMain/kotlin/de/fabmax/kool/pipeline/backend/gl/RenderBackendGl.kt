@@ -198,7 +198,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     companion object : BackendProvider {
         override val displayName: String = "OpenGL"
 
-        override fun createBackend(ctx: KoolContext): Result<RenderBackendGl> {
+        override suspend fun createBackend(ctx: KoolContext): Result<RenderBackendGl> {
             return Result.success(createRenderBackendGl(ctx))
         }
     }

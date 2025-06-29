@@ -4,6 +4,9 @@ import de.fabmax.kool.platform.JsContext
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.LogPrinter
 import de.fabmax.kool.util.launchOnMainThread
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
 
 actual fun Double.toString(precision: Int): String {
@@ -20,15 +23,20 @@ val KoolSystem.configJs: KoolConfigJs get() = config as KoolConfigJs
  * Creates a new [KoolContext] with the given [KoolConfigJs]. Notice that there can only be one [KoolContext], calling
  * this method multiple times is an error.
  */
-fun createContext(config: KoolConfigJs = KoolConfigJs()): JsContext {
+suspend fun createContext(config: KoolConfigJs = KoolConfigJs()): JsContext {
     KoolSystem.initialize(config)
     return JsImpl.createContext()
 }
 
-fun KoolApplication(config: KoolConfigJs, appBlock: suspend KoolApplication.() -> Unit) =
-    KoolApplication(createContext(config), appBlock)
+@OptIn(DelicateCoroutinesApi::class)
+fun KoolApplication(config: KoolConfigJs = KoolConfigJs(), appBlock: suspend KoolApplication.() -> Unit) {
+    GlobalScope.launch {
+        val ctx = createContext(config)
+        KoolApplication(ctx, appBlock)
+    }
+}
 
-fun KoolApplication(ctx: JsContext = createContext(), appBlock: suspend KoolApplication.() -> Unit) {
+suspend fun KoolApplication(ctx: JsContext, appBlock: suspend KoolApplication.() -> Unit) {
     val koolApp = KoolApplication(ctx)
     launchOnMainThread {
         koolApp.appBlock()
@@ -47,8 +55,8 @@ internal object JsImpl {
         }
     }
 
-    fun createContext(): JsContext {
-        check(ctx == null) { "Context was already created (multi-context is currently not supported in js" }
+    suspend fun createContext(): JsContext {
+        check(ctx == null) { "Context was already created (multi-context is not yet supported)" }
         ctx = JsContext()
         return ctx!!
     }

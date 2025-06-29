@@ -430,7 +430,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     companion object : BackendProvider {
         override val displayName: String = "Vulkan"
 
-        override fun createBackend(ctx: KoolContext): Result<RenderBackend> {
+        override suspend fun createBackend(ctx: KoolContext): Result<RenderBackend> {
             return try {
                 Result.success(RenderBackendVk(ctx as Lwjgl3Context))
             } catch (e: Exception) {
