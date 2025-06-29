@@ -10,6 +10,9 @@ import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 
 /**
@@ -142,4 +145,10 @@ abstract class KoolContext {
     companion object {
         const val KOOL_VERSION = "0.18.0-SNAPSHOT"
     }
+}
+
+object ApplicationScope : CoroutineScope {
+    val job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = job
 }

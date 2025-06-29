@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import de.fabmax.kool.KoolConfigJvm
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJvm
+import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
@@ -12,6 +9,7 @@ import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
+import kotlinx.coroutines.cancel
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.awt.image.BufferedImage
@@ -99,6 +97,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         backgroundScene.release()
         onShutdown.updated().forEach { it(this) }
         backend.cleanup(this)
+        ApplicationScope.cancel()
     }
 
     internal fun renderFrame() {

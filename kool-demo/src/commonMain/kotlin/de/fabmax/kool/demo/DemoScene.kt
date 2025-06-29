@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -14,6 +13,7 @@ import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
 
 abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
     var demoEntry: Demos.Entry? = null
@@ -66,7 +66,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
             demoState = State.LOADING
             launchOnMainThread {
                 resources.loadParallel()
-                Assets.loadResources(ctx)
+                with(mainScene) { loadResources(ctx) }
                 demoState = State.SETUP
             }
         }
@@ -85,7 +85,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
         lateInit(ctx)
     }
 
-    open suspend fun Assets.loadResources(ctx: KoolContext) { }
+    open suspend fun CoroutineScope.loadResources(ctx: KoolContext) { }
 
     abstract fun Scene.setupMainScene(ctx: KoolContext)
 

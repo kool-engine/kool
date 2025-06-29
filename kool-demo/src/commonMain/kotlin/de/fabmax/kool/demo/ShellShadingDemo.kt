@@ -16,6 +16,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.*
 
 class ShellShadingDemo : DemoScene("Shell Shading") {
@@ -209,7 +210,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
     }
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
+    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
         val colors = mapOf(
             "Blueish Gray" to MdColor.BLUE_GREY.toLinear().toOklab(),
             "Brown" to (MdColor.BROWN tone 800).toOklab(),
@@ -248,7 +249,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
 
         val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
-        val model = loadGltfModel("${DemoLoader.modelPath}/bunny.gltf.gz", modelCfg, 1)
+        val model = Assets.loadGltfModel("${DemoLoader.modelPath}/bunny.gltf.gz", modelCfg, 1)
             .getOrThrow().meshes.values.first()
         bunnyMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = furShaderBunny.shells).apply {
             generate {

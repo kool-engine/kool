@@ -84,7 +84,7 @@ class ResourceGroup(val assetLoader: AssetLoader = Assets.defaultLoader) : BaseR
         private val onLoaded = mutableListOf<(T) -> Unit>()
 
         abstract suspend fun load(): Result<T>
-        fun loadAsync(): Deferred<Result<T>> = Assets.async { load() }
+        fun loadAsync(): Deferred<Result<T>> = Assets.coroutineScope.async { load() }
 
         operator fun getValue(thisRef: Any?, property: KProperty<*>): T = loaded ?: error("$name not yet loaded")
 

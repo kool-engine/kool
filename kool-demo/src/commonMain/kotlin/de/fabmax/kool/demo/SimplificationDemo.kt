@@ -20,6 +20,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -63,7 +64,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         models += cosModel
     }
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
+    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
         loadModel("Bunny", "${DemoLoader.modelPath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
         loadModel("Cow", "${DemoLoader.modelPath}/cow.gltf.gz", 1f, Vec3f.ZERO)
         loadModel("Teapot", "${DemoLoader.modelPath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))
@@ -117,9 +118,9 @@ class SimplificationDemo : DemoScene("Simplification") {
         }
     }
 
-    private suspend fun Assets.loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
+    private suspend fun loadModel(name: String, path: String, scale: Float, offset: Vec3f) {
         val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false)
-        val model = loadGltfModel(path, modelCfg).getOrThrow()
+        val model = Assets.loadGltfModel(path, modelCfg).getOrThrow()
         val mesh = model.meshes.values.first()
         val geometry = mesh.geometry
         for (i in 0 until geometry.numVertices) {

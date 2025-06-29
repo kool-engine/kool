@@ -8,7 +8,7 @@ import kotlinx.coroutines.async
 
 suspend fun AssetLoader.loadGltfFile(assetPath: String): Result<GltfFile> = loadGltfFileAsync(assetPath).await()
 
-fun AssetLoader.loadGltfFileAsync(assetPath: String): Deferred<Result<GltfFile>> = Assets.async {
+fun AssetLoader.loadGltfFileAsync(assetPath: String): Deferred<Result<GltfFile>> = Assets.coroutineScope.async {
     loadBlob(assetPath).mapCatching { GltfFile(it, assetPath, this@loadGltfFileAsync).getOrThrow() }
 }
 
@@ -22,7 +22,7 @@ fun AssetLoader.loadGltfModelAsync(
     assetPath: String,
     modelCfg: GltfLoadConfig = GltfLoadConfig(),
     scene: Int = 0
-): Deferred<Result<Model>> = Assets.async {
+): Deferred<Result<Model>> = Assets.coroutineScope.async {
     val cfg = if (modelCfg.assetLoader == null) modelCfg.copy(assetLoader = this@loadGltfModelAsync) else modelCfg
     loadGltfFileAsync(assetPath).await().mapCatching { it.makeModel(cfg, scene) }
 }

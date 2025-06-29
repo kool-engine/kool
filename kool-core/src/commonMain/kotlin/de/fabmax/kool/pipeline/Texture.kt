@@ -61,7 +61,7 @@ abstract class Texture<T: ImageData>(
         uploadData = imageData
     }
 
-    fun uploadLazy(provider: suspend CoroutineScope.() -> T) = Assets.launch {
+    fun uploadLazy(provider: suspend CoroutineScope.() -> T) = Assets.coroutineScope.launch {
         uploadData = provider()
     }
 

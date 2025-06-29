@@ -72,7 +72,7 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
 }
 
 fun AssetLoader.hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): Deferred<Result<EnvironmentMap>> {
-    return Assets.async {
+    return Assets.coroutineScope.async {
         val samplerSettings = SamplerSettings().nearest()
         val hdri = loadTexture2d(hdriPath, TexFormat.RGBA, MipMapping.Off, samplerSettings)
         withContext(Dispatchers.RenderLoop) {

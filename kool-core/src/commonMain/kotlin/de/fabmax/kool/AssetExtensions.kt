@@ -18,7 +18,7 @@ fun AssetLoader.loadImage2dAsync(
     assetPath: String,
     format: TexFormat = TexFormat.RGBA,
     resolveSize: Vec2i? = null
-): Deferred<Result<ImageData2d>> = Assets.async { loadImage2d(assetPath, format, resolveSize) }
+): Deferred<Result<ImageData2d>> = Assets.coroutineScope.async { loadImage2d(assetPath, format, resolveSize) }
 
 /**
  * Similar to [loadImage2dAsync], but returns the image data as [BufferedImageData2d] object, which stores the pixels
@@ -32,7 +32,7 @@ fun AssetLoader.loadBufferedImage2dAsync(
     assetPath: String,
     format: TexFormat = TexFormat.RGBA,
     resolveSize: Vec2i? = null
-): Deferred<Result<BufferedImageData2d>> = Assets.async { loadBufferedImage2d(assetPath, format, resolveSize) }
+): Deferred<Result<BufferedImageData2d>> = Assets.coroutineScope.async { loadBufferedImage2d(assetPath, format, resolveSize) }
 
 /**
  * Loads the texture data at the given path and splits it into an atlas of [tilesX] * [tilesY] individual
@@ -44,7 +44,7 @@ fun AssetLoader.loadImageAtlasAsync(
     tilesY: Int,
     format: TexFormat = TexFormat.RGBA,
     resolveSize: Vec2i? = null
-): Deferred<Result<ImageData3d>> = Assets.async { loadImageAtlas(assetPath, tilesX, tilesY, format, resolveSize) }
+): Deferred<Result<ImageData3d>> = Assets.coroutineScope.async { loadImageAtlas(assetPath, tilesX, tilesY, format, resolveSize) }
 
 /**
  * Loads a cube map from the given image paths (one for each side).
@@ -58,7 +58,7 @@ fun AssetLoader.loadImageCubeAsync(
     posZ: String,
     format: TexFormat = TexFormat.RGBA,
     resolveSize: Vec2i? = null
-): Deferred<Result<ImageDataCube>> = Assets.async {
+): Deferred<Result<ImageDataCube>> = Assets.coroutineScope.async {
     loadImageCube(negX, posX, negY, posY, negZ, posZ, format, resolveSize)
 }
 
@@ -66,10 +66,10 @@ fun AssetLoader.loadImageCubeAsync(
  * Loads the binary data asset at the given path and returns the data as an [Uint8Buffer].
  */
 fun AssetLoader.loadBlobAsync(assetPath: String): Deferred<Result<Uint8Buffer>> =
-    Assets.async { loadBlob(assetPath) }
+    Assets.coroutineScope.async { loadBlob(assetPath) }
 
 fun AssetLoader.loadAudioClipAsync(assetPath: String,): Deferred<Result<AudioClip>> =
-    Assets.async { loadAudioClip(assetPath) }
+    Assets.coroutineScope.async { loadAudioClip(assetPath) }
 
 
 
@@ -135,7 +135,7 @@ fun AssetLoader.loadTexture2dAsync(
     samplerSettings: SamplerSettings = SamplerSettings(),
     resolveSize: Vec2i? = null
 ): Deferred<Result<Texture2d>> =
-    Assets.async { loadTexture2d(assetPath, format, mipMapping, samplerSettings, resolveSize) }
+    Assets.coroutineScope.async { loadTexture2d(assetPath, format, mipMapping, samplerSettings, resolveSize) }
 
 fun AssetLoader.loadTexture3dAsync(
     assetPath: String,
@@ -145,7 +145,7 @@ fun AssetLoader.loadTexture3dAsync(
     mipMapping: MipMapping = MipMapping.Full,
     samplerSettings: SamplerSettings = SamplerSettings(),
     resolveSize: Vec2i? = null
-): Deferred<Result<Texture3d>> = Assets.async { loadTexture3d(assetPath, tilesX, tilesY, format, mipMapping, samplerSettings, resolveSize) }
+): Deferred<Result<Texture3d>> = Assets.coroutineScope.async { loadTexture3d(assetPath, tilesX, tilesY, format, mipMapping, samplerSettings, resolveSize) }
 
 fun AssetLoader.loadTextureCubeAsync(
     negX: String,
@@ -158,7 +158,7 @@ fun AssetLoader.loadTextureCubeAsync(
     mipMapping: MipMapping = MipMapping.Full,
     samplerSettings: SamplerSettings = SamplerSettings(),
     resolveSize: Vec2i? = null
-): Deferred<Result<TextureCube>> = Assets.async {
+): Deferred<Result<TextureCube>> = Assets.coroutineScope.async {
     loadTextureCube(negZ, posZ, negX, posX, posY, negY, format, mipMapping, samplerSettings, resolveSize)
 }
 

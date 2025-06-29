@@ -44,8 +44,8 @@ class VehicleAudio(physicsWorld: PhysicsWorld) {
         physicsWorld.registerContactListener(contactListener)
     }
 
-    suspend fun loadAudio(assetMgr: Assets) {
-        assetMgr.apply {
+    suspend fun loadAudio() {
+        Assets.apply {
             for (i in 1..5) {
                 crashSounds += loadAudioClip("${DemoLoader.soundPath}/car/crash$i.wav").getOrThrow()
             }

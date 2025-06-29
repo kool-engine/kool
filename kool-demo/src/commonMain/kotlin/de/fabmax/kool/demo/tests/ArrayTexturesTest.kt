@@ -23,13 +23,14 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.Uint8Buffer
 import de.fabmax.kool.util.releaseWith
+import kotlinx.coroutines.CoroutineScope
 
 class ArrayTexturesTest : DemoScene("Array Textures Test") {
 
     private lateinit var pbrArrayTex: Texture2dArray
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        pbrArrayTex = loadTexture2dArray(listOf(
+    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+        pbrArrayTex = Assets.loadTexture2dArray(listOf(
             "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg",
             "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg",
             "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg",

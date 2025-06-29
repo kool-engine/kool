@@ -10,26 +10,17 @@ import de.fabmax.kool.util.FontMap
 import de.fabmax.kool.util.Uint8Buffer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.JvmInline
 
-object Assets : CoroutineScope {
+object Assets {
 
     var defaultLoader = KoolSystem.config.defaultAssetLoader
 
-    private const val NUM_LOAD_WORKERS = 8
-    internal val job = Job()
-    override val coroutineContext: CoroutineContext
-        get() = job
+    internal val coroutineScope = CoroutineScope(ApplicationScope.coroutineContext)
 
     private val platformAssets = PlatformAssets()
     private val loadedAtlasFontMaps = mutableMapOf<AtlasFont, FontMap>()
-
-    internal fun close() {
-        job.cancel()
-    }
 
     /**
      * Suspends until custom fonts are loaded. This is useful in case a loading screen uses some text loading message
@@ -138,7 +129,7 @@ object Assets : CoroutineScope {
         mimeType: MimeType,
         format: TexFormat = TexFormat.RGBA,
         resolveSize: Vec2i? = null
-    ): Deferred<ImageData2d> = async { loadImageFromBuffer(texData, mimeType, format, resolveSize) }
+    ): Deferred<ImageData2d> = coroutineScope.async { loadImageFromBuffer(texData, mimeType, format, resolveSize) }
 }
 
 expect fun fileSystemAssetLoader(baseDir: FileSystemDirectory): FileSystemAssetLoader

@@ -136,7 +136,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         registerScenePicking()
         ctx.onWindowFocusChanged += {
             if (!it.isWindowFocused) {
-                Assets.launch { saveProject() }
+                ApplicationScope.launch { saveProject() }
             }
         }
         appLoader.appReloadListeners += AppReloadListener {
@@ -148,7 +148,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     }
 
     fun startApp() {
-        Assets.launch { saveProject() }
+        ApplicationScope.launch { saveProject() }
 
         val app = loadedApp.value?.app ?: return
         val sceneModel = projectModel.createdScenes.values.firstOrNull() ?: return

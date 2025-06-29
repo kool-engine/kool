@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.Pointer
@@ -9,17 +10,19 @@ import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
-
-/**
- * @author fabmax
- */
 
 inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
 }
 
-open class Scene(name: String? = null) : Node(name) {
+open class Scene(name: String? = null) : Node(name), CoroutineScope {
+    private val job = Job(ApplicationScope.job)
+    override val coroutineContext: CoroutineContext
+        get() = job
 
     val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
@@ -103,6 +106,8 @@ open class Scene(name: String? = null) : Node(name) {
         // scenes shall not be released twice
         checkIsNotReleased()
         super.release()
+
+        job.cancel()
 
         mainRenderPass.release()
         extraPasses.updated().forEach { it.release() }

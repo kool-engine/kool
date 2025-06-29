@@ -13,6 +13,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.CoroutineScope
 import kotlin.math.PI
 
 class KslShaderTest : DemoScene("KslShader") {
@@ -20,10 +21,10 @@ class KslShaderTest : DemoScene("KslShader") {
     private lateinit var colorMap: Texture2d
     private lateinit var normalMap: Texture2d
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        colorMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg")
+    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+        colorMap = Assets.loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_diff_2k.jpg")
             .getOrThrow().also { it.releaseWith(mainScene) }
-        normalMap = loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg")
+        normalMap = Assets.loadTexture2d("${DemoLoader.materialPath}/castle_brick/castle_brick_02_red_nor_2k.jpg")
             .getOrThrow().also { it.releaseWith(mainScene) }
     }
 

@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.vehicle
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
@@ -26,6 +25,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import kotlinx.coroutines.CoroutineScope
 
 class VehicleDemo : DemoScene("Vehicle Demo") {
 
@@ -46,7 +46,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
     private lateinit var deferredPipeline: DeferredPipeline
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
+    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
         val shadows = CascadedShadowMap(mainScene, mainScene.lighting.lights[0], maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)
@@ -91,7 +91,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
         vehicle = DemoVehicle(this@VehicleDemo, vehicleModel, ctx)
         showLoadText("Loading Vehicle Audio")
-        vehicle.vehicleAudio.loadAudio(this)
+        vehicle.vehicleAudio.loadAudio()
 
         showLoadText("Creating Physics World")
         deferredPipeline.sceneContent.apply {
