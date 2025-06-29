@@ -102,13 +102,41 @@ object PlatformAssetsImpl : PlatformAssets {
         format: TexFormat,
         resolveSize: Vec2i?
     ): ImageTextureData {
-        val array = (texData as Uint8BufferImpl).buffer
-        val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType))
-        val imgBitmap = createImageBitmap(imgBlob, ImageBitmapOptions(resolveSize)).await()
+        val imgBitmap = if (mimeType == MimeType.IMAGE_SVG) {
+            val svgData = texData.toArray().decodeToString()
+            val dataUrl = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData)
+            loadSvgImageFromUrl(dataUrl, resolveSize).getOrThrow()
+        } else {
+            val array = (texData as Uint8BufferImpl).buffer
+            val imgBlob = Blob(arrayOf(array), BlobPropertyBag(mimeType))
+            createImageBitmap(imgBlob, ImageBitmapOptions(resolveSize)).await()
+        }
         return ImageTextureData(imgBitmap, ImageData.idForImageData("ImageTextureData", texData))
+    }
+
+    suspend fun loadSvgImageFromUrl(
+        url: String,
+        resolveSize: Vec2i?
+    ): Result<ImageBitmap> {
+        val deferredBitmap = CompletableDeferred<ImageBitmap>()
+        val img = resolveSize?.let { Image(it.x, it.y) } ?: Image()
+        img.onload = {
+            createImageBitmap(img, ImageBitmapOptions(resolveSize)).then { bmp -> deferredBitmap.complete(bmp) }
+        }
+        img.onerror = { _, _, _, _, _ ->
+            deferredBitmap.completeExceptionally(IllegalStateException("Failed decoding SVG image from buffer"))
+        }
+        img.crossOrigin = ""
+        img.src = url
+        return try {
+            Result.success(deferredBitmap.await())
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
     }
 }
 
+external fun encodeURIComponent(string: String): String
 external fun createImageBitmap(blob: Blob, options: ImageBitmapOptions = definedExternally): Promise<ImageBitmap>
 external fun createImageBitmap(image: Image, options: ImageBitmapOptions = definedExternally): Promise<ImageBitmap>
 

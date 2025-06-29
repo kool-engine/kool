@@ -7,10 +7,8 @@ import de.fabmax.kool.platform.ImageAtlasTextureData
 import de.fabmax.kool.platform.ImageTextureData
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logE
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
-import org.w3c.dom.Image
 import org.w3c.dom.ImageBitmap
 
 class NativeAssetLoader(val basePath: String) : AssetLoader() {
@@ -72,24 +70,8 @@ class NativeAssetLoader(val basePath: String) : AssetLoader() {
                 val imgBlob = it.blob().await()
                 createImageBitmap(imgBlob, ImageBitmapOptions(resize)).await()
             }
-
         } else {
-            // svg image -> use an Image element to convert it to an ImageBitmap
-            val deferredBitmap = CompletableDeferred<ImageBitmap>()
-            val img = resize?.let { Image(it.x, it.y) } ?: Image()
-            img.onload = {
-                createImageBitmap(img, ImageBitmapOptions(resize)).then { bmp -> deferredBitmap.complete(bmp) }
-            }
-            img.onerror = { _, _, _, _, _ ->
-                deferredBitmap.completeExceptionally(IllegalStateException("Failed loading tex from $prefixedUrl"))
-            }
-            img.crossOrigin = ""
-            img.src = prefixedUrl
-            try {
-                Result.success(deferredBitmap.await())
-            } catch (t: Throwable) {
-                Result.failure(t)
-            }
+            PlatformAssetsImpl.loadSvgImageFromUrl(prefixedUrl, resize)
         }
     }
 
