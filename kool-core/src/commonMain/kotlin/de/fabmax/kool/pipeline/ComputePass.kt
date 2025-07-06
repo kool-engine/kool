@@ -1,11 +1,15 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PassData
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.Time
 import kotlin.math.ceil
+import kotlin.time.Duration.Companion.seconds
 
 fun ComputePass(computeShader: ComputeShader, numInvocationsX: Int, numInvocationsY: Int = 1, numInvocationsZ: Int = 1): ComputePass {
     val pass = ComputePass(computeShader.name)
@@ -29,6 +33,12 @@ open class ComputePass(name: String) : GpuPass(name) {
     fun removeAndReleaseTask(task: Task) {
         _tasks.remove(task)
         task.release()
+    }
+
+    override fun update(passData: PassData, ctx: KoolContext) {
+        val t = Time.precisionTime
+        super.update(passData, ctx)
+        tUpdate = (Time.precisionTime - t).seconds
     }
 
     override fun release() {

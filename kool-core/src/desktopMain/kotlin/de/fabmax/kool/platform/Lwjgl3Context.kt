@@ -9,6 +9,8 @@ import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW.*
@@ -50,6 +52,8 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     private var prevFrameTime = System.nanoTime()
     private val sysInfo = SysInfo()
 
+    private var nextFrameData: Deferred<FrameData>? = null
+
     internal suspend fun createBackend() {
         val backendProvider = config.renderBackend
         val backendResult = config.renderBackend.createBackend(this@Lwjgl3Context)
@@ -83,14 +87,16 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     }
 
     override fun run() {
-        while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
-            sysInfo.update()
-            backend.glfwWindow.pollEvents()
+        runBlocking {
+            while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
+                sysInfo.update()
+                backend.glfwWindow.pollEvents()
 
-            if (!backend.glfwWindow.isMinimized) {
-                renderFrame()
-            } else {
-                Thread.sleep(10)
+                if (!backend.glfwWindow.isMinimized) {
+                    renderFrame()
+                } else {
+                    Thread.sleep(10)
+                }
             }
         }
         logI { "Exiting..." }
@@ -101,24 +107,27 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         ApplicationScope.cancel()
     }
 
-    internal fun renderFrame() {
+    internal suspend fun renderFrame() {
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         if (windowNotFocusedFrameRate > 0 || maxFrameRate > 0) {
             checkFrameRateLimits(prevFrameTime)
         }
 
-        // determine time delta
+        val frameData = nextFrameData?.await() ?: render(computeDt())
+        backend.renderFrame(frameData, this@Lwjgl3Context)
+        if (config.asyncSceneUpdate) {
+            nextFrameData = ApplicationScope.async {
+                render(computeDt())
+            }
+        }
+    }
+
+    private fun computeDt(): Double {
         val time = System.nanoTime()
         val dt = (time - prevFrameTime) / 1e9
         prevFrameTime = time
-
-        runBlocking {
-            // setup draw queues for all scenes / render passes
-            val frameData = render(dt)
-            // execute draw queues
-            backend.renderFrame(frameData, this@Lwjgl3Context)
-        }
+        return dt
     }
 
     private fun checkFrameRateLimits(prevTime: Long) {

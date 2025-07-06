@@ -174,6 +174,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private fun PassData.executePass(passEncoderState: PassEncoderState) {
         val pass = gpuPass
+        val t = Time.precisionTime
         pass.beforePass()
         when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
@@ -183,6 +184,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
         pass.afterPass()
+        pass.tRecord = (Time.precisionTime - t).seconds
     }
 
     private fun OffscreenPass2d.draw(passData: PassData, passEncoderState: PassEncoderState) {

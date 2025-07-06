@@ -28,7 +28,7 @@ abstract class RenderPassVk(
 
     protected fun render(passData: PassData, passEncoderState: PassEncoderState) {
         val renderPass = passData.gpuPass as RenderPass
-        if (renderPass.isProfileTimes) {
+        if (renderPass.isProfileGpu) {
             if (timeQuery.isComplete) {
                 renderPass.tGpu = timeQuery.latestResult
             }
@@ -61,7 +61,7 @@ abstract class RenderPassVk(
             copy(passData.frameCopies[i], passEncoderState)
         }
 
-        if (renderPass.isProfileTimes) {
+        if (renderPass.isProfileGpu) {
             timeQuery.end(passEncoderState.commandBuffer)
         }
     }

@@ -58,7 +58,7 @@ abstract class RenderPass(
     }
 
     override fun update(passData: PassData, ctx: KoolContext) {
-        val t = if (isProfileTimes) Time.precisionTime else 0.0
+        val t = Time.precisionTime
         super.update(passData, ctx)
         check(passData.viewData.isEmpty())
         for (i in views.indices) {
@@ -68,7 +68,7 @@ abstract class RenderPass(
             _frameCopies.removeAll { it.isSingleShot }
             hasSingleShotCopies = false
         }
-        tUpdate = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
+        tUpdate = (Time.precisionTime - t).seconds
     }
 
     protected open fun beforeCollectDrawCommands(viewData: ViewData) {

@@ -9,7 +9,10 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BufferedList
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.WindowTitleHoverHandler
+import de.fabmax.kool.util.logD
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -38,16 +41,6 @@ abstract class KoolContext {
         protected set(value) {
             field = value
             onWindowFocusChanged.updated().forEach { it(this) }
-        }
-
-    var isProfileRenderPasses = false
-        set(value) {
-            field = value
-            if (value) {
-                Profiling.enableAutoPrint(10.0)
-            } else {
-                Profiling.disableAutoPrint()
-            }
         }
 
     private val frameDatas = List(2) { FrameData() }
@@ -111,13 +104,10 @@ abstract class KoolContext {
         val frameData = frameDatas[frameDataPtr].also { it.reset() }
         frameDataPtr = (frameDataPtr++) and 1
 
-        if (isProfileRenderPasses) {
-            Profiling.enter("!main-render-loop")
-        }
-
         Time.deltaT = dt.toFloat()
         Time.gameTime += dt
         Time.frameCount++
+        Time.frameFlow.emit(Time.frameCount)
 
         frameTimes[Time.frameCount % frameTimes.size] = dt
         var sum = 0.0
@@ -141,10 +131,6 @@ abstract class KoolContext {
             if (scenes[i].isVisible) {
                 scenes[i].collectScene(frameData, this)
             }
-        }
-
-        if (isProfileRenderPasses) {
-            Profiling.exit("!main-render-loop")
         }
 
         return frameData

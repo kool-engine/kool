@@ -167,6 +167,7 @@ abstract class RenderBackendWgpu4k(
 
     private suspend fun PassData.executePass(passEncoderState: RenderPassEncoderState) {
         val pass = gpuPass
+        val t = Time.precisionTime
         pass.beforePass()
         when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
@@ -176,6 +177,7 @@ abstract class RenderBackendWgpu4k(
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
         pass.afterPass()
+        pass.tRecord = (Time.precisionTime - t).seconds
     }
 
     private suspend fun OffscreenPass2d.draw(passData: PassData, passEncoderState: RenderPassEncoderState) {

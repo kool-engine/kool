@@ -20,7 +20,7 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
         val maxWorkGroupSz = backend.features.maxComputeWorkGroupSize
         val maxInvocations = backend.features.maxComputeInvocationsPerWorkgroup
 
-        if (parentPass.isProfileTimes) {
+        if (parentPass.isProfileGpu) {
             if (timeQuery.isComplete) {
                 parentPass.tGpu = timeQuery.latestResult
             }
@@ -79,7 +79,7 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
             }
         }
 
-        if (parentPass.isProfileTimes) {
+        if (parentPass.isProfileGpu) {
             timeQuery.end(passEncoderState.commandBuffer)
         }
     }

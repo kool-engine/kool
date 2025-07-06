@@ -37,7 +37,6 @@ object KoolSystem {
 
         ctx.onShutdown += {
             initConfig = null
-            defaultContext = null
             isInitialized = false
             BackendStats.onDestroy()
         }

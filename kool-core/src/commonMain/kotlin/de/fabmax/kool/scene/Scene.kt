@@ -11,7 +11,6 @@ import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration.Companion.seconds
 
 inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
@@ -41,8 +40,6 @@ open class Scene(name: String? = null) : Node(name), CoroutineScope {
     val isEmpty: Boolean
         get() = children.isEmpty() && (extraPasses.isEmpty() && !extraPasses.hasStagedMutations)
 
-    var sceneRecordTime = 0.0.seconds
-
     fun addComputePass(pass: ComputePass) {
         extraPasses += pass
     }
@@ -59,7 +56,7 @@ open class Scene(name: String? = null) : Node(name), CoroutineScope {
         extraPasses -= pass
     }
 
-    open fun collectScene(frameData: FrameData, ctx: KoolContext) {
+    fun collectScene(frameData: FrameData, ctx: KoolContext) {
         onRenderScene.update()
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)

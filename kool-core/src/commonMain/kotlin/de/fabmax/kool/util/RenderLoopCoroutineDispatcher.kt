@@ -1,12 +1,11 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.count
+import kotlinx.coroutines.flow.takeWhile
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
 
 @Suppress("UnusedReceiverParameter")
 val Dispatchers.RenderLoop: CoroutineDispatcher
@@ -38,23 +37,8 @@ object RenderLoopCoroutineDispatcher : CoroutineDispatcher() {
 }
 
 suspend fun delayFrames(numFrames: Int) {
-    if (numFrames <= 0) {
-        return
-    }
-
-    withContext(Dispatchers.RenderLoop) {
-        var delayCallback: ((KoolContext) -> Unit)? = null
-        suspendCancellableCoroutine { continuation ->
-            var counter = numFrames
-            delayCallback = {
-                if (--counter <= 0) {
-                    continuation.resume(Unit)
-                }
-            }
-            delayCallback?.let { KoolSystem.requireContext().onRender += it }
-        }
-        delayCallback?.let { KoolSystem.requireContext().onRender -= it }
-    }
+    val frame = Time.frameCount + numFrames
+    Time.frameFlow.takeWhile { it < frame }.count()
 }
 
 /**

@@ -237,7 +237,7 @@ class GpuBees(beeScene: Scene) {
             beeBufferB.release()
         }
 
-        simulationPass.isProfileTimes = true
+        simulationPass.isProfileGpu = true
         beeScene.addComputePass(simulationPass)
 
         var deltaT by beeUpdateShader.uniform1f("deltaT")

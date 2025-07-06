@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.tests
 
-import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -20,13 +19,17 @@ import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.Time
 import kotlin.math.sin
 
-class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
+class InstancingTest : DemoScene("Instancing") {
 
     private val numObjects = mutableStateOf(5000)
     private val drawInstanced = mutableStateOf(false)
     private val animateInstances = mutableStateOf(false)
     private val updateInstances = mutableStateOf(false)
     private val numInstancesPerMesh = mutableStateOf(10)
+
+    private val updateTstate = mutableStateOf(0.0)
+    private val recordTstate = mutableStateOf(0.0)
+    private val drawTstate = mutableStateOf(0.0)
 
     private val objects = mutableListOf<Mesh>()
     private val meshInstances = mutableListOf<MeshInstance>()
@@ -42,8 +45,6 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
         color { vertexColor() }
         colorSpaceConversion = ColorSpaceConversion.AsIs
     }
-
-    private val profilingScene = mainScene as ProfilingScene
 
     private val axes = List(1000) { randomInUnitSphere() }
 
@@ -67,6 +68,23 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
                 for (i in meshInstances.indices) {
                     meshInstances[i].addInstance()
                 }
+            }
+        }
+
+        mainRenderPass.isProfileGpu = true
+
+        var updateT = 0.0
+        var recordT = 0.0
+        var drawT = 0.0
+        onUpdate {
+            updateT = updateT * 0.9 + (mainRenderPass.tUpdate.inWholeNanoseconds / 1e6) * 0.1
+            recordT = recordT * 0.9 + (mainRenderPass.tRecord.inWholeNanoseconds / 1e6) * 0.1
+            drawT = drawT * 0.9 + (mainRenderPass.tGpu.inWholeNanoseconds / 1e6) * 0.1
+
+            if (Time.frameCount % 5 == 0) {
+                updateTstate.set(updateT)
+                recordTstate.set(recordT)
+                drawTstate.set(drawT)
             }
         }
     }
@@ -96,11 +114,15 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
 
         MenuRow {
             Text("Update scene:") { labelStyle(Grow.Std) }
-            Text("${profilingScene.updateTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
+            Text("${updateTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
         MenuRow {
             Text("Scene recording:") { labelStyle(Grow.Std) }
-            Text("${profilingScene.drawTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
+            Text("${recordTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
+        }
+        MenuRow {
+            Text("GPU time:") { labelStyle(Grow.Std) }
+            Text("${drawTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
     }
 
@@ -173,27 +195,6 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
         fun addInstance() {
             instances.addInstance {
                 pose.putTo(this)
-            }
-        }
-    }
-
-    private class ProfilingScene : Scene() {
-        val updateTstate = mutableStateOf(0.0)
-        val drawTstate = mutableStateOf(0.0)
-
-        var updateT = 0.0
-        var drawT = 0.0
-
-        override fun collectScene(frameData: FrameData, ctx: KoolContext) {
-            val t = Time.precisionTime
-            super.collectScene(frameData, ctx)
-            val p = (Time.precisionTime - t)
-            updateT = updateT * 0.9 + p * 1000.0 * 0.1
-            drawT = drawT * 0.9 + sceneRecordTime.inWholeMicroseconds / 1000.0 * 0.1
-
-            if (Time.frameCount % 5 == 0) {
-                updateTstate.set(updateT)
-                drawTstate.set(drawT)
             }
         }
     }

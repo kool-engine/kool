@@ -49,7 +49,7 @@ class BeeDemo : DemoScene("Fighting Bees") {
         }
 
         clearColor = ClearColorFill(bgColor)
-        mainRenderPass.isProfileTimes = true
+        mainRenderPass.isProfileGpu = true
 
         val beeMeshA = cpuBeesA.beeMesh
         val beeMeshB = cpuBeesB.beeMesh

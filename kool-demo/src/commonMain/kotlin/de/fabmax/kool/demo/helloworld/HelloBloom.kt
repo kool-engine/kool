@@ -61,7 +61,7 @@ class HelloBloom : DemoScene("Bloom") {
         val bloomPass = BloomPass(hdrPass.colorTexture!!)
         addComputePass(bloomPass)
 
-        bloomPass.isProfileTimes = true
+        bloomPass.isProfileGpu = true
         bloomPass.strength = bloomStrength.value
         bloomPass.threshold = bloomThreshold.value
         bloomPass.thresholdLuminanceFactors = bloomLuminance.value

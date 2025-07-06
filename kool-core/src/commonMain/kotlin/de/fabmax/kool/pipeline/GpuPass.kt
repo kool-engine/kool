@@ -22,8 +22,9 @@ abstract class GpuPass(var name: String) : BaseReleasable() {
 
     var isEnabled = true
 
-    var isProfileTimes = false
+    var isProfileGpu = false
     var tGpu: Duration = 0.0.seconds
+    var tRecord: Duration = 0.0.seconds
     var tUpdate: Duration = 0.0.seconds
 
     fun dependsOn(pass: GpuPass) {

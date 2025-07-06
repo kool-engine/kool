@@ -28,7 +28,7 @@ abstract class WgpuRenderPass(
     protected fun render(passData: PassData, passEncoderState: RenderPassEncoderState) {
         val renderPass = passData.gpuPass as RenderPass
         var timestampWrites: GPURenderPassTimestampWrites? = null
-        if (renderPass.isProfileTimes) {
+        if (renderPass.isProfileGpu) {
             createTimestampQueries()
             val begin = beginTimestamp
             val end = endTimestamp

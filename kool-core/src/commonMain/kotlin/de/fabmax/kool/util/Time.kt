@@ -1,5 +1,8 @@
 package de.fabmax.kool.util
 
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+
 object Time {
     private val systemClock = SystemClock()
     /**
@@ -19,6 +22,11 @@ object Time {
      */
     var frameCount: Int = 0
         internal set
+
+    /**
+     * Frame number flow.
+     */
+    val frameFlow = MutableSharedFlow<Int>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     /**
      * Precision timer value, unit is seconds. Absolute value has no real meaning, but it can be used to precisely
