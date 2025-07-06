@@ -10,6 +10,7 @@ import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW.*
 import java.awt.Desktop
 import java.awt.image.BufferedImage
@@ -112,11 +113,12 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         val dt = (time - prevFrameTime) / 1e9
         prevFrameTime = time
 
-        // setup draw queues for all scenes / render passes
-        render(dt)
-
-        // execute draw queues
-        backend.renderFrame(this@Lwjgl3Context)
+        runBlocking {
+            // setup draw queues for all scenes / render passes
+            val frameData = render(dt)
+            // execute draw queues
+            backend.renderFrame(frameData, this@Lwjgl3Context)
+        }
     }
 
     private fun checkFrameRateLimits(prevTime: Long) {

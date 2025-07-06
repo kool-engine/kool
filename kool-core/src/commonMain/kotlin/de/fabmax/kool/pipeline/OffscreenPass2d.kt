@@ -62,8 +62,7 @@ open class OffscreenPass2d(
      * generate lookup-tables, etc.)
      */
     fun copyColor(): Texture2d {
-        val copy = FrameCopy(this, isCopyColor = true, isCopyDepth = false, isSingleShot = true)
-        frameCopies += copy
+        val copy = copyOutput(isCopyColor = true, isCopyDepth = false, isSingleShot = true)
         return copy.colorCopy2d
     }
 

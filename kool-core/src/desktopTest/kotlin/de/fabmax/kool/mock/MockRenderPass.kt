@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 
 class MockRenderPass(
-    override val size: Vec3i = Vec3i(Mock.testCtx.windowWidth, Mock.testCtx.windowHeight, 1)
+    override val dimensions: Vec3i = Vec3i(Mock.testCtx.windowWidth, Mock.testCtx.windowHeight, 1)
 ) : RenderPass(numSamples = 1, mipMode = MipMode.Single, name = "mock-render-pass") {
 
     override val colorAttachments: List<RenderPassColorAttachment> = emptyList()

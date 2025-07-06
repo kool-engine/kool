@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
@@ -22,7 +23,7 @@ interface RenderBackend {
 
     val frameGpuTime: Duration
 
-    fun renderFrame(ctx: KoolContext)
+    fun renderFrame(frameData: FrameData, ctx: KoolContext)
     fun cleanup(ctx: KoolContext)
 
     fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode

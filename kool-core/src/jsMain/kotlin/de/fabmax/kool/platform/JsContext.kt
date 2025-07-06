@@ -9,6 +9,7 @@ import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
 import de.fabmax.kool.util.logE
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.launch
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
@@ -147,7 +148,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         KoolSystem.onContextCreated(this)
     }
 
-    fun renderFrame(time: Double) {
+    private suspend fun renderFrame(time: Double) {
         RenderLoopCoroutineDispatcher.executeDispatchedTasks()
 
         // determine delta time
@@ -176,11 +177,9 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         }
 
         // render frame
-        render(dt)
-        backend.renderFrame(this)
-
-        // request next frame
-        window.requestAnimationFrame { t -> renderFrame(t) }
+        val frameData = render(dt)
+        backend.renderFrame(frameData, this)
+        requestAnimationFrame()
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {
@@ -192,7 +191,15 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
     }
 
     override fun run() {
-        window.requestAnimationFrame { t -> renderFrame(t) }
+        requestAnimationFrame()
+    }
+
+    private fun requestAnimationFrame() {
+        window.requestAnimationFrame { t ->
+            ApplicationScope.launch {
+                renderFrame(t)
+            }
+        }
     }
 
     override fun getSysInfos(): List<String> {

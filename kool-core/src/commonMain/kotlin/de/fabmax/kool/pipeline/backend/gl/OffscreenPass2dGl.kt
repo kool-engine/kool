@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.PassData
 import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.OffscreenPass2dImpl
@@ -37,10 +38,10 @@ class OffscreenPass2dGl(
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
     }
 
-    fun draw() {
+    fun draw(passData: PassData) {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
 
-        renderViews(parent)
+        renderViews(passData)
 
         if (parent.mipMode == RenderPass.MipMode.Generate) {
             for (i in colorTextures.indices) {

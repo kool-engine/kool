@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.PassData
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.BufferedList
@@ -41,7 +42,7 @@ abstract class GpuPass(var name: String) : BaseReleasable() {
         onAfterPass += block
     }
 
-    open fun update(ctx: KoolContext) {
+    open fun update(passData: PassData, ctx: KoolContext) {
         checkIsNotReleased()
         onUpdate.update()
         for (i in onUpdate.indices) {

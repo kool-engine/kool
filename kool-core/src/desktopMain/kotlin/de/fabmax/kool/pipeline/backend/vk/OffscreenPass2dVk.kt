@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.PassData
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
@@ -15,20 +16,16 @@ class OffscreenPass2dVk(
 ), OffscreenPass2dImpl {
 
     override val colorTargetFormats: List<Int> = parentPass.colorAttachments.map { it.texture.format.vk }
-    private var attachments = createAttachments()
+    private var attachments = createAttachments(false)
 
-    private fun createAttachments(): Attachments {
-        val isCopy = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
+    private fun createAttachments(isCopySource: Boolean): Attachments {
         val isGenMipMaps = parentPass.mipMode == RenderPass.MipMode.Generate
-        val isCopySrc = isCopy || isGenMipMaps
-        val isCopyDst = isGenMipMaps
-
         val attachments = Attachments(
             colorFormats = colorTargetFormats,
             depthFormat = if (hasDepth) backend.physicalDevice.depthFormat else null,
             layers = 1,
-            isCopySrc = isCopySrc,
-            isCopyDst = isCopyDst,
+            isCopySrc = isCopySource || isGenMipMaps,
+            isCopyDst = isGenMipMaps,
             parentPass = parentPass,
         )
         parentPass.colorTextures.forEachIndexed { i, attachment ->
@@ -50,8 +47,9 @@ class OffscreenPass2dVk(
 
     override fun applySize(width: Int, height: Int) {
         logT { "Resize offscreen 2d pass ${parentPass.name} to $width x $height" }
+        val wasCopySource = attachments.isCopySrc
         attachments.release()
-        attachments = createAttachments()
+        attachments = createAttachments(wasCopySource)
     }
 
     override fun release() {
@@ -72,17 +70,16 @@ class OffscreenPass2dVk(
         return "OffscreenPass2dVk:${parentPass.name}"
     }
 
-    fun draw(passEncoderState: PassEncoderState) {
-        val isCopy = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
+    fun draw(passData: PassData, passEncoderState: PassEncoderState) {
         val isGenMipMaps = parentPass.mipMode == RenderPass.MipMode.Generate
-        val isCopySrc = isCopy || isGenMipMaps
+        val isCopySrc = passData.isCopySource || isGenMipMaps
         val isCopyDst = isGenMipMaps
         if (isCopySrc != attachments.isCopySrc || isCopyDst != attachments.isCopyDst) {
             logD { "Offscreen pass ${parentPass.name} copy requirements changed: copy src: $isCopySrc, copy dst: $isCopyDst" }
             attachments.release()
-            attachments = createAttachments()
+            attachments = createAttachments(isCopySrc)
         }
-        render(parentPass, passEncoderState)
+        render(passData, passEncoderState)
     }
 
     override fun beginRenderPass(passEncoderState: PassEncoderState, forceLoad: Boolean) {

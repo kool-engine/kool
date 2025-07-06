@@ -1,6 +1,7 @@
 package de.fabmax.kool.editor.overlays
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.MeshComponent
@@ -174,15 +175,15 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
             isEnabled = true
             defaultView.drawFilter = { it !is Mesh || it.id in selectedMeshes }
 
-            onAfterCollectDrawCommands += { ev ->
+            onAfterCollectDrawCommands += { viewData ->
                 expectedNodeIds.clear()
                 expectedNodeIds += selectedMeshes.keys
 
                 // replace regular object shaders by selection shader
-                val q = ev.view.drawQueue
+                val q = viewData.drawQueue
                 q.forEach {
                     expectedNodeIds -= it.mesh.id
-                    setupDrawCommand(it, ev.ctx)
+                    setupDrawCommand(it, KoolSystem.requireContext())
                 }
 
                 if (expectedNodeIds.isNotEmpty()) {

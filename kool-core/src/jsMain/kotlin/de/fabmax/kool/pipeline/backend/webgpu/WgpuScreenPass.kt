@@ -1,12 +1,12 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PassData
 import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.launchDelayed
 
 class WgpuScreenPass(backend: RenderBackendWebGpu) :
@@ -28,11 +28,11 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width, height)
     }
 
-    fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
+    fun renderScene(passData: PassData, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.ctx.canvas.width, backend.ctx.canvas.height)
         }
-        render(scenePass, passEncoderState)
+        render(passData, passEncoderState)
     }
 
     override fun generateMipLevels(encoder: GPUCommandEncoder) { }

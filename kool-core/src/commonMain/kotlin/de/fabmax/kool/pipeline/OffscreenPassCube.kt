@@ -55,8 +55,7 @@ open class OffscreenPassCube(
      * generate lookup-tables, etc.)
      */
     fun copyColor(): TextureCube {
-        val copy = FrameCopy(this, isCopyColor = true, isCopyDepth = false, isSingleShot = true)
-        frameCopies += copy
+        val copy = copyOutput(isCopyColor = true, isCopyDepth = false, isSingleShot = true)
         return copy.colorCopyCube
     }
 

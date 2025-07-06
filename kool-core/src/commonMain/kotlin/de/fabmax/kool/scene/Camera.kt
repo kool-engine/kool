@@ -1,10 +1,10 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.DepthMode
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.LazyMat4f
@@ -81,7 +81,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
     private val tmpVec3d = MutableVec3d()
     private val tmpVec4d = MutableVec4d()
 
-    val onCameraUpdated = mutableListOf<(RenderPass.UpdateEvent) -> Unit>()
+    val onCameraUpdated = mutableListOf<(ViewData) -> Unit>()
 
     fun setupCamera(position: Vec3f? = null, up: Vec3f? = null, lookAt: Vec3f? = null) {
         position?.let { this.position.set(it) }
@@ -94,25 +94,25 @@ abstract class Camera(name: String = "camera") : Node(name) {
         clipFar = far
     }
 
-    open fun updateCamera(updateEvent: RenderPass.UpdateEvent) {
-        isReverseDepthProjection = updateEvent.renderPass.depthMode == DepthMode.Reversed
+    open fun updateCamera(viewData: ViewData) {
+        isReverseDepthProjection = viewData.depthMode == DepthMode.Reversed
         if (useViewportAspectRatio) {
-            aspectRatio = updateEvent.view.viewport.aspectRatio
+            aspectRatio = viewData.viewport.aspectRatio
         }
 
-        updateProjectionMatrix(updateEvent)
+        updateProjectionMatrix(viewData)
         lazyInvProj.isDirty = true
-        updateViewMatrix(updateEvent)
+        updateViewMatrix(viewData)
 
         if (onCameraUpdated.isNotEmpty()) {
             for (i in onCameraUpdated.indices) {
-                onCameraUpdated[i](updateEvent)
+                onCameraUpdated[i](viewData)
             }
         }
     }
 
-    open fun updateViewMatrix(updateEvent: RenderPass.UpdateEvent) {
-        if (updateEvent.renderPass.isDoublePrecision) {
+    open fun updateViewMatrix(viewData: ViewData) {
+        if (viewData.drawQueue.isDoublePrecision) {
             dataD.updateView()
             dataF.set(dataD)
         } else {
@@ -121,7 +121,7 @@ abstract class Camera(name: String = "camera") : Node(name) {
         }
     }
 
-    abstract fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent)
+    abstract fun updateProjectionMatrix(viewData: ViewData)
 
     fun computePickRay(pickRay: RayF, ptr: Pointer, viewport: Viewport): Boolean {
         return ptr.isValid && computePickRay(pickRay, ptr.pos.x, ptr.pos.y, viewport)
@@ -377,8 +377,8 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
         this.clipFar = far
     }
 
-    override fun updateCamera(updateEvent: RenderPass.UpdateEvent) {
-        val vp = updateEvent.view.viewport
+    override fun updateCamera(viewData: ViewData) {
+        val vp = viewData.viewport
         if (isClipToViewport) {
             left = 0f
             right = vp.width.toFloat()
@@ -392,16 +392,17 @@ open class OrthographicCamera(name: String = "orthographicCam") : Camera(name) {
             left = xCenter - w * 0.5f
             right = xCenter + w * 0.5f
         }
-        super.updateCamera(updateEvent)
+        super.updateCamera(viewData)
     }
 
-    override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
+    override fun updateProjectionMatrix(viewData: ViewData) {
         if (left != right && bottom != top && clipNear != clipFar) {
             proj.setIdentity()
-            if (updateEvent.renderPass.isMirrorY) {
+            if (viewData.drawQueue.renderPass.isMirrorY) {
                 proj.m11 *= -1f
             }
-            proj.orthographic(left, right, bottom, top, clipNear, clipFar, updateEvent.ctx.backend.depthRange, isReverseDepthProjection)
+            val depthRange = KoolSystem.requireContext().backend.depthRange
+            proj.orthographic(left, right, bottom, top, clipNear, clipFar, depthRange, isReverseDepthProjection)
         }
 
         viewParams.set(0f, 0f, (right - left) / 2f, (top - bottom) / 2f)
@@ -458,20 +459,21 @@ open class PerspectiveCamera(name: String = "perspectiveCam") : Camera(name) {
 
     private var complainedAboutDepthRange = false
 
-    override fun updateProjectionMatrix(updateEvent: RenderPass.UpdateEvent) {
+    override fun updateProjectionMatrix(viewData: ViewData) {
         proj.setIdentity()
-        if (updateEvent.renderPass.isMirrorY) {
+        if (viewData.drawQueue.renderPass.isMirrorY) {
             proj.m11 *= -1f
         }
+        val depthRange = KoolSystem.requireContext().backend.depthRange
         if (isReverseDepthProjection) {
             proj.perspectiveReversedDepthInfiniteRange(fovY, aspectRatio, clipNear)
-            if (updateEvent.ctx.backend.depthRange != DepthRange.ZERO_TO_ONE && !complainedAboutDepthRange) {
+            if (depthRange != DepthRange.ZERO_TO_ONE && !complainedAboutDepthRange) {
                 complainedAboutDepthRange = true
                 logW { "Using infinite depth projection on incompatible clip depth range" }
             }
 
         } else {
-            proj.perspective(fovY, aspectRatio, clipNear, clipFar, updateEvent.ctx.backend.depthRange)
+            proj.perspective(fovY, aspectRatio, clipNear, clipFar, depthRange)
         }
 
         // compute intermediate values needed for view frustum culling
@@ -540,10 +542,10 @@ open class PerspectiveProxyCam(var trackedCam: PerspectiveCamera) : PerspectiveC
         useViewportAspectRatio = false
     }
 
-    open fun sync(updateEvent: RenderPass.UpdateEvent) {
+    open fun sync(viewData: ViewData) {
         // updateViewMatrix also updates the global pos and orientation parameters of tracked cam. Call it here
         // to avoid 1 frame latency in tracked camera position
-        trackedCam.updateViewMatrix(updateEvent)
+        trackedCam.updateViewMatrix(viewData)
 
         position.set(trackedCam.globalPos)
         lookAt.set(trackedCam.globalLookAt)
@@ -554,7 +556,7 @@ open class PerspectiveProxyCam(var trackedCam: PerspectiveCamera) : PerspectiveC
         clipNear = trackedCam.clipNear
         clipFar = trackedCam.clipFar
 
-        if (updateEvent.renderPass.depthMode == DepthMode.Legacy && trackedCam.isReverseDepthProjection) {
+        if (viewData.drawQueue.renderPass.depthMode == DepthMode.Legacy && trackedCam.isReverseDepthProjection) {
             // limit far plane distance if this render pass is not reversed depth but the tracked camera is
             clipFar = min(clipFar, clipNear * 10_000f)
         }

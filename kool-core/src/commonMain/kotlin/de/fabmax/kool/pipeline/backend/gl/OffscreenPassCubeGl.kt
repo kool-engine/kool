@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.PassData
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.OffscreenPassInfo
 import de.fabmax.kool.util.logW
@@ -37,10 +38,10 @@ class OffscreenPassCubeGl(
         }
     }
 
-    fun draw() {
+    fun draw(passData: PassData) {
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
 
-        renderViews(parent)
+        renderViews(passData)
 
         if (parent.mipMode == RenderPass.MipMode.Generate) {
             for (i in colorTextures.indices) {

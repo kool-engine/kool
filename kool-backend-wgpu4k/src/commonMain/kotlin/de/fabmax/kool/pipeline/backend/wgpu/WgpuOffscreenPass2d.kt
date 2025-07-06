@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
+import de.fabmax.kool.PassData
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
@@ -11,18 +12,15 @@ class WgpuOffscreenPass2d(
 ) : WgpuRenderPass(GPUTextureFormat.Depth32Float, parentPass.numSamples, backend), OffscreenPass2dImpl {
 
     override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }
-    private var attachments = createAttachments()
+    private var attachments = createAttachments(false)
 
-    private fun createAttachments(): Attachments {
-        val isCopy = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
+    private fun createAttachments(isCopySource: Boolean): Attachments {
         val isGenMipMaps = parentPass.mipMode == RenderPass.MipMode.Generate
-        val isCopySrc = isCopy || isGenMipMaps
-
         val attachments = Attachments(
             colorFormats = colorTargetFormats,
             depthFormat = if (parentPass.hasDepth) GPUTextureFormat.Depth32Float else null,
             layers = 1,
-            isCopySrc = isCopySrc,
+            isCopySrc = isCopySource || isGenMipMaps,
             parentPass = parentPass,
         )
         parentPass.colorTextures.forEachIndexed { i, attachment ->
@@ -44,8 +42,9 @@ class WgpuOffscreenPass2d(
 
     override fun applySize(width: Int, height: Int) {
         logT { "Resize offscreen 2d pass ${parentPass.name} to $width x $height" }
+        val wasCopySource = attachments.isCopySrc
         attachments.release()
-        attachments = createAttachments()
+        attachments = createAttachments(wasCopySource)
     }
 
     override fun release() {
@@ -62,14 +61,14 @@ class WgpuOffscreenPass2d(
         }
     }
 
-    suspend fun draw(passEncoderState: RenderPassEncoderState) {
-        val isCopySrc = parentPass.frameCopies.isNotEmpty() || parentPass.views.any { it.frameCopies.isNotEmpty() }
+    suspend fun draw(passData: PassData, passEncoderState: RenderPassEncoderState) {
+        val isCopySrc = passData.isCopySource
         if (isCopySrc != attachments.isCopySrc) {
             logD { "Offscreen pass ${parentPass.name} copy requirements changed: copy src: $isCopySrc" }
             attachments.release()
-            attachments = createAttachments()
+            attachments = createAttachments(isCopySrc)
         }
-        render(parentPass, passEncoderState)
+        render(passData, passEncoderState)
     }
 
     override fun generateMipLevels(encoder: GPUCommandEncoder) {

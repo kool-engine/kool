@@ -1,8 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.logI
 import de.fabmax.kool.util.releaseWith
 import org.lwjgl.vulkan.KHRCopyCommands2.vkCmdBlitImage2KHR
@@ -137,8 +137,8 @@ class ScreenPassVk(backend: RenderBackendVk) :
             stack = passEncoderState.stack)
     }
 
-    fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: PassEncoderState) {
-        render(scenePass, passEncoderState)
+    fun renderScene(passData: PassData, passEncoderState: PassEncoderState) {
+        render(passData, passEncoderState)
     }
 
     override fun generateMipLevels(passEncoderState: PassEncoderState) { }
@@ -207,7 +207,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
             override val depthAttachment: RenderPassDepthAttachment = object : RenderPassDepthAttachment {
                 override var clearDepth: ClearDepth = ClearDepthLoad
             }
-            override val size: Vec3i = Vec3i.ZERO
+            override val dimensions: Vec3i = Vec3i.ZERO
             override val views: List<View> = emptyList()
         }
 

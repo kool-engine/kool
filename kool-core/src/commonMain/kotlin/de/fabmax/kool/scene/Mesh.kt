@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.spatial.BoundingBoxF
@@ -207,8 +208,8 @@ open class Mesh(
         }
     }
 
-    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
-        super.collectDrawCommands(updateEvent)
+    override fun collectDrawCommands(viewData: ViewData, updateEvent: RenderPass.UpdateEvent) {
+        super.collectDrawCommands(viewData, updateEvent)
 
         if (!updateEvent.drawFilter(this) || !isRendered) {
             // mesh is not visible (either hidden or outside frustum)
@@ -235,7 +236,7 @@ open class Mesh(
         }
 
         getOrCreatePipeline(updateEvent.ctx)?.let { pipeline ->
-            updateEvent.view.drawQueue.addMesh(this, pipeline)
+            viewData.drawQueue.addMesh(this, pipeline)
         }
     }
 }

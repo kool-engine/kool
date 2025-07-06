@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.PassData
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ksl.KslUnlitShader
@@ -56,7 +57,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         }
     }
 
-    fun draw(screenPass: Scene.ScreenPass) = renderViews(screenPass)
+    fun draw(passData: PassData) = renderViews(passData)
 
     override fun copy(frameCopy: FrameCopy) {
         val width = renderSize.x
@@ -90,8 +91,9 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
             blitFramebuffers(renderFbo, resolveFbo, blitMask, renderSize, renderSize)
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
-            blitScene.mainRenderPass.update(backend.ctx)
-            renderView(blitScene.mainRenderPass.defaultView, 0, 0)
+            val passData = backend.currentFrameData.acquirePassData(blitScene.mainRenderPass)
+            blitScene.mainRenderPass.update(passData, backend.ctx)
+            passData.forEachView { viewData -> renderView(viewData, 0, 0) }
         }
     }
 

@@ -1,6 +1,8 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.numMipLevels
@@ -24,7 +26,6 @@ import io.ygdrasil.webgpu.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.measureTime
 
 internal expect fun isRenderBackendWgpu4kSupported(): Boolean
 
@@ -122,7 +123,7 @@ abstract class RenderBackendWgpu4k(
         )
     }
 
-    protected suspend fun renderFrameSuspending(ctx: KoolContext) {
+    protected suspend fun renderFrameSuspending(frameData: FrameData, ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         if (surface.width.toInt() != renderSize.x || surface.height.toInt() != renderSize.y) {
@@ -132,8 +133,8 @@ abstract class RenderBackendWgpu4k(
 
         passEncoderState.beginFrame()
 
-        ctx.preparePipelines(passEncoderState)
-        ctx.executePasses(passEncoderState)
+        frameData.preparePipelines()
+        frameData.executePasses()
 
         passEncoderState.ensureRenderPassInactive()
         if (gpuReadbacks.isNotEmpty()) {
@@ -152,76 +153,37 @@ abstract class RenderBackendWgpu4k(
         surface.present()
     }
 
-    private suspend fun KoolContext.preparePipelines(passEncoderState: RenderPassEncoderState) {
-        backgroundScene.prepareDrawPipelines(passEncoderState)
-        for (i in scenes.indices) {
-            val scene = scenes[i]
-            if (scene.isVisible) {
-                scene.prepareDrawPipelines(passEncoderState)
+    private suspend fun FrameData.preparePipelines() {
+        forEachPass { passData ->
+            passData.forEachView { viewData ->
+                viewData.drawQueue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
             }
         }
     }
 
-    private suspend fun Scene.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
-        checkIsNotReleased()
-        sceneRecordTime = measureTime {
-            for (i in sortedPasses.indices) {
-                val pass = sortedPasses[i]
-                if (pass.isEnabled && pass is RenderPass) {
-                    pass.prepareDrawPipelines(passEncoderState)
-                }
-            }
-        }
+    private suspend fun FrameData.executePasses() {
+        forEachPass { passData -> passData.executePass(passEncoderState) }
     }
 
-    private suspend fun RenderPass.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
-        if (isEnabled) {
-            for (i in views.indices) {
-                val queue = views[i].drawQueue
-                queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
-            }
-        }
-    }
-
-    private suspend fun KoolContext.executePasses(passEncoderState: RenderPassEncoderState) {
-        backgroundScene.executePasses(passEncoderState)
-        for (i in scenes.indices) {
-            val scene = scenes[i]
-            if (scene.isVisible) {
-                scene.executePasses(passEncoderState)
-            }
-        }
-    }
-
-    private suspend fun Scene.executePasses(passEncoderState: RenderPassEncoderState) {
-        sceneRecordTime += measureTime {
-            for (i in sortedPasses.indices) {
-                val pass = sortedPasses[i]
-                if (pass.isEnabled) {
-                    pass.beforePass()
-                    pass.execute(passEncoderState)
-                    pass.afterPass()
-                }
-            }
-        }
-    }
-
-    private suspend fun GpuPass.execute(passEncoderState: RenderPassEncoderState) {
-        when (this) {
+    private suspend fun PassData.executePass(passEncoderState: RenderPassEncoderState) {
+        val pass = gpuPass
+        pass.beforePass()
+        when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
-            is OffscreenPass2d -> draw(passEncoderState)
-            is OffscreenPassCube -> draw(passEncoderState)
-            is ComputePass -> dispatch(passEncoderState)
+            is OffscreenPass2d -> pass.draw(this, passEncoderState)
+            is OffscreenPassCube -> pass.draw(this, passEncoderState)
+            is ComputePass -> pass.dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
+        pass.afterPass()
     }
 
-    private suspend fun OffscreenPass2d.draw(passEncoderState: RenderPassEncoderState) {
-        (impl as WgpuOffscreenPass2d).draw(passEncoderState)
+    private suspend fun OffscreenPass2d.draw(passData: PassData, passEncoderState: RenderPassEncoderState) {
+        (impl as WgpuOffscreenPass2d).draw(passData, passEncoderState)
     }
 
-    private suspend fun OffscreenPassCube.draw(passEncoderState: RenderPassEncoderState) {
-        (impl as WgpuOffscreenPassCube).draw(passEncoderState)
+    private suspend fun OffscreenPassCube.draw(passData: PassData, passEncoderState: RenderPassEncoderState) {
+        (impl as WgpuOffscreenPassCube).draw(passData, passEncoderState)
     }
 
     private suspend fun ComputePass.dispatch(passEncoderState: RenderPassEncoderState) {

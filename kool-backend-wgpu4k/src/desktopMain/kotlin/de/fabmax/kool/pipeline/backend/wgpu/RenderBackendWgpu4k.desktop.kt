@@ -4,6 +4,7 @@ import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Kernel32
 import darwin.CAMetalLayer
 import darwin.NSWindow
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
@@ -73,8 +74,8 @@ internal class DesktopRenderBackendWgpu4kWebGpu(
     override val glfwWindow: GlfwWindow
         get() = surface.glfwWindow
 
-    override fun renderFrame(ctx: KoolContext) {
-        runBlocking { renderFrameSuspending(ctx) }
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
+        runBlocking { renderFrameSuspending(frameData, ctx) }
     }
 }
 

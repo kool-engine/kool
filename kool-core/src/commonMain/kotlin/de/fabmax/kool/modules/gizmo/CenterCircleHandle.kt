@@ -1,11 +1,11 @@
 package de.fabmax.kool.modules.gizmo
 
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
@@ -39,8 +39,8 @@ class CenterCircleHandle(
 
     private val handleTransform = TrsTransformD()
     private var parentCam: Camera? = null
-    private val camUpdateListener: (RenderPass.UpdateEvent) -> Unit = { ev ->
-        val cam = ev.camera
+    private val camUpdateListener: (ViewData) -> Unit = { viewData ->
+        val cam = viewData.drawQueue.view.camera
         parent?.let { parent ->
             val parentZ = parent.invModelMatD.transform(cam.dataD.globalLookDir * -1.0, 0.0, MutableVec3d())
             val parentY = parent.invModelMatD.transform(cam.dataD.globalUp, 0.0, MutableVec3d())

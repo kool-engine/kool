@@ -13,8 +13,8 @@ abstract class OffscreenPass(
     name: String
 ) : RenderPass(numSamples, mipMode, name) {
 
-    private val _size = MutableVec3i(initialSize)
-    override val size: Vec3i get() = _size
+    private val _dimensions = MutableVec3i(initialSize)
+    override val dimensions: Vec3i get() = _dimensions
 
     protected fun setSize(width: Int, height: Int, layers: Int) {
         val safeWidth = width.coerceAtLeast(1)
@@ -33,7 +33,7 @@ abstract class OffscreenPass(
     }
 
     protected open fun applySize(width: Int, height: Int, layers: Int) {
-        _size.set(width, height, layers)
+        _dimensions.set(width, height, layers)
     }
 
     override fun release() {

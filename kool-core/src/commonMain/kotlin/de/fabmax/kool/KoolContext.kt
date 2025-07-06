@@ -50,6 +50,9 @@ abstract class KoolContext {
             }
         }
 
+    private val frameDatas = List(2) { FrameData() }
+    private var frameDataPtr = 0
+
     abstract val backend: RenderBackend
 
     var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
@@ -104,7 +107,10 @@ abstract class KoolContext {
         scenes -= scene
     }
 
-    protected fun render(dt: Double) {
+    protected suspend fun render(dt: Double): FrameData {
+        val frameData = frameDatas[frameDataPtr].also { it.reset() }
+        frameDataPtr = (frameDataPtr++) and 1
+
         if (isProfileRenderPasses) {
             Profiling.enter("!main-render-loop")
         }
@@ -126,20 +132,22 @@ abstract class KoolContext {
         }
 
         if (!backgroundScene.isEmpty) {
-            backgroundScene.renderScene(this)
+            backgroundScene.collectScene(frameData, this)
         }
 
         // draw scene contents (back to front)
         scenes.update()
         for (i in scenes.indices) {
             if (scenes[i].isVisible) {
-                scenes[i].renderScene(this)
+                scenes[i].collectScene(frameData, this)
             }
         }
 
         if (isProfileRenderPasses) {
             Profiling.exit("!main-render-loop")
         }
+
+        return frameData
     }
 
     companion object {

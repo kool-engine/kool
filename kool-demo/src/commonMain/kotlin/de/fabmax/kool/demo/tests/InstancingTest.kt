@@ -1,10 +1,13 @@
 package de.fabmax.kool.demo.tests
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.randomInUnitSphere
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -15,11 +18,13 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.Time
+import kotlin.math.sin
 
 class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
 
     private val numObjects = mutableStateOf(5000)
     private val drawInstanced = mutableStateOf(false)
+    private val animateInstances = mutableStateOf(false)
     private val updateInstances = mutableStateOf(false)
     private val numInstancesPerMesh = mutableStateOf(10)
 
@@ -40,14 +45,22 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
 
     private val profilingScene = mainScene as ProfilingScene
 
+    private val axes = List(1000) { randomInUnitSphere() }
+
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(0f)
         camera.setClipRange(0.1f, 10000f)
 
         updateObjects()
-
         onUpdate {
-            if (drawInstanced.value && updateInstances.value) {
+            if (drawInstanced.value && (updateInstances.value || animateInstances.value)) {
+                if (animateInstances.value) {
+                    for (i in meshInstances.indices) {
+                        val ax = axes[i % axes.size]
+                        val ang = 90f.deg * Time.deltaT * sin(Time.gameTime + i).toFloat()
+                        meshInstances[i].pose.rotate(ang, ax)
+                    }
+                }
                 for (i in objects.indices) {
                     objects[i].instances?.clear()
                 }
@@ -62,6 +75,7 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
         MenuSlider2("Num objects", numObjects.use().toFloat(), 100f, 10000f, txtFormat = { it.toInt().toString() }) {
             numObjects.set(it.toInt())
         }
+        LabeledSwitch("Animate instances", animateInstances)
         LabeledSwitch("Draw instanced", drawInstanced) {
             updateObjects()
         }
@@ -117,6 +131,13 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
                 }
                 shader = directShader
                 transform.translate(x.toFloat(), -30f, z.toFloat())
+
+                onUpdate {
+                    if (animateInstances.value) {
+                        val ang = 90f.deg * Time.deltaT * sin(Time.gameTime + i).toFloat()
+                        transform.rotate(ang, axes[i % axes.size])
+                    }
+                }
             }
         }
     }
@@ -144,11 +165,11 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
             }
             insts++
 
-            meshInstances += MeshInstance(instances, Mat4f.translation(x.toFloat(), -30f, z.toFloat())).apply { addInstance() }
+            meshInstances += MeshInstance(instances, MutableMat4f().translate(x.toFloat(), -30f, z.toFloat())).apply { addInstance() }
         }
     }
 
-    class MeshInstance(val instances: MeshInstanceList, val pose: Mat4f) {
+    class MeshInstance(val instances: MeshInstanceList, val pose: MutableMat4f) {
         fun addInstance() {
             instances.addInstance {
                 pose.putTo(this)
@@ -163,9 +184,9 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
         var updateT = 0.0
         var drawT = 0.0
 
-        override fun renderScene(ctx: KoolContext) {
+        override fun collectScene(frameData: FrameData, ctx: KoolContext) {
             val t = Time.precisionTime
-            super.renderScene(ctx)
+            super.collectScene(frameData, ctx)
             val p = (Time.precisionTime - t)
             updateT = updateT * 0.9 + p * 1000.0 * 0.1
             drawT = drawT * 0.9 + sceneRecordTime.inWholeMicroseconds / 1000.0 * 0.1
