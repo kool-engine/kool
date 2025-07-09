@@ -37,8 +37,8 @@ object RenderLoopCoroutineDispatcher : CoroutineDispatcher() {
 }
 
 suspend fun delayFrames(numFrames: Int) {
-    val frame = Time.frameCount + numFrames
-    Time.frameFlow.takeWhile { it < frame }.count()
+    val targetFrame = Time.frameCount + numFrames
+    Time.frameFlow.takeWhile { it < targetFrame }.count()
 }
 
 /**

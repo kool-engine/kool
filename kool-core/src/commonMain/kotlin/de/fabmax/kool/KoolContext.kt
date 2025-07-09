@@ -107,7 +107,6 @@ abstract class KoolContext {
         Time.deltaT = dt.toFloat()
         Time.gameTime += dt
         Time.frameCount++
-        Time.frameFlow.emit(Time.frameCount)
 
         frameTimes[Time.frameCount % frameTimes.size] = dt
         var sum = 0.0
