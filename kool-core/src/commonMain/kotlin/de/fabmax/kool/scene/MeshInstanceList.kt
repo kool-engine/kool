@@ -1,12 +1,12 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.backend.GpuInstances
 import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.releaseDelayed
 import kotlin.math.max
 
 class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) : BaseReleasable() {
@@ -143,8 +143,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     }
 
     override fun release() {
-        gpuInstances?.release()
-        gpuInstances = null
         super.release()
+        gpuInstances?.releaseDelayed(1)
     }
 }

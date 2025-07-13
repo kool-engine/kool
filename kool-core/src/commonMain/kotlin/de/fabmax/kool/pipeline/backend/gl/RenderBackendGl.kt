@@ -12,11 +12,9 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Buffer
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
+import kotlin.time.Duration.Companion.seconds
 
 expect fun createRenderBackendGl(ctx: KoolContext): RenderBackendGl
 

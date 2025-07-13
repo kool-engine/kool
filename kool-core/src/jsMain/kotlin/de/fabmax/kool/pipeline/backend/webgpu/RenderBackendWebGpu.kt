@@ -165,9 +165,11 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
 
     private fun FrameData.preparePipelines() {
         forEachPass { passData ->
+            val t = Time.precisionTime
             passData.forEachView { viewData ->
                 viewData.drawQueue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
             }
+            passData.gpuPass.tRecord = (Time.precisionTime - t).seconds
         }
     }
 

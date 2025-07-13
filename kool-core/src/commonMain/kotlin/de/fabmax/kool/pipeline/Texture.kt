@@ -29,20 +29,16 @@ abstract class Texture<T: ImageData>(
 
     val isLoaded: Boolean get() = gpuTexture != null
 
-    val width: Int
-        get() = gpuTexture?.width ?: 0
-    val height: Int
-        get() = gpuTexture?.height ?: 0
-    val depth: Int
-        get() = gpuTexture?.depth ?: 0
+    val width: Int get() = gpuTexture?.width ?: 0
+    val height: Int get() = gpuTexture?.height ?: 0
+    val depth: Int get() = gpuTexture?.depth ?: 0
 
     /**
      * Releases this texture, making it unusable.
      */
     override fun release() {
         super.release()
-        gpuTexture?.release()
-        gpuTexture = null
+        gpuTexture?.releaseDelayed(1)
     }
 
     override fun toString(): String {

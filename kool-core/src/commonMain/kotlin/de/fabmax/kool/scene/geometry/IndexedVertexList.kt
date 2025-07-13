@@ -1,6 +1,5 @@
 package de.fabmax.kool.scene.geometry
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
@@ -547,9 +546,8 @@ class IndexedVertexList(
     }
 
     override fun release() {
-        gpuGeometry?.release()
-        gpuGeometry = null
         super.release()
+        gpuGeometry?.releaseDelayed(1)
     }
 
     companion object {

@@ -73,7 +73,7 @@ class DrawPipelineVk(
     }
 
     private fun bindVertexBuffers(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
-        val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk? ?: return false
+        val gpuGeom = cmd.geometry.gpuGeometry as GeometryVk? ?: return false
         val gpuInsts = cmd.instances?.gpuInstances as InstancesVk?
 
         var numBuffers = 0

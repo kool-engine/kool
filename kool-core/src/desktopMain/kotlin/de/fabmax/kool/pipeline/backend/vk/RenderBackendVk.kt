@@ -162,9 +162,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private fun FrameData.preparePipelines(passEncoderState: PassEncoderState) {
         forEachPass { passData ->
+            val t = Time.precisionTime
             passData.forEachView { viewData ->
                 viewData.drawQueue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
             }
+            passData.gpuPass.tRecord = (Time.precisionTime - t).seconds
         }
     }
 
@@ -184,7 +186,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
         pass.afterPass()
-        pass.tRecord = (Time.precisionTime - t).seconds
+        pass.tRecord += (Time.precisionTime - t).seconds
     }
 
     private fun OffscreenPass2d.draw(passData: PassData, passEncoderState: PassEncoderState) {
