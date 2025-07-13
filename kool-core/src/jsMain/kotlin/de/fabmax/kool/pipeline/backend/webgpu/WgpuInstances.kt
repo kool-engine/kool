@@ -17,16 +17,15 @@ class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendW
     }
     val instanceBuffer: GPUBuffer? get() = createdInstanceBuffer?.buffer?.buffer
 
-    private var isNewlyCreated = true
+    private var updateModCount = -1
 
     fun checkBuffers() {
         checkIsNotReleased()
 
-        if (instances.hasChanged || isNewlyCreated) {
+        if (updateModCount != instances.modCount) {
+            updateModCount = instances.modCount
             createdInstanceBuffer?.writeData(instances.dataF)
-            instances.hasChanged = false
         }
-        isNewlyCreated = false
     }
 
     override fun release() {

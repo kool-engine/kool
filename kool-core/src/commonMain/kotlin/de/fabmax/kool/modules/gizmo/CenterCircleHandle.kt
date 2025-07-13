@@ -69,10 +69,6 @@ class CenterCircleHandle(
         coveredMesh.isPickable = false
         hitMesh.rayTest = LowPriorityMeshTest(hitMesh)
 
-        // hasChanged flag is usually cleared after mesh is drawn the first time, but hitMesh is never drawn
-        // -> clear flag manually to avoid hitTest kd-tree being regenerated every frame
-        hitMesh.geometry.hasChanged = false
-
         addNode(coveredMesh)
         addNode(mesh)
         addNode(hitMesh)

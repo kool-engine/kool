@@ -102,7 +102,7 @@ abstract class KoolContext {
 
     protected suspend fun render(dt: Double): FrameData {
         val frameData = frameDatas[frameDataPtr].also { it.reset() }
-        frameDataPtr = (frameDataPtr++) and 1
+        frameDataPtr = ++frameDataPtr and 1
 
         Time.deltaT = dt.toFloat()
         Time.gameTime += dt

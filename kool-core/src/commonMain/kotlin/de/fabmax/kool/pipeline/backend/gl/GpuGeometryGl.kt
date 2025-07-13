@@ -19,7 +19,7 @@ class GpuGeometryGl(
 
     private val gl = backend.gl
 
-    private var isNewlyCreated =  true
+    private var updateModCount = -1
     var numIndices = 0
 
     private val name = creationInfo.bufferName
@@ -45,17 +45,15 @@ class GpuGeometryGl(
 
     fun checkBuffers() {
         checkIsNotReleased()
-        if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
+        if (updateModCount != geometry.modCount) {
+            updateModCount = geometry.modCount
             numIndices = geometry.numIndices
 
             val usage = geometry.usage.glUsage
             indexBuffer.setData(geometry.indices, usage)
             dataBufferF?.setData(geometry.dataF, usage)
             dataBufferI?.setData(geometry.dataI, usage)
-
-            geometry.hasChanged = false
         }
-        isNewlyCreated = false
     }
 
     override fun toString(): String {

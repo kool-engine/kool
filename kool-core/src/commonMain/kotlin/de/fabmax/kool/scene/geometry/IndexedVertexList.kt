@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene.geometry
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.math.spatial.InRadiusTraverser
@@ -80,8 +81,9 @@ class IndexedVertexList(
     val vertexIt: VertexView
 
     var isRebuildBoundsOnSync = false
-    var hasChanged = true
-    var isBatchUpdate = false
+
+    var modCount = 0
+        internal set
 
     var gpuGeometry: GpuGeometry? = null
 
@@ -113,6 +115,8 @@ class IndexedVertexList(
         dataI = Int32Buffer(strideI * INITIAL_SIZE, true)
         vertexIt = VertexView(this, 0)
     }
+
+    fun incrementModCount() = modCount++
 
     fun hasAttributes(requiredAttributes: Set<Attribute>): Boolean {
         return vertexAttributes.containsAll(requiredAttributes)
@@ -178,11 +182,7 @@ class IndexedVertexList(
     fun hasAttribute(attribute: Attribute): Boolean = vertexAttributes.contains(attribute)
 
     inline fun batchUpdate(rebuildBounds: Boolean = false, block: IndexedVertexList.() -> Unit) {
-        val wasBatchUpdate = isBatchUpdate
-        isBatchUpdate = true
         block.invoke(this)
-        hasChanged = true
-        isBatchUpdate = wasBatchUpdate
         if (rebuildBounds) {
             rebuildBounds()
         }
@@ -202,7 +202,7 @@ class IndexedVertexList(
         vertexIt.index = numVertices++
         vertexIt.block()
         bounds.add(vertexIt.position)
-        hasChanged = true
+        incrementModCount()
         return numVertices - 1
     }
 
@@ -246,13 +246,13 @@ class IndexedVertexList(
             checkIndexSize()
         }
         indices += idx
+        modCount++
     }
 
     fun addIndices(vararg indices: Int) {
         for (idx in indices.indices) {
             addIndex(indices[idx])
         }
-        hasChanged = true
     }
 
     fun addIndices(indices: List<Int>) {
@@ -283,24 +283,43 @@ class IndexedVertexList(
         indices.clear()
 
         bounds.clear()
-        hasChanged = true
+        modCount++
+    }
+
+    /**
+     * Replaces all content by the content of [source]. Given source buffer must have the same vertex layout.
+     * This vertex list's [modCount] is set to the [modCount] value of the source vertex list.
+     */
+    internal fun set(source: IndexedVertexList) {
+        clear()
+        checkBufferSizes(source.numVertices)
+        checkIndexSize(source.indices.position)
+        dataF.put(source.dataF)
+        dataI.put(source.dataI)
+        indices.put(source.indices)
+        numVertices = source.numVertices
+        bounds.set(source.bounds)
+        usage = source.usage
+        modCount = source.modCount
     }
 
     fun clearIndices() {
         indices.clear()
+        modCount++
     }
 
     fun shrinkIndices(newSize: Int) {
         check(newSize <= indices.position) { "new size must be less (or equal) than old size" }
         indices.position = newSize
+        modCount++
     }
 
     fun shrinkVertices(newSize: Int) {
         check(newSize <= numVertices) { "new size must be less (or equal) than old size" }
-
         numVertices = newSize
         dataF.position = newSize * vertexSizeF
         dataI.position = newSize * vertexSizeI
+        modCount++
     }
 
     operator fun get(i: Int): VertexView {
@@ -343,6 +362,7 @@ class IndexedVertexList(
         if (iFixed != numIndices) {
             indices.clear()
             indices.put(fixedIndices, 0, iFixed)
+            modCount++
         }
     }
 
@@ -390,6 +410,7 @@ class IndexedVertexList(
             mergeIndices.put(indexMap[mergeMap[ind]!!]!!)
         }
         indices = mergeIndices
+        modCount++
     }
 
     fun splitVertices() {
@@ -413,6 +434,7 @@ class IndexedVertexList(
             indices.put(i)
         }
         numVertices = numIndices
+        modCount++
     }
 
     fun generateNormals() {
@@ -460,6 +482,7 @@ class IndexedVertexList(
             v0.index = i
             v0.normal.norm()
         }
+        modCount++
     }
 
     fun generateTangents(tangentSign: Float = 1f) {
@@ -520,6 +543,7 @@ class IndexedVertexList(
                 v0.tangent.set(Vec3f.X_AXIS)
             }
         }
+        modCount++
     }
 
     override fun release() {

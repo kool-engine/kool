@@ -292,7 +292,7 @@ private class DeltaTGraph : UiRenderer<UiNode> {
         graphVertex.position.y = y0 - h
 
         setCurrentBarColor(Color.MAGENTA)
-        graphGeom.hasChanged = true
+        graphGeom.incrementModCount()
     }
 
     fun setCurrentBarColor(color: Color) {

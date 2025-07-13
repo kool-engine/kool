@@ -22,16 +22,15 @@ class InstancesVk(val instances: MeshInstanceList, val backend: RenderBackendVk,
     }
     val instanceBuffer: VkBuffer? get() = createdInstanceBuffer?.buffer?.vkBuffer
 
-    private var isNewlyCreated = true
+    private var updateModCount = -1
 
     fun checkBuffers(commandBuffer: VkCommandBuffer) {
         checkIsNotReleased()
 
-        if (instances.hasChanged || isNewlyCreated) {
+        if (updateModCount != instances.modCount) {
+            updateModCount = instances.modCount
             createdInstanceBuffer?.writeData(instances.dataF, commandBuffer)
-            instances.hasChanged = false
         }
-        isNewlyCreated = false
     }
 
     override fun release() {

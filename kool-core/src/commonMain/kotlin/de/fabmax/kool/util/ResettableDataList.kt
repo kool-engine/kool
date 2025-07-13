@@ -65,9 +65,44 @@ class ResettableDataList<T: ResettableData<I>, I>(val factory: () -> T) : List<T
         }
     }
 
-    override fun iterator(): Iterator<T> = error("ResettableDataList is not iterable")
-    override fun listIterator(): ListIterator<T> = error("ResettableDataList is not iterable")
-    override fun listIterator(index: Int): ListIterator<T> = error("ResettableDataList is not iterable")
+    override fun iterator(): Iterator<T> = It()
+    override fun listIterator(): ListIterator<T> = It()
+    override fun listIterator(index: Int): ListIterator<T> = It()
+
+    private inner class It : ListIterator<T> {
+        var pos = 0
+
+        override fun next(): T {
+            if (pos !in 0 until pointer) {
+                throw NoSuchElementException()
+            }
+            return buffer[pos++]
+        }
+
+        override fun hasNext(): Boolean {
+            return pos < pointer
+        }
+
+        override fun hasPrevious(): Boolean {
+            return pos > 0
+        }
+
+        override fun previous(): T {
+            if (pos !in 1 .. pointer) {
+                throw NoSuchElementException()
+            }
+            return buffer[--pos]
+        }
+
+        override fun nextIndex(): Int {
+            return pos
+        }
+
+        override fun previousIndex(): Int {
+            return pos - 1
+        }
+
+    }
 }
 
 interface ResettableData<I> {

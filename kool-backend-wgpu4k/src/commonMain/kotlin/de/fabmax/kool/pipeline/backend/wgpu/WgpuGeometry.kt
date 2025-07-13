@@ -19,7 +19,7 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWgpu4k) : BaseRelea
     val floatBuffer: GPUBuffer? get() = createdFloatBuffer?.buffer?.buffer
     val intBuffer: GPUBuffer? get() = createdIntBuffer?.buffer?.buffer
 
-    private var isNewlyCreated = true
+    private var updateModCount = -1
 
     init {
         val geom = mesh.geometry
@@ -36,13 +36,12 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWgpu4k) : BaseRelea
         checkIsNotReleased()
 
         val geometry = mesh.geometry
-        if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
+        if (updateModCount != geometry.modCount) {
+            updateModCount = geometry.modCount
             createdIndexBuffer.writeData(geometry.indices)
             createdFloatBuffer?.writeData(geometry.dataF)
             createdIntBuffer?.writeData(geometry.dataI)
-            geometry.hasChanged = false
         }
-        isNewlyCreated = false
     }
 
     override fun release() {

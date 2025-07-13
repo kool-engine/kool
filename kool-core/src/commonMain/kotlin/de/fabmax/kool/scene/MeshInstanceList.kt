@@ -1,5 +1,6 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.backend.GpuInstances
 import de.fabmax.kool.pipeline.isInt
@@ -44,7 +45,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     var maxInstances = initialSize
         private set
 
-    var hasChanged = true
+    var modCount = 0
+        internal set
 
     var gpuInstances: GpuInstances? = null
 
@@ -68,6 +70,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         strideBytesF = strideFloats
         dataF = Float32Buffer(strideFloats * maxInstances, true)
     }
+
+    fun incrementModCount() = modCount++
 
     fun checkBufferSize(reqSpace: Int = 1) {
         if (numInstances + reqSpace > maxInstances) {
@@ -96,7 +100,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
             throw IllegalStateException("Expected data to grow by ${instanceSizeF * n} elements, instead it grew by $growSz")
         }
         numInstances += n
-        hasChanged = true
+        incrementModCount()
     }
 
     inline fun addInstancesUpTo(upperBoundN: Int, block: (Float32Buffer) -> Int) {
@@ -112,7 +116,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         }
         numInstances += actuallyAdded
         if (actuallyAdded > 0) {
-            hasChanged = true
+            incrementModCount()
         }
     }
 
@@ -122,7 +126,20 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         }
         numInstances = 0
         dataF.clear()
-        hasChanged = true
+        incrementModCount()
+    }
+
+    /**
+     * Replaces all content by the content of [source]. Given source buffer must have the same vertex layout.
+     * This instance list's [modCount] is set to the [modCount] value of the source instance list.
+     */
+    internal fun set(source: MeshInstanceList) {
+        clear()
+        checkBufferSize(source.numInstances)
+        dataF.put(source.dataF)
+        numInstances = source.numInstances
+        usage = source.usage
+        modCount = source.modCount
     }
 
     override fun release() {

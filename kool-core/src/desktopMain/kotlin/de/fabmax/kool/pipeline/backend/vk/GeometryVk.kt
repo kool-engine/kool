@@ -18,10 +18,10 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
     val floatBuffer: VkBuffer? get() = createdFloatBuffer?.buffer?.vkBuffer
     val intBuffer: VkBuffer? get() = createdIntBuffer?.buffer?.vkBuffer
 
-    private var isNewlyCreated = true
+    private var updateModCount = -1
 
     init {
-        val geom = mesh.geometry
+        val geom = mesh.drawGeometry
 
         val indexBufInfo = MemoryInfo(
             size = 4L * geom.numIndices,
@@ -50,14 +50,13 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
     fun checkBuffers(commandBuffer: VkCommandBuffer) {
         checkIsNotReleased()
 
-        val geometry = mesh.geometry
-        if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
+        val geometry = mesh.drawGeometry
+        if (updateModCount != geometry.modCount) {
+            updateModCount = geometry.modCount
             createdIndexBuffer.writeData(geometry.indices, commandBuffer)
             createdFloatBuffer?.writeData(geometry.dataF, commandBuffer)
             createdIntBuffer?.writeData(geometry.dataI, commandBuffer)
-            geometry.hasChanged = false
         }
-        isNewlyCreated = false
     }
 
     override fun release() {

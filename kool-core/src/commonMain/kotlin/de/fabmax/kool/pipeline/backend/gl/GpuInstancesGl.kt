@@ -15,7 +15,7 @@ class GpuInstancesGl(
     internal val instanceBuffer: GpuBufferGl
 
     private val gl = backend.gl
-    private var isNewlyCreated =  true
+    private var updateModCount = -1
 
     init {
         val namePrefix = creationInfo.bufferName
@@ -25,10 +25,9 @@ class GpuInstancesGl(
 
     fun checkBuffers() {
         checkIsNotReleased()
-        if (instances.hasChanged || isNewlyCreated) {
+        if (updateModCount != instances.modCount) {
+            updateModCount = instances.modCount
             instanceBuffer.setData(instances.dataF, instances.usage.glUsage)
-            instances.hasChanged = false
-            isNewlyCreated = false
         }
     }
 
