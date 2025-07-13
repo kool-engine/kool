@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import android.opengl.GLSurfaceView
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configAndroid
@@ -88,15 +89,15 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
         androidCtx.renderFrame()
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         val t = timer
         if (t != null) {
             if (t.isAvailable) {
                 frameGpuTime = t.getQueryResult()
             }
-            t.timedScope { super.renderFrame(ctx) }
+            t.timedScope { super.renderFrame(frameData, ctx) }
         } else {
-            super.renderFrame(ctx)
+            super.renderFrame(frameData, ctx)
         }
     }
 }

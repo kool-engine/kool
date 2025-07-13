@@ -85,10 +85,10 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         prevFrameTime = time
 
         // setup draw queues for all scenes / render passes
-        render(dt)
+        val frameData = render(dt)
 
         // execute draw queues
-        backend.renderFrame(this@KoolContextAndroid)
+        backend.renderFrame(frameData, this@KoolContextAndroid)
     }
 
     companion object {
