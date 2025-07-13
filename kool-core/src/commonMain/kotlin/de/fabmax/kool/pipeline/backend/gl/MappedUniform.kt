@@ -206,10 +206,8 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
     protected abstract val sampler: BindGroupData.TextureBindingData<*>
 
     private fun <T: ImageData> checkLoadingState(texture: Texture<T>, texUnit: Int): Boolean {
-        if (texture.isReleased) {
-            logE { "Texture is already released: ${texture.name}" }
-            return false
-        }
+        val checkReleasable: Releasable = texture.gpuTexture ?: texture
+        checkReleasable.checkIsNotReleased()
         gl.activeTexture(gl.TEXTURE0 + texUnit)
         texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
         (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
@@ -275,10 +273,8 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
     }
 
     private fun checkLoadingState(texture: Texture<*>, texUnit: Int): Boolean {
-        if (texture.isReleased) {
-            logE { "Storage texture is already released: ${texture.name}" }
-            return false
-        }
+        val checkReleasable: Releasable = texture.gpuTexture ?: texture
+        checkReleasable.checkIsNotReleased()
         texture.uploadData?.let {
             gl.activeTexture(gl.TEXTURE0 + texUnit)
             TextureLoaderGl.loadTexture(texture, backend)

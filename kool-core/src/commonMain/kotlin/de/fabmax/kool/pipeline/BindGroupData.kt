@@ -4,6 +4,7 @@ import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.StructBuffer
+import de.fabmax.kool.util.releaseDelayed
 
 class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
@@ -75,7 +76,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
     override fun release() {
         super.release()
-        gpuData?.release()
+        gpuData?.releaseDelayed(1)
     }
 
     sealed interface BindingData {

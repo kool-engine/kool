@@ -16,8 +16,8 @@ class BloomPass(
     val inPlace: Boolean = KoolSystem.requireContext().backend.features.readWriteStorageTextures
 ) : ComputePass("Bloom Pass") {
 
-    private val idealWidth: Int get() = inputTexture.width / 2
-    private val idealHeight: Int get() = inputTexture.height / 2
+    private val idealWidth: Int get() = (inputTexture.width / 2).coerceAtLeast(1)
+    private val idealHeight: Int get() = (inputTexture.height / 2).coerceAtLeast(1)
     private var levels: Int = levelsForSize(idealWidth, idealHeight)
 
     var threshold = 1f
@@ -206,7 +206,7 @@ class BloomPass(
                 val h = float3Var(sampleInput.sample(float2Value(u, v - ry), 0f.const).rgb)
                 val i = float3Var(sampleInput.sample(float2Value(u + rx, v - ry), 0f.const).rgb)
 
-                var filtered = float3Var(downSampled[texelCoord].rgb)
+                val filtered = float3Var(downSampled[texelCoord].rgb)
                 filtered += e * (4f / 16f).const
                 filtered += (b + d + f + h) * (2f / 16f).const
                 filtered += (a + c + g + i) * (1f / 16f).const

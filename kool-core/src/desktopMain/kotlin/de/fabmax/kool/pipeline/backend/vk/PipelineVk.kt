@@ -2,10 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.checkIsNotReleased
-import de.fabmax.kool.util.memStack
+import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
@@ -81,7 +78,8 @@ sealed class PipelineVk(
     }
 
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
-        checkIsNotReleased()
+        val checkReleasable: Releasable = gpuTexture ?: this
+        checkReleasable.checkIsNotReleased()
         uploadData?.let { backend.textureLoader.loadTexture(this) }
         return isLoaded
     }

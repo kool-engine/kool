@@ -75,9 +75,11 @@ class StorageTexture2d(
     }
 
     fun resize(width: Int, height: Int, mipMapping: MipMapping = this.mipMapping) {
-        if (width != this.width || height != this.height || mipMapping != this.mipMapping) {
+        val w = width.coerceAtLeast(1)
+        val h = height.coerceAtLeast(1)
+        if (w != this.width || h != this.height || mipMapping != this.mipMapping) {
             this.mipMapping = mipMapping
-            backend.initStorageTexture(this, width, height, 1)
+            backend.initStorageTexture(this, w, h, 1)
         }
     }
 }

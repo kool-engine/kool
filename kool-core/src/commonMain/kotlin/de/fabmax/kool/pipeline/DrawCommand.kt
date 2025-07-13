@@ -13,8 +13,8 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
     var drawGroupId = 0
         private set
 
-    var geometry: IndexedVertexList = mesh.geometry
-    var instances: MeshInstanceList? = mesh.instances
+    var geometry: IndexedVertexList = mesh.drawGeometry
+    var instances: MeshInstanceList? = mesh.drawInstances
 
     var isActive = true
 
@@ -32,8 +32,19 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
         this.mesh = mesh
         this.pipeline = pipeline
         this.drawGroupId = drawGroupId
-        geometry = mesh.geometry
-        instances = mesh.instances
+        geometry = mesh.drawGeometry
+        instances = mesh.drawInstances
         isActive = true
+    }
+
+    fun captureBuffers() {
+        if (geometry.modCount != mesh.geometry.modCount) {
+            geometry.set(mesh.geometry)
+        }
+        instances?.let { insts ->
+            if (insts.modCount != mesh.instances!!.modCount) {
+                insts.set(mesh.instances!!)
+            }
+        }
     }
 }
