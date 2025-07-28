@@ -182,7 +182,7 @@ abstract class RenderPass(
         var isReleaseDrawNode = true
         var isFillFramebuffer = true
 
-        val viewPipelineData = PipelineData(BindGroupScope.VIEW)
+        val viewPipelineData = MultiPipelineBindGroupData(BindGroupScope.VIEW)
 
         private var updateEvent: UpdateEvent? = null
 

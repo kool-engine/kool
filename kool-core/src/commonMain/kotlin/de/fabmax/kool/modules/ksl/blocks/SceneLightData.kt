@@ -38,22 +38,22 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
 
     override fun onUpdate(cmd: DrawCommand) {
         val layout = structLayout ?: return
-        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, layout.bindingIndex) ?: return
-        val binding = viewData.uniformStructBindingData(layout)
-        val lighting = cmd.queue.renderPass.lighting
-
-        binding.set {
-            if (lighting == null) {
-                lightCount.set(0)
-            } else {
-                val lightCount = min(lighting.lights.size, maxLightCount)
-                this.lightCount.set(lightCount)
-                for (i in 0 until lightCount) {
-                    val light = lighting.lights[i]
-                    light.updateEncodedValues()
-                    encodedPositions[i] = light.encodedPosition
-                    encodedDirections[i] = light.encodedDirection
-                    encodedColors[i] = light.encodedColor
+        cmd.queue.view.viewPipelineData.updatePipelineData(cmd.pipeline, layout.bindingIndex) { viewData ->
+            val binding = viewData.uniformStructBindingData(layout)
+            val lighting = cmd.queue.renderPass.lighting
+            binding.set {
+                if (lighting == null) {
+                    lightCount.set(0)
+                } else {
+                    val lightCount = min(lighting.lights.size, maxLightCount)
+                    this.lightCount.set(lightCount)
+                    for (i in 0 until lightCount) {
+                        val light = lighting.lights[i]
+                        light.updateEncodedValues()
+                        encodedPositions[i] = light.encodedPosition
+                        encodedDirections[i] = light.encodedDirection
+                        encodedColors[i] = light.encodedColor
+                    }
                 }
             }
         }

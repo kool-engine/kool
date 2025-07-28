@@ -66,22 +66,22 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
 
     override fun onUpdate(cmd: DrawCommand) {
         val layout = structLayout ?: return
-        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, layout.bindingIndex) ?: return
-        val binding = viewData.uniformStructBindingData(layout)
-        val q = cmd.queue
-        val vp = q.view.viewport
-        val cam = q.view.camera
-
-        binding.set {
-            viewProj.set(q.viewProjMatF)
-            view.set(q.viewMatF)
-            proj.set(q.projMat)
-            viewport.set(viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
-            viewParams.set(cam.viewParams)
-            position.set(cam.globalPos)
-            direction.set(cam.globalLookDir)
-            clip.set(cam.clip)
-            frameIndex.set(Time.frameCount)
+        cmd.queue.view.viewPipelineData.updatePipelineData(cmd.pipeline, layout.bindingIndex) { viewData ->
+            val binding = viewData.uniformStructBindingData(layout)
+            val q = cmd.queue
+            val vp = q.view.viewport
+            val cam = q.view.camera
+            binding.set {
+                viewProj.set(q.viewProjMatF)
+                view.set(q.viewMatF)
+                proj.set(q.projMat)
+                viewport.set(viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
+                viewParams.set(cam.viewParams)
+                position.set(cam.globalPos)
+                direction.set(cam.globalLookDir)
+                clip.set(cam.clip)
+                frameIndex.set(Time.frameCount)
+            }
         }
     }
 

@@ -91,15 +91,15 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", Bi
 
     override fun onUpdate(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
-        val uboData = cmd.mesh.meshPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
-        if (uboData.modCnt == cmd.mesh.modelMatrixData.modCount) return
-        uboData.modCnt = cmd.mesh.modelMatrixData.modCount
-
-        if (cmd.queue.isDoublePrecision) {
-            cmd.modelMatD.toMutableMat4f(tmpMat4f)
-            putMatrixToBuffer(tmpMat4f, uboData)
-        } else {
-            putMatrixToBuffer(cmd.modelMatF, uboData)
+        cmd.mesh.meshPipelineData.updatePipelineData(cmd.pipeline, bindingLayout.bindingIndex) { uboData ->
+            if (uboData.modCnt == cmd.mesh.modelMatrixData.modCount) return
+            uboData.modCnt = cmd.mesh.modelMatrixData.modCount
+            if (cmd.queue.isDoublePrecision) {
+                cmd.modelMatD.toMutableMat4f(tmpMat4f)
+                putMatrixToBuffer(tmpMat4f, uboData)
+            } else {
+                putMatrixToBuffer(cmd.modelMatF, uboData)
+            }
         }
     }
 
@@ -114,9 +114,10 @@ class InvProjMatrixData(program: KslProgram) : MatrixData(program, "uInvProjMat"
 
     override fun onUpdate(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
-        val viewData = cmd.queue.view.viewPipelineData.getPipelineDataUpdating(cmd.pipeline, bindingLayout.bindingIndex) ?: return
-        val cam = cmd.queue.view.camera
-        putMatrixToBuffer(cam.invProj, viewData)
+        cmd.queue.view.viewPipelineData.updatePipelineData(cmd.pipeline, bindingLayout.bindingIndex) { viewData ->
+            val cam = cmd.queue.view.camera
+            putMatrixToBuffer(cam.invProj, viewData)
+        }
     }
 
     companion object {

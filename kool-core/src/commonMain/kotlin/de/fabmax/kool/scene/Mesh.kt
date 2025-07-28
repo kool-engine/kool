@@ -89,7 +89,7 @@ open class Mesh(
 
     var isOpaque = true
 
-    val meshPipelineData = PipelineData(BindGroupScope.MESH)
+    val meshPipelineData = MultiPipelineBindGroupData(BindGroupScope.MESH)
 
     private var pipeline: DrawPipeline? = null
 

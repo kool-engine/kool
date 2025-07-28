@@ -72,8 +72,9 @@ interface PipelineBackend : Releasable {
     fun removeUser(user: Any)
 }
 
-class PipelineData(val scope: BindGroupScope) : BaseReleasable() {
-    private val bindGroupData = mutableMapOf<LongHash, UpdateAwareBindGroupData>()
+class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), BackendData {
+    @PublishedApi
+    internal val bindGroupData = mutableMapOf<LongHash, UpdateAwareBindGroupData>()
 
     fun getPipelineData(pipeline: PipelineBase): BindGroupData {
         val layout = pipeline.bindGroupLayouts[scope]
@@ -81,18 +82,12 @@ class PipelineData(val scope: BindGroupScope) : BaseReleasable() {
         return data.data
     }
 
-    fun getPipelineDataUpdating(pipeline: PipelineBase, binding: Int): BindGroupData? {
+    inline fun updatePipelineData(pipeline: PipelineBase, binding: Int, block: (BindGroupData) -> Unit) {
         val layout = pipeline.bindGroupLayouts[scope]
         val data = bindGroupData.getOrPut(layout.hash) { UpdateAwareBindGroupData(layout.createData()) }
-        return if (data.markBindingUpdate(binding)) data.data else null
-    }
-
-    fun setPipelineData(data: BindGroupData, pipeline: PipelineBase) {
-        val layout = pipeline.bindGroupLayouts[scope]
-        check(layout == data.layout) {
-            "Given BindGroupData does not match this pipeline's $scope data bind group layout"
+        if (data.markBindingUpdate(binding)) {
+            block(data.data)
         }
-        bindGroupData[layout.hash] = UpdateAwareBindGroupData(layout.createData())
     }
 
     fun discardPipelineData(pipeline: PipelineBase) {
@@ -100,12 +95,17 @@ class PipelineData(val scope: BindGroupScope) : BaseReleasable() {
         bindGroupData.remove(layout.hash)?.data?.release()
     }
 
+    override fun captureData() {
+
+    }
+
     override fun release() {
         super.release()
         bindGroupData.values.forEach { it.data.release() }
     }
 
-    private class UpdateAwareBindGroupData(val data: BindGroupData) {
+    @PublishedApi
+    internal class UpdateAwareBindGroupData(val data: BindGroupData) {
         val updateFrames = IntArray(data.bindings.size)
 
         fun markBindingUpdate(binding: Int): Boolean {
