@@ -83,11 +83,14 @@ class BloomPass(
             val key = "$level"
 
             task.onBeforeDispatch {
-                downSampleShader.createdPipeline?.swapPipelineData(key)
-                sampleInput.set(input, inputSampler)
-                downSampled.set(downSampleTex, level)
-                uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.Companion.ZERO
-                uInputTexelSize = inputTexelSize
+                downSampleShader.createdPipeline?.let {
+                    it.swapPipelineData(key)
+                    sampleInput.set(input, inputSampler)
+                    downSampled.set(downSampleTex, level)
+                    uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.Companion.ZERO
+                    uInputTexelSize = inputTexelSize
+                    it.captureBuffer()
+                }
             }
         }
     }
@@ -110,15 +113,18 @@ class BloomPass(
             val key = "$level"
 
             task.onBeforeDispatch {
-                upSampleShader.createdPipeline?.swapPipelineData(key)
-                sampleInput.set(input, inputSampler)
-                upSampled.set(bloomMap, level)
-                if (!inPlace) {
-                    downSampled.set(downSampleTex, level)
+                upSampleShader.createdPipeline?.let {
+                    it.swapPipelineData(key)
+                    sampleInput.set(input, inputSampler)
+                    upSampled.set(bloomMap, level)
+                    if (!inPlace) {
+                        downSampled.set(downSampleTex, level)
+                    }
+                    uInputTexelSize = inputTexelSize
+                    uRadius = radius
+                    uOutputScale = if (level == 0) strength / levels else 1f
+                    it.captureBuffer()
                 }
-                uInputTexelSize = inputTexelSize
-                uRadius = radius
-                uOutputScale = if (level == 0) strength / levels else 1f
             }
         }
     }

@@ -178,21 +178,21 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
 fun KslProgram.makeBindGroupLayout(isComputePipeline: Boolean): BindGroupLayouts {
     return if (isComputePipeline) {
         BindGroupLayouts(
-            BindGroupLayout(-1, BindGroupScope.VIEW, emptyList()),
-            makeBindGroupLayout(0, BindGroupScope.PIPELINE),
-            BindGroupLayout(-1, BindGroupScope.MESH, emptyList()),
+            BindGroupLayout(-1, BindGroupScope.VIEW, emptyList(), name),
+            makeBindGroupLayout(0, BindGroupScope.PIPELINE, name),
+            BindGroupLayout(-1, BindGroupScope.MESH, emptyList(), name),
         )
     } else {
         BindGroupLayouts(
-            makeBindGroupLayout(0, BindGroupScope.VIEW),
-            makeBindGroupLayout(1, BindGroupScope.PIPELINE),
-            makeBindGroupLayout(2, BindGroupScope.MESH),
+            makeBindGroupLayout(0, BindGroupScope.VIEW, name),
+            makeBindGroupLayout(1, BindGroupScope.PIPELINE, name),
+            makeBindGroupLayout(2, BindGroupScope.MESH, name),
         )
     }
 }
 
-private fun KslProgram.makeBindGroupLayout(group: Int, scope: BindGroupScope): BindGroupLayout {
-    val bindGrpBuilder = BindGroupLayout.Builder(group, scope)
+private fun KslProgram.makeBindGroupLayout(group: Int, scope: BindGroupScope, name: String): BindGroupLayout {
+    val bindGrpBuilder = BindGroupLayout.Builder(group, scope, name)
     setupBindGroupLayoutUbos(bindGrpBuilder)
     setupBindGroupLayoutTextures(bindGrpBuilder)
     setupBindGroupLayoutStorage(bindGrpBuilder)

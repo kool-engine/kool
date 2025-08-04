@@ -3,18 +3,28 @@ package de.fabmax.kool.pipeline
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.*
 
-class BindGroupData(val layout: BindGroupLayout) : BaseReleasable(), DoubleBuffered {
+class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasable(), DoubleBuffered {
 
-    val bindings: List<BindingData> = layout.bindings.toData()
+    private val bindings: List<BindingData> = layout.bindings.toData()
     private val _bufferedBindingData: List<BindingData> = layout.bindings.toData()
+
+    val size: Int get() = bindings.size
+
     val bufferedBindings: List<BindingData> get() {
+        if (captureI != Time.frameCount) {
+            //logW { "$name / ${layout.scope} $this, $captureI" }
+            //error("foo")
+            //return bindings
+        }
         if (!captured) {
-            logW { "not captured! ${Time.frameCount} ${layout.scope}" }
+            logW { "BindGroupData not captured! $name / ${layout.scope}" }
             return bindings
         }
         return _bufferedBindingData
+//        return bindings
     }
     private var captured = false
+    private var captureI = -1
 
     val isComplete: Boolean get() = bindings.all { it.isComplete }
 
@@ -37,7 +47,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable(), DoubleBuffe
     fun storageTexture3dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageTexture3dBindingData
 
     fun copy(): BindGroupData {
-        val copy = BindGroupData(layout)
+        val copy = BindGroupData(layout, name)
         bindings.copyTo(copy.bindings)
         return copy
     }
@@ -45,6 +55,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable(), DoubleBuffe
     override fun captureBuffer() {
         bindings.copyTo(_bufferedBindingData)
         captured = true
+        captureI = Time.frameCount
     }
 
     override fun release() {

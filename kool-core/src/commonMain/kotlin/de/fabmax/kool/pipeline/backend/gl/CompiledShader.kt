@@ -134,7 +134,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         private val mappings = mutableListOf<MappedUniform>()
 
         init {
-            bindGroupData.bindings.forEach { binding ->
+            bindGroupData.bufferedBindings.forEach { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData<*> -> mapUbo(binding)
                     is BindGroupData.StorageBufferBindingData -> mapStorageBuffer(binding)

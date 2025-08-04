@@ -93,14 +93,14 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", Bi
     override fun onUpdateDrawData(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
         cmd.mesh.meshPipelineData.updatePipelineData(cmd.pipeline, bindingLayout.bindingIndex) { uboData ->
-            val uboBinding = uboData.bufferedBindings.get(bindingLayout.bindingIndex)
+            val uboBinding = uboData.uniformBufferBindingData(bindingLayout.bindingIndex)
             if (!uboBinding.modCount.isDirty(cmd.mesh.modelMatrixData.modCount)) return
             uboBinding.modCount.reset(cmd.mesh.modelMatrixData.modCount)
             if (cmd.queue.isDoublePrecision) {
                 cmd.modelMatD.toMutableMat4f(tmpMat4f)
-                putMatrixToBuffer(tmpMat4f, uboBinding as UniformBufferBindingData<*>)
+                putMatrixToBuffer(tmpMat4f, uboBinding)
             } else {
-                putMatrixToBuffer(cmd.modelMatF, uboBinding as UniformBufferBindingData<*>)
+                putMatrixToBuffer(cmd.modelMatF, uboBinding)
             }
         }
     }

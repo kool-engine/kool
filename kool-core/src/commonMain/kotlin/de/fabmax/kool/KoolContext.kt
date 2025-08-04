@@ -132,28 +132,35 @@ abstract class KoolContext {
             }
         }
 
-        frameData.forEachView { viewData ->
-            viewData.drawQueue.forEach { it.updatePipelineData() }
-        }
-
+        frameData.updatePipelineData()
         return frameData
     }
 
-    protected fun FrameData.syncData() {
-        forEachView { viewData ->
-            viewData.drawQueue.view.viewPipelineData.captureBuffer()
-            viewData.drawQueue.forEach { cmd ->
-                cmd.pipeline.updatePipelineData(cmd)
-                cmd.captureData()
+    protected fun FrameData.updatePipelineData() {
+        for (pi in passData.indices) {
+            val pass = passData[pi]
+            for (vi in pass.viewData.indices) {
+                val viewData = pass.viewData[vi]
+                viewData.drawQueue.forEach { it.updatePipelineData() }
+            }
+            (pass.gpuPass as? ComputePass)?.let { computePass ->
+                computePass.tasks.forEach { task -> task.pipeline.updatePipelineData(computePass) }
             }
         }
     }
 
-    private inline fun FrameData.forEachView(block: (ViewData) -> Unit) {
+    protected fun FrameData.syncData() {
         for (pi in passData.indices) {
             val pass = passData[pi]
             for (vi in pass.viewData.indices) {
-                block(pass.viewData[vi])
+                val viewData = pass.viewData[vi]
+                viewData.drawQueue.view.viewPipelineData.captureBuffer()
+                viewData.drawQueue.forEach { cmd ->
+                    cmd.captureData()
+                }
+            }
+            (pass.gpuPass as? ComputePass)?.let { computePass ->
+                computePass.tasks.forEach { task -> task.pipeline.captureBuffer() }
             }
         }
     }

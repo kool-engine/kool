@@ -100,7 +100,10 @@ class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), 
     }
 
     override fun captureBuffer() {
-        bindGroupData.values.forEach { it.data.captureBuffer() }
+        // fixme don't forEach
+        bindGroupData.values.forEach {
+            it.data.captureBuffer()
+        }
     }
 
     override fun release() {
@@ -110,7 +113,7 @@ class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), 
 
     @PublishedApi
     internal class UpdateAwareBindGroupData(val data: BindGroupData) {
-        val updateFrames = IntArray(data.bindings.size)
+        val updateFrames = IntArray(data.size)
 
         fun markBindingUpdate(binding: Int): Boolean {
             val frame = Time.frameCount

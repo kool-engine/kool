@@ -14,9 +14,9 @@ class WgslGenerator private constructor(
 
     private var generatorState = GeneratorState(
         BindGroupLayouts(
-            BindGroupLayout(-1, BindGroupScope.VIEW, emptyList()),
-            BindGroupLayout(-1, BindGroupScope.PIPELINE, emptyList()),
-            BindGroupLayout(-1, BindGroupScope.MESH, emptyList())
+            BindGroupLayout(-1, BindGroupScope.VIEW, emptyList(), ""),
+            BindGroupLayout(-1, BindGroupScope.PIPELINE, emptyList(), ""),
+            BindGroupLayout(-1, BindGroupScope.MESH, emptyList(), "")
         ),
         null
     )
