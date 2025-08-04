@@ -104,9 +104,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         users.add(cmd.mesh.id)
         drawInfo.numIndices = 0
 
-        // update uniform values (camera + transform matrices, etc.)
-        pipeline.update(cmd)
-
         // bind uniform data
         val rp = cmd.queue.view.renderPass
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(pipeline)

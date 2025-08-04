@@ -57,7 +57,7 @@ class ShadowData(val shadowCfg: LightingConfig, program: KslProgram) : KslDataBl
         }
     }
 
-    override fun onUpdate(cmd: DrawCommand) {
+    override fun onUpdateDrawData(cmd: DrawCommand) {
         uShadowMapViewProjMats?.let { mats ->
             subMaps.forEachIndexed { i, shadowMap ->
                 mats[i] = shadowMap.lightViewProjMat

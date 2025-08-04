@@ -32,7 +32,7 @@ class WgpuComputePipeline(
 
     fun bind(task: ComputePass.Task, passEncoderState: ComputePassEncoderState): Boolean {
         users += task
-        computePipeline.update(task.pass)
+        computePipeline.updatePipelineData(task.pass)
 
         val pipelineData = computePipeline.pipelineData
         if (!pipelineData.checkBindings()) {

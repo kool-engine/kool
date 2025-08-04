@@ -6,7 +6,7 @@ import de.fabmax.kool.util.*
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
  * like the corresponding data layout, etc.
  */
-abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLayouts) : BaseReleasable() {
+abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLayouts) : BaseReleasable(), DoubleBuffered {
 
     protected val pipelineHashBuilder = LongHashBuilder()
 
@@ -35,6 +35,10 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
 
     fun swapPipelineData(key: Any?) {
         pipelineData = pipelineSwapData.getOrPut(key) { pipelineData.copy() }
+    }
+
+    override fun captureBuffer() {
+        pipelineData.captureBuffer()
     }
 
     override fun release() {
@@ -72,7 +76,7 @@ interface PipelineBackend : Releasable {
     fun removeUser(user: Any)
 }
 
-class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), BackendData {
+class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), DoubleBuffered {
     @PublishedApi
     internal val bindGroupData = mutableMapOf<LongHash, UpdateAwareBindGroupData>()
 
@@ -95,8 +99,8 @@ class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), 
         bindGroupData.remove(layout.hash)?.data?.release()
     }
 
-    override fun captureData() {
-
+    override fun captureBuffer() {
+        bindGroupData.values.forEach { it.data.captureBuffer() }
     }
 
     override fun release() {

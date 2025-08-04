@@ -132,7 +132,30 @@ abstract class KoolContext {
             }
         }
 
+        frameData.forEachView { viewData ->
+            viewData.drawQueue.forEach { it.updatePipelineData() }
+        }
+
         return frameData
+    }
+
+    protected fun FrameData.syncData() {
+        forEachView { viewData ->
+            viewData.drawQueue.view.viewPipelineData.captureBuffer()
+            viewData.drawQueue.forEach { cmd ->
+                cmd.pipeline.updatePipelineData(cmd)
+                cmd.captureData()
+            }
+        }
+    }
+
+    private inline fun FrameData.forEachView(block: (ViewData) -> Unit) {
+        for (pi in passData.indices) {
+            val pass = passData[pi]
+            for (vi in pass.viewData.indices) {
+                block(pass.viewData[vi])
+            }
+        }
     }
 
     companion object {

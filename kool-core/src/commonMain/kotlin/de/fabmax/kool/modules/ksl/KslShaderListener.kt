@@ -6,6 +6,6 @@ import de.fabmax.kool.pipeline.ShaderBase
 
 interface KslShaderListener {
     fun onShaderCreated(shader: ShaderBase<*>) { }
-    fun onUpdate(cmd: DrawCommand) { }
-    fun onComputeUpdate(computePass: ComputePass) { }
+    fun onUpdateDrawData(cmd: DrawCommand) { }
+    fun onUpdateComputeData(computePass: ComputePass) { }
 }

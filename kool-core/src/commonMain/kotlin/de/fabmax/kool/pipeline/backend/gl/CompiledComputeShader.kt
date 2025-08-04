@@ -12,7 +12,6 @@ class CompiledComputeShader(val pipeline: ComputePipeline, program: GlProgram, b
 
     fun bindComputePass(task: ComputePass.Task): Boolean {
         users += task
-        pipeline.update(task.pass)
         return bindUniforms(task.pass, null, null)
     }
 

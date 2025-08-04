@@ -80,7 +80,7 @@ open class Mesh(
     val morphWeights: FloatArray? = null,
     val skin: Skin? = null,
     name: String = geometry.name
-) : Node(name) {
+) : Node(name), DoubleBuffered {
 
     constructor(attributes: List<Attribute>, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
             this(IndexedVertexList(attributes), instances = instances, name = name)
@@ -237,6 +237,16 @@ open class Mesh(
         getOrCreatePipeline(updateEvent.ctx)?.let { pipeline ->
             viewData.drawQueue.addMesh(this, pipeline)
         }
+    }
+
+    override fun captureBuffer() {
+        if (drawGeometry.modCount != geometry.modCount) {
+            drawGeometry.set(geometry)
+        }
+        if (instances != null && instances.modCount != drawInstances!!.modCount) {
+            drawInstances.set(instances)
+        }
+        meshPipelineData.captureBuffer()
     }
 }
 

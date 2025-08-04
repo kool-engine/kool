@@ -115,6 +115,8 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         }
 
         val frameData = nextFrameData?.await() ?: render(computeDt())
+        frameData.syncData()
+
         if (config.asyncSceneUpdate) {
             nextFrameData = ApplicationScope.async {
                 render(computeDt())

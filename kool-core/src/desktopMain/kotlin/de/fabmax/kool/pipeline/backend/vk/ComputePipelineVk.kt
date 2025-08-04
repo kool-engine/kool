@@ -22,7 +22,7 @@ class ComputePipelineVk(
 
     fun bind(task: ComputePass.Task, passEncoderState: PassEncoderState): Boolean {
         users += task
-        computePipeline.update(task.pass)
+        computePipeline.updatePipelineData(task.pass)
 
         val pipelineData = computePipeline.pipelineData
         if (!pipelineData.checkBindings()) {
@@ -30,7 +30,7 @@ class ComputePipelineVk(
         }
 
         passEncoderState.setComputePipeline(vkComputePipeline)
-        val computeData = pipelineData.getOrCreateVkData(passEncoderState.commandBuffer)
+        val computeData = pipelineData.getOrCreateVkData()
         computeData.updateBuffers(passEncoderState)
         computeData.prepareBind(passEncoderState)
         passEncoderState.setBindGroup(computeData, pipelineLayout, BindPoint.Compute, groupIndex = 0)

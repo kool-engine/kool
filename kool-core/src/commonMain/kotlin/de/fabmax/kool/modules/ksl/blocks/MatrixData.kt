@@ -6,7 +6,11 @@ import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.math.toMutableMat4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.BindGroupData.UniformBufferBindingData
+import de.fabmax.kool.pipeline.BindGroupScope
+import de.fabmax.kool.pipeline.DrawCommand
+import de.fabmax.kool.pipeline.ShaderBase
+import de.fabmax.kool.pipeline.UniformBufferLayout
 import de.fabmax.kool.util.setMat4
 
 fun KslProgram.mvpMatrix(): MvpMatrixData {
@@ -45,12 +49,8 @@ abstract class MatrixData(program: KslProgram, val uniformName: String, scope: B
         }
     }
 
-    protected fun putMatrixToBuffer(matrix: Mat4f, groupData: BindGroupData) {
-        val bindingLayout = uboLayout ?: return
-        val uboData = groupData.uniformBufferBindingData(bindingLayout.bindingIndex)
-        uboData.set {
-            setMat4(matIndex, matrix)
-        }
+    protected fun putMatrixToBuffer(matrix: Mat4f, uboData: UniformBufferBindingData<*>) {
+        uboData.set { setMat4(matIndex, matrix) }
     }
 }
 
@@ -60,7 +60,7 @@ class MvpMatrixData(program: KslProgram) : MatrixData(program, "uMvpMat", BindGr
     private val tmpMat4d = MutableMat4d()
     private val tmpMat4f = MutableMat4f()
 
-    override fun onUpdate(cmd: DrawCommand) {
+    override fun onUpdateDrawData(cmd: DrawCommand) {
         // Do not use getPipelineDataUpdating() here: MVP matrix needs to be always updated, in case this mesh /
         // pipeline combination is drawn in multiple views with different view matrices.
         //
@@ -76,7 +76,8 @@ class MvpMatrixData(program: KslProgram) : MatrixData(program, "uMvpMat", BindGr
         } else {
             cmd.queue.viewProjMatF.mul(cmd.modelMatF, tmpMat4f)
         }
-        putMatrixToBuffer(tmpMat4f, uboData)
+        val bindingLayout = uboLayout ?: return
+        putMatrixToBuffer(tmpMat4f, uboData.uniformBufferBindingData(bindingLayout.bindingIndex))
     }
 
     companion object {
@@ -89,16 +90,17 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", Bi
 
     private val tmpMat4f = MutableMat4f()
 
-    override fun onUpdate(cmd: DrawCommand) {
+    override fun onUpdateDrawData(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
         cmd.mesh.meshPipelineData.updatePipelineData(cmd.pipeline, bindingLayout.bindingIndex) { uboData ->
-            if (uboData.modCnt == cmd.mesh.modelMatrixData.modCount) return
-            uboData.modCnt = cmd.mesh.modelMatrixData.modCount
+            val uboBinding = uboData.bufferedBindings.get(bindingLayout.bindingIndex)
+            if (!uboBinding.modCount.isDirty(cmd.mesh.modelMatrixData.modCount)) return
+            uboBinding.modCount.reset(cmd.mesh.modelMatrixData.modCount)
             if (cmd.queue.isDoublePrecision) {
                 cmd.modelMatD.toMutableMat4f(tmpMat4f)
-                putMatrixToBuffer(tmpMat4f, uboData)
+                putMatrixToBuffer(tmpMat4f, uboBinding as UniformBufferBindingData<*>)
             } else {
-                putMatrixToBuffer(cmd.modelMatF, uboData)
+                putMatrixToBuffer(cmd.modelMatF, uboBinding as UniformBufferBindingData<*>)
             }
         }
     }
@@ -112,11 +114,11 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", Bi
 class InvProjMatrixData(program: KslProgram) : MatrixData(program, "uInvProjMat", BindGroupScope.VIEW) {
     override val name = NAME
 
-    override fun onUpdate(cmd: DrawCommand) {
+    override fun onUpdateDrawData(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
         cmd.queue.view.viewPipelineData.updatePipelineData(cmd.pipeline, bindingLayout.bindingIndex) { viewData ->
             val cam = cmd.queue.view.camera
-            putMatrixToBuffer(cam.invProj, viewData)
+            putMatrixToBuffer(cam.invProj, viewData.uniformBufferBindingData(bindingLayout.bindingIndex))
         }
     }
 

@@ -24,31 +24,33 @@ class WgpuBindGroupData(
     var bindGroup: GPUBindGroup? = null
         private set
 
+    internal var checkFrame = -1
+    internal var isCheckOk = false
+
     fun bind(passEncoderState: PassEncoderState, group: Int = data.layout.group) {
+        var recreatedBindGroup = bindGroup == null
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
-                data.isDirty = true
+                recreatedBindGroup = true
             }
         }
         for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
-                data.isDirty = true
+                recreatedBindGroup = true
             }
         }
 
-        val recreatedBindGroup = bindGroup == null || data.isDirty
         if (recreatedBindGroup) {
-            data.isDirty = false
             createBindGroup(passEncoderState.renderPass)
         }
 
         for (i in bufferBindings.indices) {
             val ubo = bufferBindings[i]
-            if (ubo.modCount != ubo.binding.modCount || recreatedBindGroup) {
+            if (ubo.modCount != ubo.binding.modCount.count || recreatedBindGroup) {
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
                     bufferOffset = 0L,

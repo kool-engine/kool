@@ -37,14 +37,12 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
         isActive = true
     }
 
-    fun captureBuffers() {
-        if (geometry.modCount != mesh.geometry.modCount) {
-            geometry.set(mesh.geometry)
-        }
-        instances?.let { insts ->
-            if (insts.modCount != mesh.instances!!.modCount) {
-                insts.set(mesh.instances!!)
-            }
-        }
+    fun captureData() {
+        mesh.captureBuffer()
+        pipeline.captureBuffer()
+    }
+
+    fun updatePipelineData() {
+        pipeline.updatePipelineData(this)
     }
 }

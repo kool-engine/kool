@@ -40,7 +40,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
         structLayout = binding
     }
 
-    override fun onUpdate(cmd: DrawCommand) {
+    override fun onUpdateDrawData(cmd: DrawCommand) {
         val layout = structLayout ?: return
         cmd.queue.view.viewPipelineData.updatePipelineData(cmd.pipeline, layout.bindingIndex) { viewData ->
             val binding = viewData.uniformStructBindingData(layout)

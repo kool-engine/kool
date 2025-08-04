@@ -42,7 +42,7 @@ class DrawPipelineVk(
             gpuInsts.checkBuffers(passEncoderState.commandBuffer)
         }
 
-        drawPipeline.pipelineData.getOrCreateVkData(passEncoderState.commandBuffer).updateBuffers(passEncoderState)
+        drawPipeline.pipelineData.getOrCreateVkData().updateBuffers(passEncoderState)
     }
 
     fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
@@ -60,9 +60,9 @@ class DrawPipelineVk(
         val pipeline = pipelines.getOrPut(passEncoderState.gpuRenderPass) { createPipeline(passEncoderState) }
         passEncoderState.setPipeline(pipeline)
 
-        val pipelineGroup = pipelineData.getOrCreateVkData(passEncoderState.commandBuffer)
-        val viewGroup = viewData.getOrCreateVkData(passEncoderState.commandBuffer)
-        val meshGroup = meshData.getOrCreateVkData(passEncoderState.commandBuffer)
+        val pipelineGroup = pipelineData.getOrCreateVkData()
+        val viewGroup = viewData.getOrCreateVkData()
+        val meshGroup = meshData.getOrCreateVkData()
 
         pipelineGroup.prepareBind(passEncoderState)
         viewGroup.prepareBind(passEncoderState)

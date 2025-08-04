@@ -72,7 +72,7 @@ class ClearHelper(val backend: RenderBackendVk) {
                 pipelineLayout = device.createPipelineLayout(this) {
                     pSetLayouts(longs(descriptorSetLayout.handle))
                 }
-                bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend, passEncoderState.commandBuffer)
+                bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend)
             }
 
             releaseWith(renderPass)

@@ -4,7 +4,6 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.PipelineInfo
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
-import org.lwjgl.vulkan.VkCommandBuffer
 
 sealed class PipelineVk(
     private val pipeline: PipelineBase,
@@ -55,26 +54,27 @@ sealed class PipelineVk(
     }
 
     protected fun BindGroupData.checkBindings(): Boolean {
-        if (Time.frameCount == checkFrame) return isCheckOk
-        checkFrame = Time.frameCount
-        isCheckOk = true
+        val vkData = getOrCreateVkData()
+        if (Time.frameCount == vkData.checkFrame) return vkData.isCheckOk
+        vkData.checkFrame = Time.frameCount
+        vkData.isCheckOk = true
 
-        for (i in bindings.indices) {
-            val binding = bindings[i]
+        for (i in bufferedBindings.indices) {
+            val binding = bufferedBindings[i]
             when (binding) {
                 is BindGroupData.StorageBufferBindingData -> {
-                    isCheckOk = isCheckOk && binding.storageBuffer != null
+                    vkData.isCheckOk = vkData.isCheckOk && binding.storageBuffer != null
                 }
                 is BindGroupData.TextureBindingData<*> -> {
                     val tex = binding.texture
                     if (tex == null || !tex.checkLoadingState()) {
-                        isCheckOk = false
+                        vkData.isCheckOk = false
                     }
                 }
                 else -> { }
             }
         }
-        return isCheckOk
+        return vkData.isCheckOk
     }
 
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {
@@ -84,10 +84,10 @@ sealed class PipelineVk(
         return isLoaded
     }
 
-    protected fun BindGroupData.getOrCreateVkData(commandBuffer: VkCommandBuffer): BindGroupDataVk {
+    protected fun BindGroupData.getOrCreateVkData(): BindGroupDataVk {
         if (gpuData == null) {
             val group = if (this@PipelineVk is ComputePipelineVk) 0 else layout.group
-            gpuData = BindGroupDataVk(this, bindGroupLayouts[group], backend, commandBuffer)
+            gpuData = BindGroupDataVk(this, bindGroupLayouts[group], backend)
         }
         return gpuData as BindGroupDataVk
     }

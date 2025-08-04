@@ -12,8 +12,8 @@ class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData<*>, val gpuBuffe
     private var modCount = -1
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        if (modCount != ubo.modCount) {
-            modCount = ubo.modCount
+        if (ubo.modCount.isDirty(modCount)) {
+            modCount = ubo.modCount.count
             gpuBuffer.setData(ubo.buffer.buffer, gl.DYNAMIC_DRAW)
         }
         gl.bindBufferBase(gl.UNIFORM_BUFFER, bindCtx.location(ubo.layout.bindingIndex), gpuBuffer.buffer)
