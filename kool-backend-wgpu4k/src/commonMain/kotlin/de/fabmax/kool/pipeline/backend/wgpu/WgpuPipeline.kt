@@ -147,26 +147,27 @@ sealed class WgpuPipeline(
     }
 
     protected fun BindGroupData.checkBindings(): Boolean {
-        if (Time.frameCount == checkFrame) return isCheckOk
-        checkFrame = Time.frameCount
-        isCheckOk = true
+        val wgpuData = getOrCreateWgpuData()
+        if (Time.frameCount == wgpuData.checkFrame) return wgpuData.isCheckOk
+        wgpuData.checkFrame = Time.frameCount
+        wgpuData.isCheckOk = true
 
-        for (i in bindings.indices) {
-            val binding = bindings[i]
+        for (i in bufferedBindings.indices) {
+            val binding = bufferedBindings[i]
             when (binding) {
                 is BindGroupData.StorageBufferBindingData -> {
-                    isCheckOk = isCheckOk && binding.storageBuffer != null
+                    wgpuData.isCheckOk = wgpuData.isCheckOk && binding.storageBuffer != null
                 }
                 is BindGroupData.TextureBindingData<*> -> {
                     val tex = binding.texture
                     if (tex == null || !tex.checkLoadingState()) {
-                        isCheckOk = false
+                        wgpuData.isCheckOk = false
                     }
                 }
                 else -> { }
             }
         }
-        return isCheckOk
+        return wgpuData.isCheckOk
     }
 
     private fun <T: ImageData> Texture<T>.checkLoadingState(): Boolean {

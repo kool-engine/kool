@@ -88,7 +88,7 @@ class WgpuBindGroupData(
         storageTextureBindings.clear()
 
         val bindGroupEntries: List<GPUBindGroupEntry> = buildList {
-            data.bindings.map { binding ->
+            data.bufferedBindings.map { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData<*> -> add(binding.makeEntry(pass))
                     is BindGroupData.StorageBufferBindingData -> add(binding.makeEntry(pass))

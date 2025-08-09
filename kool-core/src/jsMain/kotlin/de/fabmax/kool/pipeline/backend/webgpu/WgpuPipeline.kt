@@ -147,8 +147,8 @@ sealed class WgpuPipeline(
         wgpuData.checkFrame = Time.frameCount
         wgpuData.isCheckOk = true
 
-        for (i in bindings.indices) {
-            val binding = bindings[i]
+        for (i in bufferedBindings.indices) {
+            val binding = bufferedBindings[i]
             when (binding) {
                 is BindGroupData.StorageBufferBindingData -> {
                     wgpuData.isCheckOk = wgpuData.isCheckOk && binding.storageBuffer != null

@@ -13,7 +13,7 @@ class WgpuPipelineManager(val backend: RenderBackendWgpu4k) {
 
     suspend fun prepareDrawPipeline(cmd: DrawCommand) {
         val wgpuPipeline = cmd.pipeline.getWgpuPipeline()
-        cmd.pipeline.update(cmd)
+        cmd.pipeline.updatePipelineData(cmd)
         wgpuPipeline.updateGeometry(cmd)
     }
 
@@ -23,7 +23,7 @@ class WgpuPipelineManager(val backend: RenderBackendWgpu4k) {
 
     suspend fun bindComputePipeline(task: ComputePass.Task, passEncoderState: ComputePassEncoderState): Boolean {
         val gpuPipeline = task.pipeline.getWgpuPipeline()
-        task.pipeline.update(task.pass)
+        task.pipeline.updatePipelineData(task.pass)
         return gpuPipeline.bind(task, passEncoderState)
     }
 
