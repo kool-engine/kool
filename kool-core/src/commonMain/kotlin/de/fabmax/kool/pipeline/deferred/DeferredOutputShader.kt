@@ -55,6 +55,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
         } else {
             bloomMap = noBloomMap
         }
+        createdPipeline?.pipelineData?.captureBuffer()
     }
 
     class Model(cfg: DeferredPipelineConfig) : KslProgram("Deferred output shader") {
