@@ -15,11 +15,13 @@ class ModCounter(init: Int = 0) {
         }
     }
 
-    fun reset(value: Int) {
-        count = value
-    }
-
+    fun reset(count: Int) { this.count = count }
     fun isDirty(count: Int): Boolean = count != this.count
+    fun isNotDirty(count: Int): Boolean = count == this.count
+
+    fun reset(counter: ModCounter) { count = counter.count }
+    fun isDirty(counter: ModCounter): Boolean = counter.count != this.count
+    fun isNotDirty(counter: ModCounter): Boolean = counter.count == this.count
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

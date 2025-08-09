@@ -121,18 +121,18 @@ abstract class TransformF : Transform {
     private var applyParentMatsModCount = -1
 
     override fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean {
-        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount
-        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount)) {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount.count
+        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount.count)) {
             modelMat.setMatF { parentModelMat.matF.mul(matrixF, it) }
             applyModCount = modCount
-            applyMatsModCount = modelMat.modCount
-            applyParentMatsModCount = parentModelMat.modCount
+            applyMatsModCount = modelMat.modCount.count
+            applyParentMatsModCount = parentModelMat.modCount.count
             return true
 
         } else if (egoChanged) {
             modelMat.setMatF { it.set(matrixF) }
             applyModCount = modCount
-            applyMatsModCount = modelMat.modCount
+            applyMatsModCount = modelMat.modCount.count
             return true
         }
         return false
@@ -201,18 +201,18 @@ abstract class TransformD : Transform {
     private var applyParentMatsModCount = -1
 
     override fun applyToModelMat(parentModelMat: SyncedMatrixFd?, modelMat: SyncedMatrixFd): Boolean {
-        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount
-        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount)) {
+        val egoChanged = applyModCount != modCount || applyMatsModCount != modelMat.modCount.count
+        if (parentModelMat != null && (egoChanged || applyParentMatsModCount != parentModelMat.modCount.count)) {
             modelMat.setMatD { parentModelMat.matD.mul(matrixD, it) }
             applyModCount = modCount
-            applyMatsModCount = modelMat.modCount
-            applyParentMatsModCount = parentModelMat.modCount
+            applyMatsModCount = modelMat.modCount.count
+            applyParentMatsModCount = parentModelMat.modCount.count
             return true
 
         } else if (egoChanged) {
             modelMat.setMatD { it.set(matrixD) }
             applyModCount = modCount
-            applyMatsModCount = modelMat.modCount
+            applyMatsModCount = modelMat.modCount.count
             return true
         }
         return false

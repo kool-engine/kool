@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.BindGroupScope
 import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.util.ModCounter
 import de.fabmax.kool.util.setMat4
 
 fun KslProgram.mvpMatrix(): MvpMatrixData {
@@ -89,13 +90,15 @@ class ModelMatrixData(program: KslProgram) : MatrixData(program, "uModelMat", Bi
     override val name = NAME
 
     private val tmpMat4f = MutableMat4f()
+    private val bindingModCounts = mutableMapOf<UniformBufferBindingData<*>, ModCounter>()
 
     override fun onUpdateDrawData(cmd: DrawCommand) {
         val bindingLayout = uboLayout ?: return
         cmd.mesh.meshPipelineData.updatePipelineData(cmd.pipeline, bindingLayout.bindingIndex) { uboData ->
             val uboBinding = uboData.uniformBufferBindingData(bindingLayout.bindingIndex)
-            if (!uboBinding.modCount.isDirty(cmd.mesh.modelMatrixData.modCount)) return
-            uboBinding.modCount.reset(cmd.mesh.modelMatrixData.modCount)
+            val bindingModCount = bindingModCounts.getOrPut(uboBinding) { ModCounter() }
+            if (bindingModCount.isNotDirty(cmd.mesh.modelMatrixData.modCount)) return
+            bindingModCount.reset(cmd.mesh.modelMatrixData.modCount)
             if (cmd.queue.isDoublePrecision) {
                 cmd.modelMatD.toMutableMat4f(tmpMat4f)
                 putMatrixToBuffer(tmpMat4f, uboBinding)
