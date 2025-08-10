@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.PassData
 import de.fabmax.kool.ViewData
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
@@ -234,21 +235,22 @@ abstract class RenderPassVk(
         val layers: Int,
         val isCopySrc: Boolean,
         val isCopyDst: Boolean,
-        val parentPass: RenderPass
+        val parentPass: RenderPass,
+        val size: Vec2i,
     ) : BaseReleasable() {
         val colorImages = colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, numSamples, format, false)
+            createImage(size.x, size.y, numSamples, format, false)
         }
         val depthImage = depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, numSamples, format, true)
+            createImage(size.x, size.y, numSamples, format, true)
         }
 
         val resolveColorImages = if (!isMultiSampled) emptyList() else colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, 1, format, false)
+            createImage(size.x, size.y, 1, format, false)
         }
         val isResolveDepth = isMultiSampled && parentPass.depthAttachment is RenderPassDepthTextureAttachment<*>
         val resolveDepthImage = if (!isResolveDepth) null else depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, 1, format, true)
+            createImage(size.x, size.y, 1, format, true)
         }
 
         val colorMipViews = colorImages.map { it.createMipViews() }
@@ -459,11 +461,11 @@ abstract class RenderPassVk(
 
         private fun copyToTexture(target: Texture<*>, src: ImageVk, format: Int, passEncoderState: PassEncoderState) {
             var copyDst = (target.gpuTexture as ImageVk?)
-            if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
+            if (copyDst == null || copyDst.width != size.x || copyDst.height != size.y) {
                 copyDst?.release()
                 copyDst = createImageWithUsage(
-                    width = parentPass.width,
-                    height = parentPass.height,
+                    width = size.x,
+                    height = size.y,
                     samples = 1,
                     format = format,
                     isDepth = false,

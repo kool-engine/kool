@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.PassData
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.FrameCopy
 import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.OffscreenPass2dImpl
@@ -18,6 +19,8 @@ class OffscreenPass2dGl(
     private val rbos = mutableListOf<GlRenderbuffer>()
     private var copyFbo: GlFramebuffer? = null
 
+    private var applyResize: Vec2i? = Vec2i(parent.width, parent.height)
+
     internal val colorTextures = Array(parent.colorAttachments.size) { gl.NULL_TEXTURE }
     internal var depthTexture = gl.NULL_TEXTURE
 
@@ -31,7 +34,6 @@ class OffscreenPass2dGl(
                         "WebGPU backend if you need multi-sampled offscreen passes)"
             }
         }
-        createBuffers()
     }
 
     override fun setupFramebuffer(mipLevel: Int, layer: Int) {
@@ -39,6 +41,10 @@ class OffscreenPass2dGl(
     }
 
     fun draw(passData: PassData) {
+        applyResize?.let {
+            doResize(it)
+            applyResize = null
+        }
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
 
         renderViews(passData)
@@ -110,16 +116,20 @@ class OffscreenPass2dGl(
     }
 
     override fun applySize(width: Int, height: Int) {
-        deleteBuffers()
-        createBuffers()
+        applyResize = Vec2i(width, height)
     }
 
-    private fun createBuffers() {
+    private fun doResize(newSize: Vec2i) {
+        deleteBuffers()
+        createBuffers(newSize)
+    }
+
+    private fun createBuffers(size: Vec2i) {
         parent.colorTextures.forEachIndexed { i, tex ->
-            colorTextures[i] = createColorAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
+            colorTextures[i] = createColorAttachmentTexture(size.x, size.y, parent.numTextureMipLevels, tex, gl.TEXTURE_2D)
         }
         parent.depthTexture?.let {
-            depthTexture = createDepthAttachmentTexture(parent.width, parent.height, parent.numTextureMipLevels, it, gl.TEXTURE_2D)
+            depthTexture = createDepthAttachmentTexture(size.x, size.y, parent.numTextureMipLevels, it, gl.TEXTURE_2D)
         }
 
         for (mipLevel in 0 until parent.numRenderMipLevels) {

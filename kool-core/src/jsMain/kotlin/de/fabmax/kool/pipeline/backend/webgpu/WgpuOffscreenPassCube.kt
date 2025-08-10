@@ -1,9 +1,11 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.PassData
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.releaseDelayed
 
 class WgpuOffscreenPassCube(
     val parentPass: OffscreenPassCube,
@@ -11,46 +13,14 @@ class WgpuOffscreenPassCube(
 ) : WgpuRenderPass(GPUTextureFormat.depth32float, parentPass.numSamples, backend), OffscreenPassCubeImpl {
 
     override val colorTargetFormats = parentPass.colorAttachments.map { it.texture.format.wgpu }
-    private var attachments = createAttachments(false)
-
-    private fun createAttachments(isCopySource: Boolean): Attachments {
-        val isGenMipMaps = parentPass.mipMode == RenderPass.MipMode.Generate
-        val attachments = Attachments(
-            colorFormats = colorTargetFormats,
-            depthFormat = if (parentPass.hasDepth) GPUTextureFormat.depth32float else null,
-            layers = 6,
-            isCopySrc = isCopySource || isGenMipMaps,
-            parentPass = parentPass,
-        )
-        parentPass.colorTextures.forEachIndexed { i, attachment ->
-            if (isMultiSampled) {
-                attachment.gpuTexture = attachments.resolveColorImages[i]
-            } else {
-                attachment.gpuTexture = attachments.colorImages[i]
-            }
-        }
-        parentPass.depthTexture?.let { attachment ->
-            if (isMultiSampled) {
-                attachment.gpuTexture = attachments.resolveDepthImage
-            } else {
-                attachment.gpuTexture = attachments.depthImage
-            }
-        }
-        return attachments
-    }
-
-    override fun applySize(width: Int, height: Int) {
-        logT { "Resize offscreen 2d pass ${parentPass.name} to $width x $height" }
-        val wasCopySource = attachments.isCopySrc
-        attachments.release()
-        attachments = createAttachments(wasCopySource)
-    }
+    private var attachments: Attachments? = null
+    private var applyResize: Vec2i? = Vec2i(parentPass.width, parentPass.height)
 
     override fun release() {
         val alreadyReleased = isReleased
         super.release()
         if (!alreadyReleased) {
-            attachments.release()
+            attachments?.release()
             parentPass.colorTextures.forEach {
                 it.gpuTexture = null
             }
@@ -61,16 +31,34 @@ class WgpuOffscreenPassCube(
     }
 
     fun draw(passData: PassData, passEncoderState: RenderPassEncoderState) {
+        applyResize?.let {
+            doResize(it)
+            applyResize = null
+        }
+        val attachments = checkNotNull(this.attachments)
         val isCopySrc = passData.isCopySource
         if (isCopySrc != attachments.isCopySrc) {
             logD { "Offscreen pass ${parentPass.name} copy requirements changed: copy src: $isCopySrc" }
+            val size = attachments.size
             attachments.release()
-            attachments = createAttachments(isCopySrc)
+            this.attachments = createAttachments(isCopySrc, size)
         }
         render(passData, passEncoderState)
     }
 
+    override fun applySize(width: Int, height: Int) {
+        applyResize = Vec2i(width, height)
+    }
+
+    private fun doResize(newSize: Vec2i) {
+        logT { "Resize offscreen cube pass ${parentPass.name} to ${newSize.x} x ${newSize.y}" }
+        val wasCopySource = attachments?.isCopySrc == true
+        attachments?.releaseDelayed(1)
+        attachments = createAttachments(wasCopySource, newSize)
+    }
+
     override fun generateMipLevels(encoder: GPUCommandEncoder) {
+        val attachments = checkNotNull(this.attachments)
         for (i in attachments.colorImages.indices) {
             val image = attachments.colorImages[i]
             backend.textureLoader.mipmapGenerator.generateMipLevels(image.imageInfo, image.gpuTexture, encoder)
@@ -78,6 +66,7 @@ class WgpuOffscreenPassCube(
     }
 
     override fun copy(frameCopy: FrameCopy, encoder: GPUCommandEncoder) {
+        val attachments = checkNotNull(this.attachments)
         if (frameCopy.isCopyColor) {
             for (i in frameCopy.colorCopy.indices) {
                 attachments.copyColorToTexture(i, frameCopy.colorCopy[i] as TextureCube, encoder)
@@ -93,6 +82,7 @@ class WgpuOffscreenPassCube(
         forceLoad: Boolean,
         timestampWrites: GPURenderPassTimestampWrites?
     ): GPURenderPassEncoder {
+        val attachments = checkNotNull(this.attachments)
         val renderPass = passEncoderState.renderPass
         val mipLevel = passEncoderState.mipLevel
         val layer = passEncoderState.layer
@@ -133,6 +123,7 @@ class WgpuOffscreenPassCube(
 
     override fun endRenderPass(passEncoderState: RenderPassEncoderState) {
         super.endRenderPass(passEncoderState)
+        val attachments = checkNotNull(this.attachments)
         attachments.resolveDepthImage?.let { copyDst ->
             backend.textureLoader.resolveMultiSampledDepthTexture(
                 src = attachments.depthImage!!.gpuTexture,
@@ -142,5 +133,32 @@ class WgpuOffscreenPassCube(
                 encoder = passEncoderState.encoder
             )
         }
+    }
+
+    private fun createAttachments(isCopySource: Boolean, size: Vec2i): Attachments {
+        val isGenMipMaps = parentPass.mipMode == RenderPass.MipMode.Generate
+        val attachments = Attachments(
+            colorFormats = colorTargetFormats,
+            depthFormat = if (parentPass.hasDepth) GPUTextureFormat.depth32float else null,
+            layers = 6,
+            isCopySrc = isCopySource || isGenMipMaps,
+            parentPass = parentPass,
+            size = size,
+        )
+        parentPass.colorTextures.forEachIndexed { i, attachment ->
+            if (isMultiSampled) {
+                attachment.gpuTexture = attachments.resolveColorImages[i]
+            } else {
+                attachment.gpuTexture = attachments.colorImages[i]
+            }
+        }
+        parentPass.depthTexture?.let { attachment ->
+            if (isMultiSampled) {
+                attachment.gpuTexture = attachments.resolveDepthImage
+            } else {
+                attachment.gpuTexture = attachments.depthImage
+            }
+        }
+        return attachments
     }
 }

@@ -2,6 +2,7 @@ package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.PassData
 import de.fabmax.kool.ViewData
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.Texture
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
@@ -168,20 +169,21 @@ abstract class WgpuRenderPass(
         val layers: Int,
         val isCopySrc: Boolean,
         val parentPass: RenderPass,
+        val size: Vec2i,
     ) : BaseReleasable() {
         val colorImages = colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, numSamples, format)
+            createImage(size.x, size.y, numSamples, format)
         }
         val depthImage = depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, numSamples, format)
+            createImage(size.x, size.y, numSamples, format)
         }
 
         val resolveColorImages = if (!isMultiSampled) emptyList() else colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, 1, format)
+            createImage(size.x, size.y, 1, format)
         }
         val isResolveDepth = isMultiSampled && parentPass.depthAttachment is RenderPassDepthTextureAttachment<*>
         val resolveDepthImage = if (!isResolveDepth) null else depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, 1, format)
+            createImage(size.x, size.y, 1, format)
         }
 
         val colorMipViews = colorImages.map { it.createMipViews() }
@@ -276,11 +278,11 @@ abstract class WgpuRenderPass(
 
         private fun copyToTexture(target: Texture<*>, src: WgpuTextureResource, format: GPUTextureFormat, encoder: GPUCommandEncoder) {
             var copyDst = (target.gpuTexture as WgpuTextureResource?)
-            if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
+            if (copyDst == null || copyDst.width != size.x || copyDst.height != size.y) {
                 copyDst?.release()
                 copyDst = createImageWithUsage(
-                    width = parentPass.width,
-                    height = parentPass.height,
+                    width = size.x,
+                    height = size.y,
                     samples = 1,
                     format = format,
                     usage = setOf(GPUTextureUsage.CopyDst, GPUTextureUsage.TextureBinding, GPUTextureUsage.RenderAttachment),
