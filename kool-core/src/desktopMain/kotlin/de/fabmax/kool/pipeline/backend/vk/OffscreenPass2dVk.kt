@@ -4,6 +4,7 @@ import de.fabmax.kool.PassData
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.releaseDelayed
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
 
 class OffscreenPass2dVk(
@@ -48,7 +49,7 @@ class OffscreenPass2dVk(
     override fun applySize(width: Int, height: Int) {
         logT { "Resize offscreen 2d pass ${parentPass.name} to $width x $height" }
         val wasCopySource = attachments.isCopySrc
-        attachments.release()
+        attachments.releaseDelayed(1)
         attachments = createAttachments(wasCopySource)
     }
 

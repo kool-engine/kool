@@ -22,7 +22,8 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     private val defaultPipelineData: BindGroupData = pipelineDataLayout.createData()
     private val pipelineSwapData = mutableMapOf<Any?, BindGroupData>(null to defaultPipelineData)
 
-    var pipelineData = defaultPipelineData
+    internal var pipelineData = defaultPipelineData
+    var capturedPipelineData = defaultPipelineData
         private set
 
     var pipelineBackend: PipelineBackend? = null
@@ -39,6 +40,7 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
 
     override fun captureBuffer() {
         pipelineData.captureBuffer()
+        capturedPipelineData = pipelineData
     }
 
     override fun release() {
@@ -80,15 +82,18 @@ class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), 
     @PublishedApi
     internal val bindGroupData = mutableMapOf<LongHash, UpdateAwareBindGroupData>()
 
-    fun getPipelineData(pipeline: PipelineBase): BindGroupData {
+    @PublishedApi
+    internal fun dataForPipeline(pipeline: PipelineBase): UpdateAwareBindGroupData {
         val layout = pipeline.bindGroupLayouts[scope]
-        val data = bindGroupData.getOrPut(layout.hash) { UpdateAwareBindGroupData(layout.createData()) }
-        return data.data
+        return bindGroupData.getOrPut(layout.hash) {
+            UpdateAwareBindGroupData(layout.createData().also { it.captureBuffer() })
+        }
     }
 
+    fun getPipelineData(pipeline: PipelineBase): BindGroupData = dataForPipeline(pipeline).data
+
     inline fun updatePipelineData(pipeline: PipelineBase, binding: Int, block: (BindGroupData) -> Unit) {
-        val layout = pipeline.bindGroupLayouts[scope]
-        val data = bindGroupData.getOrPut(layout.hash) { UpdateAwareBindGroupData(layout.createData()) }
+        val data = dataForPipeline(pipeline)
         if (data.markBindingUpdate(binding)) {
             block(data.data)
         }
@@ -100,7 +105,6 @@ class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), 
     }
 
     override fun captureBuffer() {
-        // fixme don't forEach
         bindGroupData.values.forEach {
             it.data.captureBuffer()
         }

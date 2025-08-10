@@ -118,9 +118,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         frameData.syncData()
 
         if (config.asyncSceneUpdate) {
-            nextFrameData = ApplicationScope.async {
-                render(computeDt())
-            }
+            nextFrameData = ApplicationScope.async { render(computeDt()) }
         }
         backend.renderFrame(frameData, this@Lwjgl3Context)
     }

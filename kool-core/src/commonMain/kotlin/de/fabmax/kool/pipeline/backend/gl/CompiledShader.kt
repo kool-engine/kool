@@ -76,7 +76,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             uniformsOk = uniformsOk && viewGroup.bindUniforms(uniformBindCtx) != false
         }
 
-        val pipelineData = pipeline.pipelineData
+        val pipelineData = pipeline.capturedPipelineData
         val pipelineGroup = (pipelineData.gpuData as MappedBindGroup?) ?: mapBindGroup(pipelineData, pass).also { pipelineData.gpuData = it }
         uniformsOk = uniformsOk && pipelineGroup.bindUniforms(uniformBindCtx) != false
 

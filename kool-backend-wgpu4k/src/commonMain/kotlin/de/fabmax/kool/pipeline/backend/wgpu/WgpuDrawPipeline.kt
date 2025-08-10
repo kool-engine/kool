@@ -168,7 +168,7 @@ class WgpuDrawPipeline(
     }
 
     fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
-        val pipelineData = drawPipeline.pipelineData
+        val pipelineData = drawPipeline.capturedPipelineData
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
         val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
 

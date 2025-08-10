@@ -4,6 +4,7 @@ import de.fabmax.kool.PassData
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.releaseDelayed
 import org.lwjgl.vulkan.KHRDynamicRendering.vkCmdBeginRenderingKHR
 import org.lwjgl.vulkan.VK10.VK_ATTACHMENT_STORE_OP_STORE
 
@@ -49,7 +50,7 @@ class OffscreenPassCubeVk(
     override fun applySize(width: Int, height: Int) {
         logT { "Resize offscreen cube pass ${parentPass.name} to $width x $height" }
         val wasCopySource = attachments.isCopySrc
-        attachments.release()
+        attachments.releaseDelayed(1)
         attachments = createAttachments(wasCopySource)
     }
 

@@ -75,7 +75,7 @@ open class Scene(name: String? = null) : Node(name), CoroutineScope {
             }
         }
         if (passData.isNotEmpty()) {
-            // make sure mainRenderPass is updated first, so that scene info (e.g. camera) is updated
+            // make sure mainRenderPass is updated first, so that scene info (camera, etc.) is updated
             // before offscreen passes are updated
             val (mainPass, mainPassData) = passData.last()
             mainPass.update(mainPassData, ctx)

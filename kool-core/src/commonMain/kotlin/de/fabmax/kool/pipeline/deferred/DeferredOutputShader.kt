@@ -50,12 +50,7 @@ class DeferredOutputShader(cfg: DeferredPipelineConfig, deferredPipeline: Deferr
         createdPipeline?.swapPipelineData(current)
         currentLighting = current.lightingPass.colorTexture
         depthTex = current.materialPass.depthTexture
-        if (isBloomEnabled) {
-            bloomMap = current.bloomPass?.bloomMap ?: noBloomMap
-        } else {
-            bloomMap = noBloomMap
-        }
-        createdPipeline?.pipelineData?.captureBuffer()
+        bloomMap = if (isBloomEnabled) current.bloomPass?.bloomMap ?: noBloomMap else noBloomMap
     }
 
     class Model(cfg: DeferredPipelineConfig) : KslProgram("Deferred output shader") {

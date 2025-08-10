@@ -24,7 +24,7 @@ class ComputePipelineVk(
         users += task
         computePipeline.updatePipelineData(task.pass)
 
-        val pipelineData = computePipeline.pipelineData
+        val pipelineData = computePipeline.capturedPipelineData
         if (!pipelineData.checkBindings()) {
             return false
         }

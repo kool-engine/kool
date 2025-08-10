@@ -4,31 +4,22 @@ import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.util.*
 
 class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasable(), DoubleBuffered {
+    var gpuData: GpuBindGroupData? = null
 
     private val bindings: List<BindingData> = layout.bindings.toData()
     private val _bufferedBindingData: List<BindingData> = layout.bindings.toData()
+    private var captured = false
 
     val size: Int get() = bindings.size
+    val isComplete: Boolean get() = bindings.all { it.isComplete }
 
     val bufferedBindings: List<BindingData> get() {
-        if (captureI != Time.frameCount) {
-            //logW { "$name / ${layout.scope} $this, $captureI" }
-            //error("foo")
-            //return bindings
-        }
         if (!captured) {
             logW { "BindGroupData not captured! $name / ${layout.scope}" }
             return bindings
         }
         return _bufferedBindingData
-//        return bindings
     }
-    private var captured = false
-    private var captureI = -1
-
-    val isComplete: Boolean get() = bindings.all { it.isComplete }
-
-    var gpuData: GpuBindGroupData? = null
 
     @Suppress("UNCHECKED_CAST")
     fun <S: Struct> uniformStructBindingData(binding: UniformBufferLayout<S>) = bindings[binding.bindingIndex] as UniformBufferBindingData<S>
@@ -55,7 +46,6 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
     override fun captureBuffer() {
         bindings.copyTo(_bufferedBindingData)
         captured = true
-        captureI = Time.frameCount
     }
 
     override fun release() {
@@ -83,8 +73,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
 
     private fun List<BindingData>.copyTo(dst: List<BindingData>) {
         for (i in indices) {
-            val bindingData = this[i]
-            when (bindingData) {
+            when (val bindingData = this[i]) {
                 is UniformBufferBindingData<*> -> bindingData.copyTo(dst[i] as UniformBufferBindingData<*>)
                 is StorageBufferBindingData -> bindingData.copyTo(dst[i] as StorageBufferBindingData)
 
@@ -129,7 +118,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
             for (i in 0 until buffer.buffer.capacity / 4) {
                 other.buffer.buffer.setInt32(i * 4, buffer.buffer.getInt32(i * 4))
             }
-            other.markDirty()
+            other.modCount.reset(modCount)
         }
     }
 
@@ -153,6 +142,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
 
         fun copyTo(other: StorageBufferBindingData) {
             other.storageBuffer = storageBuffer
+            other.modCount.reset(modCount)
         }
     }
 
@@ -176,6 +166,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
         fun copyTo(other: TextureBindingData<T>) {
             other.texture = texture
             other.sampler = sampler
+            other.modCount.reset(modCount)
         }
     }
 

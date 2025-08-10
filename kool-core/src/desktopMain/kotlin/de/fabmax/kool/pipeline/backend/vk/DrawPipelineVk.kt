@@ -42,11 +42,11 @@ class DrawPipelineVk(
             gpuInsts.checkBuffers(passEncoderState.commandBuffer)
         }
 
-        drawPipeline.pipelineData.getOrCreateVkData().updateBuffers(passEncoderState)
+        drawPipeline.capturedPipelineData.getOrCreateVkData().updateBuffers(passEncoderState)
     }
 
     fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
-        val pipelineData = drawPipeline.pipelineData
+        val pipelineData = drawPipeline.capturedPipelineData
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
         val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
 
