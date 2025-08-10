@@ -190,7 +190,7 @@ class WgpuDrawPipeline(
     }
 
     private fun bindVertexBuffers(passEncoder: GPURenderPassEncoder, cmd: DrawCommand): Boolean {
-        val gpuGeom = cmd.mesh.geometry.gpuGeometry as WgpuGeometry? ?: return false
+        val gpuGeom = cmd.geometry.gpuGeometry as WgpuGeometry? ?: return false
         val gpuInsts = cmd.instances?.gpuInstances as WgpuInstances?
 
         var slot = 0u

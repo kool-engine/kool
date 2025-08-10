@@ -37,14 +37,12 @@ class OffscreenPass2dGl(
     }
 
     override fun setupFramebuffer(mipLevel: Int, layer: Int) {
+        doResize()
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
     }
 
     fun draw(passData: PassData) {
-        applyResize?.let {
-            doResize(it)
-            applyResize = null
-        }
+        doResize()
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
 
         renderViews(passData)
@@ -119,9 +117,12 @@ class OffscreenPass2dGl(
         applyResize = Vec2i(width, height)
     }
 
-    private fun doResize(newSize: Vec2i) {
-        deleteBuffers()
-        createBuffers(newSize)
+    private fun doResize() {
+        applyResize?.let { newSize ->
+            applyResize = null
+            deleteBuffers()
+            createBuffers(newSize)
+        }
     }
 
     private fun createBuffers(size: Vec2i) {

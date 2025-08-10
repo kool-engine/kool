@@ -22,7 +22,6 @@ class ComputePipelineVk(
 
     fun bind(task: ComputePass.Task, passEncoderState: PassEncoderState): Boolean {
         users += task
-        computePipeline.updatePipelineData(task.pass)
 
         val pipelineData = computePipeline.capturedPipelineData
         if (!pipelineData.checkBindings()) {

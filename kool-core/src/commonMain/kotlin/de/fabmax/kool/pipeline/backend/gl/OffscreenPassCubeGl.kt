@@ -34,6 +34,7 @@ class OffscreenPassCubeGl(
     }
 
     override fun setupFramebuffer(mipLevel: Int, layer: Int) {
+        doResize()
         gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[mipLevel])
         attachColorTextures(mipLevel, layer)
         if (depthTexture != gl.NULL_TEXTURE) {
@@ -42,10 +43,7 @@ class OffscreenPassCubeGl(
     }
 
     fun draw(passData: PassData) {
-        applyResize?.let {
-            doResize(it)
-            applyResize = null
-        }
+        doResize()
         resInfo.sceneName = parent.parentScene?.name ?: "scene:<null>"
 
         renderViews(passData)
@@ -127,9 +125,12 @@ class OffscreenPassCubeGl(
         applyResize = Vec2i(width, height)
     }
 
-    private fun doResize(newSize: Vec2i) {
-        deleteBuffers()
-        createBuffers(newSize)
+    private fun doResize() {
+        applyResize?.let { newSize ->
+            applyResize = null
+            deleteBuffers()
+            createBuffers(newSize)
+        }
     }
 
     private fun createBuffers(size: Vec2i) {

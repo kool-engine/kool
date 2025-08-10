@@ -93,7 +93,19 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
             gl.bindFramebuffer(gl.FRAMEBUFFER, targetFbo)
             val passData = backend.currentFrameData.acquirePassData(blitScene.mainRenderPass)
             blitScene.mainRenderPass.update(passData, backend.ctx)
+            passData.updatePipelineData()
             passData.forEachView { viewData -> renderView(viewData, 0, 0) }
+        }
+    }
+
+    private fun PassData.updatePipelineData() {
+        for (vi in viewData.indices) {
+            val viewData = viewData[vi]
+            viewData.drawQueue.forEach {
+                it.updatePipelineData()
+                it.captureData()
+            }
+            viewData.drawQueue.view.viewPipelineData.captureBuffer()
         }
     }
 

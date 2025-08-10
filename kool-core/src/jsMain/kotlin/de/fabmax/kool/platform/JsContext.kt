@@ -178,6 +178,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
 
         // render frame
         val frameData = render(dt)
+        frameData.syncData()
         backend.renderFrame(frameData, this)
         requestAnimationFrame()
     }

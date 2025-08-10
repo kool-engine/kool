@@ -86,8 +86,8 @@ private object DesktopLogPrinter : LogPrinter {
     var prevMsg: String? = null
 
     override fun print(lvl: Log.Level, tag: String?, message: String) {
-        val timestamp = coloredText("%8.3f s".format((System.currentTimeMillis() - startTime) / 1000.0), MdColor.BROWN tone 300)
-        val frameFmt = if (Time.frameCount > 999) "…%03d".format(Time.frameCount % 1000) else "%4d".format(Time.frameCount)
+        val timestamp = coloredText("%8.3f s".format(Locale.ENGLISH, (System.currentTimeMillis() - startTime) / 1000.0), MdColor.BROWN tone 300)
+        val frameFmt = if (Time.frameCount > 999) "…%03d".format(Locale.ENGLISH, Time.frameCount % 1000) else "%4d".format(Time.frameCount)
         val frame = coloredText("f:$frameFmt", MdColor.PURPLE tone 300)
 
         val style = styles[lvl.level]
