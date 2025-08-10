@@ -36,6 +36,10 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
      * Number of instances.
      */
     var numInstances = 0
+        set(value) {
+            field = value
+            incrementModCount()
+        }
 
     var dataF: Float32Buffer
         private set
@@ -74,6 +78,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     fun incrementModCount() = modCount++
 
     fun checkBufferSize(reqSpace: Int = 1) {
+        if (strideFloats == 0) return
         if (numInstances + reqSpace > maxInstances) {
             maxInstances = max(maxInstances * 2, numInstances + reqSpace).coerceAtMost(Int.MAX_VALUE / (strideFloats * 4))
             check(maxInstances >= numInstances + reqSpace) {
