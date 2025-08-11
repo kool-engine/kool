@@ -86,4 +86,6 @@ class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWgp
             endTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
         }
     }
+
+    override fun doRelease() { }
 }

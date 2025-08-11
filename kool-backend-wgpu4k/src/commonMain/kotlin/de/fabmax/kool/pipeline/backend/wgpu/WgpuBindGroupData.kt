@@ -306,8 +306,7 @@ class WgpuBindGroupData(
         return BindGroupEntry(location.binding.toUInt(), texView)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         textureBindings.clear()
         bufferBindings.forEach { it.gpuBuffer.release() }
         bufferBindings.clear()

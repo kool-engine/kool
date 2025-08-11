@@ -292,8 +292,7 @@ abstract class WgpuRenderPass(
             backend.textureLoader.copyTexture2d(src.gpuTexture, copyDst.gpuTexture, parentPass.numTextureMipLevels, encoder)
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             colorImages.forEach { it.release() }
             depthImage?.release()
             resolveColorImages.forEach { it.release() }

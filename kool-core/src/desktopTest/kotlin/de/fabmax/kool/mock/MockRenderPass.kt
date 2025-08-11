@@ -18,4 +18,6 @@ class MockRenderPass(
     override val views = listOf(mockView)
 
     val updateEvent = views[0].makeUpdateEvent(Mock.testCtx)
+
+    override fun doRelease() { }
 }

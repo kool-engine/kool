@@ -110,17 +110,12 @@ open class Scene(name: String? = null) : Node(name), CoroutineScope {
         return isVisible
     }
 
-    override fun release() {
-        // scenes shall not be released twice
-        checkIsNotReleased()
-        super.release()
-
+    override fun doRelease() {
+        super.doRelease()
         job.cancel()
-
         mainRenderPass.release()
         extraPasses.updated().forEach { it.release() }
         extraPasses.clear()
-
         logD { "Released scene \"$name\"" }
     }
 
@@ -191,6 +186,8 @@ open class Scene(name: String? = null) : Node(name), CoroutineScope {
             }
             super.update(passData, ctx)
         }
+
+        override fun doRelease() { }
     }
 
     private class PassAndPassData() : ResettableData<GpuPass> {

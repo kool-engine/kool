@@ -126,14 +126,13 @@ abstract class AoPipeline : BaseReleasable() {
             depthPass.isEnabled = isEnabled
         }
 
-        override fun release() {
+        override fun doRelease() {
             scene.removeOffscreenPass(depthPass)
             scene.removeOffscreenPass(aoPass)
             scene.removeOffscreenPass(denoisePass)
             depthPass.release()
             aoPass.release()
             denoisePass.release()
-            super.release()
         }
     }
 
@@ -177,7 +176,7 @@ abstract class AoPipeline : BaseReleasable() {
             }
         }
 
-        override fun release() {
+        override fun doRelease() {
             launchOnMainThread {
                 deferredPipeline.scene.removeOffscreenPass(aoPass)
                 deferredPipeline.scene.removeOffscreenPass(denoisePass)

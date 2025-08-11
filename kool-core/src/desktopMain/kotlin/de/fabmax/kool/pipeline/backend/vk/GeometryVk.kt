@@ -59,8 +59,7 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         createdIndexBuffer.buffer.release()
         createdFloatBuffer?.buffer?.release()
         createdIntBuffer?.buffer?.release()

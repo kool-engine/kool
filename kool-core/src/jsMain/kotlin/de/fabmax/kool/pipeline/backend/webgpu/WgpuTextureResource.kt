@@ -34,8 +34,7 @@ class WgpuTextureResource(
 
     private val GPUTextureDescriptor.mipMapFactor: Double get() = if (mipLevelCount > 1) { 1.333 } else 1.0
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gpuTexture.destroy()
         textureInfo.deleted()
     }

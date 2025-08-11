@@ -51,8 +51,8 @@ class ComputePipelineVk(
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         backend.pipelineManager.removeComputePipeline(this)
         backend.device.destroyComputePipeline(vkComputePipeline)
     }

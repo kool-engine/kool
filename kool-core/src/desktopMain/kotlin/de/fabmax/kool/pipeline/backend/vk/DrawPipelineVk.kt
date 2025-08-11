@@ -316,8 +316,8 @@ class DrawPipelineVk(
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         backend.pipelineManager.removeDrawPipeline(this)
         pipelines.values.forEach { backend.device.destroyGraphicsPipeline(it) }
     }

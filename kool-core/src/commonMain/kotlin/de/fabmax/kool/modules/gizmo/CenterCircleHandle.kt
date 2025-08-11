@@ -82,8 +82,8 @@ class CenterCircleHandle(
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         parentCam?.let { it.onCameraUpdated -= camUpdateListener }
     }
 

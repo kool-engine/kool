@@ -33,8 +33,7 @@ class InstancesVk(val instances: MeshInstanceList, val backend: RenderBackendVk,
         }
     }
 
-    override fun release() {
+    override fun doRelease() {
         createdInstanceBuffer?.buffer?.release()
-        super.release()
     }
 }

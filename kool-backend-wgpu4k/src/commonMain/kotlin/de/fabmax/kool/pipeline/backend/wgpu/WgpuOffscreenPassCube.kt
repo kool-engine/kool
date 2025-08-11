@@ -17,17 +17,13 @@ class WgpuOffscreenPassCube(
     private var attachments: Attachments? = null
     private var applyResize: Vec2i? = Vec2i(parentPass.width, parentPass.height)
 
-    override fun release() {
-        val alreadyReleased = isReleased
-        super.release()
-        if (!alreadyReleased) {
-            attachments?.release()
-            parentPass.colorTextures.forEach {
-                it.gpuTexture = null
-            }
-            parentPass.depthTexture?.let {
-                it.gpuTexture = null
-            }
+    override fun doRelease() {
+        attachments?.release()
+        parentPass.colorTextures.forEach {
+            it.gpuTexture = null
+        }
+        parentPass.depthTexture?.let {
+            it.gpuTexture = null
         }
     }
 

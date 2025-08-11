@@ -170,4 +170,6 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
             depthAttachmentView = it.createView()
         }
     }
+
+    override fun doRelease() { }
 }

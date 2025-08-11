@@ -122,8 +122,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         drawPipelines.toList().forEach { it.release() }
         computePipelines.toList().forEach { it.release() }
     }

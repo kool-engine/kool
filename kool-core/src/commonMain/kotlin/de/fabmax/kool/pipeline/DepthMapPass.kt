@@ -72,8 +72,8 @@ open class DepthMapPass(
         return this.cullMethod ?: mesh.getOrCreatePipeline(ctx)?.cullMethod ?: CullMethod.CULL_BACK_FACES
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         shadowPipelines.values
             .filterNotNull()
             .distinct()

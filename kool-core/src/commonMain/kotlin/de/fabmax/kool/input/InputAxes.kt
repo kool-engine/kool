@@ -59,13 +59,12 @@ open class InputAxes(
 
     fun digital(name: String): Boolean = axes[name]?.isPositive == true
 
-    override fun release() {
+    override fun doRelease() {
         KoolSystem.requireContext().onRender -= updateAxes
         ControllerInput.connectionListeners -= this
         axesList.forEach { ax -> ax.release() }
         axesList.clear()
         axes.clear()
-        super.release()
     }
 
     override fun onControllerConnected(controller: Controller) {

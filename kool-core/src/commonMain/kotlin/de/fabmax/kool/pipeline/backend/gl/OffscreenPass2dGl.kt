@@ -107,8 +107,7 @@ class OffscreenPass2dGl(
         depthTexture = gl.NULL_TEXTURE
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         deleteBuffers()
         resInfo.deleted()
     }

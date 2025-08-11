@@ -97,8 +97,7 @@ class Device(val backend: RenderBackendVk) : BaseReleasable() {
         vkDeviceWaitIdle(vkDevice)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         ReleaseQueue.enqueue {
             vkDestroyDevice(vkDevice, null)
             logD { "Destroyed logical device" }

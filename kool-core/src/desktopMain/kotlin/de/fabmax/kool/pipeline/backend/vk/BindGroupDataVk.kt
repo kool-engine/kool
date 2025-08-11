@@ -102,12 +102,8 @@ class BindGroupDataVk(
         }
     }
 
-    override fun release() {
-        val alreadyReleased = isReleased
-        super.release()
-        if (!alreadyReleased) {
-            bindGroup.release()
-        }
+    override fun doRelease() {
+        bindGroup.release()
     }
 
     class BindGroup(
@@ -155,12 +151,15 @@ class BindGroupDataVk(
         override fun release() {
             if (isReleasable) {
                 super.release()
-                uboBindings.forEach { it.release() }
-                storageBufferBindings.forEach { it.release() }
-                textureBindings.forEach { it.release() }
-                storageTextureBindings.forEach { it.release() }
-                backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
             }
+        }
+
+        override fun doRelease() {
+            uboBindings.forEach { it.release() }
+            storageBufferBindings.forEach { it.release() }
+            textureBindings.forEach { it.release() }
+            storageTextureBindings.forEach { it.release() }
+            backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
         }
 
         companion object {
@@ -237,8 +236,7 @@ class BindGroupDataVk(
             return false
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             buffers.forEach { it.release() }
         }
     }
@@ -339,8 +337,7 @@ class BindGroupDataVk(
             )
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             view?.let { backend.device.destroyImageView(it) }
             sampler?.let { backend.device.destroySampler(it) }
         }
@@ -401,8 +398,7 @@ class BindGroupDataVk(
             )
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             view?.let { backend.device.destroyImageView(it) }
         }
     }
@@ -470,5 +466,7 @@ class BindGroupDataVk(
                 buffer.gpuBuffer = gpuBuffer
             }
         }
+
+        override fun doRelease() { }
     }
 }

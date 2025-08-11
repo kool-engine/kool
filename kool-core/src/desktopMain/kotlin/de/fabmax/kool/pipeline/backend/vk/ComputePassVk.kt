@@ -83,4 +83,6 @@ class ComputePassVk(val parentPass: ComputePass, val backend: RenderBackendVk) :
             timeQuery.end(passEncoderState.commandBuffer)
         }
     }
+
+    override fun doRelease() { }
 }

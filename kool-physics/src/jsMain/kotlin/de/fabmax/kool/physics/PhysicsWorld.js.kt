@@ -125,8 +125,8 @@ class PhysicsWorldImpl(scene: Scene?, val isContinuousCollisionDetection: Boolea
         pxScene.removeArticulation((articulation as ArticulationImpl).pxArticulation)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         pxScene.release()
         bufPxGravity.destroy()
         raycastResult.destroy()

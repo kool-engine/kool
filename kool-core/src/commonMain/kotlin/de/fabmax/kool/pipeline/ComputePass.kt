@@ -41,8 +41,7 @@ open class ComputePass(name: String) : GpuPass(name) {
         tUpdate = (Time.precisionTime - t).seconds
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         _tasks.forEach { it.release() }
         _tasks.clear()
     }
@@ -83,8 +82,7 @@ open class ComputePass(name: String) : GpuPass(name) {
             }
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             pipeline.removeUser(this)
         }
     }

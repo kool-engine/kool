@@ -80,8 +80,8 @@ class SimpleGizmo(
         transformClient = GizmoClientNode(node)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         InputStack.remove(inputHandler)
     }
 

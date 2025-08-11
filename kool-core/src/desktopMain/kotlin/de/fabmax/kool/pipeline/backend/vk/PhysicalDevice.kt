@@ -193,8 +193,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
         return tilingFeatures and VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT != 0
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         deviceProperties.free()
         vkDeviceFeatures2.free()
         portabilityFeatures.free()

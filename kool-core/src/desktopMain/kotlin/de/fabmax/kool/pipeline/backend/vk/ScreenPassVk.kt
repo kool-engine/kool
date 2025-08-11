@@ -196,6 +196,8 @@ class ScreenPassVk(backend: RenderBackendVk) :
         return image to imageView
     }
 
+    override fun doRelease() { }
+
     private inner class ScreenCopy(val frameCopy: FrameCopy) {
         var colorCopyView: VkImageView? = null
         var depthCopyView: VkImageView? = null
@@ -209,6 +211,7 @@ class ScreenPassVk(backend: RenderBackendVk) :
             }
             override val dimensions: Vec3i = Vec3i.ZERO
             override val views: List<View> = emptyList()
+            override fun doRelease() { }
         }
 
         fun getOrCreateColorCopy(): ImageVk? {

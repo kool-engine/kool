@@ -147,8 +147,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         modCount = source.modCount
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gpuInstances?.releaseDelayed(1)
     }
 }

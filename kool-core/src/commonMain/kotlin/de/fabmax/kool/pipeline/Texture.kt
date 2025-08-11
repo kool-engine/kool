@@ -36,8 +36,7 @@ abstract class Texture<T: ImageData>(
     /**
      * Releases this texture, making it unusable.
      */
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gpuTexture?.releaseDelayed(1)
     }
 

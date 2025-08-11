@@ -18,8 +18,7 @@ class GpuBufferWgpu(val buffer: GPUBuffer, size: Long, info: String?) :
         allocated(size)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         buffer.close()
         bufferInfo.deleted()
     }
@@ -68,6 +67,7 @@ internal class WgpuGrowingBuffer(
         if (required > size) {
             buffer.release()
             size = required
+            buffer.release()
             buffer = makeBuffer(required)
         }
     }
@@ -80,4 +80,8 @@ internal class WgpuGrowingBuffer(
         ),
         label
     )
+
+    override fun doRelease() {
+        buffer.release()
+    }
 }

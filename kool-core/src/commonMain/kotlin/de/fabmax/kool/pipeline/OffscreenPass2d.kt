@@ -76,8 +76,8 @@ open class OffscreenPass2d(
         impl.applySize(width, height)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         impl.release()
     }
 

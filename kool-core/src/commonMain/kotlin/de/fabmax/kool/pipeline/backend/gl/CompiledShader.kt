@@ -87,11 +87,8 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         return uniformsOk
     }
 
-    override fun release() {
-        super.release()
-        if (!pipeline.isReleased) {
-            pipeline.release()
-        }
+    override fun doRelease() {
+        pipeline.release()
         pipelineInfo.deleted()
     }
 
@@ -237,5 +234,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                 "Storage textures require OpenGL 4.2 or higher"
             }
         }
+
+        override fun doRelease() { }
     }
 }

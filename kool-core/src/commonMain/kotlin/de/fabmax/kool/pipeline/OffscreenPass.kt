@@ -36,10 +36,9 @@ abstract class OffscreenPass(
         _dimensions.set(width, height, layers)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         views.forEach {
-            if (it.isReleaseDrawNode && !it.drawNode.isReleased) {
+            if (it.isReleaseDrawNode) {
                 it.drawNode.release()
             }
         }

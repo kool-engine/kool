@@ -115,8 +115,7 @@ class OffscreenPassCubeGl(
         depthTexture = gl.NULL_TEXTURE
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         deleteBuffers()
         resInfo.deleted()
     }

@@ -184,17 +184,12 @@ sealed class WgpuPipeline(
         return gpuData as WgpuBindGroupData
     }
 
-    override fun release() {
-        if (!isReleased) {
-            super.release()
-            if (!pipeline.isReleased) {
-                pipeline.release()
-            }
-            when (this) {
-                is WgpuDrawPipeline -> backend.pipelineManager.removeDrawPipeline(this)
-                is WgpuComputePipeline -> backend.pipelineManager.removeComputePipeline(this)
-            }
-            pipelineInfo.deleted()
+    override fun doRelease() {
+        pipeline.release()
+        when (this) {
+            is WgpuDrawPipeline -> backend.pipelineManager.removeDrawPipeline(this)
+            is WgpuComputePipeline -> backend.pipelineManager.removeComputePipeline(this)
         }
+        pipelineInfo.deleted()
     }
 }

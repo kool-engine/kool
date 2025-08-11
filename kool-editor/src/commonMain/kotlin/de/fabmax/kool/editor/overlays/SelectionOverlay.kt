@@ -255,8 +255,8 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
             selectionPipelines.clear()
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
+            super.doRelease()
             disposePipelines()
         }
     }

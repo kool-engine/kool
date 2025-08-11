@@ -136,12 +136,10 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         }
     }
 
-    override fun release() {
-        if (!isReleased) {
-            backend.shaderMgr.removeDrawShader(this)
-            vao?.let { gl.deleteVertexArray(it) }
-            super.release()
-        }
+    override fun doRelease() {
+        super.doRelease()
+        backend.shaderMgr.removeDrawShader(this)
+        vao?.let { gl.deleteVertexArray(it) }
     }
 
     private fun getOrCreateGpuGeometry(cmd: DrawCommand): GpuGeometryGl {

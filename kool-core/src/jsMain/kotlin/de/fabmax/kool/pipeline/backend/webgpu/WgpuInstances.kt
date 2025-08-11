@@ -28,8 +28,7 @@ class WgpuInstances(val instances: MeshInstanceList, val backend: RenderBackendW
         }
     }
 
-    override fun release() {
+    override fun doRelease() {
         createdInstanceBuffer?.release()
-        super.release()
     }
 }

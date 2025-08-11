@@ -42,8 +42,7 @@ abstract class JointImpl(frameA: PoseF, frameB: PoseF) : BaseReleasable(), Joint
 
     override fun enableBreakage(breakForce: Float, breakTorque: Float) = pxJoint.setBreakForce(breakForce, breakTorque)
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         pxJoint.release()
     }
 }

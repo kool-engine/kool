@@ -60,11 +60,10 @@ class GpuGeometryGl(
         return "GpuGeometryGl(name=$name, geometry.name=${geometry.name})"
     }
 
-    override fun release() {
+    override fun doRelease() {
         indexBuffer.release()
         dataBufferF?.release()
         dataBufferI?.release()
-        super.release()
     }
 
     private val Usage.glUsage: Int get() = when (this) {

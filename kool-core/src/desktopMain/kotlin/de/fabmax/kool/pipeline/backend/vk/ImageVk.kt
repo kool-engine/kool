@@ -187,13 +187,9 @@ class ImageVk(
         lastKnownLayout = newLayout
     }
 
-    override fun release() {
-        val wasReleased = isReleased
-        super.release()
-        if (!wasReleased) {
-            backend.memManager.freeImage(vkImage)
-            textureInfo.deleted()
-        }
+    override fun doRelease() {
+        backend.memManager.freeImage(vkImage)
+        textureInfo.deleted()
     }
 
     fun generateMipmaps(stack: MemoryStack, commandBuffer: VkCommandBuffer, dstLayout: Int = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
@@ -343,8 +339,8 @@ class ImageVk(
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL -> VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL -> VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT
             VK_IMAGE_LAYOUT_UNDEFINED -> VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT.toLong()
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT.toLong()
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL -> VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT
             else -> VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT
         }
 

@@ -70,8 +70,8 @@ abstract class RigidBodyImpl : RigidActorImpl(), RigidBody {
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         pxTmpVec.destroy()
     }
 

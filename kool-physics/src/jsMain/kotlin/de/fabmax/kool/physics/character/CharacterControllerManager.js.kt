@@ -54,10 +54,10 @@ class CharacterControllerManagerImpl(private val world: PhysicsWorld) : Characte
         return JsCharacterController(pxCharacter, hitCallback, behaviorCallback, this, world)
     }
 
-    override fun release() {
+    override fun doRelease() {
+        super.doRelease()
         world.onAdvancePhysics -= onAdvanceListener
         world.onPhysicsUpdate -= onUpdateListener
         pxManager.release()
-        super.release()
     }
 }

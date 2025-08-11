@@ -171,8 +171,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
         val ao: Texture2d?,
         val displacement: Texture2d?
     ) : BaseReleasable() {
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             albedo.release()
             normal.release()
             roughness.release()

@@ -92,11 +92,8 @@ sealed class PipelineVk(
         return gpuData as BindGroupDataVk
     }
 
-    override fun release() {
-        super.release()
-        if (!pipeline.isReleased) {
-            pipeline.release()
-        }
+    override fun doRelease() {
+        pipeline.release()
         bindGroupLayouts.forEach { backend.device.destroyDescriptorSetLayout(it) }
         backend.device.destroyPipelineLayout(pipelineLayout)
         pipelineInfo.deleted()

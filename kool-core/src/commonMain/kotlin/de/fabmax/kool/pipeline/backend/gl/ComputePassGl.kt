@@ -47,4 +47,6 @@ class ComputePassGl(
 
         q?.end()
     }
+
+    override fun doRelease() { }
 }

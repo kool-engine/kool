@@ -22,10 +22,8 @@ class CompiledComputeShader(val pipeline: ComputePipeline, program: GlProgram, b
         }
     }
 
-    override fun release() {
-        if (!isReleased) {
-            backend.shaderMgr.removeComputeShader(this)
-            super.release()
-        }
+    override fun doRelease() {
+        backend.shaderMgr.removeComputeShader(this)
+        super.doRelease()
     }
 }

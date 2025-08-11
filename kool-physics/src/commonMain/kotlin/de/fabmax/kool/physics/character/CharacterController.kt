@@ -134,9 +134,8 @@ abstract class CharacterController(private val manager: CharacterControllerManag
 
     abstract fun resize(height: Float)
 
-    override fun release() {
+    override fun doRelease() {
         manager.removeController(this)
-        super.release()
     }
 
     private class GroundSlopeObserver {

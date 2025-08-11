@@ -174,4 +174,6 @@ class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
             depthAttachmentView = it.createView()
         }
     }
+
+    override fun doRelease() { }
 }

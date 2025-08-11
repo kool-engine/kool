@@ -82,8 +82,7 @@ class MemoryManager(val backend: RenderBackendVk) : BaseReleasable() {
         mappedBytes(buffer) { block(it.asIntBuffer()) }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         if (buffers.isNotEmpty()) {
             logW { "Freeing ${buffers.size} leaked buffers:" }
             buffers.keys.toList().forEach {

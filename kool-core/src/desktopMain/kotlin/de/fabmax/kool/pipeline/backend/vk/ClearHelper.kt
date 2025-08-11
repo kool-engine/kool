@@ -79,8 +79,7 @@ class ClearHelper(val backend: RenderBackendVk) {
             releaseWith(renderPass)
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             cancelReleaseWith(renderPass)
             bindGroupData.release()
             device.destroyPipelineLayout(pipelineLayout)

@@ -202,4 +202,6 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
         )
         gl.drawBuffers(intArrayOf(gl.COLOR_ATTACHMENT0))
     }
+
+    override fun doRelease() { }
 }

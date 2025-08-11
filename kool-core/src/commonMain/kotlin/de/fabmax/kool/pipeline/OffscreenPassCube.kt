@@ -69,8 +69,8 @@ open class OffscreenPassCube(
         impl.applySize(width, height)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         impl.release()
     }
 

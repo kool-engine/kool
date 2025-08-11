@@ -48,8 +48,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
         captured = true
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gpuData?.releaseDelayed(1)
     }
 

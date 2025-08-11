@@ -32,8 +32,7 @@ class MaterialImpl(
         get() = pxMaterial.restitution
         set(value) { pxMaterial.restitution = value }
 
-    override fun release() {
+    override fun doRelease() {
         pxMaterial.release()
-        super.release()
     }
 }

@@ -111,8 +111,7 @@ abstract class RigidActorImpl : BaseReleasable(), RigidActor {
         shape.holder = null
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         holder.release()
         _shapes.clear()
     }

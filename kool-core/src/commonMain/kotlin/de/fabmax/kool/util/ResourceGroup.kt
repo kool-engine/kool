@@ -74,6 +74,8 @@ class ResourceGroup(val assetLoader: AssetLoader = Assets.defaultLoader) : BaseR
         return Tex2d(path, format, mipMapping, samplerSettings, resolveSize).also { loadables += it }
     }
 
+    override fun doRelease() { }
+
     abstract class Loadable<T: Releasable>(val name: String) {
         protected var loaded: T? = null
             set(value) {

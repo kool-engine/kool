@@ -165,9 +165,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         sceneNodes.updateInstances()
     }
 
-    override fun release() {
-        super.release()
-
+    override fun doRelease() {
         sceneEntities.values.forEach { it.destroyComponents() }
         sceneComponent.sceneNode.release()
         lifecycle = EntityLifecycle.DESTROYED

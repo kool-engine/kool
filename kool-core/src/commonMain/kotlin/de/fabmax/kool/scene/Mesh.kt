@@ -196,19 +196,16 @@ open class Mesh(
     /**
      * Deletes all buffers associated with this mesh.
      */
-    override fun release() {
-        // fixme: same check as for Node
-        if (!isReleased) {
-            super.release()
-            geometry.release()
-            drawGeometry.release()
-            instances?.release()
-            drawInstances?.release()
-            meshPipelineData.release()
-            shadowGeometry.forEach { it.release() }
-            pipeline?.removeUser(this)
-            pipeline = null
-        }
+    override fun doRelease() {
+        super.doRelease()
+        geometry.release()
+        drawGeometry.release()
+        instances?.release()
+        drawInstances?.release()
+        meshPipelineData.release()
+        shadowGeometry.forEach { it.release() }
+        pipeline?.removeUser(this)
+        pipeline = null
     }
 
     override fun collectDrawCommands(viewData: ViewData, updateEvent: RenderPass.UpdateEvent) {

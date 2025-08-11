@@ -43,11 +43,8 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
         capturedPipelineData = pipelineData
     }
 
-    override fun release() {
-        super.release()
-        if (pipelineBackend?.isReleased == false) {
-            pipelineBackend?.release()
-        }
+    override fun doRelease() {
+        pipelineBackend?.release()
         pipelineSwapData.values.forEach { it.release() }
     }
 
@@ -110,8 +107,7 @@ class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), 
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         bindGroupData.values.forEach { it.data.release() }
     }
 

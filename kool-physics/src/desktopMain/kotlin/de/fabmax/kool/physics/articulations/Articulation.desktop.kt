@@ -55,8 +55,7 @@ class ArticulationImpl(val isFixedBase: Boolean) : Articulation() {
         pxArticulation.putToSleep()
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         pxArticulation.release()
     }
 }

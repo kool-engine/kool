@@ -545,8 +545,7 @@ class IndexedVertexList(
         modCount++
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gpuGeometry?.releaseDelayed(1)
     }
 

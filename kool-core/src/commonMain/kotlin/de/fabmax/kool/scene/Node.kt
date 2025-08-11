@@ -230,13 +230,8 @@ open class Node(name: String? = null) : BaseReleasable() {
     /**
      * Frees all resources occupied by this Node.
      */
-    override fun release() {
-        // fixme: Ideally, nodes should only be released once. However, currently, multi-release still happens
-        //  a lot, so check for it here
-        if (!isReleased) {
-            children.forEach { it.release() }
-            super.release()
-        }
+    override fun doRelease() {
+        children.forEach { it.release() }
     }
 
     /**

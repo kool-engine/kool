@@ -114,8 +114,8 @@ open class UiSurface(
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         // release unused mesh layers - they are detached from this node and not released by Node.release()
         meshLayers.values.filter { it !in children }.forEach { it.release() }
     }
@@ -717,8 +717,8 @@ open class UiSurface(
             }
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
+            super.doRelease()
             imageMeshes.values.forEach { it.meshes.forEach { img -> img.release() } }
         }
     }

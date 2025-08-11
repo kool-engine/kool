@@ -476,9 +476,7 @@ abstract class RenderPassVk(
             copyDst.copyFromImage(src, passEncoderState.commandBuffer, stack = passEncoderState.stack)
         }
 
-        override fun release() {
-            super.release()
-
+        override fun doRelease() {
             colorImages.forEach { it.release() }
             depthImage?.release()
             colorMipViews.flatMap { it }.flatMap { it }.forEach { backend.device.destroyImageView(it) }

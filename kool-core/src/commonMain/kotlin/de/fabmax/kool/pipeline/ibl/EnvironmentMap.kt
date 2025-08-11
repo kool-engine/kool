@@ -12,12 +12,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
 class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureCube) : BaseReleasable() {
-    override fun release() {
+
+    override fun doRelease() {
         irradianceMap.release()
         if (irradianceMap !== reflectionMap) {
             reflectionMap.release()
         }
-        super.release()
     }
 
     companion object {

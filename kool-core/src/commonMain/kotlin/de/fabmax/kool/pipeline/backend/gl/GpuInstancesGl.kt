@@ -36,8 +36,7 @@ class GpuInstancesGl(
         Usage.STATIC -> gl.STATIC_DRAW
     }
 
-    override fun release() {
+    override fun doRelease() {
         instanceBuffer.release()
-        super.release()
     }
 }

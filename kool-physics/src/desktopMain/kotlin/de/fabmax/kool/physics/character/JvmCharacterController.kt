@@ -77,8 +77,8 @@ class JvmCharacterController(
         pxController.resize(height)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         (world as PhysicsWorldImpl).deleteActorReference(actor)
         pxController.release()
         bufPxPosition.destroy()

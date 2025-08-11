@@ -89,13 +89,12 @@ abstract class PhysicsWorld : BaseReleasable() {
         }
     }
 
-    override fun release() {
+    override fun doRelease() {
         if (isStepInProgress) {
             fetchAsyncStepResults()
         }
         unregisterHandlers()
         clear(true)
-        super.release()
     }
 
     open fun addActor(actor: RigidActor) {

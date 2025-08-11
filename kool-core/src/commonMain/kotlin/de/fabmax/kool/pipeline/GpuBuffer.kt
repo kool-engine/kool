@@ -128,8 +128,7 @@ class GpuBuffer(
         deferred.await()
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gpuBuffer?.release()
         gpuBuffer = null
     }
