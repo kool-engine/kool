@@ -14,3 +14,4 @@ kool-demo/runtimeLibs
 *.kjsm
 *.meta.js
 /local.properties
+.DS_Store

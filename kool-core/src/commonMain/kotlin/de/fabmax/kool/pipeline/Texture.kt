@@ -29,9 +29,9 @@ abstract class Texture<T: ImageData>(
 
     val isLoaded: Boolean get() = gpuTexture != null
 
-    val width: Int get() = gpuTexture?.width ?: 0
-    val height: Int get() = gpuTexture?.height ?: 0
-    val depth: Int get() = gpuTexture?.depth ?: 0
+    open val width: Int get() = gpuTexture?.width ?: 0
+    open val height: Int get() = gpuTexture?.height ?: 0
+    open val depth: Int get() = gpuTexture?.depth ?: 0
 
     /**
      * Releases this texture, making it unusable.

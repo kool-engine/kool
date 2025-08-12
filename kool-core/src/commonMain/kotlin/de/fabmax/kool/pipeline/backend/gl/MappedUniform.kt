@@ -255,6 +255,7 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val texUnit = bindCtx.nextTexUnit++
         val texture = storageTex.storageTexture?.asTexture
+        storageTex.storageTexture?.checkTextureSize()
         if (texture != null && checkLoadingState(texture, texUnit)) {
             val glTex = texture.gpuTexture as LoadedTextureGl
             gl.bindImageTexture(
@@ -270,6 +271,14 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
             return true
         }
         return false
+    }
+
+    private fun StorageTexture.checkTextureSize() {
+        val tex = asTexture
+        val gpu = asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            TextureLoaderGl.createStorageTexture(this, tex.width, tex.height, tex.depth, backend)
+        }
     }
 
     private fun checkLoadingState(texture: Texture<*>, texUnit: Int): Boolean {

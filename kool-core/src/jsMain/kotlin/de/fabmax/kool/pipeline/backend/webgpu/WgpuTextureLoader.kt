@@ -236,6 +236,42 @@ internal class WgpuTextureLoader(val backend: RenderBackendWebGpu) {
         }
     }
 
+    internal fun createStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
+        val usage = GPUTextureUsage.STORAGE_BINDING or
+                GPUTextureUsage.COPY_SRC or
+                GPUTextureUsage.COPY_DST or
+                GPUTextureUsage.TEXTURE_BINDING
+        val dimension = when (storageTexture) {
+            is StorageTexture1d -> GPUTextureDimension.texture1d
+            is StorageTexture2d -> GPUTextureDimension.texture2d
+            is StorageTexture3d -> GPUTextureDimension.texture3d
+        }
+        val size = when (storageTexture) {
+            is StorageTexture1d -> intArrayOf(width)
+            is StorageTexture2d -> intArrayOf(width, height)
+            is StorageTexture3d -> intArrayOf(width, height, depth)
+        }
+        val levels = when (val mipMapping = storageTexture.mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
+
+        if (storageTexture.format == TexFormat.RG11B10_F) {
+            logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
+        }
+        val texDesc = GPUTextureDescriptor(
+            size = size,
+            format = storageTexture.format.wgpuStorage,
+            dimension = dimension,
+            usage = usage,
+            mipLevelCount = levels,
+            label = storageTexture.name
+        )
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = backend.createTexture(texDesc)
+    }
+
     private val ImageData.gpuImageDataLayout: GPUImageDataLayout get() {
         return when (this) {
             is BufferedImageData1d -> gpuImageDataLayout

@@ -85,6 +85,7 @@ class BindGroupDataVk(
         }
         for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
+            tex.binding.storageTexture?.checkTextureSize(passEncoderState.commandBuffer)
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.boundImage) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 resetBindGroup = true
@@ -99,6 +100,14 @@ class BindGroupDataVk(
             if (ubo.isUpdate(frameIdx, ubo.binding.modCount.count) || resetBindGroup) {
                 ubo.binding.buffer.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
             }
+        }
+    }
+
+    private fun StorageTexture.checkTextureSize(commandBuffer: VkCommandBuffer) {
+        val tex = asTexture
+        val gpu = asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            backend.textureLoader.createStorageTexture(this, tex.width, tex.height, tex.depth, commandBuffer)
         }
     }
 
@@ -355,7 +364,7 @@ class BindGroupDataVk(
         fun setupDescriptor(
             descriptorWrite: VkWriteDescriptorSet,
             descriptorSet: VkDescriptorSet,
-            stack: MemoryStack
+            stack: MemoryStack,
         ) {
             checkView(stack)
             val imgInfo = stack.callocVkDescriptorImageInfoN(1) {

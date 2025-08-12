@@ -3,7 +3,6 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.PassData
-import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -108,29 +107,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return ComputePassGl(parentPass, this)
-    }
-
-    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val tex = storageTexture.asTexture
-        val imageType = when (storageTexture) {
-            is StorageTexture1d -> gl.TEXTURE_2D
-            is StorageTexture2d -> gl.TEXTURE_2D
-            is StorageTexture3d -> gl.TEXTURE_3D
-        }
-        val levels = if (tex.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
-        val format = tex.format.glInternalFormat(gl)
-
-        val somePxSize = 16L
-        val gpuTexture = LoadedTextureGl(imageType, gl.createTexture(), this, tex, width * height * depth * somePxSize)
-        gpuTexture.setSize(width, height, depth)
-        gpuTexture.bind()
-        if (imageType == gl.TEXTURE_3D) {
-            gl.texStorage3d(gl.TEXTURE_3D, levels, format, width, height, depth)
-        } else {
-            gl.texStorage2d(gl.TEXTURE_2D, levels, format, width, height)
-        }
-        storageTexture.gpuTexture?.release()
-        storageTexture.gpuTexture = gpuTexture
     }
 
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {

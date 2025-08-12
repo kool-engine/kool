@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.wgpu
 import de.fabmax.kool.pipeline.BindGroupData
 import de.fabmax.kool.pipeline.FilterMethod
 import de.fabmax.kool.pipeline.GpuPass
+import de.fabmax.kool.pipeline.StorageTexture
 import de.fabmax.kool.pipeline.TextureSampleType
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
@@ -39,6 +40,7 @@ class WgpuBindGroupData(
         }
         for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
+            tex.binding.storageTexture?.checkTextureSize()
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
                 recreatedBindGroup = true
@@ -76,6 +78,14 @@ class WgpuBindGroupData(
             }
         }
         passEncoderState.setBindGroup(group, this)
+    }
+
+    private fun StorageTexture.checkTextureSize() {
+        val tex = asTexture
+        val gpu = asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            backend.textureLoader.createStorageTexture(this, tex.width, tex.height, tex.depth)
+        }
     }
 
     private fun createBindGroup(pass: GpuPass) {

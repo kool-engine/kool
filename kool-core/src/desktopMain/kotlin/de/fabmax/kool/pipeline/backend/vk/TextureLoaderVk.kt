@@ -5,6 +5,7 @@ import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.*
+import org.lwjgl.vulkan.VkCommandBuffer
 import java.nio.ByteBuffer
 
 
@@ -207,5 +208,39 @@ class TextureLoaderVk(val backend: RenderBackendVk) {
             }
             else -> error("src buffer must be any of Uint8Buffer, Uint16Buffer, Int32Buffer, Float32Buffer")
         }
+    }
+
+    internal fun createStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int, commandBuffer: VkCommandBuffer) {
+        val usage = VK_IMAGE_USAGE_STORAGE_BIT or
+                VK_IMAGE_USAGE_TRANSFER_SRC_BIT or
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT or
+                VK_IMAGE_USAGE_SAMPLED_BIT
+        val imageType = when (storageTexture) {
+            is StorageTexture1d -> VK_IMAGE_TYPE_1D
+            is StorageTexture2d -> VK_IMAGE_TYPE_2D
+            is StorageTexture3d -> VK_IMAGE_TYPE_3D
+        }
+        val levels = when (val mipMapping = storageTexture.mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
+        val imageInfo = ImageInfo(
+            imageType = imageType,
+            format = storageTexture.format.vk,
+            width = width,
+            height = height,
+            depth = depth,
+            arrayLayers = 1,
+            mipLevels = levels,
+            samples = 1,
+            usage = usage,
+            label = storageTexture.name,
+            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
+        )
+        val storageImage = ImageVk(backend, imageInfo)
+        storageImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = storageImage
     }
 }

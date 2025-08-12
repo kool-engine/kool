@@ -87,7 +87,7 @@ class BloomPass(
                     it.swapPipelineData(key)
                     sampleInput.set(input, inputSampler)
                     downSampled.set(downSampleTex, level)
-                    uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.Companion.ZERO
+                    uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.ZERO
                     uInputTexelSize = inputTexelSize
                     it.captureBuffer()
                 }

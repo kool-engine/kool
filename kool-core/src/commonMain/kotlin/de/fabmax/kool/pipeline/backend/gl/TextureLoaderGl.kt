@@ -162,4 +162,28 @@ object TextureLoaderGl {
         }
         return Texture.estimatedTexSize(width, height, depth, numMipLevels(width, height), format.pxSize).toLong()
     }
+
+    internal fun createStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int, backend: RenderBackendGl) {
+        val gl = backend.gl
+        val tex = storageTexture.asTexture
+        val imageType = when (storageTexture) {
+            is StorageTexture1d -> gl.TEXTURE_2D
+            is StorageTexture2d -> gl.TEXTURE_2D
+            is StorageTexture3d -> gl.TEXTURE_3D
+        }
+        val levels = if (tex.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
+        val format = tex.format.glInternalFormat(gl)
+
+        val somePxSize = 16L
+        val gpuTexture = LoadedTextureGl(imageType, gl.createTexture(), backend, tex, width * height * depth * somePxSize)
+        gpuTexture.setSize(width, height, depth)
+        gpuTexture.bind()
+        if (imageType == gl.TEXTURE_3D) {
+            gl.texStorage3d(gl.TEXTURE_3D, levels, format, width, height, depth)
+        } else {
+            gl.texStorage2d(gl.TEXTURE_2D, levels, format, width, height)
+        }
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = gpuTexture
+    }
 }

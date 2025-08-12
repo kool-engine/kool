@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.*
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -228,42 +227,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return ComputePassVk(parentPass, this)
-    }
-
-    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val usage = VK_IMAGE_USAGE_STORAGE_BIT or
-                VK_IMAGE_USAGE_TRANSFER_SRC_BIT or
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT or
-                VK_IMAGE_USAGE_SAMPLED_BIT
-        val imageType = when (storageTexture) {
-            is StorageTexture1d -> VK_IMAGE_TYPE_1D
-            is StorageTexture2d -> VK_IMAGE_TYPE_2D
-            is StorageTexture3d -> VK_IMAGE_TYPE_3D
-        }
-        val levels = when (val mipMapping = storageTexture.mipMapping) {
-            MipMapping.Full -> numMipLevels(width, height, depth)
-            is MipMapping.Limited -> mipMapping.numLevels
-            MipMapping.Off -> 1
-        }
-        val imageInfo = ImageInfo(
-            imageType = imageType,
-            format = storageTexture.format.vk,
-            width = width,
-            height = height,
-            depth = depth,
-            arrayLayers = 1,
-            mipLevels = levels,
-            samples = 1,
-            usage = usage,
-            label = storageTexture.name,
-            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-        )
-        val storageImage = ImageVk(this, imageInfo)
-        commandPool.singleShotCommands { commandBuffer ->
-            storageImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
-        }
-        storageTexture.gpuTexture?.release()
-        storageTexture.gpuTexture = storageImage
     }
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)
