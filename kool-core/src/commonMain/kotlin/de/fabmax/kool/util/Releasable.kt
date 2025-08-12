@@ -82,7 +82,7 @@ abstract class BaseReleasable : Releasable {
     }
 
     override fun release() {
-        if (_isReleased.getAndSet(true)) {
+        if (!_isReleased.getAndSet(true)) {
             dependingReleasables.reversed().toList().forEach { it.release() }
             onReleaseCallbacks.forEach { it() }
             doRelease()

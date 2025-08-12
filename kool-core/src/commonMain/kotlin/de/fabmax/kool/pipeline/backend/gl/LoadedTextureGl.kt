@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.pipeline.backend.stats.TextureInfo
+import de.fabmax.kool.util.BaseReleasable
 import kotlin.math.min
 
 class LoadedTextureGl(
@@ -11,11 +12,9 @@ class LoadedTextureGl(
     val backend: RenderBackendGl,
     val texture: Texture<*>,
     estimatedSize: Long
-) : GpuTexture {
+) : BaseReleasable(), GpuTexture {
 
     val texId = nextTexId++
-    override var isReleased = false
-        private set
 
     override var width = 0
     override var height = 0
@@ -73,12 +72,9 @@ class LoadedTextureGl(
         }
     }
 
-    override fun release() {
-        if (!isReleased) {
-            isReleased = true
-            gl.deleteTexture(glTexture)
-            allocationInfo.deleted()
-        }
+    override fun doRelease() {
+        gl.deleteTexture(glTexture)
+        allocationInfo.deleted()
     }
 
     fun FilterMethod.glMinFilterMethod(mipMapping: Boolean): Int {

@@ -8,6 +8,4 @@ interface Material : Releasable {
     var staticFriction: Float
     var dynamicFriction: Float
     var restitution: Float
-
-    override fun release()
 }
