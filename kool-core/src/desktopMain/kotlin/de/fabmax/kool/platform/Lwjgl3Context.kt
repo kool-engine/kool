@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.Deferred
@@ -103,6 +104,14 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         scenes.forEach { it.release() }
         backgroundScene.release()
         onShutdown.updated().forEach { it(this) }
+
+        // Somewhat hacky: Many releasables release their resources with a delay of a few frames. Increment
+        // frame counter and execute dispatched tasks to run their release code before destroying the backend.
+        repeat(3) {
+            Time.frameCount++
+            RenderLoopCoroutineDispatcher.executeDispatchedTasks()
+        }
+
         backend.cleanup(this)
         ApplicationScope.cancel()
     }
