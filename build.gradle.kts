@@ -1,4 +1,4 @@
-import de.fabmax.kool.comment
+import de.fabmax.kool.UnCommentTask
 
 plugins {
     id("kool.androidlib-conventions") apply false
@@ -12,34 +12,28 @@ allprojects {
 
 }
 
-tasks.register("disableAndroidPlatform") {
+tasks.register<UnCommentTask>("disableAndroidPlatform") {
     group = "build config"
-    doFirst {
-        listOf("kool-core", "kool-editor-model").forEach { subProj ->
-            project.file("${subProj}/build.gradle.kts").comment {
-                commentLines("alias(libs.plugins.androidLibrary)")
-                commentBlocks("android")
-            }
-        }
-        rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts").comment {
-            commentLines("id(\"com.android.library\")")
-            commentBlocks("android")
-        }
+
+    filesToUpdate += rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts")
+    listOf("kool-core", "kool-editor-model").forEach { subProj ->
+        filesToUpdate += project.file("${subProj}/build.gradle.kts")
     }
+
+    commentLines += "alias(libs.plugins.androidLibrary)"
+    commentLines += "id(\"com.android.library\")"
+    commentBlocks += "android"
 }
 
-tasks.register("enableAndroidPlatform") {
+tasks.register<UnCommentTask>("enableAndroidPlatform") {
     group = "build config"
-    doFirst {
-        listOf("kool-core", "kool-editor-model").forEach { subProj ->
-            project.file("$subProj/build.gradle.kts").comment {
-                uncommentLines("alias(libs.plugins.androidLibrary)")
-                uncommentBlocks("android")
-            }
-        }
-        rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts").comment {
-            uncommentLines("id(\"com.android.library\")")
-            uncommentBlocks("android")
-        }
+
+    filesToUpdate += rootProject.file("buildSrc/src/main/kotlin/kool.androidlib-conventions.gradle.kts")
+    listOf("kool-core", "kool-editor-model").forEach { subProj ->
+        filesToUpdate += project.file("${subProj}/build.gradle.kts")
     }
+
+    uncommentLines += "alias(libs.plugins.androidLibrary)"
+    uncommentLines += "id(\"com.android.library\")"
+    uncommentBlocks += "android"
 }

@@ -1,5 +1,8 @@
 package de.fabmax.kool
 
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 import java.io.File
 
 fun File.comment(block: FileCommentScope.() -> Unit) {
@@ -70,6 +73,31 @@ class FileCommentScope(val text: String) {
                 if (cnt <= 0) {
                     inBlock = false
                 }
+            }
+        }
+    }
+}
+
+abstract class UnCommentTask : DefaultTask() {
+    @Input
+    var filesToUpdate = listOf<File>()
+    @Input
+    var commentLines = listOf<String>()
+    @Input
+    var commentBlocks = listOf<String>()
+    @Input
+    var uncommentLines = listOf<String>()
+    @Input
+    var uncommentBlocks = listOf<String>()
+
+    @TaskAction
+    fun updateFiles() {
+        filesToUpdate.forEach { file ->
+            file.comment {
+                commentLines.forEach { commentLines(it) }
+                commentBlocks.forEach { commentBlocks(it) }
+                uncommentLines.forEach { uncommentLines(it) }
+                uncommentBlocks.forEach { uncommentBlocks(it) }
             }
         }
     }

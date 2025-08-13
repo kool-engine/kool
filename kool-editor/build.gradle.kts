@@ -18,8 +18,7 @@ kotlin {
         }
 
         desktopTest.dependencies {
-            implementation(fileTree("${projectDir}/../kool-demo/runtimeLibs") { include("*.jar") })
-            implementation(libs.jsvg)
+            implementation(libs.kotlin.test.junit)
         }
     }
 }
