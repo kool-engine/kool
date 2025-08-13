@@ -31,11 +31,8 @@ kotlin {
                 outputDirectory.set(File("${rootDir}/dist/kool-demo"))
             }
             commonWebpackConfig {
-                mode = if (localProperties.isRelease) {
-                    KotlinWebpackConfig.Mode.PRODUCTION
-                } else {
-                    KotlinWebpackConfig.Mode.DEVELOPMENT
-                }
+                //KotlinWebpackConfig.Mode.PRODUCTION
+                KotlinWebpackConfig.Mode.DEVELOPMENT
             }
         }
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -66,36 +63,35 @@ kotlin {
 }
 
 tasks["build"].dependsOn("cacheRuntimeLibs")
-tasks.register("cacheRuntimeLibs") {
-    doFirst {
-        val os = OperatingSystem.current()
-        val platformName = when {
-            os.isLinux -> "natives-linux"
-            os.isWindows -> "natives-windows"
-            os.isMacOsX && "aarch64" in System.getProperty("os.arch") -> "natives-macos-arm64"
-            os.isMacOsX -> "natives-macos"
-            else -> ""
-        }
-
-        val runtimeLibs = configurations
-            .filter { it.name == "desktopRuntimeClasspath" }
-            .flatMap { it.files.toList() }
-            .filter { it.name.endsWith("$platformName.jar") && !it.path.startsWith(projectDir.path) }
-            .onEach {
-                if (!File("${projectDir}/runtimeLibs/${it.name}").exists()) {
-                    copy {
-                        from(it)
-                        into("${projectDir}/runtimeLibs")
-                    }
-                }
-            }
-        File("${projectDir}/runtimeLibs/").listFiles()
-            ?.filter { existing -> runtimeLibs.none { existing.name == it.name } }
-            ?.forEach { it.delete() }
+tasks.register<Copy>("cacheRuntimeLibs") {
+    val os = OperatingSystem.current()
+    val platformName = when {
+        os.isLinux -> "natives-linux"
+        os.isWindows -> "natives-windows"
+        os.isMacOsX && "aarch64" in System.getProperty("os.arch") -> "natives-macos-arm64"
+        os.isMacOsX -> "natives-macos"
+        else -> ""
     }
+
+    val runtimeLibs = configurations
+        .filter { it.name == "desktopRuntimeClasspath" }
+        .flatMap { it.files.toList() }
+        .filter { it.name.endsWith("$platformName.jar") && !it.path.startsWith(projectDir.path) }
+        .onEach {
+            if (!File("${projectDir}/runtimeLibs/${it.name}").exists()) {
+                from(it)
+                into("${projectDir}/runtimeLibs")
+            }
+        }
+    File("${projectDir}/runtimeLibs/").listFiles()
+        ?.filter { existing -> runtimeLibs.none { existing.name == it.name } }
+        ?.forEach {
+            delete { delete(it) }
+        }
 }
 
-tasks["clean"].doLast {
+tasks["clean"].dependsOn("deleteExtras")
+tasks.register<Delete>("deleteExtras") {
     delete("${rootDir}/dist/kool-demo")
     delete("${projectDir}/runtimeLibs")
 }
