@@ -150,8 +150,8 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             val skyReflection = sky.reflectionMapPass.copyColor()
             skies[timeOfDay] = EnvironmentMap(skyIrradiance, skyReflection)
 
-            delayFrames(1)
-
+            // fixme: Why do we need 2 frames? With only 1 frame delay, 2 consecutive sky-boxes are equal. Why?
+            delayFrames(2)
         }
         weightedEnvs = WeightedEnvMaps(skies.firstValue(), skies.firstValue())
 

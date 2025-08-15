@@ -115,7 +115,7 @@ class SkyCubePass(opticalDepthLut: Texture2d, size: Int = 256) :
             skyShader.sunColor = MutableColor(sunLight.color).apply { a /= 3f }
         }
 
-        onAfterPass {
+        onAfterCollect {
             isEnabled = false
         }
     }
@@ -209,7 +209,7 @@ class SkyCubeIblSystem(val parentScene: Scene, opticalDepthLut: Texture2d) {
         irradianceMapPass.isAutoRemove = false
         reflectionMapPass.isAutoRemove = false
 
-        skyPass.onAfterPass {
+        skyPass.onAfterCollect {
             if (isAutoUpdateIblMaps) {
                 updateIblMaps()
             }

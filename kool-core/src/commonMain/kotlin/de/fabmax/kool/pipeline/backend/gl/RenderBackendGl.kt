@@ -125,7 +125,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
     private fun PassData.executePass() {
         val pass = gpuPass
         val t = Time.precisionTime
-        pass.beforePass()
         when (pass) {
             is Scene.ScreenPass -> sceneRenderer.draw(this)
             is OffscreenPass2d -> pass.impl.draw(this)
@@ -133,7 +132,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
             is ComputePass -> pass.impl.dispatch()
             else -> error("Gpu pass type not implemented: $pass")
         }
-        pass.afterPass()
         pass.tRecord = (Time.precisionTime - t).seconds
     }
 

@@ -34,7 +34,7 @@ class GradientCubeGenerator(scene: Scene, gradientTex: Texture1d, size: Int = 12
         }
 
         // remove render pass as soon as the gradient texture is loaded and rendered
-        onAfterPass {
+        onAfterCollect {
             logD { "Generated gradient cube map" }
             scene.removeOffscreenPass(this)
             launchDelayed(1) {

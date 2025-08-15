@@ -179,7 +179,6 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
     private fun PassData.executePass(passEncoderState: RenderPassEncoderState) {
         val pass = gpuPass
         val t = Time.precisionTime
-        pass.beforePass()
         when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> pass.draw(this, passEncoderState)
@@ -187,7 +186,6 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
             is ComputePass -> pass.dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
-        pass.afterPass()
         pass.tRecord = (Time.precisionTime - t).seconds
     }
 

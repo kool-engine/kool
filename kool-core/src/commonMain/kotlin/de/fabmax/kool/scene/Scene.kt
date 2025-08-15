@@ -78,11 +78,11 @@ open class Scene(name: String? = null) : Node(name), CoroutineScope {
             // make sure mainRenderPass is updated first, so that scene info (camera, etc.) is updated
             // before offscreen passes are updated
             val (mainPass, mainPassData) = passData.last()
-            mainPass.update(mainPassData, ctx)
-            for (i in 0 .. (passData.lastIndex - 1)) {
+            mainPass.collect(mainPassData, ctx)
+            for (i in 0 ..< passData.lastIndex) {
                 val (pass, data) = passData[i]
                 data.reset(pass)
-                pass.update(data, ctx)
+                pass.collect(data, ctx)
             }
         }
     }

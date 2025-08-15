@@ -131,7 +131,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 if (frameData.passData.isEmpty()) {
                     // make sure any scene is rendered, so that screen is correctly cleared
                     val passData = frameData.acquirePassData(emptyScene.mainRenderPass)
-                    emptyScene.mainRenderPass.update(passData, ctx)
+                    emptyScene.mainRenderPass.collect(passData, ctx)
                     passData.executePass(passEncoderState)
                 }
 
@@ -176,7 +176,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     private fun PassData.executePass(passEncoderState: PassEncoderState) {
         val pass = gpuPass
         val t = Time.precisionTime
-        pass.beforePass()
         when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> pass.draw(this, passEncoderState)
@@ -184,7 +183,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             is ComputePass -> pass.dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
-        pass.afterPass()
         pass.tRecord += (Time.precisionTime - t).seconds
     }
 

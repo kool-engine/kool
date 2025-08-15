@@ -5,7 +5,6 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -170,7 +169,6 @@ abstract class RenderBackendWgpu4k(
     private suspend fun PassData.executePass(passEncoderState: RenderPassEncoderState) {
         val pass = gpuPass
         val t = Time.precisionTime
-        pass.beforePass()
         when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
             is OffscreenPass2d -> pass.draw(this, passEncoderState)
@@ -178,7 +176,6 @@ abstract class RenderBackendWgpu4k(
             is ComputePass -> pass.dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
-        pass.afterPass()
         pass.tRecord = (Time.precisionTime - t).seconds
     }
 

@@ -49,7 +49,7 @@ class BloomPass(
             downSampleTex.releaseWith(this)
         }
 
-        onBeforePass {
+        onUpdate {
             val requiredWidth = idealWidth
             val requiredHeight = idealHeight
             if (requiredWidth != width || requiredHeight != height) {

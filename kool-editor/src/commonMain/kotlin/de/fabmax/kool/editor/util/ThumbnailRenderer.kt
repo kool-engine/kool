@@ -53,11 +53,9 @@ class ThumbnailRenderer(
             }
         }
 
-        onAfterPass {
+        onAfterCollect {
             val releasables = renderQueue.map { it.first.drawNode }
-            launchDelayed(1) {
-                releasables.forEach { it.release() }
-            }
+            releasables.forEach { it.releaseDelayed(1) }
             renderQueue.forEach { (_, thumbnail) ->
                 thumbnail.state.set(ThumbnailState.USABLE)
                 thumbnails[thumbnail.tileIndex] = thumbnail
