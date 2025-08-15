@@ -38,9 +38,9 @@ class ReflectionMapPass private constructor(parentScene: Scene, hdriMap: Texture
         }
 
         onSetupMipLevel { mipLevel ->
-            reflectionMapShader.createdPipeline?.swapPipelineData(mipLevel)
-            reflectionMapShader.uRoughness = mipLevel.toFloat() / (numRenderMipLevels - 1) * 0.55f
-            reflectionMapShader.createdPipeline?.captureBuffer()
+            reflectionMapShader.createdPipeline?.swapPipelineDataCapturing(mipLevel) {
+                reflectionMapShader.uRoughness = mipLevel.toFloat() / (numRenderMipLevels - 1) * 0.55f
+            }
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render

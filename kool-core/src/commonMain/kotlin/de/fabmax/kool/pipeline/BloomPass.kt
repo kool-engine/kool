@@ -83,13 +83,11 @@ class BloomPass(
             val key = "$level"
 
             task.onBeforeDispatch {
-                downSampleShader.createdPipeline?.let {
-                    it.swapPipelineData(key)
+                downSampleShader.createdPipeline?.swapPipelineDataCapturing(key) {
                     sampleInput.set(input, inputSampler)
                     downSampled.set(downSampleTex, level)
                     uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.ZERO
                     uInputTexelSize = inputTexelSize
-                    it.captureBuffer()
                 }
             }
         }
@@ -113,8 +111,7 @@ class BloomPass(
             val key = "$level"
 
             task.onBeforeDispatch {
-                upSampleShader.createdPipeline?.let {
-                    it.swapPipelineData(key)
+                upSampleShader.createdPipeline?.swapPipelineDataCapturing(key) {
                     sampleInput.set(input, inputSampler)
                     upSampled.set(bloomMap, level)
                     if (!inPlace) {
@@ -123,7 +120,6 @@ class BloomPass(
                     uInputTexelSize = inputTexelSize
                     uRadius = radius
                     uOutputScale = if (level == 0) strength / levels else 1f
-                    it.captureBuffer()
                 }
             }
         }

@@ -71,6 +71,12 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     }
 }
 
+inline fun PipelineBase.swapPipelineDataCapturing(key: Any?, block: () -> Unit) {
+    swapPipelineData(key)
+    block()
+    captureBuffer()
+}
+
 interface PipelineBackend : Releasable {
     fun removeUser(user: Any)
 }

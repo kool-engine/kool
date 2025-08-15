@@ -15,7 +15,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
 
     val bufferedBindings: List<BindingData> get() {
         if (!captured) {
-            logW { "BindGroupData not captured! $name / ${layout.scope}" }
+            logE { "BindGroupData not captured! $name / ${layout.scope}" }
             return bindings
         }
         return _bufferedBindingData
@@ -44,7 +44,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
     }
 
     override fun captureBuffer() {
-        bindings.copyTo(_bufferedBindingData)
+        bindings.copyToIfModded(_bufferedBindingData)
         captured = true
     }
 
@@ -86,6 +86,30 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
                 is StorageTexture1dBindingData -> bindingData.copyTo(dst[i] as StorageTexture1dBindingData)
                 is StorageTexture2dBindingData -> bindingData.copyTo(dst[i] as StorageTexture2dBindingData)
                 is StorageTexture3dBindingData -> bindingData.copyTo(dst[i] as StorageTexture3dBindingData)
+            }
+        }
+    }
+
+    private fun List<BindingData>.copyToIfModded(dst: List<BindingData>) {
+        for (i in indices) {
+            val src = this[i]
+            val dst = dst[i]
+            if (src.modCount.isDirty(dst.modCount)) {
+                when (src) {
+                    is UniformBufferBindingData<*> -> src.copyTo(dst as UniformBufferBindingData<*>)
+                    is StorageBufferBindingData -> src.copyTo(dst as StorageBufferBindingData)
+
+                    is Texture1dBindingData -> src.copyTo(dst as Texture1dBindingData)
+                    is Texture2dBindingData -> src.copyTo(dst as Texture2dBindingData)
+                    is Texture3dBindingData -> src.copyTo(dst as Texture3dBindingData)
+                    is TextureCubeBindingData -> src.copyTo(dst as TextureCubeBindingData)
+                    is Texture2dArrayBindingData -> src.copyTo(dst as Texture2dArrayBindingData)
+                    is TextureCubeArrayBindingData -> src.copyTo(dst as TextureCubeArrayBindingData)
+
+                    is StorageTexture1dBindingData -> src.copyTo(dst as StorageTexture1dBindingData)
+                    is StorageTexture2dBindingData -> src.copyTo(dst as StorageTexture2dBindingData)
+                    is StorageTexture3dBindingData -> src.copyTo(dst as StorageTexture3dBindingData)
+                }
             }
         }
     }
