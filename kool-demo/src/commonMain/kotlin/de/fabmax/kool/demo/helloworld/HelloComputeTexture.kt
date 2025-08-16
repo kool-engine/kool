@@ -99,7 +99,7 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
 
         var counter = 0
         onUpdate {
-            if (counter++ % 1000 == 0) {
+            if (++counter % 100 == 0) {
                 // for the purpose of this example, we read back the texture from time to time and print the color of
                 // the first pixel to the console
                 mainScene.coroutineScope.launch(Dispatchers.Backend) {

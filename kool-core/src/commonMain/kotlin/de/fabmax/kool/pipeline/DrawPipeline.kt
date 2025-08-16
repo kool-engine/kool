@@ -1,8 +1,12 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Backend
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.LongHash
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Graphics pipeline class. Also includes rasterizing options like [cullMethod], [blendMode], etc. In contrast
@@ -57,7 +61,9 @@ class DrawPipeline(
     }
 
     fun removeUser(mesh: Mesh) {
-        pipelineBackend?.removeUser(mesh)
+        ApplicationScope.launch(Dispatchers.Backend) {
+            pipelineBackend?.removeUser(mesh)
+        }
     }
 }
 

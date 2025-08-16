@@ -6,7 +6,6 @@ import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.LogPrinter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.w3c.dom.HTMLCanvasElement
 
 actual fun Double.toString(precision: Int): String {
@@ -35,9 +34,9 @@ fun KoolApplication(config: KoolConfigJs = KoolConfigJs(), appBlock: suspend Koo
     }
 }
 
-suspend fun KoolApplication(ctx: JsContext, appBlock: suspend KoolApplication.() -> Unit) {
+fun KoolApplication(ctx: JsContext, appBlock: suspend KoolApplication.() -> Unit) {
     val koolApp = KoolApplication(ctx)
-    withContext(Dispatchers.Frontend) {
+    ApplicationScope.launch(Dispatchers.Frontend) {
         koolApp.appBlock()
     }
     ctx.run()

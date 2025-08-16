@@ -77,7 +77,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
 
     internal fun renderFrame() = runBlocking {
         sysInfo.update()
-        RenderLoopCoroutineDispatcher.executeDispatchedTasks()
+        BackendCoroutineDispatcher.executeDispatchedTasks()
 
         // determine time delta
         val time = System.nanoTime()

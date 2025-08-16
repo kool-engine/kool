@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.Dispatchers
 
 /**
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
@@ -44,7 +45,7 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     }
 
     override fun doRelease() {
-        pipelineBackend?.release()
+        pipelineBackend?.releaseDelayed(1, Dispatchers.Backend)
         pipelineSwapData.values.forEach { it.release() }
     }
 

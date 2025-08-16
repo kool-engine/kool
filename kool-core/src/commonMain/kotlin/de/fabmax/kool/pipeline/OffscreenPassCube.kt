@@ -7,8 +7,11 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
+import de.fabmax.kool.util.Backend
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.releaseDelayed
+import kotlinx.coroutines.Dispatchers
 
 open class OffscreenPassCube(
     drawNode: Node,
@@ -71,7 +74,7 @@ open class OffscreenPassCube(
 
     override fun doRelease() {
         super.doRelease()
-        impl.release()
+        impl.releaseDelayed(1, Dispatchers.Backend)
     }
 
     inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<TextureCube> {

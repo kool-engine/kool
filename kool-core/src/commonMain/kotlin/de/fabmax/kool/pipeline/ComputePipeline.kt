@@ -1,8 +1,12 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.util.Backend
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.LongHash
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * Compute pipeline: Compute shader + data layout.
@@ -35,6 +39,8 @@ class ComputePipeline(
     }
 
     fun removeUser(task: ComputePass.Task) {
-        pipelineBackend?.removeUser(task)
+        ApplicationScope.launch(Dispatchers.Backend) {
+            pipelineBackend?.removeUser(task)
+        }
     }
 }
