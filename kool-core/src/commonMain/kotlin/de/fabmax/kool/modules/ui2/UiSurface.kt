@@ -10,22 +10,25 @@ import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.*
 
 open class UiSurface(
+    val parentScene: Scene,
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "uiSurface"
 ) : Node(name) {
 
     constructor(
+        parentScene: Scene,
         colors: Colors = Colors.darkColors(),
         sizes: Sizes = Sizes.medium,
         name: String = "uiSurface",
         block: UiScope.() -> Unit
-    ) : this(colors, sizes, name) {
+    ) : this(parentScene, colors, sizes, name) {
         content = block
     }
 

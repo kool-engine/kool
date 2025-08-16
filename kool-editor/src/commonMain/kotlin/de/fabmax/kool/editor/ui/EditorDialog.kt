@@ -1,13 +1,16 @@
 package de.fabmax.kool.editor.ui
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.PlatformFunctions
 import de.fabmax.kool.input.KeyEvent
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
+import de.fabmax.kool.util.Frontend
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.launchOnMainThread
+import kotlinx.coroutines.Dispatchers
 
 abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance.ui, isResizable: Boolean = false) {
 
@@ -18,7 +21,7 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
     val dialogActions = mutableListOf<DialogAction>()
     val onClose = mutableListOf<() -> Unit>()
 
-    val dialog = WindowSurface(dialogDockable, borderColor = { null }, isResizable = isResizable) {
+    val dialog = WindowSurface(ui, dialogDockable, borderColor = { null }, isResizable = isResizable) {
         surface.colors = ui.uiColors.use()
         surface.sizes = ui.uiSizes.use()
 
@@ -152,7 +155,7 @@ fun OkCancelTextDialog(
     onCancel: (() -> Unit)? = null,
     onOk: () -> Unit
 ) = TextDialog(title, text).apply {
-    launchDelayed(1) { dialog.isFocused.set(true) }
+    ApplicationScope.launchDelayed(1, Dispatchers.Frontend) { dialog.isFocused.set(true) }
     addOkAction {
         onOk()
         hide()
@@ -168,7 +171,7 @@ fun OkCancelEnterTextDialog(
     onCancel: (() -> Unit)? = null,
     onOk: (String) -> Unit
 ) = EnterTextDialog(title, text, hint, onOk).apply {
-    launchDelayed(1) { dialog.isFocused.set(true) }
+    ApplicationScope.launchDelayed(1, Dispatchers.Frontend) { dialog.isFocused.set(true) }
     addOkAction {
         onOk(this.text.value)
         hide()
@@ -217,7 +220,7 @@ fun OkCancelBrowsePathDialog(
     onCancel: (() -> Unit)? = null,
     onOk: (String) -> Unit
 ) = BrowsePathDialog(title, path, hint, onOk).apply {
-    launchDelayed(1) { dialog.isFocused.set(true) }
+    ApplicationScope.launchDelayed(1, Dispatchers.Frontend) { dialog.isFocused.set(true) }
     addOkAction {
         onOk(this.text.value)
         hide()

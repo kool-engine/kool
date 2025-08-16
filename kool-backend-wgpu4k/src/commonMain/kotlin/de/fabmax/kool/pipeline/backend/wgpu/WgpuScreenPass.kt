@@ -5,7 +5,7 @@ import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.util.launchDelayed
+import de.fabmax.kool.util.releaseDelayed
 import io.ygdrasil.webgpu.*
 
 class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
@@ -50,9 +50,7 @@ class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
         colorDst?.let { dst ->
             var copyDstC = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstC == null || copyDstC.width.toUInt() != width || copyDstC.height.toUInt() != height) {
-                copyDstC?.let {
-                    launchDelayed(1) { it.release() }
-                }
+                copyDstC?.releaseDelayed(1)
 
                 val descriptor = TextureDescriptor(
                     label = colorDst.name,
@@ -70,9 +68,7 @@ class WgpuScreenPass(backend: RenderBackendWgpu4k, numSamples: Int) :
         depthDst?.let { dst ->
             var copyDstD = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstD == null || copyDstD.width.toUInt() != width || copyDstD.height.toUInt() != height) {
-                copyDstD?.let {
-                    launchDelayed(1) { it.release() }
-                }
+                copyDstD?.releaseDelayed(1)
 
                 val descriptor = TextureDescriptor(
                     label = dst.name,

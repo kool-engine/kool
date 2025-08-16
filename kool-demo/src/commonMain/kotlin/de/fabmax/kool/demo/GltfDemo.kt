@@ -18,7 +18,6 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlin.math.PI
 import kotlin.math.cos
@@ -105,7 +104,7 @@ class GltfDemo : DemoScene("glTF Models") {
         trackModel = currentModel.trackModel
     }
 
-    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         mainScene.setupLighting()
 
         // create deferred pipeline
@@ -134,7 +133,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
         // load models
         models.map {
-            it to async {
+            it to mainScene.coroutineScope.async {
                 it.load(false)
                 it.load(true)
             }

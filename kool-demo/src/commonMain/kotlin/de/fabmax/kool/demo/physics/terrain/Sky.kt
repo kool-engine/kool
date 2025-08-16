@@ -19,7 +19,7 @@ import kotlin.math.atan2
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-class Sky(mainScene: Scene, moonTex: Texture2d) {
+class Sky(val mainScene: Scene, moonTex: Texture2d) {
 
     var timeOfDay = 0.25f
     var fullDayDuration = 180f
@@ -155,12 +155,11 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
         }
         weightedEnvs = WeightedEnvMaps(skies.firstValue(), skies.firstValue())
 
-        launchDelayed(1) {
-            parentScene.removeOffscreenPass(skyLut)
-            sky.removeOffscreenPasses()
-            sky.releaseOffscreenPasses()
-            skyLut.release()
-        }
+        delayFrames(1)
+        parentScene.removeOffscreenPass(skyLut)
+        sky.removeOffscreenPasses()
+        sky.releaseOffscreenPasses()
+        skyLut.release()
     }
 
     fun updateLight(sceneLight: Light.Directional) {

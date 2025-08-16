@@ -21,8 +21,10 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Frontend
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
+import kotlinx.coroutines.Dispatchers
 import kotlin.math.max
 
 class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), EditorOverlay {
@@ -74,7 +76,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                 updateOverlay = false
                 selectedMeshes.clear()
                 getSelectedSceneEntities().forEach { collectMeshes(it) }
-                launchDelayed(1) {
+                overlay.coroutineScope.launchDelayed(1, Dispatchers.Frontend) {
                     // delay disable by 1 frame, so that selectionPass clears its output
                     selectionPass.isEnabled = selectedMeshes.isNotEmpty()
                     overlayMesh.isVisible = selectedMeshes.isNotEmpty()

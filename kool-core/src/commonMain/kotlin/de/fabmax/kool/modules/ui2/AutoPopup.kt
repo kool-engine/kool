@@ -85,7 +85,7 @@ open class AutoPopup(
                             // the menu explicitly, also do not hide the popup if show was called in between (e.g.
                             // because the popup should reappear at another location)
                             hideCnt++
-                            launchDelayed(1) {
+                            coroutineScope.launchDelayed(1) {
                                 if (revokeHide < hideCnt) {
                                     hide()
                                 }

@@ -21,7 +21,7 @@ class UiDemo : DemoScene("UI Demo") {
     val selectedColors = mutableStateOf(Colors.darkColors()).onChange { _, new -> dock.dockingSurface.colors = new }
     val selectedUiSize = mutableStateOf(Sizes.medium)
 
-    val dock = Dock()
+    val dock = Dock(mainScene)
     val demoWindows = mutableListOf<DemoWindow>()
 
     private val windowSpawnLocation = MutableVec2f(320f, 64f)
@@ -119,7 +119,7 @@ class UiDemo : DemoScene("UI Demo") {
             }
         }
 
-        launchDelayed(1) {
+        mainScene.coroutineScope.launchDelayed(1) {
             window.windowSurface.isFocused.set(true)
         }
     }

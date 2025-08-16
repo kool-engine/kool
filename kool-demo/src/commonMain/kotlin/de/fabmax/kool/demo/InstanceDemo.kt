@@ -12,7 +12,6 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -38,7 +37,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             Lod(10000, 1000f, MutableColor(MdColor.BLUE.toLinear()))
     )
 
-    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         model = Assets.loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz").getOrThrow()
     }
 

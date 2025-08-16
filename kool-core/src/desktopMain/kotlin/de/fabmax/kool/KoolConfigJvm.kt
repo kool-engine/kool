@@ -46,7 +46,7 @@ data class KoolConfigJvm(
     val useOpenGlFallback: Boolean = true,
     val monitor: Int = -1,
     val windowIcon: List<BufferedImage> = DEFAULT_ICON?.let { listOf(it) } ?: emptyList(),
-    val asyncSceneUpdate: Boolean = false,
+    val asyncSceneUpdate: Boolean = true,
 
     /**
      * Windows only for now: Disable the window title bar to allow custom window themes.

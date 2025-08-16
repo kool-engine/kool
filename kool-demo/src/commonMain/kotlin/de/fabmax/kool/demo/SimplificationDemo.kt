@@ -20,7 +20,6 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -64,7 +63,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         models += cosModel
     }
 
-    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         loadModel("Bunny", "${DemoLoader.modelPath}/bunny.gltf.gz", 1f, Vec3f(0f, -3f, 0f))
         loadModel("Cow", "${DemoLoader.modelPath}/cow.gltf.gz", 1f, Vec3f.ZERO)
         loadModel("Teapot", "${DemoLoader.modelPath}/teapot.gltf.gz", 1f, Vec3f(0f, -1.5f, 0f))

@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -27,6 +28,7 @@ fun UiScope.Panel(
 }
 
 fun PanelSurface(
+    parentScene: Scene,
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
     name: String = "Panel",
@@ -36,7 +38,7 @@ fun PanelSurface(
     height: Dimension = Grow.Std,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val panelSurface = UiSurface(colors, sizes, name)
+    val panelSurface = UiSurface(parentScene, colors, sizes, name)
     panelSurface.content = {
         Panel(backgroundColor(), layout, name, width, height, block)
     }
@@ -53,15 +55,10 @@ fun Node.addPanelSurface(
     height: Dimension = Grow.Std,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val panelSurface = PanelSurface(colors, sizes, name, backgroundColor, layout, width, height, block)
+    val scene = checkNotNull(findParentOfType<Scene>()) {
+        "Parent scene not found. Make sure the node is added to a scene before calling addPanelSurface()"
+    }
+    val panelSurface = PanelSurface(scene, colors, sizes, name, backgroundColor, layout, width, height, block)
     addNode(panelSurface)
     return panelSurface
 }
-
-@Deprecated("Use addPanelSurface() instead", replaceWith = ReplaceWith("addPanelSurface(colors, sizes, name) { block() }"))
-fun Node.Panel(
-    colors: Colors = Colors.darkColors(),
-    sizes: Sizes = Sizes.medium,
-    name: String = "Panel",
-    block: UiScope.() -> Unit
-): UiSurface = addPanelSurface(colors, sizes, name, block = block)

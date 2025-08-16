@@ -24,7 +24,6 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.math.atan2
 
 class TerrainDemo : DemoScene("Terrain Demo") {
@@ -99,7 +98,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
         val heightData = Assets.loadBlob("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
         val heightMap = Heightmap.fromRawData(heightData, 200f, heightOffset = -50f)

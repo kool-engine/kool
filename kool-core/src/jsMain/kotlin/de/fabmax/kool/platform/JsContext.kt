@@ -5,7 +5,7 @@ import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
-import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.BackendCoroutineDispatcher
 import de.fabmax.kool.util.logE
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -149,7 +149,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
     }
 
     private suspend fun renderFrame(time: Double) {
-        RenderLoopCoroutineDispatcher.executeDispatchedTasks()
+        BackendCoroutineDispatcher.executeDispatchedTasks()
 
         // determine delta time
         val dt = (time - animationMillis) / 1000.0

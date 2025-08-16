@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.Clipboard
 import de.fabmax.kool.editor.actions.AddEntitiesAction
 import de.fabmax.kool.editor.api.EditorScene
@@ -9,7 +10,6 @@ import de.fabmax.kool.editor.data.GameEntityData
 import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
-import kotlinx.serialization.encodeToString
 
 object EditorClipboard {
 
@@ -58,7 +58,7 @@ object EditorClipboard {
                     sanitized.toHierarchy().forEach { root -> root.entityData.parentId = parent.id }
 
                     AddEntitiesAction(sanitized).apply()
-                    launchDelayed(1) {
+                    ApplicationScope.launchDelayed(1) {
                         val nodes = sanitized.mapNotNull { scene.sceneEntities[it.id] }
                         editor.selectionOverlay.setSelection(nodes)
                         editor.editMode.mode.set(EditorEditMode.Mode.MOVE_IMMEDIATE)

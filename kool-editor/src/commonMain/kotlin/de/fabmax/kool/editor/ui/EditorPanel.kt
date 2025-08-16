@@ -37,7 +37,8 @@ abstract class EditorPanel(
         isResizable: Boolean = true,
         block: UiScope.() -> Unit
     ) = WindowSurface(
-        windowDockable,
+        parentScene = ui,
+        windowDockable = windowDockable,
         borderColor = { null },
         isResizable = isResizable,
     ) {
@@ -55,7 +56,8 @@ abstract class EditorPanel(
         backgroundColor: UiScope.() -> Color? = { null },
         block: UiScope.() -> Unit
     ) = WindowSurface(
-        windowDockable,
+        parentScene = ui,
+        windowDockable = windowDockable,
         borderColor = { null },
         isResizable = true,
     ) {

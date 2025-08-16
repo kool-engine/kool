@@ -53,6 +53,8 @@ object KoolSystem {
     data class PlatformProperties(val platform: Platform)
 }
 
+expect val currentThreadName: String
+
 internal expect fun PlatformProperties(): KoolSystem.PlatformProperties
 
 sealed interface Platform {

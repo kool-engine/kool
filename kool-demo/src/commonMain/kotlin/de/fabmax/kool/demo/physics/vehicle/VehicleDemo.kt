@@ -25,7 +25,6 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.CascadedShadowMap
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
-import kotlinx.coroutines.CoroutineScope
 
 class VehicleDemo : DemoScene("Vehicle Demo") {
 
@@ -46,7 +45,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
 
     private lateinit var deferredPipeline: DeferredPipeline
 
-    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         val shadows = CascadedShadowMap(mainScene, mainScene.lighting.lights[0], maxRange = 400f, mapSizes = listOf(4096, 2048, 2048)).apply {
             mapRanges[0].set(0f, 0.03f)
             mapRanges[1].set(0.03f, 0.17f)
@@ -132,7 +131,7 @@ class VehicleDemo : DemoScene("Vehicle Demo") {
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext): UiSurface {
-        ui = VehicleUi(vehicle).apply {
+        ui = VehicleUi(mainScene, vehicle).apply {
             onToggleSound = { en -> vehicle.toggleSound(en) }
         }
         return ui!!.uiSurface

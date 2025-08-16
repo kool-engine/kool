@@ -2,7 +2,7 @@ package de.fabmax.kool.mock
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.pipeline.backend.RenderBackend
-import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.BackendCoroutineDispatcher
 import kotlin.concurrent.thread
 
 class TestKoolContext(
@@ -18,7 +18,7 @@ class TestKoolContext(
         thread(isDaemon = true) {
             while (true) {
                 Thread.sleep(16)
-                RenderLoopCoroutineDispatcher.executeDispatchedTasks()
+                BackendCoroutineDispatcher.executeDispatchedTasks()
             }
         }
     }

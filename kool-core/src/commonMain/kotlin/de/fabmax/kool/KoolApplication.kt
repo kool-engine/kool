@@ -4,7 +4,7 @@ import de.fabmax.kool.modules.ui2.setupUiScene
 import de.fabmax.kool.pipeline.ClearColor
 import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.launchDelayed
+import de.fabmax.kool.util.releaseDelayed
 
 class KoolApplication(val ctx: KoolContext)
 
@@ -49,7 +49,5 @@ fun KoolApplication.removeScene(scene: Scene) = ctx.removeScene(scene)
  */
 fun KoolApplication.removeAndReleaseScene(scene: Scene) {
     ctx.removeScene(scene)
-    launchDelayed(1) {
-        scene.release()
-    }
+    scene.releaseDelayed(1)
 }

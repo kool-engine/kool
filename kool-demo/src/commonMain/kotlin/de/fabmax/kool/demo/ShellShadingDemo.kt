@@ -16,7 +16,6 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.math.*
 
 class ShellShadingDemo : DemoScene("Shell Shading") {
@@ -210,7 +209,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
         }
     }
 
-    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         val colors = mapOf(
             "Blueish Gray" to MdColor.BLUE_GREY.toLinear().toOklab(),
             "Brown" to (MdColor.BROWN tone 800).toOklab(),

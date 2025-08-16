@@ -1,15 +1,14 @@
 package de.fabmax.kool.editor.api
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.components.PhysicsWorldComponent
 import de.fabmax.kool.editor.components.SceneComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformD
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
+import kotlinx.coroutines.Dispatchers
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.sceneNode
@@ -230,7 +229,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
         gameEntity.parent?.removeChild(gameEntity)
 
-        launchDelayed(1) {
+        ApplicationScope.launchDelayed(1, Dispatchers.Frontend) {
             gameEntity.destroyComponents()
         }
     }

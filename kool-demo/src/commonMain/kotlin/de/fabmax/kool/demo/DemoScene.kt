@@ -13,7 +13,9 @@ import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
     var demoEntry: Demos.Entry? = null
@@ -64,9 +66,11 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
         if (demoState == State.NEW) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
-            launchOnMainThread {
+            mainScene.coroutineScope.launch {
                 resources.loadParallel()
-                with(mainScene) { loadResources(ctx) }
+                withContext(Dispatchers.Frontend) {
+                    loadResources(ctx)
+                }
                 demoState = State.SETUP
             }
         }
@@ -85,7 +89,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
         lateInit(ctx)
     }
 
-    open suspend fun CoroutineScope.loadResources(ctx: KoolContext) { }
+    open suspend fun loadResources(ctx: KoolContext) { }
 
     abstract fun Scene.setupMainScene(ctx: KoolContext)
 
@@ -114,6 +118,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
         return WindowSurface(
+            mainScene,
             menuDockable,
             colors = Colors.singleColorDark(accent, Color("101010d0"))
         ) {

@@ -373,7 +373,7 @@ open class Node(name: String? = null) : BaseReleasable() {
     }
 
     inline fun <reified T> findParentOfType(): T? {
-        var p = parent
+        var p: Node? = this
         while (p != null && p !is T) {
             p = p.parent
         }

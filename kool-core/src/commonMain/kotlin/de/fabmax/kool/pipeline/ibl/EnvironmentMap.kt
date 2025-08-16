@@ -75,7 +75,7 @@ fun AssetLoader.hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): 
     return Assets.coroutineScope.async {
         val samplerSettings = SamplerSettings().nearest()
         val hdri = loadTexture2d(hdriPath, TexFormat.RGBA, MipMapping.Off, samplerSettings)
-        withContext(Dispatchers.RenderLoop) {
+        withContext(Dispatchers.Frontend) {
             hdri.map { EnvironmentMap.fromHdriTexture(it, brightness) }
         }
     }

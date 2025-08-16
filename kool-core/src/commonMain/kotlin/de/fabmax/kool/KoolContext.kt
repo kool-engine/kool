@@ -9,10 +9,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.WindowTitleHoverHandler
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -115,6 +112,7 @@ abstract class KoolContext {
 
         Input.poll(this)
 
+        FrontendCoroutineDispatcher.executeDispatchedTasks()
         onRender.update()
         for (i in onRender.indices) {
             onRender[i](this)

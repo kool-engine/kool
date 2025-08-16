@@ -26,7 +26,6 @@ import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.CoroutineScope
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
@@ -59,7 +58,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         roughness(0.8f)
     }
 
-    override suspend fun CoroutineScope.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         ao = AoPipeline.createForward(mainScene).apply {
             mapSize = 0.7f
             radius = 0.5f

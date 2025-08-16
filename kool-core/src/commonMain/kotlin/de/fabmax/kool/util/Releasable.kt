@@ -4,6 +4,7 @@ import de.fabmax.kool.ApplicationScope
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Super-interface for any resource that has to be released after usage (such as GPU resources, e.g. buffers,
@@ -49,13 +50,13 @@ fun Releasable.checkIsReleased() = check(isReleased) {
 }
 
 /**
- * Schedules release of this [Releasable]. The release operation is performed in the context of the backend render
- * thread after *at least* [numFrames] frames. However, depending on where / when this function is called, it might
+ * Schedules release of this [Releasable]. The release operation is performed in the given context
+ * after *at least* [numFrames] frames. However, depending on where / when this function is called, it might
  * also be [numFrames] + 1 frames.
  */
-fun Releasable.releaseDelayed(numFrames: Int = 1) {
+fun Releasable.releaseDelayed(numFrames: Int = 1, context: CoroutineContext = BackendCoroutineDispatcher) {
     ApplicationScope.launch {
-        withContext(RenderLoopCoroutineDispatcher) {
+        withContext(context) {
             delayFrames(numFrames)
             release()
         }

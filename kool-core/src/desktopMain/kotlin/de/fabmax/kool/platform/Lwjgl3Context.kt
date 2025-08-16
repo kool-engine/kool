@@ -6,10 +6,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
-import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
-import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logI
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
@@ -88,6 +85,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     }
 
     override fun run() {
+        Thread.currentThread().name = "kool-main-backend-thread"
         runBlocking {
             while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
                 sysInfo.update()
@@ -109,7 +107,8 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         // frame counter and execute dispatched tasks to run their release code before destroying the backend.
         repeat(3) {
             Time.frameCount++
-            RenderLoopCoroutineDispatcher.executeDispatchedTasks()
+            FrontendCoroutineDispatcher.executeDispatchedTasks()
+            BackendCoroutineDispatcher.executeDispatchedTasks()
         }
 
         backend.cleanup(this)
@@ -117,7 +116,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     }
 
     internal suspend fun renderFrame() {
-        RenderLoopCoroutineDispatcher.executeDispatchedTasks()
+        BackendCoroutineDispatcher.executeDispatchedTasks()
 
         if (windowNotFocusedFrameRate > 0 || maxFrameRate > 0) {
             checkFrameRateLimits(prevFrameTime)

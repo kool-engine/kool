@@ -10,16 +10,18 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlin.coroutines.CoroutineContext
 
 inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
 }
 
-open class Scene(name: String? = null) : Node(name), CoroutineScope {
+open class Scene(name: String? = null) : Node(name) {
     private val job = Job(ApplicationScope.job)
-    override val coroutineContext: CoroutineContext
-        get() = job
+
+    /**
+     * This scene's [CoroutineScope]. Is automatically canceled when the scene is released.
+     */
+    val coroutineScope: CoroutineScope = CoroutineScope(job)
 
     val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
