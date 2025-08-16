@@ -22,6 +22,7 @@ import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformF
+import de.fabmax.kool.scene.launchOnFrontend
 import de.fabmax.kool.util.*
 
 class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
@@ -111,7 +112,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             }
         }
 
-        launchOnMainThread {
+        launchOnFrontend {
             val uiFont = MsdfFont("assets/fonts/gidole/font-gidole-regular").getOrThrow()
             this@EditorUi.uiFont.set(uiFont)
 

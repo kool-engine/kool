@@ -9,8 +9,8 @@ import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.util.Frontend
 import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.launchOnMainThread
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance.ui, isResizable: Boolean = false) {
 
@@ -205,7 +205,7 @@ class BrowsePathDialog(title: String, path: String, val hint: String, val onEnte
                 .alignY(AlignmentY.Center)
                 .margin(start = sizes.largeGap)
                 .onClick {
-                    launchOnMainThread {
+                    ApplicationScope.launch(Dispatchers.Frontend) {
                         PlatformFunctions.chooseFilePath()?.let { text.set(it) }
                     }
                 }

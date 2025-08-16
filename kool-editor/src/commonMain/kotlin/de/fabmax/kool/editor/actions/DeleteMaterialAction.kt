@@ -1,10 +1,13 @@
 package de.fabmax.kool.editor.actions
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.components.MaterialReferenceComponent
 import de.fabmax.kool.editor.data.EntityId
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.Frontend
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class DeleteMaterialAction(
     materialToDelete: MaterialComponent
@@ -25,7 +28,7 @@ class DeleteMaterialAction(
     }
 
     override fun undoAction() {
-        launchOnMainThread {
+        ApplicationScope.launch(Dispatchers.Frontend) {
             material = KoolEditor.instance.projectModel.addMaterial(materialData)
             users.forEach { it.setPersistent(it.data.copy(materialId = material.id)) }
         }

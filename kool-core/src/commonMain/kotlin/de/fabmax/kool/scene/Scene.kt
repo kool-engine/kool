@@ -9,7 +9,9 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
@@ -208,3 +210,6 @@ open class Scene(name: String? = null) : Node(name) {
         }
     }
 }
+
+fun Scene.launchOnFrontend(block: suspend CoroutineScope.() -> Unit) =
+    coroutineScope.launch(Dispatchers.Frontend, block = block)

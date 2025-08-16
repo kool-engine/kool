@@ -13,7 +13,6 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 
 abstract class AoPipeline : BaseReleasable() {
@@ -177,12 +176,10 @@ abstract class AoPipeline : BaseReleasable() {
         }
 
         override fun doRelease() {
-            launchOnMainThread {
-                deferredPipeline.scene.removeOffscreenPass(aoPass)
-                deferredPipeline.scene.removeOffscreenPass(denoisePass)
-                aoPass.release()
-                denoisePass.release()
-            }
+            deferredPipeline.scene.removeOffscreenPass(aoPass)
+            deferredPipeline.scene.removeOffscreenPass(denoisePass)
+            aoPass.release()
+            denoisePass.release()
         }
     }
 

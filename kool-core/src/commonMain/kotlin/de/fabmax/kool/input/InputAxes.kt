@@ -6,7 +6,6 @@ import de.fabmax.kool.math.Easing
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.checkIsNotReleased
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -21,7 +20,6 @@ open class InputAxes(
     private var controller: Controller? = fixedController
 
     private val updateAxes: ((KoolContext) -> Unit) = {
-        checkIsNotReleased()
         for (i in axesList.indices) {
             axesList[i].updateAxisState(Time.deltaT)
         }

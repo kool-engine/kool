@@ -1,9 +1,6 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.Assets
-import de.fabmax.kool.FileFilterItem
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.MimeType
+import de.fabmax.kool.*
 import de.fabmax.kool.editor.AppAssetType
 import de.fabmax.kool.editor.AssetItem
 import de.fabmax.kool.editor.util.ThumbnailRenderer
@@ -12,7 +9,9 @@ import de.fabmax.kool.editor.util.hdriThumbnail
 import de.fabmax.kool.editor.util.textureThumbnail
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.Frontend
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.picture, ui) {
@@ -171,7 +170,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.pi
     private fun SubMenuItem<BrowserItem>.renameDirectoryItem() = item("Rename directory") { item ->
         OkCancelEnterTextDialog("Rename / Move Directory", item.path, hint = "New directory name") {
             if (it.isNotBlank()) {
-                launchOnMainThread {
+                ApplicationScope.launch(Dispatchers.Frontend) {
                     editor.availableAssets.renameAsset(item.path, it.trim())
                 }
             }
@@ -187,7 +186,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.pi
     private fun SubMenuItem<BrowserItem>.renameAssetItem() = item("Rename asset file") { item ->
         OkCancelEnterTextDialog("Rename / Move Asset File", item.path, hint = "New asset file name") {
             if (it.isNotBlank()) {
-                launchOnMainThread {
+                ApplicationScope.launch(Dispatchers.Frontend) {
                     editor.availableAssets.renameAsset(item.path, it.trim())
                 }
             }
@@ -207,7 +206,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.pi
     }
 
     private fun SubMenuItem<BrowserItem>.importAssetsItem(label: String, filterList: List<FileFilterItem>) = item(label) { item ->
-        launchOnMainThread {
+        ApplicationScope.launch(Dispatchers.Frontend) {
             val importFiles = Assets.loadFileByUser(filterList, true)
             editor.availableAssets.importAssets(item.path, importFiles)
         }

@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.DefaultLoader
@@ -11,6 +12,7 @@ import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("") {
@@ -87,7 +89,7 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
     internal fun reloadAsset(assetItem: AssetItem) {
         val assetRefs = assetRefsByPath[assetItem.path]
 
-        launchOnMainThread {
+        ApplicationScope.launch(Dispatchers.Frontend) {
             assetRefs?.forEach { ref ->
                 when (ref) {
                     is AssetReference.Texture -> {

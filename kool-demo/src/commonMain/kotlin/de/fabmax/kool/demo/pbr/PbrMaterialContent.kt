@@ -13,11 +13,11 @@ import de.fabmax.kool.pipeline.SingleColorTexture
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.scene.*
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.releaseWith
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<KslPbrShader>()
@@ -39,7 +39,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
     }
 
     private fun updatePbrMaterial() {
-        launchOnMainThread {
+        scene.launchOnFrontend {
             val materialIdx = selectedMatIdx.value
             val maps = loadedMaterials[materialIdx] ?: materialLoaders[materialIdx].second().also {
                 it.releaseWith(scene)

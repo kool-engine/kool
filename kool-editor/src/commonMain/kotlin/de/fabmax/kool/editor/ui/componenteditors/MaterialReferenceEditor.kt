@@ -1,5 +1,6 @@
 package de.fabmax.kool.editor.ui.componenteditors
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.actions.SetComponentDataAction
 import de.fabmax.kool.editor.actions.SetMaterialAction
@@ -9,7 +10,9 @@ import de.fabmax.kool.editor.components.MaterialReferenceComponent
 import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.editor.ui.*
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.Frontend
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
 class MaterialReferenceEditor : ComponentEditor<MaterialReferenceComponent>() {
@@ -51,7 +54,7 @@ class MaterialReferenceEditor : ComponentEditor<MaterialReferenceComponent>() {
                         .selectedIndex(idx)
                         .onItemSelected { index ->
                             if (allTheSameMaterial || index > 0) {
-                                launchOnMainThread {
+                                ApplicationScope.launch(Dispatchers.Frontend) {
                                     val setMaterial = items[index].getMaterial()
                                     components
                                         .map { SetMaterialAction(it, setMaterial) }
