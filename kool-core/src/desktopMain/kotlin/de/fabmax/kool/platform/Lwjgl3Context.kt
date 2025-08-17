@@ -116,8 +116,6 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     }
 
     internal suspend fun renderFrame() {
-        BackendCoroutineDispatcher.executeDispatchedTasks()
-
         if (windowNotFocusedFrameRate > 0 || maxFrameRate > 0) {
             checkFrameRateLimits(prevFrameTime)
         }
@@ -128,6 +126,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         if (config.asyncSceneUpdate) {
             nextFrameData = ApplicationScope.async { render(computeDt()) }
         }
+        BackendCoroutineDispatcher.executeDispatchedTasks()
         backend.renderFrame(frameData, this@Lwjgl3Context)
     }
 

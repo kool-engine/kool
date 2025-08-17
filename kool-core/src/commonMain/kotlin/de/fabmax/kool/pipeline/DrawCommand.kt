@@ -7,7 +7,6 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
 class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) {
-
     var mesh: Mesh = mesh
         private set
     var drawGroupId = 0
@@ -40,6 +39,7 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
     fun captureData() {
         mesh.captureBuffer()
         pipeline.captureBuffer()
+        pipeline.addUser(mesh)
     }
 
     fun updatePipelineData() {

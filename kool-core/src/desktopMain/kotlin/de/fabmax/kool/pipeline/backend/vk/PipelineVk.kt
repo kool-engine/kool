@@ -93,7 +93,6 @@ sealed class PipelineVk(
     }
 
     override fun doRelease() {
-        pipeline.release()
         bindGroupLayouts.forEach { backend.device.destroyDescriptorSetLayout(it) }
         backend.device.destroyPipelineLayout(pipelineLayout)
         pipelineInfo.deleted()

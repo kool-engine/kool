@@ -50,7 +50,7 @@ open class ComputePass(name: String) : GpuPass(name) {
         val pass: ComputePass get() = this@ComputePass
         val numGroups = MutableVec3i(numGroups)
         var isEnabled = true
-        val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputePass)
+        val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputePass).also { it.addUser(this) }
 
         private val beforeDispatch = mutableListOf<() -> Unit>()
         private val afterDispatch = mutableListOf<() -> Unit>()

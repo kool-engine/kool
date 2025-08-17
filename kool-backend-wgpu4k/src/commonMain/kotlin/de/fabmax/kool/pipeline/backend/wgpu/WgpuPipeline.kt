@@ -185,7 +185,6 @@ sealed class WgpuPipeline(
     }
 
     override fun doRelease() {
-        pipeline.release()
         when (this) {
             is WgpuDrawPipeline -> backend.pipelineManager.removeDrawPipeline(this)
             is WgpuComputePipeline -> backend.pipelineManager.removeComputePipeline(this)

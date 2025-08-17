@@ -53,8 +53,10 @@ abstract class TriggeredCoroutineDispatcher : CoroutineDispatcher() {
 }
 
 suspend fun delayFrames(numFrames: Int) {
-    val targetFrame = Time.frameCount + numFrames
-    Time.frameFlow.takeWhile { it < targetFrame }.count()
+    if (numFrames > 0) {
+        val targetFrame = Time.frameCount + numFrames
+        Time.frameFlow.takeWhile { it < targetFrame }.count()
+    }
 }
 
 /**

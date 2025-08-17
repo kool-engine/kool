@@ -1,12 +1,8 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.util.Backend
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.LongHash
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /**
  * Compute pipeline: Compute shader + data layout.
@@ -18,6 +14,7 @@ class ComputePipeline(
     shaderCodeGenerator: (ComputePipeline) -> ComputeShaderCode
 ) : PipelineBase(name, bindGroupLayouts) {
     override val pipelineHash: LongHash
+    private val users = mutableSetOf<ComputePass.Task>()
 
     override val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
     val onUpdatePipelineData: BufferedList<(ComputePass) -> Unit> = BufferedList()
@@ -38,9 +35,14 @@ class ComputePipeline(
         onUpdatePipelineData += block
     }
 
+    fun addUser(task: ComputePass.Task) {
+        users.add(task)
+    }
+
     fun removeUser(task: ComputePass.Task) {
-        ApplicationScope.launch(Dispatchers.Backend) {
-            pipelineBackend?.removeUser(task)
+        users.remove(task)
+        if (users.isEmpty()) {
+            release()
         }
     }
 }

@@ -45,8 +45,9 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     }
 
     override fun doRelease() {
-        pipelineBackend?.releaseDelayed(1, Dispatchers.Backend)
+        pipelineBackend?.releaseDelayed(0, Dispatchers.Backend)
         pipelineSwapData.values.forEach { it.release() }
+        pipelineBackend = null
     }
 
     inline fun <reified T: BindingLayout> findBindGroupItem(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {
@@ -78,9 +79,7 @@ inline fun PipelineBase.swapPipelineDataCapturing(key: Any?, block: () -> Unit) 
     captureBuffer()
 }
 
-interface PipelineBackend : Releasable {
-    fun removeUser(user: Any)
-}
+interface PipelineBackend : Releasable
 
 class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), DoubleBuffered {
     @PublishedApi

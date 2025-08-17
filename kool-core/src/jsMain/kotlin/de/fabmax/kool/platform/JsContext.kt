@@ -149,8 +149,6 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
     }
 
     private suspend fun renderFrame(time: Double) {
-        BackendCoroutineDispatcher.executeDispatchedTasks()
-
         // determine delta time
         val dt = (time - animationMillis) / 1000.0
         animationMillis = time
@@ -179,6 +177,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         // render frame
         val frameData = render(dt)
         frameData.syncData()
+        BackendCoroutineDispatcher.executeDispatchedTasks()
         backend.renderFrame(frameData, this)
         requestAnimationFrame()
     }

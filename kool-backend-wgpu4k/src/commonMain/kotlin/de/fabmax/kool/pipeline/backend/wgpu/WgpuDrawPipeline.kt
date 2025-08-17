@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.NodeId
 import io.ygdrasil.webgpu.*
 
 class WgpuDrawPipeline(
@@ -13,7 +11,6 @@ class WgpuDrawPipeline(
 ): WgpuPipeline(drawPipeline, backend) {
 
     private val pipelines = mutableMapOf<WgpuRenderPass, GPURenderPipeline>()
-    private val users = mutableSetOf<NodeId>()
 
     private fun createVertexBufferLayout(): List<GPUVertexBufferLayout> {
         val bindings = drawPipeline.vertexLayout.bindings.filter { it.vertexAttributes.isNotEmpty() }
@@ -150,7 +147,6 @@ class WgpuDrawPipeline(
 
     fun updateGeometry(cmd: DrawCommand) {
         if (cmd.geometry.numIndices == 0) return
-        users.add(cmd.mesh.id)
 
         if (cmd.geometry.gpuGeometry == null) {
             cmd.geometry.gpuGeometry = WgpuGeometry(cmd.mesh, backend)
@@ -199,12 +195,5 @@ class WgpuDrawPipeline(
         gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
         passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.Uint32)
         return true
-    }
-
-    override fun removeUser(user: Any) {
-        (user as? Mesh)?.let { users.remove(it.id) }
-        if (users.isEmpty()) {
-            release()
-        }
     }
 }

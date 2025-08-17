@@ -4,8 +4,6 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
 import de.fabmax.kool.pipeline.backend.gl.locationSize
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.NodeId
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
@@ -22,11 +20,9 @@ class DrawPipelineVk(
 ): PipelineVk(drawPipeline, backend) {
 
     private val pipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
-    private val users = mutableSetOf<NodeId>()
 
     fun updateGeometry(cmd: DrawCommand, passEncoderState: PassEncoderState) {
         if (cmd.geometry.numIndices == 0) return
-        users.add(cmd.mesh.id)
 
         if (cmd.geometry.gpuGeometry == null) {
             cmd.geometry.gpuGeometry = GeometryVk(cmd.mesh, backend)
@@ -306,13 +302,6 @@ class DrawPipelineVk(
             blendConstants(1, 0f)
             blendConstants(2, 0f)
             blendConstants(3, 0f)
-        }
-    }
-
-    override fun removeUser(user: Any) {
-        (user as? Mesh)?.let { users.remove(it.id) }
-        if (users.isEmpty()) {
-            release()
         }
     }
 

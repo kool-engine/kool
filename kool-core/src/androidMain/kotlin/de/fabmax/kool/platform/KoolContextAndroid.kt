@@ -77,7 +77,6 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
 
     internal fun renderFrame() = runBlocking {
         sysInfo.update()
-        BackendCoroutineDispatcher.executeDispatchedTasks()
 
         // determine time delta
         val time = System.nanoTime()
@@ -88,6 +87,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         val frameData = render(dt)
 
         // execute draw queues
+        BackendCoroutineDispatcher.executeDispatchedTasks()
         backend.renderFrame(frameData, this@KoolContextAndroid)
     }
 

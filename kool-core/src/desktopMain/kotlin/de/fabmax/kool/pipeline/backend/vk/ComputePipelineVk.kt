@@ -11,18 +11,8 @@ class ComputePipelineVk(
 ) : PipelineVk(computePipeline, backend) {
 
     private val vkComputePipeline: VkComputePipeline = createComputePipelineVk()
-    private val users = mutableSetOf<ComputePass.Task>()
-
-    override fun removeUser(user: Any) {
-        (user as? ComputePass.Task)?.let { users.remove(it) }
-        if (users.isEmpty()) {
-            release()
-        }
-    }
 
     fun bind(task: ComputePass.Task, passEncoderState: PassEncoderState): Boolean {
-        users += task
-
         val pipelineData = computePipeline.capturedPipelineData
         if (!pipelineData.checkBindings()) {
             return false
