@@ -1,10 +1,14 @@
 package de.fabmax.kool.input
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.isMacOs
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.util.Backend
 import de.fabmax.kool.util.logD
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.lwjgl.glfw.GLFW.*
 
 internal actual fun PlatformInput(): PlatformInput = PlatformInputJvm
@@ -22,30 +26,34 @@ object PlatformInputJvm : PlatformInput {
     private val ctx: KoolContext by lazy { KoolSystem.requireContext() }
 
     override fun setCursorMode(cursorMode: CursorMode) {
-        val ctx = KoolSystem.getContextOrNull() as Lwjgl3Context? ?: return
-        val window = ctx.backend.glfwWindow
-        val windowHandle = window.windowPtr
+        ApplicationScope.launch(Dispatchers.Backend) {
+            val ctx = KoolSystem.requireContext() as Lwjgl3Context
+            val window = ctx.backend.glfwWindow
+            val windowHandle = window.windowPtr
 
-        if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
-            val x = doubleArrayOf(0.0)
-            val y = doubleArrayOf(0.0)
-            glfwGetCursorPos(windowHandle, x, y)
-            glfwSetInputMode(windowHandle, GLFW_CURSOR, cursorMode.glfwMode)
-            if (cursorMode == CursorMode.NORMAL) {
-                val setX = ((x[0] % window.framebufferWidth) + window.framebufferWidth) % window.framebufferWidth
-                val setY = ((y[0] % window.framebufferHeight) + window.framebufferHeight) % window.framebufferHeight
-                glfwSetCursorPos(windowHandle, setX, setY)
+            if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
+                val x = doubleArrayOf(0.0)
+                val y = doubleArrayOf(0.0)
+                glfwGetCursorPos(windowHandle, x, y)
+                glfwSetInputMode(windowHandle, GLFW_CURSOR, cursorMode.glfwMode)
+                if (cursorMode == CursorMode.NORMAL) {
+                    val setX = ((x[0] % window.framebufferWidth) + window.framebufferWidth) % window.framebufferWidth
+                    val setY = ((y[0] % window.framebufferHeight) + window.framebufferHeight) % window.framebufferHeight
+                    glfwSetCursorPos(windowHandle, setX, setY)
+                }
             }
         }
     }
 
     override fun applyCursorShape(cursorShape: CursorShape) {
-        val ctx = KoolSystem.requireContext() as Lwjgl3Context? ?: return
-        val windowHandle = ctx.backend.glfwWindow.windowPtr
+        ApplicationScope.launch(Dispatchers.Backend) {
+            val ctx = KoolSystem.requireContext() as Lwjgl3Context
+            val windowHandle = ctx.backend.glfwWindow.windowPtr
 
-        if (cursorShape != currentCursorShape) {
-            glfwSetCursor(windowHandle, cursorShapes[cursorShape] ?: 0L)
-            currentCursorShape = cursorShape
+            if (cursorShape != currentCursorShape) {
+                glfwSetCursor(windowHandle, cursorShapes[cursorShape] ?: 0L)
+                currentCursorShape = cursorShape
+            }
         }
     }
 
