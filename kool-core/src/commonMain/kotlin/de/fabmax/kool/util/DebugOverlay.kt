@@ -4,6 +4,8 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.pipeline.ComputePipeline
+import de.fabmax.kool.pipeline.DrawPipeline
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Mesh
@@ -214,7 +216,11 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
 
     private fun printShaderStats() {
         BackendStats.pipelines.values.forEach { pipelineInfo ->
-            println(pipelineInfo.pipeline.name)
+            println("${pipelineInfo.pipeline.name}, released: ${pipelineInfo.pipeline.isReleased}")
+            when (val pipeline = pipelineInfo.pipeline) {
+                is DrawPipeline -> pipeline.users.forEach { println("  ${it.name}, released: ${it.isReleased}") }
+                is ComputePipeline -> pipeline.users.forEach { println("  ${it.pass.name}, released: ${it.isReleased}") }
+            }
         }
     }
 

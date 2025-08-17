@@ -1,7 +1,6 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.NodeId
 import de.fabmax.kool.util.BufferedList
 import de.fabmax.kool.util.LongHash
 
@@ -18,7 +17,7 @@ class DrawPipeline(
     shaderCodeGenerator: (DrawPipeline) -> ShaderCode
 ) : PipelineBase(name, bindGroupLayouts) {
     override val pipelineHash: LongHash
-    private val users = mutableSetOf<NodeId>()
+    internal val users = mutableSetOf<Mesh>()
 
     val cullMethod: CullMethod get() = pipelineConfig.cullMethod
     val blendMode: BlendMode get() = pipelineConfig.blendMode
@@ -59,11 +58,11 @@ class DrawPipeline(
     }
 
     fun addUser(mesh: Mesh) {
-        users.add(mesh.id)
+        users.add(mesh)
     }
 
     fun removeUser(mesh: Mesh) {
-        users.remove(mesh.id)
+        users.remove(mesh)
         if (users.isEmpty()) {
             release()
         }

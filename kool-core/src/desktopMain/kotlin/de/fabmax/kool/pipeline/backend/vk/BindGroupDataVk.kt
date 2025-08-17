@@ -208,7 +208,7 @@ class BindGroupDataVk(
                 bufferInfo = MemoryInfo(
                     size = struct.structSize.toLong(),
                     usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                    label = "bindGroup[${data.layout.scope}]-ubo-${binding.name}",
+                    label = "${data.name}-bindGroup[${data.layout.scope}]-ubo-${binding.name}",
                     createMapped = true
                 ),
             )

@@ -7,7 +7,10 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.NodeId
+import de.fabmax.kool.util.Frontend
 import de.fabmax.kool.util.UniqueId
+import de.fabmax.kool.util.releaseDelayed
+import kotlinx.coroutines.Dispatchers
 
 
 open class DepthMapPass(
@@ -78,7 +81,7 @@ open class DepthMapPass(
             .filterNotNull()
             .distinct()
             .filter { !it.isReleased }
-            .forEach { it.release() }
+            .forEach { it.releaseDelayed(1, Dispatchers.Frontend) }
     }
 
     protected data class DepthShaderKey(

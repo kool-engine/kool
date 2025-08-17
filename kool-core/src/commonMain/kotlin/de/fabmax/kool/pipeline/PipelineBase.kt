@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 
@@ -45,9 +46,11 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     }
 
     override fun doRelease() {
-        pipelineBackend?.releaseDelayed(0, Dispatchers.Backend)
-        pipelineSwapData.values.forEach { it.release() }
-        pipelineBackend = null
+        ApplicationScope.launchDelayed(1, Dispatchers.Backend) {
+            pipelineBackend?.release()
+            pipelineSwapData.values.forEach { it.release() }
+            pipelineBackend = null
+        }
     }
 
     inline fun <reified T: BindingLayout> findBindGroupItem(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {

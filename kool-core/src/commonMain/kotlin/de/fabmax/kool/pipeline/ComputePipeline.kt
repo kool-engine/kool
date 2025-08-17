@@ -14,7 +14,7 @@ class ComputePipeline(
     shaderCodeGenerator: (ComputePipeline) -> ComputeShaderCode
 ) : PipelineBase(name, bindGroupLayouts) {
     override val pipelineHash: LongHash
-    private val users = mutableSetOf<ComputePass.Task>()
+    internal val users = mutableSetOf<ComputePass.Task>()
 
     override val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
     val onUpdatePipelineData: BufferedList<(ComputePass) -> Unit> = BufferedList()

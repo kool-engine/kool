@@ -20,14 +20,19 @@ object BackendStats {
     var numPrimitives = 0
         private set
 
+    private var _numDrawCommands = 0
+    private var _numPrimitives = 0
+
     fun resetPerFrameCounts() {
-        numDrawCommands = 0
-        numPrimitives = 0
+        numDrawCommands = _numDrawCommands
+        numPrimitives = _numPrimitives
+        _numDrawCommands = 0
+        _numPrimitives = 0
     }
 
     fun addDrawCommands(nCommands: Int, nPrimitives: Int) {
-        numPrimitives += nPrimitives
-        numDrawCommands += nCommands
+        _numPrimitives += nPrimitives
+        _numDrawCommands += nCommands
     }
 
     internal fun onDestroy() {
