@@ -4,7 +4,6 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW
@@ -34,7 +33,7 @@ fun KoolApplication(config: KoolConfigJvm = KoolConfigJvm(), appBlock: suspend K
 
 fun KoolApplication(ctx: Lwjgl3Context, appBlock: suspend KoolApplication.() -> Unit) {
     val koolApp = KoolApplication(ctx)
-    ApplicationScope.launch(Dispatchers.Frontend) {
+    FrontendScope.launch {
         koolApp.appBlock()
     }
     ctx.run()

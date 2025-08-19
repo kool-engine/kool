@@ -4,10 +4,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemDirectory
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.AtlasFont
-import de.fabmax.kool.util.CharMetrics
-import de.fabmax.kool.util.FontMap
-import de.fabmax.kool.util.Uint8Buffer
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async

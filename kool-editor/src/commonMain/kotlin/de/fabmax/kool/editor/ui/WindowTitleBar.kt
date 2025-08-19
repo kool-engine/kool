@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.ui
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
 import de.fabmax.kool.editor.KoolEditor
@@ -12,7 +11,6 @@ import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
@@ -179,7 +177,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             .onClick {
                 if (!isExporting) {
                     isExporting = true
-                    ApplicationScope.launch(Dispatchers.Frontend) {
+                    FrontendScope.launch {
                         editor.exportProject()
                         isExporting = false
                     }

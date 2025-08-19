@@ -1,13 +1,11 @@
 package de.fabmax.kool.editor
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.Platform
 import de.fabmax.kool.editor.api.EditorAwareApp
 import de.fabmax.kool.editor.ui.componenteditors.BehaviorEditor
-import de.fabmax.kool.util.Frontend
+import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.logE
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
@@ -71,7 +69,7 @@ class AppLoader(val editor: KoolEditor) : AppSourcesChangeListener {
     fun reloadApp() {
         if (!isBuildInProgress) {
             isBuildInProgress = true
-            ApplicationScope.launch(Dispatchers.Frontend) {
+            FrontendScope.launch {
                 try {
                     if (appSourcesChanged) {
                         appSourcesChanged = false

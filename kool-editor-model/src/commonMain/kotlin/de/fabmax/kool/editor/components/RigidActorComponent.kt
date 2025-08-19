@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.api.AppAssets
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.isDestroyed
@@ -15,8 +14,7 @@ import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
 class RigidActorComponent(
@@ -59,7 +57,7 @@ class RigidActorComponent(
     }
 
     override fun onDataChanged(oldData: RigidActorComponentData, newData: RigidActorComponentData) {
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             updateRigidActor(newData, forceRecreate = oldData.materialId != newData.materialId)
         }
     }

@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.isDestroyed
@@ -13,8 +12,7 @@ import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.CharacterController
 import de.fabmax.kool.physics.character.OnHitActorListener
 import de.fabmax.kool.scene.TrsTransformF
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.atan2
@@ -58,7 +56,7 @@ class CharacterControllerComponent(
     override val physicsActorTransform: TrsTransformF? get() = charController?.actor?.transform
 
     override fun onDataChanged(oldData: CharacterControllerComponentData, newData: CharacterControllerComponentData) {
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             updateControllerProps(newData)
         }
     }

@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.EditorDefaults
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.EditorScene
@@ -13,8 +12,7 @@ import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.QuatD
 import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
 class AddEntitiesAction(
@@ -24,7 +22,7 @@ class AddEntitiesAction(
     private val hierarchy = addEntityDatas.toHierarchy()
 
     override fun doAction() {
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             hierarchy.forEach {
                 val scene = it.entityData.parentId.gameEntity?.scene
                 scene?.addGameEntities(it)

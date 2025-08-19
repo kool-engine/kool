@@ -14,10 +14,8 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.util.Frontend
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.releaseDelayed
-import kotlinx.coroutines.Dispatchers
 
 
 class BrdfLutPass(parentScene: Scene) :
@@ -44,7 +42,7 @@ class BrdfLutPass(parentScene: Scene) :
             logT { "Generated BRDF look-up table" }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)
-                releaseDelayed(1, Dispatchers.Frontend)
+                releaseDelayed(1)
             } else {
                 isEnabled = false
             }

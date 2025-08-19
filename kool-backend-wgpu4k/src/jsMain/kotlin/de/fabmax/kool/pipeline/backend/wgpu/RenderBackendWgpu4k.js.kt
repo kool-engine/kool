@@ -1,9 +1,12 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
-import de.fabmax.kool.*
+import de.fabmax.kool.FrameData
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJs
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.ApplicationScope
 import io.ygdrasil.webgpu.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
@@ -52,10 +55,8 @@ internal class JsRenderBackendWgpu4kWebGpu(ctx: KoolContext, canvas: HTMLCanvasE
         { getAdapter() }
     )
 {
-    private val backendScope = CoroutineScope(ApplicationScope.coroutineContext)
-
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
-        backendScope.launch {
+        ApplicationScope.launch {
             renderFrameSuspending(frameData, ctx)
         }
     }

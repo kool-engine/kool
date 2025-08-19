@@ -1,10 +1,10 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.platform.JsContext
-import de.fabmax.kool.util.Frontend
+import de.fabmax.kool.util.ApplicationScope
+import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.LogPrinter
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
 
@@ -36,7 +36,7 @@ fun KoolApplication(config: KoolConfigJs = KoolConfigJs(), appBlock: suspend Koo
 
 fun KoolApplication(ctx: JsContext, appBlock: suspend KoolApplication.() -> Unit) {
     val koolApp = KoolApplication(ctx)
-    ApplicationScope.launch(Dispatchers.Frontend) {
+    FrontendScope.launch {
         koolApp.appBlock()
     }
     ctx.run()

@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.api
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.components.MeshComponent
 import de.fabmax.kool.editor.components.isDefaultMaterial
@@ -20,7 +19,6 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -382,7 +380,7 @@ class SceneNodes(val scene: EditorScene) :
 
         private fun recreateModelAsync() {
             if (!isRecreatingModel.getAndSet(true)) {
-                ApplicationScope.launch(Dispatchers.Frontend) {
+                FrontendScope.launch {
                     createNode()
                     isRecreatingModel.lazySet(false)
                 }

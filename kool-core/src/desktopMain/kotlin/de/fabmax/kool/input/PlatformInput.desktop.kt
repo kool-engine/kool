@@ -1,13 +1,11 @@
 package de.fabmax.kool.input
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.isMacOs
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.util.Backend
+import de.fabmax.kool.util.BackendScope
 import de.fabmax.kool.util.logD
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.lwjgl.glfw.GLFW.*
 
@@ -26,7 +24,7 @@ object PlatformInputJvm : PlatformInput {
     private val ctx: KoolContext by lazy { KoolSystem.requireContext() }
 
     override fun setCursorMode(cursorMode: CursorMode) {
-        ApplicationScope.launch(Dispatchers.Backend) {
+        BackendScope.launch {
             val ctx = KoolSystem.requireContext() as Lwjgl3Context
             val window = ctx.backend.glfwWindow
             val windowHandle = window.windowPtr
@@ -46,7 +44,7 @@ object PlatformInputJvm : PlatformInput {
     }
 
     override fun applyCursorShape(cursorShape: CursorShape) {
-        ApplicationScope.launch(Dispatchers.Backend) {
+        BackendScope.launch {
             val ctx = KoolSystem.requireContext() as Lwjgl3Context
             val windowHandle = ctx.backend.glfwWindow.windowPtr
 

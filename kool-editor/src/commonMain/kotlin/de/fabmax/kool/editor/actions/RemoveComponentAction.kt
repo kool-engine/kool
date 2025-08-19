@@ -1,12 +1,10 @@
 package de.fabmax.kool.editor.actions
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.GameEntityDataComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.util.gameEntity
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
 class RemoveComponentAction(
@@ -28,7 +26,7 @@ class RemoveComponentAction(
 
     override fun undoAction() {
         val entity = gameEntity ?: return
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             val component = entity.createDataComponent(componentInfo)
             entity.addComponentLifecycleAware(component)
             refreshComponentViews()

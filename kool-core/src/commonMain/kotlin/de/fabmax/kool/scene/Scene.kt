@@ -1,6 +1,9 @@
 package de.fabmax.kool.scene
 
-import de.fabmax.kool.*
+import de.fabmax.kool.FrameData
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PassData
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.RayD
@@ -9,9 +12,7 @@ import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
@@ -23,7 +24,7 @@ open class Scene(name: String? = null) : Node(name) {
     /**
      * This scene's [CoroutineScope]. Is automatically canceled when the scene is released.
      */
-    val coroutineScope: CoroutineScope = CoroutineScope(job)
+    val coroutineScope: CoroutineScope = CoroutineScope(job + KoolDispatchers.Frontend)
 
     val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
@@ -210,6 +211,3 @@ open class Scene(name: String? = null) : Node(name) {
         }
     }
 }
-
-fun Scene.launchOnFrontend(block: suspend CoroutineScope.() -> Unit) =
-    coroutineScope.launch(Dispatchers.Frontend, block = block)

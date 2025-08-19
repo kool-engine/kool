@@ -80,7 +80,7 @@ object PlatformAssetsImpl : PlatformAssets {
     suspend fun openFileChooser(filterList: List<FileFilterItem> = emptyList(), multiSelect: Boolean = false): List<File> {
         // apparently file dialog functions need to be called from main thread
         // unfortunately, this means the main loop is suspended while the dialog is open
-        return withContext(Dispatchers.Backend) {
+        return withContext(KoolDispatchers.Backend) {
             memStack {
                 var fileFilters: NFDFilterItem.Buffer? = null
                 if (filterList.isNotEmpty()) {
@@ -127,7 +127,7 @@ object PlatformAssetsImpl : PlatformAssets {
     suspend fun saveFileChooser(defaultFileName: String? = null, filterList: List<FileFilterItem> = emptyList()): File? {
         // apparently file dialog functions need to be called from main thread
         // unfortunately, this means the main loop is blocked while the dialog is open
-        return withContext(Dispatchers.Backend) {
+        return withContext(KoolDispatchers.Backend) {
             memStack {
                 val outPath = callocPointer(1)
                 var fileFilters: NFDFilterItem.Buffer? = null

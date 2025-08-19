@@ -1,6 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.ApplicationScope
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,11 +53,18 @@ fun Releasable.checkIsReleased() = check(isReleased) {
  * after *at least* [numFrames] frames. However, depending on where / when this function is called, it might
  * also be [numFrames] + 1 frames.
  */
-fun Releasable.releaseDelayed(numFrames: Int = 1, context: CoroutineContext = BackendCoroutineDispatcher) {
-    ApplicationScope.launch {
-        withContext(context) {
+fun Releasable.releaseDelayed(numFrames: Int = 1, context: CoroutineContext? = null) {
+    if (context == null) {
+        SyncedScope.launch {
             delayFrames(numFrames)
             release()
+        }
+    } else {
+        ApplicationScope.launch {
+            withContext(context) {
+                delayFrames(numFrames)
+                release()
+            }
         }
     }
 }

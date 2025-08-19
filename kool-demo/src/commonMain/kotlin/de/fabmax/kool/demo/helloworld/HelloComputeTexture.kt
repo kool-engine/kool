@@ -12,7 +12,6 @@ import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class HelloComputeTexture : DemoScene("Hello Compute Texture") {
@@ -102,7 +101,7 @@ class HelloComputeTexture : DemoScene("Hello Compute Texture") {
             if (++counter % 100 == 0) {
                 // for the purpose of this example, we read back the texture from time to time and print the color of
                 // the first pixel to the console
-                mainScene.coroutineScope.launch(Dispatchers.Backend) {
+                mainScene.coroutineScope.launch(KoolDispatchers.Backend) {
                     logI { "${Time.frameCount}: Read back storage texture from GPU memory..." }
                     // buffer download is an asynchronous operation and will take some time to complete (which is why
                     // it is a suspending function)

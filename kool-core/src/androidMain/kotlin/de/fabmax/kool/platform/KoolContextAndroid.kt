@@ -87,7 +87,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         val frameData = render(dt)
 
         // execute draw queues
-        BackendCoroutineDispatcher.executeDispatchedTasks()
+        KoolDispatchers.Backend.executeDispatchedTasks()
         backend.renderFrame(frameData, this@KoolContextAndroid)
     }
 

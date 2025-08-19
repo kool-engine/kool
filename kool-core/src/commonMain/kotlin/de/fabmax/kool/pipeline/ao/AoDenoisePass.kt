@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline.ao
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec2f
@@ -13,9 +12,8 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Frontend
+import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.launchDelayed
-import kotlinx.coroutines.Dispatchers
 
 class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
     OffscreenPass2d(
@@ -64,7 +62,7 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
             denoiseMesh.isVisible = false
             clearMesh.isVisible = true
 
-            ApplicationScope.launchDelayed(5, Dispatchers.Frontend) {
+            FrontendScope.launchDelayed(5) {
                 isEnabled = false
                 denoiseMesh.isVisible = true
                 clearMesh.isVisible = false

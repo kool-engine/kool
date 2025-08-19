@@ -7,7 +7,6 @@ import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
@@ -75,7 +74,7 @@ fun AssetLoader.hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): 
     return Assets.coroutineScope.async {
         val samplerSettings = SamplerSettings().nearest()
         val hdri = loadTexture2d(hdriPath, TexFormat.RGBA, MipMapping.Off, samplerSettings)
-        withContext(Dispatchers.Frontend) {
+        withContext(KoolDispatchers.Frontend) {
             hdri.map { EnvironmentMap.fromHdriTexture(it, brightness) }
         }
     }

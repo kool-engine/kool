@@ -3,8 +3,8 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.editor.util.ImmediateTransformEditMode
 import de.fabmax.kool.modules.gizmo.GizmoMode
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.scene.launchOnFrontend
 import de.fabmax.kool.util.logD
+import kotlinx.coroutines.launch
 
 class EditorEditMode(val editor: KoolEditor) {
 
@@ -38,7 +38,7 @@ class EditorEditMode(val editor: KoolEditor) {
 
     fun updateGizmo() = updateGizmo(mode.value)
 
-    private fun updateGizmo(mode: Mode) = editor.ui.launchOnFrontend {
+    private fun updateGizmo(mode: Mode) = editor.ui.coroutineScope.launch {
         if (mode in transformTools) {
             editor.gizmoOverlay.setTransformObjects(editor.selectionOverlay.getSelectedSceneEntities())
             editor.gizmoOverlay.transformMode = when (mode) {

@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.SceneNodes
 import de.fabmax.kool.editor.api.cachedEntityComponents
@@ -10,8 +9,7 @@ import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
 class MeshComponent(
@@ -34,7 +32,7 @@ class MeshComponent(
     }
 
     override fun onDataChanged(oldData: MeshComponentData, newData: MeshComponentData) {
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             if (oldData.shapes != newData.shapes) {
                 updateDrawNode(newData)
             }

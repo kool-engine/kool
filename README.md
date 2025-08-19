@@ -239,7 +239,7 @@ fun main() = KoolApplication {
         }
 
         // Load a glTF 2.0 model
-        launchOnFrontend {
+        coroutineScope.launch {
             val materialCfg = GltfMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
@@ -278,9 +278,9 @@ attribute, but a simple pre-defined color (white in this case).
 
 Finally, we want to load a glTF 2.0 model. Resources are loaded via the `Assets` object. Since resource loading
 functions suspend until the resource is loaded (or loading has failed), we need to launch a coroutine, which does
-the model loading. We do that using the `Scene.launchOnFrontend` extension functions, which launches the coroutine
-on the scene's own coroutine context and makes sure that the loading runs in sync with the render loop (by using
-`Dispatchers.Frontend`) so that we can directly add our loaded model to the scene after it is loaded.
+the model loading. We do that using the scene's own `coroutineScioe`, which makes sure that the loading runs in sync
+with the render loop (by using `KoolDispatchers.Frontend`) so that we can directly add our loaded model to the scene
+after it is loaded.
 
 By default, the built-in glTF parser creates shaders for all models it loads. The
 created shaders can be customized via a provided material configuration, which we use to pass the shadow and

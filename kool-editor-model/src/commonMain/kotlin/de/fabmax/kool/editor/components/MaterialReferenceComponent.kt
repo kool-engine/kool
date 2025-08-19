@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.api.AssetReference
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.cachedEntityComponents
@@ -9,8 +8,7 @@ import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MapAttribute
 import de.fabmax.kool.editor.data.MaterialReferenceComponentData
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
 class MaterialReferenceComponent(
@@ -30,8 +28,7 @@ class MaterialReferenceComponent(
     override fun onDataChanged(oldData: MaterialReferenceComponentData, newData: MaterialReferenceComponentData) {
         val material = project.materialsById[newData.materialId]
         collectRequiredAssets(material)
-
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             listeners.forEach { it.onMaterialReferenceChanged(this@MaterialReferenceComponent, material) }
         }
     }

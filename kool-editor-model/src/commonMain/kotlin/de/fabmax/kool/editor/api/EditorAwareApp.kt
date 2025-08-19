@@ -1,10 +1,8 @@
 package de.fabmax.kool.editor.api
 
 import de.fabmax.kool.ApplicationCallbacks
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
 interface EditorAwareApp {
@@ -32,7 +30,7 @@ interface EditorAwareApp {
     fun onDispose(ctx: KoolContext) { }
 
     fun launchStandalone(ctx: KoolContext) {
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             val projModel = checkNotNull(EditorProject.loadFromAssets()) { "kool-project.json not found" }
             loadApp(projModel, ctx)
             projModel.createdScenes.values.forEach {

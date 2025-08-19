@@ -5,7 +5,8 @@ import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
-import de.fabmax.kool.util.BackendCoroutineDispatcher
+import de.fabmax.kool.util.ApplicationScope
+import de.fabmax.kool.util.KoolDispatchers
 import de.fabmax.kool.util.logE
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -177,7 +178,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         // render frame
         val frameData = render(dt)
         frameData.syncData()
-        BackendCoroutineDispatcher.executeDispatchedTasks()
+        KoolDispatchers.Backend.executeDispatchedTasks()
         backend.renderFrame(frameData, this)
         requestAnimationFrame()
     }

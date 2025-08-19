@@ -3,10 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel

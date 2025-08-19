@@ -13,7 +13,6 @@ import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -67,10 +66,10 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
             mainScene.coroutineScope.launch {
-                resources.loadParallel()
-                withContext(Dispatchers.Frontend) {
-                    loadResources(ctx)
+                withContext(ApplicationScope.coroutineContext) {
+                    resources.loadParallel()
                 }
+                loadResources(ctx)
                 demoState = State.SETUP
             }
         }

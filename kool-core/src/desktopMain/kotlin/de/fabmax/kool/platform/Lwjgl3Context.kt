@@ -107,8 +107,9 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         // frame counter and execute dispatched tasks to run their release code before destroying the backend.
         repeat(3) {
             Time.frameCount++
-            FrontendCoroutineDispatcher.executeDispatchedTasks()
-            BackendCoroutineDispatcher.executeDispatchedTasks()
+            KoolDispatchers.Frontend.executeDispatchedTasks()
+            KoolDispatchers.Backend.executeDispatchedTasks()
+            KoolDispatchers.Synced.executeDispatchedTasks()
         }
 
         backend.cleanup(this)
@@ -126,7 +127,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         if (config.asyncSceneUpdate) {
             nextFrameData = ApplicationScope.async { render(computeDt()) }
         }
-        BackendCoroutineDispatcher.executeDispatchedTasks()
+        KoolDispatchers.Backend.executeDispatchedTasks()
         backend.renderFrame(frameData, this@Lwjgl3Context)
     }
 

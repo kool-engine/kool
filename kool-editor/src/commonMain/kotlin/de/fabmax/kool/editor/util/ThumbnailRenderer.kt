@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.util
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.AssetReference
@@ -25,7 +24,6 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.math.min
 
@@ -93,7 +91,7 @@ class ThumbnailRenderer(
     }
 
     private fun renderThumbnail(thumbNail: Thumbnail) {
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             val cam = OrthographicCamera().apply {
                 left = -1f
                 right = 1f

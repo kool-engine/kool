@@ -1,6 +1,5 @@
 package de.fabmax.kool.modules.filesystem
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -116,7 +115,7 @@ class PhysicalFileSystem(
         }
     }
 
-    private fun launchWatchJob(service: FileSystemWatchService) = ApplicationScope.launch(Dispatchers.Frontend) {
+    private fun launchWatchJob(service: FileSystemWatchService) = FrontendScope.launch {
         while (!service.isClosed) {
             val events = service.changes.receiveCatching()
             events.getOrElse { emptyList() }.forEach { event ->

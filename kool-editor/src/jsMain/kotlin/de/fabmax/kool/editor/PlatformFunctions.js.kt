@@ -1,9 +1,9 @@
 package de.fabmax.kool.editor
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.NativeAssetLoader
+import de.fabmax.kool.util.ApplicationScope
 import de.fabmax.kool.util.logE
 import kotlinx.coroutines.launch
 

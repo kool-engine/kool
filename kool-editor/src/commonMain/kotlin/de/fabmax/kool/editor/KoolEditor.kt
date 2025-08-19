@@ -29,7 +29,6 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.scene
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -114,7 +113,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         override fun onFileDrop(droppedFiles: List<LoadableFile>) {
             val targetPath = ui.assetBrowser.selectedDirectory.value?.path ?: ""
-            ApplicationScope.launch(Dispatchers.Frontend) {
+            FrontendScope.launch {
                 availableAssets.importAssets(targetPath, droppedFiles)
             }
         }

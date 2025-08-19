@@ -4,7 +4,10 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
@@ -46,7 +49,7 @@ abstract class Texture<T: ImageData>(
 
     suspend fun upload(imageData: T) {
         checkFormat(imageData.format)
-        withContext(Dispatchers.Backend) {
+        withContext(KoolDispatchers.Backend) {
             uploadData = imageData
             KoolSystem.requireContext().backend.uploadTextureData(this@Texture)
         }

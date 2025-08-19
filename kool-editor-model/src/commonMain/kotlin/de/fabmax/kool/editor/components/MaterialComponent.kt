@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
@@ -9,10 +8,9 @@ import de.fabmax.kool.editor.data.MaterialShaderData
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.util.Frontend
+import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.logW
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MaterialComponent(
@@ -58,7 +56,7 @@ class MaterialComponent(
 
     override fun onDataChanged(oldData: MaterialComponentData, newData: MaterialComponentData) {
         gameEntity.name = newData.name
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             project.createdScenes.values.forEach { scene ->
                 scene.shaderData.shaderCache.getShaderCache(this@MaterialComponent)?.let { shaders ->
                     val removeShaders = shaders.values.filter { !newData.updateShader(it, scene.shaderData) }
@@ -71,7 +69,7 @@ class MaterialComponent(
 
     override fun onSceneShaderDataChanged(scene: EditorScene, sceneShaderData: SceneShaderData) {
         val sceneShaders = scene.shaderData.shaderCache.getShaderCache(this) ?: return
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             val removeShaders = sceneShaders.values.filter { !data.updateShader(it, sceneShaderData) }
             sceneShaders.values -= removeShaders.toSet()
             listeners.forEach { it.onMaterialChanged(this@MaterialComponent, data) }

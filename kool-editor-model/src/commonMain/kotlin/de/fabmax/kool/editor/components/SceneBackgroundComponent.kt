@@ -1,6 +1,5 @@
 package de.fabmax.kool.editor.components
 
-import de.fabmax.kool.ApplicationScope
 import de.fabmax.kool.editor.api.*
 import de.fabmax.kool.editor.data.ColorData
 import de.fabmax.kool.editor.data.ComponentInfo
@@ -12,8 +11,7 @@ import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.Skybox
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Frontend
-import kotlinx.coroutines.Dispatchers
+import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
 fun SceneBackgroundComponent(gameEntity: GameEntity, color: Color, isLinear: Boolean = true): SceneBackgroundComponent {
@@ -72,7 +70,7 @@ class SceneBackgroundComponent(
     }
 
     private fun applyBackground(data: SceneBackgroundComponentData, prevHdriPath: String?) {
-        ApplicationScope.launch(Dispatchers.Frontend) {
+        FrontendScope.launch {
             requiredAssets.clear()
             when (val bgData = data.sceneBackground) {
                 is SceneBackgroundData.Hdri -> {
