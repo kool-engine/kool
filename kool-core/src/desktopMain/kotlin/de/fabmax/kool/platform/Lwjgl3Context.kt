@@ -59,7 +59,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         backend = when {
             backendResult.isSuccess -> backendResult.getOrThrow()
             config.useOpenGlFallback && backendProvider != RenderBackendGl -> {
-                logE { "Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}\nFalling back to WebGL2" }
+                logE { "Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}\nFalling back to OpenGL" }
                 RenderBackendGl.createBackend(this@Lwjgl3Context).getOrThrow()
             }
             else -> error("Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}")

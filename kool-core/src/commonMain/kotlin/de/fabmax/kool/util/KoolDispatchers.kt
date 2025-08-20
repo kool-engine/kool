@@ -13,20 +13,20 @@ object KoolDispatchers {
      * Coroutine dispatcher for executing coroutines in the frontend render loop. Use this if you want to
      * add / remove scenes, scene nodes, modify meshes, etc.
      */
-    val Frontend = TriggeredCoroutineDispatcher()
+    val Frontend = TriggeredCoroutineDispatcher("Frontend")
 
     /**
      * Coroutine dispatcher for executing coroutines on the backend render thread. This is only needed if you want
      * to directly interact with GPU resources. The backend render thread runs in parallel to frontend update, so
      * it is not safe to modify scene data from within coroutines using this dispatcher.
      */
-    val Backend = TriggeredCoroutineDispatcher()
+    val Backend = TriggeredCoroutineDispatcher("Backend")
 
     /**
      * Coroutine dispatcher for executing coroutines during sync-time, i.e., it is safe to access frontend and backend
      * components.
      */
-    val Synced = TriggeredCoroutineDispatcher()
+    val Synced = TriggeredCoroutineDispatcher("Synced")
 }
 
 object ApplicationScope : CoroutineScope {
@@ -49,7 +49,7 @@ object SyncedScope : CoroutineScope {
     override val coroutineContext: CoroutineContext = job + KoolDispatchers.Synced
 }
 
-class TriggeredCoroutineDispatcher : CoroutineDispatcher() {
+class TriggeredCoroutineDispatcher(val name: String) : CoroutineDispatcher() {
     private val queueLock = SynchronizedObject()
     private val taskQueue = mutableListOf<Runnable>()
     private val taskQueueCopy = mutableListOf<Runnable>()
