@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.Uint8BufferImpl
 import de.fabmax.kool.util.logD
 import de.fabmax.kool.util.logW
+import kotlinx.coroutines.runBlocking
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWImage
@@ -185,10 +186,12 @@ open class GlfwWindow(val ctx: Lwjgl3Context) {
         // with GLFW, window resizing blocks the main-loop, call renderFrame() from here to update window content
         // during window resizing
         if (renderOnResizeFlag) {
-            ctx.renderFrame()
-            if (ctx.backend is RenderBackendVk) {
-                // Vulkan needs two renders for swapchain update
+            runBlocking {
                 ctx.renderFrame()
+                if (ctx.backend is RenderBackendVk) {
+                    // Vulkan needs two renders for swapchain update
+                    ctx.renderFrame()
+                }
             }
         }
     }

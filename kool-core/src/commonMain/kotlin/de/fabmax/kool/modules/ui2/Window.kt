@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.modules.ui2.docking.UiDockable
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 
 fun UiScope.Window(
@@ -41,6 +42,7 @@ fun UiScope.Window(
 }
 
 fun WindowSurface(
+    parentScene: Scene,
     windowDockable: UiDockable,
     colors: Colors = Colors.darkColors(),
     sizes: Sizes = Sizes.medium,
@@ -50,7 +52,7 @@ fun WindowSurface(
     hideIfDockedInBackground: Boolean = true,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val windowSurface = UiSurface(colors, sizes, windowDockable.name)
+    val windowSurface = UiSurface(parentScene, colors, sizes, windowDockable.name)
     windowSurface.content = {
         Window(windowDockable, backgroundColor(), borderColor(), isResizable, block)
     }
@@ -80,7 +82,20 @@ fun Node.addWindowSurface(
     hideIfDockedInBackground: Boolean = true,
     block: UiScope.() -> Unit
 ): UiSurface {
-    val windowSurface = WindowSurface(windowDockable, colors, sizes, backgroundColor, borderColor, isResizable, hideIfDockedInBackground, block)
+    val scene = checkNotNull(findParentOfType<Scene>()) {
+        "Parent scene not found. Make sure the node is added to a scene before calling addPanelSurface()"
+    }
+    val windowSurface = WindowSurface(
+        parentScene = scene,
+        windowDockable = windowDockable,
+        colors = colors,
+        sizes = sizes,
+        backgroundColor = backgroundColor,
+        borderColor = borderColor,
+        isResizable = isResizable,
+        hideIfDockedInBackground = hideIfDockedInBackground,
+        block = block
+    )
     addNode(windowSurface)
     return windowSurface
 }

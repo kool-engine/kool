@@ -1,5 +1,6 @@
 package de.fabmax.kool.mock
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslComputeShader
@@ -39,7 +40,7 @@ class MockBackend() : RenderBackend {
 
     val glslHints = GlslGenerator.Hints("#version 330 core")
 
-    override fun renderFrame(ctx: KoolContext) { }
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) { }
 
     override fun cleanup(ctx: KoolContext) { }
 
@@ -62,10 +63,6 @@ class MockBackend() : RenderBackend {
     }
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
-        TODO("Not yet implemented")
-    }
-
-    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
         TODO("Not yet implemented")
     }
 

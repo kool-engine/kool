@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline.ao
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.lang.*
@@ -11,13 +12,14 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.launchDelayed
 
 class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
     OffscreenPass2d(
         drawNode = Node(),
         attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.R),
-        initialSize = aoPass.size.xy,
+        initialSize = aoPass.dimensions.xy,
         name = "ambient-occlusion-denoise"
     )
 {
@@ -53,21 +55,20 @@ class AoDenoisePass(aoPass: OffscreenPass2d, depthComponent: String) :
         }
     }
 
-    override fun update(ctx: KoolContext) {
+    override fun update(passData: PassData, ctx: KoolContext) {
         if (clearAndDisable) {
             setSize(1, 1)
             clearAndDisable = false
             denoiseMesh.isVisible = false
             clearMesh.isVisible = true
 
-            launchDelayed(5) {
+            FrontendScope.launchDelayed(5) {
                 isEnabled = false
                 denoiseMesh.isVisible = true
                 clearMesh.isVisible = false
             }
         }
-
-        super.update(ctx)
+        super.update(passData, ctx)
     }
 
     inner class DenoiseShader(aoPass: OffscreenPass2d, depthComponent: String) :

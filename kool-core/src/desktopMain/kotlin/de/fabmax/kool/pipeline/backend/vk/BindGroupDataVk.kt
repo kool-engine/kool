@@ -14,7 +14,6 @@ class BindGroupDataVk(
     val data: BindGroupData,
     private val gpuLayout: VkDescriptorSetLayout,
     private val backend: RenderBackendVk,
-    commandBuffer: VkCommandBuffer
 ) : BaseReleasable(), GpuBindGroupData {
     private val device: Device get() = backend.device
 
@@ -26,9 +25,11 @@ class BindGroupDataVk(
     val bindGroup: BindGroup
 
     private var prepareFrame = -1
+    internal var checkFrame = -1
+    internal var isCheckOk = false
 
     init {
-        data.bindings.forEach { binding ->
+        data.bufferedBindings.forEach { binding ->
             when (binding) {
                 is BindGroupData.UniformBufferBindingData<*> -> uboBindings += UboBinding(binding, Swapchain.MAX_FRAMES_IN_FLIGHT)
                 is BindGroupData.StorageBufferBindingData -> storageBufferBindings += StorageBufferBinding(binding)
@@ -47,7 +48,7 @@ class BindGroupDataVk(
         }
 
         val poolLayout = PoolLayout(uboBindings.size, textureBindings.size, storageBufferBindings.size, storageTextureBindings.size)
-        bindGroup = if (data.bindings.isEmpty()) BindGroup.emptyBindGroup else BindGroup(
+        bindGroup = if (data.bufferedBindings.isEmpty()) BindGroup.emptyBindGroup else BindGroup(
             poolLayout = poolLayout,
             gpuLayout = gpuLayout,
             uboBindings = uboBindings,
@@ -72,44 +73,46 @@ class BindGroupDataVk(
         if (prepareFrame == Time.frameCount) return
         prepareFrame = Time.frameCount
 
+        val frameIdx = passEncoderState.frameIndex
+        var resetBindGroup = !bindGroup.isInitialized
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.gpuTexture !== tex.boundImage) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
-                data.isDirty = true
+                resetBindGroup = true
                 logT { "$this outdated texture binding: ${tex.binding.texture?.name}, pass: ${passEncoderState.renderPass.name}" }
             }
         }
         for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
+            tex.binding.storageTexture?.checkTextureSize(passEncoderState.commandBuffer)
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.boundImage) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
-                data.isDirty = true
+                resetBindGroup = true
                 logT { "$this outdated storage texture binding: ${tex.binding.storageTexture?.asTexture?.name}, pass: ${passEncoderState.renderPass.name}" }
             }
         }
-
-        val resetBindGroup = data.isDirty || !bindGroup.isInitialized
         if (resetBindGroup) {
-            data.isDirty = false
             bindGroup.resetBindGroup(passEncoderState)
         }
-
-        val frameIdx = passEncoderState.frameIndex
         for (i in bindGroup.uboBindings.indices) {
             val ubo = bindGroup.uboBindings[i]
-            if (ubo.isUpdate(frameIdx, ubo.binding.modCount) || resetBindGroup) {
+            if (ubo.isUpdate(frameIdx, ubo.binding.modCount.count) || resetBindGroup) {
                 ubo.binding.buffer.buffer.useRaw { raw -> ubo.mappedBuffers[frameIdx].put(raw).flip() }
             }
         }
     }
 
-    override fun release() {
-        val alreadyReleased = isReleased
-        super.release()
-        if (!alreadyReleased) {
-            bindGroup.release()
+    private fun StorageTexture.checkTextureSize(commandBuffer: VkCommandBuffer) {
+        val tex = asTexture
+        val gpu = asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            backend.textureLoader.createStorageTexture(this, tex.width, tex.height, tex.depth, commandBuffer)
         }
+    }
+
+    override fun doRelease() {
+        bindGroup.release()
     }
 
     class BindGroup(
@@ -157,12 +160,15 @@ class BindGroupDataVk(
         override fun release() {
             if (isReleasable) {
                 super.release()
-                uboBindings.forEach { it.release() }
-                storageBufferBindings.forEach { it.release() }
-                textureBindings.forEach { it.release() }
-                storageTextureBindings.forEach { it.release() }
-                backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
             }
+        }
+
+        override fun doRelease() {
+            uboBindings.forEach { it.release() }
+            storageBufferBindings.forEach { it.release() }
+            textureBindings.forEach { it.release() }
+            storageTextureBindings.forEach { it.release() }
+            backend.descriptorPools.releaseSets(poolLayout, descriptorSets)
         }
 
         companion object {
@@ -202,7 +208,7 @@ class BindGroupDataVk(
                 bufferInfo = MemoryInfo(
                     size = struct.structSize.toLong(),
                     usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                    label = "bindGroup[${data.layout.scope}]-ubo-${binding.name}",
+                    label = "${data.name}-bindGroup[${data.layout.scope}]-ubo-${binding.name}",
                     createMapped = true
                 ),
             )
@@ -239,8 +245,7 @@ class BindGroupDataVk(
             return false
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             buffers.forEach { it.release() }
         }
     }
@@ -341,8 +346,7 @@ class BindGroupDataVk(
             )
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             view?.let { backend.device.destroyImageView(it) }
             sampler?.let { backend.device.destroySampler(it) }
         }
@@ -360,7 +364,7 @@ class BindGroupDataVk(
         fun setupDescriptor(
             descriptorWrite: VkWriteDescriptorSet,
             descriptorSet: VkDescriptorSet,
-            stack: MemoryStack
+            stack: MemoryStack,
         ) {
             checkView(stack)
             val imgInfo = stack.callocVkDescriptorImageInfoN(1) {
@@ -403,8 +407,7 @@ class BindGroupDataVk(
             )
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             view?.let { backend.device.destroyImageView(it) }
         }
     }
@@ -472,5 +475,7 @@ class BindGroupDataVk(
                 buffer.gpuBuffer = gpuBuffer
             }
         }
+
+        override fun doRelease() { }
     }
 }

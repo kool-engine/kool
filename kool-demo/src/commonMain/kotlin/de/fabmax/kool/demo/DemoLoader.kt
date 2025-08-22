@@ -5,7 +5,6 @@ import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.PointerInput
 import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchOnMainThread
 import de.fabmax.kool.util.logI
 
 /**
@@ -54,11 +53,8 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
         }
 
         val loadScene = startScene ?: Settings.selectedDemo.value
-
-        launchOnMainThread {
-            val loadDemo = Demos.demos[loadScene] ?: Demos.demos[Demos.defaultDemo]!!
-            switchDemo = loadDemo
-        }
+        val loadDemo = Demos.demos[loadScene] ?: Demos.demos[Demos.defaultDemo]!!
+        switchDemo = loadDemo
     }
 
     fun loadDemo(demo: Demos.Entry) {
@@ -104,26 +100,23 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     }
 
     private fun switchContentScene(newDemo: Demos.Entry, ctx: KoolContext) {
-        launchOnMainThread {
+        logI { "Loading demo ${newDemo.title}..." }
+        Settings.selectedDemo.set(newDemo.id)
 
-            logI { "Loaded demo ${newDemo.title}" }
-            Settings.selectedDemo.set(newDemo.id)
+        currentDemo?.second?.let { demo ->
+            demo.scenes.forEach { ctx.scenes -= it }
+            demo.menuUi?.let { menu.ui -= it }
+            demo.scenes.forEach { it.release() }
+            demo.menuUi?.release()
+        }
+        ctx.scenes -= loadingScreen
+        ctx.scenes.stageAdd(loadingScreen, 0)
 
-            currentDemo?.second?.let { demo ->
-                demo.scenes.forEach { ctx.scenes -= it }
-                demo.menuUi?.let { menu.ui -= it }
-                demo.scenes.forEach { it.release() }
-                demo.menuUi?.release()
-            }
-            ctx.scenes -= loadingScreen
-            ctx.scenes.stageAdd(loadingScreen, 0)
-
-            // set new demo
-            currentDemo = newDemo.id to newDemo.newInstance(ctx).also {
-                it.demoEntry = newDemo
-                it.demoLoader = this
-                it.loadingScreen = loadingScreen
-            }
+        // set new demo
+        currentDemo = newDemo.id to newDemo.newInstance(ctx).also {
+            it.demoEntry = newDemo
+            it.demoLoader = this@DemoLoader
+            it.loadingScreen = loadingScreen
         }
     }
 

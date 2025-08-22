@@ -12,8 +12,8 @@ class MappedUbo(val ubo: BindGroupData.UniformBufferBindingData<*>, val gpuBuffe
     private var modCount = -1
 
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
-        if (modCount != ubo.modCount) {
-            modCount = ubo.modCount
+        if (ubo.modCount.isDirty(modCount)) {
+            modCount = ubo.modCount.count
             gpuBuffer.setData(ubo.buffer.buffer, gl.DYNAMIC_DRAW)
         }
         gl.bindBufferBase(gl.UNIFORM_BUFFER, bindCtx.location(ubo.layout.bindingIndex), gpuBuffer.buffer)
@@ -206,10 +206,8 @@ sealed class MappedUniformTex(val target: Int, val backend: RenderBackendGl) : M
     protected abstract val sampler: BindGroupData.TextureBindingData<*>
 
     private fun <T: ImageData> checkLoadingState(texture: Texture<T>, texUnit: Int): Boolean {
-        if (texture.isReleased) {
-            logE { "Texture is already released: ${texture.name}" }
-            return false
-        }
+        val checkReleasable: Releasable = texture.gpuTexture ?: texture
+        checkReleasable.checkIsNotReleased()
         gl.activeTexture(gl.TEXTURE0 + texUnit)
         texture.uploadData?.let { TextureLoaderGl.loadTexture(texture, backend) }
         (texture.gpuTexture as LoadedTextureGl?)?.let { tex ->
@@ -257,6 +255,7 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
     override fun setUniform(bindCtx: CompiledShader.UniformBindContext): Boolean {
         val texUnit = bindCtx.nextTexUnit++
         val texture = storageTex.storageTexture?.asTexture
+        storageTex.storageTexture?.checkTextureSize()
         if (texture != null && checkLoadingState(texture, texUnit)) {
             val glTex = texture.gpuTexture as LoadedTextureGl
             gl.bindImageTexture(
@@ -274,11 +273,17 @@ sealed class MappedStorageTexture<T: Texture<*>>(private val backend: RenderBack
         return false
     }
 
-    private fun checkLoadingState(texture: Texture<*>, texUnit: Int): Boolean {
-        if (texture.isReleased) {
-            logE { "Storage texture is already released: ${texture.name}" }
-            return false
+    private fun StorageTexture.checkTextureSize() {
+        val tex = asTexture
+        val gpu = asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            TextureLoaderGl.createStorageTexture(this, tex.width, tex.height, tex.depth, backend)
         }
+    }
+
+    private fun checkLoadingState(texture: Texture<*>, texUnit: Int): Boolean {
+        val checkReleasable: Releasable = texture.gpuTexture ?: texture
+        checkReleasable.checkIsNotReleased()
         texture.uploadData?.let {
             gl.activeTexture(gl.TEXTURE0 + texUnit)
             TextureLoaderGl.loadTexture(texture, backend)

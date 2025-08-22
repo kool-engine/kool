@@ -14,7 +14,7 @@ class ReflectionDenoisePass(reflectionPass: OffscreenPass2d) :
     OffscreenPass2d(
         drawNode = Node(),
         attachmentConfig = AttachmentConfig.singleColorNoDepth(TexFormat.RGBA),
-        initialSize = reflectionPass.size.xy,
+        initialSize = reflectionPass.dimensions.xy,
         name = "reflection-denoise"
     )
 {

@@ -37,15 +37,8 @@ abstract class KoolContext {
             onWindowFocusChanged.updated().forEach { it(this) }
         }
 
-    var isProfileRenderPasses = false
-        set(value) {
-            field = value
-            if (value) {
-                Profiling.enableAutoPrint(10.0)
-            } else {
-                Profiling.disableAutoPrint()
-            }
-        }
+    private val frameDatas = List(2) { FrameData() }
+    private var frameDataPtr = 0
 
     abstract val backend: RenderBackend
 
@@ -101,10 +94,9 @@ abstract class KoolContext {
         scenes -= scene
     }
 
-    protected fun render(dt: Double) {
-        if (isProfileRenderPasses) {
-            Profiling.enter("!main-render-loop")
-        }
+    protected suspend fun render(dt: Double): FrameData {
+        val frameData = frameDatas[frameDataPtr].also { it.reset() }
+        frameDataPtr = ++frameDataPtr and 1
 
         Time.deltaT = dt.toFloat()
         Time.gameTime += dt
@@ -117,25 +109,55 @@ abstract class KoolContext {
 
         Input.poll(this)
 
+        KoolDispatchers.Frontend.executeDispatchedTasks()
         onRender.update()
         for (i in onRender.indices) {
             onRender[i](this)
         }
 
         if (!backgroundScene.isEmpty) {
-            backgroundScene.renderScene(this)
+            backgroundScene.collectScene(frameData, this)
         }
 
         // draw scene contents (back to front)
         scenes.update()
         for (i in scenes.indices) {
             if (scenes[i].isVisible) {
-                scenes[i].renderScene(this)
+                scenes[i].collectScene(frameData, this)
             }
         }
 
-        if (isProfileRenderPasses) {
-            Profiling.exit("!main-render-loop")
+        frameData.updatePipelineData()
+        return frameData
+    }
+
+    protected fun FrameData.updatePipelineData() {
+        for (pi in passData.indices) {
+            val pass = passData[pi]
+            for (vi in pass.viewData.indices) {
+                val viewData = pass.viewData[vi]
+                viewData.drawQueue.forEach { it.updatePipelineData() }
+            }
+            (pass.gpuPass as? ComputePass)?.let { computePass ->
+                computePass.tasks.forEach { task -> task.pipeline.updatePipelineData(computePass) }
+            }
+        }
+    }
+
+    protected fun FrameData.syncData() {
+        KoolDispatchers.Synced.executeDispatchedTasks()
+        for (pi in passData.indices) {
+            val pass = passData[pi]
+            for (vi in pass.viewData.indices) {
+                val viewData = pass.viewData[vi]
+                viewData.drawQueue.view.viewPipelineData.captureBuffer()
+                viewData.drawQueue.forEach { cmd ->
+                    cmd.captureData()
+                }
+            }
+            (pass.gpuPass as? ComputePass)?.let { computePass ->
+                computePass.tasks.forEach { task -> task.pipeline.captureBuffer() }
+            }
         }
     }
 

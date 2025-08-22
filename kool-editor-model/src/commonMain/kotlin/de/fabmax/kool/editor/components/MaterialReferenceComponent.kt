@@ -8,7 +8,8 @@ import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MapAttribute
 import de.fabmax.kool.editor.data.MaterialReferenceComponentData
 import de.fabmax.kool.pipeline.TexFormat
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 
 class MaterialReferenceComponent(
     gameEntity: GameEntity,
@@ -27,9 +28,8 @@ class MaterialReferenceComponent(
     override fun onDataChanged(oldData: MaterialReferenceComponentData, newData: MaterialReferenceComponentData) {
         val material = project.materialsById[newData.materialId]
         collectRequiredAssets(material)
-
-        launchOnMainThread {
-            listeners.forEach { it.onMaterialReferenceChanged(this, material) }
+        FrontendScope.launch {
+            listeners.forEach { it.onMaterialReferenceChanged(this@MaterialReferenceComponent, material) }
         }
     }
 

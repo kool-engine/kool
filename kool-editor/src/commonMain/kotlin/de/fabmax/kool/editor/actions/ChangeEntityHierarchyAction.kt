@@ -12,7 +12,8 @@ import de.fabmax.kool.editor.data.TransformComponentData
 import de.fabmax.kool.editor.data.TransformData
 import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.math.Mat4d
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 
 class ChangeEntityHierarchyAction(
     moveEntities: List<GameEntity>,
@@ -40,8 +41,8 @@ class ChangeEntityHierarchyAction(
     }
 
     override fun doAction() {
-        launchOnMainThread {
-            var insertionPos = this.insertionPos
+        FrontendScope.launch {
+            var insertionPos = this@ChangeEntityHierarchyAction.insertionPos
             moveHierarchy.keys.forEach { moveEntityId ->
                 val gameEntity = checkNotNull(moveEntityId.gameEntity)
                 val hierarchy = checkNotNull(moveHierarchy[gameEntity.id])
@@ -57,7 +58,7 @@ class ChangeEntityHierarchyAction(
     }
 
     override fun undoAction() {
-        launchOnMainThread {
+        FrontendScope.launch {
             moveHierarchy.keys.forEach { moveEntityId ->
                 val gameEntity = checkNotNull(moveEntityId.gameEntity)
                 val hierarchy = checkNotNull(moveHierarchy[gameEntity.id])

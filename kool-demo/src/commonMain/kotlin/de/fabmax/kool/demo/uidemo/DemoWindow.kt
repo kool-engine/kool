@@ -6,7 +6,7 @@ import de.fabmax.kool.modules.ui2.docking.UiDockable
 abstract class DemoWindow(name: String, val uiDemo: UiDemo, isClosable: Boolean = true) {
     val windowDockable = UiDockable(name, uiDemo.dock)
 
-    val windowSurface = WindowSurface(windowDockable) {
+    val windowSurface = WindowSurface(uiDemo.mainScene, windowDockable) {
         surface.sizes = uiDemo.selectedUiSize.use()
         surface.colors = uiDemo.selectedColors.use()
 

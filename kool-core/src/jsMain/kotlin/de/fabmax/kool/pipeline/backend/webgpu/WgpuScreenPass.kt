@@ -1,13 +1,13 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PassData
 import de.fabmax.kool.configJs
 import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.pipeline.ClearColorLoad
 import de.fabmax.kool.pipeline.ClearDepthLoad
 import de.fabmax.kool.pipeline.FrameCopy
-import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.launchDelayed
+import de.fabmax.kool.util.releaseDelayed
 
 class WgpuScreenPass(backend: RenderBackendWebGpu) :
     WgpuRenderPass(GPUTextureFormat.depth32float, KoolSystem.configJs.numSamples, backend)
@@ -28,11 +28,11 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         updateRenderTextures(width, height)
     }
 
-    fun renderScene(scenePass: Scene.ScreenPass, passEncoderState: RenderPassEncoderState) {
+    fun renderScene(passData: PassData, passEncoderState: RenderPassEncoderState) {
         if (depthAttachment == null || colorTexture == null) {
             updateRenderTextures(backend.ctx.canvas.width, backend.ctx.canvas.height)
         }
-        render(scenePass, passEncoderState)
+        render(passData, passEncoderState)
     }
 
     override fun generateMipLevels(encoder: GPUCommandEncoder) { }
@@ -51,9 +51,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         colorDst?.let { dst ->
             var copyDstC = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstC == null || copyDstC.width != width || copyDstC.height != height) {
-                copyDstC?.let {
-                    launchDelayed(1) { it.release() }
-                }
+                copyDstC?.releaseDelayed(1)
 
                 val descriptor = GPUTextureDescriptor(
                     label = colorDst.name,
@@ -71,9 +69,7 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
         depthDst?.let { dst ->
             var copyDstD = (dst.gpuTexture as WgpuTextureResource?)
             if (copyDstD == null || copyDstD.width != width || copyDstD.height != height) {
-                copyDstD?.let {
-                    launchDelayed(1) { it.release() }
-                }
+                copyDstD?.releaseDelayed(1)
 
                 val descriptor = GPUTextureDescriptor(
                     label = dst.name,
@@ -170,4 +166,6 @@ class WgpuScreenPass(backend: RenderBackendWebGpu) :
             depthAttachmentView = it.createView()
         }
     }
+
+    override fun doRelease() { }
 }

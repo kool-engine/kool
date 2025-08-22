@@ -5,7 +5,7 @@ import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.indexOf
 
-class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: List<BindingLayout>) {
+class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: List<BindingLayout>, val name: String) {
 
     val hash: LongHash = LongHash {
         this += scope
@@ -15,7 +15,7 @@ class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: L
         }
     }
 
-    fun createData(): BindGroupData = BindGroupData(this)
+    fun createData(): BindGroupData = BindGroupData(this, name)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -26,14 +26,14 @@ class BindGroupLayout(val group: Int, val scope: BindGroupScope, val bindings: L
 
     override fun hashCode(): Int = hash.hashCode()
 
-    class Builder(val group: Int, val scope: BindGroupScope) {
+    class Builder(val group: Int, val scope: BindGroupScope, val name: String) {
         val ubos = mutableListOf<UniformBufferLayout<*>>()
         val textures = mutableListOf<TextureLayout>()
         val storage = mutableListOf<StorageBufferLayout>()
         val storageTextures = mutableListOf<StorageTextureLayout>()
 
         fun create(): BindGroupLayout {
-            return BindGroupLayout(group, scope, ubos + textures + storage + storageTextures)
+            return BindGroupLayout(group, scope, ubos + textures + storage + storageTextures, name)
         }
     }
 }

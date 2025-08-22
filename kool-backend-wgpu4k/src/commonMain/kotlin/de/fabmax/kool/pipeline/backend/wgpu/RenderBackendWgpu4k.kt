@@ -1,9 +1,10 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.PassData
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -24,7 +25,6 @@ import io.ygdrasil.webgpu.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.measureTime
 
 internal expect fun isRenderBackendWgpu4kSupported(): Boolean
 
@@ -122,7 +122,7 @@ abstract class RenderBackendWgpu4k(
         )
     }
 
-    protected suspend fun renderFrameSuspending(ctx: KoolContext) {
+    protected suspend fun renderFrameSuspending(frameData: FrameData, ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         if (surface.width.toInt() != renderSize.x || surface.height.toInt() != renderSize.y) {
@@ -132,8 +132,8 @@ abstract class RenderBackendWgpu4k(
 
         passEncoderState.beginFrame()
 
-        ctx.preparePipelines(passEncoderState)
-        ctx.executePasses(passEncoderState)
+        frameData.preparePipelines()
+        frameData.executePasses()
 
         passEncoderState.ensureRenderPassInactive()
         if (gpuReadbacks.isNotEmpty()) {
@@ -152,76 +152,39 @@ abstract class RenderBackendWgpu4k(
         surface.present()
     }
 
-    private suspend fun KoolContext.preparePipelines(passEncoderState: RenderPassEncoderState) {
-        backgroundScene.prepareDrawPipelines(passEncoderState)
-        for (i in scenes.indices) {
-            val scene = scenes[i]
-            if (scene.isVisible) {
-                scene.prepareDrawPipelines(passEncoderState)
+    private suspend fun FrameData.preparePipelines() {
+        forEachPass { passData ->
+            val t = Time.precisionTime
+            passData.forEachView { viewData ->
+                viewData.drawQueue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
             }
+            passData.gpuPass.tRecord = (Time.precisionTime - t).seconds
         }
     }
 
-    private suspend fun Scene.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
-        checkIsNotReleased()
-        sceneRecordTime = measureTime {
-            for (i in sortedPasses.indices) {
-                val pass = sortedPasses[i]
-                if (pass.isEnabled && pass is RenderPass) {
-                    pass.prepareDrawPipelines(passEncoderState)
-                }
-            }
-        }
+    private suspend fun FrameData.executePasses() {
+        forEachPass { passData -> passData.executePass(passEncoderState) }
     }
 
-    private suspend fun RenderPass.prepareDrawPipelines(passEncoderState: RenderPassEncoderState) {
-        if (isEnabled) {
-            for (i in views.indices) {
-                val queue = views[i].drawQueue
-                queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd) }
-            }
-        }
-    }
-
-    private suspend fun KoolContext.executePasses(passEncoderState: RenderPassEncoderState) {
-        backgroundScene.executePasses(passEncoderState)
-        for (i in scenes.indices) {
-            val scene = scenes[i]
-            if (scene.isVisible) {
-                scene.executePasses(passEncoderState)
-            }
-        }
-    }
-
-    private suspend fun Scene.executePasses(passEncoderState: RenderPassEncoderState) {
-        sceneRecordTime += measureTime {
-            for (i in sortedPasses.indices) {
-                val pass = sortedPasses[i]
-                if (pass.isEnabled) {
-                    pass.beforePass()
-                    pass.execute(passEncoderState)
-                    pass.afterPass()
-                }
-            }
-        }
-    }
-
-    private suspend fun GpuPass.execute(passEncoderState: RenderPassEncoderState) {
-        when (this) {
+    private suspend fun PassData.executePass(passEncoderState: RenderPassEncoderState) {
+        val pass = gpuPass
+        val t = Time.precisionTime
+        when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
-            is OffscreenPass2d -> draw(passEncoderState)
-            is OffscreenPassCube -> draw(passEncoderState)
-            is ComputePass -> dispatch(passEncoderState)
+            is OffscreenPass2d -> pass.draw(this, passEncoderState)
+            is OffscreenPassCube -> pass.draw(this, passEncoderState)
+            is ComputePass -> pass.dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
+        pass.tRecord = (Time.precisionTime - t).seconds
     }
 
-    private suspend fun OffscreenPass2d.draw(passEncoderState: RenderPassEncoderState) {
-        (impl as WgpuOffscreenPass2d).draw(passEncoderState)
+    private suspend fun OffscreenPass2d.draw(passData: PassData, passEncoderState: RenderPassEncoderState) {
+        (impl as WgpuOffscreenPass2d).draw(passData, passEncoderState)
     }
 
-    private suspend fun OffscreenPassCube.draw(passEncoderState: RenderPassEncoderState) {
-        (impl as WgpuOffscreenPassCube).draw(passEncoderState)
+    private suspend fun OffscreenPassCube.draw(passData: PassData, passEncoderState: RenderPassEncoderState) {
+        (impl as WgpuOffscreenPassCube).draw(passData, passEncoderState)
     }
 
     private suspend fun ComputePass.dispatch(passEncoderState: RenderPassEncoderState) {
@@ -261,42 +224,6 @@ abstract class RenderBackendWgpu4k(
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return WgpuComputePass(parentPass, this)
-    }
-
-    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val usage = setOf(GPUTextureUsage.StorageBinding,
-                GPUTextureUsage.CopySrc,
-                GPUTextureUsage.CopyDst,
-                GPUTextureUsage.TextureBinding)
-        val dimension = when (storageTexture) {
-            is StorageTexture1d -> GPUTextureDimension.OneD
-            is StorageTexture2d -> GPUTextureDimension.TwoD
-            is StorageTexture3d -> GPUTextureDimension.ThreeD
-        }
-        val size = when (storageTexture) {
-            is StorageTexture1d -> Extent3D(width.toUInt())
-            is StorageTexture2d -> Extent3D(width.toUInt(), height.toUInt())
-            is StorageTexture3d -> Extent3D(width.toUInt(), height.toUInt(), depth.toUInt())
-        }
-        val levels = when (val mipMapping = storageTexture.mipMapping) {
-            MipMapping.Full -> numMipLevels(width, height, depth)
-            is MipMapping.Limited -> mipMapping.numLevels
-            MipMapping.Off -> 1
-        }
-
-        if (storageTexture.format == TexFormat.RG11B10_F) {
-            logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
-        }
-        val texDesc = TextureDescriptor(
-            size = size,
-            format = storageTexture.format.wgpuStorage,
-            dimension = dimension,
-            usage = usage,
-            mipLevelCount = levels.toUInt(),
-            label = storageTexture.name
-        )
-        storageTexture.gpuTexture?.release()
-        storageTexture.gpuTexture = createTexture(texDesc)
     }
 
     override fun <T: ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)

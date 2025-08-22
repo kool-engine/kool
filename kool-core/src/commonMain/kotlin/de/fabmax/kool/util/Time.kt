@@ -1,5 +1,11 @@
 package de.fabmax.kool.util
 
+import de.fabmax.kool.util.Time.frameCount
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+
 object Time {
     private val systemClock = SystemClock()
     /**
@@ -18,7 +24,16 @@ object Time {
      * Number of rendered frames since the app started.
      */
     var frameCount: Int = 0
-        internal set
+        internal set(value) {
+            field = value
+            _frameFlow.update { value }
+        }
+    private val _frameFlow = MutableStateFlow(0)
+
+    /**
+     * Returns the current number of rendered frames (like [frameCount]) as a [StateFlow].
+     */
+    val frameFlow: StateFlow<Int> = _frameFlow.asStateFlow()
 
     /**
      * Precision timer value, unit is seconds. Absolute value has no real meaning, but it can be used to precisely

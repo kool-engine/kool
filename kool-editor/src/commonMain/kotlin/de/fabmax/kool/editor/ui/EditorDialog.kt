@@ -6,8 +6,9 @@ import de.fabmax.kool.input.KeyEvent
 import de.fabmax.kool.input.KeyboardInput
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.modules.ui2.docking.UiDockable
+import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.launchOnMainThread
+import kotlinx.coroutines.launch
 
 abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance.ui, isResizable: Boolean = false) {
 
@@ -18,7 +19,7 @@ abstract class EditorDialog(name: String, val ui: EditorUi = KoolEditor.instance
     val dialogActions = mutableListOf<DialogAction>()
     val onClose = mutableListOf<() -> Unit>()
 
-    val dialog = WindowSurface(dialogDockable, borderColor = { null }, isResizable = isResizable) {
+    val dialog = WindowSurface(ui, dialogDockable, borderColor = { null }, isResizable = isResizable) {
         surface.colors = ui.uiColors.use()
         surface.sizes = ui.uiSizes.use()
 
@@ -152,7 +153,7 @@ fun OkCancelTextDialog(
     onCancel: (() -> Unit)? = null,
     onOk: () -> Unit
 ) = TextDialog(title, text).apply {
-    launchDelayed(1) { dialog.isFocused.set(true) }
+    FrontendScope.launchDelayed(1) { dialog.isFocused.set(true) }
     addOkAction {
         onOk()
         hide()
@@ -168,7 +169,7 @@ fun OkCancelEnterTextDialog(
     onCancel: (() -> Unit)? = null,
     onOk: (String) -> Unit
 ) = EnterTextDialog(title, text, hint, onOk).apply {
-    launchDelayed(1) { dialog.isFocused.set(true) }
+    FrontendScope.launchDelayed(1) { dialog.isFocused.set(true) }
     addOkAction {
         onOk(this.text.value)
         hide()
@@ -202,7 +203,7 @@ class BrowsePathDialog(title: String, path: String, val hint: String, val onEnte
                 .alignY(AlignmentY.Center)
                 .margin(start = sizes.largeGap)
                 .onClick {
-                    launchOnMainThread {
+                    FrontendScope.launch {
                         PlatformFunctions.chooseFilePath()?.let { text.set(it) }
                     }
                 }
@@ -217,7 +218,7 @@ fun OkCancelBrowsePathDialog(
     onCancel: (() -> Unit)? = null,
     onOk: (String) -> Unit
 ) = BrowsePathDialog(title, path, hint, onOk).apply {
-    launchDelayed(1) { dialog.isFocused.set(true) }
+    FrontendScope.launchDelayed(1) { dialog.isFocused.set(true) }
     addOkAction {
         onOk(this.text.value)
         hide()

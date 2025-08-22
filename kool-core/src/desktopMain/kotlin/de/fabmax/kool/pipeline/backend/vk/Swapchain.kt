@@ -138,8 +138,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         cancelReleaseWith(backend.device)
         device.destroySwapchain(vkSwapchain)
 

@@ -9,7 +9,8 @@ import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.ShapeData
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 
 class MeshComponent(
     gameEntity: GameEntity,
@@ -31,7 +32,7 @@ class MeshComponent(
     }
 
     override fun onDataChanged(oldData: MeshComponentData, newData: MeshComponentData) {
-        launchOnMainThread {
+        FrontendScope.launch {
             if (oldData.shapes != newData.shapes) {
                 updateDrawNode(newData)
             }

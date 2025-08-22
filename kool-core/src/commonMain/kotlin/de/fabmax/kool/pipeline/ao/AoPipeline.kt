@@ -13,7 +13,6 @@ import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.scene.PerspectiveProxyCam
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.launchOnMainThread
 import kotlin.math.max
 
 abstract class AoPipeline : BaseReleasable() {
@@ -92,9 +91,7 @@ abstract class AoPipeline : BaseReleasable() {
             depthPass.camera = proxyCamera
             depthPass.isUpdateDrawNode = false
             depthPass.isReleaseDrawNode = false
-            depthPass.onBeforeCollectDrawCommands += { ev ->
-                proxyCamera.sync(ev)
-            }
+            depthPass.onBeforeCollectDrawCommands += { proxyCamera.sync(it) }
 
             aoPass = AmbientOcclusionPass(AoSetup.forward(depthPass), mapWidth, mapHeight)
             aoPass.sceneCam = proxyCamera
@@ -128,14 +125,13 @@ abstract class AoPipeline : BaseReleasable() {
             depthPass.isEnabled = isEnabled
         }
 
-        override fun release() {
+        override fun doRelease() {
             scene.removeOffscreenPass(depthPass)
             scene.removeOffscreenPass(aoPass)
             scene.removeOffscreenPass(denoisePass)
             depthPass.release()
             aoPass.release()
             denoisePass.release()
-            super.release()
         }
     }
 
@@ -179,13 +175,11 @@ abstract class AoPipeline : BaseReleasable() {
             }
         }
 
-        override fun release() {
-            launchOnMainThread {
-                deferredPipeline.scene.removeOffscreenPass(aoPass)
-                deferredPipeline.scene.removeOffscreenPass(denoisePass)
-                aoPass.release()
-                denoisePass.release()
-            }
+        override fun doRelease() {
+            deferredPipeline.scene.removeOffscreenPass(aoPass)
+            deferredPipeline.scene.removeOffscreenPass(denoisePass)
+            aoPass.release()
+            denoisePass.release()
         }
     }
 

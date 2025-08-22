@@ -34,11 +34,10 @@ abstract class CharacterControllerManager : BaseReleasable() {
 
     protected abstract fun doCreateController(charProperties: CharacterControllerProperties): CharacterController
 
-    override fun release() {
+    override fun doRelease() {
         val copyControllers = mutableListOf<CharacterController>()
         copyControllers += controllers
         copyControllers.forEach { it.release() }
         _controllers.clear()
-        super.release()
     }
 }

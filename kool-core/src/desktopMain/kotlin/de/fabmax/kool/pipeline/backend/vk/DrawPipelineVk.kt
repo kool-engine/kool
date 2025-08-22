@@ -4,8 +4,6 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.gl.getAttribLocations
 import de.fabmax.kool.pipeline.backend.gl.locationSize
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.NodeId
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.memStack
 import org.lwjgl.system.MemoryStack
@@ -22,11 +20,9 @@ class DrawPipelineVk(
 ): PipelineVk(drawPipeline, backend) {
 
     private val pipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
-    private val users = mutableSetOf<NodeId>()
 
     fun updateGeometry(cmd: DrawCommand, passEncoderState: PassEncoderState) {
         if (cmd.geometry.numIndices == 0) return
-        users.add(cmd.mesh.id)
 
         if (cmd.geometry.gpuGeometry == null) {
             cmd.geometry.gpuGeometry = GeometryVk(cmd.mesh, backend)
@@ -42,11 +38,11 @@ class DrawPipelineVk(
             gpuInsts.checkBuffers(passEncoderState.commandBuffer)
         }
 
-        drawPipeline.pipelineData.getOrCreateVkData(passEncoderState.commandBuffer).updateBuffers(passEncoderState)
+        drawPipeline.capturedPipelineData.getOrCreateVkData().updateBuffers(passEncoderState)
     }
 
     fun bind(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
-        val pipelineData = drawPipeline.pipelineData
+        val pipelineData = drawPipeline.capturedPipelineData
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
         val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
 
@@ -60,9 +56,9 @@ class DrawPipelineVk(
         val pipeline = pipelines.getOrPut(passEncoderState.gpuRenderPass) { createPipeline(passEncoderState) }
         passEncoderState.setPipeline(pipeline)
 
-        val pipelineGroup = pipelineData.getOrCreateVkData(passEncoderState.commandBuffer)
-        val viewGroup = viewData.getOrCreateVkData(passEncoderState.commandBuffer)
-        val meshGroup = meshData.getOrCreateVkData(passEncoderState.commandBuffer)
+        val pipelineGroup = pipelineData.getOrCreateVkData()
+        val viewGroup = viewData.getOrCreateVkData()
+        val meshGroup = meshData.getOrCreateVkData()
 
         pipelineGroup.prepareBind(passEncoderState)
         viewGroup.prepareBind(passEncoderState)
@@ -73,7 +69,7 @@ class DrawPipelineVk(
     }
 
     private fun bindVertexBuffers(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
-        val gpuGeom = cmd.mesh.geometry.gpuGeometry as GeometryVk? ?: return false
+        val gpuGeom = cmd.geometry.gpuGeometry as GeometryVk? ?: return false
         val gpuInsts = cmd.instances?.gpuInstances as InstancesVk?
 
         var numBuffers = 0
@@ -309,15 +305,8 @@ class DrawPipelineVk(
         }
     }
 
-    override fun removeUser(user: Any) {
-        (user as? Mesh)?.let { users.remove(it.id) }
-        if (users.isEmpty()) {
-            release()
-        }
-    }
-
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         backend.pipelineManager.removeDrawPipeline(this)
         pipelines.values.forEach { backend.device.destroyGraphicsPipeline(it) }
     }

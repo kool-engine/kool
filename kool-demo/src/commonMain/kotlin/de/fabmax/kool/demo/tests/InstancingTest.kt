@@ -3,8 +3,10 @@ package de.fabmax.kool.demo.tests
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
-import de.fabmax.kool.math.Mat4f
+import de.fabmax.kool.math.MutableMat4f
+import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
+import de.fabmax.kool.math.randomInUnitSphere
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
@@ -15,13 +17,19 @@ import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.Time
+import kotlin.math.sin
 
-class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
+class InstancingTest : DemoScene("Instancing") {
 
     private val numObjects = mutableStateOf(5000)
     private val drawInstanced = mutableStateOf(false)
+    private val animateInstances = mutableStateOf(false)
     private val updateInstances = mutableStateOf(false)
     private val numInstancesPerMesh = mutableStateOf(10)
+
+    private val updateTstate = mutableStateOf(0.0)
+    private val recordTstate = mutableStateOf(0.0)
+    private val drawTstate = mutableStateOf(0.0)
 
     private val objects = mutableListOf<Mesh>()
     private val meshInstances = mutableListOf<MeshInstance>()
@@ -38,16 +46,22 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
         colorSpaceConversion = ColorSpaceConversion.AsIs
     }
 
-    private val profilingScene = mainScene as ProfilingScene
+    private val axes = List(1000) { randomInUnitSphere() }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
         defaultOrbitCamera(0f)
         camera.setClipRange(0.1f, 10000f)
 
         updateObjects()
-
         onUpdate {
-            if (drawInstanced.value && updateInstances.value) {
+            if (drawInstanced.value && (updateInstances.value || animateInstances.value)) {
+                if (animateInstances.value) {
+                    for (i in meshInstances.indices) {
+                        val ax = axes[i % axes.size]
+                        val ang = 90f.deg * Time.deltaT * sin(Time.gameTime + i).toFloat()
+                        meshInstances[i].pose.rotate(ang, ax)
+                    }
+                }
                 for (i in objects.indices) {
                     objects[i].instances?.clear()
                 }
@@ -56,12 +70,30 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
                 }
             }
         }
+
+        mainRenderPass.isProfileGpu = true
+
+        var updateT = 0.0
+        var recordT = 0.0
+        var drawT = 0.0
+        onUpdate {
+            updateT = updateT * 0.9 + (mainRenderPass.tUpdate.inWholeNanoseconds / 1e6) * 0.1
+            recordT = recordT * 0.9 + (mainRenderPass.tRecord.inWholeNanoseconds / 1e6) * 0.1
+            drawT = drawT * 0.9 + (mainRenderPass.tGpu.inWholeNanoseconds / 1e6) * 0.1
+
+            if (Time.frameCount % 5 == 0) {
+                updateTstate.set(updateT)
+                recordTstate.set(recordT)
+                drawTstate.set(drawT)
+            }
+        }
     }
 
     override fun createMenu(menu: DemoMenu, ctx: KoolContext) = menuSurface {
         MenuSlider2("Num objects", numObjects.use().toFloat(), 100f, 10000f, txtFormat = { it.toInt().toString() }) {
             numObjects.set(it.toInt())
         }
+        LabeledSwitch("Animate instances", animateInstances)
         LabeledSwitch("Draw instanced", drawInstanced) {
             updateObjects()
         }
@@ -82,11 +114,15 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
 
         MenuRow {
             Text("Update scene:") { labelStyle(Grow.Std) }
-            Text("${profilingScene.updateTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
+            Text("${updateTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
         MenuRow {
             Text("Scene recording:") { labelStyle(Grow.Std) }
-            Text("${profilingScene.drawTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
+            Text("${recordTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
+        }
+        MenuRow {
+            Text("GPU time:") { labelStyle(Grow.Std) }
+            Text("${drawTstate.use().toString(2)} ms") { labelStyle(Grow.Std) }
         }
     }
 
@@ -117,6 +153,13 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
                 }
                 shader = directShader
                 transform.translate(x.toFloat(), -30f, z.toFloat())
+
+                onUpdate {
+                    if (animateInstances.value) {
+                        val ang = 90f.deg * Time.deltaT * sin(Time.gameTime + i).toFloat()
+                        transform.rotate(ang, axes[i % axes.size])
+                    }
+                }
             }
         }
     }
@@ -144,35 +187,14 @@ class InstancingTest : DemoScene("Instancing", ProfilingScene()) {
             }
             insts++
 
-            meshInstances += MeshInstance(instances, Mat4f.translation(x.toFloat(), -30f, z.toFloat())).apply { addInstance() }
+            meshInstances += MeshInstance(instances, MutableMat4f().translate(x.toFloat(), -30f, z.toFloat())).apply { addInstance() }
         }
     }
 
-    class MeshInstance(val instances: MeshInstanceList, val pose: Mat4f) {
+    class MeshInstance(val instances: MeshInstanceList, val pose: MutableMat4f) {
         fun addInstance() {
             instances.addInstance {
                 pose.putTo(this)
-            }
-        }
-    }
-
-    private class ProfilingScene : Scene() {
-        val updateTstate = mutableStateOf(0.0)
-        val drawTstate = mutableStateOf(0.0)
-
-        var updateT = 0.0
-        var drawT = 0.0
-
-        override fun renderScene(ctx: KoolContext) {
-            val t = Time.precisionTime
-            super.renderScene(ctx)
-            val p = (Time.precisionTime - t)
-            updateT = updateT * 0.9 + p * 1000.0 * 0.1
-            drawT = drawT * 0.9 + sceneRecordTime.inWholeMicroseconds / 1000.0 * 0.1
-
-            if (Time.frameCount % 5 == 0) {
-                updateTstate.set(updateT)
-                drawTstate.set(drawT)
             }
         }
     }

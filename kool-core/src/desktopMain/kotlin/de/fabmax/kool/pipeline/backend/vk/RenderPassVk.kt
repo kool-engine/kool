@@ -1,5 +1,8 @@
 package de.fabmax.kool.pipeline.backend.vk
 
+import de.fabmax.kool.PassData
+import de.fabmax.kool.ViewData
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
@@ -24,8 +27,9 @@ abstract class RenderPassVk(
     protected val device: Device get() = backend.device
     private val timeQuery = Timer(backend.timestampQueryPool) { }
 
-    protected fun render(renderPass: RenderPass, passEncoderState: PassEncoderState) {
-        if (renderPass.isProfileTimes) {
+    protected fun render(passData: PassData, passEncoderState: PassEncoderState) {
+        val renderPass = passData.gpuPass as RenderPass
+        if (renderPass.isProfileGpu) {
             if (timeQuery.isComplete) {
                 renderPass.tGpu = timeQuery.latestResult
             }
@@ -34,18 +38,18 @@ abstract class RenderPassVk(
 
         when (val mode = renderPass.mipMode) {
             is RenderPass.MipMode.Render -> {
-                val numLevels = mode.getRenderMipLevels(renderPass.size)
+                val numLevels = mode.getRenderMipLevels(renderPass.dimensions)
                 if (mode.renderOrder == RenderPass.MipMapRenderOrder.HigherResolutionFirst) {
                     for (mipLevel in 0 until numLevels) {
-                        renderPass.renderMipLevel(mipLevel, passEncoderState)
+                        passData.renderMipLevel(renderPass, mipLevel, passEncoderState)
                     }
                 } else {
                     for (mipLevel in (numLevels-1) downTo 0) {
-                        renderPass.renderMipLevel(mipLevel, passEncoderState)
+                        passData.renderMipLevel(renderPass, mipLevel, passEncoderState)
                     }
                 }
             }
-            else -> renderPass.renderMipLevel(0, passEncoderState)
+            else -> passData.renderMipLevel(renderPass, 0, passEncoderState)
         }
 
         if (renderPass.mipMode == RenderPass.MipMode.Generate) {
@@ -53,59 +57,53 @@ abstract class RenderPassVk(
             generateMipLevels(passEncoderState)
         }
 
-        var anySingleShots = false
-        for (i in renderPass.frameCopies.indices) {
+        for (i in passData.frameCopies.indices) {
             passEncoderState.ensureRenderPassInactive()
-            copy(renderPass.frameCopies[i], passEncoderState)
-            anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
-        }
-        if (anySingleShots) {
-            renderPass.frameCopies.removeAll { it.isSingleShot }
+            copy(passData.frameCopies[i], passEncoderState)
         }
 
-        if (renderPass.isProfileTimes) {
+        if (renderPass.isProfileGpu) {
             timeQuery.end(passEncoderState.commandBuffer)
         }
     }
 
-    private fun RenderPass.renderMipLevel(mipLevel: Int, passEncoderState: PassEncoderState) {
-        setupMipLevel(mipLevel)
+    private fun PassData.renderMipLevel(renderPass: RenderPass, mipLevel: Int, passEncoderState: PassEncoderState) {
+        renderPass.setupMipLevel(mipLevel)
 
-        if (this is OffscreenPassCube) {
-            for (layer in views.indices) {
-                passEncoderState.beginRenderPass(this, this@RenderPassVk, mipLevel, layer)
-                renderView(views[layer], passEncoderState)
+        if (renderPass is OffscreenPassCube) {
+            var layer = 0
+            forEachView { viewData ->
+                passEncoderState.beginRenderPass(renderPass, this@RenderPassVk, mipLevel, layer++)
+                renderView(viewData, passEncoderState)
             }
         } else {
-            passEncoderState.beginRenderPass(this, this@RenderPassVk, mipLevel)
-            for (viewIndex in views.indices) {
-                renderView(views[viewIndex], passEncoderState)
+            passEncoderState.beginRenderPass(renderPass, this@RenderPassVk, mipLevel)
+            forEachView { viewData ->
+                renderView(viewData, passEncoderState)
             }
         }
     }
 
-    private fun renderView(view: RenderPass.View, passEncoderState: PassEncoderState) {
+    private fun renderView(viewData: ViewData, passEncoderState: PassEncoderState) {
         val mipLevel = passEncoderState.mipLevel
         val layer = passEncoderState.layer
-        view.setupView()
+        viewData.drawQueue.view.setupView()
 
-        passEncoderState.setViewport(view.viewport, mipLevel)
+        passEncoderState.setViewport(viewData.viewport, mipLevel)
 
         // only do copy when last mip-level is rendered
-        val isLastMipLevel = mipLevel == view.renderPass.numRenderMipLevels - 1
+        val isLastMipLevel = mipLevel == viewData.numMipLevels - 1
         var nextFrameCopyI = 0
-        var nextFrameCopy = if (isLastMipLevel) view.frameCopies.getOrNull(nextFrameCopyI++) else null
-        var anySingleShots = false
+        var nextFrameCopy = if (isLastMipLevel) viewData.frameCopies.getOrNull(nextFrameCopyI++) else null
 
-        view.drawQueue.forEach { cmd ->
+        viewData.drawQueue.forEach { cmd ->
             nextFrameCopy?.let { frameCopy ->
                 if (cmd.drawGroupId > frameCopy.drawGroupId) {
                     val rp = passEncoderState.renderPass
                     passEncoderState.ensureRenderPassInactive()
                     copy(frameCopy, passEncoderState)
                     passEncoderState.beginRenderPass(rp, this@RenderPassVk, mipLevel, layer, forceLoad = true)
-                    anySingleShots = anySingleShots || frameCopy.isSingleShot
-                    nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
+                    nextFrameCopy = viewData.frameCopies.getOrNull(nextFrameCopyI++)
                 }
             }
 
@@ -128,10 +126,6 @@ abstract class RenderPassVk(
             passEncoderState.ensureRenderPassInactive()
             copy(it, passEncoderState)
             passEncoderState.beginRenderPass(rp, this@RenderPassVk, mipLevel, layer, forceLoad = true)
-            anySingleShots = anySingleShots || it.isSingleShot
-        }
-        if (anySingleShots) {
-            view.frameCopies.removeAll { it.isSingleShot }
         }
     }
 
@@ -241,21 +235,22 @@ abstract class RenderPassVk(
         val layers: Int,
         val isCopySrc: Boolean,
         val isCopyDst: Boolean,
-        val parentPass: RenderPass
+        val parentPass: RenderPass,
+        val size: Vec2i,
     ) : BaseReleasable() {
         val colorImages = colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, numSamples, format, false)
+            createImage(size.x, size.y, numSamples, format, false)
         }
         val depthImage = depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, numSamples, format, true)
+            createImage(size.x, size.y, numSamples, format, true)
         }
 
         val resolveColorImages = if (!isMultiSampled) emptyList() else colorFormats.map { format ->
-            createImage(parentPass.width, parentPass.height, 1, format, false)
+            createImage(size.x, size.y, 1, format, false)
         }
         val isResolveDepth = isMultiSampled && parentPass.depthAttachment is RenderPassDepthTextureAttachment<*>
         val resolveDepthImage = if (!isResolveDepth) null else depthFormat?.let { format ->
-            createImage(parentPass.width, parentPass.height, 1, format, true)
+            createImage(size.x, size.y, 1, format, true)
         }
 
         val colorMipViews = colorImages.map { it.createMipViews() }
@@ -466,11 +461,11 @@ abstract class RenderPassVk(
 
         private fun copyToTexture(target: Texture<*>, src: ImageVk, format: Int, passEncoderState: PassEncoderState) {
             var copyDst = (target.gpuTexture as ImageVk?)
-            if (copyDst == null || copyDst.width != parentPass.width || copyDst.height != parentPass.height) {
+            if (copyDst == null || copyDst.width != size.x || copyDst.height != size.y) {
                 copyDst?.release()
                 copyDst = createImageWithUsage(
-                    width = parentPass.width,
-                    height = parentPass.height,
+                    width = size.x,
+                    height = size.y,
                     samples = 1,
                     format = format,
                     isDepth = false,
@@ -481,9 +476,7 @@ abstract class RenderPassVk(
             copyDst.copyFromImage(src, passEncoderState.commandBuffer, stack = passEncoderState.stack)
         }
 
-        override fun release() {
-            super.release()
-
+        override fun doRelease() {
             colorImages.forEach { it.release() }
             depthImage?.release()
             colorMipViews.flatMap { it }.flatMap { it }.forEach { backend.device.destroyImageView(it) }

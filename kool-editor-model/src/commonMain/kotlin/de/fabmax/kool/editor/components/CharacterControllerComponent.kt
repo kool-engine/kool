@@ -12,7 +12,8 @@ import de.fabmax.kool.physics.RigidDynamic
 import de.fabmax.kool.physics.character.CharacterController
 import de.fabmax.kool.physics.character.OnHitActorListener
 import de.fabmax.kool.scene.TrsTransformF
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.max
@@ -55,7 +56,7 @@ class CharacterControllerComponent(
     override val physicsActorTransform: TrsTransformF? get() = charController?.actor?.transform
 
     override fun onDataChanged(oldData: CharacterControllerComponentData, newData: CharacterControllerComponentData) {
-        launchOnMainThread {
+        FrontendScope.launch {
             updateControllerProps(newData)
         }
     }
@@ -111,7 +112,7 @@ class CharacterControllerComponent(
         }
 
         if (oldPos != null) {
-            applyPose(oldPos!!, QuatD.IDENTITY)
+            applyPose(oldPos, QuatD.IDENTITY)
         } else {
             setPhysicsTransformFromDrawNode()
         }

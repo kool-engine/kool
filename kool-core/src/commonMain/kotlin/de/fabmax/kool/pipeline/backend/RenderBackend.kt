@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
@@ -22,7 +23,7 @@ interface RenderBackend {
 
     val frameGpuTime: Duration
 
-    fun renderFrame(ctx: KoolContext)
+    fun renderFrame(frameData: FrameData, ctx: KoolContext)
     fun cleanup(ctx: KoolContext)
 
     fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCode
@@ -31,8 +32,6 @@ interface RenderBackend {
     fun createOffscreenPass2d(parentPass: OffscreenPass2d): OffscreenPass2dImpl
     fun createOffscreenPassCube(parentPass: OffscreenPassCube): OffscreenPassCubeImpl
     fun createComputePass(parentPass: ComputePass): ComputePassImpl
-
-    fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int)
 
     fun <T: ImageData> uploadTextureData(tex: Texture<T>)
     fun downloadTextureData(texture: Texture<*>, deferred: CompletableDeferred<ImageData>)

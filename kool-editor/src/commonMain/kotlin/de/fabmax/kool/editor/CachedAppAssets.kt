@@ -10,8 +10,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 
 class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("") {
     private val loadedHdris = mutableMapOf<AssetReference.Hdri, MutableStateValue<EnvironmentMap?>>()
@@ -87,7 +86,7 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
     internal fun reloadAsset(assetItem: AssetItem) {
         val assetRefs = assetRefsByPath[assetItem.path]
 
-        launchOnMainThread {
+        FrontendScope.launch {
             assetRefs?.forEach { ref ->
                 when (ref) {
                     is AssetReference.Texture -> {
@@ -135,7 +134,7 @@ class CachedAppAssets(override val assetLoader: AssetLoader) : DefaultLoader("")
 
     private suspend fun Texture2d.reloadTexture(texPath: String) {
         assetLoader.loadImage2d(texPath, format).getOrNull()?.let {
-            withContext(Dispatchers.RenderLoop) {
+            BackendScope.launch {
                 upload(it)
             }
         }

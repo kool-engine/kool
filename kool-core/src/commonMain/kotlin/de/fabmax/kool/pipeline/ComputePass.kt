@@ -1,11 +1,15 @@
 package de.fabmax.kool.pipeline
 
+import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PassData
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Releasable
+import de.fabmax.kool.util.Time
 import kotlin.math.ceil
+import kotlin.time.Duration.Companion.seconds
 
 fun ComputePass(computeShader: ComputeShader, numInvocationsX: Int, numInvocationsY: Int = 1, numInvocationsZ: Int = 1): ComputePass {
     val pass = ComputePass(computeShader.name)
@@ -31,8 +35,13 @@ open class ComputePass(name: String) : GpuPass(name) {
         task.release()
     }
 
-    override fun release() {
-        super.release()
+    override fun update(passData: PassData, ctx: KoolContext) {
+        val t = Time.precisionTime
+        super.update(passData, ctx)
+        tUpdate = (Time.precisionTime - t).seconds
+    }
+
+    override fun doRelease() {
         _tasks.forEach { it.release() }
         _tasks.clear()
     }
@@ -41,7 +50,7 @@ open class ComputePass(name: String) : GpuPass(name) {
         val pass: ComputePass get() = this@ComputePass
         val numGroups = MutableVec3i(numGroups)
         var isEnabled = true
-        val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputePass)
+        val pipeline: ComputePipeline = shader.getOrCreatePipeline(this@ComputePass).also { it.addUser(this) }
 
         private val beforeDispatch = mutableListOf<() -> Unit>()
         private val afterDispatch = mutableListOf<() -> Unit>()
@@ -73,8 +82,7 @@ open class ComputePass(name: String) : GpuPass(name) {
             }
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             pipeline.removeUser(this)
         }
     }

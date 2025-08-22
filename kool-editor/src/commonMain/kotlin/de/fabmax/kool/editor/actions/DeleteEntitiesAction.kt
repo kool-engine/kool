@@ -5,7 +5,8 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.api.toHierarchy
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.util.gameEntity
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 
 class DeleteEntitiesAction(
     gameEntities: List<GameEntity>
@@ -38,9 +39,9 @@ class DeleteEntitiesAction(
     }
 
     override fun undoAction() {
-        launchOnMainThread {
+        FrontendScope.launch {
             hierarchy.forEach {
-                val scene = it.entityData.parentId?.gameEntity?.scene
+                val scene = it.entityData.parentId.gameEntity?.scene
                 scene?.addGameEntities(it, positions[it.entityData.id] ?: GameEntity.InsertionPos.End)
             }
             refreshComponentViews()

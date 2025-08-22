@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo.physics.ragdoll
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.*
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -59,7 +58,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         roughness(0.8f)
     }
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         ao = AoPipeline.createForward(mainScene).apply {
             mapSize = 0.7f
             radius = 0.5f

@@ -51,8 +51,7 @@ class TimeQuery(private val gl: GlApi) : BaseReleasable() {
         if (doQuery) end()
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gl.deleteQuery(beginTime)
         gl.deleteQuery(endTime)
     }

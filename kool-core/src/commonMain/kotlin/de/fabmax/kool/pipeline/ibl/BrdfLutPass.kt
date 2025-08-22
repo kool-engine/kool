@@ -14,8 +14,8 @@ import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addMesh
-import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.releaseDelayed
 
 
 class BrdfLutPass(parentScene: Scene) :
@@ -38,11 +38,11 @@ class BrdfLutPass(parentScene: Scene) :
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterPass {
+        onAfterCollect {
             logT { "Generated BRDF look-up table" }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)
-                launchDelayed(1) { release() }
+                releaseDelayed(1)
             } else {
                 isEnabled = false
             }

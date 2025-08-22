@@ -16,18 +16,18 @@ The code for all demos is available in
 the [kool-demo](kool-demo/src/commonMain/kotlin/de/fabmax/kool/demo) subproject. You can also run them locally by
 cloning this repo and running `./gradlew :kool-demo:runDesktop`
 
-- [Pathtracing](https://kool-engine.github.io/live/demos/?demo=pathtracing): Compute shader based implementation of the
-  [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) book. **WebGPU only**
-- [Bloom](https://kool-engine.github.io/live/demos/?demo=bloom): Decent looking bloom for (very) bright objects. **WebGPU only**
 - [Island](https://kool-engine.github.io/live/demos/?demo=phys-terrain): Height-map based
   island incl. some wind-affected vegetation + a basic controllable character.
-- [Physics - Ragdoll](https://kool-engine.github.io/live/demos/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Vehicle](https://kool-engine.github.io/live/demos/?demo=phys-vehicle): A drivable vehicle (W, A, S, D /
   cursor keys, R to reset) based on the Nvidia PhysX vehicles SDK. **WebGPU only**
+- [Physics - Ragdoll](https://kool-engine.github.io/live/demos/?demo=phys-ragdoll): Ragdoll physics demo.
 - [Physics - Joints](https://kool-engine.github.io/live/demos/?demo=phys-joints): Physics demo consisting of a chain
   running over two gears. Uses a lot of multi shapes and revolute joints.
 - [Physics - Collision](https://kool-engine.github.io/live/demos/?demo=physics): The obligatory collision physics demo with
   various different shapes.
+- [Bloom](https://kool-engine.github.io/live/demos/?demo=bloom): Decent looking bloom for (very) bright objects. **WebGPU only**
+- [Pathtracing](https://kool-engine.github.io/live/demos/?demo=pathtracing): Compute shader based implementation of the
+  [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html) book. **WebGPU only**
 - [Embedded UI](https://kool-engine.github.io/live/demos/?demo=ui): Integrated UI framework implemented completely within
   the engine. Fast, highly customizable and easy-to-use.
 - [Particles](https://kool-engine.github.io/live/demos/?demo=bees): Two teams of bees fighting against each other.
@@ -239,7 +239,7 @@ fun main() = KoolApplication {
         }
 
         // Load a glTF 2.0 model
-        launchOnMainThread {
+        coroutineScope.launch {
             val materialCfg = GltfMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap
@@ -276,8 +276,12 @@ color cube from the previous example, the ground plane uses a PBR shader. Howeve
 use the ambient occlusion and shadow maps we created before. Moreover, the shader should not use the vertex color
 attribute, but a simple pre-defined color (white in this case).
 
-Finally, we want to load a glTF 2.0 model. Resources are loaded via the `Assets` object. Since resource loading is a
-potentially long-running operation we do that from within a coroutine launched with `launchOnMainThread { ... }`. 
+Finally, we want to load a glTF 2.0 model. Resources are loaded via the `Assets` object. Since resource loading
+functions suspend until the resource is loaded (or loading has failed), we need to launch a coroutine, which does
+the model loading. We do that using the scene's own `coroutineScioe`, which makes sure that the loading runs in sync
+with the render loop (by using `KoolDispatchers.Frontend`) so that we can directly add our loaded model to the scene
+after it is loaded.
+
 By default, the built-in glTF parser creates shaders for all models it loads. The
 created shaders can be customized via a provided material configuration, which we use to pass the shadow and
 ambient occlusion maps we created during light setup. After we created the custom model / material configuration

@@ -17,7 +17,11 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.BaseReleasable
+import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.releaseWith
+import kotlinx.coroutines.launch
 
 class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene) : PbrDemo.PbrContent("PBR material") {
     private val shaders = mutableListOf<KslPbrShader>()
@@ -39,7 +43,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
     }
 
     private fun updatePbrMaterial() {
-        launchOnMainThread {
+        scene.coroutineScope.launch {
             val materialIdx = selectedMatIdx.value
             val maps = loadedMaterials[materialIdx] ?: materialLoaders[materialIdx].second().also {
                 it.releaseWith(scene)
@@ -171,8 +175,7 @@ class PbrMaterialContent(val sphereProto: PbrDemo.SphereProto, val scene: Scene)
         val ao: Texture2d?,
         val displacement: Texture2d?
     ) : BaseReleasable() {
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             albedo.release()
             normal.release()
             roughness.release()

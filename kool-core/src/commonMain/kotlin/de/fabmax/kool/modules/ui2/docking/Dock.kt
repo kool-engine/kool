@@ -3,16 +3,16 @@ package de.fabmax.kool.modules.ui2.docking
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.logE
 
-class Dock(name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) {
-
+class Dock(parentScene: Scene, name: String? = null) : Node(name = name ?: UniqueId.nextId("Dock")) {
     private val dockableNodes = Node(name = "${name}.dockableNodes")
     private val _dockables = mutableMapOf<UiSurface, Dockable>()
-    val dockingSurface = UiSurface(name = "${name}.dockingSurface")
-    val dockingSurfaceOverlay = UiSurface(name = "${name}.dockingSurfaceOverlay")
+    val dockingSurface = UiSurface(parentScene, name = "${name}.dockingSurface")
+    val dockingSurfaceOverlay = UiSurface(parentScene, name = "${name}.dockingSurfaceOverlay")
     val dockables: Map<UiSurface, Dockable> get() = _dockables
 
     val resizeMargin = mutableStateOf(Dp(4f))

@@ -3,9 +3,9 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBindingMat4fv
-import de.fabmax.kool.pipeline.DrawCommand
 import kotlin.math.min
 
 class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShaderListener {
@@ -24,7 +24,7 @@ class ArmatureData(maxBones: Int, program: KslProgram) : KslDataBlock, KslShader
         uBoneTransforms = shader.uniformMat4fv("uJointTransform")
     }
 
-    override fun onUpdate(cmd: DrawCommand) {
+    override fun onUpdateDrawData(cmd: DrawCommand) {
         uBoneTransforms?.let { mats ->
             cmd.mesh.skin?.let {
                 for (i in 0 until min(it.nodes.size, mats.arraySize)) {

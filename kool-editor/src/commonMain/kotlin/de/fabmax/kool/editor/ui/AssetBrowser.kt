@@ -12,7 +12,8 @@ import de.fabmax.kool.editor.util.hdriThumbnail
 import de.fabmax.kool.editor.util.textureThumbnail
 import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.picture, ui) {
@@ -171,7 +172,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.pi
     private fun SubMenuItem<BrowserItem>.renameDirectoryItem() = item("Rename directory") { item ->
         OkCancelEnterTextDialog("Rename / Move Directory", item.path, hint = "New directory name") {
             if (it.isNotBlank()) {
-                launchOnMainThread {
+                FrontendScope.launch {
                     editor.availableAssets.renameAsset(item.path, it.trim())
                 }
             }
@@ -187,7 +188,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.pi
     private fun SubMenuItem<BrowserItem>.renameAssetItem() = item("Rename asset file") { item ->
         OkCancelEnterTextDialog("Rename / Move Asset File", item.path, hint = "New asset file name") {
             if (it.isNotBlank()) {
-                launchOnMainThread {
+                FrontendScope.launch {
                     editor.availableAssets.renameAsset(item.path, it.trim())
                 }
             }
@@ -207,7 +208,7 @@ class AssetBrowser(ui: EditorUi) : BrowserPanel("Asset Browser", Icons.medium.pi
     }
 
     private fun SubMenuItem<BrowserItem>.importAssetsItem(label: String, filterList: List<FileFilterItem>) = item(label) { item ->
-        launchOnMainThread {
+        FrontendScope.launch {
             val importFiles = Assets.loadFileByUser(filterList, true)
             editor.availableAssets.importAssets(item.path, importFiles)
         }

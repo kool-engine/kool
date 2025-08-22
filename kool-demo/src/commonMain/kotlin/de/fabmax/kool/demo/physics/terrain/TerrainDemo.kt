@@ -98,9 +98,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         showLoadText("Loading height map...")
-        val heightData = loadBlob("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
+        val heightData = Assets.loadBlob("${DemoLoader.heightMapPath}/terrain_ocean.raw").getOrThrow()
         val heightMap = Heightmap.fromRawData(heightData, 200f, heightOffset = -50f)
         // more or less the same, but falls back to 8-bit height-resolution in javascript
         //heightMap = HeightMap.fromTextureData2d(loadTextureData2d("${Demo.heightMapPath}/terrain.png", TexFormat.R_F16), 200f)
@@ -130,7 +130,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         bridgeMesh = makeBridgeMesh()
 
         showLoadText("Loading player model...")
-        val playerGltf = loadGltfModel("${DemoLoader.modelPath}/player.glb").getOrThrow()
+        val playerGltf = Assets.loadGltfModel("${DemoLoader.modelPath}/player.glb").getOrThrow()
         playerModel = PlayerModel(playerGltf, physicsObjects.playerController)
 
         escKeyListener = KeyboardInput.addKeyListener(KeyboardInput.KEY_ESC, "Exit cursor lock") {

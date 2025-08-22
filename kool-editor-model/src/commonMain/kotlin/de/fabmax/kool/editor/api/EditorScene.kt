@@ -6,10 +6,7 @@ import de.fabmax.kool.editor.data.*
 import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformD
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 
 val EditorScene.sceneComponent: SceneComponent get() = sceneEntity.sceneComponent
 val EditorScene.scene: Scene get() = sceneComponent.sceneNode
@@ -165,9 +162,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
         sceneNodes.updateInstances()
     }
 
-    override fun release() {
-        super.release()
-
+    override fun doRelease() {
         sceneEntities.values.forEach { it.destroyComponents() }
         sceneComponent.sceneNode.release()
         lifecycle = EntityLifecycle.DESTROYED
@@ -232,7 +227,7 @@ class EditorScene(val sceneData: SceneData, val project: EditorProject) : BaseRe
 
         gameEntity.parent?.removeChild(gameEntity)
 
-        launchDelayed(1) {
+        FrontendScope.launchDelayed(1) {
             gameEntity.destroyComponents()
         }
     }

@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.releaseDelayed
 import kotlin.math.max
 
 class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) : BaseReleasable() {
@@ -35,6 +36,10 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
      * Number of instances.
      */
     var numInstances = 0
+        set(value) {
+            field = value
+            incrementModCount()
+        }
 
     var dataF: Float32Buffer
         private set
@@ -44,7 +49,8 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     var maxInstances = initialSize
         private set
 
-    var hasChanged = true
+    var modCount = 0
+        internal set
 
     var gpuInstances: GpuInstances? = null
 
@@ -69,7 +75,10 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         dataF = Float32Buffer(strideFloats * maxInstances, true)
     }
 
+    fun incrementModCount() = modCount++
+
     fun checkBufferSize(reqSpace: Int = 1) {
+        if (strideFloats == 0) return
         if (numInstances + reqSpace > maxInstances) {
             maxInstances = max(maxInstances * 2, numInstances + reqSpace).coerceAtMost(Int.MAX_VALUE / (strideFloats * 4))
             check(maxInstances >= numInstances + reqSpace) {
@@ -96,7 +105,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
             throw IllegalStateException("Expected data to grow by ${instanceSizeF * n} elements, instead it grew by $growSz")
         }
         numInstances += n
-        hasChanged = true
+        incrementModCount()
     }
 
     inline fun addInstancesUpTo(upperBoundN: Int, block: (Float32Buffer) -> Int) {
@@ -112,7 +121,7 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         }
         numInstances += actuallyAdded
         if (actuallyAdded > 0) {
-            hasChanged = true
+            incrementModCount()
         }
     }
 
@@ -122,12 +131,23 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
         }
         numInstances = 0
         dataF.clear()
-        hasChanged = true
+        incrementModCount()
     }
 
-    override fun release() {
-        gpuInstances?.release()
-        gpuInstances = null
-        super.release()
+    /**
+     * Replaces all content by the content of [source]. Given source buffer must have the same vertex layout.
+     * This instance list's [modCount] is set to the [modCount] value of the source instance list.
+     */
+    internal fun set(source: MeshInstanceList) {
+        clear()
+        checkBufferSize(source.numInstances)
+        dataF.put(source.dataF)
+        numInstances = source.numInstances
+        usage = source.usage
+        modCount = source.modCount
+    }
+
+    override fun doRelease() {
+        gpuInstances?.releaseDelayed(1)
     }
 }

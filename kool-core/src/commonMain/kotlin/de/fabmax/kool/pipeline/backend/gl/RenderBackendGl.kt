@@ -1,7 +1,8 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
-import de.fabmax.kool.math.numMipLevels
+import de.fabmax.kool.PassData
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -10,12 +11,9 @@ import de.fabmax.kool.pipeline.backend.DeviceCoordinates
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.Buffer
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
-import kotlin.time.measureTime
+import kotlin.time.Duration.Companion.seconds
 
 expect fun createRenderBackendGl(ctx: KoolContext): RenderBackendGl
 
@@ -37,6 +35,8 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
 
     private val awaitedStorageBuffers = mutableListOf<ReadbackStorageBuffer>()
 
+    internal lateinit var currentFrameData: FrameData
+
     protected fun setupGl() {
         if (gl.capabilities.hasClipControl) {
             logD { "Setting depth range to zero-to-one" }
@@ -45,17 +45,13 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         }
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
+        currentFrameData = frameData
 
         sceneRenderer.applySize(ctx.windowWidth, ctx.windowHeight)
-        ctx.backgroundScene.executePasses()
-
-        for (i in ctx.scenes.indices) {
-            val scene = ctx.scenes[i]
-            if (scene.isVisible) {
-                scene.executePasses()
-            }
+        frameData.forEachPass { passData ->
+            passData.executePass()
         }
 
         if (useFloatDepthBuffer) {
@@ -113,29 +109,6 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         return ComputePassGl(parentPass, this)
     }
 
-    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val tex = storageTexture.asTexture
-        val imageType = when (storageTexture) {
-            is StorageTexture1d -> gl.TEXTURE_2D
-            is StorageTexture2d -> gl.TEXTURE_2D
-            is StorageTexture3d -> gl.TEXTURE_3D
-        }
-        val levels = if (tex.mipMapping.isMipMapped) numMipLevels(width, height, depth) else 1
-        val format = tex.format.glInternalFormat(gl)
-
-        val somePxSize = 16L
-        val gpuTexture = LoadedTextureGl(imageType, gl.createTexture(), this, tex, width * height * depth * somePxSize)
-        gpuTexture.setSize(width, height, depth)
-        gpuTexture.bind()
-        if (imageType == gl.TEXTURE_3D) {
-            gl.texStorage3d(gl.TEXTURE_3D, levels, format, width, height, depth)
-        } else {
-            gl.texStorage2d(gl.TEXTURE_2D, levels, format, width, height)
-        }
-        storageTexture.gpuTexture?.release()
-        storageTexture.gpuTexture = gpuTexture
-    }
-
     override fun generateKslShader(shader: KslShader, pipeline: DrawPipeline): ShaderCodeGl {
         val src = GlslGenerator.generateProgram(shader.program, pipeline, glslGeneratorHints)
         return ShaderCodeGl(src.vertexSrc, src.fragmentSrc)
@@ -149,31 +122,21 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         return ComputeShaderCodeGl(src.computeSrc)
     }
 
-    private fun Scene.executePasses() {
-        sceneRecordTime += measureTime {
-            for (i in sortedPasses.indices) {
-                val pass = sortedPasses[i]
-                if (pass.isEnabled) {
-                    pass.beforePass()
-                    pass.execute()
-                    pass.afterPass()
-                }
-            }
-        }
-    }
-
-    private fun GpuPass.execute() {
-        when (this) {
+    private fun PassData.executePass() {
+        val pass = gpuPass
+        val t = Time.precisionTime
+        when (pass) {
             is Scene.ScreenPass -> sceneRenderer.draw(this)
-            is OffscreenPass2d -> impl.draw()
-            is OffscreenPassCube -> impl.draw()
-            is ComputePass -> impl.dispatch()
-            else -> error("Gpu pass type not implemented: $this")
+            is OffscreenPass2d -> pass.impl.draw(this)
+            is OffscreenPassCube -> pass.impl.draw(this)
+            is ComputePass -> pass.impl.dispatch()
+            else -> error("Gpu pass type not implemented: $pass")
         }
+        pass.tRecord = (Time.precisionTime - t).seconds
     }
 
-    protected fun OffscreenPass2dImpl.draw() = (this as OffscreenPass2dGl).draw()
-    protected fun OffscreenPassCubeImpl.draw() = (this as OffscreenPassCubeGl).draw()
+    protected fun OffscreenPass2dImpl.draw(passData: PassData) = (this as OffscreenPass2dGl).draw(passData)
+    protected fun OffscreenPassCubeImpl.draw(passData: PassData) = (this as OffscreenPassCubeGl).draw(passData)
     protected fun ComputePassImpl.dispatch() = (this as ComputePassGl).dispatch()
 
     override fun downloadBuffer(buffer: GpuBuffer, deferred: CompletableDeferred<Unit>, resultBuffer: Buffer) {

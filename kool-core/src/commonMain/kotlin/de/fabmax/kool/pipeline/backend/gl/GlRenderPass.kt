@@ -1,5 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.PassData
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.util.BaseReleasable
@@ -13,9 +15,10 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
     private val timeQuery: TimeQuery by lazy { TimeQuery(gl).also { it.releaseWith(this) } }
 
-    protected fun renderViews(renderPass: RenderPass) {
-        val q = if (renderPass.isProfileTimes) timeQuery else null
-        q?.let {
+    protected fun renderViews(passData: PassData) {
+        val renderPass = passData.gpuPass as RenderPass
+        val timer = if (renderPass.isProfileGpu) timeQuery else null
+        timer?.let {
             if (it.isAvailable) {
                 renderPass.tGpu = it.getQueryResult()
             }
@@ -24,77 +27,69 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
         when (val mode = renderPass.mipMode) {
             is RenderPass.MipMode.Render -> {
-                val numLevels = mode.getRenderMipLevels(renderPass.size)
+                val numLevels = mode.getRenderMipLevels(renderPass.dimensions)
                 if (mode.renderOrder == RenderPass.MipMapRenderOrder.HigherResolutionFirst) {
                     for (mipLevel in 0 until numLevels) {
-                        renderPass.renderMipLevel(mipLevel)
+                        passData.renderMipLevel(renderPass, mipLevel)
                     }
                 } else {
                     for (mipLevel in (numLevels-1) downTo 0) {
-                        renderPass.renderMipLevel(mipLevel)
+                        passData.renderMipLevel(renderPass, mipLevel)
                     }
                 }
             }
-            else -> renderPass.renderMipLevel(0)
+            else -> passData.renderMipLevel(renderPass, 0)
         }
 
-        var anySingleShots = false
-        for (i in renderPass.frameCopies.indices) {
-            copy(renderPass.frameCopies[i])
-            anySingleShots = anySingleShots || renderPass.frameCopies[i].isSingleShot
+        for (i in passData.frameCopies.indices) {
+            copy(passData.frameCopies[i])
         }
-        if (anySingleShots) {
-            renderPass.frameCopies.removeAll { it.isSingleShot }
-        }
-
-        q?.end()
+        timer?.end()
     }
 
-    private fun RenderPass.renderMipLevel(mipLevel: Int) {
-        setupMipLevel(mipLevel)
+    private fun PassData.renderMipLevel(renderPass: RenderPass, mipLevel: Int) {
+        renderPass.setupMipLevel(mipLevel)
 
-        if (this is OffscreenPassCube) {
-            for (viewIndex in views.indices) {
+        if (renderPass is OffscreenPassCube) {
+            var viewIndex = 0
+            forEachView { viewData ->
                 setupFramebuffer(mipLevel, viewIndex)
-                clear(this)
-                val view = views[viewIndex]
-                view.setupView()
-                renderView(view, viewIndex, mipLevel)
+                clear(renderPass)
+                renderView(viewData, viewIndex++, mipLevel)
             }
         } else {
             setupFramebuffer(mipLevel, 0)
-            clear(this)
-            for (viewIndex in views.indices) {
-                val view = views[viewIndex]
-                view.setupView()
-                renderView(view, viewIndex, mipLevel)
+            clear(renderPass)
+            var viewIndex = 0
+            forEachView { viewData ->
+                renderView(viewData, viewIndex++, mipLevel)
             }
         }
     }
 
-    protected fun renderView(view: RenderPass.View, viewIndex: Int, mipLevel: Int) {
-        val viewport = view.viewport
+    protected fun renderView(viewData: ViewData, viewIndex: Int, mipLevel: Int) {
+        viewData.drawQueue.view.setupView()
+
+        val viewport = viewData.viewport
         val x = viewport.x shr mipLevel
         val y = viewport.y shr mipLevel
         val w = viewport.width shr mipLevel
         val h = viewport.height shr mipLevel
 
         // kool viewport coordinate origin is top left, while OpenGL's is bottom left
-        val windowHeight = view.renderPass.size.y shr mipLevel
+        val windowHeight = viewData.passDimensions.y shr mipLevel
         gl.viewport(x, windowHeight - y - h, w, h)
 
         // only do copy when last mip-level is rendered
-        val isLastMipLevel = mipLevel == view.renderPass.numRenderMipLevels - 1
+        val isLastMipLevel = mipLevel == viewData.numMipLevels - 1
         var nextFrameCopyI = 0
-        var nextFrameCopy = if (isLastMipLevel) view.frameCopies.getOrNull(nextFrameCopyI++) else null
-        var anySingleShots = false
+        var nextFrameCopy = if (isLastMipLevel) viewData.frameCopies.getOrNull(nextFrameCopyI++) else null
 
-        view.drawQueue.forEach { cmd ->
+        viewData.drawQueue.forEach { cmd ->
             nextFrameCopy?.let { frameCopy ->
                 if (cmd.drawGroupId > frameCopy.drawGroupId) {
                     copy(frameCopy)
-                    anySingleShots = anySingleShots || frameCopy.isSingleShot
-                    nextFrameCopy = view.frameCopies.getOrNull(nextFrameCopyI++)
+                    nextFrameCopy = viewData.frameCopies.getOrNull(nextFrameCopyI++)
                     // copy messes up the currently bound frame buffer, restore the correct one
                     setupFramebuffer(mipLevel, viewIndex)
                 }
@@ -104,7 +99,7 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                 val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
                 val isValid = drawInfo.isValid && drawInfo.numIndices > 0
                 if (isValid) {
-                    GlState.setupPipelineAttribs(cmd.pipeline, view.renderPass.depthMode, gl)
+                    GlState.setupPipelineAttribs(cmd.pipeline, viewData.depthMode, gl)
 
                     val insts = cmd.instances
                     if (insts == null) {
@@ -120,10 +115,6 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
 
         nextFrameCopy?.let {
             copy(it)
-            anySingleShots = anySingleShots || it.isSingleShot
-        }
-        if (anySingleShots) {
-            view.frameCopies.removeAll { it.isSingleShot }
         }
     }
 

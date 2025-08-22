@@ -1,11 +1,10 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.platform.JsContext
+import de.fabmax.kool.util.ApplicationScope
+import de.fabmax.kool.util.FrontendScope
 import de.fabmax.kool.util.Log
 import de.fabmax.kool.util.LogPrinter
-import de.fabmax.kool.util.launchOnMainThread
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLCanvasElement
 
@@ -28,17 +27,16 @@ suspend fun createContext(config: KoolConfigJs = KoolConfigJs()): JsContext {
     return JsImpl.createContext()
 }
 
-@OptIn(DelicateCoroutinesApi::class)
 fun KoolApplication(config: KoolConfigJs = KoolConfigJs(), appBlock: suspend KoolApplication.() -> Unit) {
-    GlobalScope.launch {
+    ApplicationScope.launch {
         val ctx = createContext(config)
         KoolApplication(ctx, appBlock)
     }
 }
 
-suspend fun KoolApplication(ctx: JsContext, appBlock: suspend KoolApplication.() -> Unit) {
+fun KoolApplication(ctx: JsContext, appBlock: suspend KoolApplication.() -> Unit) {
     val koolApp = KoolApplication(ctx)
-    launchOnMainThread {
+    FrontendScope.launch {
         koolApp.appBlock()
     }
     ctx.run()

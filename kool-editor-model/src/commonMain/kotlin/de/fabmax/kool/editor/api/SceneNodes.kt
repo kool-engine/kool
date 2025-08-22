@@ -19,6 +19,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
 import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class SceneNodes(val scene: EditorScene) :
@@ -379,7 +380,7 @@ class SceneNodes(val scene: EditorScene) :
 
         private fun recreateModelAsync() {
             if (!isRecreatingModel.getAndSet(true)) {
-                launchOnMainThread {
+                FrontendScope.launch {
                     createNode()
                     isRecreatingModel.lazySet(false)
                 }

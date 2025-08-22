@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
-import de.fabmax.kool.pipeline.BindGroupData
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.GpuPass
-import de.fabmax.kool.pipeline.TextureSampleType
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
 import de.fabmax.kool.util.*
@@ -24,31 +21,34 @@ class WgpuBindGroupData(
     var bindGroup: GPUBindGroup? = null
         private set
 
+    internal var checkFrame = -1
+    internal var isCheckOk = false
+
     fun bind(passEncoderState: PassEncoderState, group: Int = data.layout.group) {
+        var recreatedBindGroup = bindGroup == null
         for (i in textureBindings.indices) {
             val tex = textureBindings[i]
             if (tex.binding.texture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
-                data.isDirty = true
+                recreatedBindGroup = true
             }
         }
         for (i in storageTextureBindings.indices) {
             val tex = storageTextureBindings[i]
+            tex.binding.storageTexture?.checkTextureSize()
             if (tex.binding.storageTexture?.asTexture?.gpuTexture !== tex.loadedTex) {
                 // underlying gpu texture has changed, e.g. because render attachment of a render pass was recreated
-                data.isDirty = true
+                recreatedBindGroup = true
             }
         }
 
-        val recreatedBindGroup = bindGroup == null || data.isDirty
         if (recreatedBindGroup) {
-            data.isDirty = false
             createBindGroup(passEncoderState.renderPass)
         }
 
         for (i in bufferBindings.indices) {
             val ubo = bufferBindings[i]
-            if (ubo.modCount != ubo.binding.modCount || recreatedBindGroup) {
+            if (ubo.modCount != ubo.binding.modCount.count || recreatedBindGroup) {
                 device.queue.writeBuffer(
                     buffer = ubo.gpuBuffer.buffer,
                     bufferOffset = 0L,
@@ -79,6 +79,14 @@ class WgpuBindGroupData(
         passEncoderState.setBindGroup(group, this)
     }
 
+    private fun StorageTexture.checkTextureSize() {
+        val tex = asTexture
+        val gpu = asTexture.gpuTexture
+        if (gpu == null || gpu.width != tex.width || gpu.height != tex.height || gpu.depth != tex.depth) {
+            backend.textureLoader.createStorageTexture(this, tex.width, tex.height, tex.depth)
+        }
+    }
+
     private fun createBindGroup(pass: GpuPass) {
         bufferBindings.forEach { it.gpuBuffer.release() }
         bufferBindings.clear()
@@ -86,7 +94,7 @@ class WgpuBindGroupData(
         storageTextureBindings.clear()
 
         val bindGroupEntries: List<GPUBindGroupEntry> = buildList {
-            data.bindings.map { binding ->
+            data.bufferedBindings.map { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData<*> -> add(binding.makeEntry(pass))
                     is BindGroupData.StorageBufferBindingData -> add(binding.makeEntry(pass))
@@ -297,6 +305,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.StorageTextureBindingData<*>.makeStorageTextureEntry(): GPUBindGroupEntry {
         val location = locations[layout]
         val storageTex = checkNotNull(storageTexture) { "Cannot create storage texture binding from null texture" }
+        storageTex.checkTextureSize()
         val loadedTex = checkNotNull(storageTex.asTexture.gpuTexture as WgpuTextureResource?) { "Cannot create storage texture binding from null texture" }
 
         storageTextureBindings += StorageTextureBinding(this, loadedTex)
@@ -307,8 +316,7 @@ class WgpuBindGroupData(
         return GPUBindGroupEntry(location.binding, texView)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         textureBindings.clear()
         bufferBindings.forEach { it.gpuBuffer.release() }
         bufferBindings.clear()

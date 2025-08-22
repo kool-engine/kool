@@ -39,8 +39,7 @@ class TimestampQueryPool(val backend: RenderBackendVk, size: Int = 32) : BaseRel
         releaseWith(backend.device)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         backend.device.destroyQueryPool(vkQueryPool)
     }
 

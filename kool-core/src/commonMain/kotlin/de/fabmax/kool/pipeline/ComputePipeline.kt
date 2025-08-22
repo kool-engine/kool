@@ -14,27 +14,35 @@ class ComputePipeline(
     shaderCodeGenerator: (ComputePipeline) -> ComputeShaderCode
 ) : PipelineBase(name, bindGroupLayouts) {
     override val pipelineHash: LongHash
+    internal val users = mutableSetOf<ComputePass.Task>()
 
     override val shaderCode: ComputeShaderCode = shaderCodeGenerator(this)
-    val onUpdate: BufferedList<(ComputePass) -> Unit> = BufferedList()
+    val onUpdatePipelineData: BufferedList<(ComputePass) -> Unit> = BufferedList()
 
     init {
         pipelineHashBuilder += shaderCode.hash
         pipelineHash = pipelineHashBuilder.build()
     }
 
-    fun update(computePass: ComputePass) {
-        onUpdate.update()
-        for (i in onUpdate.indices) {
-            onUpdate[i].invoke(computePass)
+    fun updatePipelineData(computePass: ComputePass) {
+        onUpdatePipelineData.update()
+        for (i in onUpdatePipelineData.indices) {
+            onUpdatePipelineData[i].invoke(computePass)
         }
     }
 
-    fun onUpdate(block: (ComputePass) -> Unit) {
-        onUpdate += block
+    fun onUpdatePipelineData(block: (ComputePass) -> Unit) {
+        onUpdatePipelineData += block
+    }
+
+    fun addUser(task: ComputePass.Task) {
+        users.add(task)
     }
 
     fun removeUser(task: ComputePass.Task) {
-        pipelineBackend?.removeUser(task)
+        users.remove(task)
+        if (users.isEmpty()) {
+            release()
+        }
     }
 }

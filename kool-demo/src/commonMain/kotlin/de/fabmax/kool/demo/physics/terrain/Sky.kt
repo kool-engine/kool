@@ -19,7 +19,7 @@ import kotlin.math.atan2
 import kotlin.math.roundToInt
 import kotlin.random.Random
 
-class Sky(mainScene: Scene, moonTex: Texture2d) {
+class Sky(val mainScene: Scene, moonTex: Texture2d) {
 
     var timeOfDay = 0.25f
     var fullDayDuration = 180f
@@ -150,17 +150,16 @@ class Sky(mainScene: Scene, moonTex: Texture2d) {
             val skyReflection = sky.reflectionMapPass.copyColor()
             skies[timeOfDay] = EnvironmentMap(skyIrradiance, skyReflection)
 
-            delayFrames(1)
-
+            // fixme: Why do we need 2 frames? With only 1 frame delay, 2 consecutive sky-boxes are equal. Why?
+            delayFrames(2)
         }
         weightedEnvs = WeightedEnvMaps(skies.firstValue(), skies.firstValue())
 
-        launchDelayed(1) {
-            parentScene.removeOffscreenPass(skyLut)
-            sky.removeOffscreenPasses()
-            sky.releaseOffscreenPasses()
-            skyLut.release()
-        }
+        delayFrames(1)
+        parentScene.removeOffscreenPass(skyLut)
+        sky.removeOffscreenPasses()
+        sky.releaseOffscreenPasses()
+        skyLut.release()
     }
 
     fun updateLight(sceneLight: Light.Directional) {

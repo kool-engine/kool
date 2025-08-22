@@ -14,8 +14,8 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addTextureMesh
-import de.fabmax.kool.util.launchDelayed
 import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.releaseDelayed
 
 class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float = 1f) :
     OffscreenPass2d(
@@ -38,11 +38,11 @@ class RgbeDecoder(parentScene: Scene, hdriTexture: Texture2d, brightness: Float 
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterPass {
+        onAfterCollect {
             logT { "Converted RGBe to linear: ${hdriTexture.name}" }
             if (isAutoRemove) {
                 parentScene.removeOffscreenPass(this)
-                launchDelayed(1) { release() }
+                releaseDelayed(1)
             } else {
                 isEnabled = false
             }

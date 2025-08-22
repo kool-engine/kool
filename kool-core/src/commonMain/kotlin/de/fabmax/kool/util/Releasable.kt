@@ -1,22 +1,25 @@
 package de.fabmax.kool.util
 
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
+
 /**
  * Super-interface for any resource that has to be released after usage (such as GPU resources, e.g. buffers,
  * shaders, etc. or native physics objects, e.g. bodies, materials, etc.). Once released, resources cannot be reused
  * and trying to do so should result in an exception.
  */
 interface Releasable {
-
     val isReleased: Boolean
 
     /**
      * Releases all resources associated with this object. Usually, resources are released immediately by calling this
      * method. However, some resources can only be released at certain times. In that case, release is done as soon as
      * possible after calling this method.
-     * Using this object after release results in an [IllegalStateException].
+     * Idempotent operation: Calling this method on an already released object has no effect.
      */
     fun release()
-
 }
 
 /**
@@ -45,9 +48,30 @@ fun Releasable.checkIsReleased() = check(isReleased) {
     "$this is not released."
 }
 
+/**
+ * Schedules release of this [Releasable]. The release operation is performed in the given context
+ * after *at least* [numFrames] frames. However, depending on where / when this function is called, it might
+ * also be [numFrames] + 1 frames.
+ */
+fun Releasable.releaseDelayed(numFrames: Int = 1, context: CoroutineContext? = null) {
+    if (context == null) {
+        SyncedScope.launch {
+            delayFrames(numFrames)
+            release()
+        }
+    } else {
+        ApplicationScope.launch {
+            withContext(context) {
+                delayFrames(numFrames)
+                release()
+            }
+        }
+    }
+}
+
 abstract class BaseReleasable : Releasable {
-    final override var isReleased: Boolean = false
-        private set
+    private val _isReleased = atomic(false)
+    override val isReleased: Boolean get() = _isReleased.value
 
     private val onReleaseCallbacks: MutableList<() -> Unit> = mutableListOf()
     private val dependingReleasables = linkedSetOf<Releasable>()
@@ -65,12 +89,12 @@ abstract class BaseReleasable : Releasable {
     }
 
     override fun release() {
-        if (isReleased) {
-            logW { "release() called on an already released object ($this)" }
-        } else {
+        if (!_isReleased.getAndSet(true)) {
             dependingReleasables.reversed().toList().forEach { it.release() }
             onReleaseCallbacks.forEach { it() }
-            isReleased = true
+            doRelease()
         }
     }
+
+    protected abstract fun doRelease()
 }

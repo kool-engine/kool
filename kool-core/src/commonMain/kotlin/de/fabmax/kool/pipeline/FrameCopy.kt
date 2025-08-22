@@ -76,8 +76,7 @@ class FrameCopy(
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         colorCopy.forEach { it.release() }
         depthCopy?.release()
     }

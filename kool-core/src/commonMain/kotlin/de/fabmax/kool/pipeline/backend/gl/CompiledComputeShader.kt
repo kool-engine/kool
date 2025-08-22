@@ -8,25 +8,12 @@ class CompiledComputeShader(val pipeline: ComputePipeline, program: GlProgram, b
     CompiledShader(pipeline, program, backend),
     PipelineBackend
 {
-    private val users = mutableSetOf<ComputePass.Task>()
-
     fun bindComputePass(task: ComputePass.Task): Boolean {
-        users += task
-        pipeline.update(task.pass)
         return bindUniforms(task.pass, null, null)
     }
 
-    override fun removeUser(user: Any) {
-        (user as? ComputePass.Task)?.let { users.remove(it) }
-        if (users.isEmpty()) {
-            release()
-        }
-    }
-
-    override fun release() {
-        if (!isReleased) {
-            backend.shaderMgr.removeComputeShader(this)
-            super.release()
-        }
+    override fun doRelease() {
+        backend.shaderMgr.removeComputeShader(this)
+        super.doRelease()
     }
 }

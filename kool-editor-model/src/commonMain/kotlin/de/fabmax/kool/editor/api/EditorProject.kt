@@ -78,8 +78,7 @@ class EditorProject(val projectData: ProjectData) : BaseReleasable() {
         sceneModCnt++
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         releaseScenes()
         materialScene.release()
     }

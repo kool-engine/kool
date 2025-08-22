@@ -26,7 +26,7 @@ class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWgp
         val maxInvocations = backend.features.maxComputeInvocationsPerWorkgroup
 
         var timestampWrites: GPUComputePassTimestampWrites? = null
-        if (parentPass.isProfileTimes) {
+        if (parentPass.isProfileGpu) {
             createTimestampQueries()
             val begin = beginTimestamp
             val end = endTimestamp
@@ -86,4 +86,6 @@ class WgpuComputePass(val parentPass: ComputePass, val backend: RenderBackendWgp
             endTimestamp = backend.timestampQuery.createQuery()?.also { it.releaseWith(this) }
         }
     }
+
+    override fun doRelease() { }
 }

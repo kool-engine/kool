@@ -4,7 +4,7 @@ import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.MdColor
 
-class UiOverlay(val ui: EditorUi) : UiSurface() {
+class UiOverlay(val ui: EditorUi) : UiSurface(ui) {
 
     private val dndOverlay = DndOverlay()
 

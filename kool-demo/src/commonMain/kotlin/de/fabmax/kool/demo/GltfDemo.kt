@@ -104,7 +104,7 @@ class GltfDemo : DemoScene("glTF Models") {
         trackModel = currentModel.trackModel
     }
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
+    override suspend fun loadResources(ctx: KoolContext) {
         mainScene.setupLighting()
 
         // create deferred pipeline
@@ -133,7 +133,7 @@ class GltfDemo : DemoScene("glTF Models") {
 
         // load models
         models.map {
-            it to Assets.async {
+            it to mainScene.coroutineScope.async {
                 it.load(false)
                 it.load(true)
             }

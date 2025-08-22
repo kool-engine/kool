@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
@@ -64,13 +65,13 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         timer = TimeQuery(gl)
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         if (timer.isAvailable) {
             frameGpuTime = timer.getQueryResult()
         }
 
         timer.timedScope {
-            super.renderFrame(ctx)
+            super.renderFrame(frameData, ctx)
         }
         glfwSwapBuffers(glfwWindow.windowPtr)
     }

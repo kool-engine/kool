@@ -37,7 +37,7 @@ class OpticalDepthLutPass :
         }
 
         // this pass only needs to be rendered once, remove it immediately after first render
-        onAfterPass {
+        onAfterCollect {
             isEnabled = false
         }
     }

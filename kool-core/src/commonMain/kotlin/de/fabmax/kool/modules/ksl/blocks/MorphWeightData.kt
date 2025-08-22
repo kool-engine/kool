@@ -4,9 +4,9 @@ import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.KslDataBlock
 import de.fabmax.kool.modules.ksl.lang.KslProgram
+import de.fabmax.kool.pipeline.DrawCommand
 import de.fabmax.kool.pipeline.ShaderBase
 import de.fabmax.kool.pipeline.UniformBinding4f
-import de.fabmax.kool.pipeline.DrawCommand
 
 fun KslProgram.morphWeightData(): MorphWeightData {
     return (dataBlocks.find { it is MorphWeightData } as? MorphWeightData) ?: MorphWeightData(this)
@@ -32,7 +32,7 @@ class MorphWeightData(program: KslProgram) : KslDataBlock, KslShaderListener {
         uMorphWeightsB = shader.uniform4f("uMorphWeightsB")
     }
 
-    override fun onUpdate(cmd: DrawCommand) {
+    override fun onUpdateDrawData(cmd: DrawCommand) {
         cmd.mesh.morphWeights?.let { w ->
             cachedWeightsA.let { wA ->
                 if (w.size > 0) wA.x = w[0]

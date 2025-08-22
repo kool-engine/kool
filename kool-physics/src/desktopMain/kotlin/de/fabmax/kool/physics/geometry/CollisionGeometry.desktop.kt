@@ -25,8 +25,7 @@ actual fun TriangleMeshGeometry(geometry: IndexedVertexList, scale: Vec3f): Tria
 abstract class CollisionGeometryImpl : BaseReleasable(), CollisionGeometry {
     init { PhysicsImpl.checkIsLoaded() }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         holder.destroy()
     }
 }

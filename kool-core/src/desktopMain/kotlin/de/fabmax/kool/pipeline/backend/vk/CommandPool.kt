@@ -56,8 +56,7 @@ class CommandPool(val backendVk: RenderBackendVk, val queue: VkQueue) : BaseRele
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         device.destroyCommandPool(vkCommandPool)
         logD { "Destroyed command pool" }
     }

@@ -11,6 +11,7 @@ import de.fabmax.kool.math.toRad
 import de.fabmax.kool.modules.gizmo.GizmoFrame
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -176,7 +177,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
             .onClick {
                 if (!isExporting) {
                     isExporting = true
-                    launchOnMainThread {
+                    FrontendScope.launch {
                         editor.exportProject()
                         isExporting = false
                     }

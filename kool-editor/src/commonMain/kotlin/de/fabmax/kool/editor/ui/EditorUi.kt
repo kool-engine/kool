@@ -23,6 +23,7 @@ import de.fabmax.kool.scene.ColorMesh
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
 
 class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
 
@@ -32,7 +33,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
     val uiFont = mutableStateOf(MsdfFont.DEFAULT_FONT)
     val consoleFont = mutableStateOf(MsdfFont.DEFAULT_FONT)
 
-    val dock = Dock()
+    val dock = Dock(this)
     val titleBar = WindowTitleBar(editor)
     val overlay = UiOverlay(this)
 
@@ -70,13 +71,13 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
         }
     }
 
-    private val titleBarSurface = PanelSurface {
+    private val titleBarSurface = PanelSurface(this) {
         surface.colors = uiColors.use()
         surface.sizes = uiSizes.use()
         titleBar()
     }
 
-    val statusBar = PanelSurface {
+    val statusBar = PanelSurface(this) {
         surface.colors = uiColors.use()
         surface.sizes = uiSizes.use()
 
@@ -111,7 +112,7 @@ class EditorUi(val editor: KoolEditor) : Scene("EditorMenu") {
             }
         }
 
-        launchOnMainThread {
+        coroutineScope.launch {
             val uiFont = MsdfFont("assets/fonts/gidole/font-gidole-regular").getOrThrow()
             this@EditorUi.uiFont.set(uiFont)
 

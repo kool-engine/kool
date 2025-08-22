@@ -9,6 +9,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.releaseDelayed
 
 open class OffscreenPassCube(
     drawNode: Node,
@@ -55,8 +56,7 @@ open class OffscreenPassCube(
      * generate lookup-tables, etc.)
      */
     fun copyColor(): TextureCube {
-        val copy = FrameCopy(this, isCopyColor = true, isCopyDepth = false, isSingleShot = true)
-        frameCopies += copy
+        val copy = copyOutput(isCopyColor = true, isCopyDepth = false, isSingleShot = true)
         return copy.colorCopyCube
     }
 
@@ -70,9 +70,9 @@ open class OffscreenPassCube(
         impl.applySize(width, height)
     }
 
-    override fun release() {
-        super.release()
-        impl.release()
+    override fun doRelease() {
+        super.doRelease()
+        impl.releaseDelayed(1)
     }
 
     inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<TextureCube> {

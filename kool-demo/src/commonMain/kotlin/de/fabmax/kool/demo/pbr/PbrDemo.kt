@@ -17,7 +17,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchOnMainThread
+import kotlinx.coroutines.launch
 
 /**
  * @author fabmax
@@ -66,13 +66,13 @@ class PbrDemo : DemoScene("PBR Materials") {
             setZoom(20.0)
         }
 
-        launchOnMainThread {
+        coroutineScope.launch {
             val maps = loadHdri(selectedHdriIdx.value)
             skybox = Skybox.cube(maps.reflectionMap, 1f)
-            this += skybox
+            this@setupMainScene += skybox
 
             pbrContent.forEach {
-                addNode(it.createContent(this, maps, ctx))
+                addNode(it.createContent(this@setupMainScene, maps, ctx))
             }
             selectedContent.show()
         }
@@ -106,7 +106,7 @@ class PbrDemo : DemoScene("PBR Materials") {
                     .selectedIndex(selectedHdriIdx.use())
                     .onItemSelected {
                         selectedHdriIdx.set(it)
-                        launchOnMainThread { updateHdri(it) }
+                        mainScene.coroutineScope.launch { updateHdri(it) }
                     }
             }
         }

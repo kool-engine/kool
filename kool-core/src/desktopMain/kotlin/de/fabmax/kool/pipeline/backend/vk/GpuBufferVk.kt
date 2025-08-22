@@ -25,13 +25,9 @@ class GpuBufferVk(
         vkCmdCopyBuffer(commandBuffer, srcBuffer.handle, vkBuffer.handle, bufferCopy)
     }
 
-    override fun release() {
-        val wasReleased = isReleased
-        super.release()
-        if (!wasReleased) {
-            backend.memManager.freeBuffer(vkBuffer)
-            allocInfo.deleted()
-        }
+    override fun doRelease() {
+        backend.memManager.freeBuffer(vkBuffer)
+        allocInfo.deleted()
     }
 
     companion object {
@@ -81,8 +77,7 @@ class GrowingBufferVk(
 
     private fun makeBuffer(bufferInfo: MemoryInfo) = GpuBufferVk(backend, bufferInfo)
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         buffer.release()
     }
 }

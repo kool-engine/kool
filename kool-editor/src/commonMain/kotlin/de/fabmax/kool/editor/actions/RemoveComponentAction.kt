@@ -4,7 +4,8 @@ import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.GameEntityDataComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.util.gameEntity
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 
 class RemoveComponentAction(
     val entityId: EntityId,
@@ -25,7 +26,7 @@ class RemoveComponentAction(
 
     override fun undoAction() {
         val entity = gameEntity ?: return
-        launchOnMainThread {
+        FrontendScope.launch {
             val component = entity.createDataComponent(componentInfo)
             entity.addComponentLifecycleAware(component)
             refreshComponentViews()

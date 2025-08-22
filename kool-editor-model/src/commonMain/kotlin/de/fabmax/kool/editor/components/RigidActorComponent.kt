@@ -14,7 +14,8 @@ import de.fabmax.kool.scene.Model
 import de.fabmax.kool.scene.TrsTransformF
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 
 class RigidActorComponent(
     gameEntity: GameEntity,
@@ -56,7 +57,7 @@ class RigidActorComponent(
     }
 
     override fun onDataChanged(oldData: RigidActorComponentData, newData: RigidActorComponentData) {
-        launchOnMainThread {
+        FrontendScope.launch {
             updateRigidActor(newData, forceRecreate = oldData.materialId != newData.materialId)
         }
     }

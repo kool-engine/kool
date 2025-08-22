@@ -6,7 +6,7 @@ import de.fabmax.kool.util.*
  * Base class for regular (graphics) and compute pipelines. A pipeline includes the shader and additional attributes
  * like the corresponding data layout, etc.
  */
-abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLayouts) : BaseReleasable() {
+abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLayouts) : BaseReleasable(), DoubleBuffered {
 
     protected val pipelineHashBuilder = LongHashBuilder()
 
@@ -22,7 +22,8 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     private val defaultPipelineData: BindGroupData = pipelineDataLayout.createData()
     private val pipelineSwapData = mutableMapOf<Any?, BindGroupData>(null to defaultPipelineData)
 
-    var pipelineData = defaultPipelineData
+    internal var pipelineData = defaultPipelineData
+    var capturedPipelineData = defaultPipelineData
         private set
 
     var pipelineBackend: PipelineBackend? = null
@@ -37,12 +38,17 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
         pipelineData = pipelineSwapData.getOrPut(key) { pipelineData.copy() }
     }
 
-    override fun release() {
-        super.release()
-        if (pipelineBackend?.isReleased == false) {
+    override fun captureBuffer() {
+        pipelineData.captureBuffer()
+        capturedPipelineData = pipelineData
+    }
+
+    override fun doRelease() {
+        BackendScope.launchDelayed(1) {
             pipelineBackend?.release()
+            pipelineSwapData.values.forEach { it.release() }
+            pipelineBackend = null
         }
-        pipelineSwapData.values.forEach { it.release() }
     }
 
     inline fun <reified T: BindingLayout> findBindGroupItem(predicate: (T) -> Boolean): Pair<BindGroupLayout, T>? {
@@ -68,31 +74,33 @@ abstract class PipelineBase(val name: String, val bindGroupLayouts: BindGroupLay
     }
 }
 
-interface PipelineBackend : Releasable {
-    fun removeUser(user: Any)
+inline fun PipelineBase.swapPipelineDataCapturing(key: Any?, block: () -> Unit) {
+    swapPipelineData(key)
+    block()
+    captureBuffer()
 }
 
-class PipelineData(val scope: BindGroupScope) : BaseReleasable() {
-    private val bindGroupData = mutableMapOf<LongHash, UpdateAwareBindGroupData>()
+interface PipelineBackend : Releasable
 
-    fun getPipelineData(pipeline: PipelineBase): BindGroupData {
-        val layout = pipeline.bindGroupLayouts[scope]
-        val data = bindGroupData.getOrPut(layout.hash) { UpdateAwareBindGroupData(layout.createData()) }
-        return data.data
-    }
+class MultiPipelineBindGroupData(val scope: BindGroupScope) : BaseReleasable(), DoubleBuffered {
+    @PublishedApi
+    internal val bindGroupData = mutableMapOf<LongHash, UpdateAwareBindGroupData>()
 
-    fun getPipelineDataUpdating(pipeline: PipelineBase, binding: Int): BindGroupData? {
+    @PublishedApi
+    internal fun dataForPipeline(pipeline: PipelineBase): UpdateAwareBindGroupData {
         val layout = pipeline.bindGroupLayouts[scope]
-        val data = bindGroupData.getOrPut(layout.hash) { UpdateAwareBindGroupData(layout.createData()) }
-        return if (data.markBindingUpdate(binding)) data.data else null
-    }
-
-    fun setPipelineData(data: BindGroupData, pipeline: PipelineBase) {
-        val layout = pipeline.bindGroupLayouts[scope]
-        check(layout == data.layout) {
-            "Given BindGroupData does not match this pipeline's $scope data bind group layout"
+        return bindGroupData.getOrPut(layout.hash) {
+            UpdateAwareBindGroupData(layout.createData().also { it.captureBuffer() })
         }
-        bindGroupData[layout.hash] = UpdateAwareBindGroupData(layout.createData())
+    }
+
+    fun getPipelineData(pipeline: PipelineBase): BindGroupData = dataForPipeline(pipeline).data
+
+    inline fun updatePipelineData(pipeline: PipelineBase, binding: Int, block: (BindGroupData) -> Unit) {
+        val data = dataForPipeline(pipeline)
+        if (data.markBindingUpdate(binding)) {
+            block(data.data)
+        }
     }
 
     fun discardPipelineData(pipeline: PipelineBase) {
@@ -100,13 +108,19 @@ class PipelineData(val scope: BindGroupScope) : BaseReleasable() {
         bindGroupData.remove(layout.hash)?.data?.release()
     }
 
-    override fun release() {
-        super.release()
+    override fun captureBuffer() {
+        bindGroupData.values.forEach {
+            it.data.captureBuffer()
+        }
+    }
+
+    override fun doRelease() {
         bindGroupData.values.forEach { it.data.release() }
     }
 
-    private class UpdateAwareBindGroupData(val data: BindGroupData) {
-        val updateFrames = IntArray(data.bindings.size)
+    @PublishedApi
+    internal class UpdateAwareBindGroupData(val data: BindGroupData) {
+        val updateFrames = IntArray(data.size)
 
         fun markBindingUpdate(binding: Int): Boolean {
             val frame = Time.frameCount

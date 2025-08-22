@@ -16,8 +16,8 @@ class BloomPass(
     val inPlace: Boolean = KoolSystem.requireContext().backend.features.readWriteStorageTextures
 ) : ComputePass("Bloom Pass") {
 
-    private val idealWidth: Int get() = inputTexture.width / 2
-    private val idealHeight: Int get() = inputTexture.height / 2
+    private val idealWidth: Int get() = (inputTexture.width / 2).coerceAtLeast(1)
+    private val idealHeight: Int get() = (inputTexture.height / 2).coerceAtLeast(1)
     private var levels: Int = levelsForSize(idealWidth, idealHeight)
 
     var threshold = 1f
@@ -49,7 +49,7 @@ class BloomPass(
             downSampleTex.releaseWith(this)
         }
 
-        onBeforePass {
+        onUpdate {
             val requiredWidth = idealWidth
             val requiredHeight = idealHeight
             if (requiredWidth != width || requiredHeight != height) {
@@ -83,11 +83,12 @@ class BloomPass(
             val key = "$level"
 
             task.onBeforeDispatch {
-                downSampleShader.createdPipeline?.swapPipelineData(key)
-                sampleInput.set(input, inputSampler)
-                downSampled.set(downSampleTex, level)
-                uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.Companion.ZERO
-                uInputTexelSize = inputTexelSize
+                downSampleShader.createdPipeline?.swapPipelineDataCapturing(key) {
+                    sampleInput.set(input, inputSampler)
+                    downSampled.set(downSampleTex, level)
+                    uThreshold = if (level == 0) Vec4f(thresholdLuminanceFactors, threshold) else Vec4f.ZERO
+                    uInputTexelSize = inputTexelSize
+                }
             }
         }
     }
@@ -110,15 +111,16 @@ class BloomPass(
             val key = "$level"
 
             task.onBeforeDispatch {
-                upSampleShader.createdPipeline?.swapPipelineData(key)
-                sampleInput.set(input, inputSampler)
-                upSampled.set(bloomMap, level)
-                if (!inPlace) {
-                    downSampled.set(downSampleTex, level)
+                upSampleShader.createdPipeline?.swapPipelineDataCapturing(key) {
+                    sampleInput.set(input, inputSampler)
+                    upSampled.set(bloomMap, level)
+                    if (!inPlace) {
+                        downSampled.set(downSampleTex, level)
+                    }
+                    uInputTexelSize = inputTexelSize
+                    uRadius = radius
+                    uOutputScale = if (level == 0) strength / levels else 1f
                 }
-                uInputTexelSize = inputTexelSize
-                uRadius = radius
-                uOutputScale = if (level == 0) strength / levels else 1f
             }
         }
     }
@@ -206,7 +208,7 @@ class BloomPass(
                 val h = float3Var(sampleInput.sample(float2Value(u, v - ry), 0f.const).rgb)
                 val i = float3Var(sampleInput.sample(float2Value(u + rx, v - ry), 0f.const).rgb)
 
-                var filtered = float3Var(downSampled[texelCoord].rgb)
+                val filtered = float3Var(downSampled[texelCoord].rgb)
                 filtered += e * (4f / 16f).const
                 filtered += (b + d + f + h) * (2f / 16f).const
                 filtered += (a + c + g + i) * (1f / 16f).const

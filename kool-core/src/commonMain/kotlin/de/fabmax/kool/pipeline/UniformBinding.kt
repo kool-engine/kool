@@ -14,7 +14,10 @@ sealed class UniformBinding<T, C, M: StructMember>(
 
     @PublishedApi
     internal val uboData: BindGroupData.UniformBufferBindingData<*>?
-        get() = bindGroupData?.bindings?.getOrNull(bindingIndex) as BindGroupData.UniformBufferBindingData<*>?
+        get() {
+            if (bindingIndex < 0) return null
+            return bindGroupData?.uniformBufferBindingData(bindingIndex)
+        }
     private var memberIndex = -1
 
     fun get(): T {
@@ -69,7 +72,7 @@ sealed class UniformArrayBinding<T, C: T, M: StructArrayMember>(
     val arraySize: Int get() = cache.size
 
     private val uboData: BindGroupData.UniformBufferBindingData<*>?
-        get() = bindGroupData?.bindings?.get(bindingIndex) as BindGroupData.UniformBufferBindingData<*>?
+        get() = bindGroupData?.uniformBufferBindingData(bindingIndex)
     private var memberIndex = -1
     @Suppress("UNCHECKED_CAST")
     private val member: M?

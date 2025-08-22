@@ -57,10 +57,6 @@ class AxisHandle(
         coveredMesh.setupShader(DepthCompareOp.ALWAYS)
         hitMesh.setupGeometry(HandleType.SPHERE, innerDistance, length, 0.07f, 0.15f)
 
-        // hasChanged flag is usually cleared after mesh is drawn the first time, but hitMesh is never drawn
-        // -> clear flag manually to avoid hitTest kd-tree being regenerated every frame
-        hitMesh.geometry.hasChanged = false
-
         addNode(coveredMesh)
         addNode(mesh)
         addNode(hitMesh)

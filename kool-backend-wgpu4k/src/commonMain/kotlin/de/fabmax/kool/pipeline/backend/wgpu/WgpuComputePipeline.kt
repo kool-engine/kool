@@ -13,14 +13,6 @@ class WgpuComputePipeline(
 ): WgpuPipeline(computePipeline, backend) {
 
     private val gpuComputePipeline = createComputePipeline()
-    private val users = mutableSetOf<ComputePass.Task>()
-
-    override fun removeUser(user: Any) {
-        (user as? ComputePass.Task)?.let { users.remove(it) }
-        if (users.isEmpty()) {
-            release()
-        }
-    }
 
     private fun createComputePipeline(): GPUComputePipeline {
         return device.createComputePipeline(
@@ -34,10 +26,7 @@ class WgpuComputePipeline(
     }
 
     fun bind(task: ComputePass.Task, passEncoderState: ComputePassEncoderState): Boolean {
-        users += task
-        computePipeline.update(task.pass)
-
-        val pipelineData = computePipeline.pipelineData
+        val pipelineData = computePipeline.capturedPipelineData
         if (!pipelineData.checkBindings()) {
             return false
         }

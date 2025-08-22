@@ -1,12 +1,15 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.util.Time
+import kotlinx.coroutines.CoroutineScope
 import kotlin.reflect.KProperty
 
 interface UiScope {
     val surface: UiSurface
     val uiNode: UiNode
     val modifier: UiModifier
+
+    val coroutineScope: CoroutineScope get() = surface.parentScene.coroutineScope
 
     val colors: Colors get() = surface.colors
     val sizes: Sizes get() = surface.sizes

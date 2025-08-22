@@ -17,7 +17,7 @@ import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.Time
-import de.fabmax.kool.util.launchOnMainThread
+import kotlinx.coroutines.launch
 
 class HelloGltf : DemoScene("Hello glTF") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -44,7 +44,7 @@ class HelloGltf : DemoScene("Hello glTF") {
         }
 
         // Load a glTF 2.0 model
-        launchOnMainThread {
+        coroutineScope.launch {
             val materialCfg = GltfMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap

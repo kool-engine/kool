@@ -1,7 +1,9 @@
 package de.fabmax.kool.scene
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PassData
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.MutableVec3i
 import de.fabmax.kool.math.RayD
@@ -9,17 +11,20 @@ import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
-import kotlin.time.Duration.Companion.seconds
-
-/**
- * @author fabmax
- */
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 
 inline fun scene(name: String? = null, block: Scene.() -> Unit): Scene {
     return Scene(name).apply(block)
 }
 
 open class Scene(name: String? = null) : Node(name) {
+    private val job = Job(ApplicationScope.job)
+
+    /**
+     * This scene's [CoroutineScope]. Is automatically canceled when the scene is released.
+     */
+    val coroutineScope: CoroutineScope = CoroutineScope(job + KoolDispatchers.Frontend)
 
     val onRenderScene: BufferedList<(KoolContext) -> Unit> = BufferedList()
 
@@ -35,11 +40,10 @@ open class Scene(name: String? = null) : Node(name) {
     val extraPasses: BufferedList<GpuPass> = BufferedList()
     private val _sortedPasses = mutableListOf<GpuPass>(mainRenderPass)
     val sortedPasses: List<GpuPass> get() = _sortedPasses
+    private val passData = ResettableDataList { PassAndPassData() }
 
     val isEmpty: Boolean
         get() = children.isEmpty() && (extraPasses.isEmpty() && !extraPasses.hasStagedMutations)
-
-    var sceneRecordTime = 0.0.seconds
 
     fun addComputePass(pass: ComputePass) {
         extraPasses += pass
@@ -57,35 +61,47 @@ open class Scene(name: String? = null) : Node(name) {
         extraPasses -= pass
     }
 
-    open fun renderScene(ctx: KoolContext) {
+    fun collectScene(frameData: FrameData, ctx: KoolContext) {
         onRenderScene.update()
         for (i in onRenderScene.indices) {
             onRenderScene[i](ctx)
         }
 
-        // make sure mainRenderPass is updated first, so that scene info (e.g. camera) is updated
-        // before offscreen passes are updated
-        mainRenderPass.update(ctx)
-
-        if (extraPasses.update()) {
-            // offscreen / compute passes have changed, re-sort them to maintain correct dependency order
-            _sortedPasses.clear()
-            _sortedPasses.addAll(extraPasses)
-            if (_sortedPasses.distinct().size != _sortedPasses.size) {
-                logW { "Multiple occurrences of offscreen passes: $_sortedPasses" }
-            }
-            GpuPass.sortByDependencies(_sortedPasses)
-            // main render pass is always executed last
-            _sortedPasses.add(mainRenderPass)
+        if (sortedPasses.isEmpty() || extraPasses.update()) {
+            sortGpuPassesByDependencies()
         }
 
-        for (i in extraPasses.indices) {
-            val pass = extraPasses[i]
-            pass.parentScene = this
+        passData.reset()
+        for (i in sortedPasses.indices) {
+            val pass = sortedPasses[i]
             if (pass.isEnabled) {
-                pass.update(ctx)
+                val passAndData = passData.acquire(pass)
+                passAndData.latePassData = frameData.acquirePassData(pass)
             }
         }
+        if (passData.isNotEmpty()) {
+            // make sure mainRenderPass is updated first, so that scene info (camera, etc.) is updated
+            // before offscreen passes are updated
+            val (mainPass, mainPassData) = passData.last()
+            mainPass.collect(mainPassData, ctx)
+            for (i in 0 ..< passData.lastIndex) {
+                val (pass, data) = passData[i]
+                data.reset(pass)
+                pass.collect(data, ctx)
+            }
+        }
+    }
+
+    private fun sortGpuPassesByDependencies() {
+        _sortedPasses.clear()
+        _sortedPasses.addAll(extraPasses)
+        if (_sortedPasses.distinct().size != _sortedPasses.size) {
+            logW { "Multiple occurrences of offscreen passes: $_sortedPasses" }
+        }
+        GpuPass.sortByDependencies(_sortedPasses)
+        // main render pass is always executed last
+        _sortedPasses.add(mainRenderPass)
+        for (i in _sortedPasses.indices) { _sortedPasses[i].parentScene = this }
     }
 
     override fun update(updateEvent: RenderPass.UpdateEvent) {
@@ -99,15 +115,12 @@ open class Scene(name: String? = null) : Node(name) {
         return isVisible
     }
 
-    override fun release() {
-        // scenes shall not be released twice
-        checkIsNotReleased()
-        super.release()
-
+    override fun doRelease() {
+        super.doRelease()
+        job.cancel()
         mainRenderPass.release()
         extraPasses.updated().forEach { it.release() }
         extraPasses.clear()
-
         logD { "Released scene \"$name\"" }
     }
 
@@ -143,8 +156,8 @@ open class Scene(name: String? = null) : Node(name) {
         var viewport: Viewport by defaultView::viewport
         var isFillFrame: Boolean by defaultView::isFillFramebuffer
 
-        private val _size = MutableVec3i()
-        override val size: Vec3i get() = _size
+        private val _dimensions = MutableVec3i()
+        override val dimensions: Vec3i get() = _dimensions
 
         init {
             parentScene = this@Scene
@@ -152,9 +165,9 @@ open class Scene(name: String? = null) : Node(name) {
 
             val ctx = KoolSystem.getContextOrNull()
             if (ctx != null) {
-                _size.set(ctx.windowWidth, ctx.windowHeight, 1)
+                _dimensions.set(ctx.windowWidth, ctx.windowHeight, 1)
             } else {
-                _size.set(Vec3i.ONES)
+                _dimensions.set(Vec3i.ONES)
             }
         }
 
@@ -171,12 +184,30 @@ open class Scene(name: String? = null) : Node(name) {
             _views -= view
         }
 
-        override fun update(ctx: KoolContext) {
-            _size.set(ctx.windowWidth, ctx.windowHeight, 1)
-            if (isFillFrame && !viewport.equals(0, 0, size.x, size.y)) {
-                viewport = Viewport(0, 0, size.x, size.y)
+        override fun update(passData: PassData, ctx: KoolContext) {
+            _dimensions.set(ctx.windowWidth, ctx.windowHeight, 1)
+            if (isFillFrame && !viewport.equals(0, 0, dimensions.x, dimensions.y)) {
+                viewport = Viewport(0, 0, dimensions.x, dimensions.y)
             }
-            super.update(ctx)
+            super.update(passData, ctx)
+        }
+
+        override fun doRelease() { }
+    }
+
+    private class PassAndPassData() : ResettableData<GpuPass> {
+        private var latePass: GpuPass? = null
+        var latePassData: PassData? = null
+
+        val pass: GpuPass get() = latePass!!
+        val passData: PassData get() = latePassData!!
+
+        operator fun component1(): GpuPass = latePass!!
+        operator fun component2(): PassData = latePassData!!
+
+        override fun reset(init: GpuPass) {
+            latePass = init
+            latePassData = null
         }
     }
 }

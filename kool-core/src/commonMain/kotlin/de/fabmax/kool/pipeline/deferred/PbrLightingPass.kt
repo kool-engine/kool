@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.deferred
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.AttachmentConfig
 import de.fabmax.kool.pipeline.OffscreenPass2d
 import de.fabmax.kool.pipeline.TexFormat
@@ -8,7 +9,7 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
     OffscreenPass2d(
         drawNode = pipeline.lightingPassContent,
         attachmentConfig = AttachmentConfig.singleColorDefaultDepth(TexFormat.RGBA_F16),
-        initialSize = materialPass.size.xy,
+        initialSize = materialPass.dimensions.xy,
         name = "pbr-lighting-pass-$suffix"
     )
 {
@@ -22,12 +23,13 @@ class PbrLightingPass(pipeline: DeferredPipeline, suffix: String, val materialPa
 
         dependsOn(materialPass)
 
-        scene.mainRenderPass.onAfterCollectDrawCommands += { ev ->
+        scene.mainRenderPass.onAfterCollectDrawCommands += { viewData ->
             if (isEnabled) {
+                val ctx = KoolSystem.requireContext()
                 for (i in materialPass.alphaMeshes.indices) {
                     val mesh = materialPass.alphaMeshes[i]
-                    mesh.getOrCreatePipeline(ev.ctx)?.let { pipeline ->
-                        scene.mainRenderPass.defaultView.drawQueue.addMesh(mesh, pipeline)
+                    mesh.getOrCreatePipeline(ctx)?.let { pipeline ->
+                        viewData.drawQueue.addMesh(mesh, pipeline)
                     }
                 }
             }

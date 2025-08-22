@@ -6,9 +6,9 @@ class SyncedMatrixFd {
     @PublishedApi
     internal val _matF = MutableMat4f()
     val matF: Mat4f get() {
-        if (modCountF != modCount) {
+        if (modCountF.count != modCount.count) {
             _matF.set(_matD)
-            modCountF = modCount
+            modCountF.reset(modCount)
         }
         return _matF
     }
@@ -16,9 +16,9 @@ class SyncedMatrixFd {
     @PublishedApi
     internal val _matD = MutableMat4d()
     val matD: Mat4d get() {
-        if (modCountD != modCount) {
+        if (modCountD.count != modCount.count) {
             _matD.set(_matF)
-            modCountD = modCount
+            modCountD.reset(modCount)
         }
         return _matD
     }
@@ -29,23 +29,22 @@ class SyncedMatrixFd {
     private val _invMatD = LazyMat4d { matD.invert(it) }
     val invD: Mat4d get() = _invMatD.get()
 
-    private var modCountF = 0
-    private var modCountD = 0
-    var modCount = 0
-        private set
+    private val modCountF = ModCounter()
+    private val modCountD = ModCounter()
+    val modCount = ModCounter()
 
     @PublishedApi
     internal fun markUpdatedF() {
-        modCount++
-        modCountF = modCount
+        modCount.increment()
+        modCountF.reset(modCount.count)
         _invMatF.isDirty = true
         _invMatD.isDirty = true
     }
 
     @PublishedApi
     internal fun markUpdatedD() {
-        modCount++
-        modCountD = modCount
+        modCount.increment()
+        modCountD.reset(modCount)
         _invMatF.isDirty = true
         _invMatD.isDirty = true
     }

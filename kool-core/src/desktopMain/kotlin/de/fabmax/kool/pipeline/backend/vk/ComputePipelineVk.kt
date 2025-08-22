@@ -11,26 +11,15 @@ class ComputePipelineVk(
 ) : PipelineVk(computePipeline, backend) {
 
     private val vkComputePipeline: VkComputePipeline = createComputePipelineVk()
-    private val users = mutableSetOf<ComputePass.Task>()
-
-    override fun removeUser(user: Any) {
-        (user as? ComputePass.Task)?.let { users.remove(it) }
-        if (users.isEmpty()) {
-            release()
-        }
-    }
 
     fun bind(task: ComputePass.Task, passEncoderState: PassEncoderState): Boolean {
-        users += task
-        computePipeline.update(task.pass)
-
-        val pipelineData = computePipeline.pipelineData
+        val pipelineData = computePipeline.capturedPipelineData
         if (!pipelineData.checkBindings()) {
             return false
         }
 
         passEncoderState.setComputePipeline(vkComputePipeline)
-        val computeData = pipelineData.getOrCreateVkData(passEncoderState.commandBuffer)
+        val computeData = pipelineData.getOrCreateVkData()
         computeData.updateBuffers(passEncoderState)
         computeData.prepareBind(passEncoderState)
         passEncoderState.setBindGroup(computeData, pipelineLayout, BindPoint.Compute, groupIndex = 0)
@@ -52,8 +41,8 @@ class ComputePipelineVk(
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         backend.pipelineManager.removeComputePipeline(this)
         backend.device.destroyComputePipeline(vkComputePipeline)
     }

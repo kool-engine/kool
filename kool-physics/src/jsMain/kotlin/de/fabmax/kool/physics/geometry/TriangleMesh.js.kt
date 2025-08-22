@@ -58,8 +58,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList) : TriangleMesh(
     /**
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         pxTriangleMesh.release()
     }
 }
@@ -89,8 +88,8 @@ class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         if (triangleMesh.releaseWithGeometry) {
             triangleMesh.pxTriangleMesh.release()
         }

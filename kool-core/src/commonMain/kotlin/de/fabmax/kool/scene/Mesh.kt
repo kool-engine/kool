@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.math.RayF
 import de.fabmax.kool.math.RayTest
 import de.fabmax.kool.math.spatial.BoundingBoxF
@@ -10,7 +11,6 @@ import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.PrimitiveType
-import de.fabmax.kool.util.Time
 
 fun Node.addMesh(
     attributes: List<Attribute>,
@@ -80,7 +80,7 @@ open class Mesh(
     val morphWeights: FloatArray? = null,
     val skin: Skin? = null,
     name: String = geometry.name
-) : Node(name) {
+) : Node(name), DoubleBuffered {
 
     constructor(attributes: List<Attribute>, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
             this(IndexedVertexList(attributes), instances = instances, name = name)
@@ -89,9 +89,13 @@ open class Mesh(
 
     var isOpaque = true
 
-    val meshPipelineData = PipelineData(BindGroupScope.MESH)
+    val meshPipelineData = MultiPipelineBindGroupData(BindGroupScope.MESH)
 
     private var pipeline: DrawPipeline? = null
+
+    val drawGeometry = IndexedVertexList(geometry.vertexAttributes, geometry.primitiveType)
+    val drawInstances = instances?.let { MeshInstanceList(it.instanceAttributes) }
+    private var geometryUpdateModCount = -1
 
     var shader: DrawShader? = null
         set(value) {
@@ -141,8 +145,6 @@ open class Mesh(
         }
 
     var rayTest = MeshRayTest.boundsTest()
-
-    private var lastGeomUpdateFrame = -1
 
     init {
         // frustum check is disabled by default for instanced meshes
@@ -194,21 +196,20 @@ open class Mesh(
     /**
      * Deletes all buffers associated with this mesh.
      */
-    override fun release() {
-        // fixme: same check as for Node
-        if (!isReleased) {
-            super.release()
-            geometry.release()
-            instances?.release()
-            meshPipelineData.release()
-            shadowGeometry.forEach { it.release() }
-            pipeline?.removeUser(this)
-            pipeline = null
-        }
+    override fun doRelease() {
+        super.doRelease()
+        geometry.release()
+        drawGeometry.release()
+        instances?.release()
+        drawInstances?.release()
+        meshPipelineData.release()
+        shadowGeometry.forEach { it.release() }
+        pipeline?.removeUser(this)
+        pipeline = null
     }
 
-    override fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
-        super.collectDrawCommands(updateEvent)
+    override fun collectDrawCommands(viewData: ViewData, updateEvent: RenderPass.UpdateEvent) {
+        super.collectDrawCommands(viewData, updateEvent)
 
         if (!updateEvent.drawFilter(this) || !isRendered) {
             // mesh is not visible (either hidden or outside frustum)
@@ -222,12 +223,8 @@ open class Mesh(
         }
 
         // update bounds and ray test if geometry has changed
-        if (geometry.hasChanged && !geometry.isBatchUpdate && lastGeomUpdateFrame < Time.frameCount) {
-            // don't clear the hasChanged flag yet, this is done by rendering backend after vertex buffers are updated
-            // however, we store the frame index here to avoid doing stuff multiple times if there are multiple
-            // render-passes (e.g. shadow map + normal render)
-            lastGeomUpdateFrame = Time.frameCount
-
+        if (geometry.modCount != geometryUpdateModCount) {
+            geometryUpdateModCount = geometry.modCount
             if (geometry.isRebuildBoundsOnSync) {
                 geometry.rebuildBounds()
             }
@@ -235,8 +232,18 @@ open class Mesh(
         }
 
         getOrCreatePipeline(updateEvent.ctx)?.let { pipeline ->
-            updateEvent.view.drawQueue.addMesh(this, pipeline)
+            viewData.drawQueue.addMesh(this, pipeline)
         }
+    }
+
+    override fun captureBuffer() {
+        if (drawGeometry.modCount != geometry.modCount) {
+            drawGeometry.set(geometry)
+        }
+        if (instances != null && instances.modCount != drawInstances!!.modCount) {
+            drawInstances.set(instances)
+        }
+        meshPipelineData.captureBuffer()
     }
 }
 

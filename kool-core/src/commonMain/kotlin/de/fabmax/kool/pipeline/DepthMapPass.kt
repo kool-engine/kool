@@ -1,12 +1,14 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.NodeId
 import de.fabmax.kool.util.UniqueId
+import de.fabmax.kool.util.releaseDelayed
 
 
 open class DepthMapPass(
@@ -26,17 +28,17 @@ open class DepthMapPass(
     init {
         mirrorIfInvertedClipY()
         depthMode = DepthMode.Legacy
-        onAfterCollectDrawCommands += { ev ->
+        onAfterCollectDrawCommands += { viewData ->
             // replace regular object shaders by cheaper shadow versions
-            val q = ev.view.drawQueue
-            q.forEach {
-                setupDrawCommand(it, ev)
+            val ctx = KoolSystem.requireContext()
+            viewData.drawQueue.forEach {
+                setupDrawCommand(it, ctx)
             }
         }
     }
 
-    protected open fun setupDrawCommand(cmd: DrawCommand, updateEvent: UpdateEvent) {
-        val pipeline = getDepthPipeline(cmd.mesh, updateEvent.ctx)
+    protected open fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
+        val pipeline = getDepthPipeline(cmd.mesh, ctx)
         if (pipeline == null) {
             cmd.isActive = false
         } else {
@@ -71,13 +73,13 @@ open class DepthMapPass(
         return this.cullMethod ?: mesh.getOrCreatePipeline(ctx)?.cullMethod ?: CullMethod.CULL_BACK_FACES
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         shadowPipelines.values
             .filterNotNull()
             .distinct()
             .filter { !it.isReleased }
-            .forEach { it.release() }
+            .forEach { it.releaseDelayed(1) }
     }
 
     protected data class DepthShaderKey(

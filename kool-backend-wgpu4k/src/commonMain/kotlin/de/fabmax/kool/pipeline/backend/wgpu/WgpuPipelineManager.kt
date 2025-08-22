@@ -12,9 +12,7 @@ class WgpuPipelineManager(val backend: RenderBackendWgpu4k) {
     private val computeShaderModules = mutableMapOf<String, UsedShaderModule>()
 
     suspend fun prepareDrawPipeline(cmd: DrawCommand) {
-        val wgpuPipeline = cmd.pipeline.getWgpuPipeline()
-        cmd.pipeline.update(cmd)
-        wgpuPipeline.updateGeometry(cmd)
+        cmd.pipeline.getWgpuPipeline().updateGeometry(cmd)
     }
 
     suspend fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
@@ -22,9 +20,7 @@ class WgpuPipelineManager(val backend: RenderBackendWgpu4k) {
     }
 
     suspend fun bindComputePipeline(task: ComputePass.Task, passEncoderState: ComputePassEncoderState): Boolean {
-        val gpuPipeline = task.pipeline.getWgpuPipeline()
-        task.pipeline.update(task.pass)
-        return gpuPipeline.bind(task, passEncoderState)
+        return task.pipeline.getWgpuPipeline().bind(task, passEncoderState)
     }
 
     private suspend fun DrawPipeline.getWgpuPipeline(): WgpuDrawPipeline {

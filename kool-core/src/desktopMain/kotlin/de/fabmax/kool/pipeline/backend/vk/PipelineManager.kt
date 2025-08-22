@@ -17,9 +17,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     fun prepareDrawPipeline(cmd: DrawCommand, passEncoderState: PassEncoderState) {
-        val vkPipeline = cmd.pipeline.getVkPipeline()
-        cmd.pipeline.update(cmd)
-        vkPipeline.updateGeometry(cmd, passEncoderState)
+        cmd.pipeline.getVkPipeline().updateGeometry(cmd, passEncoderState)
     }
 
     fun bindDrawPipeline(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
@@ -27,9 +25,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
     }
 
     fun bindComputePipeline(task: ComputePass.Task, passEncoderState: PassEncoderState): Boolean {
-        val gpuPipeline = task.pipeline.getVkPipeline()
-        task.pipeline.update(task.pass)
-        return gpuPipeline.bind(task, passEncoderState)
+        return task.pipeline.getVkPipeline().bind(task, passEncoderState)
     }
 
     private fun DrawPipeline.getVkPipeline(): DrawPipelineVk {
@@ -126,8 +122,7 @@ class PipelineManager(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         drawPipelines.toList().forEach { it.release() }
         computePipelines.toList().forEach { it.release() }
     }

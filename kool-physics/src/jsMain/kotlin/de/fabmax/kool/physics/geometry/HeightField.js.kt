@@ -66,8 +66,7 @@ class HeightFieldImpl(
     /**
      * Only use this if [releaseWithGeometry] is false. Releases the underlying PhysX mesh.
      */
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         pxHeightField.release()
     }
 }

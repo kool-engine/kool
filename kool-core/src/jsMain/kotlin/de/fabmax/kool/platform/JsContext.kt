@@ -5,10 +5,12 @@ import de.fabmax.kool.input.PlatformInputJs
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
-import de.fabmax.kool.util.RenderLoopCoroutineDispatcher
+import de.fabmax.kool.util.ApplicationScope
+import de.fabmax.kool.util.KoolDispatchers
 import de.fabmax.kool.util.logE
 import kotlinx.browser.document
 import kotlinx.browser.window
+import kotlinx.coroutines.launch
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
@@ -147,9 +149,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         KoolSystem.onContextCreated(this)
     }
 
-    fun renderFrame(time: Double) {
-        RenderLoopCoroutineDispatcher.executeDispatchedTasks()
-
+    private suspend fun renderFrame(time: Double) {
         // determine delta time
         val dt = (time - animationMillis) / 1000.0
         animationMillis = time
@@ -176,11 +176,11 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         }
 
         // render frame
-        render(dt)
-        backend.renderFrame(this)
-
-        // request next frame
-        window.requestAnimationFrame { t -> renderFrame(t) }
+        val frameData = render(dt)
+        frameData.syncData()
+        KoolDispatchers.Backend.executeDispatchedTasks()
+        backend.renderFrame(frameData, this)
+        requestAnimationFrame()
     }
 
     override fun openUrl(url: String, sameWindow: Boolean) {
@@ -192,7 +192,15 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
     }
 
     override fun run() {
-        window.requestAnimationFrame { t -> renderFrame(t) }
+        requestAnimationFrame()
+    }
+
+    private fun requestAnimationFrame() {
+        window.requestAnimationFrame { t ->
+            ApplicationScope.launch {
+                renderFrame(t)
+            }
+        }
     }
 
     override fun getSysInfos(): List<String> {

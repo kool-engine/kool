@@ -76,7 +76,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
             uniformsOk = uniformsOk && viewGroup.bindUniforms(uniformBindCtx) != false
         }
 
-        val pipelineData = pipeline.pipelineData
+        val pipelineData = pipeline.capturedPipelineData
         val pipelineGroup = (pipelineData.gpuData as MappedBindGroup?) ?: mapBindGroup(pipelineData, pass).also { pipelineData.gpuData = it }
         uniformsOk = uniformsOk && pipelineGroup.bindUniforms(uniformBindCtx) != false
 
@@ -87,11 +87,8 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         return uniformsOk
     }
 
-    override fun release() {
-        super.release()
-        if (!pipeline.isReleased) {
-            pipeline.release()
-        }
+    override fun doRelease() {
+        pipeline.release()
         pipelineInfo.deleted()
     }
 
@@ -134,7 +131,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
         private val mappings = mutableListOf<MappedUniform>()
 
         init {
-            bindGroupData.bindings.forEach { binding ->
+            bindGroupData.bufferedBindings.forEach { binding ->
                 when (binding) {
                     is BindGroupData.UniformBufferBindingData<*> -> mapUbo(binding)
                     is BindGroupData.StorageBufferBindingData -> mapStorageBuffer(binding)
@@ -237,5 +234,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                 "Storage textures require OpenGL 4.2 or higher"
             }
         }
+
+        override fun doRelease() { }
     }
 }

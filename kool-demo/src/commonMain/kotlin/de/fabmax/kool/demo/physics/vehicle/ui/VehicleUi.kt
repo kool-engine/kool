@@ -3,11 +3,12 @@ package de.fabmax.kool.demo.physics.vehicle.ui
 import de.fabmax.kool.demo.Settings
 import de.fabmax.kool.demo.physics.vehicle.DemoVehicle
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 
-class VehicleUi(val vehicle: DemoVehicle) {
+class VehicleUi(mainScene: Scene, val vehicle: DemoVehicle) {
 
     var onToggleSound: (Boolean) -> Unit = { }
 
@@ -19,7 +20,7 @@ class VehicleUi(val vehicle: DemoVehicle) {
         background = Color("00000070")
     )
 
-    val uiSurface = UiSurface(colors = menuColors).apply {
+    val uiSurface = UiSurface(mainScene, colors = menuColors).apply {
         content = {
             Box {
                 modifier

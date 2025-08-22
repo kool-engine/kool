@@ -1,6 +1,7 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.pipeline.RenderPass
@@ -208,34 +209,29 @@ open class Node(name: String? = null) : BaseReleasable() {
      * When this message is called, implementations can, but don't have to, append a DrawCommand to the provided
      * DrawQueue.
      */
-    open fun collectDrawCommands(updateEvent: RenderPass.UpdateEvent) {
+    open fun collectDrawCommands(viewData: ViewData, updateEvent: RenderPass.UpdateEvent) {
         if (!updateEvent.drawFilter(this)) return
 
         isRendered = checkIsVisible(updateEvent.camera, updateEvent.ctx)
         if (!isRendered) return
 
         // determine this Node's drawOrderId
-        val orderId = if (drawGroupId == 0) updateEvent.view.drawQueue.drawGroupId else drawGroupId
+        val orderId = if (drawGroupId == 0) viewData.drawQueue.drawGroupId else drawGroupId
 
         for (i in mutChildren.indices) {
             // (re-)set this Node's drawOrderId for each child, in case it was changed by previous child
-            updateEvent.view.drawQueue.drawGroupId = orderId
-            mutChildren[i].collectDrawCommands(updateEvent)
+            viewData.drawQueue.drawGroupId = orderId
+            mutChildren[i].collectDrawCommands(viewData, updateEvent)
         }
         // restore this Node's drawOrderId for subclass implementation (mesh)
-        updateEvent.view.drawQueue.drawGroupId = orderId
+        viewData.drawQueue.drawGroupId = orderId
     }
 
     /**
      * Frees all resources occupied by this Node.
      */
-    override fun release() {
-        // fixme: Ideally, nodes should only be released once. However, currently, multi-release still happens
-        //  a lot, so check for it here
-        if (!isReleased) {
-            children.forEach { it.release() }
-            super.release()
-        }
+    override fun doRelease() {
+        children.forEach { it.release() }
     }
 
     /**
@@ -377,7 +373,7 @@ open class Node(name: String? = null) : BaseReleasable() {
     }
 
     inline fun <reified T> findParentOfType(): T? {
-        var p = parent
+        var p: Node? = this
         while (p != null && p !is T) {
             p = p.parent
         }

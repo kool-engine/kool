@@ -17,7 +17,7 @@ class ComputePassGl(
     private val timeQuery: TimeQuery by lazy { TimeQuery(gl).also { it.releaseWith(this) } }
 
     fun dispatch() {
-        val q = if (parent.isProfileTimes) timeQuery else null
+        val q = if (parent.isProfileGpu) timeQuery else null
         q?.let {
             if (it.isAvailable) {
                 parent.tGpu = it.getQueryResult()
@@ -47,4 +47,6 @@ class ComputePassGl(
 
         q?.end()
     }
+
+    override fun doRelease() { }
 }

@@ -4,6 +4,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -30,9 +31,9 @@ fun KoolApplication(config: KoolConfigJvm = KoolConfigJvm(), appBlock: suspend K
     }
 }
 
-suspend fun KoolApplication(ctx: Lwjgl3Context, appBlock: suspend KoolApplication.() -> Unit) {
+fun KoolApplication(ctx: Lwjgl3Context, appBlock: suspend KoolApplication.() -> Unit) {
     val koolApp = KoolApplication(ctx)
-    launchOnMainThread {
+    FrontendScope.launch {
         koolApp.appBlock()
     }
     ctx.run()
@@ -86,8 +87,8 @@ private object DesktopLogPrinter : LogPrinter {
     var prevMsg: String? = null
 
     override fun print(lvl: Log.Level, tag: String?, message: String) {
-        val timestamp = coloredText("%8.3f s".format((System.currentTimeMillis() - startTime) / 1000.0), MdColor.BROWN tone 300)
-        val frameFmt = if (Time.frameCount > 999) "…%03d".format(Time.frameCount % 1000) else "%4d".format(Time.frameCount)
+        val timestamp = coloredText("%8.3f s".format(Locale.ENGLISH, (System.currentTimeMillis() - startTime) / 1000.0), MdColor.BROWN tone 300)
+        val frameFmt = if (Time.frameCount > 999) "…%03d".format(Locale.ENGLISH, Time.frameCount % 1000) else "%4d".format(Time.frameCount)
         val frame = coloredText("f:$frameFmt", MdColor.PURPLE tone 300)
 
         val style = styles[lvl.level]

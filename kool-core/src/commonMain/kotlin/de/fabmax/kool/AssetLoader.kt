@@ -3,10 +3,7 @@ package de.fabmax.kool
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.audio.AudioClip
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -27,7 +24,7 @@ abstract class AssetLoader {
         }
 
     private val loadController by lazy {
-        Assets.launch {
+        Assets.coroutineScope.launch {
             @Suppress("UNUSED_VARIABLE")
             val workers = List(NUM_LOAD_WORKERS) { loadWorker(assetRefChannel, loadedAssetChannel) }
             val requested = mutableMapOf<AssetRef, MutableList<AwaitedAsset>>()
@@ -54,7 +51,7 @@ abstract class AssetLoader {
     }
 
     private fun loadWorker(assetRefs: ReceiveChannel<AssetRef>, loadedAssets: SendChannel<LoadedAsset<*>>) =
-        Assets.launch {
+        Assets.coroutineScope.launch {
             for (ref in assetRefs) {
                 loadedAssets.send(loadAsset(ref))
             }
@@ -214,7 +211,8 @@ abstract class AssetLoader {
             }
     }
 
-    private class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset<*>> = CompletableDeferred(Assets.job))
+    private class AwaitedAsset(val ref: AssetRef, val awaiting: CompletableDeferred<LoadedAsset<*>> =
+        CompletableDeferred(ApplicationScope.job))
 
     companion object {
         private const val NUM_LOAD_WORKERS = 8

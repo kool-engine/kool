@@ -1,9 +1,7 @@
 package de.fabmax.kool.pipeline.backend.gl
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.NodeId
 import de.fabmax.kool.scene.geometry.PrimitiveType
 
 class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend: RenderBackendGl) :
@@ -31,8 +29,6 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     private val floatAttrBinder: AttributeBinder?
     private val intAttrBinder: AttributeBinder?
     private val instanceAttrBinder: AttributeBinder?
-
-    private val users = mutableSetOf<NodeId>()
 
     private var drawInfo = DrawInfo(pipeline.vertexLayout.primitiveType.glElemType, gl.UNSIGNED_INT, 0, false)
 
@@ -101,11 +97,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     }
 
     fun bindMesh(cmd: DrawCommand): DrawInfo {
-        users.add(cmd.mesh.id)
         drawInfo.numIndices = 0
-
-        // update uniform values (camera + transform matrices, etc.)
-        pipeline.update(cmd)
 
         // bind uniform data
         val rp = cmd.queue.view.renderPass
@@ -132,19 +124,10 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         return drawInfo
     }
 
-    override fun removeUser(user: Any) {
-        (user as? Mesh)?.let { users.remove(it.id) }
-        if (users.isEmpty()) {
-            release()
-        }
-    }
-
-    override fun release() {
-        if (!isReleased) {
-            backend.shaderMgr.removeDrawShader(this)
-            vao?.let { gl.deleteVertexArray(it) }
-            super.release()
-        }
+    override fun doRelease() {
+        super.doRelease()
+        backend.shaderMgr.removeDrawShader(this)
+        vao?.let { gl.deleteVertexArray(it) }
     }
 
     private fun getOrCreateGpuGeometry(cmd: DrawCommand): GpuGeometryGl {

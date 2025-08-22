@@ -2,6 +2,8 @@ package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.PassData
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.scene.Camera
@@ -22,29 +24,31 @@ abstract class RenderPass(
     val hasColor: Boolean get() = colorAttachments.isNotEmpty()
     val hasDepth: Boolean get() = depthAttachment != null
 
-    abstract val size: Vec3i
-    val width: Int get() = size.x
-    val height: Int get() = size.y
-    val layers: Int get() = size.z
+    abstract val dimensions: Vec3i
+    val width: Int get() = dimensions.x
+    val height: Int get() = dimensions.y
+    val layers: Int get() = dimensions.z
 
     abstract val views: List<View>
 
-    val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(size)
-    val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(size)
+    val numRenderMipLevels: Int get() = mipMode.getRenderMipLevels(dimensions)
+    val numTextureMipLevels: Int get() = mipMode.getTextureMipLevels(dimensions)
 
     /**
      * Frame copies to perform after the entire render pass is done. The draw group ID of frame copies is ignored.
      * In order to perform draw group ID aware copies, use [View.frameCopies].
      */
-    val frameCopies = mutableListOf<FrameCopy>()
+    val frameCopies: List<FrameCopy> get() = _frameCopies
+    private val _frameCopies = mutableListOf<FrameCopy>()
+    private var hasSingleShotCopies = false
 
     var lighting: Lighting? = null
 
     var isDoublePrecision = false
     var depthMode = DepthMode.Reversed
 
-    val onBeforeCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
-    val onAfterCollectDrawCommands = BufferedList<((UpdateEvent) -> Unit)>()
+    val onBeforeCollectDrawCommands = BufferedList<((ViewData) -> Unit)>()
+    val onAfterCollectDrawCommands = BufferedList<((ViewData) -> Unit)>()
     val onSetupMipLevel = BufferedList<((Int) -> Unit)>()
 
     var isMirrorY = false
@@ -53,26 +57,31 @@ abstract class RenderPass(
         isMirrorY = KoolSystem.requireContext().backend.isInvertedNdcY
     }
 
-    override fun update(ctx: KoolContext) {
-        val t = if (isProfileTimes) Time.precisionTime else 0.0
-        super.update(ctx)
+    override fun update(passData: PassData, ctx: KoolContext) {
+        val t = Time.precisionTime
+        super.update(passData, ctx)
+        check(passData.viewData.isEmpty())
         for (i in views.indices) {
-            views[i].update(ctx)
+            views[i].update(passData, ctx)
         }
-        tUpdate = if (isProfileTimes) (Time.precisionTime - t).seconds else 0.0.seconds
+        if (hasSingleShotCopies) {
+            _frameCopies.removeAll { it.isSingleShot }
+            hasSingleShotCopies = false
+        }
+        tUpdate = (Time.precisionTime - t).seconds
     }
 
-    protected open fun beforeCollectDrawCommands(updateEvent: UpdateEvent) {
+    protected open fun beforeCollectDrawCommands(viewData: ViewData) {
         onBeforeCollectDrawCommands.update()
         for (i in onBeforeCollectDrawCommands.indices) {
-            onBeforeCollectDrawCommands[i](updateEvent)
+            onBeforeCollectDrawCommands[i](viewData)
         }
     }
 
-    protected open fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
+    protected open fun afterCollectDrawCommands(viewData: ViewData) {
         onAfterCollectDrawCommands.update()
         for (i in onAfterCollectDrawCommands.indices) {
-            onAfterCollectDrawCommands[i](updateEvent)
+            onAfterCollectDrawCommands[i](viewData)
         }
     }
 
@@ -95,15 +104,29 @@ abstract class RenderPass(
         }
     }
 
+    /**
+     * Adds an item to this renderpass's [frameCopies].
+     */
+    fun copyOutput(
+        isCopyColor: Boolean,
+        isCopyDepth: Boolean,
+        isSingleShot: Boolean = false
+    ): FrameCopy {
+        val copy = FrameCopy(this, isCopyColor, isCopyDepth, isSingleShot = isSingleShot)
+        _frameCopies += copy
+        hasSingleShotCopies = hasSingleShotCopies || isSingleShot
+        return copy
+    }
+
     sealed class MipMode(val mipMapping: MipMapping) {
         data object Single : MipMode(MipMapping.Off) {
-            override fun getTextureMipLevels(size: Vec3i) = 1
-            override fun getRenderMipLevels(size: Vec3i) = 1
+            override fun getTextureMipLevels(dimensions: Vec3i) = 1
+            override fun getRenderMipLevels(dimensions: Vec3i) = 1
         }
 
         data object Generate : MipMode(MipMapping.Full) {
-            override fun getTextureMipLevels(size: Vec3i) = numMipLevels(size.x, size.y)
-            override fun getRenderMipLevels(size: Vec3i) = 1
+            override fun getTextureMipLevels(dimensions: Vec3i) = numMipLevels(dimensions.x, dimensions.y)
+            override fun getRenderMipLevels(dimensions: Vec3i) = 1
         }
 
         data class Render(
@@ -111,12 +134,12 @@ abstract class RenderPass(
             val renderOrder: MipMapRenderOrder = MipMapRenderOrder.HigherResolutionFirst
         ) : MipMode(MipMapping.Limited(numMipLevels)) {
             init { require(numMipLevels >= 0) }
-            override fun getTextureMipLevels(size: Vec3i) = if (numMipLevels == 0) numMipLevels(size.x, size.y) else numMipLevels
-            override fun getRenderMipLevels(size: Vec3i) = getTextureMipLevels(size)
+            override fun getTextureMipLevels(dimensions: Vec3i) = if (numMipLevels == 0) numMipLevels(dimensions.x, dimensions.y) else numMipLevels
+            override fun getRenderMipLevels(dimensions: Vec3i) = getTextureMipLevels(dimensions)
         }
 
-        abstract fun getTextureMipLevels(size: Vec3i): Int
-        abstract fun getRenderMipLevels(size: Vec3i): Int
+        abstract fun getTextureMipLevels(dimensions: Vec3i): Int
+        abstract fun getRenderMipLevels(dimensions: Vec3i): Int
     }
 
     enum class MipMapRenderOrder {
@@ -142,7 +165,6 @@ abstract class RenderPass(
         val renderPass: RenderPass get() = this@RenderPass
 
         var viewport = Viewport(0, 0, 0, 0)
-        val drawQueue = DrawQueue(this@RenderPass, this)
         var drawFilter: (Node) -> Boolean = { true }
 
         val onSetupView = BufferedList<(() -> Unit)>()
@@ -152,13 +174,15 @@ abstract class RenderPass(
          * capture intermediate render outputs, which can then be used by following draw
          * operations / shaders.
          */
-        val frameCopies = mutableListOf<FrameCopy>()
+        val frameCopies: List<FrameCopy> get() = _frameCopies
+        private val _frameCopies = mutableListOf<FrameCopy>()
+        private var hasSingleShotCopies = false
 
         var isUpdateDrawNode = true
         var isReleaseDrawNode = true
         var isFillFramebuffer = true
 
-        val viewPipelineData = PipelineData(BindGroupScope.VIEW)
+        val viewPipelineData = MultiPipelineBindGroupData(BindGroupScope.VIEW)
 
         private var updateEvent: UpdateEvent? = null
 
@@ -167,7 +191,7 @@ abstract class RenderPass(
         }
 
         /**
-         * Convenience function to add an item to this view's [frameCopies]. Depending on the [drawGroupId], the
+         * Adds an item to this view's [frameCopies]. Depending on the [drawGroupId], the
          * copy can be performed during frame render, interrupting the render pass. This way, the framebuffer can be
          * captured after a certain set of objects is drawn (everything with drawGroupId <= the specified
          * [drawGroupId]) but before everything else is drawn.
@@ -182,8 +206,9 @@ abstract class RenderPass(
             isSingleShot: Boolean = false
         ): FrameCopy {
             val copy = FrameCopy(this@RenderPass, isCopyColor, isCopyDepth, drawGroupId, isSingleShot)
-            frameCopies += copy
-            frameCopies.sortBy { it.drawGroupId }
+            _frameCopies += copy
+            _frameCopies.sortBy { it.drawGroupId }
+            hasSingleShotCopies = hasSingleShotCopies || isSingleShot
             return copy
         }
 
@@ -210,7 +235,7 @@ abstract class RenderPass(
             return updateEvent ?: UpdateEvent(this, ctx).also { updateEvent = it }
         }
 
-        internal fun update(ctx: KoolContext) {
+        internal fun update(passData: PassData, ctx: KoolContext) {
             val updateEvent = makeUpdateEvent(ctx)
             if (isUpdateDrawNode) {
                 drawNode.update(updateEvent)
@@ -219,19 +244,21 @@ abstract class RenderPass(
                 // camera is not attached to any node, make sure it gets updated anyway
                 camera.update(updateEvent)
             }
-            collectDrawCommands(ctx)
+
+            val viewData = passData.acquireViewData(this)
+            collectDrawCommands(viewData, updateEvent)
+            if (hasSingleShotCopies) {
+                _frameCopies.removeAll { it.isSingleShot }
+                hasSingleShotCopies = false
+            }
         }
 
-        internal fun collectDrawCommands(ctx: KoolContext) {
-            val updateEvent = makeUpdateEvent(ctx)
-
-            drawQueue.reset(isDoublePrecision)
-            beforeCollectDrawCommands(updateEvent)
-            camera.updateCamera(updateEvent)
-            drawQueue.setupCamera(camera)
-
-            drawNode.collectDrawCommands(updateEvent)
-            afterCollectDrawCommands(updateEvent)
+        private fun collectDrawCommands(viewData: ViewData, updateEvent: UpdateEvent) {
+            beforeCollectDrawCommands(viewData)
+            camera.updateCamera(viewData)
+            viewData.drawQueue.setupCamera(camera)
+            drawNode.collectDrawCommands(viewData, updateEvent)
+            afterCollectDrawCommands(viewData)
         }
     }
 }

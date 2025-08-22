@@ -82,7 +82,7 @@ class GizmoTest : DemoScene("Gizmo Test") {
         // This ensures that the node was rendered at least once before it's transform is captured. This is needed
         // because otherwise the node's model matrix might not be valid, and then it's transform is not correctly
         // captured.
-        launchDelayed(1) {
+        coroutineScope.launchDelayed(1) {
             gizmo.setTransformNode(meshA)
         }
 

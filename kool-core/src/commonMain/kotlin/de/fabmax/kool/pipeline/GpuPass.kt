@@ -1,6 +1,7 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.PassData
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.BufferedList
@@ -16,13 +17,13 @@ abstract class GpuPass(var name: String) : BaseReleasable() {
     var parentScene: Scene? = null
 
     val onUpdate = BufferedList<(() -> Unit)>()
-    val onBeforePass = BufferedList<(() -> Unit)>()
-    val onAfterPass = BufferedList<(() -> Unit)>()
+    val onAfterCollect = BufferedList<(() -> Unit)>()
 
     var isEnabled = true
 
-    var isProfileTimes = false
+    var isProfileGpu = false
     var tGpu: Duration = 0.0.seconds
+    var tRecord: Duration = 0.0.seconds
     var tUpdate: Duration = 0.0.seconds
 
     fun dependsOn(pass: GpuPass) {
@@ -33,33 +34,23 @@ abstract class GpuPass(var name: String) : BaseReleasable() {
         onUpdate += block
     }
 
-    fun onBeforePass(block: () -> Unit) {
-        onBeforePass += block
+    fun onAfterCollect(block: () -> Unit) {
+        onAfterCollect += block
     }
 
-    fun onAfterPass(block: () -> Unit) {
-        onAfterPass += block
+    fun collect(passData: PassData, ctx: KoolContext) {
+        update(passData, ctx)
+        onAfterCollect.update()
+        for (i in onAfterCollect.indices) {
+            onAfterCollect[i]()
+        }
     }
 
-    open fun update(ctx: KoolContext) {
+    protected open fun update(passData: PassData, ctx: KoolContext) {
         checkIsNotReleased()
         onUpdate.update()
         for (i in onUpdate.indices) {
             onUpdate[i]()
-        }
-    }
-
-    open fun beforePass() {
-        onBeforePass.update()
-        for (i in onBeforePass.indices) {
-            onBeforePass[i]()
-        }
-    }
-
-    open fun afterPass() {
-        onAfterPass.update()
-        for (i in onAfterPass.indices) {
-            onAfterPass[i]()
         }
     }
 

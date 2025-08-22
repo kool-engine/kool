@@ -1,6 +1,5 @@
 package de.fabmax.kool.demo
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.demo.menu.DemoMenu
@@ -14,6 +13,8 @@ import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
     var demoEntry: Demos.Entry? = null
@@ -64,9 +65,11 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
         if (demoState == State.NEW) {
             // load resources (async from AssetManager CoroutineScope)
             demoState = State.LOADING
-            launchOnMainThread {
-                resources.loadParallel()
-                Assets.loadResources(ctx)
+            mainScene.coroutineScope.launch {
+                withContext(ApplicationScope.coroutineContext) {
+                    resources.loadParallel()
+                }
+                loadResources(ctx)
                 demoState = State.SETUP
             }
         }
@@ -85,7 +88,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
         lateInit(ctx)
     }
 
-    open suspend fun Assets.loadResources(ctx: KoolContext) { }
+    open suspend fun loadResources(ctx: KoolContext) { }
 
     abstract fun Scene.setupMainScene(ctx: KoolContext)
 
@@ -114,6 +117,7 @@ abstract class DemoScene(val name: String, val mainScene: Scene = Scene(name)) {
         val titleTxt = title ?: demoEntry?.title ?: "Demo"
 
         return WindowSurface(
+            mainScene,
             menuDockable,
             colors = Colors.singleColorDark(accent, Color("101010d0"))
         ) {

@@ -53,8 +53,7 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
         logD { "Created Vulkan instance" }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         ReleaseQueue.enqueue {
             if (debugMessenger != 0L) {
                 EXTDebugUtils.vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, null)

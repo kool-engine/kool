@@ -16,10 +16,10 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     val floatBuffer: GPUBuffer? get() = createdFloatBuffer?.buffer?.buffer
     val intBuffer: GPUBuffer? get() = createdIntBuffer?.buffer?.buffer
 
-    private var isNewlyCreated = true
+    private var updateModCount = -1
 
     init {
-        val geom = mesh.geometry
+        val geom = mesh.drawGeometry
         createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
         createdFloatBuffer = if (geom.byteStrideF == 0) null else {
             WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices.toLong())
@@ -32,18 +32,16 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     fun checkBuffers() {
         checkIsNotReleased()
 
-        val geometry = mesh.geometry
-        if (!geometry.isBatchUpdate && (geometry.hasChanged || isNewlyCreated)) {
+        val geometry = mesh.drawGeometry
+        if (updateModCount != geometry.modCount) {
+            updateModCount = geometry.modCount
             createdIndexBuffer.writeData(geometry.indices)
             createdFloatBuffer?.writeData(geometry.dataF)
             createdIntBuffer?.writeData(geometry.dataI)
-            geometry.hasChanged = false
         }
-        isNewlyCreated = false
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         createdIndexBuffer.release()
         createdFloatBuffer?.release()
         createdIntBuffer?.release()

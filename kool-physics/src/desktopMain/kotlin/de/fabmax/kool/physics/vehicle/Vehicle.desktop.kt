@@ -115,9 +115,9 @@ class VehicleImpl(override val vehicleProps: VehicleProperties, val world: Physi
         }
     }
 
-    override fun release() {
+    override fun doRelease() {
+        super.doRelease()
         pxVehicle.destroy()
-        super.release()
     }
 
     override fun onPhysicsUpdate(timeStep: Float) {

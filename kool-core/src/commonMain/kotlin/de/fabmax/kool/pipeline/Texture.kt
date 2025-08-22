@@ -4,7 +4,10 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.util.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
@@ -29,20 +32,15 @@ abstract class Texture<T: ImageData>(
 
     val isLoaded: Boolean get() = gpuTexture != null
 
-    val width: Int
-        get() = gpuTexture?.width ?: 0
-    val height: Int
-        get() = gpuTexture?.height ?: 0
-    val depth: Int
-        get() = gpuTexture?.depth ?: 0
+    open val width: Int get() = gpuTexture?.width ?: 0
+    open val height: Int get() = gpuTexture?.height ?: 0
+    open val depth: Int get() = gpuTexture?.depth ?: 0
 
     /**
      * Releases this texture, making it unusable.
      */
-    override fun release() {
-        super.release()
-        gpuTexture?.release()
-        gpuTexture = null
+    override fun doRelease() {
+        gpuTexture?.releaseDelayed(1)
     }
 
     override fun toString(): String {
@@ -51,7 +49,7 @@ abstract class Texture<T: ImageData>(
 
     suspend fun upload(imageData: T) {
         checkFormat(imageData.format)
-        withContext(Dispatchers.RenderLoop) {
+        withContext(KoolDispatchers.Backend) {
             uploadData = imageData
             KoolSystem.requireContext().backend.uploadTextureData(this@Texture)
         }
@@ -61,7 +59,7 @@ abstract class Texture<T: ImageData>(
         uploadData = imageData
     }
 
-    fun uploadLazy(provider: suspend CoroutineScope.() -> T) = Assets.launch {
+    fun uploadLazy(provider: suspend CoroutineScope.() -> T) = Assets.coroutineScope.launch {
         uploadData = provider()
     }
 

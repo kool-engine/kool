@@ -8,6 +8,7 @@ import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.PerspectiveCamera
 import de.fabmax.kool.util.Releasable
 import de.fabmax.kool.util.Viewport
+import de.fabmax.kool.util.releaseDelayed
 
 open class OffscreenPass2d(
     drawNode: Node,
@@ -62,8 +63,7 @@ open class OffscreenPass2d(
      * generate lookup-tables, etc.)
      */
     fun copyColor(): Texture2d {
-        val copy = FrameCopy(this, isCopyColor = true, isCopyDepth = false, isSingleShot = true)
-        frameCopies += copy
+        val copy = copyOutput(isCopyColor = true, isCopyDepth = false, isSingleShot = true)
         return copy.colorCopy2d
     }
 
@@ -77,9 +77,9 @@ open class OffscreenPass2d(
         impl.applySize(width, height)
     }
 
-    override fun release() {
-        super.release()
-        impl.release()
+    override fun doRelease() {
+        super.doRelease()
+        impl.releaseDelayed(1)
     }
 
     inner class ColorAttachment(config: TextureAttachmentConfig, i: Int) : RenderPassColorTextureAttachment<Texture2d> {

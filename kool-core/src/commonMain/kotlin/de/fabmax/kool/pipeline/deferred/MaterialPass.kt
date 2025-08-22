@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.deferred
 
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
@@ -47,18 +48,19 @@ class MaterialPass(pipeline: DeferredPipeline, suffix: String) :
         isUpdateDrawNode = false
     }
 
-    override fun afterCollectDrawCommands(updateEvent: UpdateEvent) {
+    override fun afterCollectDrawCommands(viewData: ViewData) {
         alphaMeshes.clear()
-        val it = defaultView.drawQueue.iterator()
+        val drawQueue = viewData.drawQueue
+        val it = drawQueue.iterator()
         while (it.hasNext()) {
             val cmd = it.next()
             if (!cmd.mesh.isOpaque) {
                 alphaMeshes += cmd.mesh
                 it.remove()
-                defaultView.drawQueue.recycleDrawCommand(cmd)
+                drawQueue.recycleDrawCommand(cmd)
             }
         }
-        super.afterCollectDrawCommands(updateEvent)
+        super.afterCollectDrawCommands(viewData)
     }
 
     companion object {

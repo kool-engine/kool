@@ -37,8 +37,8 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             Lod(10000, 1000f, MutableColor(MdColor.BLUE.toLinear()))
     )
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        model = loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz").getOrThrow()
+    override suspend fun loadResources(ctx: KoolContext) {
+        model = Assets.loadGltfFile("${DemoLoader.modelPath}/bunny.gltf.gz").getOrThrow()
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {

@@ -37,7 +37,6 @@ object KoolSystem {
 
         ctx.onShutdown += {
             initConfig = null
-            defaultContext = null
             isInitialized = false
             BackendStats.onDestroy()
         }
@@ -53,6 +52,8 @@ object KoolSystem {
 
     data class PlatformProperties(val platform: Platform)
 }
+
+expect val currentThreadName: String
 
 internal expect fun PlatformProperties(): KoolSystem.PlatformProperties
 

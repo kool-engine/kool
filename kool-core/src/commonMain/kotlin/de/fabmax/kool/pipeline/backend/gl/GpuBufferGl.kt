@@ -60,8 +60,7 @@ class GpuBufferGl(val target: Int, val backend: RenderBackendGl, creationInfo: B
         gl.bindBuffer(target, gl.NULL_BUFFER)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         gl.deleteBuffer(buffer)
         resInfo.deleted()
     }

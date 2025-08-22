@@ -7,17 +7,16 @@ import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 
 class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureCube) : BaseReleasable() {
-    override fun release() {
+
+    override fun doRelease() {
         irradianceMap.release()
         if (irradianceMap !== reflectionMap) {
             reflectionMap.release()
         }
-        super.release()
     }
 
     companion object {
@@ -72,10 +71,10 @@ class EnvironmentMap(val irradianceMap: TextureCube, val reflectionMap: TextureC
 }
 
 fun AssetLoader.hdriEnvironmentAsync(hdriPath: String, brightness: Float = 1f): Deferred<Result<EnvironmentMap>> {
-    return Assets.async {
+    return Assets.coroutineScope.async {
         val samplerSettings = SamplerSettings().nearest()
         val hdri = loadTexture2d(hdriPath, TexFormat.RGBA, MipMapping.Off, samplerSettings)
-        withContext(Dispatchers.RenderLoop) {
+        withContext(KoolDispatchers.Frontend) {
             hdri.map { EnvironmentMap.fromHdriTexture(it, brightness) }
         }
     }

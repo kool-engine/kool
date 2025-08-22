@@ -38,7 +38,6 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
     val lightingPassShader: PbrSceneShader
     val aoPipeline: AoPipeline.DeferredAoPipeline?
     val reflections: Reflections?
-    //val bloomPass: BloomPass?
     val shadowMaps: List<ShadowMap>
 
     val sceneContent = Node()
@@ -108,6 +107,15 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
         passes = createPasses()
 
         shadowMaps = cfg.shadowMaps ?: createShadowMapsFromSceneLights()
+        shadowMaps.forEach {
+            it.subMaps.forEach { pass ->
+                pass.dependsOn(passes[0].materialPass)
+                pass.dependsOn(passes[1].materialPass)
+            }
+        }
+        passes.map { it.lightingPass }.forEach { lighting ->
+            shadowMaps.flatMap { it.subMaps }.forEach { lighting.dependsOn(it) }
+        }
         lightingPassShader = cfg.pbrSceneShader ?: PbrSceneShader(PbrSceneShader.DeferredPbrConfig().apply {
             isScrSpcAmbientOcclusion = cfg.isWithAmbientOcclusion
             isScrSpcReflections = cfg.isWithScreenSpaceReflections
@@ -172,8 +180,9 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 
     fun createDefaultOutputQuad(): Mesh {
         val outputShader = DeferredOutputShader(cfg, this)
-        passes[0].lightingPass.onAfterPass { outputShader.setDeferredInput(passes[0]) }
-        passes[1].lightingPass.onAfterPass { outputShader.setDeferredInput(passes[1]) }
+        onSwap += DeferredPassSwapListener { prev, current ->
+            outputShader.setDeferredInput(current)
+        }
 
         onConfigChange += {
             outputShader.isBloomEnabled = isBloomEnabled

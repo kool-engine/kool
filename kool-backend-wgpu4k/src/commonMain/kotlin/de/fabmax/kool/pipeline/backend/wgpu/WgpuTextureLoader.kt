@@ -213,6 +213,42 @@ internal class WgpuTextureLoader(val backend: GPUBackend) {
         copyNativeTextureData(src, dst, size, dstOrigin, device)
     }
 
+    internal fun createStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
+        val usage = setOf(GPUTextureUsage.StorageBinding,
+                GPUTextureUsage.CopySrc,
+                GPUTextureUsage.CopyDst,
+                GPUTextureUsage.TextureBinding)
+        val dimension = when (storageTexture) {
+            is StorageTexture1d -> GPUTextureDimension.OneD
+            is StorageTexture2d -> GPUTextureDimension.TwoD
+            is StorageTexture3d -> GPUTextureDimension.ThreeD
+        }
+        val size = when (storageTexture) {
+            is StorageTexture1d -> Extent3D(width.toUInt())
+            is StorageTexture2d -> Extent3D(width.toUInt(), height.toUInt())
+            is StorageTexture3d -> Extent3D(width.toUInt(), height.toUInt(), depth.toUInt())
+        }
+        val levels = when (val mipMapping = storageTexture.mipMapping) {
+            MipMapping.Full -> numMipLevels(width, height, depth)
+            is MipMapping.Limited -> mipMapping.numLevels
+            MipMapping.Off -> 1
+        }
+
+        if (storageTexture.format == TexFormat.RG11B10_F) {
+            logW { "Storage texture format RG11B10_F is not supported by WebGPU, using RGBA_F16 instead" }
+        }
+        val texDesc = TextureDescriptor(
+            size = size,
+            format = storageTexture.format.wgpuStorage,
+            dimension = dimension,
+            usage = usage,
+            mipLevelCount = levels.toUInt(),
+            label = storageTexture.name
+        )
+        storageTexture.gpuTexture?.release()
+        storageTexture.gpuTexture = backend.createTexture(texDesc)
+    }
+
     inner class MipmapGenerator {
         private val shaderModule = device.createShaderModule("""
             var<private> pos: array<vec2f, 4> = array<vec2f, 4>(

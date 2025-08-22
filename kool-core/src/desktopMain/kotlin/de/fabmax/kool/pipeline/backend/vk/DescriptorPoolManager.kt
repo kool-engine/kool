@@ -28,8 +28,7 @@ class DescriptorPoolManager(val backend: RenderBackendVk) : BaseReleasable() {
         pools[poolLayout]?.releaseSets(sets)
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
         pools.values.forEach { it.release() }
     }
 

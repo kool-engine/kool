@@ -47,7 +47,7 @@ class ClearHelper(val backend: RenderBackendVk) {
         val clearColorAndDepth: VkGraphicsPipeline by lazy { makeClearPipeline(true, true) }
 
         init {
-            val bindGrpLayout = BindGroupLayout.Builder(0, BindGroupScope.VIEW).apply {
+            val bindGrpLayout = BindGroupLayout.Builder(0, BindGroupScope.VIEW, "ClearHelper").apply {
                 ubos += UniformBufferLayout(
                     name = "clearValues",
                     structProvider = {
@@ -56,8 +56,9 @@ class ClearHelper(val backend: RenderBackendVk) {
                     stages = setOf(ShaderStage.VERTEX_SHADER, ShaderStage.FRAGMENT_SHADER)
                 )
             }.create()
-            val bindGrpData = BindGroupData(bindGrpLayout)
-            clearValues = bindGrpData.bindings[0] as BindGroupData.UniformBufferBindingData<*>
+            val bindGrpData = BindGroupData(bindGrpLayout, "ClearHelper")
+            clearValues = bindGrpData.uniformBufferBindingData(0)
+            bindGrpData.captureBuffer()
 
             memStack {
                 val bindings = callocVkDescriptorSetLayoutBindingN(1) {
@@ -72,14 +73,13 @@ class ClearHelper(val backend: RenderBackendVk) {
                 pipelineLayout = device.createPipelineLayout(this) {
                     pSetLayouts(longs(descriptorSetLayout.handle))
                 }
-                bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend, passEncoderState.commandBuffer)
+                bindGroupData = BindGroupDataVk(bindGrpData, descriptorSetLayout, backend)
             }
 
             releaseWith(renderPass)
         }
 
-        override fun release() {
-            super.release()
+        override fun doRelease() {
             cancelReleaseWith(renderPass)
             bindGroupData.release()
             device.destroyPipelineLayout(pipelineLayout)
@@ -100,6 +100,7 @@ class ClearHelper(val backend: RenderBackendVk) {
                 clearColor.putTo(clearValues.buffer.buffer)
                 clearValues.buffer.buffer.putFloat32(clearDepth)
                 clearValues.markDirty()
+                bindGroupData.data.captureBuffer()
             }
 
             val isClearColor = rp.colorAttachments[0].clearColor is ClearColorFill

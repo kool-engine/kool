@@ -12,7 +12,8 @@ import de.fabmax.kool.editor.util.gameEntity
 import de.fabmax.kool.math.MutableVec3d
 import de.fabmax.kool.math.QuatD
 import de.fabmax.kool.math.Vec3d
-import de.fabmax.kool.util.launchOnMainThread
+import de.fabmax.kool.util.FrontendScope
+import kotlinx.coroutines.launch
 
 class AddEntitiesAction(
     addEntityDatas: List<GameEntityData>
@@ -21,7 +22,7 @@ class AddEntitiesAction(
     private val hierarchy = addEntityDatas.toHierarchy()
 
     override fun doAction() {
-        launchOnMainThread {
+        FrontendScope.launch {
             hierarchy.forEach {
                 val scene = it.entityData.parentId.gameEntity?.scene
                 scene?.addGameEntities(it)

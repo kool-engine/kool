@@ -6,10 +6,11 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.LazyMat4d
 import de.fabmax.kool.util.LazyMat4f
 
-class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
+class DrawQueue() {
 
-    var isDoublePrecision = false
-        private set
+    lateinit var view: RenderPass.View; private set
+    val renderPass: RenderPass get() = view.renderPass
+    var isDoublePrecision = false; private set
 
     val projMat = MutableMat4f()
 
@@ -60,8 +61,9 @@ class DrawQueue(val renderPass: RenderPass, val view: RenderPass.View) {
 
     var drawGroupId = 0
 
-    fun reset(isDoublePrecision: Boolean) {
-        this.isDoublePrecision = isDoublePrecision
+    fun reset(view: RenderPass.View) {
+        this.view = view
+        this.isDoublePrecision = view.renderPass.isDoublePrecision
 
         var deleteAny = false
         for (i in orderedQueues.indices) {

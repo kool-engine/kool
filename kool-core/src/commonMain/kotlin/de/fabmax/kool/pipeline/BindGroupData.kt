@@ -1,39 +1,25 @@
 package de.fabmax.kool.pipeline
 
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Struct
-import de.fabmax.kool.util.StructBuffer
+import de.fabmax.kool.util.*
 
-class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
-
-    val bindings: List<BindingData> = layout.bindings.map {
-        when (it) {
-            is UniformBufferLayout<*> -> UniformBufferBindingData(it)
-            is StorageBufferLayout -> StorageBufferBindingData(it)
-
-            is Texture1dLayout -> Texture1dBindingData(it)
-            is Texture2dLayout -> Texture2dBindingData(it)
-            is Texture3dLayout -> Texture3dBindingData(it)
-            is TextureCubeLayout -> TextureCubeBindingData(it)
-            is Texture2dArrayLayout -> Texture2dArrayBindingData(it)
-            is TextureCubeArrayLayout -> TextureCubeArrayBindingData(it)
-
-            is StorageTexture1dLayout -> StorageTexture1dBindingData(it)
-            is StorageTexture2dLayout -> StorageTexture2dBindingData(it)
-            is StorageTexture3dLayout -> StorageTexture3dBindingData(it)
-        }
-    }
-    var isDirty = true
-
-    var checkFrame = -1
-    var isCheckOk = false
-    var modCnt = -1
-
-    val isComplete: Boolean
-        get() = bindings.all { it.isComplete }
-
+class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasable(), DoubleBuffered {
     var gpuData: GpuBindGroupData? = null
+
+    private val bindings: List<BindingData> = layout.bindings.toData()
+    private val _bufferedBindingData: List<BindingData> = layout.bindings.toData()
+    private var captured = false
+
+    val size: Int get() = bindings.size
+    val isComplete: Boolean get() = bindings.all { it.isComplete }
+
+    val bufferedBindings: List<BindingData> get() {
+        if (!captured) {
+            logE { "BindGroupData not captured! $name / ${layout.scope}" }
+            return bindings
+        }
+        return _bufferedBindingData
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun <S: Struct> uniformStructBindingData(binding: UniformBufferLayout<S>) = bindings[binding.bindingIndex] as UniformBufferBindingData<S>
@@ -52,42 +38,91 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
     fun storageTexture3dBindingData(bindingIndex: Int) = bindings[bindingIndex] as StorageTexture3dBindingData
 
     fun copy(): BindGroupData {
-        val copy = BindGroupData(layout)
-        bindings.forEachIndexed { i, bindingData ->
-            when (bindingData) {
-                is UniformBufferBindingData<*> -> bindingData.copyTo(copy.bindings[i] as UniformBufferBindingData<*>)
-                is StorageBufferBindingData -> bindingData.copyTo(copy.bindings[i] as StorageBufferBindingData)
-
-                is Texture1dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture1dBindingData)
-                is Texture2dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture2dBindingData)
-                is Texture3dBindingData -> bindingData.copyTo(copy.bindings[i] as Texture3dBindingData)
-                is TextureCubeBindingData -> bindingData.copyTo(copy.bindings[i] as TextureCubeBindingData)
-                is Texture2dArrayBindingData -> bindingData.copyTo(copy.bindings[i] as Texture2dArrayBindingData)
-                is TextureCubeArrayBindingData -> bindingData.copyTo(copy.bindings[i] as TextureCubeArrayBindingData)
-
-                is StorageTexture1dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageTexture1dBindingData)
-                is StorageTexture2dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageTexture2dBindingData)
-                is StorageTexture3dBindingData -> bindingData.copyTo(copy.bindings[i] as StorageTexture3dBindingData)
-            }
-        }
+        val copy = BindGroupData(layout, name)
+        bindings.copyTo(copy.bindings)
         return copy
     }
 
-    override fun release() {
-        super.release()
-        gpuData?.release()
+    override fun captureBuffer() {
+        bindings.copyToIfModded(_bufferedBindingData)
+        captured = true
+    }
+
+    override fun doRelease() {
+        gpuData?.releaseDelayed(1)
+    }
+
+    private fun List<BindingLayout>.toData() = map {
+        when (it) {
+            is UniformBufferLayout<*> -> UniformBufferBindingData(it)
+            is StorageBufferLayout -> StorageBufferBindingData(it)
+
+            is Texture1dLayout -> Texture1dBindingData(it)
+            is Texture2dLayout -> Texture2dBindingData(it)
+            is Texture3dLayout -> Texture3dBindingData(it)
+            is TextureCubeLayout -> TextureCubeBindingData(it)
+            is Texture2dArrayLayout -> Texture2dArrayBindingData(it)
+            is TextureCubeArrayLayout -> TextureCubeArrayBindingData(it)
+
+            is StorageTexture1dLayout -> StorageTexture1dBindingData(it)
+            is StorageTexture2dLayout -> StorageTexture2dBindingData(it)
+            is StorageTexture3dLayout -> StorageTexture3dBindingData(it)
+        }
+    }
+
+    private fun List<BindingData>.copyTo(dst: List<BindingData>) {
+        for (i in indices) {
+            when (val bindingData = this[i]) {
+                is UniformBufferBindingData<*> -> bindingData.copyTo(dst[i] as UniformBufferBindingData<*>)
+                is StorageBufferBindingData -> bindingData.copyTo(dst[i] as StorageBufferBindingData)
+
+                is Texture1dBindingData -> bindingData.copyTo(dst[i] as Texture1dBindingData)
+                is Texture2dBindingData -> bindingData.copyTo(dst[i] as Texture2dBindingData)
+                is Texture3dBindingData -> bindingData.copyTo(dst[i] as Texture3dBindingData)
+                is TextureCubeBindingData -> bindingData.copyTo(dst[i] as TextureCubeBindingData)
+                is Texture2dArrayBindingData -> bindingData.copyTo(dst[i] as Texture2dArrayBindingData)
+                is TextureCubeArrayBindingData -> bindingData.copyTo(dst[i] as TextureCubeArrayBindingData)
+
+                is StorageTexture1dBindingData -> bindingData.copyTo(dst[i] as StorageTexture1dBindingData)
+                is StorageTexture2dBindingData -> bindingData.copyTo(dst[i] as StorageTexture2dBindingData)
+                is StorageTexture3dBindingData -> bindingData.copyTo(dst[i] as StorageTexture3dBindingData)
+            }
+        }
+    }
+
+    private fun List<BindingData>.copyToIfModded(dst: List<BindingData>) {
+        for (i in indices) {
+            val src = this[i]
+            val dst = dst[i]
+            if (src.modCount.isDirty(dst.modCount)) {
+                when (src) {
+                    is UniformBufferBindingData<*> -> src.copyTo(dst as UniformBufferBindingData<*>)
+                    is StorageBufferBindingData -> src.copyTo(dst as StorageBufferBindingData)
+
+                    is Texture1dBindingData -> src.copyTo(dst as Texture1dBindingData)
+                    is Texture2dBindingData -> src.copyTo(dst as Texture2dBindingData)
+                    is Texture3dBindingData -> src.copyTo(dst as Texture3dBindingData)
+                    is TextureCubeBindingData -> src.copyTo(dst as TextureCubeBindingData)
+                    is Texture2dArrayBindingData -> src.copyTo(dst as Texture2dArrayBindingData)
+                    is TextureCubeArrayBindingData -> src.copyTo(dst as TextureCubeArrayBindingData)
+
+                    is StorageTexture1dBindingData -> src.copyTo(dst as StorageTexture1dBindingData)
+                    is StorageTexture2dBindingData -> src.copyTo(dst as StorageTexture2dBindingData)
+                    is StorageTexture3dBindingData -> src.copyTo(dst as StorageTexture3dBindingData)
+                }
+            }
+        }
     }
 
     sealed interface BindingData {
         val layout: BindingLayout
         val name: String get() = layout.name
-
+        val modCount: ModCounter
         val isComplete: Boolean
     }
 
     inner class UniformBufferBindingData<T: Struct>(override val layout: UniformBufferLayout<T>) : BindingData {
-        var modCount = 0
-            private set
+        override val modCount = ModCounter()
         val buffer: StructBuffer<T> = StructBuffer(1, layout.structProvider())
 
         override val isComplete = true
@@ -98,7 +133,7 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
         }
 
         fun markDirty() {
-            modCount++
+            modCount.increment()
         }
 
         fun copyTo(other: UniformBufferBindingData<*>) {
@@ -106,16 +141,17 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
             for (i in 0 until buffer.buffer.capacity / 4) {
                 other.buffer.buffer.setInt32(i * 4, buffer.buffer.getInt32(i * 4))
             }
-            other.markDirty()
+            other.modCount.reset(modCount)
         }
     }
 
     inner class StorageBufferBindingData(override val layout: StorageBufferLayout) : BindingData {
+        override val modCount = ModCounter()
         var storageBuffer: GpuBuffer? = null
             set(value) {
                 value?.let { checkDimensions(it) }
                 field = value
-                isDirty = true
+                modCount.increment()
             }
         override val isComplete = true
 
@@ -129,28 +165,31 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
         fun copyTo(other: StorageBufferBindingData) {
             other.storageBuffer = storageBuffer
+            other.modCount.reset(modCount)
         }
     }
 
     abstract inner class TextureBindingData<T: Texture<*>> {
         abstract val layout: TextureLayout
+        val modCount = ModCounter()
         val isComplete get() = texture?.isLoaded == true
 
         var texture: T? = null
             set(value) {
-                isDirty = field !== value
+                modCount.incrementIf(field !== value)
                 field = value
             }
 
         var sampler: SamplerSettings? = null
             set(value) {
-                isDirty = field != value
+                modCount.incrementIf(field !== value)
                 field = value
             }
 
         fun copyTo(other: TextureBindingData<T>) {
             other.texture = texture
             other.sampler = sampler
+            other.modCount.reset(modCount)
         }
     }
 
@@ -163,16 +202,17 @@ class BindGroupData(val layout: BindGroupLayout) : BaseReleasable() {
 
     abstract inner class StorageTextureBindingData<T: StorageTexture> {
         abstract val layout: StorageTextureLayout
+        val modCount = ModCounter()
         val isComplete = true
 
         var storageTexture: T? = null
             set(value) {
-                isDirty = field !== value
+                modCount.incrementIf(field !== value)
                 field = value
             }
         var mipLevel: Int = 0
             set(value) {
-                isDirty = field != value
+                modCount.incrementIf(field != value)
                 field = value
             }
 

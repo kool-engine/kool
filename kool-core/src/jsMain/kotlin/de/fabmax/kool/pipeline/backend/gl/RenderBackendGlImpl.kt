@@ -1,5 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
+import de.fabmax.kool.FrameData
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJs
@@ -59,8 +60,8 @@ class RenderBackendGlImpl(ctx: JsContext) :
         // for now, we leave the cleanup to the system...
     }
 
-    override fun renderFrame(ctx: KoolContext) {
-        super.renderFrame(ctx)
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
+        super.renderFrame(frameData, ctx)
         GlImpl.gl.finish()
     }
 }

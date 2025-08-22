@@ -24,6 +24,7 @@ import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
 import kotlin.math.min
 
 class ThumbnailRenderer(
@@ -53,11 +54,9 @@ class ThumbnailRenderer(
             }
         }
 
-        onAfterPass {
+        onAfterCollect {
             val releasables = renderQueue.map { it.first.drawNode }
-            launchDelayed(1) {
-                releasables.forEach { it.release() }
-            }
+            releasables.forEach { it.releaseDelayed(1) }
             renderQueue.forEach { (_, thumbnail) ->
                 thumbnail.state.set(ThumbnailState.USABLE)
                 thumbnails[thumbnail.tileIndex] = thumbnail
@@ -92,7 +91,7 @@ class ThumbnailRenderer(
     }
 
     private fun renderThumbnail(thumbNail: Thumbnail) {
-        launchOnMainThread {
+        FrontendScope.launch {
             val cam = OrthographicCamera().apply {
                 left = -1f
                 right = 1f

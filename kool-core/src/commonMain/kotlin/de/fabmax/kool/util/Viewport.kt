@@ -20,4 +20,8 @@ data class Viewport(val x: Int, val y: Int, val width: Int, val height: Int) {
     fun equals(x: Int, y: Int, width: Int, height: Int): Boolean {
         return x == this.x && y == this.y && width == this.width && height == this.height
     }
+
+    companion object {
+        val EMPTY = Viewport(0, 0, 0, 0)
+    }
 }

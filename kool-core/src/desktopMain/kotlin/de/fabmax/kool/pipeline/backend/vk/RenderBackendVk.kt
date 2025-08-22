@@ -1,10 +1,7 @@
 package de.fabmax.kool.pipeline.backend.vk
 
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJvm
+import de.fabmax.kool.*
 import de.fabmax.kool.math.Vec3i
-import de.fabmax.kool.math.numMipLevels
 import de.fabmax.kool.modules.ksl.KslComputeShader
 import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.pipeline.*
@@ -22,7 +19,6 @@ import org.lwjgl.vulkan.VkCommandBuffer
 import java.nio.ByteBuffer
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.measureTime
 
 class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val name = "Vulkan"
@@ -118,7 +114,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         return if (unsignedCnt < 0) Int.MAX_VALUE else unsignedCnt
     }
 
-    override fun renderFrame(ctx: KoolContext) {
+    override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
         memStack {
@@ -130,12 +126,13 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 timestampQueryPool.onBeginFrame()
                 frameTimer.begin(passEncoderState.commandBuffer)
 
-                ctx.preparePipelines(passEncoderState)
-                ctx.executePasses(passEncoderState)
-                if (ctx.scenes.isEmpty()) {
+                frameData.preparePipelines(passEncoderState)
+                frameData.executePasses(passEncoderState)
+                if (frameData.passData.isEmpty()) {
                     // make sure any scene is rendered, so that screen is correctly cleared
-                    emptyScene.mainRenderPass.update(ctx)
-                    emptyScene.executePasses(passEncoderState)
+                    val passData = frameData.acquirePassData(emptyScene.mainRenderPass)
+                    emptyScene.mainRenderPass.collect(passData, ctx)
+                    passData.executePass(passEncoderState)
                 }
 
                 passEncoderState.ensureRenderPassInactive()
@@ -162,76 +159,39 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    private fun KoolContext.preparePipelines(passEncoderState: PassEncoderState) {
-        backgroundScene.prepareDrawPipelines(passEncoderState)
-        for (i in scenes.indices) {
-            val scene = scenes[i]
-            if (scene.isVisible) {
-                scene.prepareDrawPipelines(passEncoderState)
+    private fun FrameData.preparePipelines(passEncoderState: PassEncoderState) {
+        forEachPass { passData ->
+            val t = Time.precisionTime
+            passData.forEachView { viewData ->
+                viewData.drawQueue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
             }
+            passData.gpuPass.tRecord = (Time.precisionTime - t).seconds
         }
     }
 
-    private fun Scene.prepareDrawPipelines(passEncoderState: PassEncoderState) {
-        checkIsNotReleased()
-        sceneRecordTime = measureTime {
-            for (i in sortedPasses.indices) {
-                val pass = sortedPasses[i]
-                if (pass.isEnabled && pass is RenderPass) {
-                    pass.prepareDrawPipelines(passEncoderState)
-                }
-            }
-        }
+    private fun FrameData.executePasses(passEncoderState: PassEncoderState) {
+        forEachPass { passData -> passData.executePass(passEncoderState) }
     }
 
-    private fun RenderPass.prepareDrawPipelines(passEncoderState: PassEncoderState) {
-        if (isEnabled) {
-            for (i in views.indices) {
-                val queue = views[i].drawQueue
-                queue.forEach { cmd -> pipelineManager.prepareDrawPipeline(cmd, passEncoderState) }
-            }
-        }
-    }
-
-    private fun KoolContext.executePasses(passEncoderState: PassEncoderState) {
-        backgroundScene.executePasses(passEncoderState)
-        for (i in scenes.indices) {
-            val scene = scenes[i]
-            if (scene.isVisible) {
-                scene.executePasses(passEncoderState)
-            }
-        }
-    }
-
-    private fun Scene.executePasses(passEncoderState: PassEncoderState) {
-        sceneRecordTime += measureTime {
-            for (i in sortedPasses.indices) {
-                val pass = sortedPasses[i]
-                if (pass.isEnabled) {
-                    pass.beforePass()
-                    pass.execute(passEncoderState)
-                    pass.afterPass()
-                }
-            }
-        }
-    }
-
-    private fun GpuPass.execute(passEncoderState: PassEncoderState) {
-        when (this) {
+    private fun PassData.executePass(passEncoderState: PassEncoderState) {
+        val pass = gpuPass
+        val t = Time.precisionTime
+        when (pass) {
             is Scene.ScreenPass -> screenPass.renderScene(this, passEncoderState)
-            is OffscreenPass2d -> draw(passEncoderState)
-            is OffscreenPassCube -> draw(passEncoderState)
-            is ComputePass -> dispatch(passEncoderState)
+            is OffscreenPass2d -> pass.draw(this, passEncoderState)
+            is OffscreenPassCube -> pass.draw(this, passEncoderState)
+            is ComputePass -> pass.dispatch(passEncoderState)
             else -> throw IllegalArgumentException("Offscreen pass type not implemented: $this")
         }
+        pass.tRecord += (Time.precisionTime - t).seconds
     }
 
-    private fun OffscreenPass2d.draw(passEncoderState: PassEncoderState) {
-        (impl as OffscreenPass2dVk).draw(passEncoderState)
+    private fun OffscreenPass2d.draw(passData: PassData, passEncoderState: PassEncoderState) {
+        (impl as OffscreenPass2dVk).draw(passData, passEncoderState)
     }
 
-    private fun OffscreenPassCube.draw(passEncoderState: PassEncoderState) {
-        (impl as OffscreenPassCubeVk).draw(passEncoderState)
+    private fun OffscreenPassCube.draw(passData: PassData, passEncoderState: PassEncoderState) {
+        (impl as OffscreenPassCubeVk).draw(passData, passEncoderState)
     }
 
     private fun ComputePass.dispatch(passEncoderState: PassEncoderState) {
@@ -265,42 +225,6 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override fun createComputePass(parentPass: ComputePass): ComputePassImpl {
         return ComputePassVk(parentPass, this)
-    }
-
-    override fun initStorageTexture(storageTexture: StorageTexture, width: Int, height: Int, depth: Int) {
-        val usage = VK_IMAGE_USAGE_STORAGE_BIT or
-                VK_IMAGE_USAGE_TRANSFER_SRC_BIT or
-                VK_IMAGE_USAGE_TRANSFER_DST_BIT or
-                VK_IMAGE_USAGE_SAMPLED_BIT
-        val imageType = when (storageTexture) {
-            is StorageTexture1d -> VK_IMAGE_TYPE_1D
-            is StorageTexture2d -> VK_IMAGE_TYPE_2D
-            is StorageTexture3d -> VK_IMAGE_TYPE_3D
-        }
-        val levels = when (val mipMapping = storageTexture.mipMapping) {
-            MipMapping.Full -> numMipLevels(width, height, depth)
-            is MipMapping.Limited -> mipMapping.numLevels
-            MipMapping.Off -> 1
-        }
-        val imageInfo = ImageInfo(
-            imageType = imageType,
-            format = storageTexture.format.vk,
-            width = width,
-            height = height,
-            depth = depth,
-            arrayLayers = 1,
-            mipLevels = levels,
-            samples = 1,
-            usage = usage,
-            label = storageTexture.name,
-            aspectMask = VK_IMAGE_ASPECT_COLOR_BIT
-        )
-        val storageImage = ImageVk(this, imageInfo)
-        commandPool.singleShotCommands { commandBuffer ->
-            storageImage.transitionLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL, commandBuffer)
-        }
-        storageTexture.gpuTexture?.release()
-        storageTexture.gpuTexture = storageImage
     }
 
     override fun <T : ImageData> uploadTextureData(tex: Texture<T>) = textureLoader.loadTexture(tex)

@@ -1,11 +1,11 @@
 package de.fabmax.kool.modules.gizmo
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.ViewData
 import de.fabmax.kool.input.InputStack
 import de.fabmax.kool.input.PointerState
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.RenderPass
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
@@ -56,12 +56,12 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
     val scaleTick = mutableStateOf(0.0)
 
     private var parentCam: Camera? = null
-    private val camUpdateListener: (RenderPass.UpdateEvent) -> Unit = { ev ->
+    private val camUpdateListener: (ViewData) -> Unit = { viewData ->
         gizmoTransform.decompose(nodeTransform.translation, nodeTransform.rotation)
         nodeTransform.markDirty()
 
         if (isDistanceIndependentSize) {
-            val cam = ev.camera
+            val cam = viewData.drawQueue.view.camera
             val handleOrigin = handleGroup.modelMatF.transform(MutableVec3f(), 1f)
             val distance = (handleOrigin - cam.globalPos) dot cam.globalLookDir
             handleTransform.setIdentity().scale(distance / 10f * gizmoSize)
@@ -94,8 +94,8 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
         }
     }
 
-    override fun release() {
-        super.release()
+    override fun doRelease() {
+        super.doRelease()
         parentCam?.let { it.onCameraUpdated -= camUpdateListener }
     }
 
@@ -225,7 +225,7 @@ class GizmoNode(name: String = "gizmo") : Node(name), InputStack.PointerListener
 
         hoverHandle?.let { hover ->
             hover.moveVirtualPointer(virtualPointerPos, ptr, dragSpeedModifier.value)
-            scene.camera.computePickRay(pickRay, virtualPointerPos.x.toFloat(), virtualPointerPos.y.toFloat(), scene.mainRenderPass.viewport)
+            scene.camera.computePickRay(pickRay, virtualPointerPos.x, virtualPointerPos.y, scene.mainRenderPass.viewport)
 
             if (ptr.isLeftButtonDown && !isDrag) {
                 globalToDragLocal.set(invModelMatD)

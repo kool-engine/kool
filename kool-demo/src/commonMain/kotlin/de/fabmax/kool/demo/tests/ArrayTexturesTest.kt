@@ -28,8 +28,8 @@ class ArrayTexturesTest : DemoScene("Array Textures Test") {
 
     private lateinit var pbrArrayTex: Texture2dArray
 
-    override suspend fun Assets.loadResources(ctx: KoolContext) {
-        pbrArrayTex = loadTexture2dArray(listOf(
+    override suspend fun loadResources(ctx: KoolContext) {
+        pbrArrayTex = Assets.loadTexture2dArray(listOf(
             "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-albedo.jpg",
             "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-normal.jpg",
             "${DemoLoader.materialPath}/bamboo-wood-semigloss/bamboo-wood-semigloss-ao.jpg",

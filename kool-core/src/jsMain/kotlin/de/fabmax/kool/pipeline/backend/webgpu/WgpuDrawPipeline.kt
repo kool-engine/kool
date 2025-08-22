@@ -1,8 +1,6 @@
 package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.*
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.NodeId
 
 class WgpuDrawPipeline(
     val drawPipeline: DrawPipeline,
@@ -12,7 +10,6 @@ class WgpuDrawPipeline(
 ): WgpuPipeline(drawPipeline, backend) {
 
     private val pipelines = mutableMapOf<WgpuRenderPass, GPURenderPipeline>()
-    private val users = mutableSetOf<NodeId>()
 
     private fun createVertexBufferLayout(): List<GPUVertexBufferLayout> {
         val bindings = drawPipeline.vertexLayout.bindings.filter { it.vertexAttributes.isNotEmpty() }
@@ -147,7 +144,6 @@ class WgpuDrawPipeline(
 
     fun updateGeometry(cmd: DrawCommand) {
         if (cmd.geometry.numIndices == 0) return
-        users.add(cmd.mesh.id)
 
         if (cmd.geometry.gpuGeometry == null) {
             cmd.geometry.gpuGeometry = WgpuGeometry(cmd.mesh, backend)
@@ -165,7 +161,7 @@ class WgpuDrawPipeline(
     }
 
     fun bind(cmd: DrawCommand, passEncoderState: RenderPassEncoderState): Boolean {
-        val pipelineData = drawPipeline.pipelineData
+        val pipelineData = drawPipeline.capturedPipelineData
         val viewData = cmd.queue.view.viewPipelineData.getPipelineData(drawPipeline)
         val meshData = cmd.mesh.meshPipelineData.getPipelineData(drawPipeline)
 
@@ -187,7 +183,7 @@ class WgpuDrawPipeline(
     }
 
     private fun bindVertexBuffers(passEncoder: GPURenderPassEncoder, cmd: DrawCommand): Boolean {
-        val gpuGeom = cmd.mesh.geometry.gpuGeometry as WgpuGeometry? ?: return false
+        val gpuGeom = cmd.geometry.gpuGeometry as WgpuGeometry? ?: return false
         val gpuInsts = cmd.instances?.gpuInstances as WgpuInstances?
 
         var slot = 0
@@ -196,12 +192,5 @@ class WgpuDrawPipeline(
         gpuGeom.intBuffer?.let { passEncoder.setVertexBuffer(slot, it) }
         passEncoder.setIndexBuffer(gpuGeom.indexBuffer, GPUIndexFormat.uint32)
         return true
-    }
-
-    override fun removeUser(user: Any) {
-        (user as? Mesh)?.let { users.remove(it.id) }
-        if (users.isEmpty()) {
-            release()
-        }
     }
 }

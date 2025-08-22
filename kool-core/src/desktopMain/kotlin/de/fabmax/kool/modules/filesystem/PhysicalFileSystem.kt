@@ -4,6 +4,7 @@ import de.fabmax.kool.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.getOrElse
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.nio.file.FileVisitResult
 import java.nio.file.Path
@@ -114,7 +115,7 @@ class PhysicalFileSystem(
         }
     }
 
-    private fun launchWatchJob(service: FileSystemWatchService) = launchOnMainThread {
+    private fun launchWatchJob(service: FileSystemWatchService) = FrontendScope.launch {
         while (!service.isClosed) {
             val events = service.changes.receiveCatching()
             events.getOrElse { emptyList() }.forEach { event ->
