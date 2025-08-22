@@ -93,8 +93,8 @@ open class Mesh(
 
     private var pipeline: DrawPipeline? = null
 
-    internal val drawGeometry = IndexedVertexList(geometry.vertexAttributes, geometry.primitiveType)
-    internal val drawInstances = instances?.let { MeshInstanceList(it.instanceAttributes) }
+    val drawGeometry = IndexedVertexList(geometry.vertexAttributes, geometry.primitiveType)
+    val drawInstances = instances?.let { MeshInstanceList(it.instanceAttributes) }
     private var geometryUpdateModCount = -1
 
     var shader: DrawShader? = null

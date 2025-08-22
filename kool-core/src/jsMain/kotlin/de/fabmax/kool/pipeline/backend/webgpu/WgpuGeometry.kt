@@ -19,7 +19,7 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     private var updateModCount = -1
 
     init {
-        val geom = mesh.geometry
+        val geom = mesh.drawGeometry
         createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
         createdFloatBuffer = if (geom.byteStrideF == 0) null else {
             WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices.toLong())
@@ -32,7 +32,7 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     fun checkBuffers() {
         checkIsNotReleased()
 
-        val geometry = mesh.geometry
+        val geometry = mesh.drawGeometry
         if (updateModCount != geometry.modCount) {
             updateModCount = geometry.modCount
             createdIndexBuffer.writeData(geometry.indices)
