@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.wgpu
 
-import de.fabmax.kool.pipeline.BindGroupData
-import de.fabmax.kool.pipeline.FilterMethod
-import de.fabmax.kool.pipeline.GpuPass
-import de.fabmax.kool.pipeline.StorageTexture
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.TextureSampleType
 import de.fabmax.kool.pipeline.backend.GpuBindGroupData
 import de.fabmax.kool.pipeline.backend.wgsl.WgslLocations
@@ -306,6 +303,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.StorageTextureBindingData<*>.makeStorageTextureEntry(): GPUBindGroupEntry {
         val location = locations[layout]
         val storageTex = checkNotNull(storageTexture) { "Cannot create storage texture binding from null texture" }
+        storageTex.checkTextureSize()
         val loadedTex = checkNotNull(storageTex.asTexture.gpuTexture as WgpuTextureResource?) { "Cannot create storage texture binding from null texture" }
 
         storageTextureBindings += StorageTextureBinding(this, loadedTex)

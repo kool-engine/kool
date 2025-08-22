@@ -305,6 +305,7 @@ class WgpuBindGroupData(
     private fun BindGroupData.StorageTextureBindingData<*>.makeStorageTextureEntry(): GPUBindGroupEntry {
         val location = locations[layout]
         val storageTex = checkNotNull(storageTexture) { "Cannot create storage texture binding from null texture" }
+        storageTex.checkTextureSize()
         val loadedTex = checkNotNull(storageTex.asTexture.gpuTexture as WgpuTextureResource?) { "Cannot create storage texture binding from null texture" }
 
         storageTextureBindings += StorageTextureBinding(this, loadedTex)

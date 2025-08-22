@@ -28,7 +28,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class HelloBloom : DemoScene("Bloom") {
 
-    private val ibl by hdriImage("${DemoLoader.Companion.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
+    private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
 
     private val cubeBrightness = mutableStateOf(sqrt(5f))
     private val isSkyboxEnabled = mutableStateOf(false)
@@ -37,7 +37,7 @@ class HelloBloom : DemoScene("Bloom") {
     private val bloomStrength = mutableStateOf(2f)
     private val bloomRadius = mutableStateOf(2f)
     private val bloomThreshold = mutableStateOf(1f)
-    private val bloomLuminance = mutableStateOf(BloomPass.Companion.defaultThresholdLuminanceFactors)
+    private val bloomLuminance = mutableStateOf(BloomPass.defaultThresholdLuminanceFactors)
 
     private val bloomGpuTime = mutableStateOf(0.0.seconds)
 
@@ -110,7 +110,7 @@ class HelloBloom : DemoScene("Bloom") {
         val cubeShader = KslUnlitShader {
             color {
                 vertexColor()
-                uniformColor(Color.Companion.WHITE, blendMode = ColorBlockConfig.BlendMode.Multiply)
+                uniformColor(Color.WHITE, blendMode = ColorBlockConfig.BlendMode.Multiply)
                 colorSpaceConversion = ColorSpaceConversion.AsIs
             }
         }
@@ -120,22 +120,22 @@ class HelloBloom : DemoScene("Bloom") {
                 cube {
                     // use slightly different colors wit more uniform luminance than regular colored() cube
                     colors = listOf(
-                        MdColor.Companion.DEEP_ORANGE.toLinear(),
-                        MdColor.Companion.AMBER.toLinear(),
-                        MdColor.Companion.BLUE.toLinear(),
-                        MdColor.Companion.CYAN.toLinear(),
-                        MdColor.Companion.PINK.toLinear(),
-                        MdColor.Companion.LIGHT_GREEN.toLinear(),
+                        MdColor.DEEP_ORANGE.toLinear(),
+                        MdColor.AMBER.toLinear(),
+                        MdColor.BLUE.toLinear(),
+                        MdColor.CYAN.toLinear(),
+                        MdColor.PINK.toLinear(),
+                        MdColor.LIGHT_GREEN.toLinear(),
                     )
                 }
             }
             shader = cubeShader
             onUpdate {
-                transform.rotate(45f.deg * Time.deltaT, Vec3f.Companion.Y_AXIS)
+                transform.rotate(45f.deg * Time.deltaT, Vec3f.Y_AXIS)
             }
-            cubeShader.color = Color.Companion.WHITE.mulRgb(cubeBrightness.value * cubeBrightness.value)
+            cubeShader.color = Color.WHITE.mulRgb(cubeBrightness.value * cubeBrightness.value)
             cubeBrightness.onChange { _, brightness ->
-                cubeShader.color = Color.Companion.WHITE.mulRgb(brightness * brightness)
+                cubeShader.color = Color.WHITE.mulRgb(brightness * brightness)
             }
         }
 
@@ -157,15 +157,15 @@ class HelloBloom : DemoScene("Bloom") {
         MenuSlider2("Threshold", bloomThreshold.use(), 0f, 10f) { bloomThreshold.set(it) }
         MenuRow {
             val lumi = bloomLuminance.use()
-            Text("Luminance weights:") { labelStyle(Grow.Companion.Std) }
+            Text("Luminance weights:") { labelStyle(Grow.Std) }
             Text("${lumi.x.toString(2)}, ${lumi.y.toString(2)}, ${lumi.z.toString(2)}") { labelStyle() }
         }
         MenuRow(vGap = 4.dp) {
             Slider(bloomLuminance.use().x, 0f, 1f) {
                 modifier
-                    .width(Grow.Companion.Std)
+                    .width(Grow.Std)
                     .alignY(AlignmentY.Center)
-                    .colors(knobColor = MdColor.Companion.RED, trackColor = MdColor.Companion.RED.withAlpha(0.4f), trackColorActive = MdColor.Companion.RED.withAlpha(0.7f))
+                    .colors(knobColor = MdColor.RED, trackColor = MdColor.RED.withAlpha(0.4f), trackColorActive = MdColor.RED.withAlpha(0.7f))
                     .onChange {
                         bloomLuminance.set(Vec3f(it, bloomLuminance.value.y, bloomLuminance.value.z))
                     }
@@ -174,9 +174,9 @@ class HelloBloom : DemoScene("Bloom") {
         MenuRow(vGap = 4.dp) {
             Slider(bloomLuminance.use().y, 0f, 1f) {
                 modifier
-                    .width(Grow.Companion.Std)
+                    .width(Grow.Std)
                     .alignY(AlignmentY.Center)
-                    .colors(knobColor = MdColor.Companion.GREEN, trackColor = MdColor.Companion.GREEN.withAlpha(0.4f), trackColorActive = MdColor.Companion.GREEN.withAlpha(0.7f))
+                    .colors(knobColor = MdColor.GREEN, trackColor = MdColor.GREEN.withAlpha(0.4f), trackColorActive = MdColor.GREEN.withAlpha(0.7f))
                     .onChange {
                         bloomLuminance.set(Vec3f(bloomLuminance.value.x, it, bloomLuminance.value.z))
                     }
@@ -185,9 +185,9 @@ class HelloBloom : DemoScene("Bloom") {
         MenuRow(vGap = 4.dp) {
             Slider(bloomLuminance.use().z, 0f, 1f) {
                 modifier
-                    .width(Grow.Companion.Std)
+                    .width(Grow.Std)
                     .alignY(AlignmentY.Center)
-                    .colors(knobColor = MdColor.Companion.BLUE, trackColor = MdColor.Companion.BLUE.withAlpha(0.4f), trackColorActive = MdColor.Companion.BLUE.withAlpha(0.7f))
+                    .colors(knobColor = MdColor.BLUE, trackColor = MdColor.BLUE.withAlpha(0.4f), trackColorActive = MdColor.BLUE.withAlpha(0.7f))
                     .onChange {
                         bloomLuminance.set(Vec3f(bloomLuminance.value.x, bloomLuminance.value.y, it))
                     }
@@ -195,7 +195,7 @@ class HelloBloom : DemoScene("Bloom") {
         }
 
         MenuRow {
-            Text("Bloom pass:") { labelStyle(Grow.Companion.Std) }
+            Text("Bloom pass:") { labelStyle(Grow.Std) }
             Text("${(bloomGpuTime.use().inWholeMicroseconds / 1000.0).toString(3)} ms") { labelStyle() }
         }
     }
