@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.backend.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
@@ -25,7 +26,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val apiName: String
     override val deviceName: String
 
-    override val glfwWindow: GlfwVkWindow
+    override val glfwWindow: GlfwWindow
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val features: BackendFeatures
@@ -33,6 +34,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()
 
     val instance: Instance
+    val surface: Surface
     val physicalDevice: PhysicalDevice
     val device: Device
     val memManager: MemoryManager
@@ -60,10 +62,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
 
-        glfwWindow = GlfwVkWindow(this, ctx)
-        glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
+        glfwWindow = GlfwWindow(ctx)
+        glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
         instance = Instance(this, KoolSystem.configJvm.windowTitle)
-        glfwWindow.createSurface()
+        surface = Surface(this)
+        glfwWindow.setVisible(KoolSystem.configJvm.showWindowOnStart)
 
         physicalDevice = PhysicalDevice(this)
         device = Device(this)
@@ -105,7 +108,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         clearHelper = ClearHelper(this)
         screenPass = ScreenPassVk(this)
 
-        glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
+        glfwWindow.onPhysicalWindowResized { windowResized = true }
 
         frameTimer = Timer(timestampQueryPool) { delta -> frameGpuTime = delta }
     }

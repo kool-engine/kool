@@ -9,9 +9,9 @@ import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
-import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.OsInfo
+import de.fabmax.kool.platform.glfw.GlfwWindow
 import ffi.LibraryLoader
 import ffi.NativeAddress
 import io.ygdrasil.webgpu.GPUAdapter
@@ -38,11 +38,11 @@ internal actual suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderB
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API)
 
     val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
-    glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
+    glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
 
     // make the window visible
     if (KoolSystem.configJvm.showWindowOnStart) {
-        glfwWindow.isVisible = true
+        glfwWindow.setVisible(true)
     }
 
     val wgpu = createInstance() ?: error("fail to wgpu instance")
@@ -81,29 +81,29 @@ internal class DesktopRenderBackendWgpu4kWebGpu(
 
 private fun WGPU.getNativeSurface(window: GlfwWindow): NativeSurface = when (OsInfo.os) {
     OsInfo.OS.LINUX -> when {
-        glfwGetWaylandWindow(window.windowPtr) == 0L -> {
+        glfwGetWaylandWindow(window.windowHandle) == 0L -> {
             println("running on X11")
             val display = glfwGetX11Display().toNativeAddress()
-            val x11_window = glfwGetX11Window(window.windowPtr).toULong()
+            val x11_window = glfwGetX11Window(window.windowHandle).toULong()
             getSurfaceFromX11Window(display, x11_window) ?: error("fail to get surface on Linux")
         }
 
         else -> {
             println("running on Wayland")
             val display = glfwGetWaylandDisplay().toNativeAddress()
-            val wayland_window = glfwGetWaylandWindow(window.windowPtr).toNativeAddress()
+            val wayland_window = glfwGetWaylandWindow(window.windowHandle).toNativeAddress()
             getSurfaceFromWaylandWindow(display, wayland_window)
         }
     }
 
     OsInfo.OS.WINDOWS -> {
-        val hwnd = glfwGetWin32Window(window.windowPtr).toNativeAddress()
+        val hwnd = glfwGetWin32Window(window.windowHandle).toNativeAddress()
         val hinstance = Kernel32.INSTANCE.GetModuleHandle(null).pointer.toNativeAddress()
         getSurfaceFromWindows(hinstance, hwnd) ?: error("fail to get surface on Windows")
     }
 
     OsInfo.OS.MACOS_X -> {
-        val nsWindowPtr = glfwGetCocoaWindow(window.windowPtr)
+        val nsWindowPtr = glfwGetCocoaWindow(window.windowHandle)
         val nswindow = Rococoa.wrap(ID.fromLong(nsWindowPtr), NSWindow::class.java)
         nswindow.contentView()?.setWantsLayer(true)
         val layer = CAMetalLayer.layer()

@@ -11,7 +11,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
-import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFW.glfwPollEvents
+import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import java.awt.Desktop
 import java.awt.image.BufferedImage
 import java.net.URI
@@ -33,16 +34,16 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         set(value) {
             if (field != value) {
                 field = value
-                windowScale = backend.glfwWindow.windowScale * value
+                windowScale = backend.glfwWindow.scale * value
                 (backend as? RenderBackendVk)?.recreateSwapchain()
             }
         }
 
-    override val windowWidth: Int get() = (backend.glfwWindow.framebufferWidth * renderScale).toInt()
-    override val windowHeight: Int get() = (backend.glfwWindow.framebufferHeight * renderScale).toInt()
+    override val windowWidth: Int get() = (backend.glfwWindow.physicalSize.x * renderScale).toInt()
+    override val windowHeight: Int get() = (backend.glfwWindow.physicalSize.y * renderScale).toInt()
     override var isFullscreen: Boolean
-        get() = backend.glfwWindow.isFullscreen
-        set(value) { backend.glfwWindow.isFullscreen = value }
+        get() = backend.glfwWindow.flags.isFullscreen
+        set(value) { backend.glfwWindow.setFullscreen(value) }
 
     var maxFrameRate = config.maxFrameRate
     var windowNotFocusedFrameRate = config.windowNotFocusedFrameRate
@@ -65,10 +66,8 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
             else -> error("Failed creating render backend ${backendProvider.displayName}: ${backendResult.exceptionOrNull()}")
         } as RenderBackendJvm
 
-        isWindowFocused = backend.glfwWindow.isFocused
-        backend.glfwWindow.onFocusChanged += {
-            isWindowFocused = it
-        }
+        isWindowFocused = backend.glfwWindow.flags.isFocused
+        backend.glfwWindow.onWindowFlagsChanged { isWindowFocused = it.isFocused }
 
         PlatformInputJvm.onContextCreated(this)
         KoolSystem.onContextCreated(this)
@@ -81,17 +80,17 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
 
     fun close() {
-        glfwSetWindowShouldClose(backend.glfwWindow.windowPtr, true)
+        backend.glfwWindow.close()
     }
 
     override fun run() {
         Thread.currentThread().name = "kool-main-backend-thread"
         runBlocking {
-            while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
+            while (!glfwWindowShouldClose(backend.glfwWindow.windowHandle)) {
                 sysInfo.update()
                 backend.glfwWindow.pollEvents()
 
-                if (!backend.glfwWindow.isMinimized) {
+                if (!backend.glfwWindow.flags.isMinimized) {
                     renderFrame()
                 } else {
                     Thread.sleep(10)
@@ -152,7 +151,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     }
 
     private fun delayFrameRender(untilFocused: Long, untilUnfocused: Long) {
-        while (!glfwWindowShouldClose(backend.glfwWindow.windowPtr)) {
+        while (!glfwWindowShouldClose(backend.glfwWindow.windowHandle)) {
             val t = System.nanoTime()
             val isFocused = isWindowFocused || PlatformInputJvm.isMouseOverWindow
             if ((isFocused && t >= untilFocused) || (!isFocused && t >= untilUnfocused)) {

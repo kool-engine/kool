@@ -6,8 +6,8 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
-import de.fabmax.kool.platform.GlfwWindow
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.util.Color
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
@@ -73,7 +73,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         timer.timedScope {
             super.renderFrame(frameData, ctx)
         }
-        glfwSwapBuffers(glfwWindow.windowPtr)
+        glfwSwapBuffers(glfwWindow.windowHandle)
     }
 
     private fun createWindow(): GlfwWindow {
@@ -83,10 +83,10 @@ class RenderBackendGlImpl(ctx: KoolContext) :
 
         // create window
         val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
-        glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
+        glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
 
         // make the OpenGL context current
-        GLFW.glfwMakeContextCurrent(glfwWindow.windowPtr)
+        GLFW.glfwMakeContextCurrent(glfwWindow.windowHandle)
 
         // enable V-sync if configured
         if (KoolSystem.configJvm.isVsync) {
@@ -97,7 +97,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
 
         // make the window visible
         if (KoolSystem.configJvm.showWindowOnStart) {
-            glfwWindow.isVisible = true
+            glfwWindow.setVisible(true)
         }
         return glfwWindow
     }

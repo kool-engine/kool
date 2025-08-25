@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.clamp
+import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
@@ -234,7 +235,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
                 var transferFamily: Int? = null
                 for (i in 0 until nFams[0]) {
                     val props = queueFamilies[i]
-                    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, backend.glfwWindow.surface.surfaceHandle, ip)
+                    vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, backend.surface.surfaceHandle, ip)
                     if (presentFamily == null && props.queueCount() > 0 && ip[0] != 0) {
                         presentFamily = i
                     }
@@ -268,7 +269,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             fmts: VkSurfaceFormatKHR.Buffer? = null
         ): SwapChainSupportDetails {
             val ip = stack.mallocInt(1)
-            val surface = backend.glfwWindow.surface.surfaceHandle
+            val surface = backend.surface.surfaceHandle
 
             val capabilities = caps ?: VkSurfaceCapabilitiesKHR.malloc(stack)
             vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, capabilities)
@@ -361,14 +362,14 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
 
-        fun chooseSwapExtent(window: GlfwVkWindow): Vec2i {
+        fun chooseSwapExtent(window: GlfwWindow): Vec2i {
             val minWidth = capabilities.minImageExtent().width()
             val maxWidth = capabilities.maxImageExtent().width()
             val minHeight = capabilities.minImageExtent().height()
             val maxHeight = capabilities.maxImageExtent().height()
             return Vec2i(
-                window.framebufferWidth.clamp(minWidth, maxWidth),
-                window.framebufferHeight.clamp(minHeight, maxHeight)
+                window.physicalSize.x.clamp(minWidth, maxWidth),
+                window.physicalSize.y.clamp(minHeight, maxHeight)
             )
         }
     }

@@ -27,7 +27,7 @@ object PlatformInputJvm : PlatformInput {
         BackendScope.launch {
             val ctx = KoolSystem.requireContext() as Lwjgl3Context
             val window = ctx.backend.glfwWindow
-            val windowHandle = window.windowPtr
+            val windowHandle = window.windowHandle
 
             if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
                 val x = doubleArrayOf(0.0)
@@ -35,8 +35,8 @@ object PlatformInputJvm : PlatformInput {
                 glfwGetCursorPos(windowHandle, x, y)
                 glfwSetInputMode(windowHandle, GLFW_CURSOR, cursorMode.glfwMode)
                 if (cursorMode == CursorMode.NORMAL) {
-                    val setX = ((x[0] % window.framebufferWidth) + window.framebufferWidth) % window.framebufferWidth
-                    val setY = ((y[0] % window.framebufferHeight) + window.framebufferHeight) % window.framebufferHeight
+                    val setX = ((x[0] % window.physicalSize.x) + window.physicalSize.x) % window.physicalSize.x
+                    val setY = ((y[0] % window.physicalSize.y) + window.physicalSize.y) % window.physicalSize.y
                     glfwSetCursorPos(windowHandle, setX, setY)
                 }
             }
@@ -46,7 +46,7 @@ object PlatformInputJvm : PlatformInput {
     override fun applyCursorShape(cursorShape: CursorShape) {
         BackendScope.launch {
             val ctx = KoolSystem.requireContext() as Lwjgl3Context
-            val windowHandle = ctx.backend.glfwWindow.windowPtr
+            val windowHandle = ctx.backend.glfwWindow.windowHandle
 
             if (cursorShape != currentCursorShape) {
                 glfwSetCursor(windowHandle, cursorShapes[cursorShape] ?: 0L)
@@ -59,7 +59,7 @@ object PlatformInputJvm : PlatformInput {
         deriveLocalKeyCodes()
         createStandardCursors()
 
-        val windowHandle = ctx.backend.glfwWindow.windowPtr
+        val windowHandle = ctx.backend.glfwWindow.windowHandle
         installInputHandlers(windowHandle)
 
         ctx.onWindowFocusChanged += {

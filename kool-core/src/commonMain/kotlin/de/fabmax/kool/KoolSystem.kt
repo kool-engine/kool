@@ -59,15 +59,21 @@ internal expect fun PlatformProperties(): KoolSystem.PlatformProperties
 
 sealed interface Platform {
     data class Desktop(val os: String) : Platform {
-        val isWindows: Boolean get() = "windows" in os.lowercase()
-        val isLinux: Boolean get() = "linux" in os.lowercase()
-        val isMacOs: Boolean get() {
+        override val isWindows: Boolean get() = "windows" in os.lowercase()
+        override val isLinux: Boolean get() = "linux" in os.lowercase()
+        override val isMacOs: Boolean get() {
             val osLowercase = os.lowercase()
             return "mac os" in osLowercase || "darwin" in osLowercase || "osx" in osLowercase
         }
     }
     data object Android : Platform
     data object Javascript : Platform
+
+    val isWindows: Boolean get() = false
+    val isLinux: Boolean get() = false
+    val isMacOs: Boolean get() = false
+    val isAndroid: Boolean get() = this == Android
+    val isJavascript: Boolean get() = this == Javascript
 }
 
 interface KoolConfig {

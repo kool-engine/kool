@@ -2,6 +2,7 @@ package de.fabmax.kool.platform
 
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.util.WindowTitleHoverHandler
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack
@@ -25,7 +26,6 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     private val windowDragStartPos = MutableVec2i()
 
     private val hoverHandler: WindowTitleHoverHandler get() = glfwWindow.ctx.windowTitleHoverHandler
-    private var isHiddenTitleBar by glfwWindow::isHiddenTitleBar
     private var isMaximized = false
     private val nonMaxPos = MutableVec2i()
     private val nonMaxSize = MutableVec2i()
@@ -77,14 +77,14 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
                 WM_NCHITTEST -> {
                     val y = lParam.toInt() shr 16
                     val x = lParam.toInt() and 0xffff
-                    val clientX = x - glfwWindow.windowPosX - nonTopBorder
-                    val clientY = y - glfwWindow.windowPosY - topBorder
+                    val clientX = x - glfwWindow.position.x - nonTopBorder
+                    val clientY = y - glfwWindow.position.y - topBorder
                     val resizeBorder = 4
 
                     if (clientY < resizeBorder && !isMaximized) {
                         when {
                             clientX <= resizeBorder -> HTTOPLEFT.toLong()
-                            clientX >= glfwWindow.framebufferWidth - resizeBorder -> HTTOPRIGHT.toLong()
+                            clientX >= glfwWindow.physicalSize.x - resizeBorder -> HTTOPRIGHT.toLong()
                             else -> HTTOP.toLong()
                         }
                     } else {
@@ -104,9 +104,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
                 else -> nCallWindowProc(originalWndProcPtr, hWnd, uMsg, wParam, lParam)
             }
         }
-
         SetWindowLongPtr(null, glfwHWnd, GWL_WNDPROC, wndProc.address())
-        isHiddenTitleBar = true
     }
 
     private fun isHoverWindowButton(): Boolean {
@@ -125,7 +123,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     }
 
     override fun setWindowPos(windowPtr: Long, x: Int, y: Int) {
-        if (isHiddenTitleBar) {
+        if (glfwWindow.flags.isHiddenTitleBar) {
             val hWnd = glfwGetWin32Window(windowPtr)
             SetWindowPos(null, hWnd, 0L, x, y, 0, 0, SWP_FRAMECHANGED or SWP_NOSIZE)
         } else {
@@ -134,7 +132,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     }
 
     override fun setWindowSize(windowPtr: Long, width: Int, height: Int) {
-        if (isHiddenTitleBar) {
+        if (glfwWindow.flags.isHiddenTitleBar) {
             val hWnd = glfwGetWin32Window(windowPtr)
             SetWindowPos(null, hWnd, 0L, 0, 0, width + nonTopBorder * 2, height + nonTopBorder + topBorder, SWP_FRAMECHANGED or SWP_NOMOVE)
         } else {

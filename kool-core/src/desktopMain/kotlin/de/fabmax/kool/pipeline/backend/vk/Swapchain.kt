@@ -50,7 +50,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             }
 
             vkSwapchain = device.createSwapchain(this) {
-                surface(backend.glfwWindow.surface.surfaceHandle)
+                surface(backend.surface.surfaceHandle)
                 minImageCount(imageCount)
                 imageFormat(surfaceFormat.format())
                 imageColorSpace(surfaceFormat.colorSpace())
