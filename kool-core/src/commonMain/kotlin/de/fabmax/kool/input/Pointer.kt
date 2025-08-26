@@ -39,7 +39,7 @@ open class Pointer {
     /**
      * Window-scale of the parent window.
      */
-    val windowScale: Float get() = KoolSystem.requireContext().window.scale
+    val windowScale: Float get() = KoolSystem.requireContext().window.renderScale
 
     var buttonMask = 0
         internal set(value) {
@@ -142,7 +142,7 @@ open class Pointer {
      */
     fun isInViewport(viewport: Viewport, ctx: KoolContext): Boolean {
         // y-axis of viewport is inverted to window coordinates
-        val ptrY = ctx.window.physicalSize.y - pos.y
+        val ptrY = ctx.window.size.y - pos.y
         return (isValid) && viewport.isInViewport(pos.x, ptrY)
     }
 

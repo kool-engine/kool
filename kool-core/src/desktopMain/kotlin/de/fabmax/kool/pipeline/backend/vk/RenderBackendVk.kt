@@ -13,7 +13,6 @@ import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.launch
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.VK10.*
@@ -109,15 +108,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         clearHelper = ClearHelper(this)
         screenPass = ScreenPassVk(this)
 
-        window.onPhysicalWindowResized { windowResized = true }
-
         frameTimer = Timer(timestampQueryPool) { delta -> frameGpuTime = delta }
 
-        window.onScaleChange {
-            BackendScope.launch {
-                recreateSwapchain()
-            }
-        }
+        window.onResize { windowResized = true }
+        window.onScaleChange { windowResized = true }
     }
 
     private fun clampUint(unsignedCnt: Int): Int {
@@ -163,6 +157,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 imgOk = swapchain.presentNextImage(this)
             }
             if (!imgOk || windowResized) {
+                logD { "Recreate swapchain due to resize" }
                 windowResized = false
                 recreateSwapchain()
             }

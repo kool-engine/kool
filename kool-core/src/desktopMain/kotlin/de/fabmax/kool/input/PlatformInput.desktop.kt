@@ -36,8 +36,8 @@ object PlatformInputJvm : PlatformInput {
                 glfwGetCursorPos(windowHandle, x, y)
                 glfwSetInputMode(windowHandle, GLFW_CURSOR, cursorMode.glfwMode)
                 if (cursorMode == CursorMode.NORMAL) {
-                    val setX = ((x[0] % window.physicalSize.x) + window.physicalSize.x) % window.physicalSize.x
-                    val setY = ((y[0] % window.physicalSize.y) + window.physicalSize.y) % window.physicalSize.y
+                    val setX = ((x[0] % window.size.x) + window.size.x) % window.size.x
+                    val setY = ((y[0] % window.size.y) + window.size.y) % window.size.y
                     glfwSetCursorPos(windowHandle, setX, setY)
                 }
             }
@@ -126,7 +126,8 @@ object PlatformInputJvm : PlatformInput {
             PointerInput.handleMouseButtonEvent(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            val scale = if (isMacOs) ctx.window.scale else ctx.renderScaleMultiplier
+            val baseScale = if (isMacOs) ctx.window.parentScreenScale else 1f
+            val scale = baseScale * ctx.window.renderResolutionFactor
             PointerInput.handleMouseMove(x.toFloat() * scale, y.toFloat() * scale)
         }
         glfwSetCursorEnterCallback(windowHandle) { _, entered ->

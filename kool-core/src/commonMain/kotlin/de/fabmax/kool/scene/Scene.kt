@@ -165,7 +165,7 @@ open class Scene(name: String? = null) : Node(name) {
 
             val ctx = KoolSystem.getContextOrNull()
             if (ctx != null) {
-                _dimensions.set(ctx.window.physicalSize.x, ctx.window.physicalSize.y, 1)
+                _dimensions.set(ctx.window.size.x, ctx.window.size.y, 1)
             } else {
                 _dimensions.set(Vec3i.ONES)
             }
@@ -185,7 +185,7 @@ open class Scene(name: String? = null) : Node(name) {
         }
 
         override fun update(passData: PassData, ctx: KoolContext) {
-            _dimensions.set(ctx.window.physicalSize.x, ctx.window.physicalSize.y, 1)
+            _dimensions.set(ctx.window.size.x, ctx.window.size.y, 1)
             if (isFillFrame && !viewport.equals(0, 0, dimensions.x, dimensions.y)) {
                 viewport = Viewport(0, 0, dimensions.x, dimensions.y)
             }

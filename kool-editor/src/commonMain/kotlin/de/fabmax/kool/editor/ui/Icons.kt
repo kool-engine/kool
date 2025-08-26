@@ -26,9 +26,9 @@ object Icons {
 
     init {
         val ctx = KoolSystem.requireContext()
-        windowScale = ctx.renderScaleMultiplier
+        windowScale = ctx.window.renderScale
         ctx.window.onScaleChange {
-            windowScale = ctx.renderScaleMultiplier * it
+            windowScale = it
             small.invalidate()
             medium.invalidate()
         }

@@ -19,7 +19,7 @@ class TouchGestureEvaluator {
     private var scale = 1f
 
     fun evaluate(pointerState: PointerState, ctx: KoolContext) {
-        scale = ctx.window.scale
+        scale = ctx.window.renderScale
         pointerState.getActivePointers(activePointers)
 
         if (activePointers.size > 1) {

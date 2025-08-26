@@ -368,8 +368,8 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             val minHeight = capabilities.minImageExtent().height()
             val maxHeight = capabilities.maxImageExtent().height()
             return Vec2i(
-                window.physicalSize.x.clamp(minWidth, maxWidth),
-                window.physicalSize.y.clamp(minHeight, maxHeight)
+                window.framebufferSize.x.clamp(minWidth, maxWidth),
+                window.framebufferSize.y.clamp(minHeight, maxHeight)
             )
         }
     }

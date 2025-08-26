@@ -153,11 +153,12 @@ class ScreenPassVk(backend: RenderBackendVk) :
     }
 
     private fun createColorResources(samples: Int, commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
+        val renderScale = backend.window.renderResolutionFactor
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = backend.swapchain.imageFormat,
-            width = (backend.swapchain.width * backend.ctx.renderScaleMultiplier).toInt(),
-            height = (backend.swapchain.height * backend.ctx.renderScaleMultiplier).toInt(),
+            width = (backend.swapchain.width * renderScale).toInt(),
+            height = (backend.swapchain.height * renderScale).toInt(),
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
@@ -175,11 +176,12 @@ class ScreenPassVk(backend: RenderBackendVk) :
     }
 
     private fun createDepthResources(commandBuffer: VkCommandBuffer): Pair<ImageVk, VkImageView> {
+        val renderScale = backend.window.renderResolutionFactor
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = backend.physicalDevice.depthFormat,
-            width = (backend.swapchain.width * backend.ctx.renderScaleMultiplier).toInt(),
-            height = (backend.swapchain.height * backend.ctx.renderScaleMultiplier).toInt(),
+            width = (backend.swapchain.width * renderScale).toInt(),
+            height = (backend.swapchain.height * renderScale).toInt(),
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,

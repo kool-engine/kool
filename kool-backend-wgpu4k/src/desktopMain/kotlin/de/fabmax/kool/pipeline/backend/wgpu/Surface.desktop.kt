@@ -4,8 +4,8 @@ import de.fabmax.kool.platform.glfw.GlfwWindow
 import io.ygdrasil.webgpu.*
 
 actual class WgpuSurface(private val handler: NativeSurface, internal val glfwWindow: GlfwWindow) : AutoCloseable {
-    actual val width: UInt get() = glfwWindow.physicalSize.x.toUInt()
-    actual val height: UInt get() = glfwWindow.physicalSize.y.toUInt()
+    actual val width: UInt get() = glfwWindow.framebufferSize.x.toUInt()
+    actual val height: UInt get() = glfwWindow.framebufferSize.y.toUInt()
 
     val supportedFormats: Set<GPUTextureFormat> get() = handler.supportedFormats
     actual val supportedAlphaMode: Set<CompositeAlphaMode> get() = handler.supportedAlphaMode

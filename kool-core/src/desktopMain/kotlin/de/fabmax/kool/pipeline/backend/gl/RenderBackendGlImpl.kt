@@ -1,9 +1,6 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.FrameData
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJvm
+import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -89,11 +86,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         GLFW.glfwMakeContextCurrent(glfwWindow.windowHandle)
 
         // enable V-sync if configured
-        if (KoolSystem.configJvm.isVsync) {
-            GLFW.glfwSwapInterval(1)
-        } else {
-            GLFW.glfwSwapInterval(0)
-        }
+        GLFW.glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
 
         // make the window visible
         if (KoolSystem.configJvm.showWindowOnStart) {

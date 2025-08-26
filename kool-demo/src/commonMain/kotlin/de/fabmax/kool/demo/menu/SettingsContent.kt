@@ -47,7 +47,7 @@ class SettingsContent(val menu: DemoMenu) : Composable {
                     .selectedIndex(renderScales.indexOf(Settings.renderScale.use()))
                     .onItemSelected {
                         Settings.renderScale.set(renderScales[it])
-                        KoolSystem.requireContext().renderScaleMultiplier = renderScales[it] / 100f
+                        KoolSystem.requireContext().window.renderResolutionFactor = renderScales[it] / 100f
                     }
             }
         }

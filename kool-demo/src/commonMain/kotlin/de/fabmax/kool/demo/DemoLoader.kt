@@ -3,6 +3,7 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.PointerInput
+import de.fabmax.kool.setFullscreen
 import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logI
@@ -40,7 +41,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
 
     init {
         Settings.loadSettings()
-        ctx.renderScaleMultiplier = Settings.renderScale.value / 100f
+        ctx.window.renderResolutionFactor = Settings.renderScale.value / 100f
 
         ctx.scenes += loadingScreen
         ctx.scenes += dbgOverlay.ui

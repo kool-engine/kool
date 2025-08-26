@@ -1,7 +1,6 @@
 package de.fabmax.kool.platform.glfw
 
 import de.fabmax.kool.*
-import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.TexFormat
@@ -27,54 +26,57 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
 
     val windowHandle: Long
 
-    private val _windowPos = MutableVec2i()
-    private val _physicalWindowSize = MutableVec2i()
-    private val _scaledWindowSize = MutableVec2i()
+    private var _screenPos = Vec2i(0, 0)
+    private var _screenSize = Vec2i(KoolSystem.configJvm.windowSize)
+    private var _flags = WindowFlags.DEFAULT
 
-    override var position = Vec2i(0, 0); private set
-    override var title: String = KoolSystem.configJvm.windowTitle; private set
+    override var parentScreenScale: Float = 1f; private set
 
-    override var physicalSize = Vec2i(KoolSystem.configJvm.windowSize)
-        private set(value) {
+    override var positionInScreen: Vec2i
+        get() = _screenPos
+        set(value) {
+            _screenPos = value
+            platformWindowHelper.setWindowPos(windowHandle, value.x, value.y)
+        }
+
+    override var sizeOnScreen: Vec2i
+        get() = _screenSize
+        set(value) {
+            _screenSize = value
+            platformWindowHelper.setWindowSize(windowHandle, value.x, value.y)
+        }
+
+    override var renderResolutionFactor: Float = 1f
+        set(value) {
             if (value != field) {
                 field = value
-                physicalResizeListeners.updated().forEach { it.onResize(value) }
+                updateSizesAndScales()
             }
         }
 
-    override var scaledSize = Vec2i(KoolSystem.configJvm.windowSize); private set
+    override var framebufferSize: Vec2i = Vec2i(KoolSystem.configJvm.windowSize); private set
 
-    override var scale: Float = 1f
-        private set(value) {
-            if (value != field) {
-                field = value
-                updateRenderScale(windowScale = value)
-            }
-        }
+    override var size = Vec2i(KoolSystem.configJvm.windowSize)
 
     override val renderScale: Float
-        get() = scale * ctx.renderScaleMultiplier
+        get() = parentScreenScale * renderResolutionFactor
 
-    override var flags = WindowFlags(
-        isFullscreen = false,
-        isMaximized = false,
-        isMinimized = false,
-        isVisible = false,
-        isFocused = false,
-        isHiddenTitleBar = false,
-    ); private set(value) {
-        if (value != field) {
-            val oldFlags = field
+    override var title: String = KoolSystem.configJvm.windowTitle
+        set(value) {
             field = value
-            flagListeners.updated().forEach { it.onFlagsChanged(oldFlags, value) }
+            glfwSetWindowTitle(windowHandle, value)
         }
-    }
 
-    override val scaledResizeListeners = BufferedList<WindowResizeListener>()
-    override val physicalResizeListeners = BufferedList<WindowResizeListener>()
-    override val scaleChangeListeners = BufferedList<ScaleChangeListener>()
-    override val flagListeners = BufferedList<WindowFlagsListener>()
-    override val closeListeners = BufferedList<WindowCloseListener>()
+    override var flags: WindowFlags
+        get() = _flags
+        set(value) {
+            if (value != _flags) {
+                val oldFlags = _flags
+                _flags = value
+                applyFlags(oldFlags, value)
+                flagListeners.updated().forEach { it.onFlagsChanged(oldFlags, value) }
+            }
+        }
 
     override val capabilities: WindowCapabilities = WindowCapabilities(
         canSetSize = true,
@@ -87,10 +89,14 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         canHideTitleBar = KoolSystem.platform.isWindows
     )
 
+    override val resizeListeners = BufferedList<WindowResizeListener>()
+    override val scaleChangeListeners = BufferedList<ScaleChangeListener>()
+    override val flagListeners = BufferedList<WindowFlagsListener>()
+    override val closeListeners = BufferedList<WindowCloseListener>()
+
     private val fsMonitor: Long
     private var windowedSize = Vec2i.ZERO
     private var windowedPos = Vec2i.ZERO
-
     private var renderOnResizeFlag = false
 
     private val platformWindowHelper = when (OsInfo.os) {
@@ -126,159 +132,102 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         val outFloat1 = FloatArray(1)
         val outFloat2 = FloatArray(1)
         glfwGetWindowPos(windowHandle, outInt1, outInt2)
-        position = Vec2i(outInt1[0], outInt2[0])
-        windowedPos = position
+        _screenPos = Vec2i(outInt1[0], outInt2[0])
+        windowedPos = _screenPos
         glfwGetFramebufferSize(windowHandle, outInt1, outInt2)
-        physicalSize = Vec2i(outInt1[0], outInt2[0])
+        framebufferSize = Vec2i(outInt1[0], outInt2[0])
         glfwGetWindowContentScale(windowHandle, outFloat1, outFloat2)
-        scale = outFloat1[0]
+        parentScreenScale = outFloat1[0]
+        updateSizesAndScales()
 
-        scaledSize = Vec2i((physicalSize.x / scale).roundToInt(), (physicalSize.y / scale).roundToInt())
-        windowedSize = scaledSize
+        _screenSize = Vec2i((size.x / parentScreenScale).roundToInt(), (size.y / parentScreenScale).roundToInt())
+        windowedSize = _screenSize
 
         flags = flags.copy(
             isFocused = glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE
         )
 
         glfwSetWindowSizeCallback(windowHandle) { _, w, h ->
-            windowSizeChanged(w, h)
+            _screenSize = Vec2i(w, h)
+            windowResizeHandler(w, h)
         }
         glfwSetFramebufferSizeCallback(windowHandle) { _, w, h ->
-            physicalSize = Vec2i(w, h)
+            framebufferSize = Vec2i(w, h)
         }
         glfwSetWindowPosCallback(windowHandle) { _, x, y ->
-            position = platformWindowHelper.getWindowPos(windowHandle, x, y)
+            _screenPos = platformWindowHelper.getWindowPos(windowHandle, x, y)
         }
         glfwSetWindowCloseCallback(windowHandle) {
             onWindowCloseRequest()
         }
         glfwSetWindowFocusCallback(windowHandle) { _, isFocused ->
-            flags = flags.copy(isFocused = isFocused)
+            _flags = flags.copy(isFocused = isFocused)
         }
         glfwSetWindowContentScaleCallback(windowHandle) { _, xScale, _ ->
-            scale = xScale
+            parentScreenScale = xScale
+            updateSizesAndScales()
         }
         glfwSetDropCallback(windowHandle) { _, numFiles, pathPtr ->
             onFileDrop(numFiles, pathPtr)
         }
     }
 
-    override fun setPosition(position: Vec2i) {
-        platformWindowHelper.setWindowPos(windowHandle, position.x, position.y)
-    }
-
-    override fun setScaledSize(size: Vec2i) {
-        //platformWindowHelper.setWindowSize(windowHandle, size.x, size.y)
-    }
-
-    override fun setTitle(newTitle: String) {
-        glfwSetWindowTitle(windowHandle, newTitle)
-        title = newTitle
-    }
-
-    override fun setFullscreen(enabled: Boolean) {
-        if (enabled == flags.isFullscreen) return
-        if (enabled) {
-            windowedPos = position
-            windowedSize = scaledSize
-
-            val vidMode = glfwGetVideoMode(fsMonitor)!!
-            glfwSetWindowMonitor(
-                windowHandle,
-                fsMonitor,
-                0,
-                0,
-                vidMode.width(),
-                vidMode.height(),
-                GLFW_DONT_CARE
-            )
-            if (KoolSystem.configJvm.isVsync) {
-                glfwSwapInterval(1)
-            }
-        } else {
-            glfwSetWindowMonitor(
-                windowHandle,
-                0,
-                windowedPos.x,
-                windowedPos.y,
-                windowedSize.x,
-                windowedSize.y,
-                GLFW_DONT_CARE
-            )
+    private fun applyFlags(oldFlags: WindowFlags, newFlags: WindowFlags) {
+        if (oldFlags.isVisible != newFlags.isVisible) {
+            if (newFlags.isVisible) glfwShowWindow(windowHandle) else glfwHideWindow(windowHandle)
         }
-        flags = flags.copy(isFocused = enabled)
-    }
-
-    override fun setMaximized(enabled: Boolean) {
-        val wasMaximized = glfwGetWindowAttrib(windowHandle, GLFW_MAXIMIZED) != 0
-        if (enabled != wasMaximized) {
-            if (enabled) {
-                glfwMaximizeWindow(windowHandle)
+        if (oldFlags.isMinimized != newFlags.isMinimized) {
+            if (newFlags.isMinimized) glfwIconifyWindow(windowHandle) else glfwRestoreWindow(windowHandle)
+        }
+        if (oldFlags.isMaximized != newFlags.isMaximized) {
+            if (newFlags.isMaximized) glfwMaximizeWindow(windowHandle) else glfwRestoreWindow(windowHandle)
+        }
+        if (oldFlags.isFullscreen != newFlags.isFullscreen) {
+            if (newFlags.isFullscreen) enableFullscreen() else disableFullscreen()
+        }
+        if (oldFlags.isHiddenTitleBar != newFlags.isHiddenTitleBar) {
+            if (!newFlags.isHiddenTitleBar) {
+                platformWindowHelper.hideTitleBar(windowHandle)
             } else {
-                glfwRestoreWindow(windowHandle)
+                logE { "Restoring the title bar from hidden state is not yet supported" }
             }
         }
-        flags = flags.copy(isMaximized = enabled)
     }
 
-    override fun setMinimized(enabled: Boolean) {
-        val wasMinimized = glfwGetWindowAttrib(windowHandle, GLFW_ICONIFIED) != 0
-        if (enabled != wasMinimized) {
-            if (enabled) {
-                glfwIconifyWindow(windowHandle)
-            } else {
-                glfwRestoreWindow(windowHandle)
-            }
-        }
-        flags = flags.copy(isMinimized = enabled)
+    private fun enableFullscreen() {
+        windowedPos = positionInScreen
+        windowedSize = sizeOnScreen
+        val vidMode = glfwGetVideoMode(fsMonitor)!!
+        glfwSetWindowMonitor(
+            windowHandle,
+            fsMonitor,
+            0,
+            0,
+            vidMode.width(),
+            vidMode.height(),
+            GLFW_DONT_CARE
+        )
+        glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
     }
 
-    override fun setVisible(isVisible: Boolean) {
-        if (isVisible) {
-            glfwShowWindow(windowHandle)
-        } else {
-            glfwHideWindow(windowHandle)
-        }
+    private fun disableFullscreen() {
+        glfwSetWindowMonitor(
+            windowHandle,
+            0,
+            windowedPos.x,
+            windowedPos.y,
+            windowedSize.x,
+            windowedSize.y,
+            GLFW_DONT_CARE
+        )
+        glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
     }
 
     override fun close() {
         glfwSetWindowShouldClose(windowHandle, true)
     }
 
-    override fun setTitleBarVisibility(visible: Boolean) {
-        if (visible == flags.isHiddenTitleBar) {
-            return
-        }
-        if (!capabilities.canHideTitleBar) {
-            logE { "Hiding the title bar is not supported on this platform" }
-            return
-        }
-        if (!visible) {
-            platformWindowHelper.hideTitleBar(windowHandle)
-            flags = flags.copy(isHiddenTitleBar = true)
-        } else {
-            logE { "Unhiding the title bar is not yet supported" }
-        }
-    }
-
-    internal fun updateRenderScale(renderScaleMultiplier: Float = ctx.renderScaleMultiplier, windowScale: Float = scale) {
-        UiScale.updateUiScaleFromWindowScale(windowScale * renderScaleMultiplier)
-        scaleChangeListeners.updated().forEach { it.onScaleChanged(windowScale) }
-    }
-
-    fun pollEvents() {
-        renderOnResizeFlag = KoolSystem.configJvm.updateOnWindowResize
-        glfwPollEvents()
-        renderOnResizeFlag = false
-    }
-
-    private fun windowSizeChanged(width: Int, height: Int) {
-        val newSize = Vec2i(width, height)
-        if (newSize != scaledSize) {
-            scaledSize = newSize
-            scaledResizeListeners.updated().forEach { it.onResize(newSize) }
-        }
-
+    private fun windowResizeHandler(width: Int, height: Int) {
         // with GLFW, window resizing blocks the main-loop, call renderFrame() from here to update window content
         // during window resizing
         if (renderOnResizeFlag) {
@@ -290,6 +239,22 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
                 }
             }
         }
+    }
+
+    private fun updateSizesAndScales() {
+        size = Vec2i(
+            (framebufferSize.x * renderResolutionFactor).toInt(),
+            (framebufferSize.y * renderResolutionFactor).toInt()
+        )
+        UiScale.updateUiScaleFromWindowScale(renderScale)
+        resizeListeners.updated().forEach { it.onResize(size) }
+        scaleChangeListeners.updated().forEach { it.onScaleChanged(renderScale) }
+    }
+
+    fun pollEvents() {
+        renderOnResizeFlag = KoolSystem.configJvm.updateOnWindowResize
+        glfwPollEvents()
+        renderOnResizeFlag = false
     }
 
     private fun onWindowCloseRequest() {
@@ -317,10 +282,6 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         }
         TODO()
         //ctx.applicationCallbacks.onFileDrop(files)
-    }
-
-    fun setWindowTitle(windowTitle: String) {
-        glfwSetWindowTitle(windowHandle, windowTitle)
     }
 
     fun setWindowIcon(icon: List<BufferedImage>) {

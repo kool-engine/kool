@@ -38,12 +38,12 @@ actual object PlatformFunctions {
         val posX = KeyValueStore.getInt("editor.window.posX", -1)
         val posY = KeyValueStore.getInt("editor.window.posY", -1)
         if (posX != -1 && posY != -1) {
-            wnd.setPosition(Vec2i(posX, posY))
+            wnd.positionInScreen = Vec2i(posX, posY)
         }
 
         val width = KeyValueStore.getInt("editor.window.width", KoolSystem.configJvm.windowSize.x)
         val height = KeyValueStore.getInt("editor.window.height", KoolSystem.configJvm.windowSize.y)
-        wnd.setScaledSize(Vec2i(width, height))
+        wnd.sizeOnScreen = Vec2i(width, height)
 
         val isMaximized = KeyValueStore.getBoolean("editor.window.isMaximized", false)
         if (isMaximized) {
@@ -60,10 +60,10 @@ actual object PlatformFunctions {
             KeyValueStore.setBoolean("editor.window.isMaximized", true)
         } else {
             KeyValueStore.setBoolean("editor.window.isMaximized", false)
-            KeyValueStore.setInt("editor.window.posX", wnd.position.x)
-            KeyValueStore.setInt("editor.window.posY", wnd.position.y)
-            KeyValueStore.setInt("editor.window.width", wnd.scaledSize.x)
-            KeyValueStore.setInt("editor.window.height", wnd.scaledSize.y)
+            KeyValueStore.setInt("editor.window.posX", wnd.positionInScreen.x)
+            KeyValueStore.setInt("editor.window.posY", wnd.positionInScreen.y)
+            KeyValueStore.setInt("editor.window.width", wnd.sizeOnScreen.x)
+            KeyValueStore.setInt("editor.window.height", wnd.sizeOnScreen.y)
         }
     }
 

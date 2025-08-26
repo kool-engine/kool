@@ -3,10 +3,8 @@ package de.fabmax.kool.platform
 import de.fabmax.kool.*
 import de.fabmax.kool.input.PlatformInputJvm
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
-import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -15,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW.glfwPollEvents
 import org.lwjgl.glfw.GLFW.glfwWindowShouldClose
 import java.awt.Desktop
-import java.awt.image.BufferedImage
 import java.net.URI
 import java.util.*
 import kotlin.math.min
@@ -33,21 +30,6 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
 
     override val window: KoolWindow
         get() = backend.window
-
-    override var renderScaleMultiplier: Float = 1f
-        set(value) {
-            field = value
-            backend.window.updateRenderScale(renderScaleMultiplier = value)
-        }
-
-//    override var renderScale: Float = config.renderScale
-//        set(value) {
-//            if (field != value) {
-//                field = value
-//                windowScale = backend.glfwWindow.scale * value
-//                (backend as? RenderBackendVk)?.recreateSwapchain()
-//            }
-//        }
 
     var maxFrameRate = config.maxFrameRate
     var windowNotFocusedFrameRate = config.windowNotFocusedFrameRate
@@ -73,10 +55,6 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         PlatformInputJvm.onContextCreated(this)
         KoolSystem.onContextCreated(this)
     }
-
-    fun setWindowTitle(windowTitle: String) = backend.window.setWindowTitle(windowTitle)
-
-    fun setWindowIcon(icon: List<BufferedImage>) = backend.window.setWindowIcon(icon)
 
     override fun openUrl(url: String, sameWindow: Boolean)  = Desktop.getDesktop().browse(URI(url))
 

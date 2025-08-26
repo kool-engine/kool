@@ -141,7 +141,7 @@ class DebugOverlay(position: Position = Position.UPPER_RIGHT) {
     }
 
     private fun updateExpandedStats(ev: RenderPass.UpdateEvent) {
-        viewportText.set("Viewport: ${ev.viewport.width}x${ev.viewport.height} / ${(ev.ctx.window.scale * 100f).roundToInt()} %")
+        viewportText.set("Viewport: ${ev.viewport.width}x${ev.viewport.height} / ${(ev.ctx.window.renderScale * 100f).roundToInt()} %")
         updateUpText(Time.gameTime)
 
         numCmdsText.set("${BackendStats.pipelines.size} Shaders / ${BackendStats.numDrawCommands} Cmds")

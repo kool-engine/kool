@@ -48,12 +48,12 @@ class HelloBloom : DemoScene("Bloom") {
                 addColor(TexFormat.RG11B10_F, filterMethod = FilterMethod.NEAREST)
                 transientDepth()
             },
-            initialSize = Vec2i(ctx.window.physicalSize.x, ctx.window.physicalSize.y),
+            initialSize = Vec2i(ctx.window.size.x, ctx.window.size.y),
             name = "forward-hdr",
             numSamples = 4
         )
 
-        hdrPass.onUpdate { hdrPass.setSize(ctx.window.physicalSize.x, ctx.window.physicalSize.y) }
+        hdrPass.onUpdate { hdrPass.setSize(ctx.window.size.x, ctx.window.size.y) }
         hdrPass.sceneContent()
         addOffscreenPass(hdrPass)
 

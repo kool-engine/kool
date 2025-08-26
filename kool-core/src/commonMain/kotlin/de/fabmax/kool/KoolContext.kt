@@ -17,22 +17,8 @@ import de.fabmax.kool.util.Time
  */
 
 abstract class KoolContext {
-//    var windowScale = 1f
-//        internal set(value) {
-//            val userValue = applicationCallbacks.onWindowScaleChange(value, this)
-//            if (userValue != field) {
-//                logD { "Window scale changed: (${(userValue * 100f).roundToInt()} %)" }
-//                field = userValue
-//                UiScale.windowScale.set(field)
-//                UiScale.measuredScale = UiScale.windowScale.value * UiScale.uiScale.value
-//                onWindowScaleChanged.updated().forEach { it(this) }
-//            }
-//        }
-
     abstract val backend: RenderBackend
     abstract val window: KoolWindow
-
-    abstract var renderScaleMultiplier: Float
 
     private val frameDatas = List(2) { FrameData() }
     private var frameDataPtr = 0

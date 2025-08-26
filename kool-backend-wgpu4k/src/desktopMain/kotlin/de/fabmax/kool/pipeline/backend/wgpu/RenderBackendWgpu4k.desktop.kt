@@ -4,10 +4,7 @@ import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Kernel32
 import darwin.CAMetalLayer
 import darwin.NSWindow
-import de.fabmax.kool.FrameData
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJvm
+import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.OsInfo
@@ -71,7 +68,7 @@ internal class DesktopRenderBackendWgpu4kWebGpu(
     numSamples: Int,
     adapterProvider: suspend () -> GPUAdapter
 ) : RenderBackendWgpu4k(ctx, surface, numSamples, adapterProvider), RenderBackendJvm {
-    override val glfwWindow: GlfwWindow
+    override val window: GlfwWindow
         get() = surface.glfwWindow
 
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) {

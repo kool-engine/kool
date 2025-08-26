@@ -228,8 +228,8 @@ class UiDockable(
             pos.y = pos.y.clamp(0f, dock.dockingSurface.viewport.heightPx)
         } else {
             pos.set(screenPosition)
-            pos.x = pos.x.clamp(0f, ctx.window.physicalSize.x.toFloat())
-            pos.y = pos.y.clamp(0f, ctx.window.physicalSize.y.toFloat())
+            pos.x = pos.x.clamp(0f, ctx.window.size.x.toFloat())
+            pos.y = pos.y.clamp(0f, ctx.window.size.y.toFloat())
         }
         return pos
     }
