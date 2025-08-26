@@ -156,8 +156,8 @@ class ScreenPassVk(backend: RenderBackendVk) :
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = backend.swapchain.imageFormat,
-            width = (backend.swapchain.width * backend.ctx.renderScale).toInt(),
-            height = (backend.swapchain.height * backend.ctx.renderScale).toInt(),
+            width = (backend.swapchain.width * backend.ctx.renderScaleMultiplier).toInt(),
+            height = (backend.swapchain.height * backend.ctx.renderScaleMultiplier).toInt(),
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,
@@ -178,8 +178,8 @@ class ScreenPassVk(backend: RenderBackendVk) :
         val imgInfo = ImageInfo(
             imageType = VK_IMAGE_TYPE_2D,
             format = backend.physicalDevice.depthFormat,
-            width = (backend.swapchain.width * backend.ctx.renderScale).toInt(),
-            height = (backend.swapchain.height * backend.ctx.renderScale).toInt(),
+            width = (backend.swapchain.width * backend.ctx.renderScaleMultiplier).toInt(),
+            height = (backend.swapchain.height * backend.ctx.renderScaleMultiplier).toInt(),
             depth = 1,
             arrayLayers = 1,
             mipLevels = 1,

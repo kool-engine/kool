@@ -3,6 +3,7 @@ package de.fabmax.kool.platform.glfw
 import de.fabmax.kool.*
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.platform.*
@@ -47,9 +48,12 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         private set(value) {
             if (value != field) {
                 field = value
-                scaleChangeListeners.updated().forEach { it.onScaleChanged(value) }
+                updateRenderScale(windowScale = value)
             }
         }
+
+    override val renderScale: Float
+        get() = scale * ctx.renderScaleMultiplier
 
     override var flags = WindowFlags(
         isFullscreen = false,
@@ -60,16 +64,16 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         isHiddenTitleBar = false,
     ); private set(value) {
         if (value != field) {
+            val oldFlags = field
             field = value
-            flagListeners.updated().forEach { it.onFlagsChanged(value) }
+            flagListeners.updated().forEach { it.onFlagsChanged(oldFlags, value) }
         }
     }
-
 
     override val scaledResizeListeners = BufferedList<WindowResizeListener>()
     override val physicalResizeListeners = BufferedList<WindowResizeListener>()
     override val scaleChangeListeners = BufferedList<ScaleChangeListener>()
-    override val flagListeners = BufferedList<WindowFlagListener>()
+    override val flagListeners = BufferedList<WindowFlagsListener>()
     override val closeListeners = BufferedList<WindowCloseListener>()
 
     override val capabilities: WindowCapabilities = WindowCapabilities(
@@ -98,10 +102,6 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE)
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
-
-        onWindowFlagsChanged { println(it) }
-        onScaledWindowResized { println("resize $it") }
-        onPhysicalWindowResized { println("phys resize $it") }
 
         fsMonitor = if (KoolSystem.configJvm.monitor < 0) {
             DesktopImpl.primaryMonitor.monitor
@@ -132,7 +132,6 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         physicalSize = Vec2i(outInt1[0], outInt2[0])
         glfwGetWindowContentScale(windowHandle, outFloat1, outFloat2)
         scale = outFloat1[0]
-        ctx.windowScale = scale * ctx.renderScale
 
         scaledSize = Vec2i((physicalSize.x / scale).roundToInt(), (physicalSize.y / scale).roundToInt())
         windowedSize = scaledSize
@@ -262,6 +261,11 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         }
     }
 
+    internal fun updateRenderScale(renderScaleMultiplier: Float = ctx.renderScaleMultiplier, windowScale: Float = scale) {
+        UiScale.updateUiScaleFromWindowScale(windowScale * renderScaleMultiplier)
+        scaleChangeListeners.updated().forEach { it.onScaleChanged(windowScale) }
+    }
+
     fun pollEvents() {
         renderOnResizeFlag = KoolSystem.configJvm.updateOnWindowResize
         glfwPollEvents()
@@ -311,7 +315,8 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
                 files += LoadableFileImpl(file)
             }
         }
-        ctx.applicationCallbacks.onFileDrop(files)
+        TODO()
+        //ctx.applicationCallbacks.onFileDrop(files)
     }
 
     fun setWindowTitle(windowTitle: String) {

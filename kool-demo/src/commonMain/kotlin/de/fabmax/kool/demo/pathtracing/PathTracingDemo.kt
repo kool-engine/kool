@@ -321,8 +321,8 @@ class PathTracingDemo : DemoScene("Path-tracing") {
 
         val prevCamMatrix = MutableMat4f()
         onUpdate {
-            val imgW = (ctx.windowWidth * resolution.value).roundToInt()
-            val imgH = (ctx.windowHeight * resolution.value).roundToInt()
+            val imgW = (ctx.window.physicalSize.x * resolution.value).roundToInt()
+            val imgH = (ctx.window.physicalSize.y * resolution.value).roundToInt()
 
             val bufferSz = imgW * imgH
             val outBuffer = outputTex

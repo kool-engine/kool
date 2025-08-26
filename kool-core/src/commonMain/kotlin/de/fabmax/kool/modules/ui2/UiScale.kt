@@ -11,4 +11,9 @@ object UiScale {
     fun updateScale(surface: UiSurface) {
         measuredScale = uiScale.use(surface) * windowScale.use(surface)
     }
+
+    fun updateUiScaleFromWindowScale(windowScale: Float) {
+        this.windowScale.set(windowScale)
+        measuredScale = windowScale * uiScale.value
+    }
 }

@@ -43,7 +43,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             val swapChainSupport = physicalDevice.querySwapchainSupport(this)
             val surfaceFormat = swapChainSupport.chooseSurfaceFormat()
             val presentMode = swapChainSupport.choosePresentationMode()
-            extent = swapChainSupport.chooseSwapExtent(backend.glfwWindow)
+            extent = swapChainSupport.chooseSwapExtent(backend.window)
             var imageCount = swapChainSupport.capabilities.minImageCount() + 1
             if (swapChainSupport.capabilities.maxImageCount() > 0) {
                 imageCount = imageCount.coerceAtMost(swapChainSupport.capabilities.maxImageCount())

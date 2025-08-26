@@ -25,7 +25,7 @@ class PlatformWindowHelperWindows(val glfwWindow: GlfwWindow) : PlatformWindowHe
     private val windowDragStartCursor = MutableVec2i()
     private val windowDragStartPos = MutableVec2i()
 
-    private val hoverHandler: WindowTitleHoverHandler get() = glfwWindow.ctx.windowTitleHoverHandler
+    private val hoverHandler: WindowTitleHoverHandler get() = TODO()//glfwWindow.ctx.windowTitleHoverHandler
     private var isMaximized = false
     private val nonMaxPos = MutableVec2i()
     private val nonMaxSize = MutableVec2i()

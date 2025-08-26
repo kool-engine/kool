@@ -39,11 +39,12 @@ interface EditorAwareApp {
             startApp(projModel, ctx)
         }
 
-        ctx.applicationCallbacks = object : ApplicationCallbacks {
-            override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-                onDispose(ctx)
-                return true
-            }
-        }
+        TODO()
+//        ctx.applicationCallbacks = object : ApplicationCallbacks {
+//            override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
+//                onDispose(ctx)
+//                return true
+//            }
+//        }
     }
 }

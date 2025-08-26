@@ -16,7 +16,7 @@ class Surface(val backend: RenderBackendVk) : BaseReleasable() {
     init {
         memStack {
             val lp = mallocLong(1)
-            vkCheck(GLFWVulkan.glfwCreateWindowSurface(backend.instance.vkInstance, backend.glfwWindow.windowHandle, null, lp))
+            vkCheck(GLFWVulkan.glfwCreateWindowSurface(backend.instance.vkInstance, backend.window.windowHandle, null, lp))
             surfaceHandle = lp[0]
         }
         releaseWith(backend.instance)
@@ -28,7 +28,7 @@ class Surface(val backend: RenderBackendVk) : BaseReleasable() {
             KHRSurface.vkDestroySurfaceKHR(backend.instance.vkInstance, surfaceHandle, null)
             logD { "Destroyed surface" }
 
-            glfwDestroyWindow(backend.glfwWindow.windowHandle)
+            glfwDestroyWindow(backend.window.windowHandle)
             glfwTerminate()
             logD { "Destroyed GLFW window" }
         }

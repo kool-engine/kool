@@ -1,6 +1,7 @@
 package de.fabmax.kool.mock
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolWindow
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.util.KoolDispatchers
 import kotlin.concurrent.thread
@@ -8,11 +9,7 @@ import kotlin.concurrent.thread
 class TestKoolContext(
     override val backend: RenderBackend = MockBackend()
 ) : KoolContext() {
-    override var renderScale: Float = 1f
-
-    override val windowWidth: Int = 1600
-    override val windowHeight: Int = 900
-    override var isFullscreen: Boolean = false
+    override val window: KoolWindow get() = TODO("Not yet implemented")
 
     override fun run() {
         thread(isDaemon = true) {

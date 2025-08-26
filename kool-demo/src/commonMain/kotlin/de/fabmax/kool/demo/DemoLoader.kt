@@ -40,7 +40,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
 
     init {
         Settings.loadSettings()
-        ctx.renderScale = Settings.renderScale.value / 100f
+        ctx.renderScaleMultiplier = Settings.renderScale.value / 100f
 
         ctx.scenes += loadingScreen
         ctx.scenes += dbgOverlay.ui
@@ -121,8 +121,8 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     }
 
     private fun applySettings(ctx: KoolContext) {
-        if (Settings.isFullscreen.value != ctx.isFullscreen) {
-            ctx.isFullscreen = Settings.isFullscreen.value
+        if (ctx.window.capabilities.canSetFullscreen && Settings.isFullscreen.value != ctx.window.flags.isFullscreen) {
+            ctx.window.setFullscreen(Settings.isFullscreen.value)
         }
         dbgOverlay.ui.isVisible = Settings.showDebugOverlay.value
     }

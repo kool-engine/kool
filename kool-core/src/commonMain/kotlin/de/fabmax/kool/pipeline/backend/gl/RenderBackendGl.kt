@@ -49,7 +49,7 @@ abstract class RenderBackendGl(val numSamples: Int, internal val gl: GlApi, inte
         BackendStats.resetPerFrameCounts()
         currentFrameData = frameData
 
-        sceneRenderer.applySize(ctx.windowWidth, ctx.windowHeight)
+        sceneRenderer.applySize(ctx.window.physicalSize.x, ctx.window.physicalSize.y)
         frameData.forEachPass { passData ->
             passData.executePass()
         }

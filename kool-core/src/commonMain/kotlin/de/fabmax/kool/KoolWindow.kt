@@ -8,13 +8,14 @@ interface KoolWindow {
     val physicalSize: Vec2i
     val scaledSize: Vec2i
     val scale: Float
+    val renderScale: Float
     val title: String
     val flags: WindowFlags
 
     val physicalResizeListeners: BufferedList<WindowResizeListener>
     val scaledResizeListeners: BufferedList<WindowResizeListener>
     val scaleChangeListeners: BufferedList<ScaleChangeListener>
-    val flagListeners: BufferedList<WindowFlagListener>
+    val flagListeners: BufferedList<WindowFlagsListener>
     val closeListeners: BufferedList<WindowCloseListener>
 
     val capabilities: WindowCapabilities
@@ -58,8 +59,12 @@ fun interface ScaleChangeListener {
     fun onScaleChanged(newScale: Float)
 }
 
+fun interface WindowFlagsListener {
+    fun onFlagsChanged(oldFlags: WindowFlags, newFlags: WindowFlags)
+}
+
 fun interface WindowFlagListener {
-    fun onFlagsChanged(newFlags: WindowFlags)
+    fun onFlagChanged(newFlags: WindowFlags)
 }
 
 fun interface WindowCloseListener {
@@ -78,10 +83,18 @@ fun KoolWindow.onScaleChange(listener: ScaleChangeListener) {
     scaleChangeListeners.stageAdd(listener)
 }
 
-fun KoolWindow.onWindowFlagsChanged(listener: WindowFlagListener) {
+fun KoolWindow.onWindowCloseRequest(listener: WindowCloseListener) {
+    closeListeners.stageAdd(listener)
+}
+
+fun KoolWindow.onWindowFlagsChanged(listener: WindowFlagsListener) {
     flagListeners.stageAdd(listener)
 }
 
-fun KoolWindow.onWindowCloseRequest(listener: WindowCloseListener) {
-    closeListeners.stageAdd(listener)
+fun KoolWindow.onWindowFocusChanged(listener: WindowFlagListener) {
+    flagListeners += WindowFlagsListener { oldFlags, newFlags ->
+        if (oldFlags.isFocused != newFlags.isFocused) {
+            listener.onFlagChanged(newFlags)
+        }
+    }
 }

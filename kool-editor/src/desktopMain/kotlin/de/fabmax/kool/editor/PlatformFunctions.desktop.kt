@@ -3,6 +3,7 @@ package de.fabmax.kool.editor
 import de.fabmax.kool.*
 import de.fabmax.kool.editor.ui.OkCancelBrowsePathDialog
 import de.fabmax.kool.math.MutableVec2i
+import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.PhysicalFileSystem
 import de.fabmax.kool.modules.filesystem.getDirectoryOrNull
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -22,47 +23,47 @@ actual object PlatformFunctions {
 
     actual val windowButtonStyle: WindowButtonStyle get() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        return if (ctx.backend.glfwWindow.isHiddenTitleBar) WindowButtonStyle.WINDOWS else WindowButtonStyle.NONE
+        return if (ctx.backend.window.flags.isHiddenTitleBar) WindowButtonStyle.WINDOWS else WindowButtonStyle.NONE
     }
 
     actual val isWindowMaximized: Boolean get() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        return ctx.backend.glfwWindow.isMaximized
+        return ctx.backend.window.flags.isMaximized
     }
 
     actual fun onEditorStarted(ctx: KoolContext) {
         ctx as Lwjgl3Context
-        val wnd = ctx.backend.glfwWindow
+        val wnd = ctx.backend.window
 
         val posX = KeyValueStore.getInt("editor.window.posX", -1)
         val posY = KeyValueStore.getInt("editor.window.posY", -1)
         if (posX != -1 && posY != -1) {
-            wnd.setWindowPos(posX, posY)
+            wnd.setPosition(Vec2i(posX, posY))
         }
 
         val width = KeyValueStore.getInt("editor.window.width", KoolSystem.configJvm.windowSize.x)
         val height = KeyValueStore.getInt("editor.window.height", KoolSystem.configJvm.windowSize.y)
-        wnd.setWindowSize(width, height)
+        wnd.setScaledSize(Vec2i(width, height))
 
         val isMaximized = KeyValueStore.getBoolean("editor.window.isMaximized", false)
         if (isMaximized) {
-            wnd.isMaximized = true
+            wnd.setMaximized(true)
         }
-        wnd.isVisible = true
+        wnd.setVisible(true)
     }
 
     actual fun onExit(ctx: KoolContext) {
         ctx as Lwjgl3Context
-        val wnd = ctx.backend.glfwWindow
+        val wnd = ctx.backend.window
 
-        if (wnd.isMaximized) {
+        if (wnd.flags.isMaximized) {
             KeyValueStore.setBoolean("editor.window.isMaximized", true)
         } else {
             KeyValueStore.setBoolean("editor.window.isMaximized", false)
-            KeyValueStore.setInt("editor.window.posX", wnd.windowPosX)
-            KeyValueStore.setInt("editor.window.posY", wnd.windowPosY)
-            KeyValueStore.setInt("editor.window.width", wnd.windowWidth)
-            KeyValueStore.setInt("editor.window.height", wnd.windowHeight)
+            KeyValueStore.setInt("editor.window.posX", wnd.position.x)
+            KeyValueStore.setInt("editor.window.posY", wnd.position.y)
+            KeyValueStore.setInt("editor.window.width", wnd.scaledSize.x)
+            KeyValueStore.setInt("editor.window.height", wnd.scaledSize.y)
         }
     }
 
@@ -113,17 +114,17 @@ actual object PlatformFunctions {
 
     actual fun toggleMaximizeWindow() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        ctx.backend.glfwWindow.isMaximized = !ctx.backend.glfwWindow.isMaximized
+        ctx.backend.window.setMaximized(ctx.backend.window.flags.isMaximized)
     }
 
     actual fun minimizeWindow() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        ctx.backend.glfwWindow.isMinimized = true
+        ctx.backend.window.setMaximized(true)
     }
 
     actual fun closeWindow() {
         val ctx = KoolSystem.requireContext() as Lwjgl3Context
-        ctx.backend.glfwWindow.closeWindow()
+        ctx.backend.window.close()
     }
 }
 

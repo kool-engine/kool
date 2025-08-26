@@ -26,14 +26,14 @@ class RenderBackendGlImpl(ctx: KoolContext) :
     override val name = "OpenGL"
     override val features: BackendFeatures
 
-    override val glfwWindow: GlfwWindow
+    override val window: GlfwWindow
     override val glslGeneratorHints: GlslGenerator.Hints
 
     private val timer: TimeQuery
     override var frameGpuTime: Duration = 0.0.seconds
 
     init {
-        glfwWindow = createWindow()
+        window = createWindow()
 
         // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
         // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
@@ -73,7 +73,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         timer.timedScope {
             super.renderFrame(frameData, ctx)
         }
-        glfwSwapBuffers(glfwWindow.windowHandle)
+        glfwSwapBuffers(window.windowHandle)
     }
 
     private fun createWindow(): GlfwWindow {

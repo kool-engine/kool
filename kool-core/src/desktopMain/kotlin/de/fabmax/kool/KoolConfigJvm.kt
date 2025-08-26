@@ -39,7 +39,6 @@ data class KoolConfigJvm(
     val vkSetup: VkSetup? = null,
     val windowTitle: String = "Kool App",
     val windowSize: Vec2i = Vec2i(1600, 900),
-    val renderScale: Float = 1f,
     val isFullscreen: Boolean = false,
     val showWindowOnStart: Boolean = true,
     val updateOnWindowResize: Boolean = true,

@@ -125,7 +125,7 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
         AppState.isInEditorState.set(true)
         AppState.appModeState.set(AppMode.EDIT)
 
-        ctx.applicationCallbacks = editorAppCallbacks
+//        ctx.applicationCallbacks = editorAppCallbacks
 
         // editor background needs to be the first scene, not only because its background but also because it hosts
         // the editor camera controller, which is also used by other scenes, and we want it to update first
@@ -134,8 +134,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         registerKeyBindings()
         registerScenePicking()
-        ctx.onWindowFocusChanged += {
-            if (!it.isWindowFocused) {
+        ctx.window.onWindowFocusChanged {
+            if (!it.isFocused) {
                 ApplicationScope.launch { saveProject() }
             }
         }

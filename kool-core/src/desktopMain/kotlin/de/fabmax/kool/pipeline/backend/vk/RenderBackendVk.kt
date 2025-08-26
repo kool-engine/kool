@@ -13,6 +13,7 @@ import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.launch
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.VK10.*
@@ -26,7 +27,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val apiName: String
     override val deviceName: String
 
-    override val glfwWindow: GlfwWindow
+    override val window: GlfwWindow
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val features: BackendFeatures
@@ -62,11 +63,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
         GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
 
-        glfwWindow = GlfwWindow(ctx)
-        glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
+        window = GlfwWindow(ctx)
+        window.setFullscreen(KoolSystem.configJvm.isFullscreen)
         instance = Instance(this, KoolSystem.configJvm.windowTitle)
         surface = Surface(this)
-        glfwWindow.setVisible(KoolSystem.configJvm.showWindowOnStart)
+        window.setVisible(KoolSystem.configJvm.showWindowOnStart)
 
         physicalDevice = PhysicalDevice(this)
         device = Device(this)
@@ -108,9 +109,15 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         clearHelper = ClearHelper(this)
         screenPass = ScreenPassVk(this)
 
-        glfwWindow.onPhysicalWindowResized { windowResized = true }
+        window.onPhysicalWindowResized { windowResized = true }
 
         frameTimer = Timer(timestampQueryPool) { delta -> frameGpuTime = delta }
+
+        window.onScaleChange {
+            BackendScope.launch {
+                recreateSwapchain()
+            }
+        }
     }
 
     private fun clampUint(unsignedCnt: Int): Int {
@@ -361,6 +368,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             return try {
                 Result.success(RenderBackendVk(ctx as Lwjgl3Context))
             } catch (e: Exception) {
+                e.printStackTrace()
                 Result.failure(e)
             }
         }

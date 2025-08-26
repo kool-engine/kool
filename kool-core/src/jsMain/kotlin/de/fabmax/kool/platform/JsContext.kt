@@ -13,6 +13,7 @@ import kotlinx.browser.window
 import kotlinx.coroutines.launch
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.Window
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.UIEvent
 import org.w3c.files.get
@@ -30,34 +31,39 @@ suspend fun JsContext(): JsContext {
     return ctx
 }
 
+private val browserWindow: Window get() = window
+
 class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolContext() {
     override lateinit var backend: RenderBackend
         private set
 
-    override var renderScale: Float = config.renderScale
-        set(value) {
-            field = value
-            windowScale = pixelRatio.toFloat() * value
-        }
+    override val window: KoolWindow
+        get() = TODO()
+
+//    override var renderScale: Float = config.renderScale
+//        set(value) {
+//            field = value
+//            windowScale = pixelRatio.toFloat() * value
+//        }
 
     val pixelRatio: Double
-        get() = min(config.deviceScaleLimit, window.devicePixelRatio)
+        get() = min(config.deviceScaleLimit, browserWindow.devicePixelRatio)
 
     private val canvasSize = MutableVec2i(0, 0)
-    override val windowWidth: Int get() = (canvasSize.x * renderScale).toInt()
-    override val windowHeight: Int get() = (canvasSize.y * renderScale).toInt()
-
-    override var isFullscreen
-        get() = isFullscreenEnabled
-        set(value) {
-            if (value != isFullscreenEnabled) {
-                if (value) {
-                    canvas.requestFullscreen()
-                } else {
-                    document.exitFullscreen()
-                }
-            }
-        }
+//    override val windowWidth: Int get() = (canvasSize.x * renderScale).toInt()
+//    override val windowHeight: Int get() = (canvasSize.y * renderScale).toInt()
+//
+//    override var isFullscreen
+//        get() = isFullscreenEnabled
+//        set(value) {
+//            if (value != isFullscreenEnabled) {
+//                if (value) {
+//                    canvas.requestFullscreen()
+//                } else {
+//                    document.exitFullscreen()
+//                }
+//            }
+//        }
     private var isFullscreenEnabled = false
 
     private val sysInfo = mutableListOf<String>()
@@ -72,8 +78,8 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         if (config.isJsCanvasToWindowFitting) {
             canvas.style.width = "100%"
             canvas.style.height = "100%"
-            canvas.width = (window.innerWidth * pixelRatio).toInt()
-            canvas.height = (window.innerHeight * pixelRatio).toInt()
+            canvas.width = (browserWindow.innerWidth * pixelRatio).toInt()
+            canvas.height = (browserWindow.innerHeight * pixelRatio).toInt()
         } else {
             canvasFixedWidth = canvas.width
             canvasFixedHeight = canvas.height
@@ -87,45 +93,45 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
             isFullscreenEnabled = document.fullscreenElement != null
             null
         }
-        window.onbeforeunload = { e ->
-            if (applicationCallbacks.onWindowCloseRequest(this)) {
-                // proceed with closing page, delete return value to prevent unwanted popups
-                js("delete e['returnValue'];")
-            } else {
-                e.preventDefault()
-                e.returnValue = "Are you sure you want to exit?"
-            }
+        browserWindow.onbeforeunload = { e ->
+//            if (applicationCallbacks.onWindowCloseRequest(this)) {
+//                // proceed with closing page, delete return value to prevent unwanted popups
+//                js("delete e['returnValue'];")
+//            } else {
+//                e.preventDefault()
+//                e.returnValue = "Are you sure you want to exit?"
+//            }
             null
         }
-        window.onfocus = {
-            isWindowFocused = true
+        browserWindow.onfocus = {
+//            isWindowFocused = true
             null
         }
-        window.onblur = {
-            isWindowFocused = false
+        browserWindow.onblur = {
+//            isWindowFocused = false
             null
         }
 
-        window.ondragenter = {
+        browserWindow.ondragenter = {
             it.preventDefault()
         }
-        window.ondragover = {
+        browserWindow.ondragover = {
             it.preventDefault()
         }
-        window.ondrop = { e ->
+        browserWindow.ondrop = { e ->
             e.dataTransfer?.files?.let { fileList ->
                 val dropFiles = mutableListOf<LoadableFile>()
                 for (i in 0 until fileList.length) {
                     fileList[i]?.let { dropFiles += LoadableFileImpl(it) }
                 }
                 if (dropFiles.isNotEmpty()) {
-                    applicationCallbacks.onFileDrop(dropFiles)
+//                    applicationCallbacks.onFileDrop(dropFiles)
                 }
             }
             e.preventDefault()
         }
 
-        windowScale = pixelRatio.toFloat() * renderScale
+//        windowScale = pixelRatio.toFloat() * renderScale
         canvasSize.set(canvas.width, canvas.height)
 
         // suppress context menu
@@ -155,11 +161,11 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
         animationMillis = time
 
         // update viewport size according to window scale
-        windowScale = pixelRatio.toFloat() * renderScale
+//        windowScale = pixelRatio.toFloat() * renderScale
         if (KoolSystem.configJs.isJsCanvasToWindowFitting) {
             canvasSize.set(
-                (window.innerWidth * pixelRatio).toInt(),
-                (window.innerHeight * pixelRatio).toInt(),
+                (browserWindow.innerWidth * pixelRatio).toInt(),
+                (browserWindow.innerHeight * pixelRatio).toInt(),
             )
         } else {
             canvasSize.set(
@@ -172,7 +178,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
             // by canvas.style.width / canvas.style.height set on init
             canvas.width = canvasSize.x
             canvas.height = canvasSize.y
-            onWindowSizeChanged.updated().forEach { it(this) }
+//            onWindowSizeChanged.updated().forEach { it(this) }
         }
 
         // render frame
@@ -185,9 +191,9 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
 
     override fun openUrl(url: String, sameWindow: Boolean) {
         if (sameWindow) {
-            window.open(url, "_self")
+            browserWindow.open(url, "_self")
         } else {
-            window.open(url)
+            browserWindow.open(url)
         }
     }
 
@@ -196,7 +202,7 @@ class JsContext internal constructor(val canvas: HTMLCanvasElement, val config: 
     }
 
     private fun requestAnimationFrame() {
-        window.requestAnimationFrame { t ->
+        browserWindow.requestAnimationFrame { t ->
             ApplicationScope.launch {
                 renderFrame(t)
             }

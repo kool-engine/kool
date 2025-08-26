@@ -42,9 +42,9 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
             mainRenderPass.defaultView.isFillFramebuffer = false
             onUpdate {
                 val ctx = backend.ctx
-                val w = (ctx.windowWidth / ctx.renderScale).roundToInt()
-                val h = (ctx.windowHeight / ctx.renderScale).roundToInt()
-                mainRenderPass.defaultView.viewport = Viewport(0, ctx.windowHeight - h, w, h)
+                val w = (ctx.window.physicalSize.x / ctx.renderScaleMultiplier).roundToInt()
+                val h = (ctx.window.physicalSize.y / ctx.renderScaleMultiplier).roundToInt()
+                mainRenderPass.defaultView.viewport = Viewport(0, ctx.window.physicalSize.y - h, w, h)
             }
         }
     }
@@ -81,7 +81,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
     }
 
     fun resolve(targetFbo: GlFramebuffer, blitMask: Int) {
-        if ((resolveDirect && backend.ctx.renderScale == 1f) || targetFbo != gl.DEFAULT_FRAMEBUFFER) {
+        if ((resolveDirect && backend.ctx.renderScaleMultiplier == 1f) || targetFbo != gl.DEFAULT_FRAMEBUFFER) {
             blitFramebuffers(renderFbo, targetFbo, blitMask, renderSize, outputSize)
         } else {
             // on WebGL trying to resolve a multi-sampled framebuffer into the default framebuffer fails with
@@ -148,7 +148,7 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
             return
         }
         renderSize.set(width, height)
-        outputSize.set((width / backend.ctx.renderScale).roundToInt(), (height / backend.ctx.renderScale).roundToInt())
+        outputSize.set((width / backend.ctx.renderScaleMultiplier).roundToInt(), (height / backend.ctx.renderScaleMultiplier).roundToInt())
 
         val colorFormat = TexFormat.RGBA.glInternalFormat(gl)
         val depthFormat = gl.DEPTH_COMPONENT32F

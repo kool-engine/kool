@@ -5,6 +5,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.loadImage2d
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.*
+import de.fabmax.kool.onScaleChange
 import de.fabmax.kool.pipeline.ImageData2d
 import de.fabmax.kool.pipeline.MipMapping
 import de.fabmax.kool.pipeline.SamplerSettings
@@ -25,9 +26,9 @@ object Icons {
 
     init {
         val ctx = KoolSystem.requireContext()
-        windowScale = ctx.windowScale
-        ctx.onWindowScaleChanged += {
-            windowScale = it.windowScale
+        windowScale = ctx.renderScaleMultiplier
+        ctx.window.onScaleChange {
+            windowScale = ctx.renderScaleMultiplier * it
             small.invalidate()
             medium.invalidate()
         }

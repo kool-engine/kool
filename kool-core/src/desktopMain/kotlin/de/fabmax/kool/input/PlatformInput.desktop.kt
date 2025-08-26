@@ -3,6 +3,7 @@ package de.fabmax.kool.input
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.isMacOs
+import de.fabmax.kool.onWindowFocusChanged
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.BackendScope
 import de.fabmax.kool.util.logD
@@ -26,10 +27,10 @@ object PlatformInputJvm : PlatformInput {
     override fun setCursorMode(cursorMode: CursorMode) {
         BackendScope.launch {
             val ctx = KoolSystem.requireContext() as Lwjgl3Context
-            val window = ctx.backend.glfwWindow
+            val window = ctx.backend.window
             val windowHandle = window.windowHandle
 
-            if (cursorMode == CursorMode.NORMAL || ctx.isWindowFocused) {
+            if (cursorMode == CursorMode.NORMAL || ctx.window.flags.isFocused) {
                 val x = doubleArrayOf(0.0)
                 val y = doubleArrayOf(0.0)
                 glfwGetCursorPos(windowHandle, x, y)
@@ -46,7 +47,7 @@ object PlatformInputJvm : PlatformInput {
     override fun applyCursorShape(cursorShape: CursorShape) {
         BackendScope.launch {
             val ctx = KoolSystem.requireContext() as Lwjgl3Context
-            val windowHandle = ctx.backend.glfwWindow.windowHandle
+            val windowHandle = ctx.backend.window.windowHandle
 
             if (cursorShape != currentCursorShape) {
                 glfwSetCursor(windowHandle, cursorShapes[cursorShape] ?: 0L)
@@ -59,12 +60,12 @@ object PlatformInputJvm : PlatformInput {
         deriveLocalKeyCodes()
         createStandardCursors()
 
-        val windowHandle = ctx.backend.glfwWindow.windowHandle
+        val windowHandle = ctx.backend.window.windowHandle
         installInputHandlers(windowHandle)
 
-        ctx.onWindowFocusChanged += {
+        ctx.window.onWindowFocusChanged {
             if (PointerInput.cursorMode == CursorMode.LOCKED) {
-                if (!it.isWindowFocused) {
+                if (!it.isFocused) {
                     logD { "Switching to normal cursor mode because of focus loss" }
                     glfwSetInputMode(windowHandle, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
                 } else {
@@ -125,7 +126,7 @@ object PlatformInputJvm : PlatformInput {
             PointerInput.handleMouseButtonEvent(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            val scale = if (isMacOs) ctx.windowScale else ctx.renderScale
+            val scale = if (isMacOs) ctx.window.scale else ctx.renderScaleMultiplier
             PointerInput.handleMouseMove(x.toFloat() * scale, y.toFloat() * scale)
         }
         glfwSetCursorEnterCallback(windowHandle) { _, entered ->
