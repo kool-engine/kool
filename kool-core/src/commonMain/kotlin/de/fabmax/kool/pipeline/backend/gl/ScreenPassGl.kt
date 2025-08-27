@@ -38,9 +38,9 @@ class ScreenPassGl(val numSamples: Int, backend: RenderBackendGl): GlRenderPass(
             mainRenderPass.defaultView.isFillFramebuffer = false
             onUpdate {
                 val ctx = backend.ctx
-                val w = ctx.window.size.x
-                val h = ctx.window.size.y
-                mainRenderPass.defaultView.viewport = Viewport(0, 0, w, h)
+                val w = ctx.window.framebufferSize.x
+                val h = ctx.window.framebufferSize.y
+                mainRenderPass.defaultView.viewport = Viewport(0, ctx.window.size.y - h, w, h)
             }
         }
     }

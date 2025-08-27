@@ -18,7 +18,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     val surfaceView: GLSurfaceView = config.surfaceView ?: KoolSurfaceView(config.appContext)
 
     override val backend: RenderBackendGlImpl
-    override val window: KoolWindow = TODO()
+    override val window: KoolWindow get() = TODO()
 
 //    override val windowWidth: Int
 //        get() = backend.viewWidth
@@ -41,7 +41,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
         @Suppress("DEPRECATION")
         displayManager.displays[0].getMetrics(metrics)
 
-        windowScale = max(1f, metrics.density * config.scaleModifier)
+//        windowScale = max(1f, metrics.density * config.scaleModifier)
         backend = RenderBackendGlImpl(this)
         surfaceView.setRenderer(backend)
         KoolSystem.onContextCreated(this)
