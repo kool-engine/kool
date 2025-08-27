@@ -45,7 +45,7 @@ fun KoolApplication(ctx: JsContext, appBlock: suspend KoolApplication.() -> Unit
 internal object JsImpl {
     private var ctx: JsContext? = null
     val canvas: HTMLCanvasElement
-        get() = checkNotNull(ctx?.canvas) { "Platform.createContext() not called" }
+        get() = checkNotNull(ctx?.window?.canvas) { "Platform.createContext() not called" }
 
     init {
         if (Log.printer == Log.DEFAULT_PRINTER) {

@@ -6,10 +6,8 @@ import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.platform.*
-import de.fabmax.kool.util.BufferedList
-import de.fabmax.kool.util.Uint8BufferImpl
-import de.fabmax.kool.util.logD
-import de.fabmax.kool.util.logE
+import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.*
@@ -28,7 +26,6 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
 
     private var _screenPos = Vec2i(0, 0)
     private var _screenSize = Vec2i(KoolSystem.configJvm.windowSize)
-    private var _flags = WindowFlags.DEFAULT
 
     override var parentScreenScale: Float = 1f; private set
 
@@ -36,14 +33,18 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         get() = _screenPos
         set(value) {
             _screenPos = value
-            platformWindowHelper.setWindowPos(windowHandle, value.x, value.y)
+            BackendScope.launch {
+                platformWindowHelper.setWindowPos(windowHandle, value.x, value.y)
+            }
         }
 
     override var sizeOnScreen: Vec2i
         get() = _screenSize
         set(value) {
             _screenSize = value
-            platformWindowHelper.setWindowSize(windowHandle, value.x, value.y)
+            BackendScope.launch {
+                platformWindowHelper.setWindowSize(windowHandle, value.x, value.y)
+            }
         }
 
     override var renderResolutionFactor: Float = 1f
@@ -56,7 +57,7 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
 
     override var framebufferSize: Vec2i = Vec2i(KoolSystem.configJvm.windowSize); private set
 
-    override var size = Vec2i(KoolSystem.configJvm.windowSize)
+    override var size = Vec2i(KoolSystem.configJvm.windowSize); private set
 
     override val renderScale: Float
         get() = parentScreenScale * renderResolutionFactor
@@ -67,14 +68,22 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
             glfwSetWindowTitle(windowHandle, value)
         }
 
+    private var _flags = WindowFlags.DEFAULT
+        set(value) {
+            if (value != field) {
+                val oldFlags = field
+                field = value
+                flagListeners.updated().forEach { it.onFlagsChanged(oldFlags, value) }
+            }
+        }
     override var flags: WindowFlags
         get() = _flags
         set(value) {
-            if (value != _flags) {
-                val oldFlags = _flags
-                _flags = value
-                applyFlags(oldFlags, value)
-                flagListeners.updated().forEach { it.onFlagsChanged(oldFlags, value) }
+            BackendScope.launch {
+                if (value != _flags) {
+                    applyFlags(_flags, value)
+                    _flags = value
+                }
             }
         }
 
@@ -153,6 +162,7 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         }
         glfwSetFramebufferSizeCallback(windowHandle) { _, w, h ->
             framebufferSize = Vec2i(w, h)
+            updateSizesAndScales()
         }
         glfwSetWindowPosCallback(windowHandle) { _, x, y ->
             _screenPos = platformWindowHelper.getWindowPos(windowHandle, x, y)
@@ -207,7 +217,6 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
             vidMode.height(),
             GLFW_DONT_CARE
         )
-        glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
     }
 
     private fun disableFullscreen() {
@@ -220,7 +229,6 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
             windowedSize.y,
             GLFW_DONT_CARE
         )
-        glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
     }
 
     override fun close() {

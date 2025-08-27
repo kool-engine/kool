@@ -4,9 +4,7 @@ import android.content.Context
 import android.hardware.display.DisplayManager
 import android.opengl.GLSurfaceView
 import android.util.DisplayMetrics
-import de.fabmax.kool.KoolConfigAndroid
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.*
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.util.*
@@ -19,22 +17,18 @@ typealias AndroidLog = android.util.Log
 class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     val surfaceView: GLSurfaceView = config.surfaceView ?: KoolSurfaceView(config.appContext)
 
-    override var renderScale: Float = 1f
-        set(value) {
-            logE { "Changing render scale is not yet implemented on android" }
-        }
-
     override val backend: RenderBackendGlImpl
+    override val window: KoolWindow = TODO()
 
-    override val windowWidth: Int
-        get() = backend.viewWidth
-    override val windowHeight: Int
-        get() = backend.viewHeight
-
-    // todo: not really applicable on android?
-    override var isFullscreen: Boolean
-        get() = false
-        set(_) { }
+//    override val windowWidth: Int
+//        get() = backend.viewWidth
+//    override val windowHeight: Int
+//        get() = backend.viewHeight
+//
+//    // todo: not really applicable on android?
+//    override var isFullscreen: Boolean
+//        get() = false
+//        set(_) { }
 
     private var prevFrameTime = System.nanoTime()
     private val sysInfo = SysInfo()

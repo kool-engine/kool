@@ -28,16 +28,12 @@ interface KoolWindow {
     var renderResolutionFactor: Float
 
     /**
-     * Physical size of this window in pixels without any scaling. This is equivalent to
-     *   [sizeOnScreen] * [parentScreenScale]
+     * Physical size of this window in pixels.
      */
     val framebufferSize: Vec2i
 
     /**
-     * Final render surface size in pixels. This is equivalent to
-     *   [framebufferSize] * [renderResolutionFactor]
-     * and
-     *   [sizeOnScreen] * [parentScreenScale] * [renderResolutionFactor]
+     * Final output surface size in pixels considering all scaling factors.
      */
     val size: Vec2i
 
