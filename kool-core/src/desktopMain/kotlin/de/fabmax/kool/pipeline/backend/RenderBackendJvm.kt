@@ -1,7 +1,7 @@
 package de.fabmax.kool.pipeline.backend
 
-import de.fabmax.kool.platform.glfw.GlfwWindow
+import de.fabmax.kool.platform.KoolWindowJvm
 
 interface RenderBackendJvm : RenderBackend {
-    val window: GlfwWindow
+    val window: KoolWindowJvm
 }

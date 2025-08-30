@@ -5,6 +5,7 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.TexFormat
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
+import de.fabmax.kool.pipeline.backend.vk.vkCheck
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.launch
@@ -12,17 +13,23 @@ import kotlinx.coroutines.runBlocking
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWImage
+import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
+import org.lwjgl.vulkan.KHRSurface
+import org.lwjgl.vulkan.VkInstance
 import java.awt.image.BufferedImage
 import java.io.File
 import java.nio.file.LinkOption
 import kotlin.io.path.*
 import kotlin.math.roundToInt
 
-class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
+class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJvm {
 
     val windowHandle: Long
+    val input: GlfwInput = GlfwInput(this)
+
+    override var isMouseOverWindow: Boolean = false; internal set
 
     private var _screenPos = Vec2i(0, 0)
     private var _screenSize = Vec2i(KoolSystem.configJvm.windowSize)
@@ -118,10 +125,11 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE)
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
 
+        val subsystem = KoolSystem.configJvm.windowSubsystem as GlfwWindowSubsystem
         fsMonitor = if (KoolSystem.configJvm.monitor < 0) {
-            DesktopImpl.primaryMonitor.monitor
+            subsystem.primaryMonitor!!.monitor
         } else {
-            DesktopImpl.monitors[KoolSystem.configJvm.monitor].monitor
+            subsystem.monitors[KoolSystem.configJvm.monitor].monitor
         }
         windowHandle = glfwCreateWindow(
             KoolSystem.configJvm.windowSize.x,
@@ -132,7 +140,8 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         )
         check(windowHandle != MemoryUtil.NULL) { "Failed to create the GLFW window" }
 
-        if (KoolSystem.configJvm.windowIcon.isNotEmpty()) {
+        val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { listOfNotNull(KoolWindowJvm.defaultWindowIcon) }
+        if (iconList.isNotEmpty()) {
             setWindowIcon(KoolSystem.configJvm.windowIcon)
         }
 
@@ -259,10 +268,34 @@ class GlfwWindow(val ctx: Lwjgl3Context) : KoolWindow {
         scaleChangeListeners.updated().forEach { it.onScaleChanged(renderScale) }
     }
 
-    fun pollEvents() {
+    override fun pollEvents() {
         renderOnResizeFlag = KoolSystem.configJvm.updateOnWindowResize
         glfwPollEvents()
         renderOnResizeFlag = false
+    }
+
+    override fun createVulkanSurface(instance: VkInstance): Long {
+        check(clientApi == ClientApi.UNMANAGED) { "Client api needs to be UNMANAGED for Vulkan to work" }
+        return memStack {
+            val lp = mallocLong(1)
+            vkCheck(GLFWVulkan.glfwCreateWindowSurface(instance, windowHandle, null, lp))
+            lp[0]
+        }
+    }
+
+    override fun destroyVulkanSurface(surface: Long, instance: VkInstance) {
+        check(clientApi == ClientApi.UNMANAGED) { "Client api needs to be UNMANAGED for Vulkan to work" }
+
+        KHRSurface.vkDestroySurfaceKHR(instance, surface, null)
+        logD { "Destroyed surface" }
+        glfwDestroyWindow(windowHandle)
+        glfwTerminate()
+        logD { "Destroyed GLFW window" }
+    }
+
+    override fun swapBuffers() {
+        check(clientApi == ClientApi.OPEN_GL) { "Client api needs to be OpenGL for swapBuffers()" }
+        glfwSwapBuffers(windowHandle)
     }
 
     private fun onWindowCloseRequest() {

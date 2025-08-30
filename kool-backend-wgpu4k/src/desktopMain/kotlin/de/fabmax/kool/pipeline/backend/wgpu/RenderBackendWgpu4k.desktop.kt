@@ -6,9 +6,11 @@ import darwin.CAMetalLayer
 import darwin.NSWindow
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
+import de.fabmax.kool.platform.ClientApi
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.OsInfo
 import de.fabmax.kool.platform.glfw.GlfwWindow
+import de.fabmax.kool.platform.glfw.GlfwWindowSubsystem
 import ffi.LibraryLoader
 import ffi.NativeAddress
 import io.ygdrasil.webgpu.GPUAdapter
@@ -16,7 +18,6 @@ import io.ygdrasil.webgpu.NativeSurface
 import io.ygdrasil.webgpu.WGPU
 import io.ygdrasil.webgpu.WGPU.Companion.createInstance
 import kotlinx.coroutines.runBlocking
-import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow
 import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandDisplay
 import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandWindow
@@ -31,10 +32,12 @@ internal actual fun isRenderBackendWgpu4kSupported(): Boolean = true
 
 internal actual suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderBackendWgpu4k {
     LibraryLoader.load()
-    // Disable context creation, WGPU will manage that
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API)
 
-    val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
+    val glfw = KoolSystem.configJvm.windowSubsystem
+    check(glfw is GlfwWindowSubsystem) {
+        "Wgpu backend requires GLFW window subsystem"
+    }
+    val glfwWindow = glfw.createWindow(ClientApi.UNMANAGED, ctx as Lwjgl3Context)
     glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
 
     // make the window visible

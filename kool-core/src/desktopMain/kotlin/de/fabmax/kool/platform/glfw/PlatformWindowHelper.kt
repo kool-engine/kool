@@ -1,8 +1,8 @@
-package de.fabmax.kool.platform
+package de.fabmax.kool.platform.glfw
 
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
-import de.fabmax.kool.platform.glfw.GlfwWindow
+import de.fabmax.kool.platform.OsInfo
 import de.fabmax.kool.util.WindowTitleHoverHandler
 import de.fabmax.kool.util.logW
 import de.fabmax.kool.util.memStack

@@ -18,7 +18,7 @@ object Input {
 
 internal expect fun PlatformInput(): PlatformInput
 
-internal interface PlatformInput {
+interface PlatformInput {
     fun setCursorMode(cursorMode: CursorMode)
     fun applyCursorShape(cursorShape: CursorShape)
 

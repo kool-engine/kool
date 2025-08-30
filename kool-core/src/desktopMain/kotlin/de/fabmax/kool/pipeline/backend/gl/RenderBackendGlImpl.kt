@@ -3,11 +3,10 @@ package de.fabmax.kool.pipeline.backend.gl
 import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
+import de.fabmax.kool.platform.ClientApi
+import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.util.Color
-import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.glEnable
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
@@ -23,7 +22,7 @@ class RenderBackendGlImpl(ctx: KoolContext) :
     override val name = "OpenGL"
     override val features: BackendFeatures
 
-    override val window: GlfwWindow
+    override val window: KoolWindowJvm
     override val glslGeneratorHints: GlslGenerator.Hints
 
     private val timer: TimeQuery
@@ -66,33 +65,17 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         if (timer.isAvailable) {
             frameGpuTime = timer.getQueryResult()
         }
-
         timer.timedScope {
             super.renderFrame(frameData, ctx)
         }
-        glfwSwapBuffers(window.windowHandle)
+        window.swapBuffers()
     }
 
-    private fun createWindow(): GlfwWindow {
-        // do basic GLFW configuration before we create the window
-        GLFW.glfwDefaultWindowHints()
-        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, KoolSystem.configJvm.numSamples)
-
-        // create window
-        val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
-        glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
-
-        // make the OpenGL context current
-        GLFW.glfwMakeContextCurrent(glfwWindow.windowHandle)
-
-        // enable V-sync if configured
-        GLFW.glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
-
-        // make the window visible
-        if (KoolSystem.configJvm.showWindowOnStart) {
-            glfwWindow.setVisible(true)
-        }
-        return glfwWindow
+    private fun createWindow(): KoolWindowJvm {
+        val window = KoolSystem.configJvm.windowSubsystem.createWindow(ClientApi.OPEN_GL, ctx as Lwjgl3Context)
+        window.setFullscreen(KoolSystem.configJvm.isFullscreen)
+        window.setVisible(KoolSystem.configJvm.showWindowOnStart)
+        return window
     }
 
     override fun cleanup(ctx: KoolContext) {

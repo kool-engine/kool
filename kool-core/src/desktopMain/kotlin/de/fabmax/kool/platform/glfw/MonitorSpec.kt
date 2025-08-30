@@ -1,6 +1,5 @@
-package de.fabmax.kool.platform
+package de.fabmax.kool.platform.glfw
 
-import de.fabmax.kool.DesktopImpl
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFWVidMode
 
@@ -60,21 +59,4 @@ class MonitorSpec(val monitor: Long) {
             return Math.sqrt(dx * dx + dy * dy)
         }
     }
-}
-
-fun getMonitorSpecAt(x: Int, y: Int): MonitorSpec {
-    var nearestMon: MonitorSpec? = null
-    var dist = Double.MAX_VALUE
-    for (i in DesktopImpl.monitors.indices) {
-        val d = DesktopImpl.monitors[i].distance(x, y)
-        if (d < dist) {
-            dist = d
-            nearestMon = DesktopImpl.monitors[i]
-        }
-    }
-    return nearestMon!!
-}
-
-fun getResolutionAt(x: Int, y: Int): Float {
-    return getMonitorSpecAt(x, y).dpi
 }

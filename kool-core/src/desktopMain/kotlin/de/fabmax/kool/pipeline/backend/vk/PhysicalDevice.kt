@@ -1,10 +1,10 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.KoolWindow
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.util.*
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.vulkan.*
@@ -362,7 +362,7 @@ class PhysicalDevice(val backend: RenderBackendVk) : BaseReleasable() {
             }
         }
 
-        fun chooseSwapExtent(window: GlfwWindow): Vec2i {
+        fun chooseSwapExtent(window: KoolWindow): Vec2i {
             val minWidth = capabilities.minImageExtent().width()
             val maxWidth = capabilities.maxImageExtent().width()
             val minHeight = capabilities.minImageExtent().height()

@@ -1,9 +1,10 @@
 package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.util.*
 import org.lwjgl.PointerBuffer
-import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.vulkan.*
@@ -95,13 +96,9 @@ class Instance(val backend: RenderBackendVk, appName: String) : BaseReleasable()
     private fun MemoryStack.getRequestedExtensions(): PointerBuffer? {
         val requestedExtensions = backend.setup.requestedInstanceExtensions.toMutableSet()
 
-        // add all extensions required by glfw
-        val glfwExtensions = checkNotNull(GLFWVulkan.glfwGetRequiredInstanceExtensions()) {
-            "glfwGetRequiredInstanceExtensions failed to find the platform surface extensions."
-        }
-        for (i in 0 until glfwExtensions.limit()) {
-            requestedExtensions += VkSetup.RequestedFeature(MemoryUtil.memASCII(glfwExtensions[i]), true)
-        }
+        // add all required window extensions
+        requestedExtensions += KoolSystem.configJvm.windowSubsystem.queryRequiredVkExtensions()
+            .map { VkSetup.RequestedFeature(it, true) }
 
         val availableExtensions = enumerateExtensionProperties { cnt, buffer ->
             vkEnumerateInstanceExtensionProperties(null as String?, cnt, buffer)
