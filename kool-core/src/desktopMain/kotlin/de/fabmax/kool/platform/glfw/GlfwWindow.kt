@@ -109,6 +109,9 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
     override val scaleChangeListeners = BufferedList<ScaleChangeListener>()
     override val flagListeners = BufferedList<WindowFlagsListener>()
     override val closeListeners = BufferedList<WindowCloseListener>()
+    override val dragAndDropListeners = BufferedList<DragAndDropListener>()
+
+    override var windowTitleHoverHandler = WindowTitleHoverHandler()
 
     private val fsMonitor: Long
     private var windowedSize = Vec2i.ZERO
@@ -321,8 +324,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
                 files += LoadableFileImpl(file)
             }
         }
-        TODO()
-        //ctx.applicationCallbacks.onFileDrop(files)
+        dragAndDropListeners.forEach { it.onFileDrop(files) }
     }
 
     fun setWindowIcon(icon: List<BufferedImage>) {

@@ -2,6 +2,7 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.util.BufferedList
+import de.fabmax.kool.util.WindowTitleHoverHandler
 
 interface KoolWindow {
     /**
@@ -52,6 +53,9 @@ interface KoolWindow {
     val scaleChangeListeners: BufferedList<ScaleChangeListener>
     val flagListeners: BufferedList<WindowFlagsListener>
     val closeListeners: BufferedList<WindowCloseListener>
+    val dragAndDropListeners: BufferedList<DragAndDropListener>
+
+    var windowTitleHoverHandler: WindowTitleHoverHandler
 
     fun close()
 }
@@ -99,6 +103,10 @@ fun interface WindowResizeListener {
 }
 
 fun interface ScaleChangeListener {
+    /**
+     * Called when the screen scale changes, e.g., because the window is moved onto another monitor with a different
+     * scale.
+     */
     fun onScaleChanged(newScale: Float)
 }
 
@@ -111,7 +119,22 @@ fun interface WindowFlagListener {
 }
 
 fun interface WindowCloseListener {
+    /**
+     * Called when the app (window / browser tab) is about to close. Can return true to proceed with closing the app
+     * or false to stop it.
+     * This is particular useful to implement a dialogs like "There is unsaved stuff, are you sure you want to close
+     * this app? Yes / no / maybe".
+     */
     fun onCloseRequest(): Boolean
+}
+
+interface DragAndDropListener {
+    /**
+     * Called when the user drags (and drops) files into the app window. Ideally, we also would want to have callbacks
+     * containing the drag and drop state (e.g., cursor position) before files are dropped, but this is currently not
+     * possible due to limited drag and drop support of GLFW on JVM.
+     */
+    fun onFileDrop(droppedFiles: List<LoadableFile>) { }
 }
 
 fun KoolWindow.onResize(listener: WindowResizeListener) {

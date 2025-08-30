@@ -42,28 +42,6 @@ class JsContext internal constructor(canvas: HTMLCanvasElement, val config: Kool
 
     private var animationMillis = 0.0
 
-    init {
-        browserWindow.ondragenter = {
-            it.preventDefault()
-        }
-        browserWindow.ondragover = {
-            it.preventDefault()
-        }
-        browserWindow.ondrop = { e ->
-            e.dataTransfer?.files?.let { fileList ->
-                val dropFiles = mutableListOf<LoadableFile>()
-                for (i in 0 until fileList.length) {
-                    fileList[i]?.let { dropFiles += LoadableFileImpl(it) }
-                }
-                if (dropFiles.isNotEmpty()) {
-                    TODO()
-//                    applicationCallbacks.onFileDrop(dropFiles)
-                }
-            }
-            e.preventDefault()
-        }
-    }
-
     internal suspend fun createBackend() {
         val backendProvider = config.renderBackend
         val backendResult = backendProvider.createBackend(this@JsContext)
@@ -191,6 +169,9 @@ class JsWindow(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolWi
     override val scaleChangeListeners: BufferedList<ScaleChangeListener> = BufferedList()
     override val flagListeners: BufferedList<WindowFlagsListener> = BufferedList()
     override val closeListeners: BufferedList<WindowCloseListener> = BufferedList()
+    override val dragAndDropListeners: BufferedList<DragAndDropListener> = BufferedList()
+
+    override var windowTitleHoverHandler: WindowTitleHoverHandler = WindowTitleHoverHandler()
 
     private var canvasFixedWidth = -1
     private var canvasFixedHeight = -1
@@ -236,6 +217,25 @@ class JsWindow(val canvas: HTMLCanvasElement, val config: KoolConfigJs) : KoolWi
                 js("delete e['returnValue'];")
             }
             null
+        }
+
+        browserWindow.ondragenter = {
+            it.preventDefault()
+        }
+        browserWindow.ondragover = {
+            it.preventDefault()
+        }
+        browserWindow.ondrop = { e ->
+            e.dataTransfer?.files?.let { fileList ->
+                val dropFiles = mutableListOf<LoadableFile>()
+                for (i in 0 until fileList.length) {
+                    fileList[i]?.let { dropFiles += LoadableFileImpl(it) }
+                }
+                if (dropFiles.isNotEmpty()) {
+                    dragAndDropListeners.forEach { it.onFileDrop(dropFiles) }
+                }
+            }
+            e.preventDefault()
         }
     }
 
