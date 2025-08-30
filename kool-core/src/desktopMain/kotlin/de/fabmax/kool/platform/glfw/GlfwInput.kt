@@ -1,6 +1,5 @@
 package de.fabmax.kool.platform.glfw
 
-import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.*
 import de.fabmax.kool.isMacOs
@@ -17,16 +16,13 @@ class GlfwInput(val window: GlfwWindow) : PlatformInput {
     private var currentCursorShape = CursorShape.DEFAULT
 
     private val isMacOs: Boolean = KoolSystem.isMacOs
-    private val ctx: KoolContext by lazy { KoolSystem.requireContext() }
 
     override fun setCursorMode(cursorMode: CursorMode) {
         BackendScope.launch {
-            val ctx = KoolSystem.requireContext() as Lwjgl3Context
-            val windowHandle = window.windowHandle
-
-            if (cursorMode == CursorMode.NORMAL || ctx.window.flags.isFocused) {
+            if (cursorMode == CursorMode.NORMAL || window.flags.isFocused) {
                 val x = doubleArrayOf(0.0)
                 val y = doubleArrayOf(0.0)
+                val windowHandle = window.windowHandle
                 glfwGetCursorPos(windowHandle, x, y)
                 glfwSetInputMode(windowHandle, GLFW_CURSOR, cursorMode.glfwMode)
                 if (cursorMode == CursorMode.NORMAL) {
@@ -115,8 +111,8 @@ class GlfwInput(val window: GlfwWindow) : PlatformInput {
             PointerInput.handleMouseButtonEvent(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            val baseScale = if (isMacOs) ctx.window.parentScreenScale else 1f
-            val scale = baseScale * ctx.window.renderResolutionFactor
+            val baseScale = if (isMacOs) window.parentScreenScale else 1f
+            val scale = baseScale * window.renderResolutionFactor
             PointerInput.handleMouseMove(x.toFloat() * scale, y.toFloat() * scale)
         }
         glfwSetCursorEnterCallback(windowHandle) { _, entered ->

@@ -90,6 +90,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
                 if (value != _flags) {
                     applyFlags(_flags, value)
                     _flags = value
+                    updateWindowFlagsFromState()
                 }
             }
         }
@@ -164,9 +165,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         _screenSize = Vec2i((size.x / parentScreenScale).roundToInt(), (size.y / parentScreenScale).roundToInt())
         windowedSize = _screenSize
 
-        flags = flags.copy(
-            isFocused = glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE
-        )
+        updateWindowFlagsFromState()
 
         glfwSetWindowSizeCallback(windowHandle) { _, w, h ->
             _screenSize = Vec2i(w, h)
@@ -214,6 +213,15 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
                 logE { "Restoring the title bar from hidden state is not yet supported" }
             }
         }
+    }
+
+    private fun updateWindowFlagsFromState() {
+        _flags = flags.copy(
+            isVisible = glfwGetWindowAttrib(windowHandle, GLFW_VISIBLE) == GLFW_TRUE,
+            isFocused = glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE,
+            isMaximized = glfwGetWindowAttrib(windowHandle, GLFW_MAXIMIZED) == GLFW_TRUE,
+            isMinimized = glfwGetWindowAttrib(windowHandle, GLFW_ICONIFIED) == GLFW_TRUE,
+        )
     }
 
     private fun enableFullscreen() {
