@@ -5,9 +5,6 @@ import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 
-/**
- * @author fabmax
- */
 fun main() = KoolApplication(
     config = KoolConfigJvm(
         renderBackend = RenderBackendVk,
