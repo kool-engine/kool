@@ -45,7 +45,7 @@ interface KoolWindow {
     val renderScale: Float
 
     var title: String
-    var flags: WindowFlags
+    val flags: WindowFlags
 
     val capabilities: WindowCapabilities
 
@@ -56,6 +56,13 @@ interface KoolWindow {
     val dragAndDropListeners: BufferedList<DragAndDropListener>
 
     var windowTitleHoverHandler: WindowTitleHoverHandler
+
+    fun setFullscreen(flag: Boolean) { }
+    fun setMaximized(flag: Boolean) { }
+    fun setMinimized(flag: Boolean) { }
+    fun setVisible(flag: Boolean) { }
+    fun setFocused(flag: Boolean) { }
+    fun setTitleBarVisibility(flag: Boolean) { }
 
     fun close()
 }
@@ -69,7 +76,20 @@ data class WindowCapabilities(
     val canSetVisibility: Boolean,
     val canSetTitle: Boolean,
     val canHideTitleBar: Boolean,
-)
+) {
+    companion object {
+        val NONE = WindowCapabilities(
+            canSetSize = false,
+            canSetPosition = false,
+            canSetFullscreen = false,
+            canMaximize = false,
+            canMinimize = false,
+            canSetVisibility = false,
+            canSetTitle = false,
+            canHideTitleBar = false,
+        )
+    }
+}
 
 data class WindowFlags(
     val isFullscreen: Boolean,
@@ -90,13 +110,6 @@ data class WindowFlags(
         )
     }
 }
-
-fun KoolWindow.setFullscreen(flag: Boolean) { flags = flags.copy(isFullscreen = flag) }
-fun KoolWindow.setMaximized(flag: Boolean) { flags = flags.copy(isMaximized = flag) }
-fun KoolWindow.setMinimized(flag: Boolean) { flags = flags.copy(isMinimized = flag) }
-fun KoolWindow.setVisible(flag: Boolean) { flags = flags.copy(isVisible = flag) }
-fun KoolWindow.setFocused(flag: Boolean) { flags = flags.copy(isFocused = flag) }
-fun KoolWindow.setTitleBarVisibility(flag: Boolean) { flags = flags.copy(isHiddenTitleBar = flag) }
 
 fun interface WindowResizeListener {
     fun onResize(newSize: Vec2i)

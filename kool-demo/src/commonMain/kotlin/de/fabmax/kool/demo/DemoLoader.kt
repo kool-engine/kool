@@ -3,25 +3,13 @@ package de.fabmax.kool.demo
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.menu.DemoMenu
 import de.fabmax.kool.input.PointerInput
-import de.fabmax.kool.setFullscreen
 import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logI
 
-/**
- * @author fabmax
- */
-
 fun demo(startScene: String? = null, ctx: KoolContext) {
     // launch demo
-    var demo = startScene
-    if (demo != null) {
-        demo = demo.lowercase()
-        if (demo.endsWith("demo")) {
-            demo = demo.substring(0, demo.length - 4)
-        }
-    }
-    DemoLoader(ctx, demo)
+    DemoLoader(ctx, startScene?.lowercase()?.removeSuffix("demo"))
 }
 
 class DemoLoader(ctx: KoolContext, startScene: String? = null) {

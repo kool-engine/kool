@@ -2,7 +2,6 @@ package de.fabmax.kool.platform.glfw
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
-import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.platform.ClientApi
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.WindowSubsystem
@@ -23,7 +22,7 @@ object GlfwWindowSubsystem : WindowSubsystem {
     override val isCloseRequested: Boolean
         get() = primaryWindow?.let { glfwWindowShouldClose(it.windowHandle) } ?: false
 
-    override val input: PlatformInput
+    override val input: GlfwInput
         get() = requireNotNull(primaryWindow?.input)
 
     override fun queryRequiredVkExtensions(): List<String> {
@@ -89,7 +88,7 @@ object GlfwWindowSubsystem : WindowSubsystem {
     }
 
     override fun onBackendCreated(ctx: Lwjgl3Context) {
-        (input as GlfwInput).onContextCreated(ctx)
+        input.onContextCreated(ctx)
     }
 
 

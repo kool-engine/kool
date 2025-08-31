@@ -75,23 +75,12 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
             glfwSetWindowTitle(windowHandle, value)
         }
 
-    private var _flags = WindowFlags.DEFAULT
-        set(value) {
+    override var flags: WindowFlags = WindowFlags.DEFAULT
+        private set(value) {
             if (value != field) {
                 val oldFlags = field
                 field = value
                 flagListeners.updated().forEach { it.onFlagsChanged(oldFlags, value) }
-            }
-        }
-    override var flags: WindowFlags
-        get() = _flags
-        set(value) {
-            BackendScope.launch {
-                if (value != _flags) {
-                    applyFlags(_flags, value)
-                    _flags = value
-                    updateWindowFlagsFromState()
-                }
             }
         }
 
@@ -182,7 +171,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
             onWindowCloseRequest()
         }
         glfwSetWindowFocusCallback(windowHandle) { _, isFocused ->
-            _flags = flags.copy(isFocused = isFocused)
+            flags = flags.copy(isFocused = isFocused)
         }
         glfwSetWindowContentScaleCallback(windowHandle) { _, xScale, _ ->
             parentScreenScale = xScale
@@ -193,30 +182,57 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         }
     }
 
-    private fun applyFlags(oldFlags: WindowFlags, newFlags: WindowFlags) {
-        if (oldFlags.isVisible != newFlags.isVisible) {
-            if (newFlags.isVisible) glfwShowWindow(windowHandle) else glfwHideWindow(windowHandle)
+
+    override fun setFullscreen(flag: Boolean) {
+        if (flag != flags.isMaximized) {
+            BackendScope.launch {
+                if (flag) enableFullscreen() else disableFullscreen()
+                updateWindowFlagsFromState()
+            }
         }
-        if (oldFlags.isMinimized != newFlags.isMinimized) {
-            if (newFlags.isMinimized) glfwIconifyWindow(windowHandle) else glfwRestoreWindow(windowHandle)
+    }
+
+    override fun setMaximized(flag: Boolean) {
+        if (flag != flags.isMaximized) {
+            BackendScope.launch {
+                if (flag) glfwMaximizeWindow(windowHandle) else glfwRestoreWindow(windowHandle)
+                updateWindowFlagsFromState()
+            }
         }
-        if (oldFlags.isMaximized != newFlags.isMaximized) {
-            if (newFlags.isMaximized) glfwMaximizeWindow(windowHandle) else glfwRestoreWindow(windowHandle)
+    }
+
+    override fun setMinimized(flag: Boolean) {
+        if (flag != flags.isMinimized) {
+            BackendScope.launch {
+                if (flag) glfwIconifyWindow(windowHandle) else glfwRestoreWindow(windowHandle)
+                updateWindowFlagsFromState()
+            }
         }
-        if (oldFlags.isFullscreen != newFlags.isFullscreen) {
-            if (newFlags.isFullscreen) enableFullscreen() else disableFullscreen()
+    }
+
+    override fun setVisible(flag: Boolean) {
+        if (flag != flags.isVisible) {
+            BackendScope.launch {
+                if (flag) glfwShowWindow(windowHandle) else glfwHideWindow(windowHandle)
+                updateWindowFlagsFromState()
+            }
         }
-        if (oldFlags.isHiddenTitleBar != newFlags.isHiddenTitleBar) {
-            if (!newFlags.isHiddenTitleBar) {
-                platformWindowHelper.hideTitleBar(windowHandle)
-            } else {
-                logE { "Restoring the title bar from hidden state is not yet supported" }
+    }
+
+    override fun setTitleBarVisibility(flag: Boolean) {
+        if (flag != flags.isHiddenTitleBar) {
+            BackendScope.launch {
+                if (!flag) {
+                    platformWindowHelper.hideTitleBar(windowHandle)
+                } else {
+                    logE { "Restoring the title bar from hidden state is not yet supported" }
+                }
             }
         }
     }
 
     private fun updateWindowFlagsFromState() {
-        _flags = flags.copy(
+        flags = flags.copy(
             isVisible = glfwGetWindowAttrib(windowHandle, GLFW_VISIBLE) == GLFW_TRUE,
             isFocused = glfwGetWindowAttrib(windowHandle, GLFW_FOCUSED) == GLFW_TRUE,
             isMaximized = glfwGetWindowAttrib(windowHandle, GLFW_MAXIMIZED) == GLFW_TRUE,
