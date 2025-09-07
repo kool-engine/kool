@@ -67,7 +67,6 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
             val windowSubsystem = config.windowSubsystem
             while (!windowSubsystem.isCloseRequested) {
                 sysInfo.update()
-                windowSubsystem.input.poll()
                 window.pollEvents()
 
                 if (!window.flags.isMinimized) {
@@ -87,8 +86,8 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         repeat(3) {
             Time.frameCount++
             KoolDispatchers.Frontend.executeDispatchedTasks()
-            KoolDispatchers.Backend.executeDispatchedTasks()
             KoolDispatchers.Synced.executeDispatchedTasks()
+            KoolDispatchers.Backend.executeDispatchedTasks()
         }
 
         backend.cleanup(this)

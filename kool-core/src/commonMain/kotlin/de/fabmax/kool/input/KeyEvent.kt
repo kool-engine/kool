@@ -43,4 +43,6 @@ data class KeyEvent(
     val isCtrlDown: Boolean get() = (modifiers and KeyboardInput.KEY_MOD_CTRL) != 0
     val isAltDown: Boolean get() = (modifiers and KeyboardInput.KEY_MOD_ALT) != 0
     val isSuperDown: Boolean get() = (modifiers and KeyboardInput.KEY_MOD_SUPER) != 0
+
+    var isConsumed: Boolean = false
 }
