@@ -31,7 +31,8 @@ class RenderBackendGlImpl(ctx: JsContext) :
         options["antialias"] = numSamples > 1
         options["stencil"] = false
 
-        val webGlCtx = (ctx.canvas.getContext("webgl2", options) ?: ctx.canvas.getContext("experimental-webgl2", options)) as WebGL2RenderingContext?
+        val canvas = ctx.window.canvas
+        val webGlCtx = (canvas.getContext("webgl2", options) ?: canvas.getContext("experimental-webgl2", options)) as WebGL2RenderingContext?
         check(webGlCtx != null) {
             val txt = "Unable to initialize WebGL2 context. Your browser may not support it."
             js("alert(txt)")

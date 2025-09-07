@@ -1,16 +1,12 @@
 package de.fabmax.kool.pipeline.backend.gl
 
-import de.fabmax.kool.FrameData
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJvm
+import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.backend.BackendFeatures
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
-import de.fabmax.kool.platform.GlfwWindow
+import de.fabmax.kool.platform.ClientApi
+import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.Color
-import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.glEnable
 import org.lwjgl.opengl.GL20.GL_VERTEX_PROGRAM_POINT_SIZE
@@ -26,14 +22,14 @@ class RenderBackendGlImpl(ctx: KoolContext) :
     override val name = "OpenGL"
     override val features: BackendFeatures
 
-    override val glfwWindow: GlfwWindow
+    override val window: KoolWindowJvm
     override val glslGeneratorHints: GlslGenerator.Hints
 
     private val timer: TimeQuery
     override var frameGpuTime: Duration = 0.0.seconds
 
     init {
-        glfwWindow = createWindow()
+        window = createWindow()
 
         // This line is critical for LWJGL's interoperation with GLFW's OpenGL context, or any context that is managed
         // externally. LWJGL detects the context that is current in the current thread, creates the GLCapabilities
@@ -69,37 +65,17 @@ class RenderBackendGlImpl(ctx: KoolContext) :
         if (timer.isAvailable) {
             frameGpuTime = timer.getQueryResult()
         }
-
         timer.timedScope {
             super.renderFrame(frameData, ctx)
         }
-        glfwSwapBuffers(glfwWindow.windowPtr)
+        window.swapBuffers()
     }
 
-    private fun createWindow(): GlfwWindow {
-        // do basic GLFW configuration before we create the window
-        GLFW.glfwDefaultWindowHints()
-        GLFW.glfwWindowHint(GLFW.GLFW_SAMPLES, KoolSystem.configJvm.numSamples)
-
-        // create window
-        val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
-        glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
-
-        // make the OpenGL context current
-        GLFW.glfwMakeContextCurrent(glfwWindow.windowPtr)
-
-        // enable V-sync if configured
-        if (KoolSystem.configJvm.isVsync) {
-            GLFW.glfwSwapInterval(1)
-        } else {
-            GLFW.glfwSwapInterval(0)
-        }
-
-        // make the window visible
-        if (KoolSystem.configJvm.showWindowOnStart) {
-            glfwWindow.isVisible = true
-        }
-        return glfwWindow
+    private fun createWindow(): KoolWindowJvm {
+        val window = KoolSystem.configJvm.windowSubsystem.createWindow(ClientApi.OPEN_GL, ctx as Lwjgl3Context)
+        window.setFullscreen(KoolSystem.configJvm.isFullscreen)
+        window.setVisible(KoolSystem.configJvm.showWindowOnStart)
+        return window
     }
 
     override fun cleanup(ctx: KoolContext) {

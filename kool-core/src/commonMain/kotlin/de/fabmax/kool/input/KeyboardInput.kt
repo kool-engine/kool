@@ -1,9 +1,10 @@
 package de.fabmax.kool.input
 
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.util.ConcurrentBuffer
 
 object KeyboardInput {
-    private val queuedKeyEvents: MutableList<KeyEvent> = mutableListOf()
+    private val queuedKeyEvents: ConcurrentBuffer<KeyEvent> = ConcurrentBuffer()
 
     private var currentKeyMods = 0
     private var currentKeyRepeated = 0
@@ -37,8 +38,9 @@ object KeyboardInput {
     }
 
     internal fun poll(ctx: KoolContext) {
-        InputStack.handleInput(queuedKeyEvents, ctx)
-        queuedKeyEvents.clear()
+        queuedKeyEvents.consumeAll {
+            InputStack.handleInput(it, ctx)
+        }
     }
 
     //

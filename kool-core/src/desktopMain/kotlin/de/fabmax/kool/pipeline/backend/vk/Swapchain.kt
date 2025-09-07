@@ -43,14 +43,14 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             val swapChainSupport = physicalDevice.querySwapchainSupport(this)
             val surfaceFormat = swapChainSupport.chooseSurfaceFormat()
             val presentMode = swapChainSupport.choosePresentationMode()
-            extent = swapChainSupport.chooseSwapExtent(backend.glfwWindow)
+            extent = swapChainSupport.chooseSwapExtent(backend.window)
             var imageCount = swapChainSupport.capabilities.minImageCount() + 1
             if (swapChainSupport.capabilities.maxImageCount() > 0) {
                 imageCount = imageCount.coerceAtMost(swapChainSupport.capabilities.maxImageCount())
             }
 
             vkSwapchain = device.createSwapchain(this) {
-                surface(backend.glfwWindow.surface.surfaceHandle)
+                surface(backend.surface.surfaceHandle)
                 minImageCount(imageCount)
                 imageFormat(surfaceFormat.format())
                 imageColorSpace(surfaceFormat.colorSpace())
@@ -120,7 +120,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
         }
     }
 
-    fun presentNextImage(stack: MemoryStack): Boolean{
+    fun presentNextImage(stack: MemoryStack): Boolean {
         stack.apply {
             val presentInfo = callocVkPresentInfoKHR {
                 pWaitSemaphores(longs(renderFinishedSema.handle))
@@ -131,7 +131,7 @@ class Swapchain(val backend: RenderBackendVk) : BaseReleasable() {
             currentFrameIndex = (currentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT
             return when (vkQueuePresentKHR(device.presentQueue, presentInfo)) {
                 VK_SUCCESS -> true
-                VK_SUBOPTIMAL_KHR -> false   // not considered OK
+                VK_SUBOPTIMAL_KHR -> true   // also considered OK
                 VK_ERROR_OUT_OF_DATE_KHR -> false
                 else -> error("failed to acquire swap chain image")
             }

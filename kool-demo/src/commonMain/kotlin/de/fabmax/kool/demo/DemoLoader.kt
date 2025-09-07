@@ -7,20 +7,9 @@ import de.fabmax.kool.util.DebugOverlay
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.logI
 
-/**
- * @author fabmax
- */
-
 fun demo(startScene: String? = null, ctx: KoolContext) {
     // launch demo
-    var demo = startScene
-    if (demo != null) {
-        demo = demo.lowercase()
-        if (demo.endsWith("demo")) {
-            demo = demo.substring(0, demo.length - 4)
-        }
-    }
-    DemoLoader(ctx, demo)
+    DemoLoader(ctx, startScene?.lowercase()?.removeSuffix("demo"))
 }
 
 class DemoLoader(ctx: KoolContext, startScene: String? = null) {
@@ -40,7 +29,7 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
 
     init {
         Settings.loadSettings()
-        ctx.renderScale = Settings.renderScale.value / 100f
+        ctx.window.renderResolutionFactor = Settings.renderScale.value / 100f
 
         ctx.scenes += loadingScreen
         ctx.scenes += dbgOverlay.ui
@@ -121,8 +110,8 @@ class DemoLoader(ctx: KoolContext, startScene: String? = null) {
     }
 
     private fun applySettings(ctx: KoolContext) {
-        if (Settings.isFullscreen.value != ctx.isFullscreen) {
-            ctx.isFullscreen = Settings.isFullscreen.value
+        if (ctx.window.capabilities.canSetFullscreen && Settings.isFullscreen.value != ctx.window.flags.isFullscreen) {
+            ctx.window.setFullscreen(Settings.isFullscreen.value)
         }
         dbgOverlay.ui.isVisible = Settings.showDebugOverlay.value
     }

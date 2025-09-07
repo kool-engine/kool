@@ -1,7 +1,6 @@
 package de.fabmax.kool
 
 import de.fabmax.kool.input.Input
-import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.pipeline.ComputePass
 import de.fabmax.kool.pipeline.GpuPass
 import de.fabmax.kool.pipeline.OffscreenPass
@@ -9,51 +8,23 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.backend.RenderBackend
 import de.fabmax.kool.pipeline.ibl.BrdfLutPass
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.util.*
-import kotlin.math.roundToInt
+import de.fabmax.kool.util.BufferedList
+import de.fabmax.kool.util.KoolDispatchers
+import de.fabmax.kool.util.Time
 
 /**
  * @author fabmax
  */
 
 abstract class KoolContext {
-    var windowScale = 1f
-        internal set(value) {
-            val userValue = applicationCallbacks.onWindowScaleChange(value, this)
-            if (userValue != field) {
-                logD { "Window scale changed: (${(userValue * 100f).roundToInt()} %)" }
-                field = userValue
-                UiScale.windowScale.set(field)
-                UiScale.measuredScale = UiScale.windowScale.value * UiScale.uiScale.value
-                onWindowScaleChanged.updated().forEach { it(this) }
-            }
-        }
-
-    abstract var renderScale: Float
-
-    var isWindowFocused = true
-        protected set(value) {
-            field = value
-            onWindowFocusChanged.updated().forEach { it(this) }
-        }
+    abstract val backend: RenderBackend
+    abstract val window: KoolWindow
 
     private val frameDatas = List(2) { FrameData() }
     private var frameDataPtr = 0
 
-    abstract val backend: RenderBackend
-
-    var applicationCallbacks: ApplicationCallbacks = object : ApplicationCallbacks { }
-    val onWindowScaleChanged = BufferedList<(KoolContext) -> Unit>()
-    val onWindowFocusChanged = BufferedList<(KoolContext) -> Unit>()
-    val onWindowSizeChanged = BufferedList<(KoolContext) -> Unit>()
     val onRender = BufferedList<(KoolContext) -> Unit>()
     val onShutdown = BufferedList<(KoolContext) -> Unit>()
-
-    /**
-     * Frames per second (averaged over last 25 frames)
-     */
-    var fps = 60.0
-        private set
 
     val scenes: BufferedList<Scene> = BufferedList()
 
@@ -66,13 +37,6 @@ abstract class KoolContext {
             .also { pass -> addBackgroundRenderPass(pass) }.copyColor()
             .also { brdf -> onShutdown += { brdf.release() } }
     }
-
-    private val frameTimes = DoubleArray(25) { 0.017 }
-
-    abstract val windowWidth: Int
-    abstract val windowHeight: Int
-    abstract var isFullscreen: Boolean
-    var windowTitleHoverHandler = WindowTitleHoverHandler()
 
     abstract fun openUrl(url: String, sameWindow: Boolean = true)
 
@@ -98,14 +62,8 @@ abstract class KoolContext {
         val frameData = frameDatas[frameDataPtr].also { it.reset() }
         frameDataPtr = ++frameDataPtr and 1
 
-        Time.deltaT = dt.toFloat()
-        Time.gameTime += dt
+        Time.update(dt)
         Time.frameCount++
-
-        frameTimes[Time.frameCount % frameTimes.size] = dt
-        var sum = 0.0
-        for (i in frameTimes.indices) { sum += frameTimes[i] }
-        fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
 
         Input.poll(this)
 

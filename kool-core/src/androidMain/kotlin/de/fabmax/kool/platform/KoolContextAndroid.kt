@@ -1,9 +1,6 @@
 package de.fabmax.kool.platform
 
-import android.content.Context
-import android.hardware.display.DisplayManager
 import android.opengl.GLSurfaceView
-import android.util.DisplayMetrics
 import de.fabmax.kool.KoolConfigAndroid
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.KoolSystem
@@ -12,29 +9,24 @@ import de.fabmax.kool.pipeline.backend.gl.RenderBackendGlImpl
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.runBlocking
 import java.util.*
-import kotlin.math.max
 
 typealias AndroidLog = android.util.Log
 
 class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
-    val surfaceView: GLSurfaceView = config.surfaceView ?: KoolSurfaceView(config.appContext)
-
-    override var renderScale: Float = 1f
-        set(value) {
-            logE { "Changing render scale is not yet implemented on android" }
-        }
 
     override val backend: RenderBackendGlImpl
+    override val window: AndroidWindow
+    val surfaceView: GLSurfaceView get() = window.surfaceView
 
-    override val windowWidth: Int
-        get() = backend.viewWidth
-    override val windowHeight: Int
-        get() = backend.viewHeight
-
-    // todo: not really applicable on android?
-    override var isFullscreen: Boolean
-        get() = false
-        set(_) { }
+//    override val windowWidth: Int
+//        get() = backend.viewWidth
+//    override val windowHeight: Int
+//        get() = backend.viewHeight
+//
+//    // todo: not really applicable on android?
+//    override var isFullscreen: Boolean
+//        get() = false
+//        set(_) { }
 
     private var prevFrameTime = System.nanoTime()
     private val sysInfo = SysInfo()
@@ -42,14 +34,8 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     init {
         check(!KoolSystem.isContextCreated) { "KoolContext was already created" }
 
-        val metrics = DisplayMetrics()
-        val displayManager = config.appContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        @Suppress("DEPRECATION")
-        displayManager.displays[0].getMetrics(metrics)
-
-        windowScale = max(1f, metrics.density * config.scaleModifier)
         backend = RenderBackendGlImpl(this)
-        surfaceView.setRenderer(backend)
+        window = AndroidWindow(this, config)
         KoolSystem.onContextCreated(this)
     }
 
@@ -85,6 +71,7 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
 
         // setup draw queues for all scenes / render passes
         val frameData = render(dt)
+        frameData.syncData()
 
         // execute draw queues
         KoolDispatchers.Backend.executeDispatchedTasks()

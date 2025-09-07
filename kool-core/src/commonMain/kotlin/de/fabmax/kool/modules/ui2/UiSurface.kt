@@ -425,7 +425,7 @@ open class UiSurface(
             dragNode?.let { handleDrag(it, ptrEv) }
         }
 
-        override fun handleKeyEvents(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
+        override fun handleKeyEvents(keyEvents: List<KeyEvent>, ctx: KoolContext) {
             if (!blockAllKeyboardInput) {
                 return
             }
@@ -436,7 +436,9 @@ open class UiSurface(
                 focusedNode?.let { focusable ->
                     onInput()
                     for (keyEv in keyEvents) {
-                        focusable.onKeyEvent(keyEv)
+                        if (!keyEv.isConsumed) {
+                            focusable.onKeyEvent(keyEv)
+                        }
                     }
                 }
             }

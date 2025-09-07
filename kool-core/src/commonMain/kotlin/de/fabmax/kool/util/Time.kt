@@ -11,14 +11,18 @@ object Time {
     /**
      * Time since previous frame in seconds.
      */
-    var deltaT: Float = 0f
-        internal set
+    var deltaT: Float = 0f; private set
 
     /**
      * Time since the app started in seconds.
      */
-    var gameTime: Double = 0.0
-        internal set
+    var gameTime: Double = 0.0; internal set
+
+    /**
+     * Frames per second (with some averaging applied).
+     */
+    var fps = 60.0; private set
+    private val frameTimes = DoubleArray(25) { 0.017 }
 
     /**
      * Number of rendered frames since the app started.
@@ -40,8 +44,16 @@ object Time {
      * measure time intervals. Precision depends on platform, on JVM it should be around nanoseconds, on JS it should
      * be around 0.1 milliseconds.
      */
-    val precisionTime: Double
-        get() = systemClock.now()
+    val precisionTime: Double get() = systemClock.now()
+
+    internal fun update(dt: Double) {
+        gameTime += dt
+        deltaT = dt.toFloat()
+        frameTimes[frameCount % frameTimes.size] = dt
+        var sum = 0.0
+        for (i in frameTimes.indices) { sum += frameTimes[i] }
+        fps = (frameTimes.size / sum) * 0.1 + fps * 0.9
+    }
 }
 
 internal expect fun SystemClock(): SystemClock

@@ -20,6 +20,7 @@ import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.await
 import org.khronos.webgl.*
+import org.w3c.dom.HTMLCanvasElement
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -30,6 +31,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.WEB_GPU
     override lateinit var features: BackendFeatures; private set
 
+    private val canvas: HTMLCanvasElement get() = ctx.window.canvas
     lateinit var adapter: GPUAdapter
         private set
     lateinit var device: GPUDevice
@@ -50,7 +52,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
     val pipelineManager = WgpuPipelineManager(this)
     private val screenPass = WgpuScreenPass(this)
 
-    private var renderSize = Vec2i(ctx.canvas.width, ctx.canvas.height)
+    private var renderSize = Vec2i(canvas.width, canvas.height)
 
     private val gpuReadbacks = mutableListOf<GpuReadback>()
 
@@ -124,7 +126,7 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
             maxComputeInvocationsPerWorkgroup = device.limits.maxComputeInvocationsPerWorkgroup,
         )
 
-        canvasContext = ctx.canvas.getContext("webgpu") as GPUCanvasContext
+        canvasContext = canvas.getContext("webgpu") as GPUCanvasContext
         _canvasFormat = navigator.gpu.getPreferredCanvasFormat()
         canvasContext.configure(
             GPUCanvasConfiguration(device, canvasFormat)
@@ -137,9 +139,9 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         BackendStats.resetPerFrameCounts()
 
-        if (this.ctx.canvas.width != renderSize.x || this.ctx.canvas.height != renderSize.y) {
-            renderSize = Vec2i(this.ctx.canvas.width, this.ctx.canvas.height)
-            screenPass.applySize(this.ctx.canvas.width, this.ctx.canvas.height)
+        if (ctx.window.framebufferSize != renderSize) {
+            renderSize = ctx.window.framebufferSize
+            screenPass.applySize(renderSize.x, renderSize.y)
         }
 
         passEncoderState.beginFrame()

@@ -4,14 +4,13 @@ import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Kernel32
 import darwin.CAMetalLayer
 import darwin.NSWindow
-import de.fabmax.kool.FrameData
-import de.fabmax.kool.KoolContext
-import de.fabmax.kool.KoolSystem
-import de.fabmax.kool.configJvm
+import de.fabmax.kool.*
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
-import de.fabmax.kool.platform.GlfwWindow
+import de.fabmax.kool.platform.ClientApi
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.OsInfo
+import de.fabmax.kool.platform.glfw.GlfwWindow
+import de.fabmax.kool.platform.glfw.GlfwWindowSubsystem
 import ffi.LibraryLoader
 import ffi.NativeAddress
 import io.ygdrasil.webgpu.GPUAdapter
@@ -19,7 +18,6 @@ import io.ygdrasil.webgpu.NativeSurface
 import io.ygdrasil.webgpu.WGPU
 import io.ygdrasil.webgpu.WGPU.Companion.createInstance
 import kotlinx.coroutines.runBlocking
-import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWNativeCocoa.glfwGetCocoaWindow
 import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandDisplay
 import org.lwjgl.glfw.GLFWNativeWayland.glfwGetWaylandWindow
@@ -34,15 +32,17 @@ internal actual fun isRenderBackendWgpu4kSupported(): Boolean = true
 
 internal actual suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderBackendWgpu4k {
     LibraryLoader.load()
-    // Disable context creation, WGPU will manage that
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API)
 
-    val glfwWindow = GlfwWindow(ctx as Lwjgl3Context)
-    glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
+    val glfw = KoolSystem.configJvm.windowSubsystem
+    check(glfw is GlfwWindowSubsystem) {
+        "Wgpu backend requires GLFW window subsystem"
+    }
+    val glfwWindow = glfw.createWindow(ClientApi.UNMANAGED, ctx as Lwjgl3Context)
+    glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
 
     // make the window visible
     if (KoolSystem.configJvm.showWindowOnStart) {
-        glfwWindow.isVisible = true
+        glfwWindow.setVisible(true)
     }
 
     val wgpu = createInstance() ?: error("fail to wgpu instance")
@@ -71,7 +71,7 @@ internal class DesktopRenderBackendWgpu4kWebGpu(
     numSamples: Int,
     adapterProvider: suspend () -> GPUAdapter
 ) : RenderBackendWgpu4k(ctx, surface, numSamples, adapterProvider), RenderBackendJvm {
-    override val glfwWindow: GlfwWindow
+    override val window: GlfwWindow
         get() = surface.glfwWindow
 
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
@@ -81,29 +81,29 @@ internal class DesktopRenderBackendWgpu4kWebGpu(
 
 private fun WGPU.getNativeSurface(window: GlfwWindow): NativeSurface = when (OsInfo.os) {
     OsInfo.OS.LINUX -> when {
-        glfwGetWaylandWindow(window.windowPtr) == 0L -> {
+        glfwGetWaylandWindow(window.windowHandle) == 0L -> {
             println("running on X11")
             val display = glfwGetX11Display().toNativeAddress()
-            val x11_window = glfwGetX11Window(window.windowPtr).toULong()
+            val x11_window = glfwGetX11Window(window.windowHandle).toULong()
             getSurfaceFromX11Window(display, x11_window) ?: error("fail to get surface on Linux")
         }
 
         else -> {
             println("running on Wayland")
             val display = glfwGetWaylandDisplay().toNativeAddress()
-            val wayland_window = glfwGetWaylandWindow(window.windowPtr).toNativeAddress()
+            val wayland_window = glfwGetWaylandWindow(window.windowHandle).toNativeAddress()
             getSurfaceFromWaylandWindow(display, wayland_window)
         }
     }
 
     OsInfo.OS.WINDOWS -> {
-        val hwnd = glfwGetWin32Window(window.windowPtr).toNativeAddress()
+        val hwnd = glfwGetWin32Window(window.windowHandle).toNativeAddress()
         val hinstance = Kernel32.INSTANCE.GetModuleHandle(null).pointer.toNativeAddress()
         getSurfaceFromWindows(hinstance, hwnd) ?: error("fail to get surface on Windows")
     }
 
     OsInfo.OS.MACOS_X -> {
-        val nsWindowPtr = glfwGetCocoaWindow(window.windowPtr)
+        val nsWindowPtr = glfwGetCocoaWindow(window.windowHandle)
         val nswindow = Rococoa.wrap(ID.fromLong(nsWindowPtr), NSWindow::class.java)
         nswindow.contentView()?.setWantsLayer(true)
         val layer = CAMetalLayer.layer()

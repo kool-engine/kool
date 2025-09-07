@@ -15,7 +15,7 @@ internal actual fun isRenderBackendWgpu4kSupported(): Boolean = !js("!navigator.
 
 internal actual suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderBackendWgpu4k {
     ctx as JsContext
-    val backend = JsRenderBackendWgpu4kWebGpu(ctx, ctx.canvas)
+    val backend = JsRenderBackendWgpu4kWebGpu(ctx, ctx.window.canvas)
     backend.initContext()
     with(backend) {
         surface.configure(

@@ -2,25 +2,27 @@ package de.fabmax.kool
 
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.MonitorSpec
 import de.fabmax.kool.util.*
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFWErrorCallback
 import java.util.*
 
 actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)}f".format(Locale.ENGLISH, this)
 
 val KoolSystem.configJvm: KoolConfigJvm get() = config as KoolConfigJvm
-val KoolSystem.isMacOs: Boolean get() = (platform as Platform.Desktop).isMacOs
+val KoolSystem.isMacOs: Boolean get() = platform.isMacOs
 
 /**
  * Creates a new [KoolContext] with the given [KoolConfigJvm]. Notice that there can only be one [KoolContext], calling
  * this method multiple times is an error.
  */
 suspend fun createContext(config: KoolConfigJvm = KoolConfigJvm()): Lwjgl3Context {
+    if (Log.printer == Log.DEFAULT_PRINTER) {
+        Log.printer = DesktopLogPrinter
+    }
     KoolSystem.initialize(config)
+    KoolSystem.configJvm.windowSubsystem.onEarlyInit()
     return DesktopImpl.createContext()
 }
 
@@ -39,42 +41,14 @@ fun KoolApplication(ctx: Lwjgl3Context, appBlock: suspend KoolApplication.() -> 
     ctx.run()
 }
 
-internal object DesktopImpl {
-    private var ctx: Lwjgl3Context? = null
-
-    val monitors: MutableList<MonitorSpec> = mutableListOf()
-    val primaryMonitor: MonitorSpec
-
-    init {
-        if (Log.printer == Log.DEFAULT_PRINTER) {
-            Log.printer = DesktopLogPrinter
-        }
-
-        // setup an error callback
-        GLFWErrorCallback.createPrint(System.err).set()
-
-        // initialize GLFW
-        check(GLFW.glfwInit()) { "Unable to initialize GLFW" }
-
-        val primMonId = GLFW.glfwGetPrimaryMonitor()
-        val mons = GLFW.glfwGetMonitors()!!
-        var primMon = MonitorSpec(mons[0])
-        for (i in 0 until mons.limit()) {
-            val spec = MonitorSpec(mons[i])
-            monitors += spec
-            if (mons[i] == primMonId) {
-                primMon = spec
-            }
-        }
-        primaryMonitor = primMon
-    }
+private object DesktopImpl {
+    private val isCreated = atomic(false)
+    private lateinit var ctx: Lwjgl3Context
 
     suspend fun createContext(): Lwjgl3Context {
-        synchronized(this) {
-            check(ctx == null) { "Context was already created (multi-context is not yet supported)" }
-        }
+        check(!isCreated.getAndSet(true)) { "Context was already created" }
         ctx = Lwjgl3Context()
-        return ctx!!
+        return ctx
     }
 }
 

@@ -4,12 +4,12 @@ import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.backend.BackendProvider
 import de.fabmax.kool.pipeline.backend.vk.RenderBackendVk
 import de.fabmax.kool.pipeline.backend.vk.VkSetup
+import de.fabmax.kool.platform.WindowSubsystem
+import de.fabmax.kool.platform.glfw.GlfwWindowSubsystem
 import de.fabmax.kool.util.MsdfFontInfo
 import de.fabmax.kool.util.MsdfMeta
-import de.fabmax.kool.util.logD
 import kotlinx.serialization.json.Json
 import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
 
 data class KoolConfigJvm(
     /**
@@ -36,16 +36,16 @@ data class KoolConfigJvm(
     val httpCacheDir: String = "./.httpCache",
 
     val renderBackend: BackendProvider = RenderBackendVk,
+    val windowSubsystem: WindowSubsystem = GlfwWindowSubsystem,
     val vkSetup: VkSetup? = null,
     val windowTitle: String = "Kool App",
     val windowSize: Vec2i = Vec2i(1600, 900),
-    val renderScale: Float = 1f,
     val isFullscreen: Boolean = false,
     val showWindowOnStart: Boolean = true,
     val updateOnWindowResize: Boolean = true,
     val useOpenGlFallback: Boolean = true,
     val monitor: Int = -1,
-    val windowIcon: List<BufferedImage> = DEFAULT_ICON?.let { listOf(it) } ?: emptyList(),
+    val windowIcon: List<BufferedImage> = emptyList(),
     val asyncSceneUpdate: Boolean = true,
 
     /**
@@ -60,29 +60,11 @@ data class KoolConfigJvm(
 ) : KoolConfig {
 
     companion object {
-        init {
-            // on macOS, AWT clashes with GLFW, because GLFW also has to run on the first thread enabling AWT
-            // headless-mode somewhat mitigates this problem.
-            // The headless property is set here because it has to happen before any AWT class (as e.g. BufferedImage)
-            // is loaded.
-            val osName = System.getProperty("os.name", "unknown").lowercase()
-            if ("mac os" in osName || "darwin" in osName || "osx" in osName) {
-                logD("KoolConfig") { "Detected macOS. Enabling AWT headless mode to mitigate AWT / GLFW compatibility issues" }
-                System.setProperty("java.awt.headless", "true")
-            }
-        }
-
-        val DEFAULT_ICON: BufferedImage? = try {
-            KoolConfigJvm::class.java.classLoader.getResourceAsStream("icon.png").use {
-                ImageIO.read(it)
-            }
-        } catch (e: Exception) { null }
-
         val DEFAULT_MSDF_FONT_INFO: MsdfFontInfo by lazy {
             KoolConfigJvm::class.java.classLoader
                 .getResourceAsStream("fonts/font-roboto-regular.json").use {
                     checkNotNull(it) { "Failed to load \"fonts/font-roboto-regular.json\" from resources" }
-                    val meta = Json.Default.decodeFromString<MsdfMeta>(it.readBytes().decodeToString())
+                    val meta = Json.decodeFromString<MsdfMeta>(it.readBytes().decodeToString())
                     MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
                 }
         }

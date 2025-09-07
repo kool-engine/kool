@@ -53,8 +53,9 @@ object InputStack {
         }
     }
 
-    internal fun handleInput(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
+    internal fun handleInput(keyEvents: List<KeyEvent>, ctx: KoolContext) {
         var pointerBlocked = false
+        var keysBlocked = false
 
         updateHandlerStack()
 
@@ -68,14 +69,14 @@ object InputStack {
                 }
             }
 
-            if (keyEvents.isNotEmpty()) {
+            if (keyEvents.isNotEmpty() && !keysBlocked) {
                 handler.handleKeyEvents(keyEvents, ctx)
                 if (handler.blockAllKeyboardInput) {
-                    keyEvents.clear()
+                    keysBlocked = true
                 }
             }
 
-            if (pointerBlocked && keyEvents.isEmpty()) {
+            if (pointerBlocked && (keysBlocked || keyEvents.isEmpty())) {
                 break
             }
         }
@@ -102,7 +103,7 @@ object InputStack {
             }
         }
 
-        open fun handleKeyEvents(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
+        open fun handleKeyEvents(keyEvents: List<KeyEvent>, ctx: KoolContext) {
             keyboardListeners.update()
             // call listeners in reversed order -> most recently added listener first
             for (i in keyboardListeners.lastIndex downTo 0) {
@@ -127,7 +128,7 @@ object InputStack {
     }
 
     fun interface KeyboardListener {
-        fun handleKeyboard(keyEvents: MutableList<KeyEvent>, ctx: KoolContext)
+        fun handleKeyboard(keyEvents: List<KeyEvent>, ctx: KoolContext)
     }
 
     class SimpleKeyboardListener : KeyboardListener {
@@ -154,35 +155,33 @@ object InputStack {
             listeners -= listener
         }
 
-        override fun handleKeyboard(keyEvents: MutableList<KeyEvent>, ctx: KoolContext) {
+        override fun handleKeyboard(keyEvents: List<KeyEvent>, ctx: KoolContext) {
             val it = keyEvents.iterator()
             while (it.hasNext()) {
                 val ev = it.next()
-                var isHandled = false
+                if (ev.isConsumed) {
+                    continue
+                }
 
                 keyListeners[ev.keyCode]?.let { listeners ->
                     listeners.update()
                     for (j in listeners.indices) {
                         if (listeners[j].filter(ev)) {
                             listeners[j](ev)
-                            isHandled = true
+                            ev.isConsumed = true
                         }
                     }
                 }
-                if (!isHandled) {
+                if (!ev.isConsumed) {
                     keyListeners[ev.localKeyCode]?.let { listeners ->
                         listeners.update()
                         for (j in listeners.indices) {
                             if (listeners[j].filter(ev)) {
                                 listeners[j](ev)
-                                isHandled = true
+                                ev.isConsumed = true
                             }
                         }
                     }
-                }
-
-                if (isHandled) {
-                    it.remove()
                 }
             }
         }

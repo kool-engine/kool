@@ -26,7 +26,6 @@ data class KoolConfigJs(
     val isJsCanvasToWindowFitting: Boolean = true,
     val powerPreference: PowerPreference = PowerPreference.HighPerformance,
     val deviceScaleLimit: Double = 3.0,
-    val renderScale: Float = 1f,
     val forceFloatDepthBuffer: Boolean = true,
 
     val customTtfFonts: Map<String, String> = emptyMap(),
@@ -37,7 +36,7 @@ data class KoolConfigJs(
         """
 
         val DEFAULT_MSDF_FONT_INFO: MsdfFontInfo by lazy {
-            val meta = Json.Default.decodeFromString<MsdfMeta>(DEFAULT_META_JSON)
+            val meta = Json.decodeFromString<MsdfMeta>(DEFAULT_META_JSON)
             MsdfFontInfo(meta, "fonts/font-roboto-regular.png")
         }
     }

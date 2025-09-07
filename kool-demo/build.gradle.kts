@@ -10,17 +10,20 @@ plugins {
 
 kotlin {
     jvm("desktop") {
-//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-//        binaries {
-//            // build fails for duplicate libraries, despite duplicate strategy being EXCLUDE
-//            executable {
-//                mainClass.set("de.fabmax.kool.demo.MainKt")
-//                if (OperatingSystem.current().isMacOsX) {
-//                    applicationDefaultJvmArgs = listOf("-XstartOnFirstThread")
-//                }
-//                applicationDistribution.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-//            }
-//        }
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        binaries {
+            executable {
+                mainClass.set("de.fabmax.kool.demo.MainKt")
+                applicationDefaultJvmArgs = buildList {
+                    add("--add-opens=java.base/java.lang=ALL-UNNAMED")
+                    add("--enable-native-access=ALL-UNNAMED")
+                    if (OperatingSystem.current().isMacOsX) {
+                        add("-XstartOnFirstThread")
+                    }
+                }
+                applicationDistribution.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            }
+        }
     }
 
     js {
@@ -50,66 +53,21 @@ kotlin {
             implementation(libs.kotlin.serialization.core)
             implementation(libs.kotlin.serialization.json)
         }
-
-        val desktopMain by getting
-        desktopMain.dependencies {
-            // fixme: force required runtime libraries into IntelliJ module classpath by adding them as implementation
-            //  dependencies.
-            //  Notice that runtimeLibs are only available and added to classpath after first build (or after
-            //  cacheRuntimeLibs task is executed manually) AND the gradle project is re-synced.
-            implementation(fileTree("${projectDir}/runtimeLibs") { include("*.jar") })
-        }
     }
-}
-
-tasks["build"].dependsOn("cacheRuntimeLibs")
-tasks.register<Copy>("cacheRuntimeLibs") {
-    val os = OperatingSystem.current()
-    val platformName = when {
-        os.isLinux -> "natives-linux"
-        os.isWindows -> "natives-windows"
-        os.isMacOsX && "aarch64" in System.getProperty("os.arch") -> "natives-macos-arm64"
-        os.isMacOsX -> "natives-macos"
-        else -> ""
-    }
-
-    val runtimeLibs = configurations
-        .filter { it.name == "desktopRuntimeClasspath" }
-        .flatMap { it.files.toList() }
-        .filter { it.name.endsWith("$platformName.jar") && !it.path.startsWith(projectDir.path) }
-        .onEach {
-            if (!File("${projectDir}/runtimeLibs/${it.name}").exists()) {
-                from(it)
-                into("${projectDir}/runtimeLibs")
-            }
-        }
-    File("${projectDir}/runtimeLibs/").listFiles()
-        ?.filter { existing -> runtimeLibs.none { existing.name == it.name } }
-        ?.forEach {
-            delete { delete(it) }
-        }
 }
 
 tasks["clean"].dependsOn("deleteExtras")
 tasks.register<Delete>("deleteExtras") {
     delete("${rootDir}/dist/kool-demo")
-    delete("${projectDir}/runtimeLibs")
 }
 
-tasks.register<JavaExec>("runDesktop") {
-    dependsOn("cacheRuntimeLibs")
+tasks.register<JavaExec>("runDesktopSwing") {
     group = "application"
-    mainClass.set("de.fabmax.kool.demo.MainKt")
-
-    var customJvmArgs = listOf(
+    mainClass.set("de.fabmax.kool.demo.MainSwingKt")
+    jvmArgs = listOf(
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
         "--enable-native-access=ALL-UNNAMED"
     )
-
-    if (OperatingSystem.current().isMacOsX) {
-        customJvmArgs += listOf("-XstartOnFirstThread")
-    }
-    jvmArgs = customJvmArgs
 
     kotlin {
         val main = targets["desktop"].compilations["main"]

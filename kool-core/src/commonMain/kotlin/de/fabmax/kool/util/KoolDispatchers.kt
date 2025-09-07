@@ -1,7 +1,5 @@
 package de.fabmax.kool.util
 
-import kotlinx.atomicfu.locks.SynchronizedObject
-import kotlinx.atomicfu.locks.synchronized
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.takeWhile
@@ -50,24 +48,19 @@ object SyncedScope : CoroutineScope {
 }
 
 class TriggeredCoroutineDispatcher(val name: String) : CoroutineDispatcher() {
-    private val queueLock = SynchronizedObject()
-    private val taskQueue = mutableListOf<Runnable>()
-    private val taskQueueCopy = mutableListOf<Runnable>()
+    private val taskQueue = ConcurrentBuffer<Runnable>()
 
     override fun dispatch(context: CoroutineContext, block: Runnable) {
-        synchronized(queueLock) {
-            taskQueue += block
-        }
+        taskQueue.add(block)
     }
 
     internal fun executeDispatchedTasks() {
         if (taskQueue.isNotEmpty()) {
-            synchronized(queueLock) {
-                taskQueueCopy += taskQueue
-                taskQueue.clear()
+            taskQueue.consumeAll {
+                for (task in it) {
+                    task.run()
+                }
             }
-            taskQueueCopy.forEach { it.run() }
-            taskQueueCopy.clear()
         }
     }
 }

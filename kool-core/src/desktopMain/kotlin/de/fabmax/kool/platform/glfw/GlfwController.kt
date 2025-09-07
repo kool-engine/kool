@@ -1,11 +1,14 @@
-package de.fabmax.kool.input
+package de.fabmax.kool.platform.glfw
 
+import de.fabmax.kool.input.Controller
+import de.fabmax.kool.input.ControllerAxis
+import de.fabmax.kool.input.ControllerButton
 import de.fabmax.kool.util.logI
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWGamepadState
 import kotlin.math.min
 
-class ControllerJvm(id: Int) : Controller(id) {
+class GlfwController(id: Int) : Controller(id) {
     override var isConnected: Boolean = true
     override val isGamepad = glfwJoystickIsGamepad(id)
     override val name = if (isGamepad) {

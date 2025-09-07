@@ -9,7 +9,6 @@ object Input {
     internal val platformInput = PlatformInput()
 
     fun poll(ctx: KoolContext) {
-        platformInput.poll()
         KeyboardInput.poll(ctx)
         PointerInput.poll(ctx)
         ControllerInput.poll()
@@ -18,11 +17,9 @@ object Input {
 
 internal expect fun PlatformInput(): PlatformInput
 
-internal interface PlatformInput {
+interface PlatformInput {
     fun setCursorMode(cursorMode: CursorMode)
     fun applyCursorShape(cursorShape: CursorShape)
-
-    fun poll() { }
 
     fun requestKeyboard() { }
     fun hideKeyboard() { }

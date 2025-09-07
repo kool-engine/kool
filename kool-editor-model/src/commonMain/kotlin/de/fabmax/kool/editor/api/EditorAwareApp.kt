@@ -1,7 +1,7 @@
 package de.fabmax.kool.editor.api
 
-import de.fabmax.kool.ApplicationCallbacks
 import de.fabmax.kool.KoolContext
+import de.fabmax.kool.WindowCloseListener
 import de.fabmax.kool.util.FrontendScope
 import kotlinx.coroutines.launch
 
@@ -39,11 +39,9 @@ interface EditorAwareApp {
             startApp(projModel, ctx)
         }
 
-        ctx.applicationCallbacks = object : ApplicationCallbacks {
-            override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-                onDispose(ctx)
-                return true
-            }
+        ctx.window.closeListeners += WindowCloseListener {
+            onDispose(ctx)
+            true
         }
     }
 }

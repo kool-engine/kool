@@ -8,12 +8,12 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
+import de.fabmax.kool.platform.ClientApi
+import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
-import org.lwjgl.glfw.GLFW
-import org.lwjgl.glfw.GLFWVulkan
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 import java.nio.ByteBuffer
@@ -25,7 +25,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override val apiName: String
     override val deviceName: String
 
-    override val glfwWindow: GlfwVkWindow
+    override val window: KoolWindowJvm
 
     override val deviceCoordinates: DeviceCoordinates = DeviceCoordinates.VULKAN
     override val features: BackendFeatures
@@ -33,6 +33,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()
 
     val instance: Instance
+    val surface: Surface
     val physicalDevice: PhysicalDevice
     val device: Device
     val memManager: MemoryManager
@@ -56,14 +57,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     private val emptyScene = Scene("empty-scene")
 
     init {
-        // tell GLFW to not initialize default OpenGL API before we create the window
-        check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
-        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_NO_API)
-
-        glfwWindow = GlfwVkWindow(this, ctx)
-        glfwWindow.isFullscreen = KoolSystem.configJvm.isFullscreen
+        window = ctx.windowSubsystem.createWindow(ClientApi.UNMANAGED, ctx)
+        window.setFullscreen(KoolSystem.configJvm.isFullscreen)
         instance = Instance(this, KoolSystem.configJvm.windowTitle)
-        glfwWindow.createSurface()
+        surface = Surface(this)
+        window.setVisible(KoolSystem.configJvm.showWindowOnStart)
 
         physicalDevice = PhysicalDevice(this)
         device = Device(this)
@@ -105,9 +103,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         clearHelper = ClearHelper(this)
         screenPass = ScreenPassVk(this)
 
-        glfwWindow.onResize += GlfwVkWindow.OnWindowResizeListener { _, _ -> windowResized = true }
-
         frameTimer = Timer(timestampQueryPool) { delta -> frameGpuTime = delta }
+
+        window.onResize { windowResized = true }
+        window.onScaleChange { windowResized = true }
     }
 
     private fun clampUint(unsignedCnt: Int): Int {
@@ -153,6 +152,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 imgOk = swapchain.presentNextImage(this)
             }
             if (!imgOk || windowResized) {
+                logD { "Recreate swapchain due to resize" }
                 windowResized = false
                 recreateSwapchain()
             }
@@ -358,6 +358,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
             return try {
                 Result.success(RenderBackendVk(ctx as Lwjgl3Context))
             } catch (e: Exception) {
+                e.printStackTrace()
                 Result.failure(e)
             }
         }

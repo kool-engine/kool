@@ -28,7 +28,7 @@ class FontMapGenerator(val maxWidth: Int, val maxHeight: Int) {
     val loadingFonts = mutableListOf<Promise<FontFace>>()
 
     init {
-        val pixelRatio = (KoolSystem.getContextOrNull() as JsContext?)?.pixelRatio ?: 1.0
+        val pixelRatio = (KoolSystem.getContextOrNull() as JsContext?)?.window?.parentScreenScale ?: 1f
         canvas.style.width = "${(maxWidth / pixelRatio).roundToInt()}"
         canvas.style.height = "${(maxHeight / pixelRatio).roundToInt()}"
         canvas.width = maxWidth

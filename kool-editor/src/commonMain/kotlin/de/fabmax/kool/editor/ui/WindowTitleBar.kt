@@ -19,7 +19,7 @@ class WindowTitleBar(val editor: KoolEditor) : Composable {
 
     val isShowExportButton = mutableStateOf(KoolSystem.platform == Platform.Javascript)
 
-    private val hoverHandler: WindowTitleHoverHandler get() = editor.ctx.windowTitleHoverHandler
+    private val hoverHandler: WindowTitleHoverHandler get() = editor.ctx.window.windowTitleHoverHandler
     private val excludeBounds = List(3) { WindowTitleHoverHandler.HitBounds() }
 
     init {

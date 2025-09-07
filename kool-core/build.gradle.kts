@@ -21,12 +21,14 @@ kotlin {
         desktopMain.dependencies {
             api(libs.bundles.lwjgl)
             implementation(libs.jsvg)
+            implementation("org.lwjglx:lwjgl3-awt:0.2.3") { exclude(group = "org.lwjgl")  }
 
             listOf("natives-linux", "natives-windows", "natives-macos", "natives-macos-arm64").forEach { platform ->
-                val hasVulkanRuntime = "macos" in platform
-                libs.bundles.lwjgl.get().filter { it.name != "lwjgl-vulkan" || hasVulkanRuntime }.forEach { lib ->
-                    runtimeOnly("$lib:$platform")
-                }
+                val nonNativeLibs = mutableListOf("lwjgl-jawt")
+                if ("macos" !in platform) nonNativeLibs += "lwjgl-vulkan"
+                libs.bundles.lwjgl.get()
+                    .filter { it.name !in nonNativeLibs }
+                    .forEach { lib -> runtimeOnly("$lib:$platform") }
             }
         }
         desktopTest.dependencies {

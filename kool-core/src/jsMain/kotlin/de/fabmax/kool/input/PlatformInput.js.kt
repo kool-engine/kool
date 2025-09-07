@@ -23,8 +23,8 @@ internal object PlatformInputJs : PlatformInput {
 
     val excludedKeyCodes = mutableSetOf("F5", "F11", "F12", "MetaLeft", "MetaRight")
 
-    private val pixelRatio: Double
-        get() = (KoolSystem.getContextOrNull() as JsContext?)?.let { it.pixelRatio * it.renderScale } ?: 1.0
+    private val pixelRatio: Float
+        get() = (KoolSystem.getContextOrNull() as JsContext?)?.window?.renderScale ?: 1f
 
     private val virtualPointerPos = MutableVec2d()
     private var currentCursorShape = CursorShape.DEFAULT
@@ -53,7 +53,7 @@ internal object PlatformInputJs : PlatformInput {
     }
 
     fun onContextCreated(ctx: JsContext) {
-        installInputHandlers(ctx.canvas)
+        installInputHandlers(ctx.window.canvas)
     }
 
     @Suppress("UNUSED_PARAMETER")

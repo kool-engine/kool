@@ -102,30 +102,27 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
     val ui = EditorUi(this)
     val cachedAppAssets: CachedAppAssets get() = AppAssets.impl as CachedAppAssets
 
-    private val editorAppCallbacks = object : ApplicationCallbacks {
-        override fun onWindowCloseRequest(ctx: KoolContext): Boolean {
-            onExit()
-            return when (KoolSystem.platform) {
-                Platform.Javascript -> false
-                else -> true
-            }
-        }
-
-        override fun onFileDrop(droppedFiles: List<LoadableFile>) {
-            val targetPath = ui.assetBrowser.selectedDirectory.value?.path ?: ""
-            FrontendScope.launch {
-                availableAssets.importAssets(targetPath, droppedFiles)
-            }
-        }
-    }
-
     init {
         AppAssets.impl = CachedAppAssets(fileSystemAssetLoader(projectFiles.assets))
 
         AppState.isInEditorState.set(true)
         AppState.appModeState.set(AppMode.EDIT)
 
-        ctx.applicationCallbacks = editorAppCallbacks
+        ctx.window.closeListeners += WindowCloseListener {
+            onExit()
+            when (KoolSystem.platform) {
+                Platform.Javascript -> false
+                else -> true
+            }
+        }
+        ctx.window.dragAndDropListeners += object : DragAndDropListener{
+            override fun onFileDrop(droppedFiles: List<LoadableFile>) {
+                val targetPath = ui.assetBrowser.selectedDirectory.value?.path ?: ""
+                FrontendScope.launch {
+                    availableAssets.importAssets(targetPath, droppedFiles)
+                }
+            }
+        }
 
         // editor background needs to be the first scene, not only because its background but also because it hosts
         // the editor camera controller, which is also used by other scenes, and we want it to update first
@@ -134,8 +131,8 @@ class KoolEditor(val projectFiles: ProjectFiles, val projectModel: EditorProject
 
         registerKeyBindings()
         registerScenePicking()
-        ctx.onWindowFocusChanged += {
-            if (!it.isWindowFocused) {
+        ctx.window.onWindowFocusChanged {
+            if (!it.isFocused) {
                 ApplicationScope.launch { saveProject() }
             }
         }
