@@ -3,6 +3,14 @@ package de.fabmax.kool.math
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Int32Buffer
 import de.fabmax.kool.util.MixedBuffer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.listSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeCollection
 import kotlin.math.sqrt
 
 fun Vec4f.toVec4d() = Vec4d(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
@@ -33,6 +41,7 @@ fun Vec4f(x: Float, yzw: Vec3f): Vec4f = Vec4f(x, yzw.x, yzw.y, yzw.z)
 fun Vec4f(xy: Vec2f, zw: Vec2f): Vec4f = Vec4f(xy.x, xy.y, zw.x, zw.y)
 fun Vec4f(x: Float, yz: Vec2f, w: Float): Vec4f = Vec4f(x, yz.x, yz.y, w)
 
+@Serializable(with = Vec4f.Vec4Serializer::class)
 open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open val w: Float) {
 
     constructor(f: Float): this(f, f, f, f)
@@ -241,6 +250,33 @@ open class Vec4f(open val x: Float, open val y: Float, open val z: Float, open v
         val NEG_Z_AXIS = Vec4f(0f, 0f, -1f, 0f)
         val NEG_W_AXIS = Vec4f(0f, 0f, 0f, -1f)
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec4Serializer : KSerializer<Vec4f> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Float>()
+
+        override fun serialize(encoder: Encoder, value: Vec4f) {
+            encoder.encodeCollection(descriptor, 3) {
+                encodeFloatElement(descriptor, 0, value.x)
+                encodeFloatElement(descriptor, 1, value.y)
+                encodeFloatElement(descriptor, 3, value.z)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec4f {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeFloatElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeFloatElement(descriptor, 1)
+            require(dec.decodeElementIndex(descriptor) == 2)
+            val z = dec.decodeFloatElement(descriptor, 2)
+            require(dec.decodeElementIndex(descriptor) == 3)
+            val w = dec.decodeFloatElement(descriptor, 3)
+            dec.endStructure(descriptor)
+            return Vec4f(x, y, z, w)
+        }
+    }
 }
 
 open class MutableVec4f(override var x: Float, override var y: Float, override var z: Float, override var w: Float) : Vec4f(x, y, z, w) {
@@ -413,6 +449,7 @@ fun Vec4d(x: Double, yzw: Vec3d): Vec4d = Vec4d(x, yzw.x, yzw.y, yzw.z)
 fun Vec4d(xy: Vec2d, zw: Vec2d): Vec4d = Vec4d(xy.x, xy.y, zw.x, zw.y)
 fun Vec4d(x: Double, yz: Vec2d, w: Double): Vec4d = Vec4d(x, yz.x, yz.y, w)
 
+@Serializable(with = Vec4d.Vec4Serializer::class)
 open class Vec4d(open val x: Double, open val y: Double, open val z: Double, open val w: Double) {
 
     constructor(f: Double): this(f, f, f, f)
@@ -617,6 +654,33 @@ open class Vec4d(open val x: Double, open val y: Double, open val z: Double, ope
         val NEG_Z_AXIS = Vec4d(0.0, 0.0, -1.0, 0.0)
         val NEG_W_AXIS = Vec4d(0.0, 0.0, 0.0, -1.0)
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec4Serializer : KSerializer<Vec4d> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Double>()
+
+        override fun serialize(encoder: Encoder, value: Vec4d) {
+            encoder.encodeCollection(descriptor, 3) {
+                encodeDoubleElement(descriptor, 0, value.x)
+                encodeDoubleElement(descriptor, 1, value.y)
+                encodeDoubleElement(descriptor, 3, value.z)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec4d {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeDoubleElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeDoubleElement(descriptor, 1)
+            require(dec.decodeElementIndex(descriptor) == 2)
+            val z = dec.decodeDoubleElement(descriptor, 2)
+            require(dec.decodeElementIndex(descriptor) == 3)
+            val w = dec.decodeDoubleElement(descriptor, 3)
+            dec.endStructure(descriptor)
+            return Vec4d(x, y, z, w)
+        }
+    }
 }
 
 open class MutableVec4d(override var x: Double, override var y: Double, override var z: Double, override var w: Double) : Vec4d(x, y, z, w) {
@@ -784,6 +848,7 @@ fun Vec4i(x: Int, yzw: Vec3i): Vec4i = Vec4i(x, yzw.x, yzw.y, yzw.z)
 fun Vec4i(xy: Vec2i, zw: Vec2i): Vec4i = Vec4i(xy.x, xy.y, zw.x, zw.y)
 fun Vec4i(x: Int, yz: Vec2i, w: Int): Vec4i = Vec4i(x, yz.x, yz.y, w)
 
+@Serializable(with = Vec4i.Vec4Serializer::class)
 open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: Int) {
 
     constructor(f: Int): this(f, f, f, f)
@@ -937,6 +1002,33 @@ open class Vec4i(open val x: Int, open val y: Int, open val z: Int, open val w: 
         val NEG_Y_AXIS = Vec4i(0, -1, 0, 0)
         val NEG_Z_AXIS = Vec4i(0, 0, -1, 0)
         val NEG_W_AXIS = Vec4i(0, 0, 0, -1)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec4Serializer : KSerializer<Vec4i> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Int>()
+
+        override fun serialize(encoder: Encoder, value: Vec4i) {
+            encoder.encodeCollection(descriptor, 3) {
+                encodeIntElement(descriptor, 0, value.x)
+                encodeIntElement(descriptor, 1, value.y)
+                encodeIntElement(descriptor, 3, value.z)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec4i {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeIntElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeIntElement(descriptor, 1)
+            require(dec.decodeElementIndex(descriptor) == 2)
+            val z = dec.decodeIntElement(descriptor, 2)
+            require(dec.decodeElementIndex(descriptor) == 3)
+            val w = dec.decodeIntElement(descriptor, 3)
+            dec.endStructure(descriptor)
+            return Vec4i(x, y, z, w)
+        }
     }
 }
 

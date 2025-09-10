@@ -3,6 +3,14 @@ package de.fabmax.kool.math
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MixedBuffer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.listSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeCollection
 import kotlin.math.abs
 import kotlin.math.asin
 import kotlin.math.atan2
@@ -64,6 +72,7 @@ fun Mat3d.transform(that: MutableVec3f): MutableVec3f = transform(that, that)
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
+@Serializable(with = Mat3f.Mat3Serializer::class)
 open class Mat3f(
     open val m00: Float, open val m01: Float, open val m02: Float,
     open val m10: Float, open val m11: Float, open val m12: Float,
@@ -501,6 +510,36 @@ open class Mat3f(
 
         fun composition(rotation: QuatF, scale: Vec3f): Mat3f {
             return MutableMat3f().compose(rotation, scale)
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Mat3Serializer : KSerializer<Mat3f> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Float>()
+
+        override fun serialize(encoder: Encoder, value: Mat3f) {
+            encoder.encodeCollection(descriptor, 9) {
+                var i = 0
+                for (row in 0 ..< 3) {
+                    for (col in 0 ..< 3) {
+                        encodeFloatElement(descriptor, i++, value[row, col])
+                    }
+                }
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Mat3f {
+            val dec = decoder.beginStructure(descriptor)
+            val m = MutableMat3f()
+            var i = 0
+            for (row in 0 ..< 3) {
+                for (col in 0 ..< 3) {
+                    require(dec.decodeElementIndex(descriptor) == i)
+                    m[row, col] = dec.decodeFloatElement(descriptor, i++)
+                }
+            }
+            dec.endStructure(descriptor)
+            return Mat3f(m)
         }
     }
 }
@@ -961,6 +1000,7 @@ open class MutableMat3f(
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
+@Serializable(with = Mat3d.Mat3Serializer::class)
 open class Mat3d(
     open val m00: Double, open val m01: Double, open val m02: Double,
     open val m10: Double, open val m11: Double, open val m12: Double,
@@ -1398,6 +1438,36 @@ open class Mat3d(
 
         fun composition(rotation: QuatD, scale: Vec3d): Mat3d {
             return MutableMat3d().compose(rotation, scale)
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Mat3Serializer : KSerializer<Mat3d> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Double>()
+
+        override fun serialize(encoder: Encoder, value: Mat3d) {
+            encoder.encodeCollection(descriptor, 9) {
+                var i = 0
+                for (row in 0 ..< 3) {
+                    for (col in 0 ..< 3) {
+                        encodeDoubleElement(descriptor, i++, value[row, col])
+                    }
+                }
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Mat3d {
+            val dec = decoder.beginStructure(descriptor)
+            val m = MutableMat3d()
+            var i = 0
+            for (row in 0 ..< 3) {
+                for (col in 0 ..< 3) {
+                    require(dec.decodeElementIndex(descriptor) == i)
+                    m[row, col] = dec.decodeDoubleElement(descriptor, i++)
+                }
+            }
+            dec.endStructure(descriptor)
+            return Mat3d(m)
         }
     }
 }

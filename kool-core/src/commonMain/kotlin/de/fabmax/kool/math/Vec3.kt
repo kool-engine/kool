@@ -3,6 +3,14 @@ package de.fabmax.kool.math
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Int32Buffer
 import de.fabmax.kool.util.MixedBuffer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.listSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeCollection
 import kotlin.math.sqrt
 
 fun Vec3f.toVec3d() = Vec3d(x.toDouble(), y.toDouble(), z.toDouble())
@@ -31,6 +39,7 @@ fun MutableVec3i.set(that: Vec3d) = set(that.x.toInt(), that.y.toInt(), that.z.t
 fun Vec3f(xy: Vec2f, z: Float): Vec3f = Vec3f(xy.x, xy.y, z)
 fun Vec3f(x: Float, yz: Vec2f): Vec3f = Vec3f(x, yz.x, yz.y)
 
+@Serializable(with = Vec3f.Vec3Serializer::class)
 open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
 
     constructor(f: Float): this(f, f, f)
@@ -262,6 +271,31 @@ open class Vec3f(open val x: Float, open val y: Float, open val z: Float) {
         val NEG_Y_AXIS = Vec3f(0f, -1f, 0f)
         val NEG_Z_AXIS = Vec3f(0f, 0f, -1f)
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec3Serializer : KSerializer<Vec3f> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Float>()
+
+        override fun serialize(encoder: Encoder, value: Vec3f) {
+            encoder.encodeCollection(descriptor, 3) {
+                encodeFloatElement(descriptor, 0, value.x)
+                encodeFloatElement(descriptor, 1, value.y)
+                encodeFloatElement(descriptor, 3, value.z)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec3f {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeFloatElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeFloatElement(descriptor, 1)
+            require(dec.decodeElementIndex(descriptor) == 2)
+            val z = dec.decodeFloatElement(descriptor, 2)
+            dec.endStructure(descriptor)
+            return Vec3f(x, y, z)
+        }
+    }
 }
 
 open class MutableVec3f(override var x: Float, override var y: Float, override var z: Float) : Vec3f(x, y, z) {
@@ -435,6 +469,7 @@ open class MutableVec3f(override var x: Float, override var y: Float, override v
 fun Vec3d(xy: Vec2d, z: Double): Vec3d = Vec3d(xy.x, xy.y, z)
 fun Vec3d(x: Double, yz: Vec2d): Vec3d = Vec3d(x, yz.x, yz.y)
 
+@Serializable(with = Vec3d.Vec3Serializer::class)
 open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
 
     constructor(f: Double): this(f, f, f)
@@ -662,6 +697,31 @@ open class Vec3d(open val x: Double, open val y: Double, open val z: Double) {
         val NEG_Y_AXIS = Vec3d(0.0, -1.0, 0.0)
         val NEG_Z_AXIS = Vec3d(0.0, 0.0, -1.0)
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec3Serializer : KSerializer<Vec3d> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Double>()
+
+        override fun serialize(encoder: Encoder, value: Vec3d) {
+            encoder.encodeCollection(descriptor, 3) {
+                encodeDoubleElement(descriptor, 0, value.x)
+                encodeDoubleElement(descriptor, 1, value.y)
+                encodeDoubleElement(descriptor, 3, value.z)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec3d {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeDoubleElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeDoubleElement(descriptor, 1)
+            require(dec.decodeElementIndex(descriptor) == 2)
+            val z = dec.decodeDoubleElement(descriptor, 2)
+            dec.endStructure(descriptor)
+            return Vec3d(x, y, z)
+        }
+    }
 }
 
 open class MutableVec3d(override var x: Double, override var y: Double, override var z: Double) : Vec3d(x, y, z) {
@@ -830,6 +890,7 @@ open class MutableVec3d(override var x: Double, override var y: Double, override
 fun Vec3i(xy: Vec2i, z: Int): Vec3i = Vec3i(xy.x, xy.y, z)
 fun Vec3i(x: Int, yz: Vec2i): Vec3i = Vec3i(x, yz.x, yz.y)
 
+@Serializable(with = Vec3i.Vec3Serializer::class)
 open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
 
     constructor(f: Int): this(f, f, f)
@@ -976,6 +1037,31 @@ open class Vec3i(open val x: Int, open val y: Int, open val z: Int) {
         val NEG_X_AXIS = Vec3i(-1, 0, 0)
         val NEG_Y_AXIS = Vec3i(0, -1, 0)
         val NEG_Z_AXIS = Vec3i(0, 0, -1)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec3Serializer : KSerializer<Vec3i> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Int>()
+
+        override fun serialize(encoder: Encoder, value: Vec3i) {
+            encoder.encodeCollection(descriptor, 3) {
+                encodeIntElement(descriptor, 0, value.x)
+                encodeIntElement(descriptor, 1, value.y)
+                encodeIntElement(descriptor, 3, value.z)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec3i {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeIntElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeIntElement(descriptor, 1)
+            require(dec.decodeElementIndex(descriptor) == 2)
+            val z = dec.decodeIntElement(descriptor, 2)
+            dec.endStructure(descriptor)
+            return Vec3i(x, y, z)
+        }
     }
 }
 

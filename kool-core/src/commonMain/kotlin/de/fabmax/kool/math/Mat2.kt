@@ -3,9 +3,18 @@ package de.fabmax.kool.math
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MixedBuffer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.listSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeCollection
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
+@Serializable(with = Mat2f.Mat2Serializer::class)
 open class Mat2f(
     open val m00: Float, open val m01: Float,
     open val m10: Float, open val m11: Float,
@@ -252,6 +261,36 @@ open class Mat2f(
             return MutableMat2f().rotate(rotation).scale(scale)
         }
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Mat2Serializer : KSerializer<Mat2f> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Float>()
+
+        override fun serialize(encoder: Encoder, value: Mat2f) {
+            encoder.encodeCollection(descriptor, 4) {
+                var i = 0
+                for (row in 0 ..< 2) {
+                    for (col in 0 ..< 2) {
+                        encodeFloatElement(descriptor, i++, value[row, col])
+                    }
+                }
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Mat2f {
+            val dec = decoder.beginStructure(descriptor)
+            val m = MutableMat2f()
+            var i = 0
+            for (row in 0 ..< 2) {
+                for (col in 0 ..< 2) {
+                    require(dec.decodeElementIndex(descriptor) == i)
+                    m[row, col] = dec.decodeFloatElement(descriptor, i++)
+                }
+            }
+            dec.endStructure(descriptor)
+            return Mat2f(m)
+        }
+    }
 }
 
 open class MutableMat2f(
@@ -493,6 +532,7 @@ open class MutableMat2f(
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
+@Serializable(with = Mat2d.Mat2Serializer::class)
 open class Mat2d(
     open val m00: Double, open val m01: Double,
     open val m10: Double, open val m11: Double,
@@ -737,6 +777,36 @@ open class Mat2d(
 
         fun composition(rotation: AngleD, scale: Vec2d): Mat2d {
             return MutableMat2d().rotate(rotation).scale(scale)
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Mat2Serializer : KSerializer<Mat2d> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Double>()
+
+        override fun serialize(encoder: Encoder, value: Mat2d) {
+            encoder.encodeCollection(descriptor, 4) {
+                var i = 0
+                for (row in 0 ..< 2) {
+                    for (col in 0 ..< 2) {
+                        encodeDoubleElement(descriptor, i++, value[row, col])
+                    }
+                }
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Mat2d {
+            val dec = decoder.beginStructure(descriptor)
+            val m = MutableMat2d()
+            var i = 0
+            for (row in 0 ..< 2) {
+                for (col in 0 ..< 2) {
+                    require(dec.decodeElementIndex(descriptor) == i)
+                    m[row, col] = dec.decodeDoubleElement(descriptor, i++)
+                }
+            }
+            dec.endStructure(descriptor)
+            return Mat2d(m)
         }
     }
 }

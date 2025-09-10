@@ -94,6 +94,8 @@ open class GenerateVariantsFromFloatPrototype : DefaultTask() {
             Regex("""\W(floatArrayOf)\W""") to PatternTransformer { it.groups[1]!!.range to "doubleArrayOf" },
             Regex("""\W(FUZZY_EQ_F)\W""") to PatternTransformer { it.groups[1]!!.range to "FUZZY_EQ_D" },
             Regex("""\W(PI_F)\W""") to PatternTransformer { it.groups[1]!!.range to "PI" },
+            Regex("""\W(encodeFloatElement)\W""") to PatternTransformer { it.groups[1]!!.range to "encodeDoubleElement" },
+            Regex("""\W(decodeFloatElement)\W""") to PatternTransformer { it.groups[1]!!.range to "decodeDoubleElement" },
 
             Regex("""\W(matrixF)\W""") to PatternTransformer { it.groups[1]!!.range to "matrixD" },
 
@@ -114,6 +116,8 @@ open class GenerateVariantsFromFloatPrototype : DefaultTask() {
             Regex("""\W(floatArrayOf)\W""") to PatternTransformer { it.groups[1]!!.range to "intArrayOf" },
             Regex("""\W(Float32Buffer)\W""") to PatternTransformer { it.groups[1]!!.range to "Int32Buffer" },
             Regex("""\W(putFloat32)\W""") to PatternTransformer { it.groups[1]!!.range to "putInt32" },
+            Regex("""\W(encodeFloatElement)\W""") to PatternTransformer { it.groups[1]!!.range to "encodeIntElement" },
+            Regex("""\W(decodeFloatElement)\W""") to PatternTransformer { it.groups[1]!!.range to "decodeIntElement" },
 
             // remove entire <noInt>..</noInt> blocks
             Regex("""\s*// <noInt>[\s\S]*?(?<=</noInt>)""") to PatternTransformer { it.range to "" },

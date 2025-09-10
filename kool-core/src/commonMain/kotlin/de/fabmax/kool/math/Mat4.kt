@@ -4,6 +4,14 @@ import de.fabmax.kool.pipeline.backend.DepthRange
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.MixedBuffer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.listSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeCollection
 import kotlin.math.*
 
 enum class EulerOrder {
@@ -132,6 +140,7 @@ fun Mat4d.transform(that: MutableVec4f): MutableVec4f = transform(that, that)
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
+@Serializable(with = Mat4f.Mat4Serializer::class)
 open class Mat4f(
     open val m00: Float, open val m01: Float, open val m02: Float, open val m03: Float,
     open val m10: Float, open val m11: Float, open val m12: Float, open val m13: Float,
@@ -702,6 +711,36 @@ open class Mat4f(
 
         fun perspectiveReversedDepthInfiniteRange(fovy: AngleF, aspect: Float, near: Float): Mat4f {
             return MutableMat4f().perspectiveReversedDepthInfiniteRange(fovy, aspect, near)
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Mat4Serializer : KSerializer<Mat4f> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Float>()
+
+        override fun serialize(encoder: Encoder, value: Mat4f) {
+            encoder.encodeCollection(descriptor, 16) {
+                var i = 0
+                for (row in 0 ..< 4) {
+                    for (col in 0 ..< 4) {
+                        encodeFloatElement(descriptor, i++, value[row, col])
+                    }
+                }
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Mat4f {
+            val dec = decoder.beginStructure(descriptor)
+            val m = MutableMat4f()
+            var i = 0
+            for (row in 0 ..< 4) {
+                for (col in 0 ..< 4) {
+                    require(dec.decodeElementIndex(descriptor) == i)
+                    m[row, col] = dec.decodeFloatElement(descriptor, i++)
+                }
+            }
+            dec.endStructure(descriptor)
+            return Mat4f(m)
         }
     }
 }
@@ -1424,6 +1463,7 @@ open class MutableMat4f(
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
+@Serializable(with = Mat4d.Mat4Serializer::class)
 open class Mat4d(
     open val m00: Double, open val m01: Double, open val m02: Double, open val m03: Double,
     open val m10: Double, open val m11: Double, open val m12: Double, open val m13: Double,
@@ -1994,6 +2034,36 @@ open class Mat4d(
 
         fun perspectiveReversedDepthInfiniteRange(fovy: AngleD, aspect: Double, near: Double): Mat4d {
             return MutableMat4d().perspectiveReversedDepthInfiniteRange(fovy, aspect, near)
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Mat4Serializer : KSerializer<Mat4d> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Double>()
+
+        override fun serialize(encoder: Encoder, value: Mat4d) {
+            encoder.encodeCollection(descriptor, 16) {
+                var i = 0
+                for (row in 0 ..< 4) {
+                    for (col in 0 ..< 4) {
+                        encodeDoubleElement(descriptor, i++, value[row, col])
+                    }
+                }
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Mat4d {
+            val dec = decoder.beginStructure(descriptor)
+            val m = MutableMat4d()
+            var i = 0
+            for (row in 0 ..< 4) {
+                for (col in 0 ..< 4) {
+                    require(dec.decodeElementIndex(descriptor) == i)
+                    m[row, col] = dec.decodeDoubleElement(descriptor, i++)
+                }
+            }
+            dec.endStructure(descriptor)
+            return Mat4d(m)
         }
     }
 }

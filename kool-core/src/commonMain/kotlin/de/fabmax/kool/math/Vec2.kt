@@ -3,6 +3,14 @@ package de.fabmax.kool.math
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Int32Buffer
 import de.fabmax.kool.util.MixedBuffer
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.listSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeCollection
 import kotlin.math.sqrt
 
 fun Vec2f.toVec2d() = Vec2d(x.toDouble(), y.toDouble())
@@ -28,6 +36,7 @@ fun MutableVec2i.set(that: Vec2d) = set(that.x.toInt(), that.y.toInt())
 
 // <template> Changes made within the template section will also affect the other type variants of this class
 
+@Serializable(with = Vec2f.Vec2Serializer::class)
 open class Vec2f(open val x: Float, open val y: Float) {
 
     constructor(f: Float): this(f, f)
@@ -217,6 +226,28 @@ open class Vec2f(open val x: Float, open val y: Float) {
         val NEG_X_AXIS = Vec2f(-1f, 0f)
         val NEG_Y_AXIS = Vec2f(0f, -1f)
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec2Serializer : KSerializer<Vec2f> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Float>()
+
+        override fun serialize(encoder: Encoder, value: Vec2f) {
+            encoder.encodeCollection(descriptor, 2) {
+                encodeFloatElement(descriptor, 0, value.x)
+                encodeFloatElement(descriptor, 1, value.y)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec2f {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeFloatElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeFloatElement(descriptor, 1)
+            dec.endStructure(descriptor)
+            return Vec2f(x, y)
+        }
+    }
 }
 
 open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x, y) {
@@ -370,6 +401,7 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
 // </template> End of template section, DO NOT EDIT BELOW THIS!
 
 
+@Serializable(with = Vec2d.Vec2Serializer::class)
 open class Vec2d(open val x: Double, open val y: Double) {
 
     constructor(f: Double): this(f, f)
@@ -555,6 +587,28 @@ open class Vec2d(open val x: Double, open val y: Double) {
         val NEG_X_AXIS = Vec2d(-1.0, 0.0)
         val NEG_Y_AXIS = Vec2d(0.0, -1.0)
     }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec2Serializer : KSerializer<Vec2d> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Double>()
+
+        override fun serialize(encoder: Encoder, value: Vec2d) {
+            encoder.encodeCollection(descriptor, 2) {
+                encodeDoubleElement(descriptor, 0, value.x)
+                encodeDoubleElement(descriptor, 1, value.y)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec2d {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeDoubleElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeDoubleElement(descriptor, 1)
+            dec.endStructure(descriptor)
+            return Vec2d(x, y)
+        }
+    }
 }
 
 open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(x, y) {
@@ -703,6 +757,7 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
 }
 
 
+@Serializable(with = Vec2i.Vec2Serializer::class)
 open class Vec2i(open val x: Int, open val y: Int) {
 
     constructor(f: Int): this(f, f)
@@ -835,6 +890,28 @@ open class Vec2i(open val x: Int, open val y: Int) {
         val Y_AXIS = Vec2i(0, 1)
         val NEG_X_AXIS = Vec2i(-1, 0)
         val NEG_Y_AXIS = Vec2i(0, -1)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object Vec2Serializer : KSerializer<Vec2i> {
+        override val descriptor: SerialDescriptor = listSerialDescriptor<Int>()
+
+        override fun serialize(encoder: Encoder, value: Vec2i) {
+            encoder.encodeCollection(descriptor, 2) {
+                encodeIntElement(descriptor, 0, value.x)
+                encodeIntElement(descriptor, 1, value.y)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): Vec2i {
+            val dec = decoder.beginStructure(descriptor)
+            require(dec.decodeElementIndex(descriptor) == 0)
+            val x = dec.decodeIntElement(descriptor, 0)
+            require(dec.decodeElementIndex(descriptor) == 1)
+            val y = dec.decodeIntElement(descriptor, 1)
+            dec.endStructure(descriptor)
+            return Vec2i(x, y)
+        }
     }
 }
 
