@@ -13,6 +13,7 @@ import java.awt.Desktop
 import java.net.URI
 import java.util.*
 import kotlin.math.min
+import kotlin.system.exitProcess
 
 suspend fun Lwjgl3Context(): Lwjgl3Context {
     val config = KoolSystem.configJvm
@@ -92,6 +93,7 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
 
         backend.cleanup(this)
         ApplicationScope.cancel()
+        exitProcess(0)
     }
 
     internal suspend fun renderFrame() {

@@ -81,9 +81,9 @@ class SwingInput(val koolCanvas: KoolCanvas) : PlatformInput {
 
     private val MouseEvent.koolButton: Int get() {
         return when (button) {
-            MouseEvent.BUTTON1 -> 0
-            MouseEvent.BUTTON2 -> 1
-            MouseEvent.BUTTON3 -> 2
+            MouseEvent.BUTTON1 -> 0 // left button
+            MouseEvent.BUTTON2 -> 2 // middle button
+            MouseEvent.BUTTON3 -> 1 // right button
             else -> 0
         }
     }
