@@ -299,6 +299,12 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         renderOnResizeFlag = KoolSystem.configJvm.updateOnWindowResize
         glfwPollEvents()
         renderOnResizeFlag = false
+
+        val isMaximized = glfwGetWindowAttrib(windowHandle, GLFW_MAXIMIZED) != 0
+        val isIconified = glfwGetWindowAttrib(windowHandle, GLFW_ICONIFIED) != 0
+        if (isMaximized != flags.isMaximized || isIconified != flags.isMinimized) {
+            flags = flags.copy(isMaximized = isMaximized, isMinimized = isIconified)
+        }
     }
 
     override fun createVulkanSurface(instance: VkInstance): Long {
