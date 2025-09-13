@@ -6,6 +6,7 @@ import de.fabmax.kool.util.*
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.lwjgl.system.Configuration
 import java.util.*
 
 actual fun Double.toString(precision: Int): String = "%.${precision.clamp(0, 12)}f".format(Locale.ENGLISH, this)
@@ -22,6 +23,7 @@ suspend fun createContext(config: KoolConfigJvm = KoolConfigJvm()): Lwjgl3Contex
         Log.printer = DesktopLogPrinter
     }
     KoolSystem.initialize(config)
+    Configuration.STACK_SIZE.set(128)
     KoolSystem.configJvm.windowSubsystem.onEarlyInit()
     return DesktopImpl.createContext()
 }
