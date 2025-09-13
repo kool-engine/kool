@@ -14,6 +14,7 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.util.*
+import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
 
@@ -39,8 +40,10 @@ class GpuBees(beeScene: Scene) {
         initBeeBuffer(beeBufferB, Vec3f(BeeConfig.worldSize.x * -0.4f, 0f, 0f))
 
         beeScene.onRelease {
-            beeBufferA.release()
-            beeBufferB.release()
+            BackendScope.launch {
+                beeBufferA.release()
+                beeBufferB.release()
+            }
         }
 
         simulationPass.isProfileGpu = true
