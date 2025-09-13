@@ -2,10 +2,10 @@ package de.fabmax.kool.platform.glfw
 
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
-import de.fabmax.kool.platform.ClientApi
-import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.WindowSubsystem
+import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logI
+import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWVulkan
@@ -15,6 +15,7 @@ object GlfwWindowSubsystem : WindowSubsystem {
     private val _monitors: MutableList<MonitorSpec> = mutableListOf()
     val monitors: List<MonitorSpec> get() = _monitors
     var primaryMonitor: MonitorSpec? = null; private set
+    private var glCallbacks: GlWindowCallbacks? = null
 
     var primaryWindow: GlfwWindow? = null
         private set
@@ -36,7 +37,8 @@ object GlfwWindowSubsystem : WindowSubsystem {
         }
     }
 
-    override fun createWindow(clientApi: ClientApi, ctx: Lwjgl3Context): GlfwWindow {
+    override fun createWindow(clientApi: ClientApi, glCallbacks: GlWindowCallbacks?, ctx: Lwjgl3Context): GlfwWindow {
+        this.glCallbacks = glCallbacks
         if (clientApi == ClientApi.UNMANAGED) {
             // tell GLFW to not initialize default OpenGL API before we create the window
             check(GLFWVulkan.glfwVulkanSupported()) { "Cannot find a compatible Vulkan installable client driver (ICD)" }
@@ -57,6 +59,7 @@ object GlfwWindowSubsystem : WindowSubsystem {
         if (clientApi == ClientApi.OPEN_GL) {
             glfwMakeContextCurrent(window.windowHandle)
             glfwSwapInterval(if (KoolSystem.configJvm.isVsync) 1 else 0)
+            requireNotNull(glCallbacks).initGl()
         }
         return window
     }
@@ -91,6 +94,28 @@ object GlfwWindowSubsystem : WindowSubsystem {
         input.onContextCreated(ctx)
     }
 
+    override fun runRenderLoop() {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        runBlocking {
+            logI { "Starting GLFW render loop" }
+            val window = primaryWindow!!
+            while (!isCloseRequested) {
+                window.pollEvents()
+
+                if (!window.flags.isMinimized) {
+                    val cb = glCallbacks
+                    if (cb != null) {
+                        cb.drawFrame()
+                    } else {
+                        ctx.renderFrame()
+                    }
+                } else {
+                    Thread.sleep(10)
+                }
+            }
+        }
+        shutdown()
+    }
 
     fun getMonitorSpecAt(x: Int, y: Int): MonitorSpec {
         var nearestMon: MonitorSpec? = null

@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.swing
 
 import de.fabmax.kool.*
+import de.fabmax.kool.math.Vec2f
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.ui2.UiScale
 import de.fabmax.kool.platform.KoolWindowJvm
@@ -20,14 +21,22 @@ import kotlin.math.roundToInt
 class KoolCanvas(val canvas: Canvas, val swingSubsystem: SwingWindowSubsystem) : KoolWindowJvm {
     val input: SwingInput = SwingInput(this)
 
-    private val canvasSize: Vec2i get() = Vec2i(
-        x = (canvas.width * parentScreenScale).roundToInt(),
-        y = (canvas.height * parentScreenScale).roundToInt()
-    )
+    private val canvasScale: Vec2f get() {
+        val t = canvas.graphicsConfiguration?.defaultTransform
+        return if (t == null) Vec2f.ONES else Vec2f(t.scaleX.toFloat(), t.scaleY.toFloat())
+    }
+
+    private val canvasSize: Vec2i get() {
+        val s = canvasScale
+        return Vec2i(
+            x = (canvas.width * s.x).roundToInt(),
+            y = (canvas.height * s.y).roundToInt()
+        )
+    }
 
     override var isMouseOverWindow: Boolean = false; internal set
 
-    override val parentScreenScale: Float = swingSubsystem.screenScale
+    override val parentScreenScale: Float = canvasScale.x
     override var positionInScreen: Vec2i = Vec2i.ZERO
         set(_) {}
 

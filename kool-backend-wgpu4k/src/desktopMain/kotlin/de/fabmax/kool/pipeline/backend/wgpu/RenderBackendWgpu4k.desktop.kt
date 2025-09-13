@@ -4,7 +4,10 @@ import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Kernel32
 import darwin.CAMetalLayer
 import darwin.NSWindow
-import de.fabmax.kool.*
+import de.fabmax.kool.FrameData
+import de.fabmax.kool.KoolContext
+import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.platform.ClientApi
 import de.fabmax.kool.platform.Lwjgl3Context
@@ -37,7 +40,7 @@ internal actual suspend fun createRenderBackendWgpu4k(ctx: KoolContext): RenderB
     check(glfw is GlfwWindowSubsystem) {
         "Wgpu backend requires GLFW window subsystem"
     }
-    val glfwWindow = glfw.createWindow(ClientApi.UNMANAGED, ctx as Lwjgl3Context)
+    val glfwWindow = glfw.createWindow(ClientApi.UNMANAGED, null, ctx as Lwjgl3Context)
     glfwWindow.setFullscreen(KoolSystem.configJvm.isFullscreen)
 
     // make the window visible

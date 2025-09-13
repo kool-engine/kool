@@ -8,9 +8,9 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.backend.*
 import de.fabmax.kool.pipeline.backend.gl.pxSize
 import de.fabmax.kool.pipeline.backend.stats.BackendStats
-import de.fabmax.kool.platform.ClientApi
 import de.fabmax.kool.platform.KoolWindowJvm
 import de.fabmax.kool.platform.Lwjgl3Context
+import de.fabmax.kool.platform.createVkWindow
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.util.*
 import kotlinx.coroutines.CompletableDeferred
@@ -57,7 +57,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     private val emptyScene = Scene("empty-scene")
 
     init {
-        window = ctx.windowSubsystem.createWindow(ClientApi.UNMANAGED, ctx)
+        window = ctx.windowSubsystem.createVkWindow(ctx)
         window.setFullscreen(KoolSystem.configJvm.isFullscreen)
         instance = Instance(this, KoolSystem.configJvm.windowTitle)
         surface = Surface(this)

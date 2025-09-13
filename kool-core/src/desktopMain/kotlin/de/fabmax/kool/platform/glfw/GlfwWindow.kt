@@ -135,7 +135,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
 
         val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { listOfNotNull(KoolWindowJvm.defaultWindowIcon) }
         if (iconList.isNotEmpty()) {
-            setWindowIcon(KoolSystem.configJvm.windowIcon)
+            setWindowIcon(iconList)
         }
 
         val outInt1 = IntArray(1)

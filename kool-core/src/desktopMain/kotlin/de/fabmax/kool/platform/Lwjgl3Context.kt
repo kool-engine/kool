@@ -4,16 +4,15 @@ import de.fabmax.kool.*
 import de.fabmax.kool.math.clamp
 import de.fabmax.kool.pipeline.backend.RenderBackendJvm
 import de.fabmax.kool.pipeline.backend.gl.RenderBackendGl
-import de.fabmax.kool.util.*
+import de.fabmax.kool.util.ApplicationScope
+import de.fabmax.kool.util.KoolDispatchers
+import de.fabmax.kool.util.logE
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.runBlocking
 import java.awt.Desktop
 import java.net.URI
 import java.util.*
 import kotlin.math.min
-import kotlin.system.exitProcess
 
 suspend fun Lwjgl3Context(): Lwjgl3Context {
     val config = KoolSystem.configJvm
@@ -64,39 +63,12 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
 
     override fun run() {
         Thread.currentThread().name = "kool-main-backend-thread"
-        runBlocking {
-            val windowSubsystem = config.windowSubsystem
-            while (!windowSubsystem.isCloseRequested) {
-                sysInfo.update()
-                window.pollEvents()
-
-                if (!window.flags.isMinimized) {
-                    renderFrame()
-                } else {
-                    Thread.sleep(10)
-                }
-            }
-        }
-        logI { "Exiting..." }
-        scenes.forEach { it.release() }
-        backgroundScene.release()
-        onShutdown.updated().forEach { it(this) }
-
-        // Somewhat hacky: Many releasables release their resources with a delay of a few frames. Increment
-        // frame counter and execute dispatched tasks to run their release code before destroying the backend.
-        repeat(3) {
-            Time.frameCount++
-            KoolDispatchers.Frontend.executeDispatchedTasks()
-            KoolDispatchers.Synced.executeDispatchedTasks()
-            KoolDispatchers.Backend.executeDispatchedTasks()
-        }
-
-        backend.cleanup(this)
-        ApplicationScope.cancel()
-        exitProcess(0)
+        // blocks until window is closed
+        KoolSystem.configJvm.windowSubsystem.runRenderLoop()
     }
 
     internal suspend fun renderFrame() {
+        sysInfo.update()
         if (window.size.x <= 0 || window.size.y <= 0) {
             return
         }
@@ -199,4 +171,3 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         }
     }
 }
-

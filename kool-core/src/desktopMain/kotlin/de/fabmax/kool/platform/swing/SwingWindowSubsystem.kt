@@ -1,11 +1,16 @@
 package de.fabmax.kool.platform.swing
 
+import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.PlatformInput
-import de.fabmax.kool.platform.ClientApi
-import de.fabmax.kool.platform.KoolWindowJvm
-import de.fabmax.kool.platform.Lwjgl3Context
-import de.fabmax.kool.platform.WindowSubsystem
+import de.fabmax.kool.platform.*
+import de.fabmax.kool.util.logI
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 import org.lwjgl.awt.AWT
+import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.GL11.glEnd
+import org.lwjgl.opengl.awt.AWTGLCanvas
+import org.lwjgl.opengl.awt.GLData
 import org.lwjgl.vulkan.KHRSurface.VK_KHR_SURFACE_EXTENSION_NAME
 import org.lwjgl.vulkan.awt.AWTVK
 import java.awt.BorderLayout
@@ -14,20 +19,21 @@ import java.awt.Dimension
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
+import javax.swing.SwingUtilities
 
 
 class SwingWindowSubsystem(
-    val providedCanvas: Canvas,
-    val screenScale: Float = 1f,
-    val onCreated: (() -> Unit)? = null
+    val providedCanvas: Canvas? = null,
+    val onCreated: (() -> Unit)? = null,
 ) : WindowSubsystem {
 
     var primaryWindow: KoolCanvas? = null
         private set
 
+    override val input: PlatformInput get() = requireNotNull(primaryWindow?.input)
     override var isCloseRequested: Boolean = false
         private set
-    override val input: PlatformInput get() = requireNotNull(primaryWindow?.input)
+    private val closeSignal = CompletableDeferred<Unit>()
 
     override fun onEarlyInit() {
         check(AWT.isPlatformSupported()) {
@@ -40,12 +46,58 @@ class SwingWindowSubsystem(
         AWTVK.getSurfaceExtensionName()
     )
 
-    override fun createWindow(clientApi: ClientApi, ctx: Lwjgl3Context): KoolWindowJvm {
-        require(clientApi == ClientApi.UNMANAGED) {
-            "SwingWindowSubsystem currently only supports UNMANAGED client API"
-        }
+    override fun createWindow(clientApi: ClientApi, glCallbacks: GlWindowCallbacks?, ctx: Lwjgl3Context): KoolWindowJvm {
         check(primaryWindow == null)
-        primaryWindow = KoolCanvas(providedCanvas, this)
+
+        val canvas = if (providedCanvas != null) {
+            when (clientApi) {
+                ClientApi.OPEN_GL -> check(providedCanvas is AWTGLCanvas) {
+                    "For OpenGL, the provided canvas needs to be a AWTGLCanvas"
+                }
+                ClientApi.UNMANAGED -> check(providedCanvas !is AWTGLCanvas) {
+                    "For unmanaged (i.e. Vulkan) clients, the provided canvas needs to be a regular canvas"
+                }
+            }
+            providedCanvas
+        } else {
+            when (clientApi) {
+                ClientApi.UNMANAGED -> Canvas()
+                ClientApi.OPEN_GL -> {
+                    val data = GLData()
+                    data.samples = ctx.config.numSamples
+                    if (ctx.config.isVsync) {
+                        data.swapInterval = 1
+                    }
+                    KoolGlCanvas(data)
+                }
+            }
+        }
+
+        if (providedCanvas == null) {
+            val frame = JFrame(ctx.config.windowTitle)
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE)
+            frame.layout = BorderLayout()
+            frame.setPreferredSize(Dimension(ctx.config.windowSize.x, ctx.config.windowSize.y))
+            frame.add(canvas, BorderLayout.CENTER)
+            frame.pack()
+            frame.addWindowListener(object : WindowAdapter() {
+                override fun windowClosing(e: WindowEvent) {
+                    close { frame.dispose() }
+                }
+            })
+            frame.isVisible = true
+        }
+
+        if (canvas is KoolGlCanvas) {
+            canvas.glCallbacks = glCallbacks
+            SwingUtilities.invokeAndWait {
+                require(canvas.isValid)
+                canvas.initCanvas()
+            }
+            logI { "KoolGlCanvas initialized" }
+        }
+
+        primaryWindow = KoolCanvas(canvas, this)
         return primaryWindow!!
     }
 
@@ -53,23 +105,86 @@ class SwingWindowSubsystem(
         onCreated?.invoke()
     }
 
-    companion object {
-        fun simpleWindow(windowTitle: String, screenScale: Float = 1f): SwingWindowSubsystem {
-            val frame = JFrame(windowTitle)
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE)
-            frame.layout = BorderLayout()
-            frame.setPreferredSize(Dimension(1600, 900))
-            val canvas = Canvas()
-            frame.add(canvas, BorderLayout.CENTER)
-            frame.pack()
+    override fun runRenderLoop() {
+        if (primaryWindow?.canvas is KoolGlCanvas) {
+            glRenderLoop()
+        } else {
+            unmanagedRenderLoop()
+        }
+    }
 
-            val subsystem = SwingWindowSubsystem(canvas, screenScale) { frame.isVisible = true }
-            frame.addWindowListener(object : WindowAdapter() {
-                override fun windowClosing(e: WindowEvent) {
-                    subsystem.isCloseRequested = true
+    fun close(onClosed: () -> Unit) {
+        isCloseRequested = true
+        closeSignal.invokeOnCompletion { onClosed() }
+    }
+
+    private fun glRenderLoop() {
+        val canvas = requireNotNull(primaryWindow?.canvas as? KoolGlCanvas)
+        val renderLoop = object : Runnable {
+            override fun run() {
+                when {
+                    !canvas.isValid -> GL.setCapabilities(null)
+                    isCloseRequested -> {
+                        shutdown()
+                        closeSignal.complete(Unit)
+                    }
+                    else -> {
+                        canvas.render()
+                        SwingUtilities.invokeLater(this)
+                    }
                 }
-            })
-            return subsystem
+            }
+        }
+        logI { "Starting Swing event loop based render loop" }
+        SwingUtilities.invokeLater(renderLoop)
+        runBlocking { closeSignal.await() }
+    }
+
+    private fun unmanagedRenderLoop() {
+        val ctx = KoolSystem.requireContext() as Lwjgl3Context
+        runBlocking {
+            logI { "Starting unmanaged render loop" }
+            val window = primaryWindow!!
+            while (!isCloseRequested) {
+                window.pollEvents()
+                if (!window.flags.isMinimized) {
+                    ctx.renderFrame()
+                } else {
+                    Thread.sleep(10)
+                }
+            }
+            shutdown()
+            closeSignal.complete(Unit)
+        }
+    }
+}
+
+class KoolGlCanvas(data: GLData = DEFAULT_GL_DATA) : AWTGLCanvas(data) {
+    internal var glCallbacks: GlWindowCallbacks? = null
+
+    fun initCanvas() {
+        beforeRender()
+        if (!initCalled) {
+            initGL()
+            initCalled = true
+        }
+        afterRender()
+    }
+
+    override fun initGL() {
+        glCallbacks?.initGl()
+    }
+
+    override fun paintGL() {
+        glCallbacks?.drawFrame()
+        glEnd()
+        swapBuffers()
+    }
+
+    companion object {
+        val DEFAULT_GL_DATA = GLData().apply {
+            samples = 4
+            swapInterval = 1
         }
     }
 }

@@ -18,4 +18,18 @@ data class BackendFeatures(
     val maxComputeWorkGroupsPerDimension: Vec3i,
     val maxComputeWorkGroupSize: Vec3i,
     val maxComputeInvocationsPerWorkgroup: Int,
-)
+) {
+    companion object {
+        val NONE = BackendFeatures(
+            computeShaders = false,
+            cubeMapArrays = false,
+            reversedDepth = false,
+            maxSamples = 1,
+            readWriteStorageTextures = false,
+            depthOnlyShaderColorOutput = Color.BLACK,
+            maxComputeWorkGroupsPerDimension = Vec3i.ZERO,
+            maxComputeWorkGroupSize = Vec3i.ZERO,
+            maxComputeInvocationsPerWorkgroup = 0
+        )
+    }
+}

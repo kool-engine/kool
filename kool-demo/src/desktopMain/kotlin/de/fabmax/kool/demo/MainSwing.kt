@@ -12,7 +12,7 @@ fun main() {
             renderBackend = RenderBackendVk,
             windowTitle = "Kool Demo",
             windowSize = Vec2i(1600, 900),
-            windowSubsystem = SwingWindowSubsystem.simpleWindow("Kool Demo @ Swing")
+            windowSubsystem = SwingWindowSubsystem()
         )
     ) {
         // launch demo
