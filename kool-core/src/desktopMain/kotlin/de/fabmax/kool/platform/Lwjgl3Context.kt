@@ -97,6 +97,10 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
     }
 
     internal suspend fun renderFrame() {
+        if (window.size.x <= 0 || window.size.y <= 0) {
+            return
+        }
+
         if (windowNotFocusedFrameRate > 0 || maxFrameRate > 0) {
             checkFrameRateLimits(prevFrameTime)
         }
