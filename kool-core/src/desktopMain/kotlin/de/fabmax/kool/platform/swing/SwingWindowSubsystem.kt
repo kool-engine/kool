@@ -25,6 +25,7 @@ import javax.swing.SwingUtilities
 class SwingWindowSubsystem(
     val providedCanvas: Canvas? = null,
     val onCreated: (() -> Unit)? = null,
+    val onClosed: (() -> Unit)? = null,
 ) : WindowSubsystem {
 
     var primaryWindow: KoolCanvas? = null
@@ -82,7 +83,10 @@ class SwingWindowSubsystem(
             frame.pack()
             frame.addWindowListener(object : WindowAdapter() {
                 override fun windowClosing(e: WindowEvent) {
-                    close { frame.dispose() }
+                    close {
+                        frame.dispose()
+                        onClosed?.invoke()
+                    }
                 }
             })
             frame.isVisible = true
