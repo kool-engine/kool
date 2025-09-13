@@ -33,7 +33,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     val setup = KoolSystem.configJvm.vkSetup ?: VkSetup()
 
     val instance: Instance
-    val surface: Surface
+    var surface: Surface
     val physicalDevice: PhysicalDevice
     val device: Device
     val memManager: MemoryManager
@@ -337,6 +337,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         device.waitForIdle()
         swapchain.release()
+        if (setup.recreateSurfaceWithSwapchain) {
+            surface.release()
+            surface = Surface(this)
+        }
         swapchain = Swapchain(this)
         screenPass.onSwapchainRecreated()
     }

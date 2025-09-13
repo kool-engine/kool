@@ -40,6 +40,7 @@ class VkSetup(
     val preferredColorSpace: ColorSpace = ColorSpace.sRGB,
 
     val forceDeviceName: String? = null,
+    val recreateSurfaceWithSwapchain: Boolean = false,
 ) {
     val requestedLayers = mutableSetOf<RequestedFeature>()
 
