@@ -470,9 +470,9 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
         val s = stiffness * 1f
 
-        setDriveParams(ArticulationJointAxis.ROT_SWING1, ArticulationDriveType.FORCE, s / 5f, s, s)
-        setDriveParams(ArticulationJointAxis.ROT_SWING2, ArticulationDriveType.FORCE, s / 5f, s, s)
-        setDriveParams(ArticulationJointAxis.ROT_TWIST, ArticulationDriveType.FORCE, s / 5f, s, s)
+        setDriveParams(ArticulationJointAxis.ROT_SWING1, ArticulationDriveType.FORCE, s / 5f, s)
+        setDriveParams(ArticulationJointAxis.ROT_SWING2, ArticulationDriveType.FORCE, s / 5f, s)
+        setDriveParams(ArticulationJointAxis.ROT_TWIST, ArticulationDriveType.FORCE, s / 5f, s)
         block()
     }
 

@@ -69,7 +69,7 @@ interface ArticulationJoint {
     fun setupSpherical(twistMinDeg: Float, twistMaxDeg: Float, swingMinDeg: Float, swingMaxDeg: Float)
     fun setupSpherical(twistMinDeg: Float, twistMaxDeg: Float, swing1MinDeg: Float, swing1MaxDeg: Float, swing2MinDeg: Float, swing2MaxDeg: Float)
 
-    fun setDriveParams(axis: ArticulationJointAxis, driveType: ArticulationDriveType, damping: Float, stiffness: Float, maxForce: Float)
+    fun setDriveParams(axis: ArticulationJointAxis, driveType: ArticulationDriveType, damping: Float, stiffness: Float)
     fun setDriveTarget(axis: ArticulationJointAxis, target: Float)
     fun setJointPosition(axis: ArticulationJointAxis, jointPos: Float)
 }

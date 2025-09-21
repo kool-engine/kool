@@ -92,15 +92,13 @@ class ArticulationJointImpl(val pxJoint: PxArticulationJointReducedCoordinate) :
         axis: ArticulationJointAxis,
         driveType: ArticulationDriveType,
         damping: Float,
-        stiffness: Float,
-        maxForce: Float
+        stiffness: Float
     ) {
         MemoryStack.stackPush().use { mem ->
             val drive = mem.createPxArticulationDrive()
             drive.driveType = driveType.pxVal
             drive.stiffness = stiffness
             drive.damping = damping
-            drive.maxForce = maxForce
             pxJoint.setDriveParams(axis.pxVal, drive)
         }
     }
