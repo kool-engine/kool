@@ -2,7 +2,7 @@ plugins {
     id("kool.lib-conventions")
     id("kool.publish-conventions")
 
-    id("de.fabmax.webidl-util") version "0.10.2"
+    id("de.fabmax.webidl-util") version "0.10.3"
 }
 
 kotlin {
