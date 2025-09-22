@@ -32,8 +32,10 @@ object TextureLoaderGl {
                 else -> error("Invalid texture / image data combination: ${tex::class.simpleName} / ${data::class.simpleName}")
             }
         }
-        tex.gpuTexture?.release()
-        tex.gpuTexture = loaded
+        if (loaded !== tex.gpuTexture) {
+            tex.gpuTexture?.release()
+            tex.gpuTexture = loaded
+        }
         return loaded
     }
 

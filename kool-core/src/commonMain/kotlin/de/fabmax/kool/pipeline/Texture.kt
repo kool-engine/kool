@@ -1,6 +1,5 @@
 package de.fabmax.kool.pipeline
 
-import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.pipeline.backend.GpuTexture
 import de.fabmax.kool.util.*
@@ -59,7 +58,7 @@ abstract class Texture<T: ImageData>(
         uploadData = imageData
     }
 
-    fun uploadLazy(provider: suspend CoroutineScope.() -> T) = Assets.coroutineScope.launch {
+    fun uploadLazy(provider: suspend CoroutineScope.() -> T) = BackendScope.launch {
         uploadData = provider()
     }
 
