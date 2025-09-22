@@ -1,7 +1,6 @@
 plugins {
     id("kool.lib-conventions")
     id("kool.publish-conventions")
-
     id("de.fabmax.webidl-util") version "0.10.3"
 }
 

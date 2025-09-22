@@ -832,6 +832,26 @@ external interface PxJoint : PxBase {
     fun getInvMassScale1(): Float
 
     /**
+     * @param invInertiaScale WebIDL type: float
+     */
+    fun setInvInertiaScale0(invInertiaScale: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getInvInertiaScale0(): Float
+
+    /**
+     * @param invInertiaScale WebIDL type: float
+     */
+    fun setInvInertiaScale1(invInertiaScale: Float)
+
+    /**
+     * @return WebIDL type: float
+     */
+    fun getInvInertiaScale1(): Float
+
+    /**
      * @return WebIDL type: [PxConstraint]
      */
     fun getConstraint(): PxConstraint
@@ -875,6 +895,12 @@ var PxJoint.invMassScale0
 var PxJoint.invMassScale1
     get() = getInvMassScale1()
     set(value) { setInvMassScale1(value) }
+var PxJoint.invInertiaScale0
+    get() = getInvInertiaScale0()
+    set(value) { setInvInertiaScale0(value) }
+var PxJoint.invInertiaScale1
+    get() = getInvInertiaScale1()
+    set(value) { setInvInertiaScale1(value) }
 var PxJoint.name
     get() = getName()
     set(value) { setName(value) }

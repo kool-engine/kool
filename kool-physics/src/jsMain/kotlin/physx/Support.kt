@@ -1714,6 +1714,79 @@ fun PxPvdInstrumentationFlags.destroy() {
     PhysXJsLoader.destroy(this)
 }
 
+external interface PxPvdSceneClient {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag  WebIDL type: [PxPvdSceneFlagEnum] (enum)
+     * @param value WebIDL type: boolean
+     */
+    fun setScenePvdFlag(flag: Int, value: Boolean)
+
+    /**
+     * @param flags WebIDL type: [PxPvdSceneFlags] (Ref)
+     */
+    fun setScenePvdFlags(flags: PxPvdSceneFlags)
+
+    /**
+     * @return WebIDL type: [PxPvdSceneFlags] (Value)
+     */
+    fun getScenePvdFlags(): PxPvdSceneFlags
+
+    /**
+     * @param name   WebIDL type: DOMString
+     * @param origin WebIDL type: [PxVec3] (Const, Ref)
+     * @param up     WebIDL type: [PxVec3] (Const, Ref)
+     * @param target WebIDL type: [PxVec3] (Const, Ref)
+     */
+    fun updateCamera(name: String, origin: PxVec3, up: PxVec3, target: PxVec3)
+
+}
+
+fun PxPvdSceneClientFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPvdSceneClient = js("_module.wrapPointer(ptr, _module.PxPvdSceneClient)")
+
+var PxPvdSceneClient.scenePvdFlags
+    get() = getScenePvdFlags()
+    set(value) { setScenePvdFlags(value) }
+
+external interface PxPvdSceneFlags {
+    /**
+     * Native object address.
+     */
+    val ptr: Int
+
+    /**
+     * @param flag WebIDL type: [PxPvdSceneFlagEnum] (enum)
+     * @return WebIDL type: boolean
+     */
+    fun isSet(flag: Int): Boolean
+
+    /**
+     * @param flag WebIDL type: [PxPvdSceneFlagEnum] (enum)
+     */
+    fun raise(flag: Int)
+
+    /**
+     * @param flag WebIDL type: [PxPvdSceneFlagEnum] (enum)
+     */
+    fun clear(flag: Int)
+
+}
+
+/**
+ * @param flags WebIDL type: octet
+ */
+fun PxPvdSceneFlags(flags: Byte, _module: dynamic = PhysXJsLoader.physXJs): PxPvdSceneFlags = js("new _module.PxPvdSceneFlags(flags)")
+
+fun PxPvdSceneFlagsFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxPvdSceneFlags = js("_module.wrapPointer(ptr, _module.PxPvdSceneFlags)")
+
+fun PxPvdSceneFlags.destroy() {
+    PhysXJsLoader.destroy(this)
+}
+
 external interface PxOmniPvd {
     /**
      * Native object address.
@@ -1770,5 +1843,11 @@ object PxPvdInstrumentationFlagEnum {
     val ePROFILE: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_ePROFILE()
     val eMEMORY: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eMEMORY()
     val eALL: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdInstrumentationFlagEnum_eALL()
+}
+
+object PxPvdSceneFlagEnum {
+    val eTRANSMIT_CONTACTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_CONTACTS()
+    val eTRANSMIT_SCENEQUERIES: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_SCENEQUERIES()
+    val eTRANSMIT_CONSTRAINTS: Int get() = PhysXJsLoader.physXJs._emscripten_enum_PxPvdSceneFlagEnum_eTRANSMIT_CONSTRAINTS()
 }
 

@@ -584,6 +584,11 @@ external interface PxScene : PxSceneSQSystem {
      */
     fun getTimestamp(): Int
 
+    /**
+     * @return WebIDL type: [PxPvdSceneClient]
+     */
+    fun getScenePvdClient(): PxPvdSceneClient
+
 }
 
 fun PxSceneFromPointer(ptr: Int, _module: dynamic = PhysXJsLoader.physXJs): PxScene = js("_module.wrapPointer(ptr, _module.PxScene)")
@@ -628,6 +633,8 @@ val PxScene.physics
     get() = getPhysics()
 val PxScene.timestamp
     get() = getTimestamp()
+val PxScene.scenePvdClient
+    get() = getScenePvdClient()
 
 var PxScene.simulationEventCallback
     get() = getSimulationEventCallback()
