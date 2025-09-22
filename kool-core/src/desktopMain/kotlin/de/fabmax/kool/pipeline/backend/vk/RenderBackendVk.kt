@@ -56,6 +56,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     private val emptyScene = Scene("empty-scene")
 
+    private var recreateSurfaceFlag = false
+
     init {
         window = ctx.windowSubsystem.createVkWindow(ctx)
         window.setFullscreen(KoolSystem.configJvm.isFullscreen)
@@ -109,6 +111,10 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         window.onScaleChange { windowResized = true }
     }
 
+    fun recreateSurface() {
+        recreateSurfaceFlag = true
+    }
+
     private fun clampUint(unsignedCnt: Int): Int {
         return if (unsignedCnt < 0) Int.MAX_VALUE else unsignedCnt
     }
@@ -151,10 +157,11 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
                 }
                 imgOk = swapchain.presentNextImage(this)
             }
-            if (!imgOk || windowResized) {
-                logD { "Recreate swapchain due to resize" }
+            if (!imgOk || windowResized || recreateSurfaceFlag) {
+                logD { "Recreate swapchain" }
                 windowResized = false
-                recreateSwapchain()
+                recreateSwapchain(setup.recreateSurfaceWithSwapchain || recreateSurfaceFlag)
+                recreateSurfaceFlag = false
             }
         }
     }
@@ -328,7 +335,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
         }
     }
 
-    fun recreateSwapchain() {
+    private fun recreateSwapchain(recreateSurface: Boolean) {
         // Theoretically it might be possible for the swapchain image format to change (e.g. because the window
         // is moved to another monitor with HDR) in that case the screen render pass would also need to be
         // recreated.
@@ -337,7 +344,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
         device.waitForIdle()
         swapchain.release()
-        if (setup.recreateSurfaceWithSwapchain) {
+        if (recreateSurface) {
             surface.release()
             surface = Surface(this)
         }
