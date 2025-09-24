@@ -23,6 +23,8 @@ abstract class KoolContext {
     private val frameDatas = List(2) { FrameData() }
     private var frameDataPtr = 0
 
+    private var prevFrameTime = Time.precisionTime
+
     val onRender = BufferedList<(KoolContext) -> Unit>()
     val onShutdown = BufferedList<(KoolContext) -> Unit>()
 
@@ -58,12 +60,16 @@ abstract class KoolContext {
         scenes -= scene
     }
 
-    protected suspend fun render(dt: Double): FrameData {
-        val frameData = frameDatas[frameDataPtr].also { it.reset() }
-        frameDataPtr = ++frameDataPtr and 1
-
+    protected fun incrementFrameTime(time: Double = Time.precisionTime) {
+        val dt = (time - prevFrameTime).coerceAtLeast(0.0)
+        prevFrameTime = time
         Time.update(dt)
         Time.frameCount++
+    }
+
+    protected suspend fun render(): FrameData {
+        val frameData = frameDatas[frameDataPtr].also { it.reset() }
+        frameDataPtr = ++frameDataPtr and 1
 
         Input.poll(this)
 

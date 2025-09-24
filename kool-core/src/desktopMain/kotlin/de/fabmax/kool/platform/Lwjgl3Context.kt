@@ -74,37 +74,32 @@ class Lwjgl3Context internal constructor (val config: KoolConfigJvm) : KoolConte
         }
 
         if (windowNotFocusedFrameRate > 0 || maxFrameRate > 0) {
-            checkFrameRateLimits(prevFrameTime)
+            checkFrameRateLimits()
         }
 
-        val frameData = nextFrameData?.await() ?: render(computeDt())
+        val frameData = nextFrameData?.await() ?: render()
         frameData.syncData()
+        incrementFrameTime()
 
         if (config.asyncSceneUpdate) {
-            nextFrameData = ApplicationScope.async { render(computeDt()) }
+            nextFrameData = ApplicationScope.async { render() }
         }
         KoolDispatchers.Backend.executeDispatchedTasks()
         backend.renderFrame(frameData, this@Lwjgl3Context)
     }
 
-    private fun computeDt(): Double {
-        val time = System.nanoTime()
-        val dt = (time - prevFrameTime) / 1e9
-        prevFrameTime = time
-        return dt
-    }
-
-    private fun checkFrameRateLimits(prevTime: Long) {
+    private fun checkFrameRateLimits() {
         val t = System.nanoTime()
         val dtFocused = if (maxFrameRate > 0) 1.0 / maxFrameRate else 0.0
         val dtUnfocused = if (windowNotFocusedFrameRate > 0) 1.0 / windowNotFocusedFrameRate else dtFocused
-        val dtCurrent = (t - prevTime) / 1e9
+        val dtCurrent = (t - prevFrameTime) / 1e9
         val dtCmp = if (window.flags.isFocused || window.isMouseOverWindow) dtFocused else dtUnfocused
         if (dtCmp > dtCurrent) {
             val untilFocused = t + ((dtFocused - dtCurrent) * 1e9).toLong()
             val untilUnfocused = t + ((dtUnfocused - dtCurrent) * 1e9).toLong()
             delayFrameRender(untilFocused, untilUnfocused)
         }
+        prevFrameTime = t
     }
 
     private fun delayFrameRender(untilFocused: Long, untilUnfocused: Long) {

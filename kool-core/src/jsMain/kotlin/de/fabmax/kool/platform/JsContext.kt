@@ -40,8 +40,6 @@ class JsContext internal constructor(canvas: HTMLCanvasElement, val config: Kool
 
     private val sysInfo = mutableListOf<String>()
 
-    private var animationMillis = 0.0
-
     internal suspend fun createBackend() {
         val backendProvider = config.renderBackend
         val backendResult = backendProvider.createBackend(this@JsContext)
@@ -60,16 +58,13 @@ class JsContext internal constructor(canvas: HTMLCanvasElement, val config: Kool
     }
 
     private suspend fun renderFrame(time: Double) {
-        // determine delta time
-        val dt = (time - animationMillis) / 1000.0
-        animationMillis = time
-
         // update viewport size according to window scale
         window.updateCanvasSize()
 
         // render frame
-        val frameData = render(dt)
+        val frameData = render()
         frameData.syncData()
+        incrementFrameTime(time / 1000.0)
         KoolDispatchers.Backend.executeDispatchedTasks()
         backend.renderFrame(frameData, this)
         requestAnimationFrame()

@@ -18,17 +18,6 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     override val window: AndroidWindow
     val surfaceView: GLSurfaceView get() = window.surfaceView
 
-//    override val windowWidth: Int
-//        get() = backend.viewWidth
-//    override val windowHeight: Int
-//        get() = backend.viewHeight
-//
-//    // todo: not really applicable on android?
-//    override var isFullscreen: Boolean
-//        get() = false
-//        set(_) { }
-
-    private var prevFrameTime = System.nanoTime()
     private val sysInfo = SysInfo()
 
     init {
@@ -64,14 +53,10 @@ class KoolContextAndroid(config: KoolConfigAndroid) : KoolContext() {
     internal fun renderFrame() = runBlocking {
         sysInfo.update()
 
-        // determine time delta
-        val time = System.nanoTime()
-        val dt = (time - prevFrameTime) / 1e9
-        prevFrameTime = time
-
         // setup draw queues for all scenes / render passes
-        val frameData = render(dt)
+        val frameData = render()
         frameData.syncData()
+        incrementFrameTime()
 
         // execute draw queues
         KoolDispatchers.Backend.executeDispatchedTasks()
