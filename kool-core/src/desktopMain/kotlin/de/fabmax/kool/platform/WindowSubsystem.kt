@@ -35,7 +35,7 @@ internal fun WindowSubsystem.shutdown() {
 
     // Somewhat hacky: Many releasables release their resources with a delay of a few frames. Increment
     // frame counter and execute dispatched tasks to run their release code before destroying the backend.
-    repeat(3) {
+    repeat(5) {
         Time.frameCount++
         KoolDispatchers.Frontend.executeDispatchedTasks()
         KoolDispatchers.Synced.executeDispatchedTasks()

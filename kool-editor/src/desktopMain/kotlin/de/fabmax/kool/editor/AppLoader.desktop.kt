@@ -136,7 +136,7 @@ class AppLoadServiceImpl(private val projectFiles: ProjectFiles) : AppLoadServic
         if (!buildClasses.exists()) {
             buildApp()
             if (!buildClasses.exists()) {
-                logE { "Built app, but classes not found at $BUILD_OUTPUT_CLASSES" }
+                logE { "Built app, but classes not found at ${buildClasses.absolutePathString()}" }
                 return LoadedApp(EmptyApp(), emptyMap())
             }
         }
