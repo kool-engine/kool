@@ -24,12 +24,12 @@ import javax.swing.SwingUtilities
 
 class SwingWindowSubsystem(
     val providedCanvas: Canvas? = null,
+    val makeFocusable: Boolean = true,
     val onCreated: (() -> Unit)? = null,
     val onClosed: (() -> Unit)? = null,
 ) : WindowSubsystem {
 
-    var primaryWindow: KoolCanvas? = null
-        private set
+    private var primaryWindow: CanvasWrapper? = null
 
     override val input: PlatformInput get() = requireNotNull(primaryWindow?.input)
     override var isCloseRequested: Boolean = false
@@ -101,12 +101,21 @@ class SwingWindowSubsystem(
             logI { "KoolGlCanvas initialized" }
         }
 
-        primaryWindow = KoolCanvas(canvas, this)
+        if (makeFocusable) {
+            canvas.isFocusable = true
+        }
+
+        primaryWindow = CanvasWrapper(canvas)
         return primaryWindow!!
     }
 
     override fun onBackendCreated(ctx: Lwjgl3Context) {
         onCreated?.invoke()
+        if (makeFocusable) {
+            SwingUtilities.invokeLater {
+                primaryWindow?.canvas?.requestFocus()
+            }
+        }
     }
 
     override fun runRenderLoop() {

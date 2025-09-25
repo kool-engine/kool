@@ -6,18 +6,18 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
 
+private typealias KoolKeyEvent = KeyEvent
 private typealias AwtKeyEvent = java.awt.event.KeyEvent
-private typealias KoolKeyEvent = de.fabmax.kool.input.KeyEvent
 
-class SwingInput(val koolCanvas: KoolCanvas) : PlatformInput {
-    private val scale: Float get() = koolCanvas.parentScreenScale
+internal class SwingInput(private val canvasWrapper: CanvasWrapper) : PlatformInput {
+    private val scale: Float get() = canvasWrapper.parentScreenScale
 
     override fun setCursorMode(cursorMode: CursorMode) { }
 
     override fun applyCursorShape(cursorShape: CursorShape) { }
 
     init {
-        koolCanvas.canvas.addMouseListener(object : MouseAdapter() {
+        canvasWrapper.canvas.addMouseListener(object : MouseAdapter() {
             override fun mousePressed(e: MouseEvent) {
                 PointerInput.handleMouseButtonEvent(e.koolButton, true)
             }
@@ -27,16 +27,16 @@ class SwingInput(val koolCanvas: KoolCanvas) : PlatformInput {
             }
 
             override fun mouseEntered(e: MouseEvent) {
-                koolCanvas.isMouseOverWindow = true
+                canvasWrapper.isMouseOverWindow = true
             }
 
             override fun mouseExited(e: MouseEvent) {
-                koolCanvas.isMouseOverWindow = false
+                canvasWrapper.isMouseOverWindow = false
                 PointerInput.handleMouseExit()
             }
         })
 
-        koolCanvas.canvas.addMouseMotionListener(object : MouseMotionAdapter() {
+        canvasWrapper.canvas.addMouseMotionListener(object : MouseMotionAdapter() {
             override fun mouseDragged(e: MouseEvent) {
                 PointerInput.handleMouseMove(e.x.toFloat() * scale, e.y.toFloat() * scale)
             }
@@ -45,14 +45,14 @@ class SwingInput(val koolCanvas: KoolCanvas) : PlatformInput {
                 PointerInput.handleMouseMove(e.x.toFloat() * scale, e.y.toFloat() * scale)
             }
         })
-        koolCanvas.canvas.addMouseWheelListener { e ->
+        canvasWrapper.canvas.addMouseWheelListener { e ->
             PointerInput.handleMouseScroll(
                 0f,
                 -e.preciseWheelRotation.toFloat()
             )
         }
 
-        koolCanvas.canvas.addKeyListener(object : KeyAdapter() {
+        canvasWrapper.canvas.addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: AwtKeyEvent) {
                 KeyboardInput.handleKeyEvent(e.toKoolKeyEvent(KeyboardInput.KEY_EV_DOWN))
             }
@@ -62,13 +62,31 @@ class SwingInput(val koolCanvas: KoolCanvas) : PlatformInput {
             }
 
             override fun keyTyped(e: AwtKeyEvent) {
-                KeyboardInput.handleKeyEvent(e.toKoolKeyEvent(KeyboardInput.KEY_EV_CHAR_TYPED))
+                if (e.keyChar.code > 31) {
+                    KeyboardInput.handleCharTyped(e.keyChar)
+                }
             }
         })
     }
 
     private fun AwtKeyEvent.toKoolKeyEvent(event: Int): KoolKeyEvent {
-        val koolKeyCode = KEY_CODE_MAP[keyCode] ?: UniversalKeyCode(keyCode)
+        val koolKeyCode = when(keyCode) {
+            AwtKeyEvent.VK_CONTROL if keyLocation == AwtKeyEvent.KEY_LOCATION_LEFT -> KeyboardInput.KEY_CTRL_LEFT
+            AwtKeyEvent.VK_CONTROL if keyLocation == AwtKeyEvent.KEY_LOCATION_RIGHT -> KeyboardInput.KEY_CTRL_RIGHT
+            AwtKeyEvent.VK_ALT if keyLocation == AwtKeyEvent.KEY_LOCATION_LEFT -> KeyboardInput.KEY_ALT_LEFT
+            AwtKeyEvent.VK_ALT if keyLocation == AwtKeyEvent.KEY_LOCATION_RIGHT -> KeyboardInput.KEY_ALT_RIGHT
+            AwtKeyEvent.VK_SHIFT if keyLocation == AwtKeyEvent.KEY_LOCATION_LEFT -> KeyboardInput.KEY_SHIFT_LEFT
+            AwtKeyEvent.VK_SHIFT if keyLocation == AwtKeyEvent.KEY_LOCATION_RIGHT -> KeyboardInput.KEY_SHIFT_RIGHT
+            AwtKeyEvent.VK_META if keyLocation == AwtKeyEvent.KEY_LOCATION_LEFT -> KeyboardInput.KEY_SUPER_LEFT
+            AwtKeyEvent.VK_META if keyLocation == AwtKeyEvent.KEY_LOCATION_RIGHT -> KeyboardInput.KEY_SUPER_RIGHT
+            AwtKeyEvent.VK_ENTER if keyLocation == AwtKeyEvent.KEY_LOCATION_NUMPAD -> KeyboardInput.KEY_NP_ENTER
+            AwtKeyEvent.VK_DIVIDE if keyLocation == AwtKeyEvent.KEY_LOCATION_NUMPAD -> KeyboardInput.KEY_NP_DIV
+            AwtKeyEvent.VK_MULTIPLY if keyLocation == AwtKeyEvent.KEY_LOCATION_NUMPAD -> KeyboardInput.KEY_NP_MUL
+            AwtKeyEvent.VK_ADD if keyLocation == AwtKeyEvent.KEY_LOCATION_NUMPAD -> KeyboardInput.KEY_NP_PLUS
+            AwtKeyEvent.VK_SUBTRACT if keyLocation == AwtKeyEvent.KEY_LOCATION_NUMPAD -> KeyboardInput.KEY_NP_MINUS
+            AwtKeyEvent.VK_DECIMAL if keyLocation == AwtKeyEvent.KEY_LOCATION_NUMPAD -> KeyboardInput.KEY_NP_DECIMAL
+            else -> KEY_CODE_MAP[keyCode] ?: UniversalKeyCode(keyCode)
+        }
         val localKeyCode = LocalKeyCode(koolKeyCode.code)
         return KoolKeyEvent(
             keyCode = koolKeyCode,

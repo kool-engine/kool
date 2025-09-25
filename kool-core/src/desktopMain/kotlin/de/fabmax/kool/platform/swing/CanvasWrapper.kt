@@ -11,14 +11,13 @@ import org.lwjgl.vulkan.KHRSurface
 import org.lwjgl.vulkan.VkInstance
 import org.lwjgl.vulkan.awt.AWTVK
 import java.awt.Canvas
-import java.awt.Color
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import kotlin.math.roundToInt
 
-class KoolCanvas(val canvas: Canvas, val swingSubsystem: SwingWindowSubsystem) : KoolWindowJvm {
+internal class CanvasWrapper(val canvas: Canvas) : KoolWindowJvm {
     val input: SwingInput = SwingInput(this)
 
     private val canvasScale: Vec2f get() {
@@ -74,8 +73,6 @@ class KoolCanvas(val canvas: Canvas, val swingSubsystem: SwingWindowSubsystem) :
     override var windowTitleHoverHandler: WindowTitleHoverHandler = WindowTitleHoverHandler()
 
     init {
-        canvas.background = Color.BLACK
-        canvas.isFocusable = true
         canvas.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
                 resizeListeners.updated().forEach { it.onResize(canvasSize) }
