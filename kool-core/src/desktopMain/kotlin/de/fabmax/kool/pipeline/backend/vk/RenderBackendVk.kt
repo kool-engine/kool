@@ -208,6 +208,7 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
     override fun cleanup(ctx: KoolContext) {
         device.waitForIdle()
         ReleaseQueue.processQueue(true)
+        surface.release()
         instance.release()
         ReleaseQueue.processQueue(true)
     }
