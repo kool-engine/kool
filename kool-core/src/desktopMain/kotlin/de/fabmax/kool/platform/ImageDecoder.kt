@@ -1,5 +1,7 @@
 package de.fabmax.kool.platform
 
+import com.github.weisj.jsvg.parser.LoaderContext
+import com.github.weisj.jsvg.parser.SVGLoader
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.pipeline.BufferedImageData2d
 import de.fabmax.kool.pipeline.TexFormat
@@ -112,6 +114,25 @@ object ImageDecoder {
             outputBuffer, outW, outH, outW * channels,
             pixelLayout
         )
+    }
+
+    fun loadSvg(inputStream: InputStream, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d =
+        loadBufferedImage(loadSvgAsBufferedImage(inputStream, resolveSize), format)
+
+    fun loadSvgAsBufferedImage(inputStream: InputStream, resolveSize: Vec2i?): BufferedImage {
+        val svgDoc = SVGLoader().load(inputStream, null, LoaderContext.createDefault()) ?: error("Failed loading SVG image")
+        val size = svgDoc.size()
+        val scaleX = if (resolveSize != null) resolveSize.x / size.width else 1f
+        val scaleY = if (resolveSize != null) resolveSize.y / size.height else 1f
+
+        val img = BufferedImage((size.width * scaleX).roundToInt(), (size.height * scaleY).roundToInt(), BufferedImage.TYPE_4BYTE_ABGR)
+        val g = img.createGraphics()
+        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        g.scale(scaleX.toDouble(), scaleY.toDouble())
+        svgDoc.render(null, g)
+        g.dispose()
+        return img
     }
 
     fun loadBufferedImage(image: BufferedImage, format: TexFormat, resolveSize: Vec2i? = null): BufferedImageData2d {

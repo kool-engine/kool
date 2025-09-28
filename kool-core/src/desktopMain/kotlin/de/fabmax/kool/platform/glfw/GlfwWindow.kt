@@ -133,7 +133,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         )
         check(windowHandle != MemoryUtil.NULL) { "Failed to create the GLFW window" }
 
-        val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { listOfNotNull(KoolWindowJvm.defaultWindowIcon) }
+        val iconList = KoolSystem.configJvm.windowIcon.ifEmpty { KoolWindowJvm.loadDefaultWindowIconSet() }
         if (iconList.isNotEmpty()) {
             setWindowIcon(iconList)
         }

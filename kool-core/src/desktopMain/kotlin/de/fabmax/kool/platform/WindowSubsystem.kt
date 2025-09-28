@@ -4,11 +4,15 @@ import de.fabmax.kool.KoolConfigJvm
 import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.KoolWindow
 import de.fabmax.kool.input.PlatformInput
-import de.fabmax.kool.util.*
+import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.util.ApplicationScope
+import de.fabmax.kool.util.KoolDispatchers
+import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.logI
 import kotlinx.coroutines.cancel
 import org.lwjgl.vulkan.VkInstance
 import java.awt.image.BufferedImage
-import javax.imageio.ImageIO
+import java.io.ByteArrayInputStream
 
 interface WindowSubsystem {
     val isCloseRequested: Boolean
@@ -64,14 +68,14 @@ interface KoolWindowJvm : KoolWindow {
     fun swapBuffers()
 
     companion object {
-        val defaultWindowIcon: BufferedImage? by lazy {
-            try {
-                KoolConfigJvm::class.java.classLoader.getResourceAsStream("icon.png").use {
-                    ImageIO.read(it)
+        fun loadDefaultWindowIconSet(sizes: List<Int> = listOf(32, 48, 64, 96, 128)): List<BufferedImage> {
+            return buildList {
+                KoolConfigJvm::class.java.classLoader.getResourceAsStream("icon.svg")?.use {
+                    val data = it.readAllBytes()
+                    for (size in sizes) {
+                        add(ImageDecoder.loadSvgAsBufferedImage(ByteArrayInputStream(data), Vec2i(size)))
+                    }
                 }
-            } catch (e: Exception) {
-                logE { "Failed to load default window icon" }
-                null
             }
         }
     }

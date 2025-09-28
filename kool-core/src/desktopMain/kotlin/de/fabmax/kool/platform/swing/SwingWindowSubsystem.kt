@@ -1,6 +1,7 @@
 package de.fabmax.kool.platform.swing
 
 import de.fabmax.kool.KoolSystem
+import de.fabmax.kool.configJvm
 import de.fabmax.kool.input.PlatformInput
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.logI
@@ -16,6 +17,7 @@ import org.lwjgl.vulkan.awt.AWTVK
 import java.awt.BorderLayout
 import java.awt.Canvas
 import java.awt.Dimension
+import java.awt.Taskbar
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.JFrame
@@ -76,8 +78,10 @@ class SwingWindowSubsystem(
         }
 
         if (providedCanvas == null) {
+            val icons = KoolSystem.configJvm.windowIcon.ifEmpty { KoolWindowJvm.loadDefaultWindowIconSet() }
             val frame = JFrame(ctx.config.windowTitle)
             frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE)
+            frame.iconImages = icons
             frame.layout = BorderLayout()
             frame.setPreferredSize(Dimension(ctx.config.windowSize.x, ctx.config.windowSize.y))
             frame.add(canvas, BorderLayout.CENTER)
@@ -91,6 +95,16 @@ class SwingWindowSubsystem(
                 }
             })
             frame.isVisible = true
+
+            try {
+                icons.maxByOrNull { it.width }?.let { taskbarIcon ->
+                    SwingUtilities.invokeLater {
+                        Taskbar.getTaskbar().iconImage = taskbarIcon
+                    }
+                }
+            } catch (_: Exception) {
+                // silently ignored: Platform doesn't support setting a taskbar icon
+            }
         }
 
         if (canvas is KoolGlCanvas) {

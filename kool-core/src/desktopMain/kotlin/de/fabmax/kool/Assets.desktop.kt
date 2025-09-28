@@ -1,7 +1,5 @@
 package de.fabmax.kool
 
-import com.github.weisj.jsvg.parser.LoaderContext
-import com.github.weisj.jsvg.parser.SVGLoader
 import de.fabmax.kool.math.Vec2i
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoader
 import de.fabmax.kool.modules.filesystem.FileSystemAssetLoaderDesktop
@@ -17,14 +15,11 @@ import kotlinx.coroutines.withContext
 import org.lwjgl.system.MemoryUtil
 import org.lwjgl.util.nfd.NFDFilterItem
 import org.lwjgl.util.nfd.NativeFileDialog
-import java.awt.RenderingHints
-import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
-import kotlin.math.roundToInt
 
 internal actual fun PlatformAssets(): PlatformAssets = PlatformAssetsImpl
 
@@ -166,27 +161,10 @@ object PlatformAssetsImpl : PlatformAssets {
     fun readImageData(inStream: InputStream, mimeType: MimeType, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
         return inStream.use {
             when (mimeType) {
-                MimeType.IMAGE_SVG -> renderSvg(inStream, format, resolveSize)
+                MimeType.IMAGE_SVG -> ImageDecoder.loadSvg(inStream, format, resolveSize)
                 else -> ImageDecoder.loadImage(inStream, format, resolveSize)
             }
         }
-    }
-
-    private fun renderSvg(inStream: InputStream, format: TexFormat, resolveSize: Vec2i?): BufferedImageData2d {
-        val svgDoc = SVGLoader().load(inStream, null, LoaderContext.createDefault()) ?: error("Failed loading SVG image")
-        val size = svgDoc.size()
-        val scaleX = if (resolveSize != null) resolveSize.x / size.width else 1f
-        val scaleY = if (resolveSize != null) resolveSize.y / size.height else 1f
-
-        val img = BufferedImage((size.width * scaleX).roundToInt(), (size.height * scaleY).roundToInt(), BufferedImage.TYPE_4BYTE_ABGR)
-        val g = img.createGraphics()
-        g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE)
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-        g.scale(scaleX.toDouble(), scaleY.toDouble())
-        svgDoc.render(null, g)
-        g.dispose()
-
-        return ImageDecoder.loadBufferedImage(img, format, resolveSize)
     }
 }
 
