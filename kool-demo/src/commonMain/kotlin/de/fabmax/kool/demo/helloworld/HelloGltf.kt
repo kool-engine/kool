@@ -4,6 +4,7 @@ import de.fabmax.kool.Assets
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.demo.DemoLoader
 import de.fabmax.kool.demo.DemoScene
+import de.fabmax.kool.loadTexture2d
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.gltf.GltfLoadConfig
@@ -12,11 +13,12 @@ import de.fabmax.kool.modules.gltf.loadGltfModel
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.pipeline.ao.AoPipeline
 import de.fabmax.kool.scene.Scene
-import de.fabmax.kool.scene.addColorMesh
+import de.fabmax.kool.scene.addTextureMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.SimpleShadowMap
 import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.releaseWith
 import kotlinx.coroutines.launch
 
 class HelloGltf : DemoScene("Hello glTF") {
@@ -31,20 +33,22 @@ class HelloGltf : DemoScene("Hello glTF") {
         val shadowMap = SimpleShadowMap(this, lighting.lights[0])
         val aoPipeline = AoPipeline.createForward(this)
 
-        // Add a ground plane
-        addColorMesh {
-            generate {
-                grid { }
-            }
-            shader = KslPbrShader {
-                color { constColor(Color.WHITE) }
-                lighting { addShadowMap(shadowMap) }
-                enableSsao(aoPipeline.aoMap)
-            }
-        }
-
-        // Load a glTF 2.0 model
         coroutineScope.launch {
+            // Add a ground plane
+            val texture = Assets.loadTexture2d("${DemoLoader.materialPath}/kool-test-tex.png").getOrThrow()
+            texture.releaseWith(this@setupMainScene)
+            addTextureMesh {
+                generate {
+                    grid { }
+                }
+                shader = KslPbrShader {
+                    color { textureColor(texture) }
+                    lighting { addShadowMap(shadowMap) }
+                    enableSsao(aoPipeline.aoMap)
+                }
+            }
+
+            // Load a glTF 2.0 model
             val materialCfg = GltfMaterialConfig(
                 shadowMaps = listOf(shadowMap),
                 scrSpcAmbientOcclusionMap = aoPipeline.aoMap

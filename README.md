@@ -1,6 +1,6 @@
 # kool - A Vulkan / WebGPU / OpenGL graphics engine written in Kotlin
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/kool-engine/kool/blob/master/LICENSE)
-[![Maven Central](https://img.shields.io/maven-central/v/de.fabmax.kool/kool-core.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22de.fabmax.kool%22%20AND%20a:%22kool-core%22)
+[![Maven Central](https://img.shields.io/maven-central/v/de.fabmax.kool/kool-core.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/de.fabmax.kool/kool-core)
 ![Build](https://github.com/kool-engine/kool/workflows/Build/badge.svg)
 
 A multi-platform Vulkan / WebGPU / OpenGL game engine that works on Desktop Java, Android and browsers.
@@ -87,15 +87,22 @@ More editor related documentation is available in [the editor docs](https://kool
 | Platform    | Backend     | Implementation Status                                   |
 |-------------|-------------|---------------------------------------------------------|
 | Desktop JVM | OpenGL      | :white_check_mark: Fully working                        |
-| Desktop JVM | Vulkan      | :white_check_mark: Fully working (v0.17.0-SNAPSHOT)     |
+| Desktop JVM | Vulkan      | :white_check_mark: Fully working                        |
+| Desktop JVM | WebGPU      | :sparkles: Mostly working (using the `wgpu4k` backend)  |
 | Browser     | WebGL 2     | :white_check_mark: Fully working                        |
 | Browser     | WebGPU      | :white_check_mark: Fully working                        |
 | Android     | OpenGL ES 3 | :sparkles: kool-core fully working (but no physics yet) |
 
 **Supported desktop platforms are:**
-- Windows (x64): Vulkan and OpenGL
-- Linux (x64): Vulkan and OpenGL
-- macOS (ARM + x64): Vulkan only
+- Windows (x64): Vulkan, WebGPU and OpenGL
+- Linux (x64): Vulkan, WebGPU and OpenGL
+- macOS (ARM + x64): Vulkan and WebGPU (no OpenGL)
+
+### Java Version
+
+On Desktop, Kool currently uses Java 17 as the minimum language level except the `kool-backend-wgpu4k` module, which
+requires Java 22 (because it uses [Project Panama](https://openjdk.org/projects/panama/) features under the hood, which
+became stable in Java 22). In case Java 22 is a problem for you, you can exclude `kool-backend-wgpu4k` from the project.
 
 ### Android Support
 
@@ -118,12 +125,12 @@ repositories {
     maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 dependencies {
-    implementation("de.fabmax.kool:kool-core:0.17.0")
-    implementation("de.fabmax.kool:kool-physics:0.17.0")
+    implementation("de.fabmax.kool:kool-core:0.18.0")
+    implementation("de.fabmax.kool:kool-physics:0.18.0")
 }
 ```
 
-There is also a separate repo containing a minimal template project to get you started:
+There is also a separate repo containing minimal template projects to get you started:
 
 [https://github.com/kool-engine/kool-templates](https://github.com/kool-engine/kool-templates)
 
@@ -166,6 +173,7 @@ the libs are resolved and added to the IntelliJ module classpath.
 - Lighting with multiple point, spot and directional lights
 - Shadow mapping for multiple light sources (only spot and directional lights for now)
 - Basic audio support
+- Decoupled frontend (i.e., game-logic) and backend (i.e., rendering) threads
 
 ## A Hello World Example
 
@@ -209,9 +217,9 @@ X-axis.
 Finally, we set up a single directional scene light (of white color and an intensity of 5), so that our cube can shine
 in its full glory. The resulting scene looks like [this](https://kool-engine.github.io/live/demos/?demo=helloWorld).
 
-## Model Loading and Advanced Lighting
+## Texture & Model Loading and Advanced Lighting
 
-Model loading, animation and more advanced lighting with shadow mapping and ambient occlusion requires only a few more
+Asset loading, animation and more advanced lighting with shadow mapping and ambient occlusion require only a few more
 lines of code:
 ```kotlin
 fun main() = KoolApplication {
@@ -226,42 +234,41 @@ fun main() = KoolApplication {
         val shadowMap = SimpleShadowMap(this, lighting.lights[0])
         val aoPipeline = AoPipeline.createForward(this)
 
-        // Add a ground plane
-        addColorMesh {
+        // Add a textured ground plane
+        val texture = Assets.loadTexture2d("path/to/texture.png").getOrThrow()
+        addTextureMesh {
             generate {
                 grid { }
             }
             shader = KslPbrShader {
-                color { constColor(Color.WHITE) }
+                color { textureColor(texture) }
                 lighting { addShadowMap(shadowMap) }
                 enableSsao(aoPipeline.aoMap)
             }
         }
 
         // Load a glTF 2.0 model
-        coroutineScope.launch {
-            val materialCfg = GltfMaterialConfig(
-                shadowMaps = listOf(shadowMap),
-                scrSpcAmbientOcclusionMap = aoPipeline.aoMap
-            )
-            val modelCfg = GltfLoadConfig(materialConfig = materialCfg)
-            val model = Assets.loadGltfModel("path/to/model.glb", modelCfg).getOrThrow()
+        val materialCfg = GltfMaterialConfig(
+            shadowMaps = listOf(shadowMap),
+            scrSpcAmbientOcclusionMap = aoPipeline.aoMap
+        )
+        val modelCfg = GltfLoadConfig(materialConfig = materialCfg)
+        val model = Assets.loadGltfModel("path/to/model.glb", modelCfg).getOrThrow()
 
-            model.transform.translate(0f, 0.5f, 0f)
-            if (model.animations.isNotEmpty()) {
-                model.enableAnimation(0)
-                model.onUpdate {
-                    model.applyAnimation(Time.deltaT)
-                }
+        model.transform.translate(0f, 0.5f, 0f)
+        if (model.animations.isNotEmpty()) {
+            model.enableAnimation(0)
+            model.onUpdate {
+                model.applyAnimation(Time.deltaT)
             }
-
-            // Add loaded model to scene
-            addNode(model)
         }
+
+        // Add loaded model to scene
+        addNode(model)
     }
 }
 ```
-First we set up the lighting. This is very similar to the previous example but this time we use a spot-light, which
+First we set up the lighting. This is very similar to the previous example, but this time we use a spot-light, which
 requires a position, direction and opening angle. Other than directional lights, point and spot-lights have a distinct
 (point-) position and objects are affected less by them, the farther they are away. This usually results in a much
 higher required light intensity: Here we use an intensity of 300.
@@ -270,29 +277,31 @@ Next we create a `SimpleShadowMap` which computes the shadows cast by the light 
 Moreover, the created `AoPipeline` computes an ambient occlusion map, which is later used by the shaders to
 further improve the visual appearance of the scene.
 
-After light setup we can add objects to our scene. First we generate a grid mesh as ground plane. Default size and
-position of the generated grid are fine, therefore `grid { }` does not need any more configuration. Similar to the
+After light setup we can add objects to our scene. First, we load a texture that we are going to use as a ground plane.
+Textures and all other resources are loaded via the `Assets` API. Asset loading functions are suspending and return a
+`Result` object, which can be used to check whether the loading was successful. In this case we use the `getOrThrow()`
+function to throw an exception if the loading failed.
+
+To draw the texture, we need to generate a mesh where the texture is put on. We add that by calling
+`addTextureMesh { }` and generate a grid geometry in it. Default size and position of the generated grid are fine for
+our ground plane, therefore `grid { }` does not need any more configuration. Similar to the
 color cube from the previous example, the ground plane uses a PBR shader. However, this time we tell the shader to
 use the ambient occlusion and shadow maps we created before. Moreover, the shader should not use the vertex color
 attribute, but a simple pre-defined color (white in this case).
 
-Finally, we want to load a glTF 2.0 model. Resources are loaded via the `Assets` object. Since resource loading
-functions suspend until the resource is loaded (or loading has failed), we need to launch a coroutine, which does
-the model loading. We do that using the scene's own `coroutineScioe`, which makes sure that the loading runs in sync
-with the render loop (by using `KoolDispatchers.Frontend`) so that we can directly add our loaded model to the scene
-after it is loaded.
+Notice we used add**Texture**Mesh here instead of the add**Color**Mesh from before. `addColorMesh`
+and `addTextureMesh` are convenience functions which create and add meshes with all the mesh attributes needed for their
+respective purpose. It is also possible to create completely custom meshes with arbitrary attributes, but that is
+out-of-scope for this basic example.
 
-By default, the built-in glTF parser creates shaders for all models it loads. The
-created shaders can be customized via a provided material configuration, which we use to pass the shadow and
+Finally, we want to load a glTF 2.0 model. By default, the built-in glTF parser creates shaders for all models it loads.
+The created shaders can be customized via a provided material configuration, which we use to pass the shadow and
 ambient occlusion maps we created during light setup. After we created the custom model / material configuration
 we can load the model with `Assets.loadGltfModel("path/to/model.glb", modelCfg)`. This suspending function returns the
 loaded model, which can then be customized and inserted into the scene. Here we move the model 0.5 units along the
 y-axis (up). If the model contains any animations, these can be easily activated. This example checks whether there
 are any animations and if so activates the first one. The `model.onUpdate { }` block is executed on every frame and
-updates the enabled animation. The model is inserted into the scene with `addNode(model)`. Calling `addNode(model)`
-from within the coroutine is fine, since the coroutine is launched via `launchOnMainThread { ... }` and therefor
-is executed by the main render thread. If a different coroutine context / thread were used, we had to be careful to
-not modify the scene content while it is rendered.
+updates the enabled animation. The model is inserted into the scene with `addNode(model)`.
 
 The resulting scene looks like [this](https://kool-engine.github.io/live/demos/?demo=helloGltf). Here, the
 [Animated Box](https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/BoxAnimated) from the glTF sample
@@ -344,7 +353,7 @@ More complex layouts can be created by nesting `Row { }` and `Column { }` object
 [kool editor](https://kool-engine.github.io/live/kool-editor/) as well as the
 [full UI demo](https://kool-engine.github.io/live/demos/?demo=ui) should give you an impression on what's possible.
 
-## Kool Shader Language
+## Kool Shader DSL
 
 Kool comes with its own shader language (called ksl), which is implemented as a
 [Kotlin Type-safe builder / DSL](https://kotlinlang.org/docs/type-safe-builders.html). The ksl shader code you write is
@@ -386,8 +395,8 @@ fun main() = KoolApplication {
     }
 }
 ```
-The interesting part starts at `shader = KslShader() = { ... }`. Here a new shader is created and assigned to the mesh
-created before. If you ever wrote a shader before the structure should be familiar: The shader consists of a vertex
+The interesting part starts at `shader = KslShader() = { ... }`. Here, a new shader is created and assigned to the mesh
+created before. If you ever wrote a shader before, the structure should be familiar: The shader consists of a vertex
 stage (responsible for projecting the individual mesh vertices onto the screen) and a fragment stage (responsible
 for computing the output-color for each pixel covered by the mesh). This example shader is almost as simple as a valid
 shader can be: It uses a pre-multiplied MVP matrix to project the vertex position attribute to the screen. Moreover,
@@ -404,8 +413,8 @@ are written in ksl.
 After playing around with various different engines on javascript and JVM I came to the
 conclusion that all of them had some kind of flaw. So I decided to write my own bindings for
 [Nvidia PhysX](https://github.com/NVIDIA-Omniverse/PhysX): [physx-jni](https://github.com/fabmax/physx-jni) for JVM, and
-[physx-js-webidl](https://github.com/fabmax/physx-js-webidl) for javascript.
+[physx-js-webidl](https://github.com/fabmax/physx-js-webidl) for JavaScript.
 
 This was quite a bit of work, but I think it was worth it: By writing my own bindings
-I get the features I need, and, even better, I get the same features for javascript and JVM, which makes the
+I get the features I need, and, even better, I get the same features for JavaScript and JVM, which makes the
 multiplatform approach much easier.

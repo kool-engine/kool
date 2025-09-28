@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = "de.fabmax.kool"
-    version = "0.18.0-SNAPSHOT"
+    version = "0.18.0"
 }
 
 tasks.register<UnCommentTask>("disableAndroidPlatform") {

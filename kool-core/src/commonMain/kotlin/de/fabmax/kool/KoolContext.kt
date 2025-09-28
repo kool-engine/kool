@@ -126,6 +126,6 @@ abstract class KoolContext {
     }
 
     companion object {
-        const val KOOL_VERSION = "0.18.0-SNAPSHOT"
+        const val KOOL_VERSION = "0.18.0"
     }
 }
