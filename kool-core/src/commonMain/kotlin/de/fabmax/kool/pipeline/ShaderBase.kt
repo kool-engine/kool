@@ -85,8 +85,8 @@ abstract class ShaderBase<T: PipelineBase>(val name: String) {
         getOrCreateBinding(uniformName) { UniformBindingMat4fv(uniformName, arraySize, this) } as UniformBindingMat4fv
 
     @Suppress("UNCHECKED_CAST")
-    fun <S: Struct> uniformStruct(uniformName: String, provider: () -> S) =
-        getOrCreateBinding(uniformName) { UniformStructBinding<S>(uniformName, this, provider) } as UniformStructBinding<S>
+    fun <S: Struct> uniformStruct(uniformName: String, struct: S) =
+        getOrCreateBinding(uniformName) { UniformStructBinding<S>(uniformName, this, struct) } as UniformStructBinding<S>
 
     fun texture1d(textureName: String, defaultVal: Texture1d? = null, defaultSampler: SamplerSettings? = null): Texture1dBinding =
         getOrCreateBinding(textureName) { Texture1dBinding(textureName, defaultVal, defaultSampler, this) } as Texture1dBinding

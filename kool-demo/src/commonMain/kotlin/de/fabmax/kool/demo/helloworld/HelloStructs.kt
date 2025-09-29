@@ -120,16 +120,16 @@ class HelloStructs : DemoScene("Hello Structs") {
 
         // bind the uniform struct defined in the shader. Binding is done only based on the name. Make sure
         // to use the correct struct type here.
-        val structBinding = demoShader.uniformStruct("colors") { FlatColorStruct() }
+        val structBinding = demoShader.uniformStruct("colors", FlatColorStruct())
 
         onUpdate {
             // set shader input colors (updated on each frame).
             val gradient = ColorGradient.ROCKET
             structBinding.set {
-                color1.set(gradient.getColor(sin(Time.gameTime / 3.0).toFloat(), -1f, 1f))
-                color2.set(gradient.getColor(sin(Time.gameTime / 5.0).toFloat(), -1f, 1f))
-                color3.set(gradient.getColor(sin(Time.gameTime / 7.0).toFloat(), -1f, 1f))
-                color4.set(gradient.getColor(sin(Time.gameTime / 9.0).toFloat(), -1f, 1f))
+                set(it.color1, gradient.getColor(sin(Time.gameTime / 3.0).toFloat(), -1f, 1f))
+                set(it.color2, gradient.getColor(sin(Time.gameTime / 5.0).toFloat(), -1f, 1f))
+                set(it.color3, gradient.getColor(sin(Time.gameTime / 7.0).toFloat(), -1f, 1f))
+                set(it.color4, gradient.getColor(sin(Time.gameTime / 9.0).toFloat(), -1f, 1f))
             }
         }
 
