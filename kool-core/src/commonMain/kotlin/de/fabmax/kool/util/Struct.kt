@@ -1,6 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.lang.KslExprStruct
 import de.fabmax.kool.modules.ksl.lang.KslExpression
 import de.fabmax.kool.modules.ksl.lang.KslStruct
@@ -22,13 +21,6 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
 
     override val type: GpuType get() = GpuType.Struct(this)
 
-    private var _bufferAccess: StructBufferAccess? = null
-    val bufferAccess: StructBufferAccess get() = checkNotNull(_bufferAccess) {
-        "Buffer access only works if Struct is used in an StructBuffer context"
-    }
-    private val buffer: MixedBuffer get() = bufferAccess.structBuffer.buffer
-    private val bufferPosition: Int get() = bufferAccess.bufferPosition
-
     private var _kslAccess: KslExpression<KslStruct<*>>? = null
     internal val kslAccess: KslExpression<KslStruct<*>> get() = checkNotNull(_kslAccess) {
         "ksl access only works if Struct is used in an ksl context"
@@ -40,21 +32,11 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
         }
     }
     
-    protected fun addMember(member: StructMember) {
+    private fun addMember(member: StructMember) {
         check(members.none { it.memberName == member.memberName }) {
             "Duplicate struct member names are not allowed: ${member.memberName}"
         }
         _members += member
-    }
-
-    internal fun setupBufferAccess(access: StructBufferAccess) {
-        check(_bufferAccess == null) {
-            "Buffer access is already configured! A single struct instance can only view a single buffer"
-        }
-        _bufferAccess = access
-        members.filterIsInstance<Struct>().forEach {
-            it.setupBufferAccess(StructBufferAccessNested(access, it.byteOffset))
-        }
     }
 
     internal fun setupKslAccess(access: KslExprStruct<*>) {
@@ -303,32 +285,34 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
     }
 
 
-    protected fun <S: Struct> struct(struct: S, name: String = "nested_${members.size}"): S {
+    protected fun <S: Struct> struct(struct: S, name: String = "nested_${struct.structName}_${members.size}"): NestedStructMember<S> {
         require(struct.layout == layout) {
             "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
         }
-        require(struct.parent == null) {
-            "Given nested struct already has a parent"
-        }
-        struct._memberName = name
-        struct._parent = this
+//        require(struct.parent == null) {
+//            "Given nested struct already has a parent"
+//        }
+//        struct._memberName = name
+//        struct._parent = this
+//        val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, 1)
+//        struct._byteOffset = offset
+//        lastPos = offset + size
+//        addMember(struct)
+//        return struct
+
         val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, 1)
-        struct._byteOffset = offset
         lastPos = offset + size
-        addMember(struct)
-        return struct
+        return NestedStructMember(name, offset, struct).also { addMember(it) }
     }
 
-    protected fun <S: Struct> structArray(arraySize: Int, name: String = "nestedArr_${members.size}", structProvider: () -> S): NestedStructArrayMember<S> {
-        val nested = structProvider()
-        require(nested.layout == layout) {
-            "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${nested::class} has ${nested.layout}"
+    protected fun <S: Struct> structArray(struct: S, arraySize: Int, name: String = "nestedArr_${members.size}"): NestedStructArrayMember<S> {
+        require(struct.layout == layout) {
+            "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
         }
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Struct(nested), arraySize)
+        val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, arraySize)
         lastPos = offset + size
-        return NestedStructArrayMember<S>(name, offset, arraySize, structProvider).also { addMember(it) }
+        return NestedStructArrayMember(name, offset, arraySize, struct).also { addMember(it) }
     }
-
 
     override fun layoutInfo(indent: String): String {
         val members = buildString {
@@ -336,82 +320,6 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
         }
         return super.layoutInfo(indent) + "\n" + members.trimEnd()
     }
-
-    fun getBufferContentString(): String {
-        fun StructArrayMember.nameAndArrayType(): String = "$memberName: $type[$arraySize]".padEnd(30)
-        fun StructMember.nameAndType(arrayIdx: Int = 0): String {
-            val name = if (this is StructArrayMember) "$memberName[$arrayIdx]: " else "$memberName: "
-            return "$name$type".padEnd(30)
-        }
-        return members.joinToString("\n") { member ->
-            when (member) {
-                is Float1Member -> "${member.nameAndType()} = ${member.get()}"
-                is Float2Member -> "${member.nameAndType()} = ${member.get()}"
-                is Float3Member -> "${member.nameAndType()} = ${member.get()}"
-                is Float4Member -> "${member.nameAndType()} = ${member.get()}"
-
-                is Int1Member -> "${member.nameAndType()} = ${member.get()}"
-                is Int2Member -> "${member.nameAndType()} = ${member.get()}"
-                is Int3Member -> "${member.nameAndType()} = ${member.get()}"
-                is Int4Member -> "${member.nameAndType()} = ${member.get()}"
-
-                is Uint1Member -> "${member.nameAndType()} = ${member.get()}"
-                is Uint2Member -> "${member.nameAndType()} = ${member.get()}"
-                is Uint3Member -> "${member.nameAndType()} = ${member.get()}"
-                is Uint4Member -> "${member.nameAndType()} = ${member.get()}"
-
-                is Bool1Member -> "${member.nameAndType()} = ${member.get()}"
-                is Bool2Member -> "${member.nameAndType()} = ${member.get()}"
-                is Bool3Member -> "${member.nameAndType()} = ${member.get()}"
-                is Bool4Member -> "${member.nameAndType()} = ${member.get()}"
-
-                is Mat2Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
-                is Mat3Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
-                is Mat4Member -> "${member.nameAndType().trim()} =\n${member.get().toStringFormatted().prependIndent("  ")}"
-
-                is Float1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Float2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Float3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Float4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-
-                is Int1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Int2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Int3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Int4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-
-                is Uint1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Uint2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Uint3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Uint4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-
-                is Bool1ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Bool2ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Bool3ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-                is Bool4ArrayMember -> "${member.nameAndArrayType()} = ${(0..<member.arraySize).map { member[it] }}"
-
-                is Mat2ArrayMember ->
-                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Mat3ArrayMember ->
-                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is Mat4ArrayMember ->
-                    (0..<member.arraySize).joinToString("\n") { i -> "${member.nameAndType(i).trim()} =\n${member[i].toStringFormatted().prependIndent("  ")}" }
-                is NestedStructArrayMember<*> -> buildString {
-                    repeat(member.arraySize) { i ->
-                        append(member.nameAndType(i).trim()).appendLine(" {")
-                        member[i].getBufferContentString().lines().forEach { appendLine("  $it") }
-                        appendLine("}")
-                    }
-                }.trim()
-
-                is Struct -> buildString {
-                    append(member.nameAndType().trim()).appendLine(" {")
-                    member.getBufferContentString().lines().forEach { appendLine("  $it") }
-                    append("}")
-                }
-            }
-        }
-    }
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -435,910 +343,158 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
         return result
     }
 
-    inner class Float1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
+    abstract inner class SimpleMember(override val type: GpuType) : StructMember {
         override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float1
-
-        fun set(value: Float) { buffer.setFloat32(bufferPosition + byteOffset, value) }
-        fun get(): Float = buffer.getFloat32(bufferPosition + byteOffset)
     }
 
-    inner class Float2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
+    abstract inner class SimpleArrayMember(override val type: GpuType) : StructArrayMember {
         override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float2
-
-        fun set(value: Vec2f) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.x)
-            buffer.setFloat32(offset +  4, value.y)
-        }
-
-        fun get(result: MutableVec2f = MutableVec2f()): MutableVec2f {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getFloat32(offset +  0),
-                buffer.getFloat32(offset +  4)
-            )
-        }
     }
 
-    inner class Float3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float3
+    inner class Float1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float1)
+    inner class Float2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float2)
+    inner class Float3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float3)
+    inner class Float4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float4)
 
-        fun set(value: Vec3f) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.x)
-            buffer.setFloat32(offset +  4, value.y)
-            buffer.setFloat32(offset +  8, value.z)
-        }
+    inner class Int1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int1)
+    inner class Int2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int2)
+    inner class Int3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int3)
+    inner class Int4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int4)
 
-        fun get(result: MutableVec3f = MutableVec3f()): MutableVec3f {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getFloat32(offset +  0),
-                buffer.getFloat32(offset +  4),
-                buffer.getFloat32(offset +  8)
-            )
-        }
-    }
+    inner class Uint1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint1)
+    inner class Uint2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint2)
+    inner class Uint3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint3)
+    inner class Uint4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint4)
 
-    inner class Float4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float4
+    inner class Bool1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool1)
+    inner class Bool2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool2)
+    inner class Bool3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool3)
+    inner class Bool4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool4)
 
-        fun set(value: Vec4f) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.x)
-            buffer.setFloat32(offset +  4, value.y)
-            buffer.setFloat32(offset +  8, value.z)
-            buffer.setFloat32(offset + 12, value.w)
-        }
-
-        fun set(value: QuatF) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.x)
-            buffer.setFloat32(offset +  4, value.y)
-            buffer.setFloat32(offset +  8, value.z)
-            buffer.setFloat32(offset + 12, value.w)
-        }
-
-        fun set(value: Color) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.r)
-            buffer.setFloat32(offset +  4, value.g)
-            buffer.setFloat32(offset +  8, value.b)
-            buffer.setFloat32(offset + 12, value.a)
-        }
-
-        fun get(result: MutableVec4f = MutableVec4f()): MutableVec4f {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getFloat32(offset +  0),
-                buffer.getFloat32(offset +  4),
-                buffer.getFloat32(offset +  8),
-                buffer.getFloat32(offset + 12),
-            )
-        }
-    }
-
-    inner class Int1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int1
-
-        fun set(value: Int) { buffer.setInt32(bufferPosition + byteOffset, value) }
-        fun get(): Int = buffer.getInt32(bufferPosition + byteOffset)
-    }
-
-    inner class Int2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int2
-
-        fun set(value: Vec2i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-        }
-
-        fun get(result: MutableVec2i = MutableVec2i()): MutableVec2i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4)
-            )
-        }
-    }
-
-    inner class Int3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int3
-
-        fun set(value: Vec3i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-        }
-
-        fun get(result: MutableVec3i = MutableVec3i()): MutableVec3i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8)
-            )
-        }
-    }
-
-    inner class Int4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int4
-
-        fun set(value: Vec4i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-            buffer.setInt32(offset + 12, value.w)
-        }
-
-        fun get(result: MutableVec4i = MutableVec4i()): MutableVec4i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-                buffer.getInt32(offset + 12),
-            )
-        }
-    }
-
-    inner class Uint1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint1
-
-        fun set(value: UInt) { buffer.setUint32(bufferPosition + byteOffset, value) }
-        fun get(): UInt = buffer.getUint32(bufferPosition + byteOffset)
-    }
-
-    inner class Uint2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint2
-
-        fun set(value: Vec2i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-        }
-
-        fun get(result: MutableVec2i = MutableVec2i()): MutableVec2i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4)
-            )
-        }
-    }
-
-    inner class Uint3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint3
-
-        fun set(value: Vec3i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-        }
-
-        fun get(result: MutableVec3i = MutableVec3i()): MutableVec3i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8)
-            )
-        }
-    }
-
-    inner class Uint4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint4
-
-        fun set(value: Vec4i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-            buffer.setInt32(offset + 12, value.w)
-        }
-
-        fun get(result: MutableVec4i = MutableVec4i()): MutableVec4i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-                buffer.getInt32(offset + 12),
-            )
-        }
-    }
-
-    inner class Bool1Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Bool1
-
-        fun set(value: Boolean) { buffer.setInt32(bufferPosition + byteOffset, if (value) 1 else 0) }
-        fun get(): Boolean = buffer.getInt32(bufferPosition + byteOffset) != 0
-    }
-
-    inner class Bool2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Bool2
-
-        fun set(value: Vec2i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-        }
-
-        fun get(result: MutableVec2i = MutableVec2i()): MutableVec2i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4)
-            )
-        }
-    }
-
-    inner class Bool3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Bool3
-
-        fun set(value: Vec3i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-        }
-
-        fun get(result: MutableVec3i = MutableVec3i()): MutableVec3i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8)
-            )
-        }
-    }
-
-    inner class Bool4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Bool4
-
-        fun set(value: Vec4i) {
-            val offset = bufferPosition + byteOffset
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-            buffer.setInt32(offset + 12, value.w)
-        }
-
-        fun get(result: MutableVec4i = MutableVec4i()): MutableVec4i {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-                buffer.getInt32(offset + 12),
-            )
-        }
-    }
-
-    inner class Mat2Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Mat2
-
-        fun set(value: Mat2f) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10)
-            buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11)
-        }
-
-        fun get(result: MutableMat2f = MutableMat2f()): MutableMat2f {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16),
-                buffer.getFloat32(offset +  4), buffer.getFloat32(offset + 20)
-            )
-        }
-    }
-
-    inner class Mat3Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Mat3
-
-        fun set(value: Mat3f) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10); buffer.setFloat32(offset +  8, value.m20)
-            buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11); buffer.setFloat32(offset + 24, value.m21)
-            buffer.setFloat32(offset + 32, value.m02); buffer.setFloat32(offset + 36, value.m12); buffer.setFloat32(offset + 40, value.m22)
-        }
-
-        fun get(result: MutableMat3f = MutableMat3f()): MutableMat3f {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32),
-                buffer.getFloat32(offset +  4), buffer.getFloat32(offset + 20), buffer.getFloat32(offset + 36),
-                buffer.getFloat32(offset +  8), buffer.getFloat32(offset + 24), buffer.getFloat32(offset + 40),
-            )
-        }
-    }
-
-    inner class Mat4Member(override val memberName: String, override val byteOffset: Int) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Mat4
-
-        fun set(value: Mat4f) {
-            val offset = bufferPosition + byteOffset
-            buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10); buffer.setFloat32(offset +  8, value.m20); buffer.setFloat32(offset + 12, value.m30)
-            buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11); buffer.setFloat32(offset + 24, value.m21); buffer.setFloat32(offset + 28, value.m31)
-            buffer.setFloat32(offset + 32, value.m02); buffer.setFloat32(offset + 36, value.m12); buffer.setFloat32(offset + 40, value.m22); buffer.setFloat32(offset + 44, value.m32)
-            buffer.setFloat32(offset + 48, value.m03); buffer.setFloat32(offset + 52, value.m13); buffer.setFloat32(offset + 56, value.m23); buffer.setFloat32(offset + 60, value.m33)
-        }
-
-        fun get(result: MutableMat4f = MutableMat4f()): MutableMat4f {
-            val offset = bufferPosition + byteOffset
-            return result.set(
-                buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32), buffer.getFloat32(offset + 48),
-                buffer.getFloat32(offset +  4), buffer.getFloat32(offset + 20), buffer.getFloat32(offset + 36), buffer.getFloat32(offset + 52),
-                buffer.getFloat32(offset +  8), buffer.getFloat32(offset + 24), buffer.getFloat32(offset + 40), buffer.getFloat32(offset + 56),
-                buffer.getFloat32(offset + 12), buffer.getFloat32(offset + 28), buffer.getFloat32(offset + 44), buffer.getFloat32(offset + 60),
-            )
-        }
-    }
+    inner class Mat2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat2)
+    inner class Mat3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat3)
+    inner class Mat4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat4)
 
     inner class Float1ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float1
-
-        operator fun get(index: Int): Float {
-            require(index >= 0 && index < arraySize)
-            return buffer.getFloat32(bufferPosition + byteOffset + arrayStride * index)
-        }
-
-        operator fun set(index: Int, value: Float) {
-            require(index >= 0 && index < arraySize)
-            buffer.setFloat32(bufferPosition + byteOffset + arrayStride * index, value)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Float1)
 
     inner class Float2ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float2
-
-        operator fun get(index: Int): Vec2f = get(index, MutableVec2f())
-
-        fun get(index: Int, result: MutableVec2f): MutableVec2f {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getFloat32(offset +  0),
-                buffer.getFloat32(offset +  4),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec2f) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setFloat32(offset +  0, value.x)
-            buffer.setFloat32(offset +  4, value.y)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Float2)
 
     inner class Float3ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float3
-
-        operator fun get(index: Int): Vec3f = get(index, MutableVec3f())
-
-        fun get(index: Int, result: MutableVec3f): MutableVec3f {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getFloat32(offset +  0),
-                buffer.getFloat32(offset +  4),
-                buffer.getFloat32(offset +  8),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec3f) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setFloat32(offset +  0, value.x)
-            buffer.setFloat32(offset +  4, value.y)
-            buffer.setFloat32(offset +  8, value.z)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Float3)
 
     inner class Float4ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Float4
-
-        operator fun get(index: Int): Vec4f = get(index, MutableVec4f())
-
-        fun get(index: Int, result: MutableVec4f): MutableVec4f {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getFloat32(offset +  0),
-                buffer.getFloat32(offset +  4),
-                buffer.getFloat32(offset +  8),
-                buffer.getFloat32(offset + 12),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec4f) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setFloat32(offset +  0, value.x)
-            buffer.setFloat32(offset +  4, value.y)
-            buffer.setFloat32(offset +  8, value.z)
-            buffer.setFloat32(offset + 12, value.w)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Float4)
 
     inner class Int1ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int1
-
-        operator fun get(index: Int): Int {
-            require(index >= 0 && index < arraySize)
-            return buffer.getInt32(bufferPosition + byteOffset + arrayStride * index)
-        }
-
-        operator fun set(index: Int, value: Int) {
-            require(index >= 0 && index < arraySize)
-            buffer.setInt32(bufferPosition + byteOffset + arrayStride * index, value)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Int1)
 
     inner class Int2ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int2
-
-        operator fun get(index: Int): Vec2i = get(index, MutableVec2i())
-
-        fun get(index: Int, result: MutableVec2i): MutableVec2i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec2i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Int2)
 
     inner class Int3ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int3
-
-        operator fun get(index: Int): Vec3i = get(index, MutableVec3i())
-
-        fun get(index: Int, result: MutableVec3i): MutableVec3i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec3i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Int3)
 
     inner class Int4ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Int4
-
-        operator fun get(index: Int): Vec4i = get(index, MutableVec4i())
-
-        fun get(index: Int, result: MutableVec4i): MutableVec4i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-                buffer.getInt32(offset + 12),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec4i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-            buffer.setInt32(offset + 12, value.w)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Int4)
 
     inner class Uint1ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint1
-
-        operator fun get(index: Int): UInt {
-            require(index >= 0 && index < arraySize)
-            return buffer.getUint32(bufferPosition + byteOffset + arrayStride * index)
-        }
-
-        operator fun set(index: Int, value: UInt) {
-            require(index >= 0 && index < arraySize)
-            buffer.setUint32(bufferPosition + byteOffset + arrayStride * index, value)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Uint1)
 
     inner class Uint2ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint2
-
-        operator fun get(index: Int): Vec2i = get(index, MutableVec2i())
-
-        fun get(index: Int, result: MutableVec2i): MutableVec2i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec2i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Uint2)
 
     inner class Uint3ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint3
-
-        operator fun get(index: Int): Vec3i = get(index, MutableVec3i())
-
-        fun get(index: Int, result: MutableVec3i): MutableVec3i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec3i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Uint3)
 
     inner class Uint4ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint4
-
-        operator fun get(index: Int): Vec4i = get(index, MutableVec4i())
-
-        fun get(index: Int, result: MutableVec4i): MutableVec4i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-                buffer.getInt32(offset + 12),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec4i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-            buffer.setInt32(offset + 12, value.w)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Uint4)
 
     inner class Bool1ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Uint1
-
-        operator fun get(index: Int): Boolean {
-            require(index >= 0 && index < arraySize)
-            return buffer.getInt32(bufferPosition + byteOffset + arrayStride * index) != 0
-        }
-
-        operator fun set(index: Int, value: Boolean) {
-            require(index >= 0 && index < arraySize)
-            buffer.setInt32(bufferPosition + byteOffset + arrayStride * index, if (value) 1 else 0)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Bool1)
 
     inner class Bool2ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Bool2
-
-        operator fun get(index: Int): Vec2i = get(index, MutableVec2i())
-
-        fun get(index: Int, result: MutableVec2i): MutableVec2i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec2i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Bool2)
 
     inner class Bool3ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Bool3
-
-        operator fun get(index: Int): Vec3i = get(index, MutableVec3i())
-
-        fun get(index: Int, result: MutableVec3i): MutableVec3i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec3i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Bool3)
 
     inner class Bool4ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Bool4
-
-        operator fun get(index: Int): Vec4i = get(index, MutableVec4i())
-
-        fun get(index: Int, result: MutableVec4i): MutableVec4i {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getInt32(offset +  0),
-                buffer.getInt32(offset +  4),
-                buffer.getInt32(offset +  8),
-                buffer.getInt32(offset + 12),
-            )
-        }
-
-        operator fun set(index: Int, value: Vec4i) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setInt32(offset +  0, value.x)
-            buffer.setInt32(offset +  4, value.y)
-            buffer.setInt32(offset +  8, value.z)
-            buffer.setInt32(offset + 12, value.w)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Bool4)
 
     inner class Mat2ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Mat2
-
-        operator fun get(index: Int): Mat2f = get(index, MutableMat2f())
-
-        fun get(index: Int, result: MutableMat2f): MutableMat2f {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16),
-                buffer.getFloat32(offset +  4), buffer.getFloat32(offset + 20)
-            )
-        }
-
-        operator fun set(index: Int, value: Mat2f) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10)
-            buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Mat2)
 
     inner class Mat3ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
-
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Mat3
-
-        operator fun get(index: Int): Mat3f = get(index, MutableMat3f())
-
-        fun get(index: Int, result: MutableMat3f): MutableMat3f {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32),
-                buffer.getFloat32(offset +  4), buffer.getFloat32(offset + 20), buffer.getFloat32(offset + 36),
-                buffer.getFloat32(offset +  8), buffer.getFloat32(offset + 24), buffer.getFloat32(offset + 40),
-            )
-        }
-
-        operator fun set(index: Int, value: Mat3f) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10); buffer.setFloat32(offset +  8, value.m20)
-            buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11); buffer.setFloat32(offset + 24, value.m21)
-            buffer.setFloat32(offset + 32, value.m02); buffer.setFloat32(offset + 36, value.m12); buffer.setFloat32(offset + 40, value.m22)
-        }
-    }
+    ) : SimpleArrayMember(GpuType.Mat3)
 
     inner class Mat4ArrayMember(
         override val memberName: String,
         override val byteOffset: Int,
         override val arraySize: Int,
-    ) : StructArrayMember {
+    ) : SimpleArrayMember(GpuType.Mat4)
 
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Mat4
-
-        operator fun get(index: Int): Mat4f = get(index, MutableMat4f())
-
-        fun get(index: Int, result: MutableMat4f): MutableMat4f {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            return result.set(
-                buffer.getFloat32(offset +  0), buffer.getFloat32(offset + 16), buffer.getFloat32(offset + 32), buffer.getFloat32(offset + 48),
-                buffer.getFloat32(offset +  4), buffer.getFloat32(offset + 20), buffer.getFloat32(offset + 36), buffer.getFloat32(offset + 52),
-                buffer.getFloat32(offset +  8), buffer.getFloat32(offset + 24), buffer.getFloat32(offset + 40), buffer.getFloat32(offset + 56),
-                buffer.getFloat32(offset + 12), buffer.getFloat32(offset + 28), buffer.getFloat32(offset + 44), buffer.getFloat32(offset + 60),
-            )
-        }
-
-        operator fun set(index: Int, value: Mat4f) {
-            require(index >= 0 && index < arraySize)
-            val offset = bufferPosition + byteOffset + arrayStride * index
-            buffer.setFloat32(offset +  0, value.m00); buffer.setFloat32(offset +  4, value.m10); buffer.setFloat32(offset +  8, value.m20); buffer.setFloat32(offset + 12, value.m30)
-            buffer.setFloat32(offset + 16, value.m01); buffer.setFloat32(offset + 20, value.m11); buffer.setFloat32(offset + 24, value.m21); buffer.setFloat32(offset + 28, value.m31)
-            buffer.setFloat32(offset + 32, value.m02); buffer.setFloat32(offset + 36, value.m12); buffer.setFloat32(offset + 40, value.m22); buffer.setFloat32(offset + 44, value.m32)
-            buffer.setFloat32(offset + 48, value.m03); buffer.setFloat32(offset + 52, value.m13); buffer.setFloat32(offset + 56, value.m23); buffer.setFloat32(offset + 60, value.m33)
-        }
-    }
-
-    inner class NestedStructArrayMember<S: Struct>(
+    inner class NestedStructMember<S: Struct>(
         override val memberName: String,
         override val byteOffset: Int,
-        override val arraySize: Int,
-        val structProvider: () -> S
-    ) : StructArrayMember {
-
+        val struct: S
+    ) : StructMember {
         override val parent: Struct get() = this@Struct
-        private var nestedBufferAccess: StructBufferAccessNested? = null
-        internal val struct = structProvider()
-
         override val type = GpuType.Struct(struct)
 
         init {
@@ -1347,16 +503,24 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
             }
         }
 
-        operator fun get(index: Int): S {
-            require(index >= 0 && index < arraySize)
-            if (nestedBufferAccess == null) {
-                val acc = StructBufferAccessNested(bufferAccess, byteOffset)
-                nestedBufferAccess = acc
-                struct.setupBufferAccess(acc)
-            }
-            nestedBufferAccess!!.byteOffset = byteOffset + index * arrayStride
+        override fun layoutInfo(indent: String): String {
+            return super.layoutInfo(indent) + "\n" + struct.layoutInfo("$indent    ").trimEnd()
+        }
+    }
 
-            return struct
+    inner class NestedStructArrayMember<S: Struct>(
+        override val memberName: String,
+        override val byteOffset: Int,
+        override val arraySize: Int,
+        val struct: S
+    ) : StructArrayMember {
+        override val parent: Struct get() = this@Struct
+        override val type = GpuType.Struct(struct)
+
+        init {
+            require(struct.layout == layout) {
+                "Nested struct must have the same layout as the parent struct (but nested layout is ${struct.layout} and parent layout is $layout)"
+            }
         }
 
         override fun layoutInfo(indent: String): String {
@@ -1383,7 +547,7 @@ sealed interface StructMember {
 sealed interface StructArrayMember : StructMember {
     val arraySize: Int
     val arrayStride: Int get() {
-        val layout = requireNotNull(parent ?: this as Struct).layout
+        val layout = (parent ?: this as Struct).layout
         return layout.arrayStrideOf(type)
     }
 
@@ -1392,20 +556,6 @@ sealed interface StructArrayMember : StructMember {
         val typeName = "$type[$arraySize]".padEnd(16)
         return "$indent$name$typeName 0x${byteOffset.toString(16).padStart(4, '0')}"
     }
-}
-
-interface StructBufferAccess {
-    val structBuffer: StructBuffer<*>
-    val bufferPosition: Int
-}
-
-class StructBufferAccessIndexed(override val structBuffer: StructBuffer<*>, var index: Int = 0) : StructBufferAccess {
-    override val bufferPosition: Int get() = index * structBuffer.strideBytes
-}
-
-class StructBufferAccessNested(val parent: StructBufferAccess, var byteOffset: Int) : StructBufferAccess {
-    override val structBuffer: StructBuffer<*> get() = parent.structBuffer
-    override val bufferPosition: Int get() = parent.bufferPosition + byteOffset
 }
 
 fun DynamicStruct(name: String, layout: MemoryLayout, block: DynamicStruct.Builder.() -> Unit): DynamicStruct {
@@ -1426,10 +576,10 @@ class DynamicStruct private constructor(builder: Builder) : Struct(builder.name,
                 GpuType.Int3 if (it.isArray) -> int3Array(it.arraySize, it.name)
                 GpuType.Int4 if (it.isArray) -> int4Array(it.arraySize, it.name)
 
-//                GpuType.Uint1 if (it.isArray) -> uint1Array(it.arraySize, it.name)
-//                GpuType.Uint2 if (it.isArray) -> uint2Array(it.arraySize, it.name)
-//                GpuType.Uint3 if (it.isArray) -> uint3Array(it.arraySize, it.name)
-//                GpuType.Uint4 if (it.isArray) -> uint4Array(it.arraySize, it.name)
+                GpuType.Uint1 if (it.isArray) -> uint1Array(it.arraySize, it.name)
+                GpuType.Uint2 if (it.isArray) -> uint2Array(it.arraySize, it.name)
+                GpuType.Uint3 if (it.isArray) -> uint3Array(it.arraySize, it.name)
+                GpuType.Uint4 if (it.isArray) -> uint4Array(it.arraySize, it.name)
 
                 GpuType.Mat2 if (it.isArray) -> mat2Array(it.arraySize, it.name)
                 GpuType.Mat3 if (it.isArray) -> mat3Array(it.arraySize, it.name)
