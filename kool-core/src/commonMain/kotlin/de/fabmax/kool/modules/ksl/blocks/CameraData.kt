@@ -72,15 +72,15 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
             val vp = q.view.viewport
             val cam = q.view.camera
             binding.set {
-                viewProj.set(q.viewProjMatF)
-                view.set(q.viewMatF)
-                proj.set(q.projMat)
-                viewport.set(viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
-                viewParams.set(cam.viewParams)
-                position.set(cam.globalPos)
-                direction.set(cam.globalLookDir)
-                clip.set(cam.clip)
-                frameIndex.set(Time.frameCount)
+                set(it.viewProj, q.viewProjMatF)
+                set(it.view, q.viewMatF)
+                set(it.proj, q.projMat)
+                set(it.viewport, viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
+                set(it.viewParams, cam.viewParams)
+                set(it.position, cam.globalPos)
+                set(it.direction, cam.globalLookDir)
+                set(it.clip, cam.clip)
+                set(it.frameIndex, Time.frameCount)
             }
         }
     }

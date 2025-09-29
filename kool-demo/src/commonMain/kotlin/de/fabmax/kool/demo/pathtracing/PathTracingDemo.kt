@@ -407,26 +407,26 @@ class PathTracingDemo : DemoScene("Path-tracing") {
     }
 
     private fun StructBuffer<SphereStruct>.addSphere(center: Vec3f, radius: Float, material: Int) = put {
-        this.center.set(center)
-        this.radius.set(radius)
-        this.material.set(material)
+        set(it.center, center)
+        set(it.radius, radius)
+        set(it.material, material)
     }
 
     private fun StructBuffer<MaterialStruct>.addLambertian(color: Color): Int = put {
-        materialType.set(MATERIAL_LAMBERTIAN)
-        albedo.set(color)
+        set(it.materialType, MATERIAL_LAMBERTIAN)
+        set(it.albedo, color)
     }
 
     private fun StructBuffer<MaterialStruct>.addMetal(color: Color, roughness: Float): Int = put {
-        materialType.set(MATERIAL_METAL)
-        albedo.set(color)
-        this.roughness.set(roughness)
+        set(it.materialType, MATERIAL_METAL)
+        set(it.albedo, color)
+        set(it.roughness, roughness)
     }
 
     private fun StructBuffer<MaterialStruct>.addGlas(refractionIndex: Float): Int = put {
-        materialType.set(MATERIAL_GLASS)
-        albedo.set(Color.WHITE)
-        this.refractionIndex.set(refractionIndex)
+        set(it.materialType, MATERIAL_GLASS)
+        set(it.albedo, Color.WHITE)
+        set(it.refractionIndex, refractionIndex)
     }
 
     class MaterialStruct : Struct("Material", MemoryLayout.Std430) {

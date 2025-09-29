@@ -124,12 +124,12 @@ class GpuBees(beeScene: Scene) {
     private fun initBeeBuffer(beeBuffer: GpuBuffer, spawnPos: Vec3f) {
         val data = StructBuffer(beeBuffer.size, BeeData())
         repeat(data.capacity) {
-            data.put {
-                position.set(spawnPos + randomInUnitCube() * 5f)
-                decay.set(BeeConfig.decayTime)
-                velocity.set(Vec3f.ZERO)
-                enemyIndex.set(-1)
-                rotation.set(QuatF.IDENTITY.toVec4f())
+            data.put { struct ->
+                set(struct.position, spawnPos + randomInUnitCube() * 5f)
+                set(struct.decay, BeeConfig.decayTime)
+                set(struct.velocity, Vec3f.ZERO)
+                set(struct.enemyIndex, -1)
+                set(struct.rotation, QuatF.IDENTITY.toVec4f())
             }
         }
         beeBuffer.uploadData(data)
