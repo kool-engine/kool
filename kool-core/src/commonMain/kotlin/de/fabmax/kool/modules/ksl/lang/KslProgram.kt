@@ -108,7 +108,7 @@ open class KslProgram(val name: String) {
 
     @PublishedApi
     internal fun registerStruct(struct: Struct) {
-        struct.members.filterIsInstance<Struct>().forEach { registerStruct(it) }
+        struct.members.filterIsInstance<Struct.NestedStructMember<*>>().forEach { registerStruct(it.struct) }
         struct.members.filterIsInstance<Struct.NestedStructArrayMember<*>>().forEach { registerStruct(it.struct) }
 
         val existing = structs.getOrPut(struct.structName) { struct }

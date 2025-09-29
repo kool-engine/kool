@@ -43,16 +43,16 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
             val lighting = cmd.queue.renderPass.lighting
             binding.set {
                 if (lighting == null) {
-                    lightCount.set(0)
+                    set(it.lightCount, 0)
                 } else {
                     val lightCount = min(lighting.lights.size, maxLightCount)
-                    this.lightCount.set(lightCount)
+                    set(it.lightCount, lightCount)
                     for (i in 0 until lightCount) {
                         val light = lighting.lights[i]
                         light.updateEncodedValues()
-                        encodedPositions[i] = light.encodedPosition
-                        encodedDirections[i] = light.encodedDirection
-                        encodedColors[i] = light.encodedColor
+                        set(it.encodedPositions, i, light.encodedPosition)
+                        set(it.encodedDirections, i, light.encodedDirection)
+                        set(it.encodedColors, i, light.encodedColor)
                     }
                 }
             }

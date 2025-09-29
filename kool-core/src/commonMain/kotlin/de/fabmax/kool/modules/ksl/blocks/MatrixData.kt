@@ -51,7 +51,9 @@ abstract class MatrixData(program: KslProgram, val uniformName: String, scope: B
     }
 
     protected fun putMatrixToBuffer(matrix: Mat4f, uboData: UniformBufferBindingData<*>) {
-        uboData.set { setMat4(matIndex, matrix) }
+        uboData.set {
+            setMat4(it, matIndex, matrix)
+        }
     }
 }
 

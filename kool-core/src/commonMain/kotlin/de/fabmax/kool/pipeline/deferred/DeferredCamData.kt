@@ -48,10 +48,10 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
             val vp = q.view.viewport
             val cam = q.view.camera
             binding.set {
-                proj.set(q.projMat)
-                invView.set(q.invViewMatF)
-                viewport.set(viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
-                position.set(cam.globalPos)
+                set(it.proj, q.projMat)
+                set(it.invView, q.invViewMatF)
+                set(it.viewport, viewportVec.set(vp.x.toFloat(), vp.y.toFloat(), vp.width.toFloat(), vp.height.toFloat()))
+                set(it.position, cam.globalPos)
             }
         }
     }
