@@ -2,7 +2,7 @@ package de.fabmax.kool.util
 
 import de.fabmax.kool.math.*
 
-fun Struct.indexOf(memberName: String) = members.indexOfFirst { it.memberName == memberName }
+fun Struct.indexOf(memberName: String) = members.indexOfFirst { it.name == memberName }
 
 fun Struct.getFloat1(memberIndex: Int): Struct.Float1Member = members[memberIndex] as Struct.Float1Member
 fun Struct.getFloat2(memberIndex: Int): Struct.Float2Member = members[memberIndex] as Struct.Float2Member

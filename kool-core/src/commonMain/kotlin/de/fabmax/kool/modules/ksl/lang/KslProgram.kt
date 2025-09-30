@@ -111,9 +111,9 @@ open class KslProgram(val name: String) {
         struct.members.filterIsInstance<Struct.NestedStructMember<*>>().forEach { registerStruct(it.struct) }
         struct.members.filterIsInstance<Struct.NestedStructArrayMember<*>>().forEach { registerStruct(it.struct) }
 
-        val existing = structs.getOrPut(struct.structName) { struct }
+        val existing = structs.getOrPut(struct.name) { struct }
         check(struct::class == existing::class) {
-            "Existing struct with name $name has type ${existing::class.simpleName} but given struct is ${struct::class.simpleName}"
+            "Existing struct with name ${struct.name} has type ${existing::class.simpleName} but given struct is ${struct::class.simpleName}"
         }
     }
 
@@ -148,7 +148,7 @@ open class KslProgram(val name: String) {
         noinline provider: () -> S
     ): KslUniformStruct<S> {
         val proto = provider()
-        val uniform = uniformStructs[proto.structName] ?: KslUniformStruct(name, scope, provider).also { registerUniformStruct(it) }
+        val uniform = uniformStructs[proto.name] ?: KslUniformStruct(name, scope, provider).also { registerUniformStruct(it) }
         check(uniform.proto is S) {
             "Existing struct uniform with name \"$name\" has not the expected struct type"
         }

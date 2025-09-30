@@ -115,7 +115,7 @@ class UniformBufferLayout<T: Struct>(
         stages.forEach { s -> this += s }
     }
 
-    fun hasUniform(name: String) = proto.members.any { it.memberName == name }
+    fun hasUniform(name: String) = proto.members.any { it.name == name }
 }
 
 class StorageBufferLayout(

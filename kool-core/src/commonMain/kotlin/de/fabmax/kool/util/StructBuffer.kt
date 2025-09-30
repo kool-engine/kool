@@ -31,8 +31,6 @@ class StructBuffer<T: Struct>(val capacity: Int, val struct: T) {
         require(index >= 0 && index < capacity) { "Out-of-bounds index: $index, capacity: $capacity" }
         defaultView.bytePosition = index * strideBytes
         defaultView.block(struct)
-        defaultView.bytePosition = index * strideBytes
-        defaultView.block(struct)
     }
 
     inline fun set(index: Int, block: MutableStructBufferView.(T) -> Unit) {

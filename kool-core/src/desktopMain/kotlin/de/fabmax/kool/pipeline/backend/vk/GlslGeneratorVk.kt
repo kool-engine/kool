@@ -44,7 +44,7 @@ class GlslGeneratorVk private constructor(generatorExpressions: Map<KslExpressio
                     when (type.proto.layout) {
                         MemoryLayout.Std140 -> "std140"
                         MemoryLayout.Std430 -> "std430"
-                        else -> error("layout of struct ${type.proto.structName} is ${type.proto.layout} but storage buffers only support std430 and std140")
+                        else -> error("layout of struct ${type.proto.name} is ${type.proto.layout} but storage buffers only support std430 and std140")
                     }
                 } else "std430"
 
