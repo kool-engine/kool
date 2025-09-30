@@ -104,7 +104,7 @@ val KslType.gpuType: GpuType
         KslMat3 -> GpuType.Mat3
         KslMat4 -> GpuType.Mat4
 
-        is KslStruct<*> -> proto.type
+        is KslStruct<*> -> struct.type
 
         else -> throw IllegalArgumentException("KslType has no corresponding glsl type: $this")
     }

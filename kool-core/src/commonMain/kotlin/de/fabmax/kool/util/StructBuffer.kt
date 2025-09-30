@@ -16,12 +16,6 @@ class StructBuffer<T: Struct>(val capacity: Int, val struct: T) {
     internal var position = 0
     val size: Int get() = position
 
-    init {
-        require(struct.layout != MemoryLayout.DontCare) {
-            "StructBuffer requires the memory layout of the struct to be other than MemoryLayout.DontCare"
-        }
-    }
-
     fun clear() {
         position = 0
         buffer.clear()

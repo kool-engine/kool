@@ -89,33 +89,31 @@ sealed class BindingLayout(
 
 class UniformBufferLayout<T: Struct>(
     name: String,
+    val struct: T,
     stages: Set<ShaderStage>,
-    val structProvider: () -> T,
 ) : BindingLayout(name, stages, BindingType.UNIFORM_BUFFER) {
 
-    @PublishedApi
-    internal val proto = structProvider()
-
     init {
-        require(proto.layout == MemoryLayout.Std140) {
+        require(struct.layout == MemoryLayout.Std140) {
             "Uniform buffer / struct layout must be Std140"
         }
     }
 
-    inline fun <reified S: Struct> isStructInstanceOf() = proto is S
-
-    fun indexOfMember(memberName: String) = proto.indexOf(memberName)
-
-    inline fun <reified S: Struct> struct() = structProvider() as S
+    fun indexOfMember(memberName: String) = struct.indexOf(memberName)
 
     override val hash: LongHash = LongHash {
         this += name
         this += type
-        this += proto.hash
+        this += struct.hash
         stages.forEach { s -> this += s }
     }
 
-    fun hasUniform(name: String) = proto.members.any { it.name == name }
+    fun hasUniform(name: String) = struct.members.any { it.name == name }
+}
+
+inline fun <reified T: Struct> PipelineBase.getUniformBufferLayout(): Pair<BindGroupLayout, UniformBufferLayout<T>> {
+    @Suppress("UNCHECKED_CAST")
+    return getBindGroupItem<UniformBufferLayout<*>> { it.struct is T } as Pair<BindGroupLayout, UniformBufferLayout<T>>
 }
 
 class StorageBufferLayout(

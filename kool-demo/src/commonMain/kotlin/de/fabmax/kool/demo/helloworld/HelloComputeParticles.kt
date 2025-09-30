@@ -24,15 +24,15 @@ import de.fabmax.kool.util.Time
 
 class HelloComputeParticles : DemoScene("Hello Compute Particles") {
 
-    class ParticleAppearance : Struct("particleAppearance", MemoryLayout.Std430) {
+    object ParticleAppearance : Struct("particleAppearance", MemoryLayout.Std430) {
         val color = float4()
         val size = float1()
     }
 
-    class Particle : Struct("particleData", MemoryLayout.Std430) {
+    object Particle : Struct("particleData", MemoryLayout.Std430) {
         // particle color and size are stored in a nested struct, we could of course also store these in simple
         // primitive members, the nested struct is only used for an example of using nested structs
-        val appearance = struct(ParticleAppearance())
+        val appearance = struct(ParticleAppearance)
 
         val position = float3()
         val velocity = float3()
@@ -41,7 +41,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
 
     fun particleComputeShader() = KslComputeShader("particle compute shader") {
         // register the struct as a ksl type, so we can use it in the shader
-        val particleStruct = struct { Particle() }
+        val particleStruct = struct(Particle)
         // the particle buffer will hold the actual particle data
         val particleBuffer = storage("particleBuffer", particleStruct)
 
@@ -66,7 +66,10 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
 
                     val a = float1Var(noise11(seed + 17f.const) * 2f.const)
                     val r = float1Var(1.5f.const + noise11(seed + 1234f.const) * 0.1f.const)
-                    particle.appearance.color.ksl set gradient.load((abs(a - 1f.const) * 255f.const).toInt1(), 0.const)
+
+                    val app = particle.appearance.ksl
+
+                    app.color.ksl set gradient.load((abs(a - 1f.const) * 255f.const).toInt1(), 0.const)
                     particle.position.ksl set float3Value(cos(a * PI_F.const), 0f.const, sin(a * PI_F.const)) * r
                     particle.velocity.ksl set (noise13(seed + 4711f.const) + float3Value(-0.5f, 1f, -0.5f)) * 2f.const
                     lifeTime set 0.75f.const + noise11(seed)
@@ -75,7 +78,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
                 // update particle attributes
                 particle.velocity.ksl.y -= 10f.const * deltaT
                 particle.position.ksl += particle.velocity.ksl * deltaT
-                particle.appearance.size.ksl set 5f.const * sqrt(lifeTime)
+                particle.appearance.ksl.size.ksl set 5f.const * sqrt(lifeTime)
                 particle.lifeTime.ksl set lifeTime
 
                 // write updated particle data back to storage buffer
@@ -85,7 +88,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
     }
 
     fun particleDrawShader() = KslShader("particle draw shader") {
-        val particleStruct = struct { Particle() }
+        val particleStruct = struct(Particle)
         val particleBuffer = storage("particleBuffer", particleStruct)
         val index = interStageInt1()
 
@@ -97,7 +100,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
                 val modelMat = modelMatrix()
 
                 outPosition set cam.viewProjMat * modelMat.matrix * float4Value(particleData.position.ksl, 1f.const)
-                outPointSize set particleData.appearance.size.ksl
+                outPointSize set particleData.appearance.ksl.size.ksl
 
                 // forward vertex index to fragment shader so that we can use it there to access the particle data
                 // again. notice that it would probably be more efficient to read the particle color here and forward
@@ -108,7 +111,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
         fragmentStage {
             main {
                 // use the forwarded vertex index to read the particle color from the buffer and output it
-                colorOutput(particleBuffer[index.output].struct.appearance.color.ksl)
+                colorOutput(particleBuffer[index.output].struct.appearance.ksl.color.ksl)
             }
         }
     }
@@ -116,7 +119,7 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         val particleColor = GradientTexture(ColorGradient.ROCKET)
 
-        val particleBuffer = StorageBuffer(Particle().type, N_PARTICLES)
+        val particleBuffer = StorageBuffer(Particle.type, N_PARTICLES)
 
         val particleComputeShader = particleComputeShader()
         particleComputeShader.storage("particleBuffer", particleBuffer)

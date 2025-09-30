@@ -391,10 +391,10 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
 
                 val type = storage.storageType.elemType
                 val layout = if (type is KslStruct<*>) {
-                    when (type.proto.layout) {
+                    when (type.struct.layout) {
                         MemoryLayout.Std140 -> "std140"
                         MemoryLayout.Std430 -> "std430"
-                        else -> error("layout of struct ${type.proto.name} is ${type.proto.layout} but storage buffers only support std140 and std430")
+                        else -> error("layout of struct ${type.struct.name} is ${type.struct.layout} but storage buffers only support std140 and std430")
                     }
                 } else "std430"
 
@@ -798,7 +798,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             KslMat3 -> "mat3"
             KslMat4 -> "mat4"
 
-            is KslStruct<*> -> type.proto.name
+            is KslStruct<*> -> type.struct.name
 
             KslColorSampler1d -> if (hints.compat1dSampler) "sampler2D" else "sampler1D"
             KslColorSampler2d -> "sampler2D"

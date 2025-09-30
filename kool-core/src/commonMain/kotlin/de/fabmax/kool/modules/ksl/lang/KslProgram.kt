@@ -93,7 +93,7 @@ open class KslProgram(val name: String) {
     @PublishedApi
     internal fun registerUniformStruct(struct: KslUniformStruct<*>) {
         uniformStructs[struct.name] = struct
-        registerStruct(struct.value.expressionType.proto)
+        registerStruct(struct.value.expressionType.struct)
         stages.forEach {
             it.globalScope.definedStates += struct.value
         }
@@ -144,12 +144,11 @@ open class KslProgram(val name: String) {
     @PublishedApi
     internal inline fun <reified S: Struct> getOrCreateStructUniform(
         name: String,
+        struct: S,
         scope: BindGroupScope = BindGroupScope.PIPELINE,
-        noinline provider: () -> S
     ): KslUniformStruct<S> {
-        val proto = provider()
-        val uniform = uniformStructs[proto.name] ?: KslUniformStruct(name, scope, provider).also { registerUniformStruct(it) }
-        check(uniform.proto is S) {
+        val uniform = uniformStructs[struct.name] ?: KslUniformStruct(name, scope, struct).also { registerUniformStruct(it) }
+        check(uniform.struct is S) {
             "Existing struct uniform with name \"$name\" has not the expected struct type"
         }
         @Suppress("UNCHECKED_CAST")
@@ -184,8 +183,8 @@ open class KslProgram(val name: String) {
     fun uniformMat3Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat3Array(name, arraySize)
     fun uniformMat4Array(name: String, arraySize: Int) = commonUniformBuffer.uniformMat4Array(name, arraySize)
 
-    inline fun <reified S: Struct> uniformStruct(name: String, scope: BindGroupScope = BindGroupScope.PIPELINE, noinline provider: () -> S): KslUniformStruct<S> =
-        getOrCreateStructUniform(name, scope, provider)
+    inline fun <reified S: Struct> uniformStruct(name: String, struct: S, scope: BindGroupScope = BindGroupScope.PIPELINE): KslUniformStruct<S> =
+        getOrCreateStructUniform(name, struct, scope)
 
     fun texture1d(name: String, sampleType: TextureSampleType = TextureSampleType.FLOAT) =
         getOrCreateSampler(name, sampleType) { KslUniform(KslVar(name, KslColorSampler1d, false)) }
@@ -209,9 +208,9 @@ open class KslProgram(val name: String) {
     fun depthTextureCubeArray(name: String) =
         getOrCreateSampler(name, TextureSampleType.DEPTH) { KslUniform(KslVar(name, KslDepthSamplerCubeArray, false)) }
 
-    fun <T: Struct> struct(provider: () -> T): KslStruct<T> {
-        registerStruct(provider())
-        return KslStruct<T>(provider)
+    fun <T: Struct> struct(struct: T): KslStruct<T> {
+        registerStruct(struct)
+        return KslStruct(struct)
     }
 
     fun <T: Struct> storage(

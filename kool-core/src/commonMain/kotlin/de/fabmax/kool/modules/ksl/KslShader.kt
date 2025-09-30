@@ -206,7 +206,7 @@ private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.
             .filter { it.dependsOn(struct) }
             .map { it.type.pipelineStageType }
             .toSet()
-        bindGrpBuilder.ubos += UniformBufferLayout(struct.name, uboStages, struct.provider)
+        bindGrpBuilder.ubos += UniformBufferLayout(struct.name, struct.struct, uboStages)
     }
 
     uniformBuffers.filter { it.uniforms.isNotEmpty() && it.scope == bindGrpBuilder.scope }.forEach { kslUbo ->
@@ -255,7 +255,7 @@ private fun KslProgram.setupBindGroupLayoutUbos(bindGrpBuilder: BindGroupLayout.
             .filter { kslUbo.uniforms.values.any { u -> it.dependsOn(u) } }
             .map { it.type.pipelineStageType }
             .toSet()
-        bindGrpBuilder.ubos += UniformBufferLayout(kslUbo.name, uboStages) { uboBuilder.build() }
+        bindGrpBuilder.ubos += UniformBufferLayout(kslUbo.name, uboBuilder.build(), uboStages)
     }
 }
 

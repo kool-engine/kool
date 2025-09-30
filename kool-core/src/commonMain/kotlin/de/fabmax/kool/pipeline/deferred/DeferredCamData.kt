@@ -4,10 +4,7 @@ package de.fabmax.kool.pipeline.deferred
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BindGroupScope
-import de.fabmax.kool.pipeline.DrawCommand
-import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 
@@ -18,7 +15,7 @@ fun KslProgram.deferredCameraData(): DeferredCamData {
 class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
     override val name = "DeferredCamData"
 
-    private val camUniform = program.uniformStruct("uDeferredCameraData", BindGroupScope.VIEW) { DeferredCamDataStruct() }
+    private val camUniform = program.uniformStruct("uDeferredCameraData", DeferredCamDataStruct, BindGroupScope.VIEW)
 
     val position: KslExprFloat3 get() = camUniform.struct.position.ksl
     val projMat: KslExprMat4 get() = camUniform.struct.proj.ksl
@@ -34,9 +31,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val (_, binding) = shader.createdPipeline!!.getBindGroupItem<UniformBufferLayout<DeferredCamDataStruct>> {
-            it.isStructInstanceOf<DeferredCamDataStruct>()
-        }
+        val (_, binding) = shader.createdPipeline!!.getUniformBufferLayout<DeferredCamDataStruct>()
         structLayout = binding
     }
 
@@ -56,7 +51,7 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
         }
     }
 
-    class DeferredCamDataStruct : Struct("DeferredCameraData", MemoryLayout.Std140) {
+    object DeferredCamDataStruct : Struct("DeferredCameraData", MemoryLayout.Std140) {
         val proj = mat4("projMat")
         val invView = mat4("invView")
         val viewport = float4("viewport")
