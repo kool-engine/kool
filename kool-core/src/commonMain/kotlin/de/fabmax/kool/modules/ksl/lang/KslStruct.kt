@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
@@ -108,103 +110,93 @@ class KslStructMemberExpressionStructArray<S: Struct>(
     override fun toPseudoCode(): String = "${struct.toPseudoCode()}.${member.name}"
 }
 
-val <S: Struct> KslExprStruct<S>.struct: S get() = expressionType.struct.also {
-    @Suppress("UNCHECKED_CAST")
-    it.setupKslAccess(this as KslExprStruct<*>)
-}
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float1Member): KslStructMemberExpressionScalar<KslFloat1> =
+    KslStructMemberExpressionScalar(this as KslExprStruct<*>, member, KslFloat1)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float2Member): KslStructMemberExpressionVector<KslFloat2, KslFloat1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslFloat2)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float3Member): KslStructMemberExpressionVector<KslFloat3, KslFloat1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslFloat3)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float4Member): KslStructMemberExpressionVector<KslFloat4, KslFloat1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslFloat4)
 
-val Struct.Float1Member.ksl: KslStructMemberExpressionScalar<KslFloat1> get() =
-    KslStructMemberExpressionScalar(parent.kslAccess, this, KslFloat1)
-val Struct.Float2Member.ksl: KslStructMemberExpressionVector<KslFloat2, KslFloat1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslFloat2)
-val Struct.Float3Member.ksl: KslStructMemberExpressionVector<KslFloat3, KslFloat1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslFloat3)
-val Struct.Float4Member.ksl: KslStructMemberExpressionVector<KslFloat4, KslFloat1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslFloat4)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int1Member): KslStructMemberExpressionScalar<KslInt1> =
+    KslStructMemberExpressionScalar(this as KslExprStruct<*>, member, KslInt1)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int2Member): KslStructMemberExpressionVector<KslInt2, KslInt1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslInt2)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int3Member): KslStructMemberExpressionVector<KslInt3, KslInt1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslInt3)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int4Member): KslStructMemberExpressionVector<KslInt4, KslInt1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslInt4)
 
-val Struct.Int1Member.ksl: KslStructMemberExpressionScalar<KslInt1> get() =
-    KslStructMemberExpressionScalar(parent.kslAccess, this, KslInt1)
-val Struct.Int2Member.ksl: KslStructMemberExpressionVector<KslInt2, KslInt1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslInt2)
-val Struct.Int3Member.ksl: KslStructMemberExpressionVector<KslInt3, KslInt1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslInt3)
-val Struct.Int4Member.ksl: KslStructMemberExpressionVector<KslInt4, KslInt1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslInt4)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint1Member): KslStructMemberExpressionScalar<KslUint1> =
+    KslStructMemberExpressionScalar(this as KslExprStruct<*>, member, KslUint1)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint2Member): KslStructMemberExpressionVector<KslUint2, KslUint1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslUint2)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint3Member): KslStructMemberExpressionVector<KslUint3, KslUint1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslUint3)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint4Member): KslStructMemberExpressionVector<KslUint4, KslUint1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslUint4)
 
-val Struct.Uint1Member.ksl: KslStructMemberExpressionScalar<KslUint1> get() =
-    KslStructMemberExpressionScalar(parent.kslAccess, this, KslUint1)
-val Struct.Uint2Member.ksl: KslStructMemberExpressionVector<KslUint2, KslUint1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslUint2)
-val Struct.Uint3Member.ksl: KslStructMemberExpressionVector<KslUint3, KslUint1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslUint3)
-val Struct.Uint4Member.ksl: KslStructMemberExpressionVector<KslUint4, KslUint1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslUint4)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool1Member): KslStructMemberExpressionScalar<KslBool1> =
+    KslStructMemberExpressionScalar(this as KslExprStruct<*>, member, KslBool1)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool2Member): KslStructMemberExpressionVector<KslBool2, KslBool1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslBool2)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool3Member): KslStructMemberExpressionVector<KslBool3, KslBool1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslBool3)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool4Member): KslStructMemberExpressionVector<KslBool4, KslBool1> =
+    KslStructMemberExpressionVector(this as KslExprStruct<*>, member, KslBool4)
 
-val Struct.Bool1Member.ksl: KslStructMemberExpressionScalar<KslBool1> get() =
-    KslStructMemberExpressionScalar(parent.kslAccess, this, KslBool1)
-val Struct.Bool2Member.ksl: KslStructMemberExpressionVector<KslBool2, KslBool1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslBool2)
-val Struct.Bool3Member.ksl: KslStructMemberExpressionVector<KslBool3, KslBool1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslBool3)
-val Struct.Bool4Member.ksl: KslStructMemberExpressionVector<KslBool4, KslBool1> get() =
-    KslStructMemberExpressionVector(parent.kslAccess, this, KslBool4)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Mat2Member): KslStructMemberExpressionMatrix<KslMat2, KslFloat2> =
+    KslStructMemberExpressionMatrix(this as KslExprStruct<*>, member, KslMat2)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Mat3Member): KslStructMemberExpressionMatrix<KslMat3, KslFloat3> =
+    KslStructMemberExpressionMatrix(this as KslExprStruct<*>, member, KslMat3)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Mat4Member): KslStructMemberExpressionMatrix<KslMat4, KslFloat4> =
+    KslStructMemberExpressionMatrix(this as KslExprStruct<*>, member, KslMat4)
 
-val Struct.Mat2Member.ksl: KslStructMemberExpressionMatrix<KslMat2, KslFloat2> get() =
-    KslStructMemberExpressionMatrix(parent.kslAccess, this, KslMat2)
-val Struct.Mat3Member.ksl: KslStructMemberExpressionMatrix<KslMat3, KslFloat3> get() =
-    KslStructMemberExpressionMatrix(parent.kslAccess, this, KslMat3)
-val Struct.Mat4Member.ksl: KslStructMemberExpressionMatrix<KslMat4, KslFloat4> get() =
-    KslStructMemberExpressionMatrix(parent.kslAccess, this, KslMat4)
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float1ArrayMember): KslStructMemberExpressionScalarArray<KslFloat1> =
+    KslStructMemberExpressionScalarArray(this as KslExprStruct<*>, member, KslFloat1Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float2ArrayMember): KslStructMemberExpressionVectorArray<KslFloat2, KslFloat1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslFloat2Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float3ArrayMember): KslStructMemberExpressionVectorArray<KslFloat3, KslFloat1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslFloat3Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Float4ArrayMember): KslStructMemberExpressionVectorArray<KslFloat4, KslFloat1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslFloat4Array(member.arraySize))
 
-val Struct.Float1ArrayMember.ksl: KslExprFloat1Array get() =
-    KslStructMemberExpressionScalarArray(parent.kslAccess, this, KslFloat1Array(arraySize))
-val Struct.Float2ArrayMember.ksl: KslExprFloat2Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslFloat2Array(arraySize))
-val Struct.Float3ArrayMember.ksl: KslExprFloat3Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslFloat3Array(arraySize))
-val Struct.Float4ArrayMember.ksl: KslExprFloat4Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslFloat4Array(arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int1ArrayMember): KslStructMemberExpressionScalarArray<KslInt1> =
+    KslStructMemberExpressionScalarArray(this as KslExprStruct<*>, member, KslInt1Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int2ArrayMember): KslStructMemberExpressionVectorArray<KslInt2, KslInt1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslInt2Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int3ArrayMember): KslStructMemberExpressionVectorArray<KslInt3, KslInt1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslInt3Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Int4ArrayMember): KslStructMemberExpressionVectorArray<KslInt4, KslInt1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslInt4Array(member.arraySize))
 
-val Struct.Int1ArrayMember.ksl: KslExprInt1Array get() =
-    KslStructMemberExpressionScalarArray(parent.kslAccess, this, KslInt1Array(arraySize))
-val Struct.Int2ArrayMember.ksl: KslExprInt2Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslInt2Array(arraySize))
-val Struct.Int3ArrayMember.ksl: KslExprInt3Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslInt3Array(arraySize))
-val Struct.Int4ArrayMember.ksl: KslExprInt4Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslInt4Array(arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint1ArrayMember): KslStructMemberExpressionScalarArray<KslUint1> =
+    KslStructMemberExpressionScalarArray(this as KslExprStruct<*>, member, KslUint1Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint2ArrayMember): KslStructMemberExpressionVectorArray<KslUint2, KslUint1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslUint2Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint3ArrayMember): KslStructMemberExpressionVectorArray<KslUint3, KslUint1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslUint3Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Uint4ArrayMember): KslStructMemberExpressionVectorArray<KslUint4, KslUint1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslUint4Array(member.arraySize))
 
-val Struct.Uint1ArrayMember.ksl: KslExprUint1Array get() =
-    KslStructMemberExpressionScalarArray(parent.kslAccess, this, KslUint1Array(arraySize))
-val Struct.Uint2ArrayMember.ksl: KslExprUint2Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslUint2Array(arraySize))
-val Struct.Uint3ArrayMember.ksl: KslExprUint3Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslUint3Array(arraySize))
-val Struct.Uint4ArrayMember.ksl: KslExprUint4Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslUint4Array(arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool1ArrayMember): KslStructMemberExpressionScalarArray<KslBool1> =
+    KslStructMemberExpressionScalarArray(this as KslExprStruct<*>, member, KslBool1Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool2ArrayMember): KslStructMemberExpressionVectorArray<KslBool2, KslBool1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslBool2Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool3ArrayMember): KslStructMemberExpressionVectorArray<KslBool3, KslBool1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslBool3Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Bool4ArrayMember): KslStructMemberExpressionVectorArray<KslBool4, KslBool1> =
+    KslStructMemberExpressionVectorArray(this as KslExprStruct<*>, member, KslBool4Array(member.arraySize))
 
-val Struct.Bool1ArrayMember.ksl: KslExprBool1Array get() =
-    KslStructMemberExpressionScalarArray(parent.kslAccess, this, KslBool1Array(arraySize))
-val Struct.Bool2ArrayMember.ksl: KslExprBool2Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslBool2Array(arraySize))
-val Struct.Bool3ArrayMember.ksl: KslExprBool3Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslBool3Array(arraySize))
-val Struct.Bool4ArrayMember.ksl: KslExprBool4Array get() =
-    KslStructMemberExpressionVectorArray(parent.kslAccess, this, KslBool4Array(arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Mat2ArrayMember): KslStructMemberExpressionMatrixArray<KslMat2, KslFloat2> =
+    KslStructMemberExpressionMatrixArray(this as KslExprStruct<*>, member, KslMat2Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Mat3ArrayMember): KslStructMemberExpressionMatrixArray<KslMat3, KslFloat3> =
+    KslStructMemberExpressionMatrixArray(this as KslExprStruct<*>, member, KslMat3Array(member.arraySize))
+operator fun <S: Struct> KslExprStruct<S>.get(member: Struct.Mat4ArrayMember): KslStructMemberExpressionMatrixArray<KslMat4, KslFloat4> =
+    KslStructMemberExpressionMatrixArray(this as KslExprStruct<*>, member, KslMat4Array(member.arraySize))
 
-val Struct.Mat2ArrayMember.ksl: KslExprMat2Array get() =
-    KslStructMemberExpressionMatrixArray(parent.kslAccess, this, KslMat2Array(arraySize))
-val Struct.Mat3ArrayMember.ksl: KslExprMat3Array get() =
-    KslStructMemberExpressionMatrixArray(parent.kslAccess, this, KslMat3Array(arraySize))
-val Struct.Mat4ArrayMember.ksl: KslExprMat4Array get() =
-    KslStructMemberExpressionMatrixArray(parent.kslAccess, this, KslMat4Array(arraySize))
-
-@Suppress("UNCHECKED_CAST")
-val <S: Struct> Struct.NestedStructMember<S>.ksl: S get() {
-    val kslExpr = KslStructMemberExpressionStruct(parent.kslAccess, this, KslStruct(struct))
-    struct.setupKslAccess(kslExpr as KslExprStruct<*>)
-    return struct
-}
-
-val <S: Struct> Struct.NestedStructArrayMember<S>.ksl: KslArrayExpression<KslStruct<S>> get() =
-    KslStructMemberExpressionStructArray(parent.kslAccess, this, KslStructArray(KslStruct(struct), arraySize))
+operator fun <S: Struct, N: Struct> KslExprStruct<S>.get(member: Struct.NestedStructMember<N>): KslStructMemberExpressionStruct<N> =
+    KslStructMemberExpressionStruct(this as KslExprStruct<*>, member, KslStruct(member.struct))
+operator fun <S: Struct, N: Struct> KslExprStruct<S>.get(member: Struct.NestedStructArrayMember<N>): KslStructMemberExpressionStructArray<N> =
+    KslStructMemberExpressionStructArray(this as KslExprStruct<*>, member, KslStructArray(KslStruct(member.struct), member.arraySize))

@@ -75,10 +75,10 @@ class HelloStructs : DemoScene("Hello Structs") {
                     // function body: takes the flatColors parameter and copies it's values to a colorArray struct
                     // which is then returned
                     val colorArray = structVar(colorArrayType)
-                    colorArray.struct.colors.ksl[0] set flatColors.struct.color1.ksl
-                    colorArray.struct.colors.ksl[1] set flatColors.struct.color2.ksl
-                    colorArray.struct.colors.ksl[2] set flatColors.struct.color3.ksl
-                    colorArray.struct.colors.ksl[3] set flatColors.struct.color4.ksl
+                    colorArray[ColorArrayStruct.colors][0] set flatColors[FlatColorStruct.color1]
+                    colorArray[ColorArrayStruct.colors][1] set flatColors[FlatColorStruct.color2]
+                    colorArray[ColorArrayStruct.colors][2] set flatColors[FlatColorStruct.color3]
+                    colorArray[ColorArrayStruct.colors][3] set flatColors[FlatColorStruct.color4]
 
                     // return colorArray
                     colorArray
@@ -97,7 +97,7 @@ class HelloStructs : DemoScene("Hello Structs") {
                 // how to use structs as function parameters / return types.
                 val colorsAsArray = structVar(colorTransformFun(uniformColors))
                 // set vertex color from color array based on vertex index
-                interStageColor.input set colorsAsArray.struct.colors.ksl[inVertexIndex.toInt1() % 4.const]
+                interStageColor.input set colorsAsArray[ColorArrayStruct.colors][inVertexIndex.toInt1() % 4.const]
             }
         }
 

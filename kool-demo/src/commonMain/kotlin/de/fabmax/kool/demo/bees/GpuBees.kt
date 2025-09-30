@@ -271,11 +271,11 @@ class GpuBees(beeScene: Scene) {
                     val rand = float1Var(randomSeed + beeIndex.toFloat1())
 
                     val beeData = structVar(beeBuffer[beeIndex])
-                    val position = beeData.struct.position.ksl
-                    val rotation = beeData.struct.rotation.ksl
-                    val decay = beeData.struct.decay.ksl
-                    val velocity = beeData.struct.velocity.ksl
-                    val enemy = beeData.struct.enemyIndex.ksl
+                    val position = beeData[BeeData.position]
+                    val rotation = beeData[BeeData.rotation]
+                    val decay = beeData[BeeData.decay]
+                    val velocity = beeData[BeeData.velocity]
+                    val enemy = beeData[BeeData.enemyIndex]
 
                     fun randomBeeIndex(seed: Int) = abs(randomI(beeIndex + (rand * seed.toFloat().const).toInt1())).rem(numBees)
 
@@ -289,32 +289,32 @@ class GpuBees(beeScene: Scene) {
                         velocity set (velocity + vJitter) * (1f.const - BeeConfig.speedDamping.const * deltaT)
 
                         // swarming
-                        val attractiveFriend = structVar(beeBuffer[randomBeeIndex(73)]).struct
-                        val friendPos = attractiveFriend.position.ksl
+                        val attractiveFriend = structVar(beeBuffer[randomBeeIndex(73)])
+                        val friendPos = attractiveFriend[BeeData.position]//.position.ksl
                         val delta = float3Var(friendPos - position)
                         val dist = float1Var(max(0.1f.const, length(delta)))
-                        `if`(attractiveFriend.decay.ksl eq 0f.const) {
+                        `if`(attractiveFriend[BeeData.decay] eq 0f.const) {
                             // only alive friends are attractive
                             velocity += delta * teamAttraction * deltaT / dist
                         }
 
-                        val repellentFriend = structVar(beeBuffer[randomBeeIndex(31)]).struct
-                        val repelPos = repellentFriend.position.ksl
+                        val repellentFriend = structVar(beeBuffer[randomBeeIndex(31)])
+                        val repelPos = repellentFriend[BeeData.position]
                         delta set position - repelPos
                         dist set max(0.1f.const, length(delta))
-                        `if`(repellentFriend.decay.ksl eq 0f.const) {
+                        `if`(repellentFriend[BeeData.decay] eq 0f.const) {
                             // only alive friends repel
                             velocity += delta * teamRepulsion * deltaT / dist
                         }
 
                         val enemyData = structVar(enemyBeeBuffer[enemy])
-                        `if`((enemy lt 0.const) or (enemy gt numBees) or (enemyData.struct.decay.ksl ne 0f.const)) {
+                        `if`((enemy lt 0.const) or (enemy gt numBees) or (enemyData[BeeData.decay] ne 0f.const)) {
                             // choose a new enemy (old enemy is either dead or invalid)
                             enemy set randomBeeIndex(91)
 
                         }.`else` {
                             // attack enemy bee
-                            delta set enemyData.struct.position.ksl - position
+                            delta set enemyData[BeeData.position] - position
                             dist set max(0.1f.const, length(delta))
 
                             `if`(dist gt BeeConfig.attackDistance.const) {
@@ -323,7 +323,7 @@ class GpuBees(beeScene: Scene) {
                             }.`else` {
                                 velocity += delta * attackForce * deltaT / dist
                                 `if`(dist lt BeeConfig.hitDistance.const) {
-                                    enemyData.struct.decay.ksl set 0.01f.const
+                                    enemyData[BeeData.decay] set 0.01f.const
                                     enemyBeeBuffer[enemy] = enemyData
                                 }
                             }
@@ -399,7 +399,7 @@ class GpuBees(beeScene: Scene) {
                         val beeOffset = int1Var(inInstanceIndex.toInt1())
 
                         val bee = structVar(beeBuffer[beeOffset])
-                        val rotQuat = float4Var(bee.struct.rotation.ksl)
+                        val rotQuat = float4Var(bee[BeeData.rotation])
                         val r = rotQuat.w
                         val i = rotQuat.x
                         val j = rotQuat.y
@@ -422,8 +422,8 @@ class GpuBees(beeScene: Scene) {
                             1f.const - 2f.const * (i*i + j*j)
                         )
 
-                        val globalPos = float3Var(bee.struct.position.ksl)
-                        val decay = float1Var(bee.struct.decay.ksl)
+                        val globalPos = float3Var(bee[BeeData.position])
+                        val decay = float1Var(bee[BeeData.decay])
                         val vertexNormal = vertexAttribFloat3(Attribute.NORMALS.name)
                         val vertexPos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
 
