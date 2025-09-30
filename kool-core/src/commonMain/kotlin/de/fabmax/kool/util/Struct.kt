@@ -5,21 +5,14 @@ import de.fabmax.kool.modules.ksl.lang.KslExpression
 import de.fabmax.kool.modules.ksl.lang.KslStruct
 import de.fabmax.kool.pipeline.GpuType
 
-abstract class Struct(val structName: String, val layout: MemoryLayout) : StructMember {
-    private var _memberName: String = ""
-    override val memberName: String get() = _memberName
-    private var _parent: Struct? = null
-    override val parent: Struct? get() = _parent
-    private var _byteOffset = 0
-    override val byteOffset: Int get() = _byteOffset
-
+abstract class Struct(val name: String, val layout: MemoryLayout) {
     private val _members = mutableListOf<StructMember>()
     val members: List<StructMember> get() = _members
 
     private var lastPos = 0
     val structSize: Int get() = layout.structSize(this, lastPos)
 
-    override val type: GpuType get() = GpuType.Struct(this)
+    val type: GpuType get() = GpuType.Struct(this)
 
     private var _kslAccess: KslExpression<KslStruct<*>>? = null
     internal val kslAccess: KslExpression<KslStruct<*>> get() = checkNotNull(_kslAccess) {
@@ -33,8 +26,8 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
     }
     
     private fun addMember(member: StructMember) {
-        check(members.none { it.memberName == member.memberName }) {
-            "Duplicate struct member names are not allowed: ${member.memberName}"
+        check(members.none { it.name == member.name }) {
+            "Duplicate struct member names are not allowed: ${member.name}"
         }
         _members += member
     }
@@ -285,21 +278,10 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
     }
 
 
-    protected fun <S: Struct> struct(struct: S, name: String = "nested_${struct.structName}_${members.size}"): NestedStructMember<S> {
+    protected fun <S: Struct> struct(struct: S, name: String = "nested_${struct.name}_${members.size}"): NestedStructMember<S> {
         require(struct.layout == layout) {
             "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
         }
-//        require(struct.parent == null) {
-//            "Given nested struct already has a parent"
-//        }
-//        struct._memberName = name
-//        struct._parent = this
-//        val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, 1)
-//        struct._byteOffset = offset
-//        lastPos = offset + size
-//        addMember(struct)
-//        return struct
-
         val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, 1)
         lastPos = offset + size
         return NestedStructMember(name, offset, struct).also { addMember(it) }
@@ -314,11 +296,11 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
         return NestedStructArrayMember(name, offset, arraySize, struct).also { addMember(it) }
     }
 
-    override fun layoutInfo(indent: String): String {
+    fun layoutInfo(indent: String): String {
         val members = buildString {
             members.forEach { appendLine(it.layoutInfo("$indent  ")) }
         }
-        return super.layoutInfo(indent) + "\n" + members.trimEnd()
+        return members.trimEnd()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -351,146 +333,146 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
         override val parent: Struct get() = this@Struct
     }
 
-    inner class Float1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float1)
-    inner class Float2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float2)
-    inner class Float3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float3)
-    inner class Float4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Float4)
+    inner class Float1Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Float1)
+    inner class Float2Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Float2)
+    inner class Float3Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Float3)
+    inner class Float4Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Float4)
 
-    inner class Int1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int1)
-    inner class Int2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int2)
-    inner class Int3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int3)
-    inner class Int4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Int4)
+    inner class Int1Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Int1)
+    inner class Int2Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Int2)
+    inner class Int3Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Int3)
+    inner class Int4Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Int4)
 
-    inner class Uint1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint1)
-    inner class Uint2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint2)
-    inner class Uint3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint3)
-    inner class Uint4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint4)
+    inner class Uint1Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint1)
+    inner class Uint2Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint2)
+    inner class Uint3Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint3)
+    inner class Uint4Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Uint4)
 
-    inner class Bool1Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool1)
-    inner class Bool2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool2)
-    inner class Bool3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool3)
-    inner class Bool4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool4)
+    inner class Bool1Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool1)
+    inner class Bool2Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool2)
+    inner class Bool3Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool3)
+    inner class Bool4Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Bool4)
 
-    inner class Mat2Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat2)
-    inner class Mat3Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat3)
-    inner class Mat4Member(override val memberName: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat4)
+    inner class Mat2Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat2)
+    inner class Mat3Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat3)
+    inner class Mat4Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Mat4)
 
     inner class Float1ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Float1)
 
     inner class Float2ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Float2)
 
     inner class Float3ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Float3)
 
     inner class Float4ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Float4)
 
     inner class Int1ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Int1)
 
     inner class Int2ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Int2)
 
     inner class Int3ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Int3)
 
     inner class Int4ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Int4)
 
     inner class Uint1ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Uint1)
 
     inner class Uint2ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Uint2)
 
     inner class Uint3ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Uint3)
 
     inner class Uint4ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Uint4)
 
     inner class Bool1ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Bool1)
 
     inner class Bool2ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Bool2)
 
     inner class Bool3ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Bool3)
 
     inner class Bool4ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Bool4)
 
     inner class Mat2ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Mat2)
 
     inner class Mat3ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Mat3)
 
     inner class Mat4ArrayMember(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
     ) : SimpleArrayMember(GpuType.Mat4)
 
     inner class NestedStructMember<S: Struct>(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         val struct: S
     ) : StructMember {
@@ -509,7 +491,7 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
     }
 
     inner class NestedStructArrayMember<S: Struct>(
-        override val memberName: String,
+        override val name: String,
         override val byteOffset: Int,
         override val arraySize: Int,
         val struct: S
@@ -530,15 +512,13 @@ abstract class Struct(val structName: String, val layout: MemoryLayout) : Struct
 }
 
 sealed interface StructMember {
-    val parent: Struct?
-    val memberName: String
+    val parent: Struct
+    val name: String
     val type: GpuType
     val byteOffset: Int
 
-    val qualifiedName: String get() = parent?.let { "${it.qualifiedName}.$memberName" } ?: memberName
-
     fun layoutInfo(indent: String = ""): String {
-        val name = "$memberName:".padEnd(20)
+        val name = "$name:".padEnd(20)
         val typeName = type.toString().padEnd(16)
         return "$indent$name$typeName 0x${byteOffset.toString(16).padStart(4, '0')}"
     }
@@ -547,12 +527,11 @@ sealed interface StructMember {
 sealed interface StructArrayMember : StructMember {
     val arraySize: Int
     val arrayStride: Int get() {
-        val layout = (parent ?: this as Struct).layout
-        return layout.arrayStrideOf(type)
+        return parent.layout.arrayStrideOf(type)
     }
 
     override fun layoutInfo(indent: String): String {
-        val name = "$memberName:".padEnd(20)
+        val name = "$name:".padEnd(20)
         val typeName = "$type[$arraySize]".padEnd(16)
         return "$indent$name$typeName 0x${byteOffset.toString(16).padStart(4, '0')}"
     }

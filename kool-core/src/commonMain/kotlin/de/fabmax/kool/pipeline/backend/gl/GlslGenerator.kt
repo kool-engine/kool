@@ -354,10 +354,10 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
         if (structs.isNotEmpty()) {
             appendLine("// structs")
             for (struct in structs) {
-                appendLine("struct ${struct.structName} {")
+                appendLine("struct ${struct.name} {")
                 struct.members.forEach {
                     val arraySuffix = if (it is StructArrayMember) "[${it.arraySize}]" else ""
-                    appendLine("    ${glslTypeName(it.type)} ${it.memberName}$arraySuffix;")
+                    appendLine("    ${glslTypeName(it.type)} ${it.name}$arraySuffix;")
                 }
                 appendLine("};")
             }
@@ -394,7 +394,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
                     when (type.proto.layout) {
                         MemoryLayout.Std140 -> "std140"
                         MemoryLayout.Std430 -> "std430"
-                        else -> error("layout of struct ${type.proto.structName} is ${type.proto.layout} but storage buffers only support std140 and std430")
+                        else -> error("layout of struct ${type.proto.name} is ${type.proto.layout} but storage buffers only support std140 and std430")
                     }
                 } else "std430"
 
@@ -771,7 +771,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             GpuType.Mat3 -> "mat3"
             GpuType.Mat4 -> "mat4"
 
-            is GpuType.Struct -> type.struct.structName
+            is GpuType.Struct -> type.struct.name
         }
     }
 
@@ -798,7 +798,7 @@ open class GlslGenerator protected constructor(generatorExpressions: Map<KslExpr
             KslMat3 -> "mat3"
             KslMat4 -> "mat4"
 
-            is KslStruct<*> -> type.proto.structName
+            is KslStruct<*> -> type.proto.name
 
             KslColorSampler1d -> if (hints.compat1dSampler) "sampler2D" else "sampler1D"
             KslColorSampler2d -> "sampler2D"

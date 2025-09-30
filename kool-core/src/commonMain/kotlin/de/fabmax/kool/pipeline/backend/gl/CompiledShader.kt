@@ -39,7 +39,7 @@ sealed class CompiledShader(private val pipeline: PipelineBase, val program: GlP
                             } else {
                                 // binding does not describe an actual UBO but plain old uniforms
                                 plainUniformUbos += binding.name
-                                binding.structProvider().members.map { gl.getUniformLocation(program, it.memberName) }.toIntArray()
+                                binding.structProvider().members.map { gl.getUniformLocation(program, it.name) }.toIntArray()
                             }
                         }
                         is StorageBufferLayout -> intArrayOf(storageIndex++)
