@@ -21,7 +21,8 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
 
     val hash: LongHash by lazy {
         LongHash {
-            members.forEach { this += it.type }
+            this += layout.hashCode()
+            members.forEach { this += it.hashCode() }
         }
     }
     
@@ -38,7 +39,6 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
             it.setupKslAccess(access)
         }
     }
-
 
     protected fun float1(name: String = "f1_${members.size}"): Float1Member {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, 1)
@@ -158,7 +158,6 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
         return Mat4Member(name, offset).also { addMember(it) }
     }
 
-
     protected fun float1Array(arraySize: Int, name: String = "f1arr_${members.size}"): Float1ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, arraySize)
         lastPos = offset + size
@@ -258,7 +257,6 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
         return Bool4ArrayMember(name, offset, arraySize).also { addMember(it) }
     }
 
-
     protected fun mat2Array(arraySize: Int, name: String = "m2arr_${members.size}"): Mat2ArrayMember {
         val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, arraySize)
         lastPos = offset + size
@@ -305,32 +303,37 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || other !is Struct) return false
-
-        if (layout != other.layout) return false
-        if (members.size != other.members.size) return false
-        for (i in 0 until members.size) {
-            if (members[i].type != other.members[i].type) {
-                return false
-            }
-        }
-        return true
+        if (other == null || this::class != other::class) return false
+        other as Struct
+        return hash.hash == other.hash.hash
     }
 
-    override fun hashCode(): Int {
-        var result = layout.hashCode()
-        members.forEach {
-            result = 31 * result + it.type.hashCode()
-        }
-        return result
-    }
+    override fun hashCode(): Int = hash.hashCode()
 
     abstract inner class SimpleMember(override val type: GpuType) : StructMember {
         override val parent: Struct get() = this@Struct
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+            other as SimpleMember
+            return type == other.type
+        }
+
+        override fun hashCode(): Int = type.hashCode()
     }
 
     abstract inner class SimpleArrayMember(override val type: GpuType) : StructArrayMember {
         override val parent: Struct get() = this@Struct
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+            other as SimpleArrayMember
+            return type == other.type && arraySize == other.arraySize
+        }
+
+        override fun hashCode(): Int = type.hashCode() * 31 + arraySize
     }
 
     inner class Float1Member(override val name: String, override val byteOffset: Int) : SimpleMember(GpuType.Float1)
@@ -475,10 +478,7 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
         override val name: String,
         override val byteOffset: Int,
         val struct: S
-    ) : StructMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Struct(struct)
-
+    ) : SimpleMember(struct.type) {
         init {
             require(struct.layout == layout) {
                 "Nested struct must have the same layout as the parent struct (but nested layout is ${struct.layout} and parent layout is $layout)"
@@ -495,10 +495,7 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
         override val byteOffset: Int,
         override val arraySize: Int,
         val struct: S
-    ) : StructArrayMember {
-        override val parent: Struct get() = this@Struct
-        override val type = GpuType.Struct(struct)
-
+    ) : SimpleArrayMember(struct.type) {
         init {
             require(struct.layout == layout) {
                 "Nested struct must have the same layout as the parent struct (but nested layout is ${struct.layout} and parent layout is $layout)"
