@@ -12,11 +12,8 @@ class KslUniformScalar<S>(value: KslValue<S>) : KslUniform<S>(value), KslScalarE
 class KslUniformVector<V, S>(value: KslValue<V>) : KslUniform<V>(value), KslVectorExpression<V, S> where V: KslType, V: KslVector<S>, S: KslScalar
 class KslUniformMatrix<M, V>(value: KslValue<M>) : KslUniform<M>(value), KslMatrixExpression<M, V> where M: KslType, M: KslMatrix<V>, V: KslVector<*>
 
-class KslUniformStruct<S: Struct>(name: String, val scope: BindGroupScope, val provider: () -> S) :
-    KslUniform<KslStruct<S>>(KslVarStruct(name, KslStruct(provider), false))
-{
-    val proto: S get() = value.expressionType.proto
-}
+class KslUniformStruct<S: Struct>(name: String, val scope: BindGroupScope, struct: S) :
+    KslUniform<KslStruct<S>>(KslVarStruct(name, KslStruct(struct), false))
 
 class KslUniformScalarArray<S>(value: KslArrayScalar<S>) :
     KslUniform<KslArrayType<S>>(value, value.arraySize), KslScalarArrayExpression<S>

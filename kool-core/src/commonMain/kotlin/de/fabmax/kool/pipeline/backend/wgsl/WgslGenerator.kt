@@ -731,7 +731,7 @@ class WgslGenerator private constructor(
                 KslMat2 -> "mat2x2f"
                 KslMat3 -> "mat3x3f"
                 KslMat4 -> "mat4x4f"
-                is KslStruct<*> -> proto.name
+                is KslStruct<*> -> struct.name
 
                 is KslArrayType<*> -> "array<${elemType.wgslTypeName()},${arraySize}>"
 
@@ -815,7 +815,7 @@ class WgslGenerator private constructor(
                     .filterIsInstance<UniformBufferLayout<*>>()
                     .forEach { ubo ->
                         val uboVarName = ubo.name.mapIndexed { i, c -> if (i == 0) c.lowercase() else c }.joinToString("")
-                        ubo.structProvider().members.forEach { nameMap[it.name] = "${uboVarName}.${it.name}" }
+                        ubo.struct.members.forEach { nameMap[it.name] = "${uboVarName}.${it.name}" }
                     }
             }
         }

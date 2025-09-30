@@ -29,7 +29,7 @@ class HelloStructs : DemoScene("Hello Structs") {
      * A struct for storing 4 color values as 4 separate members. Std140 memory layout is needed in order
      * to use this struct as a shader uniform.
      */
-    class FlatColorStruct : Struct("FlatColorStruct", MemoryLayout.Std140) {
+    object FlatColorStruct : Struct("FlatColorStruct", MemoryLayout.Std140) {
         val color1 = float4()
         val color2 = float4()
         val color3 = float4()
@@ -41,7 +41,7 @@ class HelloStructs : DemoScene("Hello Structs") {
      * to the struct defined before. Memory layout does not matter for this struct as it will only be used inside
      * the shader.
      */
-    class ColorArrayStruct : Struct("ColorArrayStruct", MemoryLayout.DontCare) {
+    object ColorArrayStruct : Struct("ColorArrayStruct", MemoryLayout.DontCare) {
         val colors = float4Array(4)
     }
 
@@ -53,12 +53,12 @@ class HelloStructs : DemoScene("Hello Structs") {
         dumpCode = true
 
         // register struct types as ksl types so that we can use them as variables later on.
-        val flatColorsType = struct { FlatColorStruct() }
-        val colorArrayType = struct { ColorArrayStruct() }
+        val flatColorsType = struct(FlatColorStruct)
+        val colorArrayType = struct(ColorArrayStruct)
 
         // uniform struct can be set from outside the shader. We will use it to supply input colors to the shader
         // later on.
-        val uniformColors = uniformStruct("colors") { FlatColorStruct() }
+        val uniformColors = uniformStruct("colors", FlatColorStruct)
 
         // inter stage (aka varying) variable forwards color from vertex shader to fragment shader.
         val interStageColor = interStageFloat4()
@@ -120,7 +120,7 @@ class HelloStructs : DemoScene("Hello Structs") {
 
         // bind the uniform struct defined in the shader. Binding is done only based on the name. Make sure
         // to use the correct struct type here.
-        val structBinding = demoShader.uniformStruct("colors", FlatColorStruct())
+        val structBinding = demoShader.uniformStruct("colors", FlatColorStruct)
 
         onUpdate {
             // set shader input colors (updated on each frame).

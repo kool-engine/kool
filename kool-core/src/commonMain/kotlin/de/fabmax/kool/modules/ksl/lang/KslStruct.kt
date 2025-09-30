@@ -4,20 +4,17 @@ import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.StructMember
 
-class KslStruct<T: Struct>(val provider: () -> T) : KslType(provider().name) {
-    // fixme
-    val proto: T = provider()
-
+class KslStruct<T: Struct>(val struct: T) : KslType(struct.name) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
         other as KslStruct<*>
-        return proto::class == other.proto::class
+        return struct::class == other.struct::class
     }
 
     override fun hashCode(): Int {
-        return proto::class.hashCode()
+        return struct::class.hashCode()
     }
 }
 
@@ -111,13 +108,13 @@ class KslStructMemberExpressionStructArray<S: Struct>(
     override fun toPseudoCode(): String = "${struct.toPseudoCode()}.${member.name}"
 }
 
-val <S: Struct> KslExprStruct<S>.struct: S get() = expressionType.provider().also {
+val <S: Struct> KslExprStruct<S>.struct: S get() = expressionType.struct.also {
     @Suppress("UNCHECKED_CAST")
     it.setupKslAccess(this as KslExprStruct<*>)
 }
 
 val Struct.Float1Member.ksl: KslStructMemberExpressionScalar<KslFloat1> get() =
-    KslStructMemberExpressionScalar((parent as Struct).kslAccess, this, KslFloat1)
+    KslStructMemberExpressionScalar(parent.kslAccess, this, KslFloat1)
 val Struct.Float2Member.ksl: KslStructMemberExpressionVector<KslFloat2, KslFloat1> get() =
     KslStructMemberExpressionVector(parent.kslAccess, this, KslFloat2)
 val Struct.Float3Member.ksl: KslStructMemberExpressionVector<KslFloat3, KslFloat1> get() =
@@ -204,10 +201,10 @@ val Struct.Mat4ArrayMember.ksl: KslExprMat4Array get() =
 
 @Suppress("UNCHECKED_CAST")
 val <S: Struct> Struct.NestedStructMember<S>.ksl: S get() {
-    val kslExpr = KslStructMemberExpressionStruct(parent.kslAccess, this, KslStruct { struct })
+    val kslExpr = KslStructMemberExpressionStruct(parent.kslAccess, this, KslStruct(struct))
     struct.setupKslAccess(kslExpr as KslExprStruct<*>)
     return struct
 }
 
 val <S: Struct> Struct.NestedStructArrayMember<S>.ksl: KslArrayExpression<KslStruct<S>> get() =
-    KslStructMemberExpressionStructArray(parent.kslAccess, this, KslStructArray(KslStruct({ struct }), arraySize))
+    KslStructMemberExpressionStructArray(parent.kslAccess, this, KslStructArray(KslStruct(struct), arraySize))

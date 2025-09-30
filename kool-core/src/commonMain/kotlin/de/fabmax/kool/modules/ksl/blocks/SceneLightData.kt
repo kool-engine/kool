@@ -2,10 +2,7 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BindGroupScope
-import de.fabmax.kool.pipeline.DrawCommand
-import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 import kotlin.math.min
@@ -15,7 +12,7 @@ fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
 class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock, KslShaderListener {
     override val name = "SceneLightData"
 
-    private val lightUniform = program.uniformStruct("uLightData", BindGroupScope.VIEW) { LightDataStruct(maxLightCount) }
+    private val lightUniform = program.uniformStruct("uLightData", LightDataStruct(maxLightCount), BindGroupScope.VIEW)
 
     val encodedPositions: KslExprFloat4Array get() = lightUniform.struct.encodedPositions.ksl
     val encodedDirections: KslExprFloat4Array get() = lightUniform.struct.encodedDirections.ksl
@@ -30,9 +27,7 @@ class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val (_, binding) = shader.createdPipeline!!.getBindGroupItem<UniformBufferLayout<LightDataStruct>> {
-            it.isStructInstanceOf<LightDataStruct>()
-        }
+        val (_, binding) = shader.createdPipeline!!.getUniformBufferLayout<LightDataStruct>()
         structLayout = binding
     }
 

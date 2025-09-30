@@ -23,8 +23,8 @@ class GpuBees(beeScene: Scene) {
     private val maxGpuBees: Int get() = BeeConfig.maxBeesPerTeamGpu
 
     // Contains position, rotation and velocities for all bees of one team
-    private val beeBufferA = StorageBuffer(BeeData().type, (maxGpuBees + 64))
-    private val beeBufferB = StorageBuffer(BeeData().type, (maxGpuBees + 64))
+    private val beeBufferA = StorageBuffer(BeeData.type, (maxGpuBees + 64))
+    private val beeBufferB = StorageBuffer(BeeData.type, (maxGpuBees + 64))
 
     val beeUpdateTime = mutableStateOf(0.0)
 
@@ -122,7 +122,7 @@ class GpuBees(beeScene: Scene) {
     }
 
     private fun initBeeBuffer(beeBuffer: GpuBuffer, spawnPos: Vec3f) {
-        val data = StructBuffer(beeBuffer.size, BeeData())
+        val data = StructBuffer(beeBuffer.size, BeeData)
         repeat(data.capacity) {
             data.put { struct ->
                 set(struct.position, spawnPos + randomInUnitCube() * 5f)
@@ -188,7 +188,7 @@ class GpuBees(beeScene: Scene) {
         private fun KslProgram.makeBeeUpdateProgram() {
             optimizeExpressions = false
             computeStage(64) {
-                val beeStruct = struct { BeeData() }
+                val beeStruct = struct(BeeData)
                 val deltaT = uniformFloat1("deltaT")
                 val randomSeed = uniformFloat1("randomSeed")
                 val numBees = uniformInt1("numBees")
@@ -394,7 +394,7 @@ class GpuBees(beeScene: Scene) {
                 val aliveness = interStageFloat1()
                 vertexStage {
                     main {
-                        val beeStruct = struct { BeeData() }
+                        val beeStruct = struct(BeeData)
                         val beeBuffer = storage("beeBuffer", beeStruct)
                         val beeOffset = int1Var(inInstanceIndex.toInt1())
 
@@ -454,7 +454,7 @@ class GpuBees(beeScene: Scene) {
         }
     ) : KslBlinnPhongShader(cfg)
 
-    class BeeData : Struct("BeeData", MemoryLayout.Std430) {
+    object BeeData : Struct("BeeData", MemoryLayout.Std430) {
         val position = float3("position")
         val decay = float1("decay")
         val rotation = float4("rotation")

@@ -50,8 +50,9 @@ class ClearHelper(val backend: RenderBackendVk) {
             val bindGrpLayout = BindGroupLayout.Builder(0, BindGroupScope.VIEW, "ClearHelper").apply {
                 ubos += UniformBufferLayout(
                     name = "clearValues",
-                    structProvider = {
-                        DynamicStruct.Builder("clearVals", MemoryLayout.Std140).float4("color").float1("depth").build()
+                    struct = DynamicStruct("clearVals", MemoryLayout.Std140) {
+                        float4("color")
+                        float1("depth")
                     },
                     stages = setOf(ShaderStage.VERTEX_SHADER, ShaderStage.FRAGMENT_SHADER)
                 )

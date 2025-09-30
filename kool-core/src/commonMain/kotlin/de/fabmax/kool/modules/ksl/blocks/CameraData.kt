@@ -3,10 +3,7 @@ package de.fabmax.kool.modules.ksl.blocks
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.BindGroupScope
-import de.fabmax.kool.pipeline.DrawCommand
-import de.fabmax.kool.pipeline.ShaderBase
-import de.fabmax.kool.pipeline.UniformBufferLayout
+import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.Time
@@ -26,7 +23,7 @@ fun KslScopeBuilder.depthToViewSpacePos(linearDepth: KslExprFloat1, clipSpaceXy:
 class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     override val name = "CameraData"
 
-    private val camUniform = program.uniformStruct("uCameraData", BindGroupScope.VIEW) { CamDataStruct() }
+    private val camUniform = program.uniformStruct("uCameraData", CamDataStruct, BindGroupScope.VIEW)
 
     val viewProjMat: KslExprMat4 get() = camUniform.struct.viewProj.ksl
     val viewMat: KslExprMat4 get() = camUniform.struct.view.ksl
@@ -58,9 +55,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
     }
 
     override fun onShaderCreated(shader: ShaderBase<*>) {
-        val (_, binding) = shader.createdPipeline!!.getBindGroupItem<UniformBufferLayout<CamDataStruct>> {
-            it.isStructInstanceOf<CamDataStruct>()
-        }
+        val (_, binding) = shader.createdPipeline!!.getUniformBufferLayout<CamDataStruct>()
         structLayout = binding
     }
 
@@ -85,7 +80,7 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
         }
     }
 
-    class CamDataStruct : Struct("CameraData", MemoryLayout.Std140) {
+    object CamDataStruct : Struct("CameraData", MemoryLayout.Std140) {
         val viewProj = mat4("viewProjMat")
         val view = mat4("viewMat")
         val proj = mat4("projMat")

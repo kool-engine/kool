@@ -35,10 +35,10 @@ class PathTracingDemo : DemoScene("Path-tracing") {
 
     fun raytracingShader() = KslComputeShader("raytracer") {
         computeStage(8, 8) {
-            val sphere = struct { SphereStruct() }
-            val material = struct { MaterialStruct() }
-            val ray = struct { KslRay() }
-            val hitResult = struct { KslHitResult() }
+            val sphere = struct(SphereStruct)
+            val material = struct(MaterialStruct)
+            val ray = struct(KslRay)
+            val hitResult = struct(KslHitResult)
 
             val numObjects = uniformInt1("numObjects")
             val maxBounces = uniformInt1("maxBounces")
@@ -263,8 +263,8 @@ class PathTracingDemo : DemoScene("Path-tracing") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        val materials = StructBuffer(1024, MaterialStruct())
-        val spheres = StructBuffer(1024, SphereStruct())
+        val materials = StructBuffer(1024, MaterialStruct)
+        val spheres = StructBuffer(1024, SphereStruct)
         makeManySpheres(spheres, materials)
 
         val materialBuffer = materials.asStorageBuffer().also { it.releaseWith(this) }
@@ -429,20 +429,20 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         set(it.refractionIndex, refractionIndex)
     }
 
-    class MaterialStruct : Struct("Material", MemoryLayout.Std430) {
+    object MaterialStruct : Struct("Material", MemoryLayout.Std430) {
         val albedo = float4("albedo")
         val roughness = float1("roughness")
         val refractionIndex = float1("refractionIndex")
         val materialType = int1("materialType")
     }
 
-    class SphereStruct : Struct("Sphere", MemoryLayout.Std430) {
+    object SphereStruct : Struct("Sphere", MemoryLayout.Std430) {
         val center = float3("center")
         val radius = float1("radius")
         val material = int1("materialIndex")
     }
 
-    class KslHitResult : Struct("KslHitResult", MemoryLayout.DontCare) {
+    object KslHitResult : Struct("KslHitResult", MemoryLayout.DontCare) {
         val hitObject = int1("hitObject")
         val hitDistance = float1("hitDistance")
         val worldPosition = float3("worldPosition")
@@ -450,7 +450,7 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         val isFrontFace = bool1("isFrontFace")
     }
 
-    class KslRay : Struct("KslRay", MemoryLayout.DontCare) {
+    object KslRay : Struct("KslRay", MemoryLayout.DontCare) {
         val origin = float3("origin")
         val direction = float3("direction")
     }
