@@ -80,10 +80,10 @@ class PathTracingDemo : DemoScene("Path-tracing") {
             val fnScatterLambertian = functionStruct("scatterLambertian", ray) {
                 val hit = paramStruct(hitResult)
                 body {
-                    val scatterLambertian = float3Var(normalize(hit.struct.worldNormal.ksl + fnRandomUnitVector() * 0.9999f.const))
+                    val scatterLambertian = float3Var(normalize(hit[KslHitResult.worldNormal] + fnRandomUnitVector() * 0.9999f.const))
                     val outRay = structVar(ray)
-                    outRay.struct.origin.ksl set hit.struct.worldPosition.ksl + hit.struct.worldNormal.ksl * 0.0001f.const
-                    outRay.struct.direction.ksl set scatterLambertian
+                    outRay[KslRay.origin] set hit[KslHitResult.worldPosition] + hit[KslHitResult.worldNormal] * 0.0001f.const
+                    outRay[KslRay.direction] set scatterLambertian
                     outRay
                 }
             }
@@ -94,12 +94,12 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 val roughness = paramFloat1()
                 body {
                     val scatterReflective = float3Var(
-                        normalize(reflect(inRay.struct.direction.ksl, hit.struct.worldNormal.ksl)) +
+                        normalize(reflect(inRay[KslRay.direction], hit[KslHitResult.worldNormal])) +
                         fnRandomUnitVector() * clamp(roughness, 0f.const, 0.9999f.const)
                     )
                     val outRay = structVar(ray)
-                    outRay.struct.direction.ksl set scatterReflective
-                    outRay.struct.origin.ksl set hit.struct.worldPosition.ksl + outRay.struct.direction.ksl * 0.0001f.const
+                    outRay[KslRay.direction] set scatterReflective
+                    outRay[KslRay.origin] set hit[KslHitResult.worldPosition] + outRay[KslRay.direction] * 0.0001f.const
                     outRay
                 }
             }
@@ -120,23 +120,23 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 val refractionIndex = paramFloat1()
                 body {
                     val ri = float1Var(refractionIndex)
-                    `if`(hit.struct.isFrontFace.ksl) {
+                    `if`(hit[KslHitResult.isFrontFace]) {
                         ri set 1f.const / ri
                     }
 
-                    val unitDir = float3Var(normalize(inRay.struct.direction.ksl))
-                    val cosTheta = float1Var(min(dot(-unitDir, hit.struct.worldNormal.ksl), 1f.const))
+                    val unitDir = float3Var(normalize(inRay[KslRay.direction]))
+                    val cosTheta = float1Var(min(dot(-unitDir, hit[KslHitResult.worldNormal]), 1f.const))
                     val sinTheta = float1Var(sqrt(1f.const - (cosTheta * cosTheta)))
                     val cannotRefract = bool1Var((ri * sinTheta) gt 1f.const)
 
                     val outRay = structVar(ray)
                     `if`(cannotRefract or (fnReflectance(cosTheta, ri) gt randomF())) {
-                        outRay.struct.direction.ksl set reflect(unitDir, hit.struct.worldNormal.ksl)
+                        outRay[KslRay.direction] set reflect(unitDir, hit[KslHitResult.worldNormal])
                     }.`else` {
-                        outRay.struct.direction.ksl set refract(unitDir, hit.struct.worldNormal.ksl, ri)
+                        outRay[KslRay.direction] set refract(unitDir, hit[KslHitResult.worldNormal], ri)
                     }
 
-                    outRay.struct.origin.ksl set hit.struct.worldPosition.ksl + outRay.struct.direction.ksl * 0.0001f.const
+                    outRay[KslRay.origin] set hit[KslHitResult.worldPosition] + outRay[KslRay.direction] * 0.0001f.const
                     outRay
                 }
             }
@@ -149,13 +149,13 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 body {
                     val hit = structVar(hitResult)
                     val sphere = structVar(objects[objectIndex])
-                    hit.struct.hitObject.ksl set objectIndex
-                    hit.struct.hitDistance.ksl set hitDistance
-                    hit.struct.worldPosition.ksl set ray.struct.origin.ksl + ray.struct.direction.ksl * hitDistance
-                    hit.struct.worldNormal.ksl set normalize(hit.struct.worldPosition.ksl - sphere.struct.center.ksl)
-                    hit.struct.isFrontFace.ksl set (dot(ray.struct.direction.ksl, hit.struct.worldNormal.ksl) lt 0f.const)
-                    `if`(!hit.struct.isFrontFace.ksl) {
-                        hit.struct.worldNormal.ksl set hit.struct.worldNormal.ksl * (-1f).const
+                    hit[KslHitResult.hitObject] set objectIndex
+                    hit[KslHitResult.hitDistance] set hitDistance
+                    hit[KslHitResult.worldPosition] set ray[KslRay.origin] + ray[KslRay.direction] * hitDistance
+                    hit[KslHitResult.worldNormal] set normalize(hit[KslHitResult.worldPosition] - sphere[SphereStruct.center])
+                    hit[KslHitResult.isFrontFace] set (dot(ray[KslRay.direction], hit[KslHitResult.worldNormal]) lt 0f.const)
+                    `if`(!hit[KslHitResult.isFrontFace]) {
+                        hit[KslHitResult.worldNormal] set hit[KslHitResult.worldNormal] * (-1f).const
                     }
                     hit
                 }
@@ -165,7 +165,7 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 paramStruct(ray)
                 body {
                     val hitResult = structVar(hitResult)
-                    hitResult.struct.hitObject.ksl set (-1).const
+                    hitResult[KslHitResult.hitObject] set (-1).const
                     hitResult
                 }
             }
@@ -180,7 +180,7 @@ class PathTracingDemo : DemoScene("Path-tracing") {
 
                     repeat(numObjects) { i ->
                         val sphere = structVar(objects[i])
-                        val hit = float3Var(raySphereIntersection(ray.struct.origin.ksl, ray.struct.direction.ksl, sphere.struct.center.ksl, sphere.struct.radius.ksl))
+                        val hit = float3Var(raySphereIntersection(ray[KslRay.origin], ray[KslRay.direction], sphere[SphereStruct.center], sphere[SphereStruct.radius]))
                         `if`(hit.z gt 0f.const) {
                             `if`((hit.x gt 0f.const) and (hit.x lt hitDistance)) {
                                 hitDistance set hit.x
@@ -219,35 +219,35 @@ class PathTracingDemo : DemoScene("Path-tracing") {
                 lookAt set camPos + lookDist
 
                 val ray = structVar(ray)
-                ray.struct.origin.ksl set camPos
+                ray[KslRay.origin] set camPos
 
                 `if`(defocusAngle gt 0f.const) {
                     val defocusRadius = float1Var(focusDist * tan(defocusAngle / 2f.const))
                     val sample = fnRandomVecInUnitDisc()
-                    ray.struct.origin.ksl += camRight * sample.x * defocusRadius
-                    ray.struct.origin.ksl += camUp * sample.y * defocusRadius
+                    ray[KslRay.origin] += camRight * sample.x * defocusRadius
+                    ray[KslRay.origin] += camUp * sample.y * defocusRadius
                 }
-                ray.struct.direction.ksl set lookAt - ray.struct.origin.ksl
+                ray[KslRay.direction] set lookAt - ray[KslRay.origin]
 
                 val colorAttenuation = float3Var(Vec3f.ONES.const)
                 repeat(maxBounces) { bounce ->
                     val hit = structVar(fnTraceRay(ray))
 
-                    `if`(hit.struct.hitObject.ksl ge 0.const) {
-                        val hitObject = structVar(objects[hit.struct.hitObject.ksl])
-                        val hitMaterial = structVar(materials[hitObject.struct.material.ksl])
-                        colorAttenuation *= hitMaterial.struct.albedo.ksl.rgb
+                    `if`(hit[KslHitResult.hitObject] ge 0.const) {
+                        val hitObject = structVar(objects[hit[KslHitResult.hitObject]])
+                        val hitMaterial = structVar(materials[hitObject[SphereStruct.material]])
+                        colorAttenuation *= hitMaterial[MaterialStruct.albedo].rgb
 
-                        `if`(hitMaterial.struct.materialType.ksl eq MATERIAL_LAMBERTIAN.const) {
+                        `if`(hitMaterial[MaterialStruct.materialType] eq MATERIAL_LAMBERTIAN.const) {
                             ray set fnScatterLambertian(hit)
-                        }.elseIf(hitMaterial.struct.materialType.ksl eq MATERIAL_METAL.const) {
-                            ray set fnScatterMetal(ray, hit, hitMaterial.struct.roughness.ksl)
-                        }.elseIf(hitMaterial.struct.materialType.ksl eq MATERIAL_GLASS.const) {
-                            ray set fnScatterGlas(ray, hit, hitMaterial.struct.refractionIndex.ksl)
+                        }.elseIf(hitMaterial[MaterialStruct.materialType] eq MATERIAL_METAL.const) {
+                            ray set fnScatterMetal(ray, hit, hitMaterial[MaterialStruct.roughness])
+                        }.elseIf(hitMaterial[MaterialStruct.materialType] eq MATERIAL_GLASS.const) {
+                            ray set fnScatterGlas(ray, hit, hitMaterial[MaterialStruct.refractionIndex])
                         }
 
                     }.`else` {
-                        val unitDir = float3Var(normalize(ray.struct.direction.ksl))
+                        val unitDir = float3Var(normalize(ray[KslRay.direction]))
                         val a = float1Var((unitDir.y + 1f.const) * 0.5f.const)
                         val skyColor = float4Var(mix(Color.WHITE.const, Color(0.5f, 0.65f, 1f).const, saturate(a)))
                         color += skyColor * float4Value(colorAttenuation, 1f.const)

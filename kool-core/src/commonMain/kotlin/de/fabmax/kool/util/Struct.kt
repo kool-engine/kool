@@ -1,8 +1,5 @@
 package de.fabmax.kool.util
 
-import de.fabmax.kool.modules.ksl.lang.KslExprStruct
-import de.fabmax.kool.modules.ksl.lang.KslExpression
-import de.fabmax.kool.modules.ksl.lang.KslStruct
 import de.fabmax.kool.pipeline.GpuType
 
 abstract class Struct(val name: String, val layout: MemoryLayout) {
@@ -13,11 +10,6 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
     val structSize: Int get() = layout.structSize(this, lastPos)
 
     val type: GpuType get() = GpuType.Struct(this)
-
-    private var _kslAccess: KslExpression<KslStruct<*>>? = null
-    internal val kslAccess: KslExpression<KslStruct<*>> get() = checkNotNull(_kslAccess) {
-        "ksl access only works if Struct is used in an ksl context"
-    }
 
     val hash: LongHash by lazy {
         LongHash {
@@ -31,13 +23,6 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
             "Duplicate struct member names are not allowed: ${member.name}"
         }
         _members += member
-    }
-
-    internal fun setupKslAccess(access: KslExprStruct<*>) {
-        _kslAccess = access
-        members.filterIsInstance<Struct>().forEach {
-            it.setupKslAccess(access)
-        }
     }
 
     protected fun float1(name: String = "f1_${members.size}"): Float1Member {

@@ -17,10 +17,10 @@ class DeferredCamData(program: KslProgram) : KslDataBlock, KslShaderListener {
 
     private val camUniform = program.uniformStruct("uDeferredCameraData", DeferredCamDataStruct, BindGroupScope.VIEW)
 
-    val position: KslExprFloat3 get() = camUniform.struct.position.ksl
-    val projMat: KslExprMat4 get() = camUniform.struct.proj.ksl
-    val invViewMat: KslExprMat4 get() = camUniform.struct.invView.ksl
-    val viewport: KslExprFloat4 get() = camUniform.struct.viewport.ksl
+    val position: KslExprFloat3 get() = camUniform[DeferredCamDataStruct.position]
+    val projMat: KslExprMat4 get() = camUniform[DeferredCamDataStruct.proj]
+    val invViewMat: KslExprMat4 get() = camUniform[DeferredCamDataStruct.invView]
+    val viewport: KslExprFloat4 get() = camUniform[DeferredCamDataStruct.viewport]
 
     private var structLayout: UniformBufferLayout<DeferredCamDataStruct>? = null
     private val viewportVec = MutableVec4f()

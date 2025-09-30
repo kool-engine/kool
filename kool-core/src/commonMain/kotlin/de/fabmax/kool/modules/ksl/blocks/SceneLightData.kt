@@ -12,12 +12,13 @@ fun KslProgram.sceneLightData(maxLights: Int) = SceneLightData(this, maxLights)
 class SceneLightData(program: KslProgram, val maxLightCount: Int) : KslDataBlock, KslShaderListener {
     override val name = "SceneLightData"
 
-    private val lightUniform = program.uniformStruct("uLightData", LightDataStruct(maxLightCount), BindGroupScope.VIEW)
+    private val struct = LightDataStruct(maxLightCount)
+    private val lightUniform = program.uniformStruct("uLightData", struct, BindGroupScope.VIEW)
 
-    val encodedPositions: KslExprFloat4Array get() = lightUniform.struct.encodedPositions.ksl
-    val encodedDirections: KslExprFloat4Array get() = lightUniform.struct.encodedDirections.ksl
-    val encodedColors: KslExprFloat4Array get() = lightUniform.struct.encodedColors.ksl
-    val lightCount: KslExprInt1 get() = lightUniform.struct.lightCount.ksl
+    val encodedPositions: KslExprFloat4Array get() = lightUniform[struct.encodedPositions]
+    val encodedDirections: KslExprFloat4Array get() = lightUniform[struct.encodedDirections]
+    val encodedColors: KslExprFloat4Array get() = lightUniform[struct.encodedColors]
+    val lightCount: KslExprInt1 get() = lightUniform[struct.lightCount]
 
     private var structLayout: UniformBufferLayout<LightDataStruct>? = null
 

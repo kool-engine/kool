@@ -133,7 +133,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     open fun generateVectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression()}.${swizzleExpr.components}"
 
     open fun structMemberExpression(expression: KslStructMemberExpression<*>): String =
-        "${expression.struct.generateExpression()}${expression.member.qualifiedName}"
+        "${expression.struct.generateExpression()}.${expression.member.name}"
 
     open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =
         "(${expression.left.generateExpression()} ${expression.operator.opString} ${expression.right.generateExpression()})"

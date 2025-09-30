@@ -25,17 +25,17 @@ class CameraData(program: KslProgram) : KslDataBlock, KslShaderListener {
 
     private val camUniform = program.uniformStruct("uCameraData", CamDataStruct, BindGroupScope.VIEW)
 
-    val viewProjMat: KslExprMat4 get() = camUniform.struct.viewProj.ksl
-    val viewMat: KslExprMat4 get() = camUniform.struct.view.ksl
-    val projMat: KslExprMat4 get() = camUniform.struct.proj.ksl
+    val viewProjMat: KslExprMat4 get() = camUniform[CamDataStruct.viewProj]
+    val viewMat: KslExprMat4 get() = camUniform[CamDataStruct.view]
+    val projMat: KslExprMat4 get() = camUniform[CamDataStruct.proj]
 
-    val viewport: KslExprFloat4 get() = camUniform.struct.viewport.ksl
-    val viewParams: KslExprFloat4 get() = camUniform.struct.viewParams.ksl
-    val position: KslExprFloat3 get() = camUniform.struct.position.ksl
-    val direction: KslExprFloat3 get() = camUniform.struct.direction.ksl
-    val clip: KslExprFloat2 get() = camUniform.struct.clip.ksl
+    val viewport: KslExprFloat4 get() = camUniform[CamDataStruct.viewport]
+    val viewParams: KslExprFloat4 get() = camUniform[CamDataStruct.viewParams]
+    val position: KslExprFloat3 get() = camUniform[CamDataStruct.position]
+    val direction: KslExprFloat3 get() = camUniform[CamDataStruct.direction]
+    val clip: KslExprFloat2 get() = camUniform[CamDataStruct.clip]
 
-    val frameIndex: KslExprInt1 get() = camUniform.struct.frameIndex.ksl
+    val frameIndex: KslExprInt1 get() = camUniform[CamDataStruct.frameIndex]
 
     val clipNear: KslExprFloat1
         get() = clip.x
