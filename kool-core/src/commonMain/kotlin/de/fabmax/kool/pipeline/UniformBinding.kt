@@ -187,206 +187,206 @@ class UniformStructBinding<S: Struct>(
 }
 
 class UniformBinding1f(uniformName: String, defaultVal: Float, shader: ShaderBase<*>) :
-    UniformBinding<Float, Float, Struct.Float1Member>(uniformName, defaultVal, shader)
+    UniformBinding<Float, Float, Float1Member>(uniformName, defaultVal, shader)
 {
     override fun getFromCache(): Float = cache
     override fun setCacheTo(value: Float) { cache = value }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float1Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float1Member) = buffer.get(0) { cache = get(member) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float1Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float1Member) = buffer.get(0) { cache = get(member) }
 }
 
 class UniformBinding2f(uniformName: String, defaultVal: Vec2f, shader: ShaderBase<*>) :
-    UniformBinding<Vec2f, MutableVec2f, Struct.Float2Member>(uniformName, MutableVec2f(defaultVal), shader)
+    UniformBinding<Vec2f, MutableVec2f, Float2Member>(uniformName, MutableVec2f(defaultVal), shader)
 {
     override fun getFromCache(): Vec2f = cache
     override fun setCacheTo(value: Vec2f) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float2Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float2Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float2Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float2Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBinding3f(uniformName: String, defaultVal: Vec3f, shader: ShaderBase<*>) :
-    UniformBinding<Vec3f, MutableVec3f, Struct.Float3Member>(uniformName, MutableVec3f(defaultVal), shader)
+    UniformBinding<Vec3f, MutableVec3f, Float3Member>(uniformName, MutableVec3f(defaultVal), shader)
 {
     override fun getFromCache(): Vec3f = cache
     override fun setCacheTo(value: Vec3f) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float3Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float3Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float3Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float3Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBinding4f(uniformName: String, defaultVal: Vec4f, shader: ShaderBase<*>) :
-    UniformBinding<Vec4f, MutableVec4f, Struct.Float4Member>(uniformName, MutableVec4f(defaultVal), shader)
+    UniformBinding<Vec4f, MutableVec4f, Float4Member>(uniformName, MutableVec4f(defaultVal), shader)
 {
     override fun getFromCache(): Vec4f = cache
     override fun setCacheTo(value: Vec4f) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float4Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float4Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float4Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float4Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBindingColor(uniformName: String, defaultVal: Color, shader: ShaderBase<*>) :
-    UniformBinding<Color, MutableColor, Struct.Float4Member>(uniformName, MutableColor(defaultVal), shader)
+    UniformBinding<Color, MutableColor, Float4Member>(uniformName, MutableColor(defaultVal), shader)
 {
     override fun getFromCache(): Color = cache
     override fun setCacheTo(value: Color) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float4Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float4Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float4Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float4Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBindingQuat(uniformName: String, defaultVal: QuatF, shader: ShaderBase<*>) :
-    UniformBinding<QuatF, MutableQuatF, Struct.Float4Member>(uniformName, MutableQuatF(defaultVal), shader)
+    UniformBinding<QuatF, MutableQuatF, Float4Member>(uniformName, MutableQuatF(defaultVal), shader)
 {
     override fun getFromCache(): QuatF = cache
     override fun setCacheTo(value: QuatF) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float4Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float4Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float4Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float4Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBinding1i(uniformName: String, defaultVal: Int, shader: ShaderBase<*>) :
-    UniformBinding<Int, Int, Struct.Int1Member>(uniformName, defaultVal, shader)
+    UniformBinding<Int, Int, Int1Member>(uniformName, defaultVal, shader)
 {
     override fun getFromCache(): Int = cache
     override fun setCacheTo(value: Int) { cache = value }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int1Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int1Member) = buffer.get(0) { cache = get(member) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int1Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int1Member) = buffer.get(0) { cache = get(member) }
 }
 
 class UniformBinding2i(uniformName: String, defaultVal: Vec2i, shader: ShaderBase<*>) :
-    UniformBinding<Vec2i, MutableVec2i, Struct.Int2Member>(uniformName, MutableVec2i(defaultVal), shader)
+    UniformBinding<Vec2i, MutableVec2i, Int2Member>(uniformName, MutableVec2i(defaultVal), shader)
 {
     override fun getFromCache(): Vec2i = cache
     override fun setCacheTo(value: Vec2i) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int2Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int2Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int2Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int2Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBinding3i(uniformName: String, defaultVal: Vec3i, shader: ShaderBase<*>) :
-    UniformBinding<Vec3i, MutableVec3i, Struct.Int3Member>(uniformName, MutableVec3i(defaultVal), shader)
+    UniformBinding<Vec3i, MutableVec3i, Int3Member>(uniformName, MutableVec3i(defaultVal), shader)
 {
     override fun getFromCache(): Vec3i = cache
     override fun setCacheTo(value: Vec3i) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int3Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int3Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int3Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int3Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBinding4i(uniformName: String, defaultVal: Vec4i, shader: ShaderBase<*>) :
-    UniformBinding<Vec4i, MutableVec4i, Struct.Int4Member>(uniformName, MutableVec4i(defaultVal), shader)
+    UniformBinding<Vec4i, MutableVec4i, Int4Member>(uniformName, MutableVec4i(defaultVal), shader)
 {
     override fun getFromCache(): Vec4i = cache
     override fun setCacheTo(value: Vec4i) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int4Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int4Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int4Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int4Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBindingMat2f(uniformName: String, defaultVal: Mat2f, shader: ShaderBase<*>) :
-    UniformBinding<Mat2f, MutableMat2f, Struct.Mat2Member>(uniformName, MutableMat2f(defaultVal), shader)
+    UniformBinding<Mat2f, MutableMat2f, Mat2Member>(uniformName, MutableMat2f(defaultVal), shader)
 {
     override fun getFromCache(): Mat2f = cache
     override fun setCacheTo(value: Mat2f) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Mat2Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Mat2Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Mat2Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Mat2Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBindingMat3f(uniformName: String, defaultVal: Mat3f, shader: ShaderBase<*>) :
-    UniformBinding<Mat3f, MutableMat3f, Struct.Mat3Member>(uniformName, MutableMat3f(defaultVal), shader)
+    UniformBinding<Mat3f, MutableMat3f, Mat3Member>(uniformName, MutableMat3f(defaultVal), shader)
 {
     override fun getFromCache(): Mat3f = cache
     override fun setCacheTo(value: Mat3f) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Mat3Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Mat3Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Mat3Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Mat3Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBindingMat4f(uniformName: String, defaultVal: Mat4f, shader: ShaderBase<*>) :
-    UniformBinding<Mat4f, MutableMat4f, Struct.Mat4Member>(uniformName, MutableMat4f(defaultVal), shader)
+    UniformBinding<Mat4f, MutableMat4f, Mat4Member>(uniformName, MutableMat4f(defaultVal), shader)
 {
     override fun getFromCache(): Mat4f = cache
     override fun setCacheTo(value: Mat4f) { cache.set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Mat4Member) = buffer.set(0) { set(member, cache) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Mat4Member) = buffer.get(0) { get(member, cache) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Mat4Member) = buffer.set(0) { set(member, cache) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Mat4Member) = buffer.get(0) { get(member, cache) }
 }
 
 class UniformBinding1fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Float, Float, Struct.Float1ArrayMember>(uniformName, arraySize, shader, { 0f })
+    UniformArrayBinding<Float, Float, Float1ArrayMember>(uniformName, arraySize, shader, { 0f })
 {
     override fun setCacheTo(index: Int, value: Float) { cache[index] = value }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float1ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float1ArrayMember, index: Int) = buffer.get(0) { cache[index] = get(member, index) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float1ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float1ArrayMember, index: Int) = buffer.get(0) { cache[index] = get(member, index) }
 }
 
 class UniformBinding2fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Vec2f, MutableVec2f, Struct.Float2ArrayMember>(uniformName, arraySize, shader, { MutableVec2f() })
+    UniformArrayBinding<Vec2f, MutableVec2f, Float2ArrayMember>(uniformName, arraySize, shader, { MutableVec2f() })
 {
     override fun setCacheTo(index: Int, value: Vec2f) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float2ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float2ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float2ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float2ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBinding3fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Vec3f, MutableVec3f, Struct.Float3ArrayMember>(uniformName, arraySize, shader, { MutableVec3f() })
+    UniformArrayBinding<Vec3f, MutableVec3f, Float3ArrayMember>(uniformName, arraySize, shader, { MutableVec3f() })
 {
     override fun setCacheTo(index: Int, value: Vec3f) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float3ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float3ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float3ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float3ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBinding4fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Vec4f, MutableVec4f, Struct.Float4ArrayMember>(uniformName, arraySize, shader, { MutableVec4f() })
+    UniformArrayBinding<Vec4f, MutableVec4f, Float4ArrayMember>(uniformName, arraySize, shader, { MutableVec4f() })
 {
     override fun setCacheTo(index: Int, value: Vec4f) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Float4ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Float4ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Float4ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Float4ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBinding1iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Int, Int, Struct.Int1ArrayMember>(uniformName, arraySize, shader, { 0 })
+    UniformArrayBinding<Int, Int, Int1ArrayMember>(uniformName, arraySize, shader, { 0 })
 {
     override fun setCacheTo(index: Int, value: Int) { cache[index] = value }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int1ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int1ArrayMember, index: Int) = buffer.get(0) { cache[index] = get(member, index) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int1ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int1ArrayMember, index: Int) = buffer.get(0) { cache[index] = get(member, index) }
 }
 
 class UniformBinding2iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Vec2i, MutableVec2i, Struct.Int2ArrayMember>(uniformName, arraySize, shader, { MutableVec2i() })
+    UniformArrayBinding<Vec2i, MutableVec2i, Int2ArrayMember>(uniformName, arraySize, shader, { MutableVec2i() })
 {
     override fun setCacheTo(index: Int, value: Vec2i) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int2ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int2ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int2ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int2ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBinding3iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Vec3i, MutableVec3i, Struct.Int3ArrayMember>(uniformName, arraySize, shader, { MutableVec3i() })
+    UniformArrayBinding<Vec3i, MutableVec3i, Int3ArrayMember>(uniformName, arraySize, shader, { MutableVec3i() })
 {
     override fun setCacheTo(index: Int, value: Vec3i) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int3ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int3ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int3ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int3ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBinding4iv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Vec4i, MutableVec4i, Struct.Int4ArrayMember>(uniformName, arraySize, shader, { MutableVec4i() })
+    UniformArrayBinding<Vec4i, MutableVec4i, Int4ArrayMember>(uniformName, arraySize, shader, { MutableVec4i() })
 {
     override fun setCacheTo(index: Int, value: Vec4i) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Int4ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Int4ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Int4ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Int4ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBindingMat2fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Mat2f, MutableMat2f, Struct.Mat2ArrayMember>(uniformName, arraySize, shader, { MutableMat2f() })
+    UniformArrayBinding<Mat2f, MutableMat2f, Mat2ArrayMember>(uniformName, arraySize, shader, { MutableMat2f() })
 {
     override fun setCacheTo(index: Int, value: Mat2f) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Mat2ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Mat2ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Mat2ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Mat2ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBindingMat3fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Mat3f, MutableMat3f, Struct.Mat3ArrayMember>(uniformName, arraySize, shader, { MutableMat3f() })
+    UniformArrayBinding<Mat3f, MutableMat3f, Mat3ArrayMember>(uniformName, arraySize, shader, { MutableMat3f() })
 {
     override fun setCacheTo(index: Int, value: Mat3f) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Mat3ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Mat3ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Mat3ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Mat3ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }
 
 class UniformBindingMat4fv(uniformName: String, arraySize: Int, shader: ShaderBase<*>) :
-    UniformArrayBinding<Mat4f, MutableMat4f, Struct.Mat4ArrayMember>(uniformName, arraySize, shader, { MutableMat4f() })
+    UniformArrayBinding<Mat4f, MutableMat4f, Mat4ArrayMember>(uniformName, arraySize, shader, { MutableMat4f() })
 {
     override fun setCacheTo(index: Int, value: Mat4f) { cache[index].set(value) }
-    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Struct.Mat4ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
-    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Struct.Mat4ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
+    override fun updateBufferFromCache(buffer: StructBuffer<*>, member: Mat4ArrayMember, index: Int) = buffer.set(0) { set(member, index, cache[index]) }
+    override fun updateCacheFromBuffer(buffer: StructBuffer<*>, member: Mat4ArrayMember, index: Int) = buffer.get(0) { get(member, index, cache[index]) }
 }

@@ -66,7 +66,6 @@ class HelloComputeParticles : DemoScene("Hello Compute Particles") {
 
                     val a = float1Var(noise11(seed + 17f.const) * 2f.const)
                     val r = float1Var(1.5f.const + noise11(seed + 1234f.const) * 0.1f.const)
-
                     particle[Particle.appearance][ParticleAppearance.color] set gradient.load((abs(a - 1f.const) * 255f.const).toInt1(), 0.const)
                     particle[Particle.position] set float3Value(cos(a * PI_F.const), 0f.const, sin(a * PI_F.const)) * r
                     particle[Particle.velocity] set (noise13(seed + 4711f.const) + float3Value(-0.5f, 1f, -0.5f)) * 2f.const
