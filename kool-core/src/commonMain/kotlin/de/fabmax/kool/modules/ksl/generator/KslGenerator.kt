@@ -80,7 +80,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
             is KslVertexAttribute<*> -> generateValueExpression(expr.value)
             is KslStageInput<*> -> generateValueExpression(expr.value)
             is KslStageOutput<*> -> generateValueExpression(expr.value)
-            is KslStructMemberExpression -> structMemberExpression(expr)
+            is KslStructMemberExpression<*, *> -> structMemberExpression(expr)
             is KslNumericScalarUnaryMinus<*> -> numericUnaryMinusExpression(expr)
             is KslNumericVectorUnaryMinus<*, *> -> numericUnaryMinusExpression(expr)
             is KslIntScalarComplement -> intComplementExpression(expr)
@@ -109,7 +109,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
     abstract fun getStateName(state: KslState): String
 
     open fun varAssignable(assignable: KslVar<*>): String = getStateName(assignable)
-    open fun structMemberAssignable(structMember: KslStructMemberExpression<*>): String = structMember.generateExpression()
+    open fun structMemberAssignable(structMember: KslStructMemberExpression<*, *>): String = structMember.generateExpression()
     open fun arrayValueAssignable(arrayAccessor: KslArrayAccessor<*>): String =
         "${arrayAccessor.array.generateExpression()}[${arrayAccessor.index.generateExpression()}]"
     open fun matrixColAssignable(matrixAccessor: KslMatrixAccessor<*>): String =
@@ -132,7 +132,7 @@ abstract class KslGenerator(val generatorExpressions: Map<KslExpression<*>, KslE
         "${matrixAccessor.matrix.generateExpression()}[${matrixAccessor.colIndex.generateExpression()}]"
     open fun generateVectorSwizzleExpression(swizzleExpr: KslVectorAccessor<*>): String = "${swizzleExpr.vector.generateExpression()}.${swizzleExpr.components}"
 
-    open fun structMemberExpression(expression: KslStructMemberExpression<*>): String =
+    open fun structMemberExpression(expression: KslStructMemberExpression<*, *>): String =
         "${expression.struct.generateExpression()}.${expression.member.name}"
 
     open fun <B: KslBoolType> compareExpression(expression: KslExpressionCompare<B>): String =

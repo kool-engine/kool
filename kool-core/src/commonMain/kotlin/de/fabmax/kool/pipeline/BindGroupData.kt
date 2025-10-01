@@ -127,7 +127,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
 
         override val isComplete = true
 
-        inline fun set(block: MutableStructBufferView.(T) -> Unit) {
+        inline fun set(block: MutableStructBufferView<T>.(T) -> Unit) {
             buffer.set(0, block)
             markDirty()
         }
