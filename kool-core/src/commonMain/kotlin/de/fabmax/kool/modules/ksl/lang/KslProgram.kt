@@ -3,6 +3,8 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.KslShaderListener
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.util.NestedStructArrayMember
+import de.fabmax.kool.util.NestedStructMember
 import de.fabmax.kool.util.Struct
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -108,8 +110,8 @@ open class KslProgram(val name: String) {
 
     @PublishedApi
     internal fun registerStruct(struct: Struct) {
-        struct.members.filterIsInstance<Struct.NestedStructMember<*>>().forEach { registerStruct(it.struct) }
-        struct.members.filterIsInstance<Struct.NestedStructArrayMember<*>>().forEach { registerStruct(it.struct) }
+        struct.members.filterIsInstance<NestedStructMember<*>>().forEach { registerStruct(it.struct) }
+        struct.members.filterIsInstance<NestedStructArrayMember<*>>().forEach { registerStruct(it.struct) }
 
         val existing = structs.getOrPut(struct.name) { struct }
         check(struct::class == existing::class) {
