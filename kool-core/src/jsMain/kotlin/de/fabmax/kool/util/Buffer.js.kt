@@ -178,6 +178,20 @@ class Float32BufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
 class MixedBufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
     GenericBuffer<DataView>(capacity, DataView(ArrayBuffer(capacity)), isAutoLimit), MixedBuffer
 {
+    override fun put(data: MixedBuffer): MixedBuffer {
+        if (data.position % 4 == 0 && data.limit % 4 == 0) {
+            for (i in data.position until data.limit step 4) {
+                buffer.setUint32(position, data.getInt32(i), true)
+                position += SIZEOF_INT
+            }
+        } else {
+            for (i in data.position until data.limit) {
+                buffer.setInt8(position++, data.getInt8(i))
+            }
+        }
+        return this
+    }
+
     override fun putUint8(value: UByte): MixedBuffer {
         buffer.setUint8(position++, value.toByte())
         return this

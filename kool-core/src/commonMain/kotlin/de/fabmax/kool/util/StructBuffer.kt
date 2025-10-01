@@ -4,7 +4,7 @@ import de.fabmax.kool.math.*
 import de.fabmax.kool.pipeline.BufferUsage
 import de.fabmax.kool.pipeline.GpuBuffer
 
-class StructBuffer<T: Struct>(val capacity: Int, val struct: T) {
+class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
     @PublishedApi
     internal val defaultView: MutableView = MutableView(0)
 

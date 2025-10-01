@@ -129,6 +129,8 @@ interface Float32Buffer : Buffer {
  * @author fabmax
  */
 interface MixedBuffer : Buffer {
+    fun put(data: MixedBuffer): MixedBuffer
+
     fun putInt8(value: Byte): MixedBuffer = putUint8(value.toUByte())
     fun putInt8(data: ByteArray): MixedBuffer = putUint8(data)
     fun putInt8(data: ByteArray, offset: Int, len: Int): MixedBuffer = putUint8(data, offset, len)
