@@ -263,8 +263,8 @@ class PathTracingDemo : DemoScene("Path-tracing") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        val materials = StructBuffer(1024, MaterialStruct)
-        val spheres = StructBuffer(1024, SphereStruct)
+        val materials = StructBuffer(MaterialStruct, 1024)
+        val spheres = StructBuffer(SphereStruct, 1024)
         makeManySpheres(spheres, materials)
 
         val materialBuffer = materials.asStorageBuffer().also { it.releaseWith(this) }

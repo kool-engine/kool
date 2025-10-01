@@ -123,7 +123,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
 
     inner class UniformBufferBindingData<T: Struct>(override val layout: UniformBufferLayout<T>) : BindingData {
         override val modCount = ModCounter()
-        val buffer: StructBuffer<T> = StructBuffer(1, layout.struct)
+        val buffer: StructBuffer<T> = StructBuffer(layout.struct, 1)
 
         override val isComplete = true
 
