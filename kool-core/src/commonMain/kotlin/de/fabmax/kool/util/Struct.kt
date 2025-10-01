@@ -1,10 +1,11 @@
 package de.fabmax.kool.util
 
 import de.fabmax.kool.pipeline.GpuType
+import kotlin.jvm.JvmStatic
 
 abstract class Struct(val name: String, val layout: MemoryLayout) {
-    private val _members = mutableListOf<StructMember>()
-    val members: List<StructMember> get() = _members
+    private val _members = mutableListOf<StructMember<*>>()
+    val members: List<StructMember<*>> get() = _members
 
     private var lastPos = 0
     val structSize: Int get() = layout.structSize(this, lastPos)
@@ -18,265 +19,299 @@ abstract class Struct(val name: String, val layout: MemoryLayout) {
         }
     }
     
-    private fun addMember(member: StructMember) {
+    private fun addMember(member: StructMember<*>) {
         check(members.none { it.name == member.name }) {
             "Duplicate struct member names are not allowed: ${member.name}"
         }
         _members += member
     }
 
-    protected fun float1(name: String = "f1_${members.size}"): Float1Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, 1)
-        lastPos = offset + size
-        return Float1Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun float2(name: String = "f2_${members.size}"): Float2Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, 1)
-        lastPos = offset + size
-        return Float2Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun float3(name: String = "f3_${members.size}"): Float3Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, 1)
-        lastPos = offset + size
-        return Float3Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun float4(name: String = "f4_${members.size}"): Float4Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, 1)
-        lastPos = offset + size
-        return Float4Member(name, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun int1(name: String = "i1_${members.size}"): Int1Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, 1)
-        lastPos = offset + size
-        return Int1Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun int2(name: String = "i2_${members.size}"): Int2Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, 1)
-        lastPos = offset + size
-        return Int2Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun int3(name: String = "i3_${members.size}"): Int3Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, 1)
-        lastPos = offset + size
-        return Int3Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun int4(name: String = "i4_${members.size}"): Int4Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, 1)
-        lastPos = offset + size
-        return Int4Member(name, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun uint1(name: String = "u1_${members.size}"): Uint1Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint1, 1)
-        lastPos = offset + size
-        return Uint1Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun uint2(name: String = "u2_${members.size}"): Uint2Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint2, 1)
-        lastPos = offset + size
-        return Uint2Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun uint3(name: String = "u3_${members.size}"): Uint3Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint3, 1)
-        lastPos = offset + size
-        return Uint3Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun uint4(name: String = "u4_${members.size}"): Uint4Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint4, 1)
-        lastPos = offset + size
-        return Uint4Member(name, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun bool1(name: String = "b1_${members.size}"): Bool1Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool1, 1)
-        lastPos = offset + size
-        return Bool1Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun bool2(name: String = "b2_${members.size}"): Bool2Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool2, 1)
-        lastPos = offset + size
-        return Bool2Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun bool3(name: String = "b3_${members.size}"): Bool3Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool3, 1)
-        lastPos = offset + size
-        return Bool3Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun bool4(name: String = "b4_${members.size}"): Bool4Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool4, 1)
-        lastPos = offset + size
-        return Bool4Member(name, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun mat2(name: String = "m2_${members.size}"): Mat2Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, 1)
-        lastPos = offset + size
-        return Mat2Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun mat3(name: String = "m3_${members.size}"): Mat3Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, 1)
-        lastPos = offset + size
-        return Mat3Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun mat4(name: String = "m4_${members.size}"): Mat4Member {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, 1)
-        lastPos = offset + size
-        return Mat4Member(name, offset, this).also { addMember(it) }
-    }
-
-    protected fun float1Array(arraySize: Int, name: String = "f1arr_${members.size}"): Float1ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, arraySize)
-        lastPos = offset + size
-        return Float1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun float2Array(arraySize: Int, name: String = "f2arr_${members.size}"): Float2ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, arraySize)
-        lastPos = offset + size
-        return Float2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun float3Array(arraySize: Int, name: String = "f3arr_${members.size}"): Float3ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, arraySize)
-        lastPos = offset + size
-        return Float3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun float4Array(arraySize: Int, name: String = "f4arr_${members.size}"): Float4ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, arraySize)
-        lastPos = offset + size
-        return Float4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun int1Array(arraySize: Int, name: String = "i1arr_${members.size}"): Int1ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, arraySize)
-        lastPos = offset + size
-        return Int1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun int2Array(arraySize: Int, name: String = "i2arr_${members.size}"): Int2ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, arraySize)
-        lastPos = offset + size
-        return Int2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun int3Array(arraySize: Int, name: String = "i3arr_${members.size}"): Int3ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, arraySize)
-        lastPos = offset + size
-        return Int3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun int4Array(arraySize: Int, name: String = "i4arr_${members.size}"): Int4ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, arraySize)
-        lastPos = offset + size
-        return Int4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun uint1Array(arraySize: Int, name: String = "u1arr_${members.size}"): Uint1ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint1, arraySize)
-        lastPos = offset + size
-        return Uint1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun uint2Array(arraySize: Int, name: String = "u2arr_${members.size}"): Uint2ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint2, arraySize)
-        lastPos = offset + size
-        return Uint2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun uint3Array(arraySize: Int, name: String = "u3arr_${members.size}"): Uint3ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint3, arraySize)
-        lastPos = offset + size
-        return Uint3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun uint4Array(arraySize: Int, name: String = "u4arr_${members.size}"): Uint4ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint4, arraySize)
-        lastPos = offset + size
-        return Uint4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun bool1Array(arraySize: Int, name: String = "b1arr_${members.size}"): Bool1ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool1, arraySize)
-        lastPos = offset + size
-        return Bool1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun bool2Array(arraySize: Int, name: String = "b2arr_${members.size}"): Bool2ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool2, arraySize)
-        lastPos = offset + size
-        return Bool2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun bool3Array(arraySize: Int, name: String = "b3arr_${members.size}"): Bool3ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool3, arraySize)
-        lastPos = offset + size
-        return Bool3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun bool4Array(arraySize: Int, name: String = "b4arr_${members.size}"): Bool4ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool4, arraySize)
-        lastPos = offset + size
-        return Bool4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun mat2Array(arraySize: Int, name: String = "m2arr_${members.size}"): Mat2ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, arraySize)
-        lastPos = offset + size
-        return Mat2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun mat3Array(arraySize: Int, name: String = "m3arr_${members.size}"): Mat3ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, arraySize)
-        lastPos = offset + size
-        return Mat3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-    protected fun mat4Array(arraySize: Int, name: String = "m4arr_${members.size}"): Mat4ArrayMember {
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, arraySize)
-        lastPos = offset + size
-        return Mat4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
-    }
-
-
-    protected fun <S: Struct> struct(struct: S, name: String = "nested_${struct.name}_${members.size}"): NestedStructMember<S> {
-        require(struct.layout == layout) {
-            "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
+    companion object {
+        @JvmStatic
+        protected fun <T: Struct> T.float1(name: String = "f1_${members.size}"): Float1Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, 1)
+            lastPos = offset + size
+            return Float1Member(name, offset, this).also { addMember(it) }
         }
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, 1)
-        lastPos = offset + size
-        return NestedStructMember(name, offset, struct, this).also { addMember(it) }
-    }
 
-    protected fun <S: Struct> structArray(struct: S, arraySize: Int, name: String = "nestedArr_${members.size}"): NestedStructArrayMember<S> {
-        require(struct.layout == layout) {
-            "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
+        @JvmStatic
+        protected fun <T: Struct> T.float2(name: String = "f2_${members.size}"): Float2Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, 1)
+            lastPos = offset + size
+            return Float2Member(name, offset, this).also { addMember(it) }
         }
-        val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, arraySize)
-        lastPos = offset + size
-        return NestedStructArrayMember(name, arraySize, offset, struct, this).also { addMember(it) }
+
+        @JvmStatic
+        protected fun <T: Struct> T.float3(name: String = "f3_${members.size}"): Float3Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, 1)
+            lastPos = offset + size
+            return Float3Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.float4(name: String = "f4_${members.size}"): Float4Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, 1)
+            lastPos = offset + size
+            return Float4Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int1(name: String = "i1_${members.size}"): Int1Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, 1)
+            lastPos = offset + size
+            return Int1Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int2(name: String = "i2_${members.size}"): Int2Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, 1)
+            lastPos = offset + size
+            return Int2Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int3(name: String = "i3_${members.size}"): Int3Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, 1)
+            lastPos = offset + size
+            return Int3Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int4(name: String = "i4_${members.size}"): Int4Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, 1)
+            lastPos = offset + size
+            return Int4Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint1(name: String = "u1_${members.size}"): Uint1Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint1, 1)
+            lastPos = offset + size
+            return Uint1Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint2(name: String = "u2_${members.size}"): Uint2Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint2, 1)
+            lastPos = offset + size
+            return Uint2Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint3(name: String = "u3_${members.size}"): Uint3Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint3, 1)
+            lastPos = offset + size
+            return Uint3Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint4(name: String = "u4_${members.size}"): Uint4Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint4, 1)
+            lastPos = offset + size
+            return Uint4Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool1(name: String = "b1_${members.size}"): Bool1Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool1, 1)
+            lastPos = offset + size
+            return Bool1Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool2(name: String = "b2_${members.size}"): Bool2Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool2, 1)
+            lastPos = offset + size
+            return Bool2Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool3(name: String = "b3_${members.size}"): Bool3Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool3, 1)
+            lastPos = offset + size
+            return Bool3Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool4(name: String = "b4_${members.size}"): Bool4Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool4, 1)
+            lastPos = offset + size
+            return Bool4Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.mat2(name: String = "m2_${members.size}"): Mat2Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, 1)
+            lastPos = offset + size
+            return Mat2Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.mat3(name: String = "m3_${members.size}"): Mat3Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, 1)
+            lastPos = offset + size
+            return Mat3Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.mat4(name: String = "m4_${members.size}"): Mat4Member<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, 1)
+            lastPos = offset + size
+            return Mat4Member(name, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.float1Array(arraySize: Int, name: String = "f1arr_${members.size}"): Float1ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float1, arraySize)
+            lastPos = offset + size
+            return Float1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.float2Array(arraySize: Int, name: String = "f2arr_${members.size}"): Float2ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float2, arraySize)
+            lastPos = offset + size
+            return Float2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.float3Array(arraySize: Int, name: String = "f3arr_${members.size}"): Float3ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float3, arraySize)
+            lastPos = offset + size
+            return Float3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.float4Array(arraySize: Int, name: String = "f4arr_${members.size}"): Float4ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Float4, arraySize)
+            lastPos = offset + size
+            return Float4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int1Array(arraySize: Int, name: String = "i1arr_${members.size}"): Int1ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int1, arraySize)
+            lastPos = offset + size
+            return Int1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int2Array(arraySize: Int, name: String = "i2arr_${members.size}"): Int2ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int2, arraySize)
+            lastPos = offset + size
+            return Int2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int3Array(arraySize: Int, name: String = "i3arr_${members.size}"): Int3ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int3, arraySize)
+            lastPos = offset + size
+            return Int3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.int4Array(arraySize: Int, name: String = "i4arr_${members.size}"): Int4ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Int4, arraySize)
+            lastPos = offset + size
+            return Int4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint1Array(arraySize: Int, name: String = "u1arr_${members.size}"): Uint1ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint1, arraySize)
+            lastPos = offset + size
+            return Uint1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint2Array(arraySize: Int, name: String = "u2arr_${members.size}"): Uint2ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint2, arraySize)
+            lastPos = offset + size
+            return Uint2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint3Array(arraySize: Int, name: String = "u3arr_${members.size}"): Uint3ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint3, arraySize)
+            lastPos = offset + size
+            return Uint3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.uint4Array(arraySize: Int, name: String = "u4arr_${members.size}"): Uint4ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Uint4, arraySize)
+            lastPos = offset + size
+            return Uint4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool1Array(arraySize: Int, name: String = "b1arr_${members.size}"): Bool1ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool1, arraySize)
+            lastPos = offset + size
+            return Bool1ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool2Array(arraySize: Int, name: String = "b2arr_${members.size}"): Bool2ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool2, arraySize)
+            lastPos = offset + size
+            return Bool2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool3Array(arraySize: Int, name: String = "b3arr_${members.size}"): Bool3ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool3, arraySize)
+            lastPos = offset + size
+            return Bool3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.bool4Array(arraySize: Int, name: String = "b4arr_${members.size}"): Bool4ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Bool4, arraySize)
+            lastPos = offset + size
+            return Bool4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.mat2Array(arraySize: Int, name: String = "m2arr_${members.size}"): Mat2ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat2, arraySize)
+            lastPos = offset + size
+            return Mat2ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.mat3Array(arraySize: Int, name: String = "m3arr_${members.size}"): Mat3ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat3, arraySize)
+            lastPos = offset + size
+            return Mat3ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct> T.mat4Array(arraySize: Int, name: String = "m4arr_${members.size}"): Mat4ArrayMember<T> {
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, GpuType.Mat4, arraySize)
+            lastPos = offset + size
+            return Mat4ArrayMember(name, arraySize, offset, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct, S: Struct> T.struct(struct: S, name: String = "nested_${struct.name}_${members.size}"): NestedStructMember<T, S> {
+            require(struct.layout == layout) {
+                "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
+            }
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, 1)
+            lastPos = offset + size
+            return NestedStructMember(name, offset, struct, this).also { addMember(it) }
+        }
+
+        @JvmStatic
+        protected fun <T: Struct, S: Struct> T.structArray(struct: S, arraySize: Int, name: String = "nestedArr_${members.size}"): NestedStructArrayMember<T, S> {
+            require(struct.layout == layout) {
+                "Nested structs must have the same layout as the parent struct, but parent ${this::class} has layout $layout and nested ${struct::class} has ${struct.layout}"
+            }
+            val (offset, size) = layout.offsetAndSizeOf(lastPos, struct.type, arraySize)
+            lastPos = offset + size
+            return NestedStructArrayMember(name, arraySize, offset, struct, this).also { addMember(it) }
+        }
     }
 
     fun layoutInfo(indent: String): String {
