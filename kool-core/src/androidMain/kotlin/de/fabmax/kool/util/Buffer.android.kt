@@ -235,6 +235,12 @@ class MixedBufferImpl(buffer: ByteBuffer, isAutoLimit: Boolean = false) :
 
     constructor(capacity: Int, isAutoLimit: Boolean = false) : this(ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder()), isAutoLimit)
 
+    override fun put(data: MixedBuffer): MixedBuffer {
+        data.useRaw { buffer.put(it) }
+        pos += data.limit
+        return this
+    }
+
     override fun putUint8(value: UByte): MixedBuffer {
         buffer.put(value.toByte())
         pos++
