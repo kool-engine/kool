@@ -142,8 +142,10 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         val outInt2 = IntArray(1)
         val outFloat1 = FloatArray(1)
         val outFloat2 = FloatArray(1)
-        glfwGetWindowPos(windowHandle, outInt1, outInt2)
-        _screenPos = Vec2i(outInt1[0], outInt2[0])
+        if (GlfwWindowSubsystem.platform != GlfwPlatform.LinuxWayland) {
+            glfwGetWindowPos(windowHandle, outInt1, outInt2)
+            _screenPos = Vec2i(outInt1[0], outInt2[0])
+        }
         windowedPos = _screenPos
         glfwGetFramebufferSize(windowHandle, outInt1, outInt2)
         framebufferSize = Vec2i(outInt1[0], outInt2[0])
@@ -158,7 +160,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
 
         glfwSetWindowSizeCallback(windowHandle) { _, w, h ->
             _screenSize = Vec2i(w, h)
-            windowResizeHandler(w, h)
+            windowResizeHandler()
         }
         glfwSetFramebufferSizeCallback(windowHandle) { _, w, h ->
             framebufferSize = Vec2i(w, h)
@@ -271,7 +273,7 @@ class GlfwWindow(val clientApi: ClientApi, val ctx: Lwjgl3Context) : KoolWindowJ
         glfwSetWindowShouldClose(windowHandle, true)
     }
 
-    private fun windowResizeHandler(width: Int, height: Int) {
+    private fun windowResizeHandler() {
         // with GLFW, window resizing blocks the main-loop, call renderFrame() from here to update window content
         // during window resizing
         if (renderOnResizeFlag) {

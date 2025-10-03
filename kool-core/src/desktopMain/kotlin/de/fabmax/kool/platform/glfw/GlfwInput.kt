@@ -1,8 +1,6 @@
 package de.fabmax.kool.platform.glfw
 
-import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.input.*
-import de.fabmax.kool.isMacOs
 import de.fabmax.kool.onWindowFocusChanged
 import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.util.BackendScope
@@ -15,7 +13,8 @@ class GlfwInput(val window: GlfwWindow) : PlatformInput {
     private val cursorShapes = mutableMapOf<CursorShape, Long>()
     private var currentCursorShape = CursorShape.DEFAULT
 
-    private val isMacOs: Boolean = KoolSystem.isMacOs
+    private val isMacOs: Boolean = GlfwWindowSubsystem.platform == GlfwPlatform.MacOs
+    private val isWayland: Boolean = GlfwWindowSubsystem.platform == GlfwPlatform.LinuxWayland
 
     override fun setCursorMode(cursorMode: CursorMode) {
         BackendScope.launch {
@@ -65,23 +64,25 @@ class GlfwInput(val window: GlfwWindow) : PlatformInput {
         val printableKeys = mutableListOf<Int>()
         for (c in GLFW_KEY_0..GLFW_KEY_9) { printableKeys += c }
         for (c in GLFW_KEY_A..GLFW_KEY_Z) { printableKeys += c }
-        for (c in GLFW_KEY_KP_0..GLFW_KEY_KP_9) { printableKeys += c }
-        printableKeys += GLFW_KEY_APOSTROPHE
-        printableKeys += GLFW_KEY_COMMA
-        printableKeys += GLFW_KEY_MINUS
-        printableKeys += GLFW_KEY_PERIOD
-        printableKeys += GLFW_KEY_SLASH
-        printableKeys += GLFW_KEY_SEMICOLON
-        printableKeys += GLFW_KEY_EQUAL
-        printableKeys += GLFW_KEY_LEFT_BRACKET
-        printableKeys += GLFW_KEY_RIGHT_BRACKET
-        printableKeys += GLFW_KEY_BACKSLASH
-        printableKeys += GLFW_KEY_KP_DECIMAL
-        printableKeys += GLFW_KEY_KP_DIVIDE
-        printableKeys += GLFW_KEY_KP_MULTIPLY
-        printableKeys += GLFW_KEY_KP_SUBTRACT
-        printableKeys += GLFW_KEY_KP_ADD
-        printableKeys += GLFW_KEY_KP_EQUAL
+        if (GlfwWindowSubsystem.platform != GlfwPlatform.LinuxWayland) {
+            for (c in GLFW_KEY_KP_0..GLFW_KEY_KP_9) { printableKeys += c }
+            printableKeys += GLFW_KEY_APOSTROPHE
+            printableKeys += GLFW_KEY_COMMA
+            printableKeys += GLFW_KEY_MINUS
+            printableKeys += GLFW_KEY_PERIOD
+            printableKeys += GLFW_KEY_SLASH
+            printableKeys += GLFW_KEY_SEMICOLON
+            printableKeys += GLFW_KEY_EQUAL
+            printableKeys += GLFW_KEY_LEFT_BRACKET
+            printableKeys += GLFW_KEY_RIGHT_BRACKET
+            printableKeys += GLFW_KEY_BACKSLASH
+            printableKeys += GLFW_KEY_KP_DECIMAL
+            printableKeys += GLFW_KEY_KP_DIVIDE
+            printableKeys += GLFW_KEY_KP_MULTIPLY
+            printableKeys += GLFW_KEY_KP_SUBTRACT
+            printableKeys += GLFW_KEY_KP_ADD
+            printableKeys += GLFW_KEY_KP_EQUAL
+        }
 
         printableKeys.forEach { c ->
             val localName = glfwGetKeyName(c, 0) ?: ""
@@ -97,12 +98,14 @@ class GlfwInput(val window: GlfwWindow) : PlatformInput {
         cursorShapes[CursorShape.TEXT] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR)
         cursorShapes[CursorShape.CROSSHAIR] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR)
         cursorShapes[CursorShape.HAND] = glfwCreateStandardCursor(GLFW_HAND_CURSOR)
-        cursorShapes[CursorShape.NOT_ALLOWED] = glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR)
         cursorShapes[CursorShape.RESIZE_EW] = glfwCreateStandardCursor(GLFW_RESIZE_EW_CURSOR)
         cursorShapes[CursorShape.RESIZE_NS] = glfwCreateStandardCursor(GLFW_RESIZE_NS_CURSOR)
-        cursorShapes[CursorShape.RESIZE_NESW] = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR)
-        cursorShapes[CursorShape.RESIZE_NWSE] = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR)
         cursorShapes[CursorShape.RESIZE_ALL] = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR)
+        if (GlfwWindowSubsystem.platform != GlfwPlatform.LinuxWayland) {
+            cursorShapes[CursorShape.NOT_ALLOWED] = glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR)
+            cursorShapes[CursorShape.RESIZE_NESW] = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR)
+            cursorShapes[CursorShape.RESIZE_NWSE] = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR)
+        }
     }
 
     private fun installInputHandlers(windowHandle: Long) {
@@ -111,7 +114,7 @@ class GlfwInput(val window: GlfwWindow) : PlatformInput {
             PointerInput.handleMouseButtonEvent(btn, act == GLFW_PRESS)
         }
         glfwSetCursorPosCallback(windowHandle) { _, x, y ->
-            val baseScale = if (isMacOs) window.parentScreenScale else 1f
+            val baseScale = if (isMacOs || isWayland) window.parentScreenScale else 1f
             val scale = baseScale * window.renderResolutionFactor
             PointerInput.handleMouseMove(x.toFloat() * scale, y.toFloat() * scale)
         }

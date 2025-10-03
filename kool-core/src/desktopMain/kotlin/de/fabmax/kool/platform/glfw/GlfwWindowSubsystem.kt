@@ -4,6 +4,7 @@ import de.fabmax.kool.KoolSystem
 import de.fabmax.kool.configJvm
 import de.fabmax.kool.platform.*
 import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.logE
 import de.fabmax.kool.util.logI
 import kotlinx.coroutines.runBlocking
 import org.lwjgl.glfw.GLFW.*
@@ -18,6 +19,9 @@ object GlfwWindowSubsystem : WindowSubsystem {
     private var glCallbacks: GlWindowCallbacks? = null
 
     var primaryWindow: GlfwWindow? = null
+        private set
+
+    var platform: GlfwPlatform = GlfwPlatform.Unknown
         private set
 
     override val isCloseRequested: Boolean
@@ -74,8 +78,17 @@ object GlfwWindowSubsystem : WindowSubsystem {
             System.setProperty("java.awt.headless", "true")
         }
 
+        if (glfwPlatformSupported(GLFW_PLATFORM_WAYLAND)) {
+            glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND)
+        }
+
         GLFWErrorCallback.createPrint(System.err).set()
         check(glfwInit()) { "Unable to initialize GLFW" }
+
+        val glfwPlatform = glfwGetPlatform()
+        platform = GlfwPlatform.entries.find { it.value == glfwPlatform } ?: GlfwPlatform.Unknown.also {
+            logE { "Unknown GLFW platform: $glfwPlatform" }
+        }
 
         val primMonId = glfwGetPrimaryMonitor()
         val mons = glfwGetMonitors()!!
@@ -116,22 +129,12 @@ object GlfwWindowSubsystem : WindowSubsystem {
         }
         shutdown()
     }
-
-    fun getMonitorSpecAt(x: Int, y: Int): MonitorSpec {
-        var nearestMon: MonitorSpec? = null
-        var dist = Double.MAX_VALUE
-        for (i in monitors.indices) {
-            val d = monitors[i].distance(x, y)
-            if (d < dist) {
-                dist = d
-                nearestMon = monitors[i]
-            }
-        }
-        return nearestMon!!
-    }
-
-    fun getResolutionAt(x: Int, y: Int): Float {
-        return getMonitorSpecAt(x, y).dpi
-    }
 }
 
+enum class GlfwPlatform(val value: Int) {
+    Windows(GLFW_PLATFORM_WIN32),
+    MacOs(GLFW_PLATFORM_COCOA),
+    LinuxX11(GLFW_PLATFORM_X11),
+    LinuxWayland(GLFW_PLATFORM_WAYLAND),
+    Unknown(GLFW_PLATFORM_UNAVAILABLE),
+}

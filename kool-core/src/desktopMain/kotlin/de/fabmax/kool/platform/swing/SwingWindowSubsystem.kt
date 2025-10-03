@@ -96,14 +96,14 @@ class SwingWindowSubsystem(
             })
             frame.isVisible = true
 
-            try {
-                icons.maxByOrNull { it.width }?.let { taskbarIcon ->
-                    SwingUtilities.invokeLater {
+            icons.maxByOrNull { it.width }?.let { taskbarIcon ->
+                SwingUtilities.invokeLater {
+                    try {
                         Taskbar.getTaskbar().iconImage = taskbarIcon
+                    } catch (_: Exception) {
+                        // silently ignored: Platform doesn't support setting a taskbar icon
                     }
                 }
-            } catch (_: Exception) {
-                // silently ignored: Platform doesn't support setting a taskbar icon
             }
         }
 
@@ -139,6 +139,7 @@ class SwingWindowSubsystem(
         } else {
             unmanagedRenderLoop()
         }
+        runBlocking { closeSignal.await() }
     }
 
     fun close(onClosed: () -> Unit) {
@@ -146,7 +147,7 @@ class SwingWindowSubsystem(
         closeSignal.invokeOnCompletion { onClosed() }
     }
 
-    private fun glRenderLoop() {
+    fun glRenderLoop() {
         val canvas = requireNotNull(canvasWrapper?.canvas as? KoolGlCanvas)
         val renderLoop = object : Runnable {
             override fun run() {
@@ -165,7 +166,6 @@ class SwingWindowSubsystem(
         }
         logI { "Starting Swing event loop based render loop" }
         SwingUtilities.invokeLater(renderLoop)
-        runBlocking { closeSignal.await() }
     }
 
     private fun unmanagedRenderLoop() {
@@ -182,7 +182,6 @@ class SwingWindowSubsystem(
                 }
             }
             shutdown()
-            closeSignal.complete(Unit)
         }
     }
 }
