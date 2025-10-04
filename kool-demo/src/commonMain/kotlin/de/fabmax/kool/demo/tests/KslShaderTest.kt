@@ -125,16 +125,15 @@ class KslShaderTest : DemoScene("KslShader") {
             }
         }
 
-        val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR)).apply {
+        val instances = MeshInstanceList(InstanceLayoutModelMatAndColor).apply {
             val mat = MutableMat4f()
-            val mutColor = MutableColor()
             var i = 0
             for (y in -2 .. 2) {
                 for (x in -2 .. 2) {
                     mat.setIdentity().translate(x * 2.5f, y * 2.5f, 0f)
                     addInstance {
-                        mat.putTo(this)
-                        mutColor.set(MdColor.PALETTE[i++ % MdColor.PALETTE.size]).toLinear().putTo(this)
+                        set(it.modelMat, mat)
+                        set(it.color, MdColor.PALETTE[i++ % MdColor.PALETTE.size].toLinear())
                     }
                 }
             }
@@ -158,7 +157,7 @@ class KslShaderTest : DemoScene("KslShader") {
                 shininess(16f)
                 specularStrength(0.25f)
 
-                vertices { isInstanced = true }
+                vertices { instancedModelMatrix() }
                 color {
                     //addInstanceColor()
                     //addStaticColor(Color.WHITE)

@@ -9,6 +9,7 @@ import de.fabmax.kool.modules.ksl.blocks.noise13
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.InstanceLayoutEmpty
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.Scene
@@ -28,8 +29,8 @@ class GpuBees(beeScene: Scene) {
 
     val beeUpdateTime = mutableStateOf(0.0)
 
-    private val beeInstancesA = MeshInstanceList(emptyList())
-    private val beeInstancesB = MeshInstanceList(emptyList())
+    private val beeInstancesA = MeshInstanceList(InstanceLayoutEmpty)
+    private val beeInstancesB = MeshInstanceList(InstanceLayoutEmpty)
     val beeMeshA = makeBeeMesh(beeInstancesA)
     val beeMeshB = makeBeeMesh(beeInstancesB)
 
@@ -146,7 +147,7 @@ class GpuBees(beeScene: Scene) {
         }
     }
 
-    private fun makeBeeMesh(beeInstances: MeshInstanceList) = Mesh(
+    private fun makeBeeMesh(beeInstances: MeshInstanceList<*>) = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS,
         name = "bee-mesh",
         instances = beeInstances

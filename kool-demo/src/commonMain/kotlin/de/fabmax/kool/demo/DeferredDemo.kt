@@ -145,20 +145,16 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                         lightModelMat.translate(light.position)
 
                         if (lightPositionMesh.isVisible) {
-                            lightPosInsts.addInstances { buf ->
-                                buf.put {
-                                    set(it.modelMat, lightModelMat)
-                                    set(it.color, light.color)
-                                }
+                            lightPosInsts.addInstance {
+                                set(it.modelMat, lightModelMat)
+                                set(it.color, light.color)
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
                             lightModelMat.scale(light.radius)
-                            lightVolInsts.addInstances { buf ->
-                                buf.put {
-                                    set(it.modelMat, lightModelMat)
-                                    set(it.color, light.color)
-                                }
+                            lightVolInsts.addInstance {
+                                set(it.modelMat, lightModelMat)
+                                set(it.color, light.color)
                             }
                         }
                     }

@@ -91,20 +91,19 @@ class CollisionDemo : DemoScene("Physics - Collision") {
             val inactiveColor = MutableColor(MdColor.LIGHT_GREEN.toLinear())
 
             bodies.forEach { (type, typeBodies) ->
-                shapeMeshes[type]!!.instances!!.addInstances(typeBodies.size) { buf ->
+                shapeMeshes[type]!!.addInstances<InstanceLayoutModelMatAndColor>(typeBodies.size) { buf ->
                     for (i in typeBodies.indices) {
                         val body = typeBodies[i]
                         matBuf.set(body.rigidActor.transform.matrixF).scale(body.scale)
-                        matBuf.putTo(buf)
-
-                        if (drawBodyState.value) {
-                            if (body.rigidActor.isActive) {
-                                activeColor.putTo(buf)
-                            } else {
-                                inactiveColor.putTo(buf)
-                            }
+                        val color = if (drawBodyState.value) {
+                            if (body.rigidActor.isActive) activeColor else inactiveColor
                         } else {
-                            body.color.putTo(buf)
+                            body.color
+                        }
+
+                        buf.put {
+                            set(it.modelMat, matBuf)
+                            set(it.color, color)
                         }
 
                         if (body.rigidActor.pose.position.length() > 500f) {
@@ -134,13 +133,12 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     private fun ShapeType.createMesh(): Mesh {
         val mesh = Mesh(
             attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS),
-            instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), 2000)
+            instances = MeshInstanceList(InstanceLayoutModelMatAndColor, 2000)
         )
         mesh.generate { generateShapeMesh() }
         mesh.shader = instancedBodyShader()
         return mesh
     }
-
 
     override fun onRelease(ctx: KoolContext) {
         physicsWorld.release()
@@ -323,8 +321,8 @@ class CollisionDemo : DemoScene("Physics - Collision") {
     }
 
     private fun instancedBodyShader() = KslPbrShader {
-        vertices { isInstanced = true }
-        color { instanceColor(Attribute.COLORS) }
+        vertices { instancedModelMatrix() }
+        color { instanceColor() }
         roughness(1f)
         enableSsao(aoPipeline.aoMap)
         lighting {

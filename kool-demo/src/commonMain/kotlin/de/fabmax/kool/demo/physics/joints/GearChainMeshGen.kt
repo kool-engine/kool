@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
+import de.fabmax.kool.scene.InstanceLayoutModelMat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.Profile
@@ -26,7 +27,7 @@ object GearChainMeshGen {
 
     fun makeNiceGearMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
-        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+        MeshInstanceList(InstanceLayoutModelMat)
     ).apply {
         isFrustumChecked = false
         generate {
@@ -174,7 +175,7 @@ object GearChainMeshGen {
 
     fun makeNiceAxleMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
-        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+        MeshInstanceList(InstanceLayoutModelMat)
     ).apply {
         isFrustumChecked = false
         generate {
@@ -277,7 +278,7 @@ object GearChainMeshGen {
 
     fun makeNiceInnerLinkMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
-        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+        MeshInstanceList(InstanceLayoutModelMat)
     ).apply {
         isFrustumChecked = false
         generate {
@@ -334,7 +335,7 @@ object GearChainMeshGen {
 
     fun makeNiceOuterLinkMesh(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = Mesh(
         meshAttribs,
-        MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+        MeshInstanceList(InstanceLayoutModelMat)
     ).apply {
         isFrustumChecked = false
         generate {
@@ -408,7 +409,7 @@ object GearChainMeshGen {
 
     private fun makeMeshShader(ibl: EnvironmentMap, aoMap: Texture2d, shadows: List<ShadowMap>) = KslPbrShader {
         color { vertexColor() }
-        vertices { isInstanced = true }
+        vertices { instancedModelMatrix() }
         roughness { vertexProperty(attribRoughness) }
         metallic { vertexProperty(attribMetallic) }
         enableSsao(aoMap)

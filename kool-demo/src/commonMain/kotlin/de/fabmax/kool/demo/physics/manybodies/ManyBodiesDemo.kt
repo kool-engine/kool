@@ -13,7 +13,6 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.physics.*
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.geometry.PlaneGeometry
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -25,7 +24,7 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
     private val ibl by hdriImage("${DemoLoader.hdriPath}/syferfontein_0d_clear_1k.rgbe.png")
     private val physicsWorld = PhysicsWorld(mainScene)
 
-    private val cubeInstances = MeshInstanceList(100000, Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS)
+    private val cubeInstances = MeshInstanceList(InstanceLayoutModelMatAndColor, 100000)
     private val physBoxes = mutableListOf<PhysBox>()
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
@@ -44,8 +43,8 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
                 cube {  }
             }
             shader = KslPbrShader {
-                vertices { isInstanced = true }
-                color { instanceColor(Attribute.COLORS) }
+                vertices { instancedModelMatrix() }
+                color { instanceColor() }
                 lightingCfg.imageBasedAmbientLight(ibl.irradianceMap)
                 reflectionMap = ibl.reflectionMap
             }
@@ -54,8 +53,10 @@ class ManyBodiesDemo : DemoScene("Many Bodies") {
                 cubeInstances.clear()
                 cubeInstances.addInstances(physBoxes.size) { buf ->
                     physBoxes.forEach { box ->
-                        box.actor.transform.matrixF.putTo(buf)
-                        box.color.putTo(buf)
+                        buf.put {
+                            set(it.modelMat, box.actor.transform.matrixF)
+                            set(it.color, box.color)
+                        }
                     }
                 }
             }

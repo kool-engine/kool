@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.PrimitiveType
+import de.fabmax.kool.util.MutableStructBufferView
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.StructBuffer
 
@@ -164,11 +165,18 @@ open class Mesh(
         }
     }
 
-    inline fun <reified T: Struct> addInstances(numInstances: Int = 1, block: (StructBuffer<T>) -> Unit) {
+    inline fun <reified T: Struct> addInstances(numInstances: Int, clear: Boolean = false, block: (StructBuffer<T>) -> Unit) {
         val insts = checkNotNull(instances) { "Mesh $name was not created with a MeshInstanceList" }
-        require(insts.layout is T) { "MeshInstanceList uses ${insts.layout::class.simpleName} layout instead of ${T::class.simpleName}" }
+        require(insts.layout is T) { "Mesh $name uses ${insts.layout::class.simpleName} instance layout instead of ${T::class.simpleName}" }
+        if (clear) {
+            insts.clear()
+        }
         @Suppress("UNCHECKED_CAST")
         (insts as MeshInstanceList<T>).addInstances(numInstances, block)
+    }
+
+    inline fun <reified T: Struct> addInstance(block: MutableStructBufferView<T>.(T) -> Unit) {
+        addInstances(1) { buf -> buf.put(block) }
     }
 
     fun getOrCreatePipeline(

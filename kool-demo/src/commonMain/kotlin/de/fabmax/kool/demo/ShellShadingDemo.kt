@@ -319,7 +319,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
     ) {
         val furShader = FurShader(uvBased)
 
-        val shells = MeshInstanceList(128, Attribute.INSTANCE_MODEL_MAT, ATTRIB_SHELL)
+        val shells = MeshInstanceList(ShellInstanceLayout, 128)
         val numShells = mutableStateOf(initShells).onChange { _, _ -> makeShells() }
 
         val theme = mutableStateOf<ColorTheme?>(null).onChange { _, new -> furShader.furGradient = new?.texture }
@@ -359,22 +359,25 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
                     val ry = cos(i * 50f / nShells) * c
                     val rz = sin(i * 50f / nShells) * cos(i * 10f / nShells) * c
 
-                    mat.rotate(rx.deg, ry.deg, rz.deg)
-                    mat.putTo(buf)
+                    buf.put {
+                        mat.rotate(rx.deg, ry.deg, rz.deg)
+                        set(it.modelMat, mat)
 
-                    // outer shells first
-                    if (nShells > 1) {
-                        buf.put((nShells - i - 1) / (nShells - 1f))
-                    } else {
-                        buf.put(0f)
+                        // outer shells first
+                        if (nShells > 1) {
+                            set(it.shell, (nShells - i - 1) / (nShells - 1f))
+                        } else {
+                            set(it.shell, 0f)
+                        }
                     }
                 }
             }
         }
     }
 
-    companion object {
-        val ATTRIB_SHELL = Attribute("aLayer", GpuType.Float1)
+    object ShellInstanceLayout : Struct("", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val shell = float1("aLayer")
     }
 }
 
@@ -418,7 +421,7 @@ class FurShader(uvBased: Boolean) : KslShader("Fur shader") {
                 if (uvBased) {
                     uv.input.set(vertexAttribFloat2(Attribute.TEXTURE_COORDS))
                 }
-                shell.input set instanceAttribFloat1(ShellShadingDemo.ATTRIB_SHELL)
+                shell.input set instanceAttribFloat1(ShellShadingDemo.ShellInstanceLayout.shell)
                 val nrm = float3Var(vertexAttribFloat3(Attribute.NORMALS))
                 val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
                 basePos.input set pos

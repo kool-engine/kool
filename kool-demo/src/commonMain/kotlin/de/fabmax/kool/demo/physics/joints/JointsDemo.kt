@@ -500,12 +500,12 @@ class JointsDemo : DemoScene("Physics - Joints") {
     }
 
     private inner class BodyMesh(val color: Color, val onCreate: (Mesh) -> Unit) {
-        var mesh: Mesh? = null
+        private var mesh: Mesh? = null
 
         var factory: (RigidActor) -> Mesh = { proto ->
             Mesh(
                 Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
-                instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+                instances = MeshInstanceList(InstanceLayoutModelMat)
             ).apply {
                 isFrustumChecked = false
                 generate {
@@ -518,7 +518,7 @@ class JointsDemo : DemoScene("Physics - Joints") {
                     }
                 }
                 shader = KslPbrShader {
-                    vertices { isInstanced = true }
+                    vertices {instancedModelMatrix() }
                     color { vertexColor() }
                     roughness(1f)
                     enableSsao(aoPipeline.aoMap)
@@ -541,11 +541,10 @@ class JointsDemo : DemoScene("Physics - Joints") {
 
         fun updateInstances(bodies: List<RigidActor>) {
             if (bodies.isNotEmpty()) {
-                getOrCreate(bodies[0]).instances!!.apply {
-                    clear()
-                    addInstances(bodies.size) { buf ->
-                        for (i in bodies.indices) {
-                            bodies[i].transform.matrixF.putTo(buf)
+                getOrCreate(bodies[0]).addInstances<InstanceLayoutModelMat>(bodies.size, clear = true) { buffer ->
+                    for (i in bodies.indices) {
+                        buffer.put {
+                            set(it.modelMat, bodies[i].transform.matrixF)
                         }
                     }
                 }

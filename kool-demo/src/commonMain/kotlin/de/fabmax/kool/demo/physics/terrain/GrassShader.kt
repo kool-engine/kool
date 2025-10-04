@@ -8,11 +8,16 @@ import de.fabmax.kool.modules.ksl.blocks.SceneLightData
 import de.fabmax.kool.modules.ksl.blocks.TexCoordAttributeBlock
 import de.fabmax.kool.modules.ksl.blocks.texCoordAttributeBlock
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.CullMethod
+import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
+import de.fabmax.kool.scene.InstanceLayoutModelMat
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.Struct
 
 object GrassShader {
 
@@ -52,7 +57,10 @@ object GrassShader {
         override fun updateEnvMaps(envMaps: Sky.WeightedEnvMaps) { }
     }
 
-    val DISTANCE_SCALE = Attribute("aDistScale", GpuType.Float1)
+    object GrassInstanceLayout : Struct("GrassInstanceLayout", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val distScale = float1("aDistScale")
+    }
 
     fun makeGrassShader(
         grassColor: Texture2d,
@@ -78,7 +86,7 @@ object GrassShader {
                 }
                 if (isInstanced) {
                     val pos = float3Var(worldPos.input.input)
-                    pos.y -= instanceAttribFloat1(DISTANCE_SCALE.name) * 1.3f.const
+                    pos.y -= instanceAttribFloat1(GrassInstanceLayout.distScale) * 1.3f.const
                     worldPos.input(pos)
                 }
             }
@@ -102,7 +110,9 @@ object GrassShader {
 
     private fun shadowConfig(isInstanced: Boolean, isAoDepth: Boolean) = DepthShader.Config.Builder().apply {
         pipeline { cullMethod = CullMethod.NO_CULLING }
-        vertexCfg.isInstanced = isInstanced
+        if (isInstanced) {
+            vertices { instancedModelMatrix() }
+        }
         if (isAoDepth) {
             outputNormals = true
             outputLinearDepth = true
@@ -135,7 +145,7 @@ object GrassShader {
         lighting { addShadowMap(shadowMap) }
         enableSsao(ssaoMap)
         vertices {
-            this.isInstanced = isInstanced
+            if (isInstanced) { instancedModelMatrix() }
             isFlipBacksideNormals = false
         }
         alphaMode = AlphaMode.Opaque

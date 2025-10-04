@@ -8,6 +8,7 @@ import de.fabmax.kool.math.spatial.ItemAdapter
 import de.fabmax.kool.math.spatial.KdTree
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Camera
+import de.fabmax.kool.scene.InstanceLayoutModelMat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -16,7 +17,7 @@ import de.fabmax.kool.util.profiled
 
 class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val sky: Sky) {
 
-    private val oceanInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))
+    private val oceanInstances = MeshInstanceList(InstanceLayoutModelMat)
     private val tileCenters: KdTree<OceanTilePose>
     private val visibleTileTraverser = InViewFrustumTraverser<OceanTilePose>()
     private var updateFrameIdx = 0
@@ -61,7 +62,7 @@ class Ocean(terrainTiles: TerrainTiles, val camera: Camera, val wind: Wind, val 
                     oceanInstances.clear()
                     oceanInstances.addInstances(visibleTileTraverser.result.size) { buf ->
                         for (i in visibleTileTraverser.result.indices) {
-                            visibleTileTraverser.result[i].transform.putTo(buf)
+                            buf.put { set(it.modelMat, visibleTileTraverser.result[i].transform) }
                         }
                     }
                 }

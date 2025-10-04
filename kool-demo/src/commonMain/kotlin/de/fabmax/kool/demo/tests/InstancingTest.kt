@@ -11,7 +11,6 @@ import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.Color
@@ -39,8 +38,7 @@ class InstancingTest : DemoScene("Instancing") {
     }
     private val instancedShader = KslUnlitShader {
         vertices {
-            isInstanced = true
-            modelMatrixComposition = listOf(ModelMatrixComposition.INSTANCE_MODEL_MAT)
+            modelMatrixComposition = listOf(ModelMatrixComposition.InstanceModelMat())
         }
         color { vertexColor() }
         colorSpaceConversion = ColorSpaceConversion.AsIs
@@ -165,7 +163,7 @@ class InstancingTest : DemoScene("Instancing") {
     }
 
     private fun makeObjectsInstanced() {
-        var instances: MeshInstanceList? = null
+        var instances: MeshInstanceList<InstanceLayoutModelMat>? = null
         var insts = 0
 
         meshInstances.clear()
@@ -175,7 +173,7 @@ class InstancingTest : DemoScene("Instancing") {
             val z = -i / 100 - 30
 
             if (instances == null || insts >= numInstancesPerMesh.value) {
-                instances = MeshInstanceList(numInstancesPerMesh.value, Attribute.INSTANCE_MODEL_MAT)
+                instances = MeshInstanceList(InstanceLayoutModelMat, numInstancesPerMesh.value)
                 objects += mainScene.addColorMesh(instances = instances) {
                     generate {
                         color = Color.Hsv(randomF(0f, 360f), randomF(0.5f, 1f), randomF(0.5f, 1f)).toSrgb()
@@ -191,10 +189,10 @@ class InstancingTest : DemoScene("Instancing") {
         }
     }
 
-    class MeshInstance(val instances: MeshInstanceList, val pose: MutableMat4f) {
+    class MeshInstance(val instances: MeshInstanceList<InstanceLayoutModelMat>, val pose: MutableMat4f) {
         fun addInstance() {
             instances.addInstance {
-                pose.putTo(this)
+                set(it.modelMat, pose)
             }
         }
     }

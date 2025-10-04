@@ -78,7 +78,7 @@ object OceanShader {
     }
 
     private fun KslLitShader.LitShaderConfig.Builder.baseConfig(shadowMap: ShadowMap, depthMode: DepthMode) {
-        vertices { isInstanced = true }
+        vertices { instancedModelMatrix() }
         color { constColor(MdColor.CYAN.toLinear()) }
         lighting {
             addShadowMap(shadowMap)

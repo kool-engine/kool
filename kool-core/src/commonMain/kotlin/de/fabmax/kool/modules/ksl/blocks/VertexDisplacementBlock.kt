@@ -32,7 +32,7 @@ class VertexDisplacementBlock(
                     is PropertyBlockConfig.ConstProperty -> source.value.const
                     is PropertyBlockConfig.UniformProperty -> parentStage.program.uniformFloat1(source.uniformName)
                     is PropertyBlockConfig.VertexProperty -> parentStage.vertexAttribFloat1(source.propertyAttrib.name)
-                    is PropertyBlockConfig.InstanceProperty -> parentStage.instanceAttribFloat1(source.propertyAttrib.name)
+                    is PropertyBlockConfig.InstanceProperty -> parentStage.instanceAttribFloat1(source.propertyName)
                     is PropertyBlockConfig.TextureProperty ->  {
                         var sampleValue = findExistingSampleValue(source.textureName, parentStage)
                         if (sampleValue == null) {

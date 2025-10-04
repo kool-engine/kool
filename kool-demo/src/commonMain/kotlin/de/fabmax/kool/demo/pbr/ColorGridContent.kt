@@ -68,7 +68,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
         colors += MdColor.BLUE_GREY
         colors += Color(0.1f, 0.1f, 0.1f)
 
-        val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), nRows * nCols) .apply {
+        val instances = MeshInstanceList(InstanceLayoutModelMatAndColor, nRows * nCols) .apply {
             val mat = MutableMat4f()
             for (y in 0 until nRows) {
                 for (x in 0 until nCols) {
@@ -77,8 +77,8 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
                     mat.scale(1.5f)
 
                     addInstance {
-                        mat.putTo(this)
-                        colors[(y * nCols + x) % colors.size].toLinear().putTo(this)
+                        set(it.modelMat, mat)
+                        set(it.color, colors[(y * nCols + x) % colors.size].toLinear())
                     }
                 }
             }
@@ -92,8 +92,8 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
     }
 
     private fun instancedPbrShader(withIbl: Boolean, envMap: EnvironmentMap) = KslPbrShader {
-        vertices { isInstanced = true }
-        color { instanceColor(Attribute.COLORS) }
+        vertices { instancedModelMatrix() }
+        color { instanceColor() }
         roughness { uniformProperty(0.1f) }
         metallic { uniformProperty(0f) }
         if (withIbl) {
