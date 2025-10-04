@@ -30,8 +30,8 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     private val groundQryFilterData = FilterData { VehicleUtils.setupDrivableSurface(this) }
 
     private val numVehicles = 2048
-    private val chassisInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), numVehicles)
-    private val wheelInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT), numVehicles * 4)
+    private val chassisInstances = MeshInstanceList(InstanceLayoutModelMatAndColor, numVehicles)
+    private val wheelInstances = MeshInstanceList(InstanceLayoutModelMat, numVehicles * 4)
     private val vehicleInstances = mutableListOf<VehicleInstance>()
 
     private val vehicleProps = VehicleProperties().apply {
@@ -157,15 +157,15 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
     }
 
     private fun chassisShader() = KslPbrShader {
-        vertices { isInstanced = true }
-        color { instanceColor(Attribute.COLORS) }
+        vertices { instancedModelMatrix() }
+        color { instanceColor() }
         roughness(1f)
         lightingCfg.imageBasedAmbientLight(ibl.irradianceMap)
         reflectionMap = ibl.reflectionMap
     }
 
     private fun wheelsShader() = KslPbrShader {
-        vertices { isInstanced = true }
+        vertices { instancedModelMatrix() }
         color { vertexColor() }
         roughness(0.8f)
         lighting { imageBasedAmbientLight(ibl.irradianceMap) }
@@ -177,19 +177,19 @@ class ManyVehiclesDemo : DemoScene("Many Vehicles") {
         private val tmpMat2 = MutableMat4f()
         private val color = MutableColor(color)
 
-        fun addChassisInstance(instanceData: MeshInstanceList) {
+        fun addChassisInstance(instanceData: MeshInstanceList<InstanceLayoutModelMatAndColor>) {
             instanceData.addInstance {
-                vehicle.transform.matrixF.putTo(this)
-                color.putTo(this)
+                set(it.modelMat, vehicle.transform.matrixF)
+                set(it.color, color)
             }
         }
 
-        fun addWheelInstances(instanceData: MeshInstanceList) {
+        fun addWheelInstances(instanceData: MeshInstanceList<InstanceLayoutModelMat>) {
             for (i in 0..3) {
                 val wheelInfo = vehicle.wheelInfos[i]
                 tmpMat.set(vehicle.transform.matrixF).translate(vehicleProps.chassisCMOffset).mul(tmpMat2.set(wheelInfo.transform.matrixF))
                 instanceData.addInstance {
-                    tmpMat.putTo(this)
+                    set(it.modelMat, tmpMat)
                 }
             }
         }

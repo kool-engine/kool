@@ -10,17 +10,14 @@ import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.BoxGeometry
 import de.fabmax.kool.physics.joints.FixedJoint
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.deferred.DeferredKslPbrShader
 import de.fabmax.kool.pipeline.deferred.DeferredPointLights
+import de.fabmax.kool.scene.InstanceLayoutModelMat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.simpleShape
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.MdColor
-import de.fabmax.kool.util.PolyUtil
-import de.fabmax.kool.util.Time
+import de.fabmax.kool.util.*
 import kotlin.math.*
 
 class GuardRail {
@@ -30,7 +27,7 @@ class GuardRail {
 
     var isReverse = false
 
-    private val signInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, INSTANCE_EMISSION))
+    private val signInstances = MeshInstanceList(InstanceLayout)
 
     init {
         guardRailMesh = makeMesh()
@@ -207,13 +204,15 @@ class GuardRail {
             }
         }
 
-        fun updateInstance(buf: Float32Buffer) {
+        fun updateInstance(buf: StructBuffer<InstanceLayout>) {
             pointLight.intensity = max(emission.x, emission.y) * 100f
             pointLight.radius = sqrt(pointLight.intensity)
             actor.transform.transform(pointLight.position.set(0f, 0.5f, 0.1f))
 
-            actor.transform.matrixF.putTo(buf)
-            emission.putTo(buf)
+            buf.put {
+                set(it.modelMat, actor.transform.matrixF)
+                set(it.emission, emission)
+            }
         }
     }
 
@@ -221,7 +220,7 @@ class GuardRail {
         companion object {
             fun createShader(): GuardRailShader {
                 val cfg = Config.Builder().apply {
-                    vertices { isInstanced = true }
+                    vertices { instancedModelMatrix() }
                     color { vertexColor() }
                     emission {
                         constColor(VehicleDemo.color(500, false).mulRgb(20f))
@@ -233,7 +232,7 @@ class GuardRail {
                         vertexStage {
                             main {
                                 val emissionDir = vertexAttribFloat2(Attribute.TEXTURE_COORDS.name)
-                                val emissionInst = instanceAttribFloat2(INSTANCE_EMISSION.name)
+                                val emissionInst = instanceAttribFloat2(InstanceLayout.emission)
                                 val emissionLt = emissionDir.x * emissionInst.x
                                 val emissionRt = emissionDir.y * emissionInst.y
                                 emissionFactor.input set max(emissionLt, emissionRt)
@@ -253,7 +252,8 @@ class GuardRail {
         }
     }
 
-    companion object {
-        private val INSTANCE_EMISSION = Attribute("instEmission", GpuType.Float2)
+    object InstanceLayout : Struct("", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val emission = float2("instEmission")
     }
 }

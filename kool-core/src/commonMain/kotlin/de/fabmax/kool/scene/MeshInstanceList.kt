@@ -48,7 +48,12 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
     /**
      * Number of instances.
      */
-    val numInstances: Int get() = instanceData.limit
+    var numInstances: Int
+        get() = instanceData.limit
+        set(value) {
+            instanceData.limit = value
+            incrementModCount()
+        }
     val maxInstances: Int get() = instanceData.capacity
 
     var modCount = 0
@@ -76,10 +81,14 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
         }
     }
 
-    inline fun addInstances(ensureCapacity: Int = 1, block: (StructBuffer<T>) -> Unit) {
-        checkBufferSize(ensureCapacity)
+    inline fun addInstances(numInstances: Int, block: (StructBuffer<T>) -> Unit) {
+        checkBufferSize(numInstances)
         block(instanceData)
         incrementModCount()
+    }
+
+    inline fun addInstance(block: MutableStructBufferView<T>.(T) -> Unit) {
+        addInstances(1) { buf -> buf.put(block) }
     }
 
     fun clear() {
@@ -103,12 +112,15 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
         instanceData.putAll(source.instanceData as StructBuffer<T>)
         usage = source.usage
         modCount = source.modCount
+        numInstances = source.numInstances
     }
 
     override fun doRelease() {
         gpuInstances?.releaseDelayed(1)
     }
 }
+
+object InstanceLayoutEmpty : Struct("InstanceLayoutEmpty", MemoryLayout.TightlyPacked)
 
 object InstanceLayoutModelMat : Struct("InstanceLayoutModelMat", MemoryLayout.TightlyPacked) {
     val modelMat = mat4(Attribute.INSTANCE_MODEL_MAT.name)

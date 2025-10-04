@@ -17,7 +17,7 @@ import kotlin.random.Random
 
 class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, val sky: Sky) {
 
-    private val grassInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, GrassShader.DISTANCE_SCALE))
+    private val grassInstances = MeshInstanceList(GrassShader.GrassInstanceLayout)
     private val grassPositions = mutableListOf<GrassInstance>()
     private val instanceTree: KdTree<GrassInstance>
     private val instanceTrav = GrassTraverser()
@@ -113,8 +113,10 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
                                 0f,
                                 1f
                             ) / (grass.p - 0.1f)).clamp(0f, 1f)
-                            grass.transform.putTo(buf)
-                            buf.put(distScale * grass.s)
+                            buf.put {
+                                set(it.modelMat, grass.transform)
+                                set(it.distScale, distScale * grass.s)
+                            }
                         }
                     }
                 }

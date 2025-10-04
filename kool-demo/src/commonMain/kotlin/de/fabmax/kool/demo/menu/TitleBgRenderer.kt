@@ -37,16 +37,14 @@ class TitleBgRenderer(
             titleBgMesh.instances!!.clear()
         }
 
-        titleBgMesh.addInstances { buffer ->
-            buffer.put {
-                set(BgInstanceLayout.clip, node.clipBoundsPx)
-                set(BgInstanceLayout.dimens, node.leftPx, node.topPx, node.widthPx, node.heightPx)
-                set(BgInstanceLayout.gradientRange, fromColor, toColor, topRadius, bottomRadius)
-            }
+        titleBgMesh.addInstance {
+            set(BgInstanceLayout.clip, node.clipBoundsPx)
+            set(BgInstanceLayout.dimens, node.leftPx, node.topPx, node.widthPx, node.heightPx)
+            set(BgInstanceLayout.gradientRange, fromColor, toColor, topRadius, bottomRadius)
         }
     }
 
-    object BgInstanceLayout : Struct("InstanceAttribs", MemoryLayout.TightlyPacked) {
+    private object BgInstanceLayout : Struct("BgInstanceLayout", MemoryLayout.TightlyPacked) {
         val clip = float4("clip")
         val dimens = float4("dimens")
         val gradientRange = float4("gradientRange")

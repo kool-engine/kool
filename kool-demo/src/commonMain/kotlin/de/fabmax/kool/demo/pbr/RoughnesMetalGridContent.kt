@@ -8,11 +8,12 @@ import de.fabmax.kool.math.MutableMat4f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 import kotlin.math.max
 
 class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrContent("Material grid") {
@@ -59,7 +60,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         val nCols = 7
         val spacing = 2.5f
 
-        val instances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_ROUGHNESS, ATTRIB_METAL), nRows * nCols) .apply {
+        val instances = MeshInstanceList(InstanceLayout, nRows * nCols) .apply {
             val mat = MutableMat4f()
             for (y in 0 until nRows) {
                 for (x in 0 until nCols) {
@@ -67,11 +68,9 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
                     mat.translate((-(nCols - 1) * 0.5f + x) * spacing, ((nRows - 1) * 0.5f - y) * spacing, 0f)
 
                     addInstance {
-                        mat.putTo(this)
-                        val roughness = max(x / (nCols - 1).toFloat(), 0.05f)
-                        val metallic = y / (nRows - 1).toFloat()
-                        put(roughness)
-                        put(metallic)
+                        set(it.modelMat, mat)
+                        set(it.roughness, max(x / (nCols - 1).toFloat(), 0.05f))
+                        set(it.metallic, y / (nRows - 1).toFloat())
                     }
                 }
             }
@@ -85,10 +84,10 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     }
 
     private fun instancedPbrShader(withIbl: Boolean, envMap: EnvironmentMap) = KslPbrShader {
-        vertices { isInstanced = true }
+        vertices { instancedModelMatrix() }
         color { uniformColor(matColors[selectedColorIdx.value].linColor) }
-        metallic { instanceProperty(ATTRIB_METAL) }
-        roughness { instanceProperty(ATTRIB_ROUGHNESS) }
+        metallic { instanceProperty(InstanceLayout.metallic) }
+        roughness { instanceProperty(InstanceLayout.roughness) }
         if (withIbl) {
             lightingCfg.imageBasedAmbientLight(envMap.irradianceMap)
             reflectionMap = envMap.reflectionMap
@@ -99,10 +98,13 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
         override fun toString() = name
     }
 
-    companion object {
-        private val ATTRIB_ROUGHNESS = Attribute("aRoughness", GpuType.Float1)
-        private val ATTRIB_METAL = Attribute("aMetal", GpuType.Float1)
+    private object InstanceLayout : Struct("InstanceLayout", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val roughness = float1()
+        val metallic = float1()
+    }
 
+    companion object {
         private val matColors = listOf(
             MatColor("Red", MdColor.RED.toLinear()),
             MatColor("Pink", MdColor.PINK.toLinear()),

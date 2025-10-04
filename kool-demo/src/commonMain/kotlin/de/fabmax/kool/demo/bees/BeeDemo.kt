@@ -9,7 +9,10 @@ import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ui2.Grow
 import de.fabmax.kool.modules.ui2.Text
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.pipeline.ClearColorFill
+import de.fabmax.kool.pipeline.MipMapping
+import de.fabmax.kool.pipeline.SamplerSettings
+import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Scene
 import de.fabmax.kool.scene.addLineMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
@@ -132,9 +135,6 @@ class BeeDemo : DemoScene("Fighting Bees") {
     }
 
     companion object {
-        val ATTR_POSITION = Attribute("aPosition", GpuType.Float4)
-        val ATTR_ROTATION = Attribute("aRotation", GpuType.Float4)
-
         val bgColor = MdColor.LIGHT_BLUE tone 400
     }
 }

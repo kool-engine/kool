@@ -182,6 +182,7 @@ class SwingWindowSubsystem(
                 }
             }
             shutdown()
+            closeSignal.complete(Unit)
         }
     }
 }

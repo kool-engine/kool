@@ -2,9 +2,11 @@ package de.fabmax.kool.modules.ksl.blocks
 
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.pipeline.backend.gl.channels
+import de.fabmax.kool.util.Float1Member
 
 fun KslScopeBuilder.vertexPropertyBlock(cfg: PropertyBlockConfig): PropertyBlockVertexStage {
     val propertyBlock = PropertyBlockVertexStage(cfg, this)
@@ -54,13 +56,13 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
             }
             cfg.propertySources.filterIsInstance<PropertyBlockConfig.InstanceProperty>().mapIndexed { i, source ->
                 instanceProperties[source] = parentStage.program.interStageFloat1(name = nextName("${opName}_instanceProp_$i")).apply {
-                    val prop = if (source.propertyAttrib.type.channels == 1) {
-                        parentStage.instanceAttribFloat1(source.propertyAttrib.name)
+                    val prop = if (source.type.channels == 1) {
+                        parentStage.instanceAttribFloat1(source.propertyName)
                     } else {
-                        val attrib = when (source.propertyAttrib.type.channels) {
-                            2 -> parentStage.instanceAttribFloat2(source.propertyAttrib.name)
-                            3 -> parentStage.instanceAttribFloat3(source.propertyAttrib.name)
-                            else -> parentStage.instanceAttribFloat4(source.propertyAttrib.name)
+                        val attrib = when (source.type.channels) {
+                            2 -> parentStage.instanceAttribFloat2(source.propertyName)
+                            3 -> parentStage.instanceAttribFloat3(source.propertyName)
+                            else -> parentStage.instanceAttribFloat4(source.propertyName)
                         }
                         when (source.channel) {
                             0 -> attrib.float1("x")
@@ -221,7 +223,7 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
     data class VertexProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
     data class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, override val blendMode: BlendMode) : PropertySource
     data class TextureArrayProperty(val arrayIndex: Int, val defaultTexture: Texture2dArray?, val channel: Int, val textureName: String, override val blendMode: BlendMode) : PropertySource
-    data class InstanceProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
+    data class InstanceProperty(val propertyName: String, val type: GpuType, val channel: Int, override val blendMode: BlendMode) : PropertySource
 
     enum class BlendMode {
         Set,
@@ -283,7 +285,12 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
         }
 
         fun instanceProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set): Builder {
-            propertySources += InstanceProperty(attribute, channel, blendMode)
+            propertySources += InstanceProperty(attribute.name, attribute.type, channel, blendMode)
+            return this
+        }
+
+        fun instanceProperty(layoutMember: Float1Member<*>, blendMode: BlendMode = BlendMode.Set): Builder {
+            propertySources += InstanceProperty(layoutMember.name, layoutMember.type, 0, blendMode)
             return this
         }
 

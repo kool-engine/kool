@@ -263,8 +263,8 @@ class PathTracingDemo : DemoScene("Path-tracing") {
     }
 
     override fun Scene.setupMainScene(ctx: KoolContext) {
-        val materials = StructBuffer(MaterialStruct, 1024)
-        val spheres = StructBuffer(SphereStruct, 1024)
+        val materials = StructBuffer(MaterialStruct, 1024).apply { limit = 0 }
+        val spheres = StructBuffer(SphereStruct, 1024).apply { limit = 0 }
         makeManySpheres(spheres, materials)
 
         val materialBuffer = materials.asStorageBuffer().also { it.releaseWith(this) }
@@ -287,7 +287,7 @@ class PathTracingDemo : DemoScene("Path-tracing") {
         var defocusAngle by raytracingShader.uniform1f("defocusAngle", defocusAngle.value.deg.rad)
         var focusDist by raytracingShader.uniform1f("focusDist", focusDistance.value)
 
-        raytracingShader.uniform1i("numObjects", spheres.size)
+        raytracingShader.uniform1i("numObjects", spheres.limit)
         raytracingShader.uniform1i("maxBounces", 10)
         raytracingShader.storage("materials", materialBuffer)
         raytracingShader.storage("objects", sphereBuffer)

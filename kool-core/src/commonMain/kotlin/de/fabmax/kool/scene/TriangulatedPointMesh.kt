@@ -9,22 +9,23 @@ import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
-import de.fabmax.kool.pipeline.instanceAttribFloat4
 import de.fabmax.kool.pipeline.vertexAttribFloat2
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 import kotlin.math.cos
 import kotlin.math.sin
 
 class TriangulatedPointMesh(
     geometry: IndexedVertexList = IndexedVertexList(listOf(ATTR_POINT_VERTEX), PrimitiveType.TRIANGLE_STRIP),
-    instances: MeshInstanceList = MeshInstanceList(listOf(ATTR_POINT_POS_SZ, ATTR_POINT_COLOR)),
     numVertices: Int = 8,
     name: String = makeNodeName("TriangulatedPointMesh")
-) : Mesh(geometry, instances, name = name) {
+) : Mesh(geometry, MeshInstanceList(PointInstanceLayout, 1024), name = name) {
 
-    private val pointInstances: MeshInstanceList get() = instances!!
+    @Suppress("UNCHECKED_CAST")
+    private val pointInstances: MeshInstanceList<PointInstanceLayout> get() = instances as MeshInstanceList<PointInstanceLayout>
 
     init {
         check(numVertices >= 3)
@@ -59,9 +60,11 @@ class TriangulatedPointMesh(
 
     fun addPoint(position: Vec3f, size: Float, color: Color) {
         pointInstances.addInstance {
-            position.putTo(this)
-            put(size)
-            color.putTo(this)
+            set(it.pointPosSize,
+                position.x, position.y, position.z,
+                size
+            )
+            set(it.pointColor, color)
         }
     }
 
@@ -78,12 +81,12 @@ class TriangulatedPointMesh(
                         val camData = cameraData()
                         val modelMat = modelMatrix()
 
-                        val pointCfg = instanceAttribFloat4(ATTR_POINT_POS_SZ)
+                        val pointCfg = instanceAttribFloat4(PointInstanceLayout.pointPosSize)
                         val pointPos = float3Var(pointCfg.xyz)
                         val pointSize = float1Var(pointCfg.w)
                         val pxSize = float2Var(float2Value(1f.const / camData.viewport.z, 1f.const / camData.viewport.w))
 
-                        color.input set instanceAttribFloat4(ATTR_POINT_COLOR)
+                        color.input set instanceAttribFloat4(PointInstanceLayout.pointColor)
 
                         outPosition set camData.viewProjMat * modelMat.matrix * float4Value(pointPos, 1f.const)
                         outPosition.xy += vertexAttribFloat2(ATTR_POINT_VERTEX) * outPosition.w * pointSize * pxSize
@@ -96,9 +99,12 @@ class TriangulatedPointMesh(
         }
     }
 
+    object PointInstanceLayout : Struct("PointInstanceLayout", MemoryLayout.TightlyPacked) {
+        val pointPosSize = float4("pointPosSize")
+        val pointColor = float4("aPointColor")
+    }
+
     companion object {
         val ATTR_POINT_VERTEX = Attribute("aPointVertex", GpuType.Float2)
-        val ATTR_POINT_POS_SZ = Attribute("aPointPos", GpuType.Float4)
-        val ATTR_POINT_COLOR = Attribute("aPointColor", GpuType.Float4)
     }
 }

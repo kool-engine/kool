@@ -17,7 +17,6 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.modules.ui2.*
 import de.fabmax.kool.physics.util.CharacterTrackingCamRig
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GradientTexture
 import de.fabmax.kool.pipeline.SamplerSettings
 import de.fabmax.kool.pipeline.ao.AoPipeline
@@ -395,7 +394,7 @@ class TerrainDemo : DemoScene("Terrain Demo") {
 
     private fun instancedObjectShader(roughness: Float, metallic: Float, isPbr: Boolean): KslShader {
         fun KslLitShader.LitShaderConfig.Builder.baseConfig() {
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             color { vertexColor() }
             lighting {
                 addShadowMap(shadowMap)
@@ -419,24 +418,21 @@ class TerrainDemo : DemoScene("Terrain Demo") {
         }
     }
 
-    private fun makeBoxMesh() = ColorMesh(MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))).apply {
+    private fun makeBoxMesh() = ColorMesh(MeshInstanceList(InstanceLayoutModelMat)).apply {
         generate {
             color = MdColor.PURPLE.toLinear()
             physicsObjects.boxes[0].shapes[0].geometry.generateMesh(this)
         }
         onUpdate += {
-            instances!!.apply {
-                clear()
-                addInstances(physicsObjects.boxes.size) { buf ->
-                    physicsObjects.boxes.forEach { box ->
-                        box.transform.matrixF.putTo(buf)
-                    }
+            addInstances<InstanceLayoutModelMat>(physicsObjects.boxes.size, clear = true) { buffer ->
+                physicsObjects.boxes.forEach { box ->
+                    buffer.put { set(it.modelMat, box.transform.matrixF) }
                 }
             }
         }
     }
 
-    private fun makeBridgeMesh() = ColorMesh(MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT))).apply {
+    private fun makeBridgeMesh() = ColorMesh(MeshInstanceList(InstanceLayoutModelMat)).apply {
         generate {
             color = MdColor.BROWN toneLin 700
             cube {
@@ -444,12 +440,9 @@ class TerrainDemo : DemoScene("Terrain Demo") {
             }
         }
         onUpdate += {
-            instances?.let { insts ->
-                insts.clear()
-                insts.addInstances(physicsObjects.chainBridge.segments.size) { buf ->
-                    physicsObjects.chainBridge.segments.forEach { seg ->
-                        seg.transform.matrixF.putTo(buf)
-                    }
+            addInstances<InstanceLayoutModelMat>(physicsObjects.chainBridge.segments.size, clear = true) { buffer ->
+                physicsObjects.chainBridge.segments.forEach { seg ->
+                    buffer.put { set(it.modelMat, seg.transform.matrixF) }
                 }
             }
         }

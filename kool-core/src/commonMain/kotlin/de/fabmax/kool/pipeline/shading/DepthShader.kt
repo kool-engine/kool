@@ -8,7 +8,11 @@ import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.vertexTransformBlock
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
+import de.fabmax.kool.scene.InstanceLayoutModelMat
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.util.Mat4Member
+import de.fabmax.kool.util.getByName
+import de.fabmax.kool.util.logE
 
 fun DepthShader(cfgBlock: DepthShader.Config.() -> Unit): DepthShader {
     val cfg = DepthShader.Config().apply(cfgBlock)
@@ -108,7 +112,14 @@ open class DepthShader(val cfg: Config) : KslShader(depthShaderProg(cfg), cfg.pi
                     this.cullMethod = cullMethod
                 }
                 vertices {
-                    isInstanced = mesh.instances != null
+                    if (mesh.instances != null) {
+                        val modelMat = mesh.instances.layout.getByName(InstanceLayoutModelMat.modelMat.name)
+                        if (modelMat is Mat4Member) {
+                            instancedModelMatrix(modelMat)
+                        } else {
+                            logE { "Mesh ${mesh.name} has instance attributes, but does not contain an instanced model matrix member name ${InstanceLayoutModelMat.modelMat.name}" }
+                        }
+                    }
                     mesh.skin?.let {
                         enableArmature(it.nodes.size)
                     }

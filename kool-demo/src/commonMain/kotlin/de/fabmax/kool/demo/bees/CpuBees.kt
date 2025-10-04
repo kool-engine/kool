@@ -6,7 +6,9 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.RectUvs
+import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.PerfTimer
+import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.Time
 import kotlin.jvm.JvmInline
 import kotlin.math.abs
@@ -16,7 +18,7 @@ import kotlin.math.sign
 import kotlin.random.Random
 
 class CpuBees(val team: Int) {
-    val beeInstances = MeshInstanceList(BeeConfig.maxBeesPerTeamCpu, BeeDemo.ATTR_POSITION, BeeDemo.ATTR_ROTATION)
+    val beeInstances = MeshInstanceList(BeeInstanceLayout, BeeConfig.maxBeesPerTeamCpu)
     val beeMesh: Mesh
 
     val positions = Array(BeeConfig.maxBeesPerTeamCpu + 1) { MutableVec4f(0f, 0f, 0f, BeeConfig.decayTime) }
@@ -119,8 +121,10 @@ class CpuBees(val team: Int) {
         beeInstances.clear()
         beeInstances.addInstances(numSimulatedBees) { buf ->
             repeat(numSimulatedBees) { i ->
-                positions[i].putTo(buf)
-                rotations[i].putTo(buf)
+                buf.put {
+                    set(BeeInstanceLayout.position, positions[i])
+                    set(BeeInstanceLayout.rotation, rotations[i])
+                }
             }
         }
     }
@@ -295,5 +299,10 @@ class CpuBees(val team: Int) {
         y += vec3.y
         z += vec3.z
         return this
+    }
+
+    object BeeInstanceLayout : Struct("BeeInstanceLayout", MemoryLayout.TightlyPacked) {
+        val position = float4("position")
+        val rotation = float4("rotation")
     }
 }

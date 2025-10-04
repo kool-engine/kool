@@ -53,6 +53,10 @@ class StructBuffer<T: Struct>(val struct: T, val capacity: Int) {
 
     fun putAll(other: StructBuffer<T>) {
         check(struct.hash == other.struct.hash) { "Can only put buffers with matching structs" }
+        if (strideBytes == 0) {
+            return
+        }
+
         check(remaining >= other.limit) { "Insufficient size: $remaining < ${other.limit}" }
         check(other.limit == other.buffer.limit / other.strideBytes) {
             "Buffer limit mismatch: ${other.limit} != ${other.buffer.limit / other.strideBytes}"

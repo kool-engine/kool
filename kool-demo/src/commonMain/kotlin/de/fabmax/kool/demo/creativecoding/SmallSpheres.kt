@@ -9,28 +9,27 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.InstanceLayoutModelMat
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.ColorGradient
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
 
 class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeContent("Small Spheres") {
 
-    private val instances = MeshInstanceList(listOf(
-        Attribute.INSTANCE_MODEL_MAT,
-        Attribute.INSTANCE_COLOR,
-        Attribute.METAL_ROUGH
-    ))
+    private val instances = MeshInstanceList(SphereInstLayout)
 
     private val mesh = Mesh(listOf(Attribute.POSITIONS, Attribute.NORMALS), instances = instances).apply {
         shader = KslPbrShader {
-            vertices { isInstanced = true }
-            color { instanceColor() }
-            metallic { instanceProperty(Attribute.METAL_ROUGH, 0) }
-            roughness { instanceProperty(Attribute.METAL_ROUGH, 1) }
+            vertices { instancedModelMatrix(SphereInstLayout.modelMat) }
+            color { instanceColor(SphereInstLayout.color) }
+            metallic { instanceProperty(SphereInstLayout.metallic) }
+            roughness { instanceProperty(SphereInstLayout.roughness) }
             lighting {
                 addShadowMaps(resources.shadowMaps)
                 imageBasedAmbientLight(resources.imageEnv.irradianceMap)
@@ -74,12 +73,10 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
 
             // add sphere instance properties: transform matrix + sphere color
             instances.addInstance {
-                transform.putTo(this)
-                color.putTo(this)
-                // metallic
-                put(randomF(0f, 0.5f) * settings.randomness)
-                // roughness
-                put(0.3f + randomF(0f, 0.5f) * settings.randomness)
+                set(it.modelMat, transform)
+                set(it.color, color)
+                set(it.metallic, randomF(0f, 0.5f) * settings.randomness)
+                set(it.roughness, 0.3f + randomF(0f, 0.5f) * settings.randomness)
             }
         }
     }
@@ -133,5 +130,12 @@ class SmallSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
             MdColor.PURPLE,
             MdColor.BLUE
         )
+    }
+
+    private object SphereInstLayout : Struct("SphereInstLayout", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val color = float4("color")
+        val metallic = float1("metallic")
+        val roughness = float1("roughness")
     }
 }

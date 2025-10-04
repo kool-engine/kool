@@ -187,26 +187,24 @@ class UiPrimitiveMesh(name: String) :
         clip: Vec4f,
         colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
     ) {
-        primitives.addInstances { buffer ->
-            buffer.put {
-                set(it.clip, clip)
-                set(it.outerDimens,
-                    max(outerW - outerRx * 2f, 0f),
-                    max(outerH - outerRy * 2f, 0f),
-                    min(outerRx, outerW * 0.5f),
-                    min(outerRy, outerH * 0.5f),
-                )
-                set(it.innerDimens,
-                    max(innerW - innerRx * 2f, 0f),
-                    max(innerH - innerRy * 2f, 0f),
-                    min(innerRx, innerW * 0.5f),
-                    min(innerRy, innerH * 0.5f),
-                )
-                set(it.colorA, colorA)
-                set(it.colorB, colorB)
-                set(it.gradientCfg, gradientCx, gradientCy, gradientRx, gradientRy)
-                set(it.center, x + outerW * 0.5f, y + outerH * 0.5f)
-            }
+        primitives.addInstance {
+            set(it.clip, clip)
+            set(it.outerDimens,
+                max(outerW - outerRx * 2f, 0f),
+                max(outerH - outerRy * 2f, 0f),
+                min(outerRx, outerW * 0.5f),
+                min(outerRy, outerH * 0.5f),
+            )
+            set(it.innerDimens,
+                max(innerW - innerRx * 2f, 0f),
+                max(innerH - innerRy * 2f, 0f),
+                min(innerRx, innerW * 0.5f),
+                min(innerRy, innerH * 0.5f),
+            )
+            set(it.colorA, colorA)
+            set(it.colorB, colorB)
+            set(it.gradientCfg, gradientCx, gradientCy, gradientRx, gradientRy)
+            set(it.center, x + outerW * 0.5f, y + outerH * 0.5f)
         }
     }
 

@@ -41,7 +41,7 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
 
     private lateinit var ao: AoPipeline
     private val shadows = mutableListOf<ShadowMap>()
-    private val bodyInstanceData = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, ATTRIB_COLOR), 1500)
+    private val bodyInstanceData = MeshInstanceList(InstanceLayoutModelMatAndColor, 1500)
     private val bodyInstances = mutableListOf<BodyInstance>()
 
     private val ragdolls = mutableListOf<Articulation>()
@@ -477,8 +477,8 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
     }
 
     private fun instancedBodyShader() = KslPbrShader {
-        vertices { isInstanced = true }
-        color { instanceColor(ATTRIB_COLOR) }
+        vertices { instancedModelMatrix() }
+        color { instanceColor() }
         enableSsao(ao.aoMap)
         roughness(0.8f)
         lighting {
@@ -492,10 +492,12 @@ class RagdollDemo : DemoScene("Ragdoll Demo") {
         private val mutColor = MutableColor(color)
         private val bufTransform = MutableMat4f()
 
-        fun putInstanceData(buf: Float32Buffer) {
-            bufTransform.set(trs.matrixF).scale(size)
-            bufTransform.putTo(buf)
-            mutColor.putTo(buf)
+        fun putInstanceData(buf: StructBuffer<InstanceLayoutModelMatAndColor>) {
+            buf.put {
+                bufTransform.set(trs.matrixF).scale(this@BodyInstance.size)
+                set(it.modelMat, bufTransform)
+                set(it.color, mutColor)
+            }
         }
     }
 

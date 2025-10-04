@@ -65,7 +65,7 @@ object TreeShader {
     }
 
     private fun KslLitShader.LitShaderConfig.Builder.baseConfig(shadowMap: ShadowMap, ssaoMap: Texture2d) {
-        vertices { isInstanced = true }
+        vertices { instancedModelMatrix() }
         color { vertexColor() }
         lighting {
             addShadowMap(shadowMap)
@@ -89,7 +89,7 @@ object TreeShader {
     }.build()
 
     private fun shadowConfig(isAoDepth: Boolean) = DepthShader.Config.Builder().apply {
-        vertices { isInstanced = true }
+        vertices { instancedModelMatrix() }
         if (isAoDepth) {
             outputNormals = true
             outputLinearDepth = true

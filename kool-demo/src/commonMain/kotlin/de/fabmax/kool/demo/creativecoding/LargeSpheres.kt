@@ -8,6 +8,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.scene.InstanceLayoutModelMatAndColor
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.util.ColorGradient
@@ -17,14 +18,11 @@ import kotlin.math.*
 
 class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeContent("Large Spheres") {
 
-    private val instances = MeshInstanceList(listOf(
-        Attribute.INSTANCE_MODEL_MAT,
-        Attribute.INSTANCE_COLOR
-    ))
+    private val instances = MeshInstanceList(InstanceLayoutModelMatAndColor)
 
     private val mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, instances = instances).apply {
         shader = KslPbrShader {
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             color { instanceColor() }
             metallic(0f)
             roughness(0.25f)
@@ -79,9 +77,9 @@ class LargeSpheres(val resources: CreativeCodingDemo.Resources) : CreativeConten
                 // add sphere instance properties: transform matrix + sphere color
                 instances.addInstance {
                     transform.push().scale(settings.sphereSize * sphereSize)
-                    transform.putTo(this)
+                    set(it.modelMat, transform)
                     transform.pop()
-                    color.putTo(this)
+                    set(it.color, color)
                 }
 
                 // forward transform matrix to next sphere position
