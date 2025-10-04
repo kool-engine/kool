@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.Struct
 
 class SceneShaderData(val scene: EditorScene, private val isNotifying: Boolean = true) {
     private val listeners by CachedSceneComponents(scene, EditorScene.SceneShaderDataListener::class)
@@ -110,7 +111,7 @@ class SceneShaderCache : EditorScene.SceneShaderDataListener {
 
 fun MeshLayoutInfo(mesh: Mesh): MeshLayoutInfo = MeshLayoutInfo(
     vertexLayout = mesh.geometry.vertexAttributes,
-    instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
+    instanceLayout = mesh.instances?.layout,
     primitiveType = mesh.geometry.primitiveType,
     numJoints = ((mesh.skin?.nodes?.size ?: 0) + 63) and 63.inv()
     //todo: morphWeights = mesh.geometry.getMorphAttributes()
@@ -118,7 +119,7 @@ fun MeshLayoutInfo(mesh: Mesh): MeshLayoutInfo = MeshLayoutInfo(
 
 data class MeshLayoutInfo(
     val vertexLayout: List<Attribute>,
-    val instanceLayout: List<Attribute>,
+    val instanceLayout: Struct?,
     val primitiveType: PrimitiveType,
     val numJoints: Int
 )

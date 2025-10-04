@@ -3,10 +3,12 @@ package de.fabmax.kool.editor.overlays
 import de.fabmax.kool.editor.KoolEditor
 import de.fabmax.kool.editor.api.GameEntity
 import de.fabmax.kool.editor.components.localToViewD
+import de.fabmax.kool.editor.components.localToViewF
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.InstanceLayoutModelMatAndColor
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.Float32Buffer
+import de.fabmax.kool.util.StructBuffer
 
 abstract class OverlayObject(val gameEntity: GameEntity) {
     abstract val color: Color
@@ -15,11 +17,14 @@ abstract class OverlayObject(val gameEntity: GameEntity) {
 
     private val invModelMat = MutableMat4d()
 
-    fun addInstance(target: Float32Buffer, color: Color = this.color) {
+    fun addInstance(target: StructBuffer<InstanceLayoutModelMatAndColor>, color: Color = this.color) {
         val selectionOv = KoolEditor.instance.selectionOverlay
         val instColor = if (selectionOv.isSelected(gameEntity)) selectionOv.selectionColor.toLinear() else color
-        modelMat.putTo(target)
-        instColor.putTo(target)
+        target.put {
+            set(it.modelMat, gameEntity.localToViewF)
+            set(it.color, instColor)
+
+        }
     }
 
     fun rayTest(rayTest: RayTest, mesh: Mesh): Boolean {

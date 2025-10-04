@@ -7,9 +7,10 @@ import de.fabmax.kool.editor.data.ComponentInfo
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.editor.data.MeshComponentData
 import de.fabmax.kool.editor.data.ShapeData
+import de.fabmax.kool.scene.InstanceLayoutModelMat
 import de.fabmax.kool.scene.Node
-import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.FrontendScope
+import de.fabmax.kool.util.StructBuffer
 import kotlinx.coroutines.launch
 
 class MeshComponent(
@@ -39,8 +40,8 @@ class MeshComponent(
         }
     }
 
-    fun addInstanceData(target: Float32Buffer) {
-        gameEntity.localToViewF.putTo(target)
+    fun addInstanceData(target: StructBuffer<InstanceLayoutModelMat>) {
+        target.put { set(it.modelMat, gameEntity.localToViewF) }
     }
 
     override suspend fun applyComponent() {

@@ -17,10 +17,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.DrawShader
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -33,13 +30,13 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
 
     private val joints = mutableListOf<JointInstance>()
 
-    private val centerInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val linearXInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val linearYInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val linearZInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val angularXInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val angularYInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val angularZInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val centerInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val linearXInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val linearYInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val linearZInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val angularXInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val angularYInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val angularZInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
 
     private val jointCenterBgMesh = makeCenterJointMesh(objectBgShader, false)
     private val linearXJointBgMesh = makeLinearXJointMesh(objectBgShader, false)
@@ -57,7 +54,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     private val angularYJointMesh = makeAngularYJointMesh(objectShader, true)
     private val angularZJointMesh = makeAngularZJointMesh(objectShader, true)
 
-    private fun makeJointMesh(instances: MeshInstanceList, shader: DrawShader, isPickable: Boolean, name: String, block: MeshBuilder.() -> Unit): Mesh =
+    private fun makeJointMesh(instances: MeshInstanceList<*>, shader: DrawShader, isPickable: Boolean, name: String, block: MeshBuilder.() -> Unit): Mesh =
         Mesh(meshAttrs, instances, name).apply {
             isCastingShadow = false
             rayTest = if (isPickable) MeshRayTest.geometryTest(this) else MeshRayTest.nopTest()
@@ -149,18 +146,15 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
         angularZInstances.addInstances(joints, MdColor.CYAN.toLinear()) { it.isAngularZ }
     }
 
-    private fun MeshInstanceList.addInstances(objs: List<JointInstance>, color: Color, filter: (JointInstance) -> Boolean) {
+    private fun MeshInstanceList<InstanceLayoutModelMatAndColor>.addInstances(objs: List<JointInstance>, color: Color, filter: (JointInstance) -> Boolean) {
         clear()
-        addInstancesUpTo(objs.size) { buf ->
-            var addCount = 0
+        addInstances(objs.size) { buf ->
             for (i in objs.indices) {
                 val j = objs[i]
                 if (j.gameEntity.isVisible && filter(j)) {
                     j.addInstance(buf, color)
-                    addCount++
                 }
             }
-            addCount
         }
     }
 
@@ -256,7 +250,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
                 isWriteDepth = false
                 blendMode = BlendMode.BLEND_ADDITIVE
             }
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }
@@ -265,7 +259,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
                 depthTest = DepthCompareOp.ALWAYS
                 isWriteDepth = false
             }
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             color { constColor(Color.BLACK) }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
         }

@@ -267,7 +267,7 @@ fun ThumbnailRenderer.materialThumbnail(material: MaterialComponent): ThumbnailR
         ssaoMap = null
         shadowMaps = emptyList()
     }
-    if (!material.applyMaterialTo(mesh, previewShaderData, listOf(ModelMatrixComposition.UNIFORM_MODEL_MAT))) {
+    if (!material.applyMaterialTo(mesh, previewShaderData, listOf(ModelMatrixComposition.UniformModelMat))) {
         return@renderThumbnail null
     }
 

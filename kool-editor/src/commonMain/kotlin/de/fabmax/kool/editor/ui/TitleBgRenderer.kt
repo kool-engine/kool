@@ -15,6 +15,8 @@ import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 
 class TitleBgRenderer(
     val bgColor: Color,
@@ -38,28 +40,25 @@ class TitleBgRenderer(
         }
 
         bgMesh.bgInstances.addInstance {
-            node.clipBoundsPx.putTo(this)
-            put(node.leftPx)
-            put(node.topPx)
-            put(node.widthPx)
-            put(node.heightPx)
-            put(topRadius)
-            put(bottomRadius)
+            set(it.clip, node.clipBoundsPx)
+            set(it.dimens, node.leftPx, node.topPx, node.widthPx, node.heightPx)
+            set(it.clipCorners, topRadius, bottomRadius)
         }
+    }
+
+    private object BgInstanceLayout : Struct("BgInstanceLayout", MemoryLayout.TightlyPacked) {
+        val clip = float4("clip")
+        val dimens = float4("dimens")
+        val clipCorners = float2("clipCorners")
     }
 
     private class TitleBgMesh : Mesh(
         IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS),
-        instances = MeshInstanceList(
-            listOf(
-                Ui2Shader.ATTRIB_CLIP,
-                TitleBgShader.ATTRIB_DIMENS,
-                TitleBgShader.ATTRIB_CLIP_CORNERS
-            )
-        ),
+        instances = MeshInstanceList(BgInstanceLayout),
         name = "Ui/TitleBgMesh"
     ) {
-        val bgInstances: MeshInstanceList get() = instances!!
+        @Suppress("UNCHECKED_CAST")
+        val bgInstances: MeshInstanceList<BgInstanceLayout> get() = instances!! as MeshInstanceList<BgInstanceLayout>
         val bgShader = TitleBgShader()
 
         init {
@@ -96,11 +95,11 @@ class TitleBgRenderer(
 
                 vertexStage {
                     main {
-                        clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
-                        clipCornerRadius.input set instanceAttribFloat2(ATTRIB_CLIP_CORNERS.name)
+                        clipBounds.input set instanceAttribFloat4(BgInstanceLayout.clip)
+                        clipCornerRadius.input set instanceAttribFloat2(BgInstanceLayout.clipCorners)
 
                         val pos = float3Var(vertexAttribFloat3(Attribute.POSITIONS.name))
-                        val dimens = float4Var(instanceAttribFloat4(ATTRIB_DIMENS.name))
+                        val dimens = float4Var(instanceAttribFloat4(BgInstanceLayout.dimens))
                         size.input set dimens.zw
                         localPos.input set pos.xy * dimens.zw
 

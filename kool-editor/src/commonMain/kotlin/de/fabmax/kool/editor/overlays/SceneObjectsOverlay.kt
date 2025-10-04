@@ -35,11 +35,11 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
     private val cameras = mutableListOf<CameraComponentInstance>()
     private val groups = mutableListOf<GroupNodeInstance>()
 
-    private val dirLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val spotLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val pointLightsInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val cameraInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
-    private val groupInstances = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.INSTANCE_COLOR))
+    private val dirLightsInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val spotLightsInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val pointLightsInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val cameraInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val groupInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
 
     private val dirLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
@@ -80,7 +80,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         }
 
         shader = KslUnlitShader {
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
@@ -121,7 +121,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         }
 
         shader = KslUnlitShader {
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
@@ -157,7 +157,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         }
 
         shader = KslUnlitShader {
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
@@ -197,7 +197,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         }
 
         shader = KslUnlitShader {
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
@@ -224,7 +224,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         }
 
         shader = KslUnlitShader {
-            vertices { isInstanced = true }
+            vertices { instancedModelMatrix() }
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { instanceColor() }
             colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
@@ -281,17 +281,14 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         groupInstances.addInstances(groups)
     }
 
-    private fun MeshInstanceList.addInstances(objs: List<OverlayObject>) {
+    private fun MeshInstanceList<InstanceLayoutModelMatAndColor>.addInstances(objs: List<OverlayObject>) {
         clear()
-        addInstancesUpTo(objs.size) { buf ->
-            var addCount = 0
+        addInstances(objs.size) { buf ->
             for (i in objs.indices) {
                 if (objs[i].gameEntity.isVisible) {
                     objs[i].addInstance(buf)
-                    addCount++
                 }
             }
-            addCount
         }
     }
 
