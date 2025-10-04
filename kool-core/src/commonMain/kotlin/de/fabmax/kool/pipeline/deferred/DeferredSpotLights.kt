@@ -6,8 +6,7 @@ import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.MeshBuilder
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.*
 import kotlin.math.*
 
 
@@ -15,12 +14,7 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
     val lightInstances = mutableListOf<SpotLight>()
     var isDynamic = true
 
-    private val lightInstanceData = MeshInstanceList(listOf(
-        Attribute.INSTANCE_MODEL_MAT,
-        DeferredLightShader.LIGHT_POS,
-        DeferredLightShader.LIGHT_DIR,
-        Attribute.COLORS
-    ), 10000)
+    private val lightInstanceData = MeshInstanceList(SpotLightInstanceLayout, 10000)
 
     private val modelMat = MutableMat4f()
     private val encodedLightData = FloatArray(12)
@@ -51,14 +45,12 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
         lightInstanceData.clear()
         lightInstanceData.addInstances(lightInstances.size) { buf ->
             for (i in 0 until lightInstances.size) {
-                encodeLight(lightInstances[i])
-                modelMat.putTo(buf)
-                buf.put(encodedLightData)
+                buf.put { encodeLight(lightInstances[i]) }
             }
         }
     }
 
-    private fun encodeLight(light: SpotLight) {
+    private fun MutableStructBufferView<SpotLightInstanceLayout>.encodeLight(light: SpotLight) {
         modelMat
             .setIdentity()
             .translate(light.position)
@@ -66,20 +58,24 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
         modelMat.transform(tmpLightDir.set(Vec3f.X_AXIS), 0f)
         modelMat.scale(light.radius)
 
-        encodedLightData[0] = light.position.x
-        encodedLightData[1] = light.position.y
-        encodedLightData[2] = light.position.z
-        encodedLightData[3] = Light.Spot.ENCODING
-
-        encodedLightData[4] = tmpLightDir.x
-        encodedLightData[5] = tmpLightDir.y
-        encodedLightData[6] = tmpLightDir.z
-        encodedLightData[7] = cos(min(maxSpotAngle.rad, light.spotAngle.rad) / 2f)
-
-        encodedLightData[8] = light.color.r * light.intensity
-        encodedLightData[9] = light.color.g * light.intensity
-        encodedLightData[10] = light.color.b * light.intensity
-        encodedLightData[11] = light.coreRatio
+        set(SpotLightInstanceLayout.lightPos,
+            light.position.x,
+            light.position.y,
+            light.position.z,
+            Light.Spot.ENCODING,
+        )
+        set(SpotLightInstanceLayout.lightDir,
+            tmpLightDir.x,
+            tmpLightDir.y,
+            tmpLightDir.z,
+            cos(min(maxSpotAngle.rad, light.spotAngle.rad) / 2f),
+        )
+        set(SpotLightInstanceLayout.lightColor,
+            light.color.r * light.intensity,
+            light.color.g * light.intensity,
+            light.color.b * light.intensity,
+            light.coreRatio,
+        )
     }
 
     fun addSpotLight(spotLight: SpotLight) {
@@ -175,5 +171,12 @@ class DeferredSpotLights(val maxSpotAngle: AngleF) {
             }
         }
 
+    }
+
+    object SpotLightInstanceLayout : Struct("SpotLightInstanceLayout", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(Attribute.INSTANCE_MODEL_MAT.name)
+        val lightPos = float4("lightPos")
+        val lightDir = float4("lightDir")
+        val lightColor = float4("lightColor")
     }
 }
