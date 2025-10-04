@@ -5,6 +5,7 @@ import de.fabmax.kool.pipeline.backend.stats.BufferInfo
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.Float32Buffer
 import de.fabmax.kool.util.Int32Buffer
+import de.fabmax.kool.util.MixedBuffer
 import io.ygdrasil.webgpu.BufferDescriptor
 import io.ygdrasil.webgpu.GPUBuffer
 import io.ygdrasil.webgpu.GPUBufferUsage
@@ -51,6 +52,19 @@ internal class WgpuGrowingBuffer(
     }
 
     fun writeData(data: Int32Buffer) {
+        checkSize(data.limit * 4L)
+        data.asArrayBuffer { arrayBuffer ->
+            device.queue.writeBuffer(
+                buffer = buffer.buffer,
+                bufferOffset = 0uL,
+                data = arrayBuffer,
+                dataOffset = 0uL,
+                size = (data.limit * 4L).toULong()
+            )
+        }
+    }
+
+    fun writeData(data: MixedBuffer) {
         checkSize(data.limit * 4L)
         data.asArrayBuffer { arrayBuffer ->
             device.queue.writeBuffer(

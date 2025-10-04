@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture2dArray
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Float4Member
 
 fun KslScopeBuilder.vertexColorBlock(cfg: ColorBlockConfig): ColorBlockVertexStage {
     val colorBlock = ColorBlockVertexStage(cfg, this)
@@ -41,7 +42,7 @@ class ColorBlockVertexStage(cfg: ColorBlockConfig, parentScope: KslScopeBuilder)
             }
             cfg.colorSources.filterIsInstance<ColorBlockConfig.InstanceColor>().mapIndexed { i, source ->
                 instanceColors[source] = parentStage.program.interStageFloat4(name = nextName("${opName}_instanceColor_$i")).apply {
-                    input set parentStage.instanceAttribFloat4(source.colorAttrib.name)
+                    input set parentStage.instanceAttribFloat4(source.attributeName)
                 }
             }
         }
@@ -172,8 +173,13 @@ data class ColorBlockConfig(
             return this
         }
 
+        fun instanceColor(layoutMember: Float4Member<*>, blendMode: BlendMode = BlendMode.Set): Builder {
+            colorSources += InstanceColor(layoutMember.name, blendMode)
+            return this
+        }
+
         fun instanceColor(attribute: Attribute = Attribute.INSTANCE_COLOR, blendMode: BlendMode = BlendMode.Set): Builder {
-            colorSources += InstanceColor(attribute, blendMode)
+            colorSources += InstanceColor(attribute.name, blendMode)
             return this
         }
 
@@ -246,7 +252,7 @@ data class ColorBlockConfig(
     data class VertexColor(val colorAttrib: Attribute, override val blendMode: BlendMode) : ColorSource
     data class TextureColor(val defaultTexture: Texture2d?, val textureName: String, val gamma: Float, override val blendMode: BlendMode) : ColorSource
     data class TextureArrayColor(val arrayIndex: Int, val defaultTexture: Texture2dArray?, val textureName: String, val gamma: Float, override val blendMode: BlendMode) : ColorSource
-    data class InstanceColor(val colorAttrib: Attribute, override val blendMode: BlendMode) : ColorSource
+    data class InstanceColor(val attributeName: String, override val blendMode: BlendMode) : ColorSource
 
     enum class BlendMode {
         Set,

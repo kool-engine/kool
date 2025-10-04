@@ -12,26 +12,19 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 import kotlin.math.*
 
 class UiPrimitiveMesh(name: String) :
     Mesh(
         geometry = IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNER_WEIGHTS),
-        instances = MeshInstanceList(
-            listOf(
-                ATTRIB_OUTER_DIMENS,
-                ATTRIB_INNER_DIMENS,
-                Ui2Shader.ATTRIB_CLIP,
-                ATTRIB_COLOR_A,
-                ATTRIB_COLOR_B,
-                ATTRIB_GRADIENT_CFG,
-                ATTRIB_CENTER
-            )
-        ),
+        instances = MeshInstanceList(InstanceLayout, 1024),
         name = name
     )
 {
-    private val primitives: MeshInstanceList get() = instances!!
+    @Suppress("UNCHECKED_CAST")
+    private val primitives: MeshInstanceList<InstanceLayout> get() = instances as MeshInstanceList<InstanceLayout>
 
     init {
         isFrustumChecked = false
@@ -194,41 +187,43 @@ class UiPrimitiveMesh(name: String) :
         clip: Vec4f,
         colorA: Color, colorB: Color, gradientCx: Float, gradientCy: Float, gradientRx: Float, gradientRy: Float
     ) {
-        primitives.addInstance {
-            put(max(outerW - outerRx * 2f, 0f))
-            put(max(outerH - outerRy * 2f, 0f))
-            put(min(outerRx, outerW * 0.5f))
-            put(min(outerRy, outerH * 0.5f))
-
-            put(max(innerW - innerRx * 2f, 0f))
-            put(max(innerH - innerRy * 2f, 0f))
-            put(min(innerRx, innerW * 0.5f))
-            put(min(innerRy, innerH * 0.5f))
-
-            clip.putTo(this)
-
-            colorA.putTo(this)
-            colorB.putTo(this)
-            put(gradientCx)
-            put(gradientCy)
-            put(gradientRx)
-            put(gradientRy)
-
-            // center position
-            put(x + outerW * 0.5f)
-            put(y + outerH * 0.5f)
+        primitives.addInstances { buffer ->
+            buffer.put {
+                set(it.clip, clip)
+                set(it.outerDimens,
+                    max(outerW - outerRx * 2f, 0f),
+                    max(outerH - outerRy * 2f, 0f),
+                    min(outerRx, outerW * 0.5f),
+                    min(outerRy, outerH * 0.5f),
+                )
+                set(it.innerDimens,
+                    max(innerW - innerRx * 2f, 0f),
+                    max(innerH - innerRy * 2f, 0f),
+                    min(innerRx, innerW * 0.5f),
+                    min(innerRy, innerH * 0.5f),
+                )
+                set(it.colorA, colorA)
+                set(it.colorB, colorB)
+                set(it.gradientCfg, gradientCx, gradientCy, gradientRx, gradientRy)
+                set(it.center, x + outerW * 0.5f, y + outerH * 0.5f)
+            }
         }
     }
 
+    object InstanceLayout : Struct("InstanceAttribs", MemoryLayout.TightlyPacked) {
+        val clip = float4("aClip")
+        val center = float2("aCenter")
+        val outerDimens = float4("aOuterDimens")
+        val innerDimens = float4("aInnerDimens")
+        val colorA = float4("aColorA")
+        val colorB = float4("aColorB")
+        val gradientCfg = float4("aGradientCfg")
+
+    }
+
     companion object {
-        val ATTRIB_CENTER = Attribute("aCenter", GpuType.Float2)
-        val ATTRIB_OUTER_DIMENS = Attribute("aOuterDimens", GpuType.Float4)
-        val ATTRIB_INNER_DIMENS = Attribute("aInnerDimens", GpuType.Float4)
         val ATTRIB_OUTER_WEIGHTS = Attribute("aOuterW", GpuType.Float4)
         val ATTRIB_INNER_WEIGHTS = Attribute("aInnerW", GpuType.Float4)
-        val ATTRIB_COLOR_A = Attribute("aColorA", GpuType.Float4)
-        val ATTRIB_COLOR_B = Attribute("aColorB", GpuType.Float4)
-        val ATTRIB_GRADIENT_CFG = Attribute("aGradientCfg", GpuType.Float4)
     }
 
     private class PrimitiveShader : KslShader(Model(), pipelineConfig) {
@@ -244,9 +239,9 @@ class UiPrimitiveMesh(name: String) :
                     main {
                         clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
 
-                        val center = float2Var(instanceAttribFloat2(ATTRIB_CENTER.name))
-                        val outerDimens = float4Var(instanceAttribFloat4(ATTRIB_OUTER_DIMENS.name))
-                        val innerDimens = float4Var(instanceAttribFloat4(ATTRIB_INNER_DIMENS.name))
+                        val center = float2Var(instanceAttribFloat2(InstanceLayout.center))
+                        val outerDimens = float4Var(instanceAttribFloat4(InstanceLayout.outerDimens))
+                        val innerDimens = float4Var(instanceAttribFloat4(InstanceLayout.innerDimens))
                         val outerPosWeights = float4Var(vertexAttribFloat4(ATTRIB_OUTER_WEIGHTS.name))
                         val innerPosWeights = float4Var(vertexAttribFloat4(ATTRIB_INNER_WEIGHTS.name))
                         val pos = float3Var(Vec3f.ZERO.const)
@@ -254,9 +249,9 @@ class UiPrimitiveMesh(name: String) :
                         pos.xy set center + outerPosWeights.xy * outerDimens.xy + outerPosWeights.zw * outerDimens.zw
                         pos.xy += innerPosWeights.xy * innerDimens.xy + innerPosWeights.zw * innerDimens.zw
 
-                        colorA.input set instanceAttribFloat4(ATTRIB_COLOR_A.name)
-                        colorB.input set instanceAttribFloat4(ATTRIB_COLOR_B.name)
-                        gradientCfg.input set instanceAttribFloat4(ATTRIB_GRADIENT_CFG.name)
+                        colorA.input set instanceAttribFloat4(InstanceLayout.colorA)
+                        colorB.input set instanceAttribFloat4(InstanceLayout.colorB)
+                        gradientCfg.input set instanceAttribFloat4(InstanceLayout.gradientCfg)
 
                         screenPos.input set pos.xy
                         outPosition set mvpMatrix().matrix * float4Value(pos, 1f.const)

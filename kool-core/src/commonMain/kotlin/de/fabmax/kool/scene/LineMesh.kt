@@ -18,7 +18,7 @@ import kotlin.math.min
 
 fun Node.addLineMesh(
     name: String = makeChildName("LineMesh"),
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
     block: LineMesh.() -> Unit
 ): LineMesh {
     val lineMesh = LineMesh(name, instances = instances).apply(block)
@@ -29,7 +29,7 @@ fun Node.addLineMesh(
 fun Node.addWireframeMesh(
     triMesh: IndexedVertexList,
     lineColor: Color? = null,
-    instances: MeshInstanceList? = null
+    instances: MeshInstanceList<*>? = null
 ) = addLineMesh("${triMesh.name}-wireframe", instances = instances) {
     addWireframe(triMesh, lineColor)
 }
@@ -38,7 +38,7 @@ fun Node.addNormalMesh(
     geometry: IndexedVertexList,
     lineColor: Color? = null,
     len: Float = 1f,
-    instances: MeshInstanceList? = null
+    instances: MeshInstanceList<*>? = null
 ) = addLineMesh("${geometry.name}-normals", instances = instances) {
     addNormals(geometry, lineColor, len)
 }
@@ -46,7 +46,7 @@ fun Node.addNormalMesh(
 open class LineMesh(
     name: String = makeNodeName("LineMesh"),
     geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS, primitiveType = PrimitiveType.LINES),
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
 ) : Mesh(geometry, instances = instances, name = name) {
 
     private val lineBuffer = mutableListOf<LineVertex>()

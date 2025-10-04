@@ -11,10 +11,12 @@ import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.PrimitiveType
+import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.StructBuffer
 
 fun Node.addMesh(
     attributes: List<Attribute>,
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
     name: String = makeChildName("mesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     block: Mesh.() -> Unit
@@ -27,7 +29,7 @@ fun Node.addMesh(
 
 fun Node.addMesh(
     vararg attributes: Attribute,
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
     name: String = makeChildName("mesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     block: Mesh.() -> Unit
@@ -41,7 +43,7 @@ fun Node.addMesh(
 fun Node.addColorMesh(
     name: String = makeChildName("colorMesh"),
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
     block: Mesh.() -> Unit
 ): Mesh {
     return addMesh(
@@ -56,7 +58,7 @@ fun Node.addColorMesh(
 fun Node.addTextureMesh(
     name: String = makeChildName("textureMesh"),
     isNormalMapped: Boolean = false,
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
     block: Mesh.() -> Unit
 ): Mesh {
@@ -76,15 +78,15 @@ fun Node.addTextureMesh(
  */
 open class Mesh(
     val geometry: IndexedVertexList,
-    val instances: MeshInstanceList? = null,
+    val instances: MeshInstanceList<*>? = null,
     val morphWeights: FloatArray? = null,
     val skin: Skin? = null,
     name: String = geometry.name
 ) : Node(name), DoubleBuffered {
 
-    constructor(attributes: List<Attribute>, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
+    constructor(attributes: List<Attribute>, instances: MeshInstanceList<*>? = null, name: String = makeNodeName("Mesh")) :
             this(IndexedVertexList(attributes), instances = instances, name = name)
-    constructor(vararg attributes: Attribute, instances: MeshInstanceList? = null, name: String = makeNodeName("Mesh")) :
+    constructor(vararg attributes: Attribute, instances: MeshInstanceList<*>? = null, name: String = makeNodeName("Mesh")) :
             this(IndexedVertexList(*attributes), instances = instances, name = name)
 
     var isOpaque = true
@@ -94,7 +96,7 @@ open class Mesh(
     private var pipeline: DrawPipeline? = null
 
     val drawGeometry = IndexedVertexList(geometry.vertexAttributes, geometry.primitiveType)
-    val drawInstances = instances?.let { MeshInstanceList(it.instanceAttributes) }
+    val drawInstances = instances?.let { MeshInstanceList(it.layout) }
     private var geometryUpdateModCount = -1
 
     var shader: DrawShader? = null
@@ -162,9 +164,16 @@ open class Mesh(
         }
     }
 
+    inline fun <reified T: Struct> addInstances(numInstances: Int = 1, block: (StructBuffer<T>) -> Unit) {
+        val insts = checkNotNull(instances) { "Mesh $name was not created with a MeshInstanceList" }
+        require(insts.layout is T) { "MeshInstanceList uses ${insts.layout::class.simpleName} layout instead of ${T::class.simpleName}" }
+        @Suppress("UNCHECKED_CAST")
+        (insts as MeshInstanceList<T>).addInstances(numInstances, block)
+    }
+
     fun getOrCreatePipeline(
         ctx: KoolContext,
-        instances: MeshInstanceList? = this.instances
+        instances: MeshInstanceList<*>? = this.instances
     ): DrawPipeline? {
         return pipeline ?: shader?.let { s ->
             s.getOrCreatePipeline(this, ctx, instances).also { pipeline = it }
@@ -252,7 +261,7 @@ open class Mesh(
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
  */
 open class ColorMesh(
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
     name: String = makeNodeName("ColorMesh"),
 ) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, instances = instances, name = name)
 
@@ -263,7 +272,7 @@ open class ColorMesh(
  */
 open class TextureMesh(
     isNormalMapped: Boolean = false,
-    instances: MeshInstanceList? = null,
+    instances: MeshInstanceList<*>? = null,
     name: String = makeNodeName("TextureMesh")
 ) : Mesh(
     if (isNormalMapped) {

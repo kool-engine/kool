@@ -53,6 +53,17 @@ internal class WgpuGrowingBuffer(
         )
     }
 
+    fun writeData(data: MixedBuffer) {
+        checkSize(data.limit * 4L)
+        device.queue.writeBuffer(
+            buffer = buffer.buffer,
+            bufferOffset = 0L,
+            data = (data as MixedBufferImpl).buffer,
+            dataOffset = 0L,
+            size = data.limit.toLong()
+        )
+    }
+
     private fun checkSize(required: Long) {
         if (required > size) {
             buffer.release()

@@ -138,9 +138,9 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
 
         fun copyTo(other: UniformBufferBindingData<*>) {
             check(layout.hash == other.layout.hash)
-            for (i in 0 until buffer.buffer.capacity / 4) {
-                other.buffer.buffer.setInt32(i * 4, buffer.buffer.getInt32(i * 4))
-            }
+            other.buffer.clear()
+            @Suppress("UNCHECKED_CAST")
+            (other.buffer as StructBuffer<T>).putAll(buffer)
             other.modCount.reset(modCount)
         }
     }

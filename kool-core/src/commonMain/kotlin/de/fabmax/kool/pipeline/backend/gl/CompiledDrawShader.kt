@@ -137,7 +137,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         return cmd.geometry.gpuGeometry as GpuGeometryGl
     }
 
-    private fun MeshInstanceList.getOrCreateGpuInstances(cmd: DrawCommand): GpuInstancesGl {
+    private fun MeshInstanceList<*>.getOrCreateGpuInstances(cmd: DrawCommand): GpuInstancesGl {
         if (gpuInstances == null) {
             gpuInstances = GpuInstancesGl(this, backend, BufferCreationInfo(cmd))
         }

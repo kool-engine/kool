@@ -599,12 +599,7 @@ data class GltfFile(
                         isFrustumChecked = false
                     }
 
-                    val instances = if (cfg.addInstanceAttributes.isNotEmpty()) {
-                        MeshInstanceList(cfg.addInstanceAttributes)
-                    } else {
-                        null
-                    }
-
+                    val instances = cfg.instanceLayout?.let { MeshInstanceList(it) }
                     val mesh = Mesh(geometry, instances = instances, morphWeights = morphWeights, skin = meshSkin, name = name)
                     mesh.isFrustumChecked = isFrustumChecked
 
@@ -645,7 +640,7 @@ data class GltfFile(
                 vertices {
                     modelMatrixComposition = cfg.materialConfig.modelMatrixComposition
                     if (mesh.instances != null) {
-                        isInstanced = true
+                        instancedModelMatrix()
                     }
                     if (mesh.skin != null) {
                         if (cfg.materialConfig.fixedNumberOfJoints > 0) {

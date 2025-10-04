@@ -13,7 +13,7 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
         private set
 
     var geometry: IndexedVertexList = mesh.drawGeometry
-    var instances: MeshInstanceList? = mesh.drawInstances
+    var instances: MeshInstanceList<*>? = mesh.drawInstances
 
     var isActive = true
 

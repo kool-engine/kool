@@ -7,6 +7,7 @@ import de.fabmax.kool.pipeline.shading.DepthShader
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.NodeId
+import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.UniqueId
 import de.fabmax.kool.util.releaseDelayed
 
@@ -63,7 +64,7 @@ open class DepthMapPass(
         val cfg = DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, ctx))
         val key = DepthShaderKey(
             vertexLayout = mesh.geometry.vertexAttributes,
-            instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
+            instanceLayout = mesh.instances?.layout,
             shaderCfg = cfg
         )
         return depthShaders.getOrPut(key) { DepthShader(cfg) }
@@ -84,7 +85,7 @@ open class DepthMapPass(
 
     protected data class DepthShaderKey(
         val vertexLayout: List<Attribute>,
-        val instanceLayout: List<Attribute>,
+        val instanceLayout: Struct?,
         val shaderCfg: DepthShader.Config
     )
 }
@@ -123,7 +124,7 @@ class NormalLinearDepthMapPass(
         )
         val key = DepthShaderKey(
             vertexLayout = mesh.geometry.vertexAttributes,
-            instanceLayout = mesh.instances?.instanceAttributes ?: emptyList(),
+            instanceLayout = mesh.instances?.layout,
             shaderCfg = cfg
         )
         return depthShaders.getOrPut(key) { DepthShader(cfg) }

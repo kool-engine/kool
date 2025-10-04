@@ -2,10 +2,7 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.GpuBufferImpl
 import de.fabmax.kool.pipeline.backend.stats.BufferInfo
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.Int32Buffer
-import de.fabmax.kool.util.useRaw
+import de.fabmax.kool.util.*
 import org.lwjgl.vulkan.VK10.vkCmdCopyBuffer
 import org.lwjgl.vulkan.VkBufferCopy
 import org.lwjgl.vulkan.VkCommandBuffer
@@ -63,6 +60,17 @@ class GrowingBufferVk(
         checkSize(bufSize)
         backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
             data.useRaw { stagingBuf.mapped!!.asIntBuffer().put(it) }
+            buffer.copyFrom(stagingBuf, commandBuffer)
+        }
+    }
+
+    fun writeData(data: MixedBuffer, commandBuffer: VkCommandBuffer) {
+        if (data.limit == 0) return
+
+        val bufSize = data.limit * 4L
+        checkSize(bufSize)
+        backend.memManager.stagingBuffer(bufSize) { stagingBuf ->
+            data.useRaw { stagingBuf.mapped!!.put(it) }
             buffer.copyFrom(stagingBuf, commandBuffer)
         }
     }

@@ -36,8 +36,8 @@ class VertexTransformBlock(val cfg: BasicVertexConfig, name: String, parentScope
             } else {
                 cfg.modelMatrixComposition.forEachIndexed { i, mat ->
                     val srcMat = when (mat) {
-                        ModelMatrixComposition.UNIFORM_MODEL_MAT -> parentStage.program.modelMatrix().matrix
-                        ModelMatrixComposition.INSTANCE_MODEL_MAT -> stage.instanceAttribMat4(Attribute.INSTANCE_MODEL_MAT.name)
+                        ModelMatrixComposition.UniformModelMat -> parentStage.program.modelMatrix().matrix
+                        is ModelMatrixComposition.InstanceModelMat -> stage.instanceAttribMat4(mat.attributeName)
                     }
                     if (i == 0) {
                         outModelMat set srcMat

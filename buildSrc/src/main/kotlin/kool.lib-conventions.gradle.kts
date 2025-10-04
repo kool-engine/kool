@@ -23,7 +23,6 @@ kotlin {
     compilerOptions {
         freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
         freeCompilerArgs.add("-Xcontext-parameters")
-        freeCompilerArgs.add("-Xwhen-guards")
     }
 
     sourceSets.all {

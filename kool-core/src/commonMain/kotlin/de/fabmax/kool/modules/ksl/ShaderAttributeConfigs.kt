@@ -7,10 +7,10 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.TextureCube
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Mat4Member
 import de.fabmax.kool.util.ShadowMap
 
 data class BasicVertexConfig(
-    val isInstanced: Boolean,
     val isFlipBacksideNormals: Boolean,
     val maxNumberOfBones: Int,
     val morphAttributes: List<Attribute>,
@@ -23,12 +23,23 @@ data class BasicVertexConfig(
         get() = morphAttributes.isNotEmpty()
 
     class Builder {
-        var isInstanced: Boolean = false
         var isFlipBacksideNormals: Boolean = true
         var maxNumberOfBones: Int = 0
         val morphAttributes: MutableList<Attribute> = mutableListOf()
         val displacementCfg: PropertyBlockConfig.Builder = PropertyBlockConfig.Builder("displacement").apply { constProperty(0f) }
         var modelMatrixComposition = listOf<ModelMatrixComposition>()
+        var instanceModelMatItem: ModelMatrixComposition.InstanceModelMat? = null
+
+        @Deprecated("use instancedModelMatrix() instead")
+        var isInstanced: Boolean = false
+            set(value) {
+                instanceModelMatItem = if (value) {
+                    ModelMatrixComposition.InstanceModelMat()
+                } else {
+                    null
+                }
+                field = value
+            }
 
         fun enableArmatureFixedNumberOfBones(fixedNumberOfBones: Int): Builder {
             this.maxNumberOfBones = fixedNumberOfBones
@@ -45,27 +56,30 @@ data class BasicVertexConfig(
             return this
         }
 
+        fun instancedModelMatrix(layoutMember: Mat4Member<*>) = instancedModelMatrix(layoutMember.name)
+
+        fun instancedModelMatrix(attributeName: String = Attribute.INSTANCE_MODEL_MAT.name) {
+            instanceModelMatItem = ModelMatrixComposition.InstanceModelMat(attributeName)
+        }
+
         fun build() = BasicVertexConfig(
-            isInstanced = isInstanced,
             isFlipBacksideNormals = isFlipBacksideNormals,
             maxNumberOfBones = maxNumberOfBones,
             morphAttributes = morphAttributes.toList(),
             displacementCfg = displacementCfg.build(),
             modelMatrixComposition = modelMatrixComposition.ifEmpty {
                 buildList {
-                    add(ModelMatrixComposition.UNIFORM_MODEL_MAT)
-                    if (isInstanced) {
-                        add(ModelMatrixComposition.INSTANCE_MODEL_MAT)
-                    }
+                    add(ModelMatrixComposition.UniformModelMat)
+                    instanceModelMatItem?.let { add(it) }
                 }
             }
         )
     }
 }
 
-enum class ModelMatrixComposition {
-    UNIFORM_MODEL_MAT,
-    INSTANCE_MODEL_MAT
+sealed interface ModelMatrixComposition {
+    data object UniformModelMat : ModelMatrixComposition
+    data class InstanceModelMat(val attributeName: String = Attribute.INSTANCE_MODEL_MAT.name) : ModelMatrixComposition
 }
 
 data class AmbientOcclusionConfig(
