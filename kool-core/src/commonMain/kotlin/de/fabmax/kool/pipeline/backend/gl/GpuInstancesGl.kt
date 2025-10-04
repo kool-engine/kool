@@ -7,7 +7,7 @@ import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 
 class GpuInstancesGl(
-    val instances: MeshInstanceList,
+    val instances: MeshInstanceList<*>,
     val backend: RenderBackendGl,
     creationInfo: BufferCreationInfo
 ) : BaseReleasable(), GpuInstances {
@@ -27,7 +27,7 @@ class GpuInstancesGl(
         checkIsNotReleased()
         if (updateModCount != instances.modCount) {
             updateModCount = instances.modCount
-            instanceBuffer.setData(instances.dataF, instances.usage.glUsage)
+            instanceBuffer.setData(instances.instanceData.buffer, instances.usage.glUsage)
         }
     }
 

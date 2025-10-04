@@ -3,10 +3,10 @@ package de.fabmax.kool.modules.gltf
 import de.fabmax.kool.AssetLoader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.util.ShadowMap
+import de.fabmax.kool.util.Struct
 
 data class GltfLoadConfig(
     val generateNormals: Boolean = false,
@@ -20,7 +20,7 @@ data class GltfLoadConfig(
     val removeEmptyNodes: Boolean = true,
     val mergeMeshesByMaterial: Boolean = false,
     val sortNodesByAlpha: Boolean = true,
-    val addInstanceAttributes: List<Attribute> = emptyList(),
+    val instanceLayout: Struct? = null,
     val assetLoader: AssetLoader? = null,
     val pbrBlock: (KslPbrShader.Config.Builder.(GltfMesh.Primitive) -> Unit)? = null
 )

@@ -423,11 +423,24 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         buffer.setFloat32(offset + 4, value.y)
     }
 
+    fun set(member: Float2Member<T>, x: Float, y: Float) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setFloat32(offset + 0, x)
+        buffer.setFloat32(offset + 4, y)
+    }
+
     fun set(member: Float3Member<T>, value: Vec3f) {
         val offset = bytePosition + member.byteOffset
         buffer.setFloat32(offset + 0, value.x)
         buffer.setFloat32(offset + 4, value.y)
         buffer.setFloat32(offset + 8, value.z)
+    }
+
+    fun set(member: Float3Member<T>, x: Float, y: Float, z: Float) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setFloat32(offset + 0, x)
+        buffer.setFloat32(offset + 4, y)
+        buffer.setFloat32(offset + 8, z)
     }
 
     fun set(member: Float4Member<T>, value: Vec4f) {
@@ -436,6 +449,14 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         buffer.setFloat32(offset + 4, value.y)
         buffer.setFloat32(offset + 8, value.z)
         buffer.setFloat32(offset + 12, value.w)
+    }
+
+    fun set(member: Float4Member<T>, x: Float, y: Float, z: Float, w: Float) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setFloat32(offset + 0, x)
+        buffer.setFloat32(offset + 4, y)
+        buffer.setFloat32(offset + 8, z)
+        buffer.setFloat32(offset + 12, w)
     }
 
     fun set(member: Float4Member<T>, value: QuatF) {
@@ -464,19 +485,40 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         buffer.setInt32(offset + 4, value.y)
     }
 
+    fun set(member: Int2Member<T>, x: Int, y: Int) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setInt32(offset + 0, x)
+        buffer.setInt32(offset + 4, y)
+    }
+
     fun set(member: Int3Member<T>, value: Vec3i) {
         val offset = bytePosition + member.byteOffset
         buffer.setInt32(offset + 0, value.x)
         buffer.setInt32(offset + 4, value.y)
-        buffer.setInt32(offset + 8, value.y)
+        buffer.setInt32(offset + 8, value.z)
+    }
+
+    fun set(member: Int3Member<T>, x: Int, y: Int, z: Int) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setInt32(offset + 0, x)
+        buffer.setInt32(offset + 4, y)
+        buffer.setInt32(offset + 8, z)
     }
 
     fun set(member: Int4Member<T>, value: Vec4i) {
         val offset = bytePosition + member.byteOffset
         buffer.setInt32(offset + 0, value.x)
         buffer.setInt32(offset + 4, value.y)
-        buffer.setInt32(offset + 8, value.y)
-        buffer.setInt32(offset + 12, value.y)
+        buffer.setInt32(offset + 8, value.z)
+        buffer.setInt32(offset + 12, value.w)
+    }
+
+    fun set(member: Int4Member<T>, x: Int, y: Int, z: Int, w: Int) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setInt32(offset + 0, x)
+        buffer.setInt32(offset + 4, y)
+        buffer.setInt32(offset + 8, z)
+        buffer.setInt32(offset + 12, w)
     }
 
     fun set(member: Uint1Member<T>, value: UInt) {
@@ -489,19 +531,40 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         buffer.setInt32(offset + 4, value.y)
     }
 
+    fun set(member: Uint2Member<T>, x: UInt, y: UInt) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setUint32(offset + 0, x)
+        buffer.setUint32(offset + 4, y)
+    }
+
     fun set(member: Uint3Member<T>, value: Vec3i) {
         val offset = bytePosition + member.byteOffset
         buffer.setInt32(offset + 0, value.x)
         buffer.setInt32(offset + 4, value.y)
-        buffer.setInt32(offset + 8, value.y)
+        buffer.setInt32(offset + 8, value.z)
+    }
+
+    fun set(member: Uint3Member<T>, x: UInt, y: UInt, z: UInt) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setUint32(offset + 0, x)
+        buffer.setUint32(offset + 4, y)
+        buffer.setUint32(offset + 8, z)
     }
 
     fun set(member: Uint4Member<T>, value: Vec4i) {
         val offset = bytePosition + member.byteOffset
         buffer.setInt32(offset + 0, value.x)
         buffer.setInt32(offset + 4, value.y)
-        buffer.setInt32(offset + 8, value.y)
-        buffer.setInt32(offset + 12, value.y)
+        buffer.setInt32(offset + 8, value.z)
+        buffer.setInt32(offset + 12, value.w)
+    }
+
+    fun set(member: Uint4Member<T>, x: UInt, y: UInt, z: UInt, w: UInt) {
+        val offset = bytePosition + member.byteOffset
+        buffer.setUint32(offset + 0, x)
+        buffer.setUint32(offset + 4, y)
+        buffer.setUint32(offset + 8, z)
+        buffer.setUint32(offset + 12, w)
     }
 
     fun set(member: Bool1Member<T>, value: Boolean) {
@@ -518,15 +581,15 @@ class MutableStructBufferView<T: Struct>(val buffer: MixedBuffer, val offset: In
         val offset = bytePosition + member.byteOffset
         buffer.setInt32(offset + 0, value.x)
         buffer.setInt32(offset + 4, value.y)
-        buffer.setInt32(offset + 8, value.y)
+        buffer.setInt32(offset + 8, value.z)
     }
 
     fun set(member: Bool4Member<T>, value: Vec4i) {
         val offset = bytePosition + member.byteOffset
         buffer.setInt32(offset + 0, value.x)
         buffer.setInt32(offset + 4, value.y)
-        buffer.setInt32(offset + 8, value.y)
-        buffer.setInt32(offset + 12, value.y)
+        buffer.setInt32(offset + 8, value.z)
+        buffer.setInt32(offset + 12, value.w)
     }
 
     fun set(member: Float1ArrayMember<T>, index: Int, value: Float) {

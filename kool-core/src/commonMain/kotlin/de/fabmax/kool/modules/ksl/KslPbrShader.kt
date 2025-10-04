@@ -46,7 +46,7 @@ open class KslPbrShader(cfg: Config, model: KslProgram = Model(cfg)) : KslLitSha
         registerArrayTextures(cfg.metallicCfg)
     }
 
-    override fun createPipeline(mesh: Mesh, instances: MeshInstanceList?, ctx: KoolContext): DrawPipeline {
+    override fun createPipeline(mesh: Mesh, instances: MeshInstanceList<*>?, ctx: KoolContext): DrawPipeline {
         return super.createPipeline(mesh, instances, ctx).also {
             if (brdfLut == null) {
                 brdfLut = ctx.defaultPbrBrdfLut

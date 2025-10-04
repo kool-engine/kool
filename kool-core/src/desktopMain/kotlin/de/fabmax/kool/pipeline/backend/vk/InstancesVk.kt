@@ -9,12 +9,12 @@ import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_TRANSFER_DST_BIT
 import org.lwjgl.vulkan.VK10.VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
 import org.lwjgl.vulkan.VkCommandBuffer
 
-class InstancesVk(val instances: MeshInstanceList, val backend: RenderBackendVk, mesh: Mesh) : BaseReleasable(), GpuInstances {
+class InstancesVk(val instances: MeshInstanceList<*>, val backend: RenderBackendVk, mesh: Mesh) : BaseReleasable(), GpuInstances {
     private val device: Device get() = backend.device
 
-    private val createdInstanceBuffer: GrowingBufferVk? = if (instances.instanceSizeF == 0) null else {
+    private val createdInstanceBuffer: GrowingBufferVk? = if (instances.layout.structSize == 0) null else {
         val memInfo = MemoryInfo(
-            size = instances.strideBytesF * instances.maxInstances.toLong(),
+            size = instances.layout.structSize * instances.maxInstances.toLong(),
             usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             label = "${mesh.name} instance data"
         )
@@ -29,7 +29,7 @@ class InstancesVk(val instances: MeshInstanceList, val backend: RenderBackendVk,
 
         if (updateModCount != instances.modCount) {
             updateModCount = instances.modCount
-            createdInstanceBuffer?.writeData(instances.dataF, commandBuffer)
+            createdInstanceBuffer?.writeData(instances.instanceData.buffer, commandBuffer)
         }
     }
 

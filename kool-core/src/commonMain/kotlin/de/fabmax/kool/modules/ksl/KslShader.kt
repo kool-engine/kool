@@ -7,10 +7,7 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.util.DynamicStruct
-import de.fabmax.kool.util.MemoryLayout
-import de.fabmax.kool.util.logE
-import de.fabmax.kool.util.logW
+import de.fabmax.kool.util.*
 
 fun KslShader(
     name: String,
@@ -74,7 +71,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
 
     override fun createPipeline(
         mesh: Mesh,
-        instances: MeshInstanceList?,
+        instances: MeshInstanceList<*>?,
         ctx: KoolContext
     ): DrawPipeline {
         checkNotNull(program.vertexStage) {
@@ -111,7 +108,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         program.shaderListeners.forEach { it.onShaderCreated(this) }
     }
 
-    private fun makeVertexLayout(mesh: Mesh, instances: MeshInstanceList?): VertexLayout {
+    private fun makeVertexLayout(mesh: Mesh, instances: MeshInstanceList<*>?): VertexLayout {
         val vertexStage = checkNotNull(program.vertexStage) { "vertexStage not defined" }
 
         val verts = mesh.geometry
@@ -136,11 +133,11 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
         val instanceAttribs = vertexStage.attributes.values.filter { it.inputRate == KslInputRate.Instance }
         if (instances != null) {
             instanceAttribs.forEach { instanceAttrib ->
-                val attrib = checkNotNull(instances.attributeOffsets.keys.find { it.name == instanceAttrib.name }) {
+                val instanceMember = instances.layout.getByName(instanceAttrib.name)
+                checkNotNull(instanceMember) {
                     "Mesh does not include required instance attribute: ${instanceAttrib.name}"
                 }
-                val off = instances.attributeOffsets[attrib]!!
-                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, off, attrib)
+                instLayoutAttribs += VertexLayout.VertexAttribute(attribLocation++, instanceMember.byteOffset, instanceMember.asAttribute())
             }
         } else if (instanceAttribs.isNotEmpty()) {
             throw IllegalStateException("Shader model requires instance attributes, but mesh doesn't provide any")
@@ -167,7 +164,7 @@ open class KslShader private constructor(val program: KslProgram) : DrawShader(p
                     iBinding,
                     InputRate.INSTANCE,
                     instLayoutAttribs,
-                    instances.strideBytesF
+                    instances.layout.structSize
                 )
             }
         }

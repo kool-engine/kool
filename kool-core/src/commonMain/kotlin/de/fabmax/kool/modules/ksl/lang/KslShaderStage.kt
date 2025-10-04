@@ -3,7 +3,7 @@ package de.fabmax.kool.modules.ksl.lang
 import de.fabmax.kool.math.Vec3i
 import de.fabmax.kool.modules.ksl.model.KslTransformer
 import de.fabmax.kool.pipeline.ShaderStage
-import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.*
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -215,8 +215,38 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
     fun instanceAttribFloat3(name: String) = attribVector(name, KslFloat3, KslInputRate.Instance)
     fun instanceAttribFloat4(name: String) = attribVector(name, KslFloat4, KslInputRate.Instance)
 
+    fun instanceAttribInt1(name: String) = attribScalar(name, KslInt1, KslInputRate.Instance)
+    fun instanceAttribInt2(name: String) = attribVector(name, KslInt2, KslInputRate.Instance)
+    fun instanceAttribInt3(name: String) = attribVector(name, KslInt3, KslInputRate.Instance)
+    fun instanceAttribInt4(name: String) = attribVector(name, KslInt4, KslInputRate.Instance)
+
+    fun instanceAttribUint1(name: String) = attribScalar(name, KslUint1, KslInputRate.Instance)
+    fun instanceAttribUint2(name: String) = attribVector(name, KslUint2, KslInputRate.Instance)
+    fun instanceAttribUint3(name: String) = attribVector(name, KslUint3, KslInputRate.Instance)
+    fun instanceAttribUint4(name: String) = attribVector(name, KslUint4, KslInputRate.Instance)
+
+    fun instanceAttribMat2(name: String) = attribMatrix(name, KslMat2, KslInputRate.Instance)
     fun instanceAttribMat3(name: String) = attribMatrix(name, KslMat3, KslInputRate.Instance)
     fun instanceAttribMat4(name: String) = attribMatrix(name, KslMat4, KslInputRate.Instance)
+
+    fun instanceAttribFloat1(layoutMember: Float1Member<*>) = attribScalar(layoutMember.name, KslFloat1, KslInputRate.Instance)
+    fun instanceAttribFloat2(layoutMember: Float2Member<*>) = attribVector(layoutMember.name, KslFloat2, KslInputRate.Instance)
+    fun instanceAttribFloat3(layoutMember: Float3Member<*>) = attribVector(layoutMember.name, KslFloat3, KslInputRate.Instance)
+    fun instanceAttribFloat4(layoutMember: Float4Member<*>) = attribVector(layoutMember.name, KslFloat4, KslInputRate.Instance)
+
+    fun instanceAttribInt1(layoutMember: Int1Member<*>) = attribScalar(layoutMember.name, KslInt1, KslInputRate.Instance)
+    fun instanceAttribInt2(layoutMember: Int2Member<*>) = attribVector(layoutMember.name, KslInt2, KslInputRate.Instance)
+    fun instanceAttribInt3(layoutMember: Int3Member<*>) = attribVector(layoutMember.name, KslInt3, KslInputRate.Instance)
+    fun instanceAttribInt4(layoutMember: Int4Member<*>) = attribVector(layoutMember.name, KslInt4, KslInputRate.Instance)
+
+    fun instanceAttribUint1(layoutMember: Uint1Member<*>) = attribScalar(layoutMember.name, KslUint1, KslInputRate.Instance)
+    fun instanceAttribUint2(layoutMember: Uint2Member<*>) = attribVector(layoutMember.name, KslUint2, KslInputRate.Instance)
+    fun instanceAttribUint3(layoutMember: Uint3Member<*>) = attribVector(layoutMember.name, KslUint3, KslInputRate.Instance)
+    fun instanceAttribUint4(layoutMember: Uint4Member<*>) = attribVector(layoutMember.name, KslUint4, KslInputRate.Instance)
+
+    fun instanceAttribMat2(layoutMember: Mat2Member<*>) = attribMatrix(layoutMember.name, KslMat2, KslInputRate.Instance)
+    fun instanceAttribMat3(layoutMember: Mat3Member<*>) = attribMatrix(layoutMember.name, KslMat3, KslInputRate.Instance)
+    fun instanceAttribMat4(layoutMember: Mat4Member<*>) = attribMatrix(layoutMember.name, KslMat4, KslInputRate.Instance)
 
     companion object {
         const val NAME_IN_VERTEX_INDEX = "inVertexIndex"

@@ -1,30 +1,43 @@
 package de.fabmax.kool.scene
 
 import de.fabmax.kool.pipeline.Attribute
+import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.pipeline.backend.GpuInstances
-import de.fabmax.kool.pipeline.isInt
 import de.fabmax.kool.scene.geometry.Usage
-import de.fabmax.kool.util.BaseReleasable
-import de.fabmax.kool.util.Float32Buffer
-import de.fabmax.kool.util.releaseDelayed
+import de.fabmax.kool.util.*
 import kotlin.math.max
 
-class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int = 100) : BaseReleasable() {
+@Deprecated("Use a layout struct instead of specifying instance attributes individually")
+fun MeshInstanceList(instanceAttributes: List<Attribute>, initialSize: Int = 100): MeshInstanceList<*> {
+    val layout = DynamicStruct("InstanceLayout", MemoryLayout.TightlyPacked) {
+        instanceAttributes.forEach {
+            when (it.type) {
+                GpuType.Float1 -> float1(it.name)
+                GpuType.Float2 -> float2(it.name)
+                GpuType.Float3 -> float3(it.name)
+                GpuType.Float4 -> float4(it.name)
+                GpuType.Int1 -> int1(it.name)
+                GpuType.Int2 -> int2(it.name)
+                GpuType.Int3 -> int3(it.name)
+                GpuType.Int4 -> int4(it.name)
+                GpuType.Mat2 -> mat2(it.name)
+                GpuType.Mat3 -> mat3(it.name)
+                GpuType.Mat4 -> mat4(it.name)
+                else -> error("${it.type} (${it.name}) not supported here")
+            }
+        }
+    }
+    return MeshInstanceList(layout, initialSize)
+}
 
-    /**
-     * Vertex attribute offsets in bytes.
-     */
-    val attributeOffsets: Map<Attribute, Int>
+@Suppress("DEPRECATION")
+@Deprecated("Use a layout struct instead of specifying instance attributes individually")
+fun MeshInstanceList(initialSize: Int, vararg instanceAttributes: Attribute): MeshInstanceList<*> =
+    MeshInstanceList(listOf(*instanceAttributes), initialSize)
 
-    /**
-     * Number of floats per instance. E.g. an instance containing only a model matrix consists of 16 floats.
-     */
-    val instanceSizeF: Int
-
-    /**
-     * Number of bytes per instance. E.g. an instance containing only a model matrix consists of 16 * 4 = 64 bytes.
-     */
-    val strideBytesF: Int
+class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isResizable: Boolean = true) : BaseReleasable() {
+    var instanceData = StructBuffer(layout, initialSize).apply { limit = 0 }
+        private set
 
     /**
      * Expected usage of data in this instance list: STATIC if attributes are expected to change very infrequently /
@@ -35,114 +48,59 @@ class MeshInstanceList(val instanceAttributes: List<Attribute>, initialSize: Int
     /**
      * Number of instances.
      */
-    var numInstances = 0
-        set(value) {
-            field = value
-            incrementModCount()
-        }
-
-    var dataF: Float32Buffer
-        private set
-
-    private val strideFloats: Int
-
-    var maxInstances = initialSize
-        private set
+    val numInstances: Int get() = instanceData.limit
+    val maxInstances: Int get() = instanceData.capacity
 
     var modCount = 0
         internal set
 
     var gpuInstances: GpuInstances? = null
 
-    constructor(initialSize: Int, vararg instanceAttributes: Attribute) : this(listOf(*instanceAttributes), initialSize)
-
-    init {
-        var strideF = 0
-        val offsets = mutableMapOf<Attribute, Int>()
-        for (attrib in instanceAttributes) {
-            if (attrib.type.isInt) {
-                throw IllegalArgumentException("For now only float attributes are supported")
-            } else {
-                offsets[attrib] = strideF
-                strideF += attrib.type.byteSize
-            }
-        }
-        strideFloats = strideF
-
-        attributeOffsets = offsets
-        instanceSizeF = strideFloats / 4
-        strideBytesF = strideFloats
-        dataF = Float32Buffer(strideFloats * maxInstances, true)
-    }
-
     fun incrementModCount() = modCount++
 
-    fun checkBufferSize(reqSpace: Int = 1) {
-        if (strideFloats == 0) return
+    @PublishedApi
+    internal fun checkBufferSize(reqSpace: Int) {
+        if (reqSpace <= 0 || layout.structSize == 0) return
         if (numInstances + reqSpace > maxInstances) {
-            maxInstances = max(maxInstances * 2, numInstances + reqSpace).coerceAtMost(Int.MAX_VALUE / (strideFloats * 4))
-            check(maxInstances >= numInstances + reqSpace) {
+            check(isResizable) { "Maximum buffer size exceeded and instance buffer is not resizable" }
+            val newSize = max(maxInstances * 2, numInstances + reqSpace)
+                .coerceAtMost(Int.MAX_VALUE / layout.structSize)
+            check(newSize >= numInstances + reqSpace) {
                 "Unable to increase instance buffer size to required size of ${numInstances + reqSpace} instances. " +
-                        "Maximum size is ${Int.MAX_VALUE / (strideFloats * 4)} instances / ${Int.MAX_VALUE} bytes."
+                        "Maximum size is ${Int.MAX_VALUE / layout.structSize} instances / ${Int.MAX_VALUE} bytes."
             }
-            val newBuf = Float32Buffer(strideFloats * maxInstances, true)
-            newBuf.put(dataF)
-            dataF = newBuf
+            val newData = StructBuffer(layout, newSize)
+            newData.limit = instanceData.limit
+            newData.putAll(instanceData)
+            instanceData = newData
         }
     }
 
-    inline fun addInstance(block: Float32Buffer.() -> Unit) = addInstances(1) { it.block() }
-
-    inline fun addInstances(n: Int, block: (Float32Buffer) -> Unit) {
-        if (n == 0) {
-            return
-        }
-        checkBufferSize(n)
-        val szBefore = dataF.position
-        block(dataF)
-        val growSz = dataF.position - szBefore
-        if (growSz != instanceSizeF * n) {
-            throw IllegalStateException("Expected data to grow by ${instanceSizeF * n} elements, instead it grew by $growSz")
-        }
-        numInstances += n
+    inline fun addInstances(ensureCapacity: Int = 1, block: (StructBuffer<T>) -> Unit) {
+        checkBufferSize(ensureCapacity)
+        block(instanceData)
         incrementModCount()
-    }
-
-    inline fun addInstancesUpTo(upperBoundN: Int, block: (Float32Buffer) -> Int) {
-        if (upperBoundN == 0) {
-            return
-        }
-        checkBufferSize(upperBoundN)
-        val szBefore = dataF.position
-        val actuallyAdded = block(dataF)
-        val growSz = dataF.position - szBefore
-        if (growSz != instanceSizeF * actuallyAdded) {
-            throw IllegalStateException("Expected data to grow by ${instanceSizeF * upperBoundN} elements, instead it grew by $growSz")
-        }
-        numInstances += actuallyAdded
-        if (actuallyAdded > 0) {
-            incrementModCount()
-        }
     }
 
     fun clear() {
         if (numInstances == 0) {
             return
         }
-        numInstances = 0
-        dataF.clear()
+        instanceData.clear()
+        instanceData.limit = 0
         incrementModCount()
     }
 
     /**
-     * Replaces all content by the content of [source]. Given source buffer must have the same vertex layout.
+     * Replaces all content by the content of [source]. The given source buffer must have the same instance layout.
      * This instance list's [modCount] is set to the [modCount] value of the source instance list.
      */
-    internal fun set(source: MeshInstanceList) {
+    internal fun set(source: MeshInstanceList<*>) {
+        require(source.layout == layout) { "Source instance layout does not match this instance layout" }
         clear()
-        checkBufferSize(source.numInstances)
-        dataF.put(source.dataF)
-        numInstances = source.numInstances
+        checkBufferSize(source.instanceData.limit)
+        @Suppress("UNCHECKED_CAST")
+        instanceData.putAll(source.instanceData as StructBuffer<T>)
         usage = source.usage
         modCount = source.modCount
     }

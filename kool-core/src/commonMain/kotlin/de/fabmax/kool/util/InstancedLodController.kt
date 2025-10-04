@@ -9,11 +9,11 @@ import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 
-class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String? = null) : Node(name) {
+class InstancedLodController<T: Struct>(name: String? = null) : Node(name) {
 
-    val instances = mutableListOf<T>()
+    val instances = mutableListOf<Instance<T>>()
 
-    private val lods = mutableListOf<Lod>()
+    private val lods = mutableListOf<Lod<T>>()
 
     fun getInstanceCount(lod: Int): Int {
         if (lod < lods.size) {
@@ -38,7 +38,7 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         val cam = updateEvent.camera
         for (i in instances.indices) {
             val inst = instances[i]
-            inst.update(this, cam, updateEvent.ctx)
+            inst.update(this, cam)
 
             if (inst.isInFrustum) {
                 for (j in lods.lastIndex downTo 0) {
@@ -70,22 +70,25 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         super.update(updateEvent)
     }
 
-    private inner class Lod(val mesh: Mesh, val maxDistance: Float, val maxInstances: Int) {
-        val instances = mutableListOf<T>()
+    private inner class Lod<T: Struct>(val mesh: Mesh, val maxDistance: Float, val maxInstances: Int) {
+        val instances = mutableListOf<Instance<T>>()
 
         fun updateInstances(iLod: Int, ctx: KoolContext) {
-            mesh.instances?.apply {
-                clear()
-                addInstances(instances.size) { buf ->
-                    for (i in instances.indices) {
-                        instances[i].addInstanceData(iLod, buf, ctx)
+            val instances = checkNotNull(mesh.instances) { "Mesh $mesh has no instance buffer" }
+            instances.clear()
+            instances.addInstances(this@Lod.instances.size) { buf ->
+                @Suppress("UNCHECKED_CAST")
+                buf as StructBuffer<T>
+                for (i in this@Lod.instances.indices) {
+                    buf.put {
+                        this@Lod.instances[i].addInstanceData(this, iLod)
                     }
                 }
             }
         }
     }
 
-    open class Instance<T: Instance<T>> {
+    abstract class Instance<T: Struct> {
         var instanceModelMat = MutableMat4f()
 
         val center = MutableVec3f()
@@ -103,7 +106,7 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
         private val globalCenterMut = MutableVec3f()
         private val globalExtentMut = MutableVec3f()
 
-        open fun update(lodCtrl: InstancedLodController<T>, cam: Camera, ctx: KoolContext) {
+        open fun update(lodCtrl: InstancedLodController<T>, cam: Camera) {
             // update global center and radius
             globalCenterMut.set(center)
             globalExtentMut.set(center).x += radius
@@ -118,8 +121,6 @@ class InstancedLodController<T: InstancedLodController.Instance<T>>(name: String
             camDistance = cam.globalPos.distance(globalCenterMut)
         }
 
-        open fun addInstanceData(lod: Int, buffer: Float32Buffer, ctx: KoolContext) {
-            instanceModelMat.putTo(buffer)
-        }
+        abstract fun addInstanceData(view: MutableStructBufferView<T>, lod: Int)
     }
 }

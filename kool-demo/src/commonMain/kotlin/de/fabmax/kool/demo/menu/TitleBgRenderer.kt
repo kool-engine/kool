@@ -16,6 +16,8 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.Time
 import de.fabmax.kool.util.Uint8Buffer
 import kotlin.random.Random
@@ -32,35 +34,29 @@ class TitleBgRenderer(
         val meshLayer = node.surface.getMeshLayer(node.modifier.zLayer + UiSurface.LAYER_BACKGROUND)
         val isFirstUsage = meshLayer.addCustomLayer("title-bg") { titleBgMesh }
         if (isFirstUsage) {
-            titleBgMesh.bgInstances.clear()
+            titleBgMesh.instances!!.clear()
         }
 
-        titleBgMesh.bgInstances.addInstance {
-            node.clipBoundsPx.putTo(this)
-            put(node.leftPx)
-            put(node.topPx)
-            put(node.widthPx)
-            put(node.heightPx)
-            put(fromColor)
-            put(toColor)
-            put(topRadius)
-            put(bottomRadius)
+        titleBgMesh.addInstances { buffer ->
+            buffer.put {
+                set(BgInstanceLayout.clip, node.clipBoundsPx)
+                set(BgInstanceLayout.dimens, node.leftPx, node.topPx, node.widthPx, node.heightPx)
+                set(BgInstanceLayout.gradientRange, fromColor, toColor, topRadius, bottomRadius)
+            }
         }
+    }
+
+    object BgInstanceLayout : Struct("InstanceAttribs", MemoryLayout.TightlyPacked) {
+        val clip = float4("clip")
+        val dimens = float4("dimens")
+        val gradientRange = float4("gradientRange")
     }
 
     class BgMesh : Mesh(
         IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS),
-        instances = MeshInstanceList(
-            listOf(
-                Ui2Shader.ATTRIB_CLIP,
-                CategoryShader.ATTRIB_DIMENS,
-                CategoryShader.ATTRIB_GRADIENT_RANGE
-            )
-        ),
+        instances = MeshInstanceList(BgInstanceLayout),
         name = "DemoMenu/TitleBgMesh"
     ) {
-        val bgInstances: MeshInstanceList get() = instances!!
-
         private val catShader = CategoryShader()
 
         init {
@@ -96,8 +92,8 @@ class TitleBgRenderer(
 
                 vertexStage {
                     main {
-                        clipBounds.input set instanceAttribFloat4(Ui2Shader.ATTRIB_CLIP.name)
-                        val uvRange = float4Var(instanceAttribFloat4(ATTRIB_GRADIENT_RANGE.name))
+                        clipBounds.input set instanceAttribFloat4(BgInstanceLayout.clip)
+                        val uvRange = float4Var(instanceAttribFloat4(BgInstanceLayout.gradientRange))
                         val meshUv = float2Var(vertexAttribFloat2(Attribute.TEXTURE_COORDS.name))
                         clipCornerRadius.input set uvRange.zw
                         meshUv.x += uniformFloat1("uNoiseOffset")
@@ -110,7 +106,7 @@ class TitleBgRenderer(
                         texCoords.input set pos.xy
                         texCoords.input.x set uvRange.x + clamp(pos.x + pos.y * 0.2f.const, (-0.1f).const, 1.1f.const) * (uvRange.y - uvRange.x)
 
-                        val dimens = float4Var(instanceAttribFloat4(ATTRIB_DIMENS.name))
+                        val dimens = float4Var(instanceAttribFloat4(BgInstanceLayout.dimens))
                         pos.x set dimens.x + pos.x * dimens.z
                         pos.y set dimens.y + pos.y * dimens.w
 
@@ -159,9 +155,6 @@ class TitleBgRenderer(
         }
 
         companion object {
-            val ATTRIB_DIMENS = Attribute("aDimens", GpuType.Float4)
-            val ATTRIB_GRADIENT_RANGE = Attribute("aGradientRange", GpuType.Float4)
-
             val pipelineConfig = PipelineConfig(
                 blendMode = BlendMode.BLEND_PREMULTIPLIED_ALPHA,
                 cullMethod = CullMethod.NO_CULLING,
