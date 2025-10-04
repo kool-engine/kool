@@ -179,13 +179,13 @@ class MixedBufferImpl(capacity: Int, isAutoLimit: Boolean = false) :
     GenericBuffer<DataView>(capacity, DataView(ArrayBuffer(capacity)), isAutoLimit), MixedBuffer
 {
     override fun put(data: MixedBuffer): MixedBuffer {
-        if (data.position % 4 == 0 && data.limit % 4 == 0) {
-            for (i in data.position until data.limit step 4) {
-                buffer.setUint32(position, data.getInt32(i), true)
+        if (data.limit % 4 == 0) {
+            for (i in 0 until data.limit step 4) {
+                buffer.setInt32(position, data.getInt32(i), true)
                 position += SIZEOF_INT
             }
         } else {
-            for (i in data.position until data.limit) {
+            for (i in 0 until data.limit) {
                 buffer.setInt8(position++, data.getInt8(i))
             }
         }
