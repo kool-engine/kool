@@ -24,7 +24,7 @@ suspend fun PbrSplatShaderData.createPbrSplatShader(
             }
         }
         vertices {
-            isInstanced = true
+            instancedModelMatrix()
             modelMatrixComposition = modelMats
             if (meshLayoutInfo.numJoints > 0) {
                 enableArmature(meshLayoutInfo.numJoints)

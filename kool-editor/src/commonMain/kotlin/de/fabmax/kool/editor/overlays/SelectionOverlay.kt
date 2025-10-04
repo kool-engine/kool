@@ -20,9 +20,7 @@ import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenQuadVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
 import de.fabmax.kool.scene.*
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.launchDelayed
-import de.fabmax.kool.util.logT
+import de.fabmax.kool.util.*
 import kotlin.math.max
 
 class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), EditorOverlay {
@@ -40,7 +38,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
     val onSelectionChanged = mutableListOf<(Set<GameEntity>) -> Unit>()
 
     private val selectedMeshes = mutableMapOf<NodeId, SelectedMeshes>()
-    private val selectionInstances = mutableMapOf<NodeId, MeshInstanceList>()
+    private val selectionInstances = mutableMapOf<NodeId, MeshInstanceList<SelectionInstanceLayout>>()
     private val expectedNodeIds = mutableSetOf<NodeId>()
     private var updateOverlay = false
 
@@ -217,7 +215,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                         blendMode = BlendMode.DISABLED
                     }
                     vertices {
-                        isInstanced = true
+                        instancedModelMatrix()
                         mesh.skin?.let {
                             enableArmature(max(DEFAULT_NUM_JOINTS, it.nodes.size))
                         }
@@ -232,8 +230,8 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                         val typeAndId = interStageInt2()
                         vertexStage {
                             main {
-                                val type = int1Var(instanceAttribFloat4(meshId).x.toInt1())
-                                val id = int1Var(instanceAttribFloat4(meshId).y.toInt1())
+                                val type = int1Var(instanceAttribFloat4(SelectionInstanceLayout.meshId).x.toInt1())
+                                val id = int1Var(instanceAttribFloat4(SelectionInstanceLayout.meshId).y.toInt1())
                                 typeAndId.input set int2Value(type, id)
                             }
                         }
@@ -263,33 +261,38 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
 
     companion object {
         private const val DEFAULT_NUM_JOINTS = 64
-        private val meshId = Attribute("attrib_meshid", GpuType.Float4)
+    }
+
+    private object SelectionInstanceLayout : Struct("SelectionInstanceLayout", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val meshId = float4("attrib_meshid")
     }
 
     private inner class SelectedMeshes(val nodeId: NodeId) {
         val selectedInstances = mutableListOf<SelectedInstance>()
         val instanceList = selectionInstances.getOrPut(nodeId) {
-            MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, meshId))
+            MeshInstanceList(SelectionInstanceLayout)
         }
 
-        fun updateInstances(): MeshInstanceList {
+        fun updateInstances(): MeshInstanceList<SelectionInstanceLayout> {
             instanceList.clear()
-            instanceList.addInstancesUpTo(selectedInstances.size) { buf ->
-                var addCount = 0
+            instanceList.addInstances(selectedInstances.size) { buf ->
                 for (i in selectedInstances.indices) {
                     val inst = selectedInstances[i]
                     if (inst.component.sceneNode?.id == nodeId) {
-                        inst.component.gameEntity.localToViewF.putTo(buf)
-                        buf.put(inst.type.mask.toFloat())
-                        buf.put((inst.id and 0x7fffff).toFloat())
-                        buf.put(0f)
-                        buf.put(0f)
-                        addCount++
+                        buf.put {
+                            set(it.modelMat, inst.component.gameEntity.localToViewF)
+                            set(it.meshId,
+                                inst.type.mask.toFloat(),
+                                (inst.id and 0x7fffff).toFloat(),
+                                0f,
+                                0f
+                            )
+                        }
                     } else {
                         refreshSelection()
                     }
                 }
-                addCount
             }
             return instanceList
         }

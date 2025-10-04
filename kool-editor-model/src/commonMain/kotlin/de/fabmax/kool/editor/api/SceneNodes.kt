@@ -87,8 +87,8 @@ class SceneNodes(val scene: EditorScene) :
         private const val DEFAULT_HEIGHTMAP_ROWS = 129
         private const val DEFAULT_HEIGHTMAP_COLS = 129
 
-        private val modelMatsInstancedMesh = listOf(ModelMatrixComposition.INSTANCE_MODEL_MAT)
-        private val modelMatsInstancedModel = listOf(ModelMatrixComposition.INSTANCE_MODEL_MAT, ModelMatrixComposition.UNIFORM_MODEL_MAT)
+        private val modelMatsInstancedMesh = listOf(ModelMatrixComposition.InstanceModelMat())
+        private val modelMatsInstancedModel = listOf(ModelMatrixComposition.InstanceModelMat(), ModelMatrixComposition.UniformModelMat)
     }
 
     data class MeshKey(
@@ -119,24 +119,23 @@ class SceneNodes(val scene: EditorScene) :
 
         override fun updateInstances() {
             node?.instances?.apply {
+                @Suppress("UNCHECKED_CAST")
+                this as MeshInstanceList<InstanceLayoutModelMat>
                 clear()
-                addInstancesUpTo(users.size) { buf ->
-                    var added = 0
+                addInstances(users.size) { buf ->
                     for (i in users.indices) {
                         val meshComponent = users[i]
                         if (meshComponent.gameEntity.isVisible) {
                             meshComponent.addInstanceData(buf)
-                            added++
                         }
                     }
-                    added
                 }
             }
         }
 
         override suspend fun createNode() {
             val isInstanced = meshKey.exclusiveEntity == EntityId.NULL
-            val instances = if (isInstanced) MeshInstanceList(100, Attribute.INSTANCE_MODEL_MAT) else null
+            val instances = if (isInstanced) MeshInstanceList(InstanceLayoutModelMat, 100) else null
             val attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
             val isHeightmap = meshKey.shapes.any { it is ShapeData.Heightmap }
 
@@ -288,7 +287,7 @@ class SceneNodes(val scene: EditorScene) :
         private val isRecreatingModel = atomic(false)
 
         private val isManagedMaterial = meshKey.material != EntityId.NULL
-        private val modelInstances = mutableListOf<MeshInstanceList>()
+        private val modelInstances = mutableListOf<MeshInstanceList<InstanceLayoutModelMat>>()
 
         private var isIblShaded = false
         private var isSsaoEnabled = false
@@ -299,16 +298,13 @@ class SceneNodes(val scene: EditorScene) :
             for (i in modelInstances.indices) {
                 modelInstances[i].apply {
                     clear()
-                    addInstancesUpTo(users.size) { buf ->
-                        var added = 0
+                    addInstances(users.size) { buf ->
                         for (j in users.indices) {
                             val meshComponent = users[j]
                             if (meshComponent.gameEntity.isVisible) {
                                 meshComponent.addInstanceData(buf)
-                                added++
                             }
                         }
-                        added
                     }
                 }
             }
@@ -339,7 +335,7 @@ class SceneNodes(val scene: EditorScene) :
                 ),
                 applyMaterials = material == null,
                 assetLoader = AppAssets.assetLoader,
-                addInstanceAttributes = listOf(Attribute.INSTANCE_MODEL_MAT)
+                instanceLayout = InstanceLayoutModelMat
             )
             isIblShaded = ibl != null
             isSsaoEnabled = ssao != null
@@ -373,7 +369,10 @@ class SceneNodes(val scene: EditorScene) :
                 if (AppState.isInEditor) {
                     mesh.rayTest = MeshRayTest.geometryTest(mesh)
                 }
-                mesh.instances?.let { modelInstances += it }
+                mesh.instances?.let {
+                    @Suppress("UNCHECKED_CAST")
+                    modelInstances += it as MeshInstanceList<InstanceLayoutModelMat>
+                }
             }
             node = model
         }
