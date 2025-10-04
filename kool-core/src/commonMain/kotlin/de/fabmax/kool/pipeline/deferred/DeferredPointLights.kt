@@ -6,21 +6,15 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.util.Color
-import de.fabmax.kool.util.MutableColor
+import de.fabmax.kool.util.*
 
 
 class DeferredPointLights(var isDynamic: Boolean) {
     val lightInstances = mutableListOf<PointLight>()
 
-    private val lightInstanceData = MeshInstanceList(listOf(
-        Attribute.INSTANCE_MODEL_MAT,
-        DeferredLightShader.LIGHT_POS,
-        Attribute.COLORS
-    ), 10000)
+    private val lightInstanceData = MeshInstanceList(PointLightInstanceLayout, 10000)
 
     private val modelMat = MutableMat4f()
-    private val encodedLightData = FloatArray(8)
 
     val lightShader = DeferredLightShader(Light.Point.ENCODING)
 
@@ -51,27 +45,30 @@ class DeferredPointLights(var isDynamic: Boolean) {
         lightInstanceData.clear()
         lightInstanceData.addInstances(lightInstances.size) { buf ->
             for (i in 0 until lightInstances.size) {
-                encodeLight(lightInstances[i])
-                modelMat.putTo(buf)
-                buf.put(encodedLightData)
+                buf.put { encodeLight(lightInstances[i]) }
             }
         }
     }
 
-    private fun encodeLight(light: PointLight) {
-        modelMat.setIdentity()
-        modelMat.translate(light.position)
-        modelMat.scale(light.radius)
+    private fun MutableStructBufferView<PointLightInstanceLayout>.encodeLight(light: PointLight) {
+        modelMat
+            .setIdentity()
+            .translate(light.position)
+            .scale(light.radius)
+        set(PointLightInstanceLayout.modelMat, modelMat)
 
-        encodedLightData[0] = light.position.x
-        encodedLightData[1] = light.position.y
-        encodedLightData[2] = light.position.z
-        encodedLightData[3] = Light.Point.ENCODING
-
-        encodedLightData[4] = light.color.r * light.intensity
-        encodedLightData[5] = light.color.g * light.intensity
-        encodedLightData[6] = light.color.b * light.intensity
-        encodedLightData[7] = 1f
+        set(PointLightInstanceLayout.lightPos,
+            light.position.x,
+            light.position.y,
+            light.position.z,
+            Light.Point.ENCODING,
+        )
+        set(PointLightInstanceLayout.lightColor,
+            light.color.r * light.intensity,
+            light.color.g * light.intensity,
+            light.color.b * light.intensity,
+            1f,
+        )
     }
 
     fun addPointLight(pointLight: PointLight) {
@@ -94,5 +91,11 @@ class DeferredPointLights(var isDynamic: Boolean) {
         val color = MutableColor(Color.WHITE)
         var radius = 1f
         var intensity = 1f
+    }
+
+    object PointLightInstanceLayout : Struct("PointLightInstanceLayout", MemoryLayout.TightlyPacked) {
+        val modelMat = mat4(Attribute.INSTANCE_MODEL_MAT.name)
+        val lightPos = float4("lightPos")
+        val lightColor = float4("lightColor")
     }
 }

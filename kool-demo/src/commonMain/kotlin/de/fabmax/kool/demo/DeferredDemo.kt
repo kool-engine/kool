@@ -30,8 +30,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
 
     private lateinit var lightPositionMesh: Mesh
     private lateinit var lightVolumeMesh: LineMesh
-    private val lightPosInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
-    private val lightVolInsts = MeshInstanceList(listOf(Attribute.INSTANCE_MODEL_MAT, Attribute.COLORS), MAX_LIGHTS)
+    private val lightPosInsts = MeshInstanceList(InstanceLayoutModelMatAndColor, MAX_LIGHTS)
+    private val lightVolInsts = MeshInstanceList(InstanceLayoutModelMatAndColor, MAX_LIGHTS)
 
     private val rand = Random(1337)
 
@@ -128,8 +128,8 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 isVisible = false
                 isCastingShadow = false
                 shader = KslUnlitShader {
-                    vertices { isInstanced = true }
-                    color { instanceColor(Attribute.COLORS) }
+                    vertices { instancedModelMatrix() }
+                    color { instanceColor(InstanceLayoutModelMatAndColor.color) }
                     colorSpaceConversion = ColorSpaceConversion.LinearToSrgb()
                 }
             }
@@ -145,16 +145,20 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                         lightModelMat.translate(light.position)
 
                         if (lightPositionMesh.isVisible) {
-                            lightPosInsts.addInstance {
-                                lightModelMat.putTo(this)
-                                light.color.putTo(this)
+                            lightPosInsts.addInstances { buf ->
+                                buf.put {
+                                    set(it.modelMat, lightModelMat)
+                                    set(it.color, light.color)
+                                }
                             }
                         }
                         if (lightVolumeMesh.isVisible) {
                             lightModelMat.scale(light.radius)
-                            lightVolInsts.addInstance {
-                                lightModelMat.putTo(this)
-                                light.color.putTo(this)
+                            lightVolInsts.addInstances { buf ->
+                                buf.put {
+                                    set(it.modelMat, lightModelMat)
+                                    set(it.color, light.color)
+                                }
                             }
                         }
                     }
@@ -219,9 +223,9 @@ class DeferredDemo : DemoScene("Deferred Shading") {
                 }
             }
             shader = deferredKslPbrShader {
-                vertices { isInstanced = true }
+                vertices { instancedModelMatrix() }
                 emission {
-                    instanceColor(Attribute.COLORS)
+                    instanceColor(InstanceLayoutModelMatAndColor.color)
                     constColor(Color(6f, 6f, 6f), blendMode = ColorBlockConfig.BlendMode.Multiply)
                 }
             }
@@ -307,11 +311,11 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             lightCount.set(it.roundToInt())
             updateLights()
         }
-        MenuSlider2("Light power", lightPower.use().toFloat(), 0f, 10f) {
+        MenuSlider2("Light power", lightPower.use(), 0f, 10f) {
             lightPower.set(it)
             updateLights()
         }
-        MenuSlider2("Light radius", lightRadius.use().toFloat(), 0f, 4f) {
+        MenuSlider2("Light radius", lightRadius.use(), 0f, 4f) {
             lightRadius.set(it)
             updateLights()
         }

@@ -57,10 +57,10 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
 
                     lightRadius.input set length(instanceMvp * Vec4f.X_AXIS.const)
 
-                    lightColor.input set instanceAttribFloat4(Attribute.COLORS.name)
-                    lightPos.input set instanceAttribFloat4(LIGHT_POS.name)
+                    lightColor.input set instanceAttribFloat4(DeferredPointLights.PointLightInstanceLayout.lightColor)
+                    lightPos.input set instanceAttribFloat4(DeferredPointLights.PointLightInstanceLayout.lightPos)
                     if (encodedLightType != Light.Point.ENCODING) {
-                        lightDir.input set instanceAttribFloat4(LIGHT_DIR.name)
+                        lightDir.input set instanceAttribFloat4(DeferredSpotLights.SpotLightInstanceLayout.lightDir)
                     } else {
                         lightDir.input set Vec4f.ZERO.const
                     }
@@ -120,10 +120,5 @@ class DeferredLightShader(encodedLightType: Float, model: Model = Model(encodedL
                 }
             }
         }
-    }
-
-    companion object {
-        val LIGHT_POS = Attribute("aLightPos", GpuType.Float4)
-        val LIGHT_DIR = Attribute("aLightDir", GpuType.Float4)
     }
 }
