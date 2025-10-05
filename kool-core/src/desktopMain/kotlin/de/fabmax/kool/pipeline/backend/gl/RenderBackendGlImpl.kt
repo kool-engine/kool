@@ -37,6 +37,8 @@ class RenderBackendGlImpl(ctx: Lwjgl3Context) :
     private var timer: TimeQuery? = null
     override var frameGpuTime: Duration = 0.0.seconds
 
+    override val isAsyncRendering: Boolean = KoolSystem.configJvm.asyncSceneUpdate
+
     private val initSignal = CompletableDeferred<Unit>()
 
     private val glCallbacks = object : GlWindowCallbacks {

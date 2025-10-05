@@ -58,6 +58,8 @@ class RenderBackendWebGpu(val ctx: JsContext) : RenderBackend {
 
     override val frameGpuTime: Duration = 0.0.seconds
 
+    override val isAsyncRendering: Boolean = false
+
     val clearHelper: ClearHelper by lazy { ClearHelper(this) }
     private val passEncoderState = RenderPassEncoderState(this)
 

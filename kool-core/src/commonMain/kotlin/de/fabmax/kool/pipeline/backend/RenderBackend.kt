@@ -23,6 +23,8 @@ interface RenderBackend {
 
     val frameGpuTime: Duration
 
+    val isAsyncRendering: Boolean
+
     fun renderFrame(frameData: FrameData, ctx: KoolContext)
     fun cleanup(ctx: KoolContext)
 

@@ -55,6 +55,8 @@ internal class JsRenderBackendWgpu4kWebGpu(ctx: KoolContext, canvas: HTMLCanvasE
         { getAdapter() }
     )
 {
+    override val isAsyncRendering: Boolean = false
+
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         ApplicationScope.launch {
             renderFrameSuspending(frameData, ctx)

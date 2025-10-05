@@ -49,6 +49,8 @@ class RenderBackendVk(val ctx: Lwjgl3Context) : RenderBackendJvm {
 
     override var frameGpuTime: Duration = 0.0.seconds
 
+    override val isAsyncRendering: Boolean = KoolSystem.configJvm.asyncSceneUpdate
+
     private val frameTimer: Timer
     private val passEncoderState = PassEncoderState(this)
     private var windowResized = false

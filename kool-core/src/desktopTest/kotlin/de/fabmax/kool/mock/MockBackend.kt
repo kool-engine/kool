@@ -38,6 +38,8 @@ class MockBackend() : RenderBackend {
 
     override var frameGpuTime: Duration = 0.0.seconds
 
+    override val isAsyncRendering: Boolean = false
+
     val glslHints = GlslGenerator.Hints("#version 330 core")
 
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) { }

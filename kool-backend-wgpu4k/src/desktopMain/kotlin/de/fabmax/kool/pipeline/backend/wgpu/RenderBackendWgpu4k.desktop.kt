@@ -14,6 +14,7 @@ import de.fabmax.kool.platform.Lwjgl3Context
 import de.fabmax.kool.platform.OsInfo
 import de.fabmax.kool.platform.glfw.GlfwWindow
 import de.fabmax.kool.platform.glfw.GlfwWindowSubsystem
+import de.fabmax.kool.util.logD
 import ffi.LibraryLoader
 import ffi.NativeAddress
 import io.ygdrasil.webgpu.GPUAdapter
@@ -77,6 +78,8 @@ internal class DesktopRenderBackendWgpu4kWebGpu(
     override val window: GlfwWindow
         get() = surface.glfwWindow
 
+    override val isAsyncRendering: Boolean = KoolSystem.configJvm.asyncSceneUpdate
+
     override fun renderFrame(frameData: FrameData, ctx: KoolContext) {
         runBlocking { renderFrameSuspending(frameData, ctx) }
     }
@@ -85,17 +88,16 @@ internal class DesktopRenderBackendWgpu4kWebGpu(
 private fun WGPU.getNativeSurface(window: GlfwWindow): NativeSurface = when (OsInfo.os) {
     OsInfo.OS.LINUX -> when {
         glfwGetWaylandWindow(window.windowHandle) == 0L -> {
-            println("running on X11")
+            logD { "Get X11 surface" }
             val display = glfwGetX11Display().toNativeAddress()
-            val x11_window = glfwGetX11Window(window.windowHandle).toULong()
-            getSurfaceFromX11Window(display, x11_window) ?: error("fail to get surface on Linux")
+            val x11Window = glfwGetX11Window(window.windowHandle).toULong()
+            getSurfaceFromX11Window(display, x11Window) ?: error("fail to get surface on Linux")
         }
-
         else -> {
-            println("running on Wayland")
+            logD { "Get wayland surface" }
             val display = glfwGetWaylandDisplay().toNativeAddress()
-            val wayland_window = glfwGetWaylandWindow(window.windowHandle).toNativeAddress()
-            getSurfaceFromWaylandWindow(display, wayland_window)
+            val waylandWindow = glfwGetWaylandWindow(window.windowHandle).toNativeAddress()
+            getSurfaceFromWaylandWindow(display, waylandWindow)
         }
     }
 

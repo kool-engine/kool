@@ -100,6 +100,8 @@ open class Mesh(
     private val drawInstances = instances?.let { MeshInstanceList(it.layout) }
     private var geometryUpdateModCount = -1
 
+    private var isAsyncRendering = true
+
     var shader: DrawShader? = null
         set(value) {
             if (field !== value) {
@@ -227,6 +229,7 @@ open class Mesh(
 
     override fun collectDrawCommands(viewData: ViewData, updateEvent: RenderPass.UpdateEvent) {
         super.collectDrawCommands(viewData, updateEvent)
+        isAsyncRendering = updateEvent.ctx.backend.isAsyncRendering
 
         if (!updateEvent.drawFilter(this) || !isRendered) {
             // mesh is not visible (either hidden or outside frustum)
@@ -254,17 +257,28 @@ open class Mesh(
     }
 
     internal fun setupDrawCommand(cmd: DrawCommand, pipeline: DrawPipeline, drawGroupId: Int) {
-        cmd.setup(this, drawGeometry, drawInstances, pipeline, drawGroupId)
+        val geom: IndexedVertexList
+        val insts: MeshInstanceList<*>?
+        if (isAsyncRendering) {
+            geom = drawGeometry
+            insts = drawInstances
+        } else {
+            geom = geometry
+            insts = instances
+        }
+        cmd.setup(this, geom, insts, pipeline, drawGroupId)
     }
 
     override fun captureBuffer() {
-        if (drawGeometry.modCount != geometry.modCount) {
-            drawGeometry.set(geometry)
-        }
-        if (instances != null && instances.modCount != drawInstances!!.modCount) {
-            drawInstances.set(instances)
-        }
         meshPipelineData.captureBuffer()
+        if (isAsyncRendering) {
+            if (drawGeometry.modCount != geometry.modCount) {
+                drawGeometry.set(geometry)
+            }
+            if (instances != null && instances.modCount != drawInstances!!.modCount) {
+                drawInstances.set(instances)
+            }
+        }
     }
 }
 

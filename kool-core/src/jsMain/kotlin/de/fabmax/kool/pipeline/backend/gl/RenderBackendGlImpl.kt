@@ -25,6 +25,8 @@ class RenderBackendGlImpl(ctx: JsContext) :
 
     override var frameGpuTime: Duration = 0.0.seconds
 
+    override val isAsyncRendering: Boolean = false
+
     init {
         val options = js("({})")
         options["powerPreference"] = KoolSystem.configJs.powerPreference.value
