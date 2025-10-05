@@ -95,19 +95,19 @@ abstract class GlRenderPass(val backend: RenderBackendGl): BaseReleasable() {
                 }
             }
 
-            if (cmd.isActive && cmd.geometry.numIndices > 0) {
+            if (cmd.isActive && cmd.vertexData.numIndices > 0) {
                 val drawInfo = backend.shaderMgr.bindDrawShader(cmd)
                 val isValid = drawInfo.isValid && drawInfo.numIndices > 0
                 if (isValid) {
                     GlState.setupPipelineAttribs(cmd.pipeline, viewData.depthMode, gl)
 
-                    val insts = cmd.instances
+                    val insts = cmd.instanceData
                     if (insts == null) {
                         gl.drawElements(drawInfo.primitiveType, drawInfo.numIndices, drawInfo.indexType)
-                        BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
+                        BackendStats.addDrawCommands(1, cmd.vertexData.numPrimitives)
                     } else if (insts.numInstances > 0) {
                         gl.drawElementsInstanced(drawInfo.primitiveType, drawInfo.numIndices, drawInfo.indexType, insts.numInstances)
-                        BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
+                        BackendStats.addDrawCommands(1, cmd.vertexData.numPrimitives * insts.numInstances)
                     }
                 }
             }

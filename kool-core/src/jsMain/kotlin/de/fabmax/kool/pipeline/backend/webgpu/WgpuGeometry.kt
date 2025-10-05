@@ -2,10 +2,11 @@ package de.fabmax.kool.pipeline.backend.webgpu
 
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 
-class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
+class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
     private val device: GPUDevice get() = backend.device
 
     private val createdIndexBuffer: WgpuGrowingBuffer
@@ -19,25 +20,22 @@ class WgpuGeometry(val mesh: Mesh, val backend: RenderBackendWebGpu) : BaseRelea
     private var updateModCount = -1
 
     init {
-        val geom = mesh.drawGeometry
-        createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * geom.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
-        createdFloatBuffer = if (geom.byteStrideF == 0) null else {
-            WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", geom.byteStrideF * geom.numVertices.toLong())
+        createdIndexBuffer = WgpuGrowingBuffer(backend, "${mesh.name} index data", 4L * vertexData.numIndices, GPUBufferUsage.INDEX or GPUBufferUsage.COPY_DST)
+        createdFloatBuffer = if (vertexData.byteStrideF == 0) null else {
+            WgpuGrowingBuffer(backend, "${mesh.name} vertex float data", vertexData.byteStrideF * vertexData.numVertices.toLong())
         }
-        createdIntBuffer = if (geom.byteStrideI == 0) null else {
-            WgpuGrowingBuffer(backend, "${mesh.name} vertex int data", geom.byteStrideI * geom.numVertices.toLong())
+        createdIntBuffer = if (vertexData.byteStrideI == 0) null else {
+            WgpuGrowingBuffer(backend, "${mesh.name} vertex int data", vertexData.byteStrideI * vertexData.numVertices.toLong())
         }
     }
 
     fun checkBuffers() {
         checkIsNotReleased()
-
-        val geometry = mesh.drawGeometry
-        if (updateModCount != geometry.modCount) {
-            updateModCount = geometry.modCount
-            createdIndexBuffer.writeData(geometry.indices)
-            createdFloatBuffer?.writeData(geometry.dataF)
-            createdIntBuffer?.writeData(geometry.dataI)
+        if (updateModCount != vertexData.modCount) {
+            updateModCount = vertexData.modCount
+            createdIndexBuffer.writeData(vertexData.indices)
+            createdFloatBuffer?.writeData(vertexData.dataF)
+            createdIntBuffer?.writeData(vertexData.dataI)
         }
     }
 

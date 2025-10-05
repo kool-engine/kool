@@ -119,16 +119,16 @@ abstract class WgpuRenderPass(
                 }
             }
 
-            val insts = cmd.instances
-            val isCmdValid = cmd.isActive && cmd.geometry.numIndices > 0 && (insts == null || insts.numInstances > 0)
+            val insts = cmd.instanceData
+            val isCmdValid = cmd.isActive && cmd.vertexData.numIndices > 0 && (insts == null || insts.numInstances > 0)
             val bindSuccessful = isCmdValid && backend.pipelineManager.bindDrawPipeline(cmd, passEncoderState)
             if (bindSuccessful) {
                 if (insts == null) {
-                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices)
-                    BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives)
+                    passEncoderState.passEncoder.drawIndexed(cmd.vertexData.numIndices)
+                    BackendStats.addDrawCommands(1, cmd.vertexData.numPrimitives)
                 } else {
-                    passEncoderState.passEncoder.drawIndexed(cmd.geometry.numIndices, insts.numInstances)
-                    BackendStats.addDrawCommands(1, cmd.geometry.numPrimitives * insts.numInstances)
+                    passEncoderState.passEncoder.drawIndexed(cmd.vertexData.numIndices, insts.numInstances)
+                    BackendStats.addDrawCommands(1, cmd.vertexData.numPrimitives * insts.numInstances)
                 }
             }
         }

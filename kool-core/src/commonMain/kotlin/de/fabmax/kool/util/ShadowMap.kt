@@ -93,8 +93,8 @@ class SimpleShadowMap(
 
     override fun setupDrawCommand(cmd: DrawCommand, ctx: KoolContext) {
         super.setupDrawCommand(cmd, ctx)
-        if (cmd.geometry === cmd.mesh.geometry && cmd.mesh.shadowGeometry.isNotEmpty()) {
-            cmd.geometry = cmd.mesh.shadowGeometry[min(cmd.mesh.shadowGeometry.lastIndex, shadowMapLevel)]
+        if (cmd.mesh.shadowGeometry.isNotEmpty()) {
+            cmd.vertexData = cmd.mesh.shadowGeometry[min(cmd.mesh.shadowGeometry.lastIndex, shadowMapLevel)]
         }
     }
 

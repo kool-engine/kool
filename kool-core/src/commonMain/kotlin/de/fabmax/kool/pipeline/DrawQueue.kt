@@ -121,9 +121,9 @@ class DrawQueue() {
         val cmd = if (commandPool.isNotEmpty()) {
             commandPool.removeAt(commandPool.lastIndex)
         } else {
-            DrawCommand(this, mesh, pipeline)
+            DrawCommand(this, pipeline)
         }
-        cmd.setup(mesh, pipeline, drawGroupId)
+        mesh.setupDrawCommand(cmd, pipeline, drawGroupId)
         getOrderedQueue().commands.add(cmd)
         return cmd
     }

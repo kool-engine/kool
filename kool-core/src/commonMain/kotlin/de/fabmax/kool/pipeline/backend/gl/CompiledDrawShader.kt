@@ -114,7 +114,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
             geom.checkBuffers()
             drawInfo.numIndices = geom.numIndices
 
-            cmd.instances?.let { insts ->
+            cmd.instanceData?.let { insts ->
                 val gpuInsts = insts.getOrCreateGpuInstances(cmd)
                 gpuInsts.checkBuffers()
                 gpuInsts.instanceBuffer.let { instanceAttrBinder?.bindAttributes(it) }
@@ -131,10 +131,10 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
     }
 
     private fun getOrCreateGpuGeometry(cmd: DrawCommand): GpuGeometryGl {
-        if (cmd.geometry.gpuGeometry == null) {
-            cmd.geometry.gpuGeometry = GpuGeometryGl(cmd.geometry, backend, BufferCreationInfo(cmd))
+        if (cmd.vertexData.gpuGeometry == null) {
+            cmd.vertexData.gpuGeometry = GpuGeometryGl(cmd.vertexData, backend, BufferCreationInfo(cmd))
         }
-        return cmd.geometry.gpuGeometry as GpuGeometryGl
+        return cmd.vertexData.gpuGeometry as GpuGeometryGl
     }
 
     private fun MeshInstanceList<*>.getOrCreateGpuInstances(cmd: DrawCommand): GpuInstancesGl {

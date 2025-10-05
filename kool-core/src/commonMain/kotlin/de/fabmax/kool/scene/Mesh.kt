@@ -96,8 +96,8 @@ open class Mesh(
 
     private var pipeline: DrawPipeline? = null
 
-    val drawGeometry = IndexedVertexList(geometry.vertexAttributes, geometry.primitiveType)
-    val drawInstances = instances?.let { MeshInstanceList(it.layout) }
+    private val drawGeometry = IndexedVertexList(geometry.vertexAttributes, geometry.primitiveType)
+    private val drawInstances = instances?.let { MeshInstanceList(it.layout) }
     private var geometryUpdateModCount = -1
 
     var shader: DrawShader? = null
@@ -251,6 +251,10 @@ open class Mesh(
         getOrCreatePipeline(updateEvent.ctx)?.let { pipeline ->
             viewData.drawQueue.addMesh(this, pipeline)
         }
+    }
+
+    internal fun setupDrawCommand(cmd: DrawCommand, pipeline: DrawPipeline, drawGroupId: Int) {
+        cmd.setup(this, drawGeometry, drawInstances, pipeline, drawGroupId)
     }
 
     override fun captureBuffer() {

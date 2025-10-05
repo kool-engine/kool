@@ -22,15 +22,15 @@ class DrawPipelineVk(
     private val pipelines = mutableMapOf<RenderPassVk, VkGraphicsPipeline>()
 
     fun updateGeometry(cmd: DrawCommand, passEncoderState: PassEncoderState) {
-        if (cmd.geometry.numIndices == 0) return
+        if (cmd.vertexData.numIndices == 0) return
 
-        if (cmd.geometry.gpuGeometry == null) {
-            cmd.geometry.gpuGeometry = GeometryVk(cmd.mesh, backend)
+        if (cmd.vertexData.gpuGeometry == null) {
+            cmd.vertexData.gpuGeometry = GeometryVk(cmd.mesh, cmd.vertexData, backend)
         }
-        val gpuGeom = cmd.geometry.gpuGeometry as GeometryVk
+        val gpuGeom = cmd.vertexData.gpuGeometry as GeometryVk
         gpuGeom.checkBuffers(passEncoderState.commandBuffer)
 
-        cmd.instances?.let { insts ->
+        cmd.instanceData?.let { insts ->
             if (insts.gpuInstances == null) {
                 insts.gpuInstances = InstancesVk(insts, backend, cmd.mesh)
             }
@@ -69,8 +69,8 @@ class DrawPipelineVk(
     }
 
     private fun bindVertexBuffers(cmd: DrawCommand, passEncoderState: PassEncoderState): Boolean {
-        val gpuGeom = cmd.geometry.gpuGeometry as GeometryVk? ?: return false
-        val gpuInsts = cmd.instances?.gpuInstances as InstancesVk?
+        val gpuGeom = cmd.vertexData.gpuGeometry as GeometryVk? ?: return false
+        val gpuInsts = cmd.instanceData?.gpuInstances as InstancesVk?
 
         var numBuffers = 0
         if (gpuInsts?.instanceBuffer != null) numBuffers++

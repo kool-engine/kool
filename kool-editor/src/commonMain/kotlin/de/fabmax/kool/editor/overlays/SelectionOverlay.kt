@@ -197,7 +197,7 @@ class SelectionOverlay(val overlay: OverlayScene) : Node("Selection overlay"), E
                 getPipeline(cmd.mesh, ctx)?.let { pipeline ->
                     cmd.pipeline = pipeline
                     cmd.isActive = true
-                    cmd.instances = selection.updateInstances()
+                    cmd.instanceData = selection.updateInstances()
                 }
             }
         }

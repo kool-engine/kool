@@ -2,12 +2,13 @@ package de.fabmax.kool.pipeline.backend.vk
 
 import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 import org.lwjgl.vulkan.VK10.*
 import org.lwjgl.vulkan.VkCommandBuffer
 
-class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(), GpuGeometry {
+class GeometryVk(val mesh: Mesh, val vertexData: IndexedVertexList, val backend: RenderBackendVk) : BaseReleasable(), GpuGeometry {
     val device: Device get() = backend.device
 
     private val createdIndexBuffer: GrowingBufferVk
@@ -21,25 +22,23 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
     private var updateModCount = -1
 
     init {
-        val geom = mesh.drawGeometry
-
         val indexBufInfo = MemoryInfo(
-            size = 4L * geom.numIndices,
+            size = 4L * vertexData.numIndices,
             usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
             label = "${mesh.name} index data"
         )
         createdIndexBuffer = GrowingBufferVk(backend, indexBufInfo)
-        createdFloatBuffer = if (geom.byteStrideF == 0) null else {
+        createdFloatBuffer = if (vertexData.byteStrideF == 0) null else {
             val floatBufInfo = MemoryInfo(
-                size = geom.byteStrideF * geom.numVertices.toLong(),
+                size = vertexData.byteStrideF * vertexData.numVertices.toLong(),
                 usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                 label = "${mesh.name} vertex float data"
             )
             GrowingBufferVk(backend, floatBufInfo)
         }
-        createdIntBuffer = if (geom.byteStrideI == 0) null else {
+        createdIntBuffer = if (vertexData.byteStrideI == 0) null else {
             val intBufInfo = MemoryInfo(
-                size = geom.byteStrideI * geom.numVertices.toLong(),
+                size = vertexData.byteStrideI * vertexData.numVertices.toLong(),
                 usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT or VK_BUFFER_USAGE_TRANSFER_DST_BIT,
                 label = "${mesh.name} vertex int data"
             )
@@ -49,13 +48,11 @@ class GeometryVk(val mesh: Mesh, val backend: RenderBackendVk) : BaseReleasable(
 
     fun checkBuffers(commandBuffer: VkCommandBuffer) {
         checkIsNotReleased()
-
-        val geometry = mesh.drawGeometry
-        if (updateModCount != geometry.modCount) {
-            updateModCount = geometry.modCount
-            createdIndexBuffer.writeData(geometry.indices, commandBuffer)
-            createdFloatBuffer?.writeData(geometry.dataF, commandBuffer)
-            createdIntBuffer?.writeData(geometry.dataI, commandBuffer)
+        if (updateModCount != vertexData.modCount) {
+            updateModCount = vertexData.modCount
+            createdIndexBuffer.writeData(vertexData.indices, commandBuffer)
+            createdFloatBuffer?.writeData(vertexData.dataF, commandBuffer)
+            createdIntBuffer?.writeData(vertexData.dataI, commandBuffer)
         }
     }
 

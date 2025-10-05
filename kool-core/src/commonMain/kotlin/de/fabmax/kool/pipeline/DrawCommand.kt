@@ -6,14 +6,13 @@ import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 
-class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) {
-    var mesh: Mesh = mesh
-        private set
+class DrawCommand(val queue: DrawQueue, var pipeline: DrawPipeline) {
     var drawGroupId = 0
         private set
 
-    var geometry: IndexedVertexList = mesh.drawGeometry
-    var instances: MeshInstanceList<*>? = mesh.drawInstances
+    lateinit var mesh: Mesh
+    lateinit var vertexData: IndexedVertexList
+    var instanceData: MeshInstanceList<*>? = null
 
     var isActive = true
 
@@ -27,12 +26,12 @@ class DrawCommand(val queue: DrawQueue, mesh: Mesh, var pipeline: DrawPipeline) 
      */
     val modelMatD: Mat4d get() = mesh.modelMatD
 
-    fun setup(mesh: Mesh, pipeline: DrawPipeline, drawGroupId: Int) {
+    fun setup(mesh: Mesh, vertexData: IndexedVertexList, instanceData: MeshInstanceList<*>?, pipeline: DrawPipeline, drawGroupId: Int) {
         this.mesh = mesh
         this.pipeline = pipeline
         this.drawGroupId = drawGroupId
-        geometry = mesh.drawGeometry
-        instances = mesh.drawInstances
+        this@DrawCommand.vertexData = vertexData
+        this@DrawCommand.instanceData = instanceData
         isActive = true
     }
 
