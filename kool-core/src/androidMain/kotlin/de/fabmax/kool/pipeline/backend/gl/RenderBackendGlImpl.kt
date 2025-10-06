@@ -39,6 +39,8 @@ class RenderBackendGlImpl(ctx: KoolContextAndroid) :
     private var timer: TimeQuery? = null
     override var frameGpuTime: Duration = 0.0.seconds
 
+    override val isAsyncRendering: Boolean = false
+
     private var isGlContextInitialized = false
 
     init {
