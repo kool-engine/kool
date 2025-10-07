@@ -23,6 +23,9 @@ class HelloKsl : DemoScene("Hello KSL Shaders") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         // create the shader
         val helloKslShader = KslShader("Example KSL shader") {
+            // useful for debugging: dump shader code to console when its is generated
+            dumpCode = true
+
             // uniforms are used to pass data from the host (CPU) into the shader (GPU)
             val uScale = uniformFloat1("uScale")
 
@@ -35,8 +38,8 @@ class HelloKsl : DemoScene("Hello KSL Shaders") {
                     val modelMat = modelMatrix()
                     val camData = cameraData()
 
-                    val position = float3Var(vertexAttribFloat3(Attribute.POSITIONS))
-                    val normal = float3Var(vertexAttribFloat3(Attribute.NORMALS))
+                    val position by vertexAttribFloat3(Attribute.POSITIONS)
+                    val normal by vertexAttribFloat3(Attribute.NORMALS)
 
                     position set position * uScale
                     normal set normalize(normal)
@@ -50,7 +53,7 @@ class HelloKsl : DemoScene("Hello KSL Shaders") {
             fragmentStage {
                 // fragment shader main function: Is executed once per pixel to compute the output color
                 main {
-                    val normalColor = float3Var(interNormal.output * 0.5f.const + 0.5f.const)
+                    val normalColor by interNormal.output * 0.5f.const + 0.5f.const
                     colorOutput(normalColor * uScale, 1f.const)
                 }
             }

@@ -220,8 +220,8 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                 val lightData = sceneLightData(cfg.lightingCfg.maxNumberOfLights)
 
                 main {
-                    val vertexWorldPos = float3Var(positionWorldSpace.output)
-                    val vertexNormal = float3Var(normalize(normalWorldSpace.output))
+                    val vertexWorldPos by positionWorldSpace.output
+                    val vertexNormal by normalize(normalWorldSpace.output)
 
                     var ddx: KslExprFloat2? = null
                     var ddy: KslExprFloat2? = null
@@ -299,7 +299,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                         fragmentOnlyShadowBlock(cfg.lightingCfg, worldPos, normal, shadowFactors)
                     }
 
-                    val aoFactor = float1Var(fragmentPropertyBlock(cfg.aoCfg, ddx, ddy).outProperty)
+                    val aoFactor by fragmentPropertyBlock(cfg.aoCfg, ddx, ddy).outProperty
                     if (cfg.lightingCfg.isSsao) {
                         val aoMap = texture2d("tSsaoMap")
                         val aoUv = float2Var(projPosition.output.xy / projPosition.output.w * 0.5f.const + 0.5f.const)
@@ -344,7 +344,7 @@ abstract class KslLitShader(val cfg: LitShaderConfig, model: KslProgram) : KslSh
                     val materialColorPort = float4Port("materialColor", materialColor)
 
                     // set fragment stage output color
-                    val outRgb = float3Var(materialColorPort.rgb)
+                    val outRgb by materialColorPort.rgb
                     if (cfg.pipelineCfg.blendMode == BlendMode.BLEND_PREMULTIPLIED_ALPHA) {
                         outRgb set outRgb * materialColorPort.a
                     }
