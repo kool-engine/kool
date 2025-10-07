@@ -1,11 +1,18 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.modules.ksl.model.KslStateType
+
 abstract class KslInterStageVar<T: KslType>(
     open val input: KslValue<T>,
     open val output: KslValue<T>,
     val outputStage: KslShaderStageType,
     val interpolation: KslInterStageInterpolation
-)
+) {
+    init {
+        input.stateType = KslStateType.VertexOutput
+        output.stateType = KslStateType.FragmentInput
+    }
+}
 
 enum class KslInterStageInterpolation {
     Smooth,

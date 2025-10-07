@@ -5,6 +5,8 @@ open class KslState(val stateName: String) {
     var mutation = 0
     var isTrackingState = true
 
+    var stateType: KslStateType = KslStateType.Other
+
     fun depend() = KslMutatedState(this, mutation)
 
     fun mutate(): KslStateMutation {
@@ -17,4 +19,13 @@ open class KslState(val stateName: String) {
     open fun toPseudoCode(): String {
         return stateName
     }
+}
+
+enum class KslStateType {
+    VertexInput,
+    VertexOutput,
+    FragmentInput,
+    FragmentOutput,
+    ComputeInput,
+    Other
 }
