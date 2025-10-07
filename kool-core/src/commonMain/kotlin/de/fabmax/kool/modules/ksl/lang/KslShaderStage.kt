@@ -1,6 +1,7 @@
 package de.fabmax.kool.modules.ksl.lang
 
 import de.fabmax.kool.math.Vec3i
+import de.fabmax.kool.modules.ksl.model.KslStateType
 import de.fabmax.kool.modules.ksl.model.KslTransformer
 import de.fabmax.kool.pipeline.ShaderStage
 import de.fabmax.kool.util.*
@@ -163,10 +164,10 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
 
     val attributes = mutableMapOf<String, KslVertexAttribute<*>>()
 
-    val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslUint1, false))
-    val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslUint1, false))
-    val outPosition = KslStageOutputVector(KslVarVector(NAME_OUT_POSITION, KslFloat4, true))
-    val outPointSize = KslStageOutputScalar(KslVarScalar(NAME_OUT_POINT_SIZE, KslFloat1, true))
+    val inVertexIndex = KslStageInputScalar(KslVarScalar(NAME_IN_VERTEX_INDEX, KslUint1, false), KslStateType.VertexInput)
+    val inInstanceIndex = KslStageInputScalar(KslVarScalar(NAME_IN_INSTANCE_INDEX, KslUint1, false), KslStateType.VertexInput)
+    val outPosition = KslStageOutputVector(KslVarVector(NAME_OUT_POSITION, KslFloat4, true), KslStateType.VertexOutput)
+    val outPointSize = KslStageOutputScalar(KslVarScalar(NAME_OUT_POINT_SIZE, KslFloat1, true), KslStateType.VertexOutput)
 
     val isUsingVertexIndex: Boolean get() = inVertexIndex.value in main.dependencies
     val isUsingInstanceIndex: Boolean get() = inInstanceIndex.value in main.dependencies
@@ -260,9 +261,9 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
 class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderStageType.FragmentShader) {
 
     @Deprecated("Avoid using inFragPosition as it behaves differently on different backends (OpenGL vs. WebGPU")
-    val inFragPosition = KslStageInputVector(KslVarVector(NAME_IN_FRAG_POSITION, KslFloat4, false))
-    val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslBool1, false))
-    val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslFloat1, true))
+    val inFragPosition = KslStageInputVector(KslVarVector(NAME_IN_FRAG_POSITION, KslFloat4, false), KslStateType.FragmentInput)
+    val inIsFrontFacing = KslStageInputScalar(KslVarScalar(NAME_IN_IS_FRONT_FACING, KslBool1, false), KslStateType.FragmentInput)
+    val outDepth = KslStageOutputScalar(KslVarScalar(NAME_OUT_DEPTH, KslFloat1, true), KslStateType.FragmentOutput)
     val outColors = mutableListOf<KslStageOutputVector<KslFloat4, KslFloat1>>()
 
     val isUsingFragPosition: Boolean get() = inFragPosition.value in main.dependencies
@@ -278,7 +279,7 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
     fun colorOutput(location: Int = 0): KslStageOutputVector<KslFloat4, KslFloat1> {
         val name = "${NAME_OUT_COLOR_PREFIX}${location}"
         return outColors.find { it.value.stateName == name }
-            ?: KslStageOutputVector(KslVarVector(name, KslFloat4, true)).also {
+            ?: KslStageOutputVector(KslVarVector(name, KslFloat4, true), KslStateType.FragmentOutput).also {
                 it.location = location
                 globalScope.definedStates += it.value
                 outColors += it
@@ -306,11 +307,11 @@ class KslFragmentStage(program: KslProgram) : KslShaderStage(program, KslShaderS
 
 class KslComputeStage(program: KslProgram, val workGroupSize: Vec3i) : KslShaderStage(program, KslShaderStageType.ComputeShader) {
 
-    val inGlobalInvocationId = KslStageInputVector(KslVarVector(NAME_IN_GLOBAL_INVOCATION_ID, KslUint3, false))
-    val inLocalInvocationId = KslStageInputVector(KslVarVector(NAME_IN_LOCAL_INVOCATION_ID, KslUint3, false))
-    val inWorkGroupId = KslStageInputVector(KslVarVector(NAME_IN_WORK_GROUP_ID, KslUint3, false))
-    val inNumWorkGroups = KslStageInputVector(KslVarVector(NAME_IN_NUM_WORK_GROUPS, KslUint3, false))
-    val inWorkGroupSize = KslStageInputVector(KslVarVector(NAME_IN_WORK_GROUP_SIZE, KslUint3, false))
+    val inGlobalInvocationId = KslStageInputVector(KslVarVector(NAME_IN_GLOBAL_INVOCATION_ID, KslUint3, false), KslStateType.ComputeInput)
+    val inLocalInvocationId = KslStageInputVector(KslVarVector(NAME_IN_LOCAL_INVOCATION_ID, KslUint3, false), KslStateType.ComputeInput)
+    val inWorkGroupId = KslStageInputVector(KslVarVector(NAME_IN_WORK_GROUP_ID, KslUint3, false), KslStateType.ComputeInput)
+    val inNumWorkGroups = KslStageInputVector(KslVarVector(NAME_IN_NUM_WORK_GROUPS, KslUint3, false), KslStateType.ComputeInput)
+    val inWorkGroupSize = KslStageInputVector(KslVarVector(NAME_IN_WORK_GROUP_SIZE, KslUint3, false), KslStateType.ComputeInput)
 
     val isUsingGlobalInvocationId: Boolean get() = inGlobalInvocationId.value in main.dependencies
     val isUsingLocalInvocationId: Boolean get() = inLocalInvocationId.value in main.dependencies

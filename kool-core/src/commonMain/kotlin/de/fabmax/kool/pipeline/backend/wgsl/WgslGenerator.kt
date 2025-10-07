@@ -3,6 +3,7 @@ package de.fabmax.kool.pipeline.backend.wgsl
 import de.fabmax.kool.modules.ksl.generator.KslGenerator
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ksl.model.KslState
+import de.fabmax.kool.modules.ksl.model.KslStateType
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.StructArrayMember
 import de.fabmax.kool.util.logW
@@ -77,9 +78,9 @@ class WgslGenerator private constructor(
         src.appendLine("@vertex")
         src.appendLine("fn vertexMain(vertexInput: VertexInput) -> VertexOutput {")
         src.appendLine(vertexInput.reassembleMatrices().prependIndent(blockIndent))
-        src.appendLine("  var vertexOutput: VertexOutput;")
+        src.appendLine("    var vertexOutput: VertexOutput;")
         src.appendLine(generateScope(main.childScopes.first(), blockIndent))
-        src.appendLine("  return vertexOutput;")
+        src.appendLine("    return vertexOutput;")
         src.appendLine("}")
         return src.toString()
     }
@@ -109,9 +110,9 @@ class WgslGenerator private constructor(
 
         src.appendLine("@fragment")
         src.appendLine("fn fragmentMain($mainParam) -> FragmentOutput {")
-        src.appendLine("  var fragmentOutput: FragmentOutput;")
+        src.appendLine("    var fragmentOutput: FragmentOutput;")
         src.appendLine(generateScope(main.childScopes.first(), blockIndent))
-        src.appendLine("  return fragmentOutput;")
+        src.appendLine("    return fragmentOutput;")
         src.appendLine("}")
         return src.toString()
     }
@@ -650,7 +651,7 @@ class WgslGenerator private constructor(
         return "(${func.args[0].generateExpression()} != ${func.args[0].generateExpression()})"
     }
 
-    override fun getStateName(state: KslState): String = generatorState.getVarName(state.stateName)
+    override fun getStateName(state: KslState): String = generatorState.getVarName(state)
 
     companion object {
         fun generateProgram(program: KslProgram, pipeline: DrawPipeline): WgslGeneratorOutput {
@@ -820,14 +821,29 @@ class WgslGenerator private constructor(
             }
         }
 
-        fun mapStructMemberNames(members: List<WgslStructMember>) {
-            members.forEach { nameMap[it.name] = "${it.structName}.${it.name}" }
-        }
-
         fun nextTempVar(): String = "generatorTempVar_${nextTempI++}"
 
-        fun getVarName(kslName: String): String {
-            return nameMap.getOrElse(kslName) { kslName }
+        /**
+         * Translate ksl variable name into wgsl variable name: Most variables keep their ksl name, but shader
+         * stage inputs / outputs require special care because in wgsl they are defined in structs and need
+         * to be prefixed with the corresponding struct name.
+         * The only exception are vertex stage matrix inputs, which are represented as vectors and assembled into
+         * their matrix form locally.
+         */
+        fun getVarName(state: KslState): String {
+            if (state.stateName in nameMap) {
+                return nameMap[state.stateName]!!
+            }
+            val prefix = when (state.stateType) {
+                KslStateType.VertexInput if state is KslExpression<*> && state.expressionType is KslMatrix<*> -> ""
+                KslStateType.VertexInput -> "vertexInput."
+                KslStateType.VertexOutput -> "vertexOutput."
+                KslStateType.FragmentInput -> "fragmentInput."
+                KslStateType.FragmentOutput -> "fragmentOutput."
+                KslStateType.ComputeInput -> "computeInput."
+                KslStateType.Other -> ""
+            }
+            return "$prefix${state.stateName}"
         }
     }
 
@@ -861,12 +877,6 @@ class WgslGenerator private constructor(
             WgslStructMember("vertexInput", KslVertexStage.NAME_IN_INSTANCE_INDEX, "u32", "@builtin(instance_index) ")
         } else null
 
-        init {
-            generatorState.mapStructMemberNames(vertexInputs)
-            vertexIndex?.let { generatorState.mapStructMemberNames(listOf(it)) }
-            instanceIndex?.let { generatorState.mapStructMemberNames(listOf(it)) }
-        }
-
         fun generateStruct(builder: StringBuilder) = builder.apply {
             generateStruct("VertexInput", vertexInputs, vertexIndex, instanceIndex)
         }
@@ -882,7 +892,7 @@ class WgslGenerator private constructor(
         }
     }
 
-    private inner class VertexOutputStruct(stage: KslVertexStage) : WgslStructHelper {
+    private class VertexOutputStruct(stage: KslVertexStage) : WgslStructHelper {
         val vertexOutputs = stage.interStageVars
             .mapIndexed { i, output ->
                 val outVal = output.output
@@ -898,9 +908,6 @@ class WgslGenerator private constructor(
             if (pointSize != null) {
                 logW { "Ignoring vertex shader point size output: Not supported by WGSL" }
             }
-            generatorState.mapStructMemberNames(vertexOutputs)
-            generatorState.mapStructMemberNames(listOf(position))
-            pointSize?.let { generatorState.mapStructMemberNames(listOf(it)) }
         }
 
         fun generateStruct(builder: StringBuilder) = builder.apply {
@@ -908,7 +915,7 @@ class WgslGenerator private constructor(
         }
     }
 
-    private inner class FragmentInputStruct(stage: KslFragmentStage) : WgslStructHelper {
+    private class FragmentInputStruct(stage: KslFragmentStage) : WgslStructHelper {
         val fragmentInputs = stage.interStageVars
             .mapIndexed { i, input ->
                 val inVal = input.input
@@ -926,12 +933,6 @@ class WgslGenerator private constructor(
         // not-implemented: input sample_index
         // not-implemented: input sample_mask
 
-        init {
-            generatorState.mapStructMemberNames(fragmentInputs)
-            fragPosition?.let { generatorState.mapStructMemberNames(listOf(it)) }
-            isFrontFacing?.let { generatorState.mapStructMemberNames(listOf(it)) }
-        }
-
         fun isNotEmpty(): Boolean = isNotEmpty(fragmentInputs, fragPosition, isFrontFacing)
 
         fun generateStruct(builder: StringBuilder) = builder.apply {
@@ -939,7 +940,7 @@ class WgslGenerator private constructor(
         }
     }
 
-    private inner class FragmentOutputStruct(stage: KslFragmentStage) : WgslStructHelper {
+    private class FragmentOutputStruct(stage: KslFragmentStage) : WgslStructHelper {
         val outColors = stage.outColors.mapIndexed { i, outColor ->
             WgslStructMember("fragmentOutput", outColor.value.stateName, outColor.value.expressionType.wgslTypeName(), "@location($i) ")
         }
@@ -947,17 +948,12 @@ class WgslGenerator private constructor(
             WgslStructMember("fragmentOutput", KslFragmentStage.NAME_OUT_DEPTH, "f32", "@builtin(frag_depth) ")
         } else null
 
-        init {
-            generatorState.mapStructMemberNames(outColors)
-            fragDepth?.let { generatorState.mapStructMemberNames(listOf(it)) }
-        }
-
         fun generateStruct(builder: StringBuilder) = builder.apply {
             generateStruct("FragmentOutput", outColors, fragDepth)
         }
     }
 
-    private inner class ComputeInputStructs(val stage: KslComputeStage) : WgslStructHelper {
+    private class ComputeInputStructs(val stage: KslComputeStage) : WgslStructHelper {
         val globalInvocationId = if (stage.isUsingGlobalInvocationId) {
             WgslStructMember("computeInput", KslComputeStage.NAME_IN_GLOBAL_INVOCATION_ID, "vec3u", "@builtin(global_invocation_id) ")
         } else null
@@ -973,13 +969,6 @@ class WgslGenerator private constructor(
         val numWorkGroups = if (stage.isUsingNumWorkGroups) {
             WgslStructMember("computeInput", KslComputeStage.NAME_IN_NUM_WORK_GROUPS, "vec3u", "@builtin(num_workgroups) ")
         } else null
-
-        init {
-            globalInvocationId?.let { generatorState.mapStructMemberNames(listOf(it)) }
-            localInvocationId?.let { generatorState.mapStructMemberNames(listOf(it)) }
-            workGroupId?.let { generatorState.mapStructMemberNames(listOf(it)) }
-            numWorkGroups?.let { generatorState.mapStructMemberNames(listOf(it)) }
-        }
 
         fun generateStruct(builder: StringBuilder) = builder.apply {
             generateStruct("ComputeInput", emptyList(), globalInvocationId, localInvocationId, workGroupId, numWorkGroups)

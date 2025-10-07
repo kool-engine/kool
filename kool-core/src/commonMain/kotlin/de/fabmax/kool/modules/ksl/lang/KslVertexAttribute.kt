@@ -1,8 +1,13 @@
 package de.fabmax.kool.modules.ksl.lang
 
+import de.fabmax.kool.modules.ksl.model.KslStateType
+
 open class KslVertexAttribute<T: KslType>(val value: KslValue<T>, val inputRate: KslInputRate) : KslExpression<T> by value {
-    val name: String
-        get() = value.stateName
+    val name: String get() = value.stateName
+
+    init {
+        value.stateType = KslStateType.VertexInput
+    }
 }
 
 class KslVertexAttributeScalar<S>(value: KslValue<S>, inputRate: KslInputRate)
