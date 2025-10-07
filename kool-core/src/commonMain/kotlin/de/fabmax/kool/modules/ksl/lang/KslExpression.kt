@@ -96,3 +96,27 @@ typealias KslVarBool4 = KslVarVector<KslBool4, KslBool1>
 typealias KslVarMat2 = KslVarMatrix<KslMat2, KslFloat2>
 typealias KslVarMat3 = KslVarMatrix<KslMat3, KslFloat3>
 typealias KslVarMat4 = KslVarMatrix<KslMat4, KslFloat4>
+
+typealias KslVarFloat1Array = KslArrayScalar<KslFloat1>
+typealias KslVarFloat2Array = KslArrayVector<KslFloat2, KslFloat1>
+typealias KslVarFloat3Array = KslArrayVector<KslFloat3, KslFloat1>
+typealias KslVarFloat4Array = KslArrayVector<KslFloat4, KslFloat1>
+
+typealias KslVarInt1Array = KslArrayScalar<KslInt1>
+typealias KslVarInt2Array = KslArrayVector<KslInt2, KslInt1>
+typealias KslVarInt3Array = KslArrayVector<KslInt3, KslInt1>
+typealias KslVarInt4Array = KslArrayVector<KslInt4, KslInt1>
+
+typealias KslVarUint1Array = KslArrayScalar<KslUint1>
+typealias KslVarUint2Array = KslArrayVector<KslUint2, KslUint1>
+typealias KslVarUint3Array = KslArrayVector<KslUint3, KslUint1>
+typealias KslVarUint4Array = KslArrayVector<KslUint4, KslUint1>
+
+typealias KslVarBool1Array = KslArrayScalar<KslBool1>
+typealias KslVarBool2Array = KslArrayVector<KslBool2, KslBool1>
+typealias KslVarBool3Array = KslArrayVector<KslBool3, KslBool1>
+typealias KslVarBool4Array = KslArrayVector<KslBool4, KslBool1>
+
+typealias KslVarMat2Array = KslArrayMatrix<KslMat2, KslFloat2>
+typealias KslVarMat3Array = KslArrayMatrix<KslMat3, KslFloat3>
+typealias KslVarMat4Array = KslArrayMatrix<KslMat4, KslFloat4>
