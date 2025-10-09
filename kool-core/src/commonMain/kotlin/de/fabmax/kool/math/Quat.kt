@@ -488,6 +488,29 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
+     * @return rotation axis with length, equal to the rotation angle (in radians)
+     */
+    fun log(result: MutableVec3d = MutableVec3d()): MutableVec3d {
+        val lenXYZ = sqrt(x * x + y * y + z * z)
+        val angle = atan2(lenXYZ, abs(w))
+
+        val b = if (abs(angle) > 1e-5) { // angle / sin(angle)
+            val a = 1.0 / (1.0 - w * w) // 1 / sin^2
+            angle * sqrt(a)
+        } else {
+            1.0 + angle * angle / 6.0
+        }
+
+        val mult = if (w >= 0.0) b else -b
+        return result.set(x * mult, y * mult, z * mult)
+    }
+
+    fun pow(power: Double): MutableQuatD {
+        val logVec = log()
+        return MutableQuatD().setExponent(logVec, power)
+    }
+
+    /**
      * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatD].
      */
     fun normed(result: MutableQuatD = MutableQuatD()): MutableQuatD = result.set(this).norm()
@@ -557,6 +580,7 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
 
         fun rotation(angle: AngleD, axis: Vec3d): QuatD = MutableQuatD().rotate(angle, axis)
 
+        fun exponent(log: Vec3d, multiplier: Double = 1.0): QuatD = MutableQuatD().setExponent(log, multiplier)
     }
 }
 
@@ -593,6 +617,8 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
      * Sets this quaternion to represent the given rotation.
      */
     fun set(angle: AngleD, axis: Vec3d): MutableQuatD {
+        // todo reuse setExponent
+
         var s = axis.sqrLength()
         if (!isFuzzyEqual(s, 1.0)) {
             s = 1.0 / sqrt(s)
@@ -604,6 +630,28 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
         y = axis.y * factor
         z = axis.z * factor
         w = cos(rad2)
+        return this
+    }
+
+    /**
+     * log is the rotation axis, multiplied by the rotation angle in radians.
+     * t is just `effective` multiplier for log length
+     */
+    fun setExponent(log: Vec3d, multiplier: Double = 1.0): MutableQuatD {
+        val len = log.length() * abs(multiplier)
+        val cosLen = cos(len)
+
+        // if len is near zero, use Taylor series instead of division
+        val sinDivLen = if (len > 1e-5) {
+            sin(len) / len
+        } else 1.0 - (len * len) / 6.0
+
+        val mult = sinDivLen * multiplier
+
+        this.w = cosLen
+        this.x = mult * log.x
+        this.y = mult * log.y
+        this.z = mult * log.z
         return this
     }
 

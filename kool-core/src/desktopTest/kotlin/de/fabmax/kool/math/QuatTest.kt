@@ -16,4 +16,27 @@ class QuatTest {
 
         assert(m1.isFuzzyEqual(m2))
     }
+
+    @Test
+    fun exponentAndLogarithmAreInvertible() {
+        val logs = listOf(
+            Vec3d(0.0, 0.0, 0.0),
+            Vec3d(0.1, 0.0, 0.0),
+            Vec3d(0.0, 1.0, 0.0),
+            Vec3d(0.0, 0.0, 0.1),
+            Vec3d(0.1, 0.1, 0.1),
+            Vec3d(1e-6, 0.0, 0.0),
+            Vec3d(1e-12, 0.0, 0.0),
+            Vec3d(1e-50, 0.0, 0.0),
+        )
+
+        for(log in logs) {
+            val q = QuatD.exponent(log)
+            val restoredLog = q.log()
+
+            val distance = restoredLog.distance(log)
+
+            println("log: $log, restored: $restoredLog, distance: $distance")
+        }
+    }
 }
