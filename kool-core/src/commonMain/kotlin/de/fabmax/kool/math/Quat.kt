@@ -155,6 +155,14 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     fun isFuzzyEqual(that: QuatF, eps: Float = FUZZY_EQ_F): Boolean =
         isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
 
+    /**
+     * Checks equality of rotations, represented by quaternions.
+     * Quaternion, multiplied by -1, represents the same rotation, while all components have opposite signs.
+     */
+    fun isFuzzyEqualRotation(that: QuatF, eps: Float = FUZZY_EQ_F): Boolean =
+        isFuzzyEqual(that, eps) ||
+                (isFuzzyEqual(-x, that.x, eps) && isFuzzyEqual(-y, that.y, eps) && isFuzzyEqual(-z, that.z, eps) && isFuzzyEqual(-w, that.w, eps))
+
     override fun toString(): String = "($x, $y, $z, $w)"
 
     /**
@@ -495,6 +503,14 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
      */
     fun isFuzzyEqual(that: QuatD, eps: Double = FUZZY_EQ_D): Boolean =
         isFuzzyEqual(x, that.x, eps) && isFuzzyEqual(y, that.y, eps) && isFuzzyEqual(z, that.z, eps) && isFuzzyEqual(w, that.w, eps)
+
+    /**
+     * Checks equality of rotations, represented by quaternions.
+     * Quaternion, multiplied by -1, represents the same rotation, while all components have opposite signs.
+     */
+    fun isFuzzyEqualRotation(that: QuatD, eps: Double = FUZZY_EQ_D): Boolean =
+        isFuzzyEqual(that, eps) ||
+                (isFuzzyEqual(-x, that.x, eps) && isFuzzyEqual(-y, that.y, eps) && isFuzzyEqual(-z, that.z, eps) && isFuzzyEqual(-w, that.w, eps))
 
     override fun toString(): String = "($x, $y, $z, $w)"
 
