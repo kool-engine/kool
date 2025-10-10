@@ -6,6 +6,8 @@ on:
       - '*.md'
       - '*.yml'
       - '.github/workflows/**'
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
