@@ -17,6 +17,7 @@ import de.fabmax.kool.demo.physics.terrain.TerrainDemo
 import de.fabmax.kool.demo.physics.vehicle.VehicleDemo
 import de.fabmax.kool.demo.procedural.ProceduralDemo
 import de.fabmax.kool.demo.tests.*
+import de.fabmax.kool.demo.tetris.TetrisDemo
 import de.fabmax.kool.demo.uidemo.UiDemo
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.ColorGradient
@@ -73,6 +74,7 @@ object Demos {
         entry("ui", "User Interface") { UiDemo() }
         entry("bloom", "Bloom", NeedsComputeShaders) { HelloBloom() }
         entry("pathtracing", "Path-tracing", NeedsComputeShaders) { PathTracingDemo() }
+        entry("tetris", "Tetris") { TetrisDemo() }
     }
 
     val hiddenDemos = Category("Hidden", true, 0.75f, 0.95f).apply {
