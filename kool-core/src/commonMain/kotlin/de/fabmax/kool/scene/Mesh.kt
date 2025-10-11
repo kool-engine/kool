@@ -11,6 +11,7 @@ import de.fabmax.kool.scene.animation.Skin
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.PrimitiveType
+import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.MutableStructBufferView
 import de.fabmax.kool.util.Struct
 import de.fabmax.kool.util.StructBuffer
@@ -74,6 +75,28 @@ fun Node.addTextureMesh(
     return mesh
 }
 
+fun Mesh(
+    attributes: List<Attribute>,
+    instances: MeshInstanceList<*>? = null,
+    name: String = Node.makeNodeName("Mesh"),
+    usage: Usage = Usage.STATIC
+): Mesh = Mesh(
+    geometry = IndexedVertexList(attributes, usage = usage),
+    instances = instances,
+    name = name
+)
+
+fun Mesh(
+    vararg attributes: Attribute,
+    instances: MeshInstanceList<*>? = null,
+    name: String = Node.makeNodeName("Mesh"),
+    usage: Usage = Usage.STATIC
+): Mesh = Mesh(
+    geometry = IndexedVertexList(*attributes, usage = usage),
+    instances = instances,
+    name = name
+)
+
 /**
  * Class for renderable geometry (triangles, lines, points).
  */
@@ -84,11 +107,6 @@ open class Mesh(
     val skin: Skin? = null,
     name: String = geometry.name
 ) : Node(name), DoubleBuffered {
-
-    constructor(attributes: List<Attribute>, instances: MeshInstanceList<*>? = null, name: String = makeNodeName("Mesh")) :
-            this(IndexedVertexList(attributes), instances = instances, name = name)
-    constructor(vararg attributes: Attribute, instances: MeshInstanceList<*>? = null, name: String = makeNodeName("Mesh")) :
-            this(IndexedVertexList(*attributes), instances = instances, name = name)
 
     var isOpaque = true
 
@@ -286,26 +304,34 @@ open class Mesh(
  * Mesh with default attributes for vertex color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.COLORS]
  */
-open class ColorMesh(
+fun ColorMesh(
     instances: MeshInstanceList<*>? = null,
-    name: String = makeNodeName("ColorMesh"),
-) : Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, instances = instances, name = name)
+    name: String = Node.makeNodeName("ColorMesh"),
+    usage: Usage = Usage.STATIC,
+) = Mesh(
+    Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS,
+    instances = instances,
+    name = name,
+    usage = usage
+)
 
 /**
  * Mesh with default attributes for texture color based rendering:
  * [Attribute.POSITIONS], [Attribute.NORMALS], [Attribute.TEXTURE_COORDS] and [Attribute.TANGENTS] if
  * isNormalMapped is true.
  */
-open class TextureMesh(
+fun TextureMesh(
     isNormalMapped: Boolean = false,
     instances: MeshInstanceList<*>? = null,
-    name: String = makeNodeName("TextureMesh")
-) : Mesh(
-    if (isNormalMapped) {
+    name: String = Node.makeNodeName("TextureMesh"),
+    usage: Usage = Usage.STATIC,
+) = Mesh(
+    attributes = if (isNormalMapped) {
         listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
     } else {
         listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS)
     },
     instances = instances,
-    name = name
+    name = name,
+    usage = usage
 )
