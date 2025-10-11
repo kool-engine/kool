@@ -12,18 +12,32 @@ import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
 
-fun IndexedVertexList(vararg vertexAttributes: Attribute, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList<*> {
-    return IndexedVertexList(vertexAttributes.toList(), primitiveType)
+fun IndexedVertexList(
+    vararg vertexAttributes: Attribute,
+    primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    usage: Usage = Usage.STATIC
+): IndexedVertexList<*> {
+    return IndexedVertexList(vertexAttributes.toList(), primitiveType, usage)
 }
 
-fun IndexedVertexList(vertexAttributes: List<Attribute>, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList<*> {
-    return IndexedVertexList<Struct>(vertexAttributes, 1000, primitiveType)
+fun IndexedVertexList(
+    vertexAttributes: List<Attribute>,
+    primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    usage: Usage = Usage.STATIC
+): IndexedVertexList<*> {
+    return IndexedVertexList<Struct>(
+        vertexAttributes,
+        initialSize = 1000,
+        primitiveType = primitiveType,
+        usage = usage
+    )
 }
 
 class IndexedVertexList<T: Struct>(
     val vertexAttributes: List<Attribute>,
     initialSize: Int = 1000,
-    val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES
+    val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
+    val usage: Usage = Usage.STATIC
 ) : BaseReleasable() {
 
     var name: String = "geometry"
@@ -52,12 +66,6 @@ class IndexedVertexList<T: Struct>(
      * Vertex attribute offsets in bytes.
      */
     val attributeByteOffsets: Map<Attribute, Int>
-
-    /**
-     * Expected usage of geometry in this vertex list: STATIC if geometry is expected to change very infrequently /
-     * never, DYNAMIC if it will be updated often.
-     */
-    var usage = Usage.STATIC
 
     /**
      * Number of vertices.
@@ -302,7 +310,6 @@ class IndexedVertexList<T: Struct>(
         indices.put(source.indices)
         numVertices = source.numVertices
         bounds.set(source.bounds)
-        usage = source.usage
         modCount.reset(source.modCount)
     }
 
@@ -577,7 +584,16 @@ enum class PrimitiveType {
     abstract fun getNumberOfPrimitives(numIndices: Int): Int
 }
 
+/**
+ * Expected vertex data usage.
+ */
 enum class Usage {
+    /**
+     * Vertex data will be updated often.
+     */
     DYNAMIC,
+    /**
+     * Vertex data will be changed very infrequently / never.
+     */
     STATIC
 }

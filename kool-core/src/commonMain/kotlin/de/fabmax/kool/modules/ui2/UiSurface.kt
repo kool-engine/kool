@@ -588,9 +588,8 @@ open class UiSurface(
     }
 
     private class TextMesh(shader: DrawShader, name: String) {
-        val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS, name = name).apply {
+        val mesh = Mesh(MsdfUiShader.MSDF_UI_MESH_ATTRIBS, name = name, usage = Usage.DYNAMIC).apply {
             isCastingShadow = false
-            geometry.usage = Usage.DYNAMIC
             this.shader = shader
         }
         val builder = MeshBuilder(mesh.geometry)
@@ -648,7 +647,11 @@ open class UiSurface(
         private val textMeshes = mutableMapOf<Font, TextMesh>()
         private val imageMeshes = mutableMapOf<Texture2d, ImageMeshes>()
         private val customLayers = mutableMapOf<String, CustomLayer>()
-        private val plainMesh = Mesh(Ui2Shader.UI_MESH_ATTRIBS, name = "$name.plainMesh").apply { shader = Ui2Shader() }
+        private val plainMesh = Mesh(
+            attributes = Ui2Shader.UI_MESH_ATTRIBS,
+            name = "$name.plainMesh",
+            usage = Usage.DYNAMIC
+        ).apply { shader = Ui2Shader() }
 
         val uiPrimitives = UiPrimitiveMesh("$name/UiPrimitiveMesh")
         val plainBuilder = MeshBuilder(plainMesh.geometry).apply { isInvertFaceOrientation = true }
@@ -658,7 +661,6 @@ open class UiSurface(
         init {
             addNode(uiPrimitives)
             addNode(plainMesh)
-            plainMesh.geometry.usage = Usage.DYNAMIC
         }
 
         fun getTextBuilder(font: Font): MeshBuilder {
