@@ -272,7 +272,7 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
      * Sets this quaternion to represent the given rotation.
      */
     fun set(angle: AngleF, axis: Vec3f): MutableQuatF {
-        return setExponent(axis, angle.rad * 0.5f)
+        return setExponent(axis, angle.rad * 0.5f / axis.length())
     }
 
     /**
@@ -356,7 +356,7 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
      * Rotates this quaternion by the given angle around the given axis.
      */
     fun rotate(angle: AngleF, axis: Vec3f): MutableQuatF {
-        val multiplier = angle.rad * 0.5f
+        val multiplier = angle.rad * 0.5f / axis.length()
 
         val len = axis.length() * abs(multiplier)
         val cosLen = cos(len)
@@ -666,7 +666,7 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
      * Sets this quaternion to represent the given rotation.
      */
     fun set(angle: AngleD, axis: Vec3d): MutableQuatD {
-        return setExponent(axis, angle.rad * 0.5)
+        return setExponent(axis, angle.rad * 0.5 / axis.length())
     }
 
     /**
@@ -750,7 +750,7 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
      * Rotates this quaternion by the given angle around the given axis.
      */
     fun rotate(angle: AngleD, axis: Vec3d): MutableQuatD {
-        val multiplier = angle.rad * 0.5
+        val multiplier = angle.rad * 0.5 / axis.length()
 
         val len = axis.length() * abs(multiplier)
         val cosLen = cos(len)
