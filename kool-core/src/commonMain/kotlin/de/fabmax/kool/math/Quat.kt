@@ -233,7 +233,7 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     companion object {
         val IDENTITY = QuatF(0f, 0f, 0f, 1f)
 
-        fun rotation(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().rotate(angle, axis)
+        fun rotation(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().set(angle, axis)
 
         fun exponent(log: Vec3f, multiplier: Float = 1.0f): QuatF = MutableQuatF().setExponent(log, multiplier)
     }
@@ -276,7 +276,7 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
     }
 
     /**
-     * log is the rotation axis, multiplied by the rotation angle in radians.
+     * log is the rotation axis, multiplied by the half of rotation angle in radians.
      * multiplier is just `effective` multiplier for log length
      */
     fun setExponent(log: Vec3f, multiplier: Float = 1.0f): MutableQuatF {
@@ -627,7 +627,7 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     companion object {
         val IDENTITY = QuatD(0.0, 0.0, 0.0, 1.0)
 
-        fun rotation(angle: AngleD, axis: Vec3d): QuatD = MutableQuatD().rotate(angle, axis)
+        fun rotation(angle: AngleD, axis: Vec3d): QuatD = MutableQuatD().set(angle, axis)
 
         fun exponent(log: Vec3d, multiplier: Double = 1.0): QuatD = MutableQuatD().setExponent(log, multiplier)
     }
@@ -670,7 +670,7 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
     }
 
     /**
-     * log is the rotation axis, multiplied by the rotation angle in radians.
+     * log is the rotation axis, multiplied by the half of rotation angle in radians.
      * multiplier is just `effective` multiplier for log length
      */
     fun setExponent(log: Vec3d, multiplier: Double = 1.0): MutableQuatD {
