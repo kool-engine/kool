@@ -6,11 +6,11 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
-val Float.deg: AngleF get() = AngleF(this / 180f * PI_F)
+val Float.deg: AngleF get() = AngleF(this * (PI_F / 180f))
 val Float.rad: AngleF get() = AngleF(this)
 fun AngleF.toAngleD() = AngleD(rad.toDouble())
 
-val Double.deg: AngleD get() = AngleD(this / 180.0 * PI)
+val Double.deg: AngleD get() = AngleD(this * (PI / 180))
 val Double.rad: AngleD get() = AngleD(this)
 fun AngleD.toAngleF() = AngleF(rad.toFloat())
 
@@ -18,7 +18,7 @@ fun AngleD.toAngleF() = AngleF(rad.toFloat())
 
 @JvmInline
 value class AngleF(val rad: Float) {
-    val deg: Float get() = rad / PI_F * 180f
+    val deg: Float get() = rad * (180f / PI_F)
 
     val sin: Float get() = sin(rad)
     val cos: Float get() = cos(rad)
@@ -38,7 +38,7 @@ value class AngleF(val rad: Float) {
 
 @JvmInline
 value class AngleD(val rad: Double) {
-    val deg: Double get() = rad / PI * 180.0
+    val deg: Double get() = rad * (180.0 / PI)
 
     val sin: Double get() = sin(rad)
     val cos: Double get() = cos(rad)
