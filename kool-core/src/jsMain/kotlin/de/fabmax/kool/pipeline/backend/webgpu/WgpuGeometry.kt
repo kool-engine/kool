@@ -6,7 +6,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 
-class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
+class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList<*>, val backend: RenderBackendWebGpu) : BaseReleasable(), GpuGeometry {
     private val device: GPUDevice get() = backend.device
 
     private val createdIndexBuffer: WgpuGrowingBuffer
@@ -31,8 +31,8 @@ class WgpuGeometry(val mesh: Mesh, val vertexData: IndexedVertexList, val backen
 
     fun checkBuffers() {
         checkIsNotReleased()
-        if (updateModCount != vertexData.modCount) {
-            updateModCount = vertexData.modCount
+        if (vertexData.modCount.isDirty(updateModCount)) {
+            updateModCount = vertexData.modCount.count
             createdIndexBuffer.writeData(vertexData.indices)
             createdFloatBuffer?.writeData(vertexData.dataF)
             createdIntBuffer?.writeData(vertexData.dataI)

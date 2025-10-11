@@ -19,7 +19,7 @@ actual fun HeightFieldGeometry(heightField: HeightField): HeightFieldGeometry = 
 actual fun PlaneGeometry(): CommonPlaneGeometry = PlaneGeometryImpl()
 actual fun SphereGeometry(radius: Float): SphereGeometry = SphereGeometryImpl(radius)
 actual fun TriangleMeshGeometry(triangleMesh: TriangleMesh, scale: Vec3f): TriangleMeshGeometry = TriangleMeshGeometryImpl(triangleMesh, scale)
-actual fun TriangleMeshGeometry(geometry: IndexedVertexList, scale: Vec3f): TriangleMeshGeometry = TriangleMeshGeometryImpl(geometry, scale)
+actual fun TriangleMeshGeometry(geometry: IndexedVertexList<*>, scale: Vec3f): TriangleMeshGeometry = TriangleMeshGeometryImpl(geometry, scale)
 
 abstract class CollisionGeometryImpl : BaseReleasable(), CollisionGeometry {
     abstract val pxGeometry: PxGeometry

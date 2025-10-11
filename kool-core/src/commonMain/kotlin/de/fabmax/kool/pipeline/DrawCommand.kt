@@ -11,7 +11,7 @@ class DrawCommand(val queue: DrawQueue, var pipeline: DrawPipeline) {
         private set
 
     lateinit var mesh: Mesh
-    lateinit var vertexData: IndexedVertexList
+    lateinit var vertexData: IndexedVertexList<*>
     var instanceData: MeshInstanceList<*>? = null
 
     var isActive = true
@@ -26,7 +26,7 @@ class DrawCommand(val queue: DrawQueue, var pipeline: DrawPipeline) {
      */
     val modelMatD: Mat4d get() = mesh.modelMatD
 
-    fun setup(mesh: Mesh, vertexData: IndexedVertexList, instanceData: MeshInstanceList<*>?, pipeline: DrawPipeline, drawGroupId: Int) {
+    fun setup(mesh: Mesh, vertexData: IndexedVertexList<*>, instanceData: MeshInstanceList<*>?, pipeline: DrawPipeline, drawGroupId: Int) {
         this.mesh = mesh
         this.pipeline = pipeline
         this.drawGroupId = drawGroupId

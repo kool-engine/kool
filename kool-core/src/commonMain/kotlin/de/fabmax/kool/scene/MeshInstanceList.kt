@@ -56,12 +56,11 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
         }
     val maxInstances: Int get() = instanceData.capacity
 
-    var modCount = 0
-        internal set
+    val modCount = ModCounter()
 
     var gpuInstances: GpuInstances? = null
 
-    fun incrementModCount() = modCount++
+    fun incrementModCount() = modCount.increment()
 
     @PublishedApi
     internal fun checkBufferSize(reqSpace: Int) {
@@ -111,7 +110,7 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
         @Suppress("UNCHECKED_CAST")
         instanceData.putAll(source.instanceData as StructBuffer<T>)
         usage = source.usage
-        modCount = source.modCount
+        modCount.reset(source.modCount)
         numInstances = source.numInstances
     }
 

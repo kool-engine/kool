@@ -65,7 +65,7 @@ open class Edge<T: Vec3f>(val pt0: T, val pt1: T) {
     }
 
     companion object {
-        fun getEdges(lineMeshData: IndexedVertexList): List<Edge<Vec3f>> {
+        fun getEdges(lineMeshData: IndexedVertexList<*>): List<Edge<Vec3f>> {
             if (lineMeshData.primitiveType != PrimitiveType.LINES) {
                 throw IllegalArgumentException("Supplied meshData must have primitiveType GL_LINES")
             }

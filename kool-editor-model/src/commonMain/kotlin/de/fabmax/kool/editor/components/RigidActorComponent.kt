@@ -193,7 +193,7 @@ class RigidActorComponent(
         }
     }
 
-    private fun IndexedVertexList.makeTriMeshGeometry(scale: Vec3f): TriangleMeshGeometry {
+    private fun IndexedVertexList<*>.makeTriMeshGeometry(scale: Vec3f): TriangleMeshGeometry {
         return TriangleMeshGeometry(this, scale)
     }
 

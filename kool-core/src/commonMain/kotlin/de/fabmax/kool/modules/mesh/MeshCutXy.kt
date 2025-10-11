@@ -7,7 +7,7 @@ import de.fabmax.kool.util.logD
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class MeshCutXy(val geometry: IndexedVertexList) {
+class MeshCutXy(val geometry: IndexedVertexList<*>) {
 
     val ocTreeHandler = OcTreeEdgeHandler(geometry)
     val halfEdgeMesh = HalfEdgeMesh(geometry, ocTreeHandler)
@@ -138,7 +138,7 @@ class MeshCutXy(val geometry: IndexedVertexList) {
         //logD { "Deleted $delCnt inner triangles" }
     }
 
-    private inner class CoveringTriXyTrav : KNearestTraverser<HalfEdgeMesh.HalfEdge>() {
+    private class CoveringTriXyTrav : KNearestTraverser<HalfEdgeMesh.HalfEdge>() {
         val triPts = MutableList(3) { MutableVec2f() }
         private val tmpVec = MutableVec3f()
 

@@ -6,7 +6,7 @@ import de.fabmax.kool.pipeline.GpuType
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MutableColor
 
-class VertexView(val data: IndexedVertexList, index: Int) : MutableVec3f() {
+class VertexView(val data: IndexedVertexList<*>, index: Int) : MutableVec3f() {
     private var offsetF = index * data.vertexSizeF
     private var offsetI = index * data.vertexSizeI
 

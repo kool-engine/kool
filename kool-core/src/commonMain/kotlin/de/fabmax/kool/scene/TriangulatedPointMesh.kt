@@ -19,7 +19,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class TriangulatedPointMesh(
-    geometry: IndexedVertexList = IndexedVertexList(listOf(ATTR_POINT_VERTEX), PrimitiveType.TRIANGLE_STRIP),
+    geometry: IndexedVertexList<*> = IndexedVertexList(listOf(ATTR_POINT_VERTEX), PrimitiveType.TRIANGLE_STRIP),
     numVertices: Int = 8,
     name: String = makeNodeName("TriangulatedPointMesh")
 ) : Mesh(geometry, MeshInstanceList(PointInstanceLayout, 1024), name = name) {

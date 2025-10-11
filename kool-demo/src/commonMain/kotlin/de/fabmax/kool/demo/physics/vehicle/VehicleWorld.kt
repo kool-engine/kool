@@ -40,7 +40,7 @@ class VehicleWorld(val scene: Scene, val physics: PhysicsWorld, val deferredPipe
         }
     }
 
-    fun addStaticCollisionBody(mesh: IndexedVertexList): RigidStatic {
+    fun addStaticCollisionBody(mesh: IndexedVertexList<*>): RigidStatic {
         val body = RigidStatic().apply {
             simulationFilterData = obstacleSimFilterData
             queryFilterData = obstacleQryFilterData

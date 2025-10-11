@@ -159,7 +159,7 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
         }
     }
 
-    class Tree(val drawMesh: Mesh, collisionMesh: IndexedVertexList) {
+    class Tree(val drawMesh: Mesh, collisionMesh: IndexedVertexList<*>) {
         val instances = mutableListOf<TreeInstance>()
         val physicsMesh = TriangleMesh(collisionMesh)
     }

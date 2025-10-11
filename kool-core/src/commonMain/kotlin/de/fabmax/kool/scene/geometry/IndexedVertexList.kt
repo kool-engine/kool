@@ -12,12 +12,17 @@ import de.fabmax.kool.util.*
 import kotlin.math.abs
 import kotlin.math.max
 
-fun IndexedVertexList(vararg vertexAttributes: Attribute, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList {
+fun IndexedVertexList(vararg vertexAttributes: Attribute, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList<*> {
     return IndexedVertexList(vertexAttributes.toList(), primitiveType)
 }
 
-class IndexedVertexList(
+fun IndexedVertexList(vertexAttributes: List<Attribute>, primitiveType: PrimitiveType = PrimitiveType.TRIANGLES): IndexedVertexList<*> {
+    return IndexedVertexList<Struct>(vertexAttributes, 1000, primitiveType)
+}
+
+class IndexedVertexList<T: Struct>(
     val vertexAttributes: List<Attribute>,
+    initialSize: Int = 1000,
     val primitiveType: PrimitiveType = PrimitiveType.TRIANGLES
 ) : BaseReleasable() {
 
@@ -72,7 +77,7 @@ class IndexedVertexList(
         private set
     var dataI: Int32Buffer
         private set
-    var indices = Uint32Buffer(INITIAL_SIZE, true)
+    var indices = Uint32Buffer(initialSize, true)
         private set
 
     val bounds = BoundingBoxF()
@@ -81,8 +86,7 @@ class IndexedVertexList(
 
     var isRebuildBoundsOnSync = false
 
-    var modCount = 0
-        internal set
+    val modCount = ModCounter()
 
     var gpuGeometry: GpuGeometry? = null
 
@@ -110,12 +114,12 @@ class IndexedVertexList(
         vertexSizeI = strideI / 4
         byteStrideI = strideI
 
-        dataF = Float32Buffer(strideF * INITIAL_SIZE, true)
-        dataI = Int32Buffer(strideI * INITIAL_SIZE, true)
+        dataF = Float32Buffer(strideF * initialSize, true)
+        dataI = Int32Buffer(strideI * initialSize, true)
         vertexIt = VertexView(this, 0)
     }
 
-    fun incrementModCount() = modCount++
+    fun incrementModCount() = modCount.increment()
 
     fun hasAttributes(requiredAttributes: Set<Attribute>): Boolean {
         return vertexAttributes.containsAll(requiredAttributes)
@@ -180,7 +184,7 @@ class IndexedVertexList(
 
     fun hasAttribute(attribute: Attribute): Boolean = vertexAttributes.contains(attribute)
 
-    inline fun batchUpdate(rebuildBounds: Boolean = false, block: IndexedVertexList.() -> Unit) {
+    inline fun batchUpdate(rebuildBounds: Boolean = false, block: IndexedVertexList<*>.() -> Unit) {
         block.invoke(this)
         if (rebuildBounds) {
             rebuildBounds()
@@ -220,9 +224,9 @@ class IndexedVertexList(
         }
     }
 
-    fun addGeometry(geometry: IndexedVertexList) = addGeometry(geometry) { }
+    fun addGeometry(geometry: IndexedVertexList<*>) = addGeometry(geometry) { }
 
-    inline fun addGeometry(geometry: IndexedVertexList, vertexMod: (VertexView.() -> Unit)) {
+    inline fun addGeometry(geometry: IndexedVertexList<*>, vertexMod: (VertexView.() -> Unit)) {
         val baseIdx = numVertices
 
         checkBufferSizes(geometry.numVertices)
@@ -245,7 +249,7 @@ class IndexedVertexList(
             checkIndexSize()
         }
         indices += idx
-        modCount++
+        modCount.increment()
     }
 
     fun addIndices(vararg indices: Int) {
@@ -282,14 +286,14 @@ class IndexedVertexList(
         indices.clear()
 
         bounds.clear()
-        modCount++
+        modCount.increment()
     }
 
     /**
      * Replaces all content by the content of [source]. Given source buffer must have the same vertex layout.
      * This vertex list's [modCount] is set to the [modCount] value of the source vertex list.
      */
-    internal fun set(source: IndexedVertexList) {
+    internal fun set(source: IndexedVertexList<*>) {
         clear()
         checkBufferSizes(source.numVertices)
         checkIndexSize(source.indices.position)
@@ -299,18 +303,18 @@ class IndexedVertexList(
         numVertices = source.numVertices
         bounds.set(source.bounds)
         usage = source.usage
-        modCount = source.modCount
+        modCount.reset(source.modCount)
     }
 
     fun clearIndices() {
         indices.clear()
-        modCount++
+        modCount.increment()
     }
 
     fun shrinkIndices(newSize: Int) {
         check(newSize <= indices.position) { "new size must be less (or equal) than old size" }
         indices.position = newSize
-        modCount++
+        modCount.increment()
     }
 
     fun shrinkVertices(newSize: Int) {
@@ -318,7 +322,7 @@ class IndexedVertexList(
         numVertices = newSize
         dataF.position = newSize * vertexSizeF
         dataI.position = newSize * vertexSizeI
-        modCount++
+        modCount.increment()
     }
 
     operator fun get(i: Int): VertexView {
@@ -361,7 +365,7 @@ class IndexedVertexList(
         if (iFixed != numIndices) {
             indices.clear()
             indices.put(fixedIndices, 0, iFixed)
-            modCount++
+            modCount.increment()
         }
     }
 
@@ -409,7 +413,7 @@ class IndexedVertexList(
             mergeIndices.put(indexMap[mergeMap[ind]!!]!!)
         }
         indices = mergeIndices
-        modCount++
+        modCount.increment()
     }
 
     fun splitVertices() {
@@ -433,7 +437,7 @@ class IndexedVertexList(
             indices.put(i)
         }
         numVertices = numIndices
-        modCount++
+        modCount.increment()
     }
 
     fun generateNormals() {
@@ -481,7 +485,7 @@ class IndexedVertexList(
             v0.index = i
             v0.normal.norm()
         }
-        modCount++
+        modCount.increment()
     }
 
     fun generateTangents(tangentSign: Float = 1f) {
@@ -542,7 +546,7 @@ class IndexedVertexList(
                 v0.tangent.set(Vec3f.X_AXIS)
             }
         }
-        modCount++
+        modCount.increment()
     }
 
     override fun doRelease() {
@@ -550,7 +554,6 @@ class IndexedVertexList(
     }
 
     companion object {
-        private const val INITIAL_SIZE = 1000
         private const val GROW_FACTOR = 2.0
     }
 

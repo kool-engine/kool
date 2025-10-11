@@ -21,7 +21,7 @@ fun Node.addPointMesh(name: String = Node.makeNodeName("LineMesh"), block: Point
 
 open class PointMesh(
     name: String = makeNodeName("LineMesh"),
-    geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, ATTRIB_POINT_SIZE, Attribute.COLORS, primitiveType = PrimitiveType.POINTS)
+    geometry: IndexedVertexList<*> = IndexedVertexList(Attribute.POSITIONS, ATTRIB_POINT_SIZE, Attribute.COLORS, primitiveType = PrimitiveType.POINTS)
 ) : Mesh(geometry, name = name) {
     init {
         rayTest = MeshRayTest.nopTest()

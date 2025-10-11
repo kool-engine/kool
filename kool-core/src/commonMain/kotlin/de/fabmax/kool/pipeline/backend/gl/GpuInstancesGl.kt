@@ -25,8 +25,8 @@ class GpuInstancesGl(
 
     fun checkBuffers() {
         checkIsNotReleased()
-        if (updateModCount != instances.modCount) {
-            updateModCount = instances.modCount
+        if (instances.modCount.isDirty(updateModCount)) {
+            updateModCount = instances.modCount.count
             instanceBuffer.setData(instances.instanceData.buffer, instances.usage.glUsage)
         }
     }

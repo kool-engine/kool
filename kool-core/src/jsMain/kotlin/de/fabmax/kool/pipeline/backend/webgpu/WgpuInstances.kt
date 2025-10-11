@@ -22,8 +22,8 @@ class WgpuInstances(val instances: MeshInstanceList<*>, val backend: RenderBacke
     fun checkBuffers() {
         checkIsNotReleased()
 
-        if (updateModCount != instances.modCount) {
-            updateModCount = instances.modCount
+        if (instances.modCount.isDirty(updateModCount)) {
+            updateModCount = instances.modCount.count
             createdInstanceBuffer?.writeData(instances.instanceData.buffer)
         }
     }

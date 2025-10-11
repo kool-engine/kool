@@ -8,11 +8,11 @@ import de.fabmax.kool.physics.toPxVec3
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import physx.*
 
-actual fun TriangleMesh(geometry: IndexedVertexList): TriangleMesh = TriangleMeshImpl(geometry)
+actual fun TriangleMesh(geometry: IndexedVertexList<*>): TriangleMesh = TriangleMeshImpl(geometry)
 
 val TriangleMesh.pxTriangleMesh: PxTriangleMesh get() = (this as TriangleMeshImpl).pxTriangleMesh
 
-class TriangleMeshImpl(override val geometry: IndexedVertexList) : TriangleMesh() {
+class TriangleMeshImpl(override val geometry: IndexedVertexList<*>) : TriangleMesh() {
 
     val pxTriangleMesh: PxTriangleMesh
 
@@ -64,7 +64,7 @@ class TriangleMeshImpl(override val geometry: IndexedVertexList) : TriangleMesh(
 }
 
 class TriangleMeshGeometryImpl(override val triangleMesh: TriangleMesh, override val scale: Vec3f) : CollisionGeometryImpl(), TriangleMeshGeometry {
-    constructor(geometry: IndexedVertexList, scale: Vec3f) : this(TriangleMesh(geometry), scale)
+    constructor(geometry: IndexedVertexList<*>, scale: Vec3f) : this(TriangleMesh(geometry), scale)
 
     override val pxGeometry: PxTriangleMeshGeometry
 

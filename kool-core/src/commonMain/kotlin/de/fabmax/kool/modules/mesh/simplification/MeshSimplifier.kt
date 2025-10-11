@@ -6,7 +6,7 @@ import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.toString
 import de.fabmax.kool.util.*
 
-fun IndexedVertexList.simplify(termCrit: TermCriterion) {
+fun IndexedVertexList<*>.simplify(termCrit: TermCriterion) {
     HalfEdgeMesh(this).simplify(termCrit, emptySet())
 }
 

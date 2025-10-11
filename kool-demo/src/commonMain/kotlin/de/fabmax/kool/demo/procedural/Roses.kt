@@ -111,7 +111,7 @@ class Roses : Node() {
             blossomMesh.geometry.applyTint(tint)
         }
 
-        private fun IndexedVertexList.applyTint(tint: Color) {
+        private fun IndexedVertexList<*>.applyTint(tint: Color) {
             forEach {
                 it.color.r *= tint.r
                 it.color.g *= tint.g
