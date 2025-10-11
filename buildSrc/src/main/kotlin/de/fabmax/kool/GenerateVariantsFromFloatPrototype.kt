@@ -93,6 +93,7 @@ open class GenerateVariantsFromFloatPrototype : DefaultTask() {
             Regex("""\W(FloatArray)\W""") to PatternTransformer { it.groups[1]!!.range to "DoubleArray" },
             Regex("""\W(floatArrayOf)\W""") to PatternTransformer { it.groups[1]!!.range to "doubleArrayOf" },
             Regex("""\W(FUZZY_EQ_F)\W""") to PatternTransformer { it.groups[1]!!.range to "FUZZY_EQ_D" },
+            Regex("""\W(TAYLOR_EPS_F)\W""") to PatternTransformer { it.groups[1]!!.range to "TAYLOR_EPS_D" },
             Regex("""\W(PI_F)\W""") to PatternTransformer { it.groups[1]!!.range to "PI" },
             Regex("""\W(encodeFloatElement)\W""") to PatternTransformer { it.groups[1]!!.range to "encodeDoubleElement" },
             Regex("""\W(decodeFloatElement)\W""") to PatternTransformer { it.groups[1]!!.range to "decodeDoubleElement" },

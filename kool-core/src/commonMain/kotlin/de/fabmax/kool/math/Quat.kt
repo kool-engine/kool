@@ -18,6 +18,9 @@ fun QuatD.toMutableVec4d(result: MutableVec4d = MutableVec4d()): MutableVec4d = 
 fun MutableQuatD.set(that: QuatF) = set(that.x.toDouble(), that.y.toDouble(), that.z.toDouble(), that.w.toDouble())
 fun Vec4d.toQuatD() = QuatD(x, y, z, w)
 
+private const val TAYLOR_EPS_F = 1e-3f
+private const val TAYLOR_EPS_D = 1e-5f
+
 // <template> Changes made within the template section will also affect the other type variants of this class
 
 fun QuatF.toEulers(eulersDeg: MutableVec3f = MutableVec3f(), order: EulerOrder = EulerOrder.ZYX): MutableVec3f {
@@ -139,6 +142,30 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
     }
 
     /**
+     * @return rotation axis with length, equal to the half of rotation angle (in radians)
+     */
+    fun log(result: MutableVec3f = MutableVec3f()): MutableVec3f {
+        val lenXYZ = sqrt(x * x + y * y + z * z)
+        val angle = atan2(lenXYZ, abs(w))
+
+        val b = if (abs(angle) > TAYLOR_EPS_F) { // angle / sin(angle)
+            val a = 1.0f / (1.0f - w * w) // 1 / sin^2
+            angle * sqrt(a)
+        } else {
+            1.0f + angle * angle / 6.0f
+        }
+
+        val mult = if (w >= 0.0) b else -b
+        return result.set(x * mult, y * mult, z * mult)
+    }
+
+    fun pow(power: Float): MutableQuatF {
+        val logVec = log()
+        return MutableQuatF().setExponent(logVec, power)
+    }
+
+
+    /**
      * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatF].
      */
     fun normed(result: MutableQuatF = MutableQuatF()): MutableQuatF = result.set(this).norm()
@@ -208,6 +235,7 @@ open class QuatF(open val x: Float, open val y: Float, open val z: Float, open v
 
         fun rotation(angle: AngleF, axis: Vec3f): QuatF = MutableQuatF().rotate(angle, axis)
 
+        fun exponent(log: Vec3f, multiplier: Float = 1.0f): QuatF = MutableQuatF().setExponent(log, multiplier)
     }
 }
 
@@ -244,17 +272,28 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
      * Sets this quaternion to represent the given rotation.
      */
     fun set(angle: AngleF, axis: Vec3f): MutableQuatF {
-        var s = axis.sqrLength()
-        if (!isFuzzyEqual(s, 1f)) {
-            s = 1f / sqrt(s)
-        }
+        return setExponent(axis, angle.rad * 0.5f)
+    }
 
-        val rad2 = angle.rad * 0.5f
-        val factor = sin(rad2) * s
-        x = axis.x * factor
-        y = axis.y * factor
-        z = axis.z * factor
-        w = cos(rad2)
+    /**
+     * log is the rotation axis, multiplied by the rotation angle in radians.
+     * multiplier is just `effective` multiplier for log length
+     */
+    fun setExponent(log: Vec3f, multiplier: Float = 1.0f): MutableQuatF {
+        val len = log.length() * abs(multiplier)
+        val cosLen = cos(len)
+
+        // if len is near zero, use Taylor series instead of division
+        val sinDivLen = if (len > TAYLOR_EPS_F) {
+            sin(len) / len
+        } else 1.0f - (len * len) / 6.0f
+
+        val mult = sinDivLen * multiplier
+
+        this.w = cosLen
+        this.x = mult * log.x
+        this.y = mult * log.y
+        this.z = mult * log.z
         return this
     }
 
@@ -264,6 +303,10 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatF].
      */
     operator fun timesAssign(that: QuatF) { mul(that) }
+
+    operator fun plusAssign(that: QuatF) { add(that) }
+
+    operator fun minusAssign(that: QuatF) { subtract(that) }
 
     /**
      * Inplace operation: Adds the given [QuatF] component-wise to this quaternion.
@@ -313,17 +356,22 @@ open class MutableQuatF(override var x: Float, override var y: Float, override v
      * Rotates this quaternion by the given angle around the given axis.
      */
     fun rotate(angle: AngleF, axis: Vec3f): MutableQuatF {
-        var s = axis.sqrLength()
-        if (!isFuzzyEqual(s, 1f)) {
-            s = 1f / sqrt(s)
-        }
+        val multiplier = angle.rad * 0.5f
 
-        val rad2 = angle.rad * 0.5f
-        val factor = sin(rad2)
-        val qx = axis.x * factor * s
-        val qy = axis.y * factor * s
-        val qz = axis.z * factor * s
-        val qw = cos(rad2)
+        val len = axis.length() * abs(multiplier)
+        val cosLen = cos(len)
+
+        // if len is near zero, use Taylor series instead of division
+        val sinDivLen = if (len > TAYLOR_EPS_F) {
+            sin(len) / len
+        } else 1.0f - (len * len) / 6.0f
+
+        val mult = sinDivLen * multiplier
+
+        val qw = cosLen
+        val qx = mult * axis.x
+        val qy = mult * axis.y
+        val qz = mult * axis.z
 
         val tx = w * qx + x * qw + y * qz - z * qy
         val ty = w * qy - x * qz + y * qw + z * qx
@@ -488,13 +536,13 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
     }
 
     /**
-     * @return rotation axis with length, equal to the rotation angle (in radians)
+     * @return rotation axis with length, equal to the half of rotation angle (in radians)
      */
     fun log(result: MutableVec3d = MutableVec3d()): MutableVec3d {
         val lenXYZ = sqrt(x * x + y * y + z * z)
         val angle = atan2(lenXYZ, abs(w))
 
-        val b = if (abs(angle) > 1e-5) { // angle / sin(angle)
+        val b = if (abs(angle) > TAYLOR_EPS_D) { // angle / sin(angle)
             val a = 1.0 / (1.0 - w * w) // 1 / sin^2
             angle * sqrt(a)
         } else {
@@ -509,6 +557,7 @@ open class QuatD(open val x: Double, open val y: Double, open val z: Double, ope
         val logVec = log()
         return MutableQuatD().setExponent(logVec, power)
     }
+
 
     /**
      * Norms the length of this quaternion and returns the result in an (optionally provided) [MutableQuatD].
@@ -617,32 +666,19 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
      * Sets this quaternion to represent the given rotation.
      */
     fun set(angle: AngleD, axis: Vec3d): MutableQuatD {
-        // todo reuse setExponent
-
-        var s = axis.sqrLength()
-        if (!isFuzzyEqual(s, 1.0)) {
-            s = 1.0 / sqrt(s)
-        }
-
-        val rad2 = angle.rad * 0.5
-        val factor = sin(rad2) * s
-        x = axis.x * factor
-        y = axis.y * factor
-        z = axis.z * factor
-        w = cos(rad2)
-        return this
+        return setExponent(axis, angle.rad * 0.5)
     }
 
     /**
      * log is the rotation axis, multiplied by the rotation angle in radians.
-     * t is just `effective` multiplier for log length
+     * multiplier is just `effective` multiplier for log length
      */
     fun setExponent(log: Vec3d, multiplier: Double = 1.0): MutableQuatD {
         val len = log.length() * abs(multiplier)
         val cosLen = cos(len)
 
         // if len is near zero, use Taylor series instead of division
-        val sinDivLen = if (len > 1e-5) {
+        val sinDivLen = if (len > TAYLOR_EPS_D) {
             sin(len) / len
         } else 1.0 - (len * len) / 6.0
 
@@ -661,6 +697,10 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
      * Inplace operation: Multiplies this quaternion with the given one and stores the result in this [MutableQuatD].
      */
     operator fun timesAssign(that: QuatD) { mul(that) }
+
+    operator fun plusAssign(that: QuatD) { add(that) }
+
+    operator fun minusAssign(that: QuatD) { subtract(that) }
 
     /**
      * Inplace operation: Adds the given [QuatD] component-wise to this quaternion.
@@ -710,17 +750,22 @@ open class MutableQuatD(override var x: Double, override var y: Double, override
      * Rotates this quaternion by the given angle around the given axis.
      */
     fun rotate(angle: AngleD, axis: Vec3d): MutableQuatD {
-        var s = axis.sqrLength()
-        if (!isFuzzyEqual(s, 1.0)) {
-            s = 1.0 / sqrt(s)
-        }
+        val multiplier = angle.rad * 0.5
 
-        val rad2 = angle.rad * 0.5
-        val factor = sin(rad2)
-        val qx = axis.x * factor * s
-        val qy = axis.y * factor * s
-        val qz = axis.z * factor * s
-        val qw = cos(rad2)
+        val len = axis.length() * abs(multiplier)
+        val cosLen = cos(len)
+
+        // if len is near zero, use Taylor series instead of division
+        val sinDivLen = if (len > TAYLOR_EPS_D) {
+            sin(len) / len
+        } else 1.0 - (len * len) / 6.0
+
+        val mult = sinDivLen * multiplier
+
+        val qw = cosLen
+        val qx = mult * axis.x
+        val qy = mult * axis.y
+        val qz = mult * axis.z
 
         val tx = w * qx + x * qw + y * qz - z * qy
         val ty = w * qy - x * qz + y * qw + z * qx
