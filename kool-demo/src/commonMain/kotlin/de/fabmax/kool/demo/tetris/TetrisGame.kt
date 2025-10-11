@@ -2,6 +2,7 @@ package de.fabmax.kool.demo.tetris
 
 import de.fabmax.kool.math.MutableVec2i
 import de.fabmax.kool.math.Vec2i
+import de.fabmax.kool.modules.ui2.mutableStateListOf
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -11,7 +12,20 @@ internal class TetrisGame {
     // game state
     val board = Array(HEIGHT) { Array<Color?>(WIDTH) { null } }
     var currentPiece: Piece? = null
-    var nextPiece: Tetromino = Tetromino.random()
+
+    private val pieceQueue = mutableStateListOf<Tetromino>()
+    val numPreviews = mutableStateOf(1)
+    val nextPiece: Tetromino get() = pieceQueue.first()
+    val previewPieces: List<Tetromino>
+        get() {
+            val numPreviews = numPreviews.value
+            return if (numPreviews <= 1) {
+                emptyList()
+            } else {
+                pieceQueue.subList(1, numPreviews.coerceAtMost(pieceQueue.size))
+            }
+        }
+
     val isPaused = mutableStateOf(false)
     val isGameOver = mutableStateOf(false)
 
@@ -42,6 +56,11 @@ internal class TetrisGame {
         level.set(1)
         isPaused.set(false)
         gravitySpeed = 1f
+
+        pieceQueue.clear()
+        repeat(MAX_PREVIEWS) {
+            pieceQueue.add(Tetromino.random())
+        }
         spawnNewPiece()
     }
 
@@ -78,8 +97,10 @@ internal class TetrisGame {
     }
 
     private fun spawnNewPiece() {
-        currentPiece = Piece(nextPiece, MutableVec2i(WIDTH / 2, HEIGHT - 2))
-        nextPiece = Tetromino.random()
+        currentPiece = Piece(pieceQueue.removeFirst(), MutableVec2i(WIDTH / 2, HEIGHT - 2))
+        while (pieceQueue.size < MAX_PREVIEWS) {
+            pieceQueue.add(Tetromino.random())
+        }
         softDropScore = 0
 
         if (checkCollision(currentPiece!!)) {
@@ -193,6 +214,7 @@ internal class TetrisGame {
     companion object {
         const val WIDTH = 10
         const val HEIGHT = 20
+        const val MAX_PREVIEWS = 5
 
         private val jlstzKicks = mapOf(
             (0 to 1) to listOf(Vec2i(0, 0), Vec2i(-1, 0), Vec2i(-1, 1), Vec2i(0, -2), Vec2i(-1, -2)),

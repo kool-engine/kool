@@ -5,6 +5,8 @@ import de.fabmax.kool.math.isFuzzyZero
 import de.fabmax.kool.modules.ui2.mutableStateOf
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.MdColor
+import kotlin.math.max
+import kotlin.math.min
 
 internal enum class BlockStyle(val displayName: String) {
     BEVELED_CUBE("Simple Cubes"),
@@ -19,6 +21,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
         drawBorder()
         drawBoard()
         drawCurrentPiece()
+        drawNextPiece()
     }
 
     private fun MeshBuilder.drawBorder() {
@@ -72,17 +75,7 @@ internal class TetrisRenderer(private val game: TetrisGame) {
             for (x in 0 until TetrisGame.WIDTH) {
                 game.board[y][x]?.let {
                     color = it
-                    withTransform {
-                        translate(
-                            x * game.blockSize + game.blockSize / 2f,
-                            y * game.blockSize + game.blockSize / 2f,
-                            0f
-                        )
-                        when (blockStyle.value) {
-                            BlockStyle.BEVELED_CUBE -> beveledCube(game.blockSize)
-                            BlockStyle.BEVELED_SPHERE -> beveledCubeWithSphere(game.blockSize, 0.15f)
-                        }
-                    }
+                    renderBlock(x, y)
                 }
             }
         }
@@ -91,34 +84,81 @@ internal class TetrisRenderer(private val game: TetrisGame) {
     private fun MeshBuilder.drawCurrentPiece() {
         if (game.isGameOver.value) return
 
-        fun renderBlock(blocks: Piece) {
-            blocks.getBlocks().forEach { p ->
+        game.getGhostPiece()?.let { ghost ->
+            color = ghost.tetromino.color.withAlpha(0.25f)
+            ghost.getBlocks().forEach { p ->
                 if (p.y < TetrisGame.HEIGHT) {
-                    withTransform {
-                        translate(
-                            p.x * game.blockSize + game.blockSize / 2f,
-                            p.y * game.blockSize + game.blockSize / 2f,
-                            0f
-                        )
-                        when (blockStyle.value) {
-                            BlockStyle.BEVELED_CUBE -> beveledCube(game.blockSize)
-                            BlockStyle.BEVELED_SPHERE -> beveledCubeWithSphere(game.blockSize, 0.15f)
-                        }
-                    }
+                    renderBlock(p.x, p.y)
                 }
             }
         }
 
-        // drawing a ghostly figure
-        game.getGhostPiece()?.let { ghost ->
-            color = ghost.tetromino.color.withAlpha(0.25f)
-            renderBlock(ghost)
-        }
-
-        // drawing the current shape
         game.currentPiece?.let { piece ->
             color = piece.tetromino.color
-            renderBlock(piece)
+            piece.getBlocks().forEach { p ->
+                if (p.y < TetrisGame.HEIGHT) {
+                    renderBlock(p.x, p.y)
+                }
+            }
+        }
+    }
+
+    private fun MeshBuilder.drawNextPiece() {
+        if (game.isGameOver.value) return
+
+        val piecesToDraw = (listOf(game.nextPiece) + game.previewPieces).take(game.numPreviews.value)
+        piecesToDraw.forEachIndexed { i, tetromino ->
+            color = tetromino.color
+
+            val shape = tetromino.shapes[0]
+            var minX = 100; var maxX = -100; var minY = 100; var maxY = -100
+            shape.forEach {
+                minX = min(minX, it.x); maxX = max(maxX, it.x)
+                minY = min(minY, it.y); maxY = max(maxY, it.y)
+            }
+            val offX = (minX + maxX + 1) / 2f
+            val offY = (minY + maxY + 1) / 2f
+
+            withTransform {
+                val previewX = (TetrisGame.WIDTH + 2) * game.blockSize
+                val previewY = (TetrisGame.HEIGHT - 2) * game.blockSize - (i * 4f * game.blockSize * 0.6f)
+                translate(previewX, previewY, 0f)
+                scale(0.6f)
+
+                shape.forEach { p ->
+                    renderBlock(p.x - offX + 0.5f, p.y - offY + 0.5f, isCentered = true)
+                }
+            }
+        }
+    }
+
+    private fun MeshBuilder.renderBlock(x: Int, y: Int) {
+        withTransform {
+            translate(
+                x * game.blockSize + game.blockSize / 2f,
+                y * game.blockSize + game.blockSize / 2f,
+                0f
+            )
+            renderBlockGeometry()
+        }
+    }
+
+    private fun MeshBuilder.renderBlock(x: Float, y: Float, isCentered: Boolean) {
+        withTransform {
+            val blockOffset = if (isCentered) 0f else game.blockSize / 2f
+            translate(
+                x * game.blockSize + blockOffset,
+                y * game.blockSize + blockOffset,
+                0f
+            )
+            renderBlockGeometry()
+        }
+    }
+
+    private fun MeshBuilder.renderBlockGeometry() {
+        when (blockStyle.value) {
+            BlockStyle.BEVELED_CUBE -> beveledCube(game.blockSize)
+            BlockStyle.BEVELED_SPHERE -> beveledCubeWithSphere(game.blockSize, 0.15f)
         }
     }
 }

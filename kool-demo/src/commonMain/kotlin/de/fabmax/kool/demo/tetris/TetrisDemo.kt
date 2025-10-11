@@ -20,6 +20,7 @@ import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
 import de.fabmax.kool.util.Time
+import kotlin.math.roundToInt
 
 /*
  * Tetris Demo
@@ -160,6 +161,26 @@ class TetrisDemo : DemoScene("Tetris") {
         InputStack.defaultInputHandler.keyboardListeners -= keyListener
     }
 
+    // Helper function for rendering control keys
+    private fun UiScope.KeyButton(width: Dimension = 24.dp, block: UiScope.() -> Unit) {
+        Box(width, 24.dp) {
+            modifier
+                .margin(horizontal = sizes.smallGap)
+                .background(RoundRectBackground(colors.backgroundVariant, sizes.smallGap))
+                .border(RoundRectBorder(colors.primaryVariant, sizes.smallGap, 1.dp))
+            block()
+        }
+    }
+    private fun UiScope.KeyButton(key: String, width: Dimension = 24.dp) {
+        KeyButton(width) {
+            Text(key) {
+                modifier
+                    .align(AlignmentX.Center, AlignmentY.Center)
+                    .textColor(colors.onBackground)
+            }
+        }
+    }
+
     override fun createMenu(menu: DemoMenu, ctx: KoolContext): UiSurface {
         return menuSurface {
             Column(Grow.Std) {
@@ -182,6 +203,70 @@ class TetrisDemo : DemoScene("Tetris") {
                         .onItemSelected {
                             renderer.blockStyle.set(options[it])
                         }
+                }
+
+                Text("Preview Pieces:") {
+                    labelStyle()
+                    modifier.margin(top = sizes.gap)
+                }
+                Row(Grow.Std, FitContent) {
+                    modifier.margin(bottom = sizes.gap)
+                    Slider(game.numPreviews.use().toFloat(), 0f, 5f) {
+                        modifier
+                            .width(Grow.Std)
+                            .alignY(AlignmentY.Center)
+                            .onChange {
+                                game.numPreviews.set(it.roundToInt())
+                            }
+                    }
+                    Text("${game.numPreviews.use()}") {
+                        modifier
+                            .width(32.dp)
+                            .textAlignX(AlignmentX.End)
+                            .alignY(AlignmentY.Center)
+                    }
+                }
+
+                Box(height = Grow.Std) { }
+
+                // Section with control instructions
+                Column(FitContent) {
+                    modifier
+                        .alignX(AlignmentX.Center)
+                        .margin(bottom = sizes.largeGap)
+
+                    Text("Controls") {
+                        labelStyle()
+                        modifier
+                            .alignX(AlignmentX.Center)
+                            .margin(bottom = sizes.gap)
+                    }
+                    Row {
+                        modifier.alignY(AlignmentY.Center)
+                        Text("Move:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+                        KeyButton { Arrow(ArrowScope.ROTATION_LEFT) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
+                        KeyButton { Arrow(ArrowScope.ROTATION_RIGHT) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
+                    }
+                    Row {
+                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
+                        Text("Rotate:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+                        KeyButton { Arrow(ArrowScope.ROTATION_UP) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
+                    }
+                    Row {
+                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
+                        Text("Soft Drop:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+                        KeyButton { Arrow(ArrowScope.ROTATION_DOWN) { modifier.align(AlignmentX.Center, AlignmentY.Center).size(12.dp, 12.dp).colors(arrowColor = colors.onBackground) } }
+                    }
+                    Row {
+                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
+                        Text("Hard Drop:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+                        KeyButton("Space", width = 100.dp)
+                    }
+                    Row {
+                        modifier.margin(top = sizes.smallGap).alignY(AlignmentY.Center)
+                        Text("Pause:") { modifier.width(75.dp).textAlignX(AlignmentX.End).margin(end = sizes.gap) }
+                        KeyButton("P")
+                    }
                 }
             }
         }
