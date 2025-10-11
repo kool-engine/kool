@@ -8,7 +8,7 @@ import de.fabmax.kool.scene.geometry.MeshBuilder
 
 expect fun TriangleMeshGeometry(triangleMesh: TriangleMesh, scale: Vec3f = Vec3f.ONES): TriangleMeshGeometry
 
-expect fun TriangleMeshGeometry(geometry: IndexedVertexList, scale: Vec3f = Vec3f.ONES): TriangleMeshGeometry
+expect fun TriangleMeshGeometry(geometry: IndexedVertexList<*>, scale: Vec3f = Vec3f.ONES): TriangleMeshGeometry
 
 interface TriangleMeshGeometry : CollisionGeometry {
     val triangleMesh: TriangleMesh

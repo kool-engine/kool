@@ -8,7 +8,7 @@ import de.fabmax.kool.util.BaseReleasable
 import de.fabmax.kool.util.checkIsNotReleased
 
 class GpuGeometryGl(
-    val geometry: IndexedVertexList,
+    val geometry: IndexedVertexList<*>,
     val backend: RenderBackendGl,
     creationInfo: BufferCreationInfo
 ) : BaseReleasable(), GpuGeometry {
@@ -45,8 +45,8 @@ class GpuGeometryGl(
 
     fun checkBuffers() {
         checkIsNotReleased()
-        if (updateModCount != geometry.modCount) {
-            updateModCount = geometry.modCount
+        if (geometry.modCount.isDirty(updateModCount)) {
+            updateModCount = geometry.modCount.count
             numIndices = geometry.numIndices
 
             val usage = geometry.usage.glUsage

@@ -39,7 +39,7 @@ class CachedTextGeometry(node: UiNode) : CachedGeometry(node, IndexedVertexList(
         }
     }
 
-    fun addTextGeometry(target: IndexedVertexList, textProps: TextProps, textColor: Color, textRotation: Float = 0f, textClip: Vec4f = node.clipBoundsPx) {
+    fun addTextGeometry(target: IndexedVertexList<*>, textProps: TextProps, textColor: Color, textRotation: Float = 0f, textClip: Vec4f = node.clipBoundsPx) {
         if (hasContentChanged(textRotation, textColor)) {
             rebuildTextGeometry(textProps, textColor, textRotation)
         }

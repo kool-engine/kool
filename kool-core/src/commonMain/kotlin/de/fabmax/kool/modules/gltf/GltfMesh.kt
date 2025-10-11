@@ -43,7 +43,7 @@ data class GltfMesh(
         @Transient
         var materialRef: GltfMaterial? = null
 
-        fun toGeometry(cfg: GltfLoadConfig, gltfAccessors: List<GltfAccessor>): IndexedVertexList {
+        fun toGeometry(cfg: GltfLoadConfig, gltfAccessors: List<GltfAccessor>): IndexedVertexList<*> {
             val indexAccessor = if (indices >= 0) gltfAccessors[indices] else null
 
             val positionAcc = attributes[ATTRIBUTE_POSITION]?.let { gltfAccessors[it] }

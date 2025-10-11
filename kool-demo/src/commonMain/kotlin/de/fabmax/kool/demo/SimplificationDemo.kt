@@ -47,7 +47,7 @@ class SimplificationDemo : DemoScene("Simplification") {
     private val simplifiedNumVerts = mutableStateOf(0)
     private val simplificationTime = mutableStateOf(0.0)
 
-    private class DemoModel(val name: String, val geometry: IndexedVertexList) {
+    private class DemoModel(val name: String, val geometry: IndexedVertexList<*>) {
         override fun toString() = name
     }
 
@@ -130,7 +130,7 @@ class SimplificationDemo : DemoScene("Simplification") {
         models += DemoModel(name, geometry)
     }
 
-    private fun makeCosGrid(): IndexedVertexList {
+    private fun makeCosGrid(): IndexedVertexList<*> {
         val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
         builder.color = MdColor.RED
         builder.grid {

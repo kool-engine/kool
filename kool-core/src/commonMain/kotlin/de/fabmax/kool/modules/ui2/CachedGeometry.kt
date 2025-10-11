@@ -10,7 +10,7 @@ import de.fabmax.kool.util.Color
 
 open class CachedGeometry(
     val node: UiNode,
-    val cacheData: IndexedVertexList = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
+    val cacheData: IndexedVertexList<*> = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
 ) {
     val cacheBuilder = MeshBuilder(cacheData).apply { isInvertFaceOrientation = true }
     val isEmpty: Boolean get() = cacheData.isEmpty()
@@ -22,7 +22,7 @@ open class CachedGeometry(
     private val posOffset = cacheData.attributeByteOffsets[Attribute.POSITIONS]!! / 4
     private val clipOffset = cacheData.attributeByteOffsets[Ui2Shader.ATTRIB_CLIP]!! / 4
 
-    fun appendTo(target: IndexedVertexList) {
+    fun appendTo(target: IndexedVertexList<*>) {
         val i0 = target.numVertices
         target.checkIndexSize(cacheData.numIndices)
         for (i in 0 until cacheData.numIndices) {

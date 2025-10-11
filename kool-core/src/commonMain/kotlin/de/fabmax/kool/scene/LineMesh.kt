@@ -27,7 +27,7 @@ fun Node.addLineMesh(
 }
 
 fun Node.addWireframeMesh(
-    triMesh: IndexedVertexList,
+    triMesh: IndexedVertexList<*>,
     lineColor: Color? = null,
     instances: MeshInstanceList<*>? = null
 ) = addLineMesh("${triMesh.name}-wireframe", instances = instances) {
@@ -35,7 +35,7 @@ fun Node.addWireframeMesh(
 }
 
 fun Node.addNormalMesh(
-    geometry: IndexedVertexList,
+    geometry: IndexedVertexList<*>,
     lineColor: Color? = null,
     len: Float = 1f,
     instances: MeshInstanceList<*>? = null
@@ -45,7 +45,7 @@ fun Node.addNormalMesh(
 
 open class LineMesh(
     name: String = makeNodeName("LineMesh"),
-    geometry: IndexedVertexList = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS, primitiveType = PrimitiveType.LINES),
+    geometry: IndexedVertexList<*> = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS, primitiveType = PrimitiveType.LINES),
     instances: MeshInstanceList<*>? = null,
 ) : Mesh(geometry, instances = instances, name = name) {
 
@@ -124,7 +124,7 @@ open class LineMesh(
         return this
     }
 
-    fun addWireframe(triMesh: IndexedVertexList, lineColor: Color? = null) {
+    fun addWireframe(triMesh: IndexedVertexList<*>, lineColor: Color? = null) {
         if (triMesh.primitiveType != PrimitiveType.TRIANGLES) {
             throw IllegalArgumentException("Supplied mesh is not a triangle mesh: ${triMesh.primitiveType}")
         }
@@ -168,7 +168,7 @@ open class LineMesh(
         }
     }
 
-    fun addNormals(geometry: IndexedVertexList, lineColor: Color? = null, len: Float = 1f) {
+    fun addNormals(geometry: IndexedVertexList<*>, lineColor: Color? = null, len: Float = 1f) {
         val tmpN = MutableVec3f()
         geometry.forEach {
             tmpN.set(it.normal).norm().mul(len).add(it.position)

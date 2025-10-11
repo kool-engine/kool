@@ -15,7 +15,7 @@ import de.fabmax.kool.util.*
  *
  * @author fabmax
  */
-class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = ListEdgeHandler()): Mesh(geometry) {
+class HalfEdgeMesh(geometry: IndexedVertexList<*>, val edgeHandler: EdgeHandler = ListEdgeHandler()): Mesh(geometry) {
 
     private val verts: MutableList<HalfEdgeVertex>
     val vertices: List<HalfEdgeVertex>
@@ -406,7 +406,7 @@ class HalfEdgeMesh(geometry: IndexedVertexList, val edgeHandler: EdgeHandler = L
         }
     }
 
-    fun subMeshOf(edges: List<HalfEdge>): IndexedVertexList {
+    fun subMeshOf(edges: List<HalfEdge>): IndexedVertexList<*> {
         val subData = IndexedVertexList(geometry.vertexAttributes)
         val indexMap = mutableMapOf<Int, Int>()
 

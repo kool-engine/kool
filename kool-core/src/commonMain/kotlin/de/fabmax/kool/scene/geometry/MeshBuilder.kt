@@ -9,8 +9,7 @@ import kotlin.math.*
 /**
  * @author fabmax
  */
-open class MeshBuilder(val geometry: IndexedVertexList) {
-
+open class MeshBuilder(val geometry: IndexedVertexList<*>) {
     val transform = Mat4fStack()
     var isInvertFaceOrientation = false
 
@@ -812,7 +811,7 @@ open class MeshBuilder(val geometry: IndexedVertexList) {
         }
     }
 
-    fun geometry(geometry: IndexedVertexList, keepVertexColor: Boolean = false) {
+    fun geometry(geometry: IndexedVertexList<*>, keepVertexColor: Boolean = false) {
         check(geometry.primitiveType == PrimitiveType.TRIANGLES) { "Only triangle geometry can be added" }
 
         val i0 = this.geometry.numVertices

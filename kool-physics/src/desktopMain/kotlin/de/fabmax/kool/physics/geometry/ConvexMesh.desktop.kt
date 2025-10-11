@@ -19,7 +19,7 @@ val ConvexMesh.pxConvexMesh: PxConvexMesh get() = (this as ConvexMeshImpl).pxCon
 
 class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithGeometry: Boolean = true) : ConvexMesh() {
 
-    override val convexHull: IndexedVertexList
+    override val convexHull: IndexedVertexList<*>
 
     val pxConvexMesh: PxConvexMesh
 
@@ -31,7 +31,7 @@ class ConvexMeshImpl(override val points: List<Vec3f>, override var releaseWithG
         convexHull = makeConvexHull(pxConvexMesh)
     }
 
-    private fun makeConvexHull(convexMesh: PxConvexMesh): IndexedVertexList {
+    private fun makeConvexHull(convexMesh: PxConvexMesh): IndexedVertexList<*> {
         return MemoryStack.stackPush().use { mem ->
             val geometry = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS)
             val v = MutableVec3f()

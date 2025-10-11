@@ -166,7 +166,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
     private fun Node.makeContent() {
         objects = addColorMesh {
             generate {
-                val sphereProtos = mutableListOf<IndexedVertexList>()
+                val sphereProtos = mutableListOf<IndexedVertexList<*>>()
                 for (i in 0..10) {
                     val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS))
                     sphereProtos += builder.geometry

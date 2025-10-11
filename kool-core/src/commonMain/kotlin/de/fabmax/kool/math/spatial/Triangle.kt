@@ -21,10 +21,10 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
     private val tmpP = MutableVec3f()
     private val tmpQ = MutableVec3f()
 
-    constructor(data: IndexedVertexList, idx0: Int) : this(
-            MutableVec3f().apply { data.vertexIt.index = data.indices[idx0]; set(data.vertexIt.position) },
-            MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+1]; set(data.vertexIt.position) },
-            MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+2]; set(data.vertexIt.position) }
+    constructor(data: IndexedVertexList<*>, idx0: Int) : this(
+        MutableVec3f().apply { data.vertexIt.index = data.indices[idx0]; set(data.vertexIt.position) },
+        MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+1]; set(data.vertexIt.position) },
+        MutableVec3f().apply { data.vertexIt.index = data.indices[idx0+2]; set(data.vertexIt.position) }
     ) {
         if (data.primitiveType != PrimitiveType.TRIANGLES) {
             throw IllegalArgumentException("Supplied geometry data must have primitiveType TRIANGLES")
@@ -57,7 +57,7 @@ open class Triangle(val pt0: Vec3f, val pt1: Vec3f, val pt2: Vec3f) {
     }
 
     companion object {
-        fun getTriangles(meshData: IndexedVertexList): List<Triangle> {
+        fun getTriangles(meshData: IndexedVertexList<*>): List<Triangle> {
             val triangles = mutableListOf<Triangle>()
             for (i in 0 until meshData.numIndices step 3) {
                 triangles += Triangle(meshData, i)

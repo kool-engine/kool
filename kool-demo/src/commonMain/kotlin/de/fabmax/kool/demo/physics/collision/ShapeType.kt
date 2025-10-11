@@ -18,7 +18,7 @@ enum class ShapeType {
 
         override fun MeshBuilder.generateShapeMesh() = bevelBox()
 
-        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val sx = rand.randomF(2f, 3f)
             val sy = rand.randomF(2f, 3f)
             val sz = rand.randomF(2f, 3f)
@@ -32,7 +32,7 @@ enum class ShapeType {
 
         override fun MeshBuilder.generateShapeMesh() = capsule()
 
-        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val s = rand.randomF(0.75f, 1.5f)
             val mass = s.pow(3)
             return CollisionShapes(mass, Shape(CapsuleGeometry(2.5f * s, s), material))
@@ -46,7 +46,7 @@ enum class ShapeType {
 
         var convexMesh: ConvexMesh? = null
 
-        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             if (convexMesh == null) {
                 val icoPoints = mutableListOf<Vec3f>()
                 meshGeometry.forEach { icoPoints.add(Vec3f(it)) }
@@ -66,7 +66,7 @@ enum class ShapeType {
 
         override fun MeshBuilder.generateShapeMesh() = cylinder()
 
-        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val l = rand.randomF(2f, 4f)
             val r = rand.randomF(1f, 2f)
             val mass = r * r * l * 0.5f
@@ -96,7 +96,7 @@ enum class ShapeType {
             }
         }
 
-        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val s = rand.randomF(1f, 2f)
             val shape1 = Shape(
                 BoxGeometry(MutableVec3f(0.5f, 0.5f, 2.0f).mul(s)),
@@ -131,7 +131,7 @@ enum class ShapeType {
             icoSphere { steps = 2 }
         }
 
-        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             val r = rand.randomF(1.25f, 2.5f)
             return CollisionShapes(r, Shape(SphereGeometry(r), material))
         }
@@ -142,7 +142,7 @@ enum class ShapeType {
 
         override fun MeshBuilder.generateShapeMesh() { }
 
-        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes {
+        override fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes {
             throw IllegalStateException()
         }
     };
@@ -150,7 +150,7 @@ enum class ShapeType {
     abstract val label: String
 
     abstract fun MeshBuilder.generateShapeMesh()
-    abstract fun generatePhysicsShapes(meshGeometry: IndexedVertexList, material: Material, rand: Random): CollisionShapes
+    abstract fun generatePhysicsShapes(meshGeometry: IndexedVertexList<*>, material: Material, rand: Random): CollisionShapes
 
     override fun toString(): String {
         return label

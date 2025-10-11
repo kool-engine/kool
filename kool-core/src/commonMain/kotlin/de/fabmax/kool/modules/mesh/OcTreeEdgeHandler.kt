@@ -17,7 +17,7 @@ class OcTreeEdgeHandler(treeBounds: BoundingBoxD) : HalfEdgeMesh.EdgeHandler {
     override val numEdges: Int
         get() = edgeTree.size
 
-    constructor(geometry: IndexedVertexList): this(BoundingBoxD().apply {
+    constructor(geometry: IndexedVertexList<*>): this(BoundingBoxD().apply {
         batchUpdate {
             val v = geometry.vertexIt
             val posD = MutableVec3d()

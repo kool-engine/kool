@@ -13,7 +13,7 @@ fun <T: Vec3f> pointOcTree(points: List<T> = emptyList(), bounds: BoundingBoxD =
     return OcTree(Vec3fAdapter(), points, bounds, bucketSz = bucketSz)
 }
 
-fun triangleKdTree(mesh: IndexedVertexList, bucketSz: Int = 16): KdTree<Triangle> {
+fun triangleKdTree(mesh: IndexedVertexList<*>, bucketSz: Int = 16): KdTree<Triangle> {
     val triangles = mutableListOf<Triangle>()
     val v = mesh[0]
     for (i in 0 until mesh.numIndices step 3) {
@@ -33,7 +33,7 @@ fun <T: Triangle> triangleOcTree(triangles: List<T> = emptyList(), bounds: Bound
     return OcTree(TriangleAdapter(), triangles, bounds, bucketSz = bucketSz)
 }
 
-fun triangleOcTree(mesh: IndexedVertexList, bucketSz: Int = 16): OcTree<Triangle> {
+fun triangleOcTree(mesh: IndexedVertexList<*>, bucketSz: Int = 16): OcTree<Triangle> {
     val triangles = mutableListOf<Triangle>()
     val v = mesh[0]
     for (i in 0 until mesh.numIndices step 3) {

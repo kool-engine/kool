@@ -78,7 +78,7 @@ fun Node.addTextureMesh(
  * Class for renderable geometry (triangles, lines, points).
  */
 open class Mesh(
-    val geometry: IndexedVertexList,
+    val geometry: IndexedVertexList<*>,
     val instances: MeshInstanceList<*>? = null,
     val morphWeights: FloatArray? = null,
     val skin: Skin? = null,
@@ -137,7 +137,7 @@ open class Mesh(
      * [de.fabmax.kool.util.SimpleShadowMap.shadowMapLevel] or the last list entry in case the list has fewer entries.
      * If list is empty the regular geometry is used.
      */
-    val shadowGeometry = mutableListOf<IndexedVertexList>()
+    val shadowGeometry = mutableListOf<IndexedVertexList<*>>()
 
     /**
      * Determines whether this node is considered during shadow pass.
@@ -243,8 +243,8 @@ open class Mesh(
         }
 
         // update bounds and ray test if geometry has changed
-        if (geometry.modCount != geometryUpdateModCount) {
-            geometryUpdateModCount = geometry.modCount
+        if (geometry.modCount.isDirty(geometryUpdateModCount)) {
+            geometryUpdateModCount = geometry.modCount.count
             if (geometry.isRebuildBoundsOnSync) {
                 geometry.rebuildBounds()
             }
@@ -257,7 +257,7 @@ open class Mesh(
     }
 
     internal fun setupDrawCommand(cmd: DrawCommand, pipeline: DrawPipeline, drawGroupId: Int) {
-        val geom: IndexedVertexList
+        val geom: IndexedVertexList<*>
         val insts: MeshInstanceList<*>?
         if (isAsyncRendering) {
             geom = drawGeometry
@@ -272,10 +272,10 @@ open class Mesh(
     override fun captureBuffer() {
         meshPipelineData.captureBuffer()
         if (isAsyncRendering) {
-            if (drawGeometry.modCount != geometry.modCount) {
+            if (drawGeometry.modCount.isDirty(geometry.modCount)) {
                 drawGeometry.set(geometry)
             }
-            if (instances != null && instances.modCount != drawInstances!!.modCount) {
+            if (instances != null && instances.modCount.isDirty(drawInstances!!.modCount)) {
                 drawInstances.set(instances)
             }
         }

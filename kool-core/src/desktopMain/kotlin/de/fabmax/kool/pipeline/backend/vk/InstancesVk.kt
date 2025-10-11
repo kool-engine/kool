@@ -27,8 +27,8 @@ class InstancesVk(val instances: MeshInstanceList<*>, val backend: RenderBackend
     fun checkBuffers(commandBuffer: VkCommandBuffer) {
         checkIsNotReleased()
 
-        if (updateModCount != instances.modCount) {
-            updateModCount = instances.modCount
+        if (instances.modCount.isDirty(updateModCount)) {
+            updateModCount = instances.modCount.count
             createdInstanceBuffer?.writeData(instances.instanceData.buffer, commandBuffer)
         }
     }
