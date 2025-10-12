@@ -279,7 +279,7 @@ fun ThumbnailRenderer.materialThumbnail(material: MaterialComponent): ThumbnailR
 }
 
 private class MaterialPreviewMesh :
-    Mesh(vertexAttribs, name = "material-preview-mesh")
+    Mesh(IndexedVertexList(vertexAttribs), name = "material-preview-mesh")
 {
     init {
         geometry.addGeometry(sphereMeshData)
@@ -297,7 +297,7 @@ private class MaterialPreviewMesh :
     }
 }
 
-private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
     init {
         generateThumbnailRoundRect()
         shader = KslShader("scene-bg-shader", PipelineConfig(depthTest = DepthCompareOp.ALWAYS)) {
@@ -333,7 +333,7 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(Attribute.POSI
     }
 }
 
-private class ClearMesh : Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+private class ClearMesh : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
     init {
         generateFullscreenQuad()
         shader = KslShader("clear-shader", PipelineConfig(blendMode = BlendMode.DISABLED, depthTest = DepthCompareOp.ALWAYS)) {

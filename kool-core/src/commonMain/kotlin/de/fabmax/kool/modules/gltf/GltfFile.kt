@@ -515,7 +515,7 @@ data class GltfFile(
                     val r = mergeMeshes[0]
                     for (i in 1 until mergeMeshes.size) {
                         val m = mergeMeshes[i]
-                        if (m.geometry.vertexAttributes == r.geometry.vertexAttributes) {
+                        if (m.geometry.layout == r.geometry.layout) {
                             r.geometry.addGeometry(m.geometry)
                             removeNode(m)
                         }

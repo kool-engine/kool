@@ -2,6 +2,7 @@ package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.KoolContext
 import de.fabmax.kool.math.*
+import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.Color.Hsv
 import de.fabmax.kool.util.ColorGradient
@@ -61,7 +62,7 @@ open class ColorWheelNode(parent: UiNode?, surface: UiSurface) : UiNode(parent, 
     private var isHueDrag = false
     private var isSatValDrag = false
 
-    private val geomCache = CachedGeometry(this)
+    private val geomCache = CachedGeometry(this, IndexedVertexList(UiVertexLayout))
 
     override fun onDragStart(ev: PointerEvent) {
         val dx = ev.position.x - centerX

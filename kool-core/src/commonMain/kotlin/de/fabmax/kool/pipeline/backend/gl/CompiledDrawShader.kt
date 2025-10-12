@@ -26,33 +26,21 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         .toIntArray()
 
     private var vao: GlVertexArrayObject? = null
-    private val floatAttrBinder: AttributeBinder?
-    private val intAttrBinder: AttributeBinder?
+    private val vertexAttrBinder: AttributeBinder?
     private val instanceAttrBinder: AttributeBinder?
 
     private var drawInfo = DrawInfo(pipeline.vertexLayout.primitiveType.glElemType, gl.UNSIGNED_INT, 0, false)
 
     init {
-        val floatBinding = pipeline.vertexLayout.bindings
-            .filter { it.inputRate == InputRate.VERTEX }
-            .find { it.vertexAttributes.any { attr -> !attr.type.isInt } }
-        val intBinding = pipeline.vertexLayout.bindings
-            .filter { it.inputRate == InputRate.VERTEX }
-            .find { it.vertexAttributes.any { attr -> attr.type.isInt } }
+        val vertexBinding = pipeline.vertexLayout.bindings
+            .find { it.inputRate == InputRate.VERTEX }
         val instanceBinding = pipeline.vertexLayout.bindings
             .find { it.inputRate == InputRate.INSTANCE }
 
-        floatAttrBinder = floatBinding?.let { binding ->
+        vertexAttrBinder = vertexBinding?.let { binding ->
             val attrs = binding.vertexAttributes.map { attr ->
                 val location = mappedAttribLocations[attr]!!
                 AttributeBinderItem(location, attr.type.channels, attr.bufferOffset / 4, gl.FLOAT)
-            }
-            AttributeBinder(attrs, binding.strideBytes)
-        }
-        intAttrBinder = intBinding?.let { binding ->
-            val attrs = binding.vertexAttributes.map { attr ->
-                val location = mappedAttribLocations[attr]!!
-                AttributeBinderItem(location, attr.type.channels, attr.bufferOffset / 4, gl.INT)
             }
             AttributeBinder(attrs, binding.strideBytes)
         }
@@ -109,8 +97,7 @@ class CompiledDrawShader(val pipeline: DrawPipeline, program: GlProgram, backend
         if (drawInfo.isValid) {
             val geom = getOrCreateGpuGeometry(cmd)
             geom.indexBuffer.bind()
-            geom.dataBufferF?.let { floatAttrBinder?.bindAttributes(it) }
-            geom.dataBufferI?.let { intAttrBinder?.bindAttributes(it) }
+            geom.dataBuffer?.let { vertexAttrBinder?.bindAttributes(it) }
             geom.checkBuffers()
             drawInfo.numIndices = geom.numIndices
 

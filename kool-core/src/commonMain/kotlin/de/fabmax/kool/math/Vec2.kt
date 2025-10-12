@@ -256,17 +256,13 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
     constructor(f: Float): this(f, f)
     constructor(v: Vec2f): this(v.x, v.y)
 
-    fun set(x: Float, y: Float): MutableVec2f {
+    open fun set(x: Float, y: Float): MutableVec2f {
         this.x = x
         this.y = y
         return this
     }
 
-    fun set(that: Vec2f): MutableVec2f {
-        x = that.x
-        y = that.y
-        return this
-    }
+    fun set(that: Vec2f): MutableVec2f = set(that.x, that.y)
 
     /**
      * Inplace operation: Adds the given [Vec2f] component-wise to this vector.
@@ -302,8 +298,7 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
      * Inplace operation: Divides this vector component-wise by the given [Vec2f].
      */
     operator fun divAssign(that: Vec2f) {
-        x /= that.x
-        y /= that.y
+        set(x / that.x, y / that.y)
     }
 
     /**
@@ -314,59 +309,32 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
     /**
      * Inplace operation: Adds the given [Vec2f] component-wise to this vector.
      */
-    fun add(that: Vec2f): MutableVec2f {
-        x += that.x
-        y += that.y
-        return this
-    }
+    fun add(that: Vec2f): MutableVec2f = set(x + that.x, y + that.y)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Float): MutableVec2f {
-        x += that
-        y += that
-        return this
-    }
+    fun add(that: Float): MutableVec2f = set(x + that, y + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec2f] component-wise from this vector.
      */
-    fun subtract(that: Vec2f): MutableVec2f {
-        x -= that.x
-        y -= that.y
-        return this
-    }
+    fun subtract(that: Vec2f): MutableVec2f = set(x - that.x, y - that.y)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Float): MutableVec2f {
-        x -= that
-        y -= that
-        return this
-    }
+    fun subtract(that: Float): MutableVec2f = set(x - that, y - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec2f] component-wise with this vector.
      */
-    fun mul(that: Vec2f): MutableVec2f {
-        x *= that.x
-        y *= that.y
-        return this
-    }
+    fun mul(that: Vec2f): MutableVec2f = set(x * that.x, y * that.y)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Float): MutableVec2f {
-        x *= that
-        y *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Float) = mul(factor)
+    fun mul(that : Float): MutableVec2f = set(x * that, y * that)
 
     // <noInt> The following section will not be included in the integer variant of this class
 
@@ -390,8 +358,7 @@ open class MutableVec2f(override var x: Float, override var y: Float) : Vec2f(x,
         val sin = angle.sin
         val rx = x * cos - y * sin
         val ry = x * sin + y * cos
-        x = rx
-        y = ry
+        set(rx, ry)
         return this
     }
 
@@ -617,17 +584,13 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
     constructor(f: Double): this(f, f)
     constructor(v: Vec2d): this(v.x, v.y)
 
-    fun set(x: Double, y: Double): MutableVec2d {
+    open fun set(x: Double, y: Double): MutableVec2d {
         this.x = x
         this.y = y
         return this
     }
 
-    fun set(that: Vec2d): MutableVec2d {
-        x = that.x
-        y = that.y
-        return this
-    }
+    fun set(that: Vec2d): MutableVec2d = set(that.x, that.y)
 
     /**
      * Inplace operation: Adds the given [Vec2d] component-wise to this vector.
@@ -663,8 +626,7 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
      * Inplace operation: Divides this vector component-wise by the given [Vec2d].
      */
     operator fun divAssign(that: Vec2d) {
-        x /= that.x
-        y /= that.y
+        set(x / that.x, y / that.y)
     }
 
     /**
@@ -675,59 +637,32 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
     /**
      * Inplace operation: Adds the given [Vec2d] component-wise to this vector.
      */
-    fun add(that: Vec2d): MutableVec2d {
-        x += that.x
-        y += that.y
-        return this
-    }
+    fun add(that: Vec2d): MutableVec2d = set(x + that.x, y + that.y)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Double): MutableVec2d {
-        x += that
-        y += that
-        return this
-    }
+    fun add(that: Double): MutableVec2d = set(x + that, y + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec2d] component-wise from this vector.
      */
-    fun subtract(that: Vec2d): MutableVec2d {
-        x -= that.x
-        y -= that.y
-        return this
-    }
+    fun subtract(that: Vec2d): MutableVec2d = set(x - that.x, y - that.y)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Double): MutableVec2d {
-        x -= that
-        y -= that
-        return this
-    }
+    fun subtract(that: Double): MutableVec2d = set(x - that, y - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec2d] component-wise with this vector.
      */
-    fun mul(that: Vec2d): MutableVec2d {
-        x *= that.x
-        y *= that.y
-        return this
-    }
+    fun mul(that: Vec2d): MutableVec2d = set(x * that.x, y * that.y)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Double): MutableVec2d {
-        x *= that
-        y *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Double) = mul(factor)
+    fun mul(that : Double): MutableVec2d = set(x * that, y * that)
 
     /**
      * Inplace operation: Scales this vector to unit length. Special case: A zero-vector remains zero-length.
@@ -749,8 +684,7 @@ open class MutableVec2d(override var x: Double, override var y: Double) : Vec2d(
         val sin = angle.sin
         val rx = x * cos - y * sin
         val ry = x * sin + y * cos
-        x = rx
-        y = ry
+        set(rx, ry)
         return this
     }
 
@@ -921,17 +855,13 @@ open class MutableVec2i(override var x: Int, override var y: Int) : Vec2i(x, y) 
     constructor(f: Int): this(f, f)
     constructor(v: Vec2i): this(v.x, v.y)
 
-    fun set(x: Int, y: Int): MutableVec2i {
+    open fun set(x: Int, y: Int): MutableVec2i {
         this.x = x
         this.y = y
         return this
     }
 
-    fun set(that: Vec2i): MutableVec2i {
-        x = that.x
-        y = that.y
-        return this
-    }
+    fun set(that: Vec2i): MutableVec2i = set(that.x, that.y)
 
     /**
      * Inplace operation: Adds the given [Vec2i] component-wise to this vector.
@@ -967,8 +897,7 @@ open class MutableVec2i(override var x: Int, override var y: Int) : Vec2i(x, y) 
      * Inplace operation: Divides this vector component-wise by the given [Vec2i].
      */
     operator fun divAssign(that: Vec2i) {
-        x /= that.x
-        y /= that.y
+        set(x / that.x, y / that.y)
     }
 
     /**
@@ -979,57 +908,30 @@ open class MutableVec2i(override var x: Int, override var y: Int) : Vec2i(x, y) 
     /**
      * Inplace operation: Adds the given [Vec2i] component-wise to this vector.
      */
-    fun add(that: Vec2i): MutableVec2i {
-        x += that.x
-        y += that.y
-        return this
-    }
+    fun add(that: Vec2i): MutableVec2i = set(x + that.x, y + that.y)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Int): MutableVec2i {
-        x += that
-        y += that
-        return this
-    }
+    fun add(that: Int): MutableVec2i = set(x + that, y + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec2i] component-wise from this vector.
      */
-    fun subtract(that: Vec2i): MutableVec2i {
-        x -= that.x
-        y -= that.y
-        return this
-    }
+    fun subtract(that: Vec2i): MutableVec2i = set(x - that.x, y - that.y)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Int): MutableVec2i {
-        x -= that
-        y -= that
-        return this
-    }
+    fun subtract(that: Int): MutableVec2i = set(x - that, y - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec2i] component-wise with this vector.
      */
-    fun mul(that: Vec2i): MutableVec2i {
-        x *= that.x
-        y *= that.y
-        return this
-    }
+    fun mul(that: Vec2i): MutableVec2i = set(x * that.x, y * that.y)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Int): MutableVec2i {
-        x *= that
-        y *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Int) = mul(factor)
+    fun mul(that : Int): MutableVec2i = set(x * that, y * that)
 }

@@ -108,7 +108,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         position: Vec3f,
         color: Color = this.color,
         width: Float = this.width,
-        vertexMod: (VertexView.() -> Unit)? = null
+        vertexMod: (VertexView<*>.() -> Unit)? = null
     ): TriangulatedLineMesh {
         if (lineBuffer.isNotEmpty()) {
             stroke()
@@ -123,7 +123,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         position: Vec3f,
         color: Color = this.color,
         width: Float = this.width,
-        vertexMod: (VertexView.() -> Unit)? = null
+        vertexMod: (VertexView<*>.() -> Unit)? = null
     ): TriangulatedLineMesh {
         lineBuffer.add(LineVertex(position, color, width, vertexMod))
         return this
@@ -231,7 +231,7 @@ class TriangulatedLineMesh(geometry: IndexedVertexList<*>, name: String = makeNo
         addLine(p3, p7, color, width)
     }
 
-    class LineVertex(position: Vec3f, val color: Color, val width: Float, val vertexMod: (VertexView.() -> Unit)?): Vec3f(position)
+    class LineVertex(position: Vec3f, val color: Color, val width: Float, val vertexMod: (VertexView<*>.() -> Unit)?): Vec3f(position)
 
     open class Shader(cfg: Config = defaultCfg) : KslShader("Triangulated Line Shader") {
 

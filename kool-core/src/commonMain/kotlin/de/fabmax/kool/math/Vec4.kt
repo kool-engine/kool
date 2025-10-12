@@ -286,7 +286,7 @@ open class MutableVec4f(override var x: Float, override var y: Float, override v
     constructor(xyz: Vec3f, w: Float): this(xyz.x, xyz.y, xyz.z, w)
     constructor(that: Vec4f): this(that.x, that.y, that.z, that.w)
 
-    fun set(x: Float, y: Float, z: Float, w: Float): MutableVec4f {
+    open fun set(x: Float, y: Float, z: Float, w: Float): MutableVec4f {
         this.x = x
         this.y = y
         this.z = z
@@ -294,21 +294,9 @@ open class MutableVec4f(override var x: Float, override var y: Float, override v
         return this
     }
 
-    fun set(that: Vec4f): MutableVec4f {
-        x = that.x
-        y = that.y
-        z = that.z
-        w = that.w
-        return this
-    }
+    fun set(that: Vec4f): MutableVec4f = set(that.x, that.y, that.z, that.w)
 
-    fun set(xyz: Vec3f, w: Float = 0f): MutableVec4f {
-        x = xyz.x
-        y = xyz.y
-        z = xyz.z
-        this.w = w
-        return this
-    }
+    fun set(xyz: Vec3f, w: Float = 0f): MutableVec4f = set(xyz.x, xyz.y, xyz.z, w)
 
     /**
      * Inplace operation: Adds the given [Vec4f] component-wise to this vector.
@@ -344,10 +332,7 @@ open class MutableVec4f(override var x: Float, override var y: Float, override v
      * Inplace operation: Divides this vector component-wise by the given [Vec4f].
      */
     operator fun divAssign(that: Vec4f) {
-        x /= that.x
-        y /= that.y
-        z /= that.z
-        w /= that.w
+        set(x / that.x, y / that.y, z / that.z, w / that.w)
     }
 
     /**
@@ -358,71 +343,32 @@ open class MutableVec4f(override var x: Float, override var y: Float, override v
     /**
      * Inplace operation: Adds the given [Vec4f] component-wise to this vector.
      */
-    fun add(that: Vec4f): MutableVec4f {
-        x += that.x
-        y += that.y
-        z += that.z
-        w += that.w
-        return this
-    }
+    fun add(that: Vec4f): MutableVec4f = set(x + that.x, y + that.y, z + that.z, w + that.w)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Float): MutableVec4f {
-        x += that
-        y += that
-        z += that
-        w += that
-        return this
-    }
+    fun add(that: Float): MutableVec4f = set(x + that, y + that, z + that, w + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec4f] component-wise from this vector.
      */
-    fun subtract(that: Vec4f): MutableVec4f {
-        x -= that.x
-        y -= that.y
-        z -= that.z
-        w -= that.w
-        return this
-    }
+    fun subtract(that: Vec4f): MutableVec4f = set(x - that.x, y - that.y, z - that.z, w - that.w)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Float): MutableVec4f {
-        x -= that
-        y -= that
-        z -= that
-        w -= that
-        return this
-    }
+    fun subtract(that: Float): MutableVec4f = set(x - that, y - that, z - that, w - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec4f] component-wise with this vector.
      */
-    fun mul(that: Vec4f): MutableVec4f {
-        x *= that.x
-        y *= that.y
-        z *= that.z
-        w *= that.w
-        return this
-    }
+    fun mul(that: Vec4f): MutableVec4f = set(x * that.x, y * that.y, z * that.z, w * that.w)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Float): MutableVec4f {
-        x *= that
-        y *= that
-        z *= that
-        w *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Float) = mul(factor)
+    fun mul(that : Float): MutableVec4f = set(x * that, y * that, z * that, w * that)
 
     // <noInt> The following section will not be included in the integer variant of this class
 
@@ -690,7 +636,7 @@ open class MutableVec4d(override var x: Double, override var y: Double, override
     constructor(xyz: Vec3d, w: Double): this(xyz.x, xyz.y, xyz.z, w)
     constructor(that: Vec4d): this(that.x, that.y, that.z, that.w)
 
-    fun set(x: Double, y: Double, z: Double, w: Double): MutableVec4d {
+    open fun set(x: Double, y: Double, z: Double, w: Double): MutableVec4d {
         this.x = x
         this.y = y
         this.z = z
@@ -698,21 +644,9 @@ open class MutableVec4d(override var x: Double, override var y: Double, override
         return this
     }
 
-    fun set(that: Vec4d): MutableVec4d {
-        x = that.x
-        y = that.y
-        z = that.z
-        w = that.w
-        return this
-    }
+    fun set(that: Vec4d): MutableVec4d = set(that.x, that.y, that.z, that.w)
 
-    fun set(xyz: Vec3d, w: Double = 0.0): MutableVec4d {
-        x = xyz.x
-        y = xyz.y
-        z = xyz.z
-        this.w = w
-        return this
-    }
+    fun set(xyz: Vec3d, w: Double = 0.0): MutableVec4d = set(xyz.x, xyz.y, xyz.z, w)
 
     /**
      * Inplace operation: Adds the given [Vec4d] component-wise to this vector.
@@ -748,10 +682,7 @@ open class MutableVec4d(override var x: Double, override var y: Double, override
      * Inplace operation: Divides this vector component-wise by the given [Vec4d].
      */
     operator fun divAssign(that: Vec4d) {
-        x /= that.x
-        y /= that.y
-        z /= that.z
-        w /= that.w
+        set(x / that.x, y / that.y, z / that.z, w / that.w)
     }
 
     /**
@@ -762,71 +693,32 @@ open class MutableVec4d(override var x: Double, override var y: Double, override
     /**
      * Inplace operation: Adds the given [Vec4d] component-wise to this vector.
      */
-    fun add(that: Vec4d): MutableVec4d {
-        x += that.x
-        y += that.y
-        z += that.z
-        w += that.w
-        return this
-    }
+    fun add(that: Vec4d): MutableVec4d = set(x + that.x, y + that.y, z + that.z, w + that.w)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Double): MutableVec4d {
-        x += that
-        y += that
-        z += that
-        w += that
-        return this
-    }
+    fun add(that: Double): MutableVec4d = set(x + that, y + that, z + that, w + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec4d] component-wise from this vector.
      */
-    fun subtract(that: Vec4d): MutableVec4d {
-        x -= that.x
-        y -= that.y
-        z -= that.z
-        w -= that.w
-        return this
-    }
+    fun subtract(that: Vec4d): MutableVec4d = set(x - that.x, y - that.y, z - that.z, w - that.w)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Double): MutableVec4d {
-        x -= that
-        y -= that
-        z -= that
-        w -= that
-        return this
-    }
+    fun subtract(that: Double): MutableVec4d = set(x - that, y - that, z - that, w - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec4d] component-wise with this vector.
      */
-    fun mul(that: Vec4d): MutableVec4d {
-        x *= that.x
-        y *= that.y
-        z *= that.z
-        w *= that.w
-        return this
-    }
+    fun mul(that: Vec4d): MutableVec4d = set(x * that.x, y * that.y, z * that.z, w * that.w)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Double): MutableVec4d {
-        x *= that
-        y *= that
-        z *= that
-        w *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Double) = mul(factor)
+    fun mul(that : Double): MutableVec4d = set(x * that, y * that, z * that, w * that)
 
     /**
      * Inplace operation: Scales this vector to unit length. Special case: A zero-vector remains zero-length.
@@ -1039,7 +931,7 @@ open class MutableVec4i(override var x: Int, override var y: Int, override var z
     constructor(xyz: Vec3i, w: Int): this(xyz.x, xyz.y, xyz.z, w)
     constructor(that: Vec4i): this(that.x, that.y, that.z, that.w)
 
-    fun set(x: Int, y: Int, z: Int, w: Int): MutableVec4i {
+    open fun set(x: Int, y: Int, z: Int, w: Int): MutableVec4i {
         this.x = x
         this.y = y
         this.z = z
@@ -1047,21 +939,9 @@ open class MutableVec4i(override var x: Int, override var y: Int, override var z
         return this
     }
 
-    fun set(that: Vec4i): MutableVec4i {
-        x = that.x
-        y = that.y
-        z = that.z
-        w = that.w
-        return this
-    }
+    fun set(that: Vec4i): MutableVec4i = set(that.x, that.y, that.z, that.w)
 
-    fun set(xyz: Vec3i, w: Int = 0): MutableVec4i {
-        x = xyz.x
-        y = xyz.y
-        z = xyz.z
-        this.w = w
-        return this
-    }
+    fun set(xyz: Vec3i, w: Int = 0): MutableVec4i = set(xyz.x, xyz.y, xyz.z, w)
 
     /**
      * Inplace operation: Adds the given [Vec4i] component-wise to this vector.
@@ -1097,10 +977,7 @@ open class MutableVec4i(override var x: Int, override var y: Int, override var z
      * Inplace operation: Divides this vector component-wise by the given [Vec4i].
      */
     operator fun divAssign(that: Vec4i) {
-        x /= that.x
-        y /= that.y
-        z /= that.z
-        w /= that.w
+        set(x / that.x, y / that.y, z / that.z, w / that.w)
     }
 
     /**
@@ -1111,69 +988,30 @@ open class MutableVec4i(override var x: Int, override var y: Int, override var z
     /**
      * Inplace operation: Adds the given [Vec4i] component-wise to this vector.
      */
-    fun add(that: Vec4i): MutableVec4i {
-        x += that.x
-        y += that.y
-        z += that.z
-        w += that.w
-        return this
-    }
+    fun add(that: Vec4i): MutableVec4i = set(x + that.x, y + that.y, z + that.z, w + that.w)
 
     /**
      * Inplace operation: Adds the given scalar component-wise to this vector.
      */
-    fun add(that: Int): MutableVec4i {
-        x += that
-        y += that
-        z += that
-        w += that
-        return this
-    }
+    fun add(that: Int): MutableVec4i = set(x + that, y + that, z + that, w + that)
 
     /**
      * Inplace operation: Subtracts the given [Vec4i] component-wise from this vector.
      */
-    fun subtract(that: Vec4i): MutableVec4i {
-        x -= that.x
-        y -= that.y
-        z -= that.z
-        w -= that.w
-        return this
-    }
+    fun subtract(that: Vec4i): MutableVec4i = set(x - that.x, y - that.y, z - that.z, w - that.w)
 
     /**
      * Inplace operation: Subtracts the given scalar component-wise from this vector.
      */
-    fun subtract(that: Int): MutableVec4i {
-        x -= that
-        y -= that
-        z -= that
-        w -= that
-        return this
-    }
+    fun subtract(that: Int): MutableVec4i = set(x - that, y - that, z - that, w - that)
 
     /**
      * Inplace operation: Multiplies the given [Vec4i] component-wise with this vector.
      */
-    fun mul(that: Vec4i): MutableVec4i {
-        x *= that.x
-        y *= that.y
-        z *= that.z
-        w *= that.w
-        return this
-    }
+    fun mul(that: Vec4i): MutableVec4i = set(x * that.x, y * that.y, z * that.z, w * that.w)
 
     /**
      * Inplace operation: Scales this vector by the given factor.
      */
-    fun mul(that : Int): MutableVec4i {
-        x *= that
-        y *= that
-        z *= that
-        w *= that
-        return this
-    }
-
-    @Deprecated("Replace with mul()", ReplaceWith("mul(factor)"))
-    fun scale(factor: Int) = mul(factor)
+    fun mul(that : Int): MutableVec4i = set(x * that, y * that, z * that, w * that)
 }

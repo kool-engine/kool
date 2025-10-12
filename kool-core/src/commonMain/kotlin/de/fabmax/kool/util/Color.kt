@@ -446,7 +446,7 @@ open class MutableColor(override var r: Float, override var g: Float, override v
     constructor(color: Color) : this(color.r, color.g, color.b, color.a)
     constructor(rgb: Vec3f, a: Float) : this(rgb.x, rgb.y, rgb.z, a)
 
-    fun set(r: Float, g: Float, b: Float, a: Float): MutableColor {
+    open fun set(r: Float, g: Float, b: Float, a: Float): MutableColor {
         this.r = r
         this.g = g
         this.b = b
@@ -454,37 +454,14 @@ open class MutableColor(override var r: Float, override var g: Float, override v
         return this
     }
 
-    fun set(other: Color): MutableColor {
-        r = other.r
-        g = other.g
-        b = other.b
-        a = other.a
-        return this
-    }
+    fun set(other: Color): MutableColor = set(other.r, other.g, other.b, other.a)
 
-    fun set(rgb: Vec3f, a: Float): MutableColor {
-        r = rgb.x
-        g = rgb.y
-        b = rgb.z
-        this.a = a
-        return this
-    }
+    fun set(rgb: Vec3f, a: Float): MutableColor = set(rgb.x, rgb.y, rgb.z, a)
 
-    fun set(that: Vec4f): MutableColor {
-        r = that.x
-        g = that.y
-        b = that.z
-        a = that.w
-        return this
-    }
+    fun set(that: Vec4f): MutableColor = set(that.x, that.y, that.z, that.w)
 
     /**
      * Inplace operation: Multiplies this color's rgb channels by the given factor leaving the alpha channel unchanged.
      */
-    fun mulRgb(factor: Float): MutableColor {
-        r *= factor
-        g *= factor
-        b *= factor
-        return this
-    }
+    fun mulRgb(factor: Float): MutableColor = set(r * factor, g * factor, b * factor, a)
 }

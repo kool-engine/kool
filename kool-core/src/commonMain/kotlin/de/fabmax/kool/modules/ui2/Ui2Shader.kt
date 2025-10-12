@@ -7,6 +7,8 @@ import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.util.AtlasFont
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MemoryLayout
+import de.fabmax.kool.util.Struct
 
 class Ui2Shader : KslShader(Model(), pipelineConfig) {
     var fontTex by texture2d("uFontTex", noFontTex)
@@ -50,6 +52,7 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
     companion object {
         val ATTRIB_CLIP = Attribute("aClip", GpuType.Float4)
 
+        @Deprecated("Use UiVertexLayout")
         val UI_MESH_ATTRIBS = listOf(Attribute.POSITIONS, Attribute.COLORS, ATTRIB_CLIP, Attribute.TEXTURE_COORDS)
 
         private val noFontTex = SingleColorTexture(Color.WHITE)
@@ -63,4 +66,11 @@ class Ui2Shader : KslShader(Model(), pipelineConfig) {
             KoolSystem.getContextOrNull()?.onShutdown += { noFontTex.release() }
         }
     }
+}
+
+object UiVertexLayout : Struct("UiVertex", MemoryLayout.TightlyPacked) {
+    val position = float3(Attribute.POSITIONS.name)
+    val color = float4(Attribute.COLORS.name)
+    val clip = float4(Ui2Shader.ATTRIB_CLIP.name)
+    val texCoords = float2(Attribute.TEXTURE_COORDS.name)
 }

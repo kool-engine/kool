@@ -38,7 +38,7 @@ open class PointMesh(
         }
     }
 
-    fun addPoint(block: VertexView.() -> Unit): Int {
+    fun addPoint(block: VertexView<*>.() -> Unit): Int {
         val idx =  geometry.addVertex(block)
         geometry.addIndex(idx)
         return idx

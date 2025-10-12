@@ -17,11 +17,11 @@ open class MeshBuilder(val geometry: IndexedVertexList<*>) {
     var emissiveColor = Color.BLACK
     var metallic = 0f
     var roughness = 0.5f
-    var vertexModFun: (VertexView.() -> Unit)? = null
+    var vertexModFun: (VertexView<*>.() -> Unit)? = null
 
     val hasNormals = geometry.hasAttribute(Attribute.NORMALS)
 
-    inline fun vertex(block: VertexView.() -> Unit): Int {
+    inline fun vertex(block: VertexView<*>.() -> Unit): Int {
         return geometry.addVertex {
             color.set(this@MeshBuilder.color)
             setEmissiveColor(this@MeshBuilder.emissiveColor)

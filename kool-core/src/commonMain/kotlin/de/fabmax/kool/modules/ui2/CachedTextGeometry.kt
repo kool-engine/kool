@@ -5,9 +5,12 @@ import de.fabmax.kool.math.Vec4f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.TextProps
+import de.fabmax.kool.scene.geometry.Usage
 import de.fabmax.kool.util.*
 
-class CachedTextGeometry(node: UiNode) : CachedGeometry(node, IndexedVertexList(MsdfUiShader.MSDF_UI_MESH_ATTRIBS)) {
+class CachedTextGeometry(node: UiNode) :
+    CachedGeometry<UiTextVertexLayout>(node, IndexedVertexList(UiTextVertexLayout, usage = Usage.DYNAMIC))
+{
     val textMetrics = TextMetrics()
 
     private var cachedFont: Font? = null

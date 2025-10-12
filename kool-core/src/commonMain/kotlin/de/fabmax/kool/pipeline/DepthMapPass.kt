@@ -63,7 +63,7 @@ open class DepthMapPass(
 
         val cfg = DepthShader.Config.forMesh(mesh, getMeshCullMethod(mesh, ctx))
         val key = DepthShaderKey(
-            vertexLayout = mesh.geometry.vertexAttributes,
+            vertexLayout = mesh.geometry.layout,
             instanceLayout = mesh.instances?.layout,
             shaderCfg = cfg
         )
@@ -84,7 +84,7 @@ open class DepthMapPass(
     }
 
     protected data class DepthShaderKey(
-        val vertexLayout: List<Attribute>,
+        val vertexLayout: Struct,
         val instanceLayout: Struct?,
         val shaderCfg: DepthShader.Config
     )
@@ -123,7 +123,7 @@ class NormalLinearDepthMapPass(
             outputNormals = true
         )
         val key = DepthShaderKey(
-            vertexLayout = mesh.geometry.vertexAttributes,
+            vertexLayout = mesh.geometry.layout,
             instanceLayout = mesh.instances?.layout,
             shaderCfg = cfg
         )

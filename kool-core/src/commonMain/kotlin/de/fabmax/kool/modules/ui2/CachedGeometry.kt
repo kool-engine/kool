@@ -1,26 +1,30 @@
 package de.fabmax.kool.modules.ui2
 
 import de.fabmax.kool.math.MutableVec2f
+import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.MutableVec4f
 import de.fabmax.kool.math.Vec4f
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.Struct
+import de.fabmax.kool.util.getFloat3
+import de.fabmax.kool.util.getFloat4
 
-open class CachedGeometry(
+open class CachedGeometry<T: Struct>(
     val node: UiNode,
-    val cacheData: IndexedVertexList<*> = IndexedVertexList(Ui2Shader.UI_MESH_ATTRIBS)
+    private val cacheData: IndexedVertexList<T>
 ) {
     val cacheBuilder = MeshBuilder(cacheData).apply { isInvertFaceOrientation = true }
     val isEmpty: Boolean get() = cacheData.isEmpty()
 
     val cachedPosition = MutableVec2f()
+    val tmpPosition = MutableVec3f()
     val cachedSize = MutableVec2f()
     val cachedClip = MutableVec4f()
 
-    private val posOffset = cacheData.attributeByteOffsets[Attribute.POSITIONS]!! / 4
-    private val clipOffset = cacheData.attributeByteOffsets[Ui2Shader.ATTRIB_CLIP]!! / 4
+    private val posMember = cacheData.layout.getFloat3(UiVertexLayout.position.name)
+    private val clipMember = cacheData.layout.getFloat4(UiVertexLayout.clip.name)
 
     fun appendTo(target: IndexedVertexList<*>) {
         val i0 = target.numVertices
@@ -29,9 +33,9 @@ open class CachedGeometry(
             target.indices.put(i0 + cacheData.indices[i])
         }
 
-        target.checkBufferSizes(cacheData.numVertices)
-        target.dataF.put(cacheData.dataF)
-        target.numVertices += cacheData.numVertices
+        target.vertexData.position = target.numVertices
+        target.checkBufferSize(cacheData.numVertices)
+        target.vertexData.putAll(cacheData.vertexData)
     }
 
     fun hasSizeChanged(): Boolean {
@@ -69,13 +73,13 @@ open class CachedGeometry(
         cachedClip.set(clip)
 
         for (i in 0 until cacheData.numVertices) {
-            val j = i * cacheData.vertexSizeF
-            cacheData.dataF[j + posOffset] = cacheData.dataF[j + posOffset] + posOffX
-            cacheData.dataF[j + posOffset + 1] = cacheData.dataF[j + posOffset + 1] + posOffY
-            cacheData.dataF[j + clipOffset] = cachedClip.x
-            cacheData.dataF[j + clipOffset + 1] = cachedClip.y
-            cacheData.dataF[j + clipOffset + 2] = cachedClip.z
-            cacheData.dataF[j + clipOffset + 3] = cachedClip.w
+            cacheData.vertexData.set(i) {
+                get(posMember, tmpPosition)
+                tmpPosition.x += posOffX
+                tmpPosition.y += posOffY
+                set(posMember, tmpPosition)
+                set(clipMember, cachedClip)
+            }
         }
     }
 }
