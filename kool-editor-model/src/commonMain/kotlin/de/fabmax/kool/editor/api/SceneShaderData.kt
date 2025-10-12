@@ -3,7 +3,6 @@ package de.fabmax.kool.editor.api
 import de.fabmax.kool.editor.components.MaterialComponent
 import de.fabmax.kool.editor.data.EntityId
 import de.fabmax.kool.modules.ksl.blocks.ToneMapping
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DrawShader
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
@@ -110,7 +109,7 @@ class SceneShaderCache : EditorScene.SceneShaderDataListener {
 }
 
 fun MeshLayoutInfo(mesh: Mesh): MeshLayoutInfo = MeshLayoutInfo(
-    vertexLayout = mesh.geometry.vertexAttributes,
+    vertexLayout = mesh.geometry.layout,
     instanceLayout = mesh.instances?.layout,
     primitiveType = mesh.geometry.primitiveType,
     numJoints = ((mesh.skin?.nodes?.size ?: 0) + 63) and 63.inv()
@@ -118,7 +117,7 @@ fun MeshLayoutInfo(mesh: Mesh): MeshLayoutInfo = MeshLayoutInfo(
 )
 
 data class MeshLayoutInfo(
-    val vertexLayout: List<Attribute>,
+    val vertexLayout: Struct,
     val instanceLayout: Struct?,
     val primitiveType: PrimitiveType,
     val numJoints: Int

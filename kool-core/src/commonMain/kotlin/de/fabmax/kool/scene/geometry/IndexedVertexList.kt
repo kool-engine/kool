@@ -12,6 +12,8 @@ import de.fabmax.kool.pipeline.backend.GpuGeometry
 import de.fabmax.kool.util.*
 import kotlin.math.abs
 
+@Suppress("DEPRECATION")
+@Deprecated("Use a layout struct instead of specifying vertex attributes individually")
 fun IndexedVertexList(
     vararg vertexAttributes: Attribute,
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
@@ -20,6 +22,7 @@ fun IndexedVertexList(
     return IndexedVertexList(vertexAttributes.toList(), primitiveType, usage)
 }
 
+@Deprecated("Use a layout struct instead of specifying vertex attributes individually")
 fun IndexedVertexList(
     vertexAttributes: List<Attribute>,
     primitiveType: PrimitiveType = PrimitiveType.TRIANGLES,
@@ -57,6 +60,12 @@ class IndexedVertexList<T: Struct>(
 
     var name: String = "geometry"
 
+    var vertexData: StructBuffer<T> = StructBuffer(layout, capacity = initialSize)
+        internal set
+
+    var indices = Uint32Buffer(initialSize, true)
+        internal set
+
     /**
      * Number of vertices.
      */
@@ -78,12 +87,6 @@ class IndexedVertexList<T: Struct>(
 
     val lastIndex
         get() = numVertices - 1
-
-    var vertexData: StructBuffer<T> = StructBuffer(layout, initialSize).apply { limit = 0 }
-        internal set
-
-    var indices = Uint32Buffer(initialSize, true)
-        internal set
 
     val bounds = BoundingBoxF()
 
@@ -119,9 +122,8 @@ class IndexedVertexList<T: Struct>(
         if (reqSpace <= 0 || layout.structSize == 0) return
         if (vertexData.remaining < reqSpace) {
             val newSize = increaseBufferSize(vertexData.capacity, reqSpace - vertexData.remaining, layout.structSize)
-            val newData = StructBuffer(layout, newSize)
-            newData.limit = vertexData.limit
-            newData.putAll(vertexData)
+            val newData = StructBuffer(layout, capacity = newSize)
+            newData.put(vertexData)
             vertexData = newData
         }
     }
@@ -148,7 +150,6 @@ class IndexedVertexList<T: Struct>(
     }
 
     inline fun addVertex(block: VertexView<T>.() -> Unit): Int {
-        vertexData.position = numVertices
         checkBufferSize(1)
         val addIndex = numVertices++
         vertexIt.index = addIndex
@@ -229,7 +230,6 @@ class IndexedVertexList<T: Struct>(
 
     fun clear() {
         vertexData.clear()
-        vertexData.limit = 0
         indices.clear()
         bounds.clear()
         modCount.increment()
@@ -245,9 +245,8 @@ class IndexedVertexList<T: Struct>(
         checkBufferSize(source.numVertices)
         checkIndexSize(source.indices.position)
         @Suppress("UNCHECKED_CAST")
-        vertexData.putAll(source.vertexData as StructBuffer<T>)
+        vertexData.put(source.vertexData as StructBuffer<T>)
         indices.put(source.indices)
-        numVertices = source.numVertices
         bounds.set(source.bounds)
         modCount.reset(source.modCount)
     }

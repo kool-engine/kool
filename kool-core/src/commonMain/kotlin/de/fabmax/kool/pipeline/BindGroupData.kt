@@ -123,7 +123,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
 
     inner class UniformBufferBindingData<T: Struct>(override val layout: UniformBufferLayout<T>) : BindingData {
         override val modCount = ModCounter()
-        val buffer: StructBuffer<T> = StructBuffer(layout.struct, 1)
+        val buffer: StructBuffer<T> = StructBuffer(layout.struct, capacity = 1).also { it.limit = 1 }
 
         override val isComplete = true
 
@@ -140,7 +140,7 @@ class BindGroupData(val layout: BindGroupLayout, val name: String) : BaseReleasa
             check(layout.hash == other.layout.hash)
             other.buffer.clear()
             @Suppress("UNCHECKED_CAST")
-            (other.buffer as StructBuffer<T>).putAll(buffer)
+            (other.buffer as StructBuffer<T>).put(buffer)
             other.modCount.reset(modCount)
         }
     }

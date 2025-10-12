@@ -35,7 +35,7 @@ fun MeshInstanceList(initialSize: Int, vararg instanceAttributes: Attribute): Me
     MeshInstanceList(listOf(*instanceAttributes), initialSize)
 
 class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isResizable: Boolean = true) : BaseReleasable() {
-    var instanceData = StructBuffer(layout, initialSize).apply { limit = 0 }
+    var instanceData = StructBuffer(layout, capacity = initialSize)
         private set
 
     /**
@@ -70,7 +70,7 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
             val newSize = increaseBufferSize(instanceData.capacity, reqSpace - remaining, layout.structSize)
             val newData = StructBuffer(layout, newSize)
             newData.limit = instanceData.limit
-            newData.putAll(instanceData)
+            newData.put(instanceData)
             instanceData = newData
         }
     }
@@ -103,7 +103,7 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
         clear()
         checkBufferSize(source.instanceData.limit)
         @Suppress("UNCHECKED_CAST")
-        instanceData.putAll(source.instanceData as StructBuffer<T>)
+        instanceData.put(source.instanceData as StructBuffer<T>)
         usage = source.usage
         modCount.reset(source.modCount)
         numInstances = source.numInstances
