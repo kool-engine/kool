@@ -6,9 +6,7 @@ import de.fabmax.kool.math.clamp
 import de.fabmax.kool.math.noise.MultiPerlin3d
 import de.fabmax.kool.pipeline.*
 import de.fabmax.kool.toString
-import de.fabmax.kool.util.PerfTimer
-import de.fabmax.kool.util.Uint8Buffer
-import de.fabmax.kool.util.logD
+import de.fabmax.kool.util.*
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -72,7 +70,17 @@ class Wind {
         return Texture3d(mipMapping = MipMapping.Off, name = "wind-density") { BufferedImageData3d(buf, sz, sz, sz, TexFormat.RGBA) }
     }
 
-    companion object {
-        val WIND_SENSITIVITY = Attribute("aWindSense", GpuType.Float1)
+    object VertexLayoutWind : Struct("VertexLayoutWind", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val normal = float3(Attribute.NORMALS.name)
+        val texCoord = float2(Attribute.TEXTURE_COORDS.name)
+        val windSensitivity = float1("aWindSensitivity")
+    }
+
+    object VertexLayoutWindColored : Struct("VertexLayoutWind", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val normal = float3(Attribute.NORMALS.name)
+        val color = float4(Attribute.COLORS.name)
+        val windSensitivity = float1("aWindSensitivity")
     }
 }

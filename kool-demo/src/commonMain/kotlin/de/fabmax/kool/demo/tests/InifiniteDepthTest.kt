@@ -11,6 +11,7 @@ import de.fabmax.kool.pipeline.vertexAttribFloat3
 import de.fabmax.kool.pipeline.vertexAttribFloat4
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
@@ -20,7 +21,7 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
     override fun Scene.setupMainScene(ctx: KoolContext) {
         camera.setup()
 
-        addMesh(Attribute.POSITIONS, Attribute.COLORS) {
+        addMesh(VertexLayouts.PositionColor) {
             val depthsToColors = mapOf(
                 1e16f to MdColor.INDIGO,        // 10^16 m: ~1 light year away from camera
                 1e9f to MdColor.BLUE,
@@ -53,7 +54,7 @@ class InifiniteDepthTest : DemoScene("Infinite Depth Test") {
             }
         }
 
-        addMesh(Attribute.POSITIONS, Attribute.COLORS) {
+        addMesh(VertexLayouts.PositionColor) {
             val depthsToColors = mapOf(
                 1.01f to MdColor.RED,       // should never be visible
                 1.0f to MdColor.ORANGE,

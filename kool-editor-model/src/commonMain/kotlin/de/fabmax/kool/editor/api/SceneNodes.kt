@@ -13,7 +13,6 @@ import de.fabmax.kool.modules.gltf.GltfMaterialConfig
 import de.fabmax.kool.modules.ksl.KslLitShader
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.ModelMatrixComposition
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateTangents
@@ -137,10 +136,9 @@ class SceneNodes(val scene: EditorScene) :
         override suspend fun createNode() {
             val isInstanced = meshKey.exclusiveEntity == EntityId.NULL
             val instances = if (isInstanced) MeshInstanceList(InstanceLayouts.ModelMat, 100) else null
-            val attributes = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
             val isHeightmap = meshKey.shapes.any { it is ShapeData.Heightmap }
 
-            node = Mesh(attributes, instances).apply {
+            node = Mesh(VertexLayouts.PositionNormalTexCoordTangent, instances).apply {
                 sceneNode.addNode(this)
                 isFrustumChecked = false
                 drawGroupId = meshKey.drawGroupId

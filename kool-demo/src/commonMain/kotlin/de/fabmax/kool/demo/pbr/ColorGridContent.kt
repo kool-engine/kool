@@ -10,7 +10,6 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.Text
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ibl.EnvironmentMap
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
@@ -84,7 +83,7 @@ class ColorGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.PbrConten
             }
         }
 
-        return addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = instances) {
+        return addMesh(VertexLayouts.PositionNormal, instances = instances) {
             isFrustumChecked = false
             geometry.addGeometry(sphereProto.simpleSphere)
             shader = instancedPbrShader(withIbl, environmentMap).also { shaders += it }

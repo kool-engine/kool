@@ -13,6 +13,7 @@ import de.fabmax.kool.modules.ksl.lang.xyz
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.vertexAttribFloat3
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.defaultOrbitCamera
 import de.fabmax.kool.util.Time
@@ -59,7 +60,7 @@ class HelloKsl : DemoScene("Hello KSL Shaders") {
             }
         }
 
-        addMesh(Attribute.POSITIONS, Attribute.NORMALS) {
+        addMesh(VertexLayouts.PositionNormal) {
             shader = helloKslShader
 
             // connect to the shader uniform (the names need to match)

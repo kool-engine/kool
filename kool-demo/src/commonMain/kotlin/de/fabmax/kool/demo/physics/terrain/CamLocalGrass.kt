@@ -2,12 +2,10 @@ package de.fabmax.kool.demo.physics.terrain
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.math.spatial.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.scene.Camera
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.util.PerfTimer
 import de.fabmax.kool.util.Time
@@ -36,7 +34,7 @@ class CamLocalGrass(val camera: Camera, val terrain: Terrain, val wind: Wind, va
 
     init {
         grassQuads = Mesh(
-            IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, Wind.WIND_SENSITIVITY),
+            layout = Wind.VertexLayoutWind,
             instances = grassInstances
         ).apply {
             generate {

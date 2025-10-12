@@ -9,6 +9,7 @@ import de.fabmax.kool.modules.ui2.remember
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -46,7 +47,7 @@ class PlanarOrbits(resources: CreativeCodingDemo.Resources) : CreativeContent("P
     }
 
     private fun createMesh(resources: CreativeCodingDemo.Resources): Mesh = addMesh(
-        Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.METAL_ROUGH
+        layout = VertexLayouts.PositionNormalColorMetalRough
     ) {
         shader = KslPbrShader {
             color { vertexColor() }

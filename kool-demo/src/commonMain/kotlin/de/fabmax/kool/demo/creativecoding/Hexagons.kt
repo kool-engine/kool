@@ -6,9 +6,9 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.modules.ui2.UiScope
 import de.fabmax.kool.modules.ui2.remember
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.ColorGradient
 import kotlin.math.*
 
@@ -16,12 +16,12 @@ class Hexagons(val resources: CreativeCodingDemo.Resources) : CreativeContent("H
 
     private var settings = Settings()
 
-    private val mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.METAL_ROUGH).apply {
+    private val mesh = Mesh(VertexLayouts.PositionNormalColorMetalRough).apply {
         shader = KslPbrShader {
             pipeline { cullMethod = CullMethod.NO_CULLING }
             color { vertexColor() }
-            metallic { vertexProperty(Attribute.METAL_ROUGH, 0) }
-            roughness { vertexProperty(Attribute.METAL_ROUGH, 1) }
+            metallic { vertexProperty(VertexLayouts.PositionNormalColorMetalRough.metallic) }
+            roughness { vertexProperty(VertexLayouts.PositionNormalColorMetalRough.roughness) }
             lighting {
                 addShadowMaps(resources.shadowMaps)
                 imageBasedAmbientLight(resources.imageEnv.irradianceMap)

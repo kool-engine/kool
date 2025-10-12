@@ -10,13 +10,9 @@ import de.fabmax.kool.physics.RigidStatic
 import de.fabmax.kool.physics.Shape
 import de.fabmax.kool.physics.geometry.TriangleMesh
 import de.fabmax.kool.physics.geometry.TriangleMeshGeometry
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
-import de.fabmax.kool.scene.InstanceLayouts
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshInstanceList
-import de.fabmax.kool.scene.Node
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -50,12 +46,12 @@ class Trees(val terrain: Terrain, nTrees: Int, val wind: Wind, val sky: Sky) {
         repeat(20) {
             val root = treeGenerator.generateNodes(MutableMat4f())
 
-            val treeData = IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Wind.WIND_SENSITIVITY)
+            val treeData = IndexedVertexList(Wind.VertexLayoutWindColored)
             val meshBuilder = MeshBuilder(treeData)
             treeGenerator.trunkMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
             treeGenerator.leafMesh(root, random.randomF(0.25f, 0.75f), meshBuilder)
 
-            val collisionData = IndexedVertexList(Attribute.POSITIONS)
+            val collisionData = IndexedVertexList(VertexLayouts.Position)
             val collisionBuilder = MeshBuilder(collisionData)
             treeGenerator.trunkMesh(root, 0f, collisionBuilder)
 

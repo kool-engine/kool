@@ -36,13 +36,13 @@ class PropertyBlockVertexStage(cfg: PropertyBlockConfig, parentScope: KslScopeBu
 
             cfg.propertySources.filterIsInstance<PropertyBlockConfig.VertexProperty>().mapIndexed { i, source ->
                 vertexProperties[source] = parentStage.program.interStageFloat1(name = nextName("${opName}_vertexProp_$i")).apply {
-                    val prop = if (source.propertyAttrib.type.channels == 1) {
-                        parentStage.vertexAttribFloat1(source.propertyAttrib.name)
+                    val prop = if (source.type.channels == 1) {
+                        parentStage.vertexAttribFloat1(source.propertyName)
                     } else {
-                        val attrib = when (source.propertyAttrib.type.channels) {
-                            2 -> parentStage.vertexAttribFloat2(source.propertyAttrib.name)
-                            3 -> parentStage.vertexAttribFloat3(source.propertyAttrib.name)
-                            else -> parentStage.vertexAttribFloat4(source.propertyAttrib.name)
+                        val attrib = when (source.type.channels) {
+                            2 -> parentStage.vertexAttribFloat2(source.propertyName)
+                            3 -> parentStage.vertexAttribFloat3(source.propertyName)
+                            else -> parentStage.vertexAttribFloat4(source.propertyName)
                         }
                         when (source.channel) {
                             0 -> attrib.float1("x")
@@ -220,7 +220,7 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
     }
     data class ConstProperty(val value: Float, override val blendMode: BlendMode) : PropertySource
     data class UniformProperty(val defaultValue: Float?, val uniformName: String, override val blendMode: BlendMode) : PropertySource
-    data class VertexProperty(val propertyAttrib: Attribute, val channel: Int, override val blendMode: BlendMode) : PropertySource
+    data class VertexProperty(val propertyName: String, val type: GpuType, val channel: Int, override val blendMode: BlendMode) : PropertySource
     data class TextureProperty(val defaultTexture: Texture2d?, val channel: Int, val textureName: String, override val blendMode: BlendMode) : PropertySource
     data class TextureArrayProperty(val arrayIndex: Int, val defaultTexture: Texture2dArray?, val channel: Int, val textureName: String, override val blendMode: BlendMode) : PropertySource
     data class InstanceProperty(val propertyName: String, val type: GpuType, val channel: Int, override val blendMode: BlendMode) : PropertySource
@@ -259,7 +259,12 @@ data class PropertyBlockConfig(val propertyName: String, val propertySources: Li
         }
 
         fun vertexProperty(attribute: Attribute, channel: Int = 0, blendMode: BlendMode = BlendMode.Set): Builder {
-            propertySources += VertexProperty(attribute, channel, blendMode)
+            propertySources += VertexProperty(attribute.name, attribute.type, channel, blendMode)
+            return this
+        }
+
+        fun vertexProperty(layoutMember: Float1Member<*>, blendMode: BlendMode = BlendMode.Set): Builder {
+            propertySources += VertexProperty(layoutMember.name, layoutMember.type, 0, blendMode)
             return this
         }
 

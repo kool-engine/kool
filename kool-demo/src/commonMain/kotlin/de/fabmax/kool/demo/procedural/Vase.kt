@@ -3,9 +3,9 @@ package de.fabmax.kool.demo.procedural
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.rad
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
 import de.fabmax.kool.scene.Mesh
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
@@ -17,7 +17,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Vase : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS)) {
+class Vase : Mesh(IndexedVertexList(VertexLayouts.PositionNormalColor)) {
 
     init {
         generate {

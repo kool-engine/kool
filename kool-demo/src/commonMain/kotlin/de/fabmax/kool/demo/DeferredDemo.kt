@@ -168,7 +168,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             generate {
                 val sphereProtos = mutableListOf<IndexedVertexList<*>>()
                 for (i in 0..10) {
-                    val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS))
+                    val builder = MeshBuilder(IndexedVertexList(VertexLayouts.PositionNormalColor))
                     sphereProtos += builder.geometry
                     builder.apply {
                         icoSphere {
@@ -207,7 +207,7 @@ class DeferredDemo : DemoScene("Deferred Shading") {
             shader = objectShader
         }
 
-        lightPositionMesh = addMesh(Attribute.POSITIONS, Attribute.NORMALS, instances = lightPosInsts) {
+        lightPositionMesh = addMesh(VertexLayouts.PositionNormal, instances = lightPosInsts) {
             isFrustumChecked = false
             isVisible = true
             isCastingShadow = false

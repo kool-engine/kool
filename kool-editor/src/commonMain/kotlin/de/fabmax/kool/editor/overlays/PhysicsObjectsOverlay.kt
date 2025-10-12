@@ -13,7 +13,6 @@ import de.fabmax.kool.math.deg
 import de.fabmax.kool.modules.ksl.KslUnlitShader
 import de.fabmax.kool.modules.ksl.blocks.ColorSpaceConversion
 import de.fabmax.kool.physics.joints.D6JointMotion
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BlendMode
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.DrawShader
@@ -55,7 +54,7 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     private val angularZJointMesh = makeAngularZJointMesh(objectShader, true)
 
     private fun makeJointMesh(instances: MeshInstanceList<*>, shader: DrawShader, isPickable: Boolean, name: String, block: MeshBuilder.() -> Unit): Mesh =
-        Mesh(meshAttrs, instances, name).apply {
+        Mesh(VertexLayouts.Position, instances, name).apply {
             isCastingShadow = false
             rayTest = if (isPickable) MeshRayTest.geometryTest(this) else MeshRayTest.nopTest()
             this.shader = shader
@@ -243,7 +242,6 @@ class PhysicsObjectsOverlay : Node("Physics objects overlay"), EditorOverlay {
     }
 
     companion object {
-        private val meshAttrs = listOf(Attribute.POSITIONS)
         private val objectShader = KslUnlitShader {
             pipeline {
                 depthTest = DepthCompareOp.ALWAYS

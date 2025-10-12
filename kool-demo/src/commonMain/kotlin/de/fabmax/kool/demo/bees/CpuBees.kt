@@ -2,9 +2,9 @@ package de.fabmax.kool.demo.bees
 
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ui2.mutableStateOf
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.RectUvs
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.PerfTimer
@@ -50,7 +50,7 @@ class CpuBees(val team: Int) {
     private var attackForce = BeeConfig.attackForce.value
 
     init {
-        beeMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.TEXTURE_COORDS, instances = beeInstances).apply {
+        beeMesh = Mesh(VertexLayouts.PositionNormalTexCoord, instances = beeInstances).apply {
             generate {
                 cube {
                     size.set(0.7f, 0.7f, 1f)

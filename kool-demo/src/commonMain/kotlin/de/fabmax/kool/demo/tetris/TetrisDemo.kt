@@ -11,11 +11,11 @@ import de.fabmax.kool.input.UniversalKeyCode
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.ClearColorFill
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.Color
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MsdfFont
@@ -56,7 +56,7 @@ class TetrisDemo : DemoScene("Tetris") {
 
         // Create and configure the mesh for rendering the game field
         gameMesh = Mesh(
-            listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS),
+            layout = VertexLayouts.PositionNormalColor,
             name = "tetris-mesh"
         )
         gameMesh.shader = KslPbrShader {

@@ -4,8 +4,8 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.deg
 import de.fabmax.kool.math.randomF
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.Texture2d
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.geometry.IndexedVertexList
@@ -22,12 +22,7 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
     init {
         val gridSz = 8
         val meshDatas = MutableList(gridSz * gridSz) {
-            val data = IndexedVertexList(
-                Attribute.POSITIONS,
-                Attribute.NORMALS,
-                Attribute.TEXTURE_COORDS,
-                Wind.WIND_SENSITIVITY
-            )
+            val data = IndexedVertexList(Wind.VertexLayoutWind)
             val builder = MeshBuilder(data)
             builder to data
         }
@@ -117,7 +112,7 @@ class Grass(val terrain: Terrain, val wind: Wind, val sky: Sky) {
         private fun MeshBuilder.makeGrassVertex(pos: Vec3f, u: Float, v: Float, wind: Float): Int = vertex {
             set(pos)
             texCoord.set(u, v)
-            getFloatAttribute(Wind.WIND_SENSITIVITY)?.f = wind
+            getFloatAttribute(Wind.VertexLayoutWind.windSensitivity.asAttribute())?.f = wind
         }
 
         fun MeshBuilder.grassSprite(pos: Vec3f, step: Vec3f, topOffset: Vec3f, midOffset: Vec3f) {

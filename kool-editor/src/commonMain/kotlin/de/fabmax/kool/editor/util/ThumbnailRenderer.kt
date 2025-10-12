@@ -280,15 +280,14 @@ fun ThumbnailRenderer.materialThumbnail(material: MaterialComponent): ThumbnailR
 }
 
 private class MaterialPreviewMesh :
-    Mesh(IndexedVertexList(vertexAttribs), name = "material-preview-mesh")
+    Mesh(IndexedVertexList(VertexLayouts.PositionNormalTexCoordColorTangent), name = "material-preview-mesh")
 {
     init {
         geometry.addGeometry(sphereMeshData)
     }
 
     companion object {
-        val vertexAttribs = listOf(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, Attribute.TEXTURE_COORDS, Attribute.TANGENTS)
-        val sphereMeshData = IndexedVertexList(vertexAttribs).apply {
+        val sphereMeshData = IndexedVertexList(VertexLayouts.PositionNormalTexCoordColorTangent).apply {
             MeshBuilder(this).apply {
                 vertexModFun = { texCoord.x *= 2f }
                 uvSphere { steps = 35 }
@@ -298,7 +297,7 @@ private class MaterialPreviewMesh :
     }
 }
 
-private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(IndexedVertexList(VertexLayouts.PositionTexCoord)) {
     init {
         generateThumbnailRoundRect()
         shader = KslShader("scene-bg-shader", PipelineConfig(depthTest = DepthCompareOp.ALWAYS)) {
@@ -334,7 +333,7 @@ private class SceneBgMesh(val shaderData: SceneShaderData) : Mesh(IndexedVertexL
     }
 }
 
-private class ClearMesh : Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.TEXTURE_COORDS)) {
+private class ClearMesh : Mesh(IndexedVertexList(VertexLayouts.PositionTexCoord)) {
     init {
         generateFullscreenQuad()
         shader = KslShader("clear-shader", PipelineConfig(blendMode = BlendMode.DISABLED, depthTest = DepthCompareOp.ALWAYS)) {

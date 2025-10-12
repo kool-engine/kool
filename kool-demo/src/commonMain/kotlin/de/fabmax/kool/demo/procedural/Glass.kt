@@ -7,7 +7,7 @@ import de.fabmax.kool.modules.ksl.KslPbrShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.lang.*
 import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.pipeline.deferred.DeferredPassSwapListener
 import de.fabmax.kool.pipeline.deferred.DeferredPasses
 import de.fabmax.kool.pipeline.deferred.deferredKslPbrShader
@@ -19,9 +19,11 @@ import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.scene.geometry.MeshBuilder
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.util.Color
+import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.SimpleShadowMap
+import de.fabmax.kool.util.Struct
 
-class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), DeferredPassSwapListener {
+class Glass(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), DeferredPassSwapListener {
 
     private val glasShader: GlassShader = GlassShader(ibl, shadowMap)
 
@@ -55,7 +57,7 @@ class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Deferr
         }
     }
 
-    private fun makeShaft() = addMesh(Attribute.POSITIONS, Attribute.NORMALS, Attribute.COLORS, THICKNESS) {
+    private fun makeShaft() = addMesh(GlassVertex) {
         generate {
             makeShaftGeometry()
             geometry.removeDegeneratedTriangles()
@@ -132,7 +134,7 @@ class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Deferr
 
             var thickness = 0.5f
             vertexModFun = {
-                getFloatAttribute(THICKNESS)?.f = thickness
+                getFloatAttribute(GlassVertex.thickness.asAttribute())?.f = thickness
             }
 
             withTransform {
@@ -219,7 +221,7 @@ class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Deferr
 
                 vertexStage {
                     main {
-                        matThickness.input set vertexAttribFloat1(THICKNESS.name)
+                        matThickness.input set vertexAttribFloat1(GlassVertex.thickness)
                     }
                 }
 
@@ -265,7 +267,10 @@ class Glas(val ibl: EnvironmentMap, shadowMap: SimpleShadowMap) : Node(), Deferr
 
     private class ExtrudeProps(val r: Float, val h: Float, val t: Float)
 
-    companion object {
-        private val THICKNESS = Attribute("aMatThickness", GpuType.Float1)
+    private object GlassVertex : Struct("GlassVertex", MemoryLayout.TightlyPacked) {
+        val position = float3(Attribute.POSITIONS.name)
+        val normal = float3(Attribute.NORMALS.name)
+        val color = float4(Attribute.COLORS.name)
+        val thickness = float1("aMatThickness")
     }
 }

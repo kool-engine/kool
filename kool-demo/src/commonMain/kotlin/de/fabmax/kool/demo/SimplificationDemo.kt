@@ -14,7 +14,6 @@ import de.fabmax.kool.modules.mesh.ListEdgeHandler
 import de.fabmax.kool.modules.mesh.simplification.simplify
 import de.fabmax.kool.modules.mesh.simplification.terminateOnFaceCountRel
 import de.fabmax.kool.modules.ui2.*
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -28,7 +27,7 @@ class SimplificationDemo : DemoScene("Simplification") {
 
     private val activeModel: MutableStateValue<DemoModel>
     private var heMesh: HalfEdgeMesh
-    private val dispModel = Mesh(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
+    private val dispModel = Mesh(IndexedVertexList(VertexLayouts.PositionNormal))
     private val modelWireframe = TriangulatedLineMesh().apply {
         shader = TriangulatedLineMesh.Shader {
             color { vertexColor() }
@@ -130,7 +129,7 @@ class SimplificationDemo : DemoScene("Simplification") {
     }
 
     private fun makeCosGrid(): IndexedVertexList<*> {
-        val builder = MeshBuilder(IndexedVertexList(Attribute.POSITIONS, Attribute.NORMALS))
+        val builder = MeshBuilder(IndexedVertexList(VertexLayouts.PositionNormal))
         builder.color = MdColor.RED
         builder.grid {
             sizeX = 10f

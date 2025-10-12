@@ -70,9 +70,6 @@ class IndexedVertexList<T: Struct>(
     var numVertices: Int
         get() = vertexData.limit
         set(value) {
-            if (value > vertexData.capacity) {
-                logE { "$value > ${vertexData.capacity}" }
-            }
             vertexData.limit = value
             incrementModCount()
         }
