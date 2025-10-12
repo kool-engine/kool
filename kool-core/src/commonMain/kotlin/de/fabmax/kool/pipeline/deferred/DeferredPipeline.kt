@@ -2,7 +2,6 @@ package de.fabmax.kool.pipeline.deferred
 
 import de.fabmax.kool.math.AngleF
 import de.fabmax.kool.math.clamp
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.BloomPass
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenQuad
@@ -188,7 +187,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
             outputShader.isBloomEnabled = isBloomEnabled
         }
 
-        return Mesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS).apply {
+        return Mesh(VertexLayouts.PositionTexCoord).apply {
             generateFullscreenQuad(true)
             shader = outputShader
         }
@@ -211,7 +210,7 @@ class DeferredPipeline(val scene: Scene, val cfg: DeferredPipelineConfig) {
 
     private fun setupLightingPassContent() {
         lightingPassContent.apply {
-            addMesh(Attribute.POSITIONS, Attribute.TEXTURE_COORDS) {
+            addMesh(VertexLayouts.PositionTexCoord) {
                 generateFullscreenQuad()
                 shader = lightingPassShader
             }

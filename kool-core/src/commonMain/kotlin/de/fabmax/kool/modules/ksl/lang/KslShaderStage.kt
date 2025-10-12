@@ -211,6 +211,16 @@ class KslVertexStage(program: KslProgram) : KslShaderStage(program, KslShaderSta
     fun vertexAttribInt3(name: String) = attribVector(name, KslInt3, KslInputRate.Vertex)
     fun vertexAttribInt4(name: String) = attribVector(name, KslInt4, KslInputRate.Vertex)
 
+    fun vertexAttribFloat1(layoutMember: Float1Member<*>) = attribScalar(layoutMember.name, KslFloat1, KslInputRate.Vertex)
+    fun vertexAttribFloat2(layoutMember: Float2Member<*>) = attribVector(layoutMember.name, KslFloat2, KslInputRate.Vertex)
+    fun vertexAttribFloat3(layoutMember: Float3Member<*>) = attribVector(layoutMember.name, KslFloat3, KslInputRate.Vertex)
+    fun vertexAttribFloat4(layoutMember: Float4Member<*>) = attribVector(layoutMember.name, KslFloat4, KslInputRate.Vertex)
+
+    fun vertexAttribInt1(layoutMember: Int1Member<*>) = attribScalar(layoutMember.name, KslInt1, KslInputRate.Vertex)
+    fun vertexAttribInt2(layoutMember: Int2Member<*>) = attribVector(layoutMember.name, KslInt2, KslInputRate.Vertex)
+    fun vertexAttribInt3(layoutMember: Int3Member<*>) = attribVector(layoutMember.name, KslInt3, KslInputRate.Vertex)
+    fun vertexAttribInt4(layoutMember: Int4Member<*>) = attribVector(layoutMember.name, KslInt4, KslInputRate.Vertex)
+
     fun instanceAttribFloat1(name: String) = attribScalar(name, KslFloat1, KslInputRate.Instance)
     fun instanceAttribFloat2(name: String) = attribVector(name, KslFloat2, KslInputRate.Instance)
     fun instanceAttribFloat3(name: String) = attribVector(name, KslFloat3, KslInputRate.Instance)

@@ -7,9 +7,7 @@ import de.fabmax.kool.modules.ksl.KslShader
 import de.fabmax.kool.modules.ksl.blocks.cameraData
 import de.fabmax.kool.modules.ksl.blocks.modelMatrix
 import de.fabmax.kool.modules.ksl.lang.*
-import de.fabmax.kool.pipeline.Attribute
-import de.fabmax.kool.pipeline.GpuType
-import de.fabmax.kool.pipeline.vertexAttribFloat2
+import de.fabmax.kool.pipeline.asAttribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
@@ -19,7 +17,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class TriangulatedPointMesh(
-    geometry: IndexedVertexList<*> = IndexedVertexList(listOf(ATTR_POINT_VERTEX), PrimitiveType.TRIANGLE_STRIP),
+    geometry: IndexedVertexList<*> = IndexedVertexList(PointVertexLayout, primitiveType = PrimitiveType.TRIANGLE_STRIP),
     numVertices: Int = 8,
     name: String = makeNodeName("TriangulatedPointMesh")
 ) : Mesh(geometry, MeshInstanceList(PointInstanceLayout, 1024), name = name) {
@@ -38,7 +36,7 @@ class TriangulatedPointMesh(
             repeat(numVertices) { i ->
                 val a = 2f * PI_F / numVertices * i
                 addVertex {
-                    getVec2fAttribute(ATTR_POINT_VERTEX)!!.set(Vec2f(cos(a), sin(a)))
+                    getVec2fAttribute(PointVertexLayout.posOffset.asAttribute())!!.set(Vec2f(cos(a), sin(a)))
                 }
             }
 
@@ -89,7 +87,7 @@ class TriangulatedPointMesh(
                         color.input set instanceAttribFloat4(PointInstanceLayout.pointColor)
 
                         outPosition set camData.viewProjMat * modelMat.matrix * float4Value(pointPos, 1f.const)
-                        outPosition.xy += vertexAttribFloat2(ATTR_POINT_VERTEX) * outPosition.w * pointSize * pxSize
+                        outPosition.xy += vertexAttribFloat2(PointVertexLayout.posOffset) * outPosition.w * pointSize * pxSize
                     }
                 }
                 fragmentStage {
@@ -104,7 +102,7 @@ class TriangulatedPointMesh(
         val pointColor = float4("aPointColor")
     }
 
-    companion object {
-        val ATTR_POINT_VERTEX = Attribute("aPointVertex", GpuType.Float2)
+    object PointVertexLayout : Struct("PointVertexLayout", MemoryLayout.TightlyPacked) {
+        val posOffset = float2("aPointVertex")
     }
 }

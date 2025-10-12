@@ -23,7 +23,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
     private val modelCenter = MutableVec3f()
     private var modelRadius = 1f
-    private val lodController = InstancedLodController<InstanceLayoutModelMatAndColor>()
+    private val lodController = InstancedLodController<InstanceLayouts.ModelMatColor>()
 
     private lateinit var model: GltfFile
 
@@ -73,7 +73,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
 
     private fun addLods(model: GltfFile) {
         for (i in model.scenes.indices) {
-            val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false, instanceLayout = InstanceLayoutModelMatAndColor)
+            val modelCfg = GltfLoadConfig(generateNormals = true, applyMaterials = false, instanceLayout = InstanceLayouts.ModelMatColor)
             model.makeModel(modelCfg, i).meshes.values.first().apply {
                 geometry.forEach { v ->
                     v.position.mul(0.3f).add(Vec3f(0f, -1f, 0f))
@@ -95,7 +95,7 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
         lodController.setupInstances()
     }
 
-    private fun InstancedLodController<InstanceLayoutModelMatAndColor>.setupInstances() {
+    private fun InstancedLodController<InstanceLayouts.ModelMatColor>.setupInstances() {
         val colors = listOf(Color.WHITE.toLinear(), MdColor.RED.toLinear(), MdColor.PINK.toLinear(),
                 MdColor.PURPLE.toLinear(), MdColor.DEEP_PURPLE.toLinear(), MdColor.INDIGO.toLinear(),
                 MdColor.BLUE.toLinear(), MdColor.CYAN.toLinear(), MdColor.TEAL.toLinear(), MdColor.GREEN.toLinear(),
@@ -124,21 +124,21 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
     }
 
     private fun instanceColorPbrShader() = KslPbrShader {
-        vertices { instancedModelMatrix(InstanceLayoutModelMatAndColor.modelMat) }
-        color { instanceColor(InstanceLayoutModelMatAndColor.color) }
+        vertices { instancedModelMatrix(InstanceLayouts.ModelMatColor.modelMat) }
+        color { instanceColor(InstanceLayouts.ModelMatColor.color) }
     }
 
     private class Lod(val maxInsts: Int, val maxDist: Float, val color: MutableColor) {
         var mesh: Mesh? = null
     }
 
-    private inner class BunnyInstance(val position: Vec3f, rotAxis: Vec3f) : InstancedLodController.Instance<InstanceLayoutModelMatAndColor>() {
+    private inner class BunnyInstance(val position: Vec3f, rotAxis: Vec3f) : InstancedLodController.Instance<InstanceLayouts.ModelMatColor>() {
         val rotSpeed = rotAxis.length() * 120f
         val rotAxis = rotAxis.normed()
 
         val color = MutableColor()
 
-        override fun update(lodCtrl: InstancedLodController<InstanceLayoutModelMatAndColor>, cam: Camera) {
+        override fun update(lodCtrl: InstancedLodController<InstanceLayouts.ModelMatColor>, cam: Camera) {
             instanceModelMat
                 .setIdentity()
                 .translate(position)
@@ -146,12 +146,12 @@ class InstanceDemo : DemoScene("Instanced Drawing") {
             super.update(lodCtrl, cam)
         }
 
-        override fun addInstanceData(view: MutableStructBufferView<InstanceLayoutModelMatAndColor>, lod: Int) {
-            view.set(InstanceLayoutModelMatAndColor.modelMat, instanceModelMat)
+        override fun addInstanceData(view: MutableStructBufferView<InstanceLayouts.ModelMatColor>, lod: Int) {
+            view.set(InstanceLayouts.ModelMatColor.modelMat, instanceModelMat)
             if (isLodColors.value) {
-                view.set(InstanceLayoutModelMatAndColor.color, lods[lod].color)
+                view.set(InstanceLayouts.ModelMatColor.color, lods[lod].color)
             } else {
-                view.set(InstanceLayoutModelMatAndColor.color, color)
+                view.set(InstanceLayouts.ModelMatColor.color, color)
             }
         }
     }

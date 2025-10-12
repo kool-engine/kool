@@ -4,7 +4,6 @@ import de.fabmax.kool.math.MutableVec3f
 import de.fabmax.kool.math.Vec3f
 import de.fabmax.kool.math.spatial.BoundingBoxF
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
@@ -45,7 +44,7 @@ fun Node.addNormalMesh(
 
 open class LineMesh(
     name: String = makeNodeName("LineMesh"),
-    geometry: IndexedVertexList<*> = IndexedVertexList(Attribute.POSITIONS, Attribute.COLORS, primitiveType = PrimitiveType.LINES),
+    geometry: IndexedVertexList<*> = IndexedVertexList(VertexLayouts.PositionColor, primitiveType = PrimitiveType.LINES),
     instances: MeshInstanceList<*>? = null,
 ) : Mesh(geometry, instances = instances, name = name) {
 

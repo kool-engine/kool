@@ -111,14 +111,3 @@ class MeshInstanceList<T: Struct>(val layout: T, initialSize: Int = 100, val isR
         gpuInstances?.releaseDelayed(1)
     }
 }
-
-object InstanceLayoutEmpty : Struct("InstanceLayoutEmpty", MemoryLayout.TightlyPacked)
-
-object InstanceLayoutModelMat : Struct("InstanceLayoutModelMat", MemoryLayout.TightlyPacked) {
-    val modelMat = mat4(Attribute.INSTANCE_MODEL_MAT.name)
-}
-
-object InstanceLayoutModelMatAndColor : Struct("InstanceLayoutModelMatAndColor", MemoryLayout.TightlyPacked) {
-    val modelMat = mat4(Attribute.INSTANCE_MODEL_MAT.name)
-    val color = float4(Attribute.INSTANCE_COLOR.name)
-}

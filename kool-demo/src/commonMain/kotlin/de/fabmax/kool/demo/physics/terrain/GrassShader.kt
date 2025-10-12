@@ -13,7 +13,7 @@ import de.fabmax.kool.pipeline.Texture2d
 import de.fabmax.kool.pipeline.Texture3d
 import de.fabmax.kool.pipeline.shading.AlphaMode
 import de.fabmax.kool.pipeline.shading.DepthShader
-import de.fabmax.kool.scene.InstanceLayoutModelMat
+import de.fabmax.kool.scene.InstanceLayouts
 import de.fabmax.kool.util.MdColor
 import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.ShadowMap
@@ -58,7 +58,7 @@ object GrassShader {
     }
 
     object GrassInstanceLayout : Struct("GrassInstanceLayout", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val modelMat = mat4(InstanceLayouts.ModelMat.modelMat.name)
         val distScale = float1("aDistScale")
     }
 

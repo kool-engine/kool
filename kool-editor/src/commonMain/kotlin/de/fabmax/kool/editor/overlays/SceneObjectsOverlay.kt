@@ -35,11 +35,11 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
     private val cameras = mutableListOf<CameraComponentInstance>()
     private val groups = mutableListOf<GroupNodeInstance>()
 
-    private val dirLightsInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val spotLightsInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val pointLightsInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val cameraInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
-    private val groupInstances = MeshInstanceList(InstanceLayoutModelMatAndColor)
+    private val dirLightsInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val spotLightsInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val pointLightsInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val cameraInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
+    private val groupInstances = MeshInstanceList(InstanceLayouts.ModelMatColor)
 
     private val dirLightMesh = Mesh(
         Attribute.POSITIONS, Attribute.NORMALS,
@@ -281,7 +281,7 @@ class SceneObjectsOverlay : Node("Scene objects overlay"), EditorOverlay {
         groupInstances.addInstances(groups)
     }
 
-    private fun MeshInstanceList<InstanceLayoutModelMatAndColor>.addInstances(objs: List<OverlayObject>) {
+    private fun MeshInstanceList<InstanceLayouts.ModelMatColor>.addInstances(objs: List<OverlayObject>) {
         clear()
         addInstances(objs.size) { buf ->
             for (i in objs.indices) {

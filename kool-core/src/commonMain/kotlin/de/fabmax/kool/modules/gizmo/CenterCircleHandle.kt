@@ -4,7 +4,6 @@ import de.fabmax.kool.ViewData
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.MeshBuilder
@@ -33,9 +32,9 @@ class CenterCircleHandle(
             drawNode.isVisible = !value
         }
 
-    private val hitMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-hitMesh")
-    private val mesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-mesh")
-    private val coveredMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-coveredMesh")
+    private val hitMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
+    private val mesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
+    private val coveredMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
 
     private val handleTransform = TrsTransformD()
     private var parentCam: Camera? = null

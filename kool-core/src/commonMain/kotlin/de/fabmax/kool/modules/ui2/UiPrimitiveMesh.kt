@@ -18,7 +18,7 @@ import kotlin.math.*
 
 class UiPrimitiveMesh(name: String) :
     Mesh(
-        geometry = IndexedVertexList(ATTRIB_OUTER_WEIGHTS, ATTRIB_INNER_WEIGHTS),
+        geometry = IndexedVertexList(UiPrimVertexLayout),
         instances = MeshInstanceList(InstanceLayout, 1024),
         name = name
     )
@@ -35,8 +35,8 @@ class UiPrimitiveMesh(name: String) :
             val outerWeights = MutableVec4f()
             val innerWeights = MutableVec4f()
             vertexModFun = {
-                getVec4fAttribute(ATTRIB_OUTER_WEIGHTS)!!.set(outerWeights)
-                getVec4fAttribute(ATTRIB_INNER_WEIGHTS)!!.set(innerWeights)
+                getVec4fAttribute(attrOuterWeights)!!.set(outerWeights)
+                getVec4fAttribute(attrInnerWeights)!!.set(innerWeights)
             }
 
             fun addOuterInnerVerts(weights: Vec4f) {
@@ -219,9 +219,14 @@ class UiPrimitiveMesh(name: String) :
 
     }
 
+    object UiPrimVertexLayout : Struct("UiPrimitiveAttribs", MemoryLayout.TightlyPacked) {
+        val outerWeights = float4("aOuterW")
+        val innerWeights = float4("aInnerW")
+    }
+
     companion object {
-        val ATTRIB_OUTER_WEIGHTS = Attribute("aOuterW", GpuType.Float4)
-        val ATTRIB_INNER_WEIGHTS = Attribute("aInnerW", GpuType.Float4)
+        private val attrOuterWeights = UiPrimVertexLayout.outerWeights.asAttribute()
+        private val attrInnerWeights = UiPrimVertexLayout.innerWeights.asAttribute()
     }
 
     private class PrimitiveShader : KslShader(Model(), pipelineConfig) {
@@ -240,8 +245,8 @@ class UiPrimitiveMesh(name: String) :
                         val center = float2Var(instanceAttribFloat2(InstanceLayout.center))
                         val outerDimens = float4Var(instanceAttribFloat4(InstanceLayout.outerDimens))
                         val innerDimens = float4Var(instanceAttribFloat4(InstanceLayout.innerDimens))
-                        val outerPosWeights = float4Var(vertexAttribFloat4(ATTRIB_OUTER_WEIGHTS.name))
-                        val innerPosWeights = float4Var(vertexAttribFloat4(ATTRIB_INNER_WEIGHTS.name))
+                        val outerPosWeights = float4Var(vertexAttribFloat4(UiPrimVertexLayout.outerWeights))
+                        val innerPosWeights = float4Var(vertexAttribFloat4(UiPrimVertexLayout.innerWeights))
                         val pos = float3Var(Vec3f.ZERO.const)
 
                         pos.xy set center + outerPosWeights.xy * outerDimens.xy + outerPosWeights.zw * outerDimens.zw

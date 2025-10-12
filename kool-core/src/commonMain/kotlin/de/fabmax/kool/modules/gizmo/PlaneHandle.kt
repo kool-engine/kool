@@ -3,13 +3,9 @@ package de.fabmax.kool.modules.gizmo
 import de.fabmax.kool.input.Pointer
 import de.fabmax.kool.math.*
 import de.fabmax.kool.modules.ksl.KslUnlitShader
-import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.CullMethod
 import de.fabmax.kool.pipeline.DepthCompareOp
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TrsTransformD
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.PrimitiveType
 import de.fabmax.kool.util.Color
@@ -51,15 +47,15 @@ class PlaneHandle(
             markDirty()
         }
 
-        mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-mesh")
+        mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
         mesh.setup(size, innerDistance, DepthCompareOp.LESS)
         mesh.rayTest = MeshRayTest.geometryTest(mesh)
 
-        coveredMesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-coveredMesh")
+        coveredMesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
         coveredMesh.setup(size, innerDistance, DepthCompareOp.ALWAYS)
         coveredMesh.isPickable = false
 
-        lineMesh = Mesh(IndexedVertexList(Attribute.POSITIONS, primitiveType = PrimitiveType.LINES), name = "${name}-lineMesh")
+        lineMesh = Mesh(IndexedVertexList(VertexLayouts.Position, primitiveType = PrimitiveType.LINES), name = "${name}-lineMesh")
         lineMesh.makeOutline(size, innerDistance, mesh)
 
         addNode(coveredMesh)

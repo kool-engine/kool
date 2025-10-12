@@ -2,9 +2,12 @@ package de.fabmax.kool.modules.gltf
 
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.GpuType
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.geometry.IndexedVertexList
 import de.fabmax.kool.scene.geometry.generateNormals
 import de.fabmax.kool.scene.geometry.generateTangents
+import de.fabmax.kool.util.DynamicStruct
+import de.fabmax.kool.util.MemoryLayout
 import de.fabmax.kool.util.logW
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -62,36 +65,38 @@ data class GltfMesh(
 
             if (positionAcc == null) {
                 logW { "MeshPrimitive without position attribute" }
-                return IndexedVertexList()
+                return IndexedVertexList(VertexLayouts.Empty)
             }
 
             var generateTangents = false
 
-            val attribs = mutableListOf<Attribute>()
-
-            // for PbrShader positions and normals are always required
-            attribs += Attribute.POSITIONS
-            attribs += Attribute.NORMALS
-
-            if (colorAcc != null || cfg.setVertexAttribsFromMaterial) { attribs += Attribute.COLORS }
-            if (cfg.setVertexAttribsFromMaterial) {
-                attribs += Attribute.EMISSIVE_COLOR
-                attribs += Attribute.METAL_ROUGH
-            }
-            if (texCoordAcc != null) { attribs += Attribute.TEXTURE_COORDS }
-            if (tangentAcc != null) {
-                attribs += Attribute.TANGENTS
-            } else if(materialRef?.normalTexture != null) {
-                attribs += Attribute.TANGENTS
-                generateTangents = true
-            }
-            if (jointAcc != null) { attribs += Attribute.JOINTS }
-            if (weightAcc != null) { attribs += Attribute.WEIGHTS }
-
             val morphAccessors = makeMorphTargetAccessors(gltfAccessors)
-            attribs += morphAccessors.keys
+            val layout = DynamicStruct("GltfLayout", MemoryLayout.TightlyPacked) {
+                float3(Attribute.POSITIONS.name)
+                float3(Attribute.NORMALS.name)
 
-            val verts = IndexedVertexList(attribs)
+                if (colorAcc != null || cfg.setVertexAttribsFromMaterial) { float4(Attribute.COLORS.name) }
+                if (cfg.setVertexAttribsFromMaterial) {
+                    float3(Attribute.EMISSIVE_COLOR.name)
+                    float2(Attribute.METAL_ROUGH.name)
+                }
+                if (texCoordAcc != null) { float2(Attribute.TEXTURE_COORDS.name) }
+                if (tangentAcc != null) {
+                    float4(Attribute.TANGENTS.name)
+                } else if(materialRef?.normalTexture != null) {
+                    float4(Attribute.TANGENTS.name)
+                    generateTangents = true
+                }
+                if (jointAcc != null) { int4(Attribute.JOINTS.name) }
+                if (weightAcc != null) { float4(Attribute.WEIGHTS.name) }
+
+                morphAccessors.keys.forEach { attrib ->
+                    check(attrib.type == GpuType.Float3)
+                    float3(attrib.name)
+                }
+            }
+
+            val verts = IndexedVertexList(layout)
             val poss = Vec3fAccessor(positionAcc)
             val nrms = if (normalAcc != null) Vec3fAccessor(normalAcc) else null
             val tans = if (tangentAcc != null) Vec4fAccessor(tangentAcc) else null

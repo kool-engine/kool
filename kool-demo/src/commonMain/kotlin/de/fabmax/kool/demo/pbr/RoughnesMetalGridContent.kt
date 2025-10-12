@@ -99,7 +99,7 @@ class RoughnesMetalGridContent(val sphereProto: PbrDemo.SphereProto) : PbrDemo.P
     }
 
     private object InstanceLayout : Struct("InstanceLayout", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val modelMat = mat4(InstanceLayouts.ModelMat.modelMat.name)
         val roughness = float1()
         val metallic = float1()
     }

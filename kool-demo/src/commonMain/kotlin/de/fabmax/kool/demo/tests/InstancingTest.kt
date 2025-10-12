@@ -163,7 +163,7 @@ class InstancingTest : DemoScene("Instancing") {
     }
 
     private fun makeObjectsInstanced() {
-        var instances: MeshInstanceList<InstanceLayoutModelMat>? = null
+        var instances: MeshInstanceList<InstanceLayouts.ModelMat>? = null
         var insts = 0
 
         meshInstances.clear()
@@ -173,7 +173,7 @@ class InstancingTest : DemoScene("Instancing") {
             val z = -i / 100 - 30
 
             if (instances == null || insts >= numInstancesPerMesh.value) {
-                instances = MeshInstanceList(InstanceLayoutModelMat, numInstancesPerMesh.value)
+                instances = MeshInstanceList(InstanceLayouts.ModelMat, numInstancesPerMesh.value)
                 objects += mainScene.addColorMesh(instances = instances) {
                     generate {
                         color = Color.Hsv(randomF(0f, 360f), randomF(0.5f, 1f), randomF(0.5f, 1f)).toSrgb()
@@ -189,7 +189,7 @@ class InstancingTest : DemoScene("Instancing") {
         }
     }
 
-    class MeshInstance(val instances: MeshInstanceList<InstanceLayoutModelMat>, val pose: MutableMat4f) {
+    class MeshInstance(val instances: MeshInstanceList<InstanceLayouts.ModelMat>, val pose: MutableMat4f) {
         fun addInstance() {
             instances.addInstance {
                 set(it.modelMat, pose)

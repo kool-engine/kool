@@ -6,6 +6,7 @@ import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.scene.Light
 import de.fabmax.kool.scene.Mesh
 import de.fabmax.kool.scene.MeshInstanceList
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.util.*
 
 
@@ -19,7 +20,7 @@ class DeferredPointLights(var isDynamic: Boolean) {
     val lightShader = DeferredLightShader(Light.Point.ENCODING)
 
     val mesh = Mesh(
-        listOf(Attribute.POSITIONS),
+        layout = VertexLayouts.Position,
         instances = lightInstanceData,
         name = "DeferredPointLights"
     ).apply {

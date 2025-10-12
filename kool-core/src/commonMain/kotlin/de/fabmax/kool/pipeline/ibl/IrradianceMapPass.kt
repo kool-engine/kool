@@ -9,6 +9,7 @@ import de.fabmax.kool.pipeline.FullscreenShaderUtil.fullscreenCubeVertexStage
 import de.fabmax.kool.pipeline.FullscreenShaderUtil.generateFullscreenCube
 import de.fabmax.kool.scene.Node
 import de.fabmax.kool.scene.Scene
+import de.fabmax.kool.scene.VertexLayouts
 import de.fabmax.kool.scene.addMesh
 import de.fabmax.kool.util.logT
 import de.fabmax.kool.util.releaseDelayed
@@ -29,7 +30,7 @@ class IrradianceMapPass private constructor(parentScene: Scene, hdriMap: Texture
         mirrorIfInvertedClipY()
 
         drawNode.apply {
-            addMesh(Attribute.POSITIONS) {
+            addMesh(VertexLayouts.Position) {
                 generateFullscreenCube()
                 shader = IrradianceMapPassShader(hdriMap, cubeMap)
             }

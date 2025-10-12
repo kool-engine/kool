@@ -9,10 +9,7 @@ import de.fabmax.kool.modules.ksl.lang.gt
 import de.fabmax.kool.pipeline.Attribute
 import de.fabmax.kool.pipeline.DepthCompareOp
 import de.fabmax.kool.pipeline.vertexAttribFloat3
-import de.fabmax.kool.scene.Mesh
-import de.fabmax.kool.scene.MeshRayTest
-import de.fabmax.kool.scene.Node
-import de.fabmax.kool.scene.TrsTransformD
+import de.fabmax.kool.scene.*
 import de.fabmax.kool.util.Color
 import kotlin.math.abs
 import kotlin.math.cos
@@ -36,9 +33,9 @@ class AxisRotationHandle(
             drawNode.isVisible = !value
         }
 
-    private val hitMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-hitMesh")
-    private val mesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-mesh")
-    private val coveredMesh: Mesh = Mesh(Attribute.POSITIONS, Attribute.NORMALS, name = "${name}-coveredMesh")
+    private val hitMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-hitMesh")
+    private val mesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-mesh")
+    private val coveredMesh: Mesh = Mesh(VertexLayouts.PositionNormal, name = "${name}-coveredMesh")
 
     private var isHovered = false
     private var alphaFactor = 1f

@@ -376,7 +376,7 @@ class ShellShadingDemo : DemoScene("Shell Shading") {
     }
 
     object ShellInstanceLayout : Struct("", MemoryLayout.TightlyPacked) {
-        val modelMat = mat4(InstanceLayoutModelMat.modelMat.name)
+        val modelMat = mat4(InstanceLayouts.ModelMat.modelMat.name)
         val shell = float1("aLayer")
     }
 }
